@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="fr_FR" sourcelanguage="en">
+<TS version="2.1" language="fr_FR" sourcelanguage="en_US">
   <context>
     <name>AboutDialog</name>
     <message>
@@ -17,7 +17,7 @@
     <message>
       <location filename="../AboutDialog.ui" line="79"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2&apos;s hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 est un émulateur de PlayStation 2 (PS2) libre et open-source. Il vise à reproduire le comportement du matériel de la PS2 en combinant des interpréteurs et recompilateurs de CPU MIPS, avec une machine virtuelle servant à gérer les états matériels et la mémoire système de la PS2. PCSX2 vous permet de jouer à des jeux de PS2 sur votre PC et d'améliorer votre expérience de jeu en tirant partie du grand nombre de fonctionnalités mises à votre disposition.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 est un émulateur de PlayStation 2 (PS2) libre et open-source. Il vise à reproduire le comportement du matériel de la PS2 en combinant des interpréteurs et des recompilateurs de CPU MIPS avec une machine virtuelle gérant l'état du matériel et la mémoire du système PS2. PCSX2 vous permet de jouer à des jeux de PS2 sur votre PC et d'améliorer votre expérience de jeu en tirant partie du grand nombre de fonctionnalités mises à votre disposition.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../AboutDialog.ui" line="105"/>
@@ -27,7 +27,7 @@
     <message>
       <location filename="../AboutDialog.cpp" line="51"/>
       <source>Website</source>
-      <translation>Site web</translation>
+      <translation>Site Web</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="53"/>
@@ -97,7 +97,7 @@
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="25"/>
       <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in PCSX2, an access token will be generated and used instead.</source>
-      <translation>&lt;strong&gt;Votre jeton de connexion RetroAcheivements n'est plus valide.&lt;/strong&gt; Vous devez saisir à nouveau vos identifiants pour continuer à effectuer le suivi des succès. Votre mot de passe ne sera pas enregistré dans PCSX2. À la place, un jeton d'accès sera généré et utilisé pour vous authentifier.</translation>
+      <translation>&lt;strong&gt;Votre jeton de connexion RetroAchievements n'est plus valide.&lt;/strong&gt; Vous devez saisir à nouveau vos identifiants pour continuer à effectuer le suivi des succès. Votre mot de passe ne sera pas enregistré dans PCSX2. À la place, un jeton d'accès sera généré et utilisé pour vous authentifier.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="30"/>
@@ -147,7 +147,7 @@ Voulez-vous activer le suivi ?</translation>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="95"/>
       <source>Enable Hardcore Mode</source>
-      <translation>Activer le mode hardcore</translation>
+      <translation>Activer le mode Hardcore</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="96"/>
@@ -156,11 +156,11 @@ Voulez-vous activer le suivi ?</translation>
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
 
 Do you want to enable hardcore mode?</source>
-      <translation>Le mode hardcore est actuellement désactivé. L'activation du mode hardcore vous permet de soumettre vos temps et vos scores et de participer aux classements propres à chaque jeu.
+      <translation>Le mode Hardcore est actuellement désactivé. L'activation du mode Hardcore vous permet de soumettre vos temps et vos scores et de participer aux classements propres à chaque jeu.
 
-Néanmoins, le mode hardcore empêche l'utilisation des sauvegardes d'état, des codes de triche et du ralenti.
+Néanmoins, le mode Hardcore empêche l'utilisation des sauvegardes d'état, des codes de triche et du ralenti.
 
-Voulez-vous activer le mode hardcore ?</translation>
+Voulez-vous activer le mode Hardcore ?</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="112"/>
@@ -170,7 +170,7 @@ Voulez-vous activer le mode hardcore ?</translation>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="113"/>
       <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-      <translation>Le mode hardcore sera activé après la réinitialisation du système. Voulez-vous réinitialiser le système maintenant ?</translation>
+      <translation>Le mode Hardcore sera activé après la réinitialisation du système. Voulez-vous réinitialiser le système maintenant ?</translation>
     </message>
   </context>
   <context>
@@ -185,7 +185,7 @@ Voulez-vous activer le mode hardcore ?</translation>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="63"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="40"/>
       <source>Enable Hardcore Mode</source>
-      <translation>Activer le mode hardcore</translation>
+      <translation>Activer le mode Hardcore</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="49"/>
@@ -235,13 +235,13 @@ Voulez-vous activer le mode hardcore ?</translation>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="35"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="46"/>
       <source>Enable Spectator Mode</source>
-      <translation>Activer le mode spectateur</translation>
+      <translation>Activer le mode Spectateur</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="56"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="45"/>
       <source>Enable Encore Mode</source>
-      <translation>Activer le mode encore</translation>
+      <translation>Activer le mode Encore</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="118"/>
@@ -276,7 +276,7 @@ Jeton de connexion généré le :</translation>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="248"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 se connecte à RetroAchievements pour récupérer les succès et suivre votre progression. Pour utiliser les succès, créez un compte sur &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Pour afficher la liste des succès pendant une partie, utilisez le raccourci &lt;span style=&quot; font-weight:600;&quot;&gt;Ouvrir le menu pause&lt;/span&gt; et sélectionnez &lt;span style=&quot; font-weight:600;&quot;&gt;Succès&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 se connecte à RetroAchievements pour récupérer les succès et suivre votre progression. Pour utiliser les succès, créez un compte sur &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Pour afficher la liste des succès pendant une partie, utilisez le raccourci &lt;span style=&quot; font-weight:600;&quot;&gt;Ouvrir le menu Pause&lt;/span&gt; et sélectionnez &lt;span style=&quot; font-weight:600;&quot;&gt;Succès&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="39"/>
@@ -295,12 +295,12 @@ Jeton de connexion généré le :</translation>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="47"/>
       <source>When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-      <translation>Lorsque cette option est activée, PCSX2 liste les succès provenant d'ensembles non officiels. Veuillez noter que RetroAchievements n'effectue pas le suivi de ces succès, ils peuvent donc être déverrouillés plusieurs fois.</translation>
+      <translation>Lorsque cette option est activée, PCSX2 liste les succès provenant d'ensembles non officiels. Remarque : RetroAchievements n'effectue pas le suivi de ces succès, ils peuvent donc être déverrouillés plusieurs fois.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="40"/>
       <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-      <translation>Activer le mode défi et les classements. La sauvegarde d'état, les codes de triche et le ralenti seront désactivés.</translation>
+      <translation>Activer le mode Défi et les classements. La sauvegarde d'état, les codes de triche et le ralenti seront désactivés.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="41"/>
@@ -333,7 +333,7 @@ Jeton de connexion généré le :</translation>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="42"/>
       <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
-      <translation>Afficher un pop-up lorsqu'un défi débute, lors de l'envoi de votre participation et lorsque vous échouez.</translation>
+      <translation>Afficher un pop-up au début d'un défi, lors de l'envoi de votre participation et lorsque vous échouez.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="45"/>
@@ -348,7 +348,7 @@ Jeton de connexion généré le :</translation>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="121"/>
       <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-      <translation>Le mode hardcore sera activé après la réinitialisation du système. Voulez-vous réinitialiser le système maintenant ?</translation>
+      <translation>Le mode Hardcore sera activé après la réinitialisation du système. Voulez-vous réinitialiser le système maintenant ?</translation>
     </message>
     <message numerus="yes">
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="134"/>
@@ -380,308 +380,344 @@ Jeton de connexion généré le %2.</translation>
   <context>
     <name>Achievements</name>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1040"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1054"/>
       <source>Hardcore mode will be enabled on system reset.</source>
-      <translation>Le mode hardcore sera activé après la réinitialisation du système.</translation>
+      <translation>Le mode Hardcore sera activé après la réinitialisation du système.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1794"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="1834"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1836"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1876"/>
       <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
-      <translation>{0} est impossible lorsque le mode hardcore est activé. Voulez-vous désactiver le mode hardcore ? L'opération sera annulée si vous sélectionnez Non.</translation>
+      <translation>{0} est impossible lorsque le mode Hardcore est activé. Voulez-vous désactiver le mode Hardcore ? L'opération sera annulée si vous sélectionnez Non.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1427"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1447"/>
       <source>Hardcore mode is now enabled.</source>
-      <translation>Le mode hardcore est maintenant activé.</translation>
+      <translation>Le mode Hardcore est maintenant activé.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1003"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1012"/>
       <source>{} (Hardcore Mode)</source>
-      <translation>{} (mode hardcore)</translation>
+      <translation>{} (mode Hardcore)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1068"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1020"/>
+      <source>{0}, {1}.</source>
+      <translation>{0} {1}.</translation>
+    </message>
+    <message numerus="yes">
+      <location filename="../../pcsx2/Achievements.cpp" line="1021"/>
+      <source>You have unlocked {} of %n achievements</source>
+      <comment>Achievement popup</comment>
+      <translation>
+        <numerusform>Vous avez déverrouillé {} succès sur %n</numerusform>
+        <numerusform>Vous avez déverrouillé {} succès sur %n</numerusform>
+      </translation>
+    </message>
+    <message numerus="yes">
+      <location filename="../../pcsx2/Achievements.cpp" line="1024"/>
+      <source>and earned {} of %n points</source>
+      <comment>Achievement popup</comment>
+      <translation>
+        <numerusform>et gagné {} points sur %n</numerusform>
+        <numerusform>et gagné {} points sur %n</numerusform>
+      </translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Achievements.cpp" line="1082"/>
       <source>{} (Unofficial)</source>
       <translation>{} (non officiel)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1092"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1106"/>
       <source>Mastered {}</source>
       <translation>Vous maîtrisez {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1113"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1108"/>
+      <source>{0}, {1}</source>
+      <translation>{0}, {1}</translation>
+    </message>
+    <message numerus="yes">
+      <location filename="../../pcsx2/Achievements.cpp" line="1109"/>
+      <source>%n achievements</source>
+      <comment>Mastery popup</comment>
+      <translation>
+        <numerusform>%n succès</numerusform>
+        <numerusform>%n succès</numerusform>
+      </translation>
+    </message>
+    <message numerus="yes">
+      <location filename="../../pcsx2/Achievements.cpp" line="1111"/>
+      <source>%n points</source>
+      <comment>Mastery popup</comment>
+      <translation>
+        <numerusform>%n point</numerusform>
+        <numerusform>%n points</numerusform>
+      </translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Achievements.cpp" line="1130"/>
       <source>Leaderboard attempt started.</source>
       <translation>Début du défi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1132"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1149"/>
       <source>Leaderboard attempt failed.</source>
       <translation>Vous avez échoué à ce défi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1151"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1168"/>
       <source>Your Time: {}{}</source>
       <translation>Temps : {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1152"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1169"/>
       <source>Your Score: {}{}</source>
       <translation>Score : {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1153"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1170"/>
       <source>Your Value: {}{}</source>
       <translation>Valeur : {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1161"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1178"/>
       <source> (Submitting)</source>
       <translation> (envoi en cours)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1327"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1344"/>
       <source>Achievements Disconnected</source>
       <translation>Déconnecté de RetroAchievements</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1328"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1345"/>
       <source>An unlock request could not be completed. We will keep retrying to submit this request.</source>
       <translation>La demande de déverrouillage a échoué. Nous allons la renvoyer jusqu'à ce qu'elle soit acceptée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1341"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1358"/>
       <source>Achievements Reconnected</source>
       <translation>Connecté à RetroAchievements</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1342"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1359"/>
       <source>All pending unlock requests have completed.</source>
       <translation>Les demandes de déverrouillage en attente ont été transmises avec succès.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1428"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1448"/>
       <source>Hardcore mode is now disabled.</source>
-      <translation>Le mode hardcore est maintenant désactivé.</translation>
+      <translation>Le mode Hardcore est maintenant désactivé.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1793"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="1833"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1752"/>
+      <source>Score: {0} pts (softcore: {1} pts)
+Unread messages: {2}</source>
+      <translation>Score : {0} (softcore : {1})
+Messages non lus : {2}</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Achievements.cpp" line="1835"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1875"/>
       <source>Confirm Hardcore Mode</source>
-      <translation>Confirmation du mode hardcore</translation>
+      <translation>Confirmation du mode Hardcore</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2049"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2091"/>
       <source>Active Challenge Achievements</source>
       <translation>Défis actifs</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2174"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2216"/>
       <source> (Hardcore Mode)</source>
-      <translation> (mode hardcore)</translation>
+      <translation> (mode Hardcore)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2187"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2229"/>
       <source>You have unlocked all achievements and earned {} points!</source>
       <translation>Vous avez déverrouillé tous les succès et gagné {} points !</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1010"/>
-      <source>You have unlocked {0} of {1} achievements, and earned {2} of {3} points.</source>
-      <translation>Vous avez déverrouillé {0} succès sur {1} et gagné {2} points sur {3}.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1093"/>
-      <source>{0} achievements, {1} points</source>
-      <translation>{0} succès, {1} points</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1184"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1201"/>
       <source>Your Time: {0} (Best: {1})</source>
       <translation>Temps : {0} (Meilleur temps : {1})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1185"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1202"/>
       <source>Your Score: {0} (Best: {1})</source>
       <translation>Score : {0} (Meilleur score : {1})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1186"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1203"/>
       <source>Your Value: {0} (Best: {1})</source>
       <translation>Valeur : {0} (Meilleure valeur : {1})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1190"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1207"/>
       <source>{0}
 Leaderboard Position: {1} of {2}</source>
       <translation>{0}
 Classé(e) n° {1} sur {2}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1313"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1330"/>
       <source>Server error in {0}:
 {1}</source>
       <translation>Erreur du serveur ({0}) :
 {1}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1741"/>
-      <source>Score: {0} ({1} softcore)
-Unread messages: {2}</source>
-      <translation>Score : {0} (Softcore : {1})
-Messages non lus : {2}</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1837"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1879"/>
       <source>Yes</source>
       <translation>Oui</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1838"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1880"/>
       <source>No</source>
       <translation>Non</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2192"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2234"/>
       <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
       <translation>Vous avez déverrouillé {0} succès sur {1} et gagné {2} points sur {3}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2238"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2282"/>
       <source>Unknown</source>
       <translation>Inconnu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2239"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2283"/>
       <source>Locked</source>
       <translation>Verrouillé</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2240"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2284"/>
       <source>Unlocked</source>
       <translation>Déverrouillé</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2241"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2285"/>
       <source>Unsupported</source>
       <translation>Non pris en charge</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2242"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2286"/>
       <source>Unofficial</source>
       <translation>Non officiel</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2243"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2287"/>
       <source>Recently Unlocked</source>
       <translation>Déverrouillé récemment</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2244"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2288"/>
       <source>Active Challenges</source>
       <translation>Défis actifs</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2245"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2289"/>
       <source>Almost There</source>
       <translation>Vous y êtes presque !</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2346"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2391"/>
       <source>{} points</source>
       <translation>{} points</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2346"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2391"/>
       <source>{} point</source>
       <translation>{} point</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2298"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2343"/>
       <source>XXX points</source>
       <translation>XXX points</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2397"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2442"/>
       <source>Unlocked: {}</source>
       <translation>Déverrouillé le : {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2563"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2609"/>
       <source>This game has {} leaderboards.</source>
       <translation>Ce jeu a {} classements.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2579"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2625"/>
       <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
-      <translation>L'envoi des scores est désactivé car le mode hardcore est désactivé. Les classements sont en lecture seule.</translation>
+      <translation>L'envoi des scores est désactivé car le mode Hardcore est désactivé. Les classements sont en lecture seule.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2598"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2641"/>
       <source>Show Best</source>
       <translation>Afficher le haut du classement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2598"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2641"/>
       <source>Show Nearby</source>
       <translation>Afficher autour de votre position</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2623"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2666"/>
       <source>Rank</source>
       <translation>Rang</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2628"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2671"/>
       <source>Name</source>
       <translation>Nom</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2632"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2675"/>
       <source>Time</source>
       <translation>Temps</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2633"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2676"/>
       <source>Score</source>
       <translation>Score</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2634"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2677"/>
       <source>Value</source>
       <translation>Valeur</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2646"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2689"/>
       <source>Date Submitted</source>
       <translation>Date de participation</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2702"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2750"/>
       <source>Downloading leaderboard data, please wait...</source>
       <translation>Téléchargement des données du classement, veuillez patienter…</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2721"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="2730"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2769"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2778"/>
       <source>Loading...</source>
       <translation>Chargement…</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2883"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="2902"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2931"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2950"/>
       <source>Leaderboard download failed</source>
       <translation>Échec du téléchargement du classement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1016"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="2199"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1030"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2241"/>
       <source>This game has no achievements.</source>
       <translation>Aucun succès disponible pour ce jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="875"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="884"/>
       <source>Failed to read executable from disc. Achievements disabled.</source>
       <translation>Échec de la lecture de l'exécutable depuis le disque. Succès désactivés.</translation>
     </message>
@@ -689,240 +725,262 @@ Messages non lus : {2}</translation>
   <context>
     <name>AdvancedSettingsWidget</name>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="38"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="39"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="40"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="41"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="42"/>
       <source>Use Global Setting [%1]</source>
       <translation>Utiliser le paramètre global [%1]</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="60"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="62"/>
       <source>Rounding Mode</source>
       <translation>Rounding Mode</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="60"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="89"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="62"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="94"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="97"/>
       <source>Chop/Zero (Default)</source>
       <translation>Chop/Zero (par défaut)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="60"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="62"/>
       <source>Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Floating Point Unit (EE FPU). Because the various FPUs in the PS2 are non-compliant with international standards, some games may need different modes to do math correctly. The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
-      <translation>Modifier la façon dont PCSX2 arrondit les valeurs numériques lors de l'émulation de la Floating Point Unit de l'Emotion Engine (EE FPU). Puisque les FPU de la PS2 ne se conforment pas aux standards internationaux, il se peut que vous deviez modifier cette option pour que les opérations mathématiques de certains jeux s'effectuent correctement. La valeur par défaut est convenable pour la grande majorité des jeux ; &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable.&lt;/b&gt;</translation>
+      <translation>Modifier la façon dont PCSX2 arrondit les valeurs numériques lors de l'émulation de la Floating Point Unit de l'Emotion Engine (EE FPU). Puisque les FPU de la PS2 ne se conforment pas aux standards internationaux, il se peut que vous deviez modifier cette option pour que les opérations mathématiques de certains jeux s'effectuent correctement. La valeur par défaut convient pour la grande majorité des jeux ; &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="62"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="64"/>
       <source>Division Rounding Mode</source>
       <translation>Division Rounding Mode</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="62"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="64"/>
       <source>Nearest (Default)</source>
       <translation>Nearest (par défaut)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="62"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="64"/>
       <source>Determines how the results of floating-point division is rounded. Some games need specific settings; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
-      <translation>Déterminez la manière d'arrondir les résultats des divisions sur les nombres à virgule flottante. Il peut être nécessaire d'ajuster ce paramètre pour certains jeux. Toutefois, &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable.&lt;/b&gt;</translation>
+      <translation>Déterminez la manière d'arrondir les résultats des divisions sur les nombres à virgule flottante. Il peut être nécessaire d'ajuster ce paramètre pour certains jeux. Attention cependant : &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="64"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="66"/>
       <source>Clamping Mode</source>
       <translation>Clamping Mode</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="64"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="95"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="97"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="66"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="100"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="102"/>
       <source>Normal (Default)</source>
       <translation>Normal (par défaut)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="64"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="66"/>
       <source>Changes how PCSX2 handles keeping floats in a standard x86 range. The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
-      <translation>Modifier la façon dont PCSX2 maintient les nombres à virgule flottante dans les limites standard de l'architecture x86. La valeur par défaut est convenable pour la grande majorité des jeux ; &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable.&lt;/b&gt;</translation>
+      <translation>Modifier la façon dont PCSX2 maintient les nombres à virgule flottante dans les limites standard de l'architecture x86. La valeur par défaut convient pour la grande majorité des jeux ; &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="67"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="110"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="69"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
       <source>Enable Recompiler</source>
       <translation>Activer le recompilateur</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="67"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="71"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="77"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="80"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="101"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="104"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="108"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="110"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="113"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="69"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="73"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="79"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="105"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="112"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="116"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="124"/>
       <source>Checked</source>
       <translation>coché</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="68"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="70"/>
       <source>Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86.</source>
       <translation>Traduire dynamiquement le code machine MIPS-IV 64 bits en x86.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="71"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="73"/>
       <source>Wait Loop Detection</source>
       <extracomment>Wait loop: When the game makes the CPU do nothing (loop/spin) while it waits for something to happen (usually an interrupt).</extracomment>
       <translation>Détection de l'attente active</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="72"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="74"/>
       <source>Moderate speedup for some games, with no known side effects.</source>
       <translation>Amélioration modérée des performances de certains jeux et aucun effet négatif connu.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="74"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="76"/>
       <source>Enable Cache (Slow)</source>
       <translation>Activer le cache (lent)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="74"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="84"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="76"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="86"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="91"/>
       <source>Unchecked</source>
       <translation>décoché</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="74"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="76"/>
       <source>Interpreter only, provided for diagnostic.</source>
       <translation>Interpréteur uniquement, utilisé pour les diagnostics.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="77"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="79"/>
       <source>INTC Spin Detection</source>
       <extracomment>INTC = Name of a PS2 register, leave as-is. &quot;spin&quot; = to make a cpu (or gpu) actively do nothing while you wait for something. Like spinning in a circle, you&apos;re moving but not actually going anywhere.</extracomment>
       <translation>Détection des boucles INTC</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="80"/>
       <source>Huge speedup for some games, with almost no compatibility side effects.</source>
       <translation>Amélioration colossale des performances de certains jeux. Impact sur la compatibilité très faible.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="80"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
       <source>Enable Fast Memory Access</source>
       <translation>Activer l'accès rapide à la mémoire</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="84"/>
       <source>Uses backpatching to avoid register flushing on every memory access.</source>
       <extracomment>&quot;Backpatching&quot; = To edit previously generated code to change what it does (in this case, we generate direct memory accesses, then backpatch them to jump to a fancier handler function when we realize they need the fancier handler function)</extracomment>
       <translation>Utiliser le backpatching pour éviter de transférer le contenu des registres dans la mémoire de l'hôte à chaque accès à la mémoire.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="84"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="86"/>
       <source>Pause On TLB Miss</source>
       <translation>Mettre en pause lors d'un TLB Miss</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="85"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="87"/>
       <source>Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing. Note that the VM will pause after the end of the block, not on the instruction which caused the exception. Refer to the console to see the address where the invalid access occurred.</source>
       <translation>Mettre en pause la machine virtuelle lorsqu'un TLB Miss se produit, plutôt que de l'ignorer et de continuer l'exécution. Notez que la VM s'arrêtera à la fin du bloc et non à l'instruction ayant causé l'exception. Référez-vous à la console pour voir l'adresse où l'accès invalide s'est produit.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="89"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="91"/>
+      <source>Enable 128MB RAM (Dev Console)</source>
+      <translation>Activer 128 Mo de RAM (console de dév.)</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
+      <source>Exposes an additional 96MB of memory to the virtual machine.</source>
+      <translation>Exposer 96 Mo de mémoire supplémentaires à la machine virtuelle.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="94"/>
       <source>VU0 Rounding Mode</source>
       <translation>VU0 Rounding Mode</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="89"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="94"/>
       <source>Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Vector Unit 0 (EE VU0). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.&lt;/b&gt;</source>
-      <translation>Modifier la façon dont PCSX2 arrondit les valeurs numériques lors de l'émulation de la Vector Unit 0 de l'Emotion Engine (EE VU0). La valeur par défaut est convenable pour la grande majorité des jeux ; &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable, voire causer des plantages.&lt;/b&gt;</translation>
+      <translation>Modifier la façon dont PCSX2 arrondit les valeurs numériques lors de l'émulation de la Vector Unit 0 de l'Emotion Engine (EE VU0). La valeur par défaut convient pour la grande majorité des jeux ; &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable, voire causer des plantages.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="97"/>
       <source>VU1 Rounding Mode</source>
       <translation>VU1 Rounding Mode</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="97"/>
       <source>Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Vector Unit 1 (EE VU1). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.&lt;/b&gt;</source>
-      <translation>Modifier la façon dont PCSX2 arrondit les valeurs numériques lors de l'émulation de la Vector Unit 1 de l'Emotion Engine (EE VU1). La valeur par défaut est convenable pour la grande majorité des jeux ; &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable, voire causer des plantages.&lt;/b&gt;</translation>
+      <translation>Modifier la façon dont PCSX2 arrondit les valeurs numériques lors de l'émulation de la Vector Unit 1 de l'Emotion Engine (EE VU1). La valeur par défaut convient pour la grande majorité des jeux ; &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable, voire causer des plantages.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="95"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="100"/>
       <source>VU0 Clamping Mode</source>
       <translation>VU0 Clamping Mode</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="95"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="100"/>
       <source>Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine&apos;s Vector Unit 0 (EE VU0). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
-      <translation>Modifier la façon dont PCSX2 maintient les nombres à virgule flottante dans les limites standard de l'architecture x86 lors de l'émulation de la Vector Unit 0 de l'Emotion Engine (EE VU0). La valeur par défaut est convenable pour la grande majorité des jeux ; &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable.&lt;/b&gt;</translation>
+      <translation>Modifier la façon dont PCSX2 maintient les nombres à virgule flottante dans les limites standard de l'architecture x86 lors de l'émulation de la Vector Unit 0 de l'Emotion Engine (EE VU0). La valeur par défaut convient pour la grande majorité des jeux ; &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="97"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="102"/>
       <source>VU1 Clamping Mode</source>
       <translation>VU1 Clamping Mode</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="97"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="102"/>
       <source>Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine&apos;s Vector Unit 1 (EE VU1). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
-      <translation>Modifier la façon dont PCSX2 maintient les nombres à virgule flottante dans les limites standard de l'architecture x86 lors de l'émulation de la Vector Unit 1 de l'Emotion Engine (EE VU1). La valeur par défaut est convenable pour la grande majorité des jeux ; &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable.&lt;/b&gt;</translation>
+      <translation>Modifier la façon dont PCSX2 maintient les nombres à virgule flottante dans les limites standard de l'architecture x86 lors de l'émulation de la Vector Unit 1 de l'Emotion Engine (EE VU1). La valeur par défaut convient pour la grande majorité des jeux ; &lt;b&gt;modifier ce paramètre alors qu'il n'y a aucun problème apparent pourrait rendre l'émulation instable.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="101"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="105"/>
+      <source>Enable Instant VU1</source>
+      <translation>Activer « Instant VU1 »</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="105"/>
+      <source>Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.</source>
+      <translation>Exécuter instantanément la VU1. Amélioration modeste des performances dans la plupart des jeux. Fonctionne bien avec la plupart des jeux, mais il pourrait y avoir des problèmes d'affichage dans certains jeux.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
       <extracomment>VU0 = Vector Unit 0. One of the PS2&apos;s processors.</extracomment>
-      <translation>Activer le recompilateur VU0 (mode micro)</translation>
+      <translation>Activer le recompilateur VU0 (mode Micro)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="101"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
       <source>Enables VU0 Recompiler.</source>
       <translation>Activer le recompilateur VU0.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="104"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="112"/>
       <source>Enable VU1 Recompiler</source>
       <extracomment>VU1 = Vector Unit 1. One of the PS2&apos;s processors.</extracomment>
       <translation>Activer le recompilateur VU1</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="104"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="112"/>
       <source>Enables VU1 Recompiler.</source>
       <translation>Activer le recompilateur VU1.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="108"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="116"/>
       <source>mVU Flag Hack</source>
       <extracomment>mVU = PCSX2&apos;s recompiler for VU (Vector Unit) code (full name: microVU)</extracomment>
-      <translation>Hack « mVU Flag »</translation>
+      <translation>Hack « mVU Flag »</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="108"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="116"/>
       <source>Good speedup and high compatibility, may cause graphical errors.</source>
       <translation>Bonne amélioration des performances et compatibilité élevée, mais peut causer des problèmes d'affichage.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="111"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="119"/>
       <source>Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86.</source>
       <translation>Traduire dynamiquement le code machine MIPS-I 32 bits en x86.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="113"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
       <source>Enable Game Fixes</source>
       <translation>Activer les correctifs</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="114"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="122"/>
       <source>Automatically loads and applies fixes to known problematic games on game start.</source>
       <translation>Charger et appliquer automatiquement des correctifs au lancement des jeux ayant des problèmes connus.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="116"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="124"/>
       <source>Enable Compatibility Patches</source>
       <translation>Activer les patchs de compatibilité</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="117"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="125"/>
       <source>Automatically loads and applies compatibility patches to known problematic games.</source>
       <translation>Charger et appliquer automatiquement des patchs de compatibilité aux jeux ayant des problèmes connus.</translation>
     </message>
@@ -948,24 +1006,24 @@ Messages non lus : {2}</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="77"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="225"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="319"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="232"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="333"/>
       <source>Nearest</source>
       <translation>Nearest</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="82"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="113"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="230"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="324"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="237"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="338"/>
       <source>Negative</source>
       <translation>Negative</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="87"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="118"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="235"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="329"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="242"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="343"/>
       <source>Positive</source>
       <translation>Positive</translation>
     </message>
@@ -976,22 +1034,22 @@ Messages non lus : {2}</translation>
       <translation>Clamping Mode :</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="274"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="343"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="288"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="357"/>
       <source>None</source>
       <translation>None</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="144"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="279"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="348"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="293"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="362"/>
       <source>Normal (Default)</source>
       <translation>Normal (par défaut)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="92"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="240"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="334"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="247"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="348"/>
       <source>Chop/Zero (Default)</source>
       <translation>Chop/Zero (par défaut)</translation>
     </message>
@@ -1019,8 +1077,8 @@ Messages non lus : {2}</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="149"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="289"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="358"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="303"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="372"/>
       <source>Extra + Preserve Sign</source>
       <extracomment>Sign: refers here to the mathematical meaning (plus/minus).</extracomment>
       <translation>Extra + Preserve Sign</translation>
@@ -1037,7 +1095,7 @@ Messages non lus : {2}</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="171"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="375"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="389"/>
       <source>Enable Recompiler</source>
       <translation>Activer le recompilateur</translation>
     </message>
@@ -1062,472 +1120,610 @@ Messages non lus : {2}</translation>
       <translation>Mettre en pause lors d'un TLB Miss</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="211"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="206"/>
+      <source>Enable 128MB RAM (Dev Console)</source>
+      <translation>Activer 128 Mo de RAM (console de dév.)</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="218"/>
       <source>Vector Units (VU)</source>
       <extracomment>Vector Unit/VU: refers to two of PS2&apos;s processors. Do not translate the full text or do so as a comment. Leave the acronym as-is.</extracomment>
       <translation>Vector Units (VU)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="217"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="224"/>
       <source>VU1 Rounding Mode:</source>
       <translation>VU1 Rounding Mode :</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="250"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="257"/>
       <source>mVU Flag Hack</source>
-      <translation>Hack « mVU Flag »</translation>
+      <translation>Hack « mVU Flag »</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="257"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="264"/>
       <source>Enable VU1 Recompiler</source>
       <translation>Activer le recompilateur VU1</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="264"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="271"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
-      <translation>Activer le recompilateur VU0 (mode micro)</translation>
+      <translation>Activer le recompilateur VU0 (mode Micro)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="284"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="353"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="278"/>
+      <source>Enable Instant VU1</source>
+      <translation>Activer « Instant VU1 »</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="298"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="367"/>
       <source>Extra</source>
       <translation>Extra</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="297"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="311"/>
       <source>VU0 Clamping Mode:</source>
       <translation>VU0 Clamping Mode :</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="304"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="318"/>
       <source>VU0 Rounding Mode:</source>
       <translation>VU0 Rounding Mode :</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="311"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="325"/>
       <source>VU1 Clamping Mode:</source>
       <translation>VU1 Clamping Mode :</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="369"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="383"/>
       <source>I/O Processor (IOP, MIPS-I)</source>
       <translation>I/O Processor (IOP, MIPS-I)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="385"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="399"/>
       <source>Game Settings</source>
       <translation>Paramètres de jeu</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="391"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="405"/>
       <source>Enable Game Fixes</source>
       <translation>Activer les correctifs</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="398"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="412"/>
       <source>Enable Compatibility Patches</source>
       <translation>Activer les patchs de compatibilité</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="408"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="422"/>
       <source>Frame Rate Control</source>
       <translation>Contrôle du taux de rafraîchissement</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="414"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="424"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="428"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="438"/>
       <source> hz</source>
       <extracomment>hz=Hertz, as in the measuring unit. Shown after the corresponding number. Those languages who&apos;d need to remove the space or do something in between should do so.</extracomment>
       <translation> Hz</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="434"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="448"/>
       <source>PAL Frame Rate:</source>
       <translation>Taux de rafraîchissement PAL :</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="441"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="455"/>
       <source>NTSC Frame Rate:</source>
       <translation>Taux de rafraîchissement NTSC :</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="451"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="465"/>
       <source>PINE Settings</source>
       <translation>Paramètres PINE</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="473"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="487"/>
       <source>Slot:</source>
       <translation>Emplacement :</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="480"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="494"/>
       <source>Enable</source>
       <translation>Activer</translation>
+    </message>
+  </context>
+  <context>
+    <name>AudioExpansionSettingsDialog</name>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="14"/>
+      <source>Audio Expansion Settings</source>
+      <translation>Paramètres d'upmixing</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="20"/>
+      <source>Circular Wrap:</source>
+      <translation>Panorama :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="51"/>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="466"/>
+      <source>30</source>
+      <translation>30</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="60"/>
+      <source>Shift:</source>
+      <translation>Dimension :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="91"/>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="171"/>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="211"/>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="251"/>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="291"/>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="331"/>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="371"/>
+      <source>20</source>
+      <translation>20</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="100"/>
+      <source>Depth:</source>
+      <translation>Profondeur :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="131"/>
+      <source>10</source>
+      <translation>10</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="140"/>
+      <source>Focus:</source>
+      <translation>Concentration :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="180"/>
+      <source>Center Image:</source>
+      <translation>Image centrale :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="220"/>
+      <source>Front Separation:</source>
+      <translation>Séparation de l'avant :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="260"/>
+      <source>Rear Separation:</source>
+      <translation>Séparation de l'arrière :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="300"/>
+      <source>Low Cutoff:</source>
+      <translation>Limite basse :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="340"/>
+      <source>High Cutoff:</source>
+      <translation>Limite haute :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="411"/>
+      <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio Expansion Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior of the FreeSurround-based channel expander.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Paramètres d'upmixing&lt;/span&gt;&lt;br/&gt;Ces paramètres vous permettent d'ajuster le comportement de FreeSurround, utilisé pour améliorer la sortie audio avec plus de deux haut-parleurs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="429"/>
+      <source>Block Size:</source>
+      <translation>Taille de bloc :</translation>
     </message>
   </context>
   <context>
     <name>AudioSettingsWidget</name>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="29"/>
-      <source>Timestretch Settings</source>
-      <translation>Paramètres TimeStretch</translation>
+      <source>Configuration</source>
+      <translation>Configuration</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="35"/>
-      <source>Sequence Length:</source>
-      <translation>Longueur de la séquence :</translation>
+      <source>Driver:</source>
+      <translation>Pilote :</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="66"/>
-      <source>30</source>
-      <translation>30</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="75"/>
-      <source>Seekwindow Size:</source>
-      <translation>Taille de la Seekwindow :</translation>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="50"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="116"/>
+      <source>Expansion Settings</source>
+      <translation>Paramètres d'upmixing</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="106"/>
-      <source>20</source>
-      <translation>20</translation>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="120"/>
+      <source>Stretch Settings</source>
+      <translation>Paramètres d'étirement</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="115"/>
-      <source>Overlap:</source>
-      <translation>Superposition :</translation>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="118"/>
+      <source>Buffer Size:</source>
+      <translation>Taille du tampon :</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="146"/>
-      <source>10</source>
-      <translation>10</translation>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="125"/>
+      <source>Maximum latency: 0 frames (0.00ms)</source>
+      <translation>Latence maximale : 0 images (0,00 ms)</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="176"/>
-      <source>Restore Defaults</source>
-      <translation>Rétablir les valeurs par défaut</translation>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="135"/>
+      <source>Backend:</source>
+      <translation>Backend :</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="190"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="122"/>
-      <source>Volume</source>
-      <translation>Volume</translation>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="92"/>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="163"/>
+      <source>0 ms</source>
+      <translation>0 ms</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="233"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="122"/>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="216"/>
+      <source>Controls</source>
+      <translation>Commandes</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="222"/>
+      <source>Output Volume:</source>
+      <translation>Volume de sortie :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="256"/>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="305"/>
       <source>100%</source>
       <translation>100 %</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="274"/>
-      <source>Mixing Settings</source>
-      <translation>Paramètres de mixage</translation>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="327"/>
+      <source>Fast Forward Volume:</source>
+      <translation>Volume avance rapide :</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="280"/>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="334"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="111"/>
+      <source>Mute All Sound</source>
+      <translation>Couper tous les sons</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="206"/>
       <source>Synchronization:</source>
       <translation>Synchronisation :</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="288"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="89"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="118"/>
       <source>TimeStretch (Recommended)</source>
       <translation>TimeStretch (recommandé)</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="293"/>
-      <source>Async Mix (Breaks some games!)</source>
-      <translation>Mixage asynchrone (casse certains jeux !)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="298"/>
-      <source>None (Audio can skip.)</source>
-      <translation>Aucune (le son peut être saccadé)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="306"/>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="199"/>
       <source>Expansion:</source>
       <translation>Upmixing :</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="314"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="92"/>
-      <source>Stereo (None, Default)</source>
-      <translation>Stéréo (désactivé, par défaut)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="319"/>
-      <source>Quadraphonic</source>
-      <translation>Quadriphonique</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="324"/>
-      <source>Surround 5.1</source>
-      <translation>Surround 5.1</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="329"/>
-      <source>Surround 7.1</source>
-      <translation>Surround 7.1</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="337"/>
-      <source>ProLogic Level:</source>
-      <extracomment>ProLogic is a Dolby brand. Leave the name as-is unless there is an official translation for your language.</extracomment>
-      <translation>Niveau ProLogic :</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="345"/>
-      <source>None (Default)</source>
-      <translation>Désactivé (par défaut)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="350"/>
-      <source>ProLogic Decoding (basic)</source>
-      <extracomment>ProLogic is a Dolby brand. Leave the name as-is unless there is an official translation for your language.</extracomment>
-      <translation>Décodage ProLogic (basique)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="355"/>
-      <source>ProLogic II Decoding (gigaherz)</source>
-      <extracomment>ProLogic II is a Dolby brand. Leave the name as-is unless there is an official translation for your language. gigaherz is the nickname of one of PCSX2&apos;s developers. Leave as-is.</extracomment>
-      <translation>Décodage ProLogic II (gigaherz)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="363"/>
-      <source>Target Latency:</source>
-      <translation>Latence cible :</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="394"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="105"/>
-      <source>60 ms</source>
-      <translation>60 ms</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="406"/>
-      <source>Output Settings</source>
-      <translation>Paramètres de sortie</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="412"/>
-      <source>Output Module:</source>
-      <translation>Module de sortie :</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="422"/>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="182"/>
       <source>Output Latency:</source>
       <translation>Latence de sortie :</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="453"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="108"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="116"/>
-      <source>20 ms</source>
-      <translation>20 ms</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="460"/>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="170"/>
       <source>Minimal</source>
       <translation>Minimale</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="469"/>
-      <source>Output Backend:</source>
-      <translation>Backend :</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="479"/>
-      <source>Maximum Latency:</source>
-      <translation>Latence maximale :</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.ui" line="489"/>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="192"/>
       <source>Output Device:</source>
       <translation>Périphérique de sortie :</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="96"/>
-      <source>Cubeb (Cross-platform)</source>
-      <translation>Cubeb (multiplateforme)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="48"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="50"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="75"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="78"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="80"/>
-      <source> ms</source>
-      <extracomment>Measuring unit that will appear after the number selected in its option. Adapt the space depending on your language&apos;s rules.</extracomment>
-      <translation> ms</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="89"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="118"/>
       <source>Synchronization</source>
       <translation>Synchronisation</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="90"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="119"/>
       <source>When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast-forward/slowdown audio.</source>
-      <translation>Lorsque la vitesse d'exécution est différente de 100 %, la vitesse du son est ajustée au lieu de perdre des trames audio. Cela permet d'obtenir un meilleur son lors des variations de la vitesse d'émulation.</translation>
+      <translation>Lorsque la vitesse d'exécution est différente de 100 %, la vitesse du son est ajustée au lieu de perdre des trames audio. Cela permet d'obtenir un meilleur son lors des variations de la vitesse d'émulation.</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="92"/>
-      <source>Expansion</source>
-      <translation>Upmixing</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="93"/>
-      <source>Determines how the stereo output from the emulated system is upmixed into a greater number of the output speakers.</source>
-      <translation>Déterminez la manière d'utiliser la sortie stéréo du système émulé avec un nombre plus important de haut-parleurs.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="96"/>
-      <source>Output Module</source>
-      <extracomment>Cubeb is an audio engine name. Leave as-is.</extracomment>
-      <translation>Module de sortie</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="97"/>
-      <source>Selects the library to be used for audio output.</source>
-      <translation>Sélectionnez la bibliothèque à utiliser pour la sortie audio.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="99"/>
-      <source>Output Backend</source>
-      <translation>Backend</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="99"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="102"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="153"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="157"/>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="209"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="188"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="218"/>
       <source>Default</source>
       <translation>Par défaut</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="100"/>
-      <source>When the sound output module supports multiple audio backends, determines the API to be used for audio output to the system.</source>
-      <translation>Lorsque le module de sortie audio prend en charge plusieurs backends, vous pouvez définir ici l'API à utiliser pour la sortie audio.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="102"/>
-      <source>Output Device</source>
-      <translation>Périphérique de sortie</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="103"/>
-      <source>Determines which audio device to output the sound to.</source>
-      <translation>Déterminez le périphérique audio vers lequel le son doit être envoyé.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="105"/>
-      <source>Target Latency</source>
-      <translation>Latence cible</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="106"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="101"/>
       <source>Determines the buffer size which the time stretcher will try to keep filled. It effectively selects the average latency, as audio will be stretched/shrunk to keep the buffer size within check.</source>
       <translation>Déterminez la taille du tampon que TimeStretch doit tenter de garder rempli. Cela équivaut à sélectionner une latence moyenne, car la vitesse du son est ajustée pour contrôler la taille du tampon.</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="108"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="104"/>
       <source>Output Latency</source>
       <translation>Latence de sortie</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="109"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="105"/>
       <source>Determines the latency from the buffer to the host audio output. This can be set lower than the target latency to reduce audio delay.</source>
       <translation>Déterminez la latence entre le tampon et la sortie audio de l'hôte. Vous pouvez définir une valeur inférieure à la latence cible pour réduire la latence audio globale.</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="112"/>
-      <source>Sequence Length</source>
-      <translation>Longueur de séquence</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="112"/>
-      <source>30 ms</source>
-      <translation>30 ms</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="112"/>
-      <source>This is the default length of a single processing sequence which determines how the original sound is chopped in the time-stretch algorithm. Larger values mean fewer sequences are used in processing. In principle a larger value sounds better when slowing down the tempo, but worse when increasing the tempo.</source>
-      <translation>Durée par défaut d'une séquence à traiter. Cette durée détermine la façon dont l'audio original est découpé par l'algorithme TimeStretch. Plus la séquence est longue, moins il y a de séquences à traiter. En principe, augmenter la durée de la séquence améliore l'audio lorsque le jeu est ralenti, mais le dégrade lorsque le jeu est accéléré.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="116"/>
-      <source>Seek Window Size</source>
-      <extracomment>Seek Window: the region of samples (window) the audio stretching algorithm is allowed to search.</extracomment>
-      <translation>Taille de la Seekwindow</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="116"/>
-      <source>The seeking window is for the algorithm that seeks the best possible overlapping location. This determines from how wide a sample window the algorithm can use to find an optimal mixing location when the sound sequences are to be linked back together.</source>
-      <translation>La fenêtre de recherche (Seekwindow) est utilisée par l'algorithme qui s'occupe de rechercher le meilleur emplacement de chevauchement. Cette option permet de déterminer la largeur de la fenêtre utilisée par l'algorithme pour trouver l'emplacement optimal pour lier à nouveau les séquences audio.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="120"/>
-      <source>Overlap</source>
-      <translation>Superposition</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="120"/>
-      <source>10 ms</source>
-      <translation>10 ms</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="120"/>
-      <source>When the sound sequences are mixed back together to form again a continuous sound stream, this parameter defines how much the ends of the consecutive sequences will overlap with each other.</source>
-      <translation>Lorsque les séquences audio sont à nouveau liées et qu'il faut les mixer pour former un nouveau flux audio continu, la valeur de ce paramètre est utilisée pour définir la durée pendant laquelle les séquences seront superposées.</translation>
-    </message>
-    <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="123"/>
-      <source>Pre-applies a volume modifier to the game&apos;s audio output before forwarding it to your computer.</source>
-      <translation>Le son du jeu passera dans un préampli avant d'être transféré à l'hôte.</translation>
+      <source>Resets output volume back to the global/inherited setting.</source>
+      <translation>Rétablir le volume de sortie au paramètre global ou hérité.</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="153"/>
-      <source>Use Global Setting [%1]</source>
-      <translation>Utiliser le paramètre global [%1]</translation>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="124"/>
+      <source>Resets output volume back to the default.</source>
+      <translation>Réinitialiser le volume de sortie.</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="301"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="126"/>
+      <source>Resets fast forward volume back to the global/inherited setting.</source>
+      <translation>Rétablir le volume pendant l'avance rapide au paramètre global ou hérité.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="127"/>
+      <source>Resets fast forward volume back to the default.</source>
+      <translation>Réinitialiser le volume pendant l'avance rapide.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="296"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="297"/>
       <source>%1%</source>
-      <extracomment>Variable value that indicates a percentage. Preserve the %1 variable, adapt the latter % (and/or any possible spaces) to your language&apos;s ruleset.</extracomment>
       <translation>%1 %</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="320"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="116"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="120"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="122"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="125"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="257"/>
       <source>N/A</source>
       <extracomment>Preserve the %1 variable, adapt the latter ms (and/or any possible spaces in between) to your language&apos;s ruleset.</extracomment>
       <translation>N/A</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="320"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="87"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="88"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="495"/>
+      <source>%</source>
+      <translation> %</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="95"/>
+      <source>Audio Backend</source>
+      <translation>Backend audio</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="96"/>
+      <source>The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.</source>
+      <translation>Choisir un backend audio détermine la manière de transmettre à l'hôte les trames produites par l'émulateur. La latence est la plus faible en utilisant Cubeb. En cas de problème, essayez le backend SDL. Le backend Null désactive la transmission à l'hôte de l'audio.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="100"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="104"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="257"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="258"/>
       <source>%1 ms</source>
       <translation>%1 ms</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="327"/>
-      <source>Average Latency: %1 ms (%2 ms buffer + %3 ms output)</source>
-      <translation>Latence moyenne : %1 ms (tampon %2 ms + sortie %3 ms)</translation>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="100"/>
+      <source>Buffer Size</source>
+      <translation>Taille du tampon</translation>
     </message>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="334"/>
-      <source>Average Latency: %1 ms (minimum output latency unknown)</source>
-      <translation>Latence moyenne : %1 ms (latence de sortie minimale inconnue)</translation>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="107"/>
+      <source>Output Volume</source>
+      <translation>Volume de sortie</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="108"/>
+      <source>Controls the volume of the audio played on the host.</source>
+      <translation>Contrôlez le volume de l'audio joué sur l'hôte.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="109"/>
+      <source>Fast Forward Volume</source>
+      <translation>Volume pendant l'avance rapide</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="110"/>
+      <source>Controls the volume of the audio played on the host when fast forwarding.</source>
+      <translation>Contrôlez le volume de l'audio joué sur l'hôte pendant l'avance rapide.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="111"/>
+      <source>Unchecked</source>
+      <translation>décoché</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="112"/>
+      <source>Prevents the emulator from producing any audible sound.</source>
+      <translation>Empêcher l'émulateur de produire tout son audible.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="113"/>
+      <source>Expansion Mode</source>
+      <translation>Mode d'upmixing</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="113"/>
+      <source>Disabled (Stereo)</source>
+      <translation>Désactivé (stéréo)</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="114"/>
+      <source>Determines how audio is expanded from stereo to surround for supported games. This includes games that support Dolby Pro Logic/Pro Logic II.</source>
+      <translation>Déterminez la manière de transformer le son stéréo en son surround dans les jeux pris en charge. Cela inclut les jeux prenant en charge Dolby Pro Logic et/ou Dolby Pro Logic II.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="117"/>
+      <source>These settings fine-tune the behavior of the FreeSurround-based channel expander.</source>
+      <translation>Ces paramètres vous permettent d'ajuster le comportement de FreeSurround, utilisé pour améliorer la sortie audio avec plus de deux haut-parleurs.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="121"/>
+      <source>These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.</source>
+      <translation>Ces paramètres vous permettent d'ajuster le comportement de SoundTouch, utilisé pour ajuster la vitesse de l'audio lorsque la vitesse d'exécution est différente de 100 %.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="266"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="122"/>
+      <source>Reset Volume</source>
+      <translation>Réinitialiser le volume</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.ui" line="315"/>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="125"/>
+      <source>Reset Fast Forward Volume</source>
+      <translation>Réinitialiser le volume avance rapide</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="238"/>
+      <source>Unknown Device &quot;%1&quot;</source>
+      <translation>Périphérique inconnu (%1)</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="265"/>
+      <source>Maximum Latency: %1 ms (%2 ms buffer + %3 ms expand + %4 ms output)</source>
+      <translation>Latence maximale : %1 ms (tampon %2 ms + upmixing %3 ms + sortie %4 ms)</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="273"/>
+      <source>Maximum Latency: %1 ms (%2 ms buffer + %3 ms output)</source>
+      <translation>Latence maximale : %1 ms (tampon %2 ms + sortie %3 ms)</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="283"/>
+      <source>Maximum Latency: %1 ms (%2 ms expand, minimum output latency unknown)</source>
+      <translation>Latence maximale : %1 ms (upmixing %2 ms, latence de sortie minimale inconnue)</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioSettingsWidget.cpp" line="289"/>
+      <source>Maximum Latency: %1 ms (minimum output latency unknown)</source>
+      <translation>Latence maximale : %1 ms (latence de sortie minimale inconnue)</translation>
+    </message>
+  </context>
+  <context>
+    <name>AudioStream</name>
+    <message>
+      <location filename="../../pcsx2/Host/AudioStream.cpp" line="154"/>
+      <source>Null (No Output)</source>
+      <translation>Null (pas de sortie audio)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Host/AudioStream.cpp" line="155"/>
+      <source>Cubeb</source>
+      <translation>Cubeb</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Host/AudioStream.cpp" line="156"/>
+      <source>SDL</source>
+      <translation>SDL</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Host/AudioStream.cpp" line="192"/>
+      <source>Disabled (Stereo)</source>
+      <translation>Désactivé (stéréo)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Host/AudioStream.cpp" line="193"/>
+      <source>Stereo with LFE</source>
+      <translation>Stéréo + LFE</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Host/AudioStream.cpp" line="194"/>
+      <source>Quadraphonic</source>
+      <translation>Quadriphonique</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Host/AudioStream.cpp" line="195"/>
+      <source>Quadraphonic with LFE</source>
+      <translation>Quadriphonique + LFE</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Host/AudioStream.cpp" line="196"/>
+      <source>5.1 Surround</source>
+      <translation>Surround 5.1</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Host/AudioStream.cpp" line="197"/>
+      <source>7.1 Surround</source>
+      <translation>Surround 7.1</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Host/CubebAudioStream.cpp" line="289"/>
+      <location filename="../../pcsx2/Host/CubebAudioStream.cpp" line="301"/>
+      <source>Default</source>
+      <translation>Par défaut</translation>
+    </message>
+  </context>
+  <context>
+    <name>AudioStretchSettingsDialog</name>
+    <message>
+      <location filename="../Settings/AudioStretchSettingsDialog.ui" line="14"/>
+      <source>Audio Stretch Settings</source>
+      <translation>Paramètres d'étirement audio</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioStretchSettingsDialog.ui" line="20"/>
+      <source>Sequence Length:</source>
+      <translation>Longueur de séquence :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioStretchSettingsDialog.ui" line="51"/>
+      <source>30</source>
+      <translation>30</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioStretchSettingsDialog.ui" line="60"/>
+      <source>Seekwindow Size:</source>
+      <translation>Taille de la Seekwindow :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioStretchSettingsDialog.ui" line="91"/>
+      <source>20</source>
+      <translation>20</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioStretchSettingsDialog.ui" line="100"/>
+      <source>Overlap:</source>
+      <translation>Superposition :</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioStretchSettingsDialog.ui" line="131"/>
+      <source>10</source>
+      <translation>10</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioStretchSettingsDialog.ui" line="171"/>
+      <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio Stretch Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Paramètres d'étirement audio&lt;/span&gt;&lt;br/&gt;Ces paramètres vous permettent d'ajuster le comportement de SoundTouch, utilisé pour ajuster la vitesse de l'audio lorsque la vitesse d'exécution est différente de 100 %.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioStretchSettingsDialog.ui" line="189"/>
+      <source>Use Quickseek</source>
+      <translation>Utiliser la recherche rapide</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AudioStretchSettingsDialog.ui" line="196"/>
+      <source>Use Anti-Aliasing Filter</source>
+      <translation>Utiliser le filtre anticrénelage</translation>
     </message>
   </context>
   <context>
     <name>AutoUpdaterDialog</name>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="17"/>
-      <location filename="../AutoUpdaterDialog.cpp" line="475"/>
-      <location filename="../AutoUpdaterDialog.cpp" line="535"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="477"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="542"/>
       <source>Automatic Updater</source>
       <translation>Mise à jour automatique</translation>
     </message>
@@ -1568,7 +1764,7 @@ Messages non lus : {2}</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="178"/>
-      <location filename="../AutoUpdaterDialog.cpp" line="664"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="671"/>
       <source>Updater Error</source>
       <translation>Erreur lors de la mise à jour</translation>
     </message>
@@ -1588,47 +1784,47 @@ Messages non lus : {2}</translation>
       <translation>&lt;h2&gt;Attention&lt;/h2&gt;&lt;p&gt;L'installation de cette mise à jour réinitialisera la configuration du programme. N'oubliez pas de reconfigurer vos paramètres après la mise à jour.&lt;/p&gt;</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="458"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="460"/>
       <source>Savestate Warning</source>
       <translation>Avertissement</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="459"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="461"/>
       <source>&lt;h1&gt;WARNING&lt;/h1&gt;&lt;p style=&apos;font-size:12pt;&apos;&gt;Installing this update will make your &lt;b&gt;save states incompatible&lt;/b&gt;, &lt;i&gt;be sure to save any progress to your memory cards before proceeding&lt;/i&gt;.&lt;/p&gt;&lt;p&gt;Do you wish to continue?&lt;/p&gt;</source>
       <translation>&lt;h1&gt;ATTENTION&lt;/h1&gt;&lt;p style=&apos;font-size:12pt;&apos;&gt;Vos sauvegardes d'état sont &lt;b&gt;incompatibles&lt;/b&gt; avec la nouvelle version, &lt;i&gt;assurez-vous d'avoir sauvegardé votre progression dans tous vos jeux sur une Memory Card avant de procéder à la mise à jour&lt;/i&gt;.&lt;/p&gt;&lt;p&gt;Voulez-vous continuer ?&lt;/p&gt;</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="476"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="478"/>
       <source>Downloading %1...</source>
       <translation>Téléchargement de PCSX2 %1…</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="536"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="543"/>
       <source>No updates are currently available. Please try again later.</source>
       <translation>Aucune mise à jour disponible. Veuillez réessayer plus tard.</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="554"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="561"/>
       <source>Current Version: %1 (%2)</source>
       <translation>Version actuelle : %1 (%2)</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="555"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="562"/>
       <source>New Version: %1 (%2)</source>
       <translation>Nouvelle version : %1 (%2)</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="556"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="563"/>
       <source>Download Size: %1 MB</source>
       <translation>Taille du téléchargement : %1 Mo</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="557"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="564"/>
       <source>Loading...</source>
       <translation>Chargement…</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="664"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="671"/>
       <source>Failed to remove updater exe after update.</source>
       <translation>Échec de la suppression de l'outil de mise à jour à la suite de la mise à jour.</translation>
     </message>
@@ -1638,7 +1834,7 @@ Messages non lus : {2}</translation>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="29"/>
       <source>BIOS Directory</source>
-      <translation>Dossier du BIOS</translation>
+      <translation>Dossier à BIOS</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="35"/>
@@ -1663,7 +1859,7 @@ Messages non lus : {2}</translation>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="90"/>
       <source>Open BIOS Folder...</source>
-      <translation>Ouvrir le dossier du BIOS…</translation>
+      <translation>Ouvrir le dossier à BIOS…</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="97"/>
@@ -1687,33 +1883,33 @@ Messages non lus : {2}</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="140"/>
-      <location filename="../Settings/BIOSSettingsWidget.cpp" line="30"/>
+      <location filename="../Settings/BIOSSettingsWidget.cpp" line="32"/>
       <source>Fast Boot</source>
       <translation>Démarrage rapide</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="147"/>
-      <location filename="../Settings/BIOSSettingsWidget.cpp" line="33"/>
+      <location filename="../Settings/BIOSSettingsWidget.cpp" line="35"/>
       <source>Fast Forward Boot</source>
       <translation>Démarrage accéléré</translation>
     </message>
     <message>
-      <location filename="../Settings/BIOSSettingsWidget.cpp" line="30"/>
+      <location filename="../Settings/BIOSSettingsWidget.cpp" line="32"/>
       <source>Checked</source>
       <translation>coché</translation>
     </message>
     <message>
-      <location filename="../Settings/BIOSSettingsWidget.cpp" line="31"/>
+      <location filename="../Settings/BIOSSettingsWidget.cpp" line="33"/>
       <source>Patches the BIOS to skip the console&apos;s boot animation.</source>
       <translation>Patcher le BIOS pour passer l'animation de démarrage de la console.</translation>
     </message>
     <message>
-      <location filename="../Settings/BIOSSettingsWidget.cpp" line="33"/>
+      <location filename="../Settings/BIOSSettingsWidget.cpp" line="35"/>
       <source>Unchecked</source>
       <translation>décoché</translation>
     </message>
     <message>
-      <location filename="../Settings/BIOSSettingsWidget.cpp" line="34"/>
+      <location filename="../Settings/BIOSSettingsWidget.cpp" line="36"/>
       <source>Removes emulation speed throttle until the game starts to reduce startup time.</source>
       <translation>Déverrouiller la vitesse d'émulation jusqu'au lancement du jeu pour réduire le temps de démarrage.</translation>
     </message>
@@ -1804,17 +2000,17 @@ Messages non lus : {2}</translation>
       <location filename="../Debugger/BreakpointDialog.cpp" line="97"/>
       <location filename="../Debugger/BreakpointDialog.cpp" line="129"/>
       <source>Invalid address &quot;%1&quot;</source>
-      <translation>Adresse « %1 » invalide.</translation>
+      <translation>Adresse « %1 » invalide.</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.cpp" line="112"/>
       <source>Invalid condition &quot;%1&quot;</source>
-      <translation>Condition « %1 » invalide.</translation>
+      <translation>Condition « %1 » invalide.</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.cpp" line="137"/>
       <source>Invalid size &quot;%1&quot;</source>
-      <translation>Taille « %1 » invalide.</translation>
+      <translation>Taille « %1 » invalide.</translation>
     </message>
   </context>
   <context>
@@ -1903,14 +2099,19 @@ Messages non lus : {2}</translation>
   <context>
     <name>CDVD</name>
     <message>
-      <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="275"/>
+      <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="282"/>
       <source>Game disc location is on a removable drive, performance issues such as jittering and freezing may occur.</source>
       <translation>Le disque de jeu se situe sur un disque amovible, vous pourriez rencontrer des problèmes de performance tels que des saccades ou des plantages.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="384"/>
+      <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="391"/>
       <source>Saving CDVD block dump to &apos;{}&apos;.</source>
-      <translation>Blockdump CDVD enregistré dans le fichier : « {} ».</translation>
+      <translation>Blockdump CDVD enregistré dans le fichier : « {} ».</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="421"/>
+      <source>Precaching CDVD</source>
+      <translation>Mise en précache CDVD</translation>
     </message>
     <message>
       <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="28"/>
@@ -1931,6 +2132,16 @@ Messages non lus : {2}</translation>
       <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="34"/>
       <source>Unknown</source>
       <translation>Inconnu</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/CDVD/CDVDdiscReader.cpp" line="198"/>
+      <source>Precaching is not supported for discs.</source>
+      <translation>La mise en précache n'est pas prise en charge pour les disques.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/CDVD/ThreadedFileReader.cpp" line="276"/>
+      <source>Required memory ({}GB) is the above the maximum allowed ({}GB).</source>
+      <translation>La mémoire requise ({} Go) dépasse le maximum autorisé ({} Go).</translation>
     </message>
   </context>
   <context>
@@ -2003,7 +2214,7 @@ Messages non lus : {2}</translation>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="240"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-      <translation>Impossible de générer des associations génériques pour le périphérique « %1 ». La manette ou la source d'entrées n'est peut-être pas compatible avec l'association automatique.</translation>
+      <translation>Impossible de générer des associations génériques pour le périphérique « %1 ». La manette ou la source d'entrées n'est peut-être pas compatible avec l'association automatique.</translation>
     </message>
   </context>
   <context>
@@ -2289,17 +2500,17 @@ Messages non lus : {2}</translation>
   <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="707"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="709"/>
       <source>Restore Default Settings</source>
       <translation>Rétablir les paramètres par défaut</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="679"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="681"/>
       <source>Browse...</source>
       <translation>Parcourir…</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="683"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="685"/>
       <source>Select File</source>
       <translation>Sélectionner un fichier</translation>
     </message>
@@ -2324,15 +2535,15 @@ Messages non lus : {2}</translation>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="152"/>
       <source>DualShock 4 / DualSense Enhanced Mode</source>
-      <translation>Mode amélioré pour DualShock 4 et DualSense</translation>
+      <translation>Mode Amélioré pour DualShock 4 et DualSense</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="222"/>
+      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="236"/>
       <source>XInput Source</source>
       <translation>Source XInput</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="238"/>
+      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="252"/>
       <source>Enable XInput Input Source</source>
       <translation>Activer la source d'entrées XInput</translation>
     </message>
@@ -2368,7 +2579,7 @@ Messages non lus : {2}</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="159"/>
-      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="207"/>
+      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="221"/>
       <source>Controller LED Settings</source>
       <translation>Paramètres des LED des manettes</translation>
     </message>
@@ -2378,7 +2589,17 @@ Messages non lus : {2}</translation>
       <translation>Activer l'entrée brute SDL</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="228"/>
+      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="179"/>
+      <source>Enable IOKit Driver</source>
+      <translation>Activer le pilote IOKit</translation>
+    </message>
+    <message>
+      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="186"/>
+      <source>Enable MFI Driver</source>
+      <translation>Activer le pilote MFI</translation>
+    </message>
+    <message>
+      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="242"/>
       <source>The XInput source provides support for Xbox 360 / Xbox One / Xbox Series controllers, and third party controllers which implement the XInput protocol.</source>
       <translation>La source XInput permet la prise en charge des manettes Xbox 360, Xbox One, Xbox Series et de toutes les manettes compatibles avec le protocole XInput.</translation>
     </message>
@@ -2403,27 +2624,27 @@ Messages non lus : {2}</translation>
       <translation>Multitap sur le port console 2</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="182"/>
+      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="196"/>
       <source>Mouse/Pointer Source</source>
       <translation>Souris</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="188"/>
+      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="202"/>
       <source>PCSX2 allows you to use your mouse to simulate analog stick movement.</source>
       <translation>PCSX2 vous permet d'utiliser votre souris pour simuler le mouvement d'un joystick analogique.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="210"/>
+      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="224"/>
       <source>Settings...</source>
       <translation>Paramètres…</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="200"/>
+      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="214"/>
       <source>Enable Mouse Mapping</source>
       <translation>Activer l'association de la souris</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="248"/>
+      <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="262"/>
       <source>Detected Devices</source>
       <translation>Périphériques détectés</translation>
     </message>
@@ -2441,9 +2662,14 @@ Messages non lus : {2}</translation>
       <translation>LED SDL-0</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="32"/>
+      <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="56"/>
       <source>SDL-1 LED</source>
       <translation>LED SDL-1</translation>
+    </message>
+    <message>
+      <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="82"/>
+      <source>Enable DualSense Player LED</source>
+      <translation>Activer l'indicateur de joueur des manettes DualSense</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="44"/>
@@ -2451,7 +2677,7 @@ Messages non lus : {2}</translation>
       <translation>LED SDL-2</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="56"/>
+      <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="32"/>
       <source>SDL-3 LED</source>
       <translation>LED SDL-3</translation>
     </message>
@@ -2480,7 +2706,7 @@ Messages non lus : {2}</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="91"/>
-      <location filename="../Settings/ControllerMacroEditWidget.ui" line="160"/>
+      <location filename="../Settings/ControllerMacroEditWidget.ui" line="171"/>
       <source>100%</source>
       <translation>100 %</translation>
     </message>
@@ -2490,58 +2716,63 @@ Messages non lus : {2}</translation>
       <translation>Déclencheur</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerMacroEditWidget.ui" line="109"/>
+      <location filename="../Settings/ControllerMacroEditWidget.ui" line="111"/>
       <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
       <translation>Définissez comment activer la macro. Le déclencheur peut être un seul bouton ou une combinaison de boutons. Shift-clic pour définir plusieurs déclencheurs.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerMacroEditWidget.ui" line="131"/>
+      <location filename="../Settings/ControllerMacroEditWidget.ui" line="124"/>
+      <source>Press To Toggle</source>
+      <translation>Appuyer pour activer/désactiver</translation>
+    </message>
+    <message>
+      <location filename="../Settings/ControllerMacroEditWidget.ui" line="142"/>
       <source>Deadzone:</source>
       <translation>Zone morte :</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerMacroEditWidget.ui" line="172"/>
+      <location filename="../Settings/ControllerMacroEditWidget.ui" line="183"/>
       <source>Frequency</source>
       <translation>Fréquence</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerMacroEditWidget.ui" line="180"/>
+      <location filename="../Settings/ControllerMacroEditWidget.ui" line="191"/>
       <source>Macro will toggle every N frames.</source>
       <translation>La macro alternera d'état toutes les N images.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerMacroEditWidget.ui" line="187"/>
+      <location filename="../Settings/ControllerMacroEditWidget.ui" line="198"/>
       <source>Set...</source>
       <translation>Définir…</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="388"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="390"/>
       <source>Not Configured</source>
       <translation>Non configurée</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="393"/>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="398"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="395"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="400"/>
       <source>%1%</source>
       <translation>%1 %</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="405"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
       <source>Set Frequency</source>
       <translation>Définir la fréquence</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="405"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
       <source>Frequency: </source>
       <translation>Fréquence : </translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="432"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="434"/>
       <source>Macro will not repeat.</source>
       <translation>La macro ne s'activera qu'une seule fois.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="434"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="436"/>
       <source>Macro will toggle buttons every %1 frames.</source>
       <translation>La macro alternera l'état des touches toutes les %1 images.</translation>
     </message>
@@ -2654,8 +2885,8 @@ Not Configured/Buttons configured</extracomment>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsWindow.ui" line="107"/>
-      <source>Load Profile</source>
-      <translation>Charger le profil</translation>
+      <source>Apply Profile</source>
+      <translation>Appliquer le profil</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsWindow.ui" line="118"/>
@@ -2668,14 +2899,15 @@ Not Configured/Buttons configured</extracomment>
       <translation>Paramètres d'association</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.ui" line="139"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="198"/>
+      <location filename="../Settings/ControllerSettingsWindow.ui" line="140"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="209"/>
       <source>Restore Defaults</source>
       <translation>Rétablir les paramètres par défaut</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsWindow.cpp" line="91"/>
       <location filename="../Settings/ControllerSettingsWindow.cpp" line="105"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="118"/>
       <source>Create Input Profile</source>
       <translation>Créer un profil d'entrée</translation>
     </message>
@@ -2686,22 +2918,22 @@ To apply a custom input profile to a game, go to its Game Properties, then chang
 
 Enter the name for the new input profile:</source>
       <translation>Les profils d'entrée personnalisés vous permettent d'ajuster le profil d'entrée partagé pour chacun de vos jeux.
-Pour associer un profil d'entrée personnalisé à un jeu, ouvrez les propriétés du jeu puis sélectionnez un profil d'entrée depuis l'onglet « Résumé ».
+Pour associer un profil d'entrée personnalisé à un jeu, ouvrez les propriétés du jeu puis sélectionnez un profil d'entrée à partir de l'onglet Résumé.
 
 Saisissez le nom du nouveau profil d'entrée :</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsWindow.cpp" line="101"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="136"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="181"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="515"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="146"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="192"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="529"/>
       <source>Error</source>
       <translation>Erreur</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsWindow.cpp" line="101"/>
       <source>A profile with the name &apos;%1&apos; already exists.</source>
-      <translation>Un profil nommé « %1 » existe déjà.</translation>
+      <translation>Un profil nommé « %1 » existe déjà.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsWindow.cpp" line="106"/>
@@ -2709,49 +2941,54 @@ Saisissez le nom du nouveau profil d'entrée :</translation>
       <translation>Voulez-vous copier toutes les associations du profil actuel vers le nouveau profil ? Si vous sélectionnez Non, un profil totalement vide sera créé.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="136"/>
-      <source>Failed to save the new profile to &apos;%1&apos;.</source>
-      <translation>Échec de l'enregistrement du nouveau profil sous « %1 ».</translation>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="119"/>
+      <source>Do you want to copy the current hotkey bindings from global settings to the new input profile?</source>
+      <translation>Voulez-vous copier les associations de raccourcis provenant des paramètres globaux dans le nouveau profil d'entrée ?</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsWindow.cpp" line="146"/>
+      <source>Failed to save the new profile to &apos;%1&apos;.</source>
+      <translation>Échec de l'enregistrement du nouveau profil sous « %1 ».</translation>
+    </message>
+    <message>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="156"/>
       <source>Load Input Profile</source>
       <translation>Charger un profil d'entrée</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="147"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="157"/>
       <source>Are you sure you want to load the input profile named &apos;%1&apos;?
 
 All current global bindings will be removed, and the profile bindings loaded.
 
 You cannot undo this action.</source>
-      <translation>Voulez-vous vraiment charger le profil d'entrée « %1 » ?
+      <translation>Voulez-vous vraiment charger le profil d'entrée « %1 » ?
 
 Les associations globales actuelles seront supprimées et remplacées par les associations du profil.
 
 Cette action est irréversible.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="170"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="181"/>
       <source>Delete Input Profile</source>
       <translation>Supprimer un profil d'entrée</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="171"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="182"/>
       <source>Are you sure you want to delete the input profile named &apos;%1&apos;?
 
 You cannot undo this action.</source>
-      <translation>Voulez-vous vraiment supprimer le profil d'entrée « %1 » ?
+      <translation>Voulez-vous vraiment supprimer le profil d'entrée « %1 » ?
 
 Cette action est irréversible.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="181"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="192"/>
       <source>Failed to delete &apos;%1&apos;.</source>
-      <translation>Échec de la suppression de « %1 ».</translation>
+      <translation>Échec de la suppression de « %1 ».</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="199"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="210"/>
       <source>Are you sure you want to restore the default controller configuration?
 
 All shared bindings and configuration will be lost, but your input profiles will remain.
@@ -2764,13 +3001,13 @@ La configuration partagée et ses associations seront perdues mais vos profils d
 Cette action est irréversible.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="371"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="385"/>
       <source>Global Settings</source>
       <translation>Paramètres globaux</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="404"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="459"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="418"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="473"/>
       <source>Controller Port %1%2
 %3</source>
       <extracomment>Controller Port is an official term from Sony. Find the official translation for your language inside the console&apos;s manual.</extracomment>
@@ -2778,8 +3015,8 @@ Cette action est irréversible.</translation>
 %3</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="406"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="461"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="420"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="475"/>
       <source>Controller Port %1
 %2</source>
       <extracomment>Controller Port is an official term from Sony. Find the official translation for your language inside the console&apos;s manual.</extracomment>
@@ -2787,28 +3024,28 @@ Cette action est irréversible.</translation>
 %2</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="422"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="479"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="436"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="493"/>
       <source>USB Port %1
 %2</source>
       <translation>Port USB %1
 %2</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="432"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="446"/>
       <source>Hotkeys</source>
       <translation>Raccourcis</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="493"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="507"/>
       <source>Shared</source>
       <extracomment>&quot;Shared&quot; refers here to the shared input profile.</extracomment>
       <translation>Partagé</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="515"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="529"/>
       <source>The input profile named &apos;%1&apos; cannot be found.</source>
-      <translation>Impossible de trouver le profil d'entrée « %1 ».</translation>
+      <translation>Impossible de trouver le profil d'entrée « %1 ».</translation>
     </message>
   </context>
   <context>
@@ -2831,7 +3068,7 @@ Cette action est irréversible.</translation>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="63"/>
       <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-      <translation>Par défaut, les jaquettes téléchargées sont enregistrées dans un fichier portant le nom du jeu. Si cela ne vous convient pas, vous pouvez cocher la case « Utiliser le numéro de série pour nommer les fichiers » ci-dessous. Utiliser le numéro de série permettra d'éviter les conflits si vous avez plusieurs versions du même jeu.</translation>
+      <translation>Par défaut, les jaquettes téléchargées sont enregistrées dans un fichier portant le nom du jeu. Si cela ne vous convient pas, vous pouvez cocher la case « Utiliser le numéro de série pour nommer les fichiers » ci-dessous. Utiliser le numéro de série permettra d'éviter les conflits si vous avez plusieurs versions du même jeu.</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="73"/>
@@ -2908,316 +3145,143 @@ Cette action est irréversible.</translation>
       <translation>Recherche mémoire</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.ui" line="343"/>
-      <source>End</source>
-      <translation>Fin</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="189"/>
-      <source>Value</source>
-      <translation>Valeur</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="329"/>
-      <source>Start</source>
-      <translation>Début</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="199"/>
-      <source>Type</source>
-      <translation>Type</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="207"/>
-      <source>1 Byte (8 bits)</source>
-      <translation>1 octet (8 bits)</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="212"/>
-      <source>2 Bytes (16 bits)</source>
-      <translation>2 octets (16 bits)</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="217"/>
-      <source>4 Bytes (32 bits)</source>
-      <translation>4 octets (32 bits)</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="222"/>
-      <source>8 Bytes (64 bits)</source>
-      <translation>8 octets (64 bits)</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="227"/>
-      <source>Float</source>
-      <translation>Float</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="232"/>
-      <source>Double</source>
-      <translation>Double</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="237"/>
-      <source>String</source>
-      <translation>String</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="242"/>
-      <source>Array of byte</source>
-      <translation>Tableau d'octets</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="250"/>
-      <source>Hex</source>
-      <translation>Hexa</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="267"/>
-      <source>Search</source>
-      <translation>Rechercher</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="277"/>
-      <source>Filter Search</source>
-      <translation>Filtrer les résultats</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="285"/>
-      <source>Equals</source>
-      <translation>Égal à</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="290"/>
-      <source>Not Equals</source>
-      <translation>Différent de</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="295"/>
-      <source>Greater Than</source>
-      <translation>Supérieur à</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="300"/>
-      <source>Greater Than Or Equal</source>
-      <translation>Supérieur ou égal à</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="305"/>
-      <source>Less Than</source>
-      <translation>Inférieur à</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="310"/>
-      <source>Less Than Or Equal</source>
-      <translation>Inférieur ou égal à</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="318"/>
-      <source>Comparison</source>
-      <translation>Comparaison</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="429"/>
+      <location filename="../Debugger/CpuWidget.ui" line="293"/>
       <source>Memory</source>
       <translation>Mémoire</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.ui" line="484"/>
+      <location filename="../Debugger/CpuWidget.ui" line="348"/>
       <source>Breakpoints</source>
       <translation>Points d'arrêt</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.ui" line="516"/>
+      <location filename="../Debugger/CpuWidget.ui" line="380"/>
       <source>Threads</source>
       <translation>Threads</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.ui" line="554"/>
+      <location filename="../Debugger/CpuWidget.ui" line="418"/>
       <source>Active Call Stack</source>
       <translation>Pile d'appels</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.ui" line="598"/>
+      <location filename="../Debugger/CpuWidget.ui" line="462"/>
       <source>Saved Addresses</source>
       <translation>Adresses enregistrées</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="317"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="329"/>
       <source>Breakpoint List Context Menu</source>
       <translation>Menu contextuel de la liste des points d'arrêt</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="321"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="456"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="333"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="474"/>
       <source>New</source>
       <translation>Nouveau</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="329"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="341"/>
       <source>Edit</source>
       <translation>Modifier</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="335"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="702"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="937"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="347"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="685"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="892"/>
       <source>Copy</source>
       <translation>Copier</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="340"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="519"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="352"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="537"/>
       <source>Delete</source>
       <translation>Supprimer</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="349"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="492"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="715"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="950"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="361"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="510"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="698"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="905"/>
       <source>Copy all as CSV</source>
       <translation>Tout copier en CSV</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="359"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="499"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="371"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="517"/>
       <source>Paste from CSV</source>
       <translation>Coller depuis un CSV</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="700"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="683"/>
       <source>Thread List Context Menu</source>
       <translation>Menu contextuel de la liste des threads</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="785"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="858"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="769"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="843"/>
       <source>Demangle Symbols</source>
       <extracomment>&quot;Demangling&quot; is the opposite of &quot;Name mangling&quot;, which is a process where a compiler takes function names and combines them with other characteristics of the function (e.g. what types of data it accepts) to ensure they stay unique even when multiple functions exist with the same name (but different inputs / const-ness). See here: https://en.wikipedia.org/wiki/Name_mangling#C++</extracomment>
       <translation>Décoder les symboles</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="747"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="829"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="730"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="813"/>
       <source>Copy Function Name</source>
       <translation>Copier le nom de la fonction</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="758"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="835"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="741"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="819"/>
       <source>Copy Function Address</source>
       <translation>Copier l'adresse de la fonction</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="475"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="768"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="844"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="912"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="493"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="751"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="828"/>
       <source>Go to in Disassembly</source>
       <translation>Aller à l'adresse dans le désassembleur</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="363"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="505"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="375"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="523"/>
       <source>Load from Settings</source>
       <translation>Charger depuis les paramètres</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="370"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="512"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="382"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="530"/>
       <source>Save to Settings</source>
       <translation>Enregistrer dans les paramètres</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="467"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="775"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="850"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="485"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="758"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="834"/>
       <source>Go to in Memory View</source>
       <translation>Aller à l'adresse dans la vue mémoire</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="483"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="908"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="501"/>
       <source>Copy Address</source>
       <translation>Copier l'adresse</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="483"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="501"/>
       <source>Copy Text</source>
       <translation>Copier le texte</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="799"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="872"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="783"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="857"/>
       <source>Module Tree</source>
       <translation>Arborescence des modules</translation>
     </message>
     <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="902"/>
-      <source>Search Results List Context Menu</source>
-      <translation>Menu contextuel de la liste des résultats de recherche</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="916"/>
-      <source>Add to Saved Memory Addresses</source>
-      <translation>Ajouter aux adresses enregistrées</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="922"/>
-      <source>Remove Result</source>
-      <translation>Retirer le résultat</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="935"/>
+      <location filename="../Debugger/CpuWidget.cpp" line="890"/>
       <source>Stack List Context Menu</source>
       <translation>Menu contextuel de la pile d'appels</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="1204"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="1212"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="1218"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="1230"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="1236"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="1262"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="1286"/>
-      <source>Debugger</source>
-      <translation>Débogueur</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="1204"/>
-      <source>Invalid start address</source>
-      <translation>Adresse de début invalide.</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="1212"/>
-      <source>Invalid end address</source>
-      <translation>Adresse de fin invalide.</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="1218"/>
-      <source>Start address can&apos;t be equal to or greater than the end address</source>
-      <translation>L'adresse de début ne peut pas être supérieure ou égale à l'adresse de fin.</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="1230"/>
-      <source>Search types Array and String can use the Not Equals search comparison type with new searches.</source>
-      <translation>Les types de recherche « Tableau d'octets » et « String » peuvent être utilisés avec la comparaison « Différent de » lors des nouvelles recherches.</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="1236"/>
-      <source>Search types Array and String can only be used with Equals search comparisons.</source>
-      <translation>Les types de recherche « Tableau d'octets » et « String » peuvent être utilisés uniquement avec la comparaison « Égal à ».</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="1262"/>
-      <source>Invalid search value</source>
-      <translation>Valeur à rechercher invalide.</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="1286"/>
-      <source>Value is larger than type</source>
-      <translation>Valeur trop grande pour le type.</translation>
     </message>
   </context>
   <context>
@@ -3225,7 +3289,7 @@ Cette action est irréversible.</translation>
     <message>
       <location filename="../Settings/DEV9DnsHostDialog.ui" line="14"/>
       <source>Network DNS Hosts Import/Export</source>
-      <translation>Importer/exporter les hôtes DNS</translation>
+      <translation>Importer/Exporter les hôtes DNS</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9DnsHostDialog.ui" line="20"/>
@@ -3291,13 +3355,7 @@ Cette action est irréversible.</translation>
       <translation>Interception du DHCP</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.ui" line="371"/>
-      <source>48-bit LBA:</source>
-      <translation>LBA 48 bits :</translation>
-    </message>
-    <message>
-      <location filename="../Settings/DEV9SettingsWidget.ui" line="378"/>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="219"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="145"/>
       <source>Enabled</source>
       <translation>Activé</translation>
     </message>
@@ -3391,40 +3449,45 @@ Cette action est irréversible.</translation>
       <translation>Disque dur</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.ui" line="280"/>
+      <location filename="../Settings/DEV9SettingsWidget.ui" line="302"/>
+      <source>Enable 48-Bit LBA</source>
+      <translation>Activer le LBA 48 bits</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DEV9SettingsWidget.ui" line="361"/>
       <source>HDD File:</source>
       <translation>Fichier :</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.ui" line="289"/>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="733"/>
+      <location filename="../Settings/DEV9SettingsWidget.ui" line="313"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="664"/>
       <source>40</source>
       <translation>40</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.ui" line="318"/>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="729"/>
+      <location filename="../Settings/DEV9SettingsWidget.ui" line="342"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="660"/>
       <source>120</source>
       <translation>120</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.ui" line="337"/>
+      <location filename="../Settings/DEV9SettingsWidget.ui" line="368"/>
       <source>HDD Size (GiB):</source>
       <translation>Taille (Gio) :</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.ui" line="344"/>
+      <location filename="../Settings/DEV9SettingsWidget.ui" line="292"/>
       <source>Enabled</source>
       <comment>HDD</comment>
       <translation>Activé</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.ui" line="354"/>
+      <location filename="../Settings/DEV9SettingsWidget.ui" line="280"/>
       <source>Browse</source>
       <translation>Parcourir</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.ui" line="364"/>
+      <location filename="../Settings/DEV9SettingsWidget.ui" line="375"/>
       <source>Create Image</source>
       <translation>Créer une image</translation>
     </message>
@@ -3459,133 +3522,133 @@ Cette action est irréversible.</translation>
       <translation>Interne</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="123"/>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="310"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="240"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="896"/>
       <source>Use Global Setting [%1]</source>
       <translation>Utiliser le paramètre global [%1]</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="216"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="142"/>
       <source>Name</source>
       <translation>Nom</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="217"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="143"/>
       <source>Url</source>
       <translation>Url</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="218"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="144"/>
       <source>Address</source>
       <translation>Adresse</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="493"/>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="527"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="424"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="458"/>
       <source>Hosts File</source>
       <translation>Fichier hosts</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="494"/>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="528"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="425"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="459"/>
       <source>ini (*.ini)</source>
       <translation>ini (*.ini)</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="517"/>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="537"/>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="566"/>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="587"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="448"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="468"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="497"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="518"/>
       <source>DNS Hosts</source>
       <translation>Hôtes DNS</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="518"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="449"/>
       <source>Exported Successfully</source>
       <translation>Exportation réussie.</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="538"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="469"/>
       <source>Failed to open file</source>
       <translation>Échec de l'ouverture du fichier.</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="567"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="498"/>
       <source>No Hosts in file</source>
       <translation>Le fichier ne contient aucun hôte.</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="588"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="519"/>
       <source>Imported Successfully</source>
       <translation>Importation réussie.</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="597"/>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="625"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="528"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="556"/>
       <source>Per Game Host list</source>
       <translation>Liste d'hôtes par jeu</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="598"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="529"/>
       <source>Copy global settings?</source>
       <translation>Copier les paramètres globaux ?</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="626"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="557"/>
       <source>Delete per game host list?</source>
       <translation>Supprimer la liste d'hôtes par jeu ?</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="679"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="610"/>
       <source>HDD Image File</source>
       <translation>Image de disque dur</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="681"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="612"/>
       <source>HDD (*.raw)</source>
       <translation>Disque dur (*.raw)</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="729"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="660"/>
       <source>2000</source>
       <translation>2000</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="733"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="664"/>
       <source>100</source>
       <translation>100</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="760"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="690"/>
       <source>Overwrite File?</source>
       <translation>Écraser le fichier ?</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="761"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="691"/>
       <source>HDD image &quot;%1&quot; already exists.
 
 Do you want to overwrite?</source>
-      <translation>L'image de disque dur « %1 » existe déjà.
+      <translation>L'image de disque dur « %1 » existe déjà.
 
 Voulez-vous l'écraser ?</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="778"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="708"/>
       <source>HDD Creator</source>
       <translation>Création du disque dur</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="779"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="709"/>
       <source>HDD image created</source>
       <translation>Image de disque dur créée.</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="912"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="934"/>
       <source>Use Global</source>
       <translation>Utiliser les paramètres globaux</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="918"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="940"/>
       <source>Override</source>
       <translation>Modifier</translation>
     </message>
@@ -3635,7 +3698,7 @@ Voulez-vous l'écraser ?</translation>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="101"/>
       <source>Draw Dump Count:</source>
-      <translation>Nombre de dumps de dessin :</translation>
+      <translation>Nombre de dumps de dessins :</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="118"/>
@@ -3668,53 +3731,53 @@ Voulez-vous l'écraser ?</translation>
       <translation>Débogueur PCSX2</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="61"/>
-      <location filename="../Debugger/DebuggerWindow.cpp" line="77"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="64"/>
+      <location filename="../Debugger/DebuggerWindow.cpp" line="73"/>
       <source>Run</source>
       <translation>Exécuter</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="69"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="72"/>
       <source>Step Into</source>
       <translation>Pas à pas détaillé</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="72"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="75"/>
       <source>F11</source>
       <translation>F11</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="80"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="83"/>
       <source>Step Over</source>
       <translation>Pas à pas principal</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="83"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="86"/>
       <source>F10</source>
       <translation>F10</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="91"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="94"/>
       <source>Step Out</source>
       <translation>Pas à pas sortant</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="94"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="97"/>
       <source>Shift+F11</source>
       <translation>Shift+F11</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="102"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="108"/>
       <source>Always On Top</source>
       <translation>Toujours visible</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="105"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="111"/>
       <source>Show this window on top</source>
       <translation>Garder cette fenêtre toujours visible</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.cpp" line="68"/>
+      <location filename="../Debugger/DebuggerWindow.cpp" line="64"/>
       <source>Pause</source>
       <translation>Pause</translation>
     </message>
@@ -3727,74 +3790,49 @@ Voulez-vous l'écraser ?</translation>
       <translation>Désassembleur</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="653"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="663"/>
       <source>Copy Address</source>
       <translation>Copier l'adresse</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="655"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="665"/>
       <source>Copy Instruction Hex</source>
-      <translation>Copier l'hexa de l'instruction</translation>
+      <translation>Copier l'instruction au format hexa</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="657"/>
-      <source>Copy Instruction Text</source>
-      <translation>Copier l'instruction au format texte</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="670"/>
-      <source>Assemble new Instruction(s)</source>
-      <translation>Assembler des instructions</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="672"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="684"/>
       <source>NOP Instruction(s)</source>
       <translation>NOPer des instructions</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="675"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="687"/>
       <source>Run to Cursor</source>
       <translation>Exécuter jusqu'au curseur</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="677"/>
-      <source>Jump to Cursor</source>
-      <translation>Sauter vers l'emplacement du curseur</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="679"/>
-      <source>Toggle Breakpoint</source>
-      <translation>Activer/désactiver un point d'arrêt</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="681"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="695"/>
       <source>Follow Branch</source>
       <translation>Aller à la cible de la branche</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="684"/>
-      <source>Go to Address</source>
-      <translation>Aller à une adresse</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="686"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="701"/>
       <source>Go to in Memory View</source>
       <translation>Aller à l'adresse dans la vue mémoire</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="199"/>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="689"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="202"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="704"/>
       <source>Add Function</source>
       <translation>Ajouter une fonction</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="253"/>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="691"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="256"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="706"/>
       <source>Rename Function</source>
       <translation>Renommer la fonction</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="693"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="708"/>
       <source>Remove Function</source>
       <translation>Supprimer la fonction</translation>
     </message>
@@ -3815,91 +3853,121 @@ Voulez-vous l'écraser ?</translation>
       <translation>Assembler une instruction</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="163"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="166"/>
       <source>Go to address</source>
       <translation>Aller à une adresse</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="173"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="176"/>
       <source>Go to address error</source>
-      <translation>Erreur « aller à une adresse »</translation>
+      <translation>Erreur « aller à une adresse »</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="173"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="176"/>
       <source>Invalid address</source>
       <translation>Adresse invalide.</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="191"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="194"/>
       <source>Add Function Error</source>
       <translation>Erreur lors de l'ajout de la fonction</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="191"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="194"/>
       <source>A function entry point already exists here. Consider renaming instead.</source>
       <translation>Un point d'entrée de fonction existe déjà à cet emplacement. Renommez plutôt la fonction existante.</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="200"/>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="214"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="203"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="217"/>
       <source>Function will be (0x%1) instructions long.
 Enter function name</source>
       <translation>La fonction comptera (0x%1) instructions.
 Saisissez le nom de la fonction :</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="253"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="256"/>
       <source>Function name</source>
       <translation>Nom de la fonction</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="259"/>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="270"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="262"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="273"/>
       <source>Rename Function Error</source>
       <translation>Erreur lors du renommage de la fonction</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="259"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="262"/>
       <source>Function name cannot be nothing.</source>
       <translation>Le nom de la fonction ne peut pas être vide.</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="270"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="273"/>
       <source>No function / symbol is currently selected.</source>
       <translation>Aucune fonction ni symbole sélectionné.</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="320"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="323"/>
       <source>Restore Function Error</source>
       <translation>Erreur lors du rétablissement de la fonction</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="320"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="323"/>
       <source>Unable to stub selected address.</source>
       <translation>L'adresse sélectionnée est impossible à NOPer.</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="661"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="667"/>
+      <source>&amp;Copy Instruction Text</source>
+      <translation>&amp;Copier l'instruction au format texte</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="672"/>
       <source>Copy Function Name</source>
       <translation>Copier le nom de la fonction</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="667"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="678"/>
       <source>Restore Instruction(s)</source>
       <translation>Rétablir des instructions</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="697"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="681"/>
+      <source>Asse&amp;mble new Instruction(s)</source>
+      <translation>Asse&amp;mbler des instructions</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="689"/>
+      <source>&amp;Jump to Cursor</source>
+      <translation>&amp;Sauter vers le curseur</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="692"/>
+      <source>Toggle &amp;Breakpoint</source>
+      <translation>Activer/Désactiver un &amp;point d'arrêt</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="698"/>
+      <source>&amp;Go to Address</source>
+      <translation>&amp;Aller à une adresse</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="712"/>
       <source>Restore Function</source>
       <translation>Rétablir la fonction</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="702"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="717"/>
       <source>Stub (NOP) Function</source>
       <translation>NOPer la fonction</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="714"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="722"/>
+      <source>Show &amp;Opcode</source>
+      <translation>Afficher les &amp;opcodes</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="737"/>
       <source>%1 NOT VALID ADDRESS</source>
       <translation>%1 ADRESSE INVALIDE</translation>
     </message>
@@ -3914,7 +3982,7 @@ Saisissez le nom de la fonction :</translation>
     <message>
       <location filename="../GameList/EmptyGameListWidget.ui" line="65"/>
       <source>Add Game Directory...</source>
-      <translation>Ajouter un dossier…</translation>
+      <translation>Ajouter un dossier à jeux…</translation>
     </message>
     <message>
       <location filename="../GameList/EmptyGameListWidget.ui" line="102"/>
@@ -3925,79 +3993,84 @@ Saisissez le nom de la fonction :</translation>
   <context>
     <name>EmuThread</name>
     <message>
-      <location filename="../QtHost.cpp" line="975"/>
+      <location filename="../QtHost.cpp" line="1001"/>
       <source>Slot: %1 | %2 | EE: %3% | VU: %4% | GS: %5%</source>
-      <translation>Emplacement : %1 | %2 | EE : %3 % | VU : %4 % | GS : %5 %</translation>
+      <translation>Emplacement : %1 | %2 | EE : %3 % | VU : %4 % | GS : %5 %</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="984"/>
+      <location filename="../QtHost.cpp" line="1010"/>
       <source>Slot: %1 | %2 | EE: %3% | GS: %4%</source>
-      <translation>Emplacement : %1 | %2 | EE : %3 % | GS : %4 %</translation>
+      <translation>Emplacement : %1 | %2 | EE : %3 % | GS : %4 %</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1028"/>
+      <location filename="../QtHost.cpp" line="1041"/>
+      <source>No Image</source>
+      <translation>Pas d'image</translation>
+    </message>
+    <message>
+      <location filename="../QtHost.cpp" line="1043"/>
       <source>%1x%2</source>
       <translation>%1x%2</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1036"/>
+      <location filename="../QtHost.cpp" line="1055"/>
       <source>Game: %1 FPS</source>
       <translation>Jeu : %1 IPS</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1043"/>
+      <location filename="../QtHost.cpp" line="1062"/>
       <source>Video: %1 FPS (%2%)</source>
       <translation>Vidéo : %1 IPS (%2 %)</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1092"/>
+      <location filename="../QtHost.cpp" line="1117"/>
       <source>Game: %1 (%2)
 </source>
       <translation>Jeu : %1 (%2)
 </translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1100"/>
+      <location filename="../QtHost.cpp" line="1125"/>
       <source>Rich presence inactive or unsupported.</source>
       <translation>Rich Presence inactive ou non prise en charge.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1104"/>
+      <location filename="../QtHost.cpp" line="1129"/>
       <source>Game not loaded or no RetroAchievements available.</source>
       <translation>Aucun jeu chargé ou aucun RetroAchievements disponible.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1380"/>
-      <location filename="../QtHost.cpp" line="1401"/>
-      <location filename="../QtHost.cpp" line="1409"/>
-      <location filename="../QtHost.cpp" line="1443"/>
+      <location filename="../QtHost.cpp" line="1537"/>
+      <location filename="../QtHost.cpp" line="1557"/>
+      <location filename="../QtHost.cpp" line="1565"/>
+      <location filename="../QtHost.cpp" line="1599"/>
       <source>Error</source>
       <translation>Erreur</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1380"/>
+      <location filename="../QtHost.cpp" line="1537"/>
       <source>Failed to create HTTPDownloader.</source>
       <translation>Échec de la création du HTTPDownloader.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1388"/>
+      <location filename="../QtHost.cpp" line="1545"/>
       <source>Downloading %1...</source>
-      <translation>Téléchargement de « %1 »…</translation>
+      <translation>Téléchargement de « %1 »…</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1402"/>
+      <location filename="../QtHost.cpp" line="1558"/>
       <source>Download failed with HTTP status code %1.</source>
       <translation>Échec du téléchargement, code de statut HTTP : %1.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1410"/>
+      <location filename="../QtHost.cpp" line="1566"/>
       <source>Download failed: Data is empty.</source>
       <translation>Échec du téléchargement : aucune donnée reçue.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1444"/>
+      <location filename="../QtHost.cpp" line="1600"/>
       <source>Failed to write &apos;%1&apos;.</source>
-      <translation>Échec de l'écriture de « %1 ».</translation>
+      <translation>Échec de l'écriture de « %1 ».</translation>
     </message>
   </context>
   <context>
@@ -4008,387 +4081,360 @@ Saisissez le nom de la fonction :</translation>
       <translation>Contrôle de la vitesse</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="44"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="48"/>
       <source>Normal Speed:</source>
       <translation>Vitesse normale :</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="65"/>
-      <source>Enable Speed Limiter</source>
-      <translation>Activer le limiteur de vitesse</translation>
-    </message>
-    <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="75"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="68"/>
       <source>System Settings</source>
       <translation>Paramètres système</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="83"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="121"/>
-      <source>Enable Instant VU1</source>
-      <translation>Activer « Instant VU1 »</translation>
-    </message>
-    <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="90"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="126"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="139"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
       <source>Enable Cheats</source>
       <translation>Activer les codes de triche</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="51"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="35"/>
       <source>Slow-Motion Speed:</source>
       <translation>Vitesse du ralenti :</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="58"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="55"/>
       <source>Fast-Forward Speed:</source>
       <translation>Vitesse d'avance rapide :</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="97"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="146"/>
       <source>Enable Multithreaded VU1 (MTVU)</source>
       <translation>Activer MTVU (VU1 multithreadée)</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="104"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="153"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="129"/>
       <source>Enable Host Filesystem</source>
       <translation>Activer le système de fichiers hôte</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="111"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="160"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="122"/>
       <source>Enable Fast CDVD</source>
-      <translation>Activer « Fast CDVD »</translation>
+      <translation>Activer « Fast CDVD »</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="120"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="167"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
+      <source>Enable CDVD Precaching</source>
+      <translation>Activer la mise en précache CDVD</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="174"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="115"/>
+      <source>Enable Thread Pinning</source>
+      <translation>Activer l'épinglage des threads</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="190"/>
       <source>EE Cycle Skipping:</source>
       <translation>Saut de cycle EE :</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="128"/>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="205"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="110"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="114"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="114"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="111"/>
       <source>Disabled</source>
       <translation>Désactivé</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="133"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="119"/>
       <source>Mild Underclock</source>
       <translation>Underclock léger</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="138"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="124"/>
       <source>Moderate Underclock</source>
       <translation>Underclock modéré</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="143"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="129"/>
       <source>Maximum Underclock</source>
       <translation>Underclock maximal</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="151"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="183"/>
       <source>EE Cycle Rate:</source>
       <translation>Cadence de l'EE :</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="159"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="75"/>
       <source>50% (Underclock)</source>
       <translation>50 % (underclock)</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="164"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="80"/>
       <source>60% (Underclock)</source>
       <translation>60 % (underclock)</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="169"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="85"/>
       <source>75% (Underclock)</source>
       <translation>75 % (underclock)</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="174"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="107"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="90"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="108"/>
       <source>100% (Normal Speed)</source>
       <translation>100 % (vitesse normale)</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="179"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="95"/>
       <source>130% (Overclock)</source>
       <translation>130 % (overclock)</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="184"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="100"/>
       <source>180% (Overclock)</source>
       <translation>180 % (overclock)</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="189"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="105"/>
       <source>300% (Overclock)</source>
       <translation>300 % (overclock)</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="197"/>
-      <source>Affinity Control:</source>
-      <translation>Contrôle de l'affinité :</translation>
-    </message>
-    <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="210"/>
-      <source>EE &gt; VU &gt; GS</source>
-      <translation>EE &gt; VU &gt; GS</translation>
-    </message>
-    <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="215"/>
-      <source>EE &gt; GS &gt; VU</source>
-      <translation>EE &gt; GS &gt; VU</translation>
-    </message>
-    <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="220"/>
-      <source>VU &gt; EE &gt; GS</source>
-      <translation>VU &gt; EE &gt; GS</translation>
-    </message>
-    <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="225"/>
-      <source>VU &gt; GS &gt; EE</source>
-      <translation>VU &gt; GS &gt; EE</translation>
-    </message>
-    <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="230"/>
-      <source>GS &gt; EE &gt; VU</source>
-      <translation>GS &gt; EE &gt; VU</translation>
-    </message>
-    <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="235"/>
-      <source>GS &gt; VU &gt; EE</source>
-      <translation>GS &gt; VU &gt; EE</translation>
-    </message>
-    <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="246"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="200"/>
       <source>Frame Pacing / Latency Control</source>
       <translation>Cadence d'image et contrôle de la latence</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="252"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="206"/>
       <source> frames</source>
       <extracomment>This string will appear next to the amount of frames selected, in a dropdown box.</extracomment>
       <translation> images</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="265"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="219"/>
       <source>Maximum Frame Latency:</source>
       <translation>Latence d'image maximale :</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="274"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="131"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="228"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="146"/>
+      <source>Use Host VSync Timing</source>
+      <translation>Utiliser le timing VSync de l'hôte</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="235"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
+      <source>Sync to Host Refresh Rate</source>
+      <translation>Synchro. avec le taux de rafraîchissement de l'hôte</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="242"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="132"/>
       <source>Optimal Frame Pacing</source>
       <translation>Cadence d'image optimale</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="281"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="137"/>
-      <source>Scale To Host Refresh Rate</source>
-      <translation>Utiliser le taux de rafraîchissement de l'hôte</translation>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="249"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="143"/>
+      <source>Vertical Sync (VSync)</source>
+      <translation>Synchronisation verticale (VSync)</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="49"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="52"/>
       <source>Use Global Setting [%1]</source>
       <translation>Utiliser le paramètre global [%1]</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="95"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="98"/>
       <source>Normal Speed</source>
       <translation>Vitesse normale</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="96"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="99"/>
       <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-      <translation>Définissez la vitesse d'émulation cible. Rien ne garantit que cette vitesse sera atteinte et, si elle ne l'est pas, l'émulateur s'exécutera aussi vite que possible.</translation>
+      <translation>Définissez la vitesse d'émulation cible. Rien ne garantit que cette vitesse sera atteinte ; si elle ne l'est pas, l'émulateur s'exécutera aussi vite que possible.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="99"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="102"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="105"/>
       <source>User Preference</source>
       <translation>préférence utilisateur</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="104"/>
-      <source>Speed Limiter</source>
-      <translation>Limiteur de vitesse</translation>
-    </message>
-    <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="104"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="118"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="121"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
       <source>Checked</source>
       <translation>coché</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="105"/>
-      <source>Limits the emulation to the appropriate framerate for the currently running game.</source>
-      <translation>Limiter la fréquence d'images à une valeur adaptée au jeu en cours d'exécution.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="108"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="109"/>
       <source>Higher values may increase internal framerate in games, but will increase CPU requirements substantially. Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs.</source>
       <translation>Plus la valeur est élevée, plus l'utilisation du CPU augmente, et plus la fréquence d'images interne des jeux est susceptible d'augmenter. Plus la valeur est faible, plus la charge du CPU diminue, ce qui peut permettre à des jeux légers de fonctionner à pleine vitesse sur des CPU plus faibles.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="111"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="112"/>
       <source>Makes the emulated Emotion Engine skip cycles. Helps a small subset of games like SOTC. Most of the time it&apos;s harmful to performance.</source>
       <extracomment>SOTC = Shadow of the Colossus. A game&apos;s title, should not be translated unless an official translation exists.</extracomment>
       <translation>Faire sauter des cycles à l'Emotion Engine émulé. Cette option peut aider un nombre restreint de jeux tels que SOTC. La plupart du temps, activer l'option dégrade les performances.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="114"/>
-      <source>Affinity Control</source>
-      <translation>Contrôle de l'affinité</translation>
-    </message>
-    <message>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="115"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="122"/>
-      <source>Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.</source>
-      <translation>Exécuter instantanément la VU1. Amélioration modeste des performances dans la plupart des jeux. Fonctionne bien avec la plupart des jeux, mais il pourrait y avoir des problèmes d'affichage dans certains jeux.</translation>
-    </message>
-    <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="126"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="131"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="137"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="129"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="132"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="143"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="146"/>
       <source>Unchecked</source>
       <translation>décoché</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="125"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="123"/>
       <source>Fast disc access, less loading times. Check HDLoader compatibility lists for known games that have issues with this.</source>
       <translation>Accès rapide au disque, temps de chargement réduits. Les listes de compatibilité HDLoader vous permettront de connaître les jeux incompatibles avec cette option.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
       <source>Automatically loads and applies cheats on game start.</source>
       <translation>Charger et appliquer automatiquement les codes de triche au lancement du jeu.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="129"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="130"/>
       <source>Allows games and homebrew to access files / folders directly on the host computer.</source>
       <translation>Permettre aux jeux et aux homebrews d'accéder aux fichiers et aux dossiers présents sur l'ordinateur hôte.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
-      <source>Speeds up emulation so that the guest refresh rate matches the host. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Scale To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-      <translation>Accélérer l'émulation pour que le taux de rafraîchissement de l'invité corresponde à celui de l'hôte. Cela améliorera la fluidité des animations, au prix d'accélérer l'émulation jusqu'à 1 %. Cette option est automatiquement désactivée s'il y a trop d'écart entre le taux de rafraîchissement de la console et celui de l'hôte. Si vous avez un écran à taux de rafraîchissement variable, désactivez cette option.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="99"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="102"/>
       <source>Fast-Forward Speed</source>
       <extracomment>The &quot;User Preference&quot; string will appear after the text &quot;Recommended Value:&quot;</extracomment>
       <translation>Vitesse d'avance rapide</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="95"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="98"/>
       <source>100%</source>
       <translation>100 %</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="100"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="103"/>
       <source>Sets the fast-forward speed. This speed will be used when the fast-forward hotkey is pressed/toggled.</source>
-      <translation>Définissez la vitesse d'avance rapide. Cette vitesse sera utilisée lors de l'utilisation du raccourci « Avance rapide ».</translation>
+      <translation>Définissez la vitesse d'avance rapide. Cette vitesse sera utilisée lors de l'utilisation du raccourci « Avance rapide ».</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="102"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="105"/>
       <source>Slow-Motion Speed</source>
       <extracomment>The &quot;User Preference&quot; string will appear after the text &quot;Recommended Value:&quot;</extracomment>
       <translation>Vitesse du ralenti</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="103"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="106"/>
       <source>Sets the slow-motion speed. This speed will be used when the slow-motion hotkey is pressed/toggled.</source>
-      <translation>Définissez la vitesse du ralenti. Cette vitesse sera utilisée lors de l'utilisation du raccourci « Ralenti ».</translation>
+      <translation>Définissez la vitesse du ralenti. Cette vitesse sera utilisée lors de l'utilisation du raccourci « Ralenti ».</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="107"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="108"/>
       <source>EE Cycle Rate</source>
       <translation>Cadence de l'EE</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="110"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="111"/>
       <source>EE Cycle Skip</source>
       <translation>Saut de cycle EE</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="115"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="116"/>
       <source>Sets the priority for specific threads in a specific order ignoring the system scheduler. May help CPUs with big (P) and little (E) cores (e.g. Intel 12th or newer generation CPUs from Intel or other vendors such as AMD).</source>
       <extracomment>P-Core = Performance Core, E-Core = Efficiency Core. See if Intel has official translations for these terms.</extracomment>
       <translation>Définir la priorité de certains threads dans un ordre spécifique en ignorant le planificateur système. Cela peut aider les CPU ayant des gros cœurs (P) et des petits cœurs (E) (par exemple, les processeurs Intel 12ème génération ou plus récents, ou des processeurs de Intel ou d'autres fournisseurs tel que AMD).</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="118"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
       <source>Enable Multithreaded VU1 (MTVU1)</source>
       <translation>Activer MTVU1 (VU1 multithreadée)</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="120"/>
       <source>Generally a speedup on CPUs with 4 or more cores. Safe for most games, but a few are incompatible and may hang.</source>
       <translation>Cette option améliore généralement les performances si vous avez un CPU avec 4 cœurs ou plus. Fonctionne bien avec la plupart des jeux, mais certains jeux sont incompatibles et pourraient se bloquer.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="132"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="125"/>
+      <source>Loads the disc image into RAM before starting the virtual machine. Can reduce stutter on systems with hard drives that have long wake times, but significantly increases boot times.</source>
+      <translation>Charger l'image disque en RAM avant de démarrer la machine virtuelle. Cela peut réduire les saccades sur les systèmes avec des disques durs ayant un long temps de réveil, mais cela augmente significativement le temps de démarrage d'un jeu.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="133"/>
       <source>Sets the VSync queue size to 0, making every frame be completed and presented by the GS before input is polled and the next frame begins. Using this setting can reduce input lag at the cost of measurably higher CPU and GPU requirements.</source>
       <translation>Définir la taille de la file d'attente VSync à 0, afin que chaque image soit terminée et présentée par le GS avant que l'entrée ne soit sondée et que la prochaine image ne commence. L'utilisation de ce paramètre peut réduire la latence d'entrée au prix d'une utilisation CPU et GPU plus élevée.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="134"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
       <source>Maximum Frame Latency</source>
       <translation>Latence d'image maximale</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="134"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
       <source>2 Frames</source>
       <translation>2 images</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
       <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
       <translation>Définissez le nombre maximum d'images pouvant être en attente du GS, avant que le thread CPU ne doive attendre qu'une des images soit terminée avant de reprendre. Plus la valeur est élevée, plus les variations de durées d'image sont lissées, et plus la latence d'entrée augmente.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="153"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="139"/>
+      <source>Speeds up emulation so that the guest refresh rate matches the host. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync to Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
+      <translation>Accélérer l'émulation pour que le taux de rafraîchissement de l'invité corresponde à celui de l'hôte. Cela améliorera la fluidité des animations, au prix d'accélérer l'émulation jusqu'à 1 %. Cette option est automatiquement désactivée lorsqu'il y a trop d'écart entre le taux de rafraîchissement de la console et celui de l'hôte. Si vous avez un écran à taux de rafraîchissement variable, désactivez cette option.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="144"/>
+      <source>Enable this option to match PCSX2&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (eg. running at non-100% speed).</source>
+      <translation>Activez cette option pour faire correspondre le taux de rafraîchissement de PCSX2 à celui de votre écran. La VSync est désactivée automatiquement si nécessaire (par exemple si la vitesse d'exécution est différente de 100 %).</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="147"/>
+      <source>When synchronizing with the host refresh rate, this option disable&apos;s PCSX2&apos;s internal frame timing, and uses the host instead. Can result in smoother frame pacing, &lt;strong&gt;but at the cost of increased input latency&lt;/strong&gt;.</source>
+      <translation>Lors de la synchronisation avec le taux de rafraîchissement de l'hôte, PCSX2 n'utilise pas son timing d'image interne et utilise celui de l'hôte à la place. Cela peut fluidifier la cadence d'image, &lt;strong&gt;mais la latence d'entrée augmentera&lt;/strong&gt;.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="161"/>
       <source>Use Global Setting [%1%]</source>
       <translation>Utiliser le paramètre global [%1 %]</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="165"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="173"/>
       <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
       <translation>%1 % [%2 IPS (NTSC), %3 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="173"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="181"/>
       <source>Unlimited</source>
       <extracomment>Every case that uses this particular string seems to refer to speeds: Normal Speed/Fast Forward Speed/Slow Motion Speed.</extracomment>
       <translation>Illimitée</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="177"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="185"/>
       <source>Custom</source>
       <extracomment>Every case that uses this particular string seems to refer to speeds: Normal Speed/Fast Forward Speed/Slow Motion Speed.</extracomment>
       <translation>Personnalisée</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="185"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="221"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="193"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="229"/>
       <source>Custom [%1% / %2 FPS (NTSC) / %3 FPS (PAL)]</source>
       <translation>Personnalisé [%1 %, %2 IPS (NTSC), %3 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="206"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="214"/>
       <source>Custom Speed</source>
       <translation>Vitesse personnalisée</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="206"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="214"/>
       <source>Enter Custom Speed</source>
       <translation>Saisissez la vitesse désirée</translation>
     </message>
@@ -4396,12 +4442,12 @@ Saisissez le nom de la fonction :</translation>
   <context>
     <name>FileOperations</name>
     <message>
-      <location filename="../QtUtils.cpp" line="152"/>
+      <location filename="../QtUtils.cpp" line="154"/>
       <source>Failed to show file</source>
       <translation>Impossible d'afficher le fichier</translation>
     </message>
     <message>
-      <location filename="../QtUtils.cpp" line="153"/>
+      <location filename="../QtUtils.cpp" line="155"/>
       <source>Failed to show file in file explorer.
 
 The file was: %1</source>
@@ -4410,30 +4456,30 @@ The file was: %1</source>
 Fichier : %1</translation>
     </message>
     <message>
-      <location filename="../QtUtils.cpp" line="161"/>
+      <location filename="../QtUtils.cpp" line="163"/>
       <source>Show in Folder</source>
       <extracomment>Windows action to show a file in Windows Explorer</extracomment>
       <translation>Ouvrir l'emplacement du fichier</translation>
     </message>
     <message>
-      <location filename="../QtUtils.cpp" line="164"/>
+      <location filename="../QtUtils.cpp" line="166"/>
       <source>Show in Finder</source>
       <extracomment>macOS action to show a file in Finder</extracomment>
       <translation>Afficher dans Finder</translation>
     </message>
     <message>
-      <location filename="../QtUtils.cpp" line="167"/>
+      <location filename="../QtUtils.cpp" line="169"/>
       <source>Open Containing Directory</source>
       <extracomment>Opens the system file manager to the directory containing a selected file</extracomment>
       <translation>Ouvrir l'emplacement du fichier</translation>
     </message>
     <message>
-      <location filename="../QtUtils.cpp" line="175"/>
+      <location filename="../QtUtils.cpp" line="177"/>
       <source>Failed to open URL</source>
       <translation>Échec de l'ouverture de l'URL</translation>
     </message>
     <message>
-      <location filename="../QtUtils.cpp" line="176"/>
+      <location filename="../QtUtils.cpp" line="178"/>
       <source>Failed to open URL.
 
 The URL was: %1</source>
@@ -4525,362 +4571,352 @@ URL : %1</translation>
   <context>
     <name>FullscreenUI</name>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6395"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6837"/>
       <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
       <translation>Aucun périphérique CD/DVD-ROM trouvé. Assurez-vous qu'un lecteur est bien connecté et que vous avez les autorisations nécessaires pour y accéder.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6397"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6839"/>
       <source>Use Global Setting</source>
       <translation>Utiliser le paramètre global</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6399"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6840"/>
       <source>Automatic binding failed, no devices are available.</source>
       <translation>Échec de l'association automatique, aucun périphérique disponible.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6400"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6841"/>
       <source>Game title copied to clipboard.</source>
       <translation>Nom du jeu copié dans le presse-papiers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6401"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6842"/>
       <source>Game serial copied to clipboard.</source>
       <translation>Numéro de série du jeu copié dans le presse-papiers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6402"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6843"/>
       <source>Game CRC copied to clipboard.</source>
       <translation>CRC du jeu copié dans le presse-papiers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6403"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6844"/>
       <source>Game type copied to clipboard.</source>
       <translation>Type de jeu copié dans le presse-papiers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6404"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6845"/>
       <source>Game region copied to clipboard.</source>
       <translation>Région du jeu copiée dans le presse-papiers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6405"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6846"/>
       <source>Game compatibility copied to clipboard.</source>
       <translation>Compatibilité du jeu copiée dans le presse-papiers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6406"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6847"/>
       <source>Game path copied to clipboard.</source>
       <translation>Chemin d'accès au jeu copié dans le presse-papiers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6408"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6849"/>
       <source>Per-game controller configuration initialized with global settings.</source>
       <translation>Configuration des manettes propre au jeu initialisée aux paramètres globaux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6409"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6850"/>
       <source>Controller settings reset to default.</source>
       <translation>Paramètres des manettes réinitialisés.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6410"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6851"/>
       <source>No input profiles available.</source>
       <translation>Aucun profil d'entrée disponible.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6411"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6852"/>
       <source>Create New...</source>
       <translation>Créer un profil…</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6412"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6853"/>
       <source>Enter the name of the input profile you wish to create.</source>
       <translation>Saisissez le nom du profil d'entrée que vous souhaitez créer.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6413"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6854"/>
       <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
       <translation>Voulez-vous vraiment rétablir les paramètres par défaut ? Toutes vos préférences seront perdues.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6414"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6855"/>
       <source>Settings reset to defaults.</source>
       <translation>Paramètres réinitialisés.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6415"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6856"/>
       <source>No save present in this slot.</source>
       <translation>Aucune sauvegarde à cet emplacement.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6416"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6857"/>
       <source>No save states found.</source>
       <translation>Aucune sauvegarde d'état trouvée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6417"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6858"/>
       <source>Failed to delete save state.</source>
       <translation>Échec de la suppression de la sauvegarde d'état.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6418"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6859"/>
       <source>Failed to copy text to clipboard.</source>
       <translation>Échec de la copie des données vers le presse-papiers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6419"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6860"/>
       <source>This game has no achievements.</source>
       <translation>Aucun succès disponible pour ce jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6420"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6861"/>
       <source>This game has no leaderboards.</source>
       <translation>Aucun classement disponible pour ce jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6421"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6862"/>
       <source>Reset System</source>
       <translation>Réinitialiser le système</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6422"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6863"/>
       <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-      <translation>Le mode hardcore sera activé après la réinitialisation du système. Voulez-vous réinitialiser le système maintenant ?</translation>
+      <translation>Le mode Hardcore sera activé après la réinitialisation du système. Voulez-vous réinitialiser le système maintenant ?</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6423"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6865"/>
       <source>Launch a game from images scanned from your game directories.</source>
-      <translation>Lancer un jeu à partir d'images scannées dans vos dossiers de jeux.</translation>
+      <translation>Lancer un jeu à partir d'images scannées dans vos dossiers à jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6424"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6873"/>
       <source>Launch a game by selecting a file/disc image.</source>
       <translation>Lancer un jeu en sélectionnant une image disque ou un fichier.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6425"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6877"/>
       <source>Start the console without any disc inserted.</source>
       <translation>Démarrer la console sans insérer de jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6426"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6875"/>
       <source>Start a game from a disc in your PC&apos;s DVD drive.</source>
       <translation>Lancer un jeu à partir du disque se trouvant dans le lecteur DVD de votre PC.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6427"/>
-      <source>Change settings for the emulator.</source>
-      <translation>Modifier les paramètres de l'émulateur.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6428"/>
-      <source>Exits the program.</source>
-      <translation>Quitter le programme.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6430"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6885"/>
       <source>No Binding</source>
       <translation>Aucune</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6431"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6886"/>
       <source>Setting %s binding %s.</source>
       <translation>%s : association de %s.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6432"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6887"/>
       <source>Push a controller button or axis now.</source>
       <translation>Appuyez sur un bouton ou poussez un axe de votre manette.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6433"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6888"/>
       <source>Timing out in %.0f seconds...</source>
       <translation>%.0f secondes restantes…</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6434"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6889"/>
       <source>Unknown</source>
       <translation>Inconnu(e)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6435"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6890"/>
       <source>OK</source>
       <translation>OK</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6436"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6891"/>
       <source>Select Device</source>
       <translation>Sélectionnez un périphérique</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6437"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6892"/>
       <source>Details</source>
       <translation>Détails</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6438"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6893"/>
       <source>Options</source>
       <translation>Options</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6439"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6894"/>
       <source>Copies the current global settings to this game.</source>
       <translation>Copier les paramètres globaux actuels dans les paramètres propres à ce jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6440"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6895"/>
       <source>Clears all settings set for this game.</source>
       <translation>Effacer tous les paramètres définis pour ce jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6441"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6896"/>
       <source>Behaviour</source>
       <translation>Comportement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6442"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6897"/>
       <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
       <translation>Empêcher l'économiseur d'écran de s'activer et l'hôte de se mettre en veille pendant que l'émulation est en cours d'exécution.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6443"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6898"/>
       <source>Shows the game you are currently playing as part of your profile on Discord.</source>
       <translation>Afficher le jeu auquel vous êtes en train de jouer dans votre profil Discord.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6444"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6899"/>
       <source>Pauses the emulator when a game is started.</source>
-      <translation>Mettre en pause l'émulateur lors du lancement d'un jeu.</translation>
+      <translation>Mettre en pause l'émulateur au lancement d'un jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6445"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6900"/>
       <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
       <translation>Mettre en pause l'émulateur lorsque vous minimisez la fenêtre ou que vous utilisez une autre application. L'émulation reprendra lorsque vous reviendrez sur PCSX2.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6446"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6902"/>
       <source>Pauses the emulator when you open the quick menu, and unpauses when you close it.</source>
       <translation>Mettre en pause l'émulateur lorsque vous ouvrez le menu rapide et reprendre l'émulation lorsque vous le fermez.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6447"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6903"/>
       <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
-      <translation>Une confirmation vous sera demandée lors de l'utilisation du raccourci « Éteindre la machine virtuelle ».</translation>
+      <translation>Une confirmation vous sera demandée lors de l'utilisation du raccourci « Éteindre la machine virtuelle ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6448"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6904"/>
       <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
       <translation>Enregistrer automatiquement l'état de l'émulateur lorsque vous éteignez le système ou que vous quittez PCSX2. Vous pourrez ensuite reprendre directement à partir de l'endroit où vous avez arrêté de jouer.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6450"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6906"/>
       <source>Uses a light coloured theme instead of the default dark theme.</source>
       <translation>Utiliser un thème clair à la place du thème sombre par défaut.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6451"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6907"/>
       <source>Game Display</source>
       <translation>Affichage du jeu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6453"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6909"/>
       <source>Switches between full screen and windowed when the window is double-clicked.</source>
-      <translation>Basculer entre les modes plein écran et fenêtré lors d'un double-clic dans la fenêtre.</translation>
+      <translation>Basculer entre les modes Plein écran et Fenêtré lors d'un double-clic dans la fenêtre.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6454"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6910"/>
       <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
-      <translation>Masquer le pointeur/curseur de la souris lorsque le mode plein écran est activé.</translation>
+      <translation>Masquer le pointeur/curseur de la souris lorsque le mode Plein écran est activé.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6456"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6912"/>
       <source>Determines how large the on-screen messages and monitor are.</source>
       <translation>Déterminez la taille des graphiques et des messages affichés à l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6458"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6914"/>
       <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
       <translation>Afficher un message à l'écran lors d'événements tels que la création ou le chargement d'une sauvegarde d'état, la prise d'une capture d'écran, etc.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6459"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6915"/>
       <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
       <translation>Afficher la vitesse d'émulation actuelle du système en pourcentage dans le coin supérieur droit de l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6460"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6916"/>
       <source>Shows the number of video frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
       <translation>Afficher le nombre d'images (ou de synchronisations verticales) du système par seconde dans le coin supérieur droit de l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6461"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6917"/>
       <source>Shows the CPU usage based on threads in the top-right corner of the display.</source>
       <translation>Afficher l'utilisation du CPU en fonction des threads dans le coin supérieur droit de l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6462"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6918"/>
       <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
       <translation>Afficher l'utilisation du GPU de l'hôte dans le coin supérieur droit de l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6464"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6920"/>
       <source>Shows statistics about GS (primitives, draw calls) in the top-right corner of the display.</source>
       <translation>Afficher des statistiques sur le GS (primitives, draw calls) dans le coin supérieur droit de l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6465"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6921"/>
       <source>Shows indicators when fast forwarding, pausing, and other abnormal states are active.</source>
       <translation>Afficher des indicateurs lorsque vous activez l'avance rapide, mettez en pause, ou qu'un autre état anormal est actif.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6466"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6922"/>
       <source>Shows the current configuration in the bottom-right corner of the display.</source>
       <translation>Afficher la configuration actuelle dans le coin inférieur droit de l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6467"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6923"/>
       <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
       <translation>Afficher l'état système de la manette dans le coin inférieur gauche de l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6468"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6924"/>
       <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
       <translation>Afficher un historique visuel des durées d'image dans le coin supérieur gauche de l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6469"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6925"/>
       <source>Displays warnings when settings are enabled which may break games.</source>
       <translation>Afficher des avertissements lorsque des paramètres pouvant affecter le bon fonctionnement des jeux sont activés.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6471"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6927"/>
       <source>Resets configuration to defaults (excluding controller settings).</source>
       <translation>Réinitialiser la configuration (sauf les paramètres des manettes).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6473"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6929"/>
       <source>Changes the BIOS image used to start future sessions.</source>
       <translation>Sélectionnez l'image de BIOS à utiliser lors des prochaines sessions.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6407"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6848"/>
       <source>Automatic</source>
       <translation>Automatique</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6846"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7296"/>
       <source>{0}/{1}/{2}/{3}</source>
       <translation>{0}/{1}/{2}/{3}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6398"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7517"/>
       <source>Default</source>
       <translation>Par défaut</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6396"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6838"/>
       <source>WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.
 
 Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</source>
@@ -4889,1717 +4925,1757 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</sour
 Voulez-vous quand même éteindre la machine virtuelle et DÉTRUIRE DE FAÇON IRRÉVERSIBLE VOTRE MEMORY CARD ?</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6449"/>
-      <source>When enabled, custom per-game settings will be applied. Disable to always use the global configuration.</source>
-      <translation>Lorsque cette option est activée, les paramètres propres à chaque jeu sont appliqués. Désactivez l'option pour toujours utiliser la configuration globale.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6452"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6908"/>
       <source>Automatically switches to fullscreen mode when a game is started.</source>
-      <translation>Basculer automatiquement en mode plein écran au lancement d'un jeu.</translation>
+      <translation>Basculer automatiquement en mode Plein écran au lancement d'un jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6455"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6911"/>
       <source>On-Screen Display</source>
       <translation>Affichage à l'écran</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6457"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6913"/>
       <source>%d%%</source>
       <translation>%d %%</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6463"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6919"/>
       <source>Shows the resolution of the game in the top-right corner of the display.</source>
       <translation>Afficher la résolution du jeu dans le coin supérieur droit de l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6472"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6928"/>
       <source>BIOS Configuration</source>
       <translation>Configuration du BIOS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6474"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6930"/>
       <source>BIOS Selection</source>
       <translation>Sélection du BIOS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6475"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6931"/>
       <source>Options and Patches</source>
       <translation>Options et patchs</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6476"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6932"/>
       <source>Skips the intro screen, and bypasses region checks.</source>
       <translation>Passer l'écran de démarrage et faire fonctionner les jeux provenant d'autres régions.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6477"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6933"/>
       <source>Speed Control</source>
       <translation>Contrôle de la vitesse</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6478"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7567"/>
       <source>Normal Speed</source>
       <translation>Vitesse normale</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6479"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6934"/>
       <source>Sets the speed when running without fast forwarding.</source>
       <translation>Définissez la vitesse d'exécution hors avance rapide.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6480"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7568"/>
       <source>Fast Forward Speed</source>
       <translation>Vitesse d'avance rapide</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6481"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
       <source>Sets the speed when using the fast forward hotkey.</source>
-      <translation>Définissez la vitesse à utiliser lors de l'utilisation du raccourci « Avance rapide ».</translation>
+      <translation>Définissez la vitesse à utiliser lors de l'utilisation du raccourci « Avance rapide ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6482"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7569"/>
       <source>Slow Motion Speed</source>
       <translation>Vitesse du ralenti</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6483"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6936"/>
       <source>Sets the speed when using the slow motion hotkey.</source>
-      <translation>Définissez la vitesse à utiliser lors de l'utilisation du raccourci « Activer/désactiver le ralenti ».</translation>
+      <translation>Définissez la vitesse à utiliser lors de l'utilisation du raccourci « Activer/Désactiver le ralenti ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6484"/>
-      <source>Enable Speed Limiter</source>
-      <translation>Activer le limiteur de vitesse</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6485"/>
-      <source>When disabled, the game will run as fast as possible.</source>
-      <translation>Lorsque cette option est désactivée, le jeu s'exécute à la vitesse maximale.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6486"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6937"/>
       <source>System Settings</source>
       <translation>Paramètres système</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6487"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6938"/>
       <source>EE Cycle Rate</source>
       <translation>Cadence de l'EE</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6488"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6939"/>
       <source>Underclocks or overclocks the emulated Emotion Engine CPU.</source>
       <translation>Underclocker ou overclocker le CPU de l'Emotion Engine émulé.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6489"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6940"/>
       <source>EE Cycle Skipping</source>
       <translation>Saut de cycle EE</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6491"/>
-      <source>Affinity Control Mode</source>
-      <translation>Mode de contrôle de l'affinité</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6492"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6945"/>
       <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
       <translation>Associer certains threads de l'émulateur à certains cœurs CPU pour potentiellement améliorer les performances et lisser les variations de durée d'image.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6493"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6942"/>
       <source>Enable MTVU (Multi-Threaded VU1)</source>
       <translation>Activer MTVU (VU1 multithreadée)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6495"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7203"/>
       <source>Enable Instant VU1</source>
-      <translation>Activer « Instant VU1 »</translation>
+      <translation>Activer « Instant VU1 »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6497"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6946"/>
       <source>Enable Cheats</source>
       <translation>Activer les codes de triche</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6498"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6947"/>
       <source>Enables loading cheats from pnach files.</source>
       <translation>Activer le chargement des codes de triche à partir des fichiers pnach.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6499"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6948"/>
       <source>Enable Host Filesystem</source>
       <translation>Activer le système de fichiers hôte</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6500"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6949"/>
       <source>Enables access to files from the host: namespace in the virtual machine.</source>
-      <translation>Activer l'accès aux fichiers de l'hôte dans la machine virtuelle par l'espace de noms « host: ».</translation>
+      <translation>Activer l'accès aux fichiers de l'hôte dans la machine virtuelle par l'espace de noms « host: ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6501"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6950"/>
       <source>Enable Fast CDVD</source>
-      <translation>Activer « Fast CDVD »</translation>
+      <translation>Activer « Fast CDVD »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6502"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6951"/>
       <source>Fast disc access, less loading times. Not recommended.</source>
       <translation>Accès rapide au disque et temps de chargement plus courts. Déconseillé.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6503"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6954"/>
       <source>Frame Pacing/Latency Control</source>
       <translation>Cadence d'image et contrôle de la latence</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6504"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6955"/>
       <source>Maximum Frame Latency</source>
       <translation>Latence d'image maximale</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6505"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
       <source>Sets the number of frames which can be queued.</source>
       <translation>Définissez le nombre d'images pouvant être mises en attente.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6506"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6957"/>
       <source>Optimal Frame Pacing</source>
       <translation>Cadence d'image optimale</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6507"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6958"/>
       <source>Synchronize EE and GS threads after each frame. Lowest input latency, but increases system requirements.</source>
       <translation>Synchroniser les threads EE et GS après chaque image. La latence d'entrée sera minimisée mais cela demandera plus de ressources.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6509"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6962"/>
       <source>Speeds up emulation so that the guest refresh rate matches the host.</source>
       <translation>Accélérer l'émulation pour que le taux de rafraîchissement de l'invité corresponde à celui de l'hôte.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6510"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6965"/>
       <source>Renderer</source>
       <translation>Moteur de rendu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6511"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6966"/>
       <source>Selects the API used to render the emulated GS.</source>
       <translation>Sélectionnez l'API à utiliser pour le rendu du GS émulé.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6512"/>
-      <source>Sync To Host Refresh (VSync)</source>
-      <translation>Synchroniser les rafraîchissements avec l'hôte (VSync)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6513"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6960"/>
       <source>Synchronizes frame presentation with host refresh.</source>
       <translation>Synchroniser la présentation des images avec le rafraîchissement de l'hôte.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6514"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6967"/>
       <source>Display</source>
       <translation>Affichage</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6515"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6968"/>
       <source>Aspect Ratio</source>
       <translation>Format d'image</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6516"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6969"/>
       <source>Selects the aspect ratio to display the game content at.</source>
       <translation>Sélectionnez le format d'image à utiliser pour l'affichage du jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6517"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6970"/>
       <source>FMV Aspect Ratio</source>
       <translation>Format d'image FMV</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6518"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6971"/>
       <source>Selects the aspect ratio for display when a FMV is detected as playing.</source>
       <translation>Sélectionnez le format d'image à utiliser lorsque la lecture d'une cinématique vidéo est détectée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6519"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6972"/>
       <source>Deinterlacing</source>
       <translation>Désentrelacement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6520"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6973"/>
       <source>Selects the algorithm used to convert the PS2&apos;s interlaced output to progressive for display.</source>
       <translation>Sélectionnez l'algorithme à utiliser pour convertir la sortie entrelacée de la PS2 en signal progressif adapté à l'affichage.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6521"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6974"/>
       <source>Screenshot Size</source>
       <translation>Taille des captures d'écran</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6522"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6975"/>
       <source>Determines the resolution at which screenshots will be saved.</source>
       <translation>Déterminez la résolution à laquelle les captures d'écran doivent être enregistrées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6523"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6976"/>
       <source>Screenshot Format</source>
       <translation>Format des captures d'écran</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6524"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6977"/>
       <source>Selects the format which will be used to save screenshots.</source>
       <translation>Sélectionnez le format à utiliser pour enregistrer les captures d'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6525"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6978"/>
       <source>Screenshot Quality</source>
       <translation>Qualité des captures d'écran</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6526"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6979"/>
       <source>Selects the quality at which screenshots will be compressed.</source>
       <translation>Sélectionnez la qualité des captures d'écran compressées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6527"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6980"/>
       <source>Vertical Stretch</source>
       <translation>Étirement vertical</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6528"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
       <source>Increases or decreases the virtual picture size vertically.</source>
       <translation>Agrandir ou réduire verticalement l'image virtuelle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6529"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6982"/>
       <source>Crop</source>
       <translation>Rognage</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6530"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6983"/>
       <source>Crops the image, while respecting aspect ratio.</source>
       <translation>Rogner l'affichage tout en respectant le format d'image.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6531"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6984"/>
       <source>%dpx</source>
       <translation>%d px</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6532"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6985"/>
       <source>Enable Widescreen Patches</source>
       <translation>Activer les patchs écran large</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6533"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6986"/>
       <source>Enables loading widescreen patches from pnach files.</source>
       <translation>Activer le chargement des patchs écran large à partir des fichiers pnach.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6534"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6987"/>
       <source>Enable No-Interlacing Patches</source>
       <translation>Patchs de désactivation de l'entrelacement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6535"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6988"/>
       <source>Enables loading no-interlacing patches from pnach files.</source>
       <translation>Activer le chargement des patchs de désactivation de l'entrelacement à partir des fichiers pnach.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6536"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6989"/>
       <source>Bilinear Upscaling</source>
       <translation>Mise à l'échelle bilinéaire</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6537"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6990"/>
       <source>Smooths out the image when upscaling the console to the screen.</source>
       <translation>La mise à l'échelle bilinéaire lisse l'image lors de la mise à l'échelle de la sortie vidéo de la console à la résolution de l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6538"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6991"/>
       <source>Integer Upscaling</source>
       <translation>Mise à l'échelle par multiplicateur entier</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6539"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6992"/>
       <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games.</source>
       <translation>Ajouter une zone de remplissage autour de la sortie vidéo pour s'assurer que le ratio entre les pixels de l'hôte et les pixels de la console soit un nombre entier. Vous obtiendrez une image plus nette dans certains jeux 2D.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6540"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6993"/>
       <source>Screen Offsets</source>
       <translation>Décalage de l'écran</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6541"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6994"/>
       <source>Enables PCRTC Offsets which position the screen as the game requests.</source>
-      <translation>Activer les « PCRTC Offsets » qui permettent de positionner l'écran comme demandé par le jeu.</translation>
+      <translation>Activer les « PCRTC Offsets » qui permettent de positionner l'écran comme demandé par le jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6542"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6995"/>
       <source>Show Overscan</source>
       <translation>Surbalayage (overscan)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6543"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6996"/>
       <source>Enables the option to show the overscan area on games which draw more than the safe area of the screen.</source>
       <translation>Afficher la zone de surbalayage pour les jeux qui dessinent au-delà de la zone sûre de l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6544"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6997"/>
       <source>Anti-Blur</source>
       <translation>Anti-flou</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6545"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6998"/>
       <source>Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry.</source>
       <translation>Activer les hacks internes anti-flou. L'image sera moins fidèle au rendu PS2 mais cela rendra beaucoup de jeux moins flous.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6546"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6999"/>
       <source>Rendering</source>
       <translation>Rendu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6547"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7000"/>
       <source>Internal Resolution</source>
       <translation>Résolution interne</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6548"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7001"/>
       <source>Multiplies the render resolution by the specified factor (upscaling).</source>
       <translation>Multiplier la résolution du rendu par la valeur spécifiée (mise à l'échelle du rendu).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6549"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7014"/>
       <source>Mipmapping</source>
       <translation>Mipmapping</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6550"/>
-      <source>Determines how mipmaps are used when rendering textures.</source>
-      <translation>Déterminez la manière d'utiliser les mipmaps dans le rendu des textures.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6551"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7002"/>
       <source>Bilinear Filtering</source>
       <translation>Filtrage bilinéaire</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6552"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7003"/>
       <source>Selects where bilinear filtering is utilized when rendering textures.</source>
       <translation>Sélectionnez où utiliser le filtrage bilinéaire dans le rendu des textures.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6553"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7004"/>
       <source>Trilinear Filtering</source>
       <translation>Filtrage trilinéaire</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6554"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7005"/>
       <source>Selects where trilinear filtering is utilized when rendering textures.</source>
       <translation>Sélectionnez où utiliser le filtrage trilinéaire dans le rendu des textures.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6555"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7006"/>
       <source>Anisotropic Filtering</source>
       <translation>Filtrage anisotrope</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6557"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7008"/>
       <source>Dithering</source>
       <translation>Dithering</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6558"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7009"/>
       <source>Selects the type of dithering applies when the game requests it.</source>
       <translation>Sélectionnez le type de dithering à appliquer lorsque le jeu demande son utilisation.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6559"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7010"/>
       <source>Blending Accuracy</source>
       <translation>Précision des fusions</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6560"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7011"/>
       <source>Determines the level of accuracy when emulating blend modes not supported by the host graphics API.</source>
       <translation>Déterminez le niveau de précision de l'émulation des modes de fusion qui ne sont pas pris en charge par le moteur de rendu de l'hôte.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6561"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7012"/>
       <source>Texture Preloading</source>
       <translation>Préchargement des textures</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6562"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7013"/>
       <source>Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games.</source>
       <translation>Transférer au GPU les textures à utiliser dans leur entièreté, plutôt que des régions spécifiques. Cela peut améliorer les performances dans certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6563"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7016"/>
       <source>Software Rendering Threads</source>
       <translation>Threads de rendu logiciel</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6564"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7017"/>
       <source>Number of threads to use in addition to the main GS thread for rasterization.</source>
       <translation>Nombre de threads à utiliser pour la rastérisation en plus du thread principal du GS.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6565"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7018"/>
       <source>Auto Flush (Software)</source>
       <translation>Purge auto. (logiciel)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6566"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7019"/>
       <source>Force a primitive flush when a framebuffer is also an input texture.</source>
       <translation>Forcer une purge des primitives lorsqu'un framebuffer est aussi utilisé comme texture d'entrée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6567"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7020"/>
       <source>Edge AA (AA1)</source>
       <translation>Edge AA (AA1)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6568"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7021"/>
       <source>Enables emulation of the GS&apos;s edge anti-aliasing (AA1).</source>
       <translation>Activer l'émulation de l'edge anti-aliasing du GS (AA1).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6569"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7015"/>
       <source>Enables emulation of the GS&apos;s texture mipmapping.</source>
       <translation>Activer l'émulation du mipmapping des textures du GS.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6570"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7022"/>
       <source>Hardware Fixes</source>
       <translation>Correctifs matériels</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6571"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7023"/>
       <source>Manual Hardware Fixes</source>
       <translation>Correctifs matériels manuels</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6572"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7024"/>
       <source>Disables automatic hardware fixes, allowing you to set fixes manually.</source>
       <translation>Désactiver les correctifs matériels automatiques pour pouvoir choisir manuellement les correctifs à appliquer.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6573"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7025"/>
       <source>CPU Sprite Render Size</source>
       <translation>Taille du rendu CPU des sprites</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6574"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7026"/>
       <source>Uses software renderer to draw texture decompression-like sprites.</source>
       <translation>Utiliser le moteur de rendu logiciel pour les dessins identifiés comme étant de la décompression de textures.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6575"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7027"/>
       <source>CPU Sprite Render Level</source>
       <translation>Niveau du rendu CPU des sprites</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6576"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7028"/>
       <source>Determines filter level for CPU sprite render.</source>
       <translation>Déterminez le niveau de filtre pour le rendu CPU des sprites.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6577"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7029"/>
       <source>Software CLUT Render</source>
       <translation>Rendu logiciel des CLUT</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6578"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7030"/>
       <source>Uses software renderer to draw texture CLUT points/sprites.</source>
       <translation>Utiliser le moteur de rendu logiciel pour dessiner les points et les sprites des textures de palettes.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6579"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7031"/>
       <source>Skip Draw Start</source>
       <translation>Début du Skipdraw</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6580"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7032"/>
       <source>Object range to skip drawing.</source>
       <translation>Valeurs limites des objets à ne pas dessiner.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6581"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7033"/>
       <source>Skip Draw End</source>
       <translation>Fin du Skipdraw</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6582"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7034"/>
       <source>Auto Flush (Hardware)</source>
       <translation>Purge auto. (matériel)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6583"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7035"/>
       <source>CPU Framebuffer Conversion</source>
       <translation>Conversion CPU des framebuffers</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6587"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7037"/>
+      <source>Disable Depth Conversion</source>
+      <translation>Désactiver la conversion des profondeurs</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7039"/>
       <source>Disable Safe Features</source>
       <translation>Désactiver les fonctionnalités sûres</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6588"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7040"/>
       <source>This option disables multiple safe features.</source>
       <translation>Cette option désactive plusieurs fonctionnalités sûres.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6590"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7042"/>
       <source>This option disables game-specific render fixes.</source>
       <translation>Cette option désactive les correctifs de rendu propres à chaque jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6592"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7044"/>
       <source>Uploads GS data when rendering a new frame to reproduce some effects accurately.</source>
       <translation>Transférer les données du GS lors du rendu d'une nouvelle image pour reproduire correctement certains effets.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6593"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7045"/>
       <source>Disable Partial Invalidation</source>
       <translation>Désactiver l'invalidation partielle</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6594"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7046"/>
       <source>Removes texture cache entries when there is any intersection, rather than only the intersected areas.</source>
       <translation>Supprimer les entrées du cache des textures comportant des régions d'autres entrées, plutôt que de supprimer les régions en double.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6596"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7048"/>
       <source>Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.</source>
       <translation>Autoriser le cache des textures à utiliser en texture d'entrée une partie d'un framebuffer précédent.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6597"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7049"/>
       <source>Read Targets When Closing</source>
       <translation>Lire les cibles lors de la fermeture</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6598"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7050"/>
       <source>Flushes all targets in the texture cache back to local memory when shutting down.</source>
       <translation>Au moment d'éteindre la machine virtuelle, transférer les cibles du cache des textures dans la mémoire locale.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6599"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7051"/>
       <source>Estimate Texture Region</source>
       <translation>Estimer la taille des textures</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6600"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7052"/>
       <source>Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).</source>
       <translation>Essayer de réduire la taille des textures lorsque les jeux ne la définissent pas eux-mêmes (exemple : les jeux Snowblind).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6601"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7053"/>
       <source>GPU Palette Conversion</source>
       <translation>Conversion de palette GPU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6603"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7055"/>
       <source>Upscaling Fixes</source>
       <translation>Correctifs de mise à l'échelle</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6605"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7057"/>
       <source>Adjusts vertices relative to upscaling.</source>
       <translation>Ajuster les sommets en fonction du niveau de mise à l'échelle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6606"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7058"/>
       <source>Round Sprite</source>
       <translation>Arrondir les sprites</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6607"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7059"/>
       <source>Adjusts sprite coordinates.</source>
       <translation>Ajuster les coordonnées des sprites.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6608"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7060"/>
       <source>Bilinear Upscale</source>
       <translation>Mise à l'échelle bilinéaire</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6609"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7061"/>
       <source>Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.</source>
       <translation>Cette option permet, lors de la mise à l'échelle, de lisser les textures sur lesquelles le filtrage bilinéaire est appliqué. Exemple : la lueur du soleil dans Brave.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6611"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7063"/>
       <source>Adjusts target texture offsets.</source>
       <translation>Ajuster le décalage des textures cibles.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6613"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7065"/>
       <source>Align Sprite</source>
       <translation>Aligner les sprites</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6614"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7066"/>
       <source>Fixes issues with upscaling (vertical lines) in some games.</source>
       <translation>Corriger des problèmes liés à la mise à l'échelle, comme les lignes verticales apparaissant dans certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6615"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7067"/>
       <source>Merge Sprite</source>
       <translation>Fusionner les sprites</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6616"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7068"/>
       <source>Replaces multiple post-processing sprites with a larger single sprite.</source>
       <translation>Fusionner les sprites sur lesquels le post-traitement doit être appliqué.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6617"/>
-      <source>Wild Arms Hack</source>
-      <translation>Hack « Wild Arms »</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6618"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7070"/>
       <source>Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.</source>
       <translation>Diminuer la précision du GS pour éviter les écarts entre les pixels lors de la mise à l'échelle. Corrige le texte sur les jeux Wild Arms.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6619"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7071"/>
       <source>Unscaled Palette Texture Draws</source>
       <translation>Ne pas redimensionner les textures de palette</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6620"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7072"/>
       <source>Can fix some broken effects which rely on pixel perfect precision.</source>
       <translation>Activer cette option peut corriger certains effets nécessitant une précision au pixel près.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6621"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7073"/>
       <source>Texture Replacement</source>
       <translation>Textures de remplacement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6622"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7074"/>
       <source>Load Textures</source>
       <translation>Charger les textures</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6623"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7075"/>
       <source>Loads replacement textures where available and user-provided.</source>
       <translation>Charger les textures de remplacement fournies par l'utilisateur.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6624"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7076"/>
       <source>Asynchronous Texture Loading</source>
       <translation>Chargement asynchrone des textures</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6625"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7077"/>
       <source>Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled.</source>
       <translation>Charger les textures de remplacement sur un thread séparé afin d'éviter les micro-ralentissements lorsque les textures de remplacement sont activées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6626"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7078"/>
       <source>Precache Replacements</source>
       <translation>Mise en cache anticipée des textures de remplacement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6627"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7079"/>
       <source>Preloads all replacement textures to memory. Not necessary with asynchronous loading.</source>
       <translation>Précharger en mémoire l'ensemble des textures de remplacement. L'activation de cette option n'est pas nécessaire si le chargement asynchrone est activé.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6628"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7080"/>
       <source>Replacements Directory</source>
       <translation>Dossier des textures de remplacement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6629"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7081"/>
       <source>Folders</source>
       <translation>Dossiers</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6630"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7082"/>
       <source>Texture Dumping</source>
       <translation>Dumping des textures</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6631"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7083"/>
       <source>Dump Textures</source>
       <translation>Dumper les textures</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6633"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7085"/>
       <source>Dump Mipmaps</source>
       <translation>Dumper les mipmaps</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6634"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7086"/>
       <source>Includes mipmaps when dumping textures.</source>
       <translation>Inclure les mipmaps lors du dumping des textures.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6635"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7087"/>
       <source>Dump FMV Textures</source>
       <translation>Dumper les textures des FMV</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6636"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7088"/>
       <source>Allows texture dumping when FMVs are active. You should not enable this.</source>
       <translation>Autoriser le dumping des textures lorsqu'une cinématique vidéo est en cours de lecture. Vous ne devriez pas activer cette option.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6637"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7089"/>
       <source>Post-Processing</source>
       <translation>Post-traitement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6638"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7090"/>
       <source>FXAA</source>
       <translation>FXAA</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6639"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7091"/>
       <source>Enables FXAA post-processing shader.</source>
       <translation>Activer le shader de post-traitement FXAA.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6640"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7092"/>
       <source>Contrast Adaptive Sharpening</source>
       <translation>Contrast Adaptive Sharpening</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6641"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7093"/>
       <source>Enables FidelityFX Contrast Adaptive Sharpening.</source>
       <translation>Activer FidelityFX Contrast Adaptive Sharpening.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6642"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7094"/>
       <source>CAS Sharpness</source>
       <translation>Netteté CAS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6643"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7095"/>
       <source>Determines the intensity the sharpening effect in CAS post-processing.</source>
       <translation>Déterminez l'intensité de l'effet de netteté du post-traitement CAS.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6644"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7096"/>
       <source>Filters</source>
       <translation>Filtres</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6645"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7097"/>
       <source>Shade Boost</source>
       <translation>Shade Boost</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6646"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7098"/>
       <source>Enables brightness/contrast/saturation adjustment.</source>
       <translation>Activer l'ajustement de la luminosité, du contraste et de la saturation.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6647"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7099"/>
       <source>Shade Boost Brightness</source>
       <translation>Luminosité Shade Boost</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6648"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7100"/>
       <source>Adjusts brightness. 50 is normal.</source>
       <translation>Ajustez la luminosité. 50 correspond à la luminosité normale.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6649"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7101"/>
       <source>Shade Boost Contrast</source>
       <translation>Contraste Shade Boost</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6650"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7102"/>
       <source>Adjusts contrast. 50 is normal.</source>
       <translation>Ajustez le contraste. 50 correspond au contraste normal.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6651"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7103"/>
       <source>Shade Boost Saturation</source>
       <translation>Saturation Shade Boost</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6652"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7104"/>
       <source>Adjusts saturation. 50 is normal.</source>
       <translation>Ajustez la saturation. 50 correspond à la saturation normale.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6653"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7105"/>
       <source>TV Shaders</source>
       <translation>Shaders TV</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6655"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7107"/>
       <source>Advanced</source>
       <translation>Avancé</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6656"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7108"/>
       <source>Skip Presenting Duplicate Frames</source>
       <translation>Sauter la présentation des images en double</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6658"/>
-      <source>Disable Threaded Presentation</source>
-      <translation>Désactiver la présentation threadée</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6660"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7112"/>
       <source>Hardware Download Mode</source>
       <translation>Mode de téléchargement matériel</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6661"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7113"/>
       <source>Changes synchronization behavior for GS downloads.</source>
       <translation>Modifier la façon dont la synchronisation des téléchargements GS s'effectue.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6662"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7114"/>
       <source>Allow Exclusive Fullscreen</source>
-      <translation>Autoriser le mode plein écran exclusif</translation>
+      <translation>Autoriser le mode Plein écran exclusif</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6663"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7115"/>
       <source>Overrides the driver&apos;s heuristics for enabling exclusive fullscreen, or direct flip/scanout.</source>
-      <translation>Modifier les heuristiques du pilote pour activer le mode plein écran exclusif, aussi appelé « direct flip » ou « direct scanout ».</translation>
+      <translation>Modifier les heuristiques du pilote pour activer le mode Plein écran exclusif, aussi appelé « direct flip » ou « direct scanout ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6664"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7116"/>
       <source>Override Texture Barriers</source>
       <translation>Barrières de texture</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6665"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7117"/>
       <source>Forces texture barrier functionality to the specified value.</source>
       <translation>Choisir le fonctionnement des barrières de texture.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6666"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7118"/>
       <source>GS Dump Compression</source>
       <translation>Compression des dumps du GS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6667"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7119"/>
       <source>Sets the compression algorithm for GS dumps.</source>
       <translation>Définissez l'algorithme de compression à utiliser pour les dumps du GS.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6668"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7120"/>
       <source>Disable Framebuffer Fetch</source>
       <translation>Désactiver la récupération du framebuffer</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6669"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7121"/>
       <source>Prevents the usage of framebuffer fetch when supported by host GPU.</source>
       <translation>Empêcher la récupération du framebuffer par le GPU de l'hôte, s'il prend en charge l'opération.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6670"/>
-      <source>Disable Dual-Source Blending</source>
-      <translation>Désactiver le Dual-Source Blending</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6671"/>
-      <source>Prevents the usage of dual-source blending when supported by host GPU.</source>
-      <translation>Empêcher le GPU de l'hôte d'utiliser le « Dual-Source Blending » (fusion double source), s'il prend en charge l'opération.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6672"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7122"/>
       <source>Disable Shader Cache</source>
       <translation>Désactiver le cache des shaders</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6673"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7123"/>
       <source>Prevents the loading and saving of shaders/pipelines to disk.</source>
       <translation>Empêcher le chargement et l'enregistrement des shaders et des pipelines sur le disque dur.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6674"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7124"/>
       <source>Disable Vertex Shader Expand</source>
       <translation>Désactiver l'expansion par vertex shader</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6675"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7125"/>
       <source>Falls back to the CPU for expanding sprites/lines.</source>
       <translation>Utiliser le CPU pour étendre les sprites et les lignes.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6676"/>
-      <source>Runtime Settings</source>
-      <translation>Paramètres d'exécution</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6677"/>
-      <source>Applies a global volume modifier to all sound produced by the game.</source>
-      <translation>Appliquer un modificateur de volume global aux sons produits par le jeu.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6678"/>
-      <source>Mixing Settings</source>
-      <translation>Paramètres de mixage</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6679"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7133"/>
       <source>Changes when SPU samples are generated relative to system emulation.</source>
       <translation>Modifier le moment où les échantillons SPU doivent être générés par rapport à l'émulation du système.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6680"/>
-      <source>Determines how the stereo output is transformed to greater speaker counts.</source>
-      <translation>Déterminez la manière d'utiliser la sortie stéréo du système émulé avec un nombre plus important de haut-parleurs.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6681"/>
-      <source>Output Settings</source>
-      <translation>Paramètres de sortie</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6682"/>
-      <source>Determines which API is used to play back audio samples on the host.</source>
-      <translation>Déterminez l'API à utiliser pour lire les échantillons audio sur l'hôte.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6683"/>
-      <source>Sets the average output latency when using the cubeb backend.</source>
-      <translation>Définir la latence de sortie moyenne lors de l'utilisation du backend Cubeb.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6684"/>
-      <source>%d ms (avg)</source>
-      <translation>%d ms (moy.)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6685"/>
-      <source>Timestretch Settings</source>
-      <translation>Paramètres TimeStretch</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6686"/>
-      <source>Affects how the timestretcher operates when not running at 100% speed.</source>
-      <translation>Modifier le fonctionnement de TimeStretch lorsque la vitesse d'exécution est différente de 100 %.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6687"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7135"/>
       <source>%d ms</source>
       <translation>%d ms</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6688"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7138"/>
       <source>Settings and Operations</source>
       <translation>Paramètres et opérations</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6689"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7139"/>
       <source>Creates a new memory card file or folder.</source>
       <translation>Créer une nouvelle Memory Card au format fichier ou dossier.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6690"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7140"/>
       <source>Simulates a larger memory card by filtering saves only to the current game.</source>
       <translation>Simuler une Memory Card plus grande en cachant aux jeux les sauvegardes provenant d'autres jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6691"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7141"/>
       <source>If not set, this card will be considered unplugged.</source>
       <translation>En désactivant cette option, la Memory Card est considérée comme retirée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6692"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7142"/>
       <source>The selected memory card image will be used for this slot.</source>
       <translation>L'image de Memory Card sélectionnée sera utilisée dans cette fente.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7131"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7153"/>
+      <source>Enable/Disable the Player LED on DualSense controllers.</source>
+      <translation>Activer/Désactiver l'indicateur de joueur des manettes DualSense.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7159"/>
+      <source>Trigger</source>
+      <translation>Déclencheur</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7160"/>
+      <source>Toggles the macro when the button is pressed, instead of held.</source>
+      <translation>Activez/Désactivez la macro en appuyant sur le bouton plutôt qu'en le maintenant appuyé.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7295"/>
+      <source>{:%H:%M}</source>
+      <translation>{:%H:%M}</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7301"/>
+      <source>Slot {}</source>
+      <translation>Fente {}</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7448"/>
+      <source>WebP</source>
+      <translation>WebP</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7508"/>
+      <source>Change Selection</source>
+      <translation>Changer la sélection</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7509"/>
+      <source>Select</source>
+      <translation>Sélectionner</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7511"/>
+      <source>Parent Directory</source>
+      <translation>Dossier parent</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7512"/>
+      <source>Enter Value</source>
+      <translation>Saisir une valeur</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7513"/>
+      <source>About</source>
+      <translation>À propos</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7514"/>
+      <source>Toggle Fullscreen</source>
+      <translation>Activer/Désactiver le mode Plein écran</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7515"/>
+      <source>Navigate</source>
+      <translation>Naviguer</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7516"/>
+      <source>Load Global State</source>
+      <translation>Charger un état global</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7518"/>
+      <source>Change Page</source>
+      <translation>Changer de page</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7520"/>
+      <source>Return To Game</source>
+      <translation>Retourner au jeu</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7521"/>
+      <source>Select State</source>
+      <translation>Sélectionner un état</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7523"/>
+      <source>Select Game</source>
+      <translation>Sélectionner un jeu</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7524"/>
+      <source>Change View</source>
+      <translation>Changer de mode d'affichage</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7525"/>
+      <source>Launch Options</source>
+      <translation>Options de lancement</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7546"/>
+      <source>Create Save State Backups</source>
+      <translation>Créer une copie des sauvegardes d'état</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7579"/>
       <source>Create Memory Card</source>
       <translation>Créer une Memory Card</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6694"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7144"/>
       <source>Configuration</source>
       <translation>Configuration</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6695"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6866"/>
+      <source>Start Game</source>
+      <translation>Lancer un jeu</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6867"/>
+      <source>Launch a game from a file, disc, or starts the console without any disc inserted.</source>
+      <translation>Lancer un jeu à partir d'un fichier ou d'un disque, ou démarrer la console sans insérer de jeu.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6869"/>
+      <source>Changes settings for the application.</source>
+      <translation>Modifier les paramètres de l'application.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6871"/>
+      <source>Return to desktop mode, or exit the application.</source>
+      <translation>Revenir au mode Bureau ou quitter l'application.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6878"/>
+      <source>Back</source>
+      <translation>Retour</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6879"/>
+      <source>Return to the previous menu.</source>
+      <translation>Revenir au menu précédent.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6880"/>
+      <source>Exit PCSX2</source>
+      <translation>Quitter PCSX2</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6881"/>
+      <source>Completely exits the application, returning you to your desktop.</source>
+      <translation>Quitter entièrement l'application et retourner au bureau.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6882"/>
+      <source>Desktop Mode</source>
+      <translation>Mode Bureau</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6883"/>
+      <source>Exits Big Picture mode, returning to the desktop interface.</source>
+      <translation>Quitter le mode Big Picture et retourner à l'interface bureau.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7145"/>
       <source>Uses game-specific settings for controllers for this game.</source>
       <translation>Utiliser des paramètres des manettes propres à ce jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6696"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7146"/>
       <source>Copies the global controller configuration to this game.</source>
       <translation>Copier les paramètres globaux des manettes dans les paramètres propres à ce jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6697"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7147"/>
       <source>Resets all configuration to defaults (including bindings).</source>
       <translation>Réinitialiser toute la configuration (dont les paramètres des manettes).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6698"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7148"/>
       <source>Replaces these settings with a previously saved input profile.</source>
       <translation>Remplacer les paramètres actuels par les paramètres d'un profil d'entrée enregistré précédemment.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6699"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7149"/>
       <source>Stores the current settings to an input profile.</source>
       <translation>Enregistrer les paramètres actuels dans un profil d'entrée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6700"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7150"/>
       <source>Input Sources</source>
       <translation>Sources d'entrées</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6701"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7151"/>
       <source>The SDL input source supports most controllers.</source>
       <translation>La source d'entrées SDL permet la prise en charge de la plupart des manettes.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6702"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7152"/>
       <source>Provides vibration and LED control support over Bluetooth.</source>
       <translation>Activer la prise en charge des vibrations et le contrôle des LED par Bluetooth.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6703"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7154"/>
       <source>Allow SDL to use raw access to input devices.</source>
       <translation>Autoriser SDL à utiliser l'accès brut aux périphériques d'entrée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6704"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7155"/>
       <source>The XInput source provides support for XBox 360/XBox One/XBox Series controllers.</source>
       <translation>La source XInput permet la prise en charge des manettes Xbox 360, Xbox One et Xbox Series.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6705"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7156"/>
       <source>Multitap</source>
       <translation>Multitap</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6706"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7157"/>
       <source>Enables an additional three controller slots. Not supported in all games.</source>
       <translation>Ajouter trois ports de manette supplémentaires. Le multitap n'est pas pris en charge par tous les jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6707"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7158"/>
       <source>Attempts to map the selected port to a chosen controller.</source>
       <translation>Essayer d'assigner le périphérique de votre choix au port sélectionné.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6709"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7162"/>
       <source>Determines how much pressure is simulated when macro is active.</source>
       <translation>Déterminez la quantité de pression à simuler lors de l'utilisation de la macro.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6710"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7163"/>
       <source>Determines the pressure required to activate the macro.</source>
       <translation>Déterminez la quantité de pression requise pour activer la macro.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6711"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7164"/>
       <source>Toggle every %d frames</source>
       <translation>Alterner l'état toutes les %d images</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6712"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7165"/>
       <source>Clears all bindings for this USB controller.</source>
       <translation>Effacer toutes les associations pour cette manette USB.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6713"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7166"/>
       <source>Data Save Locations</source>
       <translation>Emplacements d'enregistrement des données</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6714"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7623"/>
       <source>Show Advanced Settings</source>
       <translation>Afficher les paramètres avancés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6715"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7167"/>
       <source>Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.</source>
       <translation>Modifier ces options pourrait rendre vos jeux inutilisables. C'est à vos risques et périls : l'équipe PCSX2 ne fournira aucune assistance aux utilisateurs ayant modifié ces paramètres.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6716"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7168"/>
       <source>Logging</source>
       <translation>Journalisation</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6717"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7624"/>
       <source>System Console</source>
       <translation>Console système</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6718"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7169"/>
       <source>Writes log messages to the system console (console window/standard output).</source>
       <translation>Journaliser les événements dans la console système (fenêtre de la console ou sortie standard).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6719"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7625"/>
       <source>File Logging</source>
       <translation>Journalisation dans un fichier</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6720"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7170"/>
       <source>Writes log messages to emulog.txt.</source>
       <translation>Écrire les messages du journal dans le fichier emulog.txt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6721"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7626"/>
       <source>Verbose Logging</source>
       <translation>Journalisation détaillée</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6722"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7171"/>
       <source>Writes dev log messages to log sinks.</source>
       <translation>Envoyer les messages destinés aux développeurs vers les puits de logs.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6723"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7627"/>
       <source>Log Timestamps</source>
       <translation>Horodatage des messages du journal</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6724"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7172"/>
       <source>Writes timestamps alongside log messages.</source>
       <translation>Horodater les messages du journal.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6725"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7628"/>
       <source>EE Console</source>
       <translation>Console EE</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6726"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7173"/>
       <source>Writes debug messages from the game&apos;s EE code to the console.</source>
       <translation>Écrire dans la console les messages de débogage du jeu provenant du code exécuté sur l'EE.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6727"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7629"/>
       <source>IOP Console</source>
       <translation>Console IOP</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6728"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7174"/>
       <source>Writes debug messages from the game&apos;s IOP code to the console.</source>
       <translation>Écrire dans la console les messages de débogage du jeu provenant du code exécuté sur l'IOP.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6729"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7630"/>
       <source>CDVD Verbose Reads</source>
       <translation>Détails des lectures CDVD</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6730"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7175"/>
       <source>Logs disc reads from games.</source>
       <translation>Journaliser les lectures du disque par les jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6731"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7176"/>
       <source>Emotion Engine</source>
       <translation>Emotion Engine</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6732"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7177"/>
       <source>Rounding Mode</source>
       <translation>Rounding Mode</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6733"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7178"/>
       <source>Determines how the results of floating-point operations are rounded. Some games need specific settings.</source>
       <translation>Déterminez la manière d'arrondir les résultats des opérations sur des nombres à virgule flottante. Il peut être nécessaire d'ajuster ce paramètre pour certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6734"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7179"/>
       <source>Division Rounding Mode</source>
       <translation>Division Rounding Mode</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6735"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7180"/>
       <source>Determines how the results of floating-point division is rounded. Some games need specific settings.</source>
       <translation>Déterminez la manière d'arrondir les résultats des divisions avec des nombres à virgule flottante. Il peut être nécessaire d'ajuster ce paramètre pour certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6736"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7181"/>
       <source>Clamping Mode</source>
       <translation>Clamping Mode</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6737"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7182"/>
       <source>Determines how out-of-range floating point numbers are handled. Some games need specific settings.</source>
       <translation>Déterminez la manière de gérer les nombres à virgule flottante hors limites. Il peut être nécessaire d'ajuster ce paramètre pour certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6738"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7183"/>
       <source>Enable EE Recompiler</source>
       <translation>Activer le recompilateur EE</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6739"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7184"/>
       <source>Performs just-in-time binary translation of 64-bit MIPS-IV machine code to native code.</source>
       <translation>Traduire dynamiquement le code machine MIPS-IV 64 bits en code natif.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6740"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7185"/>
       <source>Enable EE Cache</source>
       <translation>Activer le cache de l'EE</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6741"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7186"/>
       <source>Enables simulation of the EE&apos;s cache. Slow.</source>
       <translation>Activer la simulation du cache de l'EE. Activer l'option dégrade les performances.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6742"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7187"/>
       <source>Enable INTC Spin Detection</source>
       <translation>Activer la détection des boucles INTC</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6743"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7188"/>
       <source>Huge speedup for some games, with almost no compatibility side effects.</source>
       <translation>Amélioration colossale des performances de certains jeux. Impact sur la compatibilité très faible.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6744"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7189"/>
       <source>Enable Wait Loop Detection</source>
       <translation>Activer la détection de l'attente active</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6745"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7190"/>
       <source>Moderate speedup for some games, with no known side effects.</source>
       <translation>Amélioration modérée des performances de certains jeux et aucun effet négatif connu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6746"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7191"/>
       <source>Enable Fast Memory Access</source>
       <translation>Activer l'accès rapide à la mémoire</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6747"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7192"/>
       <source>Uses backpatching to avoid register flushing on every memory access.</source>
       <translation>Utiliser le backpatching pour éviter de transférer le contenu des registres dans la mémoire de l'hôte à chaque accès à la mémoire.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6748"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7193"/>
       <source>Vector Units</source>
       <translation>Vector Units</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6749"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7194"/>
       <source>VU0 Rounding Mode</source>
       <translation>VU0 Rounding Mode</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6750"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7195"/>
       <source>VU0 Clamping Mode</source>
       <translation>VU0 Clamping Mode</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6751"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7196"/>
       <source>VU1 Rounding Mode</source>
       <translation>VU1 Rounding Mode</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6752"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7197"/>
       <source>VU1 Clamping Mode</source>
       <translation>VU1 Clamping Mode</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6753"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7198"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
-      <translation>Activer le recompilateur VU0 (mode micro)</translation>
+      <translation>Activer le recompilateur VU0 (mode Micro)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6754"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7199"/>
       <source>New Vector Unit recompiler with much improved compatibility. Recommended.</source>
       <translation>Nouveau recompilateur pour les Vector Units dont la compatibilité a été grandement améliorée. Activation recommandée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6755"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7200"/>
       <source>Enable VU1 Recompiler</source>
       <translation>Activer le recompilateur VU1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6756"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7201"/>
       <source>Enable VU Flag Optimization</source>
       <translation>Activer l'optimisation du VU Status Flag</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6757"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7202"/>
       <source>Good speedup and high compatibility, may cause graphical errors.</source>
       <translation>Bonne amélioration des performances et compatibilité élevée, mais peut causer des problèmes d'affichage.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6758"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7205"/>
       <source>I/O Processor</source>
       <translation>I/O Processor</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6759"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7206"/>
       <source>Enable IOP Recompiler</source>
       <translation>Activer le recompilateur IOP</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6760"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7207"/>
       <source>Performs just-in-time binary translation of 32-bit MIPS-I machine code to native code.</source>
       <translation>Traduire dynamiquement le code machine MIPS-I 32 bits en code natif.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6761"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7208"/>
       <source>Graphics</source>
       <translation>Graphismes</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6762"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7209"/>
       <source>Use Debug Device</source>
       <translation>Utiliser le périphérique de débogage</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6764"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6868"/>
       <source>Settings</source>
       <translation>Paramètres</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6765"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7211"/>
       <source>No cheats are available for this game.</source>
       <translation>Aucun code de triche disponible pour ce jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6766"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7212"/>
       <source>Cheat Codes</source>
       <translation>Codes de triche</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6767"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7213"/>
       <source>No patches are available for this game.</source>
       <translation>Aucun patch disponible pour ce jeu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6768"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7214"/>
       <source>Game Patches</source>
       <translation>Patchs</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6769"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7215"/>
       <source>Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
       <translation>L'activation des codes de triche peut entraîner des comportements imprévisibles tels que des plantages, des soft-locks ou la corruption de vos sauvegardes.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6770"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7216"/>
       <source>Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
       <translation>L'activation des patchs peut entraîner des comportements imprévisibles tels que des plantages, des soft-locks ou la corruption de vos sauvegardes.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6771"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7217"/>
       <source>Use patches at your own risk, the PCSX2 team will provide no support for users who have enabled game patches.</source>
       <translation>Utilisez les patchs à vos risques et périls, l'équipe PCSX2 ne fournira aucune assistance aux utilisateurs qui ont activé les patchs.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6772"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7218"/>
       <source>Game Fixes</source>
       <translation>Correctifs</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6773"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7219"/>
       <source>Game fixes should not be modified unless you are aware of what each option does and the implications of doing so.</source>
       <translation>Ne modifiez pas les correctifs vous-même, à moins que vous compreniez la signification de chaque option et ce que leur activation implique.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6774"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7220"/>
       <source>FPU Multiply Hack</source>
-      <translation>Hack « FPU Multiply »</translation>
+      <translation>Hack « FPU Multiply »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6775"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7221"/>
       <source>For Tales of Destiny.</source>
       <translation>Pour Tales of Destiny.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6780"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7226"/>
       <source>Preload TLB Hack</source>
-      <translation>Hack « Preload TLB »</translation>
+      <translation>Hack « Preload TLB »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6777"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7223"/>
       <source>Needed for some games with complex FMV rendering.</source>
       <translation>Nécessaire pour certains jeux dont le rendu des cinématiques vidéo est complexe.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6778"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7224"/>
       <source>Skip MPEG Hack</source>
-      <translation>Hack « Skip MPEG »</translation>
+      <translation>Hack « Skip MPEG »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6779"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7225"/>
       <source>Skips videos/FMVs in games to avoid game hanging/freezes.</source>
       <translation>Passer les cinématiques vidéo (FMV) des jeux afin d'éviter les freezes.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6786"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7232"/>
       <source>OPH Flag Hack</source>
-      <translation>Hack « OPH Flag »</translation>
+      <translation>Hack « OPH Flag »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6782"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7228"/>
       <source>EE Timing Hack</source>
-      <translation>Hack « EE Timing »</translation>
+      <translation>Hack « EE Timing »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6784"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7230"/>
       <source>Instant DMA Hack</source>
-      <translation>Hack « Instant DMA »</translation>
+      <translation>Hack « Instant DMA »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6791"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7237"/>
       <source>Known to affect following games: Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines.</source>
       <translation>Affecte les jeux connus suivants : Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6793"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7239"/>
       <source>For SOCOM 2 HUD and Spy Hunter loading hang.</source>
       <translation>Pour l'ATH de SOCOM 2 et le freeze pendant les chargements dans Spy Hunter.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6800"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7246"/>
       <source>VU Add Hack</source>
-      <translation>Hack « VU Add »</translation>
+      <translation>Hack « VU Add »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6796"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7242"/>
       <source>Full VU0 Synchronization</source>
       <translation>Synchronisation complète de la VU0</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6797"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7243"/>
       <source>Forces tight VU0 sync on every COP2 instruction.</source>
       <translation>Forcer une synchronisation forte de la VU0 à chaque instruction COP2.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6802"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7248"/>
       <source>VU Overflow Hack</source>
-      <translation>Hack « VU Overflow »</translation>
+      <translation>Hack « VU Overflow »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6803"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7249"/>
       <source>To check for possible float overflows (Superman Returns).</source>
       <translation>Prendre en charge les débordements éventuels des nombres flottants (Superman Returns).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6807"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7253"/>
       <source>Use accurate timing for VU XGKicks (slower).</source>
       <translation>Cadencer précisément les XGKicks des VU (lent).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7053"/>
-      <source>Quadraphonic</source>
-      <translation>Quadriphonique</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6810"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7256"/>
       <source>Load State</source>
       <translation>Charger un état</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6490"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6941"/>
       <source>Makes the emulated Emotion Engine skip cycles. Helps a small subset of games like SOTC. Most of the time it&apos;s harmful to performance.</source>
       <translation>Faire sauter des cycles à l'Emotion Engine émulé. Cette option peut aider un nombre restreint de jeux tels que SOTC. La plupart du temps, activer l'option dégrade les performances.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6494"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6943"/>
       <source>Generally a speedup on CPUs with 4 or more cores. Safe for most games, but a few are incompatible and may hang.</source>
       <translation>Cette option améliore généralement les performances si vous avez un CPU avec 4 cœurs ou plus. Fonctionne bien avec la plupart des jeux, mais certains jeux sont incompatibles et pourraient se bloquer.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6496"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7204"/>
       <source>Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.</source>
       <translation>Exécuter instantanément la VU1. Amélioration modeste des performances dans la plupart des jeux. Fonctionne bien avec la plupart des jeux, mais il pourrait y avoir des problèmes d'affichage dans certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6508"/>
-      <source>Scale To Host Refresh Rate</source>
-      <translation>Utiliser le taux de rafraîchissement de l'hôte</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6585"/>
-      <source>Disable Depth Emulation</source>
-      <translation>Désactiver l'émulation de la profondeur</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6586"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7038"/>
       <source>Disable the support of depth buffers in the texture cache.</source>
       <translation>Désactiver la prise en charge des depth buffers dans le cache des textures.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6589"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7041"/>
       <source>Disable Render Fixes</source>
       <translation>Désactiver les correctifs de rendu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6591"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7043"/>
       <source>Preload Frame Data</source>
       <translation>Précharger les données des images</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6595"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7047"/>
       <source>Texture Inside RT</source>
       <translation>Texture dans la cible du rendu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6602"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7054"/>
       <source>When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU.</source>
       <translation>Lorsque cette option est activée, le GPU convertit les textures utilisant une palette à la place du CPU. C'est un moyen de répartir la charge de travail entre le GPU et le CPU.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6604"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7056"/>
       <source>Half Pixel Offset</source>
       <translation>Décalage demi-pixel</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6610"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7062"/>
       <source>Texture Offset X</source>
       <translation>Décalage X des textures</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6612"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7064"/>
       <source>Texture Offset Y</source>
       <translation>Décalage Y des textures</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6632"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7084"/>
       <source>Dumps replaceable textures to disk. Will reduce performance.</source>
       <translation>Dumper sur le disque les textures pouvant être remplacées. Cela réduira les performances.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6654"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7106"/>
       <source>Applies a shader which replicates the visual effects of different styles of television set.</source>
       <translation>Appliquer un shader qui reproduit les effets visuels de différents types de télévisions.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6657"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7109"/>
       <source>Skips displaying frames that don&apos;t change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing worse.</source>
       <translation>Sauter l'affichage des images identiques à la précédente dans les jeux à 25 ou 30 IPS. Activer cette option peut améliorer les performances au prix d'une latence d'entrée plus importante et d'une cadence d'image dégradée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6659"/>
-      <source>Presents frames on the main GS thread instead of a worker thread. Used for debugging frametime issues.</source>
-      <translation>Présenter les images sur le thread principal du GS plutôt qu'un thread séparé. Cela permet de déboguer les problèmes liés aux durées d'image.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6763"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7210"/>
       <source>Enables API-level validation of graphics commands.</source>
       <translation>Activer la validation au niveau de l'API des commandes graphiques.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6776"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7222"/>
       <source>Use Software Renderer For FMVs</source>
       <translation>Utiliser le moteur de rendu logiciel pour les cinématiques vidéo</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6781"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7227"/>
       <source>To avoid TLB miss on Goemon.</source>
       <translation>Permet d'éviter un TLB Miss pendant l'émulation de Goemon.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6783"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7229"/>
       <source>General-purpose timing hack. Known to affect following games: Digital Devil Saga, SSX.</source>
       <translation>Hack de timing à usage général. Affecte les jeux connus suivants : Digital Devil Saga, SSX.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6785"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7231"/>
       <source>Good for cache emulation problems. Known to affect following games: Fire Pro Wrestling Z.</source>
       <translation>Corriger des problèmes d'émulation du cache. Affecte les jeux connus suivants : Fire Pro Wrestling Z.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6787"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7233"/>
       <source>Known to affect following games: Bleach Blade Battlers, Growlanser II and III, Wizardry.</source>
       <translation>Affecte les jeux connus suivants : Bleach Blade Battlers, Growlanser II et III, Wizardry.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6788"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7234"/>
       <source>Emulate GIF FIFO</source>
       <translation>Émuler le FIFO de la GIF</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6789"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7235"/>
       <source>Correct but slower. Known to affect the following games: Fifa Street 2.</source>
       <translation>Correct mais plus lent. Affecte les jeux connus suivants : FIFA Street 2.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6790"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7236"/>
       <source>DMA Busy Hack</source>
-      <translation>Hack « DMA Busy »</translation>
+      <translation>Hack « DMA Busy »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6792"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7238"/>
       <source>Delay VIF1 Stalls</source>
       <translation>Retarder les arrêts de la VIF1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6794"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7240"/>
       <source>Emulate VIF FIFO</source>
       <translation>Émuler le FIFO de la VIF</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6795"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7241"/>
       <source>Simulate VIF1 FIFO read ahead. Known to affect following games: Test Drive Unlimited, Transformers.</source>
       <translation>Simuler le VIF1 FIFO readahead. Affecte les jeux connus suivants : Test Drive Unlimited, Transformers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6798"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7244"/>
       <source>VU I Bit Hack</source>
-      <translation>Hack « VU I Bit »</translation>
+      <translation>Hack « VU I Bit »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6799"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7245"/>
       <source>Avoids constant recompilation in some games. Known to affect the following games: Scarface The World is Yours, Crash Tag Team Racing.</source>
       <translation>Permet d'éviter de recompiler constamment dans certains jeux. Affecte les jeux connus suivants : Scarface The World is Yours, Crash Tag Team Racing.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6801"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7247"/>
       <source>For Tri-Ace Games: Star Ocean 3, Radiata Stories, Valkyrie Profile 2.</source>
       <translation>Pour les jeux Tri-Ace : Star Ocean 3, Radiata Stories, Valkyrie Profile 2.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6804"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7250"/>
       <source>VU Sync</source>
       <translation>Synchronisation des VU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6805"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7251"/>
       <source>Run behind. To avoid sync problems when reading or writing VU registers.</source>
-      <translation>« Run Behind », éviter les problèmes de synchronisation lors des opérations de lecture et d'écriture dans les registres des VU.</translation>
+      <translation>« Run Behind », éviter les problèmes de synchronisation lors des opérations de lecture et d'écriture dans les registres des VU.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6806"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7252"/>
       <source>VU XGKick Sync</source>
       <translation>Synchronisation par XGKick des VU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6808"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7254"/>
       <source>Force Blit Internal FPS Detection</source>
       <translation>Forcer la détection par BLIT de la fréquence d'images interne</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6811"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7257"/>
       <source>Save State</source>
       <translation>Sauvegarder l'état</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6812"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7258"/>
       <source>Load Resume State</source>
       <translation>Charger la sauvegarde automatique</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6813"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7259"/>
       <source>A resume save state created at %s was found.
 
 Do you want to load this save and continue?</source>
@@ -6608,2102 +6684,2151 @@ Do you want to load this save and continue?</source>
 Voulez-vous charger cette sauvegarde et continuer ?</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6814"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7260"/>
       <source>Region: </source>
       <translation>Région : </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6815"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7261"/>
       <source>Compatibility: </source>
       <translation>Compatibilité : </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6816"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7262"/>
       <source>No Game Selected</source>
       <translation>Aucun jeu sélectionné</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6817"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7264"/>
       <source>Search Directories</source>
       <translation>Dossiers</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6818"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7265"/>
       <source>Adds a new directory to the game search list.</source>
       <translation>Ajouter un nouveau dossier dans lequel rechercher des jeux à ajouter à la liste.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6819"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7266"/>
       <source>Scanning Subdirectories</source>
       <translation>Sous-dossiers à scanner</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6820"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7267"/>
       <source>Not Scanning Subdirectories</source>
       <translation>Pas de scan des sous-dossiers</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6821"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7268"/>
       <source>List Settings</source>
       <translation>Paramètres de la liste</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6822"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7269"/>
       <source>Sets which view the game list will open to.</source>
       <translation>Définissez le mode d'affichage à utiliser lors de l'ouverture de la liste des jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6823"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7270"/>
       <source>Determines which field the game list will be sorted by.</source>
       <translation>Déterminez par quel champ la liste des jeux sera triée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6824"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7271"/>
       <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
       <translation>Inverser l'ordre de tri par défaut de la liste des jeux (en général : croissant > décroissant).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6825"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7272"/>
       <source>Cover Settings</source>
       <translation>Paramètres des jaquettes</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6826"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7273"/>
       <source>Downloads covers from a user-specified URL template.</source>
       <translation>Télécharger les jaquettes à partir d'une URL modèle fournie par l'utilisateur.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6470"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6926"/>
       <source>Operations</source>
       <translation>Opérations</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6556"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7007"/>
       <source>Selects where anisotropic filtering is utilized when rendering textures.</source>
       <translation>Sélectionnez où utiliser le filtrage anisotrope dans le rendu des textures.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6809"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7255"/>
       <source>Use alternative method to calculate internal FPS to avoid false readings in some games.</source>
       <translation>Utiliser une méthode alternative de calcul de la fréquence d'images interne (plus fiable avec certains jeux).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6827"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7274"/>
       <source>Identifies any new files added to the game directories.</source>
-      <translation>Identifier les nouveaux fichiers ajoutés aux dossiers de jeu.</translation>
+      <translation>Identifier les nouveaux fichiers ajoutés aux dossiers à jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6828"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7275"/>
       <source>Forces a full rescan of all games previously identified.</source>
       <translation>Forcer un nouveau scan de tous les jeux précédemment identifiés.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7201"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7657"/>
       <source>Download Covers</source>
       <translation>Télécharger des jaquettes</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6829"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7276"/>
       <source>About PCSX2</source>
       <translation>À propos de PCSX2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6830"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7277"/>
       <source>PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2&apos;s hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.</source>
-      <translation>PCSX2 est un émulateur de PlayStation 2 (PS2) libre et open-source. Il vise à reproduire le comportement du matériel de la PS2 en combinant des interpréteurs et recompilateurs de CPU MIPS, avec une machine virtuelle servant à gérer les états matériels et la mémoire système de la PS2. PCSX2 vous permet de jouer à des jeux de PS2 sur votre PC et d'améliorer votre expérience de jeu en tirant partie du grand nombre de fonctionnalités mises à votre disposition.</translation>
+      <translation>PCSX2 est un émulateur de PlayStation 2 (PS2) libre et open-source. Il vise à reproduire le comportement du matériel de la PS2 en combinant des interpréteurs et des recompilateurs de CPU MIPS avec une machine virtuelle gérant l'état du matériel et la mémoire du système PS2. PCSX2 vous permet de jouer à des jeux de PS2 sur votre PC et d'améliorer votre expérience de jeu en tirant partie du grand nombre de fonctionnalités mises à votre disposition.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6831"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7278"/>
       <source>PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.</source>
       <translation>PlayStation 2 et PS2 sont des marques déposées de Sony Interactive Entertainment. Cette application n'est pas affiliée de quelque manière que ce soit à Sony Interactive Entertainment.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6832"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7279"/>
       <source>When enabled and logged in, PCSX2 will scan for achievements on startup.</source>
       <translation>Lorsque cette option est activée et que vous êtes connecté(e) à RetroAchievements, PCSX2 scanne les succès à son lancement.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6833"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7280"/>
       <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-      <translation>Activer le mode défi et les classements. La sauvegarde d'état, les codes de triche et le ralenti seront désactivés.</translation>
+      <translation>Activer le mode Défi et les classements. La sauvegarde d'état, les codes de triche et le ralenti seront désactivés.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6834"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7281"/>
       <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
       <translation>Afficher un pop-up lors d'événements tels qu'un succès déverrouillé ou la participation à un classement.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6836"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7283"/>
       <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
       <translation>Jouer des effets sonores lors d'événements tels qu'un succès déverrouillé ou la participation à un classement.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6837"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7284"/>
       <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
       <translation>Afficher l'icône des succès pouvant être débloqués dans le coin inférieur droit de l'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6840"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7287"/>
       <source>When enabled, PCSX2 will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
       <translation>Lorsque cette option est activée, PCSX2 liste les succès provenant d'ensembles non officiels. RetroAchievements n'effectue pas le suivi de ces succès.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6839"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7286"/>
       <source>When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.</source>
       <translation>Lorsque cette option est activée, PCSX2 considère que tous les succès sont verrouillés et aucune notification de déverrouillage n'est envoyée au serveur.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6835"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6836"/>
+      <source>Error</source>
+      <translation>Erreur</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6901"/>
+      <source>Pauses the emulator when a controller with bindings is disconnected.</source>
+      <translation>Mettre en pause l'émulateur lorsqu'une manette associée est déconnectée.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6905"/>
+      <source>Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix</source>
+      <translation>Lors de la création d'une sauvegarde d'état, créer une copie de la sauvegarde existante. La copie de sauvegarde porte le suffixe .backup</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6952"/>
+      <source>Enable CDVD Precaching</source>
+      <translation>Activer la mise en précache CDVD</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6953"/>
+      <source>Loads the disc image into RAM before starting the virtual machine.</source>
+      <translation>Charger l'image disque en RAM avant de démarrer la machine virtuelle.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6959"/>
+      <source>Vertical Sync (VSync)</source>
+      <translation>Synchronisation verticale (VSync)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6961"/>
+      <source>Sync to Host Refresh Rate</source>
+      <translation>Synchronisation avec le taux de rafraîchissement de l'hôte</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6963"/>
+      <source>Use Host VSync Timing</source>
+      <translation>Utiliser le timing VSync de l'hôte</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6964"/>
+      <source>Disables PCSX2&apos;s internal frame timing, and uses host vsync instead.</source>
+      <translation>Désactiver le timing d'image interne de PCSX2 et utiliser la VSync de l'hôte à la place.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7110"/>
+      <source>Disable Mailbox Presentation</source>
+      <translation>Désactiver le mode de présentation Mailbox</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7111"/>
+      <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
+      <translation>Forcer l'utilisation du mode de présentation FIFO à la place du mode Mailbox, c'est-à-dire l'utilisation du double buffering à la place du triple buffering. Cela dégrade généralement la cadence d'image.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7126"/>
+      <source>Audio Control</source>
+      <translation>Contrôle de l'audio</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7127"/>
+      <source>Controls the volume of the audio played on the host.</source>
+      <translation>Contrôlez le volume de l'audio joué sur l'hôte.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7571"/>
+      <source>Fast Forward Volume</source>
+      <translation>Volume pendant l'avance rapide</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7128"/>
+      <source>Controls the volume of the audio played on the host when fast forwarding.</source>
+      <translation>Contrôlez le volume de l'audio joué sur l'hôte pendant l'avance rapide.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7572"/>
+      <source>Mute All Sound</source>
+      <translation>Couper tous les sons</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7129"/>
+      <source>Prevents the emulator from producing any audible sound.</source>
+      <translation>Empêcher l'émulateur de produire tout son audible.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7130"/>
+      <source>Backend Settings</source>
+      <translation>Paramètres de backend</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7573"/>
+      <source>Audio Backend</source>
+      <translation>Backend audio</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7131"/>
+      <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
+      <translation>Le backend audio détermine la manière dont les trames audio produites par l'émulateur sont transmises à l'hôte.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7574"/>
+      <source>Expansion</source>
+      <translation>Upmixing</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7132"/>
+      <source>Determines how audio is expanded from stereo to surround for supported games.</source>
+      <translation>Déterminez la manière de transformer le son stéréo en son surround dans les jeux pris en charge.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7575"/>
+      <source>Synchronization</source>
+      <translation>Synchronisation</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7576"/>
+      <source>Buffer Size</source>
+      <translation>Taille du tampon</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7134"/>
+      <source>Determines the amount of audio buffered before being pulled by the host API.</source>
+      <translation>Déterminez la durée audio à mettre en mémoire tampon avant qu'elle soit récupérée par l'API hôte.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7577"/>
+      <source>Output Latency</source>
+      <translation>Latence de sortie</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7136"/>
+      <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
+      <translation>Déterminez la latence entre le moment où l'audio est récupéré par l'API hôte, et le moment où il est joué sur les haut-parleurs.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7578"/>
+      <source>Minimal Output Latency</source>
+      <translation>Latence de sortie minimale</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7137"/>
+      <source>When enabled, the minimum supported output latency will be used for the host API.</source>
+      <translation>Lorsque cette option est activée, l'API hôte utilise la latence de sortie la plus faible possible.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6944"/>
+      <source>Thread Pinning</source>
+      <translation>Épinglage des threads</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7069"/>
+      <source>Force Even Sprite Position</source>
+      <translation>Forcer une position des sprites paire</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7282"/>
       <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
       <translation>Afficher un pop-up lorsqu'un défi débute, lors de l'envoi de votre participation et lorsque vous échouez.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6838"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7285"/>
       <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
       <translation>Lorsque cette option est activée, chaque session se comporte comme si tous les succès étaient verrouillés.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6841"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7288"/>
       <source>Account</source>
       <translation>Compte</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6842"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7289"/>
       <source>Logs out of RetroAchievements.</source>
       <translation>Se déconnecter de RetroAchievements.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6843"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7290"/>
       <source>Logs in to RetroAchievements.</source>
       <translation>Se connecter à RetroAchievements.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6844"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7291"/>
       <source>Current Game</source>
       <translation>Jeu actuel</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6845"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7292"/>
+      <source>An error occurred while deleting empty game settings:
+{}</source>
+      <translation>Une erreur s'est produite lors de la suppression des paramètres de jeu vides :
+{}</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7293"/>
+      <source>An error occurred while saving game settings:
+{}</source>
+      <translation>Une erreur s'est produite lors de l'enregistrement des paramètres de jeu :
+{}</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7294"/>
       <source>{} is not a valid disc image.</source>
       <translation>{} n'est pas une image disque valide.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6847"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7297"/>
       <source>Automatic mapping completed for {}.</source>
       <translation>Association automatique de {} réussie.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6848"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7298"/>
       <source>Automatic mapping failed for {}.</source>
       <translation>Association automatique de {} échouée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6849"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7299"/>
       <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
-      <translation>Les paramètres du jeu ont été initialisés aux paramètres globaux pour « {} ».</translation>
+      <translation>Les paramètres du jeu ont été initialisés aux paramètres globaux pour « {} ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6850"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7300"/>
       <source>Game settings have been cleared for &apos;{}&apos;.</source>
-      <translation>Les paramètres du jeu ont été effacés pour « {} ».</translation>
+      <translation>Les paramètres du jeu ont été effacés pour « {} ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6851"/>
-      <source>Console Port {}</source>
-      <translation>Fente {}</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6852"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7302"/>
       <source>{} (Current)</source>
       <translation>{} (actuel)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6853"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7303"/>
       <source>{} (Folder)</source>
       <translation>{} (dossier)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6854"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7304"/>
       <source>Failed to load &apos;{}&apos;.</source>
-      <translation>Échec du chargement de « {} ».</translation>
+      <translation>Échec du chargement de « {} ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6855"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7305"/>
       <source>Input profile &apos;{}&apos; loaded.</source>
-      <translation>Profil d'entrée « {} » chargé.</translation>
+      <translation>Profil d'entrée « {} » chargé.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6856"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7306"/>
       <source>Input profile &apos;{}&apos; saved.</source>
-      <translation>Profil d'entrée « {} » enregistré.</translation>
+      <translation>Profil d'entrée « {} » enregistré.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6857"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7307"/>
       <source>Failed to save input profile &apos;{}&apos;.</source>
-      <translation>Échec de l'enregistrement du profil « {} ».</translation>
+      <translation>Échec de l'enregistrement du profil « {} ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6858"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7308"/>
       <source>Port {} Controller Type</source>
       <translation>Type de manette (port {})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6859"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7309"/>
       <source>Select Macro {} Binds</source>
       <translation>Sélectionnez les associations de la macro {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6861"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7311"/>
       <source>Port {} Device</source>
       <translation>Périphérique port {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6862"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7312"/>
       <source>Port {} Subtype</source>
       <translation>Sous-type port {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6863"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7313"/>
       <source>{} unlabelled patch codes will automatically activate.</source>
       <translation>{} codes de patch sans libellé seront activés automatiquement.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6864"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7314"/>
       <source>{} unlabelled patch codes found but not enabled.</source>
       <translation>{} codes de patch sans libellé ont été trouvés mais ils ne seront pas activés.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6865"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7315"/>
       <source>This Session: {}</source>
       <translation>Session actuelle : {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6866"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7316"/>
       <source>All Time: {}</source>
       <translation>Temps total : {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6867"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7317"/>
       <source>Save Slot {0}</source>
       <translation>Emplacement {0}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6868"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7318"/>
       <source>Saved {}</source>
       <translation>Sauvegardé : {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6869"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7319"/>
       <source>{} does not exist.</source>
       <translation>{} n'existe pas.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6870"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7320"/>
       <source>{} deleted.</source>
       <translation>{} supprimé.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6871"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7321"/>
       <source>Failed to delete {}.</source>
       <translation>Échec de la suppression de {}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6872"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7322"/>
       <source>File: {}</source>
       <translation>Fichier : {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6873"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7323"/>
       <source>CRC: {:08X}</source>
       <translation>CRC : {:08X}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6874"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7324"/>
       <source>Time Played: {}</source>
       <translation>Temps de jeu : {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6875"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7325"/>
       <source>Last Played: {}</source>
       <translation>Dernier lancement : {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6876"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7326"/>
       <source>Size: {:.2f} MB</source>
       <translation>Taille : {:.2f} Mo</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6877"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7327"/>
       <source>Left: </source>
       <translation>Gauche : </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6878"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7328"/>
       <source>Top: </source>
       <translation>Haut : </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6879"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7329"/>
       <source>Right: </source>
       <translation>Droite : </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6880"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7330"/>
       <source>Bottom: </source>
       <translation>Bas : </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6881"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7331"/>
       <source>Summary</source>
       <translation>Résumé</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6882"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7332"/>
       <source>Interface Settings</source>
       <translation>Paramètres de l'interface</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6883"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7333"/>
       <source>BIOS Settings</source>
       <translation>Paramètres BIOS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6884"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7334"/>
       <source>Emulation Settings</source>
       <translation>Paramètres d'émulation</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6885"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7335"/>
       <source>Graphics Settings</source>
       <translation>Paramètres des graphismes</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6886"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7336"/>
       <source>Audio Settings</source>
       <translation>Paramètres audio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6887"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7337"/>
       <source>Memory Card Settings</source>
       <translation>Paramètres Memory Card</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6888"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7338"/>
       <source>Controller Settings</source>
       <translation>Paramètres des manettes</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6889"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7339"/>
       <source>Hotkey Settings</source>
       <translation>Paramètres des raccourcis</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6890"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7340"/>
       <source>Achievements Settings</source>
       <translation>Paramètres des succès</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6891"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7341"/>
       <source>Folder Settings</source>
       <translation>Paramètres des dossiers</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6892"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7342"/>
       <source>Advanced Settings</source>
       <translation>Paramètres avancés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6893"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7343"/>
       <source>Patches</source>
       <translation>Patchs</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6894"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7344"/>
       <source>Cheats</source>
       <translation>Triche</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6895"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7345"/>
       <source>2% [1 FPS (NTSC) / 1 FPS (PAL)]</source>
       <translation>2 % [1 IPS (NTSC), 1 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6896"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7346"/>
       <source>10% [6 FPS (NTSC) / 5 FPS (PAL)]</source>
       <translation>10 % [6 IPS (NTSC), 5 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6897"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7347"/>
       <source>25% [15 FPS (NTSC) / 12 FPS (PAL)]</source>
       <translation>25 % [15 IPS (NTSC), 12 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6898"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7348"/>
       <source>50% [30 FPS (NTSC) / 25 FPS (PAL)]</source>
       <translation>50 % [30 IPS (NTSC), 25 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6899"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7349"/>
       <source>75% [45 FPS (NTSC) / 37 FPS (PAL)]</source>
       <translation>75 % [45 IPS (NTSC), 37 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6900"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7350"/>
       <source>90% [54 FPS (NTSC) / 45 FPS (PAL)]</source>
       <translation>90 % [54 IPS (NTSC), 45 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6901"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7351"/>
       <source>100% [60 FPS (NTSC) / 50 FPS (PAL)]</source>
       <translation>100 % [60 IPS (NTSC), 50 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6902"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7352"/>
       <source>110% [66 FPS (NTSC) / 55 FPS (PAL)]</source>
       <translation>110 % [66 IPS (NTSC), 55 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6903"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7353"/>
       <source>120% [72 FPS (NTSC) / 60 FPS (PAL)]</source>
       <translation>120 % [72 IPS (NTSC), 60 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6904"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7354"/>
       <source>150% [90 FPS (NTSC) / 75 FPS (PAL)]</source>
       <translation>150 % [90 IPS (NTSC), 75 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6905"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7355"/>
       <source>175% [105 FPS (NTSC) / 87 FPS (PAL)]</source>
       <translation>175 % [105 IPS (NTSC), 87 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6906"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7356"/>
       <source>200% [120 FPS (NTSC) / 100 FPS (PAL)]</source>
       <translation>200 % [120 IPS (NTSC), 100 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6907"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7357"/>
       <source>300% [180 FPS (NTSC) / 150 FPS (PAL)]</source>
       <translation>300 % [180 IPS (NTSC), 150 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6908"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7358"/>
       <source>400% [240 FPS (NTSC) / 200 FPS (PAL)]</source>
       <translation>400 % [240 IPS (NTSC), 200 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6909"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7359"/>
       <source>500% [300 FPS (NTSC) / 250 FPS (PAL)]</source>
       <translation>500 % [300 IPS (NTSC), 250 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6910"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7360"/>
       <source>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</source>
       <translation>1000 % [600 IPS (NTSC), 500 IPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6911"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7361"/>
       <source>50% Speed</source>
       <translation>50 %</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6912"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7362"/>
       <source>60% Speed</source>
       <translation>60 %</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6913"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7363"/>
       <source>75% Speed</source>
       <translation>75 %</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6914"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7364"/>
       <source>100% Speed (Default)</source>
       <translation>100 % (par défaut)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6915"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7365"/>
       <source>130% Speed</source>
       <translation>130 %</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6916"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7366"/>
       <source>180% Speed</source>
       <translation>180 %</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6917"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7367"/>
       <source>300% Speed</source>
       <translation>300 %</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6918"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7368"/>
       <source>Normal (Default)</source>
       <translation>Normal (par défaut)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6919"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7369"/>
       <source>Mild Underclock</source>
       <translation>Underclock léger</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6920"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7370"/>
       <source>Moderate Underclock</source>
       <translation>Underclock modéré</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6921"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7371"/>
       <source>Maximum Underclock</source>
       <translation>Underclock maximal</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6922"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7465"/>
       <source>Disabled</source>
       <translation>Désactivé</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6923"/>
-      <source>EE &gt; VU &gt; GS</source>
-      <translation>EE &gt; VU &gt; GS</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6924"/>
-      <source>EE &gt; GS &gt; VU</source>
-      <translation>EE &gt; GS &gt; VU</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6925"/>
-      <source>VU &gt; EE &gt; GS</source>
-      <translation>VU &gt; EE &gt; GS</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6926"/>
-      <source>VU &gt; GS &gt; EE</source>
-      <translation>VU &gt; GS &gt; EE</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6927"/>
-      <source>GS &gt; EE &gt; VU</source>
-      <translation>GS &gt; EE &gt; VU</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6928"/>
-      <source>GS &gt; VU &gt; EE</source>
-      <translation>GS &gt; VU &gt; EE</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6929"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7372"/>
       <source>0 Frames (Hard Sync)</source>
       <translation>0 image (synchronisation forte)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6930"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7373"/>
       <source>1 Frame</source>
       <translation>1 image</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6931"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7374"/>
       <source>2 Frames</source>
       <translation>2 images</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6932"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7375"/>
       <source>3 Frames</source>
       <translation>3 images</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6933"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7376"/>
       <source>None</source>
       <translation>Aucun</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6934"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7377"/>
       <source>Extra + Preserve Sign</source>
       <translation>Extra + préserver le signe</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7378"/>
       <source>Full</source>
       <translation>Complet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6936"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7379"/>
       <source>Extra</source>
       <translation>Extra</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6937"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7380"/>
       <source>Automatic (Default)</source>
       <translation>Automatique (par défaut)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6938"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7381"/>
       <source>Direct3D 11</source>
       <translation>Direct3D 11</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6939"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7382"/>
       <source>Direct3D 12</source>
       <translation>Direct3D 12</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6940"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7383"/>
       <source>OpenGL</source>
       <translation>OpenGL</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6941"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7384"/>
       <source>Vulkan</source>
       <translation>Vulkan</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6942"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7385"/>
       <source>Metal</source>
       <translation>Metal</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6943"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7386"/>
       <source>Software</source>
       <translation>Logiciel</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6944"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7387"/>
       <source>Null</source>
       <translation>Inactif</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6945"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7388"/>
       <source>Off</source>
-      <translation>Désactivé(e)</translation>
+      <translation>Désactivé</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6946"/>
-      <source>On</source>
-      <translation>Activé(e)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6947"/>
-      <source>Adaptive</source>
-      <translation>Adaptatif</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6948"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7389"/>
       <source>Bilinear (Smooth)</source>
       <translation>Bilinéaire (lisse)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6949"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7390"/>
       <source>Bilinear (Sharp)</source>
       <translation>Bilinéaire (net)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6951"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7392"/>
       <source>Weave (Top Field First, Sawtooth)</source>
       <translation>Weave (trame du haut en premier, effet dents de scie)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6952"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7393"/>
       <source>Weave (Bottom Field First, Sawtooth)</source>
       <translation>Weave (trame du bas en premier, effet dents de scie)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6953"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7394"/>
       <source>Bob (Top Field First)</source>
       <translation>Bob (trame du haut en premier)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6954"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7395"/>
       <source>Bob (Bottom Field First)</source>
       <translation>Bob (trame du bas en premier)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6955"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7396"/>
       <source>Blend (Top Field First, Half FPS)</source>
       <translation>Blend (trame du haut en premier, IPS divisées de moitié)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7397"/>
       <source>Blend (Bottom Field First, Half FPS)</source>
       <translation>Blend (trame du bas en premier, IPS divisées de moitié)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6957"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7398"/>
       <source>Adaptive (Top Field First)</source>
       <translation>Adaptatif (trame du haut en premier)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6958"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7399"/>
       <source>Adaptive (Bottom Field First)</source>
       <translation>Adaptatif (trame du bas en premier)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6959"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7400"/>
       <source>Native (PS2)</source>
       <translation>Native (PS2)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6960"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7401"/>
       <source>1.25x Native</source>
       <translation>1.25x Native</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6961"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7402"/>
       <source>1.5x Native</source>
       <translation>1.5x Native</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6962"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7403"/>
       <source>1.75x Native</source>
       <translation>1.75x Native</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6963"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7404"/>
       <source>2x Native (~720p)</source>
       <translation>2x Native (~720p)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6964"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7405"/>
       <source>2.25x Native</source>
       <translation>2.25x Native</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6965"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7406"/>
       <source>2.5x Native</source>
       <translation>2.5x Native</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6966"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7407"/>
       <source>2.75x Native</source>
       <translation>2.75x Native</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6967"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7408"/>
       <source>3x Native (~1080p)</source>
       <translation>3x Native (~1080p)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6968"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7409"/>
       <source>3.5x Native</source>
       <translation>3.5x Native</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6969"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7410"/>
       <source>4x Native (~1440p/2K)</source>
       <translation>4x Native (~1440p/2K)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6970"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7411"/>
       <source>5x Native (~1620p)</source>
       <translation>5x Native (~1620p)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6971"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7412"/>
       <source>6x Native (~2160p/4K)</source>
       <translation>6x Native (~2160p/4K)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6972"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7413"/>
       <source>7x Native (~2520p)</source>
       <translation>7x Native (~2520p)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6973"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7414"/>
       <source>8x Native (~2880p)</source>
       <translation>8x Native (~2880p)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6974"/>
-      <source>Basic (Generated Mipmaps)</source>
-      <translation>Basique (mipmaps générées)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6975"/>
-      <source>Full (PS2 Mipmaps)</source>
-      <translation>Complet (mipmaps PS2)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6976"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7415"/>
       <source>Nearest</source>
       <translation>Nearest (au plus proche)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6977"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7416"/>
       <source>Bilinear (Forced)</source>
       <translation>Bilinéaire (forcé)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6978"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7417"/>
       <source>Bilinear (PS2)</source>
       <translation>Bilinéaire (PS2)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6979"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7418"/>
       <source>Bilinear (Forced excluding sprite)</source>
       <translation>Bilinéaire (forcé, sprites exclus)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6980"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7419"/>
       <source>Off (None)</source>
       <translation>Désactivé</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7420"/>
       <source>Trilinear (PS2)</source>
       <translation>Trilinéaire (PS2)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6982"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7421"/>
       <source>Trilinear (Forced)</source>
       <translation>Trilinéaire (forcé)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6983"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7422"/>
       <source>Scaled</source>
       <translation>Mis à l'échelle</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6984"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7423"/>
       <source>Unscaled (Default)</source>
       <translation>Taille originale (par défaut)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6985"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7425"/>
       <source>Minimum</source>
       <translation>Minimale</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6986"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7426"/>
       <source>Basic (Recommended)</source>
       <translation>Basique (recommandé)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6987"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7427"/>
       <source>Medium</source>
       <translation>Moyenne</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6988"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7428"/>
       <source>High</source>
       <translation>Élevée</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6989"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7429"/>
       <source>Full (Slow)</source>
       <translation>Complète (lent)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6990"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7430"/>
       <source>Maximum (Very Slow)</source>
       <translation>Maximale (très lent)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6991"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7431"/>
       <source>Off (Default)</source>
       <translation>Désactivé (par défaut)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6992"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7432"/>
       <source>2x</source>
       <translation>2x</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6993"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7433"/>
       <source>4x</source>
       <translation>4x</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6994"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7434"/>
       <source>8x</source>
       <translation>8x</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6995"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7435"/>
       <source>16x</source>
       <translation>16x</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6996"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7436"/>
       <source>Partial</source>
       <translation>Partiel</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6997"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7437"/>
       <source>Full (Hash Cache)</source>
       <translation>Complet (Hash Cache)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6998"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7438"/>
       <source>Force Disabled</source>
       <translation>Désactivé (forcé)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6999"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7439"/>
       <source>Force Enabled</source>
       <translation>Activé (forcé)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7000"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7440"/>
       <source>Accurate (Recommended)</source>
       <translation>Précis (recommandé)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7001"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7441"/>
       <source>Disable Readbacks (Synchronize GS Thread)</source>
       <translation>Désactiver les readbacks (synchroniser le thread GS)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7002"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7442"/>
       <source>Unsynchronized (Non-Deterministic)</source>
       <translation>Non synchronisé (non-déterministe)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7003"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7443"/>
       <source>Disabled (Ignore Transfers)</source>
       <translation>Désactivé (ignorer les transferts)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7004"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7444"/>
       <source>Screen Resolution</source>
       <translation>Résolution d'affichage</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7005"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7445"/>
       <source>Internal Resolution (Aspect Uncorrected)</source>
       <translation>Résolution interne (format original)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7081"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7528"/>
       <source>WARNING: Memory Card Busy</source>
       <translation>ATTENTION : Memory Card occupée</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7092"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7535"/>
       <source>Cannot show details for games which were not scanned in the game list.</source>
       <translation>Impossible d'afficher les détails des jeux ne faisant pas partie de la liste des jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7154"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7542"/>
+      <source>Pause On Controller Disconnection</source>
+      <translation>Mettre en pause lorsqu'une manette est déconnectée</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7589"/>
+      <source>SDL DualSense Player LED</source>
+      <translation>Indicateur de joueur des manettes DualSense (SDL)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7602"/>
+      <source>Press To Toggle</source>
+      <translation>Appuyer pour activer/désactiver</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7604"/>
       <source>Deadzone</source>
       <translation>Zone morte</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7191"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7647"/>
       <source>Full Boot</source>
       <translation>Démarrage complet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7212"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7668"/>
       <source>Achievement Notifications</source>
       <translation>Notifications succès</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7213"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7669"/>
       <source>Leaderboard Notifications</source>
       <translation>Notifications classement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7215"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7671"/>
       <source>Enable In-Game Overlays</source>
       <translation>Activer les overlays</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7216"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7672"/>
       <source>Encore Mode</source>
-      <translation>Mode encore</translation>
+      <translation>Mode Encore</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7217"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7673"/>
       <source>Spectator Mode</source>
-      <translation>Mode spectateur</translation>
+      <translation>Mode Spectateur</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7006"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7446"/>
       <source>PNG</source>
       <translation>PNG</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6429"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6884"/>
       <source>-</source>
       <translation>–</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6584"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7036"/>
       <source>Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU.</source>
       <translation>Utiliser le CPU pour convertir les framebuffers 4 bits et 8 bits plutôt que le GPU.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6693"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7143"/>
       <source>Removes the current card from the slot.</source>
       <translation>Retirer la Memory Card actuelle de la fente.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6708"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7161"/>
       <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
       <translation>Déterminez la fréquence à laquelle la macro doit alterner l'état des touches (autofire).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6860"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7310"/>
       <source>{} Frames</source>
       <translation>{} images</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6950"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7391"/>
       <source>No Deinterlacing</source>
       <translation>Désactivé</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7007"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7424"/>
+      <source>Force 32bit</source>
+      <translation>Forcer 32 bits</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7447"/>
       <source>JPEG</source>
       <translation>JPEG</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7008"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7449"/>
       <source>0 (Disabled)</source>
       <translation>0 (désactivé)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7009"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7450"/>
       <source>1 (64 Max Width)</source>
       <translation>1 (Largeur max. : 64)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7010"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7451"/>
       <source>2 (128 Max Width)</source>
       <translation>2 (Largeur max. : 128)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7011"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7452"/>
       <source>3 (192 Max Width)</source>
       <translation>3 (Largeur max. : 192)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7012"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7453"/>
       <source>4 (256 Max Width)</source>
       <translation>4 (Largeur max. : 256)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7013"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7454"/>
       <source>5 (320 Max Width)</source>
       <translation>5 (Largeur max. : 320)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7014"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7455"/>
       <source>6 (384 Max Width)</source>
       <translation>6 (Largeur max. : 384)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7015"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7456"/>
       <source>7 (448 Max Width)</source>
       <translation>7 (Largeur max. : 448)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7016"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7457"/>
       <source>8 (512 Max Width)</source>
       <translation>8 (Largeur max. : 512)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7017"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7458"/>
       <source>9 (576 Max Width)</source>
       <translation>9 (Largeur max. : 576)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7018"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7459"/>
       <source>10 (640 Max Width)</source>
       <translation>10 (Largeur max. : 640)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7019"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7460"/>
       <source>Sprites Only</source>
       <translation>Sprites uniquement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7020"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7461"/>
       <source>Sprites/Triangles</source>
       <translation>Sprites et triangles</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7021"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7462"/>
       <source>Blended Sprites/Triangles</source>
       <translation>Sprites et triangles mélangés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7022"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7463"/>
       <source>1 (Normal)</source>
       <translation>1 (normal)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7023"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7464"/>
       <source>2 (Aggressive)</source>
       <translation>2 (agressif)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7024"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7466"/>
       <source>Inside Target</source>
       <translation>Dans la cible</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7025"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7467"/>
       <source>Merge Targets</source>
       <translation>Fusionner les cibles</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7026"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7468"/>
       <source>Normal (Vertex)</source>
       <translation>Normal (sommet)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7027"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7469"/>
       <source>Special (Texture)</source>
       <translation>Spécial (texture)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7028"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7470"/>
       <source>Special (Texture - Aggressive)</source>
       <translation>Spécial (texture, agressif)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7029"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7471"/>
       <source>Align To Native</source>
       <translation>Aligner au rendu à la résolution native</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7030"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7472"/>
       <source>Half</source>
       <translation>Moitié</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7031"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7473"/>
       <source>Force Bilinear</source>
-      <translation>Forcer « bilinéaire »</translation>
+      <translation>Forcer « bilinéaire »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7032"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7474"/>
       <source>Force Nearest</source>
-      <translation>Forcer « au plus proche »</translation>
+      <translation>Forcer « au plus proche »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7033"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7475"/>
       <source>Disabled (Default)</source>
       <translation>Désactivé (par défaut)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7034"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7476"/>
       <source>Enabled (Sprites Only)</source>
       <translation>Activé (sprites uniquement)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7035"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7477"/>
       <source>Enabled (All Primitives)</source>
       <translation>Activé (toutes les primitives)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7036"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7478"/>
       <source>None (Default)</source>
       <translation>Désactivé (par défaut)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7037"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7479"/>
       <source>Sharpen Only (Internal Resolution)</source>
       <translation>Netteté uniquement (résolution interne)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7038"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7480"/>
       <source>Sharpen and Resize (Display Resolution)</source>
       <translation>Netteté et mise à l'échelle (résolution d'affichage)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7039"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7481"/>
       <source>Scanline Filter</source>
       <translation>Filtre scanline</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7040"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7482"/>
       <source>Diagonal Filter</source>
       <translation>Filtre diagonale</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7041"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7483"/>
       <source>Triangular Filter</source>
       <translation>Filtre triangulaire</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7042"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7484"/>
       <source>Wave Filter</source>
       <translation>Filtre vague</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7043"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7485"/>
       <source>Lottes CRT</source>
       <translation>Lottes CRT</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7044"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7486"/>
       <source>4xRGSS</source>
       <translation>4xRGSS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7045"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7487"/>
       <source>NxAGSS</source>
       <translation>NxAGSS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7046"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7488"/>
       <source>Uncompressed</source>
       <translation>Sans compression</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7047"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7489"/>
       <source>LZMA (xz)</source>
       <translation>LZMA (xz)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7048"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7490"/>
       <source>Zstandard (zst)</source>
       <translation>Zstandard (zst)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7049"/>
-      <source>TimeStretch (Recommended)</source>
-      <translation>TimeStretch (recommandé)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7050"/>
-      <source>Async Mix (Breaks some games!)</source>
-      <translation>Mixage asynchrone (casse certains jeux !)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7051"/>
-      <source>None (Audio can skip.)</source>
-      <translation>Aucune (le son peut être saccadé)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7052"/>
-      <source>Stereo (None, Default)</source>
-      <translation>Stéréo (désactivé, par défaut)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7054"/>
-      <source>Surround 5.1</source>
-      <translation>Surround 5.1</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7055"/>
-      <source>Surround 7.1</source>
-      <translation>Surround 7.1</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7056"/>
-      <source>No Sound (Emulate SPU2 only)</source>
-      <translation>Aucun son (émulation seule du SPU2)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7057"/>
-      <source>Cubeb (Cross-platform)</source>
-      <translation>Cubeb (multiplateforme)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7058"/>
-      <source>XAudio2</source>
-      <translation>XAudio2</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7059"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7491"/>
       <source>PS2 (8MB)</source>
       <translation>PS2 (8 Mo)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7060"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7492"/>
       <source>PS2 (16MB)</source>
       <translation>PS2 (16 Mo)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7061"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7493"/>
       <source>PS2 (32MB)</source>
       <translation>PS2 (32 Mo)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7062"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7494"/>
       <source>PS2 (64MB)</source>
       <translation>PS2 (64 Mo)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7063"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7495"/>
       <source>PS1</source>
       <translation>PS1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7064"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7496"/>
       <source>Negative</source>
       <translation>Negative</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7065"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7497"/>
       <source>Positive</source>
       <translation>Positive</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7066"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7498"/>
       <source>Chop/Zero (Default)</source>
       <translation>Chop/Zero (par défaut)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7067"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7499"/>
       <source>Game Grid</source>
       <translation>Grille des jeux</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7068"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6864"/>
       <source>Game List</source>
       <translation>Liste des jeux</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7069"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7263"/>
       <source>Game List Settings</source>
       <translation>Paramètres de la liste des jeux</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7070"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7500"/>
       <source>Type</source>
       <translation>Type</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7071"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7501"/>
       <source>Serial</source>
       <translation>Numéro de série</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7072"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7502"/>
       <source>Title</source>
       <translation>Nom</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7073"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7503"/>
       <source>File Title</source>
       <translation>Nom fichier</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7074"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7504"/>
       <source>CRC</source>
       <translation>CRC</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7075"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7505"/>
       <source>Time Played</source>
       <translation>Temps de jeu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7076"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7506"/>
       <source>Last Played</source>
       <translation>Dernier lancement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7077"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7507"/>
       <source>Size</source>
       <translation>Taille</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7079"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7526"/>
       <source>Select Disc Image</source>
       <translation>Sélectionnez une image disque</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7080"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7527"/>
       <source>Select Disc Drive</source>
       <translation>Sélectionnez un lecteur de disque</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7082"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6872"/>
       <source>Start File</source>
       <translation>Lancer un fichier</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7083"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6876"/>
       <source>Start BIOS</source>
       <translation>Lancer le BIOS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7084"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6874"/>
       <source>Start Disc</source>
       <translation>Lancer un disque</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7085"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6870"/>
       <source>Exit</source>
       <translation>Quitter</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7086"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7529"/>
       <source>Set Input Binding</source>
       <translation>Définir une association</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7087"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7530"/>
       <source>Region</source>
       <translation>Région</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7088"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7531"/>
       <source>Compatibility Rating</source>
       <translation>Note de compatibilité</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7089"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7532"/>
       <source>Path</source>
       <translation>Chemin d'accès</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7090"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7533"/>
       <source>Disc Path</source>
       <translation>Chemin d'accès au disque</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7091"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7534"/>
       <source>Select Disc Path</source>
       <translation>Sélectionnez l'emplacement du disque</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7093"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7536"/>
       <source>Copy Settings</source>
       <translation>Copier les paramètres</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7094"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7537"/>
       <source>Clear Settings</source>
       <translation>Effacer les paramètres</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7095"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7538"/>
       <source>Inhibit Screensaver</source>
       <translation>Bloquer l'économiseur d'écran</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7096"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7539"/>
       <source>Enable Discord Presence</source>
       <translation>Activer la Rich Presence Discord</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7097"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7540"/>
       <source>Pause On Start</source>
       <translation>Mettre en pause au lancement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7098"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7541"/>
       <source>Pause On Focus Loss</source>
       <translation>Mettre en pause lors de la perte du focus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7099"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7543"/>
       <source>Pause On Menu</source>
       <translation>Mettre en pause lors de l'ouverture du menu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7100"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7544"/>
       <source>Confirm Shutdown</source>
       <translation>Confirmer l'extinction</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7101"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7545"/>
       <source>Save State On Shutdown</source>
       <translation>Sauvegarder l'état lors de l'extinction</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7102"/>
-      <source>Enable Per-Game Settings</source>
-      <translation>Activer les paramètres propres aux jeux</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7103"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7547"/>
       <source>Use Light Theme</source>
       <translation>Utiliser le thème clair</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7104"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7548"/>
       <source>Start Fullscreen</source>
-      <translation>Démarrer en mode plein écran</translation>
+      <translation>Démarrer en mode Plein écran</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7105"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7549"/>
       <source>Double-Click Toggles Fullscreen</source>
-      <translation>Double-cliquer pour basculer en mode plein écran</translation>
+      <translation>Double-cliquer pour basculer en mode Plein écran</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7106"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7550"/>
       <source>Hide Cursor In Fullscreen</source>
-      <translation>Masquer le curseur en mode plein écran</translation>
+      <translation>Masquer le curseur en mode Plein écran</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7107"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7551"/>
       <source>OSD Scale</source>
       <translation>Échelle de l'affichage à l'écran (OSD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7108"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7552"/>
       <source>Show Messages</source>
       <translation>Afficher les messages</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7109"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7553"/>
       <source>Show Speed</source>
       <translation>Afficher la vitesse</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7110"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7554"/>
       <source>Show FPS</source>
       <translation>Afficher la fréquence d'images</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7111"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7555"/>
       <source>Show CPU Usage</source>
       <translation>Afficher l'utilisation du CPU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7112"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7556"/>
       <source>Show GPU Usage</source>
       <translation>Afficher l'utilisation du GPU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7113"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7557"/>
       <source>Show Resolution</source>
       <translation>Afficher la résolution</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7114"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7558"/>
       <source>Show GS Statistics</source>
       <translation>Afficher des statistiques sur le GS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7115"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7559"/>
       <source>Show Status Indicators</source>
       <translation>Afficher des indicateurs de statut</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7116"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7560"/>
       <source>Show Settings</source>
       <translation>Afficher les paramètres</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7117"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7561"/>
       <source>Show Inputs</source>
       <translation>Afficher les entrées</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7118"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7562"/>
       <source>Show Frame Times</source>
       <translation>Afficher les durées d'image</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7119"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7563"/>
       <source>Warn About Unsafe Settings</source>
       <translation>Avertir des paramètres dangereux</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7120"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7564"/>
       <source>Reset Settings</source>
       <translation>Réinitialiser les paramètres</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7121"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7565"/>
       <source>Change Search Directory</source>
       <translation>Changer de dossier</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7122"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7566"/>
       <source>Fast Boot</source>
       <translation>Démarrage rapide</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7123"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7570"/>
       <source>Output Volume</source>
       <translation>Volume de sortie</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7124"/>
-      <source>Synchronization Mode</source>
-      <translation>Mode de synchronisation</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7125"/>
-      <source>Expansion Mode</source>
-      <translation>Mode d'upmixing</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7126"/>
-      <source>Output Module</source>
-      <translation>Module de sortie</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7127"/>
-      <source>Latency</source>
-      <translation>Latence</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7128"/>
-      <source>Sequence Length</source>
-      <translation>Longueur de séquence</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7129"/>
-      <source>Seekwindow Size</source>
-      <translation>Taille de la Seekwindow</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7130"/>
-      <source>Overlap</source>
-      <translation>Superposition</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7132"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7580"/>
       <source>Memory Card Directory</source>
       <translation>Dossier des Memory Cards</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7133"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
       <source>Folder Memory Card Filter</source>
       <translation>Filtrer les sauvegardes des Memory Cards au format dossier</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7136"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7584"/>
       <source>Create</source>
       <translation>Créer</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7190"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7510"/>
       <source>Cancel</source>
       <translation>Annuler</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7134"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7582"/>
       <source>Load Profile</source>
       <translation>Charger un profil</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7135"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7583"/>
       <source>Save Profile</source>
       <translation>Enregistrer dans un profil</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7137"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7585"/>
       <source>Per-Game Configuration</source>
       <translation>Configuration propre au jeu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7138"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7586"/>
       <source>Copy Global Settings</source>
       <translation>Copier les paramètres globaux</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7139"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7587"/>
       <source>Enable SDL Input Source</source>
       <translation>Activer la source d'entrées SDL</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7140"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7588"/>
       <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
-      <translation>Mode amélioré SDL pour DualShock 4 et DualSense</translation>
+      <translation>Mode Amélioré SDL pour DualShock 4 et DualSense</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7141"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7590"/>
       <source>SDL Raw Input</source>
       <translation>Entrée brute SDL</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7142"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7591"/>
       <source>Enable XInput Input Source</source>
       <translation>Activer la source d'entrées XInput</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7143"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7592"/>
       <source>Enable Console Port 1 Multitap</source>
       <translation>Activer le multitap sur le port console 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7144"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7593"/>
       <source>Enable Console Port 2 Multitap</source>
       <translation>Activer le multitap sur le port console 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7145"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7594"/>
       <source>Controller Port {}{}</source>
       <translation>Port de manette {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7146"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7595"/>
       <source>Controller Port {}</source>
       <translation>Port de manette {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7147"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7596"/>
       <source>Controller Type</source>
       <translation>Type de manette</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7148"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7597"/>
       <source>Automatic Mapping</source>
       <translation>Association automatique</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7149"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7598"/>
       <source>Controller Port {}{} Macros</source>
       <translation>Macros du port de manette {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7150"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7599"/>
       <source>Controller Port {} Macros</source>
       <translation>Macros du port de manette {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7151"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7600"/>
       <source>Macro Button {}</source>
       <translation>Bouton macro {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7152"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7601"/>
       <source>Buttons</source>
       <translation>Boutons</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7078"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7519"/>
       <source>Frequency</source>
       <translation>Fréquence</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7153"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7603"/>
       <source>Pressure</source>
       <translation>Pression</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7155"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7605"/>
       <source>Controller Port {}{} Settings</source>
       <translation>Paramètres du port de manette {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7156"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7606"/>
       <source>Controller Port {} Settings</source>
       <translation>Paramètres du port de manette {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7157"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7607"/>
       <source>USB Port {}</source>
       <translation>Port USB {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7158"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7608"/>
       <source>Device Type</source>
       <translation>Type de périphérique</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7159"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7609"/>
       <source>Device Subtype</source>
       <translation>Sous-type de périphérique</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7160"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7610"/>
       <source>{} Bindings</source>
       <translation>{} associations</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7161"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7611"/>
       <source>Clear Bindings</source>
       <translation>Effacer les associations</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7162"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7612"/>
       <source>{} Settings</source>
       <translation>Paramètres de {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7163"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7613"/>
       <source>Cache Directory</source>
       <translation>Dossier du cache</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7164"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7614"/>
       <source>Covers Directory</source>
       <translation>Dossier des jaquettes</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7165"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7615"/>
       <source>Snapshots Directory</source>
       <translation>Dossier des instantanés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7166"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7616"/>
       <source>Save States Directory</source>
       <translation>Dossier des sauvegardes d'état</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7167"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7617"/>
       <source>Game Settings Directory</source>
       <translation>Dossier des paramètres des jeux</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7168"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7618"/>
       <source>Input Profile Directory</source>
       <translation>Dossier des profils d'entrée</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7169"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7619"/>
       <source>Cheats Directory</source>
       <translation>Dossier des codes de triche</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7170"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7620"/>
       <source>Patches Directory</source>
       <translation>Dossier des patchs</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7171"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7621"/>
       <source>Texture Replacements Directory</source>
       <translation>Dossier des textures de remplacement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7172"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7622"/>
       <source>Video Dumping Directory</source>
       <translation>Dossier des dumps vidéo</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7173"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7631"/>
       <source>Resume Game</source>
       <translation>Reprendre la partie</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7174"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7632"/>
       <source>Toggle Frame Limit</source>
-      <translation>Activer/désactiver la limite d'images</translation>
+      <translation>Activer/Désactiver la limite d'images</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7175"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7633"/>
       <source>Game Properties</source>
       <translation>Propriétés du jeu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7176"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7634"/>
       <source>Achievements</source>
       <translation>Succès</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7177"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7635"/>
       <source>Save Screenshot</source>
       <translation>Enregistrer une capture d'écran</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7178"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7636"/>
       <source>Switch To Software Renderer</source>
       <translation>Basculer vers le moteur de rendu logiciel</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7179"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7637"/>
       <source>Switch To Hardware Renderer</source>
       <translation>Basculer vers le moteur de rendu matériel</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7180"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7638"/>
       <source>Change Disc</source>
       <translation>Changer de disque</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7181"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7639"/>
       <source>Close Game</source>
       <translation>Quitter le jeu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7182"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7640"/>
       <source>Exit Without Saving</source>
       <translation>Quitter sans sauvegarder</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7183"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7641"/>
       <source>Back To Pause Menu</source>
-      <translation>Revenir au menu pause</translation>
+      <translation>Revenir au menu Pause</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7184"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7642"/>
       <source>Exit And Save State</source>
       <translation>Quitter et sauvegarder l'état</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7185"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7643"/>
       <source>Leaderboards</source>
       <translation>Classements</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7186"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7644"/>
       <source>Delete Save</source>
       <translation>Supprimer la sauvegarde</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7187"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7645"/>
       <source>Close Menu</source>
       <translation>Fermer le menu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7189"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7522"/>
       <source>Delete State</source>
       <translation>Supprimer l'état</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7188"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7646"/>
       <source>Default Boot</source>
       <translation>Démarrage par défaut</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7192"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7648"/>
       <source>Reset Play Time</source>
       <translation>Réinitialiser le temps de jeu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7193"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7649"/>
       <source>Add Search Directory</source>
       <translation>Ajouter un dossier</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7194"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7650"/>
       <source>Open in File Browser</source>
       <translation>Ouvrir dans l'explorateur de fichiers</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7195"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7651"/>
       <source>Disable Subdirectory Scanning</source>
       <translation>Désactiver le scan des sous-dossiers</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7196"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7652"/>
       <source>Enable Subdirectory Scanning</source>
       <translation>Activer le scan des sous-dossiers</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7197"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7653"/>
       <source>Remove From List</source>
       <translation>Retirer de la liste</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7198"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7654"/>
       <source>Default View</source>
       <translation>Affichage par défaut</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7199"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7655"/>
       <source>Sort By</source>
       <translation>Trier par</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7200"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7656"/>
       <source>Sort Reversed</source>
       <translation>Tri inversé</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7202"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7658"/>
       <source>Scan For New Games</source>
       <translation>Actualiser la liste des jeux</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7203"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7659"/>
       <source>Rescan All Games</source>
       <translation>Rescanner tous les jeux</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7204"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7660"/>
       <source>Website</source>
-      <translation>Site web</translation>
+      <translation>Site Web</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7205"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7661"/>
       <source>Support Forums</source>
       <translation>Forums d'assistance</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7206"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7662"/>
       <source>GitHub Repository</source>
       <translation>Dépôt GitHub</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7207"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7663"/>
       <source>License</source>
       <translation>Licence</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7208"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7664"/>
       <source>Close</source>
       <translation>Fermer</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7209"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7665"/>
       <source>RAIntegration is being used instead of the built-in achievements implementation.</source>
       <translation>RAIntegration est utilisé à la place de l'implémentation des succès intégrée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7210"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7666"/>
       <source>Enable Achievements</source>
       <translation>Activer les succès</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7211"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7667"/>
       <source>Hardcore Mode</source>
-      <translation>Mode hardcore</translation>
+      <translation>Mode Hardcore</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7214"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7670"/>
       <source>Sound Effects</source>
       <translation>Effets sonores</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7218"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7674"/>
       <source>Test Unofficial Achievements</source>
       <translation>Tester les succès non officiels</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7219"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7675"/>
       <source>Username: {}</source>
       <translation>Nom d'utilisateur : {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7220"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7676"/>
       <source>Login token generated on {}</source>
       <translation>Jeton de connexion généré : {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7221"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7677"/>
       <source>Logout</source>
       <translation>Se déconnecter</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7222"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7678"/>
       <source>Not Logged In</source>
       <translation>Déconnecté(e)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7223"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7679"/>
       <source>Login</source>
       <translation>Se connecter</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7224"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7680"/>
       <source>Game: {0} ({1})</source>
       <translation>Jeu : {0} ({1})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7225"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7681"/>
       <source>Rich presence inactive or unsupported.</source>
       <translation>Rich Presence inactive ou non prise en charge.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7226"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7682"/>
       <source>Game not loaded or no RetroAchievements available.</source>
       <translation>Aucun jeu chargé ou aucun RetroAchievements disponible.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7227"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7683"/>
       <source>Card Enabled</source>
       <translation>Memory Card activée</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7228"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7684"/>
       <source>Card Name</source>
       <translation>Nom de la Memory Card</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7229"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7685"/>
       <source>Eject Card</source>
       <translation>Éjecter la Memory Card</translation>
     </message>
@@ -8711,79 +8836,84 @@ Voulez-vous charger cette sauvegarde et continuer ?</translation>
   <context>
     <name>GS</name>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="272"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="275"/>
       <source>Failed to reopen, restoring old configuration.</source>
       <translation>Échec de la réouverture, rétablissement de l'ancienne configuration.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="983"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="332"/>
+      <source>Failed to create render device. This may be due to your GPU not supporting the chosen renderer ({}), or because your graphics drivers need to be updated.</source>
+      <translation>Échec de la création du périphérique de rendu. Il se peut que votre GPU ne prenne peut-être pas en charge le moteur de rendu sélectionné ({}), ou que vos pilotes graphiques doivent être mis à jour.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1010"/>
       <source>Upscale multiplier set to {}x.</source>
       <translation>Multiplicateur de mise à l'échelle défini sur {}x.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="432"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="434"/>
       <source>Saving screenshot to &apos;{}&apos;.</source>
-      <translation>Capture d'écran enregistrée sous « {} ».</translation>
+      <translation>Capture d'écran enregistrée sous « {} ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="444"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="446"/>
       <source>Saved screenshot to &apos;{}&apos;.</source>
-      <translation>Capture d'écran enregistrée sous « {} ».</translation>
+      <translation>Capture d'écran enregistrée sous « {} ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="451"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="453"/>
       <source>Failed to save screenshot to &apos;{}&apos;.</source>
-      <translation>Échec de l'enregistrement de la capture d'écran dans le fichier « {} ».</translation>
+      <translation>Échec de l'enregistrement de la capture d'écran dans le fichier « {} ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="522"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="524"/>
       <source>Host GPU device encountered an error and was recovered. This may have broken rendering.</source>
       <translation>Le périphérique GPU de l'hôte a rencontré un problème et a été récupéré. Vous pourriez avoir des problèmes d'affichage.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="626"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="629"/>
       <source>CAS is not available, your graphics driver does not support the required functionality.</source>
       <translation>CAS indisponible : votre pilote graphique ne prend pas en charge les fonctionnalités requises.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="681"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="684"/>
       <source>with no compression</source>
       <translation>sans compression</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="688"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="691"/>
       <source>with LZMA compression</source>
       <translation>avec compression LZMA</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="695"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="698"/>
       <source>with Zstandard compression</source>
       <translation>avec compression Zstandard</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="701"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="704"/>
       <source>Saving {0} GS dump {1} to &apos;{2}&apos;</source>
-      <translation>Dump du GS « {0}, {1} » enregistré sous : « {2} ».</translation>
+      <translation>Dump du GS « {0}, {1} » enregistré sous : « {2} »</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="702"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="705"/>
       <source>single frame</source>
       <translation>1 image</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="702"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="705"/>
       <source>multi-frame</source>
       <translation>plusieurs images</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="722"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="725"/>
       <source>Failed to render/download screenshot.</source>
       <translation>Échec du rendu ou du téléchargement de la capture d'écran.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="733"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="736"/>
       <source>Saved GS dump to &apos;{}&apos;.</source>
-      <translation>Dump du GS enregistré sous « {} ».</translation>
+      <translation>Dump du GS enregistré sous « {} ».</translation>
     </message>
     <message>
       <location filename="../../pcsx2/GS/Renderers/HW/GSRendererHW.cpp" line="132"/>
@@ -8791,22 +8921,31 @@ Voulez-vous charger cette sauvegarde et continuer ?</translation>
       <translation>Le hash cache a utilisé {:.2f} Mo de VRAM, désactivation.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/HW/GSTextureReplacements.cpp" line="657"/>
+      <location filename="../../pcsx2/GS/Renderers/HW/GSTextureReplacements.cpp" line="699"/>
       <source>Disabling autogenerated mipmaps on one or more compressed replacement textures. Please generate mipmaps when compressing your textures.</source>
       <translation>Désactivation de la génération des mipmaps d'une ou plusieurs textures de remplacement compressées. Veuillez générer les mipmaps au moment de compresser vos textures.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2733"/>
+      <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2618"/>
       <source>Stencil buffers and texture barriers are both unavailable, this will break some graphical effects.</source>
       <translation>Les stencil buffers et les barrières de texture sont indisponibles, cela pourrait casser certains effets visuels.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5024"/>
+      <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="4976"/>
       <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
-      <translation>Garder le GPU actif lors des readbacks est activé, mais les « calibrated timestamps » sont indisponibles. Les performances pourraient être sévèrement dégradées.</translation>
+      <translation>Garder le GPU actif lors des readbacks est activé, mais les « calibrated timestamps » sont indisponibles. Les performances pourraient être sévèrement dégradées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="389"/>
+      <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="391"/>
+      <source>Your system has the &quot;OpenCL, OpenGL, and Vulkan Compatibility Pack&quot; installed.
+This Vulkan driver crashes PCSX2 on some GPUs.
+To use the Vulkan renderer, you should remove this app package.</source>
+      <translation>Le package de compatibilité OpenCL™, OpenGL® et Vulkan® est installé sur votre système.
+Ce pilote Vulkan fait planter PCSX2 lorsqu'il est utilisé avec certains GPU.
+Pour utiliser le moteur de rendu Vulkan, supprimez ce package d'application.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="412"/>
       <source>The Vulkan renderer was automatically selected, but no compatible devices were found.
        You should update all graphics drivers in your system, including any integrated GPUs
        to use the Vulkan renderer.</source>
@@ -8822,6 +8961,38 @@ Pour utiliser le moteur de rendu Vulkan, mettez à jour les pilotes graphiques d
       <location filename="../../pcsx2/MTGS.cpp" line="997"/>
       <source>Switching to Hardware Renderer...</source>
       <translation>Basculement vers le moteur de rendu matériel…</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="511"/>
+      <source>The Direct3D renderer is running at feature level 10.0. This is an UNSUPPORTED configuration.
+Do not request support, please upgrade your hardware/drivers first.</source>
+      <translation>Le moteur de rendu Direct3D s'exécute au niveau de fonctionnalité 10.0. Cette configuration n'est PAS prise en charge.
+Changez de matériel ou mettez à jour vos pilotes avant de demander de l'aide.</translation>
+    </message>
+  </context>
+  <context>
+    <name>GSCapture</name>
+    <message>
+      <location filename="../../pcsx2/GS/GSCapture.cpp" line="292"/>
+      <source>Failed to load FFmpeg</source>
+      <translation>Échec du chargement de FFmpeg</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GS/GSCapture.cpp" line="293"/>
+      <source>You may be missing one or more files, or are using the incorrect version. This build of PCSX2 requires:
+  libavcodec: {}
+  libavformat: {}
+  libavutil: {}
+  libswscale: {}
+  libswresample: {}
+</source>
+      <translation>Il se peut qu'il vous manque un ou plusieurs fichiers, ou que leur version soit incorrecte. Cette version de PCSX2 requiert :
+  libavcodec : {}
+  libavformat : {}
+  libavutil : {}
+  libswscale : {}
+  libswresample : {}
+</translation>
     </message>
   </context>
   <context>
@@ -8895,53 +9066,53 @@ Pour utiliser le moteur de rendu Vulkan, mettez à jour les pilotes graphiques d
   <context>
     <name>GameDatabase</name>
     <message>
-      <location filename="../../pcsx2/GameDatabase.cpp" line="887"/>
+      <location filename="../../pcsx2/GameDatabase.cpp" line="888"/>
       <source>{0} Current Blending Accuracy is {1}.
 Recommended Blending Accuracy for this game is {2}.
 You can adjust the blending level in Game Properties to improve
 graphical quality, but this will increase system requirements.</source>
-      <translation>{0} Précision des fusions actuelle : « {1} ».
-Précision des fusions recommandée pour ce jeu : « {2} ».
+      <translation>{0} Précision des fusions actuelle : « {1} ».
+Précision des fusions recommandée pour ce jeu : « {2} ».
 Vous pouvez ajuster la précision des fusions dans les propriétés
 du jeu pour améliorer la qualité des graphismes, mais cela
 demandera plus de ressources.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameDatabase.cpp" line="931"/>
+      <location filename="../../pcsx2/GameDatabase.cpp" line="932"/>
       <source>Manual GS hardware renderer fixes are enabled, automatic fixes were not applied:</source>
       <translation>Les correctifs manuels du moteur de rendu GS matériel sont activés. Ces correctifs automatiques n'ont pas été appliqués :</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameDatabase.cpp" line="1169"/>
+      <location filename="../../pcsx2/GameDatabase.cpp" line="1170"/>
       <source>No tracks provided.</source>
       <translation>Aucune piste fournie.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameDatabase.cpp" line="1178"/>
+      <location filename="../../pcsx2/GameDatabase.cpp" line="1179"/>
       <source>Hash {} is not in database.</source>
       <translation>Le hash {} est absent de la base de données.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameDatabase.cpp" line="1187"/>
+      <location filename="../../pcsx2/GameDatabase.cpp" line="1188"/>
       <source>Data track number does not match data track in database.</source>
       <translation>Le nombre de pistes de données ne correspond au nombre dans la base de données.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameDatabase.cpp" line="1204"/>
+      <location filename="../../pcsx2/GameDatabase.cpp" line="1205"/>
       <source>Track {0} with hash {1} is not found in database.
 </source>
       <translation>La piste {0} ayant pour hash {1} est introuvable dans la base de données.
 </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameDatabase.cpp" line="1215"/>
+      <location filename="../../pcsx2/GameDatabase.cpp" line="1216"/>
       <source>Track {0} with hash {1} is for a different game ({2}).
 </source>
       <translation>La piste {0} ayant pour hash {1} appartient à un autre jeu ({2}).
 </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameDatabase.cpp" line="1226"/>
+      <location filename="../../pcsx2/GameDatabase.cpp" line="1227"/>
       <source>Track {0} with hash {1} does not match database track.
 </source>
       <translation>La piste {0} ayant pour hash {1} ne correspond pas à la piste dans la base de données.
@@ -8960,42 +9131,42 @@ demandera plus de ressources.</translation>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="39"/>
       <source>FPU Multiply Hack</source>
       <extracomment>FPU = Floating Point Unit. A part of the PS2&apos;s CPU. Do not translate.\nMultiply: mathematical term.\nTales of Destiny: a game&apos;s name. Leave as-is or use an official translation.</extracomment>
-      <translation>Hack « FPU Multiply »</translation>
+      <translation>Hack « FPU Multiply »</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.ui" line="76"/>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="42"/>
       <source>Skip MPEG Hack</source>
       <extracomment>MPEG: video codec, leave as-is. FMV: Full Motion Video. Find the common used term in your language.</extracomment>
-      <translation>Hack « Skip MPEG »</translation>
+      <translation>Hack « Skip MPEG »</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.ui" line="83"/>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="40"/>
       <source>Preload TLB Hack</source>
       <extracomment>TLB: Translation Lookaside Buffer. Leave as-is. Goemon: name of a character from the series with his name. Leave as-is or use an official translation.</extracomment>
-      <translation>Hack « Preload TLB »</translation>
+      <translation>Hack « Preload TLB »</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.ui" line="90"/>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="44"/>
       <source>EE Timing Hack</source>
       <extracomment>EE: Emotion Engine. Leave as-is.</extracomment>
-      <translation>Hack « EE Timing »</translation>
+      <translation>Hack « EE Timing »</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.ui" line="97"/>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="45"/>
       <source>Instant DMA Hack</source>
       <extracomment>DMA: Direct Memory Access. Leave as-is.</extracomment>
-      <translation>Hack « Instant DMA »</translation>
+      <translation>Hack « Instant DMA »</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.ui" line="104"/>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="43"/>
       <source>OPH Flag Hack</source>
       <extracomment>OPH: Name of a flag (Output PatH) in the GIF_STAT register in the EE. Leave as-is.\nBleach Blade Battles: a game&apos;s name. Leave as-is or use an official translation.</extracomment>
-      <translation>Hack « OPH Flag »</translation>
+      <translation>Hack « OPH Flag »</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.ui" line="111"/>
@@ -9009,7 +9180,7 @@ demandera plus de ressources.</translation>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="46"/>
       <source>DMA Busy Hack</source>
       <extracomment>DMA: Direct Memory Access. Leave as-is.</extracomment>
-      <translation>Hack « DMA Busy »</translation>
+      <translation>Hack « DMA Busy »</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.ui" line="125"/>
@@ -9037,21 +9208,21 @@ demandera plus de ressources.</translation>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="51"/>
       <source>VU I Bit Hack</source>
       <extracomment>VU = Vector Unit. Leave as-is.\nI Bit = A bit referred as I, not as 1.\nScarface The World is Yours and Crash Tag Team Racing: names of two different games. Leave as-is or use an official translation.</extracomment>
-      <translation>Hack « VU I Bit »</translation>
+      <translation>Hack « VU I Bit »</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.ui" line="153"/>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="50"/>
       <source>VU Add Hack</source>
       <extracomment>VU = Vector Unit. Leave as-is.\nTri-Ace: a game development company name. Leave as-is.</extracomment>
-      <translation>Hack « VU Add »</translation>
+      <translation>Hack « VU Add »</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.ui" line="160"/>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="54"/>
       <source>VU Overflow Hack</source>
       <extracomment>VU = Vector Unit. Leave as-is.\nSuperman Returns: a game&apos;s name. Leave as-is or use an official translation.</extracomment>
-      <translation>Hack « VU Overflow »</translation>
+      <translation>Hack « VU Overflow »</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.ui" line="167"/>
@@ -9176,7 +9347,7 @@ demandera plus de ressources.</translation>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="53"/>
       <source>Run behind. To avoid sync problems when reading or writing VU registers.</source>
-      <translation>« Run Behind », éviter les problèmes de synchronisation lors des opérations de lecture et d'écriture dans les registres des VU.</translation>
+      <translation>« Run Behind », éviter les problèmes de synchronisation lors des opérations de lecture et d'écriture dans les registres des VU.</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="54"/>
@@ -9246,15 +9417,23 @@ demandera plus de ressources.</translation>
       <source>{}s</source>
       <translation>{} s</translation>
     </message>
-    <message>
+    <message numerus="yes">
+      <location filename="../GameList/GameListModel.cpp" line="268"/>
       <location filename="../../pcsx2/GameList.cpp" line="1142"/>
-      <source>{} hours</source>
-      <translation>{} heures</translation>
+      <source>%n hours</source>
+      <translation>
+        <numerusform>%n heure</numerusform>
+        <numerusform>%n heures</numerusform>
+      </translation>
     </message>
-    <message>
+    <message numerus="yes">
+      <location filename="../GameList/GameListModel.cpp" line="270"/>
       <location filename="../../pcsx2/GameList.cpp" line="1144"/>
-      <source>{} minutes</source>
-      <translation>{} minutes</translation>
+      <source>%n minutes</source>
+      <translation>
+        <numerusform>%n minute</numerusform>
+        <numerusform>%n minutes</numerusform>
+      </translation>
     </message>
     <message>
       <location filename="../../pcsx2/GameList.cpp" line="1304"/>
@@ -9265,52 +9444,52 @@ demandera plus de ressources.</translation>
   <context>
     <name>GameListModel</name>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="586"/>
+      <location filename="../GameList/GameListModel.cpp" line="597"/>
       <source>Type</source>
       <translation>Type</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="587"/>
+      <location filename="../GameList/GameListModel.cpp" line="598"/>
       <source>Code</source>
       <translation>Code</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="588"/>
+      <location filename="../GameList/GameListModel.cpp" line="599"/>
       <source>Title</source>
       <translation>Nom</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="589"/>
+      <location filename="../GameList/GameListModel.cpp" line="600"/>
       <source>File Title</source>
       <translation>Nom fichier</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="590"/>
+      <location filename="../GameList/GameListModel.cpp" line="601"/>
       <source>CRC</source>
       <translation>CRC</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="591"/>
+      <location filename="../GameList/GameListModel.cpp" line="602"/>
       <source>Time Played</source>
       <translation>Temps de jeu</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="592"/>
+      <location filename="../GameList/GameListModel.cpp" line="603"/>
       <source>Last Played</source>
       <translation>Lancé le</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="593"/>
+      <location filename="../GameList/GameListModel.cpp" line="604"/>
       <source>Size</source>
       <translation>Taille</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="594"/>
+      <location filename="../GameList/GameListModel.cpp" line="605"/>
       <source>Region</source>
       <translation>Région</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="595"/>
+      <location filename="../GameList/GameListModel.cpp" line="606"/>
       <source>Compatibility</source>
       <translation>Compatibilité</translation>
     </message>
@@ -9335,7 +9514,7 @@ demandera plus de ressources.</translation>
     <message>
       <location filename="../Settings/GameListSettingsWidget.ui" line="83"/>
       <location filename="../Settings/GameListSettingsWidget.ui" line="181"/>
-      <location filename="../Settings/GameListSettingsWidget.cpp" line="180"/>
+      <location filename="../Settings/GameListSettingsWidget.cpp" line="182"/>
       <source>Remove</source>
       <translation>Retirer</translation>
     </message>
@@ -9396,36 +9575,36 @@ demandera plus de ressources.</translation>
       <translation>Si le nom original du jeu est différent du nom anglais, privilégier le nom anglais.</translation>
     </message>
     <message>
-      <location filename="../Settings/GameListSettingsWidget.cpp" line="182"/>
+      <location filename="../Settings/GameListSettingsWidget.cpp" line="184"/>
       <source>Open Directory...</source>
       <translation>Ouvrir le dossier…</translation>
     </message>
     <message>
-      <location filename="../Settings/GameListSettingsWidget.cpp" line="191"/>
+      <location filename="../Settings/GameListSettingsWidget.cpp" line="198"/>
       <source>Select Search Directory</source>
       <translation>Sélectionner un dossier</translation>
     </message>
     <message>
-      <location filename="../Settings/GameListSettingsWidget.cpp" line="197"/>
+      <location filename="../Settings/GameListSettingsWidget.cpp" line="204"/>
       <source>Scan Recursively?</source>
       <translation>Scanner les sous-dossiers ?</translation>
     </message>
     <message>
-      <location filename="../Settings/GameListSettingsWidget.cpp" line="198"/>
+      <location filename="../Settings/GameListSettingsWidget.cpp" line="205"/>
       <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-      <translation>Voulez-vous scanner les sous-dossiers de « %1 » ?
+      <translation>Voulez-vous scanner les sous-dossiers de « %1 » ?
 
 Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un sous-dossier pourront être identifiés.</translation>
     </message>
     <message>
-      <location filename="../Settings/GameListSettingsWidget.cpp" line="228"/>
+      <location filename="../Settings/GameListSettingsWidget.cpp" line="235"/>
       <source>Select File</source>
       <translation>Sélectionner un fichier</translation>
     </message>
     <message>
-      <location filename="../Settings/GameListSettingsWidget.cpp" line="238"/>
+      <location filename="../Settings/GameListSettingsWidget.cpp" line="245"/>
       <source>Select Directory</source>
       <translation>Sélectionner un dossier</translation>
     </message>
@@ -9984,7 +10163,7 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="71"/>
       <source>Fullscreen Mode:</source>
-      <translation>Mode plein écran :</translation>
+      <translation>Mode Plein écran :</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="81"/>
@@ -10021,28 +10200,26 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="120"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1089"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1125"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1068"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1130"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="47"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="419"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="486"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="595"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="598"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="507"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="615"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="618"/>
       <source>Off (Default)</source>
       <translation>Désactivé (par défaut)</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="151"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="481"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="543"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1222"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2095"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2130"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="510"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1156"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2103"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2138"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="22"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="436"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="483"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="759"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="504"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="778"/>
       <source>Automatic (Default)</source>
       <translation>Automatique (par défaut)</translation>
     </message>
@@ -10101,13 +10278,13 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="212"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="651"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="623"/>
       <source>None</source>
       <translation>Aucun</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="217"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="406"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="431"/>
       <source>Bilinear (Smooth)</source>
       <extracomment>Smooth: Refers to the texture clarity.</extracomment>
       <translation>Bilinéaire (lisse)</translation>
@@ -10119,15 +10296,15 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
       <translation>Bilinéaire (net)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="230"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="299"/>
       <source>Vertical Stretch:</source>
       <translation>Étirement vertical :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="237"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="441"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1401"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1596"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="284"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="306"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1406"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1601"/>
       <source>%</source>
       <extracomment>Percentage sign that shows next to a value. You might want to add a space before if your language requires it.
 ----------
@@ -10135,541 +10312,512 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation> %</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="250"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="319"/>
       <source>Crop:</source>
       <translation>Rognage :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="259"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="328"/>
       <source>Left:</source>
       <extracomment>Warning: short space constraints. Abbreviate if necessary.</extracomment>
       <translation>Gauche :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="266"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="283"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="300"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="317"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="335"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="352"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="369"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="386"/>
       <source>px</source>
       <translation> px</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="276"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="345"/>
       <source>Top:</source>
       <extracomment>Warning: short space constraints. Abbreviate if necessary.</extracomment>
       <translation>Haut :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="293"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="362"/>
       <source>Right:</source>
       <extracomment>Warning: short space constraints. Abbreviate if necessary.</extracomment>
       <translation>Droite :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="310"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="379"/>
       <source>Bottom:</source>
       <extracomment>Warning: short space constraints. Abbreviate if necessary.</extracomment>
       <translation>Bas :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="331"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="410"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="438"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="435"/>
       <source>Screen Offsets</source>
       <translation>Décalage de l'écran</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="345"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="424"/>
-      <source>VSync</source>
-      <translation>VSync</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="352"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="415"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="445"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="440"/>
       <source>Show Overscan</source>
       <translation>Surbalayage (overscan)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="359"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="397"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="422"/>
       <source>Enable Widescreen Patches</source>
       <translation>Activer les patchs écran large</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="366"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="400"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="425"/>
       <source>Enable No-Interlacing Patches</source>
       <translation>Patchs de désactivation de l'entrelacement</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="373"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="421"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="421"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="446"/>
       <source>Anti-Blur</source>
       <translation>Anti-flou</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="376"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="424"/>
       <source>Ctrl+S</source>
       <translation>Ctrl+S</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="383"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="403"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="431"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="428"/>
       <source>Disable Interlace Offset</source>
       <translation>Désactiver le décalage d'entrelacement</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="392"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="230"/>
       <source>Screenshot Size:</source>
       <translation>Taille des captures d'écran :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="402"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="438"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="459"/>
       <source>Screen Resolution</source>
       <translation>Résolution d'affichage</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="407"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="472"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="493"/>
       <source>Internal Resolution</source>
       <translation>Résolution interne</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="412"/>
-      <source>Internal Resolution (Aspect Uncorrected)</source>
-      <translation>Résolution interne (format original)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="421"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="442"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="259"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="463"/>
       <source>PNG</source>
       <translation>PNG</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="426"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="264"/>
       <source>JPEG</source>
       <translation>JPEG</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="434"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="277"/>
       <source>Quality:</source>
       <translation>Qualité :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="457"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="695"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="455"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="674"/>
       <source>Rendering</source>
       <translation>Rendu</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="463"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="461"/>
       <source>Internal Resolution:</source>
       <translation>Résolution interne :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="473"/>
-      <source>Mipmapping:</source>
-      <translation>Mipmapping :</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="486"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="584"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="551"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1104"/>
       <source>Off</source>
       <translation>Désactivé</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="491"/>
-      <source>Basic (Generated Mipmaps)</source>
-      <translation>Basique (mipmaps générées)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="496"/>
-      <source>Full (PS2 Mipmaps)</source>
-      <translation>Complet (mipmaps PS2)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="504"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="701"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="471"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="680"/>
       <source>Texture Filtering:</source>
       <translation>Filtrage des textures :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="512"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="721"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="479"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="700"/>
       <source>Nearest</source>
       <translation>Nearest (au plus proche)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="517"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="726"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="484"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="705"/>
       <source>Bilinear (Forced)</source>
       <translation>Bilinéaire (forcé)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="522"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="731"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="489"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="710"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="502"/>
       <source>Bilinear (PS2)</source>
       <translation>Bilinéaire (PS2)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="527"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="736"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="494"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="715"/>
       <source>Bilinear (Forced excluding sprite)</source>
       <translation>Bilinéaire (forcé, sprites exclus)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="535"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="502"/>
       <source>Trilinear Filtering:</source>
       <translation>Filtrage trilinéaire :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="548"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="515"/>
       <source>Off (None)</source>
       <translation>Désactivé</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="553"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="520"/>
       <source>Trilinear (PS2)</source>
       <translation>Trilinéaire (PS2)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="558"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="525"/>
       <source>Trilinear (Forced)</source>
       <translation>Trilinéaire (forcé)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="566"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="533"/>
       <source>Anisotropic Filtering:</source>
       <translation>Filtrage anisotrope :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="576"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="543"/>
       <source>Dithering:</source>
       <translation>Dithering :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="589"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="556"/>
       <source>Scaled</source>
       <translation>Mis à l'échelle</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="594"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="489"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="561"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="510"/>
       <source>Unscaled (Default)</source>
       <translation>Taille originale (par défaut)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="602"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="574"/>
       <source>Blending Accuracy:</source>
       <translation>Précision des fusions :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="610"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="582"/>
       <source>Minimum</source>
       <translation>Minimale</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="615"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="495"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="587"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="517"/>
       <source>Basic (Recommended)</source>
       <translation>Basique (recommandé)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="620"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="592"/>
       <source>Medium</source>
       <translation>Moyenne</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="625"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="597"/>
       <source>High</source>
       <translation>Élevée</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="630"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="602"/>
       <source>Full (Slow)</source>
       <translation>Complète (lent)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="635"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="607"/>
       <source>Maximum (Very Slow)</source>
       <translation>Maximale (très lent)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="643"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="615"/>
       <source>Texture Preloading:</source>
       <translation>Préchargement des textures :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="656"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="628"/>
       <source>Partial</source>
       <translation>Partiel</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="661"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="501"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="633"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="523"/>
       <source>Full (Hash Cache)</source>
       <translation>Complet (Hash Cache)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="744"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="723"/>
       <source>Software Rendering Threads:</source>
       <translation>Threads de rendu logiciel :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="982"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="961"/>
       <source>Skip Draw Range:</source>
       <translation>Limites du Skipdraw :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1044"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="505"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="988"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="578"/>
+      <source>Disable Depth Conversion</source>
+      <translation>Désactiver la conversion des profondeurs</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1023"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="527"/>
       <source>GPU Palette Conversion</source>
       <translation>Conversion de palette GPU</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="678"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="509"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="664"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="531"/>
       <source>Manual Hardware Renderer Fixes</source>
       <translation>Correctifs manuels du moteur de rendu matériel</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="671"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="518"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="643"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="540"/>
       <source>Spin GPU During Readbacks</source>
       <translation>Garder le GPU actif lors des readbacks</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="685"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="514"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="657"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
       <source>Spin CPU During Readbacks</source>
       <translation>Garder le CPU actif lors des readbacks</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="751"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="730"/>
       <source> threads</source>
       <translation> threads</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="760"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="534"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="650"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="739"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="499"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="554"/>
       <source>Mipmapping</source>
       <translation>Mipmapping</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="767"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="529"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="554"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="746"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="549"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="574"/>
       <source>Auto Flush</source>
       <translation>Purge auto.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="777"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="756"/>
       <source>Hardware Fixes</source>
       <translation>Correctifs matériels</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2135"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2143"/>
       <source>Force Disabled</source>
       <translation>Désactivé (forcé)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2140"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2148"/>
       <source>Force Enabled</source>
       <translation>Activé (forcé)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="783"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="762"/>
       <source>CPU Sprite Render Size:</source>
       <translation>Taille rendu CPU sprites :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="793"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="879"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="886"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="539"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="542"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="772"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="858"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="865"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="559"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="562"/>
       <source>0 (Disabled)</source>
       <extracomment>0 (Disabled)</extracomment>
       <translation>0 (désactivé)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="798"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="777"/>
       <source>1 (64 Max Width)</source>
       <translation>1 (Largeur max. : 64)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="803"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="782"/>
       <source>2 (128 Max Width)</source>
       <translation>2 (Largeur max. : 128)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="808"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="787"/>
       <source>3 (192 Max Width)</source>
       <translation>3 (Largeur max. : 192)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="813"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="792"/>
       <source>4 (256 Max Width)</source>
       <translation>4 (Largeur max. : 256)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="818"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="797"/>
       <source>5 (320 Max Width)</source>
       <translation>5 (Largeur max. : 320)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="823"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="802"/>
       <source>6 (384 Max Width)</source>
       <translation>6 (Largeur max. : 384)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="828"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="807"/>
       <source>7 (448 Max Width)</source>
       <translation>7 (Largeur max. : 448)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="833"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="812"/>
       <source>8 (512 Max Width)</source>
       <translation>8 (Largeur max. : 512)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="838"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="817"/>
       <source>9 (576 Max Width)</source>
       <translation>9 (Largeur max. : 576)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="843"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="822"/>
       <source>10 (640 Max Width)</source>
       <translation>10 (Largeur max. : 640)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1009"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="558"/>
-      <source>Disable Depth Emulation</source>
-      <translation>Désactiver l'émulation de la profondeur</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1023"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="562"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1002"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="582"/>
       <source>Disable Safe Features</source>
       <translation>Désactiver les fonctionnalités sûres</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1037"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="579"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1016"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="599"/>
       <source>Preload Frame Data</source>
       <translation>Précharger les données des images</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="582"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="602"/>
       <source>Texture Inside RT</source>
       <translation>Texture dans RT</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="891"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="870"/>
       <source>1 (Normal)</source>
       <translation>1 (normal)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="896"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="875"/>
       <source>2 (Aggressive)</source>
       <translation>2 (agressif)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="872"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="851"/>
       <source>Software CLUT Render:</source>
       <translation>Rendu logiciel des CLUT :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="904"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="883"/>
       <source>GPU Target CLUT:</source>
       <extracomment>CLUT: Color Look Up Table, often referred to as a palette in non-PS2 things.  GPU Target CLUT: GPU handling of when a game uses data from a render target as a CLUT.</extracomment>
       <translation>CLUT dans une cible GPU :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="912"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="938"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="964"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="891"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="917"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="943"/>
       <source>Disabled (Default)</source>
       <translation>Désactivé (par défaut)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="917"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="896"/>
       <source>Enabled (Exact Match)</source>
       <translation>Activé (correspondance exacte)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="922"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="901"/>
       <source>Enabled (Check Inside Target)</source>
       <translation>Activé (vérifier dans la cible)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1075"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1054"/>
       <source>Upscaling Fixes</source>
       <translation>Correctifs de mise à l'échelle</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1081"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1060"/>
       <source>Half Pixel Offset:</source>
       <translation>Décalage demi-pixel :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1094"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1073"/>
       <source>Normal (Vertex)</source>
       <translation>Normal (sommet)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1099"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1078"/>
       <source>Special (Texture)</source>
       <translation>Spécial (texture)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1104"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1083"/>
       <source>Special (Texture - Aggressive)</source>
       <translation>Spécial (texture, agressif)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1117"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1122"/>
       <source>Round Sprite:</source>
       <translation>Arrondir les sprites :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1130"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1135"/>
       <source>Half</source>
       <translation>Moitié</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1135"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1140"/>
       <source>Full</source>
       <translation>Complet</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1143"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1174"/>
       <source>Texture Offsets:</source>
       <translation>Décalage des textures :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1152"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1183"/>
       <source>X:</source>
       <translation>X :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1166"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1197"/>
       <source>Y:</source>
       <translation>Y :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1205"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="625"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1229"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="644"/>
       <source>Merge Sprite</source>
       <translation>Fusionner les sprites</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1184"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="613"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1215"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="633"/>
       <source>Align Sprite</source>
       <translation>Aligner les sprites</translation>
     </message>
@@ -10684,511 +10832,566 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>Désactivé</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="852"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="407"/>
+      <source>Apply Widescreen Patches</source>
+      <translation>Appliquer les patchs écran large</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="414"/>
+      <source>Apply No-Interlacing Patches</source>
+      <translation>Patchs de désactivation de l'entrelacement</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="240"/>
+      <source>Window Resolution (Aspect Corrected)</source>
+      <translation>Résolution de la fenêtre (format d'image corrigé)</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="245"/>
+      <source>Internal Resolution (Aspect Corrected)</source>
+      <translation>Résolution interne (format d'image corrigé)</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="250"/>
+      <source>Internal Resolution (No Aspect Correction)</source>
+      <translation>Résolution interne (format d'image original)</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="269"/>
+      <source>WebP</source>
+      <translation>WebP</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="566"/>
+      <source>Force 32bit</source>
+      <translation>Forcer 32 bits</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="831"/>
       <source>Sprites Only</source>
       <translation>Sprites uniquement</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="857"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="836"/>
       <source>Sprites/Triangles</source>
       <translation>Sprites/Triangles</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="862"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="841"/>
       <source>Blended Sprites/Triangles</source>
       <translation>Sprites et triangles mélangés</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="930"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="909"/>
       <source>Auto Flush:</source>
       <translation>Purge auto. :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="943"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="922"/>
       <source>Enabled (Sprites Only)</source>
       <translation>Activé (sprites uniquement)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="948"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="927"/>
       <source>Enabled (All Primitives)</source>
       <translation>Activé (toutes les primitives)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="956"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="935"/>
       <source>Texture Inside RT:</source>
       <translation>Texture dans la cible du rendu :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="969"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="948"/>
       <source>Inside Target</source>
       <translation>Dans la cible</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="974"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="953"/>
       <source>Merge Targets</source>
       <translation>Fusionner les cibles</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1016"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="571"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="995"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="591"/>
       <source>Disable Partial Source Invalidation</source>
       <translation>Désactiver l'invalidation partielle des sources</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1030"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="585"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1009"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="605"/>
       <source>Read Targets When Closing</source>
       <translation>Lire les cibles lors de la fermeture</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1058"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="589"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1037"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="609"/>
       <source>Estimate Texture Region</source>
       <translation>Estimer la taille des textures</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1065"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="569"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1044"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="589"/>
       <source>Disable Render Fixes</source>
       <translation>Désactiver les correctifs de rendu</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1109"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1088"/>
       <source>Align To Native</source>
       <translation>Aligner au rendu à la résolution native</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1191"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1222"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="647"/>
       <source>Unscaled Palette Texture Draws</source>
       <translation>Ne pas redim. les textures de palette</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1198"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="618"/>
-      <source>Wild Arms Hack</source>
-      <extracomment>Wild Arms: name of a game series. Leave as-is or use an official translation.</extracomment>
-      <translation>Hack « Wild Arms »</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1214"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1148"/>
       <source>Bilinear Dirty Upscale:</source>
       <translation>Mise à l'échelle bilinéaire rapide :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1227"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1161"/>
       <source>Force Bilinear</source>
-      <translation>Forcer « bilinéaire »</translation>
+      <translation>Forcer « bilinéaire »</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1232"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1166"/>
       <source>Force Nearest</source>
-      <translation>Forcer « au plus proche »</translation>
+      <translation>Forcer « au plus proche »</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1241"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1246"/>
       <source>Texture Replacement</source>
       <translation>Textures de rempl.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1247"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1303"/>
       <source>Search Directory</source>
       <translation>Dossier</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1256"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1731"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1312"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1961"/>
       <source>Browse...</source>
       <translation>Parcourir…</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1263"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1738"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1319"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1968"/>
       <source>Open...</source>
       <translation>Ouvrir…</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1270"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1745"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1326"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1975"/>
       <source>Reset</source>
       <translation>Réinitialiser</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1277"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1333"/>
       <source>PCSX2 will dump and load texture replacements from this directory.</source>
       <translation>PCSX2 utilisera ce dossier pour dumper les textures et charger les textures de remplacement.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1287"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1252"/>
       <source>Options</source>
       <translation>Options</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1293"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="634"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1279"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="653"/>
       <source>Dump Textures</source>
       <translation>Dumper les textures</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1300"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="636"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1286"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
       <source>Dump Mipmaps</source>
       <translation>Dumper les mipmaps</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1307"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="638"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1293"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="657"/>
       <source>Dump FMV Textures</source>
       <translation>Dumper les textures FMV</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1321"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1272"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
       <source>Load Textures</source>
       <translation>Charger les textures</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1328"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="644"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1096"/>
+      <source>Native Scaling</source>
+      <translation>Mise à l'échelle native</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1109"/>
+      <source>Normal</source>
+      <translation>Normal</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1114"/>
+      <source>Aggressive</source>
+      <translation>Agressif</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1236"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="637"/>
+      <source>Force Even Sprite Position</source>
+      <translation>Forcer une position des sprites paire</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1258"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
       <source>Precache Textures</source>
       <translation>Mise en cache anticipée des textures</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1352"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1357"/>
       <source>Post-Processing</source>
       <translation>Post-traitement</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1358"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1363"/>
       <source>Sharpening/Anti-Aliasing</source>
       <translation>Netteté et anticrénelage</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1364"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1369"/>
       <source>Contrast Adaptive Sharpening:</source>
       <extracomment>You might find an official translation for this on AMD&apos;s website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx</extracomment>
       <translation>Contrast Adaptive Sharpening :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1374"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1442"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="650"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="667"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1379"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1447"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="686"/>
       <source>None (Default)</source>
       <translation>Désactivé (par défaut)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1379"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1384"/>
       <source>Sharpen Only (Internal Resolution)</source>
       <translation>Netteté uniquement (résolution interne)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1384"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1389"/>
       <source>Sharpen and Resize (Display Resolution)</source>
       <translation>Netteté et mise à l'échelle (résolution d'affichage)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1394"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1399"/>
       <source>Sharpness:</source>
       <translation>Netteté :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1418"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1423"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
       <source>FXAA</source>
       <translation>FXAA</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1428"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1433"/>
       <source>Filters</source>
       <translation>Filtres</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1434"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1439"/>
       <source>TV Shader:</source>
       <translation>Shader TV :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1447"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1452"/>
       <source>Scanline Filter</source>
       <translation>Filtre scanline</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1452"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1457"/>
       <source>Diagonal Filter</source>
       <translation>Filtre diagonale</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1457"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1462"/>
       <source>Triangular Filter</source>
       <translation>Filtre triangulaire</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1462"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1467"/>
       <source>Wave Filter</source>
       <translation>Filtre vague</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1467"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1472"/>
       <source>Lottes CRT</source>
       <extracomment>Lottes = Timothy Lottes, the creator of the shader filter. Leave as-is. CRT= Cathode Ray Tube, an old type of television technology.</extracomment>
       <translation>Lottes CRT</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1472"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1477"/>
       <source>4xRGSS downsampling (4x Rotated Grid SuperSampling)</source>
       <translation>4xRGSS (suréchantillonnage x4 à grille pivotée)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1477"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1482"/>
       <source>NxAGSS downsampling (Nx Automatic Grid SuperSampling)</source>
       <translation>NxAGSS (suréchantillonnage Nx à grille automatique)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1485"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="654"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1490"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="673"/>
       <source>Shade Boost</source>
       <translation>Shade Boost</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1507"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1512"/>
       <source>Brightness:</source>
       <translation>Luminosité :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1524"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1529"/>
       <source>Contrast:</source>
       <translation>Contraste :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="665"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="684"/>
       <source>Saturation</source>
       <translation>Saturation</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1577"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1582"/>
       <source>OSD</source>
       <translation>OSD</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1583"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1588"/>
       <source>On-Screen Display</source>
       <translation>Affichage à l'écran (OSD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1589"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1594"/>
       <source>OSD Scale:</source>
       <translation>Échelle de l'affichage à l'écran :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1611"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="695"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1616"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="714"/>
       <source>Show Indicators</source>
       <translation>Afficher des indicateurs</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1618"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="685"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1623"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="704"/>
       <source>Show Resolution</source>
       <translation>Afficher la résolution</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1625"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="701"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1630"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="720"/>
       <source>Show Inputs</source>
       <translation>Afficher les entrées</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1632"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="690"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1637"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="709"/>
       <source>Show GPU Usage</source>
       <translation>Afficher l'utilisation du GPU</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1639"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="698"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1644"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
       <source>Show Settings</source>
       <translation>Afficher les paramètres</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1646"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="679"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1651"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="698"/>
       <source>Show FPS</source>
       <translation>Afficher la fréquence d'images</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2157"/>
-      <source>Disable Dual-Source Blending</source>
-      <translation>Désactiver le Dual-Source Blending</translation>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2086"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="788"/>
+      <source>Disable Mailbox Presentation</source>
+      <translation>Désactiver le mode de présentation Mailbox</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2164"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2165"/>
       <source>Disable Shader Cache</source>
       <translation>Désactiver le cache des shaders</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2178"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2172"/>
       <source>Disable Vertex Shader Expand</source>
       <translation>Désactiver l'expansion par vertex shader</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1660"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1665"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="711"/>
       <source>Show Statistics</source>
       <translation>Afficher des statistiques</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1314"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="640"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1265"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
       <source>Asynchronous Texture Loading</source>
       <translation>Chargement asynchrone des textures</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1541"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1546"/>
       <source>Saturation:</source>
       <translation>Saturation :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1667"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="688"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
       <source>Show CPU Usage</source>
       <translation>Afficher l'utilisation du CPU</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1681"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1686"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="726"/>
       <source>Warn About Unsafe Settings</source>
       <translation>Avertir des paramètres dangereux</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1688"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1693"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="724"/>
       <source>Show Frame Times</source>
       <translation>Afficher les durées d'image</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1714"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1719"/>
       <source>Recording</source>
       <translation>Enregistrement</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1720"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1950"/>
       <source>Video Dumping Directory</source>
       <translation>Dossier des dumps vidéo</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1757"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1728"/>
       <source>Capture Setup</source>
       <translation>Configuration de la capture</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1763"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1725"/>
+      <source>capture</source>
+      <translation>capture</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1734"/>
       <source>Container:</source>
       <translation>Conteneur :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1796"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1864"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1767"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1835"/>
       <source>Codec:</source>
       <translation>Codec :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1829"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1954"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1800"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1925"/>
       <source>Extra Arguments</source>
       <translation>Arguments supplémentaires</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1842"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1813"/>
       <source>Capture Audio</source>
       <translation>Capture audio</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1897"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1868"/>
       <source>Resolution:</source>
       <translation>Résolution :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1922"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1893"/>
       <source>x</source>
       <translation>x</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1945"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1916"/>
       <source>Auto</source>
       <translation>Auto.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1967"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1938"/>
       <source>Capture Video</source>
       <translation>Capture vidéo</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1993"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2001"/>
       <source>Advanced</source>
       <extracomment>Advanced here refers to the advanced graphics options.</extracomment>
       <translation>Avancé</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1999"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2007"/>
       <source>Advanced Options</source>
       <translation>Options avancées</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2005"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2013"/>
       <source>Hardware Download Mode:</source>
       <translation>Mode de téléchargement matériel :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2013"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2021"/>
       <source>Accurate (Recommended)</source>
       <translation>Précis (recommandé)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2018"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2026"/>
       <source>Disable Readbacks (Synchronize GS Thread)</source>
       <translation>Désactiver les readbacks (synchroniser le thread GS)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2023"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2031"/>
       <source>Unsynchronized (Non-Deterministic)</source>
       <translation>Non synchronisé (non-déterministe)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2028"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2036"/>
       <source>Disabled (Ignore Transfers)</source>
       <translation>Désactivé (ignorer les transferts)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2036"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2044"/>
       <source>GS Dump Compression:</source>
       <translation>Compression des dumps du GS :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2044"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2052"/>
       <source>Uncompressed</source>
       <translation>Sans compression</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2049"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2057"/>
       <source>LZMA (xz)</source>
       <translation>LZMA (xz)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2054"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="749"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2062"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="768"/>
       <source>Zstandard (zst)</source>
       <translation>Zstandard (zst)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2064"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="763"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2072"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="782"/>
       <source>Skip Presenting Duplicate Frames</source>
       <translation>Sauter la présentation des images en double</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2071"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="753"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2079"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="772"/>
       <source>Use Blit Swap Chain</source>
       <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft&apos;s Terminology Portal.
 ----------
@@ -11197,62 +11400,56 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <translation>Utiliser la chaîne d'échange BLIT</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2078"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="769"/>
-      <source>Disable Threaded Presentation</source>
-      <translation>Désactiver la présentation threadée</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1806"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1874"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1777"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1845"/>
       <source>Bitrate:</source>
       <translation>Débit :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1813"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1881"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1784"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1852"/>
       <source> kbps</source>
       <extracomment>Unit that will appear next to a number. Alter the space or whatever is needed before the text depending on your language.</extracomment>
-      <translation> kbps</translation>
+      <translation> kb/s</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2087"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2095"/>
       <source>Allow Exclusive Fullscreen:</source>
-      <translation>Autoriser le mode plein écran exclusif :</translation>
+      <translation>Autoriser le mode Plein écran exclusif :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2100"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2108"/>
       <source>Disallowed</source>
       <translation>Interdit</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2105"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2113"/>
       <source>Allowed</source>
       <translation>Autorisé</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2116"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2124"/>
       <source>Debugging Options</source>
       <translation>Options de débogage</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2122"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2130"/>
       <source>Override Texture Barriers:</source>
       <translation>Barrières de texture :</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2171"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2179"/>
       <source>Use Debug Device</source>
       <translation>Utiliser le périphérique de débogage</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1674"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1679"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="701"/>
       <source>Show Speed Percentages</source>
       <translation>Afficher les pourcentages de vitesse</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2150"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2158"/>
       <source>Disable Framebuffer Fetch</source>
       <translation>Désactiver la récupération du framebuffer</translation>
     </message>
@@ -11319,953 +11516,944 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <translation>16x</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="268"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1022"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1051"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="282"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1056"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1085"/>
       <source>Use Global Setting [%1]</source>
       <translation>Utiliser le paramètre global [%1]</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="397"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="400"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="403"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="410"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="415"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="424"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="422"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="425"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="428"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="505"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="509"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="514"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="518"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="554"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="558"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="562"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="569"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="571"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="575"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="579"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="585"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="435"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="440"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="449"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="527"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="531"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="540"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="574"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="578"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="582"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="589"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="613"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="618"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="622"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="625"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="634"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="636"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="638"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="591"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="595"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="599"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="605"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="609"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="633"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="637"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="641"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="644"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="654"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="679"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="685"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="688"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="690"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="647"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="653"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="657"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="673"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="698"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="701"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="726"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="739"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="753"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="763"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="769"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="774"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="704"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="709"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="711"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="720"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="724"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="740"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="745"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="758"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="772"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="782"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="788"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="792"/>
       <source>Unchecked</source>
       <translation>décoché</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="398"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="423"/>
       <source>Automatically loads and applies widescreen patches on game start. Can cause issues.</source>
       <translation>Charger et appliquer automatiquement des patchs écran large au lancement du jeu. Cette option peut causer des problèmes.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="401"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="426"/>
       <source>Automatically loads and applies no-interlacing patches on game start. Can cause issues.</source>
       <translation>Charger et appliquer automatiquement des patchs de désactivation de l'entrelacement au lancement du jeu. Cette option peut causer des problèmes.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="404"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="429"/>
       <source>Disables interlacing offset which may reduce blurring in some situations.</source>
       <translation>Désactiver le décalage d'entrelacement, cela pourrait atténuer le flou dans certaines situations.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="406"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="431"/>
       <source>Bilinear Filtering</source>
       <translation>Filtrage bilinéaire</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="407"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="432"/>
       <source>Enables bilinear post processing filter. Smooths the overall picture as it is displayed on the screen. Corrects positioning between pixels.</source>
       <translation>Activer le filtre post-traitement bilinéaire. Ce filtre lisse l'image au moment de l'afficher à l'écran. Cela permet de corriger l'alignement des pixels.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="412"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="437"/>
       <source>Enables PCRTC Offsets which position the screen as the game requests. Useful for some games such as WipEout Fusion for its screen shake effect, but can make the picture blurry.</source>
       <extracomment>PCRTC: Programmable CRT (Cathode Ray Tube) Controller.</extracomment>
-      <translation>Activer les « PCRTC Offsets » qui permettent de positionner l'écran comme demandé par le jeu. Cette option est utile pour certains jeux comme WipEout Fusion pour son effet d'agitation de l'écran, mais elle peut rendre l'image floue.</translation>
+      <translation>Activer les « PCRTC Offsets » qui permettent de positionner l'écran comme demandé par le jeu. Cette option est utile pour certains jeux comme WipEout Fusion pour son effet d'agitation de l'écran, mais elle peut rendre l'image floue.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="416"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="441"/>
       <source>Enables the option to show the overscan area on games which draw more than the safe area of the screen.</source>
       <translation>Afficher la zone de surbalayage pour les jeux qui dessinent au-delà de la zone sûre de l'écran.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="419"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
       <source>FMV Aspect Ratio</source>
       <translation>Format d'image FMV</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="419"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
       <source>Overrides the full-motion video (FMV) aspect ratio.</source>
       <translation>Changer de format d'image pendant les cinématiques vidéo (FMV).</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="436"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
       <source>Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the available options.</source>
-      <translation>Déterminez la méthode de désentrelacement à utiliser lorsque la sortie vidéo de la console émulée est entrelacée. « Automatique » devrait permettre de désentrelacer correctement la plupart des jeux, mais si vous observez que les graphismes tremblent, essayez l'une des options disponibles.</translation>
+      <translation>Déterminez la méthode de désentrelacement à utiliser lorsque la sortie vidéo de la console émulée est entrelacée. « Automatique » devrait permettre de désentrelacer correctement la plupart des jeux, mais si vous observez que l'image tremble, essayez l'une des options disponibles.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="484"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="505"/>
       <source>Control the texture&apos;s trilinear filtering of the emulation.</source>
       <translation>Contrôlez l'utilisation du filtrage trilinéaire des textures.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="496"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="518"/>
       <source>Control the accuracy level of the GS blending unit emulation.&lt;br&gt; The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will be.&lt;br&gt; Do note that Direct3D&apos;s blending is reduced in capability compared to OpenGL/Vulkan.</source>
       <translation>Contrôlez la précision de l'émulation de la blending unit du GS.&lt;br&gt; Plus le paramètre est élevé, meilleure est l'émulation des fusions et plus la pénalité de vitesse est importante.&lt;br&gt; Notez que l'émulation des fusions est plus limitée avec Direct3D qu'avec OpenGL ou Vulkan.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="523"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="545"/>
       <source>Software Rendering Threads</source>
       <translation>Threads de rendu logiciel</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="539"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="559"/>
       <source>CPU Sprite Render Size</source>
       <translation>Taille du rendu CPU des sprites</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="542"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="562"/>
       <source>Software CLUT Render</source>
       <translation>Rendu logiciel des CLUT</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="546"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="566"/>
       <source>Try to detect when a game is drawing its own color palette and then renders it on the GPU with special handling.</source>
       <translation>Essayer de détecter lorsqu'un jeu dessine sa propre palette de couleurs, et laisser le GPU effectuer son rendu différemment des autres rendus.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="569"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="589"/>
       <source>This option disables game-specific render fixes.</source>
       <translation>Cette option désactive les correctifs de rendu propres à chaque jeu.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="572"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="592"/>
       <source>By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise. This hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load. It helps with the Snowblind engine games.</source>
       <translation>Par défaut, le cache des textures prend en charge les invalidations partielles. Malheureusement, cette opération est très coûteuse pour le CPU. Ce hack remplace les invalidations partielles par une suppression complète de la texture pour réduire la charge CPU. Cette option améliore les performances des jeux basés sur le moteur Snowblind.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1051"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="575"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1030"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="595"/>
       <source>Framebuffer Conversion</source>
       <translation>Conversion des framebuffers</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="576"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="596"/>
       <source>Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU. Helps Harry Potter and Stuntman games. It has a big impact on performance.</source>
       <translation>Utiliser le CPU pour convertir les framebuffers 4 bits et 8 bits plutôt que le GPU. Aide à l'émulation des jeux Harry Potter et Stuntman. Cette option impacte fortement les performances.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="545"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="582"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="565"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="602"/>
       <source>Disabled</source>
       <translation>désactivé</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="307"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="321"/>
       <source>Remove Unsupported Settings</source>
       <translation>Supprimer les paramètres non pris en charge</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="308"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="322"/>
       <source>You currently have the &lt;strong&gt;Enable Widescreen Patches&lt;/strong&gt; or &lt;strong&gt;Enable No-Interlacing Patches&lt;/strong&gt; options enabled for this game.&lt;br&gt;&lt;br&gt;We no longer support these options, instead &lt;strong&gt;you should select the &quot;Patches&quot; section, and explicitly enable the patches you want.&lt;/strong&gt;&lt;br&gt;&lt;br&gt;Do you want to remove these options from your game configuration now?</source>
-      <translation>Actuellement, au moins une des options suivantes est activée pour ce jeu : &lt;strong&gt;Activer les patchs écran large&lt;/strong&gt;, &lt;strong&gt;Patchs de désactivation de l'entrelacement&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Ces options ne sont plus prises en charge, &lt;strong&gt;vous devriez plutôt sélectionner la section « Patchs » et activer explicitement les patchs de votre choix.&lt;/strong&gt;&lt;br&gt;&lt;br&gt;Voulez-vous supprimer ces options de la configuration propre à ce jeu ?</translation>
+      <translation>Actuellement, au moins une des options suivantes est activée pour ce jeu : &lt;strong&gt;Activer les patchs écran large&lt;/strong&gt;, &lt;strong&gt;Patchs de désactivation de l'entrelacement&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Ces options ne sont plus prises en charge, &lt;strong&gt;vous devriez plutôt sélectionner la section « Patchs » et activer explicitement les patchs de votre choix.&lt;/strong&gt;&lt;br&gt;&lt;br&gt;Voulez-vous supprimer ces options de la configuration propre à ce jeu ?</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="583"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="511"/>
+      <source>Reduces banding between colors and improves the perceived color depth.&lt;br&gt; Off: Disables any dithering.&lt;br&gt; Scaled: Upscaling-aware / Highest dithering effect.&lt;br&gt; Unscaled: Native Dithering / Lowest dithering effect does not increase size of squares when upscaling.&lt;br&gt; Force 32bit: Treat all draws as if they were 32bit to avoid banding and dithering.</source>
+      <translation>Réduit l'effet de bande entre les couleurs et améliore la profondeur de couleur perçue.&lt;br&gt; Désactivé : désactiver tout dithering.&lt;br&gt; Mis à l'échelle : prendre en compte la mise à l'échelle. Effet de dithering maximal.&lt;br&gt; Taille originale : dithering natif. Effet minime qui n'augmente pas la taille des carrés lors de la mise à l'échelle.&lt;br&gt; Forcer 32 bits : traiter toutes les commandes de dessin comme si elles étaient sur 32 bits pour éviter l'effet de bande et le dithering.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="537"/>
+      <source>Does useless work on the CPU during readbacks to prevent it from going to into powersave modes. May improve performance during readbacks but with a significant increase in power usage.</source>
+      <translation>Envoyer des opérations inutiles au CPU lors des readbacks afin d'éviter qu'il passe en mode économie d'énergie. Cela peut améliorer les performances lors des readbacks, au prix d'une augmentation significative de la consommation d'énergie.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="541"/>
+      <source>Submits useless work to the GPU during readbacks to prevent it from going into powersave modes. May improve performance during readbacks but with a significant increase in power usage.</source>
+      <translation>Envoyer des opérations inutiles au GPU lors des readbacks afin d'éviter qu'il passe en mode économie d'énergie. Cela peut améliorer les performances lors des readbacks, au prix d'une augmentation significative de la consommation d'énergie.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="546"/>
+      <source>Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging). 2 to 4 threads is recommended, any more than that is likely to be slower instead of faster.</source>
+      <translation>Nombre de threads de rendu : 0 pour un seul thread, 2 ou plus pour du multithreading (1 sert au débogage). Nous vous recommandons d'utiliser entre 2 et 4 threads ; utiliser plus de 4 threads pourrait ralentir l'émulation au lieu de l'accélérer.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="579"/>
+      <source>Disable the support of depth buffers in the texture cache. Will likely create various glitches and is only useful for debugging.</source>
+      <translation>Désactiver la prise en charge des depth buffers dans le cache des textures. Cette option ne sert qu'au débogage et son activation engendrera un certain nombre de glitchs.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="603"/>
       <source>Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.</source>
       <translation>Autoriser le cache des textures à utiliser en texture d'entrée une partie d'un framebuffer précédent.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="586"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="606"/>
       <source>Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving state or switching renderers, but can also cause graphical corruption.</source>
       <translation>Au moment d'éteindre la machine virtuelle, transférer les cibles du cache des textures dans la mémoire locale. Cela permet d'éviter la perte de certains visuels lors de la sauvegarde d'état ou lorsque vous changez de moteur de rendu, mais cela peut corrompre les graphismes.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="590"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="610"/>
       <source>Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).</source>
       <translation>Essayer de réduire la taille des textures lorsque les jeux ne la définissent pas eux-mêmes (exemple : les jeux Snowblind).</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="615"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="635"/>
       <source>Fixes issues with upscaling (vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc.</source>
       <extracomment>Namco: a game publisher and development company. Leave the name as-is. Ace Combat, Tekken, Soul Calibur: game names. Leave as-is or use official translations.</extracomment>
       <translation>Corriger des problèmes liés à la mise à l'échelle, comme les lignes verticales apparaissant dans les jeux Namco (Ace Combat, Tekken, Soul Calibur, etc.).</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="634"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="653"/>
       <source>Dumps replaceable textures to disk. Will reduce performance.</source>
       <translation>Dumper sur le disque les textures pouvant être remplacées. Cela réduira les performances.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="636"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
       <source>Includes mipmaps when dumping textures.</source>
       <translation>Inclure les mipmaps lors du dumping des textures.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="638"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="657"/>
       <source>Allows texture dumping when FMVs are active. You should not enable this.</source>
       <translation>Autoriser le dumping des textures lorsqu'une cinématique vidéo est en cours de lecture. Vous ne devriez pas activer cette option.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="640"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
       <source>Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled.</source>
       <translation>Charger les textures de remplacement sur un thread séparé afin d'éviter les micro-ralentissements lorsque les textures de remplacement sont activées.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
       <source>Loads replacement textures where available and user-provided.</source>
       <translation>Charger les textures de remplacement fournies par l'utilisateur.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="644"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
       <source>Preloads all replacement textures to memory. Not necessary with asynchronous loading.</source>
       <translation>Précharger en mémoire l'ensemble des textures de remplacement. L'activation de cette option n'est pas nécessaire si le chargement asynchrone est activé.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="650"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
       <source>Enables FidelityFX Contrast Adaptive Sharpening.</source>
       <translation>Activer FidelityFX Contrast Adaptive Sharpening.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="652"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="671"/>
       <source>Determines the intensity the sharpening effect in CAS post-processing.</source>
       <translation>Déterminez l'intensité de l'effet de netteté du post-traitement CAS.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
       <source>Adjusts brightness. 50 is normal.</source>
       <translation>Ajustez la luminosité. 50 correspond à la luminosité normale.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
       <source>Adjusts contrast. 50 is normal.</source>
       <translation>Ajustez le contraste. 50 correspond au contraste normal.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="665"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="684"/>
       <source>Adjusts saturation. 50 is normal.</source>
       <translation>Ajustez la saturation. 50 correspond à la saturation normale.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="673"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
       <source>Scales the size of the onscreen OSD from 50% to 500%.</source>
       <translation>Modifier la taille de l'affichage à l'écran entre 50 % et 500 %.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="696"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="715"/>
       <source>Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast-Forward, and Slow-Motion.</source>
       <translation>Afficher une icône à l'écran indiquant l'état actuel de l'émulation, tel que : mise en pause, turbo, avance rapide et ralenti.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="699"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="718"/>
       <source>Displays various settings and the current values of those settings, useful for debugging.</source>
       <translation>Afficher divers paramètres et leur valeur actuelle. Utile au débogage.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="724"/>
       <source>Displays a graph showing the average frametimes.</source>
       <translation>Afficher un graphique montrant la moyenne des durées d'image.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="732"/>
       <source>Video Codec</source>
       <translation>Codec vidéo</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="732"/>
       <source>Selects which Video Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
       <translation>Sélectionnez le codec vidéo à utiliser pour la capture vidéo. &lt;b&gt;Laissez le codec par défaut, à part si vous savez ce que vous faites.&lt;b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="736"/>
       <source>Video Bitrate</source>
       <translation>Débit vidéo</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="736"/>
       <source>6000 kbps</source>
-      <translation>6000 kbps</translation>
+      <translation>6 000 kb/s</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="736"/>
       <source>Sets the video bitrate to be used. Larger bitrate generally yields better video quality at the cost of larger resulting file size.</source>
       <translation>Déterminez le débit vidéo à utiliser. En général, plus le débit est élevé, meilleure est la qualité de la vidéo, et plus le fichier est lourd.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="740"/>
       <source>Automatic Resolution</source>
       <translation>Résolution automatique</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="740"/>
       <source>When checked, the video capture resolution will follows the internal resolution of the running game.&lt;br&gt;&lt;br&gt;&lt;b&gt;Be careful when using this setting especially when you are upscaling, as higher internal resolution (above 4x) can results in very large video capture and can cause system overload.&lt;/b&gt;</source>
       <translation>Lorsque la case est cochée, la résolution de la capture vidéo est identique à la résolution interne du jeu que vous enregistrez.&lt;br&gt;&lt;br&gt;&lt;b&gt;Faites particulièrement attention lorsque vous activez cette option et que vous avez augmenté la résolution interne : le fichier contenant la capture vidéo pourrait être gigantesque et votre système pourrait être surchargé.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="726"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="745"/>
       <source>Enable Extra Video Arguments</source>
       <translation>Activer les arguments vidéo supplémentaires</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="726"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="745"/>
       <source>Allows you to pass arguments to the selected video codec.</source>
       <translation>Cette option vous permet de passer des arguments supplémentaires au codec vidéo sélectionné.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="728"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="747"/>
       <source>Extra Video Arguments</source>
       <translation>Arguments vidéo supplémentaires</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="733"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
       <source>Audio Codec</source>
       <translation>Codec audio</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="733"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
       <source>Selects which Audio Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
       <translation>Sélectionnez le codec audio à utiliser pour la capture vidéo. &lt;b&gt;Laissez le codec par défaut, à part si vous savez ce que vous faites.&lt;b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="737"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="756"/>
       <source>Audio Bitrate</source>
       <translation>Débit audio</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="739"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="758"/>
       <source>Enable Extra Audio Arguments</source>
       <translation>Activer les arguments audio supplémentaires</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="739"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="758"/>
       <source>Allows you to pass arguments to the selected audio codec.</source>
       <translation>Cette option vous permet de passer des arguments supplémentaires au codec audio sélectionné.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="741"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="760"/>
       <source>Extra Audio Arguments</source>
       <translation>Arguments audio supplémentaires</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="759"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="778"/>
       <source>Allow Exclusive Fullscreen</source>
-      <translation>Autoriser le mode plein écran exclusif</translation>
+      <translation>Autoriser le mode Plein écran exclusif</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="760"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="779"/>
       <source>Overrides the driver&apos;s heuristics for enabling exclusive fullscreen, or direct flip/scanout.&lt;br&gt;Disallowing exclusive fullscreen may enable smoother task switching and overlays, but increase input latency.</source>
-      <translation>Modifier les heuristiques du pilote pour activer le mode plein écran exclusif, aussi appelé « direct flip » ou « direct scanout ».&lt;br&gt;Interdire le mode plein écran exclusif peut permettre de passer d'une application à l'autre plus rapidement et de rendre les overlays plus fluides, mais la latence d'entrée sera plus importante.</translation>
+      <translation>Modifier les heuristiques du pilote pour activer le mode Plein écran exclusif, aussi appelé « direct flip » ou « direct scanout ».&lt;br&gt;Interdire le mode Plein écran exclusif peut permettre de passer d'une application à l'autre plus rapidement et de rendre les overlays plus fluides, mais la latence d'entrée sera plus importante.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="421"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="529"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="534"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="640"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="675"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="695"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="446"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="499"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="549"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="554"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="694"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="714"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="726"/>
       <source>Checked</source>
       <translation>coché</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="422"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="447"/>
       <source>Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry.</source>
       <translation>Activer les hacks internes anti-flou. L'image sera moins fidèle au rendu PS2 mais cela rendra beaucoup de jeux moins flous.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="425"/>
-      <source>Enable this option to match PCSX2&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (eg. running at non-100% speed).</source>
-      <translation>Activez cette option pour faire correspondre le taux de rafraîchissement de PCSX2 avec celui de votre écran. La VSync est désactivée automatiquement si nécessaire (par exemple : vitesse d'exécution différente de 100 %).</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="338"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="428"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="400"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="449"/>
       <source>Integer Scaling</source>
       <translation>Mise à l'échelle par multiplicateur entier</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="429"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="450"/>
       <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games.</source>
       <translation>Ajouter une zone de remplissage autour de la sortie vidéo pour s'assurer que le ratio entre les pixels de l'hôte et les pixels de la console soit un nombre entier. Vous obtiendrez une image plus nette dans certains jeux 2D.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="432"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="453"/>
       <source>Aspect Ratio</source>
       <translation>Format d'image</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="432"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="453"/>
       <source>Auto Standard (4:3/3:2 Progressive)</source>
       <translation>Standard auto (4:3 et 3:2 progressif)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="433"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="454"/>
       <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto Standard (4:3/3:2 Progressive) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
       <translation>Modifier le format d'image utilisé pour l'affichage de la sortie vidéo de la console. La valeur par défaut est Standard auto (4:3 et 3:2 progressif) : le format d'image est ajusté pour correspondre à la manière dont le jeu serait affiché sur une télévision typique de l'époque.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="436"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
       <source>Deinterlacing</source>
       <translation>Désentrelacement</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="438"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="459"/>
       <source>Screenshot Size</source>
       <translation>Taille des captures d'écran</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="439"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="460"/>
       <source>Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of file size.</source>
-      <translation>Déterminez la résolution à laquelle les captures d'écran doivent être enregistrées. Les options « résolution interne » préservent plus de détails au prix d'une taille de fichier plus importante.</translation>
+      <translation>Déterminez la résolution à laquelle les captures d'écran doivent être enregistrées. Les options « résolution interne » préservent plus de détails au prix d'une taille de fichier plus importante.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="442"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="463"/>
       <source>Screenshot Format</source>
       <translation>Format des captures d'écran</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="443"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="464"/>
       <source>Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail.</source>
       <translation>Sélectionnez le format à utiliser pour enregistrer les captures d'écran. Le format JPEG permet d'obtenir des fichiers plus petits, mais vous perdrez en détails.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="445"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="466"/>
       <source>Screenshot Quality</source>
       <translation>Qualité des captures d'écran</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="445"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="652"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="466"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="671"/>
       <source>50%</source>
       <translation>50 %</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="446"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="467"/>
       <source>Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG, and reduce file size for PNG.</source>
       <translation>Sélectionnez la qualité des captures d'écran compressées. Plus la valeur est élevée, plus les détails sont préservés (JPEG) ou plus la taille du fichier est réduite (PNG).</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="449"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="673"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="470"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
       <source>100%</source>
       <translation>100 %</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="449"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="470"/>
       <source>Vertical Stretch</source>
       <translation>Étirement vertical</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="451"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="472"/>
       <source>Stretches (&amp;lt; 100%) or squashes (&amp;gt; 100%) the vertical component of the display.</source>
       <translation>Étirer (&amp;lt; 100 %) ou aplatir (&amp;gt; 100 %) la composante verticale de l'affichage.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="453"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="474"/>
       <source>Fullscreen Mode</source>
-      <translation>Mode plein écran</translation>
+      <translation>Mode Plein écran</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="453"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1045"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1051"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="474"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1079"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1085"/>
       <source>Borderless Fullscreen</source>
       <translation>Fenêtré sans bordure</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="454"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="475"/>
       <source>Chooses the fullscreen resolution and frequency.</source>
-      <translation>Choisissez la résolution et la fréquence à utiliser pour le mode plein écran.</translation>
+      <translation>Choisissez la résolution et la fréquence à utiliser pour le mode Plein écran.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
       <source>Left</source>
       <translation>Gauche</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="460"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="463"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="466"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="484"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="487"/>
       <source>0px</source>
       <translation>0 px</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
       <source>Changes the number of pixels cropped from the left side of the display.</source>
       <translation>Modifier le nombre de pixels à rogner depuis le côté gauche de l'écran.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="460"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
       <source>Top</source>
       <translation>Haut</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="460"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
       <source>Changes the number of pixels cropped from the top of the display.</source>
       <translation>Modifier le nombre de pixels à rogner depuis le haut de l'écran.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="463"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="484"/>
       <source>Right</source>
       <translation>Droite</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="463"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="484"/>
       <source>Changes the number of pixels cropped from the right side of the display.</source>
       <translation>Modifier le nombre de pixels à rogner depuis le côté droit de l'écran.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="466"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="487"/>
       <source>Bottom</source>
       <translation>Bas</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="466"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="487"/>
       <source>Changes the number of pixels cropped from the bottom of the display.</source>
       <translation>Modifier le nombre de pixels à rogner depuis le bas de l'écran.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="472"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="493"/>
       <source>Native (PS2) (Default)</source>
       <translation>Native (PS2) (par défaut)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="473"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="494"/>
       <source>Control the resolution at which games are rendered. High resolutions can impact performance on older or lower-end GPUs.&lt;br&gt;Non-native resolution may cause minor graphical issues in some games.&lt;br&gt;FMV resolution will remain unchanged, as the video files are pre-rendered.</source>
       <translation>Contrôlez la résolution à laquelle effectuer le rendu. Utiliser une résolution élevée peut impacter les performances sur les GPU anciens ou d'entrée de gamme.&lt;br&gt;Utiliser une résolution autre que la résolution native peut causer des problèmes graphiques mineurs dans certains jeux.&lt;br&gt;La résolution des cinématiques vidéo restera inchangée car les fichiers vidéo sont pré-rendus.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
-      <source>Control the accuracy level of the mipmapping emulation.</source>
-      <translation>Contrôlez le niveau de précision de l'émulation du mipmapping.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="502"/>
       <source>Texture Filtering</source>
       <translation>Filtrage des textures</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="502"/>
       <source>Control the texture filtering of the emulation.</source>
       <translation>Contrôlez le filtrage des textures.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="483"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="504"/>
       <source>Trilinear Filtering</source>
       <translation>Filtrage trilinéaire</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="486"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="507"/>
       <source>Anisotropic Filtering</source>
       <translation>Filtrage anisotrope</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="487"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="508"/>
       <source>Reduces texture aliasing at extreme viewing angles.</source>
       <translation>Améliore la qualité des textures à des angles de vue extrêmes.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="489"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="510"/>
       <source>Dithering</source>
       <translation>Dithering</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="490"/>
-      <source>Reduces banding between colors and improves the perceived color depth.&lt;br&gt; Off: Disables any dithering.&lt;br&gt; Unscaled: Native Dithering / Lowest dithering effect does not increase size of squares when upscaling.&lt;br&gt; Scaled: Upscaling-aware / Highest dithering effect.</source>
-      <translation>Réduit l'effet de bande entre les couleurs et améliore la profondeur de couleur perçue.&lt;br&gt; Désactivé : désactiver tout dithering.&lt;br&gt; Taille originale : dithering natif. Effet minime qui n'augmente pas la taille des carrés lors de la mise à l'échelle.&lt;br&gt; Mis à l'échelle : prendre en compte la mise à l'échelle. Effet de dithering maximal.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="495"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="517"/>
       <source>Blending Accuracy</source>
       <translation>Précision des fusions</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="501"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="523"/>
       <source>Texture Preloading</source>
       <translation>Préchargement des textures</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="502"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="524"/>
       <source>Uploads entire textures at once instead of small pieces, avoiding redundant uploads when possible. Improves performance in most games, but can make a small selection slower.</source>
       <translation>Transférer les textures à utiliser dans leur entièreté, plutôt que des régions spécifiques. Cela évite les transferts de données inutiles. Cette option améliore les performances dans la plupart des jeux, mais peut en ralentir quelques-uns.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="506"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="528"/>
       <source>When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU.</source>
       <translation>Lorsque cette option est activée, le GPU convertit les textures utilisant une palette à la place du CPU. C'est un moyen de répartir la charge de travail entre le GPU et le CPU.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="510"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="532"/>
       <source>Enabling this option gives you the ability to change the renderer and upscaling fixes to your games. However IF you have ENABLED this, you WILL DISABLE AUTOMATIC SETTINGS and you can re-enable automatic settings by unchecking this option.</source>
       <translation>Activer cette option vous donne la possibilité de changer de moteur de rendu et de choisir les correctifs de mise à l'échelle appliqués à vos jeux. Cependant, en ACTIVANT cette option, LES PARAMÈTRES AUTOMATIQUES seront DÉSACTIVÉS. Vous pouvez réactiver les paramètres automatiques en décochant cette option.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="515"/>
-      <source>Does useless work on the CPU during readbacks to prevent it from going to into powersave modes. May improve performance but with a significant increase in power usage.</source>
-      <translation>Envoie des opérations inutiles au CPU lors des readbacks afin d'éviter qu'il passe en mode économie d'énergie. Peut améliorer les performances, au prix d'une augmentation significative de la consommation d'énergie.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="519"/>
-      <source>Submits useless work to the GPU during readbacks to prevent it from going into powersave modes. May improve performance but with a significant increase in power usage.</source>
-      <translation>Envoyer des opérations inutiles au GPU lors des readbacks afin d'éviter qu'il passe en mode économie d'énergie. Cela peut améliorer les performances, au prix d'une augmentation significative de la consommation d'énergie.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="523"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="545"/>
       <source>2 threads</source>
       <translation>2 threads</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="524"/>
-      <source>Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging). If you have 4 threads on your CPU pick 2 or 3. You can calculate how to get the best performance (amount of CPU threads - 2). 7+ threads will not give much more performance and could perhaps even lower it.</source>
-      <translation>Nombre de threads de rendu : 0 pour un seul thread, 2 ou plus pour utiliser plusieurs threads (1 sert au débogage). Si vous avez 4 threads sur votre CPU, choisissez 2 ou 3. Vous pouvez calculer comment obtenir les meilleures performances (nombre de threads du CPU - 2). Utiliser 7 threads ou plus n'améliorera pas significativement les performances et pourrait même les dégrader.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="530"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="555"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="550"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="575"/>
       <source>Force a primitive flush when a framebuffer is also an input texture. Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.</source>
       <translation>Forcer une purge des primitives lorsqu'un framebuffer est aussi utilisé comme texture d'entrée. Cela corrige certains effets post-traitement comme les ombres dans les jeux Jak and Daxter et la radiosité dans GTA:SA.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="534"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="499"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="554"/>
       <source>Enables mipmapping, which some games require to render correctly.</source>
       <translation>Activer le mipmapping, nécessaire au rendu correct de certains jeux.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="540"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="560"/>
       <source>The maximum target memory width that will allow the CPU Sprite Renderer to activate on.</source>
       <translation>Le rendu des sprites sera effectué par le CPU si leur taille en mémoire ne dépasse pas cette valeur maximale.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="543"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="563"/>
       <source>Tries to detect when a game is drawing its own color palette and then renders it in software, instead of on the GPU.</source>
       <translation>Essayer de détecter lorsqu'un jeu dessine sa propre palette de couleurs, et laisser le CPU effectuer son rendu à la place du GPU.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="545"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="565"/>
       <source>GPU Target CLUT</source>
       <translation>CLUT dans une cible GPU</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="548"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="568"/>
       <source>Skipdraw Range Start</source>
       <translation>Début du Skipdraw</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="548"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="551"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="603"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="608"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="568"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="571"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="623"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
       <source>0</source>
       <translation>0</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="549"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="552"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="569"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="572"/>
       <source>Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right.</source>
       <translation>Ne pas dessiner les surfaces se trouvant dans la zone dont les limites peuvent être spécifiées dans les champs de gauche et de droite.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="551"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="571"/>
       <source>Skipdraw Range End</source>
       <translation>Fin du Skipdraw</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="559"/>
-      <source>Disable the support of depth buffers in the texture cache. It can help to increase speed but it will likely create various glitches.</source>
-      <translation>Désactiver la prise en charge des depth buffers dans le cache des textures. Activer cette option peut accélérer l'émulation mais aussi engendrer un certain nombre de glitchs.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="563"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="583"/>
       <source>This option disables multiple safe features. Disables accurate Unscale Point and Line rendering which can help Xenosaga games. Disables accurate GS Memory Clearing to be done on the CPU, and let the GPU handle it, which can help Kingdom Hearts games.</source>
       <translation>Cette option désactive plusieurs fonctionnalités sûres. Elle désactive le rendu précis à l'échelle des lignes et des points qui est utile pour les jeux Xenosaga. Elle désactive également le nettoyage précis de la mémoire du GS par le CPU et laisse le GPU s'en charger, ce qui est utile pour les jeux Kingdom Hearts.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="580"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="600"/>
       <source>Uploads GS data when rendering a new frame to reproduce some effects accurately.</source>
       <translation>Transférer les données du GS lors du rendu d'une nouvelle image pour reproduire correctement certains effets.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="595"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="615"/>
       <source>Half Pixel Offset</source>
       <translation>Décalage demi-pixel</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="596"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="616"/>
       <source>Might fix some misaligned fog, bloom, or blend effect.</source>
       <translation>Activer cette option peut corriger l'alignement du brouillard, du flou lumineux ou des effets de fusion.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="598"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="618"/>
       <source>Round Sprite</source>
       <translation>Arrondir les sprites</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="599"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="619"/>
       <source>Corrects the sampling of 2D sprite textures when upscaling. Fixes lines in sprites of games like Ar tonelico when upscaling. Half option is for flat sprites, Full is for all sprites.</source>
-      <translation>Corriger l'échantillonnage des textures de sprites 2D lors de la mise à l'échelle. Cela fait disparaître les lignes apparaissant dans les sprites de certains jeux tels que Ar tonelico lors de la mise à l'échelle. « Moitié » pour les sprites plats, « Complet » pour tous les sprites.</translation>
+      <translation>Corriger l'échantillonnage des textures de sprites 2D lors de la mise à l'échelle. Cela fait disparaître les lignes apparaissant dans les sprites de certains jeux tels que Ar tonelico lors de la mise à l'échelle. « Moitié » pour les sprites plats, « Complet » pour tous les sprites.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="603"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="623"/>
       <source>Texture Offsets X</source>
       <translation>Décalage X des textures</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="605"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="610"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="625"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="630"/>
       <source>Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too.</source>
       <extracomment>ST and UV are different types of texture coordinates, like XY would be spatial coordinates.</extracomment>
       <translation>Décalage des coordonnées ST/UV des textures. Corrige quelques problèmes de texture bizarres et peut également corriger l'alignement de certains effets post-traitement.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="608"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
       <source>Texture Offsets Y</source>
       <translation>Décalage Y des textures</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="620"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="639"/>
       <source>Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.</source>
       <extracomment>Wild Arms: name of a game series. Leave as-is or use an official translation.</extracomment>
       <translation>Diminuer la précision du GS pour éviter les écarts entre les pixels lors de la mise à l'échelle. Corrige le texte sur les jeux Wild Arms.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="622"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="641"/>
       <source>Bilinear Upscale</source>
       <translation>Mise à l'échelle bilinéaire</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="623"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
       <source>Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.</source>
       <translation>Cette option permet, lors de la mise à l'échelle, de lisser les textures sur lesquelles le filtrage bilinéaire est appliqué. Exemple : la lueur du soleil dans Brave.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="626"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="645"/>
       <source>Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines.</source>
       <translation>Fusionner les sprites sur lesquels le post-traitement doit être appliqué. Cela permet de réduire les lignes visibles causées par la mise à l'échelle.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="629"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="648"/>
       <source>Force palette texture draws to render at native resolution.</source>
       <translation>Forcer le rendu des dessins des textures de palette à être effectué à la résolution native.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="650"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
       <source>Contrast Adaptive Sharpening</source>
       <extracomment>You might find an official translation for this on AMD&apos;s website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx</extracomment>
       <translation>Contrast Adaptive Sharpening</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="652"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="671"/>
       <source>Sharpness</source>
       <translation>Netteté</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="674"/>
       <source>Enables saturation, contrast, and brightness to be adjusted. Values of brightness, saturation, and contrast are at default 50.</source>
       <translation>Activer l'ajustement de la saturation, du contraste et de la luminosité. Valeur par défaut de ces trois options : 50.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
       <source>Applies the FXAA anti-aliasing algorithm to improve the visual quality of games.</source>
       <translation>Appliquer l'algorithme d'anticrénelage FXAA pour améliorer la qualité visuelle des jeux.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
       <source>Brightness</source>
       <translation>Luminosité</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="665"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="684"/>
       <source>50</source>
       <translation>50</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
       <source>Contrast</source>
       <translation>Contraste</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="667"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="686"/>
       <source>TV Shader</source>
       <translation>Shader TV</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="668"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="687"/>
       <source>Applies a shader which replicates the visual effects of different styles of television set.</source>
       <translation>Appliquer un shader qui reproduit les effets visuels de différents types de télévisions.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="673"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
       <source>OSD Scale</source>
       <translation>Échelle de l'affichage à l'écran</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1653"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="675"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1658"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="694"/>
       <source>Show OSD Messages</source>
       <translation>Afficher des messages à l'écran</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="676"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="695"/>
       <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
       <translation>Afficher un message à l'écran lors d'événements tels que la création ou le chargement d'une sauvegarde d'état, la prise d'une capture d'écran, etc.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="699"/>
       <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
       <translation>Afficher la fréquence d'images interne au jeu dans le coin supérieur droit de l'écran.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="683"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="702"/>
       <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
       <translation>Afficher la vitesse d'émulation actuelle du système en pourcentage dans le coin supérieur droit de l'écran.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="686"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
       <source>Shows the resolution of the game in the top-right corner of the display.</source>
       <translation>Afficher la résolution du jeu dans le coin supérieur droit de l'écran.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="688"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
       <source>Shows host&apos;s CPU utilization.</source>
       <translation>Afficher l'utilisation du CPU de l'hôte.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="690"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="709"/>
       <source>Shows host&apos;s GPU utilization.</source>
       <translation>Afficher l'utilisation du GPU de l'hôte.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="693"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="712"/>
       <source>Shows counters for internal graphical utilization, useful for debugging.</source>
       <translation>Afficher des compteurs à propos de l'utilisation graphique interne. Utile au débogage.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="702"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
       <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
       <translation>Afficher l'état système de la manette dans le coin inférieur gauche de l'écran.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="708"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="727"/>
       <source>Displays warnings when settings are enabled which may break games.</source>
       <translation>Afficher des avertissements lorsque des paramètres pouvant affecter le bon fonctionnement des jeux sont activés.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="728"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="741"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="747"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="760"/>
       <source>Leave It Blank</source>
       <translation>vide</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="748"/>
       <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
       <translation>Paramètres à passer au codec vidéo sélectionné.&lt;br&gt;&lt;b&gt;Utilisez &apos;=&apos; pour séparer la clé de sa valeur et &apos;:&apos; pour séparer les paires clé/valeur.&lt;/b&gt;&lt;br&gt;Exemple : &quot;crf = 21 : preset = veryfast&quot;.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="737"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="756"/>
       <source>Sets the audio bitrate to be used.</source>
       <translation>Déterminez le débit audio à utiliser.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="737"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="756"/>
       <source>160 kbps</source>
-      <translation>160 kbps</translation>
+      <translation>160 kb/s</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="742"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="761"/>
       <source>Parameters passed to the selected audio codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;compression_level = 4 : joint_stereo = 1&quot;</source>
       <translation>Paramètres à passer au codec audio sélectionné.&lt;br&gt;&lt;b&gt;Utilisez &apos;=&apos; pour séparer la clé de sa valeur et &apos;:&apos; pour séparer les paires clé/valeur.&lt;/b&gt;&lt;br&gt;Exemple : &quot;compression_level = 4 : joint_stereo = 1&quot;.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="749"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="768"/>
       <source>GS Dump Compression</source>
       <translation>Compression des dumps du GS</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="750"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="769"/>
       <source>Change the compression algorithm used when creating a GS dump.</source>
       <translation>Modifier l'algorithme de compression à utiliser pour les dumps du GS.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="755"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="774"/>
       <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
       <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit</extracomment>
-      <translation>Utiliser un modèle de présentation BLIT plutôt que de « flipper » lorsque vous utilisez le moteur de rendu Direct3D 11. En général, activer cette option dégrade les performances, mais son activation peut être nécessaire pour certaines applications de streaming ou pour déplafonner la fréquence d'images sur certains systèmes.</translation>
+      <translation>Utiliser un modèle de présentation BLIT plutôt que de « flipper » lorsque vous utilisez le moteur de rendu Direct3D 11. En général, activer cette option dégrade les performances, mais son activation peut être nécessaire pour certaines applications de streaming ou pour déplafonner la fréquence d'images sur certains systèmes.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="764"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="783"/>
       <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth our frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
       <translation>Détecter quand des images en double sont présentées dans des jeux à 25 ou 30 IPS et sauter leur présentation. Le rendu de ces images est toujours effectué mais le GPU a plus de temps pour les terminer (ce n'est PAS du saut d'images). L'option peut permettre de lisser les durées d'image lorsque la charge CPU ou GPU est maximale, mais la cadence d'image sera plus variable et la latence d'entrée peut augmenter.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="770"/>
-      <source>Presents frames on the main GS thread instead of a worker thread. Used for debugging frametime issues. Could reduce chance of missing a frame or reduce tearing at the expense of more erratic frame times. Only applies to the Vulkan renderer.</source>
-      <translation>Présenter les images sur le thread principal du GS plutôt qu'un thread séparé. Cela permet de déboguer les problèmes liés aux durées d'image. Activer cette option peut réduire le risque de manquer une image et peut réduire le déchirement, au prix de durées d'image plus erratiques. Ne s'applique qu'au moteur de rendu Vulkan.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="774"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="792"/>
       <source>Enable Debug Device</source>
       <translation>Activer le périphérique de débogage</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="775"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="793"/>
       <source>Enables API-level validation of graphics commands.</source>
       <translation>Activer la validation au niveau de l'API des commandes graphiques.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="777"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="795"/>
       <source>GS Download Mode</source>
       <translation>Mode de téléchargement GS</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="777"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="795"/>
       <source>Accurate</source>
       <translation>Précis</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="778"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="796"/>
       <source>Skips synchronizing with the GS thread and host GPU for GS downloads. Can result in a large speed boost on slower systems, at the cost of many broken graphical effects. If games are broken and you have this option enabled, please disable it first.</source>
       <translation>Ne pas synchroniser le thread GS et le GPU hôte lors des téléchargements GS. Cela peut grandement améliorer les performances mais cela cassera un grand nombre d'effets visuels. Si les jeux ne fonctionnent pas correctement et que cette option est activée, veuillez la désactiver.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="733"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="869"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="882"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="732"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="902"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="915"/>
       <source>Default</source>
       <extracomment>This string refers to a default codec, whether it&apos;s an audio codec or a video codec.</extracomment>
       <translation>Par défaut</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1016"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1022"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="789"/>
+      <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
+      <translation>Forcer l'utilisation du mode de présentation FIFO à la place du mode Mailbox, c'est-à-dire l'utilisation du double buffering à la place du triple buffering. Cela dégrade généralement la cadence d'image.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1050"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1056"/>
       <source>(Default)</source>
       <translation>(Par défaut)</translation>
     </message>
@@ -12273,135 +12461,140 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
   <context>
     <name>Hotkeys</name>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1006"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1014"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1034"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1033"/>
       <location filename="../../pcsx2/GS/GS.cpp" line="1041"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1050"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1056"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1062"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1061"/>
       <location filename="../../pcsx2/GS/GS.cpp" line="1068"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1073"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1086"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1109"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1137"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1149"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1163"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1077"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1083"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1089"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1095"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1100"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1113"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1126"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1154"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1166"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1180"/>
       <source>Graphics</source>
       <translation>Graphismes</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1007"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1034"/>
       <source>Save Screenshot</source>
       <translation>Enregistrer une capture d'écran</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1014"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1041"/>
       <source>Toggle Video Capture</source>
-      <translation>Activer/désactiver la capture vidéo</translation>
+      <translation>Activer/Désactiver la capture vidéo</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1034"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1061"/>
       <source>Save Single Frame GS Dump</source>
       <translation>Enregistrer un dump du GS contenant 1 image</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1041"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1068"/>
       <source>Save Multi Frame GS Dump</source>
       <translation>Enregistrer un dump du GS contenant plusieurs images</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1051"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1078"/>
       <source>Toggle Software Rendering</source>
-      <translation>Activer/désactiver le moteur de rendu logiciel</translation>
+      <translation>Activer/Désactiver le moteur de rendu logiciel</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1057"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1084"/>
       <source>Increase Upscale Multiplier</source>
       <translation>Augmenter le multiplicateur de mise à l'échelle</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1063"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1090"/>
       <source>Decrease Upscale Multiplier</source>
       <translation>Diminuer le multiplicateur de mise à l'échelle</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1068"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1095"/>
       <source>Toggle On-Screen Display</source>
-      <translation>Activer/désactiver l'affichage à l'écran (OSD)</translation>
+      <translation>Activer/Désactiver l'affichage à l'écran (OSD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1073"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1100"/>
       <source>Cycle Aspect Ratio</source>
       <translation>Changer de format d'image</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1082"/>
-      <source>Aspect ratio set to &apos;{}&apos;.</source>
-      <translation>Format d'image défini sur « {} ».</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1086"/>
-      <source>Cycle Hardware Mipmapping</source>
-      <translation>Changer de mode de mipmapping matériel</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1098"/>
-      <source>Hardware mipmapping set to &apos;{}&apos;.</source>
-      <translation>Mipmapping matériel défini sur « {} ».</translation>
-    </message>
-    <message>
       <location filename="../../pcsx2/GS/GS.cpp" line="1109"/>
+      <source>Aspect ratio set to &apos;{}&apos;.</source>
+      <translation>Format d'image défini sur « {} ».</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1113"/>
+      <source>Toggle Hardware Mipmapping</source>
+      <translation>Activer/Désactiver le mipmapping matériel</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1120"/>
+      <source>Hardware mipmapping is now enabled.</source>
+      <translation>Le mipmapping matériel est maintenant activé.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1121"/>
+      <source>Hardware mipmapping is now disabled.</source>
+      <translation>Le mipmapping matériel est maintenant désactivé.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1126"/>
       <source>Cycle Deinterlace Mode</source>
       <translation>Changer de mode de désentrelacement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1131"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1148"/>
       <source>Deinterlace mode set to &apos;{}&apos;.</source>
-      <translation>Mode de désentrelacement défini sur « {} ».</translation>
+      <translation>Mode de désentrelacement défini sur « {} ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1137"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1154"/>
       <source>Toggle Texture Dumping</source>
-      <translation>Activer/désactiver le dumping des textures</translation>
+      <translation>Activer/Désactiver le dumping des textures</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1143"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1160"/>
       <source>Texture dumping is now enabled.</source>
       <translation>Le dumping des textures est maintenant activé.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1144"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1161"/>
       <source>Texture dumping is now disabled.</source>
       <translation>Le dumping des textures est maintenant désactivé.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1150"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1167"/>
       <source>Toggle Texture Replacements</source>
-      <translation>Activer/désactiver les textures de remplacement</translation>
+      <translation>Activer/Désactiver les textures de remplacement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1157"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1174"/>
       <source>Texture replacements are now enabled.</source>
       <translation>Les textures de remplacement sont maintenant activées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1158"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1175"/>
       <source>Texture replacements are now disabled.</source>
       <translation>Les textures de remplacement sont maintenant désactivées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1164"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1181"/>
       <source>Reload Texture Replacements</source>
       <translation>Recharger les textures de remplacement</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1171"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1188"/>
       <source>Texture replacements are not enabled.</source>
       <translation>Les textures de remplacement n'ont pas été activées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1176"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1193"/>
       <source>Reloading texture replacements...</source>
       <translation>Rechargement des textures de remplacement…</translation>
     </message>
@@ -12426,258 +12619,253 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <translation>Aucune sauvegarde d'état trouvée à l'emplacement {}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="98"/>
-      <source>You cannot pause until another {:.1f} seconds have passed.</source>
-      <translation>Vous devez attendre {:.1f} secondes de plus avant de pouvoir mettre en pause.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="111"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="116"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="121"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="127"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="131"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="136"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="145"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="153"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="161"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="178"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="183"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="188"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="193"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="198"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="203"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="207"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="212"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="217"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="110"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="115"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="120"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="126"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="130"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="135"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="144"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="152"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="160"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="177"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="182"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="187"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="192"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="197"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="202"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="206"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="211"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="216"/>
       <source>System</source>
       <translation>Système</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="111"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="110"/>
       <source>Open Pause Menu</source>
-      <translation>Ouvrir le menu pause</translation>
+      <translation>Ouvrir le menu Pause</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="117"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="116"/>
       <source>Open Achievements List</source>
       <translation>Ouvrir la liste des succès</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="122"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="121"/>
       <source>Open Leaderboards List</source>
       <translation>Ouvrir la liste des classements</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="127"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="126"/>
       <source>Toggle Pause</source>
-      <translation>Mettre en pause/reprendre</translation>
+      <translation>Mettre en pause/Reprendre</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="131"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="130"/>
       <source>Toggle Fullscreen</source>
-      <translation>Activer/désactiver le mode plein écran</translation>
+      <translation>Activer/Désactiver le mode Plein écran</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="136"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="135"/>
       <source>Toggle Frame Limit</source>
-      <translation>Activer/désactiver la limite d'images</translation>
+      <translation>Activer/Désactiver la limite d'images</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="146"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="145"/>
       <source>Toggle Turbo / Fast Forward</source>
-      <translation>Activer/désactiver l'avance rapide (turbo)</translation>
+      <translation>Activer/Désactiver l'avance rapide (turbo)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="153"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="152"/>
       <source>Toggle Slow Motion</source>
-      <translation>Activer/désactiver le ralenti</translation>
+      <translation>Activer/Désactiver le ralenti</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="162"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="161"/>
       <source>Turbo / Fast Forward (Hold)</source>
       <translation>Avance rapide (maintenir appuyé)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="178"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="177"/>
       <source>Increase Target Speed</source>
       <translation>Augmenter la vitesse cible</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="183"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="182"/>
       <source>Decrease Target Speed</source>
       <translation>Diminuer la vitesse cible</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="188"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="187"/>
       <source>Increase Volume</source>
       <translation>Augmenter le volume</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="193"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="192"/>
       <source>Decrease Volume</source>
       <translation>Diminuer le volume</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="198"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="197"/>
       <source>Toggle Mute</source>
-      <translation>Couper/remettre le son</translation>
+      <translation>Couper/Remettre le son</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="203"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="202"/>
       <source>Frame Advance</source>
       <translation>Image par image</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="207"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="206"/>
       <source>Shut Down Virtual Machine</source>
       <translation>Éteindre la machine virtuelle</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="212"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="211"/>
       <source>Reset Virtual Machine</source>
       <translation>Réinitialiser la machine virtuelle</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="218"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="217"/>
       <source>Toggle Input Recording Mode</source>
       <translation>Changer de mode d'enregistrement d'entrées</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="223"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="228"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="233"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="238"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="243"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="222"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="227"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="232"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="237"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="242"/>
       <source>Save States</source>
       <translation>Sauvegardes d'état</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="224"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="223"/>
       <source>Select Previous Save Slot</source>
       <translation>Sélectionner l'emplacement de sauvegarde précédent</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="229"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="228"/>
       <source>Select Next Save Slot</source>
       <translation>Sélectionner l'emplacement de sauvegarde suivant</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="234"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="233"/>
       <source>Save State To Selected Slot</source>
       <translation>Sauvegarder l'état à l'emplacement sélectionné</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="239"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="238"/>
       <source>Load State From Selected Slot</source>
       <translation>Charger l'état à l'emplacement sélectionné</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="244"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="243"/>
       <source>Save State and Select Next Slot</source>
       <translation>Sauvegarder l'état et sélectionner l'emplacement suivant</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="262"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="261"/>
       <source>Save State To Slot 1</source>
       <translation>Sauvegarder l'état à l'emplacement 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="263"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="262"/>
       <source>Load State From Slot 1</source>
       <translation>Charger l'état à l'emplacement 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="264"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="263"/>
       <source>Save State To Slot 2</source>
       <translation>Sauvegarder l'état à l'emplacement 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="265"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="264"/>
       <source>Load State From Slot 2</source>
       <translation>Charger l'état à l'emplacement 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="266"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="265"/>
       <source>Save State To Slot 3</source>
       <translation>Sauvegarder l'état à l'emplacement 3</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="267"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="266"/>
       <source>Load State From Slot 3</source>
       <translation>Charger l'état à l'emplacement 3</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="268"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="267"/>
       <source>Save State To Slot 4</source>
       <translation>Sauvegarder l'état à l'emplacement 4</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="269"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="268"/>
       <source>Load State From Slot 4</source>
       <translation>Charger l'état à l'emplacement 4</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="270"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="269"/>
       <source>Save State To Slot 5</source>
       <translation>Sauvegarder l'état à l'emplacement 5</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="271"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="270"/>
       <source>Load State From Slot 5</source>
       <translation>Charger l'état à l'emplacement 5</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="272"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="271"/>
       <source>Save State To Slot 6</source>
       <translation>Sauvegarder l'état à l'emplacement 6</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="273"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="272"/>
       <source>Load State From Slot 6</source>
       <translation>Charger l'état à l'emplacement 6</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="274"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="273"/>
       <source>Save State To Slot 7</source>
       <translation>Sauvegarder l'état à l'emplacement 7</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="275"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="274"/>
       <source>Load State From Slot 7</source>
       <translation>Charger l'état à l'emplacement 7</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="276"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="275"/>
       <source>Save State To Slot 8</source>
       <translation>Sauvegarder l'état à l'emplacement 8</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="277"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="276"/>
       <source>Load State From Slot 8</source>
       <translation>Charger l'état à l'emplacement 8</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="278"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="277"/>
       <source>Save State To Slot 9</source>
       <translation>Sauvegarder l'état à l'emplacement 9</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="279"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="278"/>
       <source>Load State From Slot 9</source>
       <translation>Charger l'état à l'emplacement 9</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="280"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="279"/>
       <source>Save State To Slot 10</source>
       <translation>Sauvegarder l'état à l'emplacement 10</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="281"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="280"/>
       <source>Load State From Slot 10</source>
       <translation>Charger l'état à l'emplacement 10</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1052"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1074"/>
       <source>Save slot {0} selected ({1}).</source>
       <translation>Emplacement de sauvegarde {0} sélectionné ({1}).</translation>
     </message>
@@ -12685,48 +12873,73 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
   <context>
     <name>ImGuiOverlays</name>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="690"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="642"/>
+      <source>{} Recording Input</source>
+      <translation>{} Enregistrement des entrées</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="646"/>
+      <source>{} Replaying</source>
+      <translation>{} Lecture</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="650"/>
+      <source>Input Recording Active: {}</source>
+      <translation>Enregistrement d'entrées actif : {}</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="651"/>
+      <source>Frame: {}/{} ({})</source>
+      <translation>Image : {}/{} ({})</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="652"/>
+      <source>Undo Count: {}</source>
+      <translation>Nombre d'annulations : {}</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="711"/>
       <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
       <translation>Sauvegardé à {0:%H:%M} le {0:%d/%m/%Y}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="716"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="737"/>
       <source>Save state selector is unavailable without a valid game serial.</source>
       <translation>Impossible de sélectionner une sauvegarde d'état sans un numéro de série de jeu valide.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="798"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="819"/>
       <source>Load</source>
       <translation>Charger</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="800"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="821"/>
       <source>Save</source>
       <translation>Sauvegarder</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="802"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="823"/>
       <source>Select Previous</source>
       <translation>Sauv. précédente</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="804"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="825"/>
       <source>Select Next</source>
       <translation>Sauv. suivante</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="857"/>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="879"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="878"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="900"/>
       <source>Save Slot {0}</source>
       <translation>Emplacement {0}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="880"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="901"/>
       <source>No save present in this slot.</source>
       <translation>Aucune sauvegarde à cet emplacement.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1049"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1071"/>
       <source>no save yet</source>
       <translation>vide</translation>
     </message>
@@ -12870,114 +13083,124 @@ Clic droit : effacer les associations</translation>
       <translation>Fermer</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="30"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="32"/>
       <source>%1 %2</source>
       <translation>%1 %2</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="35"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="37"/>
       <source>%1</source>
       <translation>%1</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="41"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="43"/>
       <source>%1 [%2]</source>
       <translation>%1 [%2]</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>Left Analog</source>
       <translation>Joystick analogique gauche</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>Right Analog</source>
       <translation>Joystick analogique droit</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>Cross</source>
       <translation>Croix</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>Square</source>
       <translation>Carré</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>Triangle</source>
       <translation>Triangle</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>Circle</source>
       <translation>Cercle</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>L1</source>
       <translation>L1</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>R1</source>
       <translation>R1</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>L2</source>
       <translation>L2</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>R2</source>
       <translation>R2</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>D-Pad Down</source>
       <translation>Touche directionnelle (bas)</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>L3</source>
       <translation>L3</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>R3</source>
       <translation>R3</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>Select</source>
       <translation>SELECT</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>Start</source>
       <translation>START</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>D-Pad Right</source>
       <translation>Touche directionnelle (droite)</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>D-Pad Up</source>
       <translation>Touche directionnelle (haut)</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="46"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="48"/>
       <source>D-Pad Left</source>
       <translation>Touche directionnelle (gauche)</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="84"/>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="86"/>
       <source>Input Recording Files (*.p2m2)</source>
       <translation>Enregistrements d'entrées (*.p2m2)</translation>
+    </message>
+    <message>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="103"/>
+      <source>Opening Recording Failed</source>
+      <translation>Échec de l'ouverture de l'enregistrement</translation>
+    </message>
+    <message>
+      <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="103"/>
+      <source>Failed to open file: %1</source>
+      <translation>Échec de l'ouverture du fichier : %1</translation>
     </message>
   </context>
   <context>
@@ -13006,52 +13229,52 @@ Clic droit : effacer les associations</translation>
       <translation>Comportement</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="35"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="63"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="148"/>
       <source>Pause On Focus Loss</source>
       <translation>Mettre en pause lors de la perte du focus</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="42"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="130"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="137"/>
       <source>Inhibit Screensaver</source>
       <translation>Bloquer l'économiseur d'écran</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="49"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="136"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="35"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="143"/>
       <source>Save State On Shutdown</source>
       <translation>Sauvegarder l'état lors de l'extinction</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="56"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="139"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
       <source>Pause On Start</source>
       <translation>Mettre en pause au lancement</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="63"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="133"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="49"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="140"/>
       <source>Confirm Shutdown</source>
       <translation>Confirmer l'extinction</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="70"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="84"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
       <source>Create Save State Backups</source>
       <translation>Créer une copie des sauvegardes d'état</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="77"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="160"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
       <source>Enable Discord Presence</source>
       <translation>Activer la Rich Presence Discord</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="84"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="157"/>
-      <source>Enable Per-Game Settings</source>
-      <translation>Activer les paramètres propres aux jeux</translation>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="70"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
+      <source>Pause On Controller Disconnection</source>
+      <translation>Mettre en pause lorsqu'une manette est déconnectée</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="94"/>
@@ -13060,39 +13283,39 @@ Clic droit : effacer les associations</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="100"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="147"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
       <source>Start Fullscreen</source>
-      <translation>Démarrer en mode plein écran</translation>
+      <translation>Démarrer en mode Plein écran</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="107"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="163"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
       <source>Double-Click Toggles Fullscreen</source>
-      <translation>Double-cliquer pour basculer en mode plein écran</translation>
+      <translation>Double-cliquer pour basculer en mode Plein écran</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="114"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
       <source>Render To Separate Window</source>
       <translation>Afficher le jeu dans une autre fenêtre</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="121"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
       <source>Hide Main Window When Running</source>
       <translation>Masquer la fenêtre principale pendant l'émulation</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="128"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="166"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
       <source>Disable Window Resizing</source>
       <translation>Fenêtre principale de taille fixe</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="135"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
       <source>Hide Cursor In Fullscreen</source>
-      <translation>Masquer le curseur en mode plein écran</translation>
+      <translation>Masquer le curseur en mode Plein écran</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="145"/>
@@ -13115,216 +13338,227 @@ Clic droit : effacer les associations</translation>
       <translation>Mise à jour automatique</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="180"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="187"/>
       <source>Update Channel:</source>
       <translation>Canal de mise à jour :</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="190"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="194"/>
       <source>Current Version:</source>
       <translation>Version actuelle :</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="204"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="101"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="206"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="108"/>
       <source>Enable Automatic Update Check</source>
       <translation>Rechercher automatiquement des mises à jour</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="226"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="213"/>
       <source>Check for Updates...</source>
       <translation>Rechercher des mises à jour…</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="12"/>
       <source>Native</source>
-      <translation>Native</translation>
+      <translation>Natif</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="16"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="15"/>
+      <source>Classic Windows</source>
+      <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
+      <translation>Windows classique</translation>
+    </message>
+    <message>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="19"/>
       <source>Dark Fusion (Gray) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Dark Fusion (gris) [Sombre]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="18"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="21"/>
       <source>Dark Fusion (Blue) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Dark Fusion (bleu) [Sombre]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="20"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="23"/>
+      <source>Grey Matter (Gray) [Dark]</source>
+      <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
+      <translation>Grey Matter (gris) [Sombre]</translation>
+    </message>
+    <message>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="25"/>
       <source>Untouched Lagoon (Grayish Green/-Blue ) [Light]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Untouched Lagoon (vert gris/gris bleu) [Clair]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="22"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="27"/>
       <source>Baby Pastel (Pink) [Light]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Baby Pastel (rose) [Clair]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="24"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="29"/>
       <source>Pizza Time! (Brown-ish/Creamy White) [Light]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Pizza Time! (orange/crème) [Clair]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="26"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="31"/>
       <source>PCSX2 (White/Blue) [Light]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>PCSX2 (blanc/bleu) [Clair]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="28"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="33"/>
       <source>Scarlet Devil (Red/Purple) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Scarlet Devil (rouge/violet) [Sombre]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="30"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="35"/>
       <source>Violet Angel (Blue/Purple) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Violet Angel (bleu/violet) [Sombre]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="32"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="37"/>
       <source>Cobalt Sky (Blue) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Cobalt Sky (bleu) [Sombre]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="34"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="39"/>
       <source>Ruby (Black/Red) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Ruby (noir/rouge) [Sombre]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="36"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="41"/>
       <source>Sapphire (Black/Blue) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Saphir (noir/bleu) [Sombre]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="38"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="43"/>
       <source>Custom.qss [Drop in PCSX2 Folder]</source>
       <extracomment>&quot;Custom.qss&quot; must be kept as-is.</extracomment>
       <translation>Custom.qss [À déposer dans le dossier PCSX2]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="101"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="130"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="133"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="157"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="163"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="108"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="137"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="140"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
       <source>Checked</source>
       <translation>coché</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="102"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="109"/>
       <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
       <translation>Rechercher des mises à jour automatiquement au lancement de l'application. Les mises à jour peuvent être reportées à plus tard ou ignorées.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="110"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="117"/>
       <source>%1 (%2)</source>
       <extracomment>Variable %1 shows the version number and variable %2 shows a timestamp.</extracomment>
       <translation>%1 (%2)</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="131"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="138"/>
       <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
       <translation>Empêcher l'économiseur d'écran de s'activer et l'hôte de se mettre en veille pendant que l'émulation est en cours d'exécution.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="134"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
       <source>Determines whether a prompt will be displayed to confirm shutting down the virtual machine when the hotkey is pressed.</source>
-      <translation>Une confirmation vous sera demandée lors de l'utilisation du raccourci « Éteindre la machine virtuelle ».</translation>
+      <translation>Une confirmation vous sera demandée lors de l'utilisation du raccourci « Éteindre la machine virtuelle ».</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="137"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
       <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
       <translation>Enregistrer automatiquement l'état de l'émulateur lorsque vous éteignez le système ou que vous quittez PCSX2. Vous pourrez ensuite reprendre directement à partir de l'endroit où vous avez arrêté de jouer.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
-      <source>When enabled, custom per-game settings will be applied. Disable to always use the global configuration.</source>
-      <translation>Lorsque cette option est activée, les paramètres propres à chaque jeu sont appliqués. Désactivez l'option pour toujours utiliser la configuration globale.</translation>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
+      <source>Pauses the emulator when a controller with bindings is disconnected.</source>
+      <translation>Mettre en pause l'émulateur lorsqu'une manette associée est déconnectée.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="171"/>
       <source>Allows switching in and out of fullscreen mode by double-clicking the game window.</source>
-      <translation>Permettre de basculer entre les modes plein écran et fenêtré en double-cliquant dans la fenêtre du jeu.</translation>
+      <translation>Permettre de basculer entre les modes Plein écran et Fenêtré en double-cliquant dans la fenêtre du jeu.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="174"/>
       <source>Prevents the main window from being resized.</source>
       <translation>Empêcher la fenêtre principale d'être redimensionnée.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="136"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="139"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="147"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="143"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="148"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="160"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="166"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
       <source>Unchecked</source>
       <translation>décoché</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="14"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="17"/>
       <source>Fusion [Light/Dark]</source>
-      <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Fusion [Clair/Sombre]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="140"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="147"/>
       <source>Pauses the emulator when a game is started.</source>
-      <translation>Mettre en pause l'émulateur lors du lancement d'un jeu.</translation>
+      <translation>Mettre en pause l'émulateur au lancement d'un jeu.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="142"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
       <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
       <translation>Mettre en pause l'émulateur lorsque vous minimisez la fenêtre ou que vous utilisez une autre application. L'émulation reprendra lorsque vous reviendrez sur PCSX2.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
       <source>Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix.</source>
       <extracomment>Do not translate the &quot;.backup&quot; extension.</extracomment>
       <translation>Lors de la création d'une sauvegarde d'état, créer une copie de la sauvegarde existante. La copie de sauvegarde porte le suffixe .backup.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="148"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="157"/>
       <source>Automatically switches to fullscreen mode when a game is started.</source>
-      <translation>Basculer automatiquement en mode plein écran au lancement d'un jeu.</translation>
+      <translation>Basculer automatiquement en mode Plein écran au lancement d'un jeu.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
       <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
-      <translation>Masquer le pointeur/curseur de la souris lorsque le mode plein écran est activé.</translation>
+      <translation>Masquer le pointeur/curseur de la souris lorsque le mode Plein écran est activé.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
       <source>Renders the game to a separate window, instead of the main window. If unchecked, the game will display over the top of the game list.</source>
       <translation>Afficher la sortie vidéo du jeu dans une fenêtre séparée. Si la case est décochée, le jeu est affiché à la place de la liste des jeux.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
       <source>Hides the main window (with the game list) when a game is running, requires Render To Separate Window to be enabled.</source>
-      <translation>Masquer la fenêtre principale (et la liste des jeux) lorsqu'un jeu est en cours d'exécution. Pour activer cette option, activez d'abord « Afficher le jeu dans une autre fenêtre ».</translation>
+      <translation>Masquer la fenêtre principale (et la liste des jeux) lorsqu'un jeu est en cours d'exécution. Pour activer cette option, activez d'abord « Afficher le jeu dans une autre fenêtre ».</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
       <source>Shows the game you are currently playing as part of your profile in Discord.</source>
       <translation>Afficher le jeu auquel vous êtes en train de jouer dans votre profil Discord.</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="219"/>
+      <location filename="../Translations.cpp" line="224"/>
       <source>System Language [Default]</source>
       <translation>Langue du système [Par défaut]</translation>
     </message>
@@ -13332,85 +13566,85 @@ Clic droit : effacer les associations</translation>
   <context>
     <name>LogWindow</name>
     <message>
-      <location filename="../LogWindow.cpp" line="120"/>
+      <location filename="../LogWindow.cpp" line="118"/>
       <source>Log Window - %1 [%2]</source>
       <translation>Journal ­– %1 [%2]</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="124"/>
+      <location filename="../LogWindow.cpp" line="122"/>
       <source>Log Window</source>
       <translation>Journal</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="141"/>
+      <location filename="../LogWindow.cpp" line="140"/>
       <source>&amp;Clear</source>
       <translation>&amp;Effacer</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="143"/>
+      <location filename="../LogWindow.cpp" line="142"/>
       <source>&amp;Save...</source>
       <translation>Enregi&amp;strer…</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="148"/>
+      <location filename="../LogWindow.cpp" line="147"/>
       <source>Cl&amp;ose</source>
       <translation>&amp;Fermer</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="151"/>
+      <location filename="../LogWindow.cpp" line="150"/>
       <source>&amp;Settings</source>
       <translation>&amp;Paramètres</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="155"/>
+      <location filename="../LogWindow.cpp" line="154"/>
       <source>Log To &amp;System Console</source>
       <translation>Journaliser dans la console &amp;système</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="159"/>
+      <location filename="../LogWindow.cpp" line="158"/>
       <source>Log To &amp;Debug Console</source>
       <translation>Journaliser dans la console de &amp;débogage</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="163"/>
+      <location filename="../LogWindow.cpp" line="162"/>
       <source>Log To &amp;File</source>
       <translation>Journaliser dans un &amp;fichier</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="170"/>
+      <location filename="../LogWindow.cpp" line="169"/>
       <source>Attach To &amp;Main Window</source>
       <translation>&amp;Attacher à la fenêtre principale</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="174"/>
+      <location filename="../LogWindow.cpp" line="173"/>
       <source>Show &amp;Timestamps</source>
       <translation>Afficher l'horodatage des messages</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="211"/>
+      <location filename="../LogWindow.cpp" line="210"/>
       <source>Select Log File</source>
       <translation>Sélectionner un fichier journal</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="211"/>
+      <location filename="../LogWindow.cpp" line="210"/>
       <source>Log Files (*.txt)</source>
       <translation>Fichiers journaux (*.txt)</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="218"/>
+      <location filename="../LogWindow.cpp" line="217"/>
       <source>Error</source>
       <translation>Erreur</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="218"/>
+      <location filename="../LogWindow.cpp" line="217"/>
       <source>Failed to open file for writing.</source>
       <translation>Échec de l'ouverture du fichier en écriture.</translation>
     </message>
     <message>
-      <location filename="../LogWindow.cpp" line="225"/>
+      <location filename="../LogWindow.cpp" line="224"/>
       <source>Log was written to %1.
 </source>
-      <translation>Journal écrit dans le fichier « %1 ».
+      <translation>Journal écrit dans le fichier « %1 ».
 </translation>
     </message>
   </context>
@@ -13460,599 +13694,599 @@ Clic droit : effacer les associations</translation>
       <translation>PCSX2</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="36"/>
+      <location filename="../MainWindow.ui" line="39"/>
       <source>&amp;System</source>
       <translation>&amp;Système</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="40"/>
-      <location filename="../MainWindow.cpp" line="1367"/>
-      <location filename="../MainWindow.cpp" line="1428"/>
+      <location filename="../MainWindow.ui" line="43"/>
+      <location filename="../MainWindow.cpp" line="1388"/>
+      <location filename="../MainWindow.cpp" line="1449"/>
       <source>Change Disc</source>
       <translation>Changer de disque</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="55"/>
-      <location filename="../MainWindow.cpp" line="2664"/>
+      <location filename="../MainWindow.ui" line="58"/>
+      <location filename="../MainWindow.cpp" line="2714"/>
       <source>Load State</source>
       <translation>Charger un état</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="64"/>
+      <location filename="../MainWindow.ui" line="67"/>
       <source>Save State</source>
       <translation>Sauvegarder l'état</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="92"/>
+      <location filename="../MainWindow.ui" line="95"/>
       <source>S&amp;ettings</source>
       <translation>&amp;Paramètres</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="115"/>
+      <location filename="../MainWindow.ui" line="118"/>
       <source>&amp;Help</source>
       <translation>A&amp;ide</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="128"/>
+      <location filename="../MainWindow.ui" line="131"/>
       <source>&amp;Debug</source>
       <translation>&amp;Débogage</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="132"/>
+      <location filename="../MainWindow.ui" line="135"/>
       <source>Switch Renderer</source>
       <translation>Changer de moteur de rendu</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="151"/>
+      <location filename="../MainWindow.ui" line="154"/>
       <source>&amp;View</source>
       <translation>&amp;Affichage</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="155"/>
+      <location filename="../MainWindow.ui" line="158"/>
       <source>&amp;Window Size</source>
       <translation>&amp;Taille de la fenêtre</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="181"/>
+      <location filename="../MainWindow.ui" line="184"/>
       <source>&amp;Tools</source>
       <translation>&amp;Outils</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="185"/>
+      <location filename="../MainWindow.ui" line="188"/>
       <source>Input Recording</source>
       <translation>Enregistrement d'entrées</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="234"/>
+      <location filename="../MainWindow.ui" line="237"/>
       <source>Toolbar</source>
       <translation>Barre d'outils</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="277"/>
+      <location filename="../MainWindow.ui" line="280"/>
       <source>Start &amp;File...</source>
       <translation>Lancer un &amp;fichier…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="295"/>
+      <location filename="../MainWindow.ui" line="298"/>
       <source>Start &amp;Disc...</source>
       <translation>Lancer un &amp;disque…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="313"/>
+      <location filename="../MainWindow.ui" line="316"/>
       <source>Start &amp;BIOS</source>
       <translation>Lancer le &amp;BIOS</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="331"/>
+      <location filename="../MainWindow.ui" line="334"/>
       <source>&amp;Scan For New Games</source>
       <translation>Ac&amp;tualiser la liste des jeux</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="340"/>
+      <location filename="../MainWindow.ui" line="343"/>
       <source>&amp;Rescan All Games</source>
       <translation>R&amp;escanner tous les jeux</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="349"/>
+      <location filename="../MainWindow.ui" line="352"/>
       <source>Shut &amp;Down</source>
       <translation>&amp;Éteindre</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="367"/>
+      <location filename="../MainWindow.ui" line="370"/>
       <source>Shut Down &amp;Without Saving</source>
       <translation>Éteindre &amp;sans sauvegarder</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="376"/>
+      <location filename="../MainWindow.ui" line="379"/>
       <source>&amp;Reset</source>
       <translation>&amp;Réinitialiser</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="397"/>
+      <location filename="../MainWindow.ui" line="400"/>
       <source>&amp;Pause</source>
       <translation>&amp;Mettre en pause</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="436"/>
+      <location filename="../MainWindow.ui" line="439"/>
       <source>E&amp;xit</source>
       <translation>&amp;Quitter</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="445"/>
+      <location filename="../MainWindow.ui" line="448"/>
       <source>&amp;BIOS</source>
       <translation>&amp;BIOS</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="454"/>
+      <location filename="../MainWindow.ui" line="457"/>
       <source>Emulation</source>
       <translation>Émulation</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="463"/>
+      <location filename="../MainWindow.ui" line="466"/>
       <source>&amp;Controllers</source>
       <translation>Ma&amp;nettes</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="481"/>
+      <location filename="../MainWindow.ui" line="484"/>
       <source>&amp;Hotkeys</source>
       <translation>Ra&amp;ccourcis</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="490"/>
+      <location filename="../MainWindow.ui" line="493"/>
       <source>&amp;Graphics</source>
       <translation>&amp;Graphismes</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="499"/>
+      <location filename="../MainWindow.ui" line="502"/>
       <source>A&amp;chievements</source>
       <translation>&amp;Succès</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="504"/>
+      <location filename="../MainWindow.ui" line="507"/>
       <source>&amp;Post-Processing Settings...</source>
       <translation>&amp;Paramètres post-traitement…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="513"/>
+      <location filename="../MainWindow.ui" line="516"/>
       <source>Fullscreen</source>
-      <translation>Mode plein écran</translation>
+      <translation>Mode Plein écran</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="527"/>
+      <location filename="../MainWindow.ui" line="530"/>
       <source>Resolution Scale</source>
       <translation>Multiplicateur de résolution</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="536"/>
+      <location filename="../MainWindow.ui" line="539"/>
       <source>&amp;GitHub Repository...</source>
       <translation>Dépôt &amp;GitHub…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="545"/>
+      <location filename="../MainWindow.ui" line="548"/>
       <source>Support &amp;Forums...</source>
       <translation>&amp;Forums d'assistance…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="554"/>
+      <location filename="../MainWindow.ui" line="557"/>
       <source>&amp;Discord Server...</source>
       <translation>Serveur &amp;Discord…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="563"/>
+      <location filename="../MainWindow.ui" line="566"/>
       <source>Check for &amp;Updates...</source>
       <translation>&amp;Rechercher des mises à jour…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="572"/>
+      <location filename="../MainWindow.ui" line="575"/>
       <source>About &amp;Qt...</source>
       <translation>À propos de &amp;Qt…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="581"/>
+      <location filename="../MainWindow.ui" line="584"/>
       <source>&amp;About PCSX2...</source>
       <translation>&amp;À propos de PCSX2…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="522"/>
+      <location filename="../MainWindow.ui" line="525"/>
       <source>Fullscreen</source>
       <comment>In Toolbar</comment>
       <translation>Plein écran</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="590"/>
+      <location filename="../MainWindow.ui" line="593"/>
       <source>Change Disc...</source>
       <comment>In Toolbar</comment>
       <translation>Chang. disque</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="599"/>
+      <location filename="../MainWindow.ui" line="602"/>
       <source>&amp;Audio</source>
       <translation>&amp;Audio</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="608"/>
+      <location filename="../MainWindow.ui" line="611"/>
       <source>Game List</source>
       <translation>Liste des jeux</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="617"/>
+      <location filename="../MainWindow.ui" line="620"/>
       <source>Interface</source>
       <translation>Interface</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="626"/>
+      <location filename="../MainWindow.ui" line="629"/>
       <source>Add Game Directory...</source>
-      <translation>Ajouter un dossier…</translation>
+      <translation>Ajouter un dossier à jeux…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="635"/>
+      <location filename="../MainWindow.ui" line="638"/>
       <source>&amp;Settings</source>
       <translation>&amp;Paramètres</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="655"/>
+      <location filename="../MainWindow.ui" line="658"/>
       <source>From File...</source>
       <translation>À partir d'un fichier…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="660"/>
+      <location filename="../MainWindow.ui" line="663"/>
       <source>From Device...</source>
       <translation>À partir d'un périphérique…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="665"/>
+      <location filename="../MainWindow.ui" line="668"/>
       <source>From Game List...</source>
       <translation>À partir de la liste des jeux…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="670"/>
+      <location filename="../MainWindow.ui" line="673"/>
       <source>Remove Disc</source>
       <translation>Éjecter le disque</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="675"/>
+      <location filename="../MainWindow.ui" line="678"/>
       <source>Global State</source>
       <translation>État global</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="684"/>
+      <location filename="../MainWindow.ui" line="687"/>
       <source>&amp;Screenshot</source>
       <translation>&amp;Capture d'écran</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="286"/>
+      <location filename="../MainWindow.ui" line="289"/>
       <source>Start File</source>
       <comment>In Toolbar</comment>
       <translation>Lanc. fichier</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="304"/>
+      <location filename="../MainWindow.ui" line="307"/>
       <source>Start Disc</source>
       <comment>In Toolbar</comment>
       <translation>Lanc. disque</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="322"/>
+      <location filename="../MainWindow.ui" line="325"/>
       <source>Start BIOS</source>
       <comment>In Toolbar</comment>
       <translation>Lanc. BIOS</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="358"/>
+      <location filename="../MainWindow.ui" line="361"/>
       <source>Shut Down</source>
       <comment>In Toolbar</comment>
       <translation>Éteindre</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="385"/>
+      <location filename="../MainWindow.ui" line="388"/>
       <source>Reset</source>
       <comment>In Toolbar</comment>
       <translation>Réinitialiser</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="409"/>
+      <location filename="../MainWindow.ui" line="412"/>
       <source>Pause</source>
       <comment>In Toolbar</comment>
       <translation>Pause</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="418"/>
+      <location filename="../MainWindow.ui" line="421"/>
       <source>Load State</source>
       <comment>In Toolbar</comment>
       <translation>Charg. état</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="427"/>
+      <location filename="../MainWindow.ui" line="430"/>
       <source>Save State</source>
       <comment>In Toolbar</comment>
       <translation>Sauv. état</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="472"/>
+      <location filename="../MainWindow.ui" line="475"/>
       <source>Controllers</source>
       <comment>In Toolbar</comment>
       <translation>Manettes</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="647"/>
+      <location filename="../MainWindow.ui" line="650"/>
       <source>Settings</source>
       <comment>In Toolbar</comment>
       <translation>Paramètres</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="693"/>
+      <location filename="../MainWindow.ui" line="696"/>
       <source>Screenshot</source>
       <comment>In Toolbar</comment>
       <translation>Capt. écran</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="702"/>
+      <location filename="../MainWindow.ui" line="705"/>
       <source>&amp;Memory Cards</source>
       <translation>&amp;Memory Cards</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="711"/>
+      <location filename="../MainWindow.ui" line="714"/>
       <source>&amp;Network &amp;&amp; HDD</source>
       <translation>&amp;Réseau et disque dur</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="720"/>
+      <location filename="../MainWindow.ui" line="723"/>
       <source>&amp;Folders</source>
       <translation>&amp;Dossiers</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="731"/>
+      <location filename="../MainWindow.ui" line="734"/>
       <source>&amp;Toolbar</source>
       <translation>Barre d'&amp;outils</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="742"/>
+      <location filename="../MainWindow.ui" line="745"/>
       <source>Lock Toolbar</source>
       <translation>Verrouiller la barre d'outils</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="753"/>
+      <location filename="../MainWindow.ui" line="756"/>
       <source>&amp;Status Bar</source>
       <translation>Barre d'&amp;état</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="764"/>
+      <location filename="../MainWindow.ui" line="767"/>
       <source>Verbose Status</source>
       <translation>Statut détaillé</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="773"/>
+      <location filename="../MainWindow.ui" line="776"/>
       <source>Game &amp;List</source>
       <translation>&amp;Liste des jeux</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="785"/>
+      <location filename="../MainWindow.ui" line="788"/>
       <source>System &amp;Display</source>
       <extracomment>This grayed-out at first option will become available while there is a game emulated and the game list is displayed over the actual emulation, to let users display the system emulation once more.</extracomment>
       <translation>&amp;Affichage du système</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="797"/>
+      <location filename="../MainWindow.ui" line="800"/>
       <source>Game &amp;Properties</source>
       <translation>&amp;Propriétés du jeu</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="806"/>
+      <location filename="../MainWindow.ui" line="809"/>
       <source>Game &amp;Grid</source>
       <translation>&amp;Grille des jeux</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="817"/>
+      <location filename="../MainWindow.ui" line="820"/>
       <source>Show Titles (Grid View)</source>
-      <translation>Afficher les titres (mode grille)</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="826"/>
-      <source>Zoom &amp;In (Grid View)</source>
-      <translation>Zoom a&amp;vant (mode grille)</translation>
+      <translation>Afficher les titres (mode Grille)</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="829"/>
+      <source>Zoom &amp;In (Grid View)</source>
+      <translation>Zoom a&amp;vant (mode Grille)</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="832"/>
       <source>Ctrl++</source>
       <translation>Ctrl++</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="838"/>
+      <location filename="../MainWindow.ui" line="841"/>
       <source>Zoom &amp;Out (Grid View)</source>
-      <translation>Zoom a&amp;rrière (mode grille)</translation>
+      <translation>Zoom a&amp;rrière (mode Grille)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="841"/>
+      <location filename="../MainWindow.ui" line="844"/>
       <source>Ctrl+-</source>
       <translation>Ctrl+-</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="850"/>
+      <location filename="../MainWindow.ui" line="853"/>
       <source>Refresh &amp;Covers (Grid View)</source>
-      <translation>A&amp;ctualiser les jaquettes (mode grille)</translation>
+      <translation>A&amp;ctualiser les jaquettes (mode Grille)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="859"/>
+      <location filename="../MainWindow.ui" line="862"/>
       <source>Open Memory Card Directory...</source>
       <translation>Ouvrir le dossier des Memory Cards…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="868"/>
+      <location filename="../MainWindow.ui" line="871"/>
       <source>Open Data Directory...</source>
       <translation>Ouvrir le dossier des données…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="877"/>
+      <location filename="../MainWindow.ui" line="880"/>
       <source>Toggle Software Rendering</source>
-      <translation>Activer/désactiver le moteur de rendu logiciel</translation>
+      <translation>Activer/Désactiver le moteur de rendu logiciel</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="886"/>
+      <location filename="../MainWindow.ui" line="889"/>
       <source>Open Debugger</source>
       <translation>Ouvrir le débogueur</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="895"/>
+      <location filename="../MainWindow.ui" line="898"/>
       <source>Reload Cheats/Patches</source>
       <translation>Recharger codes de triche et patchs</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="903"/>
+      <location filename="../MainWindow.ui" line="906"/>
       <source>Enable System Console</source>
       <translation>Activer la console système</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="911"/>
+      <location filename="../MainWindow.ui" line="914"/>
       <source>Enable Debug Console</source>
       <translation>Activer la console de débogage</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="919"/>
+      <location filename="../MainWindow.ui" line="922"/>
       <source>Enable Log Window</source>
       <translation>Activer la fenêtre du journal</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="927"/>
+      <location filename="../MainWindow.ui" line="930"/>
       <source>Enable Verbose Logging</source>
       <translation>Activer la journalisation détaillée</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="935"/>
+      <location filename="../MainWindow.ui" line="938"/>
       <source>Enable EE Console Logging</source>
       <translation>Activer la journalisation de la console EE</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="943"/>
+      <location filename="../MainWindow.ui" line="946"/>
       <source>Enable IOP Console Logging</source>
       <translation>Activer la journalisation de la console IOP</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="952"/>
+      <location filename="../MainWindow.ui" line="955"/>
       <source>Save Single Frame GS Dump</source>
       <translation>Enregistrer un dump du GS contenant 1 image</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="960"/>
+      <location filename="../MainWindow.ui" line="963"/>
       <source>New</source>
       <extracomment>This section refers to the Input Recording submenu.</extracomment>
       <translation>Nouveau</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="968"/>
+      <location filename="../MainWindow.ui" line="971"/>
       <source>Play</source>
       <extracomment>This section refers to the Input Recording submenu.</extracomment>
       <translation>Lecture</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="976"/>
+      <location filename="../MainWindow.ui" line="979"/>
       <source>Stop</source>
       <extracomment>This section refers to the Input Recording submenu.</extracomment>
       <translation>Arrêt</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="984"/>
+      <location filename="../MainWindow.ui" line="987"/>
       <source>Settings</source>
       <extracomment>This section refers to the Input Recording submenu.</extracomment>
       <translation>Paramètres</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="989"/>
-      <location filename="../MainWindow.ui" line="1005"/>
+      <location filename="../MainWindow.ui" line="992"/>
+      <location filename="../MainWindow.ui" line="1008"/>
       <source>Input Recording Logs</source>
       <translation>Journaux d'enregistrement d'entrées</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="997"/>
+      <location filename="../MainWindow.ui" line="1000"/>
       <source>Controller Logs</source>
       <translation>Journaux des manettes</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1013"/>
+      <location filename="../MainWindow.ui" line="1016"/>
       <source>Enable &amp;File Logging</source>
       <translation>Activer la journalisation dans un &amp;fichier</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1021"/>
+      <location filename="../MainWindow.ui" line="1024"/>
       <source>Enable CDVD Read Logging</source>
       <translation>Activer la journalisation des lectures CDVD</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1029"/>
+      <location filename="../MainWindow.ui" line="1032"/>
       <source>Save CDVD Block Dump</source>
       <translation>Enregistrer un blockdump CDVD</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1037"/>
+      <location filename="../MainWindow.ui" line="1040"/>
       <source>Enable Log Timestamps</source>
       <translation>Activer l'horodatage des messages du journal</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1046"/>
-      <location filename="../MainWindow.cpp" line="1471"/>
+      <location filename="../MainWindow.ui" line="1049"/>
+      <location filename="../MainWindow.cpp" line="1492"/>
       <source>Start Big Picture Mode</source>
       <translation>Lancer le mode Big Picture</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1055"/>
-      <location filename="../MainWindow.cpp" line="1472"/>
+      <location filename="../MainWindow.ui" line="1058"/>
+      <location filename="../MainWindow.cpp" line="1493"/>
       <source>Big Picture</source>
       <comment>In Toolbar</comment>
       <translation>Big Picture</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1064"/>
+      <location filename="../MainWindow.ui" line="1067"/>
       <source>Cover Downloader...</source>
       <translation>Télécharger des jaquettes…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1072"/>
-      <location filename="../MainWindow.cpp" line="645"/>
+      <location filename="../MainWindow.ui" line="1075"/>
+      <location filename="../MainWindow.cpp" line="664"/>
       <source>Show Advanced Settings</source>
       <translation>Afficher les paramètres avancés</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1077"/>
+      <location filename="../MainWindow.ui" line="1080"/>
       <source>Recording Viewer</source>
       <translation>Visionneuse d'enregistrements</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1085"/>
-      <location filename="../MainWindow.cpp" line="714"/>
+      <location filename="../MainWindow.ui" line="1088"/>
+      <location filename="../MainWindow.cpp" line="733"/>
       <source>Video Capture</source>
       <translation>Capture vidéo</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1090"/>
+      <location filename="../MainWindow.ui" line="1093"/>
       <source>Edit Cheats...</source>
       <translation>Modifier les codes de triche…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1099"/>
+      <location filename="../MainWindow.ui" line="1102"/>
       <source>Edit Patches...</source>
       <translation>Modifier les patchs…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="247"/>
+      <location filename="../MainWindow.cpp" line="248"/>
       <source>Internal Resolution</source>
       <translation>Résolution interne</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="247"/>
+      <location filename="../MainWindow.cpp" line="248"/>
       <source>%1x Scale</source>
       <translation>%1x</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="625"/>
+      <location filename="../MainWindow.cpp" line="642"/>
       <source>Select location to save block dump:</source>
       <translation>Sélectionnez où enregistrer le blockdump :</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="643"/>
+      <location filename="../MainWindow.cpp" line="660"/>
       <source>Do not show again</source>
       <translation>Ne plus afficher ce message</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="646"/>
+      <location filename="../MainWindow.cpp" line="665"/>
       <source>Changing advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and even corrupted save files. We do not recommend changing advanced settings unless you know what you are doing, and the implications of changing each setting.
 
 The PCSX2 team will not provide any support for configurations that modify these settings, you are on your own.
@@ -14065,290 +14299,296 @@ L'équipe PCSX2 ne fournira aucune assistance aux utilisateurs ayant modifié ce
 Voulez-vous vraiment continuer ?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="711"/>
+      <location filename="../MainWindow.cpp" line="730"/>
       <source>%1 Files (*.%2)</source>
       <translation>Fichiers %1 (*.%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="750"/>
-      <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
-      <translation>RA : connecté en tant que %1 (%2, softcore : %3). %4 messages non lus.</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.cpp" line="1051"/>
+      <location filename="../MainWindow.cpp" line="1065"/>
       <source>WARNING: Memory Card Busy</source>
       <translation>ATTENTION : Memory Card occupée</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1052"/>
-      <source>WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.
-
-Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</source>
-      <translation>ATTENTION : des données sont encore en cours d'écriture sur votre Memory Card. Éteindre la machine virtuelle maintenant aura pour effet de DÉTRUIRE DE FAÇON IRRÉVERSIBLE VOTRE MEMORY CARD. Il est fortement recommandé de revenir au jeu et de le laisser finir d'écrire sur votre Memory Card.
-
-Voulez-vous quand même éteindre la machine virtuelle et DÉTRUIRE DE FAÇON IRRÉVERSIBLE VOTRE MEMORY CARD ?</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.cpp" line="1167"/>
+      <location filename="../MainWindow.cpp" line="1186"/>
       <source>Confirm Shutdown</source>
       <translation>Confirmer l'extinction</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1168"/>
+      <location filename="../MainWindow.cpp" line="1189"/>
       <source>Are you sure you want to shut down the virtual machine?</source>
       <translation>Voulez-vous vraiment éteindre la machine virtuelle ?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1170"/>
+      <location filename="../MainWindow.cpp" line="1191"/>
       <source>Save State For Resume</source>
       <translation>Sauvegarder l'état pour reprendre plus tard</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1278"/>
-      <location filename="../MainWindow.cpp" line="1667"/>
-      <location filename="../MainWindow.cpp" line="2079"/>
-      <location filename="../MainWindow.cpp" line="2207"/>
-      <location filename="../MainWindow.cpp" line="2576"/>
-      <location filename="../MainWindow.cpp" line="2683"/>
+      <location filename="../MainWindow.cpp" line="1299"/>
+      <location filename="../MainWindow.cpp" line="1689"/>
+      <location filename="../MainWindow.cpp" line="2120"/>
+      <location filename="../MainWindow.cpp" line="2255"/>
+      <location filename="../MainWindow.cpp" line="2624"/>
+      <location filename="../MainWindow.cpp" line="2733"/>
       <source>Error</source>
       <translation>Erreur</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1278"/>
+      <location filename="../MainWindow.cpp" line="1299"/>
       <source>You must select a disc to change discs.</source>
       <translation>Vous devez sélectionner un disque pour changer de disque.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1310"/>
+      <location filename="../MainWindow.cpp" line="1331"/>
       <source>Properties...</source>
       <translation>Propriétés…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1327"/>
+      <location filename="../MainWindow.cpp" line="1348"/>
       <source>Set Cover Image...</source>
       <translation>Définir la jaquette…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1330"/>
+      <location filename="../MainWindow.cpp" line="1351"/>
       <source>Exclude From List</source>
       <translation>Exclure de la liste</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1333"/>
+      <location filename="../MainWindow.cpp" line="1354"/>
       <source>Reset Play Time</source>
       <translation>Réinitialiser le temps de jeu</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1339"/>
+      <location filename="../MainWindow.cpp" line="1360"/>
       <source>Default Boot</source>
       <translation>Démarrage par défaut</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1346"/>
+      <location filename="../MainWindow.cpp" line="1367"/>
       <source>Fast Boot</source>
       <translation>Démarrage rapide</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1349"/>
+      <location filename="../MainWindow.cpp" line="1370"/>
       <source>Full Boot</source>
       <translation>Démarrage complet</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1354"/>
+      <location filename="../MainWindow.cpp" line="1375"/>
       <source>Boot and Debug</source>
       <translation>Démarrer et déboguer</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1378"/>
+      <location filename="../MainWindow.cpp" line="1399"/>
       <source>Add Search Directory...</source>
       <translation>Ajouter un dossier…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1387"/>
+      <location filename="../MainWindow.cpp" line="1408"/>
       <source>Start File</source>
       <translation>Lancer un fichier</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1396"/>
+      <location filename="../MainWindow.cpp" line="1417"/>
       <source>Start Disc</source>
       <translation>Lancer un disque</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1413"/>
+      <location filename="../MainWindow.cpp" line="1434"/>
       <source>Select Disc Image</source>
       <translation>Sélectionnez une image disque</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1581"/>
+      <location filename="../MainWindow.cpp" line="1602"/>
       <source>Updater Error</source>
       <translation>Erreur lors de la mise à jour</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1586"/>
+      <location filename="../MainWindow.cpp" line="1608"/>
       <source>&lt;p&gt;Sorry, you are trying to update a PCSX2 version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please download from the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://pcsx2.net/downloads/&quot;&gt;https://pcsx2.net/downloads/&lt;/a&gt;&lt;/p&gt;</source>
       <translation>&lt;p&gt;Désolé, la mise à jour automatique de PCSX2 ne fonctionne qu'avec les versions officielles afin d'éviter des problèmes de compatibilité.&lt;/p&gt;&lt;p&gt;Vous pouvez obtenir une version officielle à partir du lien ci-dessous :&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://pcsx2.net/downloads/&quot;&gt;https://pcsx2.net/downloads/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1591"/>
+      <location filename="../MainWindow.cpp" line="1613"/>
       <source>Automatic updating is not supported on the current platform.</source>
       <translation>La mise à jour automatique n'est pas prise en charge sur votre plateforme.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1657"/>
+      <location filename="../MainWindow.cpp" line="1679"/>
       <source>Confirm File Creation</source>
       <translation>Confirmer la création du fichier</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1658"/>
+      <location filename="../MainWindow.cpp" line="1680"/>
       <source>The pnach file &apos;%1&apos; does not currently exist. Do you want to create it?</source>
-      <translation>Le fichier pnach « %1 » n'existe pas. Voulez-vous le créer ?</translation>
+      <translation>Le fichier pnach « %1 » n'existe pas. Voulez-vous le créer ?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1667"/>
+      <location filename="../MainWindow.cpp" line="1689"/>
       <source>Failed to create &apos;%1&apos;.</source>
-      <translation>Échec de la création de « %1 ».</translation>
+      <translation>Échec de la création de « %1 ».</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1750"/>
+      <location filename="../MainWindow.cpp" line="1754"/>
+      <source>Input Recording Failed</source>
+      <translation>Échec de l'enregistrement d'entrées</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.cpp" line="1755"/>
+      <source>Failed to create file: {}</source>
+      <translation>Échec de la création du fichier : {}</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.cpp" line="1778"/>
       <source>Input Recording Files (*.p2m2)</source>
       <translation>Enregistrements d'entrées (*.p2m2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1866"/>
+      <location filename="../MainWindow.cpp" line="1813"/>
+      <source>Input Playback Failed</source>
+      <translation>Échec de la lecture d'entrées</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.cpp" line="1814"/>
+      <source>Failed to open file: {}</source>
+      <translation>Échec de l'ouverture du fichier : {}</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.cpp" line="1900"/>
       <source>Paused</source>
       <translation>En pause</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2036"/>
+      <location filename="../MainWindow.cpp" line="2077"/>
       <source>Load State Failed</source>
       <translation>Échec du chargement de l'état</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2036"/>
+      <location filename="../MainWindow.cpp" line="2077"/>
       <source>Cannot load a save state without a running VM.</source>
       <translation>Impossible de charger une sauvegarde d'état sans machine virtuelle en cours d'exécution.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2064"/>
+      <location filename="../MainWindow.cpp" line="2105"/>
       <source>The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?</source>
       <translation>Le chargement d'un nouvel ELF nécessite la réinitialisation de la machine virtuelle. Voulez-vous réinitialiser la machine virtuelle ?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2079"/>
+      <location filename="../MainWindow.cpp" line="2120"/>
       <source>Cannot change from game to GS dump without shutting down first.</source>
       <translation>Impossible de lire un dump du GS sans éteindre la machine virtuelle.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2207"/>
+      <location filename="../MainWindow.cpp" line="2255"/>
       <source>Failed to get window info from widget</source>
       <translation>Échec de l'obtention des informations sur la fenêtre à partir du widget</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1471"/>
+      <location filename="../MainWindow.cpp" line="1492"/>
       <source>Stop Big Picture Mode</source>
       <translation>Quitter le mode Big Picture</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1472"/>
+      <location filename="../MainWindow.cpp" line="1493"/>
       <source>Exit Big Picture</source>
       <comment>In Toolbar</comment>
       <translation>Quitter BP</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1536"/>
+      <location filename="../MainWindow.cpp" line="1557"/>
       <source>Game Properties</source>
       <translation>Propriétés du jeu</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1536"/>
+      <location filename="../MainWindow.cpp" line="1557"/>
       <source>Game properties is unavailable for the current game.</source>
       <translation>Les propriétés du jeu sont indisponibles pour le jeu actuel.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2534"/>
+      <location filename="../MainWindow.cpp" line="2582"/>
       <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
       <translation>Aucun périphérique CD/DVD-ROM trouvé. Assurez-vous qu'un lecteur est bien connecté et que vous avez les autorisations nécessaires pour y accéder.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2552"/>
+      <location filename="../MainWindow.cpp" line="2600"/>
       <source>Select disc drive:</source>
       <translation>Sélectionnez un lecteur de disque :</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2576"/>
+      <location filename="../MainWindow.cpp" line="2624"/>
       <source>This save state does not exist.</source>
       <translation>Cette sauvegarde d'état n'existe pas.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2589"/>
+      <location filename="../MainWindow.cpp" line="2637"/>
       <source>Select Cover Image</source>
       <translation>Sélectionner une jaquette</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2606"/>
+      <location filename="../MainWindow.cpp" line="2654"/>
       <source>Cover Already Exists</source>
       <translation>Jaquette existante</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2607"/>
+      <location filename="../MainWindow.cpp" line="2655"/>
       <source>A cover image for this game already exists, do you wish to replace it?</source>
       <translation>Ce jeu a déjà une jaquette, voulez-vous la remplacer ?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2602"/>
-      <location filename="../MainWindow.cpp" line="2616"/>
-      <location filename="../MainWindow.cpp" line="2622"/>
-      <location filename="../MainWindow.cpp" line="2628"/>
+      <location filename="../MainWindow.cpp" line="2650"/>
+      <location filename="../MainWindow.cpp" line="2664"/>
+      <location filename="../MainWindow.cpp" line="2670"/>
+      <location filename="../MainWindow.cpp" line="2676"/>
       <source>Copy Error</source>
       <translation>Erreur de copie</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2616"/>
+      <location filename="../MainWindow.cpp" line="2664"/>
       <source>Failed to remove existing cover &apos;%1&apos;</source>
-      <translation>Échec de la suppression de la jaquette existante « %1 ».</translation>
+      <translation>Échec de la suppression de la jaquette existante « %1 ».</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2622"/>
+      <location filename="../MainWindow.cpp" line="2670"/>
       <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
-      <translation>Échec de la copie de « %1 » vers « %2 ».</translation>
+      <translation>Échec de la copie de « %1 » vers « %2 ».</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2628"/>
+      <location filename="../MainWindow.cpp" line="2676"/>
       <source>Failed to remove &apos;%1&apos;</source>
-      <translation>Échec de la suppression de « %1 ».</translation>
+      <translation>Échec de la suppression de « %1 ».</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2063"/>
-      <location filename="../MainWindow.cpp" line="2637"/>
+      <location filename="../MainWindow.cpp" line="2104"/>
+      <location filename="../MainWindow.cpp" line="2685"/>
       <source>Confirm Reset</source>
       <translation>Confirmer la réinitialisation</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2589"/>
+      <location filename="../MainWindow.cpp" line="2637"/>
       <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
       <translation>Tous les types de jaquettes (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2602"/>
+      <location filename="../MainWindow.cpp" line="2650"/>
       <source>You must select a different file to the current cover image.</source>
       <translation>Vous devez sélectionner un fichier différent de la jaquette actuelle.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2638"/>
+      <location filename="../MainWindow.cpp" line="2686"/>
       <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
-      <translation>Voulez-vous vraiment réinitialiser le temps de jeu pour « %1 » ?
+      <translation>Voulez-vous vraiment réinitialiser le temps de jeu pour « %1 » ?
 
 Cette action est irréversible.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2659"/>
+      <location filename="../MainWindow.cpp" line="2708"/>
       <source>Load Resume State</source>
       <translation>Charger la sauvegarde automatique</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2661"/>
+      <location filename="../MainWindow.cpp" line="2711"/>
       <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -14361,84 +14601,89 @@ Do you want to load this state, or start from a fresh boot?</source>
 Voulez-vous charger cette sauvegarde ou lancer le jeu normalement ?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2665"/>
+      <location filename="../MainWindow.cpp" line="2715"/>
       <source>Fresh Boot</source>
       <translation>Lancer normalement</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2666"/>
+      <location filename="../MainWindow.cpp" line="2716"/>
       <source>Delete And Boot</source>
       <translation>Supprimer et lancer</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2683"/>
+      <location filename="../MainWindow.cpp" line="2733"/>
       <source>Failed to delete save state file &apos;%1&apos;.</source>
-      <translation>Échec de la suppression de la sauvegarde d'état « %1 ».</translation>
+      <translation>Échec de la suppression de la sauvegarde d'état « %1 ».</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2741"/>
+      <location filename="../MainWindow.cpp" line="2791"/>
       <source>Load State File...</source>
       <translation>Charger l'état depuis un fichier…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2741"/>
+      <location filename="../MainWindow.cpp" line="2791"/>
       <source>Load From File...</source>
       <translation>Charger depuis un fichier…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2743"/>
-      <location filename="../MainWindow.cpp" line="2813"/>
+      <location filename="../MainWindow.cpp" line="2794"/>
+      <location filename="../MainWindow.cpp" line="2865"/>
       <source>Select Save State File</source>
       <translation>Sélectionner un fichier de sauvegarde d'état</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2813"/>
+      <location filename="../MainWindow.cpp" line="2865"/>
       <source>Save States (*.p2s)</source>
       <translation>Sauvegardes d'état (*.p2s)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2750"/>
+      <location filename="../MainWindow.cpp" line="2801"/>
       <source>Delete Save States...</source>
       <translation>Supprimer les sauvegardes d'état…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="57"/>
+      <location filename="../MainWindow.cpp" line="58"/>
       <source>All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;Single-Track Raw Images (*.bin *.iso);;Cue Sheets (*.cue);;Media Descriptor File (*.mdf);;MAME CHD Images (*.chd);;CSO Images (*.cso);;ZSO Images (*.zso);;GZ Images (*.gz);;ELF Executables (*.elf);;IRX Executables (*.irx);;GS Dumps (*.gs *.gs.xz *.gs.zst);;Block Dumps (*.dump)</source>
       <translation>Tous les types de fichiers (*.bin *.iso *.cue *.mdf *.chd *.zso *.cso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;Images brutes à 1 piste (*.bin *.iso);;Fichiers CUE (*.cue);;Media Descriptor File (*.mdf);;Images CHD pour MAME (*.chd);;Images CSO (*.cso);;Images ZSO (*.zso);;Images GZ (*.gz);;Exécutables ELF (*.elf);;Exécutables IRX (*.irx);;Dumps du GS (*.gs *.gs.xz *.gs.zst);;Blockdumps (*.dump)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="70"/>
+      <location filename="../MainWindow.cpp" line="71"/>
       <source>All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.dump);;Single-Track Raw Images (*.bin *.iso);;Cue Sheets (*.cue);;Media Descriptor File (*.mdf);;MAME CHD Images (*.chd);;CSO Images (*.cso);;ZSO Images (*.zso);;GZ Images (*.gz);;Block Dumps (*.dump)</source>
       <translation>Tous les types de fichiers (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.dump);;Images brutes à 1 piste (*.bin *.iso);;Fichiers CUE (*.cue);;Media Descriptor File (*.mdf);;Images CHD pour MAME (*.chd);;Images CSO (*.cso);;Images ZSO (*.zso);;Images GZ (*.gz);;Blockdumps (*.dump)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2743"/>
+      <location filename="../MainWindow.cpp" line="1066"/>
+      <source>WARNING: Your memory card is still writing data. Shutting down now &lt;b&gt;WILL IRREVERSIBLY DESTROY YOUR MEMORY CARD.&lt;/b&gt; It is strongly recommended to resume your game and let it finish writing to your memory card.&lt;br&gt;&lt;br&gt;Do you wish to shutdown anyways and &lt;b&gt;IRREVERSIBLY DESTROY YOUR MEMORY CARD?&lt;/b&gt;</source>
+      <translation>ATTENTION : des données sont encore en cours d'écriture sur votre Memory Card. Éteindre la machine virtuelle maintenant aura pour effet de &lt;b&gt;DÉTRUIRE DE FAÇON IRRÉVERSIBLE VOTRE MEMORY CARD.&lt;/b&gt; Il est fortement recommandé de revenir au jeu et le laisser finir l'écriture sur votre Memory Card.&lt;br&gt;&lt;br&gt;Voulez-vous quand même éteindre la machine virtuelle et &lt;b&gt;DÉTRUIRE DE FAÇON IRRÉVERSIBLE VOTRE MEMORY CARD ?&lt;/b&gt;</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.cpp" line="2794"/>
       <source>Save States (*.p2s *.p2s.backup)</source>
       <translation>Sauvegardes d'état (*.p2s *.p2s.backup)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2755"/>
+      <location filename="../MainWindow.cpp" line="2806"/>
       <source>Undo Load State</source>
       <translation>Annuler le chargement d'état</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2769"/>
+      <location filename="../MainWindow.cpp" line="2820"/>
       <source>Resume (%2)</source>
       <translation>Reprendre (%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2785"/>
+      <location filename="../MainWindow.cpp" line="2836"/>
       <source>Load Slot %1 (%2)</source>
       <translation>Charger l'état à l'emplacement %1 (%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2794"/>
-      <location filename="../MainWindow.cpp" line="2802"/>
+      <location filename="../MainWindow.cpp" line="2845"/>
+      <location filename="../MainWindow.cpp" line="2853"/>
       <source>Delete Save States</source>
       <translation>Supprimer les sauvegardes d'état</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2795"/>
+      <location filename="../MainWindow.cpp" line="2846"/>
       <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -14447,57 +14692,57 @@ The saves will not be recoverable.</source>
 Les sauvegardes ne pourront pas être récupérées.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2802"/>
+      <location filename="../MainWindow.cpp" line="2853"/>
       <source>%1 save states deleted.</source>
       <translation>%1 sauvegardes d'état supprimées.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2812"/>
+      <location filename="../MainWindow.cpp" line="2863"/>
       <source>Save To File...</source>
       <translation>Sauvegarder dans un fichier…</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2831"/>
+      <location filename="../MainWindow.cpp" line="2883"/>
       <source>Empty</source>
       <translation>vide</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2833"/>
+      <location filename="../MainWindow.cpp" line="2885"/>
       <source>Save Slot %1 (%2)</source>
       <translation>Sauvegarder à l'emplacement %1 (%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2890"/>
+      <location filename="../MainWindow.cpp" line="2942"/>
       <source>Confirm Disc Change</source>
       <translation>Confirmer le changement de disque</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2891"/>
+      <location filename="../MainWindow.cpp" line="2943"/>
       <source>Do you want to swap discs or boot the new image (via system reset)?</source>
       <translation>Voulez-vous échanger les disques, ou redémarrer le système avec la nouvelle image disque insérée ?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2892"/>
+      <location filename="../MainWindow.cpp" line="2944"/>
       <source>Swap Disc</source>
       <translation>Échanger les disques</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2893"/>
+      <location filename="../MainWindow.cpp" line="2945"/>
       <source>Reset</source>
       <translation>Redémarrer</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="355"/>
+      <location filename="../Translations.cpp" line="360"/>
       <source>Missing Font File</source>
       <translation>Fichier de police manquant</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="359"/>
+      <location filename="../Translations.cpp" line="365"/>
       <source>The font file &apos;%1&apos; is required for the On-Screen Display and Big Picture Mode to show messages in your language.&lt;br&gt;&lt;br&gt;Do you want to download this file now? These files are usually less than 10 megabytes in size.&lt;br&gt;&lt;br&gt;&lt;strong&gt;If you do not download this file, on-screen messages will not be readable.&lt;/strong&gt;</source>
-      <translation>Le fichier de police « %1 » est nécessaire pour pouvoir afficher des messages dans votre langue, en jeu et dans le mode Big Picture.&lt;br&gt;&lt;br&gt;Voulez-vous télécharger ce fichier ? Généralement, la taille du téléchargement est inférieure à 10 mégaoctets.&lt;br&gt;&lt;br&gt;&lt;strong&gt;Si vous décidez de ne pas télécharger ce fichier, les messages à l'écran seront illisibles.&lt;/strong&gt;</translation>
+      <translation>Le fichier de police « %1 » est nécessaire pour pouvoir afficher des messages dans votre langue, en jeu et dans le mode Big Picture.&lt;br&gt;&lt;br&gt;Voulez-vous télécharger ce fichier ? Généralement, la taille du téléchargement est inférieure à 10 mégaoctets.&lt;br&gt;&lt;br&gt;&lt;strong&gt;Si vous décidez de ne pas télécharger ce fichier, les messages à l'écran seront illisibles.&lt;/strong&gt;</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="369"/>
+      <location filename="../Translations.cpp" line="375"/>
       <source>Downloading Files</source>
       <translation>Téléchargement de fichiers</translation>
     </message>
@@ -14505,10 +14750,52 @@ Les sauvegardes ne pourront pas être récupérées.</translation>
   <context>
     <name>MemoryCard</name>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="513"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="284"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="969"/>
+      <source>Memory Card Creation Failed</source>
+      <translation>Échec de la création de la Memory Card</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="285"/>
+      <source>Could not create the memory card:
+{}</source>
+      <translation>Impossible de créer la Memory Card :
+{}</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="310"/>
+      <source>Memory Card Read Failed</source>
+      <translation>Échec de la lecture de la Memory Card</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="311"/>
+      <source>Unable to access memory card:
+
+{}
+
+Another instance of PCSX2 may be using this memory card or the memory card is stored in a write-protected folder.
+Close any other instances of PCSX2, or restart your computer.
+</source>
+      <translation>Impossible d'accéder à la Memory Card :
+
+{}
+
+Il se peut qu'une autre instance de PCSX2 soit en train d'utiliser cette Memory Card, ou qu'elle soit stockée dans un dossier protégé en écriture.
+Fermez toutes les autres instances de PCSX2, ou redémarrez votre ordinateur.
+</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="506"/>
       <location filename="../../pcsx2/SIO/Memcard/MemoryCardFolder.cpp" line="2346"/>
       <source>Memory Card &apos;{}&apos; was saved to storage.</source>
-      <translation>La Memory Card « {} » a bien été enregistrée.</translation>
+      <translation>La Memory Card « {} » a bien été enregistrée.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="970"/>
+      <source>Failed to create memory card. The error was:
+{}</source>
+      <translation>Échec de la création de la Memory Card :
+{}</translation>
     </message>
     <message>
       <location filename="../../pcsx2/SIO/Sio.cpp" line="83"/>
@@ -14626,7 +14913,7 @@ Les sauvegardes ne pourront pas être récupérées.</translation>
     <message>
       <location filename="../Settings/MemoryCardConvertDialog.cpp" line="101"/>
       <source>Memory Card &quot;%1&quot; converted to &quot;%2&quot;</source>
-      <translation>Memory Card « %1 » convertie vers « %2 ».</translation>
+      <translation>Memory Card « %1 » convertie vers « %2 ».</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardConvertDialog.cpp" line="222"/>
@@ -14729,12 +15016,12 @@ Les sauvegardes ne pourront pas être récupérées.</translation>
     <message>
       <location filename="../Settings/MemoryCardCreateDialog.cpp" line="107"/>
       <source>Failed to create the Memory Card, because the name &apos;%1&apos; contains one or more invalid characters.</source>
-      <translation>Échec de la création de la Memory Card : « %1 » contient un ou plusieurs caractères invalides.</translation>
+      <translation>Échec de la création de la Memory Card : « %1 » contient un ou plusieurs caractères invalides.</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardCreateDialog.cpp" line="114"/>
       <source>Failed to create the Memory Card, because another card with the name &apos;%1&apos; already exists.</source>
-      <translation>Échec de la création de la Memory Card. Une autre Memory Card également nommée « %1 » existe déjà.</translation>
+      <translation>Échec de la création de la Memory Card. Une autre Memory Card également nommée « %1 » existe déjà.</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardCreateDialog.cpp" line="121"/>
@@ -14744,7 +15031,7 @@ Les sauvegardes ne pourront pas être récupérées.</translation>
     <message>
       <location filename="../Settings/MemoryCardCreateDialog.cpp" line="133"/>
       <source>Memory Card &apos;%1&apos; created.</source>
-      <translation>Memory Card « %1 » créée.</translation>
+      <translation>Memory Card « %1 » créée.</translation>
     </message>
   </context>
   <context>
@@ -14901,7 +15188,7 @@ Les sauvegardes ne pourront pas être récupérées.</translation>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="237"/>
       <source>New name is invalid, it must end with .ps2</source>
-      <translation>Le nouveau nom est invalide, il doit se terminer par « .ps2 ».</translation>
+      <translation>Le nouveau nom est invalide, il doit se terminer par « .ps2 ».</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="245"/>
@@ -14909,21 +15196,21 @@ Les sauvegardes ne pourront pas être récupérées.</translation>
       <translation>Le nouveau nom est invalide, une carte portant ce nom existe déjà.</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="153"/>
-      <source>This Memory Card is unknown.</source>
-      <translation>Cette Memory Card est inconnue.</translation>
-    </message>
-    <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="106"/>
       <source>Slot %1</source>
       <translation>Fente %1</translation>
+    </message>
+    <message>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="153"/>
+      <source>This Memory Card cannot be recognized or is not a valid file type.</source>
+      <translation>Impossible de reconnaître cette Memory Card, fichier invalide.</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="206"/>
       <source>Are you sure you wish to delete the Memory Card &apos;%1&apos;?
 
 This action cannot be reversed, and you will lose any saves on the card.</source>
-      <translation>Voulez-vous vraiment supprimer la Memory Card « %1 » ?
+      <translation>Voulez-vous vraiment supprimer la Memory Card « %1 » ?
 
 Vous perdrez toutes les sauvegardes qui s'y trouvent. Cette action est irréversible.</translation>
     </message>
@@ -14999,6 +15286,235 @@ Vous perdrez toutes les sauvegardes qui s'y trouvent. Cette action est irrévers
     </message>
   </context>
   <context>
+    <name>MemorySearchWidget</name>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="27"/>
+      <source>Value</source>
+      <translation>Valeur</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="37"/>
+      <source>Type</source>
+      <translation>Type</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="45"/>
+      <source>1 Byte (8 bits)</source>
+      <translation>1 octet (8 bits)</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="50"/>
+      <source>2 Bytes (16 bits)</source>
+      <translation>2 octets (16 bits)</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="55"/>
+      <source>4 Bytes (32 bits)</source>
+      <translation>4 octets (32 bits)</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="60"/>
+      <source>8 Bytes (64 bits)</source>
+      <translation>8 octets (64 bits)</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="65"/>
+      <source>Float</source>
+      <translation>Float</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="70"/>
+      <source>Double</source>
+      <translation>Double</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="75"/>
+      <source>String</source>
+      <translation>String</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="80"/>
+      <source>Array of byte</source>
+      <translation>Tableau d'octets</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="88"/>
+      <source>Hex</source>
+      <translation>Hexa</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="105"/>
+      <source>Search</source>
+      <translation>Rechercher</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="115"/>
+      <source>Filter Search</source>
+      <translation>Filtrer</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="123"/>
+      <location filename="../Debugger/MemorySearchWidget.h" line="59"/>
+      <source>Equals</source>
+      <translation>Égal à</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="128"/>
+      <location filename="../Debugger/MemorySearchWidget.h" line="60"/>
+      <source>Not Equals</source>
+      <translation>Différent de</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="133"/>
+      <location filename="../Debugger/MemorySearchWidget.h" line="61"/>
+      <source>Greater Than</source>
+      <translation>Supérieur à</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="138"/>
+      <location filename="../Debugger/MemorySearchWidget.h" line="62"/>
+      <source>Greater Than Or Equal</source>
+      <translation>Supérieur ou égal à</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="143"/>
+      <location filename="../Debugger/MemorySearchWidget.h" line="63"/>
+      <source>Less Than</source>
+      <translation>Inférieur à</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="148"/>
+      <location filename="../Debugger/MemorySearchWidget.h" line="64"/>
+      <source>Less Than Or Equal</source>
+      <translation>Inférieur ou égal à</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="156"/>
+      <source>Comparison</source>
+      <translation>Comparaison</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="167"/>
+      <source>Start</source>
+      <translation>Début</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.ui" line="181"/>
+      <source>End</source>
+      <translation>Fin</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="94"/>
+      <source>Search Results List Context Menu</source>
+      <translation>Menu contextuel de la liste des résultats de recherche</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="100"/>
+      <source>Copy Address</source>
+      <translation>Copier l'adresse</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="104"/>
+      <source>Go to in Disassembly</source>
+      <translation>Aller à l'adresse dans le désassembleur</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="108"/>
+      <source>Add to Saved Memory Addresses</source>
+      <translation>Ajouter aux adresses enregistrées</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="115"/>
+      <source>Remove Result</source>
+      <translation>Supprimer le résultat</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="486"/>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="494"/>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="500"/>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="531"/>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="555"/>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="564"/>
+      <source>Debugger</source>
+      <translation>Débogueur</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="486"/>
+      <source>Invalid start address</source>
+      <translation>Adresse de début invalide.</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="494"/>
+      <source>Invalid end address</source>
+      <translation>Adresse de fin invalide.</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="500"/>
+      <source>Start address can&apos;t be equal to or greater than the end address</source>
+      <translation>L'adresse de début ne peut pas être supérieure ou égale à l'adresse de fin.</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="531"/>
+      <source>Invalid search value</source>
+      <translation>Valeur à rechercher invalide.</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="555"/>
+      <source>Value is larger than type</source>
+      <translation>La valeur est trop grande pour le type sélectionné.</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="564"/>
+      <source>This search comparison can only be used with filter searches.</source>
+      <translation>Cette comparaison ne peut être utilisée que lorsque vous filtrez les résultats.</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="577"/>
+      <source>%0 results found</source>
+      <translation>%0 résultats</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.cpp" line="594"/>
+      <source>Searching...</source>
+      <translation>Recherche en cours…</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.h" line="65"/>
+      <source>Increased</source>
+      <translation>A augmenté</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.h" line="66"/>
+      <source>Increased By</source>
+      <translation>A augmenté de</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.h" line="67"/>
+      <source>Decreased</source>
+      <translation>A diminué</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.h" line="68"/>
+      <source>Decreased By</source>
+      <translation>A diminué de</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.h" line="69"/>
+      <source>Changed</source>
+      <translation>A changé</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.h" line="70"/>
+      <source>Changed By</source>
+      <translation>A changé de</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemorySearchWidget.h" line="71"/>
+      <source>Not Changed</source>
+      <translation>N'a pas changé</translation>
+    </message>
+  </context>
+  <context>
     <name>MemoryViewWidget</name>
     <message>
       <location filename="../Debugger/MemoryViewWidget.ui" line="14"/>
@@ -15006,63 +15522,63 @@ Vous perdrez toutes les sauvegardes qui s'y trouvent. Cette action est irrévers
       <translation>Mémoire</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="390"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="392"/>
       <source>Copy Address</source>
       <translation>Copier l'adresse</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="394"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="396"/>
       <source>Go to in Disassembly</source>
       <translation>Aller à l'adresse dans le désassembleur</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="398"/>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="482"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="400"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="484"/>
       <source>Go to address</source>
       <translation>Aller à une adresse</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="405"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="407"/>
       <source>Show as 1 byte</source>
       <translation>Grouper par 1 octet</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="410"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="412"/>
       <source>Show as 2 bytes</source>
       <translation>Afficher comme 2 octets</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="415"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="417"/>
       <source>Show as 4 bytes</source>
       <translation>Grouper par 4 octets</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="420"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="422"/>
       <source>Show as 8 bytes</source>
       <translation>Grouper par 8 octets</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="427"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="429"/>
       <source>Add to Saved Memory Addresses</source>
       <translation>Ajouter aux adresses enregistrées</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="431"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="433"/>
       <source>Copy Byte</source>
       <translation>Copier l'octet</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="435"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="437"/>
       <source>Copy Segment</source>
       <translation>Copier le segment</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="439"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="441"/>
       <source>Copy Character</source>
       <translation>Copier le caractère</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="443"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="445"/>
       <source>Paste</source>
       <translation>Coller</translation>
     </message>
@@ -15112,12 +15628,12 @@ Vous perdrez toutes les sauvegardes qui s'y trouvent. Cette action est irrévers
       <translation>Saisissez le nom de l'auteur</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/NewInputRecordingDlg.cpp" line="68"/>
+      <location filename="../Tools/InputRecording/NewInputRecordingDlg.cpp" line="69"/>
       <source>Input Recording Files (*.p2m2)</source>
       <translation>Enregistrements d'entrées (*.p2m2)</translation>
     </message>
     <message>
-      <location filename="../Tools/InputRecording/NewInputRecordingDlg.cpp" line="69"/>
+      <location filename="../Tools/InputRecording/NewInputRecordingDlg.cpp" line="71"/>
       <source>Select a File</source>
       <translation>Sélectionnez un fichier</translation>
     </message>
@@ -15469,7 +15985,7 @@ Vous perdrez toutes les sauvegardes qui s'y trouvent. Cette action est irrévers
       <translation>Guitare</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Pad/Pad.cpp" line="561"/>
+      <location filename="../../pcsx2/SIO/Pad/Pad.cpp" line="565"/>
       <source>Controller port {0}, slot {1} has a {2} connected, but the save state has a {3}.
 Ejecting {3} and replacing it with {2}.</source>
       <translation>Périphérique connecté au port de manette {0}, emplacement {1} : {2}. La sauvegarde d'état a un périphérique différent : {3}.
@@ -15533,30 +16049,50 @@ Ejecting {3} and replacing it with {2}.</source>
       <source>Failed to open {}. Built-in game patches are not available.</source>
       <translation>Échec de l'ouverture de {}. Les patchs intégrés sont indisponibles.</translation>
     </message>
-    <message>
+    <message numerus="yes">
       <location filename="../../pcsx2/Patch.cpp" line="698"/>
-      <source>{} GameDB patches</source>
-      <translation>{} patchs GameDB</translation>
+      <source>%n GameDB patches are active.</source>
+      <comment>OSD Message</comment>
+      <translation>
+        <numerusform>%n patch GameDB est actif.</numerusform>
+        <numerusform>%n patchs GameDB sont actifs.</numerusform>
+      </translation>
+    </message>
+    <message numerus="yes">
+      <location filename="../../pcsx2/Patch.cpp" line="705"/>
+      <source>%n game patches are active.</source>
+      <comment>OSD Message</comment>
+      <translation>
+        <numerusform>%n patch de jeu est actif.</numerusform>
+        <numerusform>%n patchs de jeu sont actifs.</numerusform>
+      </translation>
+    </message>
+    <message numerus="yes">
+      <location filename="../../pcsx2/Patch.cpp" line="712"/>
+      <source>%n cheat patches are active.</source>
+      <comment>OSD Message</comment>
+      <translation>
+        <numerusform>%n code de triche est actif.</numerusform>
+        <numerusform>%n codes de triche sont actifs.</numerusform>
+      </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Patch.cpp" line="704"/>
-      <source>{}{} game patches</source>
-      <translation>{}{} patchs</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/Patch.cpp" line="711"/>
-      <source>{}{} cheat patches</source>
-      <translation>{}{} codes de triche</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/Patch.cpp" line="723"/>
-      <source>{} are active.</source>
-      <translation>{} patchs activés.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/Patch.cpp" line="728"/>
+      <location filename="../../pcsx2/Patch.cpp" line="727"/>
       <source>No cheats or patches (widescreen, compatibility or others) are found / enabled.</source>
       <translation>Aucun code de triche ou patch (écran large, compatibilité, ou autre) trouvé et activé.</translation>
+    </message>
+  </context>
+  <context>
+    <name>Pcsx2Config</name>
+    <message>
+      <location filename="../../pcsx2/Pcsx2Config.cpp" line="1013"/>
+      <source>Disabled (Noisy)</source>
+      <translation>Désactivé (bruit)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Pcsx2Config.cpp" line="1014"/>
+      <source>TimeStretch (Recommended)</source>
+      <translation>TimeStretch (recommandé)</translation>
     </message>
   </context>
   <context>
@@ -15578,13 +16114,13 @@ Ejecting {3} and replacing it with {2}.</source>
   <context>
     <name>QObject</name>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="747"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="678"/>
       <location filename="../Settings/HddCreateQt.cpp" line="34"/>
       <source>HDD Creator</source>
       <translation>Création du disque dur</translation>
     </message>
     <message>
-      <location filename="../Settings/DEV9SettingsWidget.cpp" line="748"/>
+      <location filename="../Settings/DEV9SettingsWidget.cpp" line="679"/>
       <location filename="../Settings/HddCreateQt.cpp" line="35"/>
       <source>Failed to create HDD image</source>
       <translation>Échec de la création de l'image de disque dur.</translation>
@@ -15619,6 +16155,54 @@ Ejecting {3} and replacing it with {2}.</source>
       <location filename="../QtProgressCallback.cpp" line="203"/>
       <source>Information</source>
       <translation>Information</translation>
+    </message>
+  </context>
+  <context>
+    <name>QtHost</name>
+    <message>
+      <location filename="../QtHost.cpp" line="1097"/>
+      <source>RA: Logged in as %1 (%2 pts, softcore: %3 pts). %4 unread messages.</source>
+      <translation>RA : connecté en tant que %1 (%2 pts, softcore : %3 pts). %4 messages non lus.</translation>
+    </message>
+    <message>
+      <location filename="../QtHost.cpp" line="1507"/>
+      <location filename="../QtHost.cpp" line="1522"/>
+      <source>Error</source>
+      <translation>Erreur</translation>
+    </message>
+    <message>
+      <location filename="../QtHost.cpp" line="1508"/>
+      <source>An error occurred while deleting empty game settings:
+{}</source>
+      <translation>Une erreur s'est produite lors de la suppression des paramètres de jeu vides :
+{}</translation>
+    </message>
+    <message>
+      <location filename="../QtHost.cpp" line="1523"/>
+      <source>An error occurred while saving game settings:
+{}</source>
+      <translation>Une erreur s'est produite lors de l'enregistrement des paramètres de jeu :
+{}</translation>
+    </message>
+    <message>
+      <location filename="../QtHost.cpp" line="1671"/>
+      <source>Controller {} connected.</source>
+      <translation>Manette {} connectée.</translation>
+    </message>
+    <message>
+      <location filename="../QtHost.cpp" line="1684"/>
+      <source>System paused because controller {} was disconnected.</source>
+      <translation>Système mis en pause en raison de la déconnexion de la manette {}.</translation>
+    </message>
+    <message>
+      <location filename="../QtHost.cpp" line="1697"/>
+      <source>Controller {} disconnected.</source>
+      <translation>Manette {} déconnectée.</translation>
+    </message>
+    <message>
+      <location filename="../QtHost.cpp" line="1924"/>
+      <source>Cancel</source>
+      <translation>Annuler</translation>
     </message>
   </context>
   <context>
@@ -15657,132 +16241,105 @@ Ejecting {3} and replacing it with {2}.</source>
       <translation>Affichage des registres</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="226"/>
-      <location filename="../Debugger/RegisterWidget.cpp" line="233"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="239"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="246"/>
       <source>View as hex</source>
       <translation>Afficher en hexa</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="226"/>
-      <location filename="../Debugger/RegisterWidget.cpp" line="233"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="239"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="246"/>
       <source>View as float</source>
       <translation>Afficher en nombre flottant</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="240"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="253"/>
       <source>Copy Top Half</source>
       <translation>Copier la moitié supérieure</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="242"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="255"/>
       <source>Copy Bottom Half</source>
       <translation>Copier la moitié inférieure</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="244"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="257"/>
       <source>Copy Segment</source>
       <translation>Copier le segment</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="249"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="262"/>
       <source>Copy Value</source>
       <translation>Copier la valeur</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="257"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="270"/>
       <source>Change Top Half</source>
       <translation>Modifier la moitié supérieure</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="259"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="272"/>
       <source>Change Bottom Half</source>
       <translation>Modifier la moitié inférieure</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="261"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="274"/>
       <source>Change Segment</source>
       <translation>Modifier le segment</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="266"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="279"/>
       <source>Change Value</source>
       <translation>Modifier la valeur</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="272"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="285"/>
       <source>Go to in Disassembly</source>
       <translation>Aller à l'adresse dans le désassembleur</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="275"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="288"/>
       <source>Go to in Memory View</source>
       <translation>Aller à l'adresse dans la vue mémoire</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="331"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="344"/>
       <source>Change %1</source>
       <extracomment>Changing the value in a CPU register (e.g. &quot;Change t0&quot;)</extracomment>
       <translation>Modifier %1</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="342"/>
-      <location filename="../Debugger/RegisterWidget.cpp" line="351"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="355"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="364"/>
       <source>Invalid register value</source>
       <translation>Valeur de registre invalide</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="342"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="355"/>
       <source>Invalid hexadecimal register value.</source>
       <translation>Valeur hexadécimale invalide.</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="351"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="364"/>
       <source>Invalid floating-point register value.</source>
       <translation>Nombre à virgule flottante invalide.</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="420"/>
+      <location filename="../Debugger/RegisterWidget.cpp" line="433"/>
       <source>Invalid target address</source>
       <translation>Adresse cible invalide</translation>
     </message>
   </context>
   <context>
-    <name>SPU2</name>
-    <message>
-      <location filename="../../pcsx2/SPU2/SndOut_Cubeb.cpp" line="285"/>
-      <source>Requested audio output device &apos;{}&apos; not found, using default.</source>
-      <translation>Périphérique de sortie audio demandé (« {} ») introuvable, utilisation du périphérique par défaut.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/SPU2/SndOut_Cubeb.cpp" line="370"/>
-      <source>Cubeb (Cross-platform)</source>
-      <extracomment>Cubeb is an audio engine name. Leave as-is.</extracomment>
-      <translation>Cubeb (multiplateforme)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/SPU2/SndOut.cpp" line="40"/>
-      <source>No Sound (Emulate SPU2 only)</source>
-      <translation>Aucun son (émulation du SPU2 seule)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/SPU2/SndOut_XAudio2.cpp" line="351"/>
-      <source>XAudio2</source>
-      <extracomment>XAudio2 is an audio engine name. Leave as-is.</extracomment>
-      <translation>XAudio2</translation>
-    </message>
-  </context>
-  <context>
     <name>SaveState</name>
     <message>
-      <location filename="../../pcsx2/SaveState.cpp" line="1053"/>
-      <source>This savestate is an unsupported version and cannot be used.
+      <location filename="../../pcsx2/SaveState.cpp" line="1055"/>
+      <source>This save state is outdated and is no longer compatible with the current version of PCSX2.
 
-You can download PCSX2 {} from pcsx2.net and make a normal memory card save.
-Otherwise delete the savestate and do a fresh boot.</source>
-      <translation>La version de cette sauvegarde d'état n'est plus prise en charge.
+If you have any unsaved progress on this save state, you can download the compatible version (PCSX2 {}) from pcsx2.net, load the save state, and save your progress to the memory card.</source>
+      <translation>Cette sauvegarde d'état est obsolète et incompatible avec la version actuelle de PCSX2.
 
-Vous pouvez télécharger PCSX2 {} depuis pcsx2.net et sauvegarder sur la Memory Card.
-Sinon, vous pouvez supprimer la sauvegarde d'état et lancer le jeu normalement.</translation>
+Si vous avez besoin d'utiliser cette sauvegarde d'état pour récupérer votre progression, vous pouvez télécharger la version de PCSX2 compatible avec celle-ci (PCSX2 {}) sur pcsx2.net, charger la sauvegarde d'état puis sauvegarder votre progression sur une Memory Card.</translation>
     </message>
   </context>
   <context>
@@ -15806,26 +16363,25 @@ Sinon, vous pouvez supprimer la sauvegarde d'état et lancer le jeu normalement.
   <context>
     <name>SettingWidgetBinder</name>
     <message>
-      <location filename="../Settings/AudioSettingsWidget.cpp" line="272"/>
-      <location filename="../SettingWidgetBinder.h" line="402"/>
-      <location filename="../SettingWidgetBinder.h" line="530"/>
-      <location filename="../SettingWidgetBinder.h" line="1121"/>
+      <location filename="../SettingWidgetBinder.h" line="348"/>
+      <location filename="../SettingWidgetBinder.h" line="472"/>
+      <location filename="../SettingWidgetBinder.h" line="600"/>
       <source>Reset</source>
       <translation>Réinitialiser</translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="303"/>
-      <location filename="../SettingWidgetBinder.h" line="431"/>
+      <location filename="../SettingWidgetBinder.h" line="373"/>
+      <location filename="../SettingWidgetBinder.h" line="501"/>
       <source>Default: </source>
       <translation>Par défaut : </translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="1022"/>
+      <location filename="../SettingWidgetBinder.h" line="1173"/>
       <source>Confirm Folder</source>
       <translation>Confirmer le dossier</translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="1023"/>
+      <location filename="../SettingWidgetBinder.h" line="1174"/>
       <source>The chosen directory does not currently exist:
 
 %1
@@ -15838,17 +16394,17 @@ Do you want to create this directory?</source>
 Voulez-vous créer ce dossier ?</translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="1045"/>
+      <location filename="../SettingWidgetBinder.h" line="1196"/>
       <source>Error</source>
       <translation>Erreur</translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="1046"/>
+      <location filename="../SettingWidgetBinder.h" line="1197"/>
       <source>Folder path cannot be empty.</source>
       <translation>Le chemin d'accès ne peut pas être vide.</translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="1064"/>
+      <location filename="../SettingWidgetBinder.h" line="1215"/>
       <source>Select folder for %1</source>
       <translation>Sélectionner un dossier (%1)</translation>
     </message>
@@ -15877,10 +16433,10 @@ Voulez-vous créer ce dossier ?</translation>
   <context>
     <name>SettingsWindow</name>
     <message>
-      <location filename="../Settings/SettingsWindow.ui" line="25"/>
-      <location filename="../Settings/SettingsWindow.cpp" line="290"/>
-      <location filename="../Settings/SettingsWindow.cpp" line="305"/>
-      <location filename="../Settings/SettingsWindow.cpp" line="313"/>
+      <location filename="../Settings/SettingsWindow.ui" line="20"/>
+      <location filename="../Settings/SettingsWindow.cpp" line="291"/>
+      <location filename="../Settings/SettingsWindow.cpp" line="306"/>
+      <location filename="../Settings/SettingsWindow.cpp" line="314"/>
       <location filename="../Settings/SettingsWindow.cpp" line="327"/>
       <source>PCSX2 Settings</source>
       <translation>Paramètres PCSX2</translation>
@@ -15908,7 +16464,7 @@ Voulez-vous créer ce dossier ?</translation>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="77"/>
       <source>&lt;strong&gt;Summary&lt;/strong&gt;&lt;hr&gt;This page shows details about the selected game. Changing the Input Profile will set the controller binding scheme for this game to whichever profile is chosen, instead of the default (Shared) configuration. The track list and dump verification can be used to determine if your disc image matches a known good dump. If it does not match, the game may be broken.</source>
-      <translation>&lt;strong&gt;Résumé&lt;/strong&gt;&lt;hr&gt;Cette page affiche des détails à propos du jeu sélectionné. Sélectionner un profil d'entrée a pour effet d'utiliser la configuration des manettes du profil sélectionné à la place de la configuration par défaut (« Partagé »). La liste des pistes et la vérification permettent de déterminer si votre image disque est identique à une autre copie valide. Si la vérification échoue, votre jeu pourrait ne pas fonctionner correctement.</translation>
+      <translation>&lt;strong&gt;Résumé&lt;/strong&gt;&lt;hr&gt;Cette page affiche des détails à propos du jeu sélectionné. Changer de profil d'entrée a pour effet d'utiliser, pour ce jeu, la configuration des manettes du profil sélectionné au lieu de la configuration par défaut (profil « Partagé »). La liste des pistes et la vérification vous permettent de déterminer si votre image disque est identique à une autre copie valide. Si la vérification échoue, votre jeu pourrait ne pas fonctionner correctement.</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="83"/>
@@ -15964,7 +16520,7 @@ Voulez-vous créer ce dossier ?</translation>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="143"/>
       <source>&lt;strong&gt;Cheats&lt;/strong&gt;&lt;hr&gt;This section allows you to select which cheats you wish to enable. You cannot enable/disable cheats without labels for old-format pnach files, those will automatically activate if the main cheat enable option is checked.</source>
-      <translation>&lt;strong&gt;Triche&lt;/strong&gt;&lt;hr&gt;Cette section vous permet de choisir les codes de triche à activer. Les codes de triche dans l'ancien format pnach et sans libellé ne peuvent pas être activés ou désactivés individuellement, ils seront activés automatiquement en cochant l'option « Activer les codes de triche ».</translation>
+      <translation>&lt;strong&gt;Triche&lt;/strong&gt;&lt;hr&gt;Cette section vous permet de choisir les codes de triche à activer. Les codes de triche dans l'ancien format pnach et sans libellé ne peuvent pas être activés ou désactivés individuellement, ils seront activés automatiquement en cochant l'option « Activer les codes de triche ».</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="151"/>
@@ -15994,7 +16550,7 @@ Voulez-vous créer ce dossier ?</translation>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="169"/>
       <source>Network &amp; HDD</source>
-      <translation>Réseau/disque dur</translation>
+      <translation>Réseau/Disque dur</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="175"/>
@@ -16025,6 +16581,11 @@ Voulez-vous créer ce dossier ?</translation>
       <location filename="../Settings/SettingsWindow.cpp" line="202"/>
       <source>Advanced</source>
       <translation>Avancé</translation>
+    </message>
+    <message>
+      <location filename="../Settings/SettingsWindow.cpp" line="273"/>
+      <source>Are you sure you want to restore the default settings? Any existing preferences will be lost.</source>
+      <translation>Voulez-vous vraiment rétablir les paramètres par défaut ? Les préférences existantes seront perdues.</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="114"/>
@@ -16077,22 +16638,17 @@ Voulez-vous créer ce dossier ?</translation>
       <translation>&lt;strong&gt;Paramètres de débogage&lt;/strong&gt;&lt;hr&gt;Ces options vous permettent d'enregistrer des informations internes sur l'application. &lt;strong&gt;Modifiez ces options uniquement si vous savez ce que vous faites&lt;/strong&gt;, leur activation provoquera un ralentissement considérable de l'application et peut gaspiller beaucoup d'espace disque.</translation>
     </message>
     <message>
-      <location filename="../Settings/SettingsWindow.cpp" line="271"/>
+      <location filename="../Settings/SettingsWindow.cpp" line="272"/>
       <source>Confirm Restore Defaults</source>
       <translation>Rétablir les paramètres par défaut</translation>
     </message>
     <message>
-      <location filename="../Settings/SettingsWindow.cpp" line="272"/>
-      <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
-      <translation>Voulez-vous vraiment rétablir les paramètres par défaut ? Toutes vos préférences seront perdues.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/SettingsWindow.cpp" line="274"/>
+      <location filename="../Settings/SettingsWindow.cpp" line="275"/>
       <source>Reset UI Settings</source>
       <translation>Réinitialiser les paramètres de l'interface</translation>
     </message>
     <message>
-      <location filename="../Settings/SettingsWindow.cpp" line="291"/>
+      <location filename="../Settings/SettingsWindow.cpp" line="292"/>
       <source>The configuration for this game will be replaced by the current global settings.
 
 Any current setting values will be overwritten.
@@ -16105,12 +16661,12 @@ Les valeurs actuelles des paramètres seront perdues.
 Voulez-vous vraiment continuer ?</translation>
     </message>
     <message>
-      <location filename="../Settings/SettingsWindow.cpp" line="305"/>
+      <location filename="../Settings/SettingsWindow.cpp" line="306"/>
       <source>Per-game configuration copied from global settings.</source>
       <translation>Configuration propre au jeu copiée à partir de la configuration globale.</translation>
     </message>
     <message>
-      <location filename="../Settings/SettingsWindow.cpp" line="314"/>
+      <location filename="../Settings/SettingsWindow.cpp" line="315"/>
       <source>The configuration for this game will be cleared.
 
 Any current setting values will be lost.
@@ -16141,214 +16697,214 @@ Voulez-vous vraiment continuer ?</translation>
       <translation>Assistant de configuration PCSX2</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="68"/>
+      <location filename="../SetupWizardDialog.ui" line="69"/>
       <source>Language</source>
       <translation>Langue</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="75"/>
+      <location filename="../SetupWizardDialog.ui" line="76"/>
       <source>BIOS Image</source>
       <translation>Image de BIOS</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="82"/>
+      <location filename="../SetupWizardDialog.ui" line="83"/>
       <source>Game Directories</source>
-      <translation>Dossiers de jeux</translation>
+      <translation>Dossiers à jeux</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="89"/>
+      <location filename="../SetupWizardDialog.ui" line="90"/>
       <source>Controller Setup</source>
       <translation>Manettes</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="96"/>
+      <location filename="../SetupWizardDialog.ui" line="97"/>
       <source>Complete</source>
       <translation>Fin</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="142"/>
-      <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Welcome to PCSX2!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;This wizard will help guide you through the configuration steps required to use the application. It is recommended if this is your first time installing PCSX2 that you view the setup guide at &lt;a href=&quot;https://pcsx2.net/docs/usage/setup/&quot;&gt;https://pcsx2.net/docs/usage/setup/&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;By default, PCSX2 will connect to the server at &lt;a href=&quot;https://pcsx2.net/&quot;&gt;pcsx2.net&lt;/a&gt; to check for updates, and if available and confirmed, download update packages from &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. If you do not wish for PCSX2 to make any network connections on startup, you should uncheck the Automatic Updates option now. The Automatic Update setting can be changed later at any time in Interface Settings.&lt;/p&gt;&lt;p&gt;Please choose a language and theme to begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Bienvenue dans PCSX2 !&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Cet assistant vous guidera à travers les étapes de configuration nécessaires avant de pouvoir utiliser l'application. Si vous utilisez l'application pour la première fois, nous vous recommandons de lire le guide de configuration à l'adresse &lt;a href=&quot;https://pcsx2.net/docs/usage/setup/&quot;&gt;https://pcsx2.net/docs/usage/setup/&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Par défaut, PCSX2 se connecte à &lt;a href=&quot;https://pcsx2.net/&quot;&gt;pcsx2.net&lt;/a&gt; pour rechercher des mises à jour et télécharge les packages de mise à jour depuis &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. Si vous ne souhaitez pas que PCSX2 se connecte au réseau à son lancement, décochez la case « Activer les mises à jour automatiques ». Ce paramètre peut être modifié à tout moment dans les paramètres de l'interface.&lt;/p&gt;&lt;p&gt;Pour commencer, choisissez une langue et un thème.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-      <location filename="../SetupWizardDialog.ui" line="163"/>
+      <location filename="../SetupWizardDialog.ui" line="164"/>
       <source>Language:</source>
       <translation>Langue :</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="180"/>
+      <location filename="../SetupWizardDialog.ui" line="181"/>
       <source>Theme:</source>
       <translation>Thème :</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="203"/>
+      <location filename="../SetupWizardDialog.ui" line="204"/>
       <source>Enable Automatic Updates</source>
       <translation>Activer les mises à jour automatiques</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="228"/>
-      <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 requires a PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;strong&gt;from an actual PS2 unit that you own&lt;/strong&gt; (borrowing doesn&apos;t count).&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct PCSX2 to scan an alternative directory.&lt;/p&gt;&lt;p&gt;A guide for dumping your BIOS can be found at &lt;a href=&quot;https://pcsx2.net/docs/usage/setup/#how-to-dump-your-ps2-bios&quot;&gt;pcsx2.net&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pour pouvoir utiliser PCSX2, il vous faut un BIOS de PS2.&lt;/p&gt;&lt;p&gt;Pour des raisons juridiques, le BIOS doit provenir &lt;strong&gt;d'une PS2 vous appartenant&lt;/strong&gt;. Vous ne pouvez pas utiliser le BIOS d'une PS2 que vous auriez empruntée.&lt;/p&gt;&lt;p&gt;Une fois dumpée, l'image du BIOS doit être placée dans le dossier « bios » situé dans le dossier des données affiché ci-dessous, ou bien vous pouvez demander à PCSX2 de scanner un autre dossier.&lt;/p&gt;&lt;p&gt;Vous trouverez un guide pour dumper votre BIOS sur &lt;a href=&quot;https://pcsx2.net/docs/usage/setup/#how-to-dump-your-ps2-bios&quot;&gt;pcsx2.net&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-      <location filename="../SetupWizardDialog.ui" line="249"/>
+      <location filename="../SetupWizardDialog.ui" line="250"/>
       <source>BIOS Directory:</source>
-      <translation>Dossier du BIOS :</translation>
+      <translation>Dossier à BIOS :</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="259"/>
+      <location filename="../SetupWizardDialog.ui" line="260"/>
       <source>Browse...</source>
       <translation>Parcourir…</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="266"/>
+      <location filename="../SetupWizardDialog.ui" line="267"/>
       <source>Reset</source>
       <translation>Réinitialiser</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="285"/>
+      <location filename="../SetupWizardDialog.ui" line="286"/>
       <source>Filename</source>
       <translation>Nom de fichier</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="290"/>
+      <location filename="../SetupWizardDialog.ui" line="291"/>
       <source>Version</source>
       <translation>Version</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="313"/>
+      <location filename="../SetupWizardDialog.ui" line="314"/>
       <source>Open BIOS Folder...</source>
-      <translation>Ouvrir le dossier du BIOS…</translation>
+      <translation>Ouvrir le dossier à BIOS…</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="320"/>
+      <location filename="../SetupWizardDialog.ui" line="321"/>
       <source>Refresh List</source>
       <translation>Actualiser</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="345"/>
-      <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 will automatically scan and identify games from the selected directories below, and populate the game list.&lt;br&gt;These games should be dumped from discs you own. Guides for dumping discs can be found at &lt;a href=&quot;https://pcsx2.net/docs/usage/setup/#dumping-ps2-discs-via-imgburn&quot;&gt;pcsx2.net&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include:&lt;/p&gt;&lt;p&gt;&lt;ul&gt;&lt;li&gt;.bin/.iso (ISO Disc Images)&lt;/li&gt;&lt;li&gt;.mdf (Media Descriptor File)&lt;/li&gt;&lt;li&gt;.chd (Compressed Hunks of Data)&lt;/li&gt;&lt;li&gt;.cso (Compressed ISO)&lt;/li&gt;&lt;li&gt;.gz (Gzip Compressed ISO)&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 remplira automatiquement sa liste de jeux en scannant les dossiers ci-dessous.&lt;br&gt;Ces jeux doivent être dumpés à partir de disques qui vous appartiennent. Vous trouverez un guide pour dumper des disques sur &lt;a href=&quot;https://pcsx2.net/docs/usage/setup/#dumping-ps2-discs-via-imgburn&quot;&gt;pcsx2.net&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Formats de fichier pris en charge :&lt;/p&gt;&lt;p&gt;&lt;ul&gt;&lt;li&gt;.bin/.iso (Images disque ISO)&lt;/li&gt;&lt;li&gt;.mdf (Media Descriptor File)&lt;/li&gt;&lt;li&gt;.chd (Compressed Hunks of Data)&lt;/li&gt;&lt;li&gt;.cso (ISO compressé)&lt;/li&gt;&lt;li&gt;.gz (ISO compressé au format gzip)&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-      <location filename="../SetupWizardDialog.ui" line="366"/>
+      <location filename="../SetupWizardDialog.ui" line="367"/>
       <source>Search Directories (will be scanned for games)</source>
       <translation>Dossiers scannés à la recherche de jeux</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="392"/>
+      <location filename="../SetupWizardDialog.ui" line="393"/>
       <source>Add...</source>
       <translation>Ajouter…</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="412"/>
-      <location filename="../SetupWizardDialog.cpp" line="283"/>
+      <location filename="../SetupWizardDialog.ui" line="413"/>
+      <location filename="../SetupWizardDialog.cpp" line="257"/>
       <source>Remove</source>
       <translation>Retirer</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="429"/>
+      <location filename="../SetupWizardDialog.ui" line="430"/>
       <source>Search Directory</source>
       <translation>Dossier</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="434"/>
+      <location filename="../SetupWizardDialog.ui" line="435"/>
       <source>Scan Recursively</source>
       <translation>Scanner les sous-dossiers</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="461"/>
-      <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, PCSX2 will map your keyboard to the virtual PS2 controller.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Par défaut, PCSX2 associe la manette PS2 virtuelle à votre clavier.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Pour utiliser une manette externe, il vous faut associer ses boutons. &lt;/span&gt;Vous pouvez brancher votre manette si ce n'est pas déjà fait.&lt;/p&gt;&lt;p&gt;Pour modifier plus en détail les associations de boutons ou utiliser un multitap, ouvrez le menu « Paramètres » et sélectionnez « Manettes ».&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <location filename="../SetupWizardDialog.ui" line="143"/>
+      <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Welcome to PCSX2!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;This wizard will help guide you through the configuration steps required to use the application. It is recommended if this is your first time installing PCSX2 that you view the setup guide &lt;a href=&quot;https://pcsx2.net/docs/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;By default, PCSX2 will connect to the server at &lt;a href=&quot;https://pcsx2.net/&quot;&gt;pcsx2.net&lt;/a&gt; to check for updates, and if available and confirmed, download update packages from &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. If you do not wish for PCSX2 to make any network connections on startup, you should uncheck the Automatic Updates option now. The Automatic Update setting can be changed later at any time in Interface Settings.&lt;/p&gt;&lt;p&gt;Please choose a language and theme to begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Bienvenue dans PCSX2 !&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Cet assistant vous guidera à travers les étapes de configuration nécessaires avant de pouvoir utiliser l'application. Si vous installez PCSX2 pour la première fois, nous vous recommandons de lire le guide de configuration disponible &lt;a href=&quot;https://pcsx2.net/docs/&quot;&gt;ici&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Par défaut, PCSX2 se connecte à &lt;a href=&quot;https://pcsx2.net/&quot;&gt;pcsx2.net&lt;/a&gt; pour rechercher des mises à jour et à &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt; pour télécharger les packages de mise à jour. Si vous ne souhaitez pas que PCSX2 se connecte au réseau à son lancement, décochez la case « Activer les mises à jour automatiques ». Vous pourrez revenir sur votre décision à tout moment en accédant aux paramètres de l'interface.&lt;/p&gt;&lt;p&gt;Pour commencer, choisissez une langue et un thème.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="471"/>
+      <location filename="../SetupWizardDialog.ui" line="229"/>
+      <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 requires a PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;strong&gt;from an actual PS2 unit that you own&lt;/strong&gt; (borrowing doesn&apos;t count).&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct PCSX2 to scan an alternative directory.&lt;/p&gt;&lt;p&gt;A guide for dumping your BIOS can be found &lt;a href=&quot;https://pcsx2.net/docs/setup/gather#how-to-dump-your-ps2-bios&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pour pouvoir utiliser PCSX2, il vous faut un BIOS de PS2.&lt;/p&gt;&lt;p&gt;Pour des raisons juridiques, le BIOS doit provenir &lt;strong&gt;d'une PS2 qui vous appartient&lt;/strong&gt;. Vous ne pouvez pas utiliser le BIOS d'une PS2 que vous auriez empruntée.&lt;/p&gt;&lt;p&gt;Une fois dumpée, l'image du BIOS doit être placée dans le dossier « bios » affiché ci-dessous et situé dans le dossier des données, ou bien vous pouvez demander à PCSX2 de scanner un autre dossier.&lt;/p&gt;&lt;p&gt;Vous trouverez un guide pour dumper votre BIOS &lt;a href=&quot;https://pcsx2.net/docs/setup/gather#how-to-dump-your-ps2-bios&quot;&gt;ici&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+      <location filename="../SetupWizardDialog.ui" line="346"/>
+      <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 will automatically scan and identify games from the selected directories below, and populate the game list.&lt;br&gt;These games should be dumped from discs you own. Guides for dumping discs can be found &lt;a href=&quot;https://pcsx2.net/docs/setup/gather#dumping-ps2-discs-via-imgburn&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include:&lt;/p&gt;&lt;p&gt;&lt;ul&gt;&lt;li&gt;.bin/.iso (ISO Disc Images)&lt;/li&gt;&lt;li&gt;.mdf (Media Descriptor File)&lt;/li&gt;&lt;li&gt;.chd (Compressed Hunks of Data)&lt;/li&gt;&lt;li&gt;.cso (Compressed ISO)&lt;/li&gt;&lt;li&gt;.zso (Compressed ISO)&lt;/li&gt;&lt;li&gt;.gz (Gzip Compressed ISO)&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 remplit automatiquement sa liste des jeux en scannant les dossiers ci-dessous et en identifiant les jeux trouvés.&lt;br&gt;Ces jeux doivent être dumpés à partir de vos propres disques. Vous trouverez des guides pour dumper des disques &lt;a href=&quot;https://pcsx2.net/docs/setup/gather#dumping-ps2-discs-via-imgburn&quot;&gt;ici&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Formats de fichier pris en charge :&lt;/p&gt;&lt;p&gt;&lt;ul&gt;&lt;li&gt;.bin/.iso (Images disque ISO)&lt;/li&gt;&lt;li&gt;.mdf (Media Descriptor File)&lt;/li&gt;&lt;li&gt;.chd (Compressed Hunks of Data)&lt;/li&gt;&lt;li&gt;.cso (ISO compressé)&lt;/li&gt;&lt;li&gt;.zso (ISO compressé)&lt;/li&gt;&lt;li&gt;.gz (ISO compressé au format gzip)&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;&lt;/3>&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+      <location filename="../SetupWizardDialog.ui" line="462"/>
+      <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, PCSX2 will map your keyboard to the virtual PS2 controller.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:704;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;p&gt;Guides for configuring controllers can be found &lt;a href=&quot;https://pcsx2.net/docs/post/controllers/&quot;&gt;&lt;span style=&quot;&quot;&gt;here&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Par défaut, PCSX2 associe la manette PS2 virtuelle avec votre clavier.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:704;&quot;&gt;Pour utiliser une manette externe, vous devez associer ses touches. &lt;/span&gt;Sur cet écran, vous pouvez associer automatiquement toute manette connectée à votre appareil. Vous pouvez brancher votre manette si ce n'est pas déjà fait.&lt;/p&gt;&lt;p&gt;Pour modifier plus en détail les associations de touches ou utiliser un multitap, ouvrez le menu Paramètres une fois l'assistant de configuration terminé et sélectionnez « Manettes ».&lt;/p&gt;&lt;p&gt;Vous trouverez des guides pour configurer vos manettes &lt;a href=&quot;https://pcsx2.net/docs/post/controllers/&quot;&gt;&lt;span style=&quot;&quot;&gt;ici&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+      <location filename="../SetupWizardDialog.ui" line="475"/>
       <source>Controller Port 1</source>
       <translation>Port de manette 1</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="480"/>
-      <location filename="../SetupWizardDialog.ui" line="551"/>
+      <location filename="../SetupWizardDialog.ui" line="484"/>
+      <location filename="../SetupWizardDialog.ui" line="555"/>
       <source>Controller Mapped To:</source>
       <translation>Manette associée à :</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="487"/>
-      <location filename="../SetupWizardDialog.ui" line="541"/>
+      <location filename="../SetupWizardDialog.ui" line="491"/>
+      <location filename="../SetupWizardDialog.ui" line="545"/>
       <source>Controller Type:</source>
       <translation>Type de manette :</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="496"/>
-      <location filename="../SetupWizardDialog.ui" line="560"/>
-      <location filename="../SetupWizardDialog.cpp" line="408"/>
+      <location filename="../SetupWizardDialog.ui" line="500"/>
+      <location filename="../SetupWizardDialog.ui" line="564"/>
+      <location filename="../SetupWizardDialog.cpp" line="388"/>
       <source>Default (Keyboard)</source>
       <translation>Par défaut (clavier)</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="516"/>
-      <location filename="../SetupWizardDialog.ui" line="580"/>
+      <location filename="../SetupWizardDialog.ui" line="520"/>
+      <location filename="../SetupWizardDialog.ui" line="584"/>
       <source>Automatic Mapping</source>
       <translation>Association automatique</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="535"/>
+      <location filename="../SetupWizardDialog.ui" line="539"/>
       <source>Controller Port 2</source>
       <translation>Port de manette 2</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="628"/>
+      <location filename="../SetupWizardDialog.ui" line="632"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using PCSX2.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Configuration terminée !&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Tout est prêt, vous pouvez désormais jouer à des jeux.&lt;/p&gt;&lt;p&gt;Plus d'options sont disponibles dans le menu « Paramètres ». Vous pouvez également utiliser l'interface Big Picture pour contrôler l'application avec une manette.&lt;/p&gt;&lt;p&gt;Nous espérons que vous apprécierez PCSX2.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Configuration terminée !&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Tout est prêt, vous pouvez désormais jouer à des jeux.&lt;/p&gt;&lt;p&gt;Plus d'options sont disponibles dans le menu Paramètres. Vous pouvez également utiliser l'interface Big Picture pour contrôler toute l'application à la manette.&lt;/p&gt;&lt;p&gt;Nous espérons que PCSX2 vous plaira.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="663"/>
+      <location filename="../SetupWizardDialog.ui" line="667"/>
       <source>&amp;Back</source>
       <translation>&amp;Précédent</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="670"/>
-      <location filename="../SetupWizardDialog.cpp" line="140"/>
+      <location filename="../SetupWizardDialog.ui" line="674"/>
+      <location filename="../SetupWizardDialog.cpp" line="134"/>
       <source>&amp;Next</source>
       <translation>&amp;Suivant</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.ui" line="680"/>
+      <location filename="../SetupWizardDialog.ui" line="684"/>
       <source>&amp;Cancel</source>
       <translation>&amp;Annuler</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="46"/>
-      <location filename="../SetupWizardDialog.cpp" line="61"/>
+      <location filename="../SetupWizardDialog.cpp" line="40"/>
+      <location filename="../SetupWizardDialog.cpp" line="55"/>
       <source>Warning</source>
       <translation>Avertissement</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="47"/>
+      <location filename="../SetupWizardDialog.cpp" line="41"/>
       <source>A BIOS image has not been selected. PCSX2 &lt;strong&gt;will not&lt;/strong&gt; be able to run games without a BIOS image.&lt;br&gt;&lt;br&gt;Are you sure you wish to continue without selecting a BIOS image?</source>
-      <translation>Aucune image de BIOS sélectionnée. PCSX2 &lt;strong&gt;ne pourra pas&lt;/strong&gt; fonctionner correctement sans image de BIOS.&lt;br&gt;&lt;br&gt;Voulez-vous vraiment continuer sans sélectionner une image de BIOS ?</translation>
+      <translation>Aucune image de BIOS sélectionnée. PCSX2 ne pourra émuler &lt;strong&gt;aucun jeu&lt;/strong&gt; sans une image de BIOS.&lt;br&gt;&lt;br&gt;Voulez-vous vraiment continuer sans sélectionner une image de BIOS ?</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="62"/>
+      <location filename="../SetupWizardDialog.cpp" line="56"/>
       <source>No game directories have been selected. You will have to manually open any game dumps you want to play, PCSX2&apos;s list will be empty.
 
 Are you sure you want to continue?</source>
-      <translation>Aucun dossier sélectionné. La liste de PCSX2 sera vide : vous devrez ouvrir chaque jeu manuellement.
+      <translation>Aucun dossier à jeux sélectionné. La liste de PCSX2 sera vide et vous devrez ouvrir vos jeux manuellement.
 
 Voulez-vous vraiment continuer ?</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="140"/>
+      <location filename="../SetupWizardDialog.cpp" line="134"/>
       <source>&amp;Finish</source>
       <translation>&amp;Terminer</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="146"/>
+      <location filename="../SetupWizardDialog.cpp" line="140"/>
       <source>Cancel Setup</source>
       <translation>Annuler la configuration</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="147"/>
+      <location filename="../SetupWizardDialog.cpp" line="141"/>
       <source>Are you sure you want to cancel PCSX2 setup?
 
 Any changes have been saved, and the wizard will run again next time you start PCSX2.</source>
@@ -16357,48 +16913,48 @@ Any changes have been saved, and the wizard will run again next time you start P
 Les modifications appliquées ont été enregistrées. L'assistant de configuration s'exécutera à nouveau lors du prochain démarrage de PCSX2.</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="285"/>
+      <location filename="../SetupWizardDialog.cpp" line="259"/>
       <source>Open Directory...</source>
       <translation>Ouvrir le dossier…</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="292"/>
+      <location filename="../SetupWizardDialog.cpp" line="271"/>
       <source>Select Search Directory</source>
       <translation>Sélectionner un dossier</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="297"/>
+      <location filename="../SetupWizardDialog.cpp" line="276"/>
       <source>Scan Recursively?</source>
       <translation>Scanner les sous-dossiers ?</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="298"/>
+      <location filename="../SetupWizardDialog.cpp" line="277"/>
       <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-      <translation>Voulez-vous scanner les sous-dossiers de « %1 » ?
+      <translation>Voulez-vous scanner les sous-dossiers de « %1 » ?
 
-Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un sous-dossier pourront être identifiés.</translation>
+Scanner les sous-dossiers prend plus de temps, mais cela permettra d'identifier les jeux s'y trouvant.</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="408"/>
+      <location filename="../SetupWizardDialog.cpp" line="388"/>
       <source>Default (None)</source>
       <translation>Par défaut (aucun)</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="439"/>
+      <location filename="../SetupWizardDialog.cpp" line="419"/>
       <source>No devices available</source>
       <translation>Aucun périphérique disponible</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="452"/>
+      <location filename="../SetupWizardDialog.cpp" line="432"/>
       <source>Automatic Binding</source>
       <translation>Association automatique</translation>
     </message>
     <message>
-      <location filename="../SetupWizardDialog.cpp" line="453"/>
+      <location filename="../SetupWizardDialog.cpp" line="433"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-      <translation>Impossible de générer des associations génériques pour le périphérique « %1 ». La manette ou la source d'entrées n'est peut-être pas compatible avec l'association automatique.</translation>
+      <translation>Impossible de générer des associations génériques pour le périphérique « %1 ». La manette ou la source d'entrées n'est peut-être pas compatible avec l'association automatique.</translation>
     </message>
   </context>
   <context>
@@ -16657,6 +17213,7 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
       <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="576"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="82"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="110"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="940"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="368"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="433"/>
       <source>D-Pad Up</source>
@@ -16666,6 +17223,7 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
       <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="577"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="83"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="111"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="942"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="369"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="434"/>
       <source>D-Pad Down</source>
@@ -16675,6 +17233,7 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
       <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="578"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="84"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="112"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="943"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="370"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="435"/>
       <source>D-Pad Left</source>
@@ -16684,6 +17243,7 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
       <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="579"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="85"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="113"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="941"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="371"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="436"/>
       <source>D-Pad Right</source>
@@ -16729,7 +17289,7 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="94"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="120"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="938"/>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1070"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1074"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="366"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="441"/>
       <source>Select</source>
@@ -16740,7 +17300,7 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="95"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="121"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="939"/>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1069"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1073"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="367"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="442"/>
       <source>Start</source>
@@ -16765,6 +17325,11 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
       <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="594"/>
       <source>Relative Down</source>
       <translation>Relatif (bas)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="603"/>
+      <source>Cursor Path</source>
+      <translation>Chemin d'accès au curseur</translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="604"/>
@@ -16987,7 +17552,7 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
     <message>
       <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="970"/>
       <source>usb-msd: Could not open image file &apos;{}&apos;</source>
-      <translation>usb-msd: Impossible d'ouvrir le fichier image « {} ».</translation>
+      <translation>usb-msd: Impossible d'ouvrir le fichier image « {} ».</translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1018"/>
@@ -17162,7 +17727,7 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="165"/>
       <source>Smooths out changes in steering to the specified percentage per poll. Needed for using keyboards.</source>
-      <translation>Lisser les changements de rotation par le pourcentage spécifié à chaque interrogation du périphérique d'entrée. Utilisez cette option pour contrôler de façon convenable un volant virtuel avec un clavier.</translation>
+      <translation>Lisser les changements de rotation par le pourcentage spécifié à chaque interrogation du périphérique d'entrée. Utilisez cette option pour contrôler un volant virtuel avec un clavier de façon convenable.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="166"/>
@@ -17246,242 +17811,242 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
       <translation>Orange</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="954"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="958"/>
       <source>Buzz Controller</source>
       <translation>Manette Buzz</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="970"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="974"/>
       <source>Player 1 Red</source>
       <translation>Joueur 1 (rouge)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="971"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="975"/>
       <source>Player 1 Blue</source>
       <translation>Joueur 1 (bleu)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="972"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="976"/>
       <source>Player 1 Orange</source>
       <translation>Joueur 1 (orange)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="973"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="977"/>
       <source>Player 1 Green</source>
       <translation>Joueur 1 (vert)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="974"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="978"/>
       <source>Player 1 Yellow</source>
       <translation>Joueur 1 (jaune)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="976"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="980"/>
       <source>Player 2 Red</source>
       <translation>Joueur 2 (rouge)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="977"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="981"/>
       <source>Player 2 Blue</source>
       <translation>Joueur 2 (bleu)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="978"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="982"/>
       <source>Player 2 Orange</source>
       <translation>Joueur 2 (orange)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="979"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="983"/>
       <source>Player 2 Green</source>
       <translation>Joueur 2 (vert)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="980"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="984"/>
       <source>Player 2 Yellow</source>
       <translation>Joueur 2 (jaune)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="982"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="986"/>
       <source>Player 3 Red</source>
       <translation>Joueur 3 (rouge)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="983"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="987"/>
       <source>Player 3 Blue</source>
       <translation>Joueur 3 (bleu)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="984"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="988"/>
       <source>Player 3 Orange</source>
       <translation>Joueur 3 (orange)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="985"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="989"/>
       <source>Player 3 Green</source>
       <translation>Joueur 3 (vert)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="986"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="990"/>
       <source>Player 3 Yellow</source>
       <translation>Joueur 3 (jaune)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="988"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="992"/>
       <source>Player 4 Red</source>
       <translation>Joueur 4 (rouge)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="989"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="993"/>
       <source>Player 4 Blue</source>
       <translation>Joueur 4 (bleu)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="990"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="994"/>
       <source>Player 4 Orange</source>
       <translation>Joueur 4 (orange)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="991"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="995"/>
       <source>Player 4 Green</source>
       <translation>Joueur 4 (vert)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="992"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="996"/>
       <source>Player 4 Yellow</source>
       <translation>Joueur 4 (jaune)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1028"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1032"/>
       <source>KeyboardMania</source>
       <translation>KeyboardMania</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1044"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1048"/>
       <source>C 1</source>
       <translation>Do 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1045"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1049"/>
       <source>C# 1</source>
       <translation>Do# 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1046"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1050"/>
       <source>D 1</source>
       <translation>Ré 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1047"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1051"/>
       <source>D# 1</source>
       <translation>Ré# 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1048"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1052"/>
       <source>E 1</source>
       <translation>Mi 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1049"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1053"/>
       <source>F 1</source>
       <translation>Fa 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1050"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1054"/>
       <source>F# 1</source>
       <translation>Fa# 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1051"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1055"/>
       <source>G 1</source>
       <translation>Sol 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1052"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1056"/>
       <source>G# 1</source>
       <translation>Sol# 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1053"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1057"/>
       <source>A 1</source>
       <translation>La 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1054"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1058"/>
       <source>A# 1</source>
       <translation>La# 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1055"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1059"/>
       <source>B 1</source>
       <translation>Si 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1056"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1060"/>
       <source>C 2</source>
       <translation>Do 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1057"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1061"/>
       <source>C# 2</source>
       <translation>Do# 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1058"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1062"/>
       <source>D 2</source>
       <translation>Ré 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1059"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1063"/>
       <source>D# 2</source>
       <translation>Ré# 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1060"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1064"/>
       <source>E 2</source>
       <translation>Mi 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1061"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1065"/>
       <source>F 2</source>
       <translation>Fa 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1062"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1066"/>
       <source>F# 2</source>
       <translation>Fa# 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1063"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1067"/>
       <source>G 2</source>
       <translation>Sol 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1064"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1068"/>
       <source>G# 2</source>
       <translation>Sol# 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1065"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1069"/>
       <source>A 2</source>
       <translation>La 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1066"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1070"/>
       <source>A# 2</source>
       <translation>La# 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1067"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1071"/>
       <source>B 2</source>
       <translation>Si 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1071"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1075"/>
       <source>Wheel Up</source>
       <translation>Molette (haut)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1072"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1076"/>
       <source>Wheel Down</source>
       <translation>Molette (bas)</translation>
     </message>
@@ -17528,12 +18093,12 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
     <message>
       <location filename="../../pcsx2/USB/usb-printer/usb-printer.cpp" line="92"/>
       <source>Failed to open &apos;{}&apos; for printing.</source>
-      <translation>Échec de l'ouverture de « {} » pour l'impression.</translation>
+      <translation>Échec de l'ouverture de « {} » pour l'impression.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-printer/usb-printer.cpp" line="98"/>
       <source>Printer saving to &apos;{}&apos;...</source>
-      <translation>Enregistrement de l'impression sous « {} »…</translation>
+      <translation>Enregistrement de l'impression sous « {} »…</translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-printer/usb-printer.cpp" line="326"/>
@@ -17656,12 +18221,12 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
   <context>
     <name>USBBindingWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1219"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1221"/>
       <source>Axes</source>
       <translation>Axes</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1247"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1249"/>
       <source>Buttons</source>
       <translation>Boutons</translation>
     </message>
@@ -17983,65 +18548,75 @@ Scanner les sous-dossiers prend plus de temps mais les jeux se trouvant dans un 
       <translation>Effacer les associations</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="934"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="936"/>
       <source>USB Port %1</source>
       <translation>Port USB %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1100"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1102"/>
       <source>No devices available</source>
       <translation>Aucun périphérique disponible</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1109"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1111"/>
       <source>Clear Bindings</source>
       <translation>Effacer les associations</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1110"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1112"/>
       <source>Are you sure you want to clear all bindings for this device? This action cannot be undone.</source>
       <translation>Voulez-vous vraiment effacer toutes les associations pour ce périphérique ? Cette action est irréversible.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1139"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1141"/>
       <source>Automatic Binding</source>
       <translation>Association automatique</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1140"/>
+      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1142"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-      <translation>Impossible de générer des associations génériques pour le périphérique « %1 ». La manette ou la source d'entrées n'est peut-être pas compatible avec l'association automatique.</translation>
+      <translation>Impossible de générer des associations génériques pour le périphérique « %1 ». La manette ou la source d'entrées n'est peut-être pas compatible avec l'association automatique.</translation>
     </message>
   </context>
   <context>
     <name>VMManager</name>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1738"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1849"/>
       <source>Failed to back up old save state {}.</source>
-      <translation>Échec de la copie de la sauvegarde d'état existante « {} ».</translation>
+      <translation>Échec de la copie de la sauvegarde d'état existante « {} ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1723"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1834"/>
       <source>Failed to save save state: {}.</source>
       <translation>Échec de la sauvegarde de l'état à l'emplacement {}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="965"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1019"/>
       <source>PS2 BIOS ({})</source>
       <translation>BIOS PS2 ({})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1026"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1080"/>
       <source>Unknown Game</source>
       <translation>Jeu inconnu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1266"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1242"/>
+      <source>CDVD precaching was cancelled.</source>
+      <translation>La mise en précache CDVD a été annulée.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="1248"/>
+      <source>CDVD precaching failed: {}</source>
+      <translation>Échec de la mise en précache CDVD : {}</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="1341"/>
       <source>Error</source>
       <translation>Erreur</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1267"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1342"/>
       <source>PCSX2 requires a PS2 BIOS in order to run.
 
 For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn&apos;t count).
@@ -18051,250 +18626,269 @@ Once dumped, this BIOS image should be placed in the bios folder within the data
 Please consult the FAQs and Guides for further instructions.</source>
       <translation>Pour pouvoir utiliser PCSX2, il vous faut un BIOS de PS2.
 
-Pour des raisons juridiques, le BIOS doit provenir d'une PS2 vous appartenant. Vous ne pouvez pas utiliser le BIOS d'une PS2 que vous auriez empruntée.
+Pour des raisons juridiques, le BIOS doit provenir d'une PS2 qui vous appartient. Vous ne pouvez pas utiliser le BIOS d'une PS2 que vous auriez empruntée.
 
-Une fois dumpée, l'image du BIOS doit être placée dans le dossier « bios » présent dans le dossier des données (menu Outils -&gt; Ouvrir le dossier des données).
+Une fois dumpée, l'image du BIOS doit être placée dans le dossier « bios » situé dans le dossier des données (menu Outils -&gt; Ouvrir le dossier des données).
 
 Pour plus d'informations, consultez la FAQ et les guides.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1337"/>
-      <location filename="../../pcsx2/VMManager.cpp" line="1345"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1433"/>
       <source>Resuming state</source>
       <translation>La reprise</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1770"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1440"/>
+      <source>Boot and Debug</source>
+      <translation>Démarrer et déboguer</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="1808"/>
+      <source>Failed to load save state</source>
+      <translation>Échec du chargement de la sauvegarde d'état</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="1881"/>
       <source>State saved to slot {}.</source>
       <translation>État sauvegardé à l'emplacement {}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1777"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1888"/>
       <source>Failed to save save state to slot {}.</source>
       <translation>Échec de la sauvegarde de l'état à l'emplacement {}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1845"/>
-      <location filename="../../pcsx2/VMManager.cpp" line="1882"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1956"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1993"/>
       <source>Loading state</source>
       <translation>Chargement d'un état</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1856"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1967"/>
       <source>Failed to load state (Memory card is busy)</source>
       <translation>Échec du chargement de l'état (la Memory Card est occupée)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1875"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1986"/>
       <source>There is no save state in slot {}.</source>
       <translation>Il n'y a aucune sauvegarde d'état à l'emplacement {}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1893"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2004"/>
       <source>Failed to load state from slot {} (Memory card is busy)</source>
       <translation>Échec du chargement de l'état à l'emplacement {} (la Memory Card est occupée)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1899"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2010"/>
       <source>Loading state from slot {}...</source>
       <translation>Chargement de l'état à l'emplacement {}…</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1908"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2019"/>
       <source>Failed to save state (Memory card is busy)</source>
       <translation>Échec de la sauvegarde de l'état (la Memory Card est occupée)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1925"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2036"/>
       <source>Failed to save state to slot {} (Memory card is busy)</source>
       <translation>Échec de la sauvegarde de l'état à l'emplacement {} (la Memory Card est occupée)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1932"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2043"/>
       <source>Saving state to slot {}...</source>
       <translation>Sauvegarde de l'état à l'emplacement {}…</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2101"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2209"/>
       <source>Frame advancing</source>
       <translation>Avancer d'une image</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2129"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2237"/>
       <source>Disc removed.</source>
       <translation>Disque éjecté.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2135"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2243"/>
       <source>Disc changed to &apos;{}&apos;.</source>
-      <translation>Nouveau disque inséré : « {} ».</translation>
+      <translation>Nouveau disque inséré : « {} ».</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2144"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2252"/>
       <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
-      <translation>Échec de l'ouverture de la nouvelle image disque « {} ». Rétablissement de l'image précédente. ({})</translation>
+      <translation>Échec de l'ouverture de la nouvelle image disque « {} ». Rétablissement de l'image précédente. ({})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2153"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2261"/>
       <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
       <translation>Impossible de revenir à l'image disque précédente. Éjection du disque. ({})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2734"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3041"/>
       <source>Cheats have been disabled due to achievements hardcore mode.</source>
-      <translation>Les codes de triche ont été désactivés suite à l'activation du mode hardcore des succès.</translation>
+      <translation>Les codes de triche ont été désactivés suite à l'activation du mode Hardcore des succès.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2790"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3094"/>
       <source>Fast CDVD is enabled, this may break games.</source>
-      <translation>« Fast CDVD » est activé, cela pourrait casser certains jeux.</translation>
+      <translation>« Fast CDVD » est activé, cela pourrait casser certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2794"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3098"/>
       <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
       <translation>La cadence et/ou le saut de cycle n'est pas défini sur sa valeur par défaut. Cela pourrait causer des plantages et des ralentissements.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2799"/>
-      <source>Audio is using async mix, expect desynchronization in FMVs.</source>
-      <translation>Mixage audio en mode asynchrone, les cinématiques vidéo peuvent être désynchronisées.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2802"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3108"/>
       <source>Upscale multiplier is below native, this will break rendering.</source>
-      <translation>Le multiplicateur de mise à l'échelle est inférieur à « Native », cela causera des problèmes d'affichage.</translation>
+      <translation>Le multiplicateur de mise à l'échelle est inférieur à « Native », cela causera des problèmes de rendu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2806"/>
-      <source>Mipmapping is not set to automatic. This may break rendering in some games.</source>
-      <translation>Le mipmapping n'est pas défini sur automatique. Cela pourrait causer des problèmes d'affichage dans certains jeux.</translation>
+      <location filename="../../pcsx2/VMManager.cpp" line="3148"/>
+      <source>Mipmapping is disabled. This may break rendering in some games.</source>
+      <translation>Le mipmapping est désactivé. Cela pourrait causer des problèmes d'affichage dans certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2811"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3154"/>
       <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
       <translation>Le filtrage des textures n'est pas défini sur Bilinéaire (PS2). Cela causera des problèmes d'affichage dans certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2817"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3113"/>
       <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
       <translation>Le filtrage trilinéaire n'est pas défini sur automatique. Cela pourrait causer des problèmes d'affichage dans certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2823"/>
-      <source>Blending is below basic, this may break effects in some games.</source>
-      <translation>La précision des fusions est inférieure à basique. Cela pourrait casser les effets de certains jeux.</translation>
+      <location filename="../../pcsx2/VMManager.cpp" line="3118"/>
+      <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
+      <translation>La précision des fusions est inférieure à Basique. Cela pourrait casser les effets de certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2828"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3123"/>
       <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
-      <translation>Le mode de téléchargement matériel n'est pas défini sur « Précis », cela pourrait causer des problèmes d'affichage dans certains jeux.</translation>
+      <translation>Le mode de téléchargement matériel n'est pas défini sur « Précis », cela pourrait causer des problèmes d'affichage dans certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2834"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3160"/>
       <source>EE FPU Round Mode is not set to default, this may break some games.</source>
       <translation>Le EE FPU Rounding Mode n'est pas défini sur sa valeur par défaut, cela pourrait casser certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2840"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3166"/>
       <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
       <translation>Le Clamping Mode EE n'est pas défini sur sa valeur par défaut, cela pourrait casser certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2845"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3171"/>
       <source>VU0 Round Mode is not set to default, this may break some games.</source>
       <translation>Le VU0 Rounding Mode n'est pas défini sur sa valeur par défaut, cela pourrait casser certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2850"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3176"/>
       <source>VU1 Round Mode is not set to default, this may break some games.</source>
       <translation>Le VU1 Rounding Mode n'est pas défini sur sa valeur par défaut, cela pourrait casser certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2857"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3183"/>
       <source>VU Clamp Mode is not set to default, this may break some games.</source>
       <translation>Le Clamping Mode VU n'est pas défini sur sa valeur par défaut, cela pourrait casser certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2862"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3188"/>
+      <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
+      <translation>128 Mo de RAM activés. La compatibilité avec certains jeux pourrait être affectée.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="3193"/>
       <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
       <translation>Les correctifs sont désactivés. La compatibilité avec certains jeux pourrait être affectée.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2867"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3198"/>
       <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
       <translation>Patchs de compatibilité désactivés. Le bon fonctionnement de certains jeux peut être affecté.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2871"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3202"/>
       <source>Frame rate for NTSC is not default. This may break some games.</source>
       <translation>La fréquence d'images pour NTSC n'est pas définie sur sa valeur par défaut. Cela pourrait casser certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2873"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3204"/>
       <source>Frame rate for PAL is not default. This may break some games.</source>
       <translation>La fréquence d'images pour PAL n'est pas définie sur sa valeur par défaut. Cela pourrait casser certains jeux.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2892"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3223"/>
       <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
       <translation>Le recompilateur EE est désactivé, cela réduira considérablement les performances.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2897"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3228"/>
       <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
       <translation>Le recompilateur VU0 est désactivé, cela réduira considérablement les performances.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2902"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3233"/>
       <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
       <translation>Le recompilateur VU1 est désactivé, cela réduira considérablement les performances.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2907"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3238"/>
       <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
       <translation>Le recompilateur IOP est désactivé, cela réduira considérablement les performances.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2912"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3243"/>
       <source>EE Cache is enabled, this will significantly reduce performance.</source>
       <translation>Le cache EE est activé, les performances pourraient être dégradées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2917"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3248"/>
       <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
       <translation>La détection de l'attente active est désactivée, les performances pourraient être dégradées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2922"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3253"/>
       <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
       <translation>La détection des boucles INTC est désactivée, les performances pourraient être dégradées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2927"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3256"/>
+      <source>Fastmem is not enabled, this will reduce performance.</source>
+      <translation>L'accès rapide à la mémoire est désactivé, cela réduira les performances.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="3260"/>
       <source>Instant VU1 is disabled, this may reduce performance.</source>
-      <translation>« Instant VU1 » est désactivé, les performances pourraient être dégradées.</translation>
+      <translation>« Instant VU1 » est désactivé, les performances pourraient être dégradées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2932"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3265"/>
       <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
-      <translation>Le hack « mVU Flag » est désactivé, les performances pourraient être dégradées.</translation>
+      <translation>Le hack « mVU Flag » est désactivé, les performances pourraient être dégradées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2937"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3128"/>
       <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
-      <translation>« Conversion de palette GPU » est activé, les performances pourraient être dégradées.</translation>
+      <translation>« Conversion de palette GPU » est activé, les performances pourraient être dégradées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2942"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3133"/>
       <source>Texture Preloading is not Full, this may reduce performance.</source>
-      <translation>Le préchargement des textures n'est pas défini sur « Complet », les performances pourraient être dégradées.</translation>
+      <translation>Le préchargement des textures n'est pas défini sur « Complet », les performances pourraient être dégradées.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2947"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3138"/>
       <source>Estimate texture region is enabled, this may reduce performance.</source>
-      <translation>« Estimer la taille des textures » est activé, les performances pourraient être dégradées.</translation>
+      <translation>« Estimer la taille des textures » est activé, les performances pourraient être dégradées.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="3143"/>
+      <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
+      <translation>Le dumping des textures est activé, les textures seront dumpées sur le disque en continu.</translation>
     </message>
   </context>
 </TS>
