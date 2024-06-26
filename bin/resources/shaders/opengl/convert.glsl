@@ -66,6 +66,24 @@ void ps_depth_copy()
 }
 #endif
 
+#ifdef ps_downsample_copy
+uniform ivec2 ClampMin;
+uniform int DownsampleFactor;
+uniform float Weight;
+
+void ps_downsample_copy()
+{
+	ivec2 coord = max(ivec2(gl_FragCoord.xy) * DownsampleFactor, ClampMin);
+	vec4 result = vec4(0);
+	for (int yoff = 0; yoff < DownsampleFactor; yoff++)
+	{
+		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
+			result += texelFetch(TextureSampler, coord + ivec2(xoff, yoff), 0);
+	}
+	SV_Target0 = result / Weight;
+}
+#endif
+
 #ifdef ps_convert_rgba8_16bits
 // Need to be careful with precision here, it can break games like Spider-Man 3 and Dogs Life
 void ps_convert_rgba8_16bits()

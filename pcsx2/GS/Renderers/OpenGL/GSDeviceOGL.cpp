@@ -362,6 +362,12 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 				m_convert.ps[i].RegisterUniform("offset");
 				m_convert.ps[i].RegisterUniform("scale");
 			}
+			else if (static_cast<ShaderConvert>(i) == ShaderConvert::DOWNSAMPLE_COPY)
+			{
+				m_convert.ps[i].RegisterUniform("ClampMin");
+				m_convert.ps[i].RegisterUniform("DownsampleFactor");
+				m_convert.ps[i].RegisterUniform("Weight");
+			}
 		}
 
 		const PSSamplerSelector point;
@@ -1598,6 +1604,29 @@ void GSDeviceOGL::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 off
 	PSSetSamplerState(m_convert.pt);
 
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
+	DrawStretchRect(GSVector4::zero(), dRect, dTex->GetSize());
+}
+
+void GSDeviceOGL::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min)
+{
+	CommitClear(sTex, false);
+
+	constexpr ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
+	GLProgram& prog = m_convert.ps[static_cast<int>(shader)];
+	prog.Bind();
+	prog.Uniform2iv(0, clamp_min.v);
+	prog.Uniform1i(1, downsample_factor);
+	prog.Uniform1f(2, static_cast<float>(downsample_factor * downsample_factor));
+
+	OMSetDepthStencilState(m_convert.dss);
+	OMSetBlendState(false);
+	OMSetColorMaskState();
+	OMSetRenderTargets(dTex, nullptr);
+
+	PSSetShaderResource(0, sTex);
+	PSSetSamplerState(m_convert.pt);
+
+	const GSVector4 dRect = GSVector4(dTex->GetRect());
 	DrawStretchRect(GSVector4::zero(), dRect, dTex->GetSize());
 }
 

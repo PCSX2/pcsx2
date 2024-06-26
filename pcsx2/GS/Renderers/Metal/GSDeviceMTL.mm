@@ -1116,6 +1116,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 				pdesc.depthAttachmentPixelFormat = ConvertPixelFormat(GSTexture::Format::DepthStencil);
 				break;
 			case ShaderConvert::COPY:
+			case ShaderConvert::DOWNSAMPLE_COPY:
 			case ShaderConvert::RGBA_TO_8I: // Yes really
 			case ShaderConvert::RTA_CORRECTION:
 			case ShaderConvert::RTA_DECORRECTION:
@@ -1692,6 +1693,20 @@ void GSDeviceMTL::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 off
 	GSMTLIndexedConvertPSUniform uniform = { sScale, SBW, DBW };
 
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
+	DoStretchRect(sTex, GSVector4::zero(), dTex, dRect, pipeline, false, LoadAction::DontCareIfFull, &uniform, sizeof(uniform));
+}}
+
+void GSDeviceMTL::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min)
+{ @autoreleasepool {
+	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
+	id<MTLRenderPipelineState> pipeline = m_convert_pipeline[static_cast<int>(shader)];
+	if (!pipeline)
+		[NSException raise:@"StretchRect Missing Pipeline" format:@"No pipeline for %d", static_cast<int>(shader)];
+
+	GSMTLDownsamplePSUniform uniform = { {static_cast<uint>(clamp_min.x), static_cast<uint>(clamp_min.x)}, downsample_factor,
+	  static_cast<float>(downsample_factor * downsample_factor) };
+
+	const GSVector4 dRect = GSVector4(dTex->GetRect());
 	DoStretchRect(sTex, GSVector4::zero(), dTex, dRect, pipeline, false, LoadAction::DontCareIfFull, &uniform, sizeof(uniform));
 }}
 
