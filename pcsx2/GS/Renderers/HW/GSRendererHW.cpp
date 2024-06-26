@@ -6002,12 +6002,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	// FIXME D3D11 and GL support half pixel center. Code could be easier!!!
 	const GSTextureCache::Target* rt_or_ds = rt ? rt : ds;
-	const float rtscale = rt_or_ds ? rt_or_ds->GetScale() : 0.0f;
-	const GSVector2i rtsize = rt_or_ds ? rt_or_ds->GetTexture()->GetSize() : GSVector2i(0, 0);
+	const float rtscale = rt_or_ds->GetScale();
+	const GSVector2i rtsize = rt_or_ds->GetTexture()->GetSize();
 	float sx, sy, ox2, oy2;
 	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
 	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
-	if (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native && (!rt || rt->GetScale() > 1.0f))
+	if (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native && rtscale > 1.0f)
 	{
 		sx = 2.0f * rtscale / (rtsize.x << 4);
 		sy = 2.0f * rtscale / (rtsize.y << 4);
@@ -6032,12 +6032,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	else
 	{
 		// Align coordinates to native resolution framebuffer, hope for the best.
-		const int scaled_x = rt_or_ds ? rt_or_ds->GetUnscaledWidth() : 0;
-		const int scaled_y = rt_or_ds ? rt_or_ds->GetUnscaledHeight() : 0;
-		sx = 2.0f / (scaled_x << 4);
-		sy = 2.0f / (scaled_y << 4);
-		ox2 = -1.0f / scaled_x;
-		oy2 = -1.0f / scaled_y;
+		const int unscaled_x = rt_or_ds ? rt_or_ds->GetUnscaledWidth() : 0;
+		const int unscaled_y = rt_or_ds ? rt_or_ds->GetUnscaledHeight() : 0;
+		sx = 2.0f / (unscaled_x << 4);
+		sy = 2.0f / (unscaled_y << 4);
+		ox2 = -1.0f / unscaled_x;
+		oy2 = -1.0f / unscaled_y;
 	}
 
 	m_conf.cb_vs.vertex_scale = GSVector2(sx, sy);
