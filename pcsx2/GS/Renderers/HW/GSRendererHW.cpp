@@ -7284,7 +7284,7 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 	if (is_downscale && draw_size.x >= PCRTCDisplays.GetResolution().x)
 		return 0;
 
-	const bool is_upscale = m_cached_ctx.TEX0.TBW <= m_cached_ctx.FRAME.FBW && (draw_size.x / tex_size.x) >= 4 || (draw_size.y / tex_size.y) >= 4;
+	const bool is_upscale = m_cached_ctx.TEX0.TBW <= m_cached_ctx.FRAME.FBW && ((draw_size.x / tex_size.x) >= 4 || (draw_size.y / tex_size.y) >= 4);
 	// DMC does a blit in strips with the scissor to keep it inside page boundaries, so that's not technically full coverage
 	// but good enough for what we want.
 	const bool no_gaps_or_single_sprite = (is_downscale || is_upscale) && (no_gaps || (m_vt.m_primclass == GS_SPRITE_CLASS && SpriteDrawWithoutGaps()));
