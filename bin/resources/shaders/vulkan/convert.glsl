@@ -59,6 +59,28 @@ void ps_depth_copy()
 }
 #endif
 
+#ifdef ps_downsample_copy
+layout(push_constant) uniform cb10
+{
+	ivec2 ClampMin;
+	int DownsampleFactor;
+	int pad0;
+	float Weight;
+	vec3 pad1;
+};
+void ps_downsample_copy()
+{
+	ivec2 coord = max(ivec2(gl_FragCoord.xy) * DownsampleFactor, ClampMin);
+	vec4 result = vec4(0);
+	for (int yoff = 0; yoff < DownsampleFactor; yoff++)
+	{
+		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
+			result += texelFetch(samp0, coord + ivec2(xoff, yoff), 0);
+	}
+	o_col0 = result / Weight;
+}
+#endif
+
 #ifdef ps_filter_transparency
 void ps_filter_transparency()
 {

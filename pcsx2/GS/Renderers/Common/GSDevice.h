@@ -40,6 +40,7 @@ enum class ShaderConvert
 	RGBA8_TO_FLOAT16_BILN,
 	RGB5A1_TO_FLOAT16_BILN,
 	DEPTH_COPY,
+	DOWNSAMPLE_COPY,
 	RGBA_TO_8I,
 	CLUT_4,
 	CLUT_8,
@@ -985,6 +986,9 @@ public:
 
 	/// Converts a colour format to an indexed format texture.
 	virtual void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) = 0;
+
+	/// Uses box downsampling to resize a texture.
+	virtual void FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min) = 0;
 
 	virtual void RenderHW(GSHWDrawConfig& config) = 0;
 

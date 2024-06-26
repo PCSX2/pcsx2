@@ -75,6 +75,25 @@ float ps_depth_copy(PS_INPUT input) : SV_Depth
 	return sample_c(input.t).r;
 }
 
+PS_OUTPUT ps_downsample_copy(PS_INPUT input)
+{
+	int DownsampleFactor = EMODA;
+	int2 ClampMin = int2(EMODC, DOFFSET);
+	float Weight = BGColor.x;
+
+	int2 coord = max(int2(input.p.xy) * DownsampleFactor, ClampMin);
+
+	PS_OUTPUT output;
+	output.c = (float4)0;
+	for (int yoff = 0; yoff < DownsampleFactor; yoff++)
+	{
+		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
+			output.c += Texture.Load(int3(coord + int2(xoff, yoff), 0));
+	}
+	output.c /= Weight;
+	return output;
+}
+
 PS_OUTPUT ps_filter_transparency(PS_INPUT input)
 {
 	PS_OUTPUT output;

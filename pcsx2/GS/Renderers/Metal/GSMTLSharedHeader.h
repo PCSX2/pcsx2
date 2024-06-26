@@ -66,6 +66,13 @@ struct GSMTLIndexedConvertPSUniform
 	uint dbw;
 };
 
+struct GSMTLDownsamplePSUniform
+{
+	vector_uint2 clamp_min;
+	uint downsample_factor;
+	float weight;
+};
+
 struct GSMTLMainVertex
 {
 	vector_float2 st;
