@@ -884,7 +884,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntryEx(UpscaleMultiplier, "upscale_multiplier");
 
 	// ~51x would the upper bound here for 32768x32768 textures, but you'll run out VRAM long before then.
-	UpscaleMultiplier = std::clamp(UpscaleMultiplier, 0.5f, 50.0f);
+	UpscaleMultiplier = std::clamp(UpscaleMultiplier, 1.0f, 50.0f);
 
 	SettingsWrapBitBoolEx(HWMipmap, "hw_mipmap");
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
