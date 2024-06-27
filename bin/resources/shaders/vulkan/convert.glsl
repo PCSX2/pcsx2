@@ -214,6 +214,15 @@ float rgb5a1_to_depth16(vec4 unorm)
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
 }
 
+#ifdef ps_convert_float32_float24
+void ps_convert_float32_float24()
+{
+	// Truncates depth value to 24bits
+	uint d = uint(sample_c(v_tex).r * exp2(32.0f)) & 0xFFFFFF;
+	gl_FragDepth = float(d) * exp2(-32.0f);
+}
+#endif
+
 #ifdef ps_convert_rgba8_float32
 void ps_convert_rgba8_float32()
 {
