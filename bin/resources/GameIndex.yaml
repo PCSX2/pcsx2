@@ -17124,6 +17124,10 @@ SLES-51785:
 SLES-51787:
   name: "Harry Potter - Quidditch World Cup"
   region: "PAL-M10"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes post alignment.
+    nativeScaling: 1 # Fixes post processing smoothness.
+    recommendedBlendingLevel: 4 # Fixes missing lighting.
 SLES-51792:
   name: "Aliens Versus Predator - Extinction"
   region: "PAL-E"
@@ -28306,6 +28310,10 @@ SLKA-15015:
 SLKA-15016:
   name: "Harry Potter - Quidditch World Cup"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes post alignment.
+    nativeScaling: 1 # Fixes post processing smoothness.
+    recommendedBlendingLevel: 4 # Fixes missing lighting.
 SLKA-15018:
   name: "Kidou Senshi Gundam Seed"
   region: "NTSC-K"
@@ -34381,6 +34389,10 @@ SLPM-62408:
   name-sort: はりーぽったー くぃでぃっち わーるどかっぷ
   name-en: "Harry Potter - Quidditch World Cup"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes post alignment.
+    nativeScaling: 1 # Fixes post processing smoothness.
+    recommendedBlendingLevel: 4 # Fixes missing lighting.
 SLPM-62409:
   name: ウィザードリィ エンパイアIII 〜覇王の系譜〜
   name-sort: うぃざーどりぃ えんぱいあ3 はおうのけいふ
@@ -61317,6 +61329,10 @@ SLUS-20769:
   name: "Harry Potter - Quidditch World Cup"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes post alignment.
+    nativeScaling: 1 # Fixes post processing smoothness.
+    recommendedBlendingLevel: 4 # Fixes missing lighting.
 SLUS-20770:
   name: "The Lord of the Rings - The Return of the King"
   name-sort: "Lord of the Rings, The - The Return of the King"
