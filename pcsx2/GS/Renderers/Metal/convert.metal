@@ -249,6 +249,13 @@ struct ConvertToDepthRes
 	}
 };
 
+fragment DepthOut ps_convert_float32_float24(ConvertShaderData data [[stage_in]], ConvertPSDepthRes res)
+{
+	// Truncates depth value to 24bits
+	uint val = uint(res.sample(data.t) * 0x1p32) & 0xFFFFFF;
+	return float(val) * 0x1p-32f;
+}
+
 fragment DepthOut ps_convert_rgba8_float32(ConvertShaderData data [[stage_in]], ConvertToDepthRes res)
 {
 	return rgba8_to_depth32(res.sample(data.t));

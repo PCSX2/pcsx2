@@ -39,6 +39,7 @@ enum class ShaderConvert
 	RGBA8_TO_FLOAT24_BILN,
 	RGBA8_TO_FLOAT16_BILN,
 	RGB5A1_TO_FLOAT16_BILN,
+	FLOAT32_TO_FLOAT24,
 	DEPTH_COPY,
 	DOWNSAMPLE_COPY,
 	RGBA_TO_8I,
@@ -78,6 +79,7 @@ static inline bool HasDepthOutput(ShaderConvert shader)
 		case ShaderConvert::RGBA8_TO_FLOAT24_BILN:
 		case ShaderConvert::RGBA8_TO_FLOAT16_BILN:
 		case ShaderConvert::RGB5A1_TO_FLOAT16_BILN:
+		case ShaderConvert::FLOAT32_TO_FLOAT24:
 		case ShaderConvert::DEPTH_COPY:
 			return true;
 		default:
