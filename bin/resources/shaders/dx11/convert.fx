@@ -77,8 +77,8 @@ float ps_depth_copy(PS_INPUT input) : SV_Depth
 
 PS_OUTPUT ps_downsample_copy(PS_INPUT input)
 {
-	int DownsampleFactor = EMODA;
-	int2 ClampMin = int2(EMODC, DOFFSET);
+	int DownsampleFactor = DOFFSET;
+	int2 ClampMin = int2(EMODA, EMODC);
 	float Weight = BGColor.x;
 
 	int2 coord = max(int2(input.p.xy) * DownsampleFactor, ClampMin);
