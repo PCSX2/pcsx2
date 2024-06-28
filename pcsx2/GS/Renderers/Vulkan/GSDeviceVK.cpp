@@ -3130,7 +3130,7 @@ void GSDeviceVK::ConvertToIndexedTexture(
 		m_convert[static_cast<int>(shader)], false, true);
 }
 
-void GSDeviceVK::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min)
+void GSDeviceVK::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
 {
 	struct Uniforms
 	{
@@ -3146,7 +3146,7 @@ void GSDeviceVK::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32
 	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
 
 	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
-	const GSVector4 dRect = GSVector4(dTex->GetRect());
+	//const GSVector4 dRect = GSVector4(dTex->GetRect());
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), GSVector4::zero(), static_cast<GSTextureVK*>(dTex), dRect,
 		m_convert[static_cast<int>(shader)], false, true);
 }
