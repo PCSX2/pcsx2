@@ -1251,7 +1251,7 @@ bool GSRendererHW::IsSplitClearActive() const
 bool GSRendererHW::IsStartingSplitClear()
 {
 	// Shouldn't have gaps.
-	if (m_vt.m_eq.rgba != 0xFFFF || (!m_cached_ctx.ZBUF.ZMSK && !m_vt.m_eq.z) || !PrimitiveCoversWithoutGaps())
+	if (m_vt.m_eq.rgba != 0xFFFF || (!m_cached_ctx.ZBUF.ZMSK && !m_vt.m_eq.z) || PrimitiveCoversWithoutGaps() == NoGapsType::GapsFound)
 		return false;
 
 	// Limit to only single page wide tall draws for now. Too many false positives otherwise (e.g. NFSU).
@@ -1289,7 +1289,7 @@ bool GSRendererHW::ContinueSplitClear()
 		return false;
 
 	// Shouldn't have gaps.
-	if (m_vt.m_eq.rgba != 0xFFFF || (!m_cached_ctx.ZBUF.ZMSK && !m_vt.m_eq.z) || !PrimitiveCoversWithoutGaps())
+	if (m_vt.m_eq.rgba != 0xFFFF || (!m_cached_ctx.ZBUF.ZMSK && !m_vt.m_eq.z) || PrimitiveCoversWithoutGaps() == NoGapsType::GapsFound)
 		return false;
 
 	// Remove any targets which are directly at the start, since we checked this draw in the last.
@@ -2187,8 +2187,8 @@ void GSRendererHW::Draw()
 
 	m_process_texture = PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_cached_ctx.TEX0.TCC) && !(no_rt && (!m_cached_ctx.TEST.ATE || m_cached_ctx.TEST.ATST <= ATST_ALWAYS));
 
-	const bool no_gaps = PrimitiveCoversWithoutGaps();
-	const bool not_writing_to_all = (!no_gaps || AreAnyPixelsDiscarded() || !all_depth_tests_pass);
+	const NoGapsType no_gaps = PrimitiveCoversWithoutGaps();
+	const bool not_writing_to_all = (no_gaps != NoGapsType::FullCover || AreAnyPixelsDiscarded() || !all_depth_tests_pass);
 	bool preserve_depth =
 		not_writing_to_all || (!no_ds && (!all_depth_tests_pass || !m_cached_ctx.DepthWrite() || m_cached_ctx.TEST.ATE));
 
@@ -2488,7 +2488,7 @@ void GSRendererHW::Draw()
 			TEX0 = m_cached_ctx.TEX0;
 		}
 
-		tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear(), false, no_gaps);
+		tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear(), false, no_gaps != NoGapsType::GapsFound);
 
 		// Snowblind games set TW/TH to 1024, and use UVs for smaller textures inside that.
 		// Such textures usually contain junk in local memory, so try to make them smaller based on UVs.
@@ -2620,7 +2620,7 @@ void GSRendererHW::Draw()
 		m_r = m_r.rintersect(t_size_rect);
 
 	float target_scale = GetTextureScaleFactor();
-	int scale_draw = IsScalingDraw(src, no_gaps);
+	int scale_draw = IsScalingDraw(src, no_gaps != NoGapsType::GapsFound);
 	if (target_scale > 1.0f && scale_draw > 0)
 	{
 		// 1 == Downscale, so we need to reduce the size of the target also.
@@ -2685,7 +2685,7 @@ void GSRendererHW::Draw()
 		// Normally we would use 1024 here to match the clear above, but The Godfather does a 1023x1023 draw instead
 		// (very close to 1024x1024, but apparently the GS rounds down..). So, catch that here, we don't want to
 		// create that target, because the clear isn't black, it'll hang around and never get invalidated.
-		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && PrimitiveCoversWithoutGaps();
+		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && PrimitiveCoversWithoutGaps() == NoGapsType::FullCover;
 		const bool is_clear = is_possible_mem_clear && is_square;
 		const bool possible_shuffle = draw_sprite_tex && (((src && src->m_target && src->m_from_target && src->m_from_target->m_32_bits_fmt) &&
 															  GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) ||
@@ -2976,7 +2976,7 @@ void GSRendererHW::Draw()
 				m_vt.m_min.t *= 0.5f;
 				m_vt.m_max.t *= 0.5f;
 
-				tmm = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, m_vt.IsLinear(), false, no_gaps);
+				tmm = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, m_vt.IsLinear(), false, no_gaps != NoGapsType::GapsFound);
 
 				src->UpdateLayer(MIP_TEX0, tmm.coverage, layer - m_lod.x);
 			}
@@ -3006,7 +3006,7 @@ void GSRendererHW::Draw()
 	if (!m_texture_shuffle && !m_channel_shuffle)
 	{
 		// Try to turn blits in to single sprites, saves upscaling problems when striped clears/blits.
-		if (m_vt.m_primclass == GS_SPRITE_CLASS && no_gaps && m_index.tail > 2 && (!PRIM->TME || TextureCoversWithoutGapsNotEqual()) && m_vt.m_eq.rgba == 0xFFFF)
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && no_gaps != NoGapsType::GapsFound && m_index.tail > 2 && (!PRIM->TME || TextureCoversWithoutGapsNotEqual()) && m_vt.m_eq.rgba == 0xFFFF)
 		{
 			// Full final framebuffer only.
 			const GSVector2i fb_size = PCRTCDisplays.GetFramebufferSize(-1);
@@ -3785,7 +3785,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 		if (m_cached_ctx.CLAMP.WMT > CLAMP_CLAMP)
 			m_cached_ctx.CLAMP.WMT = m_cached_ctx.CLAMP.WMT == CLAMP_REGION_CLAMP ? CLAMP_CLAMP : CLAMP_REPEAT;
 
-		m_primitive_covers_without_gaps = rt->m_valid.rintersect(m_r).eq(rt->m_valid);
+		m_primitive_covers_without_gaps = rt->m_valid.rintersect(m_r).eq(rt->m_valid) ? NoGapsType::FullCover : NoGapsType::GapsFound;
 	}
 	else
 	{
@@ -4047,7 +4047,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 	m_vertex.head = m_vertex.tail = m_vertex.next = 2;
 	m_index.tail = 2;
 
-	m_primitive_covers_without_gaps = true;
+	m_primitive_covers_without_gaps = NoGapsType::FullCover;
 
 	return true;
 }
@@ -4598,7 +4598,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		{
 			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
 			const bool always_passing_alpha = !m_cached_ctx.TEST.ATE || afail_always_fb_alpha || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_ALWAYS);
-			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && PrimitiveCoversWithoutGaps() && !(DATE_PRIMID || DATE_BARRIER || !always_passing_alpha || !IsDepthAlwaysPassing());
+			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && PrimitiveCoversWithoutGaps() == NoGapsType::FullCover && !(DATE_PRIMID || DATE_BARRIER || !always_passing_alpha || !IsDepthAlwaysPassing());
 
 			if (!full_cover)
 			{
@@ -5592,7 +5592,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
 			const bool always_passing_alpha = !m_cached_ctx.TEST.ATE || afail_always_fb_alpha || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_ALWAYS);
-			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && PrimitiveCoversWithoutGaps() && !(DATE || !always_passing_alpha || !IsDepthAlwaysPassing());
+			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && PrimitiveCoversWithoutGaps() == NoGapsType::FullCover && !(DATE || !always_passing_alpha || !IsDepthAlwaysPassing());
 
 			// On DX FBMask emulation can be missing on lower blend levels, so we'll do whatever the API does.
 			const u32 fb_mask = m_conf.colormask.wa ? (m_conf.ps.fbmask ? m_conf.cb_ps.FbMask.a : 0) : 0xFF;
@@ -5879,7 +5879,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		{
 			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
 			const bool always_passing_alpha = !m_cached_ctx.TEST.ATE || afail_always_fb_alpha || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_ALWAYS);
-			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && PrimitiveCoversWithoutGaps() && !(DATE || !always_passing_alpha || !IsDepthAlwaysPassing());
+			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && PrimitiveCoversWithoutGaps() == NoGapsType::FullCover && !(DATE || !always_passing_alpha || !IsDepthAlwaysPassing());
 
 			// Restrict this to only when we're overwriting the whole target.
 			new_scale_rt_alpha = full_cover;
@@ -6368,7 +6368,7 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 	if (m_process_texture)
 	{
 		// If we're using a texture to draw our CLUT/whatever, we need the GPU to write back dirty data we need.
-		const GSVector4i r = GetTextureMinMax(m_cached_ctx.TEX0, m_cached_ctx.CLAMP, m_vt.IsLinear(), false, m_vt.m_primclass == GS_SPRITE_CLASS && PrimitiveCoversWithoutGaps()).coverage;
+		const GSVector4i r = GetTextureMinMax(m_cached_ctx.TEX0, m_cached_ctx.CLAMP, m_vt.IsLinear(), false, m_vt.m_primclass == GS_SPRITE_CLASS && PrimitiveCoversWithoutGaps() != NoGapsType::GapsFound).coverage;
 
 		// If we have GPU CLUT enabled, don't do a CPU draw when it would result in a download.
 		if (GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
@@ -6482,7 +6482,7 @@ bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_t
 			// If the EE has written over our sample area, we're fine to do this on the CPU, despite the target.
 			if (!src_target->m_dirty.empty())
 			{
-				const GSVector4i tr(GetTextureMinMax(m_cached_ctx.TEX0, m_cached_ctx.CLAMP, m_vt.IsLinear(), false, m_vt.m_primclass == GS_SPRITE_CLASS && PrimitiveCoversWithoutGaps()).coverage);
+				const GSVector4i tr(GetTextureMinMax(m_cached_ctx.TEX0, m_cached_ctx.CLAMP, m_vt.IsLinear(), false, m_vt.m_primclass == GS_SPRITE_CLASS && PrimitiveCoversWithoutGaps() != NoGapsType::GapsFound).coverage);
 
 				const u32 start_bp = GSLocalMemory::GetStartBlockAddress(m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, m_cached_ctx.TEX0.PSM, tr);
 				const u32 end_bp = GSLocalMemory::GetEndBlockAddress(m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, m_cached_ctx.TEX0.PSM, tr);
@@ -6499,7 +6499,7 @@ bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_t
 						{
 							return true;
 						}
-						else if (GSUtil::HasSameSwizzleBits(m_cached_ctx.TEX0.PSM, src_target->m_TEX0.PSM) || PrimitiveCoversWithoutGaps())
+						else if (GSUtil::HasSameSwizzleBits(m_cached_ctx.TEX0.PSM, src_target->m_TEX0.PSM) || PrimitiveCoversWithoutGaps() == NoGapsType::FullCover)
 							return false;
 					}
 				}
@@ -6951,7 +6951,7 @@ bool GSRendererHW::TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Ta
 bool GSRendererHW::TryGSMemClear(bool no_rt, bool preserve_rt, bool invalidate_rt, u32 rt_end_bp,
 	bool no_ds, bool preserve_z, bool invalidate_z, u32 ds_end_bp)
 {
-	if (!PrimitiveCoversWithoutGaps())
+	if (PrimitiveCoversWithoutGaps() == NoGapsType::GapsFound)
 		return false;
 
 	// Limit the hack to a single full buffer clear. Some games might use severals column to clear a screen

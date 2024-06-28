@@ -200,6 +200,13 @@ public:
 		bool zero_clear;
 	};
 
+	enum NoGapsType
+	{
+		GapsFound = 0,
+		SpriteNoGaps,
+		FullCover,
+	};
+
 	GIFPath m_path[4] = {};
 	const GIFRegPRIM* PRIM = nullptr;
 	GSPrivRegSet* m_regs = nullptr;
@@ -220,7 +227,7 @@ public:
 	u32 m_dirty_gs_regs = 0;
 	int m_backed_up_ctx = 0;
 	std::vector<GSUploadQueue> m_draw_transfers;
-	std::optional<bool> m_primitive_covers_without_gaps;
+	std::optional<NoGapsType> m_primitive_covers_without_gaps;
 	GSVector4i m_r = {};
 	GSVector4i m_r_no_scissor = {};
 
@@ -411,7 +418,7 @@ public:
 	bool TrianglesAreQuads(bool shuffle_check = false) const;
 	PRIM_OVERLAP PrimitiveOverlap();
 	bool SpriteDrawWithoutGaps();
-	bool PrimitiveCoversWithoutGaps();
+	NoGapsType PrimitiveCoversWithoutGaps();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
 };
 

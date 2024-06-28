@@ -3054,42 +3054,50 @@ bool GSState::SpriteDrawWithoutGaps()
 	return false;
 }
 
-bool GSState::PrimitiveCoversWithoutGaps()
+GSState::NoGapsType GSState::PrimitiveCoversWithoutGaps()
 {
 	if (m_primitive_covers_without_gaps.has_value())
 		return m_primitive_covers_without_gaps.value();
 
+	bool issue_found = false;
+
 	// Draw shouldn't be offset.
 	if (((m_r.eq32(GSVector4i::zero())).mask() & 0xff) != 0xff)
 	{
-		m_primitive_covers_without_gaps = false;
-		return false;
+		issue_found = true;
 	}
 
 	if (m_vt.m_primclass == GS_POINT_CLASS)
 	{
-		m_primitive_covers_without_gaps = (m_vertex.next < 2);
+		m_primitive_covers_without_gaps = (m_vertex.next < 2) ? FullCover : GapsFound;
+
 		return m_primitive_covers_without_gaps.value();
 	}
 	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
 	{
-		m_primitive_covers_without_gaps = (m_index.tail == 6 && TrianglesAreQuads());
+		m_primitive_covers_without_gaps = (m_index.tail == 6 && TrianglesAreQuads()) ? FullCover : GapsFound;
+
 		return m_primitive_covers_without_gaps.value();
 	}
 	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
 	{
-		m_primitive_covers_without_gaps = false;
-		return false;
+		m_primitive_covers_without_gaps = GapsFound;
+		return m_primitive_covers_without_gaps.value();
 	}
 
 	// Simple case: one sprite.
-	if (m_index.tail == 2)
+	if (issue_found == false && m_index.tail == 2)
 	{
-		m_primitive_covers_without_gaps = true;
-		return true;
+		m_primitive_covers_without_gaps = FullCover;
+		return m_primitive_covers_without_gaps.value();
 	}
 
-	const bool result = SpriteDrawWithoutGaps();
+	if (issue_found)
+		m_primitive_covers_without_gaps = GapsFound;
+	else
+		m_primitive_covers_without_gaps = FullCover;
+
+	const NoGapsType result = SpriteDrawWithoutGaps() ? (issue_found ? SpriteNoGaps : m_primitive_covers_without_gaps.value()) : GapsFound;
 	m_primitive_covers_without_gaps = result;
 
 	return result;
@@ -3902,7 +3910,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 						new_st.x += floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
 				}
 				// we need to check that it's not going to repeat over the non-clipped part
-				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(new_st.x) & ~tw_mask) == (static_cast<int>(new_st.z) & ~tw_mask)))
+				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(new_st.x) & ~tw_mask) == (static_cast<int>(new_st.z - 1) & ~tw_mask)))
 				{
 					st.x = new_st.x;
 					st.z = new_st.z;
@@ -3926,7 +3934,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 					else
 						new_st.y += floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
 				}
-				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(new_st.y) & ~th_mask) == (static_cast<int>(new_st.w) & ~th_mask)))
+				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(new_st.y) & ~th_mask) == (static_cast<int>(new_st.w - 1) & ~th_mask)))
 				{
 					st.y = new_st.y;
 					st.w = new_st.w;
