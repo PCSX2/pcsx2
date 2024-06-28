@@ -4283,7 +4283,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			// Blending with alpha > 1 will be wrong, except BLEND_HW2.
 			|| (!(blend_flag & BLEND_HW2) && (alpha_c2_high_one || alpha_c0_high_max_one) && no_prim_overlap)
 			// Ad blends are completely wrong without sw blend (Ad is 0.5 not 1 for 128). We can spare a barrier for it.
-			|| (blend_ad && no_prim_overlap);
+			|| (blend_ad && no_prim_overlap && !new_rt_alpha_scale);
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
