@@ -20162,7 +20162,7 @@ SLES-52950:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post positioning.
+    halfPixelOffset: 2 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SLES-52951:
   name: "Phantom Brave"
@@ -32324,7 +32324,7 @@ SLPM-61109:
   name: "Shadow of Rome [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post positioning.
+    halfPixelOffset: 2 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SLPM-61110:
   name: "Enthusia - Professional Racing [Trial]"
@@ -32350,7 +32350,7 @@ SLPM-61114:
   name: "Shadow of Rome [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post positioning.
+    halfPixelOffset: 2 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SLPM-61115:
   name: "Racing Battle - C1 Grand Prix [Trial]"
@@ -41201,7 +41201,7 @@ SLPM-65883:
   name-en: "Shadow of Rome"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post positioning.
+    halfPixelOffset: 2 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SLPM-65884:
   name: リモートコントロールダンディSF
@@ -62017,7 +62017,7 @@ SLUS-20902:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post positioning.
+    halfPixelOffset: 2 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SLUS-20903:
   name: "Mega Man X - Command Mission"
@@ -68593,7 +68593,7 @@ SLUS-29139:
   name: "Shadow of Rome [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post positioning.
+    halfPixelOffset: 2 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SLUS-29140:
   name: "MX vs. ATV Unleashed [Demo]"
