@@ -5295,7 +5295,8 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			const GSVector2i clamp_min = (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native) ?
 											 GSVector2i(0, 0) :
 											 GSVector2i(downsample_factor, downsample_factor);
-			g_gs_device->FilteredDownsampleTexture(src_target->m_texture, src_copy.get(), downsample_factor, clamp_min);
+			const GSVector4 dRect = GSVector4((tmm.coverage + GSVector4i(-1, 1).xxyy()).rintersect(src_target->GetUnscaledRect()));
+			g_gs_device->FilteredDownsampleTexture(src_target->m_texture, src_copy.get(), downsample_factor, clamp_min, dRect);
 		}
 	}
 	else
