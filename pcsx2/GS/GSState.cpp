@@ -3056,48 +3056,42 @@ bool GSState::SpriteDrawWithoutGaps()
 
 GSState::NoGapsType GSState::PrimitiveCoversWithoutGaps()
 {
-	if (m_primitive_covers_without_gaps.has_value())
-		return m_primitive_covers_without_gaps.value();
+	if (m_primitive_covers_without_gaps != Uninitialized)
+		return m_primitive_covers_without_gaps;
 
-	bool issue_found = false;
+	m_primitive_covers_without_gaps = FullCover;
 
 	// Draw shouldn't be offset.
 	if (((m_r.eq32(GSVector4i::zero())).mask() & 0xff) != 0xff)
 	{
-		issue_found = true;
+		m_primitive_covers_without_gaps = GapsFound;
 	}
 
 	if (m_vt.m_primclass == GS_POINT_CLASS)
 	{
-		m_primitive_covers_without_gaps = (m_vertex.next < 2) ? FullCover : GapsFound;
+		m_primitive_covers_without_gaps = (m_vertex.next < 2) ? m_primitive_covers_without_gaps : GapsFound;
 
-		return m_primitive_covers_without_gaps.value();
+		return m_primitive_covers_without_gaps;
 	}
 	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
 	{
-		m_primitive_covers_without_gaps = (m_index.tail == 6 && TrianglesAreQuads()) ? FullCover : GapsFound;
+		m_primitive_covers_without_gaps = (m_index.tail == 6 && TrianglesAreQuads()) ? m_primitive_covers_without_gaps : GapsFound;
 
-		return m_primitive_covers_without_gaps.value();
+		return m_primitive_covers_without_gaps;
 	}
 	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
 	{
 		m_primitive_covers_without_gaps = GapsFound;
-		return m_primitive_covers_without_gaps.value();
+		return m_primitive_covers_without_gaps;
 	}
 
 	// Simple case: one sprite.
-	if (issue_found == false && m_index.tail == 2)
+	if (m_primitive_covers_without_gaps != GapsFound && m_index.tail == 2)
 	{
-		m_primitive_covers_without_gaps = FullCover;
-		return m_primitive_covers_without_gaps.value();
+		return m_primitive_covers_without_gaps;
 	}
 
-	if (issue_found)
-		m_primitive_covers_without_gaps = GapsFound;
-	else
-		m_primitive_covers_without_gaps = FullCover;
-
-	const NoGapsType result = SpriteDrawWithoutGaps() ? (issue_found ? SpriteNoGaps : m_primitive_covers_without_gaps.value()) : GapsFound;
+	const NoGapsType result = SpriteDrawWithoutGaps() ? (m_primitive_covers_without_gaps == GapsFound ? SpriteNoGaps : m_primitive_covers_without_gaps) : GapsFound;
 	m_primitive_covers_without_gaps = result;
 
 	return result;

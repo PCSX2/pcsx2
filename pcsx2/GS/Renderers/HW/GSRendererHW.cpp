@@ -1251,7 +1251,7 @@ bool GSRendererHW::IsSplitClearActive() const
 bool GSRendererHW::IsStartingSplitClear()
 {
 	// Shouldn't have gaps.
-	if (m_vt.m_eq.rgba != 0xFFFF || (!m_cached_ctx.ZBUF.ZMSK && !m_vt.m_eq.z) || PrimitiveCoversWithoutGaps() == NoGapsType::GapsFound)
+	if (m_vt.m_eq.rgba != 0xFFFF || (!m_cached_ctx.ZBUF.ZMSK && !m_vt.m_eq.z) || PrimitiveCoversWithoutGaps() != NoGapsType::FullCover)
 		return false;
 
 	// Limit to only single page wide tall draws for now. Too many false positives otherwise (e.g. NFSU).
@@ -1289,7 +1289,7 @@ bool GSRendererHW::ContinueSplitClear()
 		return false;
 
 	// Shouldn't have gaps.
-	if (m_vt.m_eq.rgba != 0xFFFF || (!m_cached_ctx.ZBUF.ZMSK && !m_vt.m_eq.z) || PrimitiveCoversWithoutGaps() == NoGapsType::GapsFound)
+	if (m_vt.m_eq.rgba != 0xFFFF || (!m_cached_ctx.ZBUF.ZMSK && !m_vt.m_eq.z) || PrimitiveCoversWithoutGaps() != NoGapsType::FullCover)
 		return false;
 
 	// Remove any targets which are directly at the start, since we checked this draw in the last.
@@ -1998,7 +1998,7 @@ void GSRendererHW::Draw()
 	m_cached_ctx.TEST = context->TEST;
 	m_cached_ctx.FRAME = context->FRAME;
 	m_cached_ctx.ZBUF = context->ZBUF;
-	m_primitive_covers_without_gaps.reset();
+	m_primitive_covers_without_gaps = NoGapsType::Uninitialized;
 
 	if (IsBadFrame())
 	{
@@ -2620,7 +2620,7 @@ void GSRendererHW::Draw()
 		m_r = m_r.rintersect(t_size_rect);
 
 	float target_scale = GetTextureScaleFactor();
-	int scale_draw = IsScalingDraw(src, no_gaps != NoGapsType::GapsFound);
+	int scale_draw = IsScalingDraw(src, no_gaps  != NoGapsType::GapsFound);
 	if (target_scale > 1.0f && scale_draw > 0)
 	{
 		// 1 == Downscale, so we need to reduce the size of the target also.
@@ -3006,7 +3006,7 @@ void GSRendererHW::Draw()
 	if (!m_texture_shuffle && !m_channel_shuffle)
 	{
 		// Try to turn blits in to single sprites, saves upscaling problems when striped clears/blits.
-		if (m_vt.m_primclass == GS_SPRITE_CLASS && no_gaps != NoGapsType::GapsFound && m_index.tail > 2 && (!PRIM->TME || TextureCoversWithoutGapsNotEqual()) && m_vt.m_eq.rgba == 0xFFFF)
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && no_gaps == NoGapsType::FullCover && m_index.tail > 2 && (!PRIM->TME || TextureCoversWithoutGapsNotEqual()) && m_vt.m_eq.rgba == 0xFFFF)
 		{
 			// Full final framebuffer only.
 			const GSVector2i fb_size = PCRTCDisplays.GetFramebufferSize(-1);
