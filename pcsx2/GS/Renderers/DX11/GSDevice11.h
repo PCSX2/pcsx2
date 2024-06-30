@@ -91,7 +91,6 @@ private:
 	};
 
 	void SetFeatures(IDXGIAdapter1* adapter);
-	int GetMaxTextureSize() const;
 
 	u32 GetSwapChainBufferCount() const;
 	bool CreateSwapChain();

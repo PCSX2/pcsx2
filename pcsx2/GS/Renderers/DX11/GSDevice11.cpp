@@ -595,13 +595,10 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 			m_features.vs_expand = false;
 		}
 	}
-}
 
-int GSDevice11::GetMaxTextureSize() const
-{
-	return (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
-			   D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION :
-			   D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
+							 D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
+							 D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 }
 
 bool GSDevice11::HasSurface() const
@@ -1185,10 +1182,8 @@ void GSDevice11::InsertDebugMessage(DebugMessageCategory category, const char* f
 GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
 	D3D11_TEXTURE2D_DESC desc = {};
-
-	// Texture limit for D3D10/11 min 1, max 8192 D3D10, max 16384 D3D11.
-	desc.Width = std::clamp(width, 1, GetMaxTextureSize());
-	desc.Height = std::clamp(height, 1, GetMaxTextureSize());
+	desc.Width = width;
+	desc.Height = height;
 	desc.Format = GSTexture11::GetDXGIFormat(format);
 	desc.MipLevels = levels;
 	desc.ArraySize = 1;

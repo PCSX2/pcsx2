@@ -48,6 +48,8 @@
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
 
+#include "IconsFontAwesome5.h"
+
 #include "fmt/format.h"
 
 #include <fstream>
@@ -171,6 +173,24 @@ static void CloseGSDevice(bool clear_state)
 	g_gs_device.reset();
 }
 
+static void GSClampUpscaleMultiplier(Pcsx2Config::GSOptions& config)
+{
+	const u32 max_upscale_multiplier = GSGetMaxUpscaleMultiplier(g_gs_device->GetMaxTextureSize());
+	if (config.UpscaleMultiplier <= static_cast<float>(max_upscale_multiplier))
+	{
+		// Shouldn't happen, but just in case.
+		if (config.UpscaleMultiplier < 1.0f)
+			config.UpscaleMultiplier = 1.0f;
+		return;
+	}
+
+	Host::AddIconOSDMessage("GSUpscaleMultiplierInvalid", ICON_FA_EXCLAMATION_TRIANGLE,
+		fmt::format(TRANSLATE_FS("GS", "Configured upscale multiplier {}x is above your GPU's supported multiplier of {}x."),
+			config.UpscaleMultiplier, max_upscale_multiplier),
+		Host::OSD_WARNING_DURATION);
+	config.UpscaleMultiplier = static_cast<float>(max_upscale_multiplier);
+}
+
 static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 {
 	// Must be done first, initialization routines in GSState use GSIsHardwareRenderer().
@@ -184,6 +204,7 @@ static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 	}
 	else if (renderer != GSRendererType::SW)
 	{
+		GSClampUpscaleMultiplier(GSConfig);
 		g_gs_renderer = std::make_unique<GSRendererHW>();
 	}
 	else
@@ -548,9 +569,9 @@ std::optional<float> GSGetHostRefreshRate()
 		return surface_refresh_rate;
 }
 
-void GSGetAdaptersAndFullscreenModes(
-	GSRendererType renderer, std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes)
+std::vector<GSAdapterInfo> GSGetAdapterInfo(GSRendererType renderer)
 {
+	std::vector<GSAdapterInfo> ret;
 	switch (renderer)
 	{
 #ifdef _WIN32
@@ -559,12 +580,7 @@ void GSGetAdaptersAndFullscreenModes(
 		{
 			auto factory = D3D::CreateFactory(false);
 			if (factory)
-			{
-				if (adapters)
-					*adapters = D3D::GetAdapterNames(factory.get());
-				if (fullscreen_modes)
-					*fullscreen_modes = D3D::GetFullscreenModes(factory.get(), EmuConfig.GS.Adapter);
-			}
+				ret = D3D::GetAdapterInfo(factory.get());
 		}
 		break;
 #endif
@@ -572,7 +588,7 @@ void GSGetAdaptersAndFullscreenModes(
 #ifdef ENABLE_VULKAN
 		case GSRendererType::VK:
 		{
-			GSDeviceVK::GetAdaptersAndFullscreenModes(adapters, fullscreen_modes);
+			ret = GSDeviceVK::GetAdapterInfo();
 		}
 		break;
 #endif
@@ -580,8 +596,7 @@ void GSGetAdaptersAndFullscreenModes(
 #ifdef __APPLE__
 		case GSRendererType::Metal:
 		{
-			if (adapters)
-				*adapters = GetMetalAdapterList();
+			ret = GetMetalAdapterList();
 		}
 		break;
 #endif
@@ -589,6 +604,14 @@ void GSGetAdaptersAndFullscreenModes(
 		default:
 			break;
 	}
+
+	return ret;
+}
+
+u32 GSGetMaxUpscaleMultiplier(u32 max_texture_size)
+{
+	// Maximum GS target size is 1280x1280. Assume we want to upscale the max size target.
+	return std::max(max_texture_size / 1280, 1u);
 }
 
 GSVideoMode GSgetDisplayMode()
@@ -711,6 +734,9 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 			pxFailRel("Failed to do full GS reopen");
 		return;
 	}
+
+	// Ensure upscale multiplier is in range.
+	GSClampUpscaleMultiplier(GSConfig);
 
 	// Options which aren't using the global struct yet, so we need to recreate all GS objects.
 	if (GSConfig.SWExtraThreads != old_config.SWExtraThreads ||

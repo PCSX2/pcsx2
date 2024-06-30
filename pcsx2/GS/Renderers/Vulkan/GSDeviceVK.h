@@ -129,11 +129,6 @@ private:
 	static VkInstance CreateVulkanInstance(const WindowInfo& wi, OptionalExtensions* oe, bool enable_debug_utils,
 		bool enable_validation_layer);
 
-	// Returns a list of Vulkan-compatible GPUs.
-	using GPUList = std::vector<std::pair<VkPhysicalDevice, std::string>>;
-	static GPUList EnumerateGPUs(VkInstance instance);
-	static void GPUListToAdapterNames(std::vector<std::string>* dest, VkInstance instance);
-
 	// Enable/disable debug message runtime.
 	bool EnableDebugUtils();
 	void DisableDebugUtils();
@@ -474,8 +469,11 @@ public:
 
 	__fi static GSDeviceVK* GetInstance() { return static_cast<GSDeviceVK*>(g_gs_device.get()); }
 
-	static void GetAdaptersAndFullscreenModes(
-		std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes);
+	// Returns a list of Vulkan-compatible GPUs.
+	using GPUList = std::vector<std::pair<VkPhysicalDevice, GSAdapterInfo>>;
+	static GPUList EnumerateGPUs();
+	static GPUList EnumerateGPUs(VkInstance instance);
+	static std::vector<GSAdapterInfo> GetAdapterInfo();
 
 	/// Returns true if Vulkan is suitable as a default for the devices in the system.
 	static bool IsSuitableDefaultRenderer();

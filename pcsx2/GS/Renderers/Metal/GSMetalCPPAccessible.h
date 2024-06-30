@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "GS/GS.h"
+
 #include <string>
 #include <vector>
 
@@ -12,6 +14,6 @@
 
 class GSDevice;
 GSDevice* MakeGSDeviceMTL();
-std::vector<std::string> GetMetalAdapterList();
+std::vector<GSAdapterInfo> GetMetalAdapterList();
 
 #endif
