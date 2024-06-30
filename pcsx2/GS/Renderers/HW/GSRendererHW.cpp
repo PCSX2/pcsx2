@@ -5556,8 +5556,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		}
 	}
 
-	const int fail_type = m_cached_ctx.TEST.GetAFAIL(m_cached_ctx.FRAME.PSM);
-	if (m_cached_ctx.TEST.ATE && ((fail_type != AFAIL_FB_ONLY && fail_type != AFAIL_RGB_ONLY) || !PRIM->ABE || !IsUsingAsInBlend()))
+	const int afail_type = m_cached_ctx.TEST.GetAFAIL(m_cached_ctx.FRAME.PSM);
+	if (m_cached_ctx.TEST.ATE && ((afail_type != AFAIL_FB_ONLY && afail_type != AFAIL_RGB_ONLY) || !PRIM->ABE || !IsUsingAsInBlend()))
 	{
 		const int aref = static_cast<int>(m_cached_ctx.TEST.AREF);
 		CorrectATEAlphaMinMax(m_cached_ctx.TEST.ATST, aref);
@@ -5907,10 +5907,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	{
 		const bool commutative_depth = (m_conf.depth.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (m_conf.depth.ztst == ZTST_ALWAYS) || !m_conf.depth.zwe;
 		const bool commutative_alpha = (m_context->ALPHA.C != 1) || !m_conf.colormask.wa; // when either Alpha Src or a constant, or not updating A
-		const u32 afail = m_cached_ctx.TEST.GetAFAIL(m_cached_ctx.FRAME.PSM);
 
-		ate_RGBA_then_Z = (afail == AFAIL_FB_ONLY) && commutative_depth;
-		ate_RGB_then_Z = (afail == AFAIL_RGB_ONLY) && commutative_depth && commutative_alpha;
+		ate_RGBA_then_Z = (afail_type == AFAIL_FB_ONLY) && commutative_depth;
+		ate_RGB_then_Z = (afail_type == AFAIL_RGB_ONLY) && commutative_depth && commutative_alpha;
 	}
 
 	if (ate_RGBA_then_Z)
@@ -6199,8 +6198,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		bool g = m_conf.colormask.wg;
 		bool b = m_conf.colormask.wb;
 		bool a = m_conf.colormask.wa;
-		const int fail_type = m_cached_ctx.TEST.GetAFAIL(m_cached_ctx.FRAME.PSM);
-		switch (fail_type)
+		switch (afail_type)
 		{
 			case AFAIL_KEEP: z = r = g = b = a = false; break; // none
 			case AFAIL_FB_ONLY: z = false; break; // rgba
