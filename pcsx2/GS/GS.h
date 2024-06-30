@@ -23,14 +23,6 @@ enum class RenderAPI
 	OpenGL
 };
 
-// ST_WRITE is defined in libc, avoid this
-enum stateType
-{
-	SAVE_WRITE,
-	SAVE_TRANSFER,
-	SAVE_VSYNC
-};
-
 enum class GSVideoMode : u8
 {
 	Unknown,
