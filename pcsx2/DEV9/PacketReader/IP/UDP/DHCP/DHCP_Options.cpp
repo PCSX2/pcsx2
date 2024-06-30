@@ -66,7 +66,7 @@ namespace PacketReader::IP::UDP::DHCP
 		NetLib::WriteByteArray(buffer, offset, dnsServers.size() * 4, (u8*)&dnsServers[0]);
 	}
 
-	DHCPopHostName::DHCPopHostName(std::string name)
+	DHCPopHostName::DHCPopHostName(const std::string& name)
 	{
 		if (name.size() > 255)
 		{
@@ -298,7 +298,7 @@ namespace PacketReader::IP::UDP::DHCP
 		NetLib::WriteByteArray(buffer, offset, requests.size(), &requests[0]);
 	}
 
-	DHCPopMSGStr::DHCPopMSGStr(std::string msg)
+	DHCPopMSGStr::DHCPopMSGStr(const std::string& msg)
 	{
 		if (msg.size() > 255)
 		{
@@ -375,7 +375,7 @@ namespace PacketReader::IP::UDP::DHCP
 		NetLib::WriteUInt32(buffer, offset, ipRebindingTimeT2);
 	}
 
-	DHCPopClassID::DHCPopClassID(std::string id)
+	DHCPopClassID::DHCPopClassID(const std::string& id)
 	{
 		if (id.size() > 255)
 		{

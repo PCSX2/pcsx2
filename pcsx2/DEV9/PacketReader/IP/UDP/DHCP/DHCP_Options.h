@@ -90,7 +90,7 @@ namespace PacketReader::IP::UDP::DHCP
 		//ASCII encoding
 		std::string hostName;
 
-		DHCPopHostName(std::string name);
+		DHCPopHostName(const std::string& name);
 		DHCPopHostName(u8* data, int offset); //Offset will include Kind and Len
 
 		virtual u8 GetLength() { return 2 + hostName.size(); }
@@ -276,7 +276,7 @@ namespace PacketReader::IP::UDP::DHCP
 		//ASCII encoding
 		std::string message;
 
-		DHCPopMSGStr(std::string msg);
+		DHCPopMSGStr(const std::string& msg);
 		DHCPopMSGStr(u8* data, int offset); //Offset will include Kind and Len
 
 		virtual u8 GetLength() { return 2 + message.size(); }
@@ -353,7 +353,7 @@ namespace PacketReader::IP::UDP::DHCP
 		//ASCII encoding
 		std::string classID;
 
-		DHCPopClassID(std::string id);
+		DHCPopClassID(const std::string& id);
 		DHCPopClassID(u8* data, int offset); //Offset will include Kind and Len
 
 		virtual u8 GetLength() { return 2 + classID.size(); }
