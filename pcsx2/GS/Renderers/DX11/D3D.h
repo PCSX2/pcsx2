@@ -6,7 +6,8 @@
 #include "common/RedtapeWindows.h"
 #include "common/RedtapeWilCom.h"
 
-#include "pcsx2/Config.h"
+#include "Config.h"
+#include "GS/GS.h"
 
 #include <d3d11_1.h>
 #include <dxgi1_5.h>
@@ -19,11 +20,8 @@ namespace D3D
 	// create a dxgi factory
 	wil::com_ptr_nothrow<IDXGIFactory5> CreateFactory(bool debug);
 
-	// returns a list of all adapter names
-	std::vector<std::string> GetAdapterNames(IDXGIFactory5* factory);
-
-	// returns a list of fullscreen modes for the specified adapter
-	std::vector<std::string> GetFullscreenModes(IDXGIFactory5* factory, const std::string_view adapter_name);
+	// returns a list of all adapter information
+	std::vector<GSAdapterInfo> GetAdapterInfo(IDXGIFactory5* factory);
 
 	// returns the fullscreen mode to use for the specified dimensions
 	bool GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect, u32 width, u32 height,

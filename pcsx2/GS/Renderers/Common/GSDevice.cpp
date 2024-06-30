@@ -435,7 +435,8 @@ void GSDevice::TextureRecycleDeleter::operator()(GSTexture* const tex)
 
 GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_unused_texture)
 {
-	const GSVector2i size(width, height);
+	const GSVector2i size(std::clamp(width, 1, static_cast<int>(g_gs_device->GetMaxTextureSize())),
+		std::clamp(height, 1, static_cast<int>(g_gs_device->GetMaxTextureSize())));
 	FastList<GSTexture*>& pool = m_pool[type != GSTexture::Type::Texture];
 
 	GSTexture* t = nullptr;
@@ -475,14 +476,14 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 		}
 		else
 		{
-			t = CreateSurface(type, width, height, levels, format);
+			t = CreateSurface(type, size.x, size.y, levels, format);
 			if (!t)
 			{
-				Console.Error("GS: Memory allocation failure for %dx%d texture. Purging pool and retrying.", width, height);
+				ERROR_LOG("GS: Memory allocation failure for {}x{} texture. Purging pool and retrying.", size.x, size.y);
 				PurgePool();
 				if (!t)
 				{
-					Console.Error("GS: Memory allocation failure for %dx%d texture after purging pool.", width, height);
+					ERROR_LOG("GS: Memory allocation failure for {}x{} texture after purging pool.", size.x, size.y);
 					return nullptr;
 				}
 			}

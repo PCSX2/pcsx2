@@ -291,24 +291,58 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 		if (has_missing_extension)
 			continue;
 
-		std::string gpu_name = props.deviceName;
+		GSAdapterInfo ai;
+		ai.name = props.deviceName;
+		ai.max_texture_size = std::min(props.limits.maxFramebufferWidth, props.limits.maxImageDimension2D);
+		ai.max_upscale_multiplier = GSGetMaxUpscaleMultiplier(ai.max_texture_size);
 
 		// handle duplicate adapter names
 		if (std::any_of(
-				gpus.begin(), gpus.end(), [&gpu_name](const auto& other) { return (gpu_name == other.second); }))
+				gpus.begin(), gpus.end(), [&ai](const auto& other) { return (ai.name == other.second.name); }))
 		{
-			std::string original_adapter_name = std::move(gpu_name);
+			std::string original_adapter_name = std::move(ai.name);
 
 			u32 current_extra = 2;
 			do
 			{
-				gpu_name = fmt::format("{} ({})", original_adapter_name, current_extra);
+				ai.name = fmt::format("{} ({})", original_adapter_name, current_extra);
 				current_extra++;
 			} while (std::any_of(
-				gpus.begin(), gpus.end(), [&gpu_name](const auto& other) { return (gpu_name == other.second); }));
+				gpus.begin(), gpus.end(), [&ai](const auto& other) { return (ai.name == other.second.name); }));
 		}
 
-		gpus.emplace_back(device, std::move(gpu_name));
+		gpus.emplace_back(device, std::move(ai));
+	}
+
+	return gpus;
+}
+
+GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs()
+{
+	std::unique_lock lock(s_instance_mutex);
+
+	// Device shouldn't be torn down since we have the lock.
+	GPUList gpus;
+	if (g_gs_device && Vulkan::IsVulkanLibraryLoaded())
+	{
+		gpus = EnumerateGPUs(GSDeviceVK::GetInstance()->GetVulkanInstance());
+	}
+	else
+	{
+		if (Vulkan::LoadVulkanLibrary(nullptr))
+		{
+			OptionalExtensions oe = {};
+			const VkInstance instance = CreateVulkanInstance(WindowInfo(), &oe, false, false);
+			if (instance != VK_NULL_HANDLE)
+			{
+				if (Vulkan::LoadVulkanInstanceFunctions(instance))
+					gpus = EnumerateGPUs(instance);
+
+				vkDestroyInstance(instance, nullptr);
+			}
+
+			Vulkan::UnloadVulkanLibrary();
+		}
 	}
 
 	return gpus;
@@ -1928,58 +1962,28 @@ bool GSDeviceVK::AllocatePreinitializedGPUBuffer(u32 size, VkBuffer* gpu_buffer,
 }
 
 
-void GSDeviceVK::GPUListToAdapterNames(std::vector<std::string>* dest, VkInstance instance)
+std::vector<GSAdapterInfo> GSDeviceVK::GetAdapterInfo()
 {
-	GPUList gpus = EnumerateGPUs(instance);
-	dest->clear();
-	dest->reserve(gpus.size());
-	for (auto& [gpu, name] : gpus)
-		dest->push_back(std::move(name));
-}
-
-void GSDeviceVK::GetAdaptersAndFullscreenModes(
-	std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes)
-{
-	std::unique_lock lock(s_instance_mutex);
-
-	// Device shouldn't be torn down since we have the lock.
-	if (g_gs_device && Vulkan::IsVulkanLibraryLoaded())
-	{
-		if (adapters)
-			GPUListToAdapterNames(adapters, GSDeviceVK::GetInstance()->GetVulkanInstance());
-	}
-	else
-	{
-		if (Vulkan::LoadVulkanLibrary(nullptr))
-		{
-			OptionalExtensions oe = {};
-			const VkInstance instance = CreateVulkanInstance(WindowInfo(), &oe, false, false);
-			if (instance != VK_NULL_HANDLE)
-			{
-				if (Vulkan::LoadVulkanInstanceFunctions(instance))
-					GPUListToAdapterNames(adapters, instance);
-
-				vkDestroyInstance(instance, nullptr);
-			}
-
-			Vulkan::UnloadVulkanLibrary();
-		}
-	}
+	GPUList gpus = EnumerateGPUs();
+	std::vector<GSAdapterInfo> ret;
+	ret.reserve(gpus.size());
+	for (auto& [physical_device, ai] : gpus)
+		ret.push_back(std::move(ai));
+	return ret;
 }
 
 bool GSDeviceVK::IsSuitableDefaultRenderer()
 {
-	std::vector<std::string> adapters;
-	GetAdaptersAndFullscreenModes(&adapters, nullptr);
-	if (adapters.empty())
+	GPUList gpus = EnumerateGPUs();
+	if (gpus.empty())
 	{
 		// No adapters, not gonna be able to use VK.
 		return false;
 	}
 
 	// Check the first GPU, should be enough.
-	const std::string& name = adapters.front();
-	Console.WriteLn(fmt::format("Using Vulkan GPU '{}' for automatic renderer check.", name));
+	const std::string& name = gpus.front().second.name;
+	INFO_LOG("Using Vulkan GPU '{}' for automatic renderer check.", name);
 
 	// Any software rendering (LLVMpipe, SwiftShader).
 	if (StringUtil::StartsWithNoCase(name, "llvmpipe") || StringUtil::StartsWithNoCase(name, "SwiftShader"))
@@ -2451,18 +2455,17 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 			m_instance = CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
 			if (m_instance == VK_NULL_HANDLE)
 			{
-				Host::ReportErrorAsync(
-					"Error", "Failed to create Vulkan instance. Does your GPU and/or driver support Vulkan?");
+				Host::ReportErrorAsync("Error", "Failed to create Vulkan instance. Does your GPU and/or driver support Vulkan?");
 				return false;
 			}
 
-			Console.Error("Vulkan validation/debug layers requested but are unavailable. Creating non-debug device.");
+			ERROR_LOG("Vulkan validation/debug layers requested but are unavailable. Creating non-debug device.");
 		}
 	}
 
 	if (!Vulkan::LoadVulkanInstanceFunctions(m_instance))
 	{
-		Console.Error("Failed to load Vulkan instance functions");
+		ERROR_LOG("Failed to load Vulkan instance functions");
 		return false;
 	}
 
@@ -2478,8 +2481,8 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 		u32 gpu_index = 0;
 		for (; gpu_index < static_cast<u32>(gpus.size()); gpu_index++)
 		{
-			Console.WriteLn(fmt::format("GPU {}: {}", gpu_index, gpus[gpu_index].second));
-			if (gpus[gpu_index].second == GSConfig.Adapter)
+			DEV_LOG("GPU {}: {}", gpu_index, gpus[gpu_index].second.name);
+			if (gpus[gpu_index].second.name == GSConfig.Adapter)
 			{
 				m_physical_device = gpus[gpu_index].first;
 				break;
@@ -2488,14 +2491,13 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 
 		if (gpu_index == static_cast<u32>(gpus.size()))
 		{
-			Console.Warning(
-				fmt::format("Requested GPU '{}' not found, using first ({})", GSConfig.Adapter, gpus[0].second));
+			WARNING_LOG("Requested GPU '{}' not found, using first ({})", GSConfig.Adapter, gpus[0].second.name);
 			m_physical_device = gpus[0].first;
 		}
 	}
 	else
 	{
-		Console.WriteLn(fmt::format("No GPU requested, using first ({})", gpus[0].second));
+		INFO_LOG("No GPU requested, using first ({})", gpus[0].second.name);
 		m_physical_device = gpus[0].first;
 	}
 
@@ -2647,6 +2649,8 @@ bool GSDeviceVK::CheckFeatures()
 			Host::OSD_WARNING_DURATION);
 	}
 
+	m_max_texture_size = m_device_properties.limits.maxImageDimension2D;
+
 	return true;
 }
 
@@ -2693,18 +2697,13 @@ VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
 
 GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
-	const u32 clamped_width =
-		static_cast<u32>(std::clamp<int>(width, 1, m_device_properties.limits.maxImageDimension2D));
-	const u32 clamped_height =
-		static_cast<u32>(std::clamp<int>(height, 1, m_device_properties.limits.maxImageDimension2D));
-
-	std::unique_ptr<GSTexture> tex(GSTextureVK::Create(type, format, clamped_width, clamped_height, levels));
+	std::unique_ptr<GSTexture> tex = GSTextureVK::Create(type, format, width, height, levels);
 	if (!tex)
 	{
 		// We're probably out of vram, try flushing the command buffer to release pending textures.
 		PurgePool();
 		ExecuteCommandBufferAndRestartRenderPass(true, "Couldn't allocate texture.");
-		tex = GSTextureVK::Create(type, format, clamped_width, clamped_height, levels);
+		tex = GSTextureVK::Create(type, format, width, height, levels);
 	}
 
 	return tex.release();

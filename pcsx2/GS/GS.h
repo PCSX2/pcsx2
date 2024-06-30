@@ -41,6 +41,14 @@ enum class GSDisplayAlignment
 	RightOrBottom
 };
 
+struct GSAdapterInfo
+{
+	std::string name;
+	std::vector<std::string> fullscreen_modes;
+	u32 max_texture_size;
+	u32 max_upscale_multiplier;
+};
+
 class SmallStringBase;
 
 // Returns the ID for the specified function, otherwise -1.
@@ -83,8 +91,8 @@ GSRendererType GSGetCurrentRenderer();
 bool GSIsHardwareRenderer();
 bool GSWantsExclusiveFullscreen();
 std::optional<float> GSGetHostRefreshRate();
-void GSGetAdaptersAndFullscreenModes(
-	GSRendererType renderer, std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes);
+std::vector<GSAdapterInfo> GSGetAdapterInfo(GSRendererType renderer);
+u32 GSGetMaxUpscaleMultiplier(u32 max_texture_size);
 GSVideoMode GSgetDisplayMode();
 void GSgetInternalResolution(int* width, int* height);
 void GSgetStats(SmallStringBase& info);

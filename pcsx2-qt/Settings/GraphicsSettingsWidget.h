@@ -29,6 +29,7 @@ private Q_SLOTS:
 	void onSWTextureFilteringChange();
 	void onRendererChanged(int index);
 	void onAdapterChanged(int index);
+	void onUpscaleMultiplierChanged();
 	void onTrilinearFilteringChanged();
 	void onGpuPaletteConversionChanged(int state);
 	void onCPUSpriteRenderBWChanged();
@@ -46,6 +47,7 @@ private Q_SLOTS:
 private:
 	GSRendererType getEffectiveRenderer() const;
 	void updateRendererDependentOptions();
+	void populateUpscaleMultipliers(u32 max_upscale_multiplier);
 	void resetManualHardwareFixes();
 
 	SettingsWindow* m_dialog;

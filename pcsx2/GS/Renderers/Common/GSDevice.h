@@ -804,6 +804,7 @@ public:
 
 protected:
 	FeatureSupport m_features;
+	u32 m_max_texture_size = 0;
 
 	struct
 	{
@@ -888,6 +889,7 @@ public:
 	__fi u64 GetPoolMemoryUsage() const { return m_pool_memory_usage; }
 
 	__fi FeatureSupport Features() const { return m_features; }
+	__fi u32 GetMaxTextureSize() const { return m_max_texture_size; }
 
 	__fi const WindowInfo& GetWindowInfo() const { return m_window_info; }
 	__fi s32 GetWindowWidth() const { return static_cast<s32>(m_window_info.surface_width); }
