@@ -2770,6 +2770,7 @@ void FullscreenUI::DoCopyGameSettings()
 		return;
 
 	Pcsx2Config::CopyConfiguration(s_game_settings_interface.get(), *GetEditingSettingsInterface(false));
+	Pcsx2Config::ClearInvalidPerGameConfiguration(s_game_settings_interface.get());
 
 	SetSettingsChanged(s_game_settings_interface.get());
 

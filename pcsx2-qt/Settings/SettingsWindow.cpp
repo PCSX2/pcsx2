@@ -299,6 +299,7 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
 	{
 		auto lock = Host::GetSettingsLock();
 		Pcsx2Config::CopyConfiguration(m_sif.get(), *Host::Internal::GetBaseSettingsLayer());
+		Pcsx2Config::ClearInvalidPerGameConfiguration(m_sif.get());
 	}
 	saveAndReloadGameSettings();
 
