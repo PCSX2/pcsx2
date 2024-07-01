@@ -1838,6 +1838,13 @@ void Pcsx2Config::ClearConfiguration(SettingsInterface* dest_si)
 	temp.LoadSaveCore(wrapper);
 }
 
+void Pcsx2Config::ClearInvalidPerGameConfiguration(SettingsInterface* si)
+{
+	// Deprecated in favor of patches.
+	si->DeleteValue("EmuCore", "EnableWideScreenPatches");
+	si->DeleteValue("EmuCore", "EnableNoInterlacingPatches");
+}
+
 void EmuFolders::SetAppRoot()
 {
 	const std::string program_path = FileSystem::GetProgramPath();
