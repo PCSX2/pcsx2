@@ -119,7 +119,7 @@ private:
 	void addWidget(QWidget* widget, QString title, QString icon, QString help_text);
 	bool handleWheelEvent(QWheelEvent* event);
 
-	SettingsWindow* reopen();
+	void reopen(const QString& message);
 
 	std::unique_ptr<INISettingsInterface> m_sif;
 
