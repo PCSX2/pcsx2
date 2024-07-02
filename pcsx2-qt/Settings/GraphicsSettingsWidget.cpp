@@ -1143,12 +1143,14 @@ void GraphicsSettingsWidget::populateUpscaleMultipliers(u32 max_upscale_multipli
 										 max_upscale_multiplier :
 										 std::min(max_upscale_multiplier, max_non_advanced_multiplier);
 	for (u32 i = max_template_multiplier + 1; i <= max_shown_multiplier; i++)
-		m_ui.upscaleMultiplier->addItem(tr("%1x Native ").arg(i), QVariant(static_cast<float>(i)));
+		m_ui.upscaleMultiplier->addItem(tr("%1x Native").arg(i), QVariant(static_cast<float>(i)));
 
 	const float global_value = Host::GetBaseFloatSettingValue("EmuCore/GS", "upscale_multiplier", 1.0f);
 	if (m_dialog->isPerGameSettings())
 	{
-		m_ui.upscaleMultiplier->addItem(tr("Use Global Setting [%1]").arg(QStringLiteral("%1x").arg(global_value)));
+		const int name_idx = m_ui.upscaleMultiplier->findData(QVariant(global_value));
+		const QString global_name = (name_idx >= 0) ? m_ui.upscaleMultiplier->itemText(name_idx) : tr("%1x Native");
+		m_ui.upscaleMultiplier->insertItem(0, tr("Use Global Setting [%1]").arg(global_name));
 
 		const std::optional<float> config_value = m_dialog->getFloatValue("EmuCore/GS", "upscale_multiplier", std::nullopt);
 		if (config_value.has_value())
