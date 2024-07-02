@@ -446,6 +446,16 @@
            </property>
           </widget>
          </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="PreRoundSprites">
+           <property name="toolTip">
+            <string>Attempts to pre-round sprite texel coordinates to resolve rounding issues. Helpful for games such as Beyond Good and Evil, and Manhunt</string>
+           </property>
+           <property name="text">
+            <string>Pre-Round Sprites</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>
