@@ -224,6 +224,8 @@ public:
 	bool m_texflush_flag = false;
 	bool m_isPackedUV_HackFlag = false;
 	bool m_channel_shuffle = false;
+	bool m_in_target_draw = false;
+	u32 m_target_offset = 0;
 	u8 m_scanmask_used = 0;
 	u32 m_dirty_gs_regs = 0;
 	int m_backed_up_ctx = 0;
