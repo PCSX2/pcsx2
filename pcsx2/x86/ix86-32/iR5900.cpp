@@ -350,7 +350,6 @@ static void dyna_page_reset(u32 start, u32 sz);
 static const void* DispatcherEvent = nullptr;
 static const void* DispatcherReg = nullptr;
 static const void* JITCompile = nullptr;
-static const void* JITCompileInBlock = nullptr;
 static const void* EnterRecompiledCode = nullptr;
 static const void* DispatchBlockDiscard = nullptr;
 static const void* DispatchPageReset = nullptr;
@@ -386,13 +385,6 @@ static const void* _DynGen_JITCompile()
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, recLUT, rax * wordsize)]);
 	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
 
-	return retval;
-}
-
-static const void* _DynGen_JITCompileInBlock()
-{
-	u8* retval = xGetAlignedCallTarget();
-	xJMP(JITCompile);
 	return retval;
 }
 
@@ -479,7 +471,6 @@ static void _DynGen_Dispatchers()
 	DispatcherReg = _DynGen_DispatcherReg();
 
 	JITCompile = _DynGen_JITCompile();
-	JITCompileInBlock = _DynGen_JITCompileInBlock();
 	EnterRecompiledCode = _DynGen_EnterRecompiledCode();
 	DispatchBlockDiscard = _DynGen_DispatchBlockDiscard();
 	DispatchPageReset = _DynGen_DispatchPageReset();
@@ -773,9 +764,7 @@ void recClear(u32 addr, u32 size)
 
 		lowerextent = std::min(lowerextent, blockstart);
 		upperextent = std::max(upperextent, blockend);
-		// This might end up inside a block that doesn't contain the clearing range,
-		// so set it to recompile now.  This will become JITCompile if we clear it.
-		pblock->SetFnptr((uptr)JITCompileInBlock);
+		pblock->SetFnptr((uptr)JITCompile);
 
 		blockidx--;
 	}
@@ -2319,8 +2308,6 @@ static void recRecompile(const u32 startpc)
 
 	while (1)
 	{
-		BASEBLOCK* pblock = PC_GETBLOCK(i);
-
 		// stop before breakpoints
 		if (isBreakpointNeeded(i) != 0 || isMemcheckNeeded(i) != 0)
 		{
@@ -2336,13 +2323,6 @@ static void recRecompile(const u32 startpc)
 				s_nEndBlock = i;
 
 				eeRecPerfLog.Write("Pagesplit @ %08X : size=%d insts", startpc, (i - startpc) / 4);
-				break;
-			}
-
-			if (pblock->GetFnptr() != (uptr)JITCompile && pblock->GetFnptr() != (uptr)JITCompileInBlock)
-			{
-				willbranch3 = 1;
-				s_nEndBlock = i;
 				break;
 			}
 		}
@@ -2581,6 +2561,8 @@ StartRecomp:
 			COP2FlagHackPass().Run(startpc, s_nEndBlock, s_pInstCache + 1);
 	}
 
+	//WARNING_LOG("Compiling block {:08X} => {:08X}", startpc, s_nEndBlock);
+
 #ifdef DUMP_BLOCKS
 	ZydisDecoder disas_decoder;
 	ZydisDecoderInit(&disas_decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_ADDRESS_WIDTH_64);
@@ -2647,42 +2629,7 @@ StartRecomp:
 
 	pxAssert((pc - startpc) >> 2 <= 0xffff);
 	s_pCurBlockEx->size = (pc - startpc) >> 2;
-
-	if (HWADDR(pc) <= Ps2MemSize::ExposedRam)
-	{
-		BASEBLOCKEX* oldBlock;
-		int i;
-
-		i = recBlocks.LastIndex(HWADDR(pc) - 4);
-		while ((oldBlock = recBlocks[i--]))
-		{
-			if (oldBlock == s_pCurBlockEx)
-				continue;
-			if (oldBlock->startpc >= HWADDR(pc))
-				continue;
-			if ((oldBlock->startpc + oldBlock->size * 4) <= HWADDR(startpc))
-				break;
-
-			if (memcmp(&recRAMCopy[oldBlock->startpc / 4], PSM(oldBlock->startpc),
-					oldBlock->size * 4))
-			{
-				recClear(startpc, (pc - startpc) / 4);
-				s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
-				pxAssert(s_pCurBlockEx->startpc == HWADDR(startpc));
-				break;
-			}
-		}
-
-		memcpy(&recRAMCopy[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
-	}
-
 	s_pCurBlock->SetFnptr((uptr)recPtr);
-
-	for (i = 1; i < static_cast<u32>(s_pCurBlockEx->size); i++)
-	{
-		if ((uptr)JITCompile == s_pCurBlock[i].GetFnptr())
-			s_pCurBlock[i].SetFnptr((uptr)JITCompileInBlock);
-	}
 
 	if (!(pc & 0x10000000))
 		maxrecmem = std::max((pc & ~0xa0000000), maxrecmem);
