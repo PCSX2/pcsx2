@@ -737,6 +737,11 @@ PCPX-96323:
 PCPX-96324:
   name: "Dual Hearts [Trial]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flashing FMV.
+  gsHWFixes:
+    deinterlace: 9 # Game looks better with Adaptive BFF.
+    halfPixelOffset: 4 # Improves offset blur.
 PCPX-96328:
   name: "3タイトルスペシャルディスク「サルゲッチュ2・ポポロクロイス-はじまりの冒険-・ぼくのなつやすみ2」"
   name-sort: "3たいとるすぺしゃるでぃすく さるげっちゅ2 ぽぽぽくろいす はじまりのぼうけん ぼくのなつやすみ2"
@@ -1911,10 +1916,13 @@ SCAJ-20162:
   name: "Rogue Galaxy"
   region: "NTSC-Unk"
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes text and menu color.
     autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes doubled post and DOF effects.
 SCAJ-20163:
   name: "Tales of the Abyss"
   region: "NTSC-Unk"
@@ -2024,7 +2032,6 @@ SCAJ-20179:
     autoFlush: 1 # Fixes shadows.
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
-    nativePaletteDraw: 1 # Fixes broken shadows.
 SCAJ-20180:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 2 of 2]"
   region: "NTSC-Unk"
@@ -2032,7 +2039,6 @@ SCAJ-20180:
     autoFlush: 1 # Fixes shadows.
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
-    nativePaletteDraw: 1 # Fixes broken shadows.
 SCAJ-20181:
   name: "Minna no Tennis"
   region: "NTSC-Unk"
@@ -5952,10 +5958,13 @@ SCES-54552:
   name: "Rogue Galaxy"
   region: "PAL-M5"
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes text and menu color.
     autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes doubled post and DOF effects.
   patches:
     CBB4B383:
       content: |-
@@ -7847,6 +7856,11 @@ SCPS-15022:
   name-sort: でゅあるはーつ
   name-en: "Dual Hearts"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flashing FMV.
+  gsHWFixes:
+    deinterlace: 9 # Game looks better with Adaptive BFF.
+    halfPixelOffset: 4 # Improves offset blur.
 SCPS-15023:
   name: ワイルドアームズ アドヴァンスドサード プレミアムボックス
   name-sort: わいるどあーむず あどゔぁんすどさーど [ぷれみあむぼっくす]
@@ -8498,10 +8512,13 @@ SCPS-15102:
   name-en: "Rogue Galaxy"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes text and menu color.
     autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes doubled post and DOF effects.
 SCPS-15103:
   name: ガンパレード・オーケストラ 白の章 〜青森ペンギン伝説〜（限定版）
   name-sort: がんぱれーど おーけすとら しろのしょう あおもりぺんぎんでんせつ [げんていばん]
@@ -8749,10 +8766,13 @@ SCPS-17013:
   name-en: "Rogue Galaxy [Director's Cut]"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes text and menu color.
     autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes doubled post and DOF effects.
   patches:
     CDEE4B19:
       content: |-
@@ -8984,10 +9004,13 @@ SCPS-19254:
   name: "Rogue Galaxy [PlayStation 2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes text and menu color.
     autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes doubled post and DOF effects.
 SCPS-19301:
   name: みんなのGOLF 4 PlayStation 2 the Best
   name-sort: みんなのごるふ4 PlayStation 2 the Best
@@ -9440,6 +9463,11 @@ SCPS-55010:
 SCPS-55011:
   name: "Dual Hearts"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flashing FMV.
+  gsHWFixes:
+    deinterlace: 9 # Game looks better with Adaptive BFF.
+    halfPixelOffset: 4 # Improves offset blur.
 SCPS-55012:
   name: "Grandia II"
   region: "NTSC-J"
@@ -11337,10 +11365,13 @@ SCUS-97490:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes text and menu color.
     autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes doubled post and DOF effects.
   patches:
     0643F90C:
       content: |-
@@ -11651,10 +11682,13 @@ SCUS-97572:
   name: "Rogue Galaxy [Demo]"
   region: "NTSC-U"
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes text and menu color.
     autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes doubled post and DOF effects.
 SCUS-97574:
   name: "Jak X - Combat Racing [Greatest Hits]"
   region: "NTSC-U"
@@ -12149,8 +12183,7 @@ SLAJ-25078:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
-    halfPixelOffset: 2 # Mostly aligns post processing.
+    halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 2 # Improves post processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -12178,9 +12211,11 @@ SLAJ-25087:
     cpuSpriteRenderLevel: 2 # Needed for above.
 SLAJ-25088:
   name: "FIFA Soccer 2007"
-  region: "NTSC-Unk"
+  region: "NTSC-HK"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLAJ-25091:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "NTSC-J"
@@ -12623,6 +12658,10 @@ SLED-52890:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   speedHacks:
     eeCycleRate: 3 # Fixes player uniforms.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLED-52891:
   name: "Rocky Legends"
   region: "PAL-Unk"
@@ -12800,7 +12839,11 @@ SLED-53650:
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
 SLED-53664:
   name: "FIFA 06 - Demo Pre-Release Version"
-  region: "PAL-Unk"
+  region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLED-53673:
   name: "007 - From Russia with Love [Demo]"
   region: "PAL-E"
@@ -12884,8 +12927,7 @@ SLED-53937:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
-    halfPixelOffset: 2 # Mostly aligns post processing.
+    halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 2 # Improves post processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -12968,7 +13010,11 @@ SLED-54315:
     nativeScaling: 1 # Fixes post processing smoothness and position.
 SLED-54327:
   name: "FIFA '07"
-  region: "PAL-Unk"
+  region: "PAL-M7"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLED-54328:
   name: "NBA Live 07 [Demo]"
   region: "PAL-Unk"
@@ -16109,7 +16155,7 @@ SLES-51284:
   name: "Contra - Shattered Soldier"
   region: "PAL-M3"
 SLES-51285:
-  name: "Spongebob SquarePants - Revenge of the Flying Dutchman"
+  name: "Nickelodeon SpongeBob SquarePants - Revenge of the Flying Dutchman"
   region: "PAL-E"
   compat: 5
 SLES-51286:
@@ -17671,10 +17717,10 @@ SLES-51967:
     halfPixelOffset: 2 # Fixes misaligned post-processing.
     PCRTCOverscan: 1 # Fixes image alignment.
 SLES-51968:
-  name: "SpongeBob SquarePants - Battle for Bikini Bottom"
+  name: "Nickelodeon SpongeBob SquarePants - Battle for Bikini Bottom"
   region: "PAL-E"
 SLES-51970:
-  name: "Spongebob Schwammkopf - Schlacht um Bikini Bottom"
+  name: "Nickelodeon SpongeBob Schwammkopf - Schlacht um Bikini Bottom"
   region: "PAL-G"
   compat: 5
 SLES-51972:
@@ -18907,6 +18953,8 @@ SLES-52535:
   name: "Rumble Roses"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns offset blur.
 SLES-52536:
   name: "DreamWorks Shark Tale"
   region: "PAL-E"
@@ -18991,6 +19039,10 @@ SLES-52559:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   speedHacks:
     eeCycleRate: 3 # Fixes player uniforms.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-52560:
   name: "FIFA 2005"
   region: "PAL-G"
@@ -18998,6 +19050,10 @@ SLES-52560:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   speedHacks:
     eeCycleRate: 3 # Fixes player uniforms.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-52561:
   name: "FIFA 2005"
   region: "PAL-P-S"
@@ -19005,6 +19061,10 @@ SLES-52561:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   speedHacks:
     eeCycleRate: 3 # Fixes player uniforms.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-52562:
   name: "FIFA 2005"
   region: "PAL-I"
@@ -19012,6 +19072,10 @@ SLES-52562:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   speedHacks:
     eeCycleRate: 3 # Fixes player uniforms.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-52563:
   name: "FIFA Football 2005"
   region: "PAL-M6"
@@ -19019,6 +19083,10 @@ SLES-52563:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   speedHacks:
     eeCycleRate: 3 # Fixes player uniforms.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-52567:
   name: "Catwoman"
   region: "PAL-M7"
@@ -19999,7 +20067,7 @@ SLES-52895:
     nativeScaling: 2 # Fixes post effects.
 SLES-52896:
   name: "Nickelodeon SpongeBob SquarePants - The Movie"
-  region: "PAL-F-G"
+  region: "PAL-F-N"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes missing lights.
     halfPixelOffset: 4 # Aligns post processing.
@@ -20090,7 +20158,9 @@ SLES-52921:
   name: "Rogue Trooper"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 3 # Fixes ghosting.
+    halfPixelOffset: 4 # Fixes edge garbage and misaligned bloom.
+    nativeScaling: 2 # Fixes post processing and lighting smoothness and alignment.
+    autoFlush: 1 # Fixes bloom alignment.
 SLES-52922:
   name: "EyeToy - Disney Move"
   region: "PAL-M5"
@@ -21658,15 +21728,27 @@ SLES-53492:
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
 SLES-53494:
-  name: "Spongebob SquarePants - Lights, Camera, PANTS!"
+  name: "Nickelodeon SpongeBob SquarePants - Lights, Camera, Pants!"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
+    halfPixelOffset: 4 # Aligns post processing.
+    nativeScaling: 2 # Fixes post effects.
 SLES-53495:
   name: "Nickelodeon Bob L'éponge - Silence on Tourne!"
   region: "PAL-F"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
+    halfPixelOffset: 4 # Aligns post processing.
+    nativeScaling: 2 # Fixes post effects.
 SLES-53496:
   name: "Nickelodeon SpongeBob - Ciak si Gira!"
   region: "PAL-I"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
+    halfPixelOffset: 4 # Aligns post processing.
+    nativeScaling: 2 # Fixes post effects.
 SLES-53497:
   name: "Nickelodeon SpongeBob Schwammkopf - Film ab!"
   region: "PAL-G"
@@ -21677,12 +21759,24 @@ SLES-53497:
 SLES-53498:
   name: "Nickelodeon Bob Esponja - ¡Luces, Cámara, Esponja!"
   region: "PAL-S"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
+    halfPixelOffset: 4 # Aligns post processing.
+    nativeScaling: 2 # Fixes post effects.
 SLES-53499:
   name: "Nickelodeon SpongeBob SquarePants - Licht uit, Camera aan!"
   region: "PAL-NL"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
+    halfPixelOffset: 4 # Aligns post processing.
+    nativeScaling: 2 # Fixes post effects.
 SLES-53500:
   name: "Nickelodeon Svampbob Fyrkant - Tystnad, Tagning, TvÃ¤ttsvamp!"
   region: "PAL-SW"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
+    halfPixelOffset: 4 # Aligns post processing.
+    nativeScaling: 2 # Fixes post effects.
 SLES-53501:
   name: "Star Wars - Battlefront II"
   region: "PAL-M3"
@@ -21838,27 +21932,37 @@ SLES-53529:
   name: "FIFA '06"
   region: "PAL-E"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-53530:
   name: "FIFA '06"
   region: "PAL-I"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-53531:
   name: "FIFA '06"
   region: "PAL-F-G"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-53532:
   name: "FIFA '06"
   region: "PAL-P-S"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-53533:
   name: "FIFA '06"
   region: "PAL-M8"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-53534:
   name: "Tony Hawk's American Wasteland"
   region: "PAL-E"
@@ -22221,7 +22325,7 @@ SLES-53621:
     halfPixelOffset: 4 # Fixes post alignment.
     nativeScaling: 1 # Fixes post effect.
 SLES-53623:
-  name: "SpongeBob SquarePants - Battle for Bikini Bottom"
+  name: "Nickelodeon Bob L'éponge - Bataille pour Bikini Bottom"
   region: "PAL-F"
 SLES-53624:
   name: "Disney/Pixar Cars"
@@ -23023,8 +23127,7 @@ SLES-53886:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
-    halfPixelOffset: 2 # Mostly aligns post processing.
+    halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 2 # Improves post processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -23445,8 +23548,7 @@ SLES-54030:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
-    halfPixelOffset: 2 # Mostly aligns post processing.
+    halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 2 # Improves post processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -24047,32 +24149,44 @@ SLES-54240:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-54241:
   name: "FIFA '07"
   region: "PAL-M3"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-54243:
   name: "FIFA '07"
   region: "PAL-P-S"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-54244:
   name: "FIFA '07"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-54245:
   name: "NHL '07"
   region: "PAL-M6"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-54246:
   name: "FIFA '07"
-  region: "PAL-R"
+  region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-54248:
   name: "Madden NFL '07"
   region: "PAL-E"
@@ -25799,22 +25913,30 @@ SLES-54871:
   name: "FIFA '08"
   region: "PAL-F-G-I"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-54872:
   name: "FIFA '08"
   region: "PAL-P-S"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-54873:
   name: "FIFA '08"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-54874:
   name: "FIFA '08"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-54875:
   name: "Warriors Orochi"
   region: "PAL-E"
@@ -26877,6 +26999,8 @@ SLES-55216:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting of characters.
+    autoFlush: 2 # Fixes missing glow.
+    nativeScaling: 2 # Fixes post processing alignment.
 SLES-55218:
   name: "Tiger Woods PGA Tour 09"
   region: "PAL-E"
@@ -26955,28 +27079,38 @@ SLES-55243:
   name: "FIFA '09"
   region: "PAL-E"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55244:
   name: "FIFA '09"
   region: "PAL-F-G"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55245:
   name: "FIFA '09"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55246:
   name: "FIFA '09"
   region: "PAL-SC"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55247:
   name: "FIFA '09"
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55248:
   name: "Harry Potter and the Half-Blood Prince"
   region: "PAL-M6"
@@ -27046,10 +27180,10 @@ SLES-55266:
   region: "PAL-M5"
   compat: 5
 SLES-55271:
-  name: "Spongebob SquarePants Featuring Nicktoons - Globs of Doom"
+  name: "Nickelodeon SpongeBob SquarePants featuring Nicktoons - Globs of Doom"
   region: "PAL-E-F"
 SLES-55272:
-  name: "Spongebob SquarePants Featuring Nicktoons - Globs of Doom"
+  name: "Nickelodeon SpongeBob SquarePants featuring Nicktoons - Globs of Doom"
   region: "PAL-M3"
 SLES-55274:
   name: "Diabolik - The Original Sin"
@@ -27179,6 +27313,9 @@ SLES-55349:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    bilinearUpscale: 2 # Fixes sun glare textures.
+    gpuTargetCLUT: 1 # Fixes sun penetration.
+    nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
 SLES-55350:
   name: "Need for Speed - Undercover"
@@ -27186,6 +27323,9 @@ SLES-55350:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    bilinearUpscale: 2 # Fixes sun glare textures.
+    gpuTargetCLUT: 1 # Fixes sun penetration.
+    nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
 SLES-55351:
   name: "Need for Speed - Undercover"
@@ -27193,6 +27333,9 @@ SLES-55351:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    bilinearUpscale: 2 # Fixes sun glare textures.
+    gpuTargetCLUT: 1 # Fixes sun penetration.
+    nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
 SLES-55352:
   name: "Need for Speed - Undercover"
@@ -27201,6 +27344,9 @@ SLES-55352:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    bilinearUpscale: 2 # Fixes sun glare textures.
+    gpuTargetCLUT: 1 # Fixes sun penetration.
+    nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
 SLES-55353:
   name: "Need for Speed - Undercover"
@@ -27208,6 +27354,9 @@ SLES-55353:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    bilinearUpscale: 2 # Fixes sun glare textures.
+    gpuTargetCLUT: 1 # Fixes sun penetration.
+    nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
 SLES-55354:
   name: "Shin Megami Tensei - Persona 3 FES"
@@ -27731,28 +27880,38 @@ SLES-55581:
   name: "FIFA 10"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55582:
   name: "FIFA 10"
   region: "PAL-F-G"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55583:
   name: "FIFA 10"
   region: "PAL-SC"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55584:
   name: "FIFA 10"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55585:
   name: "FIFA 10"
   region: "PAL-E"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55587:
   name: "Pro Evolution Soccer 2010"
   region: "PAL-M5"
@@ -27847,12 +28006,24 @@ SLES-55642:
   name: "FIFA 11"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55643:
   name: "FIFA 11"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55644:
   name: "FIFA 11"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55645:
   name: "NBA 2K11"
   region: "PAL-M5"
@@ -27863,13 +28034,25 @@ SLES-55648:
 SLES-55652:
   name: "FIFA 12"
   region: "PAL-M4"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55653:
   name: "FIFA 12"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55654:
   name: "FIFA 12"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55656:
   name: "PES 2012 - Pro Evolution Soccer"
   region: "PAL-M5"
@@ -27886,9 +28069,17 @@ SLES-55664:
   name: "FIFA 13"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55665:
   name: "FIFA 13"
   region: "PAL-M4"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55666:
   name: "PES 2013 - Pro Evolution Soccer"
   region: "PAL-M5"
@@ -27905,16 +28096,16 @@ SLES-55671:
   name: "FIFA 14 [LEGACY EDITION]"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes stadium banners and improves performance.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55672:
   name: "FIFA 14"
   region: "PAL-M4"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes stadium banners and improves performance.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55673:
   name: "Pro Evolution Soccer 2014"
   region: "PAL-M5"
@@ -29193,6 +29384,10 @@ SLKA-25209:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   speedHacks:
     eeCycleRate: 3 # Fixes player uniforms.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLKA-25210:
   name: "Summer Heat Beach Volleyball"
   region: "NTSC-K"
@@ -29313,6 +29508,8 @@ SLKA-25233:
 SLKA-25234:
   name: "Rumble Roses"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns offset blur.
 SLKA-25235:
   name: "FIFA Street"
   region: "NTSC-K"
@@ -29631,6 +29828,9 @@ SLKA-25308:
 SLKA-25309:
   name: "Indigo Prophecy"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns post processing.
+    nativeScaling: 2 # Fixes post processing position.
 SLKA-25310:
   name: "Musou Orochi"
   region: "NTSC-J"
@@ -29674,8 +29874,13 @@ SLKA-25318:
   gsHWFixes:
     textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
 SLKA-25319:
+  name-en: "Nickelodeon SpongeBob SquarePants - Lights, Camera, Pants!"
   name: "보글보글 스폰지밥 - 레디, 액션!"
   region: "NTSC-K"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
+    halfPixelOffset: 4 # Aligns post processing.
+    nativeScaling: 2 # Fixes post effects.
 SLKA-25320:
   name: "Ikusa Gami"
   region: "NTSC-K"
@@ -29898,7 +30103,7 @@ SLKA-25362:
   name: "Sega Rally 2006"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 4 # Correct shadow position.
+    halfPixelOffset: 2 # Correct shadow position.
     nativeScaling: 2 # Smooths shadows.
 SLKA-25363:
   name: "Guitar Hero III - Legends of Rock"
@@ -30045,7 +30250,9 @@ SLKA-25396:
   name: "FIFA '07"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLKA-25397:
   name: "Dragon Ball Z Sparking NEO"
   region: "NTSC-K"
@@ -30800,6 +31007,8 @@ SLPM-55107:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting of characters.
+    autoFlush: 2 # Fixes missing glow.
+    nativeScaling: 2 # Fixes post processing alignment.
 SLPM-55108:
   name: フェイト/アンリミテッドコード
   name-sort: ふぇいと/あんりみてっどこーど
@@ -30879,6 +31088,9 @@ SLPM-55127:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    bilinearUpscale: 2 # Fixes sun glare textures.
+    gpuTargetCLUT: 1 # Fixes sun penetration.
+    nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
 SLPM-55128:
   name: "Rugby 08"
@@ -30901,7 +31113,9 @@ SLPM-55134:
   name: "FIFA '09 - World Class Soccer"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLPM-55135:
   name: "Grand Theft Auto - Vice City Stories [Best Price]"
   region: "NTSC-J"
@@ -31194,7 +31408,9 @@ SLPM-55226:
   name-en: "FIFA 10 - World Class Soccer"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLPM-55227:
   name: "Sekirei - Mirai kara no Okurimono"
   region: "NTSC-J"
@@ -31262,6 +31478,9 @@ SLPM-55244:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    bilinearUpscale: 2 # Fixes sun glare textures.
+    gpuTargetCLUT: 1 # Fixes sun penetration.
+    nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
 SLPM-55245:
   name: ひまわり -Pebble in the Sky-
@@ -31346,7 +31565,9 @@ SLPM-55271:
   name-en: "FIFA 10 - World Class Soccer [Ea -SY! 1980]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLPM-55273:
   name: 薄桜鬼 黎明録
   name-sort: はくおうき れいめいろく
@@ -32315,8 +32536,10 @@ SLPM-61105:
   name: "Hajime no Ippo All Stars"
   region: "NTSC-J"
 SLPM-61106:
-  name: "Rumble Roses"
+  name: "Rumble Roses [Trial]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns offset blur.
 SLPM-61107:
   name: "Dengeki PS2 PlayStation D76"
   region: "NTSC-J"
@@ -32478,7 +32701,7 @@ SLPM-61137:
   name: "Sega Rally 2006"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Correct shadow position.
+    halfPixelOffset: 2 # Correct shadow position.
     nativeScaling: 2 # Smooths shadows.
 SLPM-61138:
   name: "Akumajou Dracula - Yami no Juin"
@@ -32515,7 +32738,6 @@ SLPM-61147:
     autoFlush: 1 # Fixes shadows.
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
-    nativePaletteDraw: 1 # Fixes broken shadows.
 SLPM-61148:
   name: "Growlanser V - Generations [Trial]"
   region: "NTSC-J"
@@ -41213,6 +41435,8 @@ SLPM-65885:
   name-sort: らんぶるろーず
   name-en: "Rumble Roses"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns offset blur.
 SLPM-65886:
   name: ガイザード・レボリューション 〜 僕らは想いを身に纏う 〜
   name-sort: がいざーど・れぼりゅーしょん ぼくらはおもいをみにまとう
@@ -42370,6 +42594,8 @@ SLPM-66085:
   name-sort: Rumble Roses [こなみ・ざ・べすと]
   name-en: "Rumble Roses [Konami The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns offset blur.
 SLPM-66086:
   name: 極上生徒会
   name-sort: ごくじょうせいとかい
@@ -43184,7 +43410,7 @@ SLPM-66212:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Correct shadow position.
+    halfPixelOffset: 2 # Correct shadow position.
     nativeScaling: 2 # Smooths shadows.
 SLPM-66213:
   name: バイオハザード4
@@ -44085,8 +44311,7 @@ SLPM-66354:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
-    halfPixelOffset: 2 # Mostly aligns post processing.
+    halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 2 # Improves post processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -46349,8 +46574,7 @@ SLPM-66731:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
-    halfPixelOffset: 2 # Mostly aligns post processing.
+    halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 2 # Improves post processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -46466,6 +46690,8 @@ SLPM-66747:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting of characters.
+    autoFlush: 2 # Fixes missing glow.
+    nativeScaling: 2 # Fixes post processing alignment.
 SLPM-66748:
   name: マナケミア 〜学園の錬金術師たち〜
   name-sort: まなけみあ がくえんのれんきんじゅつしたち
@@ -47631,8 +47857,7 @@ SLPM-66961:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
-    halfPixelOffset: 2 # Mostly aligns post processing.
+    halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 2 # Improves post processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -48975,9 +49200,6 @@ SLPM-84075:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns post effects.
     nativeScaling: 2 # Fixes post effects.
-SLPS-12345:
-  name: "RoboCop"
-  region: "NTSC-U"
 SLPS-20000:
   name: "AH-64D Apache"
   region: "NTSC-J"
@@ -54837,7 +55059,6 @@ SLPS-25640:
     autoFlush: 1 # Fixes shadows.
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
-    nativePaletteDraw: 1 # Fixes broken shadows.
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLPS-25640"
     - "SLPS-25368"
@@ -54851,7 +55072,6 @@ SLPS-25641:
     autoFlush: 1 # Fixes shadows.
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
-    nativePaletteDraw: 1 # Fixes broken shadows.
   memcardFilters:
     - "SLPS-25640"
     - "SLPS-25368"
@@ -57636,9 +57856,6 @@ SLPS-73901:
 SLUF-20921:
   name: "ESPN NHL 2K5"
   region: "NTSC-U"
-SLUS-12345:
-  name: "XIII"
-  region: "PAL-Unk"
 SLUS-20001:
   name: "Tekken Tag Tournament"
   region: "NTSC-U"
@@ -59511,7 +59728,7 @@ SLUS-20424:
   region: "NTSC-U"
   compat: 5
 SLUS-20425:
-  name: "Spongebob SquarePants - Revenge of the Flying Dutchman"
+  name: "Nickelodeon SpongeBob SquarePants - Revenge of the Flying Dutchman"
   region: "NTSC-U"
   compat: 5
 SLUS-20428:
@@ -59775,11 +59992,12 @@ SLUS-20474:
 SLUS-20475:
   name: "Dual Hearts"
   region: "NTSC-U"
+  compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes flashing FMV.
   gsHWFixes:
     deinterlace: 9 # Game looks better with Adaptive BFF.
-  compat: 5
+    halfPixelOffset: 4 # Improves offset blur.
 SLUS-20476:
   name: "NBA 2K3 - Sega Sports"
   region: "NTSC-U"
@@ -60826,7 +61044,7 @@ SLUS-20678:
   region: "NTSC-U"
   compat: 5
 SLUS-20680:
-  name: "SpongeBob SquarePants - Battle for Bikini Bottom"
+  name: "Nickelodeon SpongeBob SquarePants - Battle for Bikini Bottom"
   region: "NTSC-U"
   compat: 5
 SLUS-20681:
@@ -62026,7 +62244,7 @@ SLUS-20903:
   clampModes:
     vu1ClampMode: 3 # Fixes the trophies.
 SLUS-20904:
-  name: "SpongeBob SquarePants - The Movie"
+  name: "Nickelodeon SpongeBob SquarePants - The Movie"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -62441,6 +62659,8 @@ SLUS-20970:
   name: "Rumble Roses"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns offset blur.
 SLUS-20971:
   name: "Metal Slug 4 & 5 [Disc 1 of 2]"
   region: "NTSC-U"
@@ -62966,6 +63186,10 @@ SLUS-21051:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   speedHacks:
     eeCycleRate: 3 # Fixes player uniforms.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-21052:
   name: "Disney's Monsters Inc."
   region: "NTSC-U"
@@ -63199,6 +63423,8 @@ SLUS-21099:
 SLUS-21100:
   name: "NCAA March Madness 2005"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes lines when upscaling.
 SLUS-21101:
   name: "Mortal Kombat - Deception [Premium Pack]"
   region: "NTSC-U"
@@ -63730,6 +63956,9 @@ SLUS-21196:
   name: "Indigo Prophecy"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns post processing.
+    nativeScaling: 2 # Fixes post processing position.
 SLUS-21197:
   name: "DreamWorks Shrek - SuperSlam"
   region: "NTSC-U"
@@ -64115,9 +64344,13 @@ SLUS-21251:
   gsHWFixes:
     halfPixelOffset: 2 # Corrects most vertical lines.
 SLUS-21252:
-  name: "SpongeBob SquarePants - Lights, Camera, PANTS!"
+  name: "Nickelodeon SpongeBob SquarePants - Lights, Camera, Pants!"
   region: "NTSC-U"
   compat: 4
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
+    halfPixelOffset: 4 # Aligns post processing.
+    nativeScaling: 2 # Fixes post effects.
 SLUS-21253:
   name: "TY the Tasmanian Tiger 3 - Night of the Quinkan"
   region: "NTSC-U"
@@ -64346,7 +64579,9 @@ SLUS-21280:
   name: "FIFA '06"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-21281:
   name: "Marvel Nemesis - Rise of the Imperfects"
   region: "NTSC-U"
@@ -64600,7 +64835,9 @@ SLUS-21320:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 3 # Fixes ghosting.
+    halfPixelOffset: 4 # Fixes edge garbage and misaligned bloom.
+    nativeScaling: 2 # Fixes post processing and lighting smoothness and alignment.
+    autoFlush: 1 # Fixes bloom alignment.
 SLUS-21321:
   name: "Squadra Course Alfa Romeo"
   region: "NTSC-U"
@@ -64986,8 +65223,7 @@ SLUS-21376:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
-    halfPixelOffset: 2 # Mostly aligns post processing.
+    halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 2 # Improves post processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -65082,7 +65318,6 @@ SLUS-21389:
     autoFlush: 1 # Fixes shadows.
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
-    nativePaletteDraw: 1 # Fixes broken shadows.
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLUS-21389"
     - "SLUS-20892"
@@ -65243,7 +65478,6 @@ SLUS-21417:
     autoFlush: 1 # Fixes shadows.
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
-    nativePaletteDraw: 1 # Fixes broken shadows.
   memcardFilters:
     - "SLUS-21389"
     - "SLUS-20892"
@@ -65358,7 +65592,9 @@ SLUS-21433:
   name: "FIFA Soccer '07"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-21434:
   name: "Superman Returns - The Video Game"
   region: "NTSC-U"
@@ -66428,7 +66664,9 @@ SLUS-21648:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-21649:
   name: "NBA Live '08"
   region: "NTSC-U"
@@ -66743,6 +66981,8 @@ SLUS-21714:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting of characters.
+    autoFlush: 2 # Fixes missing glow.
+    nativeScaling: 2 # Fixes post processing alignment.
 SLUS-21715:
   name: "Cabela's Monster Bass"
   region: "NTSC-U"
@@ -67097,7 +67337,9 @@ SLUS-21776:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-21777:
   name: "NBA Live '09"
   region: "NTSC-U"
@@ -67230,6 +67472,9 @@ SLUS-21801:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    bilinearUpscale: 2 # Fixes sun glare textures.
+    gpuTargetCLUT: 1 # Fixes sun penetration.
+    nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
 SLUS-21802:
   name: "Naked Brothers Band - The Video Game"
@@ -67306,7 +67551,7 @@ SLUS-21817:
   region: "NTSC-U"
   compat: 5
 SLUS-21818:
-  name: "Spongebob SquarePants Featuring Nicktoons - Globs of Doom"
+  name: "Nickelodeon SpongeBob SquarePants featuring Nicktoons - Globs of Doom"
   region: "NTSC-U"
   compat: 5
 SLUS-21819:
@@ -67713,7 +67958,9 @@ SLUS-21905:
   name: "FIFA Soccer 10"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-21906:
   name: "Cabela's Outdoor Adventures 2010"
   region: "NTSC-U"
@@ -67867,6 +68114,10 @@ SLUS-21941:
   name: "FIFA Soccer 11"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-21942:
   name: "Pro Evolution Soccer 2011"
   region: "NTSC-U"
@@ -67892,6 +68143,10 @@ SLUS-21946:
 SLUS-21947:
   name: "FIFA Soccer 12"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-21948:
   name: "Pro Evolution Soccer 2012"
   region: "NTSC-U"
@@ -67914,6 +68169,10 @@ SLUS-21951:
 SLUS-21954:
   name: "FIFA 13"
   region: "NTSC-U" # Latin America with En,Fr,Es
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-21955:
   name: "Pro Evolution Soccer 2013"
   region: "NTSC-U"
@@ -67933,9 +68192,9 @@ SLUS-27093:
   name: "FIFA 14"
   region: "NTSC-B" # Brazil with En,Fr,Es
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes stadium banners and improves performance.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-28002:
   name: "Red Faction [Trade Demo]"
   region: "NTSC-U"
@@ -67977,6 +68236,11 @@ SLUS-28012:
 SLUS-28013:
   name: "Dual Hearts [Trade Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flashing FMV.
+  gsHWFixes:
+    deinterlace: 9 # Game looks better with Adaptive BFF.
+    halfPixelOffset: 4 # Improves offset blur.
 SLUS-28014:
   name: "Matt Hoffman's Pro BMX 2 [Trade Demo]"
   region: "NTSC-U"
@@ -68233,6 +68497,11 @@ SLUS-29032:
 SLUS-29033:
   name: "Dual Hearts [Regular Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flashing FMV.
+  gsHWFixes:
+    deinterlace: 9 # Game looks better with Adaptive BFF.
+    halfPixelOffset: 4 # Improves offset blur.
 SLUS-29034:
   name: "Tekken 4 [Regular Demo]"
   region: "NTSC-U"
@@ -68547,6 +68816,14 @@ SLUS-29126:
 SLUS-29127:
   name: "FIFA Soccer 2005 [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
+  speedHacks:
+    eeCycleRate: 3 # Fixes player uniforms.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-29129:
   name: "25 to Life [Public Beta Vol.1.0]"
   region: "NTSC-U"
@@ -68575,6 +68852,8 @@ SLUS-29134:
 SLUS-29135:
   name: "NCAA March Madness 2005 [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes lines when upscaling.
 SLUS-29137:
   name: "Mercenaries - Playground of Destruction [Demo]"
   region: "NTSC-U"
@@ -68697,7 +68976,9 @@ SLUS-29160:
   name: "FIFA '06 [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-29161:
   name: "SSX On Tour [Demo]"
   region: "NTSC-U"
@@ -68803,8 +69084,7 @@ SLUS-29180:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
-    halfPixelOffset: 2 # Mostly aligns post processing.
+    halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 2 # Improves post processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -68857,7 +69137,9 @@ SLUS-29194:
   name: "FIFA '07 [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces blurriness.
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-29195:
   name: "Yakuza [Demo]"
   region: "NTSC-U"
@@ -68894,6 +69176,10 @@ SLUS-29200:
 SLUS-29201:
   name: "FIFA Soccer 08"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLUS-80421:
   name: "Resident Evil 2 [Demo]"
   region: "NTSC-U"
@@ -69277,6 +69563,10 @@ TLES-53544:
 TLES-54240:
   name: "FIFA '07 Beta Trial Code"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 TLES-82043:
   name: "Metal Gear Solid Subsistence Beta Trial Code"
   region: "PAL-E"
