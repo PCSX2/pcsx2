@@ -469,6 +469,19 @@ void QtHost::SetStyleFromSettings()
 
 		qApp->setPalette(darkPalette);
 	}
+	else if (theme == "CatppuccinMocha")
+	{
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+
+		QString sheet_content;
+		QFile sheets(QString::fromStdString(":/qss/CatppuccinMocha.qss"));
+
+		if (sheets.open(QFile::ReadOnly))
+		{
+			QString sheet_content = QString::fromUtf8(sheets.readAll().data());
+			qApp->setStyleSheet(sheet_content);
+		}
+	}
 	else if (theme == "Custom")
 	{
 		//Additional Theme option than loads .qss from main PCSX2 Directory

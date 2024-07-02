@@ -1,0 +1,166 @@
+/* * {
+    color : #cdd6f4;
+    background-color: #cdd6f4;
+} */
+QWidget {
+    background-color: #1e1e2e;
+    color: #cdd6f4;
+}
+
+
+
+QComboBox  {
+    color : #cdd6f4;
+    background-color: #313244;
+    border: 1px solid #313244;
+    border-radius: 5px;
+    padding: 1px 18px 1px 3px;
+}
+
+QComboBox::drop-down { /*  ! todo fix broken arrows on drop downs */
+  /* subcontrol-origin: padding;
+  subcontrol-position: top right; */
+  width: 15px;
+    background-color: #313244;
+    color : #cdd6f4;
+    border-radius: 5px;
+    padding: 1px 18px 1px 3px;
+    /* border: 1px solid #313244; */
+}
+QComboBox::down-arrow {
+    /* image: url(resources/icons/white/svg/arrow-left-right-line.svg); */
+    /* image: url(:/icons/white/svg/arrow-left-right-line.svg); */
+    image: url(:icons/CatppuccinMocha/text/caret-down-fill-svgrepo-com.svg);
+}
+
+QCheckBox  {
+    color : #cdd6f4;
+    background-color: #1e1e2e;
+    border: 0px solid #1e1e2e;
+}
+QCheckBox::indicator {
+    width: 8px;
+    height: 8px;
+    color : #cdd6f4;
+    background-color: #313244;
+    border: 1px solid #313244;
+    border-radius: 3px;
+    padding: 1px 1px 1px 1px;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #f5c2e7;
+}
+
+QCheckBox::indicator:unchecked {
+    background-color: #313244;
+}
+
+QWidget::item:selected {
+    background-color: #fdd6f4;
+    color: #1e1e2e;
+}
+
+
+
+QAbstractScrollArea {
+    background-color: #1e1e2e;
+    color : #cd6f4;
+}
+
+QFrame {
+    background-color: #1e1e2e;
+    color : #cdd6f4;
+}
+
+
+
+QGroupBox {
+    background-color: #1e1e2e;
+    color : #cdd6f4;
+}
+
+
+
+QLabel {
+    background-color: #1e1e2e;
+    color : #cdd6f4;
+}
+
+QGroupBox#gameDisplayTab {
+    background-color: #1e1e2e;
+    color : #fdd6f4;
+}
+
+
+
+QGridLayout {
+    background-color: #fdd6f4;
+}
+
+QListWidget::item:selected {
+    background-color: #fdd6f4;
+    color: #1e1e2e;
+}
+
+QLineEdit {
+    background-color: #313244;
+    color: #cdd6f4;
+    border-radius: 5px;
+    padding: 1px 18px 1px 3px;
+}
+
+QPushButton {
+    background-color: #313244;
+    color: #cdd6f4;
+    padding: 1px 10px;
+    border-top: 2px solid #313244;
+    border-bottom: 2px solid #313244;
+    border-left: 3px solid #313244;
+    border-right: 3px solid #313244;
+    border-radius: 5px;
+}
+
+QSpinBox {
+    background-color: #313244;
+    color: #cdd6f4;
+    padding: 1px 10px;
+    border-top: 2px solid #313244;
+    border-bottom: 2px solid #313244;
+    border-left: 3px solid #313244;
+    border-right: 3px solid #313244;
+    border-radius: 5px;
+}
+
+#actionViewGameList {
+    background-color: #313244;
+    color: #cdd6f4;
+    padding: 1px 10px;
+    border-top: 2px solid #313244;
+    border-bottom: 2px solid #313244;
+    border-left: 3px solid #313244;
+    border-right: 3px solid #313244;
+    border-radius: 5px;
+}
+
+
+
+QScrollBar:vertical {
+    background-color: #1e1e2e;
+    width: 10px;
+    margin: 16px 0;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #313244;
+    min-height: 20px;
+    border-top: 3px solid #313244;
+    border-bottom: 3px solid #313244;
+    border-left: 3px solid #313244;
+    border-right: 3px solid #313244;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #cdd6f4;
+}
