@@ -3519,6 +3519,12 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		"7",
 		"8",
 	};
+	static constexpr const char* s_mipmapping_options[] = {
+		FSUI_NSTR("Disabled"),
+		FSUI_NSTR("Enabled"),
+		FSUI_NSTR("All Levels"),
+		FSUI_NSTR("Unclamped"),
+	};
 	static constexpr const char* s_bilinear_options[] = {
 		FSUI_NSTR("Nearest"),
 		FSUI_NSTR("Bilinear (Forced)"),
@@ -3652,6 +3658,9 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		DrawStringListSetting(bsi, FSUI_CSTR("Internal Resolution"),
 			FSUI_CSTR("Multiplies the render resolution by the specified factor (upscaling)."), "EmuCore/GS", "upscale_multiplier",
 			"1.000000", s_resolution_options, s_resolution_values, std::size(s_resolution_options), true);
+		DrawIntListSetting(
+			bsi, FSUI_CSTR("Mipmapping"), FSUI_CSTR("Enables emulation of the GS's texture mipmapping."), "EmuCore/GS", "hw_mipmap_mode",
+			static_cast<int>(GSHWMipmapMode::Enabled), s_mipmapping_options, std::size(s_mipmapping_options), true);
 		DrawIntListSetting(bsi, FSUI_CSTR("Bilinear Filtering"),
 			FSUI_CSTR("Selects where bilinear filtering is utilized when rendering textures."), "EmuCore/GS", "filter",
 			static_cast<int>(BiFiltering::PS2), s_bilinear_options, std::size(s_bilinear_options), true);
@@ -3671,8 +3680,6 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 				"Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games."),
 			"EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off), s_preloading_options,
 			std::size(s_preloading_options), true);
-		DrawToggleSetting(
-			bsi, FSUI_CSTR("Mipmapping"), FSUI_CSTR("Enables emulation of the GS's texture mipmapping."), "EmuCore/GS", "hw_mipmap", true);
 	}
 	else
 	{
@@ -7000,6 +7007,8 @@ TRANSLATE_NOOP("FullscreenUI", "Enables internal Anti-Blur hacks. Less accurate 
 TRANSLATE_NOOP("FullscreenUI", "Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Internal Resolution");
 TRANSLATE_NOOP("FullscreenUI", "Multiplies the render resolution by the specified factor (upscaling).");
+TRANSLATE_NOOP("FullscreenUI", "Mipmapping");
+TRANSLATE_NOOP("FullscreenUI", "Enables emulation of the GS's texture mipmapping.");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear Filtering");
 TRANSLATE_NOOP("FullscreenUI", "Selects where bilinear filtering is utilized when rendering textures.");
 TRANSLATE_NOOP("FullscreenUI", "Trilinear Filtering");
@@ -7012,8 +7021,6 @@ TRANSLATE_NOOP("FullscreenUI", "Blending Accuracy");
 TRANSLATE_NOOP("FullscreenUI", "Determines the level of accuracy when emulating blend modes not supported by the host graphics API.");
 TRANSLATE_NOOP("FullscreenUI", "Texture Preloading");
 TRANSLATE_NOOP("FullscreenUI", "Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games.");
-TRANSLATE_NOOP("FullscreenUI", "Mipmapping");
-TRANSLATE_NOOP("FullscreenUI", "Enables emulation of the GS's texture mipmapping.");
 TRANSLATE_NOOP("FullscreenUI", "Software Rendering Threads");
 TRANSLATE_NOOP("FullscreenUI", "Number of threads to use in addition to the main GS thread for rasterization.");
 TRANSLATE_NOOP("FullscreenUI", "Auto Flush (Software)");
@@ -7056,6 +7063,8 @@ TRANSLATE_NOOP("FullscreenUI", "When enabled GPU converts colormap-textures, oth
 TRANSLATE_NOOP("FullscreenUI", "Upscaling Fixes");
 TRANSLATE_NOOP("FullscreenUI", "Half Pixel Offset");
 TRANSLATE_NOOP("FullscreenUI", "Adjusts vertices relative to upscaling.");
+TRANSLATE_NOOP("FullscreenUI", "Native Scaling");
+TRANSLATE_NOOP("FullscreenUI", "Attempt to do rescaling at native resolution.");
 TRANSLATE_NOOP("FullscreenUI", "Round Sprite");
 TRANSLATE_NOOP("FullscreenUI", "Adjusts sprite coordinates.");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear Upscale");
@@ -7413,6 +7422,10 @@ TRANSLATE_NOOP("FullscreenUI", "5x Native (~1620p)");
 TRANSLATE_NOOP("FullscreenUI", "6x Native (~2160p/4K)");
 TRANSLATE_NOOP("FullscreenUI", "7x Native (~2520p)");
 TRANSLATE_NOOP("FullscreenUI", "8x Native (~2880p)");
+TRANSLATE_NOOP("FullscreenUI", "Disabled");
+TRANSLATE_NOOP("FullscreenUI", "Enabled");
+TRANSLATE_NOOP("FullscreenUI", "All Levels");
+TRANSLATE_NOOP("FullscreenUI", "Unclamped");
 TRANSLATE_NOOP("FullscreenUI", "Nearest");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear (Forced)");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear (PS2)");
@@ -7463,13 +7476,13 @@ TRANSLATE_NOOP("FullscreenUI", "Sprites/Triangles");
 TRANSLATE_NOOP("FullscreenUI", "Blended Sprites/Triangles");
 TRANSLATE_NOOP("FullscreenUI", "1 (Normal)");
 TRANSLATE_NOOP("FullscreenUI", "2 (Aggressive)");
-TRANSLATE_NOOP("FullscreenUI", "Disabled");
 TRANSLATE_NOOP("FullscreenUI", "Inside Target");
 TRANSLATE_NOOP("FullscreenUI", "Merge Targets");
 TRANSLATE_NOOP("FullscreenUI", "Normal (Vertex)");
 TRANSLATE_NOOP("FullscreenUI", "Special (Texture)");
 TRANSLATE_NOOP("FullscreenUI", "Special (Texture - Aggressive)");
 TRANSLATE_NOOP("FullscreenUI", "Align To Native");
+TRANSLATE_NOOP("FullscreenUI", "Aggressive");
 TRANSLATE_NOOP("FullscreenUI", "Half");
 TRANSLATE_NOOP("FullscreenUI", "Force Bilinear");
 TRANSLATE_NOOP("FullscreenUI", "Force Nearest");

@@ -644,13 +644,6 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="mipmapping">
-           <property name="text">
-            <string>Mipmapping</string>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="1">
           <widget class="QCheckBox" name="spinCPUDuringReadbacks">
            <property name="text">
@@ -658,7 +651,7 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="1" column="0">
           <widget class="QCheckBox" name="enableHWFixes">
            <property name="text">
             <string>Manual Hardware Renderer Fixes</string>
@@ -666,6 +659,37 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="hwMipmappingLabel">
+         <property name="text">
+          <string>Mipmapping:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="hwMipmapMode">
+         <item>
+          <property name="text">
+           <string>Disabled</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Enabled</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>All Levels</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Unclamped</string>
+          </property>
+         </item>
+        </widget>
        </item>
       </layout>
      </widget>
