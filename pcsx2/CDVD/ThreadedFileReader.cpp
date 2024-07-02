@@ -254,13 +254,13 @@ bool ThreadedFileReader::TryCachedRead(void*& buffer, u64& offset, u32& size, co
 bool ThreadedFileReader::Precache(ProgressCallback* progress, Error* error)
 {
 	CancelAndWaitUntilStopped();
-	progress->SetStatusText(SmallString::from_format("Precaching {}...", Path::GetFileName(m_filename)).c_str());
+	progress->SetStatusText(SmallString::from_format(TRANSLATE_FS("CDVD", "Precaching {}..."), Path::GetFileName(m_filename)).c_str());
 	return Precache2(progress, error);
 }
 
 bool ThreadedFileReader::Precache2(ProgressCallback* progress, Error* error)
 {
-	Error::SetStringView(error, "Precaching is not supported for this file format.");
+	Error::SetStringView(error, TRANSLATE_SV("CDVD","Precaching is not supported for this file format."));
 	return false;
 }
 
