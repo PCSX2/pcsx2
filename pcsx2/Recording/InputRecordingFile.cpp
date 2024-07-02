@@ -7,6 +7,7 @@
 
 #include "common/FileSystem.h"
 #include "DebugTools/Debug.h"
+#include "InputRecording.h"
 #include "MemoryTypes.h"
 #include "svnrev.h"
 
@@ -91,6 +92,7 @@ void InputRecordingFile::incrementUndoCount()
 	}
 	fseek(m_recordingFile, s_seekpointUndoCount, SEEK_SET);
 	fwrite(&m_undoCount, 4, 1, m_recordingFile);
+	InputRecording::InformGSThread();
 }
 
 bool InputRecordingFile::openNew(const std::string& path, bool fromSavestate)
@@ -106,6 +108,7 @@ bool InputRecordingFile::openNew(const std::string& path, bool fromSavestate)
 	m_undoCount = 0;
 	m_header.init();
 	m_savestate = fromSavestate;
+	InputRecording::InformGSThread();
 	return true;
 }
 
@@ -125,6 +128,7 @@ bool InputRecordingFile::openExisting(const std::string& path)
 	}
 
 	m_filename = path;
+	InputRecording::InformGSThread();
 	return true;
 }
 
@@ -149,13 +153,14 @@ std::optional<PadData> InputRecordingFile::readPadData(const uint frame, const u
 
 void InputRecordingFile::setTotalFrames(u32 frame)
 {
-	if (m_recordingFile == nullptr || m_totalFrames >= frame)
+	if (m_recordingFile == nullptr)
 	{
 		return;
 	}
 	m_totalFrames = frame;
 	fseek(m_recordingFile, s_seekpointTotalFrames, SEEK_SET);
 	fwrite(&m_totalFrames, 4, 1, m_recordingFile);
+	InputRecording::InformGSThread();
 }
 
 bool InputRecordingFile::writeHeader() const
