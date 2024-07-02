@@ -1800,7 +1800,8 @@ GSVector2i GSTextureCache::ScaleRenderTargetSize(const GSVector2i& sz, float sca
 }
 
 GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
-	bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_rgb, bool preserve_alpha, const GSVector4i draw_rect, bool is_shuffle, bool possible_clear, bool preserve_scale, GSTextureCache::Source* src)
+	bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_rgb, bool preserve_alpha, const GSVector4i draw_rect,
+	bool is_shuffle, bool possible_clear, bool preserve_scale, GSTextureCache::Source* src, int offset)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	const u32 bp = TEX0.TBP0;
@@ -1898,8 +1899,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				}
 			}
 			// Probably pointing to half way through the target
-			else if(GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
+			else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
 			{
+				if (offset != -1 && (bp - t->m_TEX0.TBP0) != offset)
+					continue;
+
 				const u32 widthpage_offset = (std::abs(static_cast<int>(bp - t->m_TEX0.TBP0)) >> 5) % std::max(t->m_TEX0.TBW, 1U);
 				const bool is_aligned_ok = widthpage_offset == 0 || ((widthpage_offset + TEX0.TBW) <= t->m_TEX0.TBW) || min_rect.width() <= 64 || (widthpage_offset == (t->m_TEX0.TBW >> 1) && (static_cast<u32>(min_rect.width()) <= (widthpage_offset * 64)));
 				if ((!dst || ((GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw))) && is_aligned_ok && (t->m_TEX0.TBW == TEX0.TBW || (TEX0.TBW == 1 && t->m_TEX0.TBW > 1)) && t->Inside(bp, TEX0.TBW, TEX0.PSM, min_rect))
@@ -2083,6 +2087,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		}
 		else if (!is_shuffle && std::abs(static_cast<s16>(GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp - GSLocalMemory::m_psm[TEX0.PSM].bpp)) == 16)
 		{
+			dst->Update(false);
+
 			const bool scale_down = GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp > GSLocalMemory::m_psm[TEX0.PSM].bpp;
 			new_size = dst->m_unscaled_size;
 			new_scaled_size = ScaleRenderTargetSize(dst->m_unscaled_size, scale);
@@ -2340,6 +2346,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			dst->m_valid_alpha_high = dst_match->m_valid_alpha_high; //&& psm_s.trbpp != 24;
 			dst->m_valid_rgb = dst_match->m_valid_rgb;
 			dst->m_was_dst_matched = true;
+			dst_match->m_was_dst_matched = true;
+			dst_match->m_valid_rgb = false;
 
 			if (GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].bpp > 16)
 				dst->m_TEX0.TBW = dst_match->m_TEX0.TBW; // Be careful of shuffles of the depth as C16, but using a buffer width of 16 (Mercenaries).
@@ -3170,6 +3178,17 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 			Target* const t = *i;
 			if (start_bp != t->m_TEX0.TBP0 && (t->m_TEX0.TBP0 < start_bp || t->UnwrappedEndBlock() > end_bp))
 			{
+				++i;
+				continue;
+			}
+
+			// Not covering the whole target, and a different format, so just dirty it.
+			if (start_bp == t->m_TEX0.TBP0 && (t->UnwrappedEndBlock() > end_bp) && write_psm != t->m_TEX0.PSM)
+			{
+				const GSLocalMemory::psm_t& target_psm = GSLocalMemory::m_psm[write_psm];
+				u32 total_pages = (end_bp - t->m_TEX0.TBP0) >> 5;
+				GSVector4i dirty_area = GSVector4i(0, 0, t->m_valid.z, (total_pages / t->m_TEX0.TBW) * target_psm.pgs.y);
+				InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(t->m_TEX0.TBP0, t->m_TEX0.TBW, write_psm), dirty_area, true);
 				++i;
 				continue;
 			}
@@ -4588,9 +4607,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	}
 
 	bool hack = false;
-	bool channel_shuffle = false;
+	bool channel_shuffle = dst && (TEX0.PSM == PSMT8) && (GSRendererHW::GetInstance()->TestChannelShuffle(dst));
 
-	if (dst && (x_offset != 0 || y_offset != 0))
+	if (dst && (x_offset != 0 || y_offset != 0) && (TEX0.PSM != PSMT8 || channel_shuffle))
 	{
 		const float scale = dst->m_scale;
 		const int x = static_cast<int>(scale * x_offset);
@@ -4653,8 +4672,6 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			src->m_texture = dst->m_texture;
 			src->m_unscaled_size = dst->m_unscaled_size;
 			src->m_shared_texture = true;
-
-			channel_shuffle = GSRendererHW::GetInstance()->TestChannelShuffle(dst);
 		}
 
 		// Invalidate immediately on recursive draws, because if we don't here, InvalidateVideoMem() will.
