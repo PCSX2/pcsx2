@@ -1113,9 +1113,7 @@ void GraphicsSettingsWidget::populateUpscaleMultipliers(u32 max_upscale_multipli
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.5x Native"), 1.5f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.75x Native"), 1.75f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2x Native (~720p)"), 2.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2.25x Native"), 2.25f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2.5x Native"), 2.5f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2.75x Native"), 2.75f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3x Native (~1080p)"), 3.0f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3.5x Native"), 3.5f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "4x Native (~1440p/2K)"), 4.0f},
@@ -1123,8 +1121,25 @@ void GraphicsSettingsWidget::populateUpscaleMultipliers(u32 max_upscale_multipli
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "6x Native (~2160p/4K)"), 6.0f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "7x Native (~2520p)"), 7.0f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "8x Native (~2880p/5K)"), 8.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "9x Native (~3240p)"), 9.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "10x Native (~3600p/6K)"), 10.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "11x Native (~3960p/7K)"), 11.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "12x Native (~4320p/8K)"), 12.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "13x Native (~4680p)"), 13.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "14x Native (~5040p/9K)"), 14.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "15x Native (~5400p)"), 15.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "16x Native (~5760p/10K)"), 16.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "17x Native (~6120p/11K)"), 17.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "18x Native (~6480p)"), 18.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "19x Native (~6840p/12K)"), 19.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "20x Native (~7200p/13K)"), 20.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "21x Native (~7560p)"), 21.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "22x Native (~7920p/14K)"), 22.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "23x Native (~8280p)"), 23.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "24x Native (~8640p/15K)"), 24.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "25x Native (~9000p/16K)"), 25.0f},
 	};
-	static constexpr u32 max_template_multiplier = 8;
+	static constexpr u32 max_template_multiplier = 25;
 
 	// Limit the dropdown to 12x if we're not showing advanced settings. Save the noobs.
 	static constexpr u32 max_non_advanced_multiplier = 12;

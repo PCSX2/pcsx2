@@ -12976,7 +12976,7 @@ SLED-54328:
     cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SLED-54401:
-  name: "Destroy All Humans 2 [Demo]"
+  name: "Destroy All Humans! 2 [Demo]"
   region: "PAL-E"
   gsHWFixes:
     textureInsideRT: 1 # Fixes shadow maps.
@@ -24406,7 +24406,7 @@ SLES-54383:
   name: "Casper and The Ghostly Trio"
   region: "PAL-M6"
 SLES-54384:
-  name: "Destroy All Humans 2 - Make War not Love"
+  name: "Destroy All Humans! 2"
   region: "PAL-M5"
   gsHWFixes:
     textureInsideRT: 1 # Fixes shadow maps.
