@@ -4052,7 +4052,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 	return true;
 }
 
-void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER,
+void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const bool DATE, bool& DATE_PRIMID, bool& DATE_BARRIER,
 	GSTextureCache::Target* rt, bool can_scale_rt_alpha, bool& new_rt_alpha_scale)
 {
 	{
@@ -4069,6 +4069,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		{
 			m_conf.blend = {};
 			m_conf.ps.no_color1 = true;
+
+			// TODO: Find games that may benefit from adding full coverage on RTA Scale when we're overwriting the whole target.
 
 			return;
 		}
@@ -4454,6 +4456,17 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 
 		// Output is Cd, set rgb write to 0.
 		m_conf.colormask.wrgba &= 0x8;
+
+		// TODO: Find games that may benefit from adding full coverage on RTA Scale when we're overwriting the whole target,
+		// then the rest of then conditions can be added.
+		if (can_scale_rt_alpha && !new_rt_alpha_scale && m_conf.colormask.wa)
+		{
+			const bool afail_fb_only = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY;
+			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && m_primitive_covers_without_gaps == NoGapsType::FullCover && !(DATE || !afail_fb_only || !IsDepthAlwaysPassing());
+
+			// Restrict this to only when we're overwriting the whole target.
+			new_rt_alpha_scale = full_cover;
+		}
 
 		return;
 	}
@@ -5867,7 +5880,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle)))
 	{
-		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE_PRIMID, DATE_BARRIER, rt, can_scale_rt_alpha, new_scale_rt_alpha);
+		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE, DATE_PRIMID, DATE_BARRIER, rt, can_scale_rt_alpha, new_scale_rt_alpha);
 	}
 	else
 	{
