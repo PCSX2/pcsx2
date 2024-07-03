@@ -55,10 +55,16 @@ public:
 		{
 			char reg[8];
 			std::snprintf(reg, std::size(reg), "r%d", i);
-
 			if (StringUtil::Strcasecmp(str, reg) == 0 || StringUtil::Strcasecmp(str, cpu->getRegisterName(0, i)) == 0)
 			{
 				referenceIndex = i;
+				return true;
+			}
+
+			std::snprintf(reg, std::size(reg), "f%d", i);
+			if (StringUtil::Strcasecmp(str, reg) == 0)
+			{
+				referenceIndex = i | REF_INDEX_FPU;
 				return true;
 			}
 		}
@@ -144,6 +150,10 @@ public:
 				}
 			}
 			return 0;
+		}
+		if (referenceIndex & REF_INDEX_FPU)
+		{
+			return cpu->getRegister(EECAT_FPR, referenceIndex & 0x1F)._u64[0];
 		}
 		return -1;
 	}
