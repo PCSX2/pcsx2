@@ -3485,20 +3485,22 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	};
 	static const char* s_resolution_options[] = {
 		FSUI_NSTR("Native (PS2)"),
-		FSUI_NSTR("1.25x Native"),
-		FSUI_NSTR("1.5x Native"),
-		FSUI_NSTR("1.75x Native"),
-		FSUI_NSTR("2x Native (~720p)"),
-		FSUI_NSTR("2.25x Native"),
-		FSUI_NSTR("2.5x Native"),
-		FSUI_NSTR("2.75x Native"),
-		FSUI_NSTR("3x Native (~1080p)"),
-		FSUI_NSTR("3.5x Native"),
-		FSUI_NSTR("4x Native (~1440p/2K)"),
-		FSUI_NSTR("5x Native (~1620p)"),
-		FSUI_NSTR("6x Native (~2160p/4K)"),
-		FSUI_NSTR("7x Native (~2520p)"),
-		FSUI_NSTR("8x Native (~2880p)"),
+		FSUI_NSTR("1.25x Native (~450px)"),
+		FSUI_NSTR("1.5x Native (~540px)"),
+		FSUI_NSTR("1.75x Native (~630px)"),
+		FSUI_NSTR("2x Native (~720px/HD)"),
+		FSUI_NSTR("2.5x Native (~900px/HD+)"),
+		FSUI_NSTR("3x Native (~1080px/FHD)"),
+		FSUI_NSTR("3.5x Native (~1260px)"),
+		FSUI_NSTR("4x Native (~1440px/QHD)"),
+		FSUI_NSTR("5x Native (~1800px/QHD+)"),
+		FSUI_NSTR("6x Native (~2160px/4K UHD)"),
+		FSUI_NSTR("7x Native (~2520px)"),
+		FSUI_NSTR("8x Native (~2880px/5K UHD)"),
+		FSUI_NSTR("9x Native (~3240px)"),
+		FSUI_NSTR("10x Native (~3600px/6K UHD)"),
+		FSUI_NSTR("11x Native (~3960px)"),
+		FSUI_NSTR("12x Native (~4320px/8K UHD)"),
 	};
 	static const char* s_resolution_values[] = {
 		"1",
@@ -3506,9 +3508,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		"1.5",
 		"1.75",
 		"2",
-		"2.25",
 		"2.5",
-		"2.75",
 		"3",
 		"3.5",
 		"4",
@@ -3516,6 +3516,10 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		"6",
 		"7",
 		"8",
+		"9",
+		"10",
+		"11",
+		"12",
 	};
 	static constexpr const char* s_bilinear_options[] = {
 		FSUI_NSTR("Nearest"),
@@ -3905,6 +3909,10 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			FSUI_CSTR("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
 					  "Usually results in worse frame pacing."),
 			"EmuCore/GS", "DisableMailboxPresentation", false);
+		/* DrawToggleSetting(bsi, FSUI_CSTR("Extended Upscaling Multipliers"),
+			FSUI_CSTR("Displays additional, very high upscaling multipliers dependent on GPU capability."),
+			"EmuCore/GS", "ExtendedUpscalingMultipliers", false); */
+		// TODO: Immplement this button properly
 		if (IsEditingGameSettings(bsi))
 		{
 			DrawIntListSetting(bsi, FSUI_CSTR("Hardware Download Mode"), FSUI_CSTR("Changes synchronization behavior for GS downloads."),
@@ -7108,6 +7116,8 @@ TRANSLATE_NOOP("FullscreenUI", "Skip Presenting Duplicate Frames");
 TRANSLATE_NOOP("FullscreenUI", "Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing worse.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
 TRANSLATE_NOOP("FullscreenUI", "Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.");
+TRANSLATE_NOOP("FullscreenUI", "Extended Upscaling Multipliers");
+TRANSLATE_NOOP("FullscreenUI", "Displays additional, very high upscaling multipliers dependent on GPU capability.");
 TRANSLATE_NOOP("FullscreenUI", "Hardware Download Mode");
 TRANSLATE_NOOP("FullscreenUI", "Changes synchronization behavior for GS downloads.");
 TRANSLATE_NOOP("FullscreenUI", "Allow Exclusive Fullscreen");
