@@ -45821,6 +45821,8 @@ SLPM-66644:
   name-sort: Jりーぐ ぷろさっかーくらぶをつくろう!5
   name-en: "J-League Pro Soccer Club o Tsukurou 5"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Makes the game to correctly register left and right Dpad button input.
 SLPM-66645:
   name: バイオニクル ヒーローズ
   name-sort: ばいおにくる ひーろーず
