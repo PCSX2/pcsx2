@@ -3054,45 +3054,35 @@ bool GSState::SpriteDrawWithoutGaps()
 	return false;
 }
 
-bool GSState::PrimitiveCoversWithoutGaps()
+void GSState::CalculatePrimitiveCoversWithoutGaps()
 {
-	if (m_primitive_covers_without_gaps.has_value())
-		return m_primitive_covers_without_gaps.value();
+	m_primitive_covers_without_gaps = FullCover;
 
 	// Draw shouldn't be offset.
 	if (((m_r.eq32(GSVector4i::zero())).mask() & 0xff) != 0xff)
-	{
-		m_primitive_covers_without_gaps = false;
-		return false;
-	}
+		m_primitive_covers_without_gaps = GapsFound;
 
 	if (m_vt.m_primclass == GS_POINT_CLASS)
 	{
-		m_primitive_covers_without_gaps = (m_vertex.next < 2);
-		return m_primitive_covers_without_gaps.value();
+		m_primitive_covers_without_gaps = (m_vertex.next < 2) ? m_primitive_covers_without_gaps : GapsFound;
+		return;
 	}
 	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
 	{
-		m_primitive_covers_without_gaps = (m_index.tail == 6 && TrianglesAreQuads());
-		return m_primitive_covers_without_gaps.value();
+		m_primitive_covers_without_gaps = (m_index.tail == 6 && TrianglesAreQuads()) ? m_primitive_covers_without_gaps : GapsFound;
+		return;
 	}
 	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
 	{
-		m_primitive_covers_without_gaps = false;
-		return false;
+		m_primitive_covers_without_gaps = GapsFound;
+		return;
 	}
 
 	// Simple case: one sprite.
-	if (m_index.tail == 2)
-	{
-		m_primitive_covers_without_gaps = true;
-		return true;
-	}
+	if (m_primitive_covers_without_gaps != GapsFound && m_index.tail == 2)
+		return;
 
-	const bool result = SpriteDrawWithoutGaps();
-	m_primitive_covers_without_gaps = result;
-
-	return result;
+	m_primitive_covers_without_gaps = SpriteDrawWithoutGaps() ? (m_primitive_covers_without_gaps == GapsFound ? SpriteNoGaps : m_primitive_covers_without_gaps) : GapsFound;
 }
 
 __forceinline bool GSState::IsAutoFlushDraw(u32 prim)
@@ -3772,7 +3762,7 @@ static bool UsesRegionRepeat(int fix, int msk, int min, int max, int* min_out, i
 	return sets_bits || clears_bits;
 }
 
-GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize, bool no_gaps)
+GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize)
 {
 	// TODO: some of the +1s can be removed if linear == false
 
@@ -3869,7 +3859,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 		const GSVector2 grad(uv_range / pos_range);
 		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
 		// optimization doesn't work when perspective correction is enabled.
-		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1 && no_gaps)
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1 && m_primitive_covers_without_gaps != NoGapsType::GapsFound)
 		{
 			// When coordinates are fractional, GS appears to draw to the right/bottom (effectively
 			// taking the ceiling), not to the top/left (taking the floor).
@@ -3902,7 +3892,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 						new_st.x += floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
 				}
 				// we need to check that it's not going to repeat over the non-clipped part
-				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(new_st.x) & ~tw_mask) == (static_cast<int>(new_st.z) & ~tw_mask)))
+				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(new_st.x) & ~tw_mask) == (static_cast<int>(new_st.z - 1) & ~tw_mask)))
 				{
 					st.x = new_st.x;
 					st.z = new_st.z;
@@ -3926,7 +3916,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 					else
 						new_st.y += floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
 				}
-				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(new_st.y) & ~th_mask) == (static_cast<int>(new_st.w) & ~th_mask)))
+				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(new_st.y) & ~th_mask) == (static_cast<int>(new_st.w - 1) & ~th_mask)))
 				{
 					st.y = new_st.y;
 					st.w = new_st.w;

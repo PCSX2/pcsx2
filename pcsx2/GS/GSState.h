@@ -182,7 +182,7 @@ protected:
 		GSVector4i coverage; ///< Part of the texture used
 		u8 uses_boundary;    ///< Whether or not the usage touches the left, top, right, or bottom edge (and therefore needs wrap modes preserved)
 	};
-	TextureMinMaxResult GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize, bool no_gaps);
+	TextureMinMaxResult GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize);
 	bool TryAlphaTest(u32& fm, u32& zm);
 	bool IsOpaque();
 	bool IsMipMapDraw();
@@ -198,6 +198,14 @@ public:
 		GSVector4i rect;
 		int draw;
 		bool zero_clear;
+	};
+
+	enum NoGapsType
+	{
+		Uninitialized = 0,
+		GapsFound,
+		SpriteNoGaps,
+		FullCover,
 	};
 
 	GIFPath m_path[4] = {};
@@ -220,7 +228,7 @@ public:
 	u32 m_dirty_gs_regs = 0;
 	int m_backed_up_ctx = 0;
 	std::vector<GSUploadQueue> m_draw_transfers;
-	std::optional<bool> m_primitive_covers_without_gaps;
+	NoGapsType m_primitive_covers_without_gaps;
 	GSVector4i m_r = {};
 	GSVector4i m_r_no_scissor = {};
 
@@ -411,7 +419,7 @@ public:
 	bool TrianglesAreQuads(bool shuffle_check = false) const;
 	PRIM_OVERLAP PrimitiveOverlap();
 	bool SpriteDrawWithoutGaps();
-	bool PrimitiveCoversWithoutGaps();
+	void CalculatePrimitiveCoversWithoutGaps();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
 };
 

@@ -29,6 +29,7 @@
 
 #include "fmt/core.h"
 
+#include <bit>
 #include <map>
 #include <unordered_set>
 #include <unordered_map>
@@ -108,6 +109,15 @@ vtlb_private::VTLBVirtual::VTLBVirtual(VTLBPhysical phys, u32 paddr, u32 vaddr)
 	}
 }
 
+__inline int ConvertPageMask(u32 PageMask)
+{
+	const u32 mask = std::popcount(PageMask >> 13);
+
+	pxAssertMsg(!((mask & 1) || mask > 12), "Invalid page mask for this TLB entry. EE cache doesn't know what to do here.");
+
+	return (1 << (12 + mask)) - 1;
+}
+
 __inline int CheckCache(u32 addr)
 {
 	u32 mask;
@@ -122,8 +132,7 @@ __inline int CheckCache(u32 addr)
 	{
 		if (((tlb[i].EntryLo1 & 0x38) >> 3) == 0x3)
 		{
-			mask = tlb[i].PageMask;
-
+			mask = ConvertPageMask(tlb[i].PageMask);
 			if ((addr >= tlb[i].PFN1) && (addr <= tlb[i].PFN1 + mask))
 			{
 				//DevCon.Warning("Yay! Cache check cache addr=%x, mask=%x, addr+mask=%x, VPN2=%x PFN0=%x", addr, mask, (addr & mask), tlb[i].VPN2, tlb[i].PFN0);
@@ -132,8 +141,7 @@ __inline int CheckCache(u32 addr)
 		}
 		if (((tlb[i].EntryLo0 & 0x38) >> 3) == 0x3)
 		{
-			mask = tlb[i].PageMask;
-
+			mask = ConvertPageMask(tlb[i].PageMask);
 			if ((addr >= tlb[i].PFN0) && (addr <= tlb[i].PFN0 + mask))
 			{
 				//DevCon.Warning("Yay! Cache check cache addr=%x, mask=%x, addr+mask=%x, VPN2=%x PFN0=%x", addr, mask, (addr & mask), tlb[i].VPN2, tlb[i].PFN0);
@@ -559,12 +567,35 @@ static void vtlbUnmappedVWriteSm(u32 addr, OperandType data) { vtlb_Miss(addr, 1
 static void TAKES_R128 vtlbUnmappedVWriteLg(u32 addr, r128 data) { vtlb_Miss(addr, 1); }
 
 template <typename OperandType>
-static OperandType vtlbUnmappedPReadSm(u32 addr) { vtlb_BusError(addr, 0); return 0; }
-static RETURNS_R128 vtlbUnmappedPReadLg(u32 addr) { vtlb_BusError(addr, 0); return r128_zero(); }
+static OperandType vtlbUnmappedPReadSm(u32 addr) {
+	vtlb_BusError(addr, 0);
+	if(!CHECK_EEREC && CHECK_CACHE && CheckCache(addr)){
+		switch (sizeof(OperandType)) {
+			case 1: return readCache8(addr, false);
+			case 2: return readCache16(addr, false);
+			case 4: return readCache32(addr, false);
+			case 8: return readCache64(addr, false);
+			default: pxFail("Invalid data size for unmapped physical cache load");
+		}
+	}
+	return 0;
+}
+static RETURNS_R128 vtlbUnmappedPReadLg(u32 addr) { vtlb_BusError(addr, 0); if(!CHECK_EEREC && CHECK_CACHE && CheckCache(addr)){ return readCache128(addr, false); } return r128_zero(); }
 
 template <typename OperandType>
-static void vtlbUnmappedPWriteSm(u32 addr, OperandType data) { vtlb_BusError(addr, 1); }
-static void TAKES_R128 vtlbUnmappedPWriteLg(u32 addr, r128 data) { vtlb_BusError(addr, 1); }
+static void vtlbUnmappedPWriteSm(u32 addr, OperandType data) {
+	vtlb_BusError(addr, 1);
+	if (!CHECK_EEREC && CHECK_CACHE && CheckCache(addr)) {
+		switch (sizeof(OperandType)) {
+			case 1: writeCache8(addr, data, false); break;
+			case 2: writeCache16(addr, data, false); break;
+			case 4: writeCache32(addr, data, false); break;
+			case 8: writeCache64(addr, data, false); break;
+			default: pxFail("Invalid data size for unmapped physical cache store");
+		}
+	}
+}
+static void TAKES_R128 vtlbUnmappedPWriteLg(u32 addr, r128 data) { vtlb_BusError(addr, 1); if(!CHECK_EEREC && CHECK_CACHE && CheckCache(addr)) { writeCache128(addr, reinterpret_cast<mem128_t*>(&data) /*Safe??*/, false); }}
 // clang-format on
 
 // --------------------------------------------------------------------------------------

@@ -402,8 +402,7 @@ namespace FullscreenUI
 	static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 	static std::unique_ptr<GameList::Entry> s_game_settings_entry;
 	static std::vector<std::pair<std::string, bool>> s_game_list_directories_cache;
-	static std::vector<std::string> s_graphics_adapter_list_cache;
-	static std::vector<std::string> s_fullscreen_mode_list_cache;
+	static std::vector<GSAdapterInfo> s_graphics_adapter_list_cache;
 	static Patch::PatchInfoList s_game_patch_list;
 	static std::vector<std::string> s_enabled_game_patch_cache;
 	static Patch::PatchInfoList s_game_cheats_list;
@@ -762,7 +761,6 @@ void FullscreenUI::Shutdown(bool clear_state)
 		s_game_cheats_list = {};
 		s_enabled_game_patch_cache = {};
 		s_game_patch_list = {};
-		s_fullscreen_mode_list_cache = {};
 		s_graphics_adapter_list_cache = {};
 		s_current_game_title = {};
 		s_current_game_subtitle = {};
@@ -2736,7 +2734,7 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry)
 
 void FullscreenUI::PopulateGraphicsAdapterList()
 {
-	GSGetAdaptersAndFullscreenModes(GSConfig.Renderer, &s_graphics_adapter_list_cache, &s_fullscreen_mode_list_cache);
+	s_graphics_adapter_list_cache = GSGetAdapterInfo(GSConfig.Renderer);
 }
 
 void FullscreenUI::PopulateGameListDirectoryCache(SettingsInterface* si)
@@ -2770,6 +2768,7 @@ void FullscreenUI::DoCopyGameSettings()
 		return;
 
 	Pcsx2Config::CopyConfiguration(s_game_settings_interface.get(), *GetEditingSettingsInterface(false));
+	Pcsx2Config::ClearInvalidPerGameConfiguration(s_game_settings_interface.get());
 
 	SetSettingsChanged(s_game_settings_interface.get());
 

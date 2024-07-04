@@ -12976,7 +12976,7 @@ SLED-54328:
     cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SLED-54401:
-  name: "Destroy All Humans 2 [Demo]"
+  name: "Destroy All Humans! 2 [Demo]"
   region: "PAL-E"
   gsHWFixes:
     textureInsideRT: 1 # Fixes shadow maps.
@@ -17124,6 +17124,10 @@ SLES-51785:
 SLES-51787:
   name: "Harry Potter - Quidditch World Cup"
   region: "PAL-M10"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes post alignment.
+    nativeScaling: 1 # Fixes post processing smoothness.
+    recommendedBlendingLevel: 4 # Fixes missing lighting.
 SLES-51792:
   name: "Aliens Versus Predator - Extinction"
   region: "PAL-E"
@@ -20158,7 +20162,7 @@ SLES-52950:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post positioning.
+    halfPixelOffset: 2 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SLES-52951:
   name: "Phantom Brave"
@@ -24402,7 +24406,7 @@ SLES-54383:
   name: "Casper and The Ghostly Trio"
   region: "PAL-M6"
 SLES-54384:
-  name: "Destroy All Humans 2 - Make War not Love"
+  name: "Destroy All Humans! 2"
   region: "PAL-M5"
   gsHWFixes:
     textureInsideRT: 1 # Fixes shadow maps.
@@ -28306,6 +28310,10 @@ SLKA-15015:
 SLKA-15016:
   name: "Harry Potter - Quidditch World Cup"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes post alignment.
+    nativeScaling: 1 # Fixes post processing smoothness.
+    recommendedBlendingLevel: 4 # Fixes missing lighting.
 SLKA-15018:
   name: "Kidou Senshi Gundam Seed"
   region: "NTSC-K"
@@ -32316,7 +32324,7 @@ SLPM-61109:
   name: "Shadow of Rome [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post positioning.
+    halfPixelOffset: 2 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SLPM-61110:
   name: "Enthusia - Professional Racing [Trial]"
@@ -32342,7 +32350,7 @@ SLPM-61114:
   name: "Shadow of Rome [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post positioning.
+    halfPixelOffset: 2 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SLPM-61115:
   name: "Racing Battle - C1 Grand Prix [Trial]"
@@ -34381,6 +34389,10 @@ SLPM-62408:
   name-sort: はりーぽったー くぃでぃっち わーるどかっぷ
   name-en: "Harry Potter - Quidditch World Cup"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes post alignment.
+    nativeScaling: 1 # Fixes post processing smoothness.
+    recommendedBlendingLevel: 4 # Fixes missing lighting.
 SLPM-62409:
   name: ウィザードリィ エンパイアIII 〜覇王の系譜〜
   name-sort: うぃざーどりぃ えんぱいあ3 はおうのけいふ
@@ -41189,7 +41201,7 @@ SLPM-65883:
   name-en: "Shadow of Rome"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post positioning.
+    halfPixelOffset: 2 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SLPM-65884:
   name: リモートコントロールダンディSF
@@ -61317,6 +61329,10 @@ SLUS-20769:
   name: "Harry Potter - Quidditch World Cup"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes post alignment.
+    nativeScaling: 1 # Fixes post processing smoothness.
+    recommendedBlendingLevel: 4 # Fixes missing lighting.
 SLUS-20770:
   name: "The Lord of the Rings - The Return of the King"
   name-sort: "Lord of the Rings, The - The Return of the King"
@@ -62001,7 +62017,7 @@ SLUS-20902:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post positioning.
+    halfPixelOffset: 2 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SLUS-20903:
   name: "Mega Man X - Command Mission"
@@ -68577,7 +68593,7 @@ SLUS-29139:
   name: "Shadow of Rome [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post positioning.
+    halfPixelOffset: 2 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SLUS-29140:
   name: "MX vs. ATV Unleashed [Demo]"

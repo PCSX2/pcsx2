@@ -140,13 +140,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Settings
 	//////////////////////////////////////////////////////////////////////////
-	static const char* upscale_entries[] = {"Native (PS2) (Default)", "1.25x Native", "1.5x Native", "1.75x Native", "2x Native (~720p)",
-		"2.25x Native", "2.5x Native", "2.75x Native", "3x Native (~1080p)", "3.5x Native", "4x Native (~1440p/2K)", "5x Native (~1620p)",
-		"6x Native (~2160p/4K)", "7x Native (~2520p)", "8x Native (~2880p/5K)", nullptr};
-	static const char* upscale_values[] = {
-		"1", "1.25", "1.5", "1.75", "2", "2.25", "2.5", "2.75", "3", "3.5", "4", "5", "6", "7", "8", nullptr};
-	SettingWidgetBinder::BindWidgetToEnumSetting(
-		sif, m_ui.upscaleMultiplier, "EmuCore/GS", "upscale_multiplier", upscale_entries, upscale_values, "1.0");
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.textureFiltering, "EmuCore/GS", "filter", static_cast<int>(BiFiltering::PS2));
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.trilinearFiltering, "EmuCore/GS", "TriFilter", static_cast<int>(TriFiltering::Automatic), -1);
@@ -158,6 +151,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		sif, m_ui.blending, "EmuCore/GS", "accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic));
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.texturePreloading, "EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off));
+	connect(m_ui.upscaleMultiplier, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+		&GraphicsSettingsWidget::onUpscaleMultiplierChanged);
 	connect(m_ui.trilinearFiltering, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
 		&GraphicsSettingsWidget::onTrilinearFilteringChanged);
 	onTrilinearFilteringChanged();
@@ -1036,10 +1031,9 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 		m_ui.exclusiveFullscreenControl->setEnabled(is_auto || is_vk);
 
 	// populate adapters
-	std::vector<std::string> adapters;
-	std::vector<std::string> fullscreen_modes;
-	GSGetAdaptersAndFullscreenModes(type, &adapters, &fullscreen_modes);
-
+	std::vector<GSAdapterInfo> adapters = GSGetAdapterInfo(type);
+	const GSAdapterInfo* current_adapter_info = nullptr;
+	
 	// fill+select adapters
 	{
 		QSignalBlocker sb(m_ui.adapterDropdown);
@@ -1062,12 +1056,17 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 			}
 		}
 
-		for (const std::string& adapter : adapters)
+		for (const GSAdapterInfo& adapter : adapters)
 		{
-			m_ui.adapterDropdown->addItem(QString::fromStdString(adapter));
-			if (current_adapter == adapter)
+			m_ui.adapterDropdown->addItem(QString::fromStdString(adapter.name));
+			if (current_adapter == adapter.name)
+			{
 				m_ui.adapterDropdown->setCurrentIndex(m_ui.adapterDropdown->count() - 1);
+				current_adapter_info = &adapter;
+			}
 		}
+
+		current_adapter_info = (current_adapter_info || adapters.empty()) ? current_adapter_info : &adapters.front();
 	}
 
 	// fill+select fullscreen modes
@@ -1090,13 +1089,92 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 			}
 		}
 
-		for (const std::string& fs_mode : fullscreen_modes)
+		if (current_adapter_info)
 		{
-			m_ui.fullscreenModes->addItem(QString::fromStdString(fs_mode));
-			if (current_mode == fs_mode)
-				m_ui.fullscreenModes->setCurrentIndex(m_ui.fullscreenModes->count() - 1);
+			for (const std::string& fs_mode : current_adapter_info->fullscreen_modes)
+			{
+				m_ui.fullscreenModes->addItem(QString::fromStdString(fs_mode));
+				if (current_mode == fs_mode)
+					m_ui.fullscreenModes->setCurrentIndex(m_ui.fullscreenModes->count() - 1);
+			}
 		}
 	}
+
+	// assume the GPU can do 10K textures.
+	const u32 max_upscale_multiplier = std::max(current_adapter_info ? current_adapter_info->max_upscale_multiplier : 0u, 10u);
+	populateUpscaleMultipliers(max_upscale_multiplier);
+}
+
+void GraphicsSettingsWidget::populateUpscaleMultipliers(u32 max_upscale_multiplier)
+{
+	static constexpr std::pair<const char*, float> templates[] = {
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Native (PS2) (Default)"), 1.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.25x Native"), 1.25f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.5x Native"), 1.5f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.75x Native"), 1.75f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2x Native (~720p)"), 2.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2.25x Native"), 2.25f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2.5x Native"), 2.5f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2.75x Native"), 2.75f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3x Native (~1080p)"), 3.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3.5x Native"), 3.5f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "4x Native (~1440p/2K)"), 4.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "5x Native (~1620p)"), 5.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "6x Native (~2160p/4K)"), 6.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "7x Native (~2520p)"), 7.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "8x Native (~2880p/5K)"), 8.0f},
+	};
+	static constexpr u32 max_template_multiplier = 8;
+
+	// Limit the dropdown to 12x if we're not showing advanced settings. Save the noobs.
+	static constexpr u32 max_non_advanced_multiplier = 12;
+
+	QSignalBlocker sb(m_ui.upscaleMultiplier);
+	m_ui.upscaleMultiplier->clear();
+
+	for (const auto& [name, value] : templates)
+	{
+		if (value > max_upscale_multiplier)
+			continue;
+
+		m_ui.upscaleMultiplier->addItem(tr(name), QVariant(value));
+	}
+	const u32 max_shown_multiplier = QtHost::ShouldShowAdvancedSettings() ?
+										 max_upscale_multiplier :
+										 std::min(max_upscale_multiplier, max_non_advanced_multiplier);
+	for (u32 i = max_template_multiplier + 1; i <= max_shown_multiplier; i++)
+		m_ui.upscaleMultiplier->addItem(tr("%1x Native").arg(i), QVariant(static_cast<float>(i)));
+
+	const float global_value = Host::GetBaseFloatSettingValue("EmuCore/GS", "upscale_multiplier", 1.0f);
+	if (m_dialog->isPerGameSettings())
+	{
+		const int name_idx = m_ui.upscaleMultiplier->findData(QVariant(global_value));
+		const QString global_name = (name_idx >= 0) ? m_ui.upscaleMultiplier->itemText(name_idx) : tr("%1x Native");
+		m_ui.upscaleMultiplier->insertItem(0, tr("Use Global Setting [%1]").arg(global_name));
+
+		const std::optional<float> config_value = m_dialog->getFloatValue("EmuCore/GS", "upscale_multiplier", std::nullopt);
+		if (config_value.has_value())
+		{
+			if (int index = m_ui.upscaleMultiplier->findData(QVariant(config_value.value())); index > 0)
+				m_ui.upscaleMultiplier->setCurrentIndex(index);
+		}
+		else
+		{
+			m_ui.upscaleMultiplier->setCurrentIndex(0);
+		}		
+	}
+	else
+	{
+		if (int index = m_ui.upscaleMultiplier->findData(QVariant(global_value)); index > 0)
+			m_ui.upscaleMultiplier->setCurrentIndex(index);
+	}
+}
+
+void GraphicsSettingsWidget::onUpscaleMultiplierChanged()
+{
+	const QVariant data = m_ui.upscaleMultiplier->currentData();
+	m_dialog->setFloatSettingValue("EmuCore/GS", "upscale_multiplier",
+		data.isValid() ? std::optional<float>(data.toFloat()) : std::optional<float>());
 }
 
 void GraphicsSettingsWidget::resetManualHardwareFixes()

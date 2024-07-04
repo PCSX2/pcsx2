@@ -883,9 +883,6 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapIntEnumEx(Renderer, "Renderer");
 	SettingsWrapEntryEx(UpscaleMultiplier, "upscale_multiplier");
 
-	// ~51x would the upper bound here for 32768x32768 textures, but you'll run out VRAM long before then.
-	UpscaleMultiplier = std::clamp(UpscaleMultiplier, 1.0f, 50.0f);
-
 	SettingsWrapBitBoolEx(HWMipmap, "hw_mipmap");
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
 	SettingsWrapIntEnumEx(TextureFiltering, "filter");
@@ -1836,6 +1833,13 @@ void Pcsx2Config::ClearConfiguration(SettingsInterface* dest_si)
 	Pcsx2Config temp;
 	SettingsClearWrapper wrapper(*dest_si);
 	temp.LoadSaveCore(wrapper);
+}
+
+void Pcsx2Config::ClearInvalidPerGameConfiguration(SettingsInterface* si)
+{
+	// Deprecated in favor of patches.
+	si->DeleteValue("EmuCore", "EnableWideScreenPatches");
+	si->DeleteValue("EmuCore", "EnableNoInterlacingPatches");
 }
 
 void EmuFolders::SetAppRoot()

@@ -299,11 +299,12 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
 	{
 		auto lock = Host::GetSettingsLock();
 		Pcsx2Config::CopyConfiguration(m_sif.get(), *Host::Internal::GetBaseSettingsLayer());
+		Pcsx2Config::ClearInvalidPerGameConfiguration(m_sif.get());
 	}
 	saveAndReloadGameSettings();
 
 
-	QMessageBox::information(reopen(), tr("PCSX2 Settings"), tr("Per-game configuration copied from global settings."));
+	reopen(tr("Per-game configuration copied from global settings."));
 }
 
 void SettingsWindow::onClearSettingsClicked()
@@ -324,17 +325,16 @@ void SettingsWindow::onClearSettingsClicked()
 	Pcsx2Config::ClearConfiguration(m_sif.get());
 	saveAndReloadGameSettings();
 
-	QMessageBox::information(reopen(), tr("PCSX2 Settings"), tr("Per-game configuration cleared."));
+	reopen(tr("Per-game configuration cleared."));
 }
 
-SettingsWindow* SettingsWindow::reopen()
+void SettingsWindow::reopen(const QString& message)
 {
 	// This doesn't work for global settings, because MainWindow maintains a pointer.
 	if (!m_sif)
-		return this;
+		return;
 
-	close();
-
+	// After closing, this pointer is freed. So we need to grab everything early.
 	std::unique_ptr<INISettingsInterface> new_sif = std::make_unique<INISettingsInterface>(m_sif->GetFileName());
 	if (FileSystem::FileExists(new_sif->GetFileName().c_str()))
 		new_sif->Load();
@@ -344,9 +344,14 @@ SettingsWindow* SettingsWindow::reopen()
 
 	SettingsWindow* dlg = new SettingsWindow(std::move(new_sif), game, m_serial, m_disc_crc, m_filename);
 	dlg->QWidget::setWindowTitle(windowTitle());
-	dlg->show();
 
-	return dlg;
+	// See note above.
+	QtHost::RunOnUIThread([this, dlg, message]() {
+		close();
+		dlg->show();
+		if (!message.isEmpty())
+			QMessageBox::information(dlg, tr("PCSX2 Settings"), message);
+	});
 }
 
 void SettingsWindow::addWidget(QWidget* widget, QString title, QString icon, QString help_text)

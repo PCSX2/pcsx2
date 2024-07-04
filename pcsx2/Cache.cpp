@@ -19,7 +19,11 @@ namespace
 	struct CacheTag
 	{
 		uptr rawValue;
-
+		// You are able to configure a TLB entry with non-existant physical address without causing a bus error.
+		// When this happens, the cache still fills with the data and when it gets evicted the data is lost.
+		// We don't emulate memory access on a logic level, so we need to ensure that we don't try to load/store to a non-existant physical address.
+		// This fixes the Find My Own Way demo.
+		bool validPFN = true;
 		// The lower parts of a cache tags structure is as follows:
 		// 31 - 12: The physical address cache tag.
 		// 11 - 7: Unused.
@@ -43,9 +47,9 @@ namespace
 			return rawValue & ALL_FLAGS;
 		}
 
-		bool isValid() const  { return rawValue & VALID_FLAG; }
-		bool isDirty() const  { return rawValue & DIRTY_FLAG; }
-		bool lrf() const      { return rawValue & LRF_FLAG; }
+		bool isValid() const { return rawValue & VALID_FLAG; }
+		bool isDirty() const { return rawValue & DIRTY_FLAG; }
+		bool lrf() const { return rawValue & LRF_FLAG; }
 		bool isLocked() const { return rawValue & LOCK_FLAG; }
 
 		bool isDirtyAndValid() const
@@ -53,11 +57,11 @@ namespace
 			return (rawValue & (DIRTY_FLAG | VALID_FLAG)) == (DIRTY_FLAG | VALID_FLAG);
 		}
 
-		void setValid()  { rawValue |= VALID_FLAG; }
-		void setDirty()  { rawValue |= DIRTY_FLAG; }
+		void setValid() { rawValue |= VALID_FLAG; }
+		void setDirty() { rawValue |= DIRTY_FLAG; }
 		void setLocked() { rawValue |= LOCK_FLAG; }
-		void clearValid()  { rawValue &= ~VALID_FLAG; }
-		void clearDirty()  { rawValue &= ~DIRTY_FLAG; }
+		void clearValid() { rawValue &= ~VALID_FLAG; }
+		void clearDirty() { rawValue &= ~DIRTY_FLAG; }
 		void clearLocked() { rawValue &= ~LOCK_FLAG; }
 		void toggleLRF() { rawValue ^= LRF_FLAG; }
 
@@ -99,7 +103,8 @@ namespace
 			uptr target = addr();
 
 			CACHE_LOG("Write back at %zx", target);
-			*reinterpret_cast<CacheData*>(target) = data;
+			if (tag.validPFN)
+				*reinterpret_cast<CacheData*>(target) = data;
 			tag.clearDirty();
 		}
 
@@ -108,7 +113,16 @@ namespace
 			pxAssertMsg(!tag.isDirtyAndValid(), "Loaded a value into cache without writing back the old one!");
 
 			tag.setAddr(ppf);
-			std::memcpy(&data, reinterpret_cast<void*>(ppf & ~0x3FULL), sizeof(data));
+			if (!tag.validPFN)
+			{
+				// Reading from invalid physical addresses seems to return 0 on hardware
+				std::memset(&data, 0, sizeof(data));
+			}
+			else
+			{
+				std::memcpy(&data, reinterpret_cast<void*>(ppf & ~0x3FULL), sizeof(data));
+			}
+
 			tag.setValid();
 			tag.clearDirty();
 		}
@@ -137,12 +151,12 @@ namespace
 
 		CacheLine lineAt(int idx, int way)
 		{
-			return { sets[idx].tags[way], sets[idx].data[way], idx };
+			return {sets[idx].tags[way], sets[idx].data[way], idx};
 		}
 	};
 
 	static Cache cache = {};
-}
+} // namespace
 
 void resetCache()
 {
@@ -151,8 +165,7 @@ void resetCache()
 
 static bool findInCache(const CacheSet& set, uptr ppf, int* way)
 {
-	auto check = [&](int checkWay) -> bool
-	{
+	auto check = [&](int checkWay) -> bool {
 		if (!set.tags[checkWay].matches(ppf))
 			return false;
 
@@ -163,29 +176,58 @@ static bool findInCache(const CacheSet& set, uptr ppf, int* way)
 	return check(0) || check(1);
 }
 
-static int getFreeCache(u32 mem, int* way)
+static int getFreeCache(u32 mem, int* way, bool validPFN)
 {
 	const int setIdx = cache.setIdxFor(mem);
 	CacheSet& set = cache.sets[setIdx];
 	VTLBVirtual vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
-	pxAssertMsg(!vmv.isHandler(mem), "Cache currently only supports non-handler addresses!");
+
+	*way = set.tags[0].lrf() ^ set.tags[1].lrf();
+	if (validPFN)
+		pxAssertMsg(!vmv.isHandler(mem), "Cache currently only supports non-handler addresses!");
+
 	uptr ppf = vmv.assumePtr(mem);
 
-	if((cpuRegs.CP0.n.Config & 0x10000) == 0)
+	[[unlikely]]
+	if ((cpuRegs.CP0.n.Config & 0x10000) == 0)
 		CACHE_LOG("Cache off!");
 
 	if (findInCache(set, ppf, way))
 	{
+		[[unlikely]]
 		if (set.tags[*way].isLocked())
-			CACHE_LOG("Index %x Way %x Locked!!", setIdx, *way);
+		{
+			// Check the other way
+			if (set.tags[*way ^ 1].isLocked())
+			{
+				Console.Error("CACHE: SECOND WAY IS LOCKED.", setIdx, *way);
+			}
+			else
+			{
+				// Force the unlocked way
+				*way ^= 1;
+			}
+		}
 	}
 	else
 	{
 		int newWay = set.tags[0].lrf() ^ set.tags[1].lrf();
+		[[unlikely]]
+		if (set.tags[newWay].isLocked())
+		{
+			// If the new way is locked, we force the unlocked way, ignoring the lrf bits.
+			newWay = newWay ^ 1;
+			[[unlikely]]
+			if (set.tags[newWay].isLocked())
+			{
+				Console.Warning("CACHE: SECOND WAY IS LOCKED.", setIdx, *way);
+			}
+		}
 		*way = newWay;
-		CacheLine line = cache.lineAt(setIdx, newWay);
 
+		CacheLine line = cache.lineAt(setIdx, newWay);
 		line.writeBackIfNeeded();
+		line.tag.validPFN = validPFN;
 		line.load(ppf);
 		line.tag.toggleLRF();
 	}
@@ -194,10 +236,10 @@ static int getFreeCache(u32 mem, int* way)
 }
 
 template <bool Write, int Bytes>
-void* prepareCacheAccess(u32 mem, int* way, int* idx)
+void* prepareCacheAccess(u32 mem, int* way, int* idx, bool validPFN = true)
 {
 	*way = 0;
-	*idx = getFreeCache(mem, way);
+	*idx = getFreeCache(mem, way, validPFN);
 	CacheLine line = cache.lineAt(*idx, *way);
 	if (Write)
 		line.tag.setDirty();
@@ -206,49 +248,49 @@ void* prepareCacheAccess(u32 mem, int* way, int* idx)
 }
 
 template <typename Int>
-void writeCache(u32 mem, Int value)
+void writeCache(u32 mem, Int value, bool validPFN)
 {
 	int way, idx;
-	void* addr = prepareCacheAccess<true, sizeof(Int)>(mem, &way, &idx);
+	void* addr = prepareCacheAccess<true, sizeof(Int)>(mem, &way, &idx, validPFN);
 
 	CACHE_LOG("writeCache%d %8.8x adding to %d, way %d, value %llx", 8 * sizeof(value), mem, idx, way, value);
 	*reinterpret_cast<Int*>(addr) = value;
 }
 
-void writeCache8(u32 mem, u8 value)
+void writeCache8(u32 mem, u8 value, bool validPFN)
 {
-	writeCache<u8>(mem, value);
+	writeCache<u8>(mem, value, validPFN);
 }
 
-void writeCache16(u32 mem, u16 value)
+void writeCache16(u32 mem, u16 value, bool validPFN)
 {
-	writeCache<u16>(mem, value);
+	writeCache<u16>(mem, value, validPFN);
 }
 
-void writeCache32(u32 mem, u32 value)
+void writeCache32(u32 mem, u32 value, bool validPFN)
 {
-	writeCache<u32>(mem, value);
+	writeCache<u32>(mem, value, validPFN);
 }
 
-void writeCache64(u32 mem, const u64 value)
+void writeCache64(u32 mem, const u64 value, bool validPFN)
 {
-	writeCache<u64>(mem, value);
+	writeCache<u64>(mem, value, validPFN);
 }
 
-void writeCache128(u32 mem, const mem128_t* value)
+void writeCache128(u32 mem, const mem128_t* value, bool validPFN)
 {
 	int way, idx;
-	void* addr = prepareCacheAccess<true, sizeof(mem128_t)>(mem, &way, &idx);
+	void* addr = prepareCacheAccess<true, sizeof(mem128_t)>(mem, &way, &idx, validPFN);
 
 	CACHE_LOG("writeCache128 %8.8x adding to %d, way %x, lo %llx, hi %llx", mem, idx, way, value->lo, value->hi);
 	*reinterpret_cast<mem128_t*>(addr) = *value;
 }
 
 template <typename Int>
-Int readCache(u32 mem)
+Int readCache(u32 mem, bool validPFN)
 {
 	int way, idx;
-	void* addr = prepareCacheAccess<false, sizeof(Int)>(mem, &way, &idx);
+	void* addr = prepareCacheAccess<false, sizeof(Int)>(mem, &way, &idx, validPFN);
 
 	Int value = *reinterpret_cast<Int*>(addr);
 	CACHE_LOG("readCache%d %8.8x from %d, way %d, value %llx", 8 * sizeof(value), mem, idx, way, value);
@@ -256,30 +298,30 @@ Int readCache(u32 mem)
 }
 
 
-u8 readCache8(u32 mem)
+u8 readCache8(u32 mem, bool validPFN)
 {
-	return readCache<u8>(mem);
+	return readCache<u8>(mem, validPFN);
 }
 
-u16 readCache16(u32 mem)
+u16 readCache16(u32 mem, bool validPFN)
 {
-	return readCache<u16>(mem);
+	return readCache<u16>(mem, validPFN);
 }
 
-u32 readCache32(u32 mem)
+u32 readCache32(u32 mem, bool validPFN)
 {
-	return readCache<u32>(mem);
+	return readCache<u32>(mem, validPFN);
 }
 
-u64 readCache64(u32 mem)
+u64 readCache64(u32 mem, bool validPFN)
 {
-	return readCache<u64>(mem);
+	return readCache<u64>(mem, validPFN);
 }
 
-RETURNS_R128 readCache128(u32 mem)
+RETURNS_R128 readCache128(u32 mem, bool validPFN)
 {
 	int way, idx;
-	void* addr = prepareCacheAccess<false, sizeof(mem128_t)>(mem, &way, &idx);
+	void* addr = prepareCacheAccess<false, sizeof(mem128_t)>(mem, &way, &idx, validPFN);
 	r128 value = r128_load(addr);
 	u64* vptr = reinterpret_cast<u64*>(&value);
 	CACHE_LOG("readCache128 %8.8x from %d, way %d, lo %llx, hi %llx", mem, idx, way, vptr[0], vptr[1]);
@@ -306,139 +348,138 @@ void doCacheHitOp(u32 addr, const char* name, Op op)
 	op(cache.lineAt(index, way));
 }
 
-namespace R5900 {
-namespace Interpreter
+namespace R5900
 {
-namespace OpcodeImpl
-{
-
-extern int Dcache;
-void CACHE()
-{
-	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
-	// CACHE_LOG("cpuRegs.GPR.r[_Rs_].UL[0] = %x, IMM = %x RT = %x", cpuRegs.GPR.r[_Rs_].UL[0], _Imm_, _Rt_);
-
-	switch (_Rt_)
+	namespace Interpreter
 	{
-		case 0x1a: //DHIN (Data Cache Hit Invalidate)
-			doCacheHitOp(addr, "DHIN", [](CacheLine line)
+		namespace OpcodeImpl
+		{
+
+			extern int Dcache;
+			void CACHE()
 			{
-				line.clear();
-			});
-			break;
+				u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+				// CACHE_LOG("cpuRegs.GPR.r[_Rs_].UL[0] = %x, IMM = %x RT = %x", cpuRegs.GPR.r[_Rs_].UL[0], _Imm_, _Rt_);
 
-		case 0x18: //DHWBIN (Data Cache Hit WriteBack with Invalidate)
-			doCacheHitOp(addr, "DHWBIN", [](CacheLine line)
-			{
-				line.writeBackIfNeeded();
-				line.clear();
-			});
-			break;
+				switch (_Rt_)
+				{
+					case 0x1a: //DHIN (Data Cache Hit Invalidate)
+						doCacheHitOp(addr, "DHIN", [](CacheLine line) {
+							line.clear();
+						});
+						break;
 
-		case 0x1c: //DHWOIN (Data Cache Hit WriteBack Without Invalidate)
-			doCacheHitOp(addr, "DHWOIN", [](CacheLine line)
-			{
-				line.writeBackIfNeeded();
-			});
-			break;
+					case 0x18: //DHWBIN (Data Cache Hit WriteBack with Invalidate)
+						doCacheHitOp(addr, "DHWBIN", [](CacheLine line) {
+							line.writeBackIfNeeded();
+							line.clear();
+						});
+						break;
 
-		case 0x16: //DXIN (Data Cache Index Invalidate)
-		{
-			const int index = cache.setIdxFor(addr);
-			const int way = addr & 0x1;
-			CacheLine line = cache.lineAt(index, way);
+					case 0x1c: //DHWOIN (Data Cache Hit WriteBack Without Invalidate)
+						doCacheHitOp(addr, "DHWOIN", [](CacheLine line) {
+							line.writeBackIfNeeded();
+						});
+						break;
 
-			CACHE_LOG("CACHE DXIN addr %x, index %d, way %d, flag %x", addr, index, way, line.tag.flags());
+					case 0x16: //DXIN (Data Cache Index Invalidate)
+					{
+						const int index = cache.setIdxFor(addr);
+						const int way = addr & 0x1;
+						CacheLine line = cache.lineAt(index, way);
 
-			line.clear();
-			break;
-		}
+						CACHE_LOG("CACHE DXIN addr %x, index %d, way %d, flag %x", addr, index, way, line.tag.flags());
 
-		case 0x11: //DXLDT (Data Cache Load Data into TagLo)
-		{
-			const int index = cache.setIdxFor(addr);
-			const int way = addr & 0x1;
-			CacheLine line = cache.lineAt(index, way);
+						line.clear();
+						break;
+					}
 
-			cpuRegs.CP0.n.TagLo = *reinterpret_cast<u32*>(&line.data.bytes[addr & 0x3C]);
+					case 0x11: //DXLDT (Data Cache Load Data into TagLo)
+					{
+						const int index = cache.setIdxFor(addr);
+						const int way = addr & 0x1;
+						CacheLine line = cache.lineAt(index, way);
 
-			CACHE_LOG("CACHE DXLDT addr %x, index %d, way %d, DATA %x OP %x", addr, index, way, cpuRegs.CP0.n.TagLo, cpuRegs.code);
-			break;
-		}
+						cpuRegs.CP0.n.TagLo = *reinterpret_cast<u32*>(&line.data.bytes[addr & 0x3C]);
 
-		case 0x10: //DXLTG (Data Cache Load Tag into TagLo)
-		{
-			const int index = (addr >> 6) & 0x3F;
-			const int way = addr & 0x1;
-			CacheLine line = cache.lineAt(index, way);
+						CACHE_LOG("CACHE DXLDT addr %x, index %d, way %d, DATA %x OP %x", addr, index, way, cpuRegs.CP0.n.TagLo, cpuRegs.code);
+						break;
+					}
 
-			// DXLTG demands that SYNC.L is called before this command, which forces the cache to write back, so presumably games are checking the cache has updated the memory
-			// For speed, we will do it here.
-			line.writeBackIfNeeded();
+					case 0x10: //DXLTG (Data Cache Load Tag into TagLo)
+					{
+						const int index = (addr >> 6) & 0x3F;
+						const int way = addr & 0x1;
+						CacheLine line = cache.lineAt(index, way);
 
-			// Our tags don't contain PS2 paddrs (instead they contain x86 addrs)
-			cpuRegs.CP0.n.TagLo = line.tag.flags();
+						// DXLTG demands that SYNC.L is called before this command, which forces the cache to write back, so presumably games are checking the cache has updated the memory
+						// For speed, we will do it here.
+						line.writeBackIfNeeded();
 
-			CACHE_LOG("CACHE DXLTG addr %x, index %d, way %d, DATA %x OP %x ", addr, index, way, cpuRegs.CP0.n.TagLo, cpuRegs.code);
-			CACHE_LOG("WARNING: DXLTG emulation supports flags only, things could break");
-			break;
-		}
+						// Our tags don't contain PS2 paddrs (instead they contain x86 addrs)
+						cpuRegs.CP0.n.TagLo = line.tag.flags();
 
-		case 0x13: //DXSDT (Data Cache Store 32bits from TagLo)
-		{
-			const int index = (addr >> 6) & 0x3F;
-			const int way = addr & 0x1;
-			CacheLine line = cache.lineAt(index, way);
+						CACHE_LOG("CACHE DXLTG addr %x, index %d, way %d, DATA %x OP %x ", addr, index, way, cpuRegs.CP0.n.TagLo, cpuRegs.code);
+						CACHE_LOG("WARNING: DXLTG emulation supports flags only, things could break");
+						break;
+					}
 
-			*reinterpret_cast<u32*>(&line.data.bytes[addr & 0x3C]) = cpuRegs.CP0.n.TagLo;
+					case 0x13: //DXSDT (Data Cache Store 32bits from TagLo)
+					{
+						const int index = (addr >> 6) & 0x3F;
+						const int way = addr & 0x1;
+						CacheLine line = cache.lineAt(index, way);
 
-			CACHE_LOG("CACHE DXSDT addr %x, index %d, way %d, DATA %x OP %x", addr, index, way, cpuRegs.CP0.n.TagLo, cpuRegs.code);
-			break;
-		}
+						*reinterpret_cast<u32*>(&line.data.bytes[addr & 0x3C]) = cpuRegs.CP0.n.TagLo;
 
-		case 0x12: //DXSTG (Data Cache Store Tag from TagLo)
-		{
-			const int index = (addr >> 6) & 0x3F;
-			const int way = addr & 0x1;
-			CacheLine line = cache.lineAt(index, way);
+						CACHE_LOG("CACHE DXSDT addr %x, index %d, way %d, DATA %x OP %x", addr, index, way, cpuRegs.CP0.n.TagLo, cpuRegs.code);
+						break;
+					}
 
-			line.tag.rawValue &= ~CacheTag::ALL_FLAGS;
-			line.tag.rawValue |= (cpuRegs.CP0.n.TagLo & CacheTag::ALL_FLAGS);
+					case 0x12: //DXSTG (Data Cache Store Tag from TagLo)
+					{
+						const int index = (addr >> 6) & 0x3F;
+						const int way = addr & 0x1;
+						CacheLine line = cache.lineAt(index, way);
 
-			CACHE_LOG("CACHE DXSTG addr %x, index %d, way %d, DATA %x OP %x", addr, index, way, cpuRegs.CP0.n.TagLo, cpuRegs.code);
-			CACHE_LOG("WARNING: DXSTG emulation supports flags only, things will probably break");
-			break;
-		}
+                        line.tag.setAddr(cpuRegs.CP0.n.TagLo);
+						line.tag.rawValue &= ~CacheTag::ALL_FLAGS;
+						line.tag.rawValue |= (cpuRegs.CP0.n.TagLo & CacheTag::ALL_FLAGS);
 
-		case 0x14: //DXWBIN (Data Cache Index WriteBack Invalidate)
-		{
-			const int index = (addr >> 6) & 0x3F;
-			const int way = addr & 0x1;
-			CacheLine line = cache.lineAt(index, way);
+						CACHE_LOG("CACHE DXSTG addr %x, index %d, way %d, DATA %x OP %x", addr, index, way, cpuRegs.CP0.n.TagLo, cpuRegs.code);
+						break;
+					}
 
-			CACHE_LOG("CACHE DXWBIN addr %x, index %d, way %d, flags %x paddr %zx", addr, index, way, line.tag.flags(), line.addr());
-			line.writeBackIfNeeded();
-			line.clear();
-			break;
-		}
+					case 0x14: //DXWBIN (Data Cache Index WriteBack Invalidate)
+					{
+						const int index = (addr >> 6) & 0x3F;
+						const int way = addr & 0x1;
+						CacheLine line = cache.lineAt(index, way);
 
-		case 0x7: //IXIN (Instruction Cache Index Invalidate)
-		{
-			//Not Implemented as we do not have instruction cache
-			break;
-		}
+						CACHE_LOG("CACHE DXWBIN addr %x, index %d, way %d, flags %x paddr %zx", addr, index, way, line.tag.flags(), line.addr());
+						line.writeBackIfNeeded();
+						line.clear();
+						break;
+					}
 
-		case 0xC: //BFH (BTAC Flush)
-		{
-			//Not Implemented as we do not cache Branch Target Addresses.
-			break;
-		}
+					case 0x7: //IXIN (Instruction Cache Index Invalidate)
+					{
+						//Not Implemented as we do not have instruction cache
+						break;
+					}
 
-		default:
-			DevCon.Warning("Cache mode %x not implemented", _Rt_);
-			break;
-	}
-}
-}		// end namespace OpcodeImpl
+					case 0xC: //BFH (BTAC Flush)
+					{
+						//Not Implemented as we do not cache Branch Target Addresses.
+						break;
+					}
 
-}}
+					default:
+						DevCon.Warning("Cache mode %x not implemented", _Rt_);
+						break;
+				}
+			}
+		} // end namespace OpcodeImpl
+
+	} // namespace Interpreter
+} // namespace R5900
