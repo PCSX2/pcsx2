@@ -2185,34 +2185,34 @@ Topplists-Position: {1} av {2}</translation>
       <translation>Rensa mappning</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="37"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="37"/>
       <source>Controller Port %1</source>
       <translation>Kontrolluttag %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="198"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="198"/>
       <source>No devices available</source>
       <translation>Inga enheter tillgängliga</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="208"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="208"/>
       <source>Clear Bindings</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
       <translation>Rensa bindningar</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="210"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="210"/>
       <source>Are you sure you want to clear all bindings for this controller? This action cannot be undone.</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
       <translation>Är du säker på att du vill rensa alla bindningar till den här kontrollen? Denna åtgärd går inte att ångra.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="239"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="239"/>
       <source>Automatic Binding</source>
       <translation>Automatisk bindning</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="240"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="240"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
       <translation>Ingen generisk bindning skapades för enheten &apos;%1&apos;. Kontrollen/källan kanske inte stöder automatisk mappning.</translation>
     </message>
@@ -2500,17 +2500,17 @@ Topplists-Position: {1} av {2}</translation>
   <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="709"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="709"/>
       <source>Restore Default Settings</source>
       <translation>Återställ standardinställningar</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="681"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="681"/>
       <source>Browse...</source>
       <translation>Bläddra...</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="685"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="685"/>
       <source>Select File</source>
       <translation>Välj fil</translation>
     </message>
@@ -2746,33 +2746,33 @@ Topplists-Position: {1} av {2}</translation>
       <translation>Ställ in...</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="390"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="390"/>
       <source>Not Configured</source>
       <translation>Inte Konfigurerad</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="395"/>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="400"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="395"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="400"/>
       <source>%1%</source>
       <translation>%1 %</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="407"/>
       <source>Set Frequency</source>
       <translation>Ange Frekvens</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="407"/>
       <source>Frequency: </source>
       <translation>Frekvens: </translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="434"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="434"/>
       <source>Macro will not repeat.</source>
       <translation>Makrot kommer inte att upprepas.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="436"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="436"/>
       <source>Macro will toggle buttons every %1 frames.</source>
       <translation>Makrot kommer växla varje %1 bilder.</translation>
     </message>
@@ -2780,12 +2780,12 @@ Topplists-Position: {1} av {2}</translation>
   <context>
     <name>ControllerMacroWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="278"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="278"/>
       <source>Controller Port %1 Macros</source>
       <translation>Kontrollport %1 Macron</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="287"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="287"/>
       <source>Macro %1
 %2</source>
       <extracomment>This is the full text that appears in each option of the 16 available macros, and reads like this:
@@ -18220,12 +18220,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
   <context>
     <name>USBBindingWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1221"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1221"/>
       <source>Axes</source>
       <translation type="unfinished">Axes</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1249"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1249"/>
       <source>Buttons</source>
       <translation type="unfinished">Buttons</translation>
     </message>
@@ -18547,32 +18547,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <translation type="unfinished">Clear Mapping</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="936"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="936"/>
       <source>USB Port %1</source>
       <translation type="unfinished">USB Port %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1102"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1102"/>
       <source>No devices available</source>
       <translation type="unfinished">No devices available</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1111"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1111"/>
       <source>Clear Bindings</source>
       <translation type="unfinished">Clear Bindings</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1112"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1112"/>
       <source>Are you sure you want to clear all bindings for this device? This action cannot be undone.</source>
       <translation type="unfinished">Are you sure you want to clear all bindings for this device? This action cannot be undone.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1141"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1141"/>
       <source>Automatic Binding</source>
       <translation type="unfinished">Automatic Binding</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1142"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1142"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
       <translation type="unfinished">No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</translation>
     </message>

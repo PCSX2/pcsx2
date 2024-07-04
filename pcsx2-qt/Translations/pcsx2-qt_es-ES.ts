@@ -2185,34 +2185,34 @@ Posición en tabla: {1} de {2}</translation>
       <translation>Borrar asignaciones</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="37"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="37"/>
       <source>Controller Port %1</source>
       <translation>Puerto de mando %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="198"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="198"/>
       <source>No devices available</source>
       <translation>No hay dispositivos disponibles</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="208"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="208"/>
       <source>Clear Bindings</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
       <translation>Borrar asignaciones</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="210"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="210"/>
       <source>Are you sure you want to clear all bindings for this controller? This action cannot be undone.</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
       <translation>¿Seguro que quieres borrar todas las asignaciones de este mando? Esta acción no se puede deshacer.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="239"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="239"/>
       <source>Automatic Binding</source>
       <translation>Asignación automática</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="240"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="240"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
       <translation>No se han generado asignaciones automáticas para el dispositivo «%1». El mando u origen podría no ser compatible con la asignación automática.</translation>
     </message>
@@ -2500,17 +2500,17 @@ Posición en tabla: {1} de {2}</translation>
   <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="709"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="709"/>
       <source>Restore Default Settings</source>
       <translation>Restaurar configuración predeterminada</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="681"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="681"/>
       <source>Browse...</source>
       <translation>Buscar...</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="685"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="685"/>
       <source>Select File</source>
       <translation>Seleccionar archivo</translation>
     </message>
@@ -2746,33 +2746,33 @@ Posición en tabla: {1} de {2}</translation>
       <translation>Establecer...</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="390"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="390"/>
       <source>Not Configured</source>
       <translation>Sin configurar</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="395"/>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="400"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="395"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="400"/>
       <source>%1%</source>
       <translation>%1 %</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="407"/>
       <source>Set Frequency</source>
       <translation>Establecer frecuencia</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="407"/>
       <source>Frequency: </source>
       <translation>Frecuencia: </translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="434"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="434"/>
       <source>Macro will not repeat.</source>
       <translation>La macro no se repetirá.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="436"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="436"/>
       <source>Macro will toggle buttons every %1 frames.</source>
       <translation>La macro alternará los botones cada %1 fotogramas.</translation>
     </message>
@@ -2780,12 +2780,12 @@ Posición en tabla: {1} de {2}</translation>
   <context>
     <name>ControllerMacroWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="278"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="278"/>
       <source>Controller Port %1 Macros</source>
       <translation>Macros del puerto de mando %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="287"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="287"/>
       <source>Macro %1
 %2</source>
       <extracomment>This is the full text that appears in each option of the 16 available macros, and reads like this:
@@ -18220,12 +18220,12 @@ La búsqueda recursiva lleva más tiempo, pero identificará los archivos que se
   <context>
     <name>USBBindingWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1221"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1221"/>
       <source>Axes</source>
       <translation>Ejes</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1249"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1249"/>
       <source>Buttons</source>
       <translation>Botones</translation>
     </message>
@@ -18547,32 +18547,32 @@ La búsqueda recursiva lleva más tiempo, pero identificará los archivos que se
       <translation>Borrar asignaciones</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="936"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="936"/>
       <source>USB Port %1</source>
       <translation>Puerto USB %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1102"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1102"/>
       <source>No devices available</source>
       <translation>No hay dispositivos disponibles</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1111"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1111"/>
       <source>Clear Bindings</source>
       <translation>Borrar asignaciones</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1112"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1112"/>
       <source>Are you sure you want to clear all bindings for this device? This action cannot be undone.</source>
       <translation>¿Seguro que quieres borrar todas las asignaciones de este dispositivo? Esta acción no se puede deshacer.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1141"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1141"/>
       <source>Automatic Binding</source>
       <translation>Asignación automática</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1142"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1142"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
       <translation>No se han generado asignaciones automáticas para el dispositivo «%1». El mando u origen podría no ser compatible con la asignación automática.</translation>
     </message>

@@ -65,12 +65,12 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/BIOSSettingsWidget.cpp
 	Settings/BIOSSettingsWidget.h
 	Settings/BIOSSettingsWidget.ui
-	Settings/ControllerBindingWidget.ui
 	Settings/ControllerBindingWidget_DualShock2.ui
 	Settings/ControllerBindingWidget_Guitar.ui
 	Settings/ControllerBindingWidget_Popn.ui
-	Settings/ControllerBindingWidgets.cpp
-	Settings/ControllerBindingWidgets.h
+	Settings/ControllerBindingWidget.cpp
+	Settings/ControllerBindingWidget.h
+	Settings/ControllerBindingWidget.ui
 	Settings/ControllerLEDSettingsDialog.ui
 	Settings/ControllerGlobalSettingsWidget.cpp
 	Settings/ControllerGlobalSettingsWidget.h
