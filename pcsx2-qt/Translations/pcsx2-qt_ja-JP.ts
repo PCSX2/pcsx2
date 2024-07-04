@@ -2180,34 +2180,34 @@ Leaderboard Position: {1} of {2}</source>
       <translation>マッピングをクリア</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="37"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="37"/>
       <source>Controller Port %1</source>
       <translation>コントローラー端子 %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="198"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="198"/>
       <source>No devices available</source>
       <translation>利用可能なデバイスがありません</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="208"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="208"/>
       <source>Clear Bindings</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
       <translation>割り当てを消去</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="210"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="210"/>
       <source>Are you sure you want to clear all bindings for this controller? This action cannot be undone.</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
       <translation>このコントローラーの割り当てを全て消去してもよろしいですか？この操作は元に戻せません。</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="239"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="239"/>
       <source>Automatic Binding</source>
       <translation>自動割り当て</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="240"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="240"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
       <translation>デバイス「%1」に対して汎用割り当てが生成されませんでした。このコントローラー/ソースは自動割り当てをサポートしていない可能性があります。</translation>
     </message>
@@ -2495,17 +2495,17 @@ Leaderboard Position: {1} of {2}</source>
   <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="709"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="709"/>
       <source>Restore Default Settings</source>
       <translation>初期設定に戻す</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="681"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="681"/>
       <source>Browse...</source>
       <translation>参照...</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="685"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="685"/>
       <source>Select File</source>
       <translation>ファイル選択</translation>
     </message>
@@ -2741,33 +2741,33 @@ Leaderboard Position: {1} of {2}</source>
       <translation>設定...</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="390"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="390"/>
       <source>Not Configured</source>
       <translation>設定されていません</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="395"/>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="400"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="395"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="400"/>
       <source>%1%</source>
       <translation>%1%</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="407"/>
       <source>Set Frequency</source>
       <translation>頻度を設定</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="407"/>
       <source>Frequency: </source>
       <translation>頻度: </translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="434"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="434"/>
       <source>Macro will not repeat.</source>
       <translation>マクロは繰り返されません。</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="436"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="436"/>
       <source>Macro will toggle buttons every %1 frames.</source>
       <translation>%1 フレーム毎にボタンのオンオフが切り替わります。</translation>
     </message>
@@ -2775,12 +2775,12 @@ Leaderboard Position: {1} of {2}</source>
   <context>
     <name>ControllerMacroWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="278"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="278"/>
       <source>Controller Port %1 Macros</source>
       <translation>コントローラー端子 %1 マクロ</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="287"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="287"/>
       <source>Macro %1
 %2</source>
       <extracomment>This is the full text that appears in each option of the 16 available macros, and reads like this:
@@ -18207,12 +18207,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
   <context>
     <name>USBBindingWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1221"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1221"/>
       <source>Axes</source>
       <translation>軸</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1249"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1249"/>
       <source>Buttons</source>
       <translation>ボタン</translation>
     </message>
@@ -18534,32 +18534,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <translation>マッピングをクリア</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="936"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="936"/>
       <source>USB Port %1</source>
       <translation>USB ポート %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1102"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1102"/>
       <source>No devices available</source>
       <translation>利用可能なデバイスがありません</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1111"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1111"/>
       <source>Clear Bindings</source>
       <translation>割り当てをクリア</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1112"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1112"/>
       <source>Are you sure you want to clear all bindings for this device? This action cannot be undone.</source>
       <translation>このデバイスの割り当てを全てクリアしますか？ この操作は元に戻せません。</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1141"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1141"/>
       <source>Automatic Binding</source>
       <translation>自動割り当て</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1142"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1142"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
       <translation>デバイス「%1」に対して一般的な割り当てが生成されませんでした。このコントローラー/ソースは自動割り当てをサポートしていない可能性があります。</translation>
     </message>

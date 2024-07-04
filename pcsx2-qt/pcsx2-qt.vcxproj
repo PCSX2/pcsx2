@@ -113,7 +113,7 @@
     <ClCompile Include="Debugger\Models\StackModel.cpp" />
     <ClCompile Include="Debugger\Models\SavedAddressesModel.cpp" />
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp" />
-    <ClCompile Include="Settings\ControllerBindingWidgets.cpp" />
+    <ClCompile Include="Settings\ControllerBindingWidget.cpp" />
     <ClCompile Include="Settings\ControllerGlobalSettingsWidget.cpp" />
     <ClCompile Include="Settings\MemoryCardCreateDialog.cpp" />
     <ClCompile Include="Settings\EmulationSettingsWidget.cpp" />
@@ -205,7 +205,7 @@
     <QtMoc Include="Debugger\Models\ThreadModel.h" />
     <QtMoc Include="Debugger\Models\StackModel.h" />
     <QtMoc Include="Debugger\Models\SavedAddressesModel.h" />
-    <QtMoc Include="Settings\ControllerBindingWidgets.h" />
+    <QtMoc Include="Settings\ControllerBindingWidget.h" />
     <QtMoc Include="Settings\ControllerGlobalSettingsWidget.h" />
     <ClInclude Include="Settings\MemoryCardConvertWorker.h" />
     <ClInclude Include="SettingWidgetBinder.h" />
@@ -224,7 +224,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(IntDir)Settings\moc_BIOSSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_ControllerBindingWidgets.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_ControllerBindingWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_ControllerGlobalSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_ControllerSettingsWindow.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_MemoryCardCreateDialog.cpp" />

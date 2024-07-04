@@ -15,7 +15,7 @@
 #include "pcsx2/Host.h"
 #include "pcsx2/SIO/Pad/Pad.h"
 
-#include "Settings/ControllerBindingWidgets.h"
+#include "Settings/ControllerBindingWidget.h"
 #include "Settings/ControllerSettingsWindow.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
 #include "Settings/SettingsWindow.h"

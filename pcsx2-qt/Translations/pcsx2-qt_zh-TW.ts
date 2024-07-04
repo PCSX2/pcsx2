@@ -2180,34 +2180,34 @@ Leaderboard Position: {1} of {2}</translation>
       <translation>清除對映</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="37"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="37"/>
       <source>Controller Port %1</source>
       <translation>控制器埠 %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="198"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="198"/>
       <source>No devices available</source>
       <translation>無可用裝置</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="208"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="208"/>
       <source>Clear Bindings</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
       <translation>清除繫結</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="210"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="210"/>
       <source>Are you sure you want to clear all bindings for this controller? This action cannot be undone.</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
       <translation>您確定要清除此控制器的所有按鍵對映嗎？這一行為是無法撤銷的。</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="239"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="239"/>
       <source>Automatic Binding</source>
       <translation>自動繫結</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="240"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="240"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
       <translation>沒有為裝置 '%1' 產生常規繫結。此控制器/源可能不支援自動對映。</translation>
     </message>
@@ -2495,17 +2495,17 @@ Leaderboard Position: {1} of {2}</translation>
   <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="709"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="709"/>
       <source>Restore Default Settings</source>
       <translation>還原預設設定</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="681"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="681"/>
       <source>Browse...</source>
       <translation>瀏覽...</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="685"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="685"/>
       <source>Select File</source>
       <translation>選擇檔案</translation>
     </message>
@@ -2741,33 +2741,33 @@ Leaderboard Position: {1} of {2}</translation>
       <translation>設定...</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="390"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="390"/>
       <source>Not Configured</source>
       <translation>未被配置</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="395"/>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="400"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="395"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="400"/>
       <source>%1%</source>
       <translation type="unfinished">%1%</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="407"/>
       <source>Set Frequency</source>
       <translation>設定頻率</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="407"/>
       <source>Frequency: </source>
       <translation>頻率: </translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="434"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="434"/>
       <source>Macro will not repeat.</source>
       <translation>宏將不會重複。</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="436"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="436"/>
       <source>Macro will toggle buttons every %1 frames.</source>
       <translation>宏命令將每間隔 %1 幀觸發按鈕。</translation>
     </message>
@@ -2775,12 +2775,12 @@ Leaderboard Position: {1} of {2}</translation>
   <context>
     <name>ControllerMacroWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="278"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="278"/>
       <source>Controller Port %1 Macros</source>
       <translation>控制器埠 %1 宏</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="287"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="287"/>
       <source>Macro %1
 %2</source>
       <extracomment>This is the full text that appears in each option of the 16 available macros, and reads like this:
@@ -18210,12 +18210,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
   <context>
     <name>USBBindingWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1221"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1221"/>
       <source>Axes</source>
       <translation>軸</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1249"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1249"/>
       <source>Buttons</source>
       <translation>按鈕</translation>
     </message>
@@ -18537,32 +18537,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <translation>清除對映</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="936"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="936"/>
       <source>USB Port %1</source>
       <translation>USB 埠 %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1102"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1102"/>
       <source>No devices available</source>
       <translation>無可用裝置</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1111"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1111"/>
       <source>Clear Bindings</source>
       <translation>清除繫結</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1112"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1112"/>
       <source>Are you sure you want to clear all bindings for this device? This action cannot be undone.</source>
       <translation>您確實要清除此裝置的所有繫結嗎?此操作無法撤銷。</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1141"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1141"/>
       <source>Automatic Binding</source>
       <translation>自動繫結</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidgets.cpp" line="1142"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1142"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
       <translation>沒有為裝置 '%1' 產生常規繫結。此控制器/源可能不支援自動對映。</translation>
     </message>

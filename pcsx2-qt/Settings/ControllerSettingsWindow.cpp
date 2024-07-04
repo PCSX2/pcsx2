@@ -4,7 +4,7 @@
 #include "QtHost.h"
 #include "Settings/ControllerSettingsWindow.h"
 #include "Settings/ControllerGlobalSettingsWidget.h"
-#include "Settings/ControllerBindingWidgets.h"
+#include "Settings/ControllerBindingWidget.h"
 #include "Settings/HotkeySettingsWidget.h"
 
 #include "pcsx2/INISettingsInterface.h"
