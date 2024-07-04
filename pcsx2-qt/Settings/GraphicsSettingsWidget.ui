@@ -2087,6 +2087,13 @@
               </property>
              </widget>
             </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="extendedUpscales">
+              <property name="text">
+               <string>Extended Upscaling Multipliers</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item row="2" column="0">

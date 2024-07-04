@@ -235,6 +235,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useDebugDevice, "EmuCore/GS", "UseDebugDevice", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.skipPresentingDuplicateFrames, "EmuCore/GS", "SkipDuplicateFrames", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableMailboxPresentation, "EmuCore/GS", "DisableMailboxPresentation", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.extendedUpscales, "EmuCore/GS", "ExtendedUpscalingMultipliers", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.exclusiveFullscreenControl, "EmuCore/GS", "ExclusiveFullscreenControl", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overrideTextureBarriers, "EmuCore/GS", "OverrideTextureBarriers", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(
@@ -284,6 +285,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 	connect(m_ui.rendererDropdown, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GraphicsSettingsWidget::onRendererChanged);
 	connect(m_ui.enableHWFixes, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updateRendererDependentOptions);
+	connect(m_ui.extendedUpscales, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updateRendererDependentOptions);
 	connect(m_ui.textureFiltering, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onTextureFilteringChange);
 	connect(m_ui.swTextureFiltering, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onSWTextureFilteringChange);
 	updateRendererDependentOptions();
@@ -302,7 +304,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		m_ui.gsDownloadMode = nullptr;
 
 		// Don't allow setting hardware fixes globally.
-		// Too many stupid youtube "best settings" guides, that break other games.
+		// Too many stupid YouTube "best settings" guides that break other games.
 		m_ui.hardwareRenderingOptionsLayout->removeWidget(m_ui.enableHWFixes);
 		delete m_ui.enableHWFixes;
 		m_ui.enableHWFixes = nullptr;
@@ -341,6 +343,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		m_ui.exclusiveFullscreenControl = nullptr;
 		m_ui.useBlitSwapChain = nullptr;
 		m_ui.disableMailboxPresentation = nullptr;
+		m_ui.extendedUpscales = nullptr;
 		m_ui.skipPresentingDuplicateFrames = nullptr;
 		m_ui.overrideTextureBarriers = nullptr;
 		m_ui.disableFramebufferFetch = nullptr;
@@ -784,6 +787,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
 			   "Usually results in worse frame pacing."));
 
+		dialog->registerWidgetHelp(m_ui.extendedUpscales, tr("Extended Upscaling Multipliers"), tr("Unchecked"),
+			tr("Displays additional, very high upscaling multipliers dependent on GPU capability."));
+
 		dialog->registerWidgetHelp(m_ui.useDebugDevice, tr("Enable Debug Device"), tr("Unchecked"),
 			tr("Enables API-level validation of graphics commands."));
 
@@ -1109,22 +1115,37 @@ void GraphicsSettingsWidget::populateUpscaleMultipliers(u32 max_upscale_multipli
 {
 	static constexpr std::pair<const char*, float> templates[] = {
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Native (PS2) (Default)"), 1.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.25x Native"), 1.25f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.5x Native"), 1.5f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.75x Native"), 1.75f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2x Native (~720p)"), 2.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2.25x Native"), 2.25f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2.5x Native"), 2.5f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2.75x Native"), 2.75f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3x Native (~1080p)"), 3.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3.5x Native"), 3.5f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "4x Native (~1440p/2K)"), 4.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "5x Native (~1620p)"), 5.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "6x Native (~2160p/4K)"), 6.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "7x Native (~2520p)"), 7.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "8x Native (~2880p/5K)"), 8.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.25x Native (~450px)"), 1.25f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.5x Native (~540px)"), 1.5f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.75x Native (~630px)"), 1.75f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2x Native (~720px/HD)"), 2.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2.5x Native (~900px/HD+)"), 2.5f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3x Native (~1080px/FHD)"), 3.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3.5x Native (~1260px)"), 3.5f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "4x Native (~1440px/QHD)"), 4.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "5x Native (~1800px/QHD+)"), 5.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "6x Native (~2160px/4K UHD)"), 6.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "7x Native (~2520px)"), 7.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "8x Native (~2880px/5K UHD)"), 8.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "9x Native (~3240px)"), 9.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "10x Native (~3600px/6K UHD)"), 10.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "11x Native (~3960px)"), 11.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "12x Native (~4320px/8K UHD)"), 12.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "13x Native (~4680px)"), 13.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "14x Native (~5040px)"), 14.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "15x Native (~5400px)"), 15.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "16x Native (~5760px)"), 16.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "17x Native (~6120px)"), 17.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "18x Native (~6480px/12K UHD)"), 18.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "19x Native (~6840px)"), 19.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "20x Native (~7200px)"), 20.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "21x Native (~7560px)"), 21.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "22x Native (~7920px)"), 22.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "23x Native (~8280px)"), 23.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "24x Native (~8640px/16K UHD)"), 24.0f},
+		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "25x Native (~9000px)"), 25.0f},
 	};
-	static constexpr u32 max_template_multiplier = 8;
+	static constexpr u32 max_template_multiplier = 25;
 
 	// Limit the dropdown to 12x if we're not showing advanced settings. Save the noobs.
 	static constexpr u32 max_non_advanced_multiplier = 12;
@@ -1132,16 +1153,16 @@ void GraphicsSettingsWidget::populateUpscaleMultipliers(u32 max_upscale_multipli
 	QSignalBlocker sb(m_ui.upscaleMultiplier);
 	m_ui.upscaleMultiplier->clear();
 
+	const u32 max_shown_multiplier = m_ui.extendedUpscales && m_ui.extendedUpscales->checkState() == Qt::Checked ?
+										 max_upscale_multiplier :
+										 std::min(max_upscale_multiplier, max_non_advanced_multiplier);
 	for (const auto& [name, value] : templates)
 	{
-		if (value > max_upscale_multiplier)
-			continue;
+		if (value > max_shown_multiplier)
+			break;
 
 		m_ui.upscaleMultiplier->addItem(tr(name), QVariant(value));
 	}
-	const u32 max_shown_multiplier = QtHost::ShouldShowAdvancedSettings() ?
-										 max_upscale_multiplier :
-										 std::min(max_upscale_multiplier, max_non_advanced_multiplier);
 	for (u32 i = max_template_multiplier + 1; i <= max_shown_multiplier; i++)
 		m_ui.upscaleMultiplier->addItem(tr("%1x Native").arg(i), QVariant(static_cast<float>(i)));
 
