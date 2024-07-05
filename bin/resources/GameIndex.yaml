@@ -23685,7 +23685,7 @@ SLES-54151:
   region: "PAL-M5"
   compat: 5
   clampModes:
-    eeClampMode: 3 # Makes the game to correctly register left and right Dpad button input.
+    eeClampMode: 3 # Makes the game correctly register left and right Dpad button input.
   memcardFilters: # Enables import of players from completed career saves.
     - "SLES-54151"
     - "SLES-54153"
@@ -45821,6 +45821,8 @@ SLPM-66644:
   name-sort: Jりーぐ ぷろさっかーくらぶをつくろう!5
   name-en: "J-League Pro Soccer Club o Tsukurou 5"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Makes the game correctly register left and right Dpad button input.
 SLPM-66645:
   name: バイオニクル ヒーローズ
   name-sort: ばいおにくる ひーろーず
