@@ -546,7 +546,7 @@ namespace usb_hid
 		{Q_KEY_CODE_CUT, "Cut"},
 		{Q_KEY_CODE_D, "D"},
 		{Q_KEY_CODE_DELETE, "Delete"},
-		{Q_KEY_CODE_DOT, "Dot"},
+		{Q_KEY_CODE_DOT, "Period"},
 		{Q_KEY_CODE_DOWN, "Down"},
 		{Q_KEY_CODE_E, "E"},
 		{Q_KEY_CODE_END, "End"},
