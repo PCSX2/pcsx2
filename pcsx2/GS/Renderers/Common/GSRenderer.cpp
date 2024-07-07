@@ -257,21 +257,22 @@ GSVector2i GSRenderer::GetInternalResolution()
 
 float GSRenderer::GetModXYOffset()
 {
-	float mod_xy = 0.0f;
-
 	if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::Normal)
 	{
-		mod_xy = GetUpscaleMultiplier();
-		switch (static_cast<int>(std::round(mod_xy)))
+		float mod_xy = GetUpscaleMultiplier();
+		const int rounded_mod_xy = static_cast<int>(std::round(mod_xy));
+		if (rounded_mod_xy > 1)
 		{
-			case 2: case 4: case 6: case 8: mod_xy += 0.2f; break;
-			case 3: case 7:                 mod_xy += 0.1f; break;
-			case 5:                         mod_xy += 0.3f; break;
-			default:                        mod_xy = 0.0f; break;
+			if (!(rounded_mod_xy & 1))
+				return mod_xy += 0.2f;
+			else if (!(rounded_mod_xy & 2))
+				return mod_xy += 0.3f;
+			else
+				return mod_xy += 0.1f;
 		}
 	}
 
-	return mod_xy;
+	return 0.0f;
 }
 
 static float GetCurrentAspectRatioFloat(bool is_progressive)
