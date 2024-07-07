@@ -20072,6 +20072,7 @@ SLES-52917:
     eeRoundMode: 2 # Fixes missing text.
   gsHWFixes:
     autoFlush: 1 # Fixes player shadow.
+    nativeScaling: 2 # Fixes post processing position.
 SLES-52918:
   name: "Scaler"
   region: "PAL-M4"
@@ -20080,6 +20081,7 @@ SLES-52918:
     eeRoundMode: 2 # Fixes missing text.
   gsHWFixes:
     autoFlush: 1 # Fixes player shadow.
+    nativeScaling: 2 # Fixes post processing position.
 SLES-52919:
   name: "NRL Rugby League 2"
   region: "PAL-E"
@@ -62349,6 +62351,7 @@ SLUS-20957:
     eeRoundMode: 2 # Fixes missing text.
   gsHWFixes:
     autoFlush: 1 # Fixes player shadow.
+    nativeScaling: 2 # Fixes post processing position.
 SLUS-20958:
   name: "Tom Clancy's Splinter Cell - Pandora Tomorrow"
   region: "NTSC-U"
