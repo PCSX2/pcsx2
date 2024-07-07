@@ -5,6 +5,13 @@
 
 GSRendererNull::GSRendererNull() = default;
 
+void GSRendererNull::VSync(u32 field, bool registers_written, bool idle_frame)
+{
+	GSRenderer::VSync(field, registers_written, idle_frame);
+
+	m_draw_transfers.clear();
+}
+
 void GSRendererNull::Draw()
 {
 }
