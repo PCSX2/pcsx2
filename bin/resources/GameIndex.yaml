@@ -30574,7 +30574,9 @@ SLPM-55040:
   name: "Soukoku no Kusabi - Hiiro no Kakera 3"
   region: "NTSC-J"
 SLPM-55041:
-  name: "Kanokon Esuii"
+  name: "かのこん えすいー"
+  name-sort: "かのこん えすいー"
+  name-en: "Kanokon Esuii"
   region: "NTSC-J"
 SLPM-55042:
   name: "Suika A.S+ Eternal Name - Sweet So Sweet [Best Edition]"
@@ -30604,7 +30606,9 @@ SLPM-55051:
   name: "Will o' Wisp - Easter no Kiseki"
   region: "NTSC-J"
 SLPM-55052:
-  name: "Triggerheart Exelica Enhanced"
+  name: "トリガーハート エグゼリカ エンハンスド"
+  name-sort: "とりがーはーと えぐぜりか えんはんすど"
+  name-en: "Triggerheart Exelica Enhanced"
   region: "NTSC-J"
 SLPM-55053:
   name: "Shi no Homura"
@@ -30616,7 +30620,9 @@ SLPM-55055:
   name: "Kanuchi - Shiroki Tsubasa no Shou"
   region: "NTSC-J"
 SLPM-55056:
-  name: "Wrestle Angels Survivor 2 [Limited Edition]"
+  name: "レッスルエンジェルス サバイバー2 [限定版]"
+  name-sort: "れっするえんじぇるす さばいばー2 [げんていばん]"
+  name-en: "Wrestle Angels Survivor 2 [Limited Edition]"
   region: "NTSC-J"
   speedHacks:
     eeCycleRate: -2 # Fixes FMV playback.
@@ -31007,10 +31013,14 @@ SLPM-55161:
   name: "Kanuchi - Kuroki Tsubasa no Shou"
   region: "NTSC-J"
 SLPM-55162:
-  name: "Myself; Yourself - Sorezore no Finale [First Limited Edition]"
+  name: "Myself; Yourself それぞれのfinale [初回限定版]"
+  name-sort: "Myself; Yourself それぞれのfinale [しょかいげんていばん]"
+  name-en: "Myself; Yourself - Sorezore no Finale [First Limited Edition]"
   region: "NTSC-J"
 SLPM-55163:
-  name: "Myself; Yourself - Sorezore no Finale"
+  name: "Myself; Yourself それぞれのfinale"
+  name-sort: "Myself; Yourself それぞれのfinale"
+  name-en: "Myself; Yourself - Sorezore no Finale"
   region: "NTSC-J"
 SLPM-55164:
   name: "Myself; Yourself [Yeti Best]"
@@ -31036,7 +31046,9 @@ SLPM-55170:
   name-en: "Skip Beat!"
   region: "NTSC-J"
 SLPM-55173:
-  name: "Strike Witches - Anata to Dekiru Koto [Limited Edition]"
+  name: "ストライクウィッチーズ あなたとできること [限定版]"
+  name-sort: "すとらいくうぃっちーず あなたとできること [げんていばん]"
+  name-en: "Strike Witches - Anata to Dekiru Koto [Limited Edition]"
   region: "NTSC-J"
 SLPM-55174:
   name: "Strike Witches - Anata to Dekiru Koto - A Little Peaceful Days"
@@ -31149,10 +31161,14 @@ SLPM-55211:
   name: "Pachislot Higurashi no Naku Koro ni Matsuri"
   region: "NTSC-J"
 SLPM-55212:
-  name: "Jigoku Shoujo Mioyosuga [Limited Edition]"
+  name: "地獄少女 澪縁 [限定版]"
+  name-sort: "じごくしょうじょ みおよすが [げんていばん]"
+  name-en: "Jigoku Shoujo Mioyosuga [Limited Edition]"
   region: "NTSC-J"
 SLPM-55213:
-  name: "Jigoku Shoujo Mioyosuga"
+  name: "地獄少女 澪縁"
+  name-sort: "じごくしょうじょ みおよすが"
+  name-en: "Jigoku Shoujo Mioyosuga"
   region: "NTSC-J"
 SLPM-55214:
   name: "Hiiro no Kakera - Shin Tamayori-hime Denshou"
@@ -31196,7 +31212,9 @@ SLPM-55226:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
 SLPM-55227:
-  name: "Sekirei - Mirai kara no Okurimono"
+  name: "セキレイ 〜未来からのおくりもの〜"
+  name-sort: "せきれい みらいからのおくりもの"
+  name-en: "Sekirei - Mirai kara no Okurimono"
   region: "NTSC-J"
 SLPM-55228:
   name: "Slotter Up Mania 11 - 2027 vs. 2027 II"
@@ -31321,19 +31339,25 @@ SLPM-55263:
   name-en: "Hana to Otome ni Shukufuku o - Harukaze no Okurimono [St. Lupinus Box]"
   region: "NTSC-J"
 SLPM-55264:
-  name: "Moujuutsukai to Oujisama [Limited Edition - Twin Pack]"
+  name: "猛獣使いと王子様 [限定版 - ツインパック]"
+  name-sort: "もうじゅうつかいとおうじさま [げんていばん - ついんぱっく]"
+  name-en: "Moujuutsukai to Oujisama [Limited Edition - Twin Pack]"
   region: "NTSC-J"
 SLPM-55266:
   name: "Scared Rider Xechs"
   region: "NTSC-J"
 SLPM-55267:
-  name: "Natsuzora no Monologue [Limited Edition]"
+  name: "夏空のモノローグ [限定版]"
+  name-sort: "なつぞらのものろーぐ [げんていばん]"
+  name-en: "Natsuzora no Monologue [Limited Edition]"
   region: "NTSC-J"
 SLPM-55268:
   name: "Nobunaga no Yabou - Kakushin with Power-Up Kit [Koei Tecmo the Best]"
   region: "NTSC-J"
 SLPM-55269:
-  name: "Pandora - Kimi no Namae o Boku ha Shiru"
+  name: "PANDORA 〜君の名前を僕は知る〜"
+  name-sort: "PANDORA 〜きみのなまえをぼくはしる〜"
+  name-en: "Pandora - Kimi no Namae o Boku ha Shiru"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Vertical and horizontal lines in FMV.
@@ -31422,7 +31446,9 @@ SLPM-55298:
   name-en: "Final Fantasy XI - Adoulin no Makyou"
   region: "NTSC-J"
 SLPM-60101:
-  name: "0 Story [Trial]"
+  name: "ØSTORY [体験版]"
+  name-sort: "らぶすとーりー [たいけんばん]"
+  name-en: "0 Story [Trial]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes removed bloom in FMV.
@@ -31562,7 +31588,9 @@ SLPM-60142:
   name: "Densha de Go! 3 - Tsuukin-hen"
   region: "NTSC-J"
 SLPM-60143:
-  name: "Tekkouki Mikazuki"
+  name: "鉄甲機ミカズキ"
+  name-sort: "てっこうきみかずき"
+  name-en: "Tekkouki Mikazuki"
   region: "NTSC-J"
 SLPM-60145:
   name: "Shadow Hearts"
@@ -37146,13 +37174,15 @@ SLPM-65144:
   speedHacks:
     mvuFlag: 0
 SLPM-65145:
-  name: "Tokimeki Memorial - Girl's Side"
+  name: "ときめきメモリアル Girl's Side"
+  name-sort: "ときめきめもりある がーるずさいど"
+  name-en: "Tokimeki Memorial - Girl's Side"
   region: "NTSC-J"
 SLPM-65146:
   name: "Shin Sangoku Musou 2"
   region: "NTSC-J"
 SLPM-65148:
-  name: "電車でGO!〜旅情編〜"
+  name: "電車でGO!　〜旅情編〜"
   name-sort: "でんしゃでごー りょじょうへん"
   name-en: "Densha de Go! Ryojou-hen"
   region: "NTSC-J"
@@ -37863,7 +37893,9 @@ SLPM-65271:
   name-en: "Over the Monochrome Rainbow featuring Shogo Hamada"
   region: "NTSC-J"
 SLPM-65272:
-  name: "Kyuuketsu-hime Yui - Sen'yashou"
+  name: "吸血姫夕維 -千夜抄-"
+  name-sort: "きゅうけつひめゆい -せんやしょう-"
+  name-en: "Kyuuketsu-hime Yui - Sen'yashou"
   region: "NTSC-J"
 SLPM-65273:
   name: "トライアングルアゲイン2"
@@ -37970,7 +38002,9 @@ SLPM-65291:
   name-en: "Merge Marginal"
   region: "NTSC-J"
 SLPM-65292:
-  name: "Love Hina Gorgeous - Chiratto Happening!!"
+  name: "ラブひな ごーじゃす 〜チラっとハプニング!!〜"
+  name-sort: "らぶひな ごーじゃす 〜ちらっとはぷにんぐ!!〜"
+  name-en: "Love Hina Gorgeous - Chiratto Happening!!"
   region: "NTSC-J"
 SLPM-65294:
   name: "カフェ・リトルウィッシュ 〜魔法のレシピ〜 初回限定版"
@@ -38510,7 +38544,9 @@ SLPM-65395:
   name-en: "Digi-Charat Fantasy"
   region: "NTSC-J"
 SLPM-65396:
-  name: "Di Gi Charat Fantasy Excellent"
+  name: "デ・ジ・キャラット ファンタジー エクセレント"
+  name-sort: "でじきゃらっと ふぁんたじー えくせれんと"
+  name-en: "Di Gi Charat Fantasy Excellent"
   region: "NTSC-J"
 SLPM-65397:
   name: "テニスの王子様 〜Kiss of Prince〜 Ice version"
@@ -38538,7 +38574,9 @@ SLPM-65401:
   name-en: "Tengai Makyou II - Manji Maru"
   region: "NTSC-J"
 SLPM-65402:
-  name: "Tengai Makyou II - Manji Maru"
+  name: "天外魔境II MANJI MARU"
+  name-sort: "てんがいまきょう2 MANJI MARU"
+  name-en: "Tengai Makyou II - Manji Maru"
   region: "NTSC-J"
 SLPM-65403:
   name: "Sangokushi Senki"
@@ -48222,7 +48260,9 @@ SLPM-68503:
     autoFlush: 1 # Fixes motion blur effect.
     halfPixelOffset: 4 # Aligns blur from upscaling.
 SLPM-68504:
-  name: "Tokimeki Memorial 3 - Special Sound Track"
+  name: "ときめきメモリアル3 スペシャルサウンドトラック"
+  name-sort: "ときめきめもりある3 すぺしゃるさうんどとらっく"
+  name-en: "Tokimeki Memorial 3 - Special Sound Track"
   region: "NTSC-J"
 SLPM-68505:
   name: "Gensou Suikoden III"
@@ -50862,7 +50902,9 @@ SLPS-20447:
   region: "NTSC-J"
   compat: 5
 SLPS-20448:
-  name: "Kamen Rider Hibiki - Taiko no Tatsujin Special Version [Trial]"
+  name: "仮面ライダー響鬼 太鼓の達人スペシャルバージョン [体験版]"
+  name-sort: "かめんらいだーひびき たいこのたつじんすぺしゃるばーじょん [たいけんばん]"
+  name-en: "Kamen Rider Hibiki - Taiko no Tatsujin Special Version [Trial]"
   region: "NTSC-J"
 SLPS-20450:
   name: "太鼓の達人 わいわいハッピー!六代目 タタコン同梱版"
@@ -51213,8 +51255,8 @@ SLPS-25002:
         //patch=0,EE,0028FEA4,word,3C140058
         //patch=0,EE,0028FEA8,word,00000000
 SLPS-25003:
-  name: "EVERGRACE"
-  name-sort: "EVERGRACE"
+  name: "エヴァ―グレイス"
+  name-sort: "えゔぁーぐれいす"
   name-en: "Evergrace"
   region: "NTSC-J"
   clampModes:
@@ -56245,7 +56287,9 @@ SLPS-25882:
   gsHWFixes:
     roundSprite: 1 # Aligns bloom effect.
 SLPS-25883:
-  name: "Katekyoo Hitman Reborn! Nerae! Ring x Vongola Trainers"
+  name: "家庭教師ヒットマンREBORN! 狙え!? リング×ボンゴレトレーナーズ"
+  name-sort: "かてきょーひっとまんREBORN! ねらえ!? りんぐ×ぼんごれとれーなーず"
+  name-en: "Katekyoo Hitman Reborn! Nerae! Ring x Vongola Trainers"
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 2 # Reduces font artifacts but characters still have major artifacts.
@@ -56357,7 +56401,9 @@ SLPS-25899:
   gsHWFixes:
     roundSprite: 2 # Reduces font artifacts but characters still have major artifacts.
 SLPS-25900:
-  name: "Kidou Senshi Gundam 00 - Gundam Meisters"
+  name: "機動戦士ガンダム00 ガンダムマイスターズ"
+  name-sort: "きどうせんしがんだむ00 がんだむまいすたーず"
+  name-en: "Kidou Senshi Gundam 00 - Gundam Meisters"
   region: "NTSC-J-K"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
@@ -56404,7 +56450,9 @@ SLPS-25911:
   name: "Hisshou Pachinko Pachi-Slot Kouryaku Series Vol. 11 - Shin Seiki Evangelion - Magokoro o, Kimi ni"
   region: "NTSC-J"
 SLPS-25912:
-  name: "Soul Eater - Battle Resonance"
+  name: "ソウルイーター バトルレゾナンス"
+  name-sort: "そうるいーたー ばとるれぞなんす"
+  name-en: "Soul Eater - Battle Resonance"
   region: "NTSC-J"
 SLPS-25914:
   name: "機動戦士ガンダム ギレンの野望 アクシズの脅威V"
@@ -56431,7 +56479,9 @@ SLPS-25917:
     cpuSpriteRenderLevel: 1 # Needed for above.
     getSkipCount: "GSC_SacredBlaze"
 SLPS-25918:
-  name: "Amagami"
+  name: "アマガミ"
+  name-sort: "あまがみ"
+  name-en: "Amagami"
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes character sprites.
