@@ -7280,23 +7280,30 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 	const GSVector2i draw_size = GSVector2i(m_vt.m_max.p.x - m_vt.m_min.p.x, m_vt.m_max.p.y - m_vt.m_min.p.y);
 	const GSVector2i tex_size = GSVector2i(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
 
-	// Try to catch cases of stupid draws like Manhunt and Syphon Filter where they sample a single pixel.
-	if(tex_size.x == 0 || tex_size.y == 0 || draw_size.x == 0 || draw_size.y == 0)
-		return 0;
-
 	const bool is_target_src = src && src->m_from_target;
+
+	// Try to catch cases of stupid draws like Manhunt and Syphon Filter where they sample a single pixel.
+	// Also make sure it's grabbing most of the texture.
+	if (tex_size.x == 0 || tex_size.y == 0 || draw_size.x == 0 || draw_size.y == 0 || !is_target_src)
+		return 0;
 
 	if (is_target_src && src->m_from_target->m_downscaled && std::abs(draw_size.x - tex_size.x) <= 1 && std::abs(draw_size.y - tex_size.y) <= 1)
 		return -1;
 
-	if (!PRIM->TME || m_context->TEX1.MMAG != 1 || m_vt.m_primclass < GS_TRIANGLE_CLASS || m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 ||
-		IsMipMapDraw() || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp <= 8 || !src || !src->m_from_target)
+	const GSDrawingContext& next_ctx = m_env.CTXT[m_env.PRIM.CTXT];
+	const bool next_tex0_is_draw = m_env.PRIM.TME && next_ctx.TEX0.TBP0 == m_cached_ctx.FRAME.Block() && next_ctx.TEX1.MMAG == 1;
+	if (!PRIM->TME || (m_context->TEX1.MMAG != 1 && !next_tex0_is_draw) || m_vt.m_primclass < GS_TRIANGLE_CLASS || m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 ||
+		IsMipMapDraw() || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp <= 8)
 		return 0;
 
 	// Should usually be 2x but some games like Monster House goes from 512x448 -> 128x128
 	const bool is_downscale = m_cached_ctx.TEX0.TBW >= m_cached_ctx.FRAME.FBW && draw_size.x <= (tex_size.x * 0.75f) && draw_size.y <= (tex_size.y * 0.75f);
+	// Check we're getting most of the texture and not just stenciling a part of it.
+	// Only allow non-bilineared downscales if it's most of the target (misdetections of shadows in Naruto, Transformers etc), otherwise it's fine.
+	const GSVector2i tex_size_half = GSVector2i((src->GetRegion().HasX() ? src->GetRegionSize().x : src->m_from_target->m_valid.width()) / 2, (src->GetRegion().HasY() ? src->GetRegionSize().y : src->m_from_target->m_valid.height()) / 2);
+	const bool possible_downscale = m_context->TEX1.MMAG == 1 || src->m_from_target->m_downscaled || tex_size.x >= tex_size_half.x || tex_size.y >= tex_size_half.y;
 
-	if (is_downscale && draw_size.x >= PCRTCDisplays.GetResolution().x)
+	if (is_downscale && (draw_size.x >= PCRTCDisplays.GetResolution().x || !possible_downscale))
 		return 0;
 
 	const bool is_upscale = m_cached_ctx.TEX0.TBW <= m_cached_ctx.FRAME.FBW && ((draw_size.x / tex_size.x) >= 4 || (draw_size.y / tex_size.y) >= 4);
