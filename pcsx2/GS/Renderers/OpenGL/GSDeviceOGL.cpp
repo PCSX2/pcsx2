@@ -606,7 +606,7 @@ bool GSDeviceOGL::CreateTextureFX()
 
 bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 {
-	bool vendor_id_amd = false;
+	//bool vendor_id_amd = false;
 	bool vendor_id_nvidia = false;
 	//bool vendor_id_intel = false;
 
@@ -615,7 +615,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 		std::strstr(vendor, "ATI"))
 	{
 		Console.WriteLn(Color_StrongRed, "OGL: AMD GPU detected.");
-		vendor_id_amd = true;
+		//vendor_id_amd = true;
 	}
 	else if (std::strstr(vendor, "NVIDIA Corporation"))
 	{
@@ -712,7 +712,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 		Console.Warning("Not using PBOs for texture downloads, this may reduce performance.");
 
 	// optional features based on context
-	m_features.broken_point_sampler = vendor_id_amd;
+	m_features.broken_point_sampler = false;
 	m_features.primitive_id = true;
 
 	m_features.framebuffer_fetch = GLAD_GL_EXT_shader_framebuffer_fetch;
@@ -1377,7 +1377,6 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_COLCLIP {}\n", sel.colclip)
 		+ fmt::format("#define PS_DATE {}\n", sel.date)
 		+ fmt::format("#define PS_TCOFFSETHACK {}\n", sel.tcoffsethack)
-		+ fmt::format("#define PS_POINT_SAMPLER {}\n", sel.point_sampler)
 		+ fmt::format("#define PS_REGION_RECT {}\n", sel.region_rect)
 		+ fmt::format("#define PS_BLEND_A {}\n", sel.blend_a)
 		+ fmt::format("#define PS_BLEND_B {}\n", sel.blend_b)

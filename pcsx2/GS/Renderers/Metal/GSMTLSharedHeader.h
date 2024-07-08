@@ -212,7 +212,6 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_TEX_IS_FB,
 	GSMTLConstantIndex_PS_AUTOMATIC_LOD,
 	GSMTLConstantIndex_PS_MANUAL_LOD,
-	GSMTLConstantIndex_PS_POINT_SAMPLER,
 	GSMTLConstantIndex_PS_REGION_RECT,
 	GSMTLConstantIndex_PS_SCANMSK,
 };
