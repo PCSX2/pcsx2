@@ -67,7 +67,6 @@ constant bool PS_TALES_OF_ABYSS_HLE [[function_constant(GSMTLConstantIndex_PS_TA
 constant bool PS_TEX_IS_FB          [[function_constant(GSMTLConstantIndex_PS_TEX_IS_FB)]];
 constant bool PS_AUTOMATIC_LOD      [[function_constant(GSMTLConstantIndex_PS_AUTOMATIC_LOD)]];
 constant bool PS_MANUAL_LOD         [[function_constant(GSMTLConstantIndex_PS_MANUAL_LOD)]];
-constant bool PS_POINT_SAMPLER      [[function_constant(GSMTLConstantIndex_PS_POINT_SAMPLER)]];
 constant bool PS_REGION_RECT        [[function_constant(GSMTLConstantIndex_PS_REGION_RECT)]];
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
 
@@ -324,16 +323,6 @@ struct PSMain
 		if (PS_REGION_RECT)
 			return read_tex(uint2(uv));
 
-		if (PS_POINT_SAMPLER)
-		{
-			// Weird issue with ATI/AMD cards,
-			// it looks like they add 127/128 of a texel to sampling coordinates
-			// occasionally causing point sampling to erroneously round up.
-			// I'm manually adjusting coordinates to the centre of texels here,
-			// though the centre is just paranoia, the top left corner works fine.
-			// As of 2018 this issue is still present.
-			uv = (trunc(uv * cb.wh.zw) + 0.5) / cb.wh.zw;
-		}
 		if (!PS_ADJS && !PS_ADJT)
 		{
 			uv *= cb.st_scale;

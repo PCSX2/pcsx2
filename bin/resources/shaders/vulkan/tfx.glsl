@@ -268,7 +268,6 @@ void main()
 #define PS_FBMASK 0
 #define PS_LTF 1
 #define PS_TCOFFSETHACK 0
-#define PS_POINT_SAMPLER 0
 #define PS_SHUFFLE 0
 #define PS_SHUFFLE_SAME 0
 #define PS_PROCESS_BA 0
@@ -372,15 +371,7 @@ vec4 sample_c(vec2 uv)
 #elif PS_REGION_RECT
 	return texelFetch(Texture, ivec2(uv), 0);
 #else
-#if PS_POINT_SAMPLER
-		// Weird issue with ATI/AMD cards,
-		// it looks like they add 127/128 of a texel to sampling coordinates
-		// occasionally causing point sampling to erroneously round up.
-		// I'm manually adjusting coordinates to the centre of texels here,
-		// though the centre is just paranoia, the top left corner works fine.
-		// As of 2018 this issue is still present.
-		uv = (trunc(uv * WH.zw) + vec2(0.5, 0.5)) / WH.zw;
-#endif
+
 #if !PS_ADJS && !PS_ADJT
 	uv *= STScale;
 #else
