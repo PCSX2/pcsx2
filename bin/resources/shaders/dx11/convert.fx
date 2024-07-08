@@ -240,7 +240,7 @@ float rgb5a1_to_depth16(float4 val)
 float ps_convert_float32_float24(PS_INPUT input) : SV_Depth
 {
 	// Truncates depth value to 24bits
-	uint d = uint(sample_c(input.t).r * exp2(32.0f)) & 0xFFFFFF;
+	uint d = uint(sample_c(input.t).r * exp2(32.0f)) & 0xFFFFFFu;
 	return float(d) * exp2(-32.0f);
 }
 
