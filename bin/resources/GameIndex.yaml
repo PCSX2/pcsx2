@@ -17479,6 +17479,7 @@ SLES-51848:
     minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-51850:
   name: "Basketball Xciting"
   region: "PAL-E"
@@ -17491,6 +17492,7 @@ SLES-51851:
     minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-51852:
   name: "Tony Hawk's Underground"
   region: "PAL-G"
@@ -17501,6 +17503,7 @@ SLES-51852:
     minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-51853:
   name: "Tony Hawk's Underground"
   region: "PAL-F"
@@ -17510,6 +17513,7 @@ SLES-51853:
     minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-51854:
   name: "Tony Hawk's Underground"
   region: "PAL-S"
@@ -17519,6 +17523,7 @@ SLES-51854:
     minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-51855:
   name: "Tank Elite"
   region: "PAL-E"
@@ -19384,20 +19389,22 @@ SLES-52621:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     preloadFrameData: 1 # Fixes missing loading screens.
-    recommendedBlendingLevel: 3 # Fixes water and grass textures.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-52622:
   name: "Tony Hawk's Underground 2"
   region: "PAL-M4"
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     preloadFrameData: 1 # Fixes missing loading screens.
-    recommendedBlendingLevel: 3 # Fixes water and grass textures.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-52624:
   name: "X-Men Legends"
   region: "PAL-E"
@@ -24719,9 +24726,10 @@ SLES-54389:
   roundModes:
     vu1RoundMode: 0 # Fixes invalid VU size spam and likely SPS.
   gsHWFixes:
-    autoFlush: 1 # Fixes black line down the side of the screen and player shadow.
+    minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-54390:
   name: "Tony Hawk's Project 8"
   region: "PAL-M4"
@@ -24729,9 +24737,10 @@ SLES-54390:
   roundModes:
     vu1RoundMode: 0 # Fixes invalid VU size spam and likely SPS.
   gsHWFixes:
-    autoFlush: 1 # Fixes black line down the side of the screen and player shadow.
+    minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-54393:
   name: "Pippa Funnell - Take the Reins"
   region: "PAL-M3"
@@ -24771,6 +24780,9 @@ SLES-54421:
   name: "Happy Feet"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Aligns bloom effect.
+    nativeScaling: 2 # Fixes very offset bloom.
 SLES-54423:
   name: "Justice League Heroes"
   region: "PAL-M5"
@@ -25610,18 +25622,20 @@ SLES-54714:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
-    autoFlush: 1 # Helps align post processing more as well as edge artifacting.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-54715:
   name: "Tony Hawk's Downhill Jam"
   region: "PAL-M4"
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
-    autoFlush: 1 # Helps align post processing more as well as edge artifacting.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-54716:
   name: "Skateboard Madness - Xtreme Edition"
   region: "PAL-E"
@@ -26429,16 +26443,20 @@ SLES-54963:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-54964:
   name: "Tony Hawk's Proving Ground"
   region: "PAL-M4"
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLES-54971:
   name: "Hot Wheels - Beat That!"
   region: "PAL-M4"
@@ -61645,6 +61663,7 @@ SLUS-20731:
     minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLUS-20732:
   name: "Drakengard"
   region: "NTSC-U"
@@ -62958,10 +62977,11 @@ SLUS-20965:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     preloadFrameData: 1 # Fixes missing loading screens.
-    recommendedBlendingLevel: 3 # Fixes water and grass textures.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLUS-20966:
   name: "State of Emergency 2"
   region: "NTSC-U"
@@ -66017,9 +66037,10 @@ SLUS-21444:
   roundModes:
     vu1RoundMode: 0 # Fixes invalid VU size spam and likely SPS.
   gsHWFixes:
-    autoFlush: 1 # Fixes black line down the side of the screen and player shadow.
+    minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLUS-21445:
   name: "Ar tonelico - Melody of Elemia"
   region: "NTSC-U"
@@ -66091,6 +66112,9 @@ SLUS-21455:
   name: "Happy Feet"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Aligns bloom effect.
+    nativeScaling: 2 # Fixes very offset bloom.
 SLUS-21456:
   name: "Tony Hawk's Downhill Jam"
   region: "NTSC-U"
@@ -66098,9 +66122,10 @@ SLUS-21456:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
-    autoFlush: 1 # Helps align post processing more as well as edge artifacting.
+    autoFlush: 1 # Fixes bloom positioning.
 SLUS-21457:
   name: "World Championship Paintball"
   region: "NTSC-U"
@@ -66827,8 +66852,10 @@ SLUS-21616:
   roundModes:
     vu1RoundMode: 0 # Fixes SPS and VU size spam.
   gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes broken lighting on ground and buildings.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    autoFlush: 1 # Fixes bloom positioning.
 SLUS-21617:
   name: "Spiderman 3"
   region: "NTSC-U"
