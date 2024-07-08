@@ -12,29 +12,35 @@
 
 struct BreakPointCond
 {
-	DebugInterface *debug;
+	DebugInterface* debug;
 	PostfixExpression expression;
-	char expressionString[128];
+	std::string expressionString;
 
-	BreakPointCond() : debug(NULL)
+	BreakPointCond()
+		: debug(NULL)
 	{
-		expressionString[0] = '\0';
 	}
 
 	u32 Evaluate()
 	{
 		u64 result;
-		if (!debug->parseExpression(expression,result) || result == 0) return 0;
+		if (!debug->parseExpression(expression, result) || result == 0)
+			return 0;
 		return 1;
 	}
 };
 
 struct BreakPoint
 {
-	BreakPoint() : addr(0), enabled(false), temporary(false), hasCond(false)
-	{}
+	BreakPoint()
+		: addr(0)
+		, enabled(false)
+		, temporary(false)
+		, hasCond(false)
+	{
+	}
 
-	u32	addr;
+	u32 addr;
 	bool enabled;
 	bool temporary;
 
@@ -42,10 +48,12 @@ struct BreakPoint
 	BreakPointCond cond;
 	BreakPointCpu cpu;
 
-	bool operator == (const BreakPoint &other) const {
+	bool operator==(const BreakPoint& other) const
+	{
 		return addr == other.addr;
 	}
-	bool operator < (const BreakPoint &other) const {
+	bool operator<(const BreakPoint& other) const
+	{
 		return addr < other.addr;
 	}
 };
@@ -75,7 +83,9 @@ struct MemCheck
 	u32 start;
 	u32 end;
 
-	MemCheckCondition cond;
+	bool hasCond;
+	BreakPointCond cond;
+	MemCheckCondition memCond;
 	MemCheckResult result;
 	BreakPointCpu cpu;
 
@@ -91,7 +101,8 @@ struct MemCheck
 
 	void Log(u32 addr, bool write, int size, u32 pc);
 
-	bool operator == (const MemCheck &other) const {
+	bool operator==(const MemCheck& other) const
+	{
 		return start == other.start && end == other.end;
 	}
 };
@@ -115,13 +126,15 @@ public:
 	static void ClearTemporaryBreakPoints();
 
 	// Makes a copy.  Temporary breakpoints can't have conditions.
-	static void ChangeBreakPointAddCond(BreakPointCpu cpu, u32 addr, const BreakPointCond &cond);
+	static void ChangeBreakPointAddCond(BreakPointCpu cpu, u32 addr, const BreakPointCond& cond);
 	static void ChangeBreakPointRemoveCond(BreakPointCpu cpu, u32 addr);
-	static BreakPointCond *GetBreakPointCondition(BreakPointCpu cpu, u32 addr);
+	static BreakPointCond* GetBreakPointCondition(BreakPointCpu cpu, u32 addr);
 
 	static void AddMemCheck(BreakPointCpu cpu, u32 start, u32 end, MemCheckCondition cond, MemCheckResult result);
 	static void RemoveMemCheck(BreakPointCpu cpu, u32 start, u32 end);
 	static void ChangeMemCheck(BreakPointCpu cpu, u32 start, u32 end, MemCheckCondition cond, MemCheckResult result);
+	static void ChangeMemCheckRemoveCond(BreakPointCpu cpu, u32 start, u32 end);
+	static void ChangeMemCheckAddCond(BreakPointCpu cpu, u32 start, u32 end, const BreakPointCond& cond);
 	static void ClearAllMemChecks();
 
 	static void SetSkipFirst(BreakPointCpu cpu, u32 pc);
@@ -135,14 +148,18 @@ public:
 	static const std::vector<BreakPoint> GetBreakpoints(BreakPointCpu cpu, bool includeTemp);
 	// Returns count of all non-temporary breakpoints
 	static size_t GetNumBreakpoints()
-	{ 
+	{
 		return std::count_if(breakPoints_.begin(), breakPoints_.end(), [](BreakPoint& bp) { return !bp.temporary; });
 	}
 	static size_t GetNumMemchecks() { return memChecks_.size(); }
 
 	static void Update(BreakPointCpu cpu = BREAKPOINT_IOP_AND_EE, u32 addr = 0);
 
-	static void SetBreakpointTriggered(bool triggered, BreakPointCpu cpu = BreakPointCpu::BREAKPOINT_IOP_AND_EE) { breakpointTriggered_ = triggered; breakpointTriggeredCpu_ = cpu; };
+	static void SetBreakpointTriggered(bool triggered, BreakPointCpu cpu = BreakPointCpu::BREAKPOINT_IOP_AND_EE)
+	{
+		breakpointTriggered_ = triggered;
+		breakpointTriggeredCpu_ = cpu;
+	};
 	static bool GetBreakpointTriggered() { return breakpointTriggered_; };
 	static BreakPointCpu GetBreakpointTriggeredCpu() { return breakpointTriggeredCpu_; };
 
@@ -165,7 +182,7 @@ private:
 	static bool corePaused;
 
 	static std::vector<MemCheck> memChecks_;
-	static std::vector<MemCheck *> cleanupMemChecks_;
+	static std::vector<MemCheck*> cleanupMemChecks_;
 };
 
 

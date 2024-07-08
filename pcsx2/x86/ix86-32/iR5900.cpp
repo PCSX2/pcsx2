@@ -1535,23 +1535,32 @@ void dynarecCheckBreakpoint()
 	recExitExecution();
 }
 
-void dynarecMemcheck()
+void dynarecMemcheck(size_t i)
 {
-	const u32 pc = cpuRegs.pc;
+	const u32 op = memRead32(cpuRegs.pc);
+	const OPCODE& opcode = GetInstruction(op);
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_EE, pc) != 0)
 		return;
 
+	auto mc = CBreakPoints::GetMemChecks(BREAKPOINT_EE)[i];
+
+	if(mc.hasCond)
+	{
+		if (!mc.cond.Evaluate())
+			return;
+	}
+
+	if (mc.result & MEMCHECK_LOG)
+	{
+		if (opcode.flags & IS_STORE)
+			DevCon.WriteLn("Hit store breakpoint @0x%x", cpuRegs.pc);
+		else
+			DevCon.WriteLn("Hit load breakpoint @0x%x", cpuRegs.pc);
+	}
+	
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_EE);
 	VMManager::SetPaused(true);
 	recExitExecution();
-}
-
-void dynarecMemLogcheck(u32 start, bool store)
-{
-	if (store)
-		DevCon.WriteLn("Hit store breakpoint @0x%x", start);
-	else
-		DevCon.WriteLn("Hit load breakpoint @0x%x", start);
 }
 
 void recMemcheck(u32 op, u32 bits, bool store)
@@ -1578,9 +1587,9 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	{
 		if (checks[i].result == 0)
 			continue;
-		if ((checks[i].cond & MEMCHECK_WRITE) == 0 && store)
+		if ((checks[i].memCond & MEMCHECK_WRITE) == 0 && store)
 			continue;
-		if ((checks[i].cond & MEMCHECK_READ) == 0 && !store)
+		if ((checks[i].memCond & MEMCHECK_READ) == 0 && !store)
 			continue;
 
 		// logic: memAddress < bpEnd && bpStart < memAddress+memSize
@@ -1594,33 +1603,10 @@ void recMemcheck(u32 op, u32 bits, bool store)
 		xForwardJGE8 next2; // if start >= address+size then goto next2
 
 		// hit the breakpoint
-		if (checks[i].result & MEMCHECK_LOG)
-		{
-			xMOV(edx, store);
-			// Preserve ecx (address) and edx (address+size) because we aren't breaking
-			// out of this loops iteration and dynarecMemLogcheck will clobber them
-			// Also keep 16 byte stack alignment
-			if (!(checks[i].result & MEMCHECK_BREAK))
-			{
-				xPUSH(eax);
-				xPUSH(ebx);
-				xPUSH(ecx);
-				xPUSH(edx);
-				xFastCall((void*)dynarecMemLogcheck, ecx, edx);
-				xPOP(edx);
-				xPOP(ecx);
-				xPOP(ebx);
-				xPOP(eax);
-			}
-			else
-			{
-				xFastCall((void*)dynarecMemLogcheck, ecx, edx);
-			}
-		}
 		if (checks[i].result & MEMCHECK_BREAK)
 		{
-			// Don't need to preserve edx and ecx, we don't return
-			xFastCall((void*)dynarecMemcheck);
+			xMOV(eax, i);
+			xFastCall((void*)dynarecMemcheck, eax);
 		}
 
 		next1.SetTarget();

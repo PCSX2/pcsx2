@@ -99,10 +99,16 @@ void intMemcheck(u32 op, u32 bits, bool store)
 
 		if (check.result == 0)
 			continue;
-		if ((check.cond & MEMCHECK_WRITE) == 0 && store)
+		if ((check.memCond & MEMCHECK_WRITE) == 0 && store)
 			continue;
-		if ((check.cond & MEMCHECK_READ) == 0 && !store)
+		if ((check.memCond & MEMCHECK_READ) == 0 && !store)
 			continue;
+
+		if (check.hasCond)
+		{
+			if (!check.cond.Evaluate())
+				continue;
+		}
 
 		if (start < check.end && check.start < end)
 			intBreakpoint(true);
