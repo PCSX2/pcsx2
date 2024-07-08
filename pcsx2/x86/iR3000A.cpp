@@ -1302,11 +1302,29 @@ static bool psxDynarecCheckBreakpoint()
 	return true;
 }
 
-static bool psxDynarecMemcheck()
+static bool psxDynarecMemcheck(size_t i)
 {
-	u32 pc = psxRegs.pc;
+	const u32 pc = psxRegs.pc;
+	const u32 op = iopMemRead32(pc);
+	const R5900::OPCODE& opcode = R5900::GetInstruction(op);
+	auto mc = CBreakPoints::GetMemChecks(BREAKPOINT_IOP)[i];
+
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) == pc)
 		return false;
+
+	if (mc.hasCond)
+	{
+		if (!mc.cond.Evaluate())
+			return false;
+	}
+
+	if (mc.result & MEMCHECK_LOG)
+	{
+		if (opcode.flags & IS_STORE)
+			DevCon.WriteLn("Hit R3000 store breakpoint @0x%x", pc);
+		else
+			DevCon.WriteLn("Hit R3000 load breakpoint @0x%x", pc);
+	}
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
 	VMManager::SetPaused(true);
@@ -1314,14 +1332,6 @@ static bool psxDynarecMemcheck()
 	// Exit the EE too.
 	Cpu->ExitExecution();
 	return true;
-}
-
-static void psxDynarecMemLogcheck(u32 start, bool store)
-{
-	if (store)
-		DevCon.WriteLn("Hit store breakpoint @0x%x", start);
-	else
-		DevCon.WriteLn("Hit load breakpoint @0x%x", start);
 }
 
 static void psxRecMemcheck(u32 op, u32 bits, bool store)
@@ -1344,9 +1354,9 @@ static void psxRecMemcheck(u32 op, u32 bits, bool store)
 	{
 		if (checks[i].result == 0)
 			continue;
-		if ((checks[i].cond & MEMCHECK_WRITE) == 0 && store)
+		if ((checks[i].memCond & MEMCHECK_WRITE) == 0 && store)
 			continue;
-		if ((checks[i].cond & MEMCHECK_READ) == 0 && !store)
+		if ((checks[i].memCond & MEMCHECK_READ) == 0 && !store)
 			continue;
 
 		// logic: memAddress < bpEnd && bpStart < memAddress+memSize
@@ -1360,25 +1370,11 @@ static void psxRecMemcheck(u32 op, u32 bits, bool store)
 		xForwardJGE8 next2; // if start >= address+size then goto next2
 
 		// hit the breakpoint
-		if (checks[i].result & MEMCHECK_LOG)
-		{
-			xMOV(edx, store);
 
-			// Refer to the EE recompiler for an explaination
-			if(!(checks[i].result & MEMCHECK_BREAK))
-			{
-				xPUSH(eax); xPUSH(ebx); xPUSH(ecx); xPUSH(edx);
-				xFastCall((void*)psxDynarecMemLogcheck, ecx, edx);
-				xPOP(edx); xPOP(ecx); xPOP(ebx); xPOP(eax);
-			}
-			else
-			{
-				xFastCall((void*)psxDynarecMemLogcheck, ecx, edx);
-			}
-		}
 		if (checks[i].result & MEMCHECK_BREAK)
 		{
-			xFastCall((void*)psxDynarecMemcheck);
+			xMOV(eax, i);
+			xFastCall((void*)psxDynarecMemcheck, eax);
 			xTEST(al, al);
 			xJNZ(iopExitRecompiledCode);
 		}
