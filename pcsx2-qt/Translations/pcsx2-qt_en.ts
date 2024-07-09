@@ -16817,6 +16817,11 @@ Do you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../SetupWizardDialog.ui" line="229"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 requires a PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;strong&gt;from an actual PS2 unit that you own&lt;/strong&gt; (borrowing doesn&apos;t count).&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct PCSX2 to scan an alternative directory.&lt;/p&gt;&lt;p&gt;A guide for dumping your BIOS can be found &lt;a href=&quot;https://pcsx2.net/docs/setup/bios/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../SetupWizardDialog.ui" line="250"/>
         <source>BIOS Directory:</source>
         <translation type="unfinished"></translation>
@@ -16852,6 +16857,11 @@ Do you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../SetupWizardDialog.ui" line="346"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 will automatically scan and identify games from the selected directories below, and populate the game list.&lt;br&gt;These games should be dumped from discs you own. Guides for dumping discs can be found &lt;a href=&quot;https://pcsx2.net/docs/setup/dumping&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include:&lt;/p&gt;&lt;p&gt;&lt;ul&gt;&lt;li&gt;.bin/.iso (ISO Disc Images)&lt;/li&gt;&lt;li&gt;.mdf (Media Descriptor File)&lt;/li&gt;&lt;li&gt;.chd (Compressed Hunks of Data)&lt;/li&gt;&lt;li&gt;.cso (Compressed ISO)&lt;/li&gt;&lt;li&gt;.zso (Compressed ISO)&lt;/li&gt;&lt;li&gt;.gz (Gzip Compressed ISO)&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../SetupWizardDialog.ui" line="367"/>
         <source>Search Directories (will be scanned for games)</source>
         <translation type="unfinished"></translation>
@@ -16880,16 +16890,6 @@ Do you want to continue?</source>
     <message>
         <location filename="../SetupWizardDialog.ui" line="143"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Welcome to PCSX2!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;This wizard will help guide you through the configuration steps required to use the application. It is recommended if this is your first time installing PCSX2 that you view the setup guide &lt;a href=&quot;https://pcsx2.net/docs/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;By default, PCSX2 will connect to the server at &lt;a href=&quot;https://pcsx2.net/&quot;&gt;pcsx2.net&lt;/a&gt; to check for updates, and if available and confirmed, download update packages from &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. If you do not wish for PCSX2 to make any network connections on startup, you should uncheck the Automatic Updates option now. The Automatic Update setting can be changed later at any time in Interface Settings.&lt;/p&gt;&lt;p&gt;Please choose a language and theme to begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SetupWizardDialog.ui" line="229"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 requires a PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;strong&gt;from an actual PS2 unit that you own&lt;/strong&gt; (borrowing doesn&apos;t count).&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct PCSX2 to scan an alternative directory.&lt;/p&gt;&lt;p&gt;A guide for dumping your BIOS can be found &lt;a href=&quot;https://pcsx2.net/docs/setup/gather#how-to-dump-your-ps2-bios&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SetupWizardDialog.ui" line="346"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 will automatically scan and identify games from the selected directories below, and populate the game list.&lt;br&gt;These games should be dumped from discs you own. Guides for dumping discs can be found &lt;a href=&quot;https://pcsx2.net/docs/setup/gather#dumping-ps2-discs-via-imgburn&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include:&lt;/p&gt;&lt;p&gt;&lt;ul&gt;&lt;li&gt;.bin/.iso (ISO Disc Images)&lt;/li&gt;&lt;li&gt;.mdf (Media Descriptor File)&lt;/li&gt;&lt;li&gt;.chd (Compressed Hunks of Data)&lt;/li&gt;&lt;li&gt;.cso (Compressed ISO)&lt;/li&gt;&lt;li&gt;.zso (Compressed ISO)&lt;/li&gt;&lt;li&gt;.gz (Gzip Compressed ISO)&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
