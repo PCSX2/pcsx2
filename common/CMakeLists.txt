@@ -171,6 +171,9 @@ else()
 		X11::X11
 		X11::Xrandr
 	)
+	if(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+		target_link_libraries(common PRIVATE cpuinfo)
+	endif()
 endif()
 
 set_source_files_properties(PrecompiledHeader.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
