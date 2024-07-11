@@ -1914,7 +1914,6 @@ Leaderboard Position: {1} of {2}</source>
     </message>
     <message>
         <location filename="../Debugger/BreakpointDialog.ui" line="84"/>
-        <location filename="../Debugger/BreakpointDialog.ui" line="236"/>
         <source>Execute</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1960,41 +1959,43 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/BreakpointDialog.ui" line="242"/>
+        <location filename="../Debugger/BreakpointDialog.ui" line="239"/>
         <source>Condition</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/BreakpointDialog.ui" line="270"/>
+        <location filename="../Debugger/BreakpointDialog.ui" line="267"/>
         <source>Log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/BreakpointDialog.ui" line="280"/>
+        <location filename="../Debugger/BreakpointDialog.ui" line="277"/>
         <source>Enable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="97"/>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="112"/>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="129"/>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="137"/>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="99"/>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="114"/>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="130"/>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="138"/>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="152"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="97"/>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="129"/>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="99"/>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="130"/>
         <source>Invalid address &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="112"/>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="114"/>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="152"/>
         <source>Invalid condition &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="137"/>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="138"/>
         <source>Invalid size &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2009,7 +2010,6 @@ Leaderboard Position: {1} of {2}</source>
     <message>
         <location filename="../Debugger/Models/BreakpointModel.cpp" line="57"/>
         <location filename="../Debugger/Models/BreakpointModel.cpp" line="80"/>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="82"/>
         <source>--</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15954,6 +15954,11 @@ This action cannot be reversed, and you will lose any saves on the card.</source
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="78"/>
+        <source>Pressure Modifier Amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="725"/>
         <source>Analog light is now on for port {0} / slot {1}</source>
         <translation type="unfinished"></translation>
@@ -15991,11 +15996,6 @@ This action cannot be reversed, and you will lose any saves on the card.</source
     <message>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="72"/>
         <source>Increases or decreases the intensity of high frequency vibration sent by the game.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="78"/>
-        <source>Modifier Pressure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
