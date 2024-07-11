@@ -75,7 +75,7 @@ static const SettingInfo s_settings[] = {
 		TRANSLATE_NOOP("Pad", "Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger "
 							  "which will be ignored."),
 		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
-	{SettingInfo::Type::Float, "PressureModifier", TRANSLATE_NOOP("Pad", "Modifier Pressure"),
+	{SettingInfo::Type::Float, "PressureModifier", TRANSLATE_NOOP("Pad", "Pressure Modifier Amount"),
 		TRANSLATE_NOOP("Pad", "Sets the pressure when the modifier button is held."), "0.50", "0.01", "1.00", "0.01",
 		TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 };
