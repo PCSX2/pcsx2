@@ -19,6 +19,10 @@
 
 #include "fmt/core.h"
 
+#if defined(__FreeBSD__)
+#include "cpuinfo.h"
+#endif
+
 // FreeBSD does not have MAP_FIXED_NOREPLACE, but does have MAP_EXCL.
 // MAP_FIXED combined with MAP_EXCL behaves like MAP_FIXED_NOREPLACE.
 #if defined(__FreeBSD__) && !defined(MAP_FIXED_NOREPLACE)
@@ -142,6 +146,22 @@ size_t HostSys::GetRuntimePageSize()
 
 size_t HostSys::GetRuntimeCacheLineSize()
 {
+#if defined(__FreeBSD__)
+	if (!cpuinfo_initialize())
+		return 0;
+
+	u32 max_line_size = 0;
+	for (u32 i = 0; i < cpuinfo_get_processors_count(); i++)
+	{
+		const u32 l1i = cpuinfo_get_processor(i)->cache.l1i->line_size;
+		const u32 l1d = cpuinfo_get_processor(i)->cache.l1d->line_size;
+		const u32 res = std::max<u32>(l1i, l1d);
+
+		max_line_size = std::max<u32>(max_line_size, res);
+	}
+
+	return static_cast<size_t>(max_line_size);
+#else
 	int l1i = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
 	int l1d = sysconf(_SC_LEVEL1_ICACHE_LINESIZE);
 	int res = (l1i > l1d) ? l1i : l1d;
@@ -160,6 +180,7 @@ size_t HostSys::GetRuntimeCacheLineSize()
 	}
 
 	return (res > 0) ? static_cast<size_t>(res) : 0;
+#endif
 }
 
 SharedMemoryMappingArea::SharedMemoryMappingArea(u8* base_ptr, size_t size, size_t num_pages)
