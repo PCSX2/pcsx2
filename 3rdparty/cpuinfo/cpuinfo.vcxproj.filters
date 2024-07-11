@@ -63,13 +63,16 @@
     <ClCompile Include="deps\clog\src\clog.c">
       <Filter>clog</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\duckstation\dep\cpuinfo\src\arm\cache.c">
+    <ClCompile Include="src\arm\cache.c">
       <Filter>arm</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\duckstation\dep\cpuinfo\src\arm\uarch.c">
+    <ClCompile Include="src\arm\uarch.c">
       <Filter>arm</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\duckstation\dep\cpuinfo\src\arm\windows\init.c">
+    <ClCompile Include="src\arm\windows\init.c">
+      <Filter>arm\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arm\windows\init-by-logical-sys-info.c">
       <Filter>arm\windows</Filter>
     </ClCompile>
   </ItemGroup>
@@ -99,13 +102,13 @@
     <ClInclude Include="deps\clog\include\clog.h">
       <Filter>clog</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\duckstation\dep\cpuinfo\src\arm\api.h">
+    <ClInclude Include="src\arm\api.h">
       <Filter>arm</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\duckstation\dep\cpuinfo\src\arm\midr.h">
+    <ClInclude Include="src\arm\midr.h">
       <Filter>arm</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\duckstation\dep\cpuinfo\src\arm\windows\api.h">
+    <ClInclude Include="src\arm\windows\windows-arm-init.h">
       <Filter>arm\windows</Filter>
     </ClInclude>
   </ItemGroup>
