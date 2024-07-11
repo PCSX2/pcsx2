@@ -30,13 +30,16 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\duckstation\dep\cpuinfo\src\arm\cache.c">
+    <ClCompile Include="src\arm\cache.c">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\..\duckstation\dep\cpuinfo\src\arm\uarch.c">
+    <ClCompile Include="src\arm\uarch.c">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\..\duckstation\dep\cpuinfo\src\arm\windows\init.c">
+    <ClCompile Include="src\arm\windows\init-by-logical-sys-info.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arm\windows\init.c">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="deps\clog\src\clog.c" />
@@ -78,13 +81,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\duckstation\dep\cpuinfo\src\arm\api.h">
+    <ClInclude Include="src\arm\api.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\..\..\duckstation\dep\cpuinfo\src\arm\midr.h">
+    <ClInclude Include="src\arm\midr.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\..\..\duckstation\dep\cpuinfo\src\arm\windows\api.h">
+    <ClInclude Include="src\arm\windows\windows-arm-init.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="deps\clog\include\clog.h" />
