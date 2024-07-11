@@ -16,7 +16,7 @@
 <context>
     <name>Achievements</name>
     <message numerus="yes">
-        <location filename="../../pcsx2/Achievements.cpp" line="1021"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1023"/>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -25,7 +25,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Achievements.cpp" line="1024"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1026"/>
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -34,7 +34,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Achievements.cpp" line="1109"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1111"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
@@ -43,7 +43,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Achievements.cpp" line="1111"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1113"/>
         <source>%n points</source>
         <comment>Mastery popup</comment>
         <translation>
