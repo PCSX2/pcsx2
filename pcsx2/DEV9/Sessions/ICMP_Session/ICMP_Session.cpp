@@ -166,7 +166,7 @@ namespace Sessions
 #endif
 	}
 
-	bool ICMP_Session::Ping::IsInitialised()
+	bool ICMP_Session::Ping::IsInitialised() const
 	{
 #ifdef _WIN32
 		return icmpFile != INVALID_HANDLE_VALUE;
@@ -190,7 +190,7 @@ namespace Sessions
 		{
 			ResetEvent(icmpEvent);
 
-			int count = IcmpParseReplies(icmpResponseBuffer.get(), icmpResponseBufferLen);
+			const int count = IcmpParseReplies(icmpResponseBuffer.get(), icmpResponseBufferLen);
 			pxAssert(count <= 1);
 
 			// Timeout
@@ -202,7 +202,7 @@ namespace Sessions
 			}
 
 			// Rely on implicit object creation
-			ICMP_ECHO_REPLY* pingRet = reinterpret_cast<ICMP_ECHO_REPLY*>(icmpResponseBuffer.get());
+			const ICMP_ECHO_REPLY* pingRet = reinterpret_cast<ICMP_ECHO_REPLY*>(icmpResponseBuffer.get());
 
 			// Map status to ICMP type/code
 			switch (pingRet->Status)
@@ -419,8 +419,8 @@ namespace Sessions
 #endif
 					{
 						// Rely on implicit object creation
-						ip* ipHeader = reinterpret_cast<ip*>(icmpResponseBuffer.get());
-						int headerLength = ipHeader->ip_hl << 2;
+						const ip* ipHeader = reinterpret_cast<ip*>(icmpResponseBuffer.get());
+						const int headerLength = ipHeader->ip_hl << 2;
 						pxAssert(headerLength == 20);
 
 						offset = headerLength;
@@ -448,7 +448,7 @@ namespace Sessions
 						// Check if response is for us
 						if (icmpConnectionKind == PingType::RAW)
 						{
-							ICMP_HeaderDataIdentifier headerData(icmp.headerData);
+							const ICMP_HeaderDataIdentifier headerData(icmp.headerData);
 							if (headerData.identifier != icmpId)
 								return nullptr;
 						}
@@ -473,7 +473,7 @@ namespace Sessions
 						ICMP_Packet icmpInner(ipPayload->data, ipPayload->GetLength());
 
 						// Check if response is for us
-						ICMP_HeaderDataIdentifier headerData(icmpInner.headerData);
+						const ICMP_HeaderDataIdentifier headerData(icmpInner.headerData);
 						if (headerData.identifier != icmpId)
 							return nullptr;
 
@@ -553,7 +553,7 @@ namespace Sessions
 				}
 
 #if defined(ICMP_SOCKETS_LINUX)
-				int value = 1;
+				const int value = 1;
 				if (setsockopt(icmpSocket, SOL_IP, IP_RECVERR, reinterpret_cast<const char*>(&value), sizeof(value)))
 				{
 					Console.Error("DEV9: ICMP: Failed to setsockopt IP_RECVERR. Error: %d", errno);
@@ -685,8 +685,7 @@ namespace Sessions
 
 		for (size_t i = 0; i < pings.size(); i++)
 		{
-			ICMP_Session::PingResult* pingRet = nullptr;
-			pingRet = pings[i]->Recv();
+			const ICMP_Session::PingResult* pingRet = pings[i]->Recv();
 			if (pingRet != nullptr)
 			{
 				std::unique_ptr<Ping> ping = std::move(pings[i]);
@@ -710,7 +709,7 @@ namespace Sessions
 						// Allocate fullsize buffer
 						std::vector<u8> temp = std::vector<u8>(ping->originalPacket->GetLength());
 						// Allocate returned ICMP payload
-						int responseSize = ping->originalPacket->GetHeaderLength() + 8;
+						const int responseSize = ping->originalPacket->GetHeaderLength() + 8;
 						data = new PayloadData(responseSize);
 
 						// Write packet into buffer
@@ -793,8 +792,8 @@ namespace Sessions
 							retPkt = std::make_unique<IP_Packet>(&icmpPayload->data[off], icmpPayload->GetLength(), true);
 						}
 
-						IP_Address srvIP = retPkt->sourceIP;
-						u8 prot = retPkt->protocol;
+						const IP_Address srvIP = retPkt->sourceIP;
+						const u8 prot = retPkt->protocol;
 						u16 srvPort = 0;
 						u16 ps2Port = 0;
 						switch (prot)
