@@ -47,7 +47,7 @@ using namespace std::chrono_literals;
 		However we may be missing that cap on some builds
 	Linux has socket(PF_INET, SOCK_DGRAM, IPPROTO_ICMP), used similar to raw sockets but for ICMP only
 		Auto filters responses
-		Requires net.ipv4.ping_group_range sysctl, default off on alot of distros
+		Requires net.ipv4.ping_group_range sysctl, default off on a lot of distros
 	Timeouts reported via sock_extended_err control messages (with IP_RECVERR socket option set)
 
 	Mac
@@ -104,7 +104,7 @@ namespace Sessions
 	{
 		switch (icmpConnectionKind)
 		{
-			//Two different methods for raw/icmp sockets bettween the unix OSes
+			//Two different methods for raw/icmp sockets between the unix OSes
 			//Play it safe and only enable when we know which of the two methods we use
 #if defined(ICMP_SOCKETS_LINUX) || defined(ICMP_SOCKETS_BSD)
 			case (PingType::ICMP):
@@ -135,7 +135,7 @@ namespace Sessions
 					//We get packet + header
 					icmpResponseBufferLen = 20 + 8 + requestSize;
 #elif defined(ICMP_SOCKETS_BSD)
-					//As above, but we will also directly recive error ICMP messages
+					//As above, but we will also directly receive error ICMP messages
 					icmpResponseBufferLen = 20 + 8 + std::max(20 + 8, requestSize);
 #endif
 					break;
@@ -217,7 +217,7 @@ namespace Sessions
 					//Destination network unknown
 					//or
 					//Destination host unknown
-					//Use host unkown
+					//Use host unknown
 					result.type = 3;
 					result.code = 7;
 					break;
@@ -295,7 +295,7 @@ namespace Sessions
 
 					socklen_t len = sizeof(error);
 					if (getsockopt(icmpSocket, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0)
-						Console.Error("DEV9: ICMP: Unkown ICMP Connection Error (getsockopt Error: %d)", errno);
+						Console.Error("DEV9: ICMP: Unknown ICMP Connection Error (getsockopt Error: %d)", errno);
 					else
 						Console.Error("DEV9: ICMP: Recv Error: %d", error);
 				}
@@ -324,7 +324,7 @@ namespace Sessions
 #if defined(ICMP_SOCKETS_LINUX)
 				//Needs to hold cmsghdr + sock_extended_err + sockaddr_in
 				//for ICMP error responses (total 44 bytes)
-				//Unkown for other types of error
+				//Unknown for other types of error
 				u8 cbuff[64];
 #endif
 
@@ -515,7 +515,7 @@ namespace Sessions
 				(DWORD)std::chrono::duration_cast<std::chrono::milliseconds>(ICMP_TIMEOUT).count());
 
 		//Documentation states that IcmpSendEcho2 returns ERROR_IO_PENDING
-		//However, it actully returns zero, with the error set to ERROR_IO_PENDING
+		//However, it actually returns zero, with the error set to ERROR_IO_PENDING
 		if (ret == 0)
 			ret = GetLastError();
 
@@ -563,7 +563,7 @@ namespace Sessions
 				}
 #endif
 
-				// TTL (Note multicast & regular ttl are seperate)
+				// TTL (Note multicast & regular ttl are separate)
 				if (setsockopt(icmpSocket, IPPROTO_IP, IP_TTL, (const char*)&parTimeToLive, sizeof(parTimeToLive)) == -1)
 				{
 					Console.Error("DEV9: ICMP: Failed to set TTL. Error: %d", errno);
@@ -756,7 +756,7 @@ namespace Sessions
 				{
 					case 3:
 					{
-						Console.Error("DEV9: ICMP: Recived Packet Rejected, Port Closed");
+						Console.Error("DEV9: ICMP: Received Packet Rejected, Port Closed");
 
 						//RE:Outbreak Hackfix
 						//TODO, check if still needed
