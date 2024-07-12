@@ -68,9 +68,8 @@ namespace Sessions
 			~Ping();
 		};
 
-		SimpleQueue<PacketReader::IP::ICMP::ICMP_Packet*> _recvBuff;
 		std::mutex ping_mutex;
-		std::vector<Ping*> pings;
+		std::vector<std::unique_ptr<Ping>> pings;
 		ThreadSafeMap<Sessions::ConnectionKey, Sessions::BaseSession*>* connections;
 
 		std::atomic<int> open{0};
