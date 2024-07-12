@@ -2572,7 +2572,7 @@ DebuggerWindow* MainWindow::getDebuggerWindow()
 void MainWindow::openDebugger()
 {
 	DebuggerWindow* dwnd = getDebuggerWindow();
-	dwnd->isVisible() ? dwnd->hide() : dwnd->show();
+	dwnd->isVisible() ? dwnd->activateWindow() : dwnd->show();
 }
 
 void MainWindow::doControllerSettings(ControllerSettingsWindow::Category category)
