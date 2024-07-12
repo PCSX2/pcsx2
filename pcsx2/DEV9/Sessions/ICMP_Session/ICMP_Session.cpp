@@ -128,7 +128,8 @@ namespace Sessions
 					icmpResponseBufferLen = 8 + requestSize + 8;
 #elif defined(ICMP_SOCKETS_BSD)
 					// Returned IP Header, ICMP Header & either data or failed ICMP packet
-					icmpResponseBufferLen = 20 + 8 + std::max(20 + 8, requestSize);
+					// Sometimes get full packet in ICMP error response
+					icmpResponseBufferLen = 20 + 8 + (20 + 8 + requestSize);
 #endif
 					break;
 				}
@@ -464,12 +465,15 @@ namespace Sessions
 					{
 						// Extract the packet the ICMP message is responding to
 						IP_Packet ipPacket(icmpPayload->data, icmpPayload->GetLength(), true);
+
+						if (ipPacket.protocol != static_cast<u8>(IP_Type::ICMP))
+							return nullptr;
+
 						IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ipPacket.GetPayload());
-						// TODO, validate proto?
-						ICMP_Packet retIcmp(ipPayload->data, ipPayload->GetLength());
+						ICMP_Packet icmpInner(ipPayload->data, ipPayload->GetLength());
 
 						// Check if response is for us
-						ICMP_HeaderDataIdentifier headerData(icmp.headerData);
+						ICMP_HeaderDataIdentifier headerData(icmpInner.headerData);
 						if (headerData.identifier != icmpId)
 							return nullptr;
 
