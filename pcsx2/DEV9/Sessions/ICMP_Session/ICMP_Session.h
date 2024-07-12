@@ -57,7 +57,7 @@ namespace Sessions
 			//Return buffers
 			PingResult result{};
 			int icmpResponseBufferLen{0};
-			std::unique_ptr<u8[]> icmpResponseBuffer;
+			std::unique_ptr<std::byte[]> icmpResponseBuffer;
 
 		public:
 			Ping(int requestSize);
