@@ -47,14 +47,14 @@ namespace Sessions
 
 			static PingType icmpConnectionKind;
 
-			//Sockets
+			// Sockets
 			int icmpSocket{-1};
 			std::chrono::steady_clock::time_point icmpDeathClockStart;
 			u16 icmpId;
 
 #endif
 
-			//Return buffers
+			// Return buffers
 			PingResult result{};
 			int icmpResponseBufferLen{0};
 			std::unique_ptr<std::byte[]> icmpResponseBuffer;
