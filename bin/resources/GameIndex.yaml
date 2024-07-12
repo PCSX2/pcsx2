@@ -8246,10 +8246,10 @@ SCPS-15064:
     - SoftwareRendererFMVHack # Fixes hash cache disabling itself.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves banding and effect emulation.
-    halfPixelOffset: 3 # Fixes texture and lighting misalignment.
-    mergeSprite: 1 # Fixes most vertical lines and lighting misalignment.
     autoFlush: 1 # Fixes light bloom intensity.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
+    halfPixelOffset: 4 # Aligns post effects.
+    nativeScaling: 1 # Fixes post effects.
     getSkipCount: "GSC_GiTS"
   patches:
     A5768F53:
@@ -15137,47 +15137,47 @@ SLES-50836:
   name: "Indiana Jones and The Emperor's Tomb"
   region: "PAL-E"
   gameFixes:
-    - EETimingHack # For texture flicker.
+    - EETimingHack # Fixes texture flicker.
   gsHWFixes:
     textureInsideRT: 1
-    halfPixelOffset: 4 # Reduces post misalignment.
+    halfPixelOffset: 2 # Reduces post misalignment.
     nativeScaling: 2 # Fixes remaining post misalignment.
 SLES-50837:
   name: "Indiana Jones et le Tombeau de L'Empereur"
   region: "PAL-F"
   gameFixes:
-    - EETimingHack # For texture flicker.
+    - EETimingHack # Fixes texture flicker.
   gsHWFixes:
     textureInsideRT: 1
-    halfPixelOffset: 4 # Reduces post misalignment.
+    halfPixelOffset: 2 # Reduces post misalignment.
     nativeScaling: 2 # Fixes remaining post misalignment.
 SLES-50838:
   name: "Indiana Jones und die Legende der Kaisergruft"
   region: "PAL-G"
   compat: 5
   gameFixes:
-    - EETimingHack # For texture flicker.
+    - EETimingHack # Fixes texture flicker.
   gsHWFixes:
     textureInsideRT: 1
-    halfPixelOffset: 4 # Reduces post misalignment.
+    halfPixelOffset: 2 # Reduces post misalignment.
     nativeScaling: 2 # Fixes remaining post misalignment.
 SLES-50839:
   name: "Indiana Jones e la Tomba dell'Imperatore"
   region: "PAL-I"
   gameFixes:
-    - EETimingHack # For texture flicker.
+    - EETimingHack # Fixes texture flicker.
   gsHWFixes:
     textureInsideRT: 1
-    halfPixelOffset: 4 # Reduces post misalignment.
+    halfPixelOffset: 2 # Reduces post misalignment.
     nativeScaling: 2 # Fixes remaining post misalignment.
 SLES-50840:
   name: "Indiana Jones y la Tumba del Emperador"
   region: "PAL-S"
   gameFixes:
-    - EETimingHack # For texture flicker.
+    - EETimingHack # Fixes texture flicker.
   gsHWFixes:
     textureInsideRT: 1
-    halfPixelOffset: 4 # Reduces post misalignment.
+    halfPixelOffset: 2 # Reduces post misalignment.
     nativeScaling: 2 # Fixes remaining post misalignment.
 SLES-50841:
   name: "Largo Winch - Empire Under Threat"
@@ -60498,7 +60498,7 @@ SLUS-20508:
     - EETimingHack # Fixes texture flicker.
   gsHWFixes:
     textureInsideRT: 1
-    halfPixelOffset: 4 # Reduces post misalignment.
+    halfPixelOffset: 2 # Reduces post misalignment.
     nativeScaling: 2 # Fixes remaining post misalignment.
 SLUS-20509:
   name: "Soccer Slam - Sega Sports"
