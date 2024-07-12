@@ -61,7 +61,7 @@ namespace Sessions
 
 		public:
 			Ping(int requestSize);
-			bool IsInitialised();
+			bool IsInitialised() const;
 			PingResult* Recv();
 			bool Send(PacketReader::IP::IP_Address parAdapterIP, PacketReader::IP::IP_Address parDestIP, int parTimeToLive, PacketReader::PayloadPtr* parPayload);
 
