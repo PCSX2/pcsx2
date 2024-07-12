@@ -96,10 +96,10 @@ namespace PacketReader::IP
 		{
 			//If buffer & data point to the same location
 			//Then no copy is needed
-			if (data == buffer)
+			if (data == &buffer[*offset])
 				return;
 
-			memcpy(buffer, data, length);
+			memcpy(&buffer[*offset], data, length);
 			*offset += length;
 		}
 		virtual IP_Payload* Clone() const
