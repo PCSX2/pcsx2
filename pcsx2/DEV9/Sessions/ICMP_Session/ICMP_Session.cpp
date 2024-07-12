@@ -15,6 +15,7 @@
 #endif
 
 #include <algorithm>
+#include <bit>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -99,7 +100,7 @@ namespace Sessions
 		//Documentation says + 8 to allow for an ICMP error message
 		//In testing, ICMP_ECHO_REPLY structure itself was returned with data set to null
 		icmpResponseBufferLen = sizeof(ICMP_ECHO_REPLY) + requestSize + 8;
-		icmpResponseBuffer = std::make_unique<u8[]>(icmpResponseBufferLen);
+		icmpResponseBuffer = std::make_unique<std::byte[]>(icmpResponseBufferLen);
 #elif defined(__POSIX__)
 	{
 		switch (icmpConnectionKind)
@@ -142,6 +143,7 @@ namespace Sessions
 				}
 
 				DevCon.WriteLn("DEV9: ICMP: Failed To Open RAW Socket");
+
 				[[fallthrough]];
 #endif
 			default:
@@ -149,7 +151,7 @@ namespace Sessions
 				return;
 		}
 
-		icmpResponseBuffer = std::make_unique<u8[]>(icmpResponseBufferLen);
+		icmpResponseBuffer = std::make_unique<std::byte[]>(icmpResponseBufferLen);
 #endif
 	}
 
@@ -179,7 +181,9 @@ namespace Sessions
 			//Prep buffer for reasing
 			[[maybe_unused]] int count = IcmpParseReplies(icmpResponseBuffer.get(), icmpResponseBufferLen);
 			pxAssert(count == 1);
-			ICMP_ECHO_REPLY* pingRet = (ICMP_ECHO_REPLY*)icmpResponseBuffer.get();
+
+			// Rely on implicit object creation
+			ICMP_ECHO_REPLY* pingRet = reinterpret_cast<ICMP_ECHO_REPLY*>(icmpResponseBuffer.get());
 
 			//Map status to ICMP type/code
 			switch (pingRet->Status)
@@ -255,7 +259,7 @@ namespace Sessions
 			}
 
 			result.dataLength = pingRet->DataSize;
-			result.data = (u8*)pingRet->Data;
+			result.data = static_cast<u8*>(pingRet->Data);
 			result.address.integer = pingRet->Address;
 
 			return &result;
@@ -274,7 +278,7 @@ namespace Sessions
 				fd_set sReady;
 				fd_set sExcept;
 
-				timeval nowait{0};
+				timeval nowait{};
 				FD_ZERO(&sReady);
 				FD_ZERO(&sExcept);
 				FD_SET(icmpSocket, &sReady);
@@ -294,7 +298,7 @@ namespace Sessions
 					int error = 0;
 
 					socklen_t len = sizeof(error);
-					if (getsockopt(icmpSocket, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0)
+					if (getsockopt(icmpSocket, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
 						Console.Error("DEV9: ICMP: Unknown ICMP Connection Error (getsockopt Error: %d)", errno);
 					else
 						Console.Error("DEV9: ICMP: Recv Error: %d", error);
@@ -315,7 +319,7 @@ namespace Sessions
 				}
 #endif
 
-				sockaddr endpoint{0};
+				sockaddr_in endpoint{};
 
 				iovec iov;
 				iov.iov_base = icmpResponseBuffer.get();
@@ -325,10 +329,10 @@ namespace Sessions
 				//Needs to hold cmsghdr + sock_extended_err + sockaddr_in
 				//for ICMP error responses (total 44 bytes)
 				//Unknown for other types of error
-				u8 cbuff[64];
+				std::byte cbuff[64]{};
 #endif
 
-				msghdr msg{0};
+				msghdr msg{};
 				msg.msg_name = &endpoint;
 				msg.msg_namelen = sizeof(endpoint);
 				msg.msg_iov = &iov;
@@ -377,7 +381,7 @@ namespace Sessions
 				if (msg.msg_flags & MSG_CTRUNC)
 					Console.Error("DEV9: ICMP: RecvMsg Control Truncated");
 
-				sock_extended_err* ex_err = nullptr;
+				sock_extended_err* exErrorPtr = nullptr;
 				cmsghdr* cmsg;
 
 				/* Receive auxiliary data in msgh */
@@ -385,28 +389,42 @@ namespace Sessions
 				{
 					if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_RECVERR)
 					{
-						ex_err = (sock_extended_err*)CMSG_DATA(cmsg);
+						exErrorPtr = reinterpret_cast<sock_extended_err*>(CMSG_DATA(cmsg));
 						continue;
 					}
 					pxAssert(false);
 				}
 
-				if (ex_err != nullptr)
+				if (exErrorPtr != nullptr)
 				{
-					if (ex_err->ee_origin == SO_EE_ORIGIN_ICMP)
-					{
-						result.type = ex_err->ee_type;
-						result.code = ex_err->ee_code;
+					/* 
+					 * The pointer returned cannot be assumed to be suitably aligned for accessing arbitrary payload data types
+					 * So we would need to memcpy sock_extended_err
+					 */
+					sock_extended_err exError;
+					std::memcpy(&exError, exErrorPtr, sizeof(exError));
 
-						sockaddr_in* sockaddr = (sockaddr_in*)SO_EE_OFFENDER(ex_err);
-						result.address = *(IP_Address*)&sockaddr->sin_addr;
+					if (exError.ee_origin == SO_EE_ORIGIN_ICMP)
+					{
+						result.type = exError.ee_type;
+						result.code = exError.ee_code;
+
+						/* 
+						 * SO_EE_OFFENDER reads data relative to, but not necessarily included in struct sock_extended_err
+						 * So we need to pass the original pointer provided to us from CMSG_DATA()
+						 * However, the input pointer needs to be of type sock_extended_err*, hence the reinterpret_cast
+						 * The pointer returned may not be suitably aligned (see CMSG_DATA), so we need to memcpy
+						 */
+						sockaddr_in errorEndpoint;
+						std::memcpy(&errorEndpoint, SO_EE_OFFENDER(exErrorPtr), sizeof(errorEndpoint));
+						result.address = std::bit_cast<IP_Address>(errorEndpoint.sin_addr);
 						return &result;
 					}
 					else
 					{
-						Console.Error("DEV9: ICMP: Recv Error %d", ex_err->ee_errno);
+						Console.Error("DEV9: ICMP: Recv Error %d", exError.ee_errno);
 						result.type = -1;
-						result.code = ex_err->ee_errno;
+						result.code = exError.ee_errno;
 						return &result;
 					}
 				}
@@ -424,7 +442,8 @@ namespace Sessions
 					else
 #endif
 					{
-						ip* ipHeader = (ip*)icmpResponseBuffer.get();
+						// Rely on implicit object creation
+						ip* ipHeader = reinterpret_cast<ip*>(icmpResponseBuffer.get());
 						int headerLength = ipHeader->ip_hl << 2;
 						pxAssert(headerLength == 20);
 
@@ -439,14 +458,14 @@ namespace Sessions
 #endif
 					}
 
-					ICMP_Packet icmp(&icmpResponseBuffer[offset], length);
+					// Rely on implicit object creation for u8
+					ICMP_Packet icmp(reinterpret_cast<u8*>(&icmpResponseBuffer[offset]), length);
 					PayloadPtr* icmpPayload = static_cast<PayloadPtr*>(icmp.GetPayload());
 
 					result.type = icmp.type;
 					result.code = icmp.code;
 
-					sockaddr_in* sockaddr = (sockaddr_in*)&endpoint;
-					result.address = *(IP_Address*)&sockaddr->sin_addr;
+					result.address = std::bit_cast<IP_Address>(endpoint.sin_addr);
 
 					if (icmp.type == 0)
 					{
@@ -504,15 +523,15 @@ namespace Sessions
 	{
 #ifdef _WIN32
 		//Documentation is incorrect, IP_OPTION_INFORMATION is to be used regardless of platform
-		IP_OPTION_INFORMATION ipInfo{0};
+		IP_OPTION_INFORMATION ipInfo{};
 		ipInfo.Ttl = parTimeToLive;
 		DWORD ret;
 		if (parAdapterIP.integer != 0)
 			ret = IcmpSendEcho2Ex(icmpFile, icmpEvent, nullptr, nullptr, parAdapterIP.integer, parDestIP.integer, parPayload->data, parPayload->GetLength(), &ipInfo, icmpResponseBuffer.get(), icmpResponseBufferLen,
-				(DWORD)std::chrono::duration_cast<std::chrono::milliseconds>(ICMP_TIMEOUT).count());
+				static_cast<DWORD>(std::chrono::duration_cast<std::chrono::milliseconds>(ICMP_TIMEOUT).count()));
 		else
 			ret = IcmpSendEcho2(icmpFile, icmpEvent, nullptr, nullptr, parDestIP.integer, parPayload->data, parPayload->GetLength(), &ipInfo, icmpResponseBuffer.get(), icmpResponseBufferLen,
-				(DWORD)std::chrono::duration_cast<std::chrono::milliseconds>(ICMP_TIMEOUT).count());
+				static_cast<DWORD>(std::chrono::duration_cast<std::chrono::milliseconds>(ICMP_TIMEOUT).count()));
 
 		//Documentation states that IcmpSendEcho2 returns ERROR_IO_PENDING
 		//However, it actually returns zero, with the error set to ERROR_IO_PENDING
@@ -539,11 +558,11 @@ namespace Sessions
 
 				if (parAdapterIP.integer != 0)
 				{
-					sockaddr_in endpoint{0};
+					sockaddr_in endpoint{};
 					endpoint.sin_family = AF_INET;
-					*(IP_Address*)&endpoint.sin_addr = parAdapterIP;
+					endpoint.sin_addr = std::bit_cast<in_addr>(parAdapterIP);
 
-					if (bind(icmpSocket, (const sockaddr*)&endpoint, sizeof(endpoint)) == -1)
+					if (bind(icmpSocket, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint)) == -1)
 					{
 						Console.Error("DEV9: ICMP: Failed to bind socket. Error: %d", errno);
 						::close(icmpSocket);
@@ -554,7 +573,7 @@ namespace Sessions
 
 #if defined(ICMP_SOCKETS_LINUX)
 				int value = 1;
-				if (setsockopt(icmpSocket, SOL_IP, IP_RECVERR, (char*)&value, sizeof(value)))
+				if (setsockopt(icmpSocket, SOL_IP, IP_RECVERR, reinterpret_cast<const char*>(&value), sizeof(value)))
 				{
 					Console.Error("DEV9: ICMP: Failed to setsockopt IP_RECVERR. Error: %d", errno);
 					::close(icmpSocket);
@@ -564,7 +583,7 @@ namespace Sessions
 #endif
 
 				// TTL (Note multicast & regular ttl are separate)
-				if (setsockopt(icmpSocket, IPPROTO_IP, IP_TTL, (const char*)&parTimeToLive, sizeof(parTimeToLive)) == -1)
+				if (setsockopt(icmpSocket, IPPROTO_IP, IP_TTL, reinterpret_cast<const char*>(&parTimeToLive), sizeof(parTimeToLive)) == -1)
 				{
 					Console.Error("DEV9: ICMP: Failed to set TTL. Error: %d", errno);
 					::close(icmpSocket);
@@ -576,9 +595,9 @@ namespace Sessions
 				if (icmpConnectionKind == PingType::ICMP)
 				{
 					//We get assigned a port
-					sockaddr_in endpoint{0};
+					sockaddr_in endpoint{};
 					socklen_t endpointsize = sizeof(endpoint);
-					if (getsockname(icmpSocket, (sockaddr*)&endpoint, &endpointsize) == -1)
+					if (getsockname(icmpSocket, reinterpret_cast<sockaddr*>(&endpoint), &endpointsize) == -1)
 					{
 						Console.Error("DEV9: ICMP: Failed to get id. Error: %d", errno);
 						::close(icmpSocket);
@@ -592,7 +611,7 @@ namespace Sessions
 #endif
 				{
 					//Use time, in ms, as id
-					icmpId = (u16)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+					icmpId = static_cast<u16>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 				}
 
 				ICMP_Packet icmp(parPayload->Clone());
@@ -609,11 +628,11 @@ namespace Sessions
 				int offset = 0;
 				icmp.WriteBytes(buffer.get(), &offset);
 
-				sockaddr_in endpoint{0};
+				sockaddr_in endpoint{};
 				endpoint.sin_family = AF_INET;
-				*(IP_Address*)&endpoint.sin_addr.s_addr = parDestIP;
+				endpoint.sin_addr = std::bit_cast<in_addr>(parDestIP);
 
-				const int ret = sendto(icmpSocket, buffer.get(), icmp.GetLength(), 0, (const sockaddr*)&endpoint, sizeof(endpoint));
+				const int ret = sendto(icmpSocket, buffer.get(), icmp.GetLength(), 0, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 				if (ret == -1)
 				{
 					Console.Error("DEV9: ICMP: Send Error %d", errno);
@@ -782,8 +801,8 @@ namespace Sessions
 						u16 ps2Port = 0;
 						switch (prot)
 						{
-							case (u8)IP_Type::TCP:
-							case (u8)IP_Type::UDP:
+							case static_cast<u8>(IP_Type::TCP):
+							case static_cast<u8>(IP_Type::UDP):
 								//Read ports directly from the payload
 								//both UDP and TCP have the same locations for ports
 								IP_PayloadPtr* payload = static_cast<IP_PayloadPtr*>(retPkt->GetPayload());
