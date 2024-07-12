@@ -16,8 +16,10 @@
 
 #include <algorithm>
 #include <bit>
+#include <thread>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
@@ -282,53 +284,6 @@ namespace Sessions
 			case (PingType::ICMP):
 			case (PingType::RAW):
 			{
-				int ret;
-
-#if defined(ICMP_SOCKETS_BSD)
-				fd_set sReady;
-				fd_set sExcept;
-
-				timeval nowait{};
-				FD_ZERO(&sReady);
-				FD_ZERO(&sExcept);
-				FD_SET(icmpSocket, &sReady);
-				FD_SET(icmpSocket, &sExcept);
-				ret = select(icmpSocket + 1, &sReady, nullptr, &sExcept, &nowait);
-
-				bool hasData;
-				if (ret == -1)
-				{
-					hasData = false;
-					Console.WriteLn("DEV9: ICMP: select failed. Error: %d", errno);
-				}
-				else if (FD_ISSET(icmpSocket, &sExcept))
-				{
-					hasData = false;
-
-					int error = 0;
-
-					socklen_t len = sizeof(error);
-					if (getsockopt(icmpSocket, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
-						Console.Error("DEV9: ICMP: Unknown ICMP connection error (getsockopt error: %d)", errno);
-					else
-						Console.Error("DEV9: ICMP: Recv error: %d", error);
-				}
-				else
-					hasData = FD_ISSET(icmpSocket, &sReady);
-
-				if (hasData == false)
-				{
-					if (std::chrono::steady_clock::now() - icmpDeathClockStart > ICMP_TIMEOUT)
-					{
-						result.type = -2;
-						result.code = 0;
-						return &result;
-					}
-					else
-						return nullptr;
-				}
-#endif
-
 				sockaddr_in endpoint{};
 
 				iovec iov;
@@ -348,20 +303,11 @@ namespace Sessions
 				msg.msg_iov = &iov;
 				msg.msg_iovlen = 1;
 
-#if defined(ICMP_SOCKETS_LINUX)
-				ret = recvmsg(icmpSocket, &msg, MSG_DONTWAIT);
-#elif defined(ICMP_SOCKETS_BSD)
-				// Why not use MSG_DONTWAIT?
-				// We can get rid of the select logic above if we do use it
-				// Might be doing it for extra error checking??
-				// maybe we can just make the socket non-blocking
-				ret = recvmsg(icmpSocket, &msg, 0);
-#endif
+				int ret = recvmsg(icmpSocket, &msg, 0);
 
 				if (ret == -1)
 				{
 					int err = errno;
-#if defined(ICMP_SOCKETS_LINUX)
 					if (err == EAGAIN || err == EWOULDBLOCK)
 					{
 						if (std::chrono::steady_clock::now() - icmpDeathClockStart > ICMP_TIMEOUT)
@@ -373,14 +319,16 @@ namespace Sessions
 						else
 							return nullptr;
 					}
+#if defined(ICMP_SOCKETS_LINUX)
 					else
 					{
 						msg.msg_control = &cbuff;
 						msg.msg_controllen = sizeof(cbuff);
-						ret = recvmsg(icmpSocket, &msg, MSG_ERRQUEUE | MSG_DONTWAIT);
+						ret = recvmsg(icmpSocket, &msg, MSG_ERRQUEUE);
 					}
-#endif
+
 					if (ret == -1)
+#endif
 					{
 						Console.Error("DEV9: ICMP: RecvMsg Error: %d", err);
 						result.type = -1;
@@ -391,6 +339,7 @@ namespace Sessions
 
 				if (msg.msg_flags & MSG_TRUNC)
 					Console.Error("DEV9: ICMP: RecvMsg Truncated");
+
 #if defined(ICMP_SOCKETS_LINUX)
 				if (msg.msg_flags & MSG_CTRUNC)
 					Console.Error("DEV9: ICMP: RecvMsg Control Truncated");
@@ -611,6 +560,16 @@ namespace Sessions
 					return false;
 				}
 
+				// Non-blocking
+				int blocking = 1;
+				if (ioctl(icmpSocket, FIONBIO, &blocking) == -1)
+				{
+					Console.Error("DEV9: ICMP: Failed to set non-blocking. Error: %d", errno);
+					::close(icmpSocket);
+					icmpSocket = -1;
+					return false;
+				}
+
 #if defined(ICMP_SOCKETS_LINUX)
 				if (icmpConnectionKind == PingType::ICMP)
 				{
@@ -652,13 +611,23 @@ namespace Sessions
 				endpoint.sin_family = AF_INET;
 				endpoint.sin_addr = std::bit_cast<in_addr>(parDestIP);
 
-				const int ret = sendto(icmpSocket, buffer.get(), icmp.GetLength(), 0, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
-				if (ret == -1)
+				int ret = -1;
+				while (ret == -1)
 				{
-					Console.Error("DEV9: ICMP: Send error %d", errno);
-					::close(icmpSocket);
-					icmpSocket = -1;
-					return false;
+					ret = sendto(icmpSocket, buffer.get(), icmp.GetLength(), 0, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
+					if (ret == -1)
+					{
+						const int err = errno;
+						if (err == EAGAIN || err == EWOULDBLOCK)
+							std::this_thread::yield();
+						else
+						{
+							Console.Error("DEV9: ICMP: Send error %d", errno);
+							::close(icmpSocket);
+							icmpSocket = -1;
+							return false;
+						}
+					}
 				}
 
 				return true;
