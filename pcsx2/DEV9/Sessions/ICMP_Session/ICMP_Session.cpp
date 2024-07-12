@@ -685,7 +685,7 @@ namespace Sessions
 			pingRet = pings[i]->Recv();
 			if (pingRet != nullptr)
 			{
-				Ping* ping = pings[i];
+				std::unique_ptr<Ping> ping = std::move(pings[i]);
 				// Remove ping from list and unlock mutex
 				pings.erase(pings.begin() + i);
 				lock.unlock();
@@ -728,9 +728,6 @@ namespace Sessions
 					Console.Error("DEV9: ICMP: Unexpected ICMP status %d", pingRet->code);
 				else
 					DevCon.WriteLn("DEV9: ICMP: ICMP timeout");
-
-				// Free ping
-				delete ping;
 
 				if (ret.has_value())
 					DevCon.WriteLn("DEV9: ICMP: Return Ping");
@@ -848,13 +845,12 @@ namespace Sessions
 				DevCon.WriteLn("DEV9: ICMP: Send Ping");
 				open++;
 
-				Ping* ping = new Ping(icmpPayload->GetLength());
+				std::unique_ptr<Ping> ping = std::make_unique<Ping>(icmpPayload->GetLength());
 
 				if (!ping->IsInitialised())
 				{
 					if (--open == 0)
 						RaiseEventConnectionClosed();
-					delete ping;
 					return false;
 				}
 
@@ -862,7 +858,6 @@ namespace Sessions
 				{
 					if (--open == 0)
 						RaiseEventConnectionClosed();
-					delete ping;
 					return false;
 				}
 
@@ -873,7 +868,7 @@ namespace Sessions
 
 				{
 					std::scoped_lock lock(ping_mutex);
-					pings.push_back(ping);
+					pings.push_back(std::move(ping));
 				}
 
 				break;
@@ -892,10 +887,8 @@ namespace Sessions
 
 	ICMP_Session::~ICMP_Session()
 	{
-		std::scoped_lock lock(ping_mutex);
-
 		// Cleanup
-		for (size_t i = 0; i < pings.size(); i++)
-			delete pings[i];
+		std::scoped_lock lock(ping_mutex);
+		pings.clear();
 	}
 } // namespace Sessions
