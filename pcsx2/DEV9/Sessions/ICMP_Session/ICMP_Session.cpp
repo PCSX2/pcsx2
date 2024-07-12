@@ -189,8 +189,16 @@ namespace Sessions
 		{
 			ResetEvent(icmpEvent);
 
-			[[maybe_unused]] int count = IcmpParseReplies(icmpResponseBuffer.get(), icmpResponseBufferLen);
-			pxAssert(count == 1);
+			int count = IcmpParseReplies(icmpResponseBuffer.get(), icmpResponseBufferLen);
+			pxAssert(count <= 1);
+
+			// Timeout
+			if (count == 0)
+			{
+				result.type = -2;
+				result.code = 0;
+				return &result;
+			}
 
 			// Rely on implicit object creation
 			ICMP_ECHO_REPLY* pingRet = reinterpret_cast<ICMP_ECHO_REPLY*>(icmpResponseBuffer.get());
