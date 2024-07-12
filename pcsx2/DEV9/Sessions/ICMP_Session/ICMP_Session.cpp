@@ -704,20 +704,17 @@ namespace Sessions
 					{
 						// Copy the original packet into the returned ICMP packet
 						// Allocate fullsize buffer
-						u8* temp = new u8[ping->originalPacket->GetLength()];
+						std::vector<u8> temp = std::vector<u8>(ping->originalPacket->GetLength());
 						// Allocate returned ICMP payload
 						int responseSize = ping->originalPacket->GetHeaderLength() + 8;
 						data = new PayloadData(responseSize);
 
 						// Write packet into buffer
 						int offset = 0;
-						ping->originalPacket->WriteBytes(temp, &offset);
+						ping->originalPacket->WriteBytes(temp.data(), &offset);
 
 						// Copy only needed bytes
-						memcpy(data->data.get(), temp, responseSize);
-
-						// Cleanup
-						delete[] temp;
+						memcpy(data->data.get(), temp.data(), responseSize);
 					}
 
 					std::unique_ptr<ICMP_Packet> pRet = std::make_unique<ICMP_Packet>(data);
