@@ -715,16 +715,16 @@ struct alignas(16) GSHWDrawConfig
 
 	AlphaPass alpha_second_pass;
 
-	struct BlendPass
+	struct BlendMultiPass
 	{
 		BlendState blend;
 		u8 blend_hw;
 		u8 dither;
 		bool enable;
 	};
-	static_assert(sizeof(BlendPass) == 8, "blend pass is 8 bytes");
+	static_assert(sizeof(BlendMultiPass) == 8, "blend multi pass is 8 bytes");
 
-	BlendPass blend_second_pass;
+	BlendMultiPass blend_multi_pass;
 
 	VSConstantBuffer cb_vs;
 	PSConstantBuffer cb_ps;
