@@ -5826,14 +5826,14 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		SendHWDraw(config, draw_rt, config.require_one_barrier, config.require_full_barrier, skip_first_barrier);
 
 	// blend second pass
-	if (config.blend_second_pass.enable)
+	if (config.blend_multi_pass.enable)
 	{
-		if (config.blend_second_pass.blend.constant_enable)
-			SetBlendConstants(config.blend_second_pass.blend.constant);
+		if (config.blend_multi_pass.blend.constant_enable)
+			SetBlendConstants(config.blend_multi_pass.blend.constant);
 
-		pipe.bs = config.blend_second_pass.blend;
-		pipe.ps.blend_hw = config.blend_second_pass.blend_hw;
-		pipe.ps.dither = config.blend_second_pass.dither;
+		pipe.bs = config.blend_multi_pass.blend;
+		pipe.ps.blend_hw = config.blend_multi_pass.blend_hw;
+		pipe.ps.dither = config.blend_multi_pass.dither;
 		if (BindDrawPipeline(pipe))
 		{
 			// TODO: This probably should have barriers, in case we want to use it conditionally.
