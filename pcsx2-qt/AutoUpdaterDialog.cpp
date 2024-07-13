@@ -264,6 +264,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
 						const QJsonObject asset_object(asset_value.toObject());
 						const QJsonArray additional_tags_array(asset_object["additionalTags"].toArray());
 						bool is_symbols = false;
+						bool is_installer = false;
 						bool is_avx2 = false;
 						bool is_sse4 = false;
 						bool is_perfect_match = false;
@@ -274,6 +275,12 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
 							{
 								// we're not interested in symbols downloads
 								is_symbols = true;
+								break;
+							}
+							if (additional_tag_str == QStringLiteral("installer"))
+							{
+								// we're not interested in installer download
+								is_installer = true;
 								break;
 							}
 							else if (additional_tag_str == QStringLiteral("SSE4"))
@@ -299,6 +306,11 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
 							continue;
 						}
 
+						if (is_installer)
+						{
+							// skip this asset
+							continue;
+						}
 #ifdef _M_X86
 						if (is_avx2 && cpuinfo_has_x86_avx2())
 						{
