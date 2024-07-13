@@ -1605,7 +1605,10 @@ void InputManager::UpdateInputSourceState(SettingsInterface& si, std::unique_loc
 	{
 		if (s_input_sources[static_cast<u32>(type)])
 		{
+			settings_lock.unlock();
 			s_input_sources[static_cast<u32>(type)]->Shutdown();
+			settings_lock.lock();
+
 			s_input_sources[static_cast<u32>(type)].reset();
 		}
 	}
