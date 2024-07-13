@@ -779,7 +779,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"), tr("Unchecked"),
 			tr("Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still "
-			   "rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth our frame time "
+			   "rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time "
 			   "fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase "
 			   "input lag."));
 
