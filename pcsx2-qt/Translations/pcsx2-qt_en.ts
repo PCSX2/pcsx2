@@ -1708,8 +1708,8 @@ Leaderboard Position: {1} of {2}</source>
     <name>AutoUpdaterDialog</name>
     <message>
         <location filename="../AutoUpdaterDialog.ui" line="17"/>
-        <location filename="../AutoUpdaterDialog.cpp" line="477"/>
-        <location filename="../AutoUpdaterDialog.cpp" line="542"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="489"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="554"/>
         <source>Automatic Updater</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1750,67 +1750,67 @@ Leaderboard Position: {1} of {2}</source>
     </message>
     <message>
         <location filename="../AutoUpdaterDialog.cpp" line="178"/>
-        <location filename="../AutoUpdaterDialog.cpp" line="671"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="683"/>
         <source>Updater Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="389"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="401"/>
         <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="423"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="435"/>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to a Memory Card before installing this update or you will lose progress.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="433"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="445"/>
         <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="460"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="472"/>
         <source>Savestate Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="461"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="473"/>
         <source>&lt;h1&gt;WARNING&lt;/h1&gt;&lt;p style=&apos;font-size:12pt;&apos;&gt;Installing this update will make your &lt;b&gt;save states incompatible&lt;/b&gt;, &lt;i&gt;be sure to save any progress to your memory cards before proceeding&lt;/i&gt;.&lt;/p&gt;&lt;p&gt;Do you wish to continue?&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="478"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="490"/>
         <source>Downloading %1...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="543"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="555"/>
         <source>No updates are currently available. Please try again later.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="561"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="573"/>
         <source>Current Version: %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="562"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="574"/>
         <source>New Version: %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="563"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="575"/>
         <source>Download Size: %1 MB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="564"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="576"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="671"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="683"/>
         <source>Failed to remove updater exe after update.</source>
         <translation type="unfinished"></translation>
     </message>
