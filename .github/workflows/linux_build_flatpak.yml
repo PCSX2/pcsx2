@@ -94,12 +94,6 @@ jobs:
           cd bin/resources
           wget "${{ inputs.patchesUrl }}/patches.zip"
 
-      - name: Generate AppStream XML
-        run: |
-          ./.github/workflows/scripts/linux/generate-metainfo.sh .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
-          cat .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
-      #    flatpak-builder-lint appstream .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
-
       - name: Validate manifest
         run: |
           flatpak-builder-lint manifest .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json

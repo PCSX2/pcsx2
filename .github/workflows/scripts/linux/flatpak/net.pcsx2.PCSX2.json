@@ -9,7 +9,7 @@
   "add-extensions": {
     "org.freedesktop.Platform.ffmpeg-full": {
       "directory": "lib/ffmpeg",
-      "version": "22.08",
+      "version": "23.08",
       "add-ld-path": ".",
       "autodownload": true
     }
@@ -51,7 +51,7 @@
           "-DCMAKE_SHARED_LINKER_FLAGS_INIT=-fuse-ld=lld",
           "-DUSE_LINKED_FFMPEG=ON",
           "-DDISABLE_ADVANCE_SIMD=TRUE"
-	]
+        ]
       },
       "sources": [
         {
@@ -63,8 +63,10 @@
         "cp -a bin \"${FLATPAK_DEST}\"",
         "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/bin/resources/icons/AppIconLarge.png\" \"${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/net.pcsx2.PCSX2.png\"",
         "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/.github/workflows/scripts/linux/pcsx2-qt.desktop\" \"${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop\"",
-	"desktop-file-edit --set-key=Icon --set-value=net.pcsx2.PCSX2 \"${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop\"",
-	"install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/.github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml\" \"${FLATPAK_DEST}/share/metainfo/net.pcsx2.PCSX2.metainfo.xml\"",
+        "desktop-file-edit --set-key=Icon --set-value=net.pcsx2.PCSX2 \"${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop\"",
+        "${FLATPAK_BUILDER_BUILDDIR}/.github/workflows/scripts/linux/generate-metainfo.sh \"${FLATPAK_BUILDER_BUILDDIR}/net.pcsx2.PCSX2.metainfo.xml\"",
+        "cat \"${FLATPAK_BUILDER_BUILDDIR}/net.pcsx2.PCSX2.metainfo.xml\"",
+        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/net.pcsx2.PCSX2.metainfo.xml\" \"${FLATPAK_DEST}/share/metainfo/net.pcsx2.PCSX2.metainfo.xml\"",
         "mkdir -p \"${FLATPAK_DEST}/lib/ffmpeg\""
       ]
     }
