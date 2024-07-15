@@ -11186,8 +11186,6 @@ SCUS-97436:
 SCUS-97437:
   name: "ATV Offroad Fury 3 [Demo]"
   region: "NTSC-U"
-  speedHacks:
-    mtvu: 0 # Increases FPS drastically.
 SCUS-97438:
   name: "EyeToy - Antigrav [Demo]"
   region: "NTSC-U"
@@ -11583,8 +11581,6 @@ SCUS-97513:
 SCUS-97514:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
-  speedHacks:
-    mtvu: 0 # Increases FPS drastically.
 SCUS-97515:
   name: "Hot Shots Golf FORE! [Greatest Hits]"
   region: "NTSC-U"
@@ -22926,8 +22922,6 @@ SLES-53753:
 SLES-53754:
   name: "ATV Offroad Fury 3"
   region: "PAL-M6"
-  speedHacks:
-    mtvu: 0 # Increases FPS drastically.
 SLES-53755:
   name: "Castlevania - Curse of Darkness"
   region: "PAL-M5"
@@ -69617,8 +69611,6 @@ SLUS-90009:
 SLUS-97405:
   name: "ATV Offroad Fury 3"
   region: "NTSC-U"
-  speedHacks:
-    mtvu: 0 # Increases FPS drastically.
 SRPM-70201:
   name: "Space Venus Starring Morning Musume."
   region: "NTSC-J"
