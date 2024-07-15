@@ -70,6 +70,9 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 		for (int j = 0; j < 16; j++)
 		{
 			const u32 currentByteAddress = currentRowAddress + j;
+			bool valid;
+			const u8 val = static_cast<u8>(m_cpu->read8(currentByteAddress, valid));
+
 
 			if (!(j % (s32)displayType))
 			{
@@ -97,14 +100,20 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 					painter.setPen(palette.highlight().color()); // SELECTED SEGMENT COLOUR
 				}
 				else
-					painter.setPen(palette.text().color()); // Default colour
+				{
+					if(val == 0x00)
+						painter.setPen(QColor::fromRgb(204, 204, 204)); // Dark gray
+					else
+						painter.setPen(palette.text().color()); // Default coloura
+				}
 			}
 			else
-				painter.setPen(palette.text().color()); // Default colour
-
-			bool valid;
-			const u8 val = static_cast<u8>(m_cpu->read8(currentByteAddress, valid));
-
+			{
+				if(val == 0x00)
+					painter.setPen(QColor::fromRgb(204, 204, 204)); // Dark gray
+				else
+					painter.setPen(palette.text().color()); // Default colour
+			}
 			painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "??");
 
 			valX += charWidth * 2;
