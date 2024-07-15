@@ -74,6 +74,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 
 			segmentXAxis[j] = valX;
 
+			bool penDefault = false;
 			if ((selectedAddress & ~0xF) == currentRowAddress)
 			{
 				if (selectedAddress >= thisSegmentsStart && selectedAddress < (thisSegmentsStart + (s32)displayType))
@@ -90,10 +91,16 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 					painter.setPen(QColor::fromRgb(0xaa, 0x22, 0x22)); // SELECTED BYTE COLOUR
 				}
 				else
+				{
+					penDefault = true;
 					painter.setPen(palette.text().color()); // Default colour
+				}
 			}
 			else
+			{
+				penDefault = true;
 				painter.setPen(palette.text().color()); // Default colour
+			}
 
 			bool valid;
 			switch (displayType)
@@ -101,24 +108,32 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 				case MemoryViewType::BYTE:
 				{
 					const u8 val = static_cast<u8>(m_cpu->read8(thisSegmentsStart, valid));
+					if (penDefault && val == 0)
+						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "??");
 					break;
 				}
 				case MemoryViewType::BYTEHW:
 				{
 					const u16 val = convertEndian<u16>(static_cast<u16>(m_cpu->read16(thisSegmentsStart, valid)));
+					if (penDefault && val == 0)
+						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "????");
 					break;
 				}
 				case MemoryViewType::WORD:
 				{
 					const u32 val = convertEndian<u32>(m_cpu->read32(thisSegmentsStart, valid));
+					if (penDefault && val == 0)
+						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "????????");
 					break;
 				}
 				case MemoryViewType::DWORD:
 				{
 					const u64 val = convertEndian<u64>(m_cpu->read64(thisSegmentsStart, valid));
+					if (penDefault && val == 0)
+						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "????????????????");
 					break;
 				}
