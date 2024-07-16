@@ -176,7 +176,7 @@ void CrashHandler::WriteDumpForCaller()
 	WriteMinidumpAndCallstack(nullptr);
 }
 
-#elif !defined(__APPLE__)
+#elif !defined(__APPLE__) && defined(HAS_LIBBACKTRACE)
 
 #include "FileSystem.h"
 

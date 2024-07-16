@@ -167,10 +167,13 @@ else()
 	)
 	target_link_libraries(common PRIVATE
 		${DBUS_LINK_LIBRARIES}
-		libbacktrace::libbacktrace
 		X11::X11
 		X11::Xrandr
 	)
+	if(USE_BACKTRACE)
+		target_compile_definitions(common PRIVATE "HAS_LIBBACKTRACE=1")
+		target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
+	endif()
 	if(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
 		target_link_libraries(common PRIVATE cpuinfo)
 	endif()

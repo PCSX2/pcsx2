@@ -65,7 +65,10 @@ else()
 			find_package(Wayland REQUIRED Egl)
 		endif()
 
-		find_package(Libbacktrace REQUIRED)
+		if(USE_BACKTRACE)
+			find_package(Libbacktrace REQUIRED)
+		endif()
+
 		find_package(PkgConfig REQUIRED)
 		pkg_check_modules(DBUS REQUIRED dbus-1)
 	endif()

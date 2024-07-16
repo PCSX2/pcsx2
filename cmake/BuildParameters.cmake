@@ -23,6 +23,7 @@ if(UNIX AND NOT APPLE)
 	option(ENABLE_SETCAP "Enable networking capability for DEV9" OFF)
 	option(X11_API "Enable X11 support" ON)
 	option(WAYLAND_API "Enable Wayland support" ON)
+	option(USE_BACKTRACE "Enable libbacktrace support" ON)
 endif()
 
 if(UNIX)
