@@ -2664,7 +2664,7 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 		return;
 
 	const QString old_filename = QString::fromStdString(GameList::GetCoverImagePathForEntry(entry));
-	const QString new_filename = QString::fromStdString(GameList::GetNewCoverImagePathForEntry(entry, filename.toUtf8().constData()));
+	const QString new_filename = QString::fromStdString(GameList::GetNewCoverImagePathForEntry(entry, filename.toUtf8().constData(), true));
 	if (new_filename.isEmpty())
 		return;
 
