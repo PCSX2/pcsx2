@@ -108,28 +108,28 @@ void QtHost::SetStyleFromSettings()
 		const QColor blue(198, 238, 255);
 		const QColor blue2(0, 88, 208);
 
-		QPalette darkPalette;
-		darkPalette.setColor(QPalette::Window, darkGray);
-		darkPalette.setColor(QPalette::WindowText, Qt::white);
-		darkPalette.setColor(QPalette::Base, black);
-		darkPalette.setColor(QPalette::AlternateBase, darkGray);
-		darkPalette.setColor(QPalette::ToolTipBase, blue2);
-		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
-		darkPalette.setColor(QPalette::Text, Qt::white);
-		darkPalette.setColor(QPalette::Button, darkGray);
-		darkPalette.setColor(QPalette::ButtonText, Qt::white);
-		darkPalette.setColor(QPalette::Link, blue);
-		darkPalette.setColor(QPalette::Highlight, blue2);
-		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
-		darkPalette.setColor(QPalette::PlaceholderText, QColor(Qt::white).darker());
+		QPalette darkBluePalette;
+		darkBluePalette.setColor(QPalette::Window, darkGray);
+		darkBluePalette.setColor(QPalette::WindowText, Qt::white);
+		darkBluePalette.setColor(QPalette::Base, black);
+		darkBluePalette.setColor(QPalette::AlternateBase, darkGray);
+		darkBluePalette.setColor(QPalette::ToolTipBase, blue2);
+		darkBluePalette.setColor(QPalette::ToolTipText, Qt::white);
+		darkBluePalette.setColor(QPalette::Text, Qt::white);
+		darkBluePalette.setColor(QPalette::Button, darkGray);
+		darkBluePalette.setColor(QPalette::ButtonText, Qt::white);
+		darkBluePalette.setColor(QPalette::Link, blue);
+		darkBluePalette.setColor(QPalette::Highlight, blue2);
+		darkBluePalette.setColor(QPalette::HighlightedText, Qt::white);
+		darkBluePalette.setColor(QPalette::PlaceholderText, QColor(Qt::white).darker());
 
-		darkPalette.setColor(QPalette::Active, QPalette::Button, darkGray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
+		darkBluePalette.setColor(QPalette::Active, QPalette::Button, darkGray);
+		darkBluePalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+		darkBluePalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+		darkBluePalette.setColor(QPalette::Disabled, QPalette::Text, gray);
+		darkBluePalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
-		qApp->setPalette(darkPalette);
+		qApp->setPalette(darkBluePalette);
 	}
 	else if (theme == "GreyMatter")
 	{
@@ -143,28 +143,28 @@ void QtHost::SetStyleFromSettings()
 		const QColor gray(111, 111, 111);
 		const QColor blue(198, 238, 255);
 
-		QPalette darkPalette;
-		darkPalette.setColor(QPalette::Window, darkGray);
-		darkPalette.setColor(QPalette::WindowText, Qt::white);
-		darkPalette.setColor(QPalette::Base, lighterGray);
-		darkPalette.setColor(QPalette::AlternateBase, darkGray);
-		darkPalette.setColor(QPalette::ToolTipBase, darkGray);
-		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
-		darkPalette.setColor(QPalette::Text, Qt::white);
-		darkPalette.setColor(QPalette::Button, lighterGray);
-		darkPalette.setColor(QPalette::ButtonText, Qt::white);
-		darkPalette.setColor(QPalette::Link, blue);
-		darkPalette.setColor(QPalette::Highlight, lighterGray.lighter());
-		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
-		darkPalette.setColor(QPalette::PlaceholderText, QColor(Qt::white).darker());
+		QPalette greyMatterPalette;
+		greyMatterPalette.setColor(QPalette::Window, darkGray);
+		greyMatterPalette.setColor(QPalette::WindowText, Qt::white);
+		greyMatterPalette.setColor(QPalette::Base, lighterGray);
+		greyMatterPalette.setColor(QPalette::AlternateBase, darkGray);
+		greyMatterPalette.setColor(QPalette::ToolTipBase, darkGray);
+		greyMatterPalette.setColor(QPalette::ToolTipText, Qt::white);
+		greyMatterPalette.setColor(QPalette::Text, Qt::white);
+		greyMatterPalette.setColor(QPalette::Button, lighterGray);
+		greyMatterPalette.setColor(QPalette::ButtonText, Qt::white);
+		greyMatterPalette.setColor(QPalette::Link, blue);
+		greyMatterPalette.setColor(QPalette::Highlight, lighterGray.lighter());
+		greyMatterPalette.setColor(QPalette::HighlightedText, Qt::white);
+		greyMatterPalette.setColor(QPalette::PlaceholderText, QColor(Qt::white).darker());
 
-		darkPalette.setColor(QPalette::Active, QPalette::Button, lighterGray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray.lighter());
-		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray.lighter());
-		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray.lighter());
-		darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
+		greyMatterPalette.setColor(QPalette::Active, QPalette::Button, lighterGray);
+		greyMatterPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray.lighter());
+		greyMatterPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray.lighter());
+		greyMatterPalette.setColor(QPalette::Disabled, QPalette::Text, gray.lighter());
+		greyMatterPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
-		qApp->setPalette(darkPalette);
+		qApp->setPalette(greyMatterPalette);
 	}
 	else if (theme == "UntouchedLagoon")
 	{
@@ -178,27 +178,27 @@ void QtHost::SetStyleFromSettings()
 		const QColor tameTeal(160, 190, 185);
 		const QColor grayBlue(160, 180, 190);
 
-		QPalette standardPalette;
-		standardPalette.setColor(QPalette::Window, tameTeal);
-		standardPalette.setColor(QPalette::WindowText, black.lighter());
-		standardPalette.setColor(QPalette::Base, grayBlue);
-		standardPalette.setColor(QPalette::AlternateBase, tameTeal);
-		standardPalette.setColor(QPalette::ToolTipBase, tameTeal);
-		standardPalette.setColor(QPalette::ToolTipText, grayBlue);
-		standardPalette.setColor(QPalette::Text, black);
-		standardPalette.setColor(QPalette::Button, tameTeal);
-		standardPalette.setColor(QPalette::ButtonText, black);
-		standardPalette.setColor(QPalette::Link, black.lighter());
-		standardPalette.setColor(QPalette::Highlight, teal);
-		standardPalette.setColor(QPalette::HighlightedText, grayBlue.lighter());
+		QPalette untouchedLagoonPalette;
+		untouchedLagoonPalette.setColor(QPalette::Window, tameTeal);
+		untouchedLagoonPalette.setColor(QPalette::WindowText, black.lighter());
+		untouchedLagoonPalette.setColor(QPalette::Base, grayBlue);
+		untouchedLagoonPalette.setColor(QPalette::AlternateBase, tameTeal);
+		untouchedLagoonPalette.setColor(QPalette::ToolTipBase, tameTeal);
+		untouchedLagoonPalette.setColor(QPalette::ToolTipText, grayBlue);
+		untouchedLagoonPalette.setColor(QPalette::Text, black);
+		untouchedLagoonPalette.setColor(QPalette::Button, tameTeal);
+		untouchedLagoonPalette.setColor(QPalette::ButtonText, black);
+		untouchedLagoonPalette.setColor(QPalette::Link, black.lighter());
+		untouchedLagoonPalette.setColor(QPalette::Highlight, teal);
+		untouchedLagoonPalette.setColor(QPalette::HighlightedText, grayBlue.lighter());
 
-		standardPalette.setColor(QPalette::Active, QPalette::Button, tameTeal);
-		standardPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkteal);
-		standardPalette.setColor(QPalette::Disabled, QPalette::WindowText, darkteal.lighter());
-		standardPalette.setColor(QPalette::Disabled, QPalette::Text, darkteal.lighter());
-		standardPalette.setColor(QPalette::Disabled, QPalette::Light, tameTeal);
+		untouchedLagoonPalette.setColor(QPalette::Active, QPalette::Button, tameTeal);
+		untouchedLagoonPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkteal);
+		untouchedLagoonPalette.setColor(QPalette::Disabled, QPalette::WindowText, darkteal.lighter());
+		untouchedLagoonPalette.setColor(QPalette::Disabled, QPalette::Text, darkteal.lighter());
+		untouchedLagoonPalette.setColor(QPalette::Disabled, QPalette::Light, tameTeal);
 
-		qApp->setPalette(standardPalette);
+		qApp->setPalette(untouchedLagoonPalette);
 	}
 	else if (theme == "BabyPastel")
 	{
@@ -214,27 +214,27 @@ void QtHost::SetStyleFromSettings()
 		const QColor congoPink(255, 127, 121);
 		const QColor blue(221, 225, 239);
 
-		QPalette standardPalette;
-		standardPalette.setColor(QPalette::Window, pink);
-		standardPalette.setColor(QPalette::WindowText, black);
-		standardPalette.setColor(QPalette::Base, brightPink);
-		standardPalette.setColor(QPalette::AlternateBase, blue);
-		standardPalette.setColor(QPalette::ToolTipBase, pink);
-		standardPalette.setColor(QPalette::ToolTipText, brightPink);
-		standardPalette.setColor(QPalette::Text, black);
-		standardPalette.setColor(QPalette::Button, pink);
-		standardPalette.setColor(QPalette::ButtonText, black);
-		standardPalette.setColor(QPalette::Link, black);
-		standardPalette.setColor(QPalette::Highlight, congoPink);
-		standardPalette.setColor(QPalette::HighlightedText, black);
+		QPalette babyPastelPalette;
+		babyPastelPalette.setColor(QPalette::Window, pink);
+		babyPastelPalette.setColor(QPalette::WindowText, black);
+		babyPastelPalette.setColor(QPalette::Base, brightPink);
+		babyPastelPalette.setColor(QPalette::AlternateBase, blue);
+		babyPastelPalette.setColor(QPalette::ToolTipBase, pink);
+		babyPastelPalette.setColor(QPalette::ToolTipText, brightPink);
+		babyPastelPalette.setColor(QPalette::Text, black);
+		babyPastelPalette.setColor(QPalette::Button, pink);
+		babyPastelPalette.setColor(QPalette::ButtonText, black);
+		babyPastelPalette.setColor(QPalette::Link, black);
+		babyPastelPalette.setColor(QPalette::Highlight, congoPink);
+		babyPastelPalette.setColor(QPalette::HighlightedText, black);
 
-		standardPalette.setColor(QPalette::Active, QPalette::Button, pink);
-		standardPalette.setColor(QPalette::Disabled, QPalette::ButtonText, redpinkish);
-		standardPalette.setColor(QPalette::Disabled, QPalette::WindowText, redpinkish);
-		standardPalette.setColor(QPalette::Disabled, QPalette::Text, redpinkish);
-		standardPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
+		babyPastelPalette.setColor(QPalette::Active, QPalette::Button, pink);
+		babyPastelPalette.setColor(QPalette::Disabled, QPalette::ButtonText, redpinkish);
+		babyPastelPalette.setColor(QPalette::Disabled, QPalette::WindowText, redpinkish);
+		babyPastelPalette.setColor(QPalette::Disabled, QPalette::Text, redpinkish);
+		babyPastelPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
-		qApp->setPalette(standardPalette);
+		qApp->setPalette(babyPastelPalette);
 	}
 	else if (theme == "PizzaBrown")
 	{
@@ -250,26 +250,27 @@ void QtHost::SetStyleFromSettings()
 		const QColor comp(248, 230, 213);
 		const QColor highlight(188, 100, 60);
 
-		QPalette standardPalette;
-		standardPalette.setColor(QPalette::Window, main);
-		standardPalette.setColor(QPalette::WindowText, Qt::black);
-		standardPalette.setColor(QPalette::Base, comp);
-		standardPalette.setColor(QPalette::AlternateBase, extr);
-		standardPalette.setColor(QPalette::ToolTipBase, comp);
-		standardPalette.setColor(QPalette::ToolTipText, Qt::black);
-		standardPalette.setColor(QPalette::Text, Qt::black);
-		standardPalette.setColor(QPalette::Button, extr);
-		standardPalette.setColor(QPalette::ButtonText, Qt::black);
-		standardPalette.setColor(QPalette::Link, highlight.darker());
-		standardPalette.setColor(QPalette::Highlight, highlight);
-		standardPalette.setColor(QPalette::HighlightedText, Qt::white);
-		standardPalette.setColor(QPalette::Active, QPalette::Button, extr);
-		standardPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray.darker());
-		standardPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray.darker());
-		standardPalette.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
-		standardPalette.setColor(QPalette::Disabled, QPalette::Light, gray.lighter());
+		QPalette pizzaPalette;
+		pizzaPalette.setColor(QPalette::Window, main);
+		pizzaPalette.setColor(QPalette::WindowText, Qt::black);
+		pizzaPalette.setColor(QPalette::Base, comp);
+		pizzaPalette.setColor(QPalette::AlternateBase, extr);
+		pizzaPalette.setColor(QPalette::ToolTipBase, comp);
+		pizzaPalette.setColor(QPalette::ToolTipText, Qt::black);
+		pizzaPalette.setColor(QPalette::Text, Qt::black);
+		pizzaPalette.setColor(QPalette::Button, extr);
+		pizzaPalette.setColor(QPalette::ButtonText, Qt::black);
+		pizzaPalette.setColor(QPalette::Link, highlight.darker());
+		pizzaPalette.setColor(QPalette::Highlight, highlight);
+		pizzaPalette.setColor(QPalette::HighlightedText, Qt::white);
+		
+		pizzaPalette.setColor(QPalette::Active, QPalette::Button, extr);
+		pizzaPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray.darker());
+		pizzaPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray.darker());
+		pizzaPalette.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
+		pizzaPalette.setColor(QPalette::Disabled, QPalette::Light, gray.lighter());
 
-		qApp->setPalette(standardPalette);
+		qApp->setPalette(pizzaPalette);
 	}
 	else if (theme == "PCSX2Blue")
 	{
@@ -283,27 +284,27 @@ void QtHost::SetStyleFromSettings()
 		const QColor blue(106, 156, 255);
 		const QColor lightBlue(130, 155, 241);
 
-		QPalette standardPalette;
-		standardPalette.setColor(QPalette::Window, blue2.lighter());
-		standardPalette.setColor(QPalette::WindowText, blackish);
-		standardPalette.setColor(QPalette::Base, lightBlue);
-		standardPalette.setColor(QPalette::AlternateBase, blue2.lighter());
-		standardPalette.setColor(QPalette::ToolTipBase, blue2);
-		standardPalette.setColor(QPalette::ToolTipText, Qt::white);
-		standardPalette.setColor(QPalette::Text, blackish);
-		standardPalette.setColor(QPalette::Button, blue);
-		standardPalette.setColor(QPalette::ButtonText, blackish);
-		standardPalette.setColor(QPalette::Link, darkBlue);
-		standardPalette.setColor(QPalette::Highlight, Qt::white);
-		standardPalette.setColor(QPalette::HighlightedText, blackish);
+		QPalette pcsx2BluePalette;
+		pcsx2BluePalette.setColor(QPalette::Window, blue2.lighter());
+		pcsx2BluePalette.setColor(QPalette::WindowText, blackish);
+		pcsx2BluePalette.setColor(QPalette::Base, lightBlue);
+		pcsx2BluePalette.setColor(QPalette::AlternateBase, blue2.lighter());
+		pcsx2BluePalette.setColor(QPalette::ToolTipBase, blue2);
+		pcsx2BluePalette.setColor(QPalette::ToolTipText, Qt::white);
+		pcsx2BluePalette.setColor(QPalette::Text, blackish);
+		pcsx2BluePalette.setColor(QPalette::Button, blue);
+		pcsx2BluePalette.setColor(QPalette::ButtonText, blackish);
+		pcsx2BluePalette.setColor(QPalette::Link, darkBlue);
+		pcsx2BluePalette.setColor(QPalette::Highlight, Qt::white);
+		pcsx2BluePalette.setColor(QPalette::HighlightedText, blackish);
 
-		standardPalette.setColor(QPalette::Active, QPalette::Button, blue);
-		standardPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkBlue);
-		standardPalette.setColor(QPalette::Disabled, QPalette::WindowText, darkBlue);
-		standardPalette.setColor(QPalette::Disabled, QPalette::Text, darkBlue);
-		standardPalette.setColor(QPalette::Disabled, QPalette::Light, darkBlue);
+		pcsx2BluePalette.setColor(QPalette::Active, QPalette::Button, blue);
+		pcsx2BluePalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkBlue);
+		pcsx2BluePalette.setColor(QPalette::Disabled, QPalette::WindowText, darkBlue);
+		pcsx2BluePalette.setColor(QPalette::Disabled, QPalette::Text, darkBlue);
+		pcsx2BluePalette.setColor(QPalette::Disabled, QPalette::Light, darkBlue);
 
-		qApp->setPalette(standardPalette);
+		qApp->setPalette(pcsx2BluePalette);
 	}
 	else if (theme == "ScarletDevilRed")
 	{
@@ -315,27 +316,27 @@ void QtHost::SetStyleFromSettings()
 		const QColor purplishRed(120, 45, 69);
 		const QColor brightRed(200, 45, 69);
 
-		QPalette darkPalette;
-		darkPalette.setColor(QPalette::Window, darkRed);
-		darkPalette.setColor(QPalette::WindowText, Qt::white);
-		darkPalette.setColor(QPalette::Base, purplishRed);
-		darkPalette.setColor(QPalette::AlternateBase, darkRed);
-		darkPalette.setColor(QPalette::ToolTipBase, darkRed);
-		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
-		darkPalette.setColor(QPalette::Text, Qt::white);
-		darkPalette.setColor(QPalette::Button, purplishRed.darker());
-		darkPalette.setColor(QPalette::ButtonText, Qt::white);
-		darkPalette.setColor(QPalette::Link, brightRed);
-		darkPalette.setColor(QPalette::Highlight, brightRed);
-		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+		QPalette scarletDevilPalette;
+		scarletDevilPalette.setColor(QPalette::Window, darkRed);
+		scarletDevilPalette.setColor(QPalette::WindowText, Qt::white);
+		scarletDevilPalette.setColor(QPalette::Base, purplishRed);
+		scarletDevilPalette.setColor(QPalette::AlternateBase, darkRed);
+		scarletDevilPalette.setColor(QPalette::ToolTipBase, darkRed);
+		scarletDevilPalette.setColor(QPalette::ToolTipText, Qt::white);
+		scarletDevilPalette.setColor(QPalette::Text, Qt::white);
+		scarletDevilPalette.setColor(QPalette::Button, purplishRed.darker());
+		scarletDevilPalette.setColor(QPalette::ButtonText, Qt::white);
+		scarletDevilPalette.setColor(QPalette::Link, brightRed);
+		scarletDevilPalette.setColor(QPalette::Highlight, brightRed);
+		scarletDevilPalette.setColor(QPalette::HighlightedText, Qt::white);
 
-		darkPalette.setColor(QPalette::Active, QPalette::Button, purplishRed.darker());
-		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, brightRed);
-		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, brightRed);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Text, brightRed);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkRed);
+		scarletDevilPalette.setColor(QPalette::Active, QPalette::Button, purplishRed.darker());
+		scarletDevilPalette.setColor(QPalette::Disabled, QPalette::ButtonText, brightRed);
+		scarletDevilPalette.setColor(QPalette::Disabled, QPalette::WindowText, brightRed);
+		scarletDevilPalette.setColor(QPalette::Disabled, QPalette::Text, brightRed);
+		scarletDevilPalette.setColor(QPalette::Disabled, QPalette::Light, darkRed);
 
-		qApp->setPalette(darkPalette);
+		qApp->setPalette(scarletDevilPalette);
 	}
 	else if (theme == "VioletAngelPurple")
 	{
@@ -347,27 +348,27 @@ void QtHost::SetStyleFromSettings()
 		const QColor darkerPurple(90, 30, 105);
 		const QColor nauticalPurple(110, 30, 125);
 
-		QPalette darkPalette;
-		darkPalette.setColor(QPalette::Window, blackishblue);
-		darkPalette.setColor(QPalette::WindowText, Qt::white);
-		darkPalette.setColor(QPalette::Base, nauticalPurple);
-		darkPalette.setColor(QPalette::AlternateBase, blackishblue);
-		darkPalette.setColor(QPalette::ToolTipBase, nauticalPurple);
-		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
-		darkPalette.setColor(QPalette::Text, Qt::white);
-		darkPalette.setColor(QPalette::Button, nauticalPurple.darker());
-		darkPalette.setColor(QPalette::ButtonText, Qt::white);
-		darkPalette.setColor(QPalette::Link, darkerPurple.lighter());
-		darkPalette.setColor(QPalette::Highlight, darkerPurple.lighter());
-		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+		QPalette violetAngelPalette;
+		violetAngelPalette.setColor(QPalette::Window, blackishblue);
+		violetAngelPalette.setColor(QPalette::WindowText, Qt::white);
+		violetAngelPalette.setColor(QPalette::Base, nauticalPurple);
+		violetAngelPalette.setColor(QPalette::AlternateBase, blackishblue);
+		violetAngelPalette.setColor(QPalette::ToolTipBase, nauticalPurple);
+		violetAngelPalette.setColor(QPalette::ToolTipText, Qt::white);
+		violetAngelPalette.setColor(QPalette::Text, Qt::white);
+		violetAngelPalette.setColor(QPalette::Button, nauticalPurple.darker());
+		violetAngelPalette.setColor(QPalette::ButtonText, Qt::white);
+		violetAngelPalette.setColor(QPalette::Link, darkerPurple.lighter());
+		violetAngelPalette.setColor(QPalette::Highlight, darkerPurple.lighter());
+		violetAngelPalette.setColor(QPalette::HighlightedText, Qt::white);
 
-		darkPalette.setColor(QPalette::Active, QPalette::Button, nauticalPurple.darker());
-		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkerPurple.lighter());
-		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, darkerPurple.lighter());
-		darkPalette.setColor(QPalette::Disabled, QPalette::Text, darkerPurple.darker());
-		darkPalette.setColor(QPalette::Disabled, QPalette::Light, nauticalPurple);
+		violetAngelPalette.setColor(QPalette::Active, QPalette::Button, nauticalPurple.darker());
+		violetAngelPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkerPurple.lighter());
+		violetAngelPalette.setColor(QPalette::Disabled, QPalette::WindowText, darkerPurple.lighter());
+		violetAngelPalette.setColor(QPalette::Disabled, QPalette::Text, darkerPurple.darker());
+		violetAngelPalette.setColor(QPalette::Disabled, QPalette::Light, nauticalPurple);
 
-		qApp->setPalette(darkPalette);
+		qApp->setPalette(violetAngelPalette);
 	}
 	else if (theme == "CobaltSky")
 	{
@@ -383,27 +384,27 @@ void QtHost::SetStyleFromSettings()
 		const QColor highlight(36, 93, 218);
 		const QColor link(0, 202, 255);
 
-		QPalette darkPalette;
-		darkPalette.setColor(QPalette::Window, royalBlue);
-		darkPalette.setColor(QPalette::WindowText, Qt::white);
-		darkPalette.setColor(QPalette::Base, royalBlue.lighter());
-		darkPalette.setColor(QPalette::AlternateBase, darkishBlue);
-		darkPalette.setColor(QPalette::ToolTipBase, darkishBlue);
-		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
-		darkPalette.setColor(QPalette::Text, Qt::white);
-		darkPalette.setColor(QPalette::Button, lighterBlue);
-		darkPalette.setColor(QPalette::ButtonText, Qt::white);
-		darkPalette.setColor(QPalette::Link, link);
-		darkPalette.setColor(QPalette::Highlight, highlight);
-		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+		QPalette cobaltSkyPalette;
+		cobaltSkyPalette.setColor(QPalette::Window, royalBlue);
+		cobaltSkyPalette.setColor(QPalette::WindowText, Qt::white);
+		cobaltSkyPalette.setColor(QPalette::Base, royalBlue.lighter());
+		cobaltSkyPalette.setColor(QPalette::AlternateBase, darkishBlue);
+		cobaltSkyPalette.setColor(QPalette::ToolTipBase, darkishBlue);
+		cobaltSkyPalette.setColor(QPalette::ToolTipText, Qt::white);
+		cobaltSkyPalette.setColor(QPalette::Text, Qt::white);
+		cobaltSkyPalette.setColor(QPalette::Button, lighterBlue);
+		cobaltSkyPalette.setColor(QPalette::ButtonText, Qt::white);
+		cobaltSkyPalette.setColor(QPalette::Link, link);
+		cobaltSkyPalette.setColor(QPalette::Highlight, highlight);
+		cobaltSkyPalette.setColor(QPalette::HighlightedText, Qt::white);
 
-		darkPalette.setColor(QPalette::Active, QPalette::Button, lighterBlue);
-		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
+		cobaltSkyPalette.setColor(QPalette::Active, QPalette::Button, lighterBlue);
+		cobaltSkyPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+		cobaltSkyPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+		cobaltSkyPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
+		cobaltSkyPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
-		qApp->setPalette(darkPalette);
+		qApp->setPalette(cobaltSkyPalette);
 	}
 	else if (theme == "Ruby")
 	{
@@ -415,27 +416,27 @@ void QtHost::SetStyleFromSettings()
 		const QColor slate(18, 18, 18);
 		const QColor rubyish(172, 21, 31);
 
-		QPalette darkPalette;
-		darkPalette.setColor(QPalette::Window, slate);
-		darkPalette.setColor(QPalette::WindowText, Qt::white);
-		darkPalette.setColor(QPalette::Base, slate.lighter());
-		darkPalette.setColor(QPalette::AlternateBase, slate.lighter());
-		darkPalette.setColor(QPalette::ToolTipBase, slate);
-		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
-		darkPalette.setColor(QPalette::Text, Qt::white);
-		darkPalette.setColor(QPalette::Button, slate);
-		darkPalette.setColor(QPalette::ButtonText, Qt::white);
-		darkPalette.setColor(QPalette::Link, Qt::white);
-		darkPalette.setColor(QPalette::Highlight, rubyish);
-		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+		QPalette rubyPalette;
+		rubyPalette.setColor(QPalette::Window, slate);
+		rubyPalette.setColor(QPalette::WindowText, Qt::white);
+		rubyPalette.setColor(QPalette::Base, slate.lighter());
+		rubyPalette.setColor(QPalette::AlternateBase, slate.lighter());
+		rubyPalette.setColor(QPalette::ToolTipBase, slate);
+		rubyPalette.setColor(QPalette::ToolTipText, Qt::white);
+		rubyPalette.setColor(QPalette::Text, Qt::white);
+		rubyPalette.setColor(QPalette::Button, slate);
+		rubyPalette.setColor(QPalette::ButtonText, Qt::white);
+		rubyPalette.setColor(QPalette::Link, Qt::white);
+		rubyPalette.setColor(QPalette::Highlight, rubyish);
+		rubyPalette.setColor(QPalette::HighlightedText, Qt::white);
 
-		darkPalette.setColor(QPalette::Active, QPalette::Button, slate);
-		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
+		rubyPalette.setColor(QPalette::Active, QPalette::Button, slate);
+		rubyPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+		rubyPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+		rubyPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
+		rubyPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
 
-		qApp->setPalette(darkPalette);
+		qApp->setPalette(rubyPalette);
 	}
 	else if (theme == "Sapphire")
 	{
@@ -447,27 +448,59 @@ void QtHost::SetStyleFromSettings()
 		const QColor slate(18, 18, 18);
 		const QColor persianBlue(32, 35, 204);
 
-		QPalette darkPalette;
-		darkPalette.setColor(QPalette::Window, slate);
-		darkPalette.setColor(QPalette::WindowText, Qt::white);
-		darkPalette.setColor(QPalette::Base, slate.lighter());
-		darkPalette.setColor(QPalette::AlternateBase, slate.lighter());
-		darkPalette.setColor(QPalette::ToolTipBase, slate);
-		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
-		darkPalette.setColor(QPalette::Text, Qt::white);
-		darkPalette.setColor(QPalette::Button, slate);
-		darkPalette.setColor(QPalette::ButtonText, Qt::white);
-		darkPalette.setColor(QPalette::Link, Qt::white);
-		darkPalette.setColor(QPalette::Highlight, persianBlue);
-		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+		QPalette sapphirePalette;
+		sapphirePalette.setColor(QPalette::Window, slate);
+		sapphirePalette.setColor(QPalette::WindowText, Qt::white);
+		sapphirePalette.setColor(QPalette::Base, slate.lighter());
+		sapphirePalette.setColor(QPalette::AlternateBase, slate.lighter());
+		sapphirePalette.setColor(QPalette::ToolTipBase, slate);
+		sapphirePalette.setColor(QPalette::ToolTipText, Qt::white);
+		sapphirePalette.setColor(QPalette::Text, Qt::white);
+		sapphirePalette.setColor(QPalette::Button, slate);
+		sapphirePalette.setColor(QPalette::ButtonText, Qt::white);
+		sapphirePalette.setColor(QPalette::Link, Qt::white);
+		sapphirePalette.setColor(QPalette::Highlight, persianBlue);
+		sapphirePalette.setColor(QPalette::HighlightedText, Qt::white);
 
-		darkPalette.setColor(QPalette::Active, QPalette::Button, slate);
-		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
+		sapphirePalette.setColor(QPalette::Active, QPalette::Button, slate);
+		sapphirePalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+		sapphirePalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+		sapphirePalette.setColor(QPalette::Disabled, QPalette::Text, gray);
+		sapphirePalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
 
-		qApp->setPalette(darkPalette);
+		qApp->setPalette(sapphirePalette);
+	}
+	else if (theme == "Emerald")
+	{
+		// Custom palette by RedDevilus, Black as main color and Blue as complimentary.
+		// Alternative dark (black) theme.
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+
+		const QColor gray(128, 128, 128);
+		const QColor slate(18, 18, 18);
+		const QColor evergreenEmerald(15, 81, 59);
+
+		QPalette emeraldPalette;
+		emeraldPalette.setColor(QPalette::Window, slate);
+		emeraldPalette.setColor(QPalette::WindowText, Qt::white);
+		emeraldPalette.setColor(QPalette::Base, slate.lighter());
+		emeraldPalette.setColor(QPalette::AlternateBase, slate.lighter());
+		emeraldPalette.setColor(QPalette::ToolTipBase, slate);
+		emeraldPalette.setColor(QPalette::ToolTipText, Qt::white);
+		emeraldPalette.setColor(QPalette::Text, Qt::white);
+		emeraldPalette.setColor(QPalette::Button, slate);
+		emeraldPalette.setColor(QPalette::ButtonText, Qt::white);
+		emeraldPalette.setColor(QPalette::Link, Qt::white);
+		emeraldPalette.setColor(QPalette::Highlight, evergreenEmerald);
+		emeraldPalette.setColor(QPalette::HighlightedText, Qt::white);
+
+		emeraldPalette.setColor(QPalette::Active, QPalette::Button, slate);
+		emeraldPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+		emeraldPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+		emeraldPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
+		emeraldPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
+
+		qApp->setPalette(emeraldPalette);
 	}
 	else if (theme == "Custom")
 	{
