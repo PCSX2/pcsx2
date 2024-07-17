@@ -11,7 +11,7 @@ namespace Ps2MemSize
 	static constexpr u32 TotalRam = _1mb * 128;// 128 MB total memory.
 	static constexpr u32 Rom = _1mb * 4;       // 4 MB main rom
 	static constexpr u32 Rom1 = _1mb * 4;      // DVD player
-	static constexpr u32 Rom2 = 0x00080000;    // Chinese rom extension
+	static constexpr u32 Rom2 = _1mb * 4;      // Chinese rom extension
 	static constexpr u32 Hardware = _64kb;
 	static constexpr u32 Scratch = _16kb;
 
