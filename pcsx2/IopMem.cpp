@@ -39,18 +39,18 @@ void iopMemRelease()
 // which is performed by MemInit and PsxMemInit()
 void iopMemReset()
 {
-	pxAssert( iopMem );
+	pxAssert(iopMem);
 
 	DbgCon.WriteLn("IOP resetting main memory...");
 
-	memset(psxMemWLUT, 0, 0x2000 * sizeof(uptr) * 2);	// clears both allocations, RLUT and WLUT
+	memset(psxMemWLUT, 0, 0x2000 * sizeof(uptr) * 2); // clears both allocations, RLUT and WLUT
 
 	// Trick!  We're accessing RLUT here through WLUT, since it's the non-const pointer.
 	// So the ones with a 0x2000 prefixed are RLUT tables.
 
 	// Map IOP main memory, which is Read/Write, and mirrored three times
 	// at 0x0, 0x8000, and 0xa000:
-	for (int i=0; i<0x0080; i++)
+	for (int i = 0; i < 0x0080; i++)
 	{
 		psxMemWLUT[i + 0x0000] = (uptr)&iopMem->Main[(i & 0x1f) << 16];
 
@@ -78,7 +78,7 @@ void iopMemReset()
 		psxMemWLUT[i + 0x2000 + 0x1e00] = (uptr)&eeMem->ROM1[i << 16];
 	}
 
-	for (int i = 0; i < 0x0008; i++)
+	for (int i = 0; i < 0x0040; i++)
 	{
 		psxMemWLUT[i + 0x2000 + 0x1e40] = (uptr)&eeMem->ROM2[i << 16];
 	}
@@ -318,7 +318,7 @@ void iopMemWrite16(u32 mem, u16 value)
 
 			default:
 				psxHu16(mem) = value;
-			break;
+				break;
 		}
 	} else
 	{
@@ -443,7 +443,7 @@ void iopMemWrite32(u32 mem, u32 value)
 
 					case 0x60:
 						psHu32(SBUS_F260) = 0;
-					return;
+						return;
 
 				}
 #if PSX_EXTRALOGS
@@ -529,11 +529,11 @@ bool iopMemSafeWriteBytes(u32 mem, const void* src, u32 size)
 
 std::string iopMemReadString(u32 mem, int maxlen)
 {
-    std::string ret;
-    char c;
+	std::string ret;
+	char c;
 
-    while ((c = iopMemRead8(mem++)) && maxlen--)
-        ret.push_back(c);
+	while ((c = iopMemRead8(mem++)) && maxlen--)
+		ret.push_back(c);
 
-    return ret;
+	return ret;
 }
