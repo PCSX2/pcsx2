@@ -3953,6 +3953,8 @@ SCED-53947:
 SCED-53962:
   name: "Shadow of the Colossus [Demo]"
   region: "PAL-M5"
+  roundModes:
+    eeRoundMode: 3 # Fixes Wander drifting when charging his attack on the ground.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -5565,6 +5567,8 @@ SCES-53326:
   name: "Shadow of the Colossus"
   region: "PAL-E"
   compat: 5
+  roundModes:
+    eeRoundMode: 3 # Fixes Wander drifting when charging his attack on the ground.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -11311,6 +11315,8 @@ SCUS-97472:
   name: "Shadow of the Colossus"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 3 # Fixes Wander drifting when charging his attack on the ground.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -11528,6 +11534,8 @@ SCUS-97504:
 SCUS-97505:
   name: "Shadow of the Colossus [Demo]"
   region: "NTSC-U"
+  roundModes:
+    eeRoundMode: 3 # Fixes Wander drifting when charging his attack on the ground.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
