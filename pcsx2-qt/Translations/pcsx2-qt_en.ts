@@ -11872,6 +11872,11 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="781"/>
+        <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1118"/>
         <source>1.25x Native (~450px)</source>
         <translation type="unfinished"></translation>
@@ -12526,11 +12531,6 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="772"/>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
         <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="781"/>
-        <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth our frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13352,49 +13352,49 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="63"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="148"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
         <source>Pause On Focus Loss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="42"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="137"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="140"/>
         <source>Inhibit Screensaver</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="35"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="143"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
         <source>Save State On Shutdown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="56"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
         <source>Pause On Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="49"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="140"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="143"/>
         <source>Confirm Shutdown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="84"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
         <source>Create Save State Backups</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="77"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
         <source>Enable Discord Presence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="70"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="154"/>
         <source>Pause On Controller Disconnection</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13405,37 +13405,37 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="100"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
         <source>Start Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="107"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
         <source>Double-Click Toggles Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="114"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
         <source>Render To Separate Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="121"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
         <source>Hide Main Window When Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="128"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="176"/>
         <source>Disable Window Resizing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="135"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
         <source>Hide Cursor In Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13471,7 +13471,7 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="206"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="108"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="111"/>
         <source>Enable Automatic Update Check</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13565,71 +13565,77 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="43"/>
+        <source>Emerald (Black/Green) [Dark]</source>
+        <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="45"/>
         <source>Custom.qss [Drop in PCSX2 Folder]</source>
         <extracomment>&quot;Custom.qss&quot; must be kept as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="108"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="137"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="111"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="140"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="143"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="109"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="112"/>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="117"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="120"/>
         <source>%1 (%2)</source>
         <extracomment>Variable %1 shows the version number and variable %2 shows a timestamp.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="138"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the virtual machine when the hotkey is pressed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="147"/>
         <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="171"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="174"/>
         <source>Allows switching in and out of fullscreen mode by double-clicking the game window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="174"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="177"/>
         <source>Prevents the main window from being resized.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="143"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="148"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="176"/>
         <source>Unchecked</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13639,43 +13645,43 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="147"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
         <source>Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix.</source>
         <extracomment>Do not translate the &quot;.backup&quot; extension.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="157"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="160"/>
         <source>Automatically switches to fullscreen mode when a game is started.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
         <source>Renders the game to a separate window, instead of the main window. If unchecked, the game will display over the top of the game list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
         <source>Hides the main window (with the game list) when a game is running, requires Render To Separate Window to be enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="171"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15621,63 +15627,68 @@ This action cannot be reversed, and you will lose any saves on the card.</source
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="392"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="497"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="396"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="501"/>
         <source>Go to in Disassembly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="400"/>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="484"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="505"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="596"/>
         <source>Go to address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="407"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="511"/>
+        <source>Show as Little Endian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="517"/>
         <source>Show as 1 byte</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="412"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="522"/>
         <source>Show as 2 bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="417"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="527"/>
         <source>Show as 4 bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="422"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="532"/>
         <source>Show as 8 bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="429"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="539"/>
         <source>Add to Saved Memory Addresses</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="433"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="543"/>
         <source>Copy Byte</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="437"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="547"/>
         <source>Copy Segment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="441"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="551"/>
         <source>Copy Character</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="445"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="555"/>
         <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
