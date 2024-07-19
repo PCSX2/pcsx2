@@ -171,7 +171,7 @@ private Q_SLOTS:
 	void onSaveGSDumpActionTriggered();
 	void onBlockDumpActionToggled(bool checked);
 	void onShowAdvancedSettingsToggled(bool checked);
-	void onToolsVideoCaptureToggled(bool checked);
+	void onVideoCaptureToggled(bool checked);
 	void onSettingsTriggeredFromToolbar();
 
 	// Input Recording
