@@ -1356,6 +1356,11 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
 		connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, entry]() { clearGameListEntryPlayTime(entry); });
 
+		if (!entry->serial.empty())
+		{
+			connect(menu.addAction(tr("Check Wiki Page")), &QAction::triggered, [this, entry]() { goToWikiPage(entry); });
+		}
+		
 		menu.addSeparator();
 
 		if (!s_vm_valid)
@@ -2717,6 +2722,11 @@ void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry)
 
 	GameList::ClearPlayedTimeForSerial(entry->serial);
 	m_game_list_widget->refresh(false);
+}
+
+void MainWindow::goToWikiPage(const GameList::Entry* entry)
+{
+	QtUtils::OpenURL(this, fmt::format("https://wiki.pcsx2.net/{}", entry->serial).c_str());
 }
 
 std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_path)

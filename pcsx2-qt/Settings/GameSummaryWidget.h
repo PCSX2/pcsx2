@@ -28,6 +28,7 @@ private Q_SLOTS:
 	void onDiscPathBrowseClicked();
 	void onVerifyClicked();
 	void onSearchHashClicked();
+	void onCheckWikiClicked(const GameList::Entry* entry);
 
 private:
 	void populateInputProfiles();
