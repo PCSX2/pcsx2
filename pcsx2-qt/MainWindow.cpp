@@ -851,16 +851,16 @@ void MainWindow::restoreStateFromConfig()
 
 void MainWindow::updateEmulationActions(bool starting, bool running, bool stopping)
 {
-	const bool starting_or_running = starting || running;
+	const bool starting_or_running_or_stopping = starting || running || stopping;
 
-	m_ui.actionStartFile->setDisabled(starting_or_running || stopping);
-	m_ui.actionStartDisc->setDisabled(starting_or_running || stopping);
-	m_ui.actionStartBios->setDisabled(starting_or_running || stopping);
-	m_ui.actionToolbarStartFile->setDisabled(starting_or_running || stopping);
-	m_ui.actionToolbarStartDisc->setDisabled(starting_or_running || stopping);
-	m_ui.actionToolbarStartBios->setDisabled(starting_or_running || stopping);
-	m_ui.actionStartFullscreenUI->setDisabled(starting_or_running || stopping);
-	m_ui.actionToolbarStartFullscreenUI->setDisabled(starting_or_running || stopping);
+	m_ui.actionStartFile->setDisabled(starting_or_running_or_stopping);
+	m_ui.actionStartDisc->setDisabled(starting_or_running_or_stopping);
+	m_ui.actionStartBios->setDisabled(starting_or_running_or_stopping);
+	m_ui.actionToolbarStartFile->setDisabled(starting_or_running_or_stopping);
+	m_ui.actionToolbarStartDisc->setDisabled(starting_or_running_or_stopping);
+	m_ui.actionToolbarStartBios->setDisabled(starting_or_running_or_stopping);
+	m_ui.actionStartFullscreenUI->setDisabled(starting_or_running_or_stopping);
+	m_ui.actionToolbarStartFullscreenUI->setDisabled(starting_or_running_or_stopping);
 
 	m_ui.actionPowerOff->setEnabled(running);
 	m_ui.actionPowerOffWithoutSaving->setEnabled(running);
@@ -869,6 +869,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 	m_ui.actionScreenshot->setEnabled(running);
 	m_ui.menuChangeDisc->setEnabled(running);
 	m_ui.menuSaveState->setEnabled(running);
+	m_ui.actionSaveGSDump->setEnabled(running);
 
 	m_ui.actionToolbarPowerOff->setEnabled(running);
 	m_ui.actionToolbarReset->setEnabled(running);
@@ -902,8 +903,8 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 	}
 
 	// scanning needs to be disabled while running
-	m_ui.actionScanForNewGames->setDisabled(starting_or_running || stopping);
-	m_ui.actionRescanAllGames->setDisabled(starting_or_running || stopping);
+	m_ui.actionScanForNewGames->setDisabled(starting_or_running_or_stopping);
+	m_ui.actionRescanAllGames->setDisabled(starting_or_running_or_stopping);
 }
 
 void MainWindow::updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen)
