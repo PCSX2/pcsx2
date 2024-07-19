@@ -318,6 +318,20 @@ void PadGuitar::SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8
 {
 }
 
+void PadGuitar::SetRawPressureButton(u32 index, const std::tuple<bool, u8> value)
+{
+	this->rawInputs[index] = std::get<1>(value);
+
+	if (std::get<0>(value))
+	{
+		this->buttons &= ~(1u << bitmaskMapping[index]);
+	}
+	else
+	{
+		this->buttons |= (1u << bitmaskMapping[index]);
+	}
+}
+
 void PadGuitar::SetAxisScale(float deadzone, float scale)
 {
 	this->whammyDeadzone = deadzone;
