@@ -1053,7 +1053,7 @@ bool MainWindow::shouldHideMouseCursor() const
 bool MainWindow::shouldHideMainWindow() const
 {
 	// NOTE: We can't use isRenderingToMain() here, because this happens post-fullscreen-switch.
-	return Host::GetBoolSettingValue("UI", "HideMainWindowWhenRunning", false) ||
+	return (Host::GetBoolSettingValue("UI", "HideMainWindowWhenRunning", false) && !g_emu_thread->shouldRenderToMain()) ||
 		   (g_emu_thread->shouldRenderToMain() && (isRenderingFullscreen() || m_is_temporarily_windowed)) ||
 		   QtHost::InNoGUIMode();
 }
