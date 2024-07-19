@@ -9,16 +9,17 @@
 		<file>icons/black/svg/band-aid-line.svg</file>
 		<file>icons/black/svg/brush-line.svg</file>
 		<file>icons/black/svg/buzz-controller-line.svg</file>
+		<file>icons/black/svg/camera-video.svg</file>
 		<file>icons/black/svg/cheats-line.svg</file>
 		<file>icons/black/svg/checkbox-multiple-blank-line.svg</file>
 		<file>icons/black/svg/chip-line.svg</file>
 		<file>icons/black/svg/close-line.svg</file>
 		<file>icons/black/svg/controller-line.svg</file>
 		<file>icons/black/svg/controller-strike-line.svg</file>
+		<file>icons/black/svg/debugger-line.svg</file>
 		<file>icons/black/svg/debug-step-into-line.svg</file>
 		<file>icons/black/svg/debug-step-out-line.svg</file>
 		<file>icons/black/svg/debug-step-over-line.svg</file>
-		<file>icons/black/svg/debugger-line.svg</file>
 		<file>icons/black/svg/delete-back-2-line.svg</file>
 		<file>icons/black/svg/disc-2-line.svg</file>
 		<file>icons/black/svg/disc-eject-line.svg</file>
@@ -105,16 +106,17 @@
 		<file>icons/white/svg/band-aid-line.svg</file>
 		<file>icons/white/svg/brush-line.svg</file>
 		<file>icons/white/svg/buzz-controller-line.svg</file>
+		<file>icons/white/svg/camera-video.svg</file>
 		<file>icons/white/svg/cheats-line.svg</file>
 		<file>icons/white/svg/checkbox-multiple-blank-line.svg</file>
 		<file>icons/white/svg/chip-line.svg</file>
 		<file>icons/white/svg/close-line.svg</file>
 		<file>icons/white/svg/controller-line.svg</file>
 		<file>icons/white/svg/controller-strike-line.svg</file>
+		<file>icons/white/svg/debugger-line.svg</file>
 		<file>icons/white/svg/debug-step-into-line.svg</file>
 		<file>icons/white/svg/debug-step-out-line.svg</file>
 		<file>icons/white/svg/debug-step-over-line.svg</file>
-		<file>icons/white/svg/debugger-line.svg</file>
 		<file>icons/white/svg/delete-back-2-line.svg</file>
 		<file>icons/white/svg/disc-2-line.svg</file>
 		<file>icons/white/svg/disc-eject-line.svg</file>
