@@ -36,6 +36,11 @@ void PadNotConnected::SetRawAnalogs(const std::tuple<u8, u8> left, const std::tu
 
 }
 
+void PadNotConnected::SetRawPressureButton(u32 index, const std::tuple<bool, u8> value)
+{
+
+}
+
 void PadNotConnected::SetAxisScale(float deadzone, float scale)
 {
 

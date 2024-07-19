@@ -560,29 +560,6 @@ void PadDualshock2::Set(u32 index, float value)
 		return;
 	}
 
-	// Since we reordered the buttons for better UI, we need to remap them here.
-	static constexpr std::array<u8, Inputs::LENGTH> bitmaskMapping = {{
-		12, // PAD_UP
-		13, // PAD_RIGHT
-		14, // PAD_DOWN
-		15, // PAD_LEFT
-		4, // PAD_TRIANGLE
-		5, // PAD_CIRCLE
-		6, // PAD_CROSS
-		7, // PAD_SQUARE
-		8, // PAD_SELECT
-		11, // PAD_START
-		2, // PAD_L1
-		0, // PAD_L2
-		3, // PAD_R1
-		1, // PAD_R2
-		9, // PAD_L3
-		10, // PAD_R3
-		16, // PAD_ANALOG
-		17, // PAD_PRESSURE
-		// remainder are analogs and not used here
-	}};
-
 	if (IsAnalogKey(index))
 	{
 		this->rawInputs[index] = static_cast<u8>(std::clamp(value * this->axisScale * 255.0f, 0.0f, 255.0f));
@@ -740,6 +717,20 @@ void PadDualshock2::SetRawAnalogs(const std::tuple<u8, u8> left, const std::tupl
 	this->analogs.ly = std::get<1>(left);
 	this->analogs.rx = std::get<0>(right);
 	this->analogs.ry = std::get<1>(right);
+}
+
+void PadDualshock2::SetRawPressureButton(u32 index, const std::tuple<bool, u8> value)
+{
+	this->rawInputs[index] = std::get<1>(value);
+
+	if (std::get<0>(value))
+	{
+		this->buttons &= ~(1u << bitmaskMapping[index]);
+	}
+	else
+	{
+		this->buttons |= (1u << bitmaskMapping[index]);
+	}
 }
 
 void PadDualshock2::SetAxisScale(float deadzone, float scale)

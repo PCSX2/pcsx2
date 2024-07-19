@@ -39,6 +39,7 @@ public: // Public members
 
 	virtual void Set(u32 index, float value) = 0;
 	virtual void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right) = 0;
+	virtual void SetRawPressureButton(u32 index, const std::tuple<bool, u8> value) = 0;
 	virtual void SetAxisScale(float deadzone, float scale) = 0;
 	virtual float GetVibrationScale(u32 motor) const = 0;
 	virtual void SetVibrationScale(u32 motor, float scale) = 0;
