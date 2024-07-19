@@ -42,6 +42,7 @@ extern "C" {
 #include "libavutil/dict.h"
 #include "libavutil/opt.h"
 #include "libavutil/version.h"
+#include "libavutil/channel_layout.h"
 #include "libswscale/swscale.h"
 #include "libswscale/version.h"
 #include "libswresample/swresample.h"
@@ -88,7 +89,8 @@ extern "C" {
 #else
 #define AVUTIL_57_IMPORTS(X) \
 	X(av_channel_layout_default) \
-	X(av_channel_layout_copy)
+	X(av_channel_layout_copy) \
+	X(av_opt_set_chlayout)
 #endif
 
 #define VISIT_AVUTIL_IMPORTS(X) \
@@ -690,9 +692,16 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 				return false;
 			}
 
+			#if LIBAVUTIL_VERSION_MAJOR >= 57
+				const AVChannelLayout layout = AV_CHANNEL_LAYOUT_STEREO;
+				wrap_av_opt_set_chlayout(s_swr_context, "in_chlayout", &layout, 0);
+				wrap_av_opt_set_chlayout(s_swr_context, "out_chlayout", &layout, 0);
+			#endif
+			
 			wrap_av_opt_set_int(s_swr_context, "in_channel_count", AUDIO_CHANNELS, 0);
 			wrap_av_opt_set_int(s_swr_context, "in_sample_rate", sample_rate, 0);
 			wrap_av_opt_set_sample_fmt(s_swr_context, "in_sample_fmt", AV_SAMPLE_FMT_S16, 0);
+
 			wrap_av_opt_set_int(s_swr_context, "out_channel_count", AUDIO_CHANNELS, 0);
 			wrap_av_opt_set_int(s_swr_context, "out_sample_rate", sample_rate, 0);
 			wrap_av_opt_set_sample_fmt(s_swr_context, "out_sample_fmt", s_audio_codec_context->sample_fmt, 0);
