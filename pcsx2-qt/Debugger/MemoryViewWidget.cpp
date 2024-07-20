@@ -66,24 +66,23 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 		const u32 currentRowAddress = startAddress + (i * 0x10);
 		s32 valX = valuexAxis;
 		segmentXAxis[0] = valX;
-		u32 currentSegmentAddress = currentRowAddress;
-		for (int j = 0; j < 16 / (s32)displayType; j++)
+		for (int j = 0; j < 16 / static_cast<s32>(displayType); j++)
 		{
 			valX += charWidth;
-			const u32 thisSegmentsStart = currentRowAddress + (j * (s32)displayType);
+			const u32 thisSegmentsStart = currentRowAddress + (j * static_cast<s32>(displayType));
 
 			segmentXAxis[j] = valX;
 
 			bool penDefault = false;
 			if ((selectedAddress & ~0xF) == currentRowAddress)
 			{
-				if (selectedAddress >= thisSegmentsStart && selectedAddress < (thisSegmentsStart + (s32)displayType))
+				if (selectedAddress >= thisSegmentsStart && selectedAddress < (thisSegmentsStart + static_cast<s32>(displayType)))
 				{ // If the current byte and row we are drawing is selected
 					if (!selectedText)
 					{
 						s32 charsIntoSegment = ((selectedAddress - thisSegmentsStart) * 2) + ((selectedNibbleHI ? 0 : 1) ^ littleEndian);
 						if (littleEndian)
-							charsIntoSegment = ((s32)displayType * 2) - charsIntoSegment - 1;
+							charsIntoSegment = (static_cast<s32>(displayType) * 2) - charsIntoSegment - 1;
 						painter.setPen(QColor::fromRgb(205, 165, 0)); // SELECTED NIBBLE LINE COLOUR
 						const QPoint lineStart(valX + (charsIntoSegment * charWidth) + 1, y + (rowHeight * i));
 						painter.drawLine(lineStart, lineStart + QPoint(charWidth - 3, 0));
@@ -138,7 +137,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 					break;
 				}
 			}
-			valX += charWidth * 2 * (s32)displayType;
+			valX += charWidth * 2 * static_cast<s32>(displayType);
 		}
 
 		// valX is our new X position after the hex values
@@ -185,7 +184,7 @@ void MemoryViewTable::SelectAt(QPoint pos)
 		// The user clicked before the first segment
 		selectedText = false;
 		if (littleEndian)
-			selectedAddress += (s32)displayType - 1;
+			selectedAddress += static_cast<s32>(displayType) - 1;
 		selectedNibbleHI = true;
 	}
 	else if (x > valuexAxis && x < textXAxis)
@@ -194,12 +193,12 @@ void MemoryViewTable::SelectAt(QPoint pos)
 		// The user clicked inside of the hexadecimal area
 		for (s32 i = 0; i < 16; i++)
 		{
-			if (i == ((16 / (s32)displayType) - 1) || (x >= segmentXAxis[i] && x < (segmentXAxis[i + 1])))
+			if (i == ((16 / static_cast<s32>(displayType)) - 1) || (x >= segmentXAxis[i] && x < (segmentXAxis[i + 1])))
 			{
 				u32 indexInSegment = (x - segmentXAxis[i]) / nibbleWidth;
 				if (littleEndian)
-					indexInSegment = ((s32)displayType * 2) - indexInSegment - 1;
-				selectedAddress = selectedAddress + i * (s32)displayType + (indexInSegment / 2);
+					indexInSegment = (static_cast<s32>(displayType) * 2) - indexInSegment - 1;
+				selectedAddress = selectedAddress + i * static_cast<s32>(displayType) + (indexInSegment / 2);
 				selectedNibbleHI = littleEndian ? indexInSegment & 1 : !(indexInSegment & 1);
 				break;
 			}
@@ -222,7 +221,7 @@ u128 MemoryViewTable::GetSelectedSegment()
 			val.lo = m_cpu->read8(selectedAddress);
 			break;
 		case MemoryViewType::BYTEHW:
-			val.lo = convertEndian((u16)m_cpu->read16(selectedAddress & ~1));
+			val.lo = convertEndian(static_cast<u16>(m_cpu->read16(selectedAddress & ~1)));
 			break;
 		case MemoryViewType::WORD:
 			val.lo = convertEndian(m_cpu->read32(selectedAddress & ~3));
@@ -276,8 +275,8 @@ u32 MemoryViewTable::nextAddress(u32 addr)
 	}
 	else
 	{
-		if (selectedAddress % (s32)displayType == 0)
-			return addr + ((s32)displayType * 2 - 1);
+		if (selectedAddress % static_cast<s32>(displayType) == 0)
+			return addr + (static_cast<s32>(displayType) * 2 - 1);
 		else
 			return addr - 1;
 	}
@@ -292,8 +291,8 @@ u32 MemoryViewTable::prevAddress(u32 addr)
 	else
 	{
 		// It works
-		if ((addr & ((s32)displayType - 1)) == ((s32)displayType - 1))
-			return addr - ((s32)displayType * 2 - 1);
+		if ((addr & (static_cast<u32>(displayType) - 1)) == (static_cast<u32>(displayType) - 1))
+			return addr - (static_cast<s32>(displayType) * 2 - 1);
 		else
 			return selectedAddress + 1;
 	}
@@ -310,8 +309,8 @@ void MemoryViewTable::ForwardSelection()
 	{
 		if ((selectedNibbleHI = !selectedNibbleHI))
 		{
-			if (selectedAddress % (s32)displayType == 0)
-				UpdateSelectedAddress(selectedAddress + ((s32)displayType * 2 - 1));
+			if (selectedAddress % static_cast<s32>(displayType) == 0)
+				UpdateSelectedAddress(selectedAddress + (static_cast<s32>(displayType) * 2 - 1));
 			else
 				UpdateSelectedAddress(selectedAddress - 1);
 		}
@@ -330,8 +329,8 @@ void MemoryViewTable::BackwardSelection()
 		if (!(selectedNibbleHI = !selectedNibbleHI))
 		{
 			// It works
-			if ((selectedAddress & ((s32)displayType - 1)) == ((s32)displayType - 1))
-				UpdateSelectedAddress(selectedAddress - ((s32)displayType * 2 - 1));
+			if ((selectedAddress & (static_cast<u32>(displayType) - 1)) == (static_cast<u32>(displayType) - 1))
+				UpdateSelectedAddress(selectedAddress - (static_cast<s32>(displayType) * 2 - 1));
 			else
 				UpdateSelectedAddress(selectedAddress + 1);
 		}
@@ -389,7 +388,7 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar)
 		if (keyCharIsText)
 		{
 			// Check if key pressed is hex before insertion (QString conversion fails otherwise)
-			const u8 keyPressed = (u8)QString(QChar(key)).toInt(&pressHandled, 16);
+			const u8 keyPressed = static_cast<u8>(QString(QChar(key)).toInt(&pressHandled, 16));
 			if (pressHandled)
 			{
 				InsertIntoSelectedHexView(keyPressed);
