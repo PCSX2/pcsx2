@@ -91,7 +91,7 @@ void CoverDownloadDialog::updateEnabled()
 
 void CoverDownloadDialog::startThread()
 {
-	m_thread = std::make_unique<CoverDownloadThread>(this, m_ui.urls->toPlainText(), m_ui.useSerialFileNames->isChecked());
+	m_thread = std::make_unique<CoverDownloadThread>(this, m_ui.urls->toPlainText(), !m_ui.useTitleFileNames->isChecked());
 	m_last_refresh_time.Reset();
 	connect(m_thread.get(), &CoverDownloadThread::statusUpdated, this, &CoverDownloadDialog::onDownloadStatus);
 	connect(m_thread.get(), &CoverDownloadThread::progressUpdated, this, &CoverDownloadDialog::onDownloadProgress);
