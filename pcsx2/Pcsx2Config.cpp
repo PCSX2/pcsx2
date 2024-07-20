@@ -750,6 +750,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 
 		OpEqu(CaptureContainer) &&
 		OpEqu(VideoCaptureCodec) &&
+		OpEqu(VideoCaptureFormat) &&
 		OpEqu(VideoCaptureParameters) &&
 		OpEqu(AudioCaptureCodec) &&
 		OpEqu(AudioCaptureParameters) &&
@@ -925,6 +926,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 
 	SettingsWrapEntryEx(CaptureContainer, "CaptureContainer");
 	SettingsWrapEntryEx(VideoCaptureCodec, "VideoCaptureCodec");
+	SettingsWrapEntryEx(VideoCaptureFormat, "VideoCaptureFormat");
 	SettingsWrapEntryEx(VideoCaptureParameters, "VideoCaptureParameters");
 	SettingsWrapEntryEx(AudioCaptureCodec, "AudioCaptureCodec");
 	SettingsWrapEntryEx(AudioCaptureParameters, "AudioCaptureParameters");
