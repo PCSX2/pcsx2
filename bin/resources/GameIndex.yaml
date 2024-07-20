@@ -1840,6 +1840,8 @@ SCAJ-20146:
   name: "Wang Da Yu Ju Xiang"
   region: "NTSC-C"
   compat: 5
+  roundModes:
+    eeRoundMode: 3 # Fixes Wander drifting when charging his attack on the ground.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -2131,6 +2133,8 @@ SCAJ-20195:
 SCAJ-20196:
   name: "Wang Da Yu Ju Xiang [PlayStation 2 the Best]"
   region: "NTSC-C"
+  roundModes:
+    eeRoundMode: 3 # Fixes Wander drifting when charging his attack on the ground.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -6982,6 +6986,8 @@ SCKA-20061:
   name: "Wanda to Kyozou"
   region: "NTSC-K"
   compat: 5
+  roundModes:
+    eeRoundMode: 3 # Fixes Wander drifting when charging his attack on the ground.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -8535,6 +8541,8 @@ SCPS-15097:
   name-en: "Wanda to Kyozou"
   region: "NTSC-J"
   compat: 5
+  roundModes:
+    eeRoundMode: 3 # Fixes Wander drifting when charging his attack on the ground.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -9281,6 +9289,8 @@ SCPS-19320:
   name-sort: "わんだときょぞう PlayStation 2 the Best"
   name-en: "Wanda to Kyozou [PlayStation 2 the Best]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 3 # Fixes Wander drifting when charging his attack on the ground.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -9432,6 +9442,8 @@ SCPS-19333:
 SCPS-19335:
   name: "Wanda to Kyozou [PlayStation 2 the Best Reprint]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 3 # Fixes Wander drifting when charging his attack on the ground.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -11315,8 +11327,6 @@ SCUS-97472:
   name: "Shadow of the Colossus"
   region: "NTSC-U"
   compat: 5
-  roundModes:
-    eeRoundMode: 3 # Fixes Wander drifting when charging his attack on the ground.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -11534,8 +11544,6 @@ SCUS-97504:
 SCUS-97505:
   name: "Shadow of the Colossus [Demo]"
   region: "NTSC-U"
-  roundModes:
-    eeRoundMode: 3 # Fixes Wander drifting when charging his attack on the ground.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -23134,6 +23142,11 @@ SLES-53820:
 SLES-53821:
   name: "Radio Helicopter II"
   region: "PAL-E"
+  patches:
+    2BB68DAB:
+      content: |-
+        comment=Patch that nops a branch instruction causing a freeze.
+        patch=1,EE,001799AC,word,00000000
 SLES-53824:
   name: "Trapt"
   region: "PAL-E"
@@ -35993,6 +36006,11 @@ SLPM-62624:
   name-sort: "ぷちこぷたー2"
   name-en: "Petit Copter 2"
   region: "NTSC-J"
+  patches:
+    9A695202:
+      content: |-
+        comment=Patch that nops a branch instruction causing a freeze.
+        patch=1,EE,001799AC,word,00000000
 SLPM-62625:
   name: "鬼浜爆走愚連隊 激闘編"
   name-sort: "おにはまばくそうぐれんたい げきとうへん"
