@@ -397,6 +397,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			&GraphicsSettingsWidget::onEnableAudioCaptureArgumentsChanged);
 
 		onCaptureContainerChanged();
+		onCaptureCodecChanged();
 		onEnableVideoCaptureChanged();
 		onEnableVideoCaptureArgumentsChanged();
 		onVideoCaptureAutoResolutionChanged();
@@ -735,6 +736,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		
 		"<b>If unsure, leave it on default.<b>"));
 
+		dialog->registerWidgetHelp(m_ui.videoCaptureFormat, tr("Video Format"), tr("Default"), tr("Selects which Video Format to be used for Video Capture. If by chance the codec does not support the format, the first format available will be used. "
+		
+		"<b>If unsure, leave it on default.<b>"));
+
 		dialog->registerWidgetHelp(m_ui.videoCaptureBitrate, tr("Video Bitrate"), tr("6000 kbps"), tr("Sets the video bitrate to be used. "
 		
 		"Larger bitrate generally yields better video quality at the cost of larger resulting file size."));
@@ -914,6 +919,7 @@ void GraphicsSettingsWidget::onCaptureContainerChanged()
 
 	SettingWidgetBinder::BindWidgetToStringSetting(
 		m_dialog->getSettingsInterface(), m_ui.videoCaptureCodec, "EmuCore/GS", "VideoCaptureCodec");
+	connect(m_ui.videoCaptureCodec, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onCaptureCodecChanged);
 
 	m_ui.audioCaptureCodec->disconnect();
 	m_ui.audioCaptureCodec->clear();
@@ -927,6 +933,30 @@ void GraphicsSettingsWidget::onCaptureContainerChanged()
 
 	SettingWidgetBinder::BindWidgetToStringSetting(
 		m_dialog->getSettingsInterface(), m_ui.audioCaptureCodec, "EmuCore/GS", "AudioCaptureCodec");
+}
+
+void GraphicsSettingsWidget::GraphicsSettingsWidget::onCaptureCodecChanged()
+{
+	m_ui.videoCaptureFormat->disconnect();
+	m_ui.videoCaptureFormat->clear();
+	//: This string refers to a default pixel format
+	m_ui.videoCaptureFormat->addItem(tr("Default"), "");
+
+	const std::string codec(
+		m_dialog->getEffectiveStringValue("EmuCore/GS", "VideoCaptureCodec", ""));
+
+	if (!codec.empty())
+	{
+		for (const auto& [id, name] : GSCapture::GetVideoFormatList(codec.c_str()))
+		{
+			const QString qid(QString::number(id));
+			const QString qname(QString::fromStdString(name));
+			m_ui.videoCaptureFormat->addItem(qname, qid);
+		}
+	}
+
+	SettingWidgetBinder::BindWidgetToStringSetting(
+		m_dialog->getSettingsInterface(), m_ui.videoCaptureFormat, "EmuCore/GS", "VideoCaptureFormat");
 }
 
 void GraphicsSettingsWidget::onEnableVideoCaptureChanged()

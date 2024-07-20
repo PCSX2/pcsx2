@@ -731,6 +731,7 @@ struct Pcsx2Config
 
 		std::string CaptureContainer = DEFAULT_CAPTURE_CONTAINER;
 		std::string VideoCaptureCodec;
+		std::string VideoCaptureFormat;
 		std::string VideoCaptureParameters;
 		std::string AudioCaptureCodec;
 		std::string AudioCaptureParameters;

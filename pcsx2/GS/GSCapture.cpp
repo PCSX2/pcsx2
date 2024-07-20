@@ -43,6 +43,7 @@ extern "C" {
 #include "libavutil/opt.h"
 #include "libavutil/version.h"
 #include "libavutil/channel_layout.h"
+#include "libavutil/pixdesc.h"
 #include "libswscale/swscale.h"
 #include "libswscale/version.h"
 #include "libswresample/swresample.h"
@@ -117,7 +118,8 @@ extern "C" {
 	X(av_hwframe_transfer_data) \
 	X(av_hwframe_get_buffer) \
 	X(av_buffer_ref) \
-	X(av_buffer_unref)
+	X(av_buffer_unref) \
+	X(av_get_pix_fmt_name)
 
 #define VISIT_SWSCALE_IMPORTS(X) \
 	X(sws_getCachedContext) \
@@ -447,24 +449,29 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 		wrap_av_reduce(&s_video_codec_context->time_base.num, &s_video_codec_context->time_base.den, 10000,
 			static_cast<s64>(static_cast<double>(fps) * 10000.0), std::numeric_limits<s32>::max());
 
-		// Default to YUV 4:2:0 if the codec doesn't specify a pixel format.
-		AVPixelFormat sw_pix_fmt = AV_PIX_FMT_YUV420P;
+		// Default to NV12 if not overridden by the user
+		const AVPixelFormat preferred_sw_pix_fmt = GSConfig.VideoCaptureFormat.empty() ? AV_PIX_FMT_NV12 : static_cast<AVPixelFormat>(std::stoi(GSConfig.VideoCaptureFormat));
+		AVPixelFormat sw_pix_fmt = preferred_sw_pix_fmt;
 		if (vcodec->pix_fmts)
 		{
-			// Prefer YUV420 given the choice, but otherwise fall back to whatever it supports.
 			sw_pix_fmt = vcodec->pix_fmts[0];
 			for (u32 i = 0; vcodec->pix_fmts[i] != AV_PIX_FMT_NONE; i++)
 			{
-				if (vcodec->pix_fmts[i] == AV_PIX_FMT_YUV420P)
+				if (vcodec->pix_fmts[i] == preferred_sw_pix_fmt)
 				{
 					sw_pix_fmt = vcodec->pix_fmts[i];
 					break;
 				}
 			}
 		}
+
 		if (sw_pix_fmt == AV_PIX_FMT_VAAPI)
 			sw_pix_fmt = AV_PIX_FMT_NV12;
+
 		s_video_codec_context->pix_fmt = sw_pix_fmt;
+
+		if (preferred_sw_pix_fmt != sw_pix_fmt)
+			Console.Warning("GSCapture: preferred pixel format (%d) was unsupported by the codec. Using (%d) instead.", preferred_sw_pix_fmt, sw_pix_fmt);
 
 		// Can we use hardware encoding?
 		const AVCodecHWConfig* hwconfig = wrap_avcodec_get_hw_config(vcodec, 0);
@@ -692,12 +699,12 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 				return false;
 			}
 
-			#if LIBAVUTIL_VERSION_MAJOR >= 57
-				const AVChannelLayout layout = AV_CHANNEL_LAYOUT_STEREO;
-				wrap_av_opt_set_chlayout(s_swr_context, "in_chlayout", &layout, 0);
-				wrap_av_opt_set_chlayout(s_swr_context, "out_chlayout", &layout, 0);
-			#endif
-			
+#if LIBAVUTIL_VERSION_MAJOR >= 57
+			const AVChannelLayout layout = AV_CHANNEL_LAYOUT_STEREO;
+			wrap_av_opt_set_chlayout(s_swr_context, "in_chlayout", &layout, 0);
+			wrap_av_opt_set_chlayout(s_swr_context, "out_chlayout", &layout, 0);
+#endif
+
 			wrap_av_opt_set_int(s_swr_context, "in_channel_count", AUDIO_CHANNELS, 0);
 			wrap_av_opt_set_int(s_swr_context, "in_sample_rate", sample_rate, 0);
 			wrap_av_opt_set_sample_fmt(s_swr_context, "in_sample_fmt", AV_SAMPLE_FMT_S16, 0);
@@ -1501,4 +1508,34 @@ GSCapture::CodecList GSCapture::GetVideoCodecList(const char* container)
 GSCapture::CodecList GSCapture::GetAudioCodecList(const char* container)
 {
 	return GetCodecListForContainer(container, AVMEDIA_TYPE_AUDIO);
+}
+
+GSCapture::FormatList GSCapture::GetVideoFormatList(const char* codec)
+{
+	FormatList ret;
+
+	if (!LoadFFmpeg(false))
+		return ret;
+
+	const AVCodec* v_codec = wrap_avcodec_find_encoder_by_name(codec);
+
+	if (!v_codec)
+	{
+		Console.Error("(GetVideoFormatList) avcodec_find_encoder_by_name() failed");
+		return ret;
+	}
+
+	// rawvideo doesn't have a list of formats.
+	if(v_codec->pix_fmts == nullptr)
+	{
+		Console.Error("(GetVideoFormatList) v_codec->pix_fmts is null.");
+		return ret;
+	}
+
+	for (int i = 0; v_codec->pix_fmts[i] != AVPixelFormat::AV_PIX_FMT_NONE; i++)
+	{
+		ret.emplace_back(v_codec->pix_fmts[i], wrap_av_get_pix_fmt_name(v_codec->pix_fmts[i]));
+	}
+
+	return ret;
 }
