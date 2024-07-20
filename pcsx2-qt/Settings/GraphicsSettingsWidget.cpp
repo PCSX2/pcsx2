@@ -126,6 +126,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowInputs, "EmuCore/GS", "OsdShowInputs", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowFrameTimes, "EmuCore/GS", "OsdShowFrameTimes", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowVersion, "EmuCore/GS", "OsdShowVersion", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowHardwareInfo, "EmuCore/GS", "OsdShowHardwareInfo", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.warnAboutUnsafeSettings, "EmuCore", "WarnAboutUnsafeSettings", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fxaa, "EmuCore/GS", "fxaa", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.shadeBoost, "EmuCore/GS", "ShadeBoost", false);
@@ -735,6 +736,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		
 		dialog->registerWidgetHelp(m_ui.osdShowVersion, tr("Show PCSX2 Version"), tr("Unchecked"),
 			tr("Shows the current PCSX2 version on the top-right corner of the display"));
+
+		dialog->registerWidgetHelp(m_ui.osdShowHardwareInfo, tr("Show Hardware Info"), tr("Unchecked"),
+			tr("Shows the current system hardware information on the OSD."));
 
 		dialog->registerWidgetHelp(m_ui.warnAboutUnsafeSettings, tr("Warn About Unsafe Settings"), tr("Checked"),
 			tr("Displays warnings when settings are enabled which may break games."));
