@@ -25,6 +25,7 @@
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "svnrev.h"
+#include "cpuinfo.h"
 
 #include "common/BitUtils.h"
 #include "common/FileSystem.h"
@@ -191,6 +192,13 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 			GSgetMemoryStats(text);
 			if (!text.empty())
 				DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
+
+			text.clear();
+			text.append_format("{} QF | {:.2f}ms | {:.2f}ms | {:.2f}ms",
+				MTGS::GetCurrentVsyncQueueSize() - 1, // we subtract one for the current frame
+				PerformanceMetrics::GetMinimumFrameTime(), PerformanceMetrics::GetAverageFrameTime(),
+				PerformanceMetrics::GetMaximumFrameTime());
+			DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 		}
 
 		if (GSConfig.OsdShowResolution)
@@ -203,15 +211,18 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 			DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 		}
 
-		if (GSConfig.OsdShowCPU)
+		if (GSConfig.OsdShowHardwareInfo)
 		{
 			text.clear();
-			text.append_format("{} QF | {:.2f}ms | {:.2f}ms | {:.2f}ms",
-				MTGS::GetCurrentVsyncQueueSize() - 1, // we subtract one for the current frame
-				PerformanceMetrics::GetMinimumFrameTime(), PerformanceMetrics::GetAverageFrameTime(),
-				PerformanceMetrics::GetMaximumFrameTime());
+			text.append_format("CPU: {} ({}C/{}T)",
+				cpuinfo_get_package(0)->name,
+				cpuinfo_get_cores_count(),
+				cpuinfo_get_processors_count());
 			DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
+		}
 
+		if (GSConfig.OsdShowCPU)
+		{
 			text.clear();
 			if (EmuConfig.Speedhacks.EECycleRate != 0 || EmuConfig.Speedhacks.EECycleSkip != 0)
 				text.append_format("EE[{}/{}]: ", EmuConfig.Speedhacks.EECycleRate, EmuConfig.Speedhacks.EECycleSkip);
