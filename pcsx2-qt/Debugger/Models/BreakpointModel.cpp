@@ -256,8 +256,6 @@ Qt::ItemFlags BreakpointModel::flags(const QModelIndex& index) const
 {
 	volatile const int row = index.row();
 
-	const bool is_breakpoint = std::holds_alternative<BreakPoint>(m_breakpoints.at(row));
-
 	switch (index.column())
 	{
 		case BreakpointColumns::CONDITION:
