@@ -23,6 +23,7 @@
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 
+#include "ui_USBBindingWidget_Buzz.h"
 #include "ui_USBBindingWidget_DrivingForce.h"
 #include "ui_USBBindingWidget_Gametrak.h"
 #include "ui_USBBindingWidget_GTForce.h"
@@ -1332,6 +1333,11 @@ USBBindingWidget* USBBindingWidget::createInstance(
 			Ui::USBBindingWidget_GTForce().setupUi(widget);
 			has_template = true;
 		}
+	}
+	else if (type == "BuzzDevice")
+	{
+		Ui::USBBindingWidget_Buzz().setupUi(widget);
+		has_template = true;
 	}
 	else if (type == "Gametrak")
 	{

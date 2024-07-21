@@ -657,6 +657,9 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="SetupWizardDialog.ui" />
+    <QtUi Include="Settings\USBBindingWidget_Buzz.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
     <QtUi Include="Settings\USBBindingWidget_DrivingForce.ui">
       <Filter>Settings</Filter>
     </QtUi>

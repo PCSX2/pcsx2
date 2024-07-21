@@ -416,6 +416,9 @@
     <QtUi Include="Settings\GamePatchSettingsWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_Buzz.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="Settings\USBBindingWidget_DrivingForce.ui">
       <FileType>Document</FileType>
     </QtUi>

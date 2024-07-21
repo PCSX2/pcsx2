@@ -383,6 +383,7 @@ set(pcsx2USBSources
 	USB/usb-mic/usb-mic-singstar.cpp
 	USB/usb-msd/usb-msd.cpp
 	USB/usb-pad/lg/lg_ff.cpp
+	USB/usb-pad/usb-buzz.cpp
 	USB/usb-pad/usb-gametrak.cpp
 	USB/usb-pad/usb-realplay.cpp
 	USB/usb-pad/usb-pad-ff.cpp
@@ -420,6 +421,7 @@ set(pcsx2USBHeaders
 	USB/usb-mic/usb-mic-singstar.h
 	USB/usb-msd/usb-msd.h
 	USB/usb-pad/lg/lg_ff.h
+	USB/usb-pad/usb-buzz.h
 	USB/usb-pad/usb-gametrak.h
 	USB/usb-pad/usb-realplay.h
 	USB/usb-pad/usb-pad-sdl-ff.h
