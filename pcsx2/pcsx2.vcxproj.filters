@@ -1187,6 +1187,9 @@
     <ClCompile Include="USB\usb-hid\usb-hid.cpp">
       <Filter>System\Ps2\USB\usb-hid</Filter>
     </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-buzz.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
     <ClCompile Include="USB\usb-pad\usb-gametrak.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
@@ -2126,6 +2129,9 @@
     </ClInclude>
     <ClInclude Include="USB\usb-hid\usb-hid.h">
       <Filter>System\Ps2\USB\usb-hid</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-buzz.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-pad\usb-gametrak.h">
       <Filter>System\Ps2\USB\usb-pad</Filter>

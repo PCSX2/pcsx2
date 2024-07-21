@@ -3,6 +3,7 @@
 
 #include "deviceproxy.h"
 #include "usb-eyetoy/usb-eyetoy-webcam.h"
+#include "usb-pad/usb-buzz.h"
 #include "usb-pad/usb-gametrak.h"
 #include "usb-pad/usb-realplay.h"
 #include "usb-hid/usb-hid.h"

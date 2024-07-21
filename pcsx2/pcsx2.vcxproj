@@ -392,6 +392,7 @@
     <ClCompile Include="USB\usb-mic\usb-mic-singstar.cpp" />
     <ClCompile Include="USB\usb-msd\usb-msd.cpp" />
     <ClCompile Include="USB\usb-pad\lg\lg_ff.cpp" />
+    <ClCompile Include="USB\usb-pad\usb-buzz.cpp" />
     <ClCompile Include="USB\usb-pad\usb-gametrak.cpp" />
     <ClCompile Include="USB\usb-pad\usb-realplay.cpp" />
     <ClCompile Include="USB\usb-pad\usb-pad-ff.cpp" />
@@ -841,6 +842,7 @@
     <ClInclude Include="USB\usb-mic\usb-mic-singstar.h" />
     <ClInclude Include="USB\usb-msd\usb-msd.h" />
     <ClInclude Include="USB\usb-pad\lg\lg_ff.h" />
+    <ClInclude Include="USB\usb-pad\usb-buzz.h" />
     <ClInclude Include="USB\usb-pad\usb-gametrak.h" />
     <ClInclude Include="USB\usb-pad\usb-realplay.h" />
     <ClInclude Include="USB\usb-pad\usb-pad-sdl-ff.h" />
