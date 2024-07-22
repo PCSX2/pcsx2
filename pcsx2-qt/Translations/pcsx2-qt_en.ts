@@ -15639,68 +15639,68 @@ This action cannot be reversed, and you will lose any saves on the card.</source
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="497"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="496"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="501"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="500"/>
         <source>Go to in Disassembly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="505"/>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="596"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="504"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="595"/>
         <source>Go to address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="511"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="510"/>
         <source>Show as Little Endian</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="517"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="516"/>
         <source>Show as 1 byte</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="522"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="521"/>
         <source>Show as 2 bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="527"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="526"/>
         <source>Show as 4 bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="532"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="531"/>
         <source>Show as 8 bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="539"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="538"/>
         <source>Add to Saved Memory Addresses</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="543"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="542"/>
         <source>Copy Byte</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="547"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="546"/>
         <source>Copy Segment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="551"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="550"/>
         <source>Copy Character</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="555"/>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="554"/>
         <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
