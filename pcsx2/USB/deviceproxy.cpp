@@ -3,6 +3,8 @@
 
 #include "deviceproxy.h"
 #include "usb-eyetoy/usb-eyetoy-webcam.h"
+#include "usb-pad/usb-gametrak.h"
+#include "usb-pad/usb-realplay.h"
 #include "usb-hid/usb-hid.h"
 #include "usb-mic/usb-headset.h"
 #include "usb-mic/usb-mic-singstar.h"
@@ -78,6 +80,8 @@ void RegisterDevice::Register()
 	inst.Add(DEVTYPE_PRINTER, new usb_printer::PrinterDevice());
 	inst.Add(DEVTYPE_KEYBOARDMANIA, new usb_pad::KeyboardmaniaDevice());
 	inst.Add(DEVTYPE_GUNCON2, new usb_lightgun::GunCon2Device());
+	inst.Add(DEVTYPE_GAMETRAK, new usb_pad::GametrakDevice());
+	inst.Add(DEVTYPE_REALPLAY, new usb_pad::RealPlayDevice());
 }
 
 void RegisterDevice::Unregister()

@@ -24,8 +24,10 @@
 #include "SettingWidgetBinder.h"
 
 #include "ui_USBBindingWidget_DrivingForce.h"
+#include "ui_USBBindingWidget_Gametrak.h"
 #include "ui_USBBindingWidget_GTForce.h"
 #include "ui_USBBindingWidget_GunCon2.h"
+#include "ui_USBBindingWidget_RealPlay.h"
 
 ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port)
 	: QWidget(parent)
@@ -1322,9 +1324,19 @@ USBBindingWidget* USBBindingWidget::createInstance(
 			has_template = true;
 		}
 	}
+	else if (type == "Gametrak")
+	{
+		Ui::USBBindingWidget_Gametrak().setupUi(widget);
+		has_template = true;
+	}
 	else if (type == "guncon2")
 	{
 		Ui::USBBindingWidget_GunCon2().setupUi(widget);
+		has_template = true;
+	}
+	else if (type == "RealPlay")
+	{
+		Ui::USBBindingWidget_RealPlay().setupUi(widget);
 		has_template = true;
 	}
 
