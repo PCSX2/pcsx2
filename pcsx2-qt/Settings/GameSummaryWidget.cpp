@@ -35,10 +35,6 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
 		m_ui.region->setItemIcon(i,
 			QIcon(QStringLiteral("%1/icons/flags/%2.png").arg(base_path).arg(GameList::RegionToString(static_cast<GameList::Region>(i)))));
 	}
-	for (int i = 1; i < m_ui.compatibility->count(); i++)
-	{
-		m_ui.compatibility->setItemIcon(i, QIcon(QStringLiteral("%1/icons/star-%2.png").arg(base_path).arg(i)));
-	}
 
 	m_entry_path = entry->path;
 	populateInputProfiles();
@@ -76,7 +72,15 @@ void GameSummaryWidget::populateDetails(const GameList::Entry* entry)
 	m_ui.crc->setText(QString::fromStdString(fmt::format("{:08X}", entry->crc)));
 	m_ui.type->setCurrentIndex(static_cast<int>(entry->type));
 	m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
-	m_ui.compatibility->setCurrentIndex(static_cast<int>(entry->compatibility_rating));
+	m_ui.compatibility->setText(QString("%0%1")
+		.arg(GameList::EntryCompatibilityRatingToString(entry->compatibility_rating))
+		.arg([entry]() {
+			if (entry->compatibility_rating == GameList::CompatibilityRating::Unknown)
+				return QString();
+
+			const qsizetype compatibility_value = static_cast<qsizetype>(entry->compatibility_rating);
+			return QString(" ") + QString("★").repeated(compatibility_value - 1) + QString("☆").repeated(6 - compatibility_value);
+		}()));
 
 	int row = 0;
 	m_ui.detailsFormLayout->getWidgetPosition(m_ui.titleSort, &row, nullptr);
