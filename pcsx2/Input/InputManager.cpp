@@ -868,6 +868,19 @@ void InputManager::AddUSBBindings(SettingsInterface& si, u32 port)
 			}
 			break;
 
+			case InputBindingInfo::Type::Motor:
+			{
+				const std::vector<std::string> bindings(si.GetStringList(section.c_str(), bind_name.c_str()));
+				for (const std::string& binding : bindings)
+				{
+					PadVibrationBinding vib;
+					vib.pad_index = Pad::NUM_CONTROLLER_PORTS + port;
+					ParseBindingAndGetSource(binding, &vib.motors[0].binding, &vib.motors[0].source);
+					s_pad_vibration_array.push_back(std::move(vib));
+				}
+			}
+			break;
+
 			default:
 				break;
 		}
@@ -1218,6 +1231,11 @@ void InputManager::OnInputDeviceDisconnected(const InputBindingKey key, const st
 // ------------------------------------------------------------------------
 // Vibration
 // ------------------------------------------------------------------------
+
+void InputManager::SetUSBVibrationIntensity(u32 port, float large_or_single_motor_intensity, float small_motor_intensity)
+{
+	SetPadVibrationIntensity(Pad::NUM_CONTROLLER_PORTS + port, large_or_single_motor_intensity, small_motor_intensity);
+}
 
 void InputManager::SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensity, float small_motor_intensity)
 {

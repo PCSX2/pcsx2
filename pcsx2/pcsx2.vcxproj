@@ -398,6 +398,7 @@
     <ClCompile Include="USB\usb-pad\usb-pad-sdl-ff.cpp" />
     <ClCompile Include="USB\usb-pad\usb-pad.cpp" />
     <ClCompile Include="USB\usb-pad\usb-seamic.cpp" />
+    <ClCompile Include="USB\usb-pad\usb-trance-vibrator.cpp" />
     <ClCompile Include="USB\usb-pad\usb-turntable.cpp" />
     <ClCompile Include="USB\usb-printer\usb-printer.cpp" />
     <ClCompile Include="USB\USB.cpp" />
@@ -845,6 +846,7 @@
     <ClInclude Include="USB\usb-pad\usb-realplay.h" />
     <ClInclude Include="USB\usb-pad\usb-pad-sdl-ff.h" />
     <ClInclude Include="USB\usb-pad\usb-pad.h" />
+    <ClInclude Include="USB\usb-pad\usb-trance-vibrator.h" />
     <ClInclude Include="USB\usb-pad\usb-turntable.h" />
     <ClInclude Include="USB\usb-printer\usb-printer.h" />
     <ClInclude Include="USB\USB.h" />

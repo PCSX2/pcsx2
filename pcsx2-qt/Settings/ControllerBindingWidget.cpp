@@ -28,6 +28,7 @@
 #include "ui_USBBindingWidget_GTForce.h"
 #include "ui_USBBindingWidget_GunCon2.h"
 #include "ui_USBBindingWidget_RealPlay.h"
+#include "ui_USBBindingWidget_TranceVibrator.h"
 
 ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port)
 	: QWidget(parent)
@@ -965,6 +966,7 @@ QIcon USBDeviceWidget::getIcon() const
 		{"hidmouse", "mouse-line"}, // HID Mouse
 		{"RBDrumKit", "drum-line"}, // Rock Band Drum Kit
 		{"BuzzDevice", "buzz-controller-line"}, // Buzz Controller
+		{"TranceVibrator", "trance-vibrator-line"}, // Trance Vibrator
 		{"webcam", "eyetoy-line"}, // EyeToy
 		{"beatmania", "keyboard-2-line"}, // BeatMania Da Da Da!! (Konami Keyboard)
 		{"seamic", "seamic-line"}, // SEGA Seamic
@@ -1302,6 +1304,13 @@ void USBBindingWidget::bindWidgets(std::span<const InputBindingInfo> bindings)
 
 			widget->initialize(sif, bi.bind_type, getConfigSection(), getBindingKey(bi.name));
 		}
+
+		if (bi.bind_type == InputBindingInfo::Type::Motor)
+		{
+			InputVibrationBindingWidget* widget = findChild<InputVibrationBindingWidget*>(QString::fromUtf8(bi.name));
+			if (widget)
+				widget->setKey(getDialog(), getConfigSection(), getBindingKey(bi.name));
+		}
 	}
 }
 
@@ -1337,6 +1346,11 @@ USBBindingWidget* USBBindingWidget::createInstance(
 	else if (type == "RealPlay")
 	{
 		Ui::USBBindingWidget_RealPlay().setupUi(widget);
+		has_template = true;
+	}
+	else if (type == "TranceVibrator")
+	{
+		Ui::USBBindingWidget_TranceVibrator().setupUi(widget);
 		has_template = true;
 	}
 
