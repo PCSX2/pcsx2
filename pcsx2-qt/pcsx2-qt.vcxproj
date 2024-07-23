@@ -431,6 +431,9 @@
     <QtUi Include="Settings\USBBindingWidget_RealPlay.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_TranceVibrator.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="Settings\USBDeviceWidget.ui">
       <FileType>Document</FileType>
     </QtUi>

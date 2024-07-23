@@ -672,6 +672,9 @@
     <QtUi Include="Settings\USBBindingWidget_RealPlay.ui">
       <Filter>Settings</Filter>
     </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_TranceVibrator.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
     <QtUi Include="Settings\AudioExpansionSettingsDialog.ui">
       <Filter>Settings</Filter>
     </QtUi>

@@ -1,0 +1,19 @@
+<svg 
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 -10 100 110" >
+  <g>
+    <path
+      fill="none"
+      stroke="black"
+      stroke-width="8"
+      stroke-miterlimit="5"
+      d="m 0 50
+         l 20,0
+         l 7.5,20
+         l 15,-45
+         l 15,55
+         l 15,-65
+         l 7.5,35
+         l 20,0" />
+  </g>
+</svg>
