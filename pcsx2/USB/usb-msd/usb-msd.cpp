@@ -188,6 +188,7 @@ namespace usb_msd
 #define SEND_DIAGNOSTIC 0x1d
 #define ALLOW_MEDIUM_REMOVAL 0x1e
 
+#define READ_FORMAT_CAPACITIES 0x23
 #define SET_WINDOW 0x24
 #define READ_CAPACITY_10 0x25
 #define READ_10 0x28
@@ -333,6 +334,9 @@ namespace usb_msd
 	const struct SCSISense sense_code_OUT_OF_RANGE = {
 		ILLEGAL_REQUEST, 0x21, 0x00};
 
+	const struct SCSISense sense_code_UNIT_ATTENTION = {
+		UNIT_ATTENTION, 0x28, 0x00};
+
 	/* Illegal request, Invalid Transfer Tag */
 	//const struct SCSISense sense_code_INVALID_TAG = {
 	//    .key = ILLEGAL_REQUEST, .asc = 0x4b, .ascq = 0x01
@@ -461,12 +465,8 @@ namespace usb_msd
 	static void usb_msd_copy_data(MSDState* s, USBPacket* p)
 	{
 		size_t len, file_ret;
-		len = p->buffer_size - p->actual_length;
-		//if (len > s->scsi_len)
-		//    len = s->scsi_len;
-
-		if (len > sizeof(s->f.buf))
-			len = sizeof(s->f.buf);
+		len = std::min<size_t>(p->buffer_size - p->actual_length, sizeof(s->f.buf));
+		len = std::min<size_t>(len, s->f.data_len);
 
 		//TODO No async reader/writer so do it right here
 		if (s->f.tag == s->f.file_op_tag)
@@ -513,6 +513,9 @@ namespace usb_msd
 	{
 		int64_t lba;
 		uint32_t xfer_len;
+		int64_t lbas;
+		uint32_t *last_lba, *blk_len;
+
 		s->f.last_cmd = cbw->cmd[0];
 
 		s->f.result = COMMAND_PASSED;
@@ -528,26 +531,69 @@ namespace usb_msd
 				//s->f.result = COMMAND_FAILED;
 				//set_sense(s, SENSE_CODE(LUN_NOT_READY));
 				break;
+
 			case REQUEST_SENSE: //device shall keep old sense data
-				memcpy(s->f.buf, s->f.sense_buf,
-					/* XXX the UFI device shall return only the number of bytes requested, as is */
-					cbw->cmd[4] < sizeof(s->f.sense_buf) ? (size_t)cbw->cmd[4] : sizeof(s->f.sense_buf));
+				memcpy(s->f.buf, s->f.sense_buf, std::min<size_t>(cbw->cmd[4], sizeof(s->f.sense_buf)));
 				break;
+
 			case INQUIRY:
 				memset(s->f.buf, 0, sizeof(s->f.buf));
-				s->f.buf[0] = 0; //SCSI Peripheral Device Type: 0x0 - direct access device, 0x1f - unknown/no device
-				s->f.buf[1] = 1 << 7; //removable
-				s->f.buf[3] = 1; //UFI response data format
+				s->f.buf[0] = 0; // SCSI Peripheral Device Type: 0x0 - direct access device, 0x1f - unknown/no device
+				s->f.buf[1] = 1 << 7; // Removable
+				s->f.buf[2] = 0x02; // Version
+				s->f.buf[3] = 0x02; // UFI response data format
 				//inq data len can be zero
 				strncpy((char*)&s->f.buf[8], "IOMEGA  ", 8);        //8 bytes vendor
 				strncpy((char*)&s->f.buf[16], "ZIP 100         ", 16); //16 bytes product
 				strncpy((char*)&s->f.buf[32], "E.08", 4);       //4 bytes product revision
+				set_sense(s, SENSE_CODE(UNIT_ATTENTION));
+				break;
+
+			case MODE_SENSE:
+				memset(s->f.buf, 0, sizeof(s->f.buf));
+				s->f.buf[0] = cbw->cmd[4] - 1;
+				break;
+
+			case START_STOP:
+				memset(s->f.buf, 0, sizeof(s->f.buf));
+				break;
+
+			case ALLOW_MEDIUM_REMOVAL:
+				memset(s->f.buf, 0, sizeof(s->f.buf));
+				break;
+
+			case READ_FORMAT_CAPACITIES:
+				memset(s->f.buf, 0, sizeof(s->f.buf));
+
+				if (s->file_size == 0)
+				{
+					s->f.result = COMMAND_FAILED;
+					set_sense(s, SENSE_CODE(UNKNOWN_ERROR));
+					break;
+				}
+
+				last_lba = (uint32_t*)&s->f.buf[4];
+				blk_len = (uint32_t*)&s->f.buf[8];
+				*blk_len = LBA_BLOCK_SIZE;
+
+				lbas = s->file_size / LBA_BLOCK_SIZE;
+				if (lbas > 0xFFFFFFFF)
+				{
+					s->f.result = COMMAND_FAILED;
+					set_sense(s, SENSE_CODE(OUT_OF_RANGE));
+					*last_lba = 0xFFFFFFFF;
+				}
+				else
+					*last_lba = static_cast<uint32_t>(lbas);
+
+				*last_lba = bswap32(*last_lba);
+				*blk_len = bswap32(*blk_len);
+				s->f.buf[3] = 0x08;
+				s->f.buf[8] = 0x02;
+				s->f.data_len = 12;
 				break;
 
 			case READ_CAPACITY_10:
-				int64_t lbas;
-				uint32_t *last_lba, *blk_len;
-
 				memset(s->f.buf, 0, sizeof(s->f.buf));
 
 				if (s->file_size == 0) //TODO
@@ -667,6 +713,8 @@ namespace usb_msd
 			case ClassInterfaceRequest | GetMaxLun:
 				data[0] = 0;
 				p->actual_length = 1;
+				break;
+			case EndpointOutRequest | USB_REQ_CLEAR_FEATURE:
 				break;
 			default:
 				p->status = USB_RET_STALL;
@@ -828,15 +876,6 @@ namespace usb_msd
 						break;
 
 					case USB_MSDM_DATAIN:
-						//if (len == 13) goto send_csw;
-						if (p->buffer_size > s->f.data_len)
-						{
-							//len = s->f.data_len;
-							s->f.result = COMMAND_FAILED;
-							set_sense(s, SENSE_CODE(UNRECOVERED_READ_ERROR));
-							goto fail;
-						}
-
 						//if (s->scsi_len)
 						{
 							usb_msd_copy_data(s, p);
@@ -853,12 +892,6 @@ namespace usb_msd
 									s->f.mode = USB_MSDM_CSW;
 								}
 							}
-						}
-
-						if ((size_t)p->actual_length < p->buffer_size)
-						{
-							s->packet = p;
-							p->status = USB_RET_ASYNC;
 						}
 						break;
 
