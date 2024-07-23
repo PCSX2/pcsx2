@@ -395,9 +395,6 @@
     </QtUi>
   </ItemGroup>
   <ItemGroup>
-    <QtUi Include="Settings\USBBindingWidget_GunCon2.ui">
-      <FileType>Document</FileType>
-    </QtUi>
     <QtUi Include="SetupWizardDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
@@ -422,7 +419,16 @@
     <QtUi Include="Settings\USBBindingWidget_DrivingForce.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_Gametrak.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="Settings\USBBindingWidget_GTForce.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_GunCon2.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_RealPlay.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\USBDeviceWidget.ui">
