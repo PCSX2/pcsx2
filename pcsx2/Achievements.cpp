@@ -1052,8 +1052,8 @@ void Achievements::DisplayHardcoreDeferredMessage()
 		if (VMManager::HasValidVM() && EmuConfig.Achievements.HardcoreMode && !s_hardcore_mode &&
 			ImGuiManager::InitializeFullscreenUI())
 		{
-			ImGuiFullscreen::ShowToast(
-				std::string(), TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
+			Host::AddIconOSDMessage(
+				"hardcore_on_reset", ICON_PF_DUMBELL, TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
 				Host::OSD_WARNING_DURATION);
 		}
 	});
@@ -1343,9 +1343,8 @@ void Achievements::HandleServerDisconnectedEvent(const rc_client_event_t* event)
 	MTGS::RunOnGSThread([]() {
 		if (ImGuiManager::InitializeFullscreenUI())
 		{
-			ImGuiFullscreen::ShowToast(TRANSLATE_STR("Achievements", "Achievements Disconnected"),
-				TRANSLATE_STR("Achievements", "An unlock request could not be completed. We will keep retrying to submit this request."),
-				Host::OSD_ERROR_DURATION);
+			ImGuiFullscreen::AddNotification("achievements_disconnect", Host::OSD_ERROR_DURATION, TRANSLATE_STR("Achievements", "Achievements Disconnected"),
+				TRANSLATE_STR("Achievements", "An unlock request could not be completed. We will keep retrying to submit this request."), s_game_icon);
 		}
 	});
 }
@@ -1357,8 +1356,8 @@ void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
 	MTGS::RunOnGSThread([]() {
 		if (ImGuiManager::InitializeFullscreenUI())
 		{
-			ImGuiFullscreen::ShowToast(TRANSLATE_STR("Achievements", "Achievements Reconnected"),
-				TRANSLATE_STR("Achievements", "All pending unlock requests have completed."), Host::OSD_INFO_DURATION);
+			ImGuiFullscreen::AddNotification("achievements_reconnect", Host::OSD_INFO_DURATION, TRANSLATE_STR("Achievements", "Achievements Reconnected"),
+				TRANSLATE_STR("Achievements", "All pending unlock requests have completed."), s_game_icon);
 		}
 	});
 }
@@ -1445,7 +1444,7 @@ void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
 		MTGS::RunOnGSThread([enabled]() {
 			if (ImGuiManager::InitializeFullscreenUI())
 			{
-				ImGuiFullscreen::ShowToast(std::string(),
+				Host::AddIconOSDMessage("hardcore_status", ICON_PF_DUMBELL,
 					enabled ? TRANSLATE_STR("Achievements", "Hardcore mode is now enabled.") :
 							  TRANSLATE_STR("Achievements", "Hardcore mode is now disabled."),
 					Host::OSD_INFO_DURATION);
@@ -1858,7 +1857,7 @@ void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::fun
 	MTGS::RunOnGSThread([trigger = TinyString(trigger), callback = std::move(callback)]() {
 		if (!FullscreenUI::Initialize())
 		{
-			Host::AddOSDMessage(fmt::format(TRANSLATE_FS("Cannot {} while hardcode mode is active.", trigger)),
+			Host::AddOSDMessage(fmt::format(TRANSLATE_FS("Cannot {} while hardcore mode is active.", trigger)),
 				Host::OSD_WARNING_DURATION);
 			callback(false);
 			return;
@@ -2931,7 +2930,8 @@ void Achievements::LeaderboardFetchNearbyCallback(
 
 	if (result != RC_OK)
 	{
-		ImGuiFullscreen::ShowToast(TRANSLATE("Achievements", "Leaderboard download failed"), error_message);
+		ImGuiFullscreen::AddNotification("leaderboard_dl_fail", Host::OSD_INFO_DURATION,
+			TRANSLATE("Achievements", "Leaderboard Download Failed"), error_message, s_game_icon);
 		CloseLeaderboard();
 		return;
 	}
@@ -2950,7 +2950,8 @@ void Achievements::LeaderboardFetchAllCallback(
 
 	if (result != RC_OK)
 	{
-		ImGuiFullscreen::ShowToast(TRANSLATE("Achievements", "Leaderboard download failed"), error_message);
+		ImGuiFullscreen::AddNotification("leaderboard_dl_fail", Host::OSD_INFO_DURATION,
+			TRANSLATE("Achievements", "Leaderboard Download Failed"), error_message, s_game_icon);
 		CloseLeaderboard();
 		return;
 	}
