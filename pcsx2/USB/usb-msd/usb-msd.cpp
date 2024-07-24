@@ -28,6 +28,12 @@ namespace usb_msd
 		"00000000000PCSX2",
 	};
 
+	static const USBDescStrings sony_msac_desc_strings = {
+		"",
+		"Sony",
+		"MSAC-US1"
+	};
+
 	static const uint8_t zip100_dev_descriptor[] = {
 		0x12,        // bLength
 		0x01,        // bDescriptorType (Device)
@@ -85,6 +91,65 @@ namespace usb_msd
 		0x03,        // bmAttributes (Interrupt)
 		0x02, 0x00,  // wMaxPacketSize 8
 		0x20,        // bInterval 32 (unit depends on device speed)
+	};
+
+	static const uint8_t sony_msac_dev_descriptor[] = {
+		0x12,        // bLength
+		0x01,        // bDescriptorType (Device)
+		0x10, 0x01,  // bcdUSB 1.10
+		0x00,        // bDeviceClass (Use class information in the Interface Descriptors)
+		0x00,        // bDeviceSubClass
+		0x00,        // bDeviceProtocol
+		0x08,        // bMaxPacketSize0 8
+		0x4C, 0x05,  // idVendor 0x054C
+		0x2d, 0x00,  // idProduct 0x002D
+		0x00, 0x01,  // bcdDevice 1.00
+		0x01,        // iManufacturer (String Index)
+		0x02,        // iProduct (String Index)
+		0x00,        // iSerialNumber (String Index)
+		0x01,        // bNumConfigurations 1
+	};
+
+	static const uint8_t sony_msac_config_descriptor[] = {
+		0x09,        // bLength
+		0x02,        // bDescriptorType (Configuration)
+		0x27, 0x00,  // wTotalLength 39
+		0x01,        // bNumInterfaces 1
+		0x01,        // bConfigurationValue
+		0x00,        // iConfiguration (String Index)
+		0x80,        // bmAttributes
+		0x32,        // bMaxPower 100mA
+
+		0x09,        // bLength
+		0x04,        // bDescriptorType (Interface)
+		0x00,        // bInterfaceNumber 0
+		0x00,        // bAlternateSetting
+		0x03,        // bNumEndpoints 3
+		0x08,        // bInterfaceClass
+		0x04,        // bInterfaceSubClass
+		0x01,        // bInterfaceProtocol
+		0x00,        // iInterface (String Index)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x01,        // bEndpointAddress (OUT/H2D)
+		0x02,        // bmAttributes (Bulk)
+		0x40, 0x00,  // wMaxPacketSize 64
+		0x00,        // bInterval 0 (unit depends on device speed)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x82,        // bEndpointAddress (IN/D2H)
+		0x02,        // bmAttributes (Bulk)
+		0x40, 0x00,  // wMaxPacketSize 64
+		0x00,        // bInterval 0 (unit depends on device speed)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x83,        // bEndpointAddress (IN/D2H)
+		0x03,        // bmAttributes (Interrupt)
+		0x00, 0x00,  // wMaxPacketSize 0
+		0xFF,        // bInterval 255 (unit depends on device speed)
 	};
 
 	struct usb_msd_cbw
@@ -919,7 +984,127 @@ namespace usb_msd
 		delete s;
 	}
 
-	USBDevice* MsdDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
+	// Sony MSAC-US1
+	static void usb_msac_handle_control(USBDevice* dev, USBPacket* p, int request, int value,
+		int index, int length, uint8_t* data)
+	{
+		MSDState* s = USB_CONTAINER_OF(dev, MSDState, dev);
+		int ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
+
+		if (ret >= 0)
+		{
+			return;
+		}
+
+		switch (request)
+		{
+			case ClassInterfaceOutRequest:
+				switch (data[0])
+				{
+					case REQUEST_SENSE:
+					{
+						s->f.mode = USB_MSDM_CBW;
+						s->f.data_len = data[4];
+						memset(s->f.buf, 0, s->f.data_len);
+						s->f.buf[0] = 0x70;
+						s->f.buf[7] = 0x0A;
+						break;
+					}
+					case INQUIRY:
+					{
+						s->f.mode = USB_MSDM_CBW;
+						s->f.data_len = data[4];
+						memset(s->f.buf, 0, s->f.data_len);
+						s->f.buf[1] = 0x80;
+						s->f.buf[3] = 1;
+						s->f.buf[4] = 0x1f;
+						strncpy((char*)&s->f.buf[8], "Sony    ", 8);
+						strncpy((char*)&s->f.buf[16], "MSAC-US1        ", 16);
+						strncpy((char*)&s->f.buf[32], "1.00", 4);
+						break;
+					}
+					case READ_CAPACITY_10:
+					{
+						s->f.mode = USB_MSDM_CBW;
+						s->f.data_len = 8;
+						memset(s->f.buf, 0, s->f.data_len);
+
+						if (s->file_size == 0)
+						{
+							break;
+						}
+
+						uint32_t* last_lba = (uint32_t*)&s->f.buf[0];
+						uint32_t* blk_len = (uint32_t*)&s->f.buf[4];
+						*blk_len = bswap32(LBA_BLOCK_SIZE);
+
+						int64_t lbas = s->file_size / LBA_BLOCK_SIZE;
+						if (lbas > 0xFFFFFFFF)
+						{
+							*last_lba = bswap32(0xFFFFFFFF);
+						}
+						else
+						{
+							*last_lba = bswap32(static_cast<uint32_t>(lbas - 1));
+						}
+						break;
+					}
+					case READ_10:
+					{
+						s->f.mode = USB_MSDM_DATAIN;
+						const int64_t lba = bswap32(*(uint32_t*)&data[2]);
+						const uint16_t xfer_len = bswap16(*(uint16_t*)&data[7]);
+						if (xfer_len == 0)
+						{
+							break;
+						}
+
+						FileSystem::FSeek64(s->file, lba * LBA_BLOCK_SIZE, SEEK_SET);
+						break;
+					}
+					default:
+						Console.Warning("usb-msd: Unhandled MSAC command : %02x", data[0]);
+						p->status = USB_RET_STALL;
+						break;
+				}
+				break;
+			default:
+				p->status = USB_RET_STALL;
+				break;
+		}
+	}
+
+	static void usb_msac_handle_data(USBDevice* dev, USBPacket* p)
+	{
+		MSDState* s = (MSDState*)dev;
+		const uint8_t devep = p->ep->nr;
+
+		switch (p->pid)
+		{
+			case USB_TOKEN_IN:
+				if (devep != 2)
+					goto fail;
+
+				if (s->f.mode == USB_MSDM_CBW)
+				{
+					usb_packet_copy(p, s->f.buf, s->f.data_len);
+				}
+				else if (s->f.mode == USB_MSDM_DATAIN)
+				{
+					size_t read_size = fread(s->f.buf, 1, p->buffer_size, s->file);
+					s->f.data_len = p->buffer_size;
+					usb_packet_copy(p, s->f.buf, read_size);
+				}
+				break;
+
+			default:
+			fail:
+				p->status = USB_RET_STALL;
+				break;
+		}
+	}
+
+	USBDevice* MsdDevice::CreateDevice(SettingsInterface& si, u32 port, u32 type) const
 	{
 		MSDState* s = new MSDState();
 
@@ -939,22 +1124,39 @@ namespace usb_msd
 		s->f.mtime = sd.ModificationTime;
 		s->f.last_cmd = -1;
 		s->dev.speed = USB_SPEED_FULL;
-
 		s->desc.full = &s->desc_dev;
-		s->desc.str = zip100_desc_strings;
-		if (usb_desc_parse_dev(zip100_dev_descriptor, sizeof(zip100_dev_descriptor), s->desc, s->desc_dev) < 0)
-			goto fail;
-		if (usb_desc_parse_config(zip100_config_descriptor, sizeof(zip100_config_descriptor), s->desc_dev) < 0)
-			goto fail;
+
+		switch (type)
+		{
+			case IOMEGA_ZIP_100:
+				s->desc.str = zip100_desc_strings;
+				if (usb_desc_parse_dev(zip100_dev_descriptor, sizeof(zip100_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(zip100_config_descriptor, sizeof(zip100_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				s->dev.klass.handle_control = usb_msd_handle_control;
+				s->dev.klass.handle_data = usb_msd_handle_data;
+				break;
+			case SONY_MSAC_US1:
+				s->desc.str = sony_msac_desc_strings;
+				if (usb_desc_parse_dev(sony_msac_dev_descriptor, sizeof(sony_msac_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(sony_msac_config_descriptor, sizeof(sony_msac_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				s->dev.klass.handle_control = usb_msac_handle_control;
+				s->dev.klass.handle_data = usb_msac_handle_data;
+				break;
+			default:
+				pxAssertMsg(false, "Unhandled type");
+				break;
+		}
 
 		s->dev.klass.cancel_packet = usb_msd_cancel_io;
 		s->dev.klass.handle_attach = usb_desc_attach;
 		s->dev.klass.handle_reset = usb_msd_handle_reset;
-		s->dev.klass.handle_control = usb_msd_handle_control;
-		s->dev.klass.handle_data = usb_msd_handle_data;
 		s->dev.klass.unrealize = usb_msd_handle_destroy;
 		s->dev.klass.usb_desc = &s->desc;
-		s->dev.klass.product_desc = zip100_desc_strings[2];
+		s->dev.klass.product_desc = nullptr;
 
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
@@ -1008,6 +1210,15 @@ namespace usb_msd
 		// TODO: Handle changes to path.
 	}
 
+	std::span<const char*> MsdDevice::SubTypes() const
+	{
+		static const char* subtypes[] = {
+			TRANSLATE_NOOP("USB", "Iomega Zip-100 (Generic)"),
+			TRANSLATE_NOOP("USB", "Sony MSAC-US1 (PictureParadise)")
+		};
+		return subtypes;
+	}
+
 	std::span<const SettingInfo> MsdDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo settings[] = {
@@ -1016,5 +1227,4 @@ namespace usb_msd
 		};
 		return settings;
 	}
-
 } // namespace usb_msd
