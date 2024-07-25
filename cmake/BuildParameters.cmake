@@ -1,6 +1,8 @@
 # Extra preprocessor definitions that will be added to all pcsx2 builds
 set(PCSX2_DEFS "")
 
+include(GNUInstallDirs)
+
 #-------------------------------------------------------------------------------
 # Misc option
 #-------------------------------------------------------------------------------
@@ -8,6 +10,7 @@ option(ENABLE_TESTS "Enables building the unit tests" ON)
 option(ENABLE_GSRUNNER "Enables building the GSRunner" OFF)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
+option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
 
 #-------------------------------------------------------------------------------
 # Graphical option
@@ -198,6 +201,15 @@ if(MSVC)
 		$<${CONFIG_REL_NO_DEB}:/OPT:ICF>
 	)
 endif()
+
+if(PACKAGE_MODE)
+	file(RELATIVE_PATH relative_datadir ${CMAKE_INSTALL_FULL_BINDIR} ${CMAKE_INSTALL_FULL_DATADIR}/PCSX2)
+
+	# Compile all source codes with those defines
+	list(APPEND PCSX2_DEFS
+		PCSX2_APP_DATADIR="${relative_datadir}")
+endif()
+
 
 if(USE_VTUNE)
 	list(APPEND PCSX2_DEFS ENABLE_VTUNE)
