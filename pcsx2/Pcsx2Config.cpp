@@ -1860,9 +1860,13 @@ void EmuFolders::SetAppRoot()
 
 bool EmuFolders::SetResourcesDirectory()
 {
-#ifndef __APPLE__
-	// On Windows/Linux, these are in the binary directory.
-	Resources = Path::Combine(AppRoot, "resources");
+#ifndef __APPLE__  
+	#ifndef PCSX2_APP_DATADIR
+		// On Windows/Linux, these are in the binary directory.
+		Resources = Path::Combine(AppRoot, "resources");
+	#else
+		Resources = Path::Canonicalize(Path::Combine(AppRoot, PCSX2_APP_DATADIR "/resources"));
+	#endif
 #else
 	// On macOS, this is in the bundle resources directory.
 	Resources = Path::Canonicalize(Path::Combine(AppRoot, "../Resources"));
