@@ -12,6 +12,8 @@
 #include "ui_ControllerBindingWidget.h"
 #include "ui_ControllerBindingWidget_DualShock2.h"
 #include "ui_ControllerBindingWidget_Guitar.h"
+#include "ui_ControllerBindingWidget_Jogcon.h"
+#include "ui_ControllerBindingWidget_Negcon.h"
 #include "ui_ControllerBindingWidget_Popn.h"
 #include "ui_ControllerMacroWidget.h"
 #include "ui_ControllerMacroEditWidget.h"
@@ -198,6 +200,38 @@ public:
 
 private:
 	Ui::ControllerBindingWidget_Guitar m_ui;
+};
+
+class ControllerBindingWidget_Jogcon final : public ControllerBindingWidget_Base
+{
+	Q_OBJECT
+
+public:
+	ControllerBindingWidget_Jogcon(ControllerBindingWidget* parent);
+	~ControllerBindingWidget_Jogcon();
+
+	QIcon getIcon() const override;
+
+	static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
+
+private:
+	Ui::ControllerBindingWidget_Jogcon m_ui;
+};
+
+class ControllerBindingWidget_Negcon final : public ControllerBindingWidget_Base
+{
+	Q_OBJECT
+
+public:
+	ControllerBindingWidget_Negcon(ControllerBindingWidget* parent);
+	~ControllerBindingWidget_Negcon();
+
+	QIcon getIcon() const override;
+
+	static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
+
+private:
+	Ui::ControllerBindingWidget_Negcon m_ui;
 };
 
 class ControllerBindingWidget_Popn final : public ControllerBindingWidget_Base

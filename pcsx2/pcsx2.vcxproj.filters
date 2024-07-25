@@ -1431,6 +1431,12 @@
     <ClCompile Include="arm64\RecStubs.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec\arm64</Filter>
     </ClCompile>
+    <ClCompile Include="SIO\Pad\PadJogcon.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadNegcon.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2371,6 +2377,12 @@
     </ClInclude>
     <ClInclude Include="arm64\AsmHelpers.h">
       <Filter>Tools\arm64</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadJogcon.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadNegcon.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
