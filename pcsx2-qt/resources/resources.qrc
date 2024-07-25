@@ -200,6 +200,8 @@
 		<file>images/DualShock_2.svg</file>
 		<file>images/GT_Force.svg</file>
 		<file>images/Guitar.svg</file>
+		<file>images/Jogcon.svg</file>
+		<file>images/Negcon.svg</file>
 		<file>images/Popn.svg</file>
 	</qresource>
 </RCC>

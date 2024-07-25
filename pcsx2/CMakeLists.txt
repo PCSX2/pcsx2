@@ -436,6 +436,8 @@ set(pcsx2PADSources
 	SIO/Pad/PadBase.cpp
 	SIO/Pad/PadDualshock2.cpp
 	SIO/Pad/PadGuitar.cpp
+	SIO/Pad/PadJogcon.cpp
+	SIO/Pad/PadNegcon.cpp
 	SIO/Pad/PadPopn.cpp
 	SIO/Pad/PadNotConnected.cpp
 )
@@ -444,6 +446,8 @@ set(pcsx2PADHeaders
 	SIO/Pad/PadBase.h
 	SIO/Pad/PadDualshock2.h
 	SIO/Pad/PadGuitar.h
+	SIO/Pad/PadJogcon.h
+	SIO/Pad/PadNegcon.h
 	SIO/Pad/PadPopn.h
 	SIO/Pad/PadNotConnected.h
 	SIO/Pad/PadTypes.h

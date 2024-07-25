@@ -112,6 +112,14 @@ void ControllerBindingWidget::onTypeChanged()
 	{
 		m_bindings_widget = ControllerBindingWidget_Guitar::createInstance(this);
 	}
+	else if (cinfo->type == Pad::ControllerType::Jogcon)
+	{
+		m_bindings_widget = ControllerBindingWidget_Jogcon::createInstance(this);
+	}
+	else if (cinfo->type == Pad::ControllerType::Negcon)
+	{
+		m_bindings_widget = ControllerBindingWidget_Negcon::createInstance(this);
+	}
 	else if (cinfo->type == Pad::ControllerType::Popn)
 	{
 		m_bindings_widget = ControllerBindingWidget_Popn::createInstance(this);
@@ -905,6 +913,48 @@ QIcon ControllerBindingWidget_Guitar::getIcon() const
 ControllerBindingWidget_Base* ControllerBindingWidget_Guitar::createInstance(ControllerBindingWidget* parent)
 {
 	return new ControllerBindingWidget_Guitar(parent);
+}
+
+ControllerBindingWidget_Jogcon::ControllerBindingWidget_Jogcon(ControllerBindingWidget* parent)
+	: ControllerBindingWidget_Base(parent)
+{
+	m_ui.setupUi(this);
+	initBindingWidgets();
+}
+
+ControllerBindingWidget_Jogcon::~ControllerBindingWidget_Jogcon()
+{
+}
+
+QIcon ControllerBindingWidget_Jogcon::getIcon() const
+{
+	return QIcon::fromTheme("controller-line");
+}
+
+ControllerBindingWidget_Base* ControllerBindingWidget_Jogcon::createInstance(ControllerBindingWidget* parent)
+{
+	return new ControllerBindingWidget_Jogcon(parent);
+}
+
+ControllerBindingWidget_Negcon::ControllerBindingWidget_Negcon(ControllerBindingWidget* parent)
+	: ControllerBindingWidget_Base(parent)
+{
+	m_ui.setupUi(this);
+	initBindingWidgets();
+}
+
+ControllerBindingWidget_Negcon::~ControllerBindingWidget_Negcon()
+{
+}
+
+QIcon ControllerBindingWidget_Negcon::getIcon() const
+{
+	return QIcon::fromTheme("controller-line");
+}
+
+ControllerBindingWidget_Base* ControllerBindingWidget_Negcon::createInstance(ControllerBindingWidget* parent)
+{
+	return new ControllerBindingWidget_Negcon(parent);
 }
 
 ControllerBindingWidget_Popn::ControllerBindingWidget_Popn(ControllerBindingWidget* parent)
