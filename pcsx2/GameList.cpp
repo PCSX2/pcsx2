@@ -117,14 +117,14 @@ const char* GameList::EntryCompatibilityRatingToString(CompatibilityRating ratin
 	// clang-format off
 	switch (rating)
 	{
-	case CompatibilityRating::Unknown: return "Unknown";
-	case CompatibilityRating::Nothing: return "Nothing";
-	case CompatibilityRating::Intro: return "Intro";
-	case CompatibilityRating::Menu: return "Menu";
-	case CompatibilityRating::InGame: return "InGame";
-	case CompatibilityRating::Playable: return "Playable";
-	case CompatibilityRating::Perfect: return "Perfect";
-	default: return "";
+		case CompatibilityRating::Unknown:  return TRANSLATE("GameList", "Unknown");
+		case CompatibilityRating::Nothing:  return TRANSLATE("GameList", "Nothing");
+		case CompatibilityRating::Intro:    return TRANSLATE("GameList", "Intro");
+		case CompatibilityRating::Menu:     return TRANSLATE("GameList", "Menu");
+		case CompatibilityRating::InGame:   return TRANSLATE("GameList", "In-Game");
+		case CompatibilityRating::Playable: return TRANSLATE("GameList", "Playable");
+		case CompatibilityRating::Perfect:  return TRANSLATE("GameList", "Perfect");
+		default: return "";
 	}
 	// clang-format on
 }
