@@ -72,14 +72,16 @@ void GameSummaryWidget::populateDetails(const GameList::Entry* entry)
 	m_ui.crc->setText(QString::fromStdString(fmt::format("{:08X}", entry->crc)));
 	m_ui.type->setCurrentIndex(static_cast<int>(entry->type));
 	m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
-	m_ui.compatibility->setText(QString("%0%1")
+	//: First arg is a GameList compat; second is a string with space followed by star rating OR empty if Unknown compat
+	m_ui.compatibility->setText(tr("%0%1")
 		.arg(GameList::EntryCompatibilityRatingToString(entry->compatibility_rating))
 		.arg([entry]() {
 			if (entry->compatibility_rating == GameList::CompatibilityRating::Unknown)
-				return QString();
+				return QStringLiteral("");
 
 			const qsizetype compatibility_value = static_cast<qsizetype>(entry->compatibility_rating);
-			return QString(" ") + QString("★").repeated(compatibility_value - 1) + QString("☆").repeated(6 - compatibility_value);
+			//: First arg is filled-in stars for game compatibility; second is empty stars; should be swapped for RTL languages
+			return tr(" %0%1").arg(QStringLiteral("★").repeated(compatibility_value - 1)).arg(QStringLiteral("☆").repeated(6 - compatibility_value));
 		}()));
 
 	int row = 0;
