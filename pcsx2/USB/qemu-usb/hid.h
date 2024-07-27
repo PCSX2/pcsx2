@@ -312,7 +312,6 @@ struct HIDState
 	int kind;
 	int32_t protocol;
 	uint8_t idle;
-	bool idle_pending;
 	HIDEventFunc event;
 };
 
