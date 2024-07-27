@@ -31,14 +31,4 @@ namespace usb_hid
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
 		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 	};
-
-	class BeatManiaDevice final : public HIDKbdDevice
-	{
-	public:
-		const char* Name() const override;
-		const char* TypeName() const override;
-		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
-		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
-	};
-
 } // namespace usb_hid
