@@ -71,13 +71,12 @@ void RegisterDevice::Register()
 	inst.Add(DEVTYPE_SINGSTAR, new usb_mic::SingstarDevice());
 	inst.Add(DEVTYPE_LOGITECH_MIC, new usb_mic::LogitechMicDevice());
 	inst.Add(DEVTYPE_LOGITECH_HEADSET, new usb_mic::HeadsetDevice());
-	inst.Add(DEVTYPE_HIDKBD, new usb_hid::HIDKbdDevice());
+	inst.Add(DEVTYPE_HIDKEYBOARD, new usb_hid::HIDKbdDevice());
 	inst.Add(DEVTYPE_HIDMOUSE, new usb_hid::HIDMouseDevice());
 	inst.Add(DEVTYPE_RBKIT, new usb_pad::RBDrumKitDevice());
 	inst.Add(DEVTYPE_DJ, new usb_pad::DJTurntableDevice());
 	inst.Add(DEVTYPE_BUZZ, new usb_pad::BuzzDevice());
 	inst.Add(DEVTYPE_EYETOY, new usb_eyetoy::EyeToyWebCamDevice());
-	inst.Add(DEVTYPE_BEATMANIA_DADADA, new usb_hid::BeatManiaDevice());
 	inst.Add(DEVTYPE_TRANCE_VIBRATOR, new usb_pad::TranceVibratorDevice());
 	inst.Add(DEVTYPE_SEGA_SEAMIC, new usb_pad::SeamicDevice());
 	inst.Add(DEVTYPE_PRINTER, new usb_printer::PrinterDevice());

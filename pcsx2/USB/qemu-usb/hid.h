@@ -18,8 +18,6 @@
 #define HID_MOUSE 1
 #define HID_TABLET 2
 #define HID_KEYBOARD 3
-// idk
-#define HID_SUBKIND_BEATMANIA 1
 
 /* scancode without modifiers */
 #define SCANCODE_KEYMASK 0xff
@@ -312,11 +310,9 @@ struct HIDState
 	uint32_t head; /* index into circular queue */
 	uint32_t n;
 	int kind;
-	int sub_kind;
 	int32_t protocol;
 	uint8_t idle;
 	bool idle_pending;
-	//QEMUTimer *idle_timer;
 	HIDEventFunc event;
 };
 
