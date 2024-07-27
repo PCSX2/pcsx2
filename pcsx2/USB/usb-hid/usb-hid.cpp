@@ -851,7 +851,6 @@ namespace usb_hid
 		sw.Do(&s->hid.n);
 		sw.Do(&s->hid.protocol);
 		sw.Do(&s->hid.idle);
-		sw.Do(&s->hid.idle_pending);
 
 		return !sw.HasError();
 	}
@@ -914,7 +913,6 @@ namespace usb_hid
 		sw.Do(&s->hid.n);
 		sw.Do(&s->hid.protocol);
 		sw.Do(&s->hid.idle);
-		sw.Do(&s->hid.idle_pending);
 
 		return !sw.HasError();
 	}
