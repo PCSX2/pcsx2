@@ -24966,6 +24966,20 @@ SLES-54466:
     - VIFFIFOHack # Needed to load the main game properly.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes bloom misalignment.
+  patches:
+    C29911A79:
+      content: |-
+        comment=COP2 Patch
+        author=Fobes
+        // Flips COP2 status read directly after vmulq. Fixes broken physics when slamming into trees (which is not recommended).
+        patch=1,EE,00b844b4,word,48428000
+        patch=1,EE,00b844b8,word,4BC0085C
+        patch=1,EE,00b84514,word,48428000
+        patch=1,EE,00b84518,word,4BC0085C
+        patch=1,EE,00b7fc48,word,48438000
+        patch=1,EE,00b7fc4c,word,4BC0085C
+        patch=1,EE,00b81804,word,48438000
+        patch=1,EE,00b81808,word,4BC0319C
 SLES-54467:
   name: "Final Armada"
   region: "PAL-M5"
