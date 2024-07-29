@@ -422,6 +422,11 @@ PAPX-90523:
 PAPX-90524:
   name: "Wild Arms - The Vth Vanguard"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes font sizes and lines in UI.
+    cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and reduces HC size.
 PBGP-0061:
   name: "Suika A.S+ Eternal Name [First Press Limited Edition]"
   region: "NTSC-J"
@@ -1887,8 +1892,10 @@ SCAJ-20154:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
 SCAJ-20155:
-  name: "Yoshitsune Eiyuuden Shura - The Story of Hero Yoshitsune Shura"
-  region: "NTSC-Unk"
+  name: "The Story of Hero Yoshitsune Shura"
+  region: "NTSC-J"
+  gsHWFixes:
+    nativeScaling: 2 # Fixes post processing alignment.
 SCAJ-20156:
   name: "Gallop Racer 8 - Live Horse Racing"
   region: "NTSC-Unk"
@@ -2080,9 +2087,10 @@ SCAJ-20183:
   name: "Wild ARMs - The Vth Vanguard"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fixes font sizes.
+    roundSprite: 1 # Fixes font sizes and lines in UI.
     cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
-    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and reduces HC size.
 SCAJ-20184:
   name: "Seiken Densetsu 4"
   region: "NTSC-Unk"
@@ -8738,9 +8746,10 @@ SCPS-15118:
   name-en: "Wild ARMs - The Vth Vanguard"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fixes font sizes.
+    roundSprite: 1 # Fixes font sizes and lines in UI.
     cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
-    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and reduces HC size.
 SCPS-15119:
   name: "BLEACH 〜ブレイド・バトラーズ2nd〜"
   name-sort: "ぶりーち ぶれいど ばとらーず2nd"
@@ -9425,6 +9434,11 @@ SCPS-19333:
   name-sort: "わいるどあーむず ざ ふぃふすゔぁんがーど [PlayStation 2 the Best]"
   name-en: "Wild ARMs - The Vth Vanguard [PlayStation 2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes font sizes and lines in UI.
+    cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and reduces HC size.
 SCPS-19335:
   name: "Wanda to Kyozou [PlayStation 2 the Best Reprint]"
   region: "NTSC-J"
@@ -26481,9 +26495,10 @@ SLES-54972:
   name: "Wild Arms 5"
   region: "PAL-M3"
   gsHWFixes:
+    roundSprite: 1 # Fixes font sizes and lines in UI.
     cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
     forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
-    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and reduces HC size.
 SLES-54973:
   name: "Avventure di Lupin III, Le - Lupin la Morte, Zenigata l'Amore"
   region: "PAL-I"
@@ -54882,8 +54897,10 @@ SLPS-25552:
 SLPS-25553:
   name: "義経英雄伝 修羅"
   name-sort: "よしつねえいゆうでん しゅら"
-  name-en: "Yoshitsune Eiyuuden Shura -The Story of Hero Yoshitsune Shura"
+  name-en: "The Story of Hero Yoshitsune Shura"
   region: "NTSC-J"
+  gsHWFixes:
+    nativeScaling: 2 # Fixes post processing alignment.
 SLPS-25554:
   name: "エウレカセブン TR1:NEW WAVE"
   name-sort: "えうれかせぶん TR1:NEW WAVE"
@@ -66861,9 +66878,10 @@ SLUS-21615:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fixes font sizes.
+    roundSprite: 1 # Fixes font sizes and lines in UI.
     cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
-    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and reduces HC size.
 SLUS-21616:
   name: "Tony Hawk's Proving Ground"
   region: "NTSC-U"
