@@ -6573,7 +6573,7 @@ void FullscreenUI::DrawAboutWindow()
 									 "This allows you to play PS2 games on your PC, with many additional features and benefits."));
 		ImGui::NewLine();
 
-		ImGui::TextWrapped("Version: %s", GIT_REV);
+		ImGui::TextWrapped(FSUI_CSTR("Version: %s"), GIT_REV);
 		ImGui::NewLine();
 
 		ImGui::TextWrapped("%s",
