@@ -385,13 +385,13 @@ Login token generated on %2.</source>
       <translation>حالت هاردکور بعد از شروع مجدد سیستم فعال خواهد شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1837"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="1878"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1836"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1877"/>
       <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
       <translation>وقتی حالت هاردکور فعال است، {0} قابل اجرا نیست. آیا می خواهید حالت هاردکور را غیرفعال کنید؟ اگر گزینه «خیر» را انتخاب کنید، {0} لغو خواهد شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1449"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1448"/>
       <source>Hardcore mode is now enabled.</source>
       <translation>حالت هاردکور فعال شد.</translation>
     </message>
@@ -497,47 +497,53 @@ Login token generated on %2.</source>
       <translation>درخواست باز کردن قفل تکمیل نشد. ما به تلاش مجدد برای ارسال این درخواست ادامه خواهیم داد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1360"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1359"/>
       <source>Achievements Reconnected</source>
       <translation>دستاورد ها دوباره متصل شدند</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1361"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1360"/>
       <source>All pending unlock requests have completed.</source>
       <translation>تمامی درخواست های در انتظار فعال شدن تکمیل شده‌اند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1450"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1449"/>
       <source>Hardcore mode is now disabled.</source>
       <translation>حالت هاردکور غیرفعال شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1753"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1752"/>
       <source>Score: {0} pts (softcore: {1} pts)
 Unread messages: {2}</source>
       <translation type="unfinished">Score: {0} pts (softcore: {1} pts)
 Unread messages: {2}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1836"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="1877"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1835"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1876"/>
       <source>Confirm Hardcore Mode</source>
       <translation>تایید حالت هاردکور</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2094"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2093"/>
       <source>Active Challenge Achievements</source>
       <translation>چالش های دستاورد فعال</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2219"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2218"/>
       <source> (Hardcore Mode)</source>
       <translation> (حالت هاردکور)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2232"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2231"/>
       <source>You have unlocked all achievements and earned {} points!</source>
       <translation>شما تمامی دستاورد ها را باز کرده اید و {} امتیاز کسب کردید!</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Achievements.cpp" line="2934"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2954"/>
+      <source>Leaderboard Download Failed</source>
+      <translation type="unfinished">Leaderboard Download Failed</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1203"/>
@@ -569,150 +575,144 @@ Leaderboard Position: {1} of {2}</source>
 {1}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1881"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1880"/>
       <source>Yes</source>
       <translation>بله</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1882"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1881"/>
       <source>No</source>
       <translation>خیر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2237"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2236"/>
       <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
       <translation>شما قفل {0} از {1} دستاوردها را باز کرده‌اید و {2} از {3} امتیاز ممکن را کسب کرده‌اید.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2285"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2284"/>
       <source>Unknown</source>
       <translation>ناشناخته</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2286"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2285"/>
       <source>Locked</source>
       <translation>قفل شد</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2287"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2286"/>
       <source>Unlocked</source>
       <translation>باز شده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2288"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2287"/>
       <source>Unsupported</source>
       <translation>پشتیبانی نشده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2289"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2288"/>
       <source>Unofficial</source>
       <translation>غیر رسمی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2290"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2289"/>
       <source>Recently Unlocked</source>
       <translation>اخیرا باز شده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2291"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2290"/>
       <source>Active Challenges</source>
       <translation>چالش های فعال</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2292"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2291"/>
       <source>Almost There</source>
       <translation>تقریبا نزدیکی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2394"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2393"/>
       <source>{} points</source>
       <translation>{} امتیاز</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2394"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2393"/>
       <source>{} point</source>
       <translation>{} امتیاز</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2346"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2345"/>
       <source>XXX points</source>
       <translation>XXX امتیاز</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2445"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2444"/>
       <source>Unlocked: {}</source>
       <translation>باز شده: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2612"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2611"/>
       <source>This game has {} leaderboards.</source>
       <translation>این بازی {} جدول امتیازات دارد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2628"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2627"/>
       <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
       <translation>ارسال نمرات غیرفعال است زیرا حالت هاردکور خاموش است. تابلوهای امتیازات روی حالت فقط خواندن هستند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2644"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2643"/>
       <source>Show Best</source>
       <translation>نمایش بهترین</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2644"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2643"/>
       <source>Show Nearby</source>
       <translation>نمایش نزدیکترین</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2669"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2668"/>
       <source>Rank</source>
       <translation>رتبه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2674"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2673"/>
       <source>Name</source>
       <translation>نام</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2678"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2677"/>
       <source>Time</source>
       <translation>زمان</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2679"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2678"/>
       <source>Score</source>
       <translation>امتیاز</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2680"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2679"/>
       <source>Value</source>
       <translation>مقدار</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2692"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2691"/>
       <source>Date Submitted</source>
       <translation>تاریخ ارسال</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2753"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2752"/>
       <source>Downloading leaderboard data, please wait...</source>
       <translation>در حال بارگیری داده های تابلوی امتیازات، لطفاً صبر کنید...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2772"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="2781"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2771"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2780"/>
       <source>Loading...</source>
       <translation>در حال بارگذاری...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2934"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="2953"/>
-      <source>Leaderboard download failed</source>
-      <translation>دانلود تابلوی امتیازات انجام نشد</translation>
-    </message>
-    <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1032"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="2244"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2243"/>
       <source>This game has no achievements.</source>
       <translation>این بازی دستاوردی ندارد.</translation>
     </message>
@@ -1722,8 +1722,8 @@ Leaderboard Position: {1} of {2}</source>
     <name>AutoUpdaterDialog</name>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="17"/>
-      <location filename="../AutoUpdaterDialog.cpp" line="477"/>
-      <location filename="../AutoUpdaterDialog.cpp" line="542"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="489"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="554"/>
       <source>Automatic Updater</source>
       <translation>به‌روزرسان خودکار</translation>
     </message>
@@ -1764,67 +1764,67 @@ Leaderboard Position: {1} of {2}</source>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="178"/>
-      <location filename="../AutoUpdaterDialog.cpp" line="671"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="683"/>
       <source>Updater Error</source>
       <translation>خطا در برنامه بروزرسان</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="389"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="401"/>
       <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
       <translation>&lt;h2&gt;تغییرات:&lt;/h2&gt;</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="423"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="435"/>
       <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to a Memory Card before installing this update or you will lose progress.&lt;/p&gt;</source>
       <translation>&lt;h2&gt;اخطار در ذخیره کردن وضعیت:&lt;/h2&gt;&lt;p&gt;نصب این به‌روزرسانی باعث می شود که وضعیت هایی که ذخیره کرده اید&lt;b&gt;دچار ایراد شود&lt;/b&gt;. لطفاً قبل از نصب این به‌روزرسانی، مطمئن شوید که بازی‌های خود را در کارت حافظه این شبیه‌ساز ذخیره کرده‌اید، وگرنه پیشرفت خود را از دست خواهید داد.&lt;/p&gt;</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="433"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="445"/>
       <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
       <translation>&lt;h2&gt;اخطار تنظیمات&lt;/h2&gt;&lt;p&gt;نصب این به‌روزرسانی، تنظیمات برنامه شما را بازنشانی می‌کند. لطفاً توجه داشته باشید که پس از این به‌روزرسانی باید تنظیمات خود را مجدداً تنظیم کنید.&lt;/p&gt;</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="460"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="472"/>
       <source>Savestate Warning</source>
       <translation>اخطار ذخیره وضعیت</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="461"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="473"/>
       <source>&lt;h1&gt;WARNING&lt;/h1&gt;&lt;p style=&apos;font-size:12pt;&apos;&gt;Installing this update will make your &lt;b&gt;save states incompatible&lt;/b&gt;, &lt;i&gt;be sure to save any progress to your memory cards before proceeding&lt;/i&gt;.&lt;/p&gt;&lt;p&gt;Do you wish to continue?&lt;/p&gt;</source>
       <translation>&lt;h1&gt;هشدار&lt;/h1&gt;&lt;p style=&apos;font-size:12pt;&apos;&gt;نصب این به‌روزرسانی باعث می‌شود &lt;b&gt;حالت‌های ذخیره‌سازی شما ناسازگار باشد&lt;/b&gt;، &lt;i&gt;قبل از ادامه، حتماً هرگونه پیشرفتی را در مموری کارت خود ذخیره کنید&lt;/i&gt;.&lt;/p&gt;&lt;p&gt;آیا می خواهید ادامه دهید؟&lt;/p&gt;</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="478"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="490"/>
       <source>Downloading %1...</source>
       <translation>درحال دانلود %1...</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="543"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="555"/>
       <source>No updates are currently available. Please try again later.</source>
       <translation>هیچ به روز رسانی در حال حاضر در دسترس نیست. لطفاً بعداً دوباره امتحان کنید.</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="561"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="573"/>
       <source>Current Version: %1 (%2)</source>
       <translation>نسخه فعلی: %1 (%2)</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="562"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="574"/>
       <source>New Version: %1 (%2)</source>
       <translation>نسخه جدید: %1 (%2)</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="563"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="575"/>
       <source>Download Size: %1 MB</source>
       <translation>حجم دانلود: %1 مگابایت</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="564"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="576"/>
       <source>Loading...</source>
       <translation>در حال بارگذاری...</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="671"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="683"/>
       <source>Failed to remove updater exe after update.</source>
       <translation>خطا در حذف کردن فایل exe بروزرسان کننده بعد از بروزرسانی.</translation>
     </message>
@@ -2195,34 +2195,34 @@ Leaderboard Position: {1} of {2}</source>
       <translation>پاک کردن اتصالات دسته</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="37"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="40"/>
       <source>Controller Port %1</source>
       <translation>پورت دسته %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="198"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="201"/>
       <source>No devices available</source>
       <translation>دستگاهی موجود نیست</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="208"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="211"/>
       <source>Clear Bindings</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
       <translation>پاک کردن پیوند ها</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="210"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="213"/>
       <source>Are you sure you want to clear all bindings for this controller? This action cannot be undone.</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
       <translation>آیا مطمئنید که می‌خواهید همه اتصالات این دسته را پاک کنید؟ این عمل قابل بازگشت نیست.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="239"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="242"/>
       <source>Automatic Binding</source>
       <translation>پیوند دادن خودکار</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="240"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="243"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
       <translation>هیچ پیوند عمومی برای دستگاه «%1» ایجاد نشد. ممکن است دسته یا منبع از اتصال خودکار پشتیبانی نکند.</translation>
     </message>
@@ -2510,17 +2510,17 @@ Leaderboard Position: {1} of {2}</source>
   <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="709"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="712"/>
       <source>Restore Default Settings</source>
       <translation>بازگرداندن تنظیمات پیش فرض</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="681"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="684"/>
       <source>Browse...</source>
       <translation>مسیر...</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="685"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="688"/>
       <source>Select File</source>
       <translation>انتخاب فایل</translation>
     </message>
@@ -2756,33 +2756,33 @@ Leaderboard Position: {1} of {2}</source>
       <translation>تنظیم...</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="390"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="393"/>
       <source>Not Configured</source>
       <translation>تنظیم نشده است</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="395"/>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="400"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="398"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="403"/>
       <source>%1%</source>
       <translation>%1%</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="407"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="410"/>
       <source>Set Frequency</source>
       <translation>تنظیم فرکانس</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="407"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="410"/>
       <source>Frequency: </source>
       <translation>فرکانس: </translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="434"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="437"/>
       <source>Macro will not repeat.</source>
       <translation>ماکرو تکرار نمی‌شود.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="436"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="439"/>
       <source>Macro will toggle buttons every %1 frames.</source>
       <translation>ماکرو دکمه ها را بعد از %1 فریم شبیه‌سازی می کند.</translation>
     </message>
@@ -2790,12 +2790,12 @@ Leaderboard Position: {1} of {2}</source>
   <context>
     <name>ControllerMacroWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="278"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="281"/>
       <source>Controller Port %1 Macros</source>
       <translation>ماکرو های پورت دسته %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="287"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="290"/>
       <source>Macro %1
 %2</source>
       <extracomment>This is the full text that appears in each option of the 16 available macros, and reads like this:
@@ -4581,352 +4581,352 @@ The URL was: %1</translation>
   <context>
     <name>FullscreenUI</name>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6844"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6847"/>
       <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
       <translation>هیچ دستگاه درایو سی دی یا دی وی دی پیدا نشد. لطفاً مطمئن شوید که یک درایو متصل و مجوزهای کافی برای دسترسی به آن را دارد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6846"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6849"/>
       <source>Use Global Setting</source>
       <translation>استفاده از تنظیمات عمومی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6847"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6850"/>
       <source>Automatic binding failed, no devices are available.</source>
       <translation>اتصال خودکار انجام نشد، هیچ دستگاهی در دسترس نیست.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6848"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6851"/>
       <source>Game title copied to clipboard.</source>
       <translation>عنوان بازی در کلیپ بورد کپی شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6849"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6852"/>
       <source>Game serial copied to clipboard.</source>
       <translation>سریال بازی در کلیپ بورد کپی شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6850"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6853"/>
       <source>Game CRC copied to clipboard.</source>
       <translation>CRC بازی در کلیپ بورد کپی شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6851"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6854"/>
       <source>Game type copied to clipboard.</source>
       <translation>نوع بازی در کلیپ بورد کپی شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6852"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6855"/>
       <source>Game region copied to clipboard.</source>
       <translation>منطقه بازی در کلیپ بورد کپی شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6853"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6856"/>
       <source>Game compatibility copied to clipboard.</source>
       <translation>سازگاری بازی در کلیپ بورد کپی شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6854"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6857"/>
       <source>Game path copied to clipboard.</source>
       <translation>مکان بازی در کلیپ بورد کپی شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6856"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6859"/>
       <source>Per-game controller configuration initialized with global settings.</source>
       <translation>پیکربندی دسته برای تنظیمات سفارشی بازی با تنظیمات عمومی مقدار دهی شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6857"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6860"/>
       <source>Controller settings reset to default.</source>
       <translation>تنظیمات دسته به حالت پیش‌فرض بازیابی شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6858"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6861"/>
       <source>No input profiles available.</source>
       <translation>هیچ پروفایل ورودی ای موجود نیست.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6859"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6862"/>
       <source>Create New...</source>
       <translation>ایجاد...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6860"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6863"/>
       <source>Enter the name of the input profile you wish to create.</source>
       <translation>نام پروفایل ورودی ای که میخواهید بسازید را وارد کنید.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6861"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6864"/>
       <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
       <translation>آیا شما مطمئن هستید که میخواید به تنظیمات پیش فرض برگردید؟ تمامی تغییرات ایجاد شده از بین می رود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6862"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6865"/>
       <source>Settings reset to defaults.</source>
       <translation>تنظیمات به حالت پیش‌فرض بازنشانی شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6863"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6866"/>
       <source>No save present in this slot.</source>
       <translation>هیچ ذخیره ای در این اسلات وجود ندارد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6864"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6867"/>
       <source>No save states found.</source>
       <translation>هیچ وضعیت ذخیره ای پیدا نشد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6865"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6868"/>
       <source>Failed to delete save state.</source>
       <translation>حذف وضعیت ذخیره ناموفق بود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6866"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6869"/>
       <source>Failed to copy text to clipboard.</source>
       <translation>کپی متن به کلیپ برد ناموفق بود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6867"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6870"/>
       <source>This game has no achievements.</source>
       <translation>این بازی دستاوردی ندارد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6868"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6871"/>
       <source>This game has no leaderboards.</source>
       <translation>این بازی هیچ جدول امتیازاتی ندارد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6869"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6872"/>
       <source>Reset System</source>
       <translation>بازنشانی سیستم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6870"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6873"/>
       <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
       <translation>حالت هاردکور تا زمانی که سیستم بازنشانی نشده است فعال نخواهد شد. آیا میخواهید سیستم را بازنشانی کنید؟</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6872"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6875"/>
       <source>Launch a game from images scanned from your game directories.</source>
       <translation>اجرای بازی با استفاده از یک فایل اسکن شده در مکان پوشه بازی های شما.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6880"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6883"/>
       <source>Launch a game by selecting a file/disc image.</source>
       <translation>اجرای یک بازی با انتخاب یک فایل / دیسک ایمیج.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6884"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6887"/>
       <source>Start the console without any disc inserted.</source>
       <translation>اجرای کنسول بدون هیچ دیسکی.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6882"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6885"/>
       <source>Start a game from a disc in your PC&apos;s DVD drive.</source>
       <translation>اجرای یک بازی با استفاده از یک دیسک در درایو کامپیوتر.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6892"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6895"/>
       <source>No Binding</source>
       <translation>بدون اتصال</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6893"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6896"/>
       <source>Setting %s binding %s.</source>
       <translation>تنظیم %s اتصال %s.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6894"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6897"/>
       <source>Push a controller button or axis now.</source>
       <translation>اکنون یک دکمه یا محور دسته را فشار دهید.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6895"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6898"/>
       <source>Timing out in %.0f seconds...</source>
       <translation>وقفه در %.0f ثانیه...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6896"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6899"/>
       <source>Unknown</source>
       <translation>ناشناخته</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6897"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6900"/>
       <source>OK</source>
       <translation>تأیید</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6898"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6901"/>
       <source>Select Device</source>
       <translation>دستگاه را انتخاب کنید</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6899"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6902"/>
       <source>Details</source>
       <translation>جزئیات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6900"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6903"/>
       <source>Options</source>
       <translation>گزینه‌ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6901"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6904"/>
       <source>Copies the current global settings to this game.</source>
       <translation>تنظیمات عمومی فعلی را به این بازی کپی می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6902"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6905"/>
       <source>Clears all settings set for this game.</source>
       <translation>تمامی تنظیمات اعمال شده برای این بازی را پاک میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6903"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6906"/>
       <source>Behaviour</source>
       <translation>عملکرد</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6904"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6907"/>
       <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
       <translation>از فعال شدن محافظ صفحه نمایش و حالت خواب میزبان هنگام اجرای شبیه ساز جلوگیری میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6905"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6908"/>
       <source>Shows the game you are currently playing as part of your profile on Discord.</source>
       <translation>بازی ای که در حال اجرا است را در پروفایل دیسکورد شما به نمایش میگذارد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6906"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6909"/>
       <source>Pauses the emulator when a game is started.</source>
       <translation>شبیه‌ساز را هنگامی که یک بازی در حال اجراست متوقف میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6907"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6910"/>
       <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
       <translation>هنگامی که پنجره را مینیمایز می‌کنید یا برنامه دیگری را استفاده می‌کنید، شبیه‌ساز موقتاً متوقف می‌کند و وقتی که به شبیه‌ساز برمیگردید، شبیه‌ساز شروع به کار می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6909"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6912"/>
       <source>Pauses the emulator when you open the quick menu, and unpauses when you close it.</source>
       <translation>هنگامی که منوی سریع را باز می کنید شبیه‌ساز را متوقف می کند، و زمانی که آن را می بندید، آن را اجرا می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6910"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6913"/>
       <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
       <translation>تعیین می کند که آیا هنگام فشار دادن کلید میانبر، درخواستی برای تأیید خاموش شدن ماشین مجازی یا بازی نمایش داده می شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6911"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6914"/>
       <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
       <translation>به طور خودکار وضعیت شبیه‌ساز را هنگام خاموش کردن یا خارج شدن ذخیره می کند. سپس می‌توانید دفعه بعد مستقیماً از جایی که بازی را ترک کردید، ادامه بدهید.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6913"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6916"/>
       <source>Uses a light coloured theme instead of the default dark theme.</source>
       <translation>از یک تم رنگ روشن به جای تم تیره پیش فرض استفاده می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6914"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6917"/>
       <source>Game Display</source>
       <translation>نمایش بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6916"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6919"/>
       <source>Switches between full screen and windowed when the window is double-clicked.</source>
       <translation>بین حالت تمام صفحه و صفحه کوچیک با دوبار کلیک کردن جابجا میشود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6917"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6920"/>
       <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
       <translation>موشواره را در حالت تمام صفحه مخفی میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6919"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6922"/>
       <source>Determines how large the on-screen messages and monitor are.</source>
       <translation>اندازه پیام های روی صفحه و نمایشگر را تعیین می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6921"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6924"/>
       <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
       <translation>هنگامی که رویدادهایی مانند ایجاد یا بارگیری حالت های ذخیره شده، گرفتن اسکرین شات و غیره رخ می دهد، پیام هایی را روی صفحه نمایش را نشان می دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6922"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6926"/>
       <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
       <translation>سرعت شبیه سازی فعلی سیستم را در گوشه سمت راست بالای صفحه نمایش به صورت درصد نشان می دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6923"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6927"/>
       <source>Shows the number of video frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
       <translation>تعداد فریم های ویدیویی (یا v-sync) نمایش داده شده در هر ثانیه توسط سیستم در گوشه سمت راست بالای صفحه نمایش را نشان می دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6924"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6928"/>
       <source>Shows the CPU usage based on threads in the top-right corner of the display.</source>
       <translation>میزان استفاده از CPU را بر اساس لیست موجود در گوشه سمت راست بالای صفحه نمایش نشان می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6925"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6929"/>
       <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
       <translation>میزان استفاده از CPU میزبان را در گوشه سمت راست بالای صفحه نمایش نشان می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6927"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6931"/>
       <source>Shows statistics about GS (primitives, draw calls) in the top-right corner of the display.</source>
       <translation>آمار مربوط به GS (اولیه، رسم تماس) را در گوشه سمت راست بالای صفحه نشان می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6928"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6932"/>
       <source>Shows indicators when fast forwarding, pausing, and other abnormal states are active.</source>
       <translation>نشانگر هایی را هنگام فعال بودن فروارد سریع، توقف و سایر حالت های غیر عادی نشان می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6929"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6933"/>
       <source>Shows the current configuration in the bottom-right corner of the display.</source>
       <translation>پیکربندی های فعلی را در گوشه سمت راست پایین صفحه نمایش نشان می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6930"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6934"/>
       <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
       <translation>وضعیت دسته های فعلی سیستم را در گوشه سمت راست پایین صفحه نشان می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6931"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
       <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
       <translation>تاریخچه بصری زمان های فریم را در گوشه سمت چپ بالای صفحه نشان می دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6932"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6936"/>
       <source>Displays warnings when settings are enabled which may break games.</source>
       <translation>هنگامی که تنظیماتی فعال است که ممکن است در بازی ایرادات ایجاد کند، خطا هایی نمایش داده میشود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6934"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6938"/>
       <source>Resets configuration to defaults (excluding controller settings).</source>
       <translation>بازیابی پیکربندی ها به پیش فرض ها (به غیر از تنظیمات دسته).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6936"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6940"/>
       <source>Changes the BIOS image used to start future sessions.</source>
       <translation>ایمیج BIOS استفاده شده برای جلسه های آینده را تغییر میدهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6855"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6858"/>
       <source>Automatic</source>
       <translation>خودکار</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7305"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7311"/>
       <source>{0}/{1}/{2}/{3}</source>
       <translation>{0}/{1}/{2}/{3}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7526"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7535"/>
       <source>Default</source>
       <translation>پیش‌فرض</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6845"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6848"/>
       <source>WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.
 
 Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</source>
@@ -4935,1767 +4935,1872 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</sour
 آیا به هر حال مایل هستید که خاموش کنید و کارت حافظه را تخریب کنید؟</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6915"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6918"/>
       <source>Automatically switches to fullscreen mode when a game is started.</source>
       <translation>هنگامی که یک بازی شروع می‌شود، به طور خودکار به حالت تمام صفحه تغییر می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6918"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6921"/>
       <source>On-Screen Display</source>
       <translation>نمایه بر روی صفحه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6920"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6923"/>
       <source>%d%%</source>
       <translation>%d%%</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6926"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6930"/>
       <source>Shows the resolution of the game in the top-right corner of the display.</source>
       <translation>رزولوشن بازی را در گوشه سمت راست بالای صفحه نشان می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6939"/>
       <source>BIOS Configuration</source>
       <translation>تنظیمات بایوس</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6937"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6941"/>
       <source>BIOS Selection</source>
       <translation>انتخاب BIOS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6938"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6942"/>
       <source>Options and Patches</source>
       <translation>تنظیمات و پچ ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6939"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6943"/>
       <source>Skips the intro screen, and bypasses region checks.</source>
       <translation>از صفحه مقدمه رد می‌شود و بررسی های منطقه را دور می‌زند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6940"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6944"/>
       <source>Speed Control</source>
       <translation>کنترل سرعت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7576"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7586"/>
       <source>Normal Speed</source>
       <translation>سرعت معمولی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6941"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6945"/>
       <source>Sets the speed when running without fast forwarding.</source>
       <translation>سرعت هنگام اجرای بدون فروارد سریع را تنظیم میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7577"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7587"/>
       <source>Fast Forward Speed</source>
       <translation>سزعت جلو بردن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6942"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6946"/>
       <source>Sets the speed when using the fast forward hotkey.</source>
       <translation>سرعت هنگام استفاده از کلید حالت فروارد سریع را تنظیم میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7578"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7588"/>
       <source>Slow Motion Speed</source>
       <translation>سرعت حرکت آهسته</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6943"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6947"/>
       <source>Sets the speed when using the slow motion hotkey.</source>
       <translation>سرعت حرکت آهسته را تنظیم می کند موقعی که کلید میانبر حرکت آهسته فشار داده می شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6944"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6948"/>
       <source>System Settings</source>
       <translation>تنظیمات سیستم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6945"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6949"/>
       <source>EE Cycle Rate</source>
       <translation>نرخ چرخه EE</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6946"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6950"/>
       <source>Underclocks or overclocks the emulated Emotion Engine CPU.</source>
       <translation>آندکلاک یا اورکلاک پردازنده شبیه سازی شده Emotion Engine را انجام می دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6947"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6951"/>
       <source>EE Cycle Skipping</source>
       <translation>رد شدن از چرخه EE</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6952"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
       <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
       <translation>رشته های شبیه سازی را به هسته های CPU پین میکند تا به طور بالقوه به واریانس زمان فریم/پرفورمنس اجرا کمک کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6949"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6953"/>
       <source>Enable MTVU (Multi-Threaded VU1)</source>
       <translation>فعال کردن MTVU (VU1 چند رشته ای)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7212"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7218"/>
       <source>Enable Instant VU1</source>
       <translation>فعال کردن VU1 فوری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6953"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6957"/>
       <source>Enable Cheats</source>
       <translation>فعال کردن تقلب ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6954"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6958"/>
       <source>Enables loading cheats from pnach files.</source>
       <translation>بارگیری تقلب ها را از فایل های Pnach فعال می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6955"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6959"/>
       <source>Enable Host Filesystem</source>
       <translation>فعال کردن فایل‌سیستم میزبان</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6960"/>
       <source>Enables access to files from the host: namespace in the virtual machine.</source>
       <translation>دسترسی به فایل ها را از میزبان: فضای نام در کامپیوتر مجازی را فعال می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6957"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6961"/>
       <source>Enable Fast CDVD</source>
       <translation>فعال کردن سی دی و دی وی دی سریع</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6958"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6962"/>
       <source>Fast disc access, less loading times. Not recommended.</source>
       <translation>دسترسی سریع به دیسک، زمان بارگیری کمتر. توصیه نمیشود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6961"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6965"/>
       <source>Frame Pacing/Latency Control</source>
       <translation>کنترل تاخیر / سرعت فریم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6962"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6966"/>
       <source>Maximum Frame Latency</source>
       <translation>زمان تاخیر حداکثر فریم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6963"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6967"/>
       <source>Sets the number of frames which can be queued.</source>
       <translation>تعداد فریم هایی را که می‌توان در انتظار قرار داد را تنظیم می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6964"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6968"/>
       <source>Optimal Frame Pacing</source>
       <translation>سرعت فریم بهینه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6965"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6969"/>
       <source>Synchronize EE and GS threads after each frame. Lowest input latency, but increases system requirements.</source>
       <translation>رشته های EE و GS را بعد از هر فریم همگام سازی کنید. کمترین تأخیر ورودی را دارد، اما نیازمند مشخصات بالاتری است.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6969"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6973"/>
       <source>Speeds up emulation so that the guest refresh rate matches the host.</source>
       <translation>سرعت شبیه‌سازی را افزایش می‌دهد تا نرخ رفرش ریت مهمان با میزبان مطابقت داشته باشد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6972"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6976"/>
       <source>Renderer</source>
       <translation>رندر کننده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6973"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6977"/>
       <source>Selects the API used to render the emulated GS.</source>
       <translation>API مورد استفاده برای ارائه GS شبیه سازی شده را انتخاب می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6967"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6971"/>
       <source>Synchronizes frame presentation with host refresh.</source>
       <translation>ارائه دهی فریم را با رفرش ریت میزبان همگام میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6974"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6978"/>
       <source>Display</source>
       <translation>صفحه نمایش</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6975"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6979"/>
       <source>Aspect Ratio</source>
       <translation>نسبت تصویر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6976"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6980"/>
       <source>Selects the aspect ratio to display the game content at.</source>
       <translation>نسبت تصویر را برای نمایش محتوای بازی انتخاب می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6977"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
       <source>FMV Aspect Ratio</source>
       <translation>نسبت تصویر FMV</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6978"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6982"/>
       <source>Selects the aspect ratio for display when a FMV is detected as playing.</source>
       <translation>انتخاب نسبت تصویر صفحه نمایش هنگام تشخیص یک FMV در حال اجرا.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6979"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6983"/>
       <source>Deinterlacing</source>
       <translation>ضد انعطاف پذیری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6980"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6984"/>
       <source>Selects the algorithm used to convert the PS2&apos;s interlaced output to progressive for display.</source>
       <translation>انتخاب الگوریتم مورد استفاده برای تبدیل خروجی انعطاف‌پذیر شده PS2 به مترقی برای نمایش.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6985"/>
       <source>Screenshot Size</source>
       <translation>اندازه اسکرین‌شات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6982"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6986"/>
       <source>Determines the resolution at which screenshots will be saved.</source>
       <translation>رزولوشنی که اسکرین شات ها در آن ذخیره می شوند را تعیین می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6983"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6987"/>
       <source>Screenshot Format</source>
       <translation>فرمت اسکرین‌شات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6984"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6988"/>
       <source>Selects the format which will be used to save screenshots.</source>
       <translation>فرمتی را انتخاب می کند که برای ذخیره اسکرین شات استفاده می شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6985"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6989"/>
       <source>Screenshot Quality</source>
       <translation>کیفیت اسکرین‌شات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6986"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6990"/>
       <source>Selects the quality at which screenshots will be compressed.</source>
       <translation>کیفیت فشرده سازی اسکرین شات ها را انتخاب می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6987"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6991"/>
       <source>Vertical Stretch</source>
       <translation>کشش عمودی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6988"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6992"/>
       <source>Increases or decreases the virtual picture size vertically.</source>
       <translation>اندازه تصویر مجازی را به صورت عمودی افزایش یا کاهش می دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6989"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6993"/>
       <source>Crop</source>
       <translation>بریدن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6990"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6994"/>
       <source>Crops the image, while respecting aspect ratio.</source>
       <translation>تصویر را برش می دهد، در حالی که نسبت تصویر را رعایت می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6991"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6995"/>
       <source>%dpx</source>
       <translation>%dپیکسل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6992"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6996"/>
       <source>Enable Widescreen Patches</source>
       <translation>فعال کردن پچ های صفحه عریض (وایداسکرین)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6993"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6997"/>
       <source>Enables loading widescreen patches from pnach files.</source>
       <translation>بارگیری پچ های صفحه عریض (وایداسکرین) را از فایل های Pnach فعال می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6994"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6998"/>
       <source>Enable No-Interlacing Patches</source>
       <translation>فعال کردن پچ های بدون درهم آمیختگی (اینترلیسینگ)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6995"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6999"/>
       <source>Enables loading no-interlacing patches from pnach files.</source>
       <translation>بارگیری پچ های بدون درهم آمیختگی (اینترلیسینگ) را از فایل های Pnach فعال می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6996"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7000"/>
       <source>Bilinear Upscaling</source>
       <translation>آپ‌اسکیل دو خطی (Bilinear)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6997"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7001"/>
       <source>Smooths out the image when upscaling the console to the screen.</source>
       <translation>هنگام آپ‌اسکیل کنسول به صفحه، تصویر را صاف می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6998"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7002"/>
       <source>Integer Upscaling</source>
       <translation>آپ‌اسکیل عدد صحیح</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6999"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7003"/>
       <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games.</source>
       <translation>برای اطمینان از اینکه نسبت بین پیکسل های سیستم اصلی به پیکسل های کنسول یک عدد صحیح باشد، به ناحیه های نمایش پدینگ اضافه می کند. ممکن است در برخی از بازی‌های دوبعدی تصویر واضح‌تری ایجاد کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7000"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7004"/>
       <source>Screen Offsets</source>
       <translation>انحراف صفحه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7001"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7005"/>
       <source>Enables PCRTC Offsets which position the screen as the game requests.</source>
       <translation>فعال کردن انحراف PCRTC که قرارگیری صفحه را مطابق به درخواست بازی تنظیم میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7002"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7006"/>
       <source>Show Overscan</source>
       <translation>نمایش ناحیه خارج از صفحه نمایش</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7003"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7007"/>
       <source>Enables the option to show the overscan area on games which draw more than the safe area of the screen.</source>
       <translation>گزینه نمایش «ناحیه خارج از صفحه نمایش» را در بازی هایی که بیشتر از ناحیه امن صفحه نمایش ترسیم می کنند، فعال می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7004"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7008"/>
       <source>Anti-Blur</source>
       <translation>ضد تاری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7005"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7009"/>
       <source>Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry.</source>
       <translation>هک های داخلی ضد تاری را فعال می کند. دقت کمتری نسبت به رندر پلی‌استیشن ۲ دارد اما باعث می شود بسیاری از بازی ها کمتر تار به نظر برسند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7006"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7010"/>
       <source>Rendering</source>
       <translation>رندرینگ</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7007"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7011"/>
       <source>Internal Resolution</source>
       <translation>رزولوشن داخلی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7008"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7012"/>
       <source>Multiplies the render resolution by the specified factor (upscaling).</source>
       <translation>وضوح رندر بازی را بر اساس فاکتور مشخص شده دو برابر میکند (آپ‌اسکیل).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7021"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7025"/>
       <source>Mipmapping</source>
       <translation>میپ‌مپینگ</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7009"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7013"/>
       <source>Bilinear Filtering</source>
       <translation>پالایهٔ دوخطی (Bilinear)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7010"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7014"/>
       <source>Selects where bilinear filtering is utilized when rendering textures.</source>
       <translation>محل استفاده از فیلتر دوخطی bilinear هنگام رندر بافت را انتخاب می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7011"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7015"/>
       <source>Trilinear Filtering</source>
       <translation>فیلتر سه خطی (Trilinear)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7012"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7016"/>
       <source>Selects where trilinear filtering is utilized when rendering textures.</source>
       <translation>محل استفاده از فیلتر سه خطی Trilinear هنگام رندر بافت را انتخاب می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7013"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7017"/>
       <source>Anisotropic Filtering</source>
       <translation>فیلتر ناهمسان‌گردی (Anisotropic Filtering)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7015"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7019"/>
       <source>Dithering</source>
       <translation>دیترینگ</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7016"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7020"/>
       <source>Selects the type of dithering applies when the game requests it.</source>
       <translation>نوع پراکندگی زمانی که بازی برای اعمال درخواست می‌کند را انتخاب می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7017"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7021"/>
       <source>Blending Accuracy</source>
       <translation>دقت ترکیب</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7018"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7022"/>
       <source>Determines the level of accuracy when emulating blend modes not supported by the host graphics API.</source>
       <translation>سطح دقت را هنگام شبیه‌سازی حالت‌های ترکیبی که توسط API گرافیک میزبان پشتیبانی نمی‌شوند را تعیین می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7019"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7023"/>
       <source>Texture Preloading</source>
       <translation>پیش‌بارگیری بافت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7020"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7024"/>
       <source>Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games.</source>
       <translation>در هنگام استفاده، به جای مناطق مورد استفاده، بافت‌های کامل را در GPU آپلود می‌کند. می تواند عملکرد را در برخی از بازی ها بهبود بخشد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7023"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7027"/>
       <source>Software Rendering Threads</source>
       <translation>رشته رندر نرم‌افزاری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7024"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7028"/>
       <source>Number of threads to use in addition to the main GS thread for rasterization.</source>
       <translation>تعداد رشته هایی که بر علاوه بر رشته های اصلی GS برای شطرنج سازی استفاده می‌شوند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7025"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7029"/>
       <source>Auto Flush (Software)</source>
       <translation>فلاش خودکار (نرم افزار)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7026"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7030"/>
       <source>Force a primitive flush when a framebuffer is also an input texture.</source>
       <translation>هنگامی که یک فریم بافر نیز یک بافت ورودی است، یک فلاش اولیه را اجبار می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7027"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7031"/>
       <source>Edge AA (AA1)</source>
       <translation>لبه AA (AA1)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7028"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7032"/>
       <source>Enables emulation of the GS&apos;s edge anti-aliasing (AA1).</source>
       <translation>شبیه‌سازی لبه‌های ضد پلگی GS را فعال می‌کند (AA1).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7022"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7026"/>
       <source>Enables emulation of the GS&apos;s texture mipmapping.</source>
       <translation>شبیه‌سازی mipmap بافت GS را فعال می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7029"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6925"/>
+      <source>Shows the current PCSX2 version on the top-right corner of the display.</source>
+      <translation type="unfinished">Shows the current PCSX2 version on the top-right corner of the display.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7033"/>
       <source>Hardware Fixes</source>
       <translation>اصلاحیات سخت‌افزاری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7030"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7034"/>
       <source>Manual Hardware Fixes</source>
       <translation>اصلاحیات سخت‌افزاری دستی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7031"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7035"/>
       <source>Disables automatic hardware fixes, allowing you to set fixes manually.</source>
       <translation>اصلاحیات سخت‌افزاری خودکار را غیر فعال میکند تا به شما اجازه دهد که به صورت دستی آن هارا اصلاح کنید.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7032"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7036"/>
       <source>CPU Sprite Render Size</source>
       <translation>اندازه رندر اسپرایت CPU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7033"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7037"/>
       <source>Uses software renderer to draw texture decompression-like sprites.</source>
       <translation>از رندر نرم افزاری برای ترسیم بافت هایی استفاده می‌کند که به نظر برای فشرده سازی هستند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7034"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7038"/>
       <source>CPU Sprite Render Level</source>
       <translation>سطح اندازه رندر اسپرایت CPU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7035"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7039"/>
       <source>Determines filter level for CPU sprite render.</source>
       <translation>سطح فیلتر را برای رندر اسپرایت CPU تعیین می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7036"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7040"/>
       <source>Software CLUT Render</source>
       <translation>رندر CLUT نرم‌افزاری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7037"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7041"/>
       <source>Uses software renderer to draw texture CLUT points/sprites.</source>
       <translation>از رندر نرم افزاری برای ترسیم بافت هایی استفاده می‌کند که مورد استفاده بافت های CLUT هستند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7038"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7042"/>
       <source>Skip Draw Start</source>
       <translation>پرش از شروع ترسیم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7039"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7043"/>
       <source>Object range to skip drawing.</source>
       <translation>محدوده شیء برای رد شدن از ترسیم.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7040"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7044"/>
       <source>Skip Draw End</source>
       <translation>پرش از پایان ترسیم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7041"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7045"/>
       <source>Auto Flush (Hardware)</source>
       <translation>فلاش خودکار (سخت‌افزار)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7042"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7046"/>
       <source>CPU Framebuffer Conversion</source>
       <translation>تبدیل CPU Framebuffer</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7044"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7048"/>
       <source>Disable Depth Conversion</source>
       <translation type="unfinished">Disable Depth Conversion</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7046"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7050"/>
       <source>Disable Safe Features</source>
       <translation>غیر فعال کردن امکانات امن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7047"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7051"/>
       <source>This option disables multiple safe features.</source>
       <translation>این گزینه تعدادی از امکانات امن را غیر‌فعال میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7049"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7053"/>
       <source>This option disables game-specific render fixes.</source>
       <translation>این گزینه تعدادی از اصلاحات رندر مخصوص هر بازی را غیر فعال میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7051"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7055"/>
       <source>Uploads GS data when rendering a new frame to reproduce some effects accurately.</source>
       <translation>داده های GS را هنگام رندر کردن یک فریم جدید برای بازتولید برخی جلوه ها با دقت آپلود می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7052"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7056"/>
       <source>Disable Partial Invalidation</source>
       <translation>غیرفعال کردن ابطالات جزئی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7053"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7057"/>
       <source>Removes texture cache entries when there is any intersection, rather than only the intersected areas.</source>
       <translation>ورودی‌های کش بافت را در صورت وجود هر تقاطعی، به جای مناطق متقاطع، حذف می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7055"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7059"/>
       <source>Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.</source>
       <translation>به کش بافت ها (textures) اجازه میدهد تا به عنوان یک بافت ورودی (texture) از بخش داخلی یک فریم بافر قبلی مجددا استفاده کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7056"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7060"/>
       <source>Read Targets When Closing</source>
       <translation>خواندن اهداف هنگام بسته شدن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7057"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7061"/>
       <source>Flushes all targets in the texture cache back to local memory when shutting down.</source>
       <translation>هنگام خاموش شدن، تمام اهداف موجود در کش بافت را به حافظه محلی باز می‌گرداند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7058"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7062"/>
       <source>Estimate Texture Region</source>
       <translation>تخمین ناحیه بافت (textures)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7059"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7063"/>
       <source>Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).</source>
       <translation>برای کاهش حجم بافت ها (texture) وقتی که بازی ها خودشان آن را تنظیم نمیکنند تلاش میکند (برای مثال، بازی های شرکت Snowblind).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7060"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7064"/>
       <source>GPU Palette Conversion</source>
       <translation>تبدیل پالت GPU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7062"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7066"/>
       <source>Upscaling Fixes</source>
       <translation>اصلاحات آپ‌اسکیل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7064"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7068"/>
       <source>Adjusts vertices relative to upscaling.</source>
       <translation>رئوس را با تناسب به آپ‌اسکیل کردن تنتظیم میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7065"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7069"/>
+      <source>Native Scaling</source>
+      <translation type="unfinished">Native Scaling</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7070"/>
+      <source>Attempt to do rescaling at native resolution.</source>
+      <translation type="unfinished">Attempt to do rescaling at native resolution.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7071"/>
       <source>Round Sprite</source>
       <translation>گرد کردن اسپرایت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7066"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7072"/>
       <source>Adjusts sprite coordinates.</source>
       <translation>مختصات sprite ها را تنظیم می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7067"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7073"/>
       <source>Bilinear Upscale</source>
       <translation>آپ‌اسکیل دو خطی (Bilinear)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7068"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7074"/>
       <source>Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.</source>
       <translation>می‌تواند بافت‌ها را به دلیل فیلتر bilinear هنگام ‌آپ‌اسکیل شدن صاف کند. به عنوان مثال، تابش نور خورشید در بازی Brave.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7070"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7076"/>
       <source>Adjusts target texture offsets.</source>
       <translation>انحراف بافت هدف را تنظیم می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7072"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7078"/>
       <source>Align Sprite</source>
       <translation>تراز کردن اسپرایت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7073"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7079"/>
       <source>Fixes issues with upscaling (vertical lines) in some games.</source>
       <translation>مشکلات مربوط به آپ‌اسکیل (خطوط عمودی) در برخی بازی ها را برطرف می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7074"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7080"/>
       <source>Merge Sprite</source>
       <translation>ادغام کردن اسپرایت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7075"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7081"/>
       <source>Replaces multiple post-processing sprites with a larger single sprite.</source>
       <translation>پس-پردازش های چندگانه اسپرایت ها را با یک اسپرایت تکی بزرگ‌تر جایگزین میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7077"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7083"/>
       <source>Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.</source>
       <translation>دقت GS را برای جلوگیری از شکاف بین پیکسل ها هنگام ارتقاء رزولوشن کاهش می دهد. متن بازی‌های Wild Arms را درست می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7078"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7084"/>
       <source>Unscaled Palette Texture Draws</source>
       <translation>ترسیم بافت پالت بدون مقیاس</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7079"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7085"/>
       <source>Can fix some broken effects which rely on pixel perfect precision.</source>
       <translation>می‌تواند برخی از جلوه‌های شکسته را که به دقت کامل پیکسلی تکیه دارند را برطرف کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7080"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7086"/>
       <source>Texture Replacement</source>
       <translation>جایگزینی بافت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7081"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7087"/>
       <source>Load Textures</source>
       <translation>بارگذاری بافت ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7082"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7088"/>
       <source>Loads replacement textures where available and user-provided.</source>
       <translation>بارگیری بافت جایگزین زمانی که در دسترسو در اختیار کاربر است.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7083"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7089"/>
       <source>Asynchronous Texture Loading</source>
       <translation>بارگذاری بافت ناهمزمان</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7084"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7090"/>
       <source>Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled.</source>
       <translation>بافت های جایگزین را بر روی یک رشته عملکردی بار می کند و در صورت فعال بودن جایگزینی، لگ های ریز را کاهش می دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7085"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7091"/>
       <source>Precache Replacements</source>
       <translation>جایگزین Precache</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7086"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7092"/>
       <source>Preloads all replacement textures to memory. Not necessary with asynchronous loading.</source>
       <translation>تمامی تکسچر ها را از قبل در حافظه بارگیری میکند. با بارگیری ناهمزمان لازم نیست.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7087"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7093"/>
       <source>Replacements Directory</source>
       <translation>پوشه جایگزین ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7088"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7094"/>
       <source>Folders</source>
       <translation>پوشه ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7089"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7095"/>
       <source>Texture Dumping</source>
       <translation>استخراج بافت ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7090"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7096"/>
       <source>Dump Textures</source>
       <translation>ذخیرهٔ بافت ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7092"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7098"/>
       <source>Dump Mipmaps</source>
       <translation>ذخیره کردن بافت های میپ‌مپ</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7093"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7099"/>
       <source>Includes mipmaps when dumping textures.</source>
       <translation>شامل کردن mipmap ها هنگام استخراح بافت ها.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7094"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7100"/>
       <source>Dump FMV Textures</source>
       <translation>استخراج بافت های FMV</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7095"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7101"/>
       <source>Allows texture dumping when FMVs are active. You should not enable this.</source>
       <translation>به استخراج بافت ها زمانی که FMV ها فعال هستند اجازه میدهد. نباید این گزینه را فعال کنید.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7096"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7102"/>
       <source>Post-Processing</source>
       <translation>پس پردازش</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7097"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7103"/>
       <source>FXAA</source>
       <translation>FXAA</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7098"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7104"/>
       <source>Enables FXAA post-processing shader.</source>
       <translation>فعال کردن شیدر پس پردازش FXAA.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7099"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7105"/>
       <source>Contrast Adaptive Sharpening</source>
       <translation>تیز کردن تطبیقی کنتراست</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7100"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7106"/>
       <source>Enables FidelityFX Contrast Adaptive Sharpening.</source>
       <translation>فعال کردن FidelityFX.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7101"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7107"/>
       <source>CAS Sharpness</source>
       <translation>تیزی CAS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7102"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7108"/>
       <source>Determines the intensity the sharpening effect in CAS post-processing.</source>
       <translation>شدت اثر تیز کردن در CAS پس از پردازش را تعیین می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7103"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7109"/>
       <source>Filters</source>
       <translation>فیلتر ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7104"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7110"/>
       <source>Shade Boost</source>
       <translation>تقویت شیدر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7105"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7111"/>
       <source>Enables brightness/contrast/saturation adjustment.</source>
       <translation>تنظیم روشنایی/کنتراست/اشباع را فعال می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7106"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7112"/>
       <source>Shade Boost Brightness</source>
       <translation>افزایش روشنایی سایه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7107"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7113"/>
       <source>Adjusts brightness. 50 is normal.</source>
       <translation>روشنایی را تنظیم می کند. 50 طبیعیست.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7108"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7114"/>
       <source>Shade Boost Contrast</source>
       <translation>افزایش کنتراست سایه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7109"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7115"/>
       <source>Adjusts contrast. 50 is normal.</source>
       <translation>کنتراست را تنظیم می کند. 50 طبیعیست.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7110"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7116"/>
       <source>Shade Boost Saturation</source>
       <translation>افزایش اشباع سایه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7111"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7117"/>
       <source>Adjusts saturation. 50 is normal.</source>
       <translation>اشباع را تنظیم می کند. 50 طبیعیست.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7112"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7118"/>
       <source>TV Shaders</source>
       <translation>شیدرهای تلویزیون</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7114"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7120"/>
       <source>Advanced</source>
       <translation>پیشرفته</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7115"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7121"/>
       <source>Skip Presenting Duplicate Frames</source>
       <translation>صرف نظر کردن از ارائه فریم های تکراری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7119"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7125"/>
       <source>Extended Upscaling Multipliers</source>
       <translation type="unfinished">Extended Upscaling Multipliers</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7120"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7126"/>
       <source>Displays additional, very high upscaling multipliers dependent on GPU capability.</source>
       <translation type="unfinished">Displays additional, very high upscaling multipliers dependent on GPU capability.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7121"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7127"/>
       <source>Hardware Download Mode</source>
       <translation>حالت دانلود سخت‌افزار</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7122"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7128"/>
       <source>Changes synchronization behavior for GS downloads.</source>
       <translation>رفتار همگام سازی را برای دانلودهای GS تغییر می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7123"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7129"/>
       <source>Allow Exclusive Fullscreen</source>
       <translation>فعال کردن حالت تمام صفحه اختصاصی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7124"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7130"/>
       <source>Overrides the driver&apos;s heuristics for enabling exclusive fullscreen, or direct flip/scanout.</source>
       <translation>اکتشافی درایور را برای فعال کردن تمام صفحه اختصاصی، یا تلنگر/پیش‌گیری مستقیم، لغو می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7125"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7131"/>
       <source>Override Texture Barriers</source>
       <translation>نادیده گرفتن موانع بافت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7126"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7132"/>
       <source>Forces texture barrier functionality to the specified value.</source>
       <translation>عملکرد مانع بافت را به مقدار مشخص شده وادار می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7127"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7133"/>
       <source>GS Dump Compression</source>
       <translation>فشرده سازی استخراج GS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7128"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7134"/>
       <source>Sets the compression algorithm for GS dumps.</source>
       <translation>الگوریتم فشرده سازی را برای استخراج های GS تنظیم می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7129"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7135"/>
       <source>Disable Framebuffer Fetch</source>
       <translation>غیرفعال کردن Framebuffer Fetch</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7130"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7136"/>
       <source>Prevents the usage of framebuffer fetch when supported by host GPU.</source>
       <translation>از استفاده از واکشی بافر فریم هنگامی که توسط GPU میزبان پشتیبانی می شود، جلوگیری می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7131"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7137"/>
       <source>Disable Shader Cache</source>
       <translation>غیر فعال کردن shader cache</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7132"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7138"/>
       <source>Prevents the loading and saving of shaders/pipelines to disk.</source>
       <translation>از بارگذاری و ذخیره شیدر ها و خط‌وط لوله (pipeline) روی دیسک جلوگیری می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7133"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7139"/>
       <source>Disable Vertex Shader Expand</source>
       <translation>غیرفعال کردن توسعه vertex shader</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7134"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7140"/>
       <source>Falls back to the CPU for expanding sprites/lines.</source>
       <translation>برای گسترش اسپرایت ها یا خطوط به CPU برمی گردد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7142"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7148"/>
       <source>Changes when SPU samples are generated relative to system emulation.</source>
       <translation>زمانی که نمونه های PSU نسبت به شبیه سازی سیستم تولید شده اند تغییر می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7144"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7150"/>
       <source>%d ms</source>
       <translation>%d ميلي‌ثانيه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7147"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7153"/>
       <source>Settings and Operations</source>
       <translation>تنظیمات و عملیات ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7148"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7154"/>
       <source>Creates a new memory card file or folder.</source>
       <translation>یک کارت حافظه یا پوشه جدید میسازد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7149"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7155"/>
       <source>Simulates a larger memory card by filtering saves only to the current game.</source>
       <translation>یک کارت حافظه جدید با ترتیب سازی سیو ها فقط به بازی جدید را شبیه‌سازی میکند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7150"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7156"/>
       <source>If not set, this card will be considered unplugged.</source>
       <translation>اگر تنظیم نشود، این کارت قطع شده در نظر گرفته می شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7151"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7157"/>
       <source>The selected memory card image will be used for this slot.</source>
       <translation>ایمیج کارت حافظه انتخاب شده برای این اسلات استفاده خواهد شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7162"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7168"/>
       <source>Enable/Disable the Player LED on DualSense controllers.</source>
       <translation type="unfinished">Enable/Disable the Player LED on DualSense controllers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7168"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7174"/>
       <source>Trigger</source>
       <translation>تریگر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7169"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7175"/>
       <source>Toggles the macro when the button is pressed, instead of held.</source>
       <translation type="unfinished">Toggles the macro when the button is pressed, instead of held.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7304"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7310"/>
       <source>{:%H:%M}</source>
       <translation type="unfinished">{:%H:%M}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7310"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7316"/>
       <source>Slot {}</source>
       <translation>اسلات {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7457"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7416"/>
+      <source>1.25x Native (~450px)</source>
+      <translation type="unfinished">1.25x Native (~450px)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7417"/>
+      <source>1.5x Native (~540px)</source>
+      <translation type="unfinished">1.5x Native (~540px)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7418"/>
+      <source>1.75x Native (~630px)</source>
+      <translation type="unfinished">1.75x Native (~630px)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7419"/>
+      <source>2x Native (~720px/HD)</source>
+      <translation type="unfinished">2x Native (~720px/HD)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7420"/>
+      <source>2.5x Native (~900px/HD+)</source>
+      <translation type="unfinished">2.5x Native (~900px/HD+)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7421"/>
+      <source>3x Native (~1080px/FHD)</source>
+      <translation type="unfinished">3x Native (~1080px/FHD)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7422"/>
+      <source>3.5x Native (~1260px)</source>
+      <translation type="unfinished">3.5x Native (~1260px)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7423"/>
+      <source>4x Native (~1440px/QHD)</source>
+      <translation type="unfinished">4x Native (~1440px/QHD)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7424"/>
+      <source>5x Native (~1800px/QHD+)</source>
+      <translation type="unfinished">5x Native (~1800px/QHD+)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7425"/>
+      <source>6x Native (~2160px/4K UHD)</source>
+      <translation type="unfinished">6x Native (~2160px/4K UHD)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7426"/>
+      <source>7x Native (~2520px)</source>
+      <translation type="unfinished">7x Native (~2520px)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7427"/>
+      <source>8x Native (~2880px/5K UHD)</source>
+      <translation type="unfinished">8x Native (~2880px/5K UHD)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7428"/>
+      <source>9x Native (~3240px)</source>
+      <translation type="unfinished">9x Native (~3240px)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7429"/>
+      <source>10x Native (~3600px/6K UHD)</source>
+      <translation type="unfinished">10x Native (~3600px/6K UHD)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7430"/>
+      <source>11x Native (~3960px)</source>
+      <translation type="unfinished">11x Native (~3960px)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7431"/>
+      <source>12x Native (~4320px/8K UHD)</source>
+      <translation type="unfinished">12x Native (~4320px/8K UHD)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7465"/>
       <source>WebP</source>
       <translation>WebP</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7517"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7489"/>
+      <source>Aggressive</source>
+      <translation type="unfinished">Aggressive</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7526"/>
       <source>Change Selection</source>
       <translation>تغییر گزینه انتخاب شده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7518"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7527"/>
       <source>Select</source>
       <translation>انتخاب</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7520"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7529"/>
       <source>Parent Directory</source>
       <translation type="unfinished">Parent Directory</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7521"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7530"/>
       <source>Enter Value</source>
       <translation>مقدار را وارد کنید</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7522"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7531"/>
       <source>About</source>
       <translation>درباره</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7523"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7532"/>
       <source>Toggle Fullscreen</source>
       <translation>فعال کردن حالت تمام صفحه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7524"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7533"/>
       <source>Navigate</source>
       <translation type="unfinished">Navigate</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7525"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7534"/>
       <source>Load Global State</source>
       <translation type="unfinished">Load Global State</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7527"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7536"/>
       <source>Change Page</source>
       <translation type="unfinished">Change Page</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7529"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7538"/>
       <source>Return To Game</source>
       <translation type="unfinished">Return To Game</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7530"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7539"/>
       <source>Select State</source>
       <translation type="unfinished">Select State</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7532"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7541"/>
       <source>Select Game</source>
       <translation>انتخاب بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7533"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7542"/>
       <source>Change View</source>
       <translation type="unfinished">Change View</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7534"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7543"/>
       <source>Launch Options</source>
       <translation type="unfinished">Launch Options</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7555"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7564"/>
       <source>Create Save State Backups</source>
       <translation type="unfinished">Create Save State Backups</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7588"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7571"/>
+      <source>Show PCSX2 Version</source>
+      <translation type="unfinished">Show PCSX2 Version</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7598"/>
       <source>Create Memory Card</source>
       <translation>درست کردن مموری کارت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7153"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7159"/>
       <source>Configuration</source>
       <translation>تنظیمات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6873"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6876"/>
       <source>Start Game</source>
       <translation type="unfinished">Start Game</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6874"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6877"/>
       <source>Launch a game from a file, disc, or starts the console without any disc inserted.</source>
       <translation type="unfinished">Launch a game from a file, disc, or starts the console without any disc inserted.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6876"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6879"/>
       <source>Changes settings for the application.</source>
       <translation type="unfinished">Changes settings for the application.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6878"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6881"/>
       <source>Return to desktop mode, or exit the application.</source>
       <translation type="unfinished">Return to desktop mode, or exit the application.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6885"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6888"/>
       <source>Back</source>
       <translation type="unfinished">Back</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6886"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6889"/>
       <source>Return to the previous menu.</source>
       <translation type="unfinished">Return to the previous menu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6887"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6890"/>
       <source>Exit PCSX2</source>
       <translation type="unfinished">Exit PCSX2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6888"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6891"/>
       <source>Completely exits the application, returning you to your desktop.</source>
       <translation type="unfinished">Completely exits the application, returning you to your desktop.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6889"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6892"/>
       <source>Desktop Mode</source>
       <translation type="unfinished">Desktop Mode</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6890"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6893"/>
       <source>Exits Big Picture mode, returning to the desktop interface.</source>
       <translation type="unfinished">Exits Big Picture mode, returning to the desktop interface.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7154"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7160"/>
       <source>Uses game-specific settings for controllers for this game.</source>
       <translation>از تنظیمات مخصوص بازی برای دسته‌های این بازی استفاده می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7155"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7161"/>
       <source>Copies the global controller configuration to this game.</source>
       <translation>پیکربندی عمومی دسته را به این بازی کپی می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7156"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7162"/>
       <source>Resets all configuration to defaults (including bindings).</source>
       <translation>تمام تنظیمات را به پیش‌فرض بازنشانی می‌کند (از جمله اتصالات).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7157"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7163"/>
       <source>Replaces these settings with a previously saved input profile.</source>
       <translation>این تنظیمات را با یک پروفایل ورودی ذخیره قبلی جایگزین می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7158"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7164"/>
       <source>Stores the current settings to an input profile.</source>
       <translation>تنظیمات فعلی را در یک پروفایل ورودی ذخیره می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7159"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7165"/>
       <source>Input Sources</source>
       <translation>منبع ورودی ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7160"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7166"/>
       <source>The SDL input source supports most controllers.</source>
       <translation>منبع ورودی SDL از اکثر دسته ها پشتیبانی می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7161"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7167"/>
       <source>Provides vibration and LED control support over Bluetooth.</source>
       <translation>پشتیبانی از ویبره و کنترل LED را از طریق بلوتوث فراهم می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7163"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7169"/>
       <source>Allow SDL to use raw access to input devices.</source>
       <translation>به SDL اجازه دسترسی خام به پروفایل ورودی می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7164"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7170"/>
       <source>The XInput source provides support for XBox 360/XBox One/XBox Series controllers.</source>
       <translation>منبع Xinput از دسته های XBox 360/XBox One/XBox Series پشتیبانی می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7165"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7171"/>
       <source>Multitap</source>
       <translation>مولتی‌تپ</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7166"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7172"/>
       <source>Enables an additional three controller slots. Not supported in all games.</source>
       <translation>سه اسلات اضافی دسته را فعال می‌کند. برای همه بازی ها پشتیبانی نمی شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7167"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7173"/>
       <source>Attempts to map the selected port to a chosen controller.</source>
       <translation>تلاش برای نگاشت پورت انتخاب شده به یک دسته انتخابی.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7171"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7177"/>
       <source>Determines how much pressure is simulated when macro is active.</source>
       <translation>تعیین می کند که چقدر فشار وقتی ماکرو فعال است شبیه‌سازی می شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7172"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7178"/>
       <source>Determines the pressure required to activate the macro.</source>
       <translation>فشار مورد نیاز برای فعال کردن ماکرو را تعیین می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7173"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7179"/>
       <source>Toggle every %d frames</source>
       <translation>هر %d فریم تغییر کند</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7174"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7180"/>
       <source>Clears all bindings for this USB controller.</source>
       <translation>تمام اتصالات این دسته USB را پاک می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7175"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7181"/>
       <source>Data Save Locations</source>
       <translation>مکان ذخیره داده ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7632"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7642"/>
       <source>Show Advanced Settings</source>
       <translation>نمایش تنظیمات پیشرفته</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7176"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7182"/>
       <source>Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.</source>
       <translation>تغییر این تنظیمات ممکن است باعث شود بازی ها غیرقابل پخش شوند. با مسئولیت خود تغییر دهید، تیم PCSX2 از تنظیمات با تغییر این تنظیمات پشتیبانی نمی کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7177"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7183"/>
       <source>Logging</source>
       <translation>ایجاد تاریخچه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7633"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7643"/>
       <source>System Console</source>
       <translation>کنسول سیستم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7178"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7184"/>
       <source>Writes log messages to the system console (console window/standard output).</source>
       <translation>پیام های گزارش را در کنسول سیستم می نویسد (پنجره کنسول/خروجی استاندارد).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7634"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7644"/>
       <source>File Logging</source>
       <translation>لاگ کردن فایل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7179"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7185"/>
       <source>Writes log messages to emulog.txt.</source>
       <translation>پیام های گزارش را در emulog.txt می نویسد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7635"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7645"/>
       <source>Verbose Logging</source>
       <translation>ورود مفصل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7180"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7186"/>
       <source>Writes dev log messages to log sinks.</source>
       <translation>پیام‌های گزارش توسعه‌دهنده را در لاگ سینک‌ها می‌نویسد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7636"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7646"/>
       <source>Log Timestamps</source>
       <translation>گزارش مهر زمانی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7181"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7187"/>
       <source>Writes timestamps alongside log messages.</source>
       <translation>مهرهای زمانی را در کنار پیام‌های گزارش می‌نویسد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7637"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7647"/>
       <source>EE Console</source>
       <translation>EE کنسول</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7182"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7188"/>
       <source>Writes debug messages from the game&apos;s EE code to the console.</source>
       <translation>پیام های debug را از کد EE بازی به کنسول می نویسد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7638"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7648"/>
       <source>IOP Console</source>
       <translation>کنسول IOP</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7183"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7189"/>
       <source>Writes debug messages from the game&apos;s IOP code to the console.</source>
       <translation>پیام های debug را از کد IOP بازی به کنسول می نویسد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7639"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7649"/>
       <source>CDVD Verbose Reads</source>
       <translation>خواندن گویا CDVD</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7184"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7190"/>
       <source>Logs disc reads from games.</source>
       <translation>دیسک خوانده شده از بازی ها را ثبت می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7185"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7191"/>
       <source>Emotion Engine</source>
       <translation>ایموشن انجین (Emotion Engine)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7186"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7192"/>
       <source>Rounding Mode</source>
       <translation>حالت گرد کردن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7187"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7193"/>
       <source>Determines how the results of floating-point operations are rounded. Some games need specific settings.</source>
       <translation>نحوه گرد شدن نتایج عملیات ممیز شناور (floating-point) را مشخص می کند. برخی از بازی ها نیاز به تنظیمات مشخصی دارند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7188"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7194"/>
       <source>Division Rounding Mode</source>
       <translation>حالت گرد کردن تقسیم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7189"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7195"/>
       <source>Determines how the results of floating-point division is rounded. Some games need specific settings.</source>
       <translation>نحوه گرد شدن نتایج عملیات ممیز شناور (floating-point) را مشخص می کند. برخی از بازی ها نیاز به تنظیمات مشخصی دارند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7190"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7196"/>
       <source>Clamping Mode</source>
       <translation>حالت محدود کردن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7191"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7197"/>
       <source>Determines how out-of-range floating point numbers are handled. Some games need specific settings.</source>
       <translation>نحوه مدیریت اعداد ممیز شناور خارج از محدوده را تعیین می کند. برخی از بازی ها نیاز به تنظیمات مشخصی دارند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7192"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7198"/>
       <source>Enable EE Recompiler</source>
       <translation>فعال کردن مفسیر EE</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7193"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7199"/>
       <source>Performs just-in-time binary translation of 64-bit MIPS-IV machine code to native code.</source>
       <translation>ترجمه باینری به‌موقع کد ماشین MIPS-IV ۶۴ بیتی را به کد بومی انجام می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7194"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7200"/>
       <source>Enable EE Cache</source>
       <translation>فعال کردن کش EE</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7195"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7201"/>
       <source>Enables simulation of the EE&apos;s cache. Slow.</source>
       <translation>شبیه‌سازی کش EE را فعال می کند. آهسته.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7196"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7202"/>
       <source>Enable INTC Spin Detection</source>
       <translation>فعال کردن تشخیص چرخش INTC</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7197"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7203"/>
       <source>Huge speedup for some games, with almost no compatibility side effects.</source>
       <translation>افزایش سرعت بسیار زیاد برای برخی بازی ها، تقریباً بدون عوارض جانبی سازگاری.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7198"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7204"/>
       <source>Enable Wait Loop Detection</source>
       <translation>فعال کردن تشخیص حلقه انتظار</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7199"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7205"/>
       <source>Moderate speedup for some games, with no known side effects.</source>
       <translation>افزایش سرعت متوسط ​​برای برخی بازی‌ها، بدون عوارض جانبی شناخته شده.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7200"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7206"/>
       <source>Enable Fast Memory Access</source>
       <translation>فعال کردن دسترسی سریع به حافظه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7201"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7207"/>
       <source>Uses backpatching to avoid register flushing on every memory access.</source>
       <translation>از بک‌پچ کردن برای جلوگیری از فلاشینگ ثبات در هر دسترسی به حافظه استفاده می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7202"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7208"/>
       <source>Vector Units</source>
       <translation>واحدهای برداری Vector Units</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7203"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7209"/>
       <source>VU0 Rounding Mode</source>
       <translation>حالت گرد کردن VU0</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7204"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7210"/>
       <source>VU0 Clamping Mode</source>
       <translation>حالت محدود کردن VU0</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7205"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7211"/>
       <source>VU1 Rounding Mode</source>
       <translation>حالت گرد کردن VU1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7206"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7212"/>
       <source>VU1 Clamping Mode</source>
       <translation>حالت محدود کردن VU1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7207"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7213"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
       <translation>فعال کردن مفسیر (کامپایلر) VU0 (حالت میکرو)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7208"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7214"/>
       <source>New Vector Unit recompiler with much improved compatibility. Recommended.</source>
       <translation>مفسیر جدید Vector Unit با سازگاری بسیار بهبود یافته. توصیه شده.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7209"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7215"/>
       <source>Enable VU1 Recompiler</source>
       <translation>فعال کردن مفسیر VU1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7210"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7216"/>
       <source>Enable VU Flag Optimization</source>
       <translation>فعال کردن بهینه‌سازی VU Flag</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7211"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7217"/>
       <source>Good speedup and high compatibility, may cause graphical errors.</source>
       <translation>سرعت خوب و سازگاری بالا، ممکن است باعث خطاهای گرافیکی شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7214"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7220"/>
       <source>I/O Processor</source>
       <translation>پردازنده ورودی و خروجی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7215"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7221"/>
       <source>Enable IOP Recompiler</source>
       <translation>فعال کردن مفسیر IOP</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7216"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7222"/>
       <source>Performs just-in-time binary translation of 32-bit MIPS-I machine code to native code.</source>
       <translation>ترجمه باینری به‌موقع کد ماشین MIPS-I ۳۲ بیتی را به کد بومی انجام می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7217"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7223"/>
       <source>Graphics</source>
       <translation>گرافیک</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7218"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7224"/>
       <source>Use Debug Device</source>
       <translation>استفاده از وسیله اشکال‌زدایی (debug)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6875"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6878"/>
       <source>Settings</source>
       <translation>تنظیمات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7220"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7226"/>
       <source>No cheats are available for this game.</source>
       <translation>هیچ تقلبی برای این بازی موجود نیست.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7221"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7227"/>
       <source>Cheat Codes</source>
       <translation>کد های تقلب</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7222"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7228"/>
       <source>No patches are available for this game.</source>
       <translation>هیچ پچ‌ای برای این بازی موجود نیست.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7223"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7229"/>
       <source>Game Patches</source>
       <translation>پچ های بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7224"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7230"/>
       <source>Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
       <translation>فعال کردن تقلب های بازی می‌تواند باعث رفتار غیرقابل پیش‌بینی، خرابی، قفل های نرم افزاری یا خرابی بازی‌های ذخیره شده شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7225"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7231"/>
       <source>Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
       <translation>فعال کردن پچ های بازی می‌تواند باعث رفتار غیرقابل پیش‌بینی، خرابی، قفل های نرم افزاری یا خرابی بازی‌های ذخیره شده شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7226"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7232"/>
       <source>Use patches at your own risk, the PCSX2 team will provide no support for users who have enabled game patches.</source>
       <translation>از پچ ها با مسئولیت خود استفاده کنید، تیم PCSX2 هیچ پشتیبانی برای کاربرانی که پچ های بازی را فعال کرده‌اند ارائه نمی‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7227"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7233"/>
       <source>Game Fixes</source>
       <translation>پچ های بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7228"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7234"/>
       <source>Game fixes should not be modified unless you are aware of what each option does and the implications of doing so.</source>
       <translation>اصلاحات بازی نباید اصلاح شود مگر اینکه از عملکرد هر گزینه و پیامدهای آن آگاه باشید.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7229"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7235"/>
       <source>FPU Multiply Hack</source>
       <translation>هک ضرب کردن FPU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7230"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7236"/>
       <source>For Tales of Destiny.</source>
       <translation>برای Tales of Destiny.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7235"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7241"/>
       <source>Preload TLB Hack</source>
       <translation>پیش بارگذاری هک TLB</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7232"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7238"/>
       <source>Needed for some games with complex FMV rendering.</source>
       <translation>مورد نیاز برای بازی هایی که رندر FMV پیچیده‌ای دارند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7233"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7239"/>
       <source>Skip MPEG Hack</source>
       <translation>پرش از هک MPEG</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7234"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7240"/>
       <source>Skips videos/FMVs in games to avoid game hanging/freezes.</source>
       <translation>پرش از ویدیو/FMV در بازی ها برای جلوگیری از هنگ کردن/فریز کردن.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7241"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7247"/>
       <source>OPH Flag Hack</source>
       <translation>هک پرچمگذاری mVU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7237"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7243"/>
       <source>EE Timing Hack</source>
       <translation>هک زمان سنجی EE</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7239"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7245"/>
       <source>Instant DMA Hack</source>
       <translation>هک فوری DMA</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7246"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7252"/>
       <source>Known to affect following games: Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines.</source>
       <translation>شناخته شده برای تاثیرگذاری بر این بازی ها: Mana Khemia 1، Metal Saga و Pilot Down Behind Enemy Lines.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7248"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7254"/>
       <source>For SOCOM 2 HUD and Spy Hunter loading hang.</source>
       <translation>برای هنگ کردن HUD بازی SOCOM2 و هنگ کردن بارگیری Spy Hunter.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7255"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7261"/>
       <source>VU Add Hack</source>
       <translation>هک اضافه VU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7251"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7257"/>
       <source>Full VU0 Synchronization</source>
       <translation>همگام سازی کامل VU0</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7252"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7258"/>
       <source>Forces tight VU0 sync on every COP2 instruction.</source>
       <translation>در هر دستورالعمل COP2 یک همگام سازی محکم VU0 را مجبور می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7257"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7263"/>
       <source>VU Overflow Hack</source>
       <translation>هک سرریز VU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7258"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7264"/>
       <source>To check for possible float overflows (Superman Returns).</source>
       <translation>برای بررسی سرریزهای احتمالی شناور (Superman Returns).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7262"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7268"/>
       <source>Use accurate timing for VU XGKicks (slower).</source>
       <translation>استفاده از زمان‌بندی دقیق برای VU XGKicks (آهسته‌تر).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7265"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7271"/>
       <source>Load State</source>
       <translation>بارگیری وضعیت ذخیره شده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6948"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6952"/>
       <source>Makes the emulated Emotion Engine skip cycles. Helps a small subset of games like SOTC. Most of the time it&apos;s harmful to performance.</source>
       <translation>چرخه‌های پرش پردازنده EmotionEngine (EE) شبیه‌سازی شده را انجام می‌دهد. به زیر مجموعه کوچکی از بازی هایی مانند Shadow of the Colossus کمک می کند. بیشتر اوقات برای عملکرد شبیه‌ساز مضر است.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6950"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6954"/>
       <source>Generally a speedup on CPUs with 4 or more cores. Safe for most games, but a few are incompatible and may hang.</source>
       <translation>به طور کلی سرعت را در پردازنده هایی با ۴ هسته یا بیشتر را افزایش می دهد. برای اکثر بازی‌ها ایمن است، اما تعداد کمی از آنها ناسازگار هستند و ممکن است هنگ بکنند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7213"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7219"/>
       <source>Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.</source>
       <translation>VU1 را فوراً اجرا می کند. در اکثر بازی‌ها، سرعت خیلی کم بهبود می‌یابد. برای اکثر بازی ها استفاده از VU1 ایمن است، اما تعداد کمی از بازی ها ممکن است خطاهای گرافیکی داشته باشند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7045"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7049"/>
       <source>Disable the support of depth buffers in the texture cache.</source>
       <translation>غیر فعال کردن پشتیبانی از بافرهای عمق را در کش بافت.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7048"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7052"/>
       <source>Disable Render Fixes</source>
       <translation>غیرفعال کردن اصلاحات رندر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7050"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7054"/>
       <source>Preload Frame Data</source>
       <translation>پیش بارگیری داده های فریم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7054"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7058"/>
       <source>Texture Inside RT</source>
       <translation>بافت داخل رندر هدف رندر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7061"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7065"/>
       <source>When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU.</source>
       <translation>هنگامی که پردازنده گرافیکی فعال باشد، بافت های نقشه رنگی را تبدیل می کند، در غیر این صورت پردازنده این کار را انجام می دهد. این یک معامله بین پردازنده گرافیکی و پردازنده است.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7063"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7067"/>
       <source>Half Pixel Offset</source>
       <translation>نیمه انحراف پیکسلی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7069"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7075"/>
       <source>Texture Offset X</source>
       <translation>انحراف بافت افقی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7071"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7077"/>
       <source>Texture Offset Y</source>
       <translation>انحراف بافت عمودی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7091"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7097"/>
       <source>Dumps replaceable textures to disk. Will reduce performance.</source>
       <translation>بافت های قابل جایگزین را در دیسک استخراج میکند. باعث کاهش سرعت اجرا می‌شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7113"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7119"/>
       <source>Applies a shader which replicates the visual effects of different styles of television set.</source>
       <translation>یک شیدر که جلوه های بصری یک سبک مختلف تلویزیون را بازسازی میکند را اعمال می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7116"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7122"/>
       <source>Skips displaying frames that don&apos;t change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing worse.</source>
       <translation>از نمایش فریم هایی که در بازی های ۲۵ یا ۳۰ فریم بر ثانیه تغییر نمی کنند، صرفنظر می کند. می تواند سرعت را بهبود ببخشد، اما تاخیر ورودی را افزایش می دهد یا سرعت فریم را بدتر می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7219"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7225"/>
       <source>Enables API-level validation of graphics commands.</source>
       <translation>اعتبار سنجی دستورات گرافیکی در سطح API را فعال می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7231"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7237"/>
       <source>Use Software Renderer For FMVs</source>
       <translation>استفاده از رندر نرم‌افزاری برای FMV ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7236"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7242"/>
       <source>To avoid TLB miss on Goemon.</source>
       <translation>برای جلوگیری از از دست دادن TLB در Goemon.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7238"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7244"/>
       <source>General-purpose timing hack. Known to affect following games: Digital Devil Saga, SSX.</source>
       <translation>هک زمان بندی همه منظوره. شناخته شده برای تاثیر بر روی این بازی ها: Digital Devil Saga، SSX.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7240"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7246"/>
       <source>Good for cache emulation problems. Known to affect following games: Fire Pro Wrestling Z.</source>
       <translation>مناسب برای مشکلات مربوط به شبیه سازی کش. شناخته شده برای اثر گذاشتن روی این بازی ها: Fire Pro Wrestling Z.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7242"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7248"/>
       <source>Known to affect following games: Bleach Blade Battlers, Growlanser II and III, Wizardry.</source>
       <translation>شناخته شده است که بر روی بازی های زیر تأثیر می گذارد: Bleach Blade Battlers، Growlanser II and III، Wizardry.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7243"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7249"/>
       <source>Emulate GIF FIFO</source>
       <translation>GIF FIFO را شبیه سازی کن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7244"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7250"/>
       <source>Correct but slower. Known to affect the following games: Fifa Street 2.</source>
       <translation>صحیح اما آهسته‌تر. شناخته شده برای تاثیر بر روی این بازی ها: Fifa Street 2.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7245"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7251"/>
       <source>DMA Busy Hack</source>
       <translation>هک DMA شلوغ</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7247"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7253"/>
       <source>Delay VIF1 Stalls</source>
       <translation>تاخیر در غرفه VIF1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7249"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7255"/>
       <source>Emulate VIF FIFO</source>
       <translation>شبیه سازی VIF FIFO</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7250"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7256"/>
       <source>Simulate VIF1 FIFO read ahead. Known to affect following games: Test Drive Unlimited, Transformers.</source>
       <translation>پیش خوانی VIF1 FIFO را شبیه سازی میکند. شناخته شده است که بر بازی های زیر تأثیر می گذارد: Test Drive Unlimited، Transformers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7253"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7259"/>
       <source>VU I Bit Hack</source>
       <translation>هک VU I Bit</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7254"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7260"/>
       <source>Avoids constant recompilation in some games. Known to affect the following games: Scarface The World is Yours, Crash Tag Team Racing.</source>
       <translation>از کامپایل مجدد مداوم در برخی بازی ها جلوگیری می کند. بر روی بازی های زیر تأثیر می گذارد: Scarface The World is Yours, Crash Tag Team Racing.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7256"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7262"/>
       <source>For Tri-Ace Games: Star Ocean 3, Radiata Stories, Valkyrie Profile 2.</source>
       <translation>برای بازی های شرکت Tri-Ace مانند: Star Ocean 3, Radiata Stories, Valkyrie Profile 2.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7259"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7265"/>
       <source>VU Sync</source>
       <translation>همگام‌سازی VU</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7260"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7266"/>
       <source>Run behind. To avoid sync problems when reading or writing VU registers.</source>
       <translation>اجرا در پشت سر برای جلوگیری از مشکلات همگام سازی هنگام خواندن یا نوشتن رجیسترهای VU.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7261"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7267"/>
       <source>VU XGKick Sync</source>
       <translation>همگام سازی VU XGKick</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7263"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7269"/>
       <source>Force Blit Internal FPS Detection</source>
       <translation>اجبار تشخیص داخلی blit فریم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7266"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7272"/>
       <source>Save State</source>
       <translation>ذخیرهٔ وضعیت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7267"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7273"/>
       <source>Load Resume State</source>
       <translation>بارگیری وضعیت ادامه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7268"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7274"/>
       <source>A resume save state created at %s was found.
 
 Do you want to load this save and continue?</source>
@@ -6704,2151 +6809,2081 @@ Do you want to load this save and continue?</source>
 آیا میخواهید این سیو را بارگیری و ادامه دهید؟</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7269"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7275"/>
       <source>Region: </source>
       <translation>ریجن: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7270"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7276"/>
       <source>Compatibility: </source>
       <translation>سازگاری: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7271"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7277"/>
       <source>No Game Selected</source>
       <translation>هیچ بازی ای انتخاب نشده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7273"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7279"/>
       <source>Search Directories</source>
       <translation>جستجوی پوشه ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7274"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7280"/>
       <source>Adds a new directory to the game search list.</source>
       <translation>یک مقصد جدید به فهرست سرچ بازی ها اضافه می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7275"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7281"/>
       <source>Scanning Subdirectories</source>
       <translation>اسکن زیر شاخه ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7276"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7282"/>
       <source>Not Scanning Subdirectories</source>
       <translation>زیر شاخه ها را اسکن نمی کند</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7277"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7283"/>
       <source>List Settings</source>
       <translation>تنظيمات ليست</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7278"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7284"/>
       <source>Sets which view the game list will open to.</source>
       <translation>تعیین می کند که با چه نمایه ای فهرست بازی ها باز شوند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7279"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7285"/>
       <source>Determines which field the game list will be sorted by.</source>
       <translation>تعیین می کند که لیست بازی بر اساس کدام زمینه مرتب شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7280"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7286"/>
       <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
       <translation>ترتیب مرتب‌سازی فهرست بازی‌ها را از پیش‌فرض (معمولاً صعودی به نزولی) تغییر می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7281"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7287"/>
       <source>Cover Settings</source>
       <translation>تنظیمات کاور</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7282"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7288"/>
       <source>Downloads covers from a user-specified URL template.</source>
       <translation>جلد ها را از یک الگوی URL مشخص شده توسط کاربر دانلود می‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6933"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6937"/>
       <source>Operations</source>
       <translation>عملیات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7014"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7018"/>
       <source>Selects where anisotropic filtering is utilized when rendering textures.</source>
       <translation>محل استفاده از فیلتر ناهمسانگرد anisotropic را هنگام رندر کردن بافت ها انتخاب می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7264"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7270"/>
       <source>Use alternative method to calculate internal FPS to avoid false readings in some games.</source>
       <translation>از روش جایگزین برای محاسبه نرخ فریم داخلی استفاده کنید تا از خواندن نادرست اطلاعات در برخی بازی ها جلوگیری کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7283"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7289"/>
       <source>Identifies any new files added to the game directories.</source>
       <translation>هر فایل جدیدی که به پوشه بازی ها اضافه شود را شناسایی می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7284"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7290"/>
       <source>Forces a full rescan of all games previously identified.</source>
       <translation>یک اسکن مجدد از تمامی بازی های از قبل شناخته شده را اجبار می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7666"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7676"/>
       <source>Download Covers</source>
       <translation>دانلود کاور ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7285"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7291"/>
       <source>About PCSX2</source>
       <translation>درباره PCSX2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7286"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7292"/>
       <source>PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2&apos;s hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.</source>
       <translation>PCSX2 یک شبیه ساز رایگان و منبع باز پلی استیشن 2 (PS2) است. هدف این برنامه، شبیه سازی سخت افزار پلی استیشن ۲ با استفاده از ترکیبی از کامپایلر یا مترجمان CPU MIPS و مفسیر می باشد و دارای یک ماشین مجازی است که سخت افزار و حافظه سیستم پلی استیشن ۲ را مدیریت می کند. این به شما امکان می دهد که بازی های پلی استیشن ۲ را با بسیاری از ویژگی ها و مزایا بازی کنید.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7287"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7293"/>
       <source>PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.</source>
       <translation>PlayStation 2 و PS2 علائم تجاری ثبت شده شرکت Sony Interactive Entertainment هستند. این برنامه به هیچ وجه به شرکت Sony Interactive Entertainment وابسته نیست.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7288"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7294"/>
       <source>When enabled and logged in, PCSX2 will scan for achievements on startup.</source>
       <translation>وقتی فعال شد و به سیستم وارد شدید، PCSX2 برای دستاوردها هنگام بارگذاری بازی اسکن می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7289"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7295"/>
       <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
       <translation>«حالت چالش» برای دستاورد ها، دارای ردیابی جدول امتیازات. ذخیره حالت کنونی بازی، تقلبات و امکانات کند کردن بازی غیر فعال می شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7290"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7296"/>
       <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
       <translation>پیام‌های پاپ آپ در رویدادهایی مانند باز کردن قفل دستاوردها و ارسال‌های تابلوی امتیازات نمایش داده می‌شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7292"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7298"/>
       <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
       <translation>جلوه های صوتی را برای رویدادهایی مانند باز کردن قفل دستاوردها و ارسال جدول امتیازات پخش می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7293"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7299"/>
       <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
       <translation>هنگامی که یک چالش یا دستاورد اولیه فعال است، آیکون هایی را در گوشه سمت راست پایین صفحه نمایش نشان می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7296"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7302"/>
       <source>When enabled, PCSX2 will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
       <translation>وقتی فعال باشد، PCSX2 دستاوردهای مجموعه‌های غیر رسمی را فهرست می‌کند. این دستاوردها توسط RetroAchievements ردیابی نمی شوند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7295"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7301"/>
       <source>When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.</source>
       <translation>وقتی فعال باشد، PCSX2 فرض می‌کند که تمام دستاوردها قفل شده‌اند و هیچ اعلان باز کردن قفل را به سرور ارسال نمی‌کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6843"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6846"/>
       <source>Error</source>
       <translation type="unfinished">Error</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6908"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6911"/>
       <source>Pauses the emulator when a controller with bindings is disconnected.</source>
       <translation type="unfinished">Pauses the emulator when a controller with bindings is disconnected.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6912"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6915"/>
       <source>Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix</source>
       <translation type="unfinished">Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6959"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6963"/>
       <source>Enable CDVD Precaching</source>
       <translation type="unfinished">Enable CDVD Precaching</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6960"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6964"/>
       <source>Loads the disc image into RAM before starting the virtual machine.</source>
       <translation type="unfinished">Loads the disc image into RAM before starting the virtual machine.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6966"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6970"/>
       <source>Vertical Sync (VSync)</source>
       <translation type="unfinished">Vertical Sync (VSync)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6968"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6972"/>
       <source>Sync to Host Refresh Rate</source>
       <translation type="unfinished">Sync to Host Refresh Rate</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6970"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6974"/>
       <source>Use Host VSync Timing</source>
       <translation type="unfinished">Use Host VSync Timing</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6971"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6975"/>
       <source>Disables PCSX2&apos;s internal frame timing, and uses host vsync instead.</source>
       <translation type="unfinished">Disables PCSX2&apos;s internal frame timing, and uses host vsync instead.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7117"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7123"/>
       <source>Disable Mailbox Presentation</source>
       <translation type="unfinished">Disable Mailbox Presentation</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7118"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7124"/>
       <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
       <translation type="unfinished">Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7135"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7141"/>
       <source>Audio Control</source>
       <translation type="unfinished">Audio Control</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7136"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7142"/>
       <source>Controls the volume of the audio played on the host.</source>
       <translation type="unfinished">Controls the volume of the audio played on the host.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7580"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7590"/>
       <source>Fast Forward Volume</source>
       <translation type="unfinished">Fast Forward Volume</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7137"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7143"/>
       <source>Controls the volume of the audio played on the host when fast forwarding.</source>
       <translation type="unfinished">Controls the volume of the audio played on the host when fast forwarding.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7591"/>
       <source>Mute All Sound</source>
       <translation>قطع کردن همه صداها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7138"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7144"/>
       <source>Prevents the emulator from producing any audible sound.</source>
       <translation type="unfinished">Prevents the emulator from producing any audible sound.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7139"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7145"/>
       <source>Backend Settings</source>
       <translation type="unfinished">Backend Settings</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7582"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7592"/>
       <source>Audio Backend</source>
       <translation type="unfinished">Audio Backend</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7140"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7146"/>
       <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
       <translation type="unfinished">The audio backend determines how frames produced by the emulator are submitted to the host.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7583"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7593"/>
       <source>Expansion</source>
       <translation type="unfinished">Expansion</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7141"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7147"/>
       <source>Determines how audio is expanded from stereo to surround for supported games.</source>
       <translation type="unfinished">Determines how audio is expanded from stereo to surround for supported games.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7584"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7594"/>
       <source>Synchronization</source>
       <translation type="unfinished">Synchronization</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7585"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7595"/>
       <source>Buffer Size</source>
       <translation type="unfinished">Buffer Size</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7143"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7149"/>
       <source>Determines the amount of audio buffered before being pulled by the host API.</source>
       <translation type="unfinished">Determines the amount of audio buffered before being pulled by the host API.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7586"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7596"/>
       <source>Output Latency</source>
       <translation type="unfinished">Output Latency</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7145"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7151"/>
       <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
       <translation type="unfinished">Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7587"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7597"/>
       <source>Minimal Output Latency</source>
       <translation type="unfinished">Minimal Output Latency</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7146"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7152"/>
       <source>When enabled, the minimum supported output latency will be used for the host API.</source>
       <translation type="unfinished">When enabled, the minimum supported output latency will be used for the host API.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6951"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6955"/>
       <source>Thread Pinning</source>
       <translation type="unfinished">Thread Pinning</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7076"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7082"/>
       <source>Force Even Sprite Position</source>
       <translation type="unfinished">Force Even Sprite Position</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7291"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7297"/>
       <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
       <translation>پیام های پاپ آپ را هنگام شروع، ثبت یا شکست در یک چالش لیست تابلوی امتیازات را نمایش می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7294"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7300"/>
       <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
       <translation>هنگام فعال بودن، هر جلسه به صورتی اجرا میشود که انگار هیچ دستاوردی باز نشده است.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7297"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7303"/>
       <source>Account</source>
       <translation>حساب کاربری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7298"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7304"/>
       <source>Logs out of RetroAchievements.</source>
       <translation>از RetroAchievements خارج می شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7299"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7305"/>
       <source>Logs in to RetroAchievements.</source>
       <translation>وارد RetroAchievements می شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7300"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7306"/>
       <source>Current Game</source>
       <translation>بازی فعلی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7301"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7307"/>
       <source>An error occurred while deleting empty game settings:
 {}</source>
       <translation type="unfinished">An error occurred while deleting empty game settings:
 {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7302"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7308"/>
       <source>An error occurred while saving game settings:
 {}</source>
       <translation type="unfinished">An error occurred while saving game settings:
 {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7303"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7309"/>
       <source>{} is not a valid disc image.</source>
       <translation>{} یک فایل دیسک معتبر نیست.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7306"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7312"/>
       <source>Automatic mapping completed for {}.</source>
       <translation>نقشه برداری خودکار برای {} تکمیل شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7307"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7313"/>
       <source>Automatic mapping failed for {}.</source>
       <translation>نقشه برداری خودکار برای {} ناموفق بود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7308"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7314"/>
       <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
       <translation>تنظیمات بازی با تنظیمات عمومی برای &apos;{}&apos; همگام شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7309"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7315"/>
       <source>Game settings have been cleared for &apos;{}&apos;.</source>
       <translation>تنظیمات بازی برای &apos;{}&apos; پاک شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7311"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7317"/>
       <source>{} (Current)</source>
       <translation>{} (فعلی)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7312"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7318"/>
       <source>{} (Folder)</source>
       <translation>{} (پوشه)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7313"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7319"/>
       <source>Failed to load &apos;{}&apos;.</source>
       <translation>خطا در بارگیری &apos;{}&apos;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7314"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7320"/>
       <source>Input profile &apos;{}&apos; loaded.</source>
       <translation>پروفایل ورودی &apos;{}&apos; بارگیری شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7315"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7321"/>
       <source>Input profile &apos;{}&apos; saved.</source>
       <translation>پروفایل ورودی &apos;{}&apos; ذخیره شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7316"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7322"/>
       <source>Failed to save input profile &apos;{}&apos;.</source>
       <translation>خطا در ذخیره پروفایل ورودی &apos;{}&apos;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7317"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7323"/>
       <source>Port {} Controller Type</source>
       <translation>پورت {} نوع دسته</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7318"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7324"/>
       <source>Select Macro {} Binds</source>
       <translation>انتخاب کردن ماکرو {} اتصالات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7320"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7326"/>
       <source>Port {} Device</source>
       <translation>پورت {} دستگاه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7321"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7327"/>
       <source>Port {} Subtype</source>
       <translation>پورت {} زیرمجموعه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7322"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7328"/>
       <source>{} unlabelled patch codes will automatically activate.</source>
       <translation>{} کد های پچ برچسب نخورده به صورت خودکار فعال خواهند شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7323"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7329"/>
       <source>{} unlabelled patch codes found but not enabled.</source>
       <translation>{} کد های پچ برچسب نخورده پیدا شدند اما فعال نیستند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7324"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7330"/>
       <source>This Session: {}</source>
       <translation>این جلسه: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7325"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7331"/>
       <source>All Time: {}</source>
       <translation>همه زمان: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7326"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7332"/>
       <source>Save Slot {0}</source>
       <translation>اسلات ذخیره {0}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7327"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7333"/>
       <source>Saved {}</source>
       <translation>{} ذخیره شد</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7328"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7334"/>
       <source>{} does not exist.</source>
       <translation>{} وجود ندارد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7329"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7335"/>
       <source>{} deleted.</source>
       <translation>{} حذف شد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7330"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7336"/>
       <source>Failed to delete {}.</source>
       <translation>حدف {} ناموفق بود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7331"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7337"/>
       <source>File: {}</source>
       <translation>فایل: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7332"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7338"/>
       <source>CRC: {:08X}</source>
       <translation>CRC: {:08X}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7333"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7339"/>
       <source>Time Played: {}</source>
       <translation>زمان سپری شده در این بازی: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7334"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7340"/>
       <source>Last Played: {}</source>
       <translation>آخرین دفعه بازی شده: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7335"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7341"/>
       <source>Size: {:.2f} MB</source>
       <translation>حجم: {:.2f} مگابایت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7336"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7342"/>
       <source>Left: </source>
       <translation>چپ: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7337"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7343"/>
       <source>Top: </source>
       <translation>بالا: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7338"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7344"/>
       <source>Right: </source>
       <translation>راست: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7339"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7345"/>
       <source>Bottom: </source>
       <translation>پایین: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7340"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7346"/>
       <source>Summary</source>
       <translation>خلاصه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7341"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7347"/>
       <source>Interface Settings</source>
       <translation>تنظیمات رابط کاربری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7342"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7348"/>
       <source>BIOS Settings</source>
       <translation>تنظیمات BIOS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7343"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7349"/>
       <source>Emulation Settings</source>
       <translation>تنظیمات شبیه ساز</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7344"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7350"/>
       <source>Graphics Settings</source>
       <translation>تنظیمات گرافیک</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7345"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7351"/>
       <source>Audio Settings</source>
       <translation>تنظیمات صدا</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7346"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7352"/>
       <source>Memory Card Settings</source>
       <translation>تنظیمات کارت حافظه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7347"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7353"/>
       <source>Controller Settings</source>
       <translation>تنظیمات دسته</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7348"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7354"/>
       <source>Hotkey Settings</source>
       <translation>تنظیمات کلید میانبر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7349"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7355"/>
       <source>Achievements Settings</source>
       <translation>تنظیمات دستاورد ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7350"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7356"/>
       <source>Folder Settings</source>
       <translation>تنظیمات پوشه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7351"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7357"/>
       <source>Advanced Settings</source>
       <translation>تنظیمات پیشرفته</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7352"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7358"/>
       <source>Patches</source>
       <translation>پچ ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7353"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7359"/>
       <source>Cheats</source>
       <translation>تقلبات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7354"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7360"/>
       <source>2% [1 FPS (NTSC) / 1 FPS (PAL)]</source>
       <translation>2% [1 فریم (NTSC) / 1 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7355"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7361"/>
       <source>10% [6 FPS (NTSC) / 5 FPS (PAL)]</source>
       <translation>10% [6 فریم (NTSC) / 5 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7356"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7362"/>
       <source>25% [15 FPS (NTSC) / 12 FPS (PAL)]</source>
       <translation>25% [15 فریم (NTSC) / 12 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7357"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7363"/>
       <source>50% [30 FPS (NTSC) / 25 FPS (PAL)]</source>
       <translation>50% [30 فریم (NTSC) / 25 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7358"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7364"/>
       <source>75% [45 FPS (NTSC) / 37 FPS (PAL)]</source>
       <translation>75% [45 فریم (NTSC) / 37 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7359"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7365"/>
       <source>90% [54 FPS (NTSC) / 45 FPS (PAL)]</source>
       <translation>90% [54 فریم (NTSC) / 45 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7360"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7366"/>
       <source>100% [60 FPS (NTSC) / 50 FPS (PAL)]</source>
       <translation>100% [60 فریم (NTSC) / 50 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7361"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7367"/>
       <source>110% [66 FPS (NTSC) / 55 FPS (PAL)]</source>
       <translation>110% [66 فریم (NTSC) / 55 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7362"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7368"/>
       <source>120% [72 FPS (NTSC) / 60 FPS (PAL)]</source>
       <translation>120% [72 فریم (NTSC) / 60 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7363"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7369"/>
       <source>150% [90 FPS (NTSC) / 75 FPS (PAL)]</source>
       <translation>150% [90 فریم (NTSC) / 75 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7364"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7370"/>
       <source>175% [105 FPS (NTSC) / 87 FPS (PAL)]</source>
       <translation>175% [105 فریم (NTSC) / 87 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7365"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7371"/>
       <source>200% [120 FPS (NTSC) / 100 FPS (PAL)]</source>
       <translation>200% [120 فریم (NTSC) / 100 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7366"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7372"/>
       <source>300% [180 FPS (NTSC) / 150 FPS (PAL)]</source>
       <translation>300% [180 فریم (NTSC) / 150 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7367"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7373"/>
       <source>400% [240 FPS (NTSC) / 200 FPS (PAL)]</source>
       <translation>400% [240 فریم (NTSC) / 200 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7368"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7374"/>
       <source>500% [300 FPS (NTSC) / 250 FPS (PAL)]</source>
       <translation>500% [300 فریم (NTSC) / 250 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7369"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7375"/>
       <source>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</source>
       <translation>1000% [600 فریم (NTSC) / 500 فریم (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7370"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7376"/>
       <source>50% Speed</source>
       <translation>۵۰% سرعت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7371"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7377"/>
       <source>60% Speed</source>
       <translation>۶۰% سرعت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7372"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7378"/>
       <source>75% Speed</source>
       <translation>۷۵% سرعت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7373"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7379"/>
       <source>100% Speed (Default)</source>
       <translation>سرعت 100% (پیش‌فرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7374"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7380"/>
       <source>130% Speed</source>
       <translation>سرعت ١۳۰%</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7375"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7381"/>
       <source>180% Speed</source>
       <translation>سرعت ١۸۰%</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7376"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7382"/>
       <source>300% Speed</source>
       <translation>سرعت ٣٠٠%</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7377"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7383"/>
       <source>Normal (Default)</source>
       <translation>معمولی (پیش‌فرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7378"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7384"/>
       <source>Mild Underclock</source>
       <translation>آندرکلاک نسبتا متوسط</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7379"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7385"/>
       <source>Moderate Underclock</source>
       <translation>آندرکلاک متوسط</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7380"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7386"/>
       <source>Maximum Underclock</source>
       <translation>آندرکلاک ماکسیموم (حداکثر)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7474"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7482"/>
       <source>Disabled</source>
       <translation>غیرفعال</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7381"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7387"/>
       <source>0 Frames (Hard Sync)</source>
       <translation>0 فریم (همگام سازی سخت)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7382"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7388"/>
       <source>1 Frame</source>
       <translation>١ فریم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7383"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7389"/>
       <source>2 Frames</source>
       <translation>۲ فریم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7384"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7390"/>
       <source>3 Frames</source>
       <translation>۳ فریم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7385"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7391"/>
       <source>None</source>
       <translation>هیچ‌کدام</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7386"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7392"/>
       <source>Extra + Preserve Sign</source>
       <translation>اضافات + حفظ علامت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7387"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7393"/>
       <source>Full</source>
       <translation>کامل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7388"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7394"/>
       <source>Extra</source>
       <translation>اضافات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7389"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7395"/>
       <source>Automatic (Default)</source>
       <translation>خودکار (پیش‌فرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7390"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7396"/>
       <source>Direct3D 11</source>
       <translation>Direct3D 11</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7391"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7397"/>
       <source>Direct3D 12</source>
       <translation>Direct3D 12</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7392"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7398"/>
       <source>OpenGL</source>
       <translation>OpenGL</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7393"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7399"/>
       <source>Vulkan</source>
       <translation>Vulkan</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7394"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7400"/>
       <source>Metal</source>
       <translation>فلزی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7395"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7401"/>
       <source>Software</source>
       <translation>نرم‌افزاری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7396"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7402"/>
       <source>Null</source>
       <translation>خالی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7397"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7403"/>
       <source>Off</source>
       <translation>خاموش</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7398"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7404"/>
       <source>Bilinear (Smooth)</source>
       <translation>دو خطی Bilinear (صاف)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7399"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7405"/>
       <source>Bilinear (Sharp)</source>
       <translation>دو خطی Bilinear (شارپ)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7401"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7407"/>
       <source>Weave (Top Field First, Sawtooth)</source>
       <translation>بافندگی (اول زمینه بالایی، دندانه اره ای)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7402"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7408"/>
       <source>Weave (Bottom Field First, Sawtooth)</source>
       <translation>بافندگی (ابتدا زمینه پایینی، دندانه اره ای)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7403"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7409"/>
       <source>Bob (Top Field First)</source>
       <translation>ضربت (ابتدا زمینه بالا)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7404"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7410"/>
       <source>Bob (Bottom Field First)</source>
       <translation>ضربت (ابتدا زمینه پایین)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7405"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7411"/>
       <source>Blend (Top Field First, Half FPS)</source>
       <translation>ترکیب (ابتدا زمینه بالا، نیم فریم در ثانیه)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7406"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7412"/>
       <source>Blend (Bottom Field First, Half FPS)</source>
       <translation>ترکیب (ابتدا زمینه پایین، نیم فریم در ثانیه)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7407"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7413"/>
       <source>Adaptive (Top Field First)</source>
       <translation>تطبیقی ​​(ابتدا زمینه بالا)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7408"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7414"/>
       <source>Adaptive (Bottom Field First)</source>
       <translation>تطبیقی (ابتدا زمینه پایین)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7409"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7415"/>
       <source>Native (PS2)</source>
       <translation>پیش‌فرض (PS2)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7410"/>
-      <source>1.25x Native</source>
-      <translation>۲۵/١ برابر پیش‌فرض</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7411"/>
-      <source>1.5x Native</source>
-      <translation>۵/١ برابر پیش‌فرض</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7412"/>
-      <source>1.75x Native</source>
-      <translation>۷۵/١ برابر پیش‌فرض</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7413"/>
-      <source>2x Native (~720p)</source>
-      <translation>۲ برابر پیش‌فرض (حدود ۷۲۰p)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7414"/>
-      <source>2.25x Native</source>
-      <translation>۲/۲۵ برابر پیش‌فرض</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7415"/>
-      <source>2.5x Native</source>
-      <translation>۲/۵ برابر پیش‌فرض</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7416"/>
-      <source>2.75x Native</source>
-      <translation>۲/۷۵ برابر پیش‌فرض</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7417"/>
-      <source>3x Native (~1080p)</source>
-      <translation>۳ برابر پیش‌فرض (حدود ١۰۸۰p)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7418"/>
-      <source>3.5x Native</source>
-      <translation>۳/۵ برابر پیش‌فرض</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7419"/>
-      <source>4x Native (~1440p/2K)</source>
-      <translation>۴ برابر پیش‌فرض (حدود ١۴۴۰p یا ۲K)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7420"/>
-      <source>5x Native (~1620p)</source>
-      <translation>۵ برابر پیش‌فرض (حدود ١۶۲۰p)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7421"/>
-      <source>6x Native (~2160p/4K)</source>
-      <translation>۶ برابر پیش‌فرض (حدود ۲١۶۰p یا ۴K)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7422"/>
-      <source>7x Native (~2520p)</source>
-      <translation>۷ برابر پیش‌فرض (حدود ۲۵۲۰p)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7423"/>
-      <source>8x Native (~2880p)</source>
-      <translation>۸ برابر پیش‌فرض (حدود ۲۸۸۰p)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7424"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7432"/>
       <source>Nearest</source>
       <translation>نزدیک‌ترین</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7425"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7433"/>
       <source>Bilinear (Forced)</source>
       <translation>دو خطی Bilinear (اجباری)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7426"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7434"/>
       <source>Bilinear (PS2)</source>
       <translation>دوخطی (PS2)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7427"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7435"/>
       <source>Bilinear (Forced excluding sprite)</source>
       <translation>دوخطی Bilinear (اجبار بدون احتساب اسپرایت)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7428"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7436"/>
       <source>Off (None)</source>
       <translation>خاموش (هیچ‌کدام)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7429"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7437"/>
       <source>Trilinear (PS2)</source>
       <translation>سه‌خطی (PS2)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7430"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7438"/>
       <source>Trilinear (Forced)</source>
       <translation>سه خطی Trilinear (اجباری)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7431"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7439"/>
       <source>Scaled</source>
       <translation>مقیاس یافته</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7432"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7440"/>
       <source>Unscaled (Default)</source>
       <translation>بدون مقیاس (پیش فرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7434"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7442"/>
       <source>Minimum</source>
       <translation>حداقل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7435"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7443"/>
       <source>Basic (Recommended)</source>
       <translation>معمولی (توصیه شده)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7436"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7444"/>
       <source>Medium</source>
       <translation>متوسط</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7437"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7445"/>
       <source>High</source>
       <translation>زیاد</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7438"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7446"/>
       <source>Full (Slow)</source>
       <translation>کامل (کند)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7439"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7447"/>
       <source>Maximum (Very Slow)</source>
       <translation>حداکثر (خیلی آهسته)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7440"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7448"/>
       <source>Off (Default)</source>
       <translation>خاموش (پیش‌فرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7441"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7449"/>
       <source>2x</source>
       <translation>۲ برابر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7442"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7450"/>
       <source>4x</source>
       <translation>۴ برابر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7443"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7451"/>
       <source>8x</source>
       <translation>۸ برابر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7444"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7452"/>
       <source>16x</source>
       <translation>١۶ برابر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7445"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7453"/>
       <source>Partial</source>
       <translation>جزئی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7446"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7454"/>
       <source>Full (Hash Cache)</source>
       <translation>كامل (ذخیره سازی هش)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7447"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7455"/>
       <source>Force Disabled</source>
       <translation>غیرفعال شده اجباری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7448"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7456"/>
       <source>Force Enabled</source>
       <translation>فعال شده اجباری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7449"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7457"/>
       <source>Accurate (Recommended)</source>
       <translation>دقیق (توصیه شده)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7450"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7458"/>
       <source>Disable Readbacks (Synchronize GS Thread)</source>
       <translation>غیرفعال کردن بازخوانی ها (همگام‌سازی رشته GS)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7451"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7459"/>
       <source>Unsynchronized (Non-Deterministic)</source>
       <translation>ناهمزمان (غیر قطعی)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7452"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7460"/>
       <source>Disabled (Ignore Transfers)</source>
       <translation>غیر فعال (نادیده گرفتن انتقالات)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7453"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7461"/>
       <source>Screen Resolution</source>
       <translation>رزولوشن صفحه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7454"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7462"/>
       <source>Internal Resolution (Aspect Uncorrected)</source>
       <translation>رزولوشن داخلی (منظر تصحیح نشده)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7537"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7546"/>
       <source>WARNING: Memory Card Busy</source>
       <translation>هشدار: کارت حافظه مشغول است</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7544"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7553"/>
       <source>Cannot show details for games which were not scanned in the game list.</source>
       <translation>جزئیات بازی هایی که در لیست بازی ها اسکن نشده اند را نمی‌توان نشان داد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7551"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7560"/>
       <source>Pause On Controller Disconnection</source>
       <translation type="unfinished">Pause On Controller Disconnection</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7598"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7608"/>
       <source>SDL DualSense Player LED</source>
       <translation type="unfinished">SDL DualSense Player LED</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7611"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7621"/>
       <source>Press To Toggle</source>
       <translation type="unfinished">Press To Toggle</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7613"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7623"/>
       <source>Deadzone</source>
       <translation>ددزون</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7656"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7666"/>
       <source>Full Boot</source>
       <translation>بوت کامل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7677"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7687"/>
       <source>Achievement Notifications</source>
       <translation>اعلان دستاورد ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7678"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7688"/>
       <source>Leaderboard Notifications</source>
       <translation>اعلان جدول امتیازات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7680"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7690"/>
       <source>Enable In-Game Overlays</source>
       <translation>فعال کردن اورلی های داخل بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7681"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7691"/>
       <source>Encore Mode</source>
       <translation>حالت اِنکور</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7682"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7692"/>
       <source>Spectator Mode</source>
       <translation>حالت تماشاگر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7455"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7463"/>
       <source>PNG</source>
       <translation>PNG</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6891"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6894"/>
       <source>-</source>
       <translation>-</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7043"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7047"/>
       <source>Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU.</source>
       <translation>تبدیل فریم بافر های 4-بیت و 8-بیت روی CPU به جای GPU.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7152"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7158"/>
       <source>Removes the current card from the slot.</source>
       <translation>کارت فعلی را از اسلات حذف می کند.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7170"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7176"/>
       <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
       <translation>فرکانس روشن و خاموش شدن دکمه ها در ماکرو را تعیین می‌کند (یا همان شلیک خودکار).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7319"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7325"/>
       <source>{} Frames</source>
       <translation>{} فریم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7400"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7406"/>
       <source>No Deinterlacing</source>
       <translation>ضد انعطاف پذیری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7433"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7441"/>
       <source>Force 32bit</source>
       <translation type="unfinished">Force 32bit</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7456"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7464"/>
       <source>JPEG</source>
       <translation>JPEG</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7458"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7466"/>
       <source>0 (Disabled)</source>
       <translation>۰ (غیرفعال)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7459"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7467"/>
       <source>1 (64 Max Width)</source>
       <translation>1 (64 حداکثر عرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7460"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7468"/>
       <source>2 (128 Max Width)</source>
       <translation>2 (128 حداکثر عرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7461"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7469"/>
       <source>3 (192 Max Width)</source>
       <translation>3 (192 حداکثر عرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7462"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7470"/>
       <source>4 (256 Max Width)</source>
       <translation>4 (256 حداکثر عرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7463"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7471"/>
       <source>5 (320 Max Width)</source>
       <translation>5 (320 حداکثر عرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7464"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7472"/>
       <source>6 (384 Max Width)</source>
       <translation>6 (384 حداکثر عرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7465"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7473"/>
       <source>7 (448 Max Width)</source>
       <translation>7 (448 حداکثر عرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7466"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7474"/>
       <source>8 (512 Max Width)</source>
       <translation>8 (512 حداکثر عرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7467"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7475"/>
       <source>9 (576 Max Width)</source>
       <translation>9 (576 حداکثر عرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7468"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7476"/>
       <source>10 (640 Max Width)</source>
       <translation>10 (640 حداکثر عرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7469"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7477"/>
       <source>Sprites Only</source>
       <translation>فقط اسپرایت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7470"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7478"/>
       <source>Sprites/Triangles</source>
       <translation>اسپرایت ها/ مثلت ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7471"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7479"/>
       <source>Blended Sprites/Triangles</source>
       <translation>اسپرایت ها/ مثلت های ترکیب شده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7472"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7480"/>
       <source>1 (Normal)</source>
       <translation>١ (معمولی)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7473"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7481"/>
       <source>2 (Aggressive)</source>
       <translation>۲ (تهاجمی)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7475"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7483"/>
       <source>Inside Target</source>
       <translation>داخل هدف</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7476"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7484"/>
       <source>Merge Targets</source>
       <translation>ادغام اهداف</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7477"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7485"/>
       <source>Normal (Vertex)</source>
       <translation>عادی (Vertex)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7478"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7486"/>
       <source>Special (Texture)</source>
       <translation>خاص (Texture)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7479"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7487"/>
       <source>Special (Texture - Aggressive)</source>
       <translation>خاص (Texture - Aggressive)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7480"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7488"/>
       <source>Align To Native</source>
       <translation>تراز به بومی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7481"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7490"/>
       <source>Half</source>
       <translation>نصف</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7482"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7491"/>
       <source>Force Bilinear</source>
       <translation>اجبار کردن دوخطی Bilinear</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7483"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7492"/>
       <source>Force Nearest</source>
       <translation>احبار نزدیک‌ترین</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7484"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7493"/>
       <source>Disabled (Default)</source>
       <translation>غیرفعال (پیش فرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7485"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7494"/>
       <source>Enabled (Sprites Only)</source>
       <translation>فعال (فقط اسپرایت)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7486"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7495"/>
       <source>Enabled (All Primitives)</source>
       <translation>فعال (همه اولویت ها)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7487"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7496"/>
       <source>None (Default)</source>
       <translation>هیچکدام (پیش‌فرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7488"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7497"/>
       <source>Sharpen Only (Internal Resolution)</source>
       <translation>فقط تیز کردن (رزولوشن داخلی)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7489"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7498"/>
       <source>Sharpen and Resize (Display Resolution)</source>
       <translation>تیز کردن و تغییر اندازه (رزولوشن نمایشگر)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7490"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7499"/>
       <source>Scanline Filter</source>
       <translation>فیلتر خط اسکن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7491"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7500"/>
       <source>Diagonal Filter</source>
       <translation>فیلتر مورب</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7492"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7501"/>
       <source>Triangular Filter</source>
       <translation>فیلتر سه ضلعی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7493"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7502"/>
       <source>Wave Filter</source>
       <translation>فیلتر موجی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7494"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7503"/>
       <source>Lottes CRT</source>
       <translation>شیدر سی‌آر‌تی لوتِس</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7495"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7504"/>
       <source>4xRGSS</source>
       <translation>۴xRGSS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7496"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7505"/>
       <source>NxAGSS</source>
       <translation>NxAGSS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7497"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7506"/>
       <source>Uncompressed</source>
       <translation>فشرده سازی نشده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7498"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7507"/>
       <source>LZMA (xz)</source>
       <translation>LZMA (xz)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7499"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7508"/>
       <source>Zstandard (zst)</source>
       <translation>Zstandard (zst)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7500"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7509"/>
       <source>PS2 (8MB)</source>
       <translation>PS2 (۸ مگابایت)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7501"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7510"/>
       <source>PS2 (16MB)</source>
       <translation>PS2 (١۶ مگابایت)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7502"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7511"/>
       <source>PS2 (32MB)</source>
       <translation>PS2 (۳۲ مگابایت)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7503"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7512"/>
       <source>PS2 (64MB)</source>
       <translation>PS2 (۶۴ مگابایت)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7504"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7513"/>
       <source>PS1</source>
       <translation>PS1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7505"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7514"/>
       <source>Negative</source>
       <translation>منفی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7506"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7515"/>
       <source>Positive</source>
       <translation>مثبت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7507"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7516"/>
       <source>Chop/Zero (Default)</source>
       <translation>خورد کردن/صفر (پیش‌فرض)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7508"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7517"/>
       <source>Game Grid</source>
       <translation>نماد های بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6871"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6874"/>
       <source>Game List</source>
       <translation>لیست بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7272"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7278"/>
       <source>Game List Settings</source>
       <translation>تنظيمات ليست بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7509"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7518"/>
       <source>Type</source>
       <translation>نوع</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7510"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7519"/>
       <source>Serial</source>
       <translation>سریال</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7511"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7520"/>
       <source>Title</source>
       <translation>عنوان</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7512"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7521"/>
       <source>File Title</source>
       <translation>عنوان فایل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7513"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7522"/>
       <source>CRC</source>
       <translation>CRC</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7514"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7523"/>
       <source>Time Played</source>
       <translation>زمان سپری شده در این بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7515"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7524"/>
       <source>Last Played</source>
       <translation>آخرین دفعه بازی شده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7516"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7525"/>
       <source>Size</source>
       <translation>حجم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7535"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7544"/>
       <source>Select Disc Image</source>
       <translation>انتخاب فایل دیسک</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7536"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7545"/>
       <source>Select Disc Drive</source>
       <translation>انتخاب دیسک درایو</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6879"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6882"/>
       <source>Start File</source>
       <translation>شروع از فایل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6883"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6886"/>
       <source>Start BIOS</source>
       <translation>شروع بایوس</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6881"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6884"/>
       <source>Start Disc</source>
       <translation>شروع از دیسک</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6877"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6880"/>
       <source>Exit</source>
       <translation>خروج</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7538"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7547"/>
       <source>Set Input Binding</source>
       <translation>تنظیم کلید ورودی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7539"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7548"/>
       <source>Region</source>
       <translation>ریجن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7540"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7549"/>
       <source>Compatibility Rating</source>
       <translation>رتبه سازگاری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7541"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7550"/>
       <source>Path</source>
       <translation>مسیر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7542"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7551"/>
       <source>Disc Path</source>
       <translation>مسیر دیسک</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7543"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7552"/>
       <source>Select Disc Path</source>
       <translation>انتخاب پچ دیسک</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7545"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7554"/>
       <source>Copy Settings</source>
       <translation>کپی کردن تنظیمات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7546"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7555"/>
       <source>Clear Settings</source>
       <translation>پاک کردن تنظیمات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7547"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7556"/>
       <source>Inhibit Screensaver</source>
       <translation>منع کردن محافظ صفحه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7548"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7557"/>
       <source>Enable Discord Presence</source>
       <translation>فعال کردن همسان سازی با برنامه دیسکورد</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7549"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7558"/>
       <source>Pause On Start</source>
       <translation>توقف در شروع</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7550"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7559"/>
       <source>Pause On Focus Loss</source>
       <translation>توقف در از دست دادن دقت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7552"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7561"/>
       <source>Pause On Menu</source>
       <translation>توقف در منو</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7553"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7562"/>
       <source>Confirm Shutdown</source>
       <translation>تایید خاموش شدن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7554"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7563"/>
       <source>Save State On Shutdown</source>
       <translation>ذخیره وضعیت موقع در خاموش کردن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7556"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7565"/>
       <source>Use Light Theme</source>
       <translation>استفاده از تم روشن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7557"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7566"/>
       <source>Start Fullscreen</source>
       <translation>شروع در حالت تمام صفحه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7558"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7567"/>
       <source>Double-Click Toggles Fullscreen</source>
       <translation>دابل کلیک به تمام صفحه تغییر می‌دهد</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7559"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7568"/>
       <source>Hide Cursor In Fullscreen</source>
       <translation>مخفی کردن موش‌واره در حالت تمام صفحه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7560"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7569"/>
       <source>OSD Scale</source>
       <translation>مقیاس متن اطلاعات‌ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7561"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7570"/>
       <source>Show Messages</source>
       <translation>نمایش پیام‌ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7562"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7572"/>
       <source>Show Speed</source>
       <translation>نمایش سرعت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7563"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7573"/>
       <source>Show FPS</source>
       <translation>نمایش نرخ فریم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7564"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7574"/>
       <source>Show CPU Usage</source>
       <translation>نمایش کارکرد پردازنده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7565"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7575"/>
       <source>Show GPU Usage</source>
       <translation>نمایس کارکرد پردازنده گرافیکی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7566"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7576"/>
       <source>Show Resolution</source>
       <translation>نمایش رزولوشن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7567"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7577"/>
       <source>Show GS Statistics</source>
       <translation>نشان دادن امار GS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7568"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7578"/>
       <source>Show Status Indicators</source>
       <translation>نمایش نشانگرهای وضعیت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7569"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7579"/>
       <source>Show Settings</source>
       <translation>نمایش تنظیمات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7570"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7580"/>
       <source>Show Inputs</source>
       <translation>نشان دادن ورودی ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7571"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
       <source>Show Frame Times</source>
       <translation>نمایش زمان های فریم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7572"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7582"/>
       <source>Warn About Unsafe Settings</source>
       <translation>اخطار دادن درمورد تنظیمات ناامن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7573"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7583"/>
       <source>Reset Settings</source>
       <translation>تنظیم مجدد تنظیمات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7574"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7584"/>
       <source>Change Search Directory</source>
       <translation>تغییر دادن مقصد جستجو</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7575"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7585"/>
       <source>Fast Boot</source>
       <translation>بوت سریع</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7579"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7589"/>
       <source>Output Volume</source>
       <translation>حجم صدای خروجی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7589"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7599"/>
       <source>Memory Card Directory</source>
       <translation>پوشه کارت حافظه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7590"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7600"/>
       <source>Folder Memory Card Filter</source>
       <translation>مرتب سازی پوشه کارت حافظه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7593"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7603"/>
       <source>Create</source>
       <translation>ایجاد</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7519"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7528"/>
       <source>Cancel</source>
       <translation>انصراف</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7591"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7601"/>
       <source>Load Profile</source>
       <translation>بارگذاری پروفایل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7592"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7602"/>
       <source>Save Profile</source>
       <translation>ذخیره پروفایل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7594"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7604"/>
       <source>Per-Game Configuration</source>
       <translation>پیکربندی سفارشی هر بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7595"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7605"/>
       <source>Copy Global Settings</source>
       <translation>کپی تنظیمات عمومی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7596"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7606"/>
       <source>Enable SDL Input Source</source>
       <translation>فعال کردن منبع ورودی SDL</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7597"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7607"/>
       <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
       <translation>حالت SDL پیشرفته DualShock 4 یا DualSense</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7599"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7609"/>
       <source>SDL Raw Input</source>
       <translation>منبع ورودی خام SDL</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7600"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7610"/>
       <source>Enable XInput Input Source</source>
       <translation>فعال کردن منبع ورودی XInput</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7601"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7611"/>
       <source>Enable Console Port 1 Multitap</source>
       <translation>فعال کردن چند ضربه در پورت کنسول 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7602"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7612"/>
       <source>Enable Console Port 2 Multitap</source>
       <translation>فعال کردن چند ضربه در پورت کنسول 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7603"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7613"/>
       <source>Controller Port {}{}</source>
       <translation>پورت دسته {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7604"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7614"/>
       <source>Controller Port {}</source>
       <translation>پورت دسته {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7605"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7615"/>
       <source>Controller Type</source>
       <translation>نوع دسته</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7606"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7616"/>
       <source>Automatic Mapping</source>
       <translation>پیوند کردن خودکار</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7607"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7617"/>
       <source>Controller Port {}{} Macros</source>
       <translation>ماکرو های پورت دسته {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7608"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7618"/>
       <source>Controller Port {} Macros</source>
       <translation>ماکرو های پورت دسته {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7609"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7619"/>
       <source>Macro Button {}</source>
       <translation>دکمه ماکرو {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7610"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7620"/>
       <source>Buttons</source>
       <translation>دکمه‌‌ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7528"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7537"/>
       <source>Frequency</source>
       <translation>فرکانس</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7612"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7622"/>
       <source>Pressure</source>
       <translation>فشار</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7614"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7624"/>
       <source>Controller Port {}{} Settings</source>
       <translation>تنظیمات پورت دسته {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7615"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7625"/>
       <source>Controller Port {} Settings</source>
       <translation>تنظیمات پورت دسته {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7616"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7626"/>
       <source>USB Port {}</source>
       <translation>درگاه USB {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7617"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7627"/>
       <source>Device Type</source>
       <translation>نوع دستگاه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7618"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7628"/>
       <source>Device Subtype</source>
       <translation>نوع فرعی دستگاه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7619"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7629"/>
       <source>{} Bindings</source>
       <translation>{} پیوند ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7620"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7630"/>
       <source>Clear Bindings</source>
       <translation>پاک کردن پیوند ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7621"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7631"/>
       <source>{} Settings</source>
       <translation>{} تنظیمات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7622"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7632"/>
       <source>Cache Directory</source>
       <translation>پوشه حافظه پنهان</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7623"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7633"/>
       <source>Covers Directory</source>
       <translation>پوشه جلد بازی ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7624"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7634"/>
       <source>Snapshots Directory</source>
       <translation>پوشه دخیره عکس ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7625"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7635"/>
       <source>Save States Directory</source>
       <translation>پوشه وضعیت ذخیره</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7626"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7636"/>
       <source>Game Settings Directory</source>
       <translation>پوشه تنظیمات بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7627"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7637"/>
       <source>Input Profile Directory</source>
       <translation>پوشه پروفایل ورودی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7628"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7638"/>
       <source>Cheats Directory</source>
       <translation>پوشه تقلب ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7629"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7639"/>
       <source>Patches Directory</source>
       <translation>پوشه پچ ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7630"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7640"/>
       <source>Texture Replacements Directory</source>
       <translation>پوشه جایگزین بافت ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7631"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7641"/>
       <source>Video Dumping Directory</source>
       <translation>پوشه استخراج ویدیو</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7640"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7650"/>
       <source>Resume Game</source>
       <translation>ادامه بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7641"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7651"/>
       <source>Toggle Frame Limit</source>
       <translation>فعال کردن محدودیت فریم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7642"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7652"/>
       <source>Game Properties</source>
       <translation>مشخصات بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7643"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7653"/>
       <source>Achievements</source>
       <translation>دستاوردها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7644"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7654"/>
       <source>Save Screenshot</source>
       <translation>ذخیره اسکرین‌شات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7645"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7655"/>
       <source>Switch To Software Renderer</source>
       <translation>تغییر به رندر نرم‌افزاری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7646"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7656"/>
       <source>Switch To Hardware Renderer</source>
       <translation>تغییر به رندر سخت‌افزاری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7647"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7657"/>
       <source>Change Disc</source>
       <translation>تغییر دیسک</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7648"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7658"/>
       <source>Close Game</source>
       <translation>بستن بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7649"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7659"/>
       <source>Exit Without Saving</source>
       <translation>خروج بدون ذخیره کردن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7650"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7660"/>
       <source>Back To Pause Menu</source>
       <translation>بازگشت به منوی توقف</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7651"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7661"/>
       <source>Exit And Save State</source>
       <translation>خروج و ذخیره وضعیت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7652"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7662"/>
       <source>Leaderboards</source>
       <translation>تابلو امتیازات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7653"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7663"/>
       <source>Delete Save</source>
       <translation>حذف سیو</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7654"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7664"/>
       <source>Close Menu</source>
       <translation>بستن منو</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7531"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7540"/>
       <source>Delete State</source>
       <translation>حذف وضعیت ذخیره شده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7655"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7665"/>
       <source>Default Boot</source>
       <translation>بوت پیش‌فرض</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7657"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7667"/>
       <source>Reset Play Time</source>
       <translation>بازنشانی زمان سپری شده در این بازی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7658"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7668"/>
       <source>Add Search Directory</source>
       <translation>اضافه کردن پوشه جستجو</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7659"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7669"/>
       <source>Open in File Browser</source>
       <translation>گشودن در مرورگر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7660"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7670"/>
       <source>Disable Subdirectory Scanning</source>
       <translation>غیرفعال کردن اسکن زیرشاخه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7661"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7671"/>
       <source>Enable Subdirectory Scanning</source>
       <translation>فعال کردن اسکن زیرشاخه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7662"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7672"/>
       <source>Remove From List</source>
       <translation>حذف از لیست</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7663"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7673"/>
       <source>Default View</source>
       <translation>نمای پیش‌فرض</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7664"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7674"/>
       <source>Sort By</source>
       <translation>ترتیب بر اساس</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7665"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7675"/>
       <source>Sort Reversed</source>
       <translation>ترتيب به صورت معكوس</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7667"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7677"/>
       <source>Scan For New Games</source>
       <translation>اسکن برای بازی های جدید</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7668"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7678"/>
       <source>Rescan All Games</source>
       <translation>اسکن دوباره تمام بازی ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7669"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7679"/>
       <source>Website</source>
       <translation>وبسایت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7670"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7680"/>
       <source>Support Forums</source>
       <translation>انجمن های پشتیبانی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7671"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7681"/>
       <source>GitHub Repository</source>
       <translation>منبع GitHub</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7672"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7682"/>
       <source>License</source>
       <translation>مجوز ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7673"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7683"/>
       <source>Close</source>
       <translation>بستن</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7674"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7684"/>
       <source>RAIntegration is being used instead of the built-in achievements implementation.</source>
       <translation>از RAIintegration به جای اجرای دستاوردهای داخلی استفاده می شود.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7675"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7685"/>
       <source>Enable Achievements</source>
       <translation>فعال کردن دستاورد ها</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7676"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7686"/>
       <source>Hardcore Mode</source>
       <translation>حالت هاردکور</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7679"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7689"/>
       <source>Sound Effects</source>
       <translation>جلوه های صوتی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7683"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7693"/>
       <source>Test Unofficial Achievements</source>
       <translation>امتحان کردن دستاوردهای غیر رسمی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7684"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7694"/>
       <source>Username: {}</source>
       <translation>نام کاربری: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7685"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7695"/>
       <source>Login token generated on {}</source>
       <translation>توکن ورود ساخته شده در {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7686"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7696"/>
       <source>Logout</source>
       <translation>خروج از سیستم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7687"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7697"/>
       <source>Not Logged In</source>
       <translation>وارد نشده اید</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7688"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7698"/>
       <source>Login</source>
       <translation>ورود به سیستم</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7689"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7699"/>
       <source>Game: {0} ({1})</source>
       <translation>بازی: {0} ({1})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7690"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7700"/>
       <source>Rich presence inactive or unsupported.</source>
       <translation>حضور غنی غیرفعال یا پشتیبانی نشده است.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7691"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7701"/>
       <source>Game not loaded or no RetroAchievements available.</source>
       <translation>بازی بارگذاری نشده است یا دستاوردی در RetroAchievements وجود ندارد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7692"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7702"/>
       <source>Card Enabled</source>
       <translation>کارت فعال شده</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7693"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7703"/>
       <source>Card Name</source>
       <translation>نام کارت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7694"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7704"/>
       <source>Eject Card</source>
       <translation>خارج کردن کارت</translation>
     </message>
@@ -8999,26 +9034,28 @@ Do not request support, please upgrade your hardware/drivers first.</translation
   <context>
     <name>GSCapture</name>
     <message>
-      <location filename="../../pcsx2/GS/GSCapture.cpp" line="292"/>
+      <location filename="../../pcsx2/GS/GSCapture.cpp" line="296"/>
       <source>Failed to load FFmpeg</source>
       <translation type="unfinished">Failed to load FFmpeg</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GSCapture.cpp" line="293"/>
+      <location filename="../../pcsx2/GS/GSCapture.cpp" line="297"/>
       <source>You may be missing one or more files, or are using the incorrect version. This build of PCSX2 requires:
   libavcodec: {}
   libavformat: {}
   libavutil: {}
   libswscale: {}
   libswresample: {}
-</source>
+
+Please see our official documentation for more information.</source>
       <translation type="unfinished">You may be missing one or more files, or are using the incorrect version. This build of PCSX2 requires:
   libavcodec: {}
   libavformat: {}
   libavutil: {}
   libswscale: {}
   libswresample: {}
-</translation>
+
+Please see our official documentation for more information.</translation>
     </message>
   </context>
   <context>
@@ -9393,6 +9430,41 @@ graphical quality, but this will increase system requirements.</source>
   <context>
     <name>GameList</name>
     <message>
+      <location filename="../../pcsx2/GameList.cpp" line="120"/>
+      <source>Unknown</source>
+      <translation type="unfinished">Unknown</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="121"/>
+      <source>Nothing</source>
+      <translation type="unfinished">Nothing</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="122"/>
+      <source>Intro</source>
+      <translation type="unfinished">Intro</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="123"/>
+      <source>Menu</source>
+      <translation type="unfinished">Menu</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="124"/>
+      <source>In-Game</source>
+      <translation type="unfinished">In-Game</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="125"/>
+      <source>Playable</source>
+      <translation type="unfinished">Playable</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="126"/>
+      <source>Perfect</source>
+      <translation type="unfinished">Perfect</translation>
+    </message>
+    <message>
       <location filename="../../pcsx2/GameList.cpp" line="595"/>
       <source>Scanning directory {} (recursively)...</source>
       <translation>بررسی پوشه {} (بازگشتی)...</translation>
@@ -9760,7 +9832,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
       <location filename="../Settings/GameSummaryWidget.ui" line="51"/>
-      <location filename="../Settings/GameSummaryWidget.ui" line="352"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="366"/>
       <source>Restore</source>
       <translation>بازیابی</translation>
     </message>
@@ -9786,384 +9858,366 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <translation>سریال:</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="116"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="121"/>
+      <source>Check Wiki</source>
+      <translation type="unfinished">Check Wiki</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GameSummaryWidget.ui" line="130"/>
       <source>CRC:</source>
       <translation>CRC:</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="130"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="144"/>
       <source>Type:</source>
       <translation>نوع:</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="150"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="164"/>
       <source>PS2 Disc</source>
       <translation>دیسک PS2</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="159"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="173"/>
       <source>PS1 Disc</source>
       <translation>دیسک PS1</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="168"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="182"/>
       <source>ELF (PS2 Executable)</source>
       <translation>ELF (قابل اجرا PS2)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="180"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="194"/>
       <source>Region:</source>
       <translation>ریجن:</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="196"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="210"/>
       <source>NTSC-B (Brazil)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-B (برزیل)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="201"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="215"/>
       <source>NTSC-C (China)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-C (چین)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="206"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="220"/>
       <source>NTSC-HK (Hong Kong)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-HK (هنگ کنگ)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="211"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="225"/>
       <source>NTSC-J (Japan)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-J (ژاپن)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="216"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="230"/>
       <source>NTSC-K (Korea)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-K (کره)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="221"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="235"/>
       <source>NTSC-T (Taiwan)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-T (تایوان)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="226"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="240"/>
       <source>NTSC-U (US)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-U (آمریکا)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="231"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="245"/>
       <source>Other</source>
       <translation>دیگر</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="236"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="250"/>
       <source>PAL-A (Australia)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-A (استرالیا)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="241"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="255"/>
       <source>PAL-AF (South Africa)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-AF (آفریقا جنوبی)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="246"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="260"/>
       <source>PAL-AU (Austria)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-AU (اتریش)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="251"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="265"/>
       <source>PAL-BE (Belgium)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-BE (بلژیک)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="256"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="270"/>
       <source>PAL-E (Europe/Australia)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-E (اروپا/استرالیا)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="261"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="275"/>
       <source>PAL-F (France)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-F (فرانسه)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="266"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="280"/>
       <source>PAL-FI (Finland)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-FI (فلاند)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="271"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="285"/>
       <source>PAL-G (Germany)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-G (آلمان)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="276"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="290"/>
       <source>PAL-GR (Greece)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-GR (یونان)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="281"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="295"/>
       <source>PAL-I (Italy)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-I (ایتالیا)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="286"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="300"/>
       <source>PAL-IN (India)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-IN (هند)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="291"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="305"/>
       <source>PAL-M (Europe/Australia)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-M (اروپا/استرالیا)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="296"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="310"/>
       <source>PAL-NL (Netherlands)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-NL (هلند)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="301"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="315"/>
       <source>PAL-NO (Norway)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-NO (نروژ)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="306"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="320"/>
       <source>PAL-P (Portugal)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-P (پرتغال)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="311"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="325"/>
       <source>PAL-PL (Poland)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-PL (لهستان)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="316"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="330"/>
       <source>PAL-R (Russia)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-R (روسیه)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="321"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="335"/>
       <source>PAL-S (Spain)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-S (اسپانیا)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="326"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="340"/>
       <source>PAL-SC (Scandinavia)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-SC (اسکاندیناوی)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="331"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="345"/>
       <source>PAL-SW (Sweden)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-SW (سوئد)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="336"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="350"/>
       <source>PAL-SWI (Switzerland)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-SWI (سوییس)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="341"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="355"/>
       <source>PAL-UK (United Kingdom)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-UK (انگلستان)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="361"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="375"/>
       <source>Compatibility:</source>
       <translation>سازگاری:</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="381"/>
-      <source>Unknown</source>
-      <translation>ناشناخته</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="386"/>
-      <source>Not Bootable</source>
-      <translation>غیرقابل بوت</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="391"/>
-      <source>Reaches Intro</source>
-      <translation>رسیدن به مقدمه</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="396"/>
-      <source>Reaches Menu</source>
-      <translation>به منو می رسد</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="401"/>
-      <source>In-Game</source>
-      <translation>داخل بازی</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="406"/>
-      <source>Playable</source>
-      <translation>قابل پخش</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="411"/>
-      <source>Perfect</source>
-      <translation>عالی</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="419"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="389"/>
       <source>Input Profile:</source>
       <translation>پروفايل ورودی:</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="433"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="403"/>
       <source>Shared</source>
       <extracomment>Refers to the shared settings profile.</extracomment>
       <translation>مشترک</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="441"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="411"/>
       <source>Disc Path:</source>
       <translation>مسیر دیسک:</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="453"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="423"/>
       <source>Browse...</source>
       <translation>مسیر...</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="460"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="430"/>
       <source>Clear</source>
       <translation>پاک کردن</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="512"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="482"/>
       <source>Verify</source>
       <translation>بررسی</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="555"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="525"/>
       <source>Search on Redump.org...</source>
       <translation>سرچ در Redump.org...</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="157"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="76"/>
+      <source>%0%1</source>
+      <extracomment>First arg is a GameList compat; second is a string with space followed by star rating OR empty if Unknown compat</extracomment>
+      <translation type="unfinished">%0%1</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="84"/>
+      <source> %0%1</source>
+      <extracomment>First arg is filled-in stars for game compatibility; second is empty stars; should be swapped for RTL languages</extracomment>
+      <translation type="unfinished"> %0%1</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="165"/>
       <source>Select Disc Path</source>
       <translation>انتخاب مسیر دیسک</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="170"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="178"/>
       <source>Game is not a CD/DVD.</source>
       <translation>این بازی یک CD/DVD نیست.</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="177"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="185"/>
       <source>Track list unavailable while virtual machine is running.</source>
       <translation>لیست آهنگ در حین اجرای کامپیوتر مجازی در دسترس نیست.</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="202"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="210"/>
       <source>#</source>
       <translation>#</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="205"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="213"/>
       <source>Mode</source>
       <translation>حالت</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="206"/>
       <location filename="../Settings/GameSummaryWidget.cpp" line="214"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="222"/>
       <source>Start</source>
       <translation>شروع</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="207"/>
       <location filename="../Settings/GameSummaryWidget.cpp" line="215"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="223"/>
       <source>Sectors</source>
       <translation>سکتورها</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="208"/>
       <location filename="../Settings/GameSummaryWidget.cpp" line="216"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="224"/>
       <source>Size</source>
       <translation>حجم</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="209"/>
       <location filename="../Settings/GameSummaryWidget.cpp" line="217"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="225"/>
       <source>MD5</source>
       <translation>MD۵</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="210"/>
       <location filename="../Settings/GameSummaryWidget.cpp" line="218"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="226"/>
       <source>Status</source>
       <translation>وضعیت</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="226"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="231"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="232"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="233"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="234"/>
       <location filename="../Settings/GameSummaryWidget.cpp" line="239"/>
       <location filename="../Settings/GameSummaryWidget.cpp" line="240"/>
       <location filename="../Settings/GameSummaryWidget.cpp" line="241"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="247"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="248"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="249"/>
       <source>%1</source>
       <translation>%1</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="234"/>
       <location filename="../Settings/GameSummaryWidget.cpp" line="242"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="250"/>
       <source>&lt;not computed&gt;</source>
       <translation>&lt;محاسبه نشده&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="258"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="266"/>
       <source>Error</source>
       <translation>خطا</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="258"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="266"/>
       <source>Cannot verify image while a game is running.</source>
       <translation>هنگام اجرای بازی نمی توان ایمیج را تأیید کرد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="288"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="296"/>
       <source>One or more tracks is missing.</source>
       <translation>یک یا چند آهنگ گم شده اند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="325"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="333"/>
       <source>Verified as %1 [%2] (Version %3).</source>
       <translation>تأیید شده به عنوان %1 [%2] (نسخه %3).</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="332"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="340"/>
       <source>Verified as %1 [%2].</source>
       <translation>تایید شده به عنوان %1 [%2].</translation>
     </message>
@@ -10228,10 +10282,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1068"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1130"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="47"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="442"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="505"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="613"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="616"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="507"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="615"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="618"/>
       <source>Off (Default)</source>
       <translation>خاموش (پیش‌فرض)</translation>
     </message>
@@ -10239,12 +10293,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="151"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="510"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1156"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2110"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2145"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2127"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2162"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="22"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="455"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="502"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="776"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="504"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="785"/>
       <source>Automatic (Default)</source>
       <translation>خودکار (پیش‌فرض)</translation>
     </message>
@@ -10309,7 +10363,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="217"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="429"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="431"/>
       <source>Bilinear (Smooth)</source>
       <extracomment>Smooth: Refers to the texture clarity.</extracomment>
       <translation>دو خطی Bilinear (صاف)</translation>
@@ -10375,29 +10429,29 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="438"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="433"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="435"/>
       <source>Screen Offsets</source>
       <translation>انحراف صفحه</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="445"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="438"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="440"/>
       <source>Show Overscan</source>
       <translation>نمایش ناحیه خارج از صفحه نمایش</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="420"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="422"/>
       <source>Enable Widescreen Patches</source>
       <translation>فعال کردن پچ های صفحه عریض (وایداسکرین)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="423"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="425"/>
       <source>Enable No-Interlacing Patches</source>
       <translation>فعال کردن پچ های بدون درهم آمیختگی (اینترلیسینگ)</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="421"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="446"/>
       <source>Anti-Blur</source>
       <translation>ضد تاری</translation>
     </message>
@@ -10408,7 +10462,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="431"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="426"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="428"/>
       <source>Disable Interlace Offset</source>
       <translation>غیرفعال کردن انحراف درهم آمیختگی</translation>
     </message>
@@ -10418,18 +10472,18 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>اندازه اسکرین‌شات:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="459"/>
       <source>Screen Resolution</source>
       <translation>رزولوشن صفحه</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="491"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="493"/>
       <source>Internal Resolution</source>
       <translation>رزولوشن داخلی</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="259"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="461"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="463"/>
       <source>PNG</source>
       <translation>PNG</translation>
     </message>
@@ -10481,7 +10535,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="489"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="710"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="500"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="502"/>
       <source>Bilinear (PS2)</source>
       <translation>دوخطی (PS2)</translation>
     </message>
@@ -10528,7 +10582,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="561"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="508"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="510"/>
       <source>Unscaled (Default)</source>
       <translation>بدون مقیاس (پیش فرض)</translation>
     </message>
@@ -10544,7 +10598,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="587"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="515"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="517"/>
       <source>Basic (Recommended)</source>
       <translation>معمولی (توصیه شده)</translation>
     </message>
@@ -10580,7 +10634,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="633"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="521"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="523"/>
       <source>Full (Hash Cache)</source>
       <translation>كامل (ذخیره سازی هش)</translation>
     </message>
@@ -10596,31 +10650,31 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="988"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="576"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="578"/>
       <source>Disable Depth Conversion</source>
       <translation type="unfinished">Disable Depth Conversion</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1023"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="525"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="527"/>
       <source>GPU Palette Conversion</source>
       <translation>تبدیل پالت GPU</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="664"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="529"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="531"/>
       <source>Manual Hardware Renderer Fixes</source>
       <translation>اصلاحیات رندر سخت‌افزاری دستی</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="643"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="538"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="540"/>
       <source>Spin GPU During Readbacks</source>
       <translation>چرخش GPU در حین بازخوانی</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="657"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="534"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
       <source>Spin CPU During Readbacks</source>
       <translation>چرخش CPU در حین بازخوانی</translation>
     </message>
@@ -10632,15 +10686,15 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="650"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="739"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="497"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="552"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="499"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="554"/>
       <source>Mipmapping</source>
       <translation>بافت های میپ‌مپینگ</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="746"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="547"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="572"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="549"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="574"/>
       <source>Auto Flush</source>
       <translation>فلاش خودکار</translation>
     </message>
@@ -10650,12 +10704,12 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>اصلاحیات سخت‌افزاری</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2150"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2167"/>
       <source>Force Disabled</source>
       <translation>غیرفعال شده اجباری</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2155"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2172"/>
       <source>Force Enabled</source>
       <translation>فعال شده اجباری</translation>
     </message>
@@ -10668,8 +10722,8 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="772"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="858"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="865"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="557"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="560"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="559"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="562"/>
       <source>0 (Disabled)</source>
       <extracomment>0 (Disabled)</extracomment>
       <translation>۰ (غیرفعال)</translation>
@@ -10726,18 +10780,18 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1002"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="580"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="582"/>
       <source>Disable Safe Features</source>
       <translation>غیر فعال کردن امکانات امن</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1016"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="597"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="599"/>
       <source>Preload Frame Data</source>
       <translation>پیش بارگیری داده های فریم</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="600"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="602"/>
       <source>Texture Inside RT</source>
       <translation>بافت داخل هدف رندر</translation>
     </message>
@@ -10836,13 +10890,13 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1229"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="644"/>
       <source>Merge Sprite</source>
       <translation>ادغام کردن اسپرایت</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1215"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="631"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="633"/>
       <source>Align Sprite</source>
       <translation>تراز کردن اسپرایت</translation>
     </message>
@@ -10938,25 +10992,25 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="995"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="589"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="591"/>
       <source>Disable Partial Source Invalidation</source>
       <translation>غیرفعال کردن ابطالات منبع جزئی</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1009"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="603"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="605"/>
       <source>Read Targets When Closing</source>
       <translation>خواندن اهداف هنگام بسته شدن</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1037"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="607"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="609"/>
       <source>Estimate Texture Region</source>
       <translation>تخمین ناحیه بافت (textures)</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1044"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="587"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="589"/>
       <source>Disable Render Fixes</source>
       <translation>غیرفعال کردن اصلاحات رندر</translation>
     </message>
@@ -10967,7 +11021,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1222"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="645"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="647"/>
       <source>Unscaled Palette Texture Draws</source>
       <translation>ترسیم بافت پالت بدون مقیاس</translation>
     </message>
@@ -10998,19 +11052,19 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1312"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1961"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1978"/>
       <source>Browse...</source>
       <translation>مسیر...</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1319"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1968"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1985"/>
       <source>Open...</source>
       <translation>باز...</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1326"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1975"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1992"/>
       <source>Reset</source>
       <translation>بازنشانی</translation>
     </message>
@@ -11026,25 +11080,25 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1279"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="651"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="653"/>
       <source>Dump Textures</source>
       <translation>ذخیرهٔ بافت ها</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1286"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="653"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
       <source>Dump Mipmaps</source>
       <translation>ذخیره کردن بافت های میپ‌مپ</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1293"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="657"/>
       <source>Dump FMV Textures</source>
       <translation>استخراج بافت های FMV</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1272"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
       <source>Load Textures</source>
       <translation>بارگذاری بافت ها</translation>
     </message>
@@ -11065,13 +11119,13 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1236"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="635"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="637"/>
       <source>Force Even Sprite Position</source>
       <translation type="unfinished">Force Even Sprite Position</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1258"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
       <source>Precache Textures</source>
       <translation>پیش ذخیره سازی بافت ها</translation>
     </message>
@@ -11094,8 +11148,8 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1379"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1447"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="667"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="684"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="686"/>
       <source>None (Default)</source>
       <translation>هیچکدام (پیش‌فرض)</translation>
     </message>
@@ -11116,7 +11170,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1423"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="676"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
       <source>FXAA</source>
       <translation>FXAA</translation>
     </message>
@@ -11168,7 +11222,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1490"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="671"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="673"/>
       <source>Shade Boost</source>
       <translation>تقویت شیدر</translation>
     </message>
@@ -11183,7 +11237,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>کنتراست:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="684"/>
       <source>Saturation</source>
       <translation>اشباع رنگ</translation>
     </message>
@@ -11203,72 +11257,72 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>مقیاس متن اطلاعات‌ها:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1616"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="712"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1637"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="714"/>
       <source>Show Indicators</source>
       <translation>نمايش نشانگرها</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1623"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="702"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1665"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="704"/>
       <source>Show Resolution</source>
       <translation>نمایش رزولوشن</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1630"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="718"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1693"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="720"/>
       <source>Show Inputs</source>
       <translation>نشان دادن ورودی ها</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1637"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1658"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="709"/>
       <source>Show GPU Usage</source>
       <translation>نمایس کارکرد پردازنده گرافیکی</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1644"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="715"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1700"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
       <source>Show Settings</source>
       <translation>نمایش تنظیمات</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1651"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="696"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1616"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="698"/>
       <source>Show FPS</source>
       <translation>نمایش نرخ فریم</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2086"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="786"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2103"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="795"/>
       <source>Disable Mailbox Presentation</source>
       <translation type="unfinished">Disable Mailbox Presentation</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2093"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2110"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="799"/>
       <source>Extended Upscaling Multipliers</source>
       <translation type="unfinished">Extended Upscaling Multipliers</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2172"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2189"/>
       <source>Disable Shader Cache</source>
       <translation>غیر فعال کردن shader cache</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2179"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2196"/>
       <source>Disable Vertex Shader Expand</source>
       <translation>غیرفعال کردن توسعه vertex shader</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1665"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="709"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1679"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="711"/>
       <source>Show Statistics</source>
       <translation>نشان دادن امارها</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1265"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="657"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
       <source>Asynchronous Texture Loading</source>
       <translation>بارگذاری بافت ناهمزمان</translation>
     </message>
@@ -11278,151 +11332,162 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>اشباع رنگ:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1630"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
       <source>Show CPU Usage</source>
       <translation>نمایش کارکرد پردازنده</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1686"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="724"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1651"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
       <source>Warn About Unsafe Settings</source>
       <translation>اخطار دادن درمورد تنظیمات ناامن</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1693"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="722"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
       <source>Show Frame Times</source>
       <translation>نمایش زمان های فریم</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1719"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1726"/>
       <source>Recording</source>
       <translation>ضبط</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1950"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1967"/>
       <source>Video Dumping Directory</source>
       <translation>پوشه استخراج ویدیو</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1728"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1735"/>
       <source>Capture Setup</source>
       <translation>تنظیمات ضبط</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1725"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1623"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="726"/>
+      <source>Show PCSX2 Version</source>
+      <translation type="unfinished">Show PCSX2 Version</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1732"/>
       <source>capture</source>
       <translation type="unfinished">capture</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1734"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1741"/>
       <source>Container:</source>
       <translation>فرمت:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1767"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1835"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1774"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1842"/>
       <source>Codec:</source>
       <translation>کدک:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1800"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1925"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1807"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1942"/>
       <source>Extra Arguments</source>
       <translation>استدلال های اضافی</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1813"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1820"/>
       <source>Capture Audio</source>
       <translation>ضبط صدا</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1868"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1852"/>
+      <source>Format:</source>
+      <translation type="unfinished">Format:</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1885"/>
       <source>Resolution:</source>
       <translation>رزولوشن:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1893"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1910"/>
       <source>x</source>
       <translation>x</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1916"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1933"/>
       <source>Auto</source>
       <translation>خودکار</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1938"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1955"/>
       <source>Capture Video</source>
       <translation>ضبط ویدئو</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2001"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2018"/>
       <source>Advanced</source>
       <extracomment>Advanced here refers to the advanced graphics options.</extracomment>
       <translation>تنظیمات پیشرفته</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2007"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2024"/>
       <source>Advanced Options</source>
       <translation>تنظیمات پیشرفته</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2013"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2030"/>
       <source>Hardware Download Mode:</source>
       <translation>حالت دانلود سخت افزار:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2021"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2038"/>
       <source>Accurate (Recommended)</source>
       <translation>دقیق (توصیه شده)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2026"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2043"/>
       <source>Disable Readbacks (Synchronize GS Thread)</source>
       <translation>غیرفعال کردن بازخوانی ها (همگام سازی رشته GS)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2031"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2048"/>
       <source>Unsynchronized (Non-Deterministic)</source>
       <translation>ناهمزمان (غیر قطعی)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2036"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2053"/>
       <source>Disabled (Ignore Transfers)</source>
       <translation>غیرفعال (نادیده گرفتن انتقالات)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2044"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2061"/>
       <source>GS Dump Compression:</source>
       <translation>فشرده سازی استخراج GS:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2052"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2069"/>
       <source>Uncompressed</source>
       <translation>فشرده سازی نشده</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2057"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2074"/>
       <source>LZMA (xz)</source>
       <translation>LZMA (xz)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2062"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="766"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2079"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="775"/>
       <source>Zstandard (zst)</source>
       <translation>Zstandard (zst)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2072"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="780"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2089"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="789"/>
       <source>Skip Presenting Duplicate Frames</source>
       <translation>صرف نظر کردن از ارائه فریم های تکراری</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2079"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="770"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2096"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="779"/>
       <source>Use Blit Swap Chain</source>
       <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft&apos;s Terminology Portal.
 ----------
@@ -11431,56 +11496,56 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <translation>استفاده از Blit Swap Chain</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1777"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1845"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1784"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1862"/>
       <source>Bitrate:</source>
       <translation>نرخ بیت‌ریت:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1784"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1852"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1791"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1869"/>
       <source> kbps</source>
       <extracomment>Unit that will appear next to a number. Alter the space or whatever is needed before the text depending on your language.</extracomment>
       <translation> كيلوبايت</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2102"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2119"/>
       <source>Allow Exclusive Fullscreen:</source>
       <translation>فعال کردن حالت تمام صفحه اختصاصی:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2115"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2132"/>
       <source>Disallowed</source>
       <translation>اجازه داده نشده</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2120"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2137"/>
       <source>Allowed</source>
       <translation>مجاز</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2131"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2148"/>
       <source>Debugging Options</source>
       <translation>گزینه های تصحیح Debug</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2137"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2154"/>
       <source>Override Texture Barriers:</source>
       <translation>نادیده گرفتن موانع بافت:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2186"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2203"/>
       <source>Use Debug Device</source>
       <translation>استفاده از وسیله اشکال‌زدایی (debug)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1679"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="699"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1686"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="701"/>
       <source>Show Speed Percentages</source>
       <translation>نمایش درصد سرعت</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2165"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2182"/>
       <source>Disable Framebuffer Fetch</source>
       <translation>غیر فعال کردن Framebuffer Fetch</translation>
     </message>
@@ -11547,1244 +11612,1270 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <translation>١۶x</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="278"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1056"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="279"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1090"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1174"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1124"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1208"/>
       <source>Use Global Setting [%1]</source>
       <translation>استفاده از تنظیمات عمومی [%1]</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="420"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="423"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="426"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="433"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="438"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="447"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="525"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="529"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="534"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="538"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="572"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="576"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="580"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="587"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="422"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="425"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="428"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="435"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="440"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="449"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="527"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="531"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="540"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="574"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="578"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="582"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="589"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="593"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="597"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="603"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="607"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="631"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="635"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="639"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="645"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="651"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="591"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="595"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="599"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="605"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="609"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="633"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="637"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="641"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="644"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="647"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="653"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="657"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="671"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="676"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="696"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="699"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="702"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="673"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="698"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="701"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="704"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="709"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="715"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="718"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="722"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="738"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="743"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="756"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="770"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="780"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="786"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="793"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="711"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="720"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="726"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="747"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="765"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="779"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="789"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="795"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="799"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="802"/>
       <source>Unchecked</source>
       <translation>فعال نشده</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="421"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="423"/>
       <source>Automatically loads and applies widescreen patches on game start. Can cause issues.</source>
       <translation>به طور خودکار پچ های صفحه عریض (وایداسکرین) را در شروع بازی بارگیری و اعمال می کند. میتواند باعث مشکلات شود.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="424"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="426"/>
       <source>Automatically loads and applies no-interlacing patches on game start. Can cause issues.</source>
       <translation>به طور خودکار پچ های بدون درهم آمیختگی (اینترلیسینگ) را در شروع بازی بارگیری و اعمال می کند. میتواند باعث مشکلات شود.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="427"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="429"/>
       <source>Disables interlacing offset which may reduce blurring in some situations.</source>
       <translation>انحراف در هم آمیختگی (اینترلیسینگ) را غیرفعال می کند که ممکن است در برخی شرایط تار بودن را کاهش دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="429"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="431"/>
       <source>Bilinear Filtering</source>
       <translation>پالایهٔ دوخطی (Bilinear)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="430"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="432"/>
       <source>Enables bilinear post processing filter. Smooths the overall picture as it is displayed on the screen. Corrects positioning between pixels.</source>
       <translation>فیلتر پس پردازش دوخطی را فعال می کند. تصویر کلی را همانطور که روی صفحه نمایش داده می شود صاف می کند. موقعیت بین پیکسل ها را هم تصحیح می کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="435"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="437"/>
       <source>Enables PCRTC Offsets which position the screen as the game requests. Useful for some games such as WipEout Fusion for its screen shake effect, but can make the picture blurry.</source>
       <extracomment>PCRTC: Programmable CRT (Cathode Ray Tube) Controller.</extracomment>
       <translation>افست های کنترل کننده سی آر تی قابل برنامه ریزی را فعال می کند که صفحه را مطابق درخواست بازی در جای مشخض شده قرار می دهد. برای برخی از بازی‌ها مانند WipEout Fusion برای افکن های لرزش صفحه‌ش مفید است، اما می‌تواند تصویر را تار کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="439"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="441"/>
       <source>Enables the option to show the overscan area on games which draw more than the safe area of the screen.</source>
       <translation>گزینه نمایش «ناحیه خارج از صفحه نمایش» را در بازی هایی که بیشتر از ناحیه قابل نمایش در صفحه نمایش ترسیم می کنند را فعال می کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="442"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
       <source>FMV Aspect Ratio</source>
       <translation>نسبت تصویر FMV</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="442"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
       <source>Overrides the full-motion video (FMV) aspect ratio.</source>
       <translation>تناسب تصویر تمام حرکتی (FMV) را لغو می کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="455"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
       <source>Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the available options.</source>
       <translation>متود ضد انتعطاف پذیری مورد استفاده برای صفحه انعطاف پذیری کنسول شبیه سازی شده را تعیین می‌کند. اتوماتیک به صورت خودکار اکثر بازی ها را انعطاف‌پذیر (اینترلیس) می‌کند، اما اگر بازی دارای گرافیک لرزشی بود، یکی از گزینه های موجود را انتخاب کنید.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="503"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="505"/>
       <source>Control the texture&apos;s trilinear filtering of the emulation.</source>
       <translation>کنترل فیلتر سه خطی بافت شبیه سازی.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="516"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="518"/>
       <source>Control the accuracy level of the GS blending unit emulation.&lt;br&gt; The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will be.&lt;br&gt; Do note that Direct3D&apos;s blending is reduced in capability compared to OpenGL/Vulkan.</source>
       <translation>سطح دقت شبیه‌سازی واحد ترکیب GS را کنترل کنید.&lt;br&gt; هر چه تنظیم بالاتر باشد، ترکیب بافت بیشتری در سایه‌زن شبیه‌سازی می‌شود و کاهش سرعت بالاتر خواهد بود.&lt;br&gt; توجه داشته باشید که ترکیب کننده Direct3D سازگاری کمتری نسبت به OpenGL و یا Vulkan دارد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="543"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="545"/>
       <source>Software Rendering Threads</source>
       <translation>رشته رندر نرم‌افزاری</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="557"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="559"/>
       <source>CPU Sprite Render Size</source>
       <translation>اندازه رندر اسپرایت CPU</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="560"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="562"/>
       <source>Software CLUT Render</source>
       <translation>رندر CLUT نرم‌افزاری</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="564"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="566"/>
       <source>Try to detect when a game is drawing its own color palette and then renders it on the GPU with special handling.</source>
       <translation>سعی میکند که تشخیص دهد چه زمانی یک بازی پالت رنگی خود را ترسیم میکند و سپس با استفاده از GPU با بررسی خاص رندر می‌کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="587"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="589"/>
       <source>This option disables game-specific render fixes.</source>
       <translation>این گزینه تعدادی از اصلاحات رندر مخصوص هر بازی را غیر فعال می کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="590"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="592"/>
       <source>By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise. This hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load. It helps with the Snowblind engine games.</source>
       <translation>به‌طور پیش‌فرض، حافظه پنهان بافت، ابطال‌های جزئی را مدیریت می‌کند. متأسفانه محاسبات پردازنده بسیار متلف است. این پچ با جایگزین اطلاعات بی اعتباری جزئی و با پاک کردن کامل این بافت ها به کاهش استفاده پردازنده کمک می کند. این پچ به بازی هایی موتور رندر Snowblind دارند، کمک می کند.</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1030"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="593"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="595"/>
       <source>Framebuffer Conversion</source>
       <translation>تبدیل Framebuffer</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="594"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="596"/>
       <source>Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU. Helps Harry Potter and Stuntman games. It has a big impact on performance.</source>
       <translation>فریم بافر ۴ و ۸ بیتی را به‌جای اینکه بر روی پردازنده گرافیکی تبدیل کند، بر روی پردازنده اصلی تبدیل می کند. به بازی های هری پاتر و Stuntman کمک می کند. تاثیر زیادی هم روی عملکرد شبیه‌ساز دارد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="563"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="600"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="565"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="602"/>
       <source>Disabled</source>
       <translation>غیرفعال</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="318"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="319"/>
       <source>Remove Unsupported Settings</source>
       <translation type="unfinished">Remove Unsupported Settings</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="319"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="320"/>
       <source>You currently have the &lt;strong&gt;Enable Widescreen Patches&lt;/strong&gt; or &lt;strong&gt;Enable No-Interlacing Patches&lt;/strong&gt; options enabled for this game.&lt;br&gt;&lt;br&gt;We no longer support these options, instead &lt;strong&gt;you should select the &quot;Patches&quot; section, and explicitly enable the patches you want.&lt;/strong&gt;&lt;br&gt;&lt;br&gt;Do you want to remove these options from your game configuration now?</source>
       <translation type="unfinished">You currently have the &lt;strong&gt;Enable Widescreen Patches&lt;/strong&gt; or &lt;strong&gt;Enable No-Interlacing Patches&lt;/strong&gt; options enabled for this game.&lt;br&gt;&lt;br&gt;We no longer support these options, instead &lt;strong&gt;you should select the &quot;Patches&quot; section, and explicitly enable the patches you want.&lt;/strong&gt;&lt;br&gt;&lt;br&gt;Do you want to remove these options from your game configuration now?</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="509"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="511"/>
       <source>Reduces banding between colors and improves the perceived color depth.&lt;br&gt; Off: Disables any dithering.&lt;br&gt; Scaled: Upscaling-aware / Highest dithering effect.&lt;br&gt; Unscaled: Native Dithering / Lowest dithering effect does not increase size of squares when upscaling.&lt;br&gt; Force 32bit: Treat all draws as if they were 32bit to avoid banding and dithering.</source>
       <translation type="unfinished">Reduces banding between colors and improves the perceived color depth.&lt;br&gt; Off: Disables any dithering.&lt;br&gt; Scaled: Upscaling-aware / Highest dithering effect.&lt;br&gt; Unscaled: Native Dithering / Lowest dithering effect does not increase size of squares when upscaling.&lt;br&gt; Force 32bit: Treat all draws as if they were 32bit to avoid banding and dithering.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="535"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="537"/>
       <source>Does useless work on the CPU during readbacks to prevent it from going to into powersave modes. May improve performance during readbacks but with a significant increase in power usage.</source>
       <translation type="unfinished">Does useless work on the CPU during readbacks to prevent it from going to into powersave modes. May improve performance during readbacks but with a significant increase in power usage.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="539"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="541"/>
       <source>Submits useless work to the GPU during readbacks to prevent it from going into powersave modes. May improve performance during readbacks but with a significant increase in power usage.</source>
       <translation type="unfinished">Submits useless work to the GPU during readbacks to prevent it from going into powersave modes. May improve performance during readbacks but with a significant increase in power usage.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="544"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="546"/>
       <source>Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging). 2 to 4 threads is recommended, any more than that is likely to be slower instead of faster.</source>
       <translation type="unfinished">Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging). 2 to 4 threads is recommended, any more than that is likely to be slower instead of faster.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="577"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="579"/>
       <source>Disable the support of depth buffers in the texture cache. Will likely create various glitches and is only useful for debugging.</source>
       <translation type="unfinished">Disable the support of depth buffers in the texture cache. Will likely create various glitches and is only useful for debugging.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="601"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="603"/>
       <source>Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.</source>
       <translation>به کش بافت ها (textures) اجازه میدهد تا به عنوان یک بافت ورودی (texture) از بخش داخلی یک فریم بافر قبلی مجددا استفاده کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="604"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="606"/>
       <source>Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving state or switching renderers, but can also cause graphical corruption.</source>
       <translation>هنگام خاموش شدن، تمام اهداف موجود در کش بافت را به حافظه محلی باز می گرداند. می تواند هنگام ذخیره وضعیت یا تغییر رندر، از از دست رفتن تصویر جلوگیری کند، اما همچنین می تواند باعث خرابی های گرافیکی شود.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="608"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="610"/>
       <source>Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).</source>
       <translation>برای کاهش حجم بافت ها (texture) وقتی که بازی ها خودشان آن را تنظیم نمیکنند تلاش میکند (برای مثال، بازی های شرکت Snowblind).</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="633"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="635"/>
       <source>Fixes issues with upscaling (vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc.</source>
       <extracomment>Namco: a game publisher and development company. Leave the name as-is. Ace Combat, Tekken, Soul Calibur: game names. Leave as-is or use official translations.</extracomment>
       <translation>مشکلات افزایش رزولوشن (خطوط عمودی) در بازی های Namco مانند Ace Combat، Tekken، Soul Calibur و غیره را برطرف می کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="651"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="653"/>
       <source>Dumps replaceable textures to disk. Will reduce performance.</source>
       <translation>بافت های قابل جایگزین را در دیسک استخراج میکند. باعث کاهش سرعت اجرا می‌شود.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="653"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
       <source>Includes mipmaps when dumping textures.</source>
       <translation>شامل کردن mipmap ها هنگام استخراح بافت ها.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="657"/>
       <source>Allows texture dumping when FMVs are active. You should not enable this.</source>
       <translation>به استخراج بافت ها زمانی که FMV ها فعال هستند اجازه میدهد. نباید این گزینه را فعال کنید.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="657"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
       <source>Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled.</source>
       <translation>بافت های جایگزین را بر روی یک رشته عملکردی بار می کند و در صورت فعال بودن جایگزینی، لگ های ریز را کاهش می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
       <source>Loads replacement textures where available and user-provided.</source>
       <translation>بارگیری بافت جایگزین زمانی که در دسترس و در اختیار کاربر است.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
       <source>Preloads all replacement textures to memory. Not necessary with asynchronous loading.</source>
       <translation>تمامی تکسچر ها را از قبل در حافظه بارگیری میکند. با بارگیری ناهمزمان لازم نیست.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="667"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
       <source>Enables FidelityFX Contrast Adaptive Sharpening.</source>
       <translation>فعال کردن تیز کردن کنتراست FidelityFX.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="671"/>
       <source>Determines the intensity the sharpening effect in CAS post-processing.</source>
       <translation>شدت اثر تیز کردن در CAS پس از پردازش را تعیین می‌کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
       <source>Adjusts brightness. 50 is normal.</source>
       <translation>روشنایی را تنظیم می کند. 50 طبیعیست.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
       <source>Adjusts contrast. 50 is normal.</source>
       <translation>کنتراست را تنظیم می کند. 50 طبیعیست.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="684"/>
       <source>Adjusts saturation. 50 is normal.</source>
       <translation>اشباع را تنظیم می کند. 50 طبیعیست.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="690"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
       <source>Scales the size of the onscreen OSD from 50% to 500%.</source>
       <translation>اندازه صفحه نمایش روی صفحه را از 50٪ به 500٪ تغییر می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="715"/>
       <source>Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast-Forward, and Slow-Motion.</source>
       <translation>نشانگرهای نماد های «اطلاعات شبیه سازی بر روی صفحه» را برای حالت های شبیه سازی مانند توقف، توربو، سریع به جلو و حرکت آهسته نشان می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="716"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="718"/>
       <source>Displays various settings and the current values of those settings, useful for debugging.</source>
       <translation>تنظیمات مختلف و مقادیر فعلی آن تنظیمات را نمایش می دهد که برای اشکال زدایی مفید است.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="722"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="724"/>
       <source>Displays a graph showing the average frametimes.</source>
       <translation>یک نمودار برای میانگین زمان فریم ها نشان می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="730"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="727"/>
+      <source>Shows the current PCSX2 version on the top-right corner of the display</source>
+      <translation type="unfinished">Shows the current PCSX2 version on the top-right corner of the display</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="735"/>
       <source>Video Codec</source>
       <translation>کدک ویدیو</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="730"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="735"/>
       <source>Selects which Video Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
       <translation>انتخاب می کند که کدام کدک ویدیو برای ضبط ویدیو استفاده شود. &lt;b&gt;اگر مطمئن نیستید، بر حالت پیش‌فرض بگذارید.&lt;b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="734"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="739"/>
+      <source>Video Format</source>
+      <translation type="unfinished">Video Format</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="739"/>
+      <source>Selects which Video Format to be used for Video Capture. If by chance the codec does not support the format, the first format available will be used. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
+      <translation type="unfinished">Selects which Video Format to be used for Video Capture. If by chance the codec does not support the format, the first format available will be used. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="743"/>
       <source>Video Bitrate</source>
       <translation>بیت ریت ویدیو</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="734"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="743"/>
       <source>6000 kbps</source>
       <translation>6000 کیلوبیت بر ثانیه</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="734"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="743"/>
       <source>Sets the video bitrate to be used. Larger bitrate generally yields better video quality at the cost of larger resulting file size.</source>
       <translation>مقدار بیت ریت مورد استفاده برای ویدیو را تنظیم می‌کند. بیت ریت بالاتر باعث کیفیت بالاتری برای ویدیو میشود اما به قیمت افزایش حجم فایل.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="738"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="747"/>
       <source>Automatic Resolution</source>
       <translation>رزولوشن خودکار</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="738"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="747"/>
       <source>When checked, the video capture resolution will follows the internal resolution of the running game.&lt;br&gt;&lt;br&gt;&lt;b&gt;Be careful when using this setting especially when you are upscaling, as higher internal resolution (above 4x) can results in very large video capture and can cause system overload.&lt;/b&gt;</source>
       <translation>هنگامی که علامت بزنید، وضوح ضبط ویدیو از وضوح داخلی بازی در حال اجرا پیروی می کند.&lt;br&gt;&lt;br&gt;&lt;b&gt;در استفاده از این تنظیم به خصوص زمانی که در حال ارتقاء آپ‌اسکیل هستید مراقب باشید، زیرا وضوح داخلی بالاتر (بالاتر از 4x) می تواند منجر به فیلم برداری بسیار بزرگ می شود و می تواند باعث بار اضافه سیستم شود.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="743"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
       <source>Enable Extra Video Arguments</source>
       <translation>فعال کردن استدلال های ویدیو اضافه</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="743"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
       <source>Allows you to pass arguments to the selected video codec.</source>
       <translation>به شما اجازه می‌دهد تا استدلال های بیشتری را به کدک ویدیویی انتخاب شده انتقال دهید.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="745"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="754"/>
       <source>Extra Video Arguments</source>
       <translation>استدلال های ویدیویی اضافه</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="750"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="759"/>
       <source>Audio Codec</source>
       <translation>کدک صوتی</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="750"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="759"/>
       <source>Selects which Audio Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
       <translation>انتخاب می کند که کدام کدک صدا برای ضبط ویدیو استفاده شود. &lt;b&gt;اگر مطمئن نیستید، بر حالت پیش‌فرض بگذارید.&lt;b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="754"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="763"/>
       <source>Audio Bitrate</source>
       <translation>بیت ریت صدا</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="756"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="765"/>
       <source>Enable Extra Audio Arguments</source>
       <translation>فعال کردن استدلال های صوتی اضافه</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="756"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="765"/>
       <source>Allows you to pass arguments to the selected audio codec.</source>
       <translation>به شما اجازه می‌دهد تا استدلال های بیشتری را به کدک صوتی انتخاب شده انتقال دهید.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="758"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="767"/>
       <source>Extra Audio Arguments</source>
       <translation>استدلال های صوتی اضافه</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="776"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="785"/>
       <source>Allow Exclusive Fullscreen</source>
       <translation>فعال کردن حالت تمام صفحه اختصاصی</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="777"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="786"/>
       <source>Overrides the driver&apos;s heuristics for enabling exclusive fullscreen, or direct flip/scanout.&lt;br&gt;Disallowing exclusive fullscreen may enable smoother task switching and overlays, but increase input latency.</source>
       <translation>فراگیر درایور را برای فعال کردن حالت تمام صفحه انحصاری و یا برای چرخش و یا اسکن اوت مستقیم لغو می‌کند.&lt;br&gt;غیر فعال کردن حالت تمام صفحه انحصاری ممکن است تعویض کارها و همپوشانی‌های نرم و تمیزتری را فعال کند، اما تأخیر در ورودی را افزایش می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1118"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
+      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
+      <translation type="unfinished">Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1152"/>
       <source>1.25x Native (~450px)</source>
       <translation type="unfinished">1.25x Native (~450px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1119"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1153"/>
       <source>1.5x Native (~540px)</source>
       <translation type="unfinished">1.5x Native (~540px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1120"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1154"/>
       <source>1.75x Native (~630px)</source>
       <translation type="unfinished">1.75x Native (~630px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1121"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1155"/>
       <source>2x Native (~720px/HD)</source>
       <translation type="unfinished">2x Native (~720px/HD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1122"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1156"/>
       <source>2.5x Native (~900px/HD+)</source>
       <translation type="unfinished">2.5x Native (~900px/HD+)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1123"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1157"/>
       <source>3x Native (~1080px/FHD)</source>
       <translation type="unfinished">3x Native (~1080px/FHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1124"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1158"/>
       <source>3.5x Native (~1260px)</source>
       <translation type="unfinished">3.5x Native (~1260px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1125"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1159"/>
       <source>4x Native (~1440px/QHD)</source>
       <translation type="unfinished">4x Native (~1440px/QHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1126"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1160"/>
       <source>5x Native (~1800px/QHD+)</source>
       <translation type="unfinished">5x Native (~1800px/QHD+)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1127"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1161"/>
       <source>6x Native (~2160px/4K UHD)</source>
       <translation type="unfinished">6x Native (~2160px/4K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1128"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1162"/>
       <source>7x Native (~2520px)</source>
       <translation type="unfinished">7x Native (~2520px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1129"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1163"/>
       <source>8x Native (~2880px/5K UHD)</source>
       <translation type="unfinished">8x Native (~2880px/5K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1130"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1164"/>
       <source>9x Native (~3240px)</source>
       <translation type="unfinished">9x Native (~3240px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1131"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1165"/>
       <source>10x Native (~3600px/6K UHD)</source>
       <translation type="unfinished">10x Native (~3600px/6K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1132"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1166"/>
       <source>11x Native (~3960px)</source>
       <translation type="unfinished">11x Native (~3960px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1133"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1167"/>
       <source>12x Native (~4320px/8K UHD)</source>
       <translation type="unfinished">12x Native (~4320px/8K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1134"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1168"/>
       <source>13x Native (~4680px)</source>
       <translation type="unfinished">13x Native (~4680px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1135"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1169"/>
       <source>14x Native (~5040px)</source>
       <translation type="unfinished">14x Native (~5040px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1136"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1170"/>
       <source>15x Native (~5400px)</source>
       <translation type="unfinished">15x Native (~5400px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1137"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1171"/>
       <source>16x Native (~5760px)</source>
       <translation type="unfinished">16x Native (~5760px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1138"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1172"/>
       <source>17x Native (~6120px)</source>
       <translation type="unfinished">17x Native (~6120px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1139"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1173"/>
       <source>18x Native (~6480px/12K UHD)</source>
       <translation type="unfinished">18x Native (~6480px/12K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1140"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1174"/>
       <source>19x Native (~6840px)</source>
       <translation type="unfinished">19x Native (~6840px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1141"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1175"/>
       <source>20x Native (~7200px)</source>
       <translation type="unfinished">20x Native (~7200px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1142"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1176"/>
       <source>21x Native (~7560px)</source>
       <translation type="unfinished">21x Native (~7560px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1143"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1177"/>
       <source>22x Native (~7920px)</source>
       <translation type="unfinished">22x Native (~7920px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1144"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1178"/>
       <source>23x Native (~8280px)</source>
       <translation type="unfinished">23x Native (~8280px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1145"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1179"/>
       <source>24x Native (~8640px/16K UHD)</source>
       <translation type="unfinished">24x Native (~8640px/16K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1146"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1180"/>
       <source>25x Native (~9000px)</source>
       <translation type="unfinished">25x Native (~9000px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1167"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1173"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1201"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1207"/>
       <source>%1x Native</source>
       <translation type="unfinished">%1x Native</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="497"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="547"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="552"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="657"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="712"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="724"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="446"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="499"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="549"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="554"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="694"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="714"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
       <source>Checked</source>
       <translation>فعال شده</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="445"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="447"/>
       <source>Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry.</source>
       <translation>هک های داخلی ضد تاری را فعال می کند. دقت کمتری نسبت به رندر پلی‌استیشن ۲ دارد اما باعث می شود بسیاری از بازی ها کمتر تار به نظر برسند.</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="400"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="447"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="449"/>
       <source>Integer Scaling</source>
       <translation>مقیاس صحیح</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="448"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="450"/>
       <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games.</source>
       <translation>برای اطمینان از اینکه نسبت بین پیکسل های سیستم اصلی به پیکسل های کنسول یک عدد صحیح باشد، به ناحیه های نمایش پدینگ اضافه می کند. ممکن است در برخی از بازی‌های دوبعدی تصویر واضح‌تری ایجاد کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="451"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="453"/>
       <source>Aspect Ratio</source>
       <translation>نسبت تصویر</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="451"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="453"/>
       <source>Auto Standard (4:3/3:2 Progressive)</source>
       <translation>استاندارد خودکار (4:3 تداخلی / 3:2 پیشرو)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="452"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="454"/>
       <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto Standard (4:3/3:2 Progressive) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
       <translation>نسبت تصویر مورد استفاده برای نمایش خروجی کنسول روی صفحه را تغییر می دهد. پیش‌فرض استاندارد خودکار (۴:۳ یا ۳:۲ پیشرونده) است که به‌طور خودکار نسبت تصویر را برای مطابقت با نحوه نمایش یک بازی در تلویزیون‌های معمولی آن دوره تنظیم می‌کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="455"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
       <source>Deinterlacing</source>
       <translation>ضد انعطاف پذیری</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="459"/>
       <source>Screenshot Size</source>
       <translation>اندازه اسکرین‌شات</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="458"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="460"/>
       <source>Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of file size.</source>
       <translation>رزولوشنی را که برای اسکرین شات ها تعیین می کند را ذخیره می کند. رزولوشن های داخلی جزئیات بیشتری را با اندازه فایل بیشتر حفظ می کنند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="461"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="463"/>
       <source>Screenshot Format</source>
       <translation>فرمت اسکرین‌شات</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="462"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="464"/>
       <source>Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail.</source>
       <translation>فرمتی را انتخاب می کند که برای ذخیره اسکرین شات استفاده می شود. فرمت JPEG فایل های کوچکتری تولید می کند، اما جزئیات داخل اسکرین شات از دست می رود.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="464"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="466"/>
       <source>Screenshot Quality</source>
       <translation>کیفیت اسکرین‌شات</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="464"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="466"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="671"/>
       <source>50%</source>
       <translation>۵۰%</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="465"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="467"/>
       <source>Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG, and reduce file size for PNG.</source>
       <translation>کیفیت فشرده سازی اسکرین شات ها را انتخاب می کند. مقادیر بالاتر، جزئیات بیشتری در اسکرین شات را برای فرمت JPEG حفظ می کند و اندازه فایل را برای فرمت PNG کاهش می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="468"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="690"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="470"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
       <source>100%</source>
       <translation>۱۰۰٪</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="468"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="470"/>
       <source>Vertical Stretch</source>
       <translation>کشش عمودی</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="470"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="472"/>
       <source>Stretches (&amp;lt; 100%) or squashes (&amp;gt; 100%) the vertical component of the display.</source>
       <translation>کشش (&amp;lt; 100%) یا کوبیدن (&amp;gt; 100%) جزئیات عمودی نمایشگر.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="472"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="474"/>
       <source>Fullscreen Mode</source>
       <translation>حالت تمام‌صفحه</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="472"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1084"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1090"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="474"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1118"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1124"/>
       <source>Borderless Fullscreen</source>
       <translation>تمام صفحه بدون مرز</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="473"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="475"/>
       <source>Chooses the fullscreen resolution and frequency.</source>
       <translation>رزولوشن و فرکانس رزولوشن تمام صفحه را انتخاب می کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="476"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
       <source>Left</source>
       <translation>چپ</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="476"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="479"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="482"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="485"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="484"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="487"/>
       <source>0px</source>
       <translation>۰ پیکسل</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="476"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
       <source>Changes the number of pixels cropped from the left side of the display.</source>
       <translation>تعداد پیکسل های برش خورده از سمت چپ نمایشگر را تغییر می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="479"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
       <source>Top</source>
       <translation>بالا</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="479"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
       <source>Changes the number of pixels cropped from the top of the display.</source>
       <translation>تعداد پیکسل های برش خورده از سمت بالای نمایشگر را تغییر می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="482"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="484"/>
       <source>Right</source>
       <translation>راست</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="482"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="484"/>
       <source>Changes the number of pixels cropped from the right side of the display.</source>
       <translation>تعداد پیکسل های برش خورده از سمت راست نمایشگر را تغییر می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="485"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="487"/>
       <source>Bottom</source>
       <translation>پایین</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="485"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="487"/>
       <source>Changes the number of pixels cropped from the bottom of the display.</source>
       <translation>تعداد پیکسل های برش خورده از سمت پایین نمایشگر را تغییر می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="491"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1117"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="493"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1151"/>
       <source>Native (PS2) (Default)</source>
       <translation>رزولوشن اولیه (PS2) (پیش‌فرض)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="492"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="494"/>
       <source>Control the resolution at which games are rendered. High resolutions can impact performance on older or lower-end GPUs.&lt;br&gt;Non-native resolution may cause minor graphical issues in some games.&lt;br&gt;FMV resolution will remain unchanged, as the video files are pre-rendered.</source>
       <translation>وضوح نمایش بازی ها را کنترل کنید. وضوح بالا می‌تواند بر عملکرد پردازنده‌های گرافیکی قدیمی یا پایین‌تر تأثیر بگذارد.&lt;br&gt;رزولوشن غیربومی ممکن است باعث مشکلات گرافیکی جزئی در برخی بازی‌ها شود.&lt;br&gt;رزولوشن FMV بدون تغییر باقی می‌ماند، زیرا فایل‌های ویدیویی از قبل رندر شده‌اند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="500"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="502"/>
       <source>Texture Filtering</source>
       <translation>فیلترینگ بافت</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="500"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="502"/>
       <source>Control the texture filtering of the emulation.</source>
       <translation>کنترل فیلتر سه خطی بافت شبیه سازی.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="502"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="504"/>
       <source>Trilinear Filtering</source>
       <translation>فیلتر سه خطی (Trilinear)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="505"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="507"/>
       <source>Anisotropic Filtering</source>
       <translation>فیلتر ناهمسان‌گردی</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="506"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="508"/>
       <source>Reduces texture aliasing at extreme viewing angles.</source>
       <translation>پلگی بافت ها دا در زوایای دید شدید کاهش میشدهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="508"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="510"/>
       <source>Dithering</source>
       <translation>دیترینگ</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="515"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="517"/>
       <source>Blending Accuracy</source>
       <translation>دقت ترکیب</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="521"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="523"/>
       <source>Texture Preloading</source>
       <translation>پیش‌بارگیری بافت</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="522"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="524"/>
       <source>Uploads entire textures at once instead of small pieces, avoiding redundant uploads when possible. Improves performance in most games, but can make a small selection slower.</source>
       <translation>کل بافت‌ها را به‌جای قطعات کوچک، یک‌باره آپلود می‌کند و در صورت امکان از آپلود اضافی اجتناب می‌کند. عملکرد را در اکثر بازی ها بهبود می بخشد، اما می تواند انتخاب های کوچک را کندتر کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="526"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="528"/>
       <source>When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU.</source>
       <translation>هنگامی که پردازنده گرافیکی فعال باشد، بافت های نقشه رنگی را تبدیل می کند، در غیر این صورت پردازنده این کار را انجام می دهد. این یک معامله بین پردازنده گرافیکی و پردازنده است.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="530"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="532"/>
       <source>Enabling this option gives you the ability to change the renderer and upscaling fixes to your games. However IF you have ENABLED this, you WILL DISABLE AUTOMATIC SETTINGS and you can re-enable automatic settings by unchecking this option.</source>
       <translation>فعال کردن این گزینه به شما این امکان را می دهد که پچ های رندر و ارتقاء مقیاس بازی های خود را تغییر دهید. اما اگر این را فعال کرده باشید، تنظیمات خودکار را غیرفعال خواهید کرد و می توانید با برداشتن تیک این گزینه تنظیمات خودکار را دوباره فعال کنید.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="543"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="545"/>
       <source>2 threads</source>
       <translation>۲ رشته</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="548"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="573"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="550"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="575"/>
       <source>Force a primitive flush when a framebuffer is also an input texture. Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.</source>
       <translation>هنگامی که یک فریم بافر نیز یک بافت ورودی است، یک فلاش اولیه را اجباری می کند. برخی از جلوه های پردازشی مانند سایه ها در سری بازی های Jak و افکت طلوعی در جی‌تی‌ای: سان آندرس را رفع می کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="497"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="552"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="499"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="554"/>
       <source>Enables mipmapping, which some games require to render correctly.</source>
       <translation>میپ‌مپینگ را فعال می کند، ممکن است بعضی از بازی ها به آن نیاز داشته باشند برای اینکه درست رندر شوند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="558"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="560"/>
       <source>The maximum target memory width that will allow the CPU Sprite Renderer to activate on.</source>
       <translation>حداکثر عرض حافظه هدف که به رندر اسپرایت CPU اجازه می دهد تا در آن فعال شود.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="561"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="563"/>
       <source>Tries to detect when a game is drawing its own color palette and then renders it in software, instead of on the GPU.</source>
       <translation>سعی میکند که تشخیص دهد چه زمانی یک بازی پالت رنگی خود را ترسیم میکند و سپس نرم ‌افزاری رندر می‌کند، به جای استفاده از GPU.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="563"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="565"/>
       <source>GPU Target CLUT</source>
       <translation>هدف GPU CLUT</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="566"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="568"/>
       <source>Skipdraw Range Start</source>
       <translation>پرش از محدوده شروع ترسیم</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="566"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="569"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="621"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="626"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="568"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="571"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="623"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
       <source>0</source>
       <translation>۰</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="567"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="570"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="569"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="572"/>
       <source>Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right.</source>
       <translation>به طور کامل از طراحی سطوح از سطح در کادر سمت چپ تا سطح مشخص شده در کادر سمت راست رد می شود.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="569"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="571"/>
       <source>Skipdraw Range End</source>
       <translation>پرش از محدوده پایان ترسیم</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="581"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="583"/>
       <source>This option disables multiple safe features. Disables accurate Unscale Point and Line rendering which can help Xenosaga games. Disables accurate GS Memory Clearing to be done on the CPU, and let the GPU handle it, which can help Kingdom Hearts games.</source>
       <translation>این گزینه چندین ویژگی های امن را غیرفعال می کند. رندر دقیق نقظه ای از مقیاس و خطی را غیرفعال می کند که می تواند به سری بازی های Xenosaga کمک کند. پاکسازی دقیق حافظه GS را که روی پردازنده انجام می شود را غیرفعال می کند و به پردازنده گرافیکی اجازه می دهد آن را مدیریت کند، که می تواند به سری بازی های Kingdom Hearts کمک کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="598"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="600"/>
       <source>Uploads GS data when rendering a new frame to reproduce some effects accurately.</source>
       <translation>داده های GS را هنگام رندر کردن یک فریم جدید برای بازتولید برخی جلوه ها با دقت آپلود می کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="613"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="615"/>
       <source>Half Pixel Offset</source>
       <translation>نیمه انحراف پیکسلی</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="614"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="616"/>
       <source>Might fix some misaligned fog, bloom, or blend effect.</source>
       <translation>ممکن است برخی ناهماهنگی در افکت های مه، بلوم یا ترکیب را درست کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="616"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="618"/>
       <source>Round Sprite</source>
       <translation>گرد کردن اسپرایت</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="617"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="619"/>
       <source>Corrects the sampling of 2D sprite textures when upscaling. Fixes lines in sprites of games like Ar tonelico when upscaling. Half option is for flat sprites, Full is for all sprites.</source>
       <translation>نمونه برداری از بافت های دوبعدی اسپرایت را هنگام ارتقاء رزولوشن درست می کند. خطوط را در بازی هایی مانند Ar Tonelico هنگام ارتقاء رزولوشن اصلاح می‌کند. گزینه «نصف» برای باقت های اسپرایت مسطح و «کامل» برای همه بافت های اسپرایت است.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="621"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="623"/>
       <source>Texture Offsets X</source>
       <translation>انحراف های بافت X</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="623"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="625"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="630"/>
       <source>Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too.</source>
       <extracomment>ST and UV are different types of texture coordinates, like XY would be spatial coordinates.</extracomment>
       <translation>آفست برای مختصات بافت های ST یا UV. برخی از مشکلات بافت عجیب و غریب را برطرف می کند و ممکن است برخی از هم‌ترازی های پس‌پردازش را نیز برطرف کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="626"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
       <source>Texture Offsets Y</source>
       <translation>انحراف های بافت Y</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="637"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="639"/>
       <source>Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.</source>
       <extracomment>Wild Arms: name of a game series. Leave as-is or use an official translation.</extracomment>
       <translation>دقت GS را برای جلوگیری از شکاف بین پیکسل ها هنگام ارتقاء رزولوشن کاهش می دهد. متن در بازی‌های Wild Arms را درست می کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="639"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="641"/>
       <source>Bilinear Upscale</source>
       <translation>آپ‌اسکیل دو خطی (Bilinear)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="640"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
       <source>Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.</source>
       <translation>می‌تواند بافت‌ها را به دلیل فیلتر bilinear هنگام ‌آپ‌اسکیل شدن صاف کند. به عنوان مثال، تابش نور خورشید در بازی Brave.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="643"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="645"/>
       <source>Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines.</source>
       <translation>اسپرايت هاي متعدد با حالت سنگفرشي را با یک اسپرایت بزرگ جایگزین می کند. خطوط مختلف افزایش مقیاس را کاهش می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="646"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="648"/>
       <source>Force palette texture draws to render at native resolution.</source>
       <translation>اجبار کردن پالت ترسیم بافت برای رندر در رزولوشن بومی.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="667"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
       <source>Contrast Adaptive Sharpening</source>
       <extracomment>You might find an official translation for this on AMD&apos;s website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx</extracomment>
       <translation>تیز کردن تطبیقی کنتراست</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="671"/>
       <source>Sharpness</source>
       <translation>تیزی</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="672"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="674"/>
       <source>Enables saturation, contrast, and brightness to be adjusted. Values of brightness, saturation, and contrast are at default 50.</source>
       <translation>تنظیم اشباع، کنتراست و روشنایی را فعال می کند. مقادیر روشنایی، اشباع و کنتراست به طور پیش فرض روی ۵۰ است.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="676"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
       <source>Applies the FXAA anti-aliasing algorithm to improve the visual quality of games.</source>
       <translation>از الگوریتم ضد پلکی FXAA برای بهبود جلوه های یک بازی استفاده می کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
       <source>Brightness</source>
       <translation>روشنایی</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="684"/>
       <source>50</source>
       <translation>۵۰</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
       <source>Contrast</source>
       <translation>کنتراست</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="684"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="686"/>
       <source>TV Shader</source>
       <translation>شیدر تلویزیون</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="685"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="687"/>
       <source>Applies a shader which replicates the visual effects of different styles of television set.</source>
       <translation>یک شیدر که جلوه های بصری یک سبک مختلف تلویزیون را بازسازی میکند را اعمال می‌کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="690"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
       <source>OSD Scale</source>
       <translation>مقیاس متن اطلاعات‌ها</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1658"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1644"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="694"/>
       <source>Show OSD Messages</source>
       <translation>نمایش پیام‌های روی صفحه</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="693"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="695"/>
       <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
       <translation>هنگامی که رویدادهایی مانند ایجاد یا بارگیری وضعیت های ذخیره شده، گرفتن اسکرین شات و غیره رخ می دهد، پیام هایی روی صفحه نمایش را نشان می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="697"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="699"/>
       <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
       <translation>رزولوشن داخلی بازی را در گوشه سمت راست بالای صفحه نشان می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="700"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="702"/>
       <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
       <translation>سرعت شبیه سازی فعلی سیستم را در گوشه سمت راست بالای صفحه نمایش به صورت درصد نشان می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="703"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
       <source>Shows the resolution of the game in the top-right corner of the display.</source>
       <translation>رزولوشن بازی را در گوشه سمت راست بالای صفحه نشان می‌دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
       <source>Shows host&apos;s CPU utilization.</source>
       <translation>نمایش استفاده CPU میزبان.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="709"/>
       <source>Shows host&apos;s GPU utilization.</source>
       <translation>نمایش استفاده GPU میزبان.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="710"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="712"/>
       <source>Shows counters for internal graphical utilization, useful for debugging.</source>
       <translation>شمارنده هایی را برای استفاده گرافیکی داخلی نشان می دهد که برای اشکال زدایی مفید است.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="719"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
       <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
       <translation>وضعیت دسته های فعلی سیستم را در گوشه سمت چپ پایین صفحه نمایش نشان می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="725"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="730"/>
       <source>Displays warnings when settings are enabled which may break games.</source>
       <translation>هنگامی که تنظیماتی فعال است که ممکن است در بازی ایرادات ایجاد کند، خطا هایی نمایش داده میشود.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="745"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="758"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="754"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="767"/>
       <source>Leave It Blank</source>
       <translation>خالی بگذارید</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="746"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="755"/>
       <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
       <translation>پارامترها به کدک ویدیوی انتخابی منتقل می شوند.&lt;br&gt; &lt;b&gt; باید از &apos;=&apos; برای جدا کردن کلید از مقدار و &apos;:&apos; برای جدا کردن دو جفت از یکدیگر.&lt;/b&gt;&lt;br&gt; برای مثال: «crf = 21 : preset = veryfast»</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="754"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="763"/>
       <source>Sets the audio bitrate to be used.</source>
       <translation>بیت ریت مورد استفاده برای صدا را تنظیم می‌کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="754"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="763"/>
       <source>160 kbps</source>
       <translation>160 کیلوبیت بر ثانیه</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="759"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="768"/>
       <source>Parameters passed to the selected audio codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;compression_level = 4 : joint_stereo = 1&quot;</source>
       <translation>پارامترها به کدک صوتی انتخابی منتقل می شوند.&lt;br&gt; باید از &apos;=&apos; برای جدا کردن کلید از مقدار و &apos;:&apos; برای جدا کردن دو جفت از یکدیگر استفاده کنید.&lt;b&gt;&lt;br&gt; برای مثال: «compression_level = 4 : joint_stereo = 1»</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="766"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="775"/>
       <source>GS Dump Compression</source>
       <translation>فشرده سازی استخراج GS</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="767"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="776"/>
       <source>Change the compression algorithm used when creating a GS dump.</source>
       <translation>الگوریتم فشرده سازی مورد استفاده در هنگام ایجاد یک استخراج GS را تغییر می دهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="772"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="781"/>
       <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
       <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit</extracomment>
       <translation>هنگام استفاده از رندر Direct3D 11 به جای بلعکس کردن از یک مدل ارائه شده بیت بلیت استفاده می کند. این معمولاً منجر به عملکرد کندتر می‌شود، اما ممکن است برای برخی از برنامه‌های استریم کردن یا برای برداشتن نرخ فریم در برخی از سیستم‌ها لازم باشد.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="781"/>
-      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth our frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
-      <translation>تشخیص می دهد که فریم های غیرفعال در بازی های ۲۵ یا ۳۰ فریم در ثانیه ارائه می شوند و از ارائه آن فریم ها صرف نظر می کند. فریم هنوز رندر شده است، فقط به این معنی است که پردازنده گرافیکی زمان بیشتری برای تکمیل آن دارد (این پرش فریمی نیست). می تواند نوسانات زمان فریم ما را در زمانی که پردازنده یا پردازنده گرافیکی نزدیک به حداکثر استفاده است، روان کند، اما سرعت فریم را ناسازگارتر می کند و می تواند تاخیر ورودی را افزایش دهد.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="791"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="800"/>
       <source>Displays additional, very high upscaling multipliers dependent on GPU capability.</source>
       <translation type="unfinished">Displays additional, very high upscaling multipliers dependent on GPU capability.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="793"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="802"/>
       <source>Enable Debug Device</source>
       <translation>استفاده از وسیله اشکال‌زدایی (debug)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="794"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="803"/>
       <source>Enables API-level validation of graphics commands.</source>
       <translation>فعال کردن اعتبار سنجی دستورات گرافیکی در سطح API.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="796"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="805"/>
       <source>GS Download Mode</source>
       <translation>حالت دانلود GS</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="796"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="805"/>
       <source>Accurate</source>
       <translation>دقت</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="797"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="806"/>
       <source>Skips synchronizing with the GS thread and host GPU for GS downloads. Can result in a large speed boost on slower systems, at the cost of many broken graphical effects. If games are broken and you have this option enabled, please disable it first.</source>
       <translation>از همگام سازی با رشته GS و GPU سیستم برای دانلودهای GS صرفنظر می کند. می تواند منجر به افزایش سرعت زیاد در سیستم های کندتر شود و باعث خرابی بسیاری از جلوه های گرافیکی شود. اگر بازی ها نادرست اجرا میشوند و این گزینه را فعال کرده اید، لطفاً ابتدا آن را غیرفعال کنید.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="730"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="750"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="903"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="916"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="735"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="739"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="759"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="912"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="926"/>
       <source>Default</source>
       <extracomment>This string refers to a default codec, whether it&apos;s an audio codec or a video codec.</extracomment>
       <translation>پیش‌فرض</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="787"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="796"/>
       <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
       <translation type="unfinished">Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1050"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1056"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1084"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1090"/>
       <source>(Default)</source>
       <translation>(پیش‌فرض)</translation>
     </message>
   </context>
   <context>
+    <name>GraphicsSettingsWidget::GraphicsSettingsWidget</name>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="943"/>
+      <source>Default</source>
+      <extracomment>This string refers to a default pixel format</extracomment>
+      <translation type="unfinished">Default</translation>
+    </message>
+  </context>
+  <context>
     <name>Hotkeys</name>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1059"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1067"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1087"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1094"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1103"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1109"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1115"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1121"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1126"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1139"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1152"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1180"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1192"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1206"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1060"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1068"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1088"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1095"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1104"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1110"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1116"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1122"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1127"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1140"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1181"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1193"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1207"/>
       <source>Graphics</source>
       <translation>گرافیک</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1060"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1061"/>
       <source>Save Screenshot</source>
       <translation>ذخیره اسکرین‌شات</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1067"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1068"/>
       <source>Toggle Video Capture</source>
       <translation>فعال کردن ضبط ویدیو</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1087"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1088"/>
       <source>Save Single Frame GS Dump</source>
       <translation>ذخیره استخراج تک فریمی GS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1094"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1095"/>
       <source>Save Multi Frame GS Dump</source>
       <translation>ذخیره استخراج چند فریمی GS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1104"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1105"/>
       <source>Toggle Software Rendering</source>
       <translation>فعال کردن رندر نرم افزاری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1110"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1111"/>
       <source>Increase Upscale Multiplier</source>
       <translation>افزایش ضریب آپ‌اسکیل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1116"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1117"/>
       <source>Decrease Upscale Multiplier</source>
       <translation>کاهش ضریب آپ‌اسکیل</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1121"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1122"/>
       <source>Toggle On-Screen Display</source>
       <translation>وضعیت نمایه بر روی صفحه</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1126"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1127"/>
       <source>Cycle Aspect Ratio</source>
       <translation>چرخه تناسب تصویر</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1135"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1136"/>
       <source>Aspect ratio set to &apos;{}&apos;.</source>
       <translation>نسبت تصویر تنظیم شده به &apos;{}&apos;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1139"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1140"/>
       <source>Toggle Hardware Mipmapping</source>
       <translation type="unfinished">Toggle Hardware Mipmapping</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1146"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
       <source>Hardware mipmapping is now enabled.</source>
       <translation type="unfinished">Hardware mipmapping is now enabled.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1148"/>
       <source>Hardware mipmapping is now disabled.</source>
       <translation type="unfinished">Hardware mipmapping is now disabled.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1152"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
       <source>Cycle Deinterlace Mode</source>
       <translation>چرخه حالت درهم آمیختگی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1174"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1175"/>
       <source>Deinterlace mode set to &apos;{}&apos;.</source>
       <translation>حالت اینترلیسینگ یا در هم آمیختگی تنظیم شده به &apos;{}&apos;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1180"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1181"/>
       <source>Toggle Texture Dumping</source>
       <translation>فعال کردن استخراج بافت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1186"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1187"/>
       <source>Texture dumping is now enabled.</source>
       <translation>استخراج بافت اکنون فعال است.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1187"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1188"/>
       <source>Texture dumping is now disabled.</source>
       <translation>استخراج بافت اکنون غیر فعال است.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1193"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1194"/>
       <source>Toggle Texture Replacements</source>
       <translation>فعال کردن جایگزین بافت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1200"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1201"/>
       <source>Texture replacements are now enabled.</source>
       <translation>جایگزین بافت اکنون فعال است.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1201"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1202"/>
       <source>Texture replacements are now disabled.</source>
       <translation>جایگزین بافت اکنون غیر فعال است.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1207"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1208"/>
       <source>Reload Texture Replacements</source>
       <translation>بارگذاری مجدد جایگزین بافت</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1214"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1215"/>
       <source>Texture replacements are not enabled.</source>
       <translation>جایگزین بافت حالا غیر فعال است.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1219"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1220"/>
       <source>Reloading texture replacements...</source>
       <translation>بارگذاری مجدد جایگزین بافت...</translation>
     </message>
@@ -13055,7 +13146,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <translation>بارگیری وضعیت از اسلات 10</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1074"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1086"/>
       <source>Save slot {0} selected ({1}).</source>
       <translation>اسلات ذخیره {0} انتخاب شده ({1}).</translation>
     </message>
@@ -13063,73 +13154,73 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
   <context>
     <name>ImGuiOverlays</name>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="642"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="654"/>
       <source>{} Recording Input</source>
       <translation type="unfinished">{} Recording Input</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="646"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="658"/>
       <source>{} Replaying</source>
       <translation type="unfinished">{} Replaying</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="650"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="662"/>
       <source>Input Recording Active: {}</source>
       <translation type="unfinished">Input Recording Active: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="651"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="663"/>
       <source>Frame: {}/{} ({})</source>
       <translation type="unfinished">Frame: {}/{} ({})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="652"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="664"/>
       <source>Undo Count: {}</source>
       <translation type="unfinished">Undo Count: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="711"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="723"/>
       <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
       <translation>ذخیره شده در {0:%H:%M} بر {0:%a} {0:%Y/%m/%d}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="737"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="749"/>
       <source>Save state selector is unavailable without a valid game serial.</source>
       <translation>انتخاب کننده وضعیت ذخیره بدون یک کد سریال معتبر برای بازی در دسترس نیست.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="819"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="831"/>
       <source>Load</source>
       <translation>بارگیری</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="821"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="833"/>
       <source>Save</source>
       <translation>ذخیره</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="823"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="835"/>
       <source>Select Previous</source>
       <translation>انتخاب قبلی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="825"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="837"/>
       <source>Select Next</source>
       <translation>انتخاب بعدی</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="878"/>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="900"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="890"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="912"/>
       <source>Save Slot {0}</source>
       <translation>اسلات ذخیره {0}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="901"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="913"/>
       <source>No save present in this slot.</source>
       <translation>هیچ ذخیره ای در این اسلات وجود ندارد.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1071"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1083"/>
       <source>no save yet</source>
       <translation>هیچ ذخیره ای در حال حاضر نیست</translation>
     </message>
@@ -13420,49 +13511,49 @@ Right click to clear binding</source>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="63"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="148"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
       <source>Pause On Focus Loss</source>
       <translation>توقف در از دست دادن دقت</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="42"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="137"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="140"/>
       <source>Inhibit Screensaver</source>
       <translation>منع کردن محافظ صفحه</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="35"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="143"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
       <source>Save State On Shutdown</source>
       <translation>ذخیره وضعیت موقع خاموش کردن</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="56"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
       <source>Pause On Start</source>
       <translation>توقف در شروع</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="49"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="140"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="143"/>
       <source>Confirm Shutdown</source>
       <translation>تایید خاموش شدن</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="84"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
       <source>Create Save State Backups</source>
       <translation>ایجاد بک آپ برای وضعیت ذخیره</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="77"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
       <source>Enable Discord Presence</source>
       <translation>فعال کردن همسان سازی با برنامه دیسکورد</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="70"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="154"/>
       <source>Pause On Controller Disconnection</source>
       <translation type="unfinished">Pause On Controller Disconnection</translation>
     </message>
@@ -13473,37 +13564,37 @@ Right click to clear binding</source>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="100"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
       <source>Start Fullscreen</source>
       <translation>شروع در حالت تمام صفحه</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="107"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
       <source>Double-Click Toggles Fullscreen</source>
       <translation>دابل کلیک به تمام صفحه تغییر می‌دهد</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="114"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
       <source>Render To Separate Window</source>
       <translation>رندر در پنجره جداگانه</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="121"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
       <source>Hide Main Window When Running</source>
       <translation>پنهان کردن پنجره اصلی هنگام رندر کردن</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="128"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="176"/>
       <source>Disable Window Resizing</source>
       <translation>غیرفعال کردن تغییر اندازه پنجره</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="135"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
       <source>Hide Cursor In Fullscreen</source>
       <translation>مخفی کردن موش‌واره در حالت تمام صفحه</translation>
     </message>
@@ -13539,7 +13630,7 @@ Right click to clear binding</source>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="206"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="108"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="111"/>
       <source>Enable Automatic Update Check</source>
       <translation>فعال کردن بررسی بروزرسانی اتوماتیک</translation>
     </message>
@@ -13633,71 +13724,77 @@ Right click to clear binding</source>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="43"/>
+      <source>Emerald (Black/Green) [Dark]</source>
+      <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
+      <translation type="unfinished">Emerald (Black/Green) [Dark]</translation>
+    </message>
+    <message>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="45"/>
       <source>Custom.qss [Drop in PCSX2 Folder]</source>
       <extracomment>&quot;Custom.qss&quot; must be kept as-is.</extracomment>
       <translation>Custom.qss [در پوشه PCSX2 انداخته شود]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="108"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="137"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="111"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="140"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="143"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
       <source>Checked</source>
       <translation>فعال شده</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="109"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="112"/>
       <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
       <translation>به‌طور خودکار به‌روزرسانی‌های برنامه را هنگام باز کردن برنامه، بررسی می‌کند. به روزرسانی ها را می توان برای بعدا دانلود کرد و یا به طور کامل از آن صرف‌نظر کرد.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="117"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="120"/>
       <source>%1 (%2)</source>
       <extracomment>Variable %1 shows the version number and variable %2 shows a timestamp.</extracomment>
       <translation>%1 (%2)</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="138"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
       <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
       <translation>از فعال شدن محافظ صفحه نمایش و حالت خواب میزبان هنگام اجرای شبیه ساز جلوگیری میکند.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
       <source>Determines whether a prompt will be displayed to confirm shutting down the virtual machine when the hotkey is pressed.</source>
       <translation>تعیین می کند که آیا هنگام فشار دادن کلید میانبر، درخواستی برای تأیید خاموش شدن ماشین مجازی نمایش داده می شود.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="147"/>
       <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
       <translation>به طور خودکار وضعیت شبیه‌ساز را هنگام خاموش کردن یا خارج شدن ذخیره می کند. سپس می‌توانید دفعه بعد مستقیماً از جایی که بازی را ترک کردید، ادامه بدهید.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
       <source>Pauses the emulator when a controller with bindings is disconnected.</source>
       <translation type="unfinished">Pauses the emulator when a controller with bindings is disconnected.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="171"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="174"/>
       <source>Allows switching in and out of fullscreen mode by double-clicking the game window.</source>
       <translation>به ورود و خروج از حالت تمام صفحه با دوبار کلیک کردن روی پنجره امکان میدهد.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="174"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="177"/>
       <source>Prevents the main window from being resized.</source>
       <translation>از تغییر سایز پنجره اصلی جلوگیری می کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="143"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="148"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="176"/>
       <source>Unchecked</source>
       <translation>فعال نشده</translation>
     </message>
@@ -13707,43 +13804,43 @@ Right click to clear binding</source>
       <translation>فیوژن [روشن/تاریک]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="147"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
       <source>Pauses the emulator when a game is started.</source>
       <translation>شبیه‌ساز را هنگامی که یک بازی در حال اجراست متوقف میکند.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
       <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
       <translation>هنگامی که پنجره را مینیمایز می‌کنید یا برنامه دیگری را استفاده می‌کنید، شبیه‌ساز موقتاً متوقف می‌کند و وقتی که به شبیه‌ساز برمیگردید، شبیه‌ساز شروع به کار می‌کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
       <source>Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix.</source>
       <extracomment>Do not translate the &quot;.backup&quot; extension.</extracomment>
       <translation>یک نسخه پشتیبان از حالت ذخیره در صورتی که در زمان ایجاد ذخیره وجود داشته باشد، ایجاد می کند. نسخه پشتیبان دارای پسوند «.backup» است.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="157"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="160"/>
       <source>Automatically switches to fullscreen mode when a game is started.</source>
       <translation>هنگامی که یک بازی شروع می‌شود، به طور خودکار به حالت تمام صفحه تغییر می‌کند.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
       <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
       <translation>موشواره را زمانی که شبیه‌ساز در حالت تمام صفحه است مخفی میکند.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
       <source>Renders the game to a separate window, instead of the main window. If unchecked, the game will display over the top of the game list.</source>
       <translation>بازی را به جای تینکه در پنجره اصلی رندر کند، در یک پنجره جداگانه رندر می کند. اگر تیک را بردارید، بازی روی لیست بازی ها نمایش داده می شود.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
       <source>Hides the main window (with the game list) when a game is running, requires Render To Separate Window to be enabled.</source>
       <translation>هنگامی که یک بازی در حال اجرا است، پنجره اصلی (با لیست بازی) را پنهان می کند، نیاز به فعال کردن گزینه «رندر کردن در پنجره مجزا» است.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="171"/>
       <source>Shows the game you are currently playing as part of your profile in Discord.</source>
       <translation>بازی ای که در حال اجرا است را در پروفایل دیسکورد شما به نمایش میگذارد.</translation>
     </message>
@@ -13890,14 +13987,14 @@ Right click to clear binding</source>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="43"/>
-      <location filename="../MainWindow.cpp" line="1390"/>
-      <location filename="../MainWindow.cpp" line="1451"/>
+      <location filename="../MainWindow.cpp" line="1396"/>
+      <location filename="../MainWindow.cpp" line="1457"/>
       <source>Change Disc</source>
       <translation>تغییر دیسک</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="58"/>
-      <location filename="../MainWindow.cpp" line="2739"/>
+      <location filename="../MainWindow.cpp" line="2750"/>
       <source>Load State</source>
       <translation>بارگیری وضعیت ذخیره شده</translation>
     </message>
@@ -13952,506 +14049,506 @@ Right click to clear binding</source>
       <translation>نوار ابزار</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="280"/>
+      <location filename="../MainWindow.ui" line="282"/>
       <source>Start &amp;File...</source>
       <translation>شروع از فایل...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="298"/>
+      <location filename="../MainWindow.ui" line="300"/>
       <source>Start &amp;Disc...</source>
       <translation>شروع از دیسک...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="316"/>
+      <location filename="../MainWindow.ui" line="318"/>
       <source>Start &amp;BIOS</source>
       <translation>شروع &amp;بایوس</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="334"/>
+      <location filename="../MainWindow.ui" line="336"/>
       <source>&amp;Scan For New Games</source>
       <translation>&amp;بررسی برای بازی های جدید</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="343"/>
+      <location filename="../MainWindow.ui" line="345"/>
       <source>&amp;Rescan All Games</source>
       <translation>&amp;اسکن دوباره تمام بازی ها</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="352"/>
+      <location filename="../MainWindow.ui" line="354"/>
       <source>Shut &amp;Down</source>
       <translation>خاموش &amp;کردن</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="370"/>
+      <location filename="../MainWindow.ui" line="372"/>
       <source>Shut Down &amp;Without Saving</source>
       <translation>خاموش کردن &amp;بدون ذخیره</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="379"/>
+      <location filename="../MainWindow.ui" line="381"/>
       <source>&amp;Reset</source>
       <translation>&amp;بازنشانی کنسول</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="400"/>
+      <location filename="../MainWindow.ui" line="402"/>
       <source>&amp;Pause</source>
       <translation>&amp;مکث</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="439"/>
+      <location filename="../MainWindow.ui" line="441"/>
       <source>E&amp;xit</source>
       <translation>&amp;خروج</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="448"/>
+      <location filename="../MainWindow.ui" line="450"/>
       <source>&amp;BIOS</source>
       <translation>&amp;بایوس</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="457"/>
+      <location filename="../MainWindow.ui" line="459"/>
       <source>Emulation</source>
       <translation>شبیه‌سازی</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="466"/>
+      <location filename="../MainWindow.ui" line="468"/>
       <source>&amp;Controllers</source>
       <translation>&amp;دسته‌ها</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="484"/>
+      <location filename="../MainWindow.ui" line="486"/>
       <source>&amp;Hotkeys</source>
       <translation>&amp;کلیدهای میانبر</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="493"/>
+      <location filename="../MainWindow.ui" line="495"/>
       <source>&amp;Graphics</source>
       <translation>&amp;گرافیک</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="502"/>
+      <location filename="../MainWindow.ui" line="504"/>
       <source>A&amp;chievements</source>
       <translation>&amp;دستاوردها</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="507"/>
+      <location filename="../MainWindow.ui" line="509"/>
       <source>&amp;Post-Processing Settings...</source>
       <translation>&amp;تنظیمات پس-پردازشی...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="516"/>
+      <location filename="../MainWindow.ui" line="518"/>
       <source>Fullscreen</source>
       <translation>تمام صفحه</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="530"/>
+      <location filename="../MainWindow.ui" line="532"/>
       <source>Resolution Scale</source>
       <translation>مقیاس رزولوشن</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="539"/>
+      <location filename="../MainWindow.ui" line="541"/>
       <source>&amp;GitHub Repository...</source>
       <translation>&amp;منبع GitHub...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="548"/>
+      <location filename="../MainWindow.ui" line="550"/>
       <source>Support &amp;Forums...</source>
       <translation>انجمن &amp;پشتیبانی...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="557"/>
+      <location filename="../MainWindow.ui" line="559"/>
       <source>&amp;Discord Server...</source>
       <translation>&amp;سرور دیسکورد...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="566"/>
+      <location filename="../MainWindow.ui" line="568"/>
       <source>Check for &amp;Updates...</source>
       <translation>بررسي برای &amp;بروزرسانی‌ها...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="575"/>
+      <location filename="../MainWindow.ui" line="577"/>
       <source>About &amp;Qt...</source>
       <translation>درباره &amp;Qt...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="584"/>
+      <location filename="../MainWindow.ui" line="586"/>
       <source>&amp;About PCSX2...</source>
       <translation>&amp;درباره PCSX2...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="525"/>
+      <location filename="../MainWindow.ui" line="527"/>
       <source>Fullscreen</source>
       <comment>In Toolbar</comment>
       <translation>تمام صفحه</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="593"/>
+      <location filename="../MainWindow.ui" line="595"/>
       <source>Change Disc...</source>
       <comment>In Toolbar</comment>
       <translation>تغییر دیسک...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="602"/>
+      <location filename="../MainWindow.ui" line="604"/>
       <source>&amp;Audio</source>
       <translation>&amp;صدا</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="611"/>
+      <location filename="../MainWindow.ui" line="613"/>
       <source>Game List</source>
       <translation>لیست بازی</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="620"/>
+      <location filename="../MainWindow.ui" line="622"/>
       <source>Interface</source>
       <translation>رابط کاربری</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="629"/>
+      <location filename="../MainWindow.ui" line="631"/>
       <source>Add Game Directory...</source>
       <translation>افزودن پوشه بازی...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="638"/>
+      <location filename="../MainWindow.ui" line="640"/>
       <source>&amp;Settings</source>
       <translation>&amp;تنظیمات</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="658"/>
+      <location filename="../MainWindow.ui" line="660"/>
       <source>From File...</source>
       <translation>از فایل...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="663"/>
+      <location filename="../MainWindow.ui" line="665"/>
       <source>From Device...</source>
       <translation>از دستگاه...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="668"/>
+      <location filename="../MainWindow.ui" line="670"/>
       <source>From Game List...</source>
       <translation>از لیست بازی...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="673"/>
+      <location filename="../MainWindow.ui" line="675"/>
       <source>Remove Disc</source>
       <translation>برداشتن دیسک</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="678"/>
+      <location filename="../MainWindow.ui" line="680"/>
       <source>Global State</source>
       <translation>وضعیت عمومی</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="687"/>
+      <location filename="../MainWindow.ui" line="689"/>
       <source>&amp;Screenshot</source>
       <translation>&amp;اسکرین‌شات</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="289"/>
+      <location filename="../MainWindow.ui" line="291"/>
       <source>Start File</source>
       <comment>In Toolbar</comment>
       <translation>شروع از فایل</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="307"/>
+      <location filename="../MainWindow.ui" line="309"/>
       <source>Start Disc</source>
       <comment>In Toolbar</comment>
       <translation>شروع از دیسک</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="325"/>
+      <location filename="../MainWindow.ui" line="327"/>
       <source>Start BIOS</source>
       <comment>In Toolbar</comment>
       <translation>شروع بایوس</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="361"/>
+      <location filename="../MainWindow.ui" line="363"/>
       <source>Shut Down</source>
       <comment>In Toolbar</comment>
       <translation>خاموش کردن</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="388"/>
+      <location filename="../MainWindow.ui" line="390"/>
       <source>Reset</source>
       <comment>In Toolbar</comment>
       <translation>بازنشانی</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="412"/>
+      <location filename="../MainWindow.ui" line="414"/>
       <source>Pause</source>
       <comment>In Toolbar</comment>
       <translation>مکث</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="421"/>
+      <location filename="../MainWindow.ui" line="423"/>
       <source>Load State</source>
       <comment>In Toolbar</comment>
       <translation>بارگیری وضعیت ذخیره شده</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="430"/>
+      <location filename="../MainWindow.ui" line="432"/>
       <source>Save State</source>
       <comment>In Toolbar</comment>
       <translation>ذخیرهٔ وضعیت</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="475"/>
+      <location filename="../MainWindow.ui" line="477"/>
       <source>Controllers</source>
       <comment>In Toolbar</comment>
       <translation>دسته‌ها</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="650"/>
+      <location filename="../MainWindow.ui" line="652"/>
       <source>Settings</source>
       <comment>In Toolbar</comment>
       <translation>تنظیمات</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="696"/>
+      <location filename="../MainWindow.ui" line="698"/>
       <source>Screenshot</source>
       <comment>In Toolbar</comment>
       <translation>اسکرین‌شات</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="705"/>
+      <location filename="../MainWindow.ui" line="707"/>
       <source>&amp;Memory Cards</source>
       <translation>&amp;مموری کارت ها</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="714"/>
+      <location filename="../MainWindow.ui" line="716"/>
       <source>&amp;Network &amp;&amp; HDD</source>
       <translation>&amp;شبکه و هارد درایو</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="723"/>
+      <location filename="../MainWindow.ui" line="725"/>
       <source>&amp;Folders</source>
       <translation>&amp;پوشه ها</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="734"/>
+      <location filename="../MainWindow.ui" line="736"/>
       <source>&amp;Toolbar</source>
       <translation>&amp;نوار ابزار</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="745"/>
+      <location filename="../MainWindow.ui" line="747"/>
       <source>Lock Toolbar</source>
       <translation>قفل نوارابزار</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="756"/>
+      <location filename="../MainWindow.ui" line="758"/>
       <source>&amp;Status Bar</source>
       <translation>&amp;نوار وضعیت</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="767"/>
+      <location filename="../MainWindow.ui" line="769"/>
       <source>Verbose Status</source>
       <translation>وضعیت مفصل</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="776"/>
+      <location filename="../MainWindow.ui" line="778"/>
       <source>Game &amp;List</source>
       <translation>لیست &amp;بازی</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="788"/>
+      <location filename="../MainWindow.ui" line="790"/>
       <source>System &amp;Display</source>
       <extracomment>This grayed-out at first option will become available while there is a game emulated and the game list is displayed over the actual emulation, to let users display the system emulation once more.</extracomment>
       <translation>نمایش &amp;سیستم</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="800"/>
+      <location filename="../MainWindow.ui" line="802"/>
       <source>Game &amp;Properties</source>
       <translation>مشخصات&amp; بازی</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="809"/>
+      <location filename="../MainWindow.ui" line="811"/>
       <source>Game &amp;Grid</source>
       <translation>نمادهای &amp;بازی</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="820"/>
+      <location filename="../MainWindow.ui" line="822"/>
       <source>Show Titles (Grid View)</source>
       <translation>نمایش عناوین (نمایش شبکه ای)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="829"/>
+      <location filename="../MainWindow.ui" line="831"/>
       <source>Zoom &amp;In (Grid View)</source>
       <translation>&amp;بزرگنمایی (نمای شبکه ای)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="832"/>
+      <location filename="../MainWindow.ui" line="834"/>
       <source>Ctrl++</source>
       <translation>Ctrl + +</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="841"/>
+      <location filename="../MainWindow.ui" line="843"/>
       <source>Zoom &amp;Out (Grid View)</source>
       <translation>&amp;کوچکنمایی (نمای شبکه ای)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="844"/>
+      <location filename="../MainWindow.ui" line="846"/>
       <source>Ctrl+-</source>
       <translation>Ctrl + -</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="853"/>
+      <location filename="../MainWindow.ui" line="855"/>
       <source>Refresh &amp;Covers (Grid View)</source>
       <translation>بازخوانی &amp;جلد ها (نمای شبکه‌ای)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="862"/>
+      <location filename="../MainWindow.ui" line="864"/>
       <source>Open Memory Card Directory...</source>
       <translation>باز کردن پوشه کارت حافظه...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="871"/>
+      <location filename="../MainWindow.ui" line="873"/>
       <source>Open Data Directory...</source>
       <translation>باز کردن پوشه داده ها...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="880"/>
+      <location filename="../MainWindow.ui" line="882"/>
       <source>Toggle Software Rendering</source>
       <translation>فعال کردن رندر نرم افزاری</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="889"/>
+      <location filename="../MainWindow.ui" line="891"/>
       <source>Open Debugger</source>
       <translation>بازکردن اشکال زدا</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="898"/>
+      <location filename="../MainWindow.ui" line="900"/>
       <source>Reload Cheats/Patches</source>
       <translation>بارگذاری مجدد تقلب ها/پچ ها</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="906"/>
+      <location filename="../MainWindow.ui" line="908"/>
       <source>Enable System Console</source>
       <translation>فعال کردن کنسول سیستم</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="914"/>
+      <location filename="../MainWindow.ui" line="916"/>
       <source>Enable Debug Console</source>
       <translation>فعال کردن کنسول اشکال زدایی</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="922"/>
+      <location filename="../MainWindow.ui" line="924"/>
       <source>Enable Log Window</source>
       <translation>فعال کردن پنجره گذارش</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="930"/>
+      <location filename="../MainWindow.ui" line="932"/>
       <source>Enable Verbose Logging</source>
       <translation>فعال کردن ورود مفصل</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="938"/>
+      <location filename="../MainWindow.ui" line="940"/>
       <source>Enable EE Console Logging</source>
       <translation>فعال کردن اشکال گیری کنسول EE</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="946"/>
+      <location filename="../MainWindow.ui" line="948"/>
       <source>Enable IOP Console Logging</source>
       <translation>فعال کردن ورود کنسول IOP</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="955"/>
+      <location filename="../MainWindow.ui" line="957"/>
       <source>Save Single Frame GS Dump</source>
       <translation>ذخیره استخراج تک فریمی GS</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="963"/>
+      <location filename="../MainWindow.ui" line="965"/>
       <source>New</source>
       <extracomment>This section refers to the Input Recording submenu.</extracomment>
       <translation>ضبط جدید</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="971"/>
+      <location filename="../MainWindow.ui" line="973"/>
       <source>Play</source>
       <extracomment>This section refers to the Input Recording submenu.</extracomment>
       <translation>پخش ضبظ</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="979"/>
+      <location filename="../MainWindow.ui" line="981"/>
       <source>Stop</source>
       <extracomment>This section refers to the Input Recording submenu.</extracomment>
       <translation>توقف ضبط</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="987"/>
+      <location filename="../MainWindow.ui" line="989"/>
       <source>Settings</source>
       <extracomment>This section refers to the Input Recording submenu.</extracomment>
       <translation>تنظیمات</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="992"/>
-      <location filename="../MainWindow.ui" line="1008"/>
+      <location filename="../MainWindow.ui" line="994"/>
+      <location filename="../MainWindow.ui" line="1010"/>
       <source>Input Recording Logs</source>
       <translation>ورودی گزارش ضبط</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1000"/>
+      <location filename="../MainWindow.ui" line="1002"/>
       <source>Controller Logs</source>
       <translation>گزارش های دسته</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1016"/>
+      <location filename="../MainWindow.ui" line="1018"/>
       <source>Enable &amp;File Logging</source>
       <translation>فعال کردن ورود از &amp;فایل</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1024"/>
+      <location filename="../MainWindow.ui" line="1026"/>
       <source>Enable CDVD Read Logging</source>
       <translation>فعال کردن ورود با خواندن CDVD</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1032"/>
+      <location filename="../MainWindow.ui" line="1034"/>
       <source>Save CDVD Block Dump</source>
       <translation>ذخیره بلوک استخراج CDVD</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1040"/>
+      <location filename="../MainWindow.ui" line="1042"/>
       <source>Enable Log Timestamps</source>
       <translation>فعال کردن مهر زمانی گزارشات</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1049"/>
-      <location filename="../MainWindow.cpp" line="1494"/>
+      <location filename="../MainWindow.ui" line="1051"/>
+      <location filename="../MainWindow.cpp" line="1500"/>
       <source>Start Big Picture Mode</source>
       <translation>شروع حالت تصویر بزرگ</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1058"/>
-      <location filename="../MainWindow.cpp" line="1495"/>
+      <location filename="../MainWindow.ui" line="1060"/>
+      <location filename="../MainWindow.cpp" line="1501"/>
       <source>Big Picture</source>
       <comment>In Toolbar</comment>
       <translation>تصویر بزرگ</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1067"/>
+      <location filename="../MainWindow.ui" line="1069"/>
       <source>Cover Downloader...</source>
       <translation>دانلود کننده جلد...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1075"/>
+      <location filename="../MainWindow.ui" line="1077"/>
       <location filename="../MainWindow.cpp" line="666"/>
       <source>Show Advanced Settings</source>
       <translation>نمایش تنظیمات پیشرفته</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1080"/>
+      <location filename="../MainWindow.ui" line="1082"/>
       <source>Recording Viewer</source>
       <translation>نمایشگر ضبط کننده</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1088"/>
+      <location filename="../MainWindow.ui" line="1090"/>
       <location filename="../MainWindow.cpp" line="735"/>
       <source>Video Capture</source>
       <translation>ضبط ویدئو</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1093"/>
+      <location filename="../MainWindow.ui" line="1099"/>
       <source>Edit Cheats...</source>
       <translation>ویرایش تقلب ها...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1102"/>
+      <location filename="../MainWindow.ui" line="1108"/>
       <source>Edit Patches...</source>
       <translation>ویرایش پچ ها...</translation>
     </message>
@@ -14494,277 +14591,282 @@ Are you sure you want to continue?</source>
       <translation>%1 فایل (*.%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1067"/>
+      <location filename="../MainWindow.cpp" line="1068"/>
       <source>WARNING: Memory Card Busy</source>
       <translation>هشدار: کارت حافظه مشغول است</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1188"/>
+      <location filename="../MainWindow.cpp" line="1189"/>
       <source>Confirm Shutdown</source>
       <translation>تایید خاموش شدن</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1191"/>
+      <location filename="../MainWindow.cpp" line="1192"/>
       <source>Are you sure you want to shut down the virtual machine?</source>
       <translation>آیا مطمئن هستید که میخواهید کامپیوتر مجازی را خاموش کنید?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1193"/>
+      <location filename="../MainWindow.cpp" line="1194"/>
       <source>Save State For Resume</source>
       <translation>وضعیت ذخیره برای ادامه دادن</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1301"/>
-      <location filename="../MainWindow.cpp" line="1691"/>
-      <location filename="../MainWindow.cpp" line="2153"/>
-      <location filename="../MainWindow.cpp" line="2288"/>
-      <location filename="../MainWindow.cpp" line="2649"/>
-      <location filename="../MainWindow.cpp" line="2758"/>
+      <location filename="../MainWindow.cpp" line="1302"/>
+      <location filename="../MainWindow.cpp" line="1697"/>
+      <location filename="../MainWindow.cpp" line="2159"/>
+      <location filename="../MainWindow.cpp" line="2294"/>
+      <location filename="../MainWindow.cpp" line="2655"/>
+      <location filename="../MainWindow.cpp" line="2769"/>
       <source>Error</source>
       <translation>خطا</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1301"/>
+      <location filename="../MainWindow.cpp" line="1302"/>
       <source>You must select a disc to change discs.</source>
       <translation>باید برای تغییر دیسک یک دیسک انتخاب کنید.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1333"/>
+      <location filename="../MainWindow.cpp" line="1334"/>
       <source>Properties...</source>
       <translation>مشخصات...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1350"/>
+      <location filename="../MainWindow.cpp" line="1351"/>
       <source>Set Cover Image...</source>
       <translation>تنطیم تصویر کاور...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1353"/>
+      <location filename="../MainWindow.cpp" line="1354"/>
       <source>Exclude From List</source>
       <translation>حذف از فهرست</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1356"/>
+      <location filename="../MainWindow.cpp" line="1357"/>
       <source>Reset Play Time</source>
       <translation>بازنشانی زمان سپری شده در این بازی</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1362"/>
+      <location filename="../MainWindow.cpp" line="1361"/>
+      <source>Check Wiki Page</source>
+      <translation type="unfinished">Check Wiki Page</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.cpp" line="1368"/>
       <source>Default Boot</source>
       <translation>بوت پیش‌فرض</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1369"/>
+      <location filename="../MainWindow.cpp" line="1375"/>
       <source>Fast Boot</source>
       <translation>بوت سریع</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1372"/>
+      <location filename="../MainWindow.cpp" line="1378"/>
       <source>Full Boot</source>
       <translation>بوت کامل</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1377"/>
+      <location filename="../MainWindow.cpp" line="1383"/>
       <source>Boot and Debug</source>
       <translation>بوت و اشکال زدایی</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1401"/>
+      <location filename="../MainWindow.cpp" line="1407"/>
       <source>Add Search Directory...</source>
       <translation>اضافه کردن پوشه جستجو...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1410"/>
+      <location filename="../MainWindow.cpp" line="1416"/>
       <source>Start File</source>
       <translation>شروع از فایل</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1419"/>
+      <location filename="../MainWindow.cpp" line="1425"/>
       <source>Start Disc</source>
       <translation>شروع از دیسک</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1436"/>
+      <location filename="../MainWindow.cpp" line="1442"/>
       <source>Select Disc Image</source>
       <translation>انتخاب فایل دیسک</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1604"/>
+      <location filename="../MainWindow.cpp" line="1610"/>
       <source>Updater Error</source>
       <translation>خطا در برنامه بروزرسان</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1610"/>
+      <location filename="../MainWindow.cpp" line="1616"/>
       <source>&lt;p&gt;Sorry, you are trying to update a PCSX2 version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please download from the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://pcsx2.net/downloads/&quot;&gt;https://pcsx2.net/downloads/&lt;/a&gt;&lt;/p&gt;</source>
       <translation>&lt;p&gt;با عرض پوزش، شما در حال به روز رسانی نسخه PCSX2 هستید که نسخه رسمی GitHub نیست. برای جلوگیری از ناسازگاری‌ها، به‌روزرسانی خودکار فقط در نسخه‌های رسمی فعال است.&lt;/p&gt;&lt;p&gt;برای دریافت نسخه رسمی، لطفاً از لینک زیر دانلود کنید:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://pcsx2.net/downloads/&quot;&gt;https://pcsx2.net/downloads/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1615"/>
+      <location filename="../MainWindow.cpp" line="1621"/>
       <source>Automatic updating is not supported on the current platform.</source>
       <translation>آپدیت خودکار در پلتفرم فعلی پشتیبانی نشده.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1681"/>
+      <location filename="../MainWindow.cpp" line="1687"/>
       <source>Confirm File Creation</source>
       <translation>تایید ایجاد فایل</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1682"/>
+      <location filename="../MainWindow.cpp" line="1688"/>
       <source>The pnach file &apos;%1&apos; does not currently exist. Do you want to create it?</source>
       <translation>این فایل pnach &apos;%1&apos; در حال حاضر وجود ندارد. ایا مایل به ساختن آن هستید?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1691"/>
+      <location filename="../MainWindow.cpp" line="1697"/>
       <source>Failed to create &apos;%1&apos;.</source>
       <translation>ساخت &apos;%1&apos; ناموفق بود.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1787"/>
+      <location filename="../MainWindow.cpp" line="1793"/>
       <source>Input Recording Failed</source>
       <translation type="unfinished">Input Recording Failed</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1788"/>
+      <location filename="../MainWindow.cpp" line="1794"/>
       <source>Failed to create file: {}</source>
       <translation type="unfinished">Failed to create file: {}</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1811"/>
+      <location filename="../MainWindow.cpp" line="1817"/>
       <source>Input Recording Files (*.p2m2)</source>
       <translation>فایل ورودی ضبط (*.p2m2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1846"/>
+      <location filename="../MainWindow.cpp" line="1852"/>
       <source>Input Playback Failed</source>
       <translation type="unfinished">Input Playback Failed</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1847"/>
+      <location filename="../MainWindow.cpp" line="1853"/>
       <source>Failed to open file: {}</source>
       <translation type="unfinished">Failed to open file: {}</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1933"/>
+      <location filename="../MainWindow.cpp" line="1939"/>
       <source>Paused</source>
       <translation>مکث شد</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2110"/>
+      <location filename="../MainWindow.cpp" line="2116"/>
       <source>Load State Failed</source>
       <translation>بارگیری وضعیت ناموفق بود</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2110"/>
+      <location filename="../MainWindow.cpp" line="2116"/>
       <source>Cannot load a save state without a running VM.</source>
       <translation>بدون اجرای یک کامپیوتر مجازی نمیتوان از یک وضعیت ذخیره بارگیری انجام داد.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2138"/>
+      <location filename="../MainWindow.cpp" line="2144"/>
       <source>The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?</source>
       <translation>ELF جدید بدون تنظیم مجدد ماشین مجازی قابل بارگیری نیست. آیا اکنون می خواهید ماشین مجازی را ریست کنید؟</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2153"/>
+      <location filename="../MainWindow.cpp" line="2159"/>
       <source>Cannot change from game to GS dump without shutting down first.</source>
       <translation>بدون خاموش کردن نمی توان از بازی به اسخراج GS تغییر داد.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2288"/>
+      <location filename="../MainWindow.cpp" line="2294"/>
       <source>Failed to get window info from widget</source>
       <translation>دریافت کردن اطلاعات پنجره از ویجت ناموفق بود</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1494"/>
+      <location filename="../MainWindow.cpp" line="1500"/>
       <source>Stop Big Picture Mode</source>
       <translation>توقف حالت تصویر بزرگ</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1495"/>
+      <location filename="../MainWindow.cpp" line="1501"/>
       <source>Exit Big Picture</source>
       <comment>In Toolbar</comment>
       <translation>خروج از تصویر بزرگ</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1559"/>
+      <location filename="../MainWindow.cpp" line="1565"/>
       <source>Game Properties</source>
       <translation>مشخصات بازی</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1559"/>
+      <location filename="../MainWindow.cpp" line="1565"/>
       <source>Game properties is unavailable for the current game.</source>
       <translation>ویژگی های بازی برای بازی فعلی در دسترس نیست.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2607"/>
+      <location filename="../MainWindow.cpp" line="2613"/>
       <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
       <translation>هیچ درایو سی‌دی یا دی‌وی‌دی پیدا نشد. لطفاً مطمئن شوید که یک درایو متصل و مجوزهای کافی برای دسترسی به آن دارید.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2625"/>
+      <location filename="../MainWindow.cpp" line="2631"/>
       <source>Select disc drive:</source>
       <translation>انتخاب درایو سی‌دی:</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2649"/>
+      <location filename="../MainWindow.cpp" line="2655"/>
       <source>This save state does not exist.</source>
       <translation>این وضعیت ذخیره وجود ندارد.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2662"/>
+      <location filename="../MainWindow.cpp" line="2668"/>
       <source>Select Cover Image</source>
       <translation>انتخاب تصویر کاور</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2679"/>
+      <location filename="../MainWindow.cpp" line="2685"/>
       <source>Cover Already Exists</source>
       <translation>کاور از قبل وجود داشت</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2680"/>
+      <location filename="../MainWindow.cpp" line="2686"/>
       <source>A cover image for this game already exists, do you wish to replace it?</source>
       <translation>یک تصویر جلد بازی برای این بازی وجود دارد، آیا مایل به جایگزین کردن هستید?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2675"/>
-      <location filename="../MainWindow.cpp" line="2689"/>
+      <location filename="../MainWindow.cpp" line="2681"/>
       <location filename="../MainWindow.cpp" line="2695"/>
       <location filename="../MainWindow.cpp" line="2701"/>
+      <location filename="../MainWindow.cpp" line="2707"/>
       <source>Copy Error</source>
       <translation>کپی خطا</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2689"/>
+      <location filename="../MainWindow.cpp" line="2695"/>
       <source>Failed to remove existing cover &apos;%1&apos;</source>
       <translation>حذف کردن جلد فعلی ناموفق بود &apos;%1&apos;</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2695"/>
+      <location filename="../MainWindow.cpp" line="2701"/>
       <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
       <translation>کپی کردن ناموف از &apos;%1&apos; به &apos;%2&apos;</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2701"/>
+      <location filename="../MainWindow.cpp" line="2707"/>
       <source>Failed to remove &apos;%1&apos;</source>
       <translation>خطا در حذف &apos;%1&apos;</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2137"/>
-      <location filename="../MainWindow.cpp" line="2710"/>
+      <location filename="../MainWindow.cpp" line="2143"/>
+      <location filename="../MainWindow.cpp" line="2716"/>
       <source>Confirm Reset</source>
       <translation>تأیید بازنشاندن کنسول</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2662"/>
+      <location filename="../MainWindow.cpp" line="2668"/>
       <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
       <translation>تمامی انواع تصاویر جلد (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2675"/>
+      <location filename="../MainWindow.cpp" line="2681"/>
       <source>You must select a different file to the current cover image.</source>
       <translation>باید یک فایل متفاوتی را برای تصویر جلد فعلی انتخاب نمایید.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2711"/>
+      <location filename="../MainWindow.cpp" line="2717"/>
       <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
@@ -14773,12 +14875,12 @@ This action cannot be undone.</source>
 این عمل قابل بازگیری نیست.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2733"/>
+      <location filename="../MainWindow.cpp" line="2744"/>
       <source>Load Resume State</source>
       <translation>بارگذاری وضعیت ادامه</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2736"/>
+      <location filename="../MainWindow.cpp" line="2747"/>
       <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -14791,43 +14893,43 @@ Do you want to load this state, or start from a fresh boot?</source>
 آیا می خواهید این وضعیت را بارگیری کنید یا از یک بوت تازه شروع کنید؟</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2740"/>
+      <location filename="../MainWindow.cpp" line="2751"/>
       <source>Fresh Boot</source>
       <translation>بوت تازه</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2741"/>
+      <location filename="../MainWindow.cpp" line="2752"/>
       <source>Delete And Boot</source>
       <translation>حذف و بوت</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2758"/>
+      <location filename="../MainWindow.cpp" line="2769"/>
       <source>Failed to delete save state file &apos;%1&apos;.</source>
       <translation>خطا در حذف کردن فایل وضعیت ذخیره &apos;%1&apos;.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2816"/>
+      <location filename="../MainWindow.cpp" line="2827"/>
       <source>Load State File...</source>
       <translation>بارگیری از فایل وضعیت ذخیره شده...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2816"/>
+      <location filename="../MainWindow.cpp" line="2827"/>
       <source>Load From File...</source>
       <translation>بارگذاری از فایل...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2819"/>
-      <location filename="../MainWindow.cpp" line="2890"/>
+      <location filename="../MainWindow.cpp" line="2830"/>
+      <location filename="../MainWindow.cpp" line="2901"/>
       <source>Select Save State File</source>
       <translation>انتخاب فایل وضعیت ذخیره شده</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2890"/>
+      <location filename="../MainWindow.cpp" line="2901"/>
       <source>Save States (*.p2s)</source>
       <translation>وضعیت ذخیره (*.p2s)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2826"/>
+      <location filename="../MainWindow.cpp" line="2837"/>
       <source>Delete Save States...</source>
       <translation>حذف وضعیت ذخیره...</translation>
     </message>
@@ -14842,38 +14944,38 @@ Do you want to load this state, or start from a fresh boot?</source>
       <translation>تمامی فرمت ها (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.dump);;فایل خام تک تراک (*.bin *.iso)؛؛ فایل نشانه گذاری دیسک (*.cue)؛؛ فایل توضیح دهنده رسانه ای (*.mdf)؛؛ فایلMAME CHD (*.chd)؛؛ تصاویر CSO (*.cso؛؛ تصاویر ZSO (*.zso؛؛ تصاویر GZ (*.gz؛;داده های استخراجی بلوکی (*.dump)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1068"/>
+      <location filename="../MainWindow.cpp" line="1069"/>
       <source>WARNING: Your memory card is still writing data. Shutting down now &lt;b&gt;WILL IRREVERSIBLY DESTROY YOUR MEMORY CARD.&lt;/b&gt; It is strongly recommended to resume your game and let it finish writing to your memory card.&lt;br&gt;&lt;br&gt;Do you wish to shutdown anyways and &lt;b&gt;IRREVERSIBLY DESTROY YOUR MEMORY CARD?&lt;/b&gt;</source>
       <translation type="unfinished">WARNING: Your memory card is still writing data. Shutting down now &lt;b&gt;WILL IRREVERSIBLY DESTROY YOUR MEMORY CARD.&lt;/b&gt; It is strongly recommended to resume your game and let it finish writing to your memory card.&lt;br&gt;&lt;br&gt;Do you wish to shutdown anyways and &lt;b&gt;IRREVERSIBLY DESTROY YOUR MEMORY CARD?&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2819"/>
+      <location filename="../MainWindow.cpp" line="2830"/>
       <source>Save States (*.p2s *.p2s.backup)</source>
       <translation>وضعیت ذخیره (*.p2s *.p2s.backup)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2831"/>
+      <location filename="../MainWindow.cpp" line="2842"/>
       <source>Undo Load State</source>
       <translation>واگرد وضعیت دانلود</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2845"/>
+      <location filename="../MainWindow.cpp" line="2856"/>
       <source>Resume (%2)</source>
       <translation>ادامه (%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2861"/>
+      <location filename="../MainWindow.cpp" line="2872"/>
       <source>Load Slot %1 (%2)</source>
       <translation>اسلات بارگیری %1 (%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2870"/>
-      <location filename="../MainWindow.cpp" line="2878"/>
+      <location filename="../MainWindow.cpp" line="2881"/>
+      <location filename="../MainWindow.cpp" line="2889"/>
       <source>Delete Save States</source>
       <translation>حذف وضعیت ذخیره شده</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2871"/>
+      <location filename="../MainWindow.cpp" line="2882"/>
       <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -14882,42 +14984,42 @@ The saves will not be recoverable.</source>
 ذخیره ها قابل بازیابی نخواهند بود.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2878"/>
+      <location filename="../MainWindow.cpp" line="2889"/>
       <source>%1 save states deleted.</source>
       <translation>%1 وضعیت ذخیره پاک شد.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2888"/>
+      <location filename="../MainWindow.cpp" line="2899"/>
       <source>Save To File...</source>
       <translation>ذخیره کردن در فایل...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2908"/>
+      <location filename="../MainWindow.cpp" line="2919"/>
       <source>Empty</source>
       <translation>خالی</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2910"/>
+      <location filename="../MainWindow.cpp" line="2921"/>
       <source>Save Slot %1 (%2)</source>
       <translation>اسلات ذخیره %1 (%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2967"/>
+      <location filename="../MainWindow.cpp" line="2978"/>
       <source>Confirm Disc Change</source>
       <translation>تایید تغییر دیسک</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2968"/>
+      <location filename="../MainWindow.cpp" line="2979"/>
       <source>Do you want to swap discs or boot the new image (via system reset)?</source>
       <translation>آیا میخواهید دیسک را عوض کنید یا یک ایمیج جدید بارگیری کنید؟ (از طریق ریست سیستم)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2969"/>
+      <location filename="../MainWindow.cpp" line="2980"/>
       <source>Swap Disc</source>
       <translation>عوض کردن دیسک</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2970"/>
+      <location filename="../MainWindow.cpp" line="2981"/>
       <source>Reset</source>
       <translation>بازنشانی کنسول</translation>
     </message>
@@ -15712,63 +15814,68 @@ This action cannot be reversed, and you will lose any saves on the card.</source
       <translation>حافظه</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="392"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="496"/>
       <source>Copy Address</source>
       <translation>کپی کردن آدرس</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="396"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="500"/>
       <source>Go to in Disassembly</source>
       <translation>رفتن به دیس اسمبلی</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="400"/>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="484"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="504"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="595"/>
       <source>Go to address</source>
       <translation>رفتن به آدرس</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="407"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="510"/>
+      <source>Show as Little Endian</source>
+      <translation type="unfinished">Show as Little Endian</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="516"/>
       <source>Show as 1 byte</source>
       <translation>نمایش بر اساس ١ بایت</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="412"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="521"/>
       <source>Show as 2 bytes</source>
       <translation>نمایش بر اساس 2 بایت</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="417"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="526"/>
       <source>Show as 4 bytes</source>
       <translation>نمایش بر اساس 4 بایت</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="422"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="531"/>
       <source>Show as 8 bytes</source>
       <translation>نمایش بر اساس 8 بایت</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="429"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="538"/>
       <source>Add to Saved Memory Addresses</source>
       <translation>اضافه به آدرس های ذخیره شده حافظه</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="433"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="542"/>
       <source>Copy Byte</source>
       <translation>کپی کردن بایت</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="437"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="546"/>
       <source>Copy Segment</source>
       <translation>کپی کردن سگمنت</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="441"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="550"/>
       <source>Copy Character</source>
       <translation>کپی کردن کاراکتر</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="445"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="554"/>
       <source>Paste</source>
       <translation>جای گذاری</translation>
     </message>
@@ -16050,12 +16157,12 @@ This action cannot be reversed, and you will lose any saves on the card.</source
       <translation type="unfinished">Pressure Modifier Amount</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="725"/>
+      <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="702"/>
       <source>Analog light is now on for port {0} / slot {1}</source>
       <translation>چراغ آنالوگ برای پورت {0}/ اسلات{1} روشن شده است</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="726"/>
+      <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="703"/>
       <source>Analog light is now off for port {0} / slot {1}</source>
       <translation>چراغ آنالوگ برای پورت {0}/ اسلات{1} خاموش شده است</translation>
     </message>
@@ -16231,6 +16338,11 @@ Ejecting {3} and replacing it with {2}.</source>
       <source>Pop&apos;n Music</source>
       <translation>موسیقی Pop&apos;n</translation>
     </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-trance-vibrator.cpp" line="175"/>
+      <source>Motor</source>
+      <translation type="unfinished">Motor</translation>
+    </message>
   </context>
   <context>
     <name>Patch</name>
@@ -16275,12 +16387,12 @@ Ejecting {3} and replacing it with {2}.</source>
   <context>
     <name>Pcsx2Config</name>
     <message>
-      <location filename="../../pcsx2/Pcsx2Config.cpp" line="1011"/>
+      <location filename="../../pcsx2/Pcsx2Config.cpp" line="1015"/>
       <source>Disabled (Noisy)</source>
       <translation type="unfinished">Disabled (Noisy)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Pcsx2Config.cpp" line="1012"/>
+      <location filename="../../pcsx2/Pcsx2Config.cpp" line="1016"/>
       <source>TimeStretch (Recommended)</source>
       <translation type="unfinished">TimeStretch (Recommended)</translation>
     </message>
@@ -17403,6 +17515,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="82"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="110"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="940"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="441"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="368"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="433"/>
       <source>D-Pad Up</source>
@@ -17413,6 +17526,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="83"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="111"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="942"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="442"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="369"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="434"/>
       <source>D-Pad Down</source>
@@ -17423,6 +17537,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="84"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="112"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="943"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="443"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="370"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="435"/>
       <source>D-Pad Left</source>
@@ -17433,6 +17548,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="85"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="113"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="941"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="444"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="371"/>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="436"/>
       <source>D-Pad Right</source>
@@ -17976,21 +18092,25 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="933"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="448"/>
       <source>Blue</source>
       <translation>آبی</translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="934"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="446"/>
       <source>Green</source>
       <translation>سبز</translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="935"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="445"/>
       <source>Red</source>
       <translation>قرمز</translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="936"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="447"/>
       <source>Yellow</source>
       <translation>زرد</translation>
     </message>
@@ -18406,16 +18526,136 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <source>Turntable Multiplier</source>
       <translation>ضریب Turntable</translation>
     </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="276"/>
+      <source>Gametrak Device</source>
+      <translation type="unfinished">Gametrak Device</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="384"/>
+      <source>Foot Pedal</source>
+      <translation type="unfinished">Foot Pedal</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="385"/>
+      <source>Left X</source>
+      <translation type="unfinished">Left X</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="386"/>
+      <source>Left Y</source>
+      <translation type="unfinished">Left Y</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="387"/>
+      <source>Left Z</source>
+      <translation type="unfinished">Left Z</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="388"/>
+      <source>Right X</source>
+      <translation type="unfinished">Right X</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="389"/>
+      <source>Right Y</source>
+      <translation type="unfinished">Right Y</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="390"/>
+      <source>Right Z</source>
+      <translation type="unfinished">Right Z</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="399"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="460"/>
+      <source>Invert X axis</source>
+      <translation type="unfinished">Invert X axis</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="400"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="461"/>
+      <source>Invert Y axis</source>
+      <translation type="unfinished">Invert Y axis</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="401"/>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="462"/>
+      <source>Invert Z axis</source>
+      <translation type="unfinished">Invert Z axis</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="402"/>
+      <source>Limit Z axis [100-4095]</source>
+      <translation type="unfinished">Limit Z axis [100-4095]</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="403"/>
+      <source>- 4095 for original Gametrak controllers
+- 1790 for standard gamepads</source>
+      <translation type="unfinished">- 4095 for original Gametrak controllers
+- 1790 for standard gamepads</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="404"/>
+      <source>%d</source>
+      <translation type="unfinished">%d</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="279"/>
+      <source>RealPlay Device</source>
+      <translation type="unfinished">RealPlay Device</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="422"/>
+      <source>RealPlay Racing</source>
+      <translation type="unfinished">RealPlay Racing</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="423"/>
+      <source>RealPlay Sphere</source>
+      <translation type="unfinished">RealPlay Sphere</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="424"/>
+      <source>RealPlay Golf</source>
+      <translation type="unfinished">RealPlay Golf</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="425"/>
+      <source>RealPlay Pool</source>
+      <translation type="unfinished">RealPlay Pool</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="449"/>
+      <source>Accel X</source>
+      <translation type="unfinished">Accel X</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="450"/>
+      <source>Accel Y</source>
+      <translation type="unfinished">Accel Y</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="451"/>
+      <source>Accel Z</source>
+      <translation type="unfinished">Accel Z</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/USB/usb-pad/usb-trance-vibrator.cpp" line="124"/>
+      <source>Trance Vibrator (Rez)</source>
+      <translation type="unfinished">Trance Vibrator (Rez)</translation>
+    </message>
   </context>
   <context>
     <name>USBBindingWidget</name>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="1221"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1225"/>
       <source>Axes</source>
       <translation>مجاورات</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="1249"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1253"/>
       <source>Buttons</source>
       <translation>دکمه‌‌ها</translation>
     </message>
@@ -18607,6 +18847,71 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
   </context>
   <context>
+    <name>USBBindingWidget_Gametrak</name>
+    <message>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="44"/>
+      <source>Left Hand</source>
+      <translation type="unfinished">Left Hand</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="50"/>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="257"/>
+      <source>X Axis</source>
+      <translation type="unfinished">X Axis</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="80"/>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="130"/>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="180"/>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="237"/>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="287"/>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="337"/>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="387"/>
+      <source>PushButton</source>
+      <translation type="unfinished">PushButton</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="87"/>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="294"/>
+      <source>Left=0 / Right=0x3ff</source>
+      <translation type="unfinished">Left=0 / Right=0x3ff</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="100"/>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="307"/>
+      <source>Y Axis</source>
+      <translation type="unfinished">Y Axis</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="137"/>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="344"/>
+      <source>Back=0 / Front=0x3ff</source>
+      <translation type="unfinished">Back=0 / Front=0x3ff</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="150"/>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="357"/>
+      <source>Z Axis</source>
+      <translation type="unfinished">Z Axis</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="187"/>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="394"/>
+      <source>Top=0 / Bottom=0xfff</source>
+      <translation type="unfinished">Top=0 / Bottom=0xfff</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="207"/>
+      <source>Foot Pedal</source>
+      <translation type="unfinished">Foot Pedal</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_Gametrak.ui" line="251"/>
+      <source>Right Hand</source>
+      <translation type="unfinished">Right Hand</translation>
+    </message>
+  </context>
+  <context>
     <name>USBBindingWidget_GunCon2</name>
     <message>
       <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="29"/>
@@ -18710,6 +19015,87 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
   </context>
   <context>
+    <name>USBBindingWidget_RealPlay</name>
+    <message>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="35"/>
+      <source>D-Pad Up</source>
+      <translation type="unfinished">D-Pad Up</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="65"/>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="105"/>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="145"/>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="185"/>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="225"/>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="265"/>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="305"/>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="345"/>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="385"/>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="425"/>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="465"/>
+      <source>PushButton</source>
+      <translation type="unfinished">PushButton</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="75"/>
+      <source>D-Pad Down</source>
+      <translation type="unfinished">D-Pad Down</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="115"/>
+      <source>D-Pad Left</source>
+      <translation type="unfinished">D-Pad Left</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="155"/>
+      <source>D-Pad Right</source>
+      <translation type="unfinished">D-Pad Right</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="195"/>
+      <source>Red</source>
+      <translation type="unfinished">Red</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="235"/>
+      <source>Green</source>
+      <translation type="unfinished">Green</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="275"/>
+      <source>Yellow</source>
+      <translation type="unfinished">Yellow</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="315"/>
+      <source>Blue</source>
+      <translation type="unfinished">Blue</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="355"/>
+      <source>Accel X</source>
+      <translation type="unfinished">Accel X</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="395"/>
+      <source>Accel Y</source>
+      <translation type="unfinished">Accel Y</translation>
+    </message>
+    <message>
+      <location filename="../Settings/USBBindingWidget_RealPlay.ui" line="435"/>
+      <source>Accel Z</source>
+      <translation type="unfinished">Accel Z</translation>
+    </message>
+  </context>
+  <context>
+    <name>USBBindingWidget_TranceVibrator</name>
+    <message>
+      <location filename="../Settings/USBBindingWidget_TranceVibrator.ui" line="50"/>
+      <source>Motor</source>
+      <translation type="unfinished">Motor</translation>
+    </message>
+  </context>
+  <context>
     <name>USBDeviceWidget</name>
     <message>
       <location filename="../Settings/USBDeviceWidget.ui" line="29"/>
@@ -18737,32 +19123,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <translation>پاک کردن اتصالات دسته</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="936"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="939"/>
       <source>USB Port %1</source>
       <translation>درگاه USB %1</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="1102"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1106"/>
       <source>No devices available</source>
       <translation>دستگاهی موجود نیست</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="1111"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1115"/>
       <source>Clear Bindings</source>
       <translation>پاک کردن پیوند خودکار</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="1112"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1116"/>
       <source>Are you sure you want to clear all bindings for this device? This action cannot be undone.</source>
       <translation>آیا مطمئنید که می‌خواهید همه اتصالات این دستگاه را پاک کنید؟ این عمل قابل بازگشت نیست.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="1141"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1145"/>
       <source>Automatic Binding</source>
       <translation>پیوند دادن خودکار</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerBindingWidget.cpp" line="1142"/>
+      <location filename="../Settings/ControllerBindingWidget.cpp" line="1146"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
       <translation>هیچ پیوند عمومی برای دستگاه «%1» ایجاد نشد. ممکن است دسته یا منبع از نقشه برداری یا پیوند خودکار پشتیبانی نکند.</translation>
     </message>
@@ -18939,6 +19325,11 @@ Error was: {}</source>
       <location filename="../../pcsx2/VMManager.cpp" line="3152"/>
       <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
       <translation>فیلترینگ بافت بر روی دوخطی (PS2) تنظیم نشده است. این باعث خراب شدن رندر در برخی بازی ها می شود.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="3615"/>
+      <source>No Game Running</source>
+      <translation type="unfinished">No Game Running</translation>
     </message>
     <message>
       <location filename="../../pcsx2/VMManager.cpp" line="3111"/>
