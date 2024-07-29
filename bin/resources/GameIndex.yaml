@@ -24980,6 +24980,8 @@ SLES-54466:
         patch=1,EE,00b7fc4c,word,4BC0085C
         patch=1,EE,00b81804,word,48438000
         patch=1,EE,00b81808,word,4BC0319C
+        patch=1,EE,00288d2c,word,4BC0109C
+        patch=1,EE,00288d30,word,48438000
 SLES-54467:
   name: "Final Armada"
   region: "PAL-M5"
