@@ -1608,9 +1608,68 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0" colspan="2">
+          <item row="1" column="0">
+           <widget class="QLabel" name="osdMessagesPosLabel">
+            <property name="text">
+             <string>OSD Messages Position:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="osdMessagesPos">
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Left (Default)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Right</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="osdPerformancePosLabel">
+            <property name="text">
+             <string>OSD Performance Position:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="osdPerformancePos">
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Left</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Right (Default)</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_6">
-            <item row="1" column="1">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="osdShowResolution">
+              <property name="text">
+               <string>Show Resolution</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
              <widget class="QCheckBox" name="osdShowFPS">
               <property name="text">
                <string>Show FPS</string>
@@ -1618,86 +1677,72 @@
              </widget>
             </item>
             <item row="1" column="0">
-             <widget class="QCheckBox" name="osdShowVersion">
-              <property name="text">
-               <string>Show PCSX2 Version</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
              <widget class="QCheckBox" name="osdShowCPU">
               <property name="text">
                <string>Show CPU Usage</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
-             <widget class="QCheckBox" name="osdShowIndicators">
-              <property name="text">
-               <string>Show Indicators</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="osdShowMessages">
-              <property name="text">
-               <string>Show OSD Messages</string>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="0">
-             <widget class="QCheckBox" name="warnAboutUnsafeSettings">
-              <property name="text">
-               <string>Warn About Unsafe Settings</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
+            <item row="1" column="1">
              <widget class="QCheckBox" name="osdShowGPU">
               <property name="text">
                <string>Show GPU Usage</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="osdShowResolution">
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="osdShowVersion">
               <property name="text">
-               <string>Show Resolution</string>
+               <string>Show PCSX2 Version</string>
               </property>
              </widget>
             </item>
-            <item row="6" column="1">
-             <widget class="QCheckBox" name="osdShowFrameTimes">
-              <property name="text">
-               <string>Show Frame Times</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QCheckBox" name="osdShowGSStats">
-              <property name="text">
-               <string>Show Statistics</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
+            <item row="2" column="1">
              <widget class="QCheckBox" name="osdShowSpeed">
               <property name="text">
                <string>Show Speed Percentages</string>
               </property>
              </widget>
             </item>
-            <item row="6" column="0">
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="osdShowIndicators">
+              <property name="text">
+               <string>Show Indicators</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="osdShowSettings">
+              <property name="text">
+               <string>Show Settings</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="osdShowGSStats">
+              <property name="text">
+               <string>Show Statistics</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
              <widget class="QCheckBox" name="osdShowInputs">
               <property name="text">
                <string>Show Inputs</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="0">
-             <widget class="QCheckBox" name="osdShowSettings">
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="osdShowFrameTimes">
               <property name="text">
-               <string>Show Settings</string>
+               <string>Show Frame Times</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QCheckBox" name="warnAboutUnsafeSettings">
+              <property name="text">
+               <string>Warn About Unsafe Settings</string>
               </property>
              </widget>
             </item>

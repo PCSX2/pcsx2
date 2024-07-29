@@ -113,7 +113,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	// OSD Settings
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.osdScale, "EmuCore/GS", "OsdScale", 100.0f);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowMessages, "EmuCore/GS", "OsdShowMessages", true);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.osdMessagesPos, "EmuCore/GS", "OsdMessagesPos", static_cast<int>(OsdOverlayPos::TopLeft));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.osdPerformancePos, "EmuCore/GS", "OsdPerformancePos", static_cast<int>(OsdOverlayPos::TopRight));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowSpeed, "EmuCore/GS", "OsdShowSpeed", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowFPS, "EmuCore/GS", "OsdShowFPS", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowCPU, "EmuCore/GS", "OsdShowCPU", false);
@@ -137,6 +138,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 	connect(m_ui.shadeBoost, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onShadeBoostChanged);
 	onShadeBoostChanged();
+	connect(m_ui.osdMessagesPos, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onMessagesPosChanged);
+	connect(m_ui.osdPerformancePos, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onPerformancePosChanged);
+	onMessagesPosChanged();
+	onPerformancePosChanged();
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Settings
@@ -691,9 +696,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	{
 		dialog->registerWidgetHelp(m_ui.osdScale, tr("OSD Scale"), tr("100%"), tr("Scales the size of the onscreen OSD from 50% to 500%."));
 
-		dialog->registerWidgetHelp(m_ui.osdShowMessages, tr("Show OSD Messages"), tr("Checked"),
+		dialog->registerWidgetHelp(m_ui.osdMessagesPos, tr("OSD Messages Position"), tr("Left (Default)"),
 			tr("Shows on-screen-display messages when events occur such as save states being "
 			   "created/loaded, screenshots being taken, etc."));
+		
+		dialog->registerWidgetHelp(m_ui.osdPerformancePos, tr("OSD Statistics Position"), tr("Right (Default)"),
+			tr("Shows a variety of on-screen performance data points as selected by the user."));
 
 		dialog->registerWidgetHelp(m_ui.osdShowFPS, tr("Show FPS"), tr("Unchecked"),
 			tr("Shows the internal frame rate of the game in the top-right corner of the display."));
@@ -884,6 +892,28 @@ void GraphicsSettingsWidget::onShadeBoostChanged()
 	m_ui.shadeBoostBrightness->setEnabled(enabled);
 	m_ui.shadeBoostContrast->setEnabled(enabled);
 	m_ui.shadeBoostSaturation->setEnabled(enabled);
+}
+
+void GraphicsSettingsWidget::onMessagesPosChanged()
+{
+	const bool enabled = m_ui.osdMessagesPos->currentIndex() != (m_dialog->isPerGameSettings() ? 1 : 0);
+
+	m_ui.warnAboutUnsafeSettings->setEnabled(enabled);
+}
+
+void GraphicsSettingsWidget::onPerformancePosChanged()
+{
+	const bool enabled = m_ui.osdPerformancePos->currentIndex() != (m_dialog->isPerGameSettings() ? 1 : 0);
+	
+	m_ui.osdShowSpeed->setEnabled(enabled);
+	m_ui.osdShowFPS->setEnabled(enabled);
+	m_ui.osdShowCPU->setEnabled(enabled);
+	m_ui.osdShowGPU->setEnabled(enabled);
+	m_ui.osdShowResolution->setEnabled(enabled);
+	m_ui.osdShowGSStats->setEnabled(enabled);
+	m_ui.osdShowIndicators->setEnabled(enabled);
+	m_ui.osdShowFrameTimes->setEnabled(enabled);
+	m_ui.osdShowVersion->setEnabled(enabled);
 }
 
 void GraphicsSettingsWidget::onTextureDumpChanged()

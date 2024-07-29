@@ -685,7 +685,7 @@ void ImGuiManager::AcquirePendingOSDMessages(Common::Timer::Value current_time)
 		if (s_osd_posted_messages.empty())
 			break;
 
-		if (GSConfig.OsdShowMessages)
+		if (GSConfig.OsdMessagesPos != OsdOverlayPos::None)
 		{
 			OSDMessage& new_msg = s_osd_posted_messages.front();
 			std::deque<OSDMessage>::iterator iter;
@@ -727,7 +727,7 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 	const float padding = std::ceil(8.0f * scale);
 	const float rounding = std::ceil(5.0f * scale);
 	const float max_width = s_window_width - (margin + padding) * 2.0f;
-	float position_x = margin;
+	float position_x = GSConfig.OsdMessagesPos == OsdOverlayPos::TopRight ? GetWindowWidth() - margin : margin;
 	float position_y = margin;
 
 	auto iter = s_osd_active_messages.begin();
@@ -780,10 +780,10 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 		if (actual_y >= s_window_height)
 			break;
 
-		const ImVec2 pos(position_x, actual_y);
 		const ImVec2 text_size(
 			font->CalcTextSizeA(font->FontSize, max_width, max_width, msg.text.c_str(), msg.text.c_str() + msg.text.length()));
 		const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
+		const ImVec2 pos(position_x - (GSConfig.OsdMessagesPos == OsdOverlayPos::TopRight ? size.x : 0), actual_y);
 		const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
 
 		ImDrawList* dl = ImGui::GetBackgroundDrawList();

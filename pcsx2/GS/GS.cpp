@@ -1043,18 +1043,13 @@ static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 
 static void HotkeyToggleOSD()
 {
-	GSConfig.OsdShowMessages ^= EmuConfig.GS.OsdShowMessages;
-	GSConfig.OsdShowSpeed ^= EmuConfig.GS.OsdShowSpeed;
-	GSConfig.OsdShowFPS ^= EmuConfig.GS.OsdShowFPS;
-	GSConfig.OsdShowCPU ^= EmuConfig.GS.OsdShowCPU;
-	GSConfig.OsdShowGPU ^= EmuConfig.GS.OsdShowGPU;
-	GSConfig.OsdShowResolution ^= EmuConfig.GS.OsdShowResolution;
-	GSConfig.OsdShowGSStats ^= EmuConfig.GS.OsdShowGSStats;
-	GSConfig.OsdShowIndicators ^= EmuConfig.GS.OsdShowIndicators;
 	GSConfig.OsdShowSettings ^= EmuConfig.GS.OsdShowSettings;
 	GSConfig.OsdShowInputs ^= EmuConfig.GS.OsdShowInputs;
-	GSConfig.OsdShowFrameTimes ^= EmuConfig.GS.OsdShowFrameTimes;
-	GSConfig.OsdShowVersion ^= EmuConfig.GS.OsdShowVersion;
+
+	GSConfig.OsdMessagesPos =
+		GSConfig.OsdMessagesPos == OsdOverlayPos::None ? EmuConfig.GS.OsdMessagesPos : OsdOverlayPos::None;
+	GSConfig.OsdPerformancePos =
+		GSConfig.OsdPerformancePos == OsdOverlayPos::None ? EmuConfig.GS.OsdPerformancePos : OsdOverlayPos::None;
 }
 
 BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphics"),
