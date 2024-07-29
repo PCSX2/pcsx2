@@ -928,7 +928,7 @@ ControllerBindingWidget_Jogcon::~ControllerBindingWidget_Jogcon()
 
 QIcon ControllerBindingWidget_Jogcon::getIcon() const
 {
-	return QIcon::fromTheme("controller-line");
+	return QIcon::fromTheme("jogcon-line");
 }
 
 ControllerBindingWidget_Base* ControllerBindingWidget_Jogcon::createInstance(ControllerBindingWidget* parent)
@@ -949,7 +949,7 @@ ControllerBindingWidget_Negcon::~ControllerBindingWidget_Negcon()
 
 QIcon ControllerBindingWidget_Negcon::getIcon() const
 {
-	return QIcon::fromTheme("controller-line");
+	return QIcon::fromTheme("negcon-line");
 }
 
 ControllerBindingWidget_Base* ControllerBindingWidget_Negcon::createInstance(ControllerBindingWidget* parent)
