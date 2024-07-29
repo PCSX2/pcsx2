@@ -304,6 +304,13 @@ enum class AccBlendLevel : u8
 	Maximum,
 };
 
+enum class OsdOverlayPos : u8
+{
+	None,
+	TopLeft,
+	TopRight,
+};
+
 enum class TexturePreloadingLevel : u8
 {
 	Off,
@@ -610,7 +617,6 @@ struct Pcsx2Config
 					DisableFramebufferFetch : 1,
 					DisableVertexShaderExpand : 1,
 					SkipDuplicateFrames : 1,
-					OsdShowMessages : 1,
 					OsdShowSpeed : 1,
 					OsdShowFPS : 1,
 					OsdShowCPU : 1,
@@ -677,7 +683,9 @@ struct Pcsx2Config
 		float StretchY = 100.0f;
 		int Crop[4] = {};
 
-		float OsdScale = 100.0;
+		float OsdScale = 100.0f;
+		OsdOverlayPos OsdMessagesPos = OsdOverlayPos::TopLeft;
+		OsdOverlayPos OsdPerformancePos = OsdOverlayPos::TopRight;
 
 		GSRendererType Renderer = GSRendererType::Auto;
 		float UpscaleMultiplier = 1.0f;
