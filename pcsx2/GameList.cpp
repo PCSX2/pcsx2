@@ -99,14 +99,14 @@ const char* GameList::EntryTypeToString(EntryType type)
 
 const char* GameList::EntryTypeToDisplayString(EntryType type)
 {
-	static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{"PS2 Disc", "PS1 Disc", "ELF"}};
+	static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{TRANSLATE("GameList", "PS2 Disc"), TRANSLATE("GameList", "PS1 Disc"), TRANSLATE("GameList", "ELF")}};
 	return names[static_cast<int>(type)];
 }
 
 const char* GameList::RegionToString(Region region)
 {
 	static std::array<const char*, static_cast<int>(Region::Count)> names = {{"NTSC-B", "NTSC-C", "NTSC-HK", "NTSC-J", "NTSC-K", "NTSC-T",
-		"NTSC-U", "Other", "PAL-A", "PAL-AF", "PAL-AU", "PAL-BE", "PAL-E", "PAL-F", "PAL-FI", "PAL-G", "PAL-GR", "PAL-I", "PAL-IN", "PAL-M",
+		"NTSC-U", TRANSLATE("GameList", "Other"), "PAL-A", "PAL-AF", "PAL-AU", "PAL-BE", "PAL-E", "PAL-F", "PAL-FI", "PAL-G", "PAL-GR", "PAL-I", "PAL-IN", "PAL-M",
 		"PAL-NL", "PAL-NO", "PAL-P", "PAL-PL", "PAL-R", "PAL-S", "PAL-SC", "PAL-SW", "PAL-SWI", "PAL-UK"}};
 
 	return names[static_cast<int>(region)];
