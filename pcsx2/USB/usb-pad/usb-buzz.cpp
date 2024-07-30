@@ -198,6 +198,11 @@ namespace usb_pad
 		return "BuzzDevice";
 	}
 
+	bool BuzzDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
+	{
+		return true;
+	}
+
 	USBDevice* BuzzDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
 		BuzzState* s = new BuzzState(port);

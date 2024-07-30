@@ -129,6 +129,11 @@ namespace usb_pad
 		return "TranceVibrator";
 	}
 
+	bool TranceVibratorDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
+	{
+		return true;
+	}
+
 	USBDevice* TranceVibratorDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
 		TranceVibratorState* s = new TranceVibratorState(port);
