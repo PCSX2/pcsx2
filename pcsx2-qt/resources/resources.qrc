@@ -47,6 +47,7 @@
 		<file>icons/black/svg/folder-settings-line.svg</file>
 		<file>icons/black/svg/fullscreen-line.svg</file>
 		<file>icons/black/svg/function-line.svg</file>
+		<file>icons/black/svg/gametrak-line.svg</file>
 		<file>icons/black/svg/github.svg</file>
 		<file>icons/black/svg/global-line.svg</file>
 		<file>icons/black/svg/guitar-line.svg</file>
@@ -74,6 +75,7 @@
 		<file>icons/black/svg/Popn-line.svg</file>
 		<file>icons/black/svg/price-tag-3-line.svg</file>
 		<file>icons/black/svg/printer-line.svg</file>
+		<file>icons/black/svg/realplay-sphere-line.svg</file>
 		<file>icons/black/svg/refresh-line.svg</file>
 		<file>icons/black/svg/restart-line.svg</file>
 		<file>icons/black/svg/save-3-line.svg</file>
@@ -145,6 +147,7 @@
 		<file>icons/white/svg/folder-settings-line.svg</file>
 		<file>icons/white/svg/fullscreen-line.svg</file>
 		<file>icons/white/svg/function-line.svg</file>
+		<file>icons/white/svg/gametrak-line.svg</file>
 		<file>icons/white/svg/github.svg</file>
 		<file>icons/white/svg/global-line.svg</file>
 		<file>icons/white/svg/guitar-line.svg</file>
@@ -172,6 +175,7 @@
 		<file>icons/white/svg/Popn-line.svg</file>
 		<file>icons/white/svg/price-tag-3-line.svg</file>
 		<file>icons/white/svg/printer-line.svg</file>
+		<file>icons/white/svg/realplay-sphere-line.svg</file>
 		<file>icons/white/svg/refresh-line.svg</file>
 		<file>icons/white/svg/restart-line.svg</file>
 		<file>icons/white/svg/save-3-line.svg</file>
