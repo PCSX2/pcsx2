@@ -1,5 +1,5 @@
-; SPDX-FileCopyrightText: 2002-2021 PCSX2 Dev Team
-; SPDX-License-Identifier: LGPL-3.0+
+; SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+; SPDX-License-Identifier: GPL-3.0+
 
 ; -----------------------------------------
 ; 64-bit X86

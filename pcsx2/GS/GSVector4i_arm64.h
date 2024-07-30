@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021-2024 Connor McLaughlin <stenzek@gmail.com>, PCSX2 Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0
 
 #pragma once
