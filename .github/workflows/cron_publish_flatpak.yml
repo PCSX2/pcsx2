@@ -34,7 +34,7 @@ jobs:
     # Use fromJson() to convert them to proper integers...
     # see: https://github.com/github/docs/pull/25870
     # and: https://github.com/orgs/community/discussions/57480
-    if: fromJson(needs.check.outputs.FLATHUB_RELEASE) < fromJson(needs.check.outputs.PCSX2_RELEASE)
+    #if: fromJson(needs.check.outputs.FLATHUB_RELEASE) < fromJson(needs.check.outputs.PCSX2_RELEASE)
     name: "Build and publish Flatpak"
     uses: ./.github/workflows/linux_build_flatpak.yml
     with:
