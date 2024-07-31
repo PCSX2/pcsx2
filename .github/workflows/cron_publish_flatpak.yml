@@ -23,6 +23,8 @@ jobs:
           FLATHUB_RELEASE=$(curl -L -s https://flathub.org/api/v2/appstream/net.pcsx2.PCSX2 | jq -r '.releases | max_by(.version) | .version')
           echo "Latest PCSX2 release is: '${PCSX2_RELEASE}'"
           echo "Latest Flathub release is: '${FLATHUB_RELEASE}'"
+          PCSX2_RELEASE=$(echo $PCSX2_RELEASE | sed 's/[^0-9]*//g')
+          FLATHUB_RELEASE=$(echo $FLATHUB_RELEASE | sed 's/[^0-9]*//g')
           echo "PCSX2_RELEASE=${PCSX2_RELEASE}" >> "$GITHUB_OUTPUT"
           echo "FLATHUB_RELEASE=${FLATHUB_RELEASE}" >> "$GITHUB_OUTPUT"
 
