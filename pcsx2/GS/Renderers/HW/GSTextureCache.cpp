@@ -2605,6 +2605,17 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				if (dst != t && t->m_TEX0.TBW == dst->m_TEX0.TBW && t->m_TEX0.PSM == dst->m_TEX0.PSM && t->m_TEX0.TBW > 4)
 					if (t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid))
 					{
+						// If the two targets are misaligned, it's likely a relocation, so we can just kill the old target.
+						// Kill targets that are overlapping new targets, but ignore the copy if the old target is dirty  because we favour GS memory.
+						if (((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % dst->m_TEX0.TBW) != 0) && !t->m_dirty.empty())
+						{
+							InvalidateSourcesFromTarget(t);
+							i = list.erase(j);
+							delete t;
+
+							continue;
+						}
+
 						// could be overwriting a double buffer, so if it's the second half of it, just reduce the size down to half.
 						if (((((t->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) == dst->m_TEX0.TBP0)
 						{
@@ -2628,34 +2639,37 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 								continue;
 							}
 
-							const int dst_offset = ((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) / dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y);
-							const int dst_offset_scaled = dst_offset * dst->m_scale;
-							const GSVector4i dst_rect = GSVector4i(t->m_valid.x, dst_offset, t->m_valid.z, dst_offset + overlapping_pages_height);
-							if (((!hw_clear && (preserve_target || preload)) || dst_rect.rintersect(draw_rect).rempty()) && dst->GetScale() == t->GetScale())
+							const int dst_offset_width = (((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.x;
+							const int dst_offset_height = ((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) / dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y);
+							const int dst_offset_scaled_width = dst_offset_width * dst->m_scale;
+							const int dst_offset_scaled_height = dst_offset_height * dst->m_scale;
+							const GSVector4i dst_rect_scale = GSVector4i(t->m_valid.x, dst_offset_height, t->m_valid.z, dst_offset_height + overlapping_pages_height);
+							if (((!hw_clear && (preserve_target || preload)) || dst_rect_scale.rintersect(draw_rect).rempty()) && dst->GetScale() == t->GetScale())
 							{
-								const int copy_width = (t->m_texture->GetWidth()) > (dst->m_texture->GetWidth()) ? (dst->m_texture->GetWidth()) : t->m_texture->GetWidth();
+								const int copy_width = ((t->m_texture->GetWidth()) > (dst->m_texture->GetWidth()) ? (dst->m_texture->GetWidth()) : t->m_texture->GetWidth()) - dst_offset_scaled_width;
 								const int copy_height = overlapping_pages_height * t->m_scale;
 
-								GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, copy_width, copy_height, 0, dst_offset_scaled);
+								GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, copy_width, copy_height, 0, dst_offset_scaled_height);
 
 								pxAssert(copy_width <= dst->GetTexture()->GetWidth() && copy_height <= dst->GetTexture()->GetHeight() &&
 										 copy_width <= t->GetTexture()->GetWidth() && copy_height <= t->GetTexture()->GetHeight());
 
-								pxAssert(dst_offset_scaled > 0);
+								pxAssert(dst_offset_scaled_height > 0);
 
 								// Clear the dirty first
+								t->Update();
 								dst->Update();
 								// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
 								if (!t->m_valid_rgb || !(t->m_valid_alpha_high || t->m_valid_alpha_low) || t->m_scale != dst->m_scale)
 								{
 									const GSVector4 src_rect = GSVector4(0, 0, copy_width, copy_height) / (GSVector4(t->m_texture->GetSize()).xyxy());
-									const GSVector4 dst_rect = GSVector4(0, dst_offset, copy_width, dst_offset + copy_height);
+									const GSVector4 dst_rect = GSVector4(dst_offset_scaled_width, dst_offset_scaled_height, dst_offset_scaled_width + copy_width, dst_offset_scaled_width + copy_height);
 									g_gs_device->StretchRect(t->m_texture, src_rect, dst->m_texture, dst_rect, t->m_valid_rgb, t->m_valid_rgb, t->m_valid_rgb, t->m_valid_alpha_high || t->m_valid_alpha_low);
 								}
 								else
 								{
 									// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
-									g_gs_device->CopyRect(t->m_texture, dst->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, dst_offset_scaled);
+									g_gs_device->CopyRect(t->m_texture, dst->m_texture, GSVector4i(0, 0, copy_width, copy_height), dst_offset_scaled_width, dst_offset_scaled_height);
 								}
 							}
 
