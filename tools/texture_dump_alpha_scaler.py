@@ -7,10 +7,10 @@ import argparse
 from PIL import Image
 
 # PCSX2 - PS2 Emulator for PCs
-# Copyright (C) 2002-2022  PCSX2 Dev Team
+# Copyright (C) 2002-2024 PCSX2 Dev Team
 #
 # PCSX2 is free software: you can redistribute it and/or modify it under the terms
-# of the GNU Lesser General Public License as published by the Free Software Found-
+# of the GNU General Public License as published by the Free Software Found-
 # ation, either version 3 of the License, or (at your option) any later version.
 #
 # PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
