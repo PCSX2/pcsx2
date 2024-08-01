@@ -4402,7 +4402,7 @@ Wprowadź nazwę funkcji</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
-      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
+      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame-times, but add additional input lag.</source>
       <translation>Ustawia maksymalną liczbę ramek, które mogą być umieszczone w kolejce do GS, zanim wątek CPU będzie czekał, aż jeden z nich zakończy się przed kontynuowaniem. Wyższe wartości mogą pomóc w wygładzaniu nieprawidłowych klatek czasowych, ale dodają dodatkowe opóźnienie wejściowe.</translation>
     </message>
     <message>
@@ -4902,7 +4902,7 @@ Adres URL to: %1</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
-      <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+      <source>Shows a visual history of frame-times in the upper-left corner of the display.</source>
       <translation>Pokazuje wizualną historię czasów klatki w lewym górnym rogu ekranu.</translation>
     </message>
     <message>
@@ -5041,7 +5041,7 @@ Czy mimo to chcesz zamknąć i NIEODWRACALNIE ZEPSUĆ SWOJĄ KARTĘ PAMIĘCI?</t
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
-      <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
+      <source>Pins emulation threads to CPU cores to potentially improve performance/frame-time variance.</source>
       <translation>Przypina wątki emulacyjne do rdzeni procesora w celu potencjalnej poprawy wariancji czasowej wydajności/ramki.</translation>
     </message>
     <message>
@@ -8414,7 +8414,7 @@ Czy chcesz załadować ten zapis i kontynuować?</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>Pokaż czasy klatek</translation>
     </message>
     <message>
@@ -11358,7 +11358,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>Pokaż czasy klatek</translation>
     </message>
     <message>
@@ -12030,7 +12030,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
-      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
+      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out the frame-time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
       <translation>Wykrywa, kiedy bezczynne klatki są prezentowane w grach 25/30fps i pomija te klatki. Klatka jest nadal renderowana, oznacza to, jedynie, że karta graficzna ma więcej czasu na jej ukończenie (to NIE jest pomijanie klatek). Może łagodzić wahania czasu wyświetlania klatek, gdy zużycie procesora lub karty graficznej zbliża się do maksimum, ale sprawia, że tempo klatek jest bardziej niespójne i może zwiększyć opóźnienie wejściowe.</translation>
     </message>
     <message>

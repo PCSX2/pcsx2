@@ -4392,7 +4392,7 @@ Saisissez le nom de la fonction :</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
-      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
+      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame-times, but add additional input lag.</source>
       <translation>Définissez le nombre maximum d'images pouvant être en attente du GS, avant que le thread CPU ne doive attendre qu'une des images soit terminée avant de reprendre. Plus la valeur est élevée, plus les variations de durées d'image sont lissées, et plus la latence d'entrée augmente.</translation>
     </message>
     <message>
@@ -4892,7 +4892,7 @@ URL : %1</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
-      <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+      <source>Shows a visual history of frame-times in the upper-left corner of the display.</source>
       <translation>Afficher un historique visuel des durées d'image dans le coin supérieur gauche de l'écran.</translation>
     </message>
     <message>
@@ -5031,7 +5031,7 @@ Voulez-vous quand même éteindre la machine virtuelle et DÉTRUIRE DE FAÇON IR
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
-      <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
+      <source>Pins emulation threads to CPU cores to potentially improve performance/frame-time variance.</source>
       <translation>Associer certains threads de l'émulateur à certains cœurs CPU pour potentiellement améliorer les performances et lisser les variations de durée d'image.</translation>
     </message>
     <message>
@@ -8404,7 +8404,7 @@ Voulez-vous charger cette sauvegarde et continuer ?</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>Afficher les durées d'image</translation>
     </message>
     <message>
@@ -11346,7 +11346,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>Afficher les durées d'image</translation>
     </message>
     <message>
@@ -12018,7 +12018,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
-      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
+      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out the frame-time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
       <translation>Détecter quand des images en double sont présentées dans des jeux à 25 ou 30 IPS et sauter leur présentation. Le rendu de ces images est toujours effectué mais le GPU a plus de temps pour les terminer (ce n'est PAS du saut d'images). L'option peut permettre de lisser les durées d'image lorsque la charge CPU ou GPU est maximale, mais la cadence d'image sera plus variable et la latence d'entrée peut augmenter.</translation>
     </message>
     <message>

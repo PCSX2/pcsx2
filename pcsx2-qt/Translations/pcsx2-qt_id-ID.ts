@@ -4387,8 +4387,8 @@ Enter function name</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
-      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
-      <translation>Mengatur jumlah frame maksimum yang dapat diantrekan ke GS, sebelum thread CPU menunggu salah satunya selesai sebelum melanjutkan. Jumlah yang lebih tinggi dapat menghaluskan frame time yang tidak teratur, namun akan menambah input lag.</translation>
+      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame-times, but add additional input lag.</source>
+      <translation>Mengatur jumlah frame maksimum yang dapat diantrekan ke GS, sebelum thread CPU menunggu salah satunya selesai sebelum melanjutkan. Jumlah yang lebih tinggi dapat menghaluskan frame-time yang tidak teratur, namun akan menambah input lag.</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="139"/>
@@ -4887,8 +4887,8 @@ Tautan nya adalah: %1</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
-      <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
-      <translation>Menampilkan riwayat visual dari frame times di sudut kiri atas di layar.</translation>
+      <source>Shows a visual history of frame-times in the upper-left corner of the display.</source>
+      <translation>Menampilkan riwayat visual dari frame-times di sudut kiri atas di layar.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6936"/>
@@ -5026,8 +5026,8 @@ Apakah Anda ingin menghentikan game dan MENGHANCURKAN MEMORY CARD Anda secara pe
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
-      <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
-      <translation>Menyematkan thread untuk emulasi ke core CPU yang mungkin dapat meningkatkan performa / perbedaan frame time.</translation>
+      <source>Pins emulation threads to CPU cores to potentially improve performance/frame-time variance.</source>
+      <translation>Menyematkan thread untuk emulasi ke core CPU yang mungkin dapat meningkatkan performa / perbedaan frame-time.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6953"/>
@@ -8400,7 +8400,7 @@ Apakah Anda ingin memuat savestate ini dan melanjutkan?</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>Tampilkan Frame Time</translation>
     </message>
     <message>
@@ -11339,7 +11339,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>Tampilkan Frame Time</translation>
     </message>
     <message>
@@ -12011,8 +12011,8 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
-      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
-      <translation>Mendeteksi saat frame diam sedang ditampilkan di game 25/30 FPS dan melewati menampilkan frame-frame diam tersebut. Framenya tetap di-render, namun GPU kini memiliki lebih banyak waktu untuk menyelesaikannya (TIDAK sama dengan frame skipping). Dapat menghaluskan fluktuasi frame time saat CPU/GPU hampir sepenuhnya dipakai, namun membuat frame pacing lebih inkonsisten dan dapat menambah input lag.</translation>
+      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out the frame-time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
+      <translation>Mendeteksi saat frame diam sedang ditampilkan di game 25/30 FPS dan melewati menampilkan frame-frame diam tersebut. Framenya tetap di-render, namun GPU kini memiliki lebih banyak waktu untuk menyelesaikannya (TIDAK sama dengan frame skipping). Dapat menghaluskan fluktuasi frame-time saat CPU/GPU hampir sepenuhnya dipakai, namun membuat frame pacing lebih inkonsisten dan dapat menambah input lag.</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1152"/>

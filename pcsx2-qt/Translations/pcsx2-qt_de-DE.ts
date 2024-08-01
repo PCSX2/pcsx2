@@ -4392,7 +4392,7 @@ Gebe den Funktionsnamen ein</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
-      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
+      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame-times, but add additional input lag.</source>
       <translation>Setzt die maximale Anzahl von Frames fest, die in einer Warteschlange zum GS stehen können. Der CPU-Thread wartet jedes mal bis ein Frame fertiggestellt wurde bevor es mit dem nächsten weitermacht . Höhere Werte können bei der Glättung unregelmäßiger Bildzeiten (Frame Times) helfen, fügt aber zusätzliche Eingabeverzögerungen (Input Lag) hinzu.</translation>
     </message>
     <message>
@@ -4892,7 +4892,7 @@ Die URL war: %1</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
-      <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+      <source>Shows a visual history of frame-times in the upper-left corner of the display.</source>
       <translation>Zeigt ein Histogramm der Frametimes in der oberen linken Ecke des Displays an.</translation>
     </message>
     <message>
@@ -5031,7 +5031,7 @@ Möchtest du trotzdem herunterfahren und DEINE MEMORY CARD IRREVERSIBEL ZERSTÖR
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
-      <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
+      <source>Pins emulation threads to CPU cores to potentially improve performance/frame-time variance.</source>
       <translation>Setzt Emulations-Threads fest auf echte CPU-Kerne (anstatt Hyperthreading/SMT Kerne), um eventuell die Performance/Frametimes zu verbessern bzw. Schwankungen zu verringern.</translation>
     </message>
     <message>
@@ -8404,7 +8404,7 @@ Möchten Sie diesen laden und fortfahren?</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>Frametime anzeigen</translation>
     </message>
     <message>
@@ -11344,7 +11344,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>Frametimes anzeigen</translation>
     </message>
     <message>
@@ -12016,7 +12016,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
-      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
+      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out the frame-time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
       <translation>Erkennt, wann inaktive Frames in 25/30fps Spielen dargestellt werden und überspringt die Darstellung dieser Frames. Das Frame wird immer noch gerendert, es bedeutet lediglich, dass die GPU mehr Zeit hat, es zu vervollständigen (dies ist KEIN frame skipping). Kann Frametime schwankungen glätten, wenn die CPU/GPU nahezu maximal Ausgelastet sind, aber macht Framepacing inkonsistenter und kann die Eingabeverzögerung erhöhen.</translation>
     </message>
     <message>
