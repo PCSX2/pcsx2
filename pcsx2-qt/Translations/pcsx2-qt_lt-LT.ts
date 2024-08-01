@@ -5145,7 +5145,7 @@ Ar norite vis tiek išjungti žaidimą ir NEGRĮŽTAMAI SUGADINTI JŪSŲ ATMINTI
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
-      <source>FMV Aspect Ratio</source>
+      <source>FMV Aspect Ratio Override</source>
       <translation>FMV Vaizdo santykis</translation>
     </message>
     <message>
@@ -10287,7 +10287,7 @@ Skenavimas pakartotinai užima daugiau laiko, tačiau bus nustatyti papildomai s
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="112"/>
-      <source>FMV Aspect Ratio:</source>
+      <source>FMV Aspect Ratio Override:</source>
       <translation>FMV Vaizdo santykis:</translation>
     </message>
     <message>
@@ -11723,7 +11723,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
-      <source>FMV Aspect Ratio</source>
+      <source>FMV Aspect Ratio Override</source>
       <translation>FMV Vaizdo santykis</translation>
     </message>
     <message>

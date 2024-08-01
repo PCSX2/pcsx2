@@ -109,7 +109,7 @@
        <item row="2" column="0">
         <widget class="QLabel" name="fmvAspectRatioLabel">
          <property name="text">
-          <string>FMV Aspect Ratio:</string>
+          <string>FMV Aspect Ratio Override:</string>
          </property>
         </widget>
        </item>

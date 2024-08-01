@@ -5137,7 +5137,7 @@ Haluatko sammuttaa siitä huolimatta ja PERUUTTAMATTOMASTI TUHOTA MUISTIKORTTISI
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
-      <source>FMV Aspect Ratio</source>
+      <source>FMV Aspect Ratio Override</source>
       <translation>FMV-kuvasuhde</translation>
     </message>
     <message>
@@ -10275,7 +10275,7 @@ Rekursiivinen skannaus vie enemmän aikaa, mutta tunnistaa tiedostot alikansiois
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="112"/>
-      <source>FMV Aspect Ratio:</source>
+      <source>FMV Aspect Ratio Override:</source>
       <translation>FMV-kuvasuhde:</translation>
     </message>
     <message>
@@ -11711,7 +11711,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
-      <source>FMV Aspect Ratio</source>
+      <source>FMV Aspect Ratio Override</source>
       <translation>FMV-kuvasuhde</translation>
     </message>
     <message>

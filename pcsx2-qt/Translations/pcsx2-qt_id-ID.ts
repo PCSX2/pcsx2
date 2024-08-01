@@ -5131,8 +5131,8 @@ Apakah Anda ingin menghentikan game dan MENGHANCURKAN MEMORY CARD Anda secara pe
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
-      <source>FMV Aspect Ratio</source>
-      <translation>FMV Aspect Ratio</translation>
+      <source>FMV Aspect Ratio Override</source>
+      <translation>FMV Aspect Ratio Override</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6982"/>
@@ -10267,7 +10267,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="112"/>
-      <source>FMV Aspect Ratio:</source>
+      <source>FMV Aspect Ratio Override:</source>
       <translation>Aspek Rasio FMV:</translation>
     </message>
     <message>
@@ -11703,7 +11703,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
-      <source>FMV Aspect Ratio</source>
+      <source>FMV Aspect Ratio Override</source>
       <translation>Aspek Rasio FMV</translation>
     </message>
     <message>

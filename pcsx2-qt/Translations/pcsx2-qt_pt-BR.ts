@@ -5136,7 +5136,7 @@ Você deseja desligar de qualquer modo e DESTRUIR IRREVERSIVELMENTE SEU CARTÃO 
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
-      <source>FMV Aspect Ratio</source>
+      <source>FMV Aspect Ratio Override</source>
       <translation>Proporção do Aspecto do FMV</translation>
     </message>
     <message>
@@ -10274,7 +10274,7 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="112"/>
-      <source>FMV Aspect Ratio:</source>
+      <source>FMV Aspect Ratio Override:</source>
       <translation>Proporção do Aspecto do FMV:</translation>
     </message>
     <message>
@@ -11710,7 +11710,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
-      <source>FMV Aspect Ratio</source>
+      <source>FMV Aspect Ratio Override</source>
       <translation>Proporção do Aspecto do FMV</translation>
     </message>
     <message>
