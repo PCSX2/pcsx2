@@ -4392,7 +4392,7 @@ Introduce el nombre de la función</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
-      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
+      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame-times, but add additional input lag.</source>
       <translation>Establece la cantidad máxima de fotogramas que podrán ponerse en la cola del GS antes de que el subproceso de la CPU espere a que un fotograma sea completado para poder continuar. Un valor alto podría ayudar a suavizar las duraciones de fotogramas irregulares, pero añadirá más retraso en la entrada de los controles.</translation>
     </message>
     <message>
@@ -4892,7 +4892,7 @@ URL introducida: %1</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
-      <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+      <source>Shows a visual history of frame-times in the upper-left corner of the display.</source>
       <translation>Muestra un historial visual de duraciones de fotogramas en la esquina superior izquierda de la imagen.</translation>
     </message>
     <message>
@@ -5031,7 +5031,7 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</sour
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
-      <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
+      <source>Pins emulation threads to CPU cores to potentially improve performance/frame-time variance.</source>
       <translation>Asigna hilos de la emulación a otros núcleos de la CPU, lo que podría mejorar el rendimiento o reducir la variación de la duración de fotogramas.</translation>
     </message>
     <message>
@@ -8404,7 +8404,7 @@ Do you want to load this save and continue?</source>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>Mostrar duraciones de fotogramas</translation>
     </message>
     <message>
@@ -11345,7 +11345,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>Mostrar duraciones de fotogramas</translation>
     </message>
     <message>
@@ -12017,7 +12017,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
-      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
+      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out the frame-time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
       <translation>Detecta cuándo se van a presentar fotogramas inactivos en juegos a 25/30 FPS y omite su presentación. El fotograma seguirá renderizándose, pero la GPU tendrá más tiempo para completarlo (esto NO ES omitir fotogramas). Puede suavizar las fluctuaciones en las duraciones de fotogramas cuando la CPU y la GPU estén siendo utilizadas al máximo, pero hará que el ritmo de fotogramas sea más inconsistente y puede aumentar el retraso de la señal de entrada.</translation>
     </message>
     <message>

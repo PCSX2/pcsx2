@@ -4392,7 +4392,7 @@ Insira o nome da função</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
-      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
+      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame-times, but add additional input lag.</source>
       <translation>Define o número máximo de frames que podem ser enfileirados até o GS antes que o thread da CPU espere que um deles complete antes de continuar. Valores maiores podem ajudar a suavizar os tempos dos frames irregulares mas adiciona atraso adicional da entrada.</translation>
     </message>
     <message>
@@ -4892,7 +4892,7 @@ A URL era: %1</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
-      <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+      <source>Shows a visual history of frame-times in the upper-left corner of the display.</source>
       <translation>Mostra um histórico visual dos tempos dos frames no canto superior esquerdo da tela.</translation>
     </message>
     <message>
@@ -5031,7 +5031,7 @@ Você deseja desligar de qualquer modo e DESTRUIR IRREVERSIVELMENTE SEU CARTÃO 
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
-      <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
+      <source>Pins emulation threads to CPU cores to potentially improve performance/frame-time variance.</source>
       <translation>Fixa os threads da emulação nos núcleos da CPU pra melhorar potencialmente a variação da performance/tempo dos frames.</translation>
     </message>
     <message>
@@ -8404,7 +8404,7 @@ Você quer carregar este save e continuar?</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>Mostrar o Tempo dos Frames</translation>
     </message>
     <message>
@@ -11346,7 +11346,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>Mostrar o Tempo dos Frames</translation>
     </message>
     <message>
@@ -12018,7 +12018,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
-      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
+      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out the frame-time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
       <translation>Detecta quando frames ociosos estão sendo apresentados em jogos de 25/30fps, e pula a apresentação desses frames. O frame ainda é renderizado, apenas significa que a GPU tem mais tempo para completá-lo (isto NÃO é pular frames). Pode suavizar as flutuações do tempo de frame quando a CPU/GPU estão próximas da utilização máxima, mas torna a cadência dos frames mais inconsistente e pode aumentar o atraso de entrada.</translation>
     </message>
     <message>

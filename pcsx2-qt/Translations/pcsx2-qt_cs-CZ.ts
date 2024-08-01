@@ -4402,7 +4402,7 @@ Zadejte název funkce</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
-      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
+      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame-times, but add additional input lag.</source>
       <translation>Nastaví maximální počet snímků, které mohou být zařazeny do fronty do GS předtím, než vlákno procesoru počká na dokončení jednoho z nich, než bude pokračovat. Vyšší hodnoty mohou pomoci s vyhlazením nepravidelných časů snímků, ale přidají další vstupní zpoždění.</translation>
     </message>
     <message>
@@ -4902,7 +4902,7 @@ Tato URL byla: %1</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
-      <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+      <source>Shows a visual history of frame-times in the upper-left corner of the display.</source>
       <translation>Zobrazí vizuální historii naměřeného času mezi snímky v levém horním rohu displeje.</translation>
     </message>
     <message>
@@ -5041,7 +5041,7 @@ Přejete si přesto vypnout a NEVRATNĚ ZNIČIT VAŠI PAMĚŤOVOU KARTU?</transl
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
-      <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
+      <source>Pins emulation threads to CPU cores to potentially improve performance/frame-time variance.</source>
       <translation>Připne emulační vlákna do jader procesoru, aby se potenciálně zlepšila odchylka výkonu/doba snímku.</translation>
     </message>
     <message>
@@ -8414,8 +8414,8 @@ Do you want to load this save and continue?</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
-      <source>Show Frame Times</source>
-      <translation type="unfinished">Show Frame Times</translation>
+      <source>Show Frame-Times</source>
+      <translation type="unfinished">Show Frame-Times</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7582"/>
@@ -11360,8 +11360,8 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
-      <source>Show Frame Times</source>
-      <translation type="unfinished">Show Frame Times</translation>
+      <source>Show Frame-Times</source>
+      <translation type="unfinished">Show Frame-Times</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1726"/>
@@ -12032,8 +12032,8 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
-      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
-      <translation type="unfinished">Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</translation>
+      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out the frame-time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
+      <translation type="unfinished">Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out the frame-time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1152"/>

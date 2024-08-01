@@ -4385,7 +4385,7 @@ Enter function name</source>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
-      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
+      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame-times, but add additional input lag.</source>
       <translation>CPU 스레드가 한 프레임이 완료될 때까지 기다렸다가 계속 진행하기 전에 GS에 대기할 수 있는 최대 프레임 수를 설정합니다. 값이 클수록 불규칙한 프레임 시간을 부드럽게 하는 데 도움이 될 수 있지만 입력 대기가 추가됩니다.</translation>
     </message>
     <message>
@@ -4885,7 +4885,7 @@ The URL was: %1</source>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
-      <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+      <source>Shows a visual history of frame-times in the upper-left corner of the display.</source>
       <translation>화면 좌측 상단 모서리에 프레임 시간의 시각적 기록을 표시합니다.</translation>
     </message>
     <message>
@@ -5024,7 +5024,7 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</sour
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
-      <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
+      <source>Pins emulation threads to CPU cores to potentially improve performance/frame-time variance.</source>
       <translation>에뮬레이션 스레드를 CPU 코어에 고정하여 잠재적으로 성능/프레임 시간 편차를 개선합니다.</translation>
     </message>
     <message>
@@ -8397,7 +8397,7 @@ Do you want to load this save and continue?</source>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>프레임 시간 표시</translation>
     </message>
     <message>
@@ -11336,7 +11336,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>프레임 시간 표시</translation>
     </message>
     <message>
@@ -12008,7 +12008,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
-      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
+      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out the frame-time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
       <translation>25/30fps 게임에서 유휴 프레임이 표시되는 시점을 감지하고 해당 프레임 표시를 건너뜁니다. 프레임은 여전히 렌더링되며, GPU가 프레임을 완료할 시간이 더 많다는 의미일 뿐입니다(프레임 건너뛰기가 아님). CPU/GPU가 최대 활용률에 가까울 때 프레임 시간 변동을 완화할 수 있지만 프레임 속도가 더 일관되지 않고 입력 지연이 증가할 수 있습니다.</translation>
     </message>
     <message>

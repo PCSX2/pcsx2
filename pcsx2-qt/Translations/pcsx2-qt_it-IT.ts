@@ -4392,8 +4392,8 @@ Inserire nome funzione</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
-      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
-      <translation>Imposta il numero massimo di frame che può essere accodato al GS, prima che il thread CPU attenda che uno di loro sia completo prima di continuare. Valori più elevati possono aiutare a rendere il frame time più regolare ma aggiungono ulteriore input lag.</translation>
+      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame-times, but add additional input lag.</source>
+      <translation>Imposta il numero massimo di frame che può essere accodato al GS, prima che il thread CPU attenda che uno di loro sia completo prima di continuare. Valori più elevati possono aiutare a rendere il frame-time più regolare ma aggiungono ulteriore input lag.</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="139"/>
@@ -4892,7 +4892,7 @@ L'URL era: %1</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
-      <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+      <source>Shows a visual history of frame-times in the upper-left corner of the display.</source>
       <translation>Mostra una cronologia visiva dei tempi dei fotogrammi nell'angolo in alto a sinistra del display.</translation>
     </message>
     <message>
@@ -5031,7 +5031,7 @@ Vuoi spegnere comunque e RENDERE INUTILIZZABILE IRRIMEDIABILMENTE LA MEMORY CARD
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
-      <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
+      <source>Pins emulation threads to CPU cores to potentially improve performance/frame-time variance.</source>
       <translation>Fissa i thread di emulazione ai core della CPU per migliorare potenzialmente la variabilità delle prestazioni/fotogrammi. </translation>
     </message>
     <message>
@@ -6996,7 +6996,7 @@ Vuoi caricare questo salvataggio e continuare?</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6975"/>
       <source>Disables PCSX2&apos;s internal frame timing, and uses host vsync instead.</source>
-      <translation>Disabilita il frame time interno di PCSX2 e usa invece il vsync dell'host.</translation>
+      <translation>Disabilita il frame-time interno di PCSX2 e usa invece il vsync dell'host.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7123"/>
@@ -8404,8 +8404,8 @@ Vuoi caricare questo salvataggio e continuare?</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
-      <source>Show Frame Times</source>
-      <translation>Mostra frame time</translation>
+      <source>Show Frame-Times</source>
+      <translation>Mostra frame-time</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7582"/>
@@ -11345,8 +11345,8 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
-      <source>Show Frame Times</source>
-      <translation>Mostra frame time</translation>
+      <source>Show Frame-Times</source>
+      <translation>Mostra frame-time</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1726"/>
@@ -12017,8 +12017,8 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
-      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
-      <translation>Rileva quando i frame inattivi vengono presentati nei giochi a 25/30fps, e salta la presentazione di quei frame. Il frame viene comunque renderizzato, ma la GPU ha più tempo per completarlo (questo NON è un salto dei frame). Può rendere più morbide le fluttuazioni del frame time quando la CPU/GPU sono vicine al massimo dell'utilizzo, ma rende il ritmo dei frame più incostante e può aumentare l'input lag.</translation>
+      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out the frame-time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
+      <translation>Rileva quando i frame inattivi vengono presentati nei giochi a 25/30fps, e salta la presentazione di quei frame. Il frame viene comunque renderizzato, ma la GPU ha più tempo per completarlo (questo NON è un salto dei frame). Può rendere più morbide le fluttuazioni del frame-time quando la CPU/GPU sono vicine al massimo dell'utilizzo, ma rende il ritmo dei frame più incostante e può aumentare l'input lag.</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1152"/>

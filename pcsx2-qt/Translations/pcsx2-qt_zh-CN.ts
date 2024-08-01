@@ -4386,7 +4386,7 @@ Enter function name</source>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
-      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
+      <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame-times, but add additional input lag.</source>
       <translation>设置可以排队到 GS 的最大帧数量,在此之前 CPU 线程将等待其中一个帧完成然后再继续。较高的值有助于平滑不规则的帧时间,但会增加额外的输入延迟。</translation>
     </message>
     <message>
@@ -4886,7 +4886,7 @@ URL: %1</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
-      <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+      <source>Shows a visual history of frame-times in the upper-left corner of the display.</source>
       <translation>在显示器的左上角显示帧时间的可视历史记录。</translation>
     </message>
     <message>
@@ -5025,7 +5025,7 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</sour
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
-      <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
+      <source>Pins emulation threads to CPU cores to potentially improve performance/frame-time variance.</source>
       <translation>将模拟线程固定到 CPU 核心以潜在地改善性能/帧时间差异。</translation>
     </message>
     <message>
@@ -8398,7 +8398,7 @@ Do you want to load this save and continue?</source>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>显示帧时间</translation>
     </message>
     <message>
@@ -11338,7 +11338,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
-      <source>Show Frame Times</source>
+      <source>Show Frame-Times</source>
       <translation>显示帧时间</translation>
     </message>
     <message>
@@ -12010,7 +12010,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
-      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
+      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out the frame-time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
       <translation>检测 25/30fps 游戏中何时呈现空闲帧,并跳过呈现这些帧。帧仍然被渲染,这只是意味着图形处理器有更多时间来完成它(这不是跳帧)。当 CPU/GPU 接近最大利用率时可以平滑帧时间波动，但会使帧节奏更加不一致并且可能会增加输入延迟。</translation>
     </message>
     <message>
