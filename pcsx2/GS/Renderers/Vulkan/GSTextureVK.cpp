@@ -32,7 +32,15 @@ static VkImageLayout GetVkImageLayout(GSTextureVK::Layout layout)
 		VK_IMAGE_LAYOUT_GENERAL, // ComputeReadWriteImage
 		VK_IMAGE_LAYOUT_GENERAL, // General
 	}};
-	return s_vk_layout_mapping[static_cast<u32>(layout)];
+	return (layout == GSTextureVK::Layout::FeedbackLoop && GSDeviceVK::GetInstance()->UseFeedbackLoopLayout()) ?
+			   VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT :
+			   s_vk_layout_mapping[static_cast<u32>(layout)];
+}
+
+static VkAccessFlagBits GetFeedbackLoopInputAccessBits()
+{
+	return GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT :
+																VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
 }
 
 GSTextureVK::GSTextureVK(Type type, Format format, int width, int height, int levels, VkImage image,
@@ -91,16 +99,22 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 		case Type::RenderTarget:
 		{
 			pxAssert(levels == 1);
-			ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
-						VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+			ici.usage =
+				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+				(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT :
+																	  VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
 		}
 		break;
 
 		case Type::DepthStencil:
 		{
 			pxAssert(levels == 1);
-			ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-						VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+			ici.usage =
+				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+				(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT :
+																	  0);
 			vci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 		}
 		break;
@@ -626,7 +640,7 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 		case Layout::FeedbackLoop:
 			barrier.srcAccessMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
 										(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-											VK_ACCESS_INPUT_ATTACHMENT_READ_BIT) :
+											GetFeedbackLoopInputAccessBits()) :
 										(VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
 											VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT);
 			srcStageMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
@@ -702,7 +716,7 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 		case Layout::FeedbackLoop:
 			barrier.dstAccessMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
 										(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-											VK_ACCESS_INPUT_ATTACHMENT_READ_BIT) :
+											GetFeedbackLoopInputAccessBits()) :
 										(VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
 											VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT);
 			dstStageMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
