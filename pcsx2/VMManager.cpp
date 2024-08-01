@@ -233,7 +233,7 @@ bool VMManager::PerformEarlyHardwareChecks(const char** error)
 	const size_t runtime_host_page_size = HostSys::GetRuntimePageSize();
 	if (__pagesize != runtime_host_page_size)
 	{
-		*error = "Page size mismatch. This build cannot run on your Mac.\n\n" COMMON_DOWNLOAD_MESSAGE;
+		*error = "Page size mismatch. This build cannot run on your system.\n\n" COMMON_DOWNLOAD_MESSAGE;
 		return false;
 	}
 #endif
