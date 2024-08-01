@@ -5138,7 +5138,7 @@ Yinede kapatıp GERİ DÖNÜLEMEYECEK BİR ŞEKİLDE HAFIZA KARDINIZI YOK ETMEK 
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
-      <source>FMV Aspect Ratio</source>
+      <source>FMV Aspect Ratio Override</source>
       <translation>Ara Sahne En/Boy Oranı</translation>
     </message>
     <message>
@@ -10276,7 +10276,7 @@ Yinelemeli tarama daha fazla zaman alır, ancak alt dizinlerdeki dosyaları bula
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="112"/>
-      <source>FMV Aspect Ratio:</source>
+      <source>FMV Aspect Ratio Override:</source>
       <translation>FMV En-Boy Oranı:</translation>
     </message>
     <message>
@@ -11712,7 +11712,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
-      <source>FMV Aspect Ratio</source>
+      <source>FMV Aspect Ratio Override</source>
       <translation>FMV En-Boy Oranı</translation>
     </message>
     <message>

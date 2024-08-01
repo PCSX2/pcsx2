@@ -446,9 +446,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Enables the option to show the overscan area on games which draw more than the safe area of the screen."));
 
 		dialog->registerWidgetHelp(
-			m_ui.fmvAspectRatio, tr("FMV Aspect Ratio"), tr("Off (Default)"),
+			m_ui.fmvAspectRatio, tr("FMV Aspect Ratio Override"), tr("Off (Default)"),
 			tr("Overrides the full-motion video (FMV) aspect ratio. "
-			   "If disabled, the FMV Aspect Ratio will match the same value the general Aspect Ratio setting instead."));
+			   "If disabled, the FMV Aspect Ratio will match the same value as the general Aspect Ratio setting."));
 
 		dialog->registerWidgetHelp(m_ui.PCRTCAntiBlur, tr("Anti-Blur"), tr("Checked"),
 			tr("Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry."));

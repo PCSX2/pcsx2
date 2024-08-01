@@ -5134,7 +5134,7 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</tran
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
-      <source>FMV Aspect Ratio</source>
+      <source>FMV Aspect Ratio Override</source>
       <translation>Proporção dos FMVs</translation>
     </message>
     <message>
@@ -10272,8 +10272,8 @@ Procurar recursivamente leva mais tempo, mas irá identificar arquivos em subpas
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="112"/>
-      <source>FMV Aspect Ratio:</source>
-      <translation type="unfinished">FMV Aspect Ratio:</translation>
+      <source>FMV Aspect Ratio Override:</source>
+      <translation type="unfinished">FMV Aspect Ratio Override:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="120"/>
@@ -11708,8 +11708,8 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
-      <source>FMV Aspect Ratio</source>
-      <translation type="unfinished">FMV Aspect Ratio</translation>
+      <source>FMV Aspect Ratio Override</source>
+      <translation type="unfinished">FMV Aspect Ratio Override</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
