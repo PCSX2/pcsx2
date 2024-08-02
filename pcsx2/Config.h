@@ -628,6 +628,8 @@ struct Pcsx2Config
 					OsdShowInputs : 1,
 					OsdShowFrameTimes : 1,
 					OsdShowVersion : 1,
+					OsdShowVideoCapture: 1,
+					OsdShowInputRec : 1,
 					OsdShowHardwareInfo : 1,
 					HWSpinGPUForReadbacks : 1,
 					HWSpinCPUForReadbacks : 1,
