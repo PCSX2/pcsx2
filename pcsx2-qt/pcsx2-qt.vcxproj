@@ -23,6 +23,7 @@
     <Import Project="$(SolutionDir)common\vsprops\GenerateSCMVersion.props" />
     <Import Project="$(SolutionDir)common\vsprops\QtCompile.props" />
     <Import Project="$(SolutionDir)common\vsprops\LinkPCSX2Deps.props" />
+    <Import Condition="'$(Platform)'=='ARM64'" Project="$(SolutionDir)common\vsprops\CopyResources.props" />
     <Import Condition="$(Configuration.Contains(Debug))" Project="$(SolutionDir)common\vsprops\CodeGen_Debug.props" />
     <Import Condition="$(Configuration.Contains(Devel))" Project="$(SolutionDir)common\vsprops\CodeGen_Devel.props" />
     <Import Condition="$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\CodeGen_Release.props" />
