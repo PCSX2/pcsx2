@@ -3129,7 +3129,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TACHOMETER_ALT, "Show Speed"),
 		FSUI_CSTR("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."), "EmuCore/GS",
 		"OsdShowSpeed", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_SIXTY_CIRCLE, "Show FPS"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_IMAGES, "Show FPS"),
 		FSUI_CSTR(
 			"Shows the number of video frames (or v-syncs) displayed per second by the system in the top-right corner of the display."),
 		"EmuCore/GS", "OsdShowFPS", false);
