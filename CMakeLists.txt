@@ -60,6 +60,14 @@ if(ENABLE_TESTS)
 	add_subdirectory(tests/ctest)
 endif()
 
+# gsrunner
+if(ENABLE_GSRUNNER)
+	if (NOT WIN32)
+		message(WARNING "GSRunner is only supported on Windows and may not build on your system")
+	endif()
+	add_subdirectory(pcsx2-gsrunner)
+endif()
+
 #-------------------------------------------------------------------------------
 if(NOT IS_SUPPORTED_COMPILER)
 	message(WARNING "

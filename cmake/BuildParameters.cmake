@@ -5,6 +5,7 @@ set(PCSX2_DEFS "")
 # Misc option
 #-------------------------------------------------------------------------------
 option(ENABLE_TESTS "Enables building the unit tests" ON)
+option(ENABLE_GSRUNNER "Enables building the GSRunner" OFF)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
 
