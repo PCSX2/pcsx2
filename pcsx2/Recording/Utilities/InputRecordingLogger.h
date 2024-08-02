@@ -9,7 +9,7 @@
 
 namespace InputRec
 {
-	void log(const std::string& log);
+	void log(const std::string& log, const float duration);
 	void consoleLog(const std::string& log);
 	void consoleMultiLog(const std::vector<std::string>& logs);
 } // namespace inputRec
