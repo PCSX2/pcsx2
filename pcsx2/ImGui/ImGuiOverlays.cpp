@@ -148,7 +148,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 			}
 			first = false;
 		}
-		
+
 		if (GSConfig.OsdShowSpeed)
 		{
 			text.append_format("{}{}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
@@ -324,9 +324,10 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				text.append_format("{:.1f} ms", max);
 				text_size = fixed_font->CalcTextSizeA(fixed_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.c_str() + text.length());
 				win_dl->AddText(ImVec2((GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft ? 2.0f * spacing : wpos.x + history_size.x - text_size.x - spacing) + shadow_offset,
-									wpos.y + shadow_offset), IM_COL32(0, 0, 0, 100), text.c_str(), text.c_str() + text.length());
+									wpos.y + shadow_offset),
+					IM_COL32(0, 0, 0, 100), text.c_str(), text.c_str() + text.length());
 				win_dl->AddText(ImVec2((GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft ? 2.0f * spacing : wpos.x + history_size.x - text_size.x - spacing), wpos.y),
-									IM_COL32(255, 255, 255, 255), text.c_str(), text.c_str() + text.length());
+					IM_COL32(255, 255, 255, 255), text.c_str(), text.c_str() + text.length());
 
 				text.clear();
 				text.append_format("{:.1f} ms", min);
@@ -335,7 +336,8 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 									wpos.y + history_size.y - fixed_font->FontSize + shadow_offset),
 					IM_COL32(0, 0, 0, 100), text.c_str(), text.c_str() + text.length());
 				win_dl->AddText(ImVec2((GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft ? 2.0f * spacing : wpos.x + history_size.x - text_size.x - spacing),
-									wpos.y + history_size.y - fixed_font->FontSize), IM_COL32(255, 255, 255, 255), text.c_str(), text.c_str() + text.length());
+									wpos.y + history_size.y - fixed_font->FontSize),
+					IM_COL32(255, 255, 255, 255), text.c_str(), text.c_str() + text.length());
 			}
 			ImGui::End();
 			ImGui::PopFont();
@@ -356,7 +358,8 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 
 __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spacing)
 {
-	if (!GSConfig.OsdShowSettings || VMManager::GetState() != VMState::Running)
+	if (!GSConfig.OsdShowSettings || 
+	FullscreenUI::HasActiveWindow())
 		return;
 
 	std::string text;
@@ -491,7 +494,8 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spacing)
 {
 	// Technically this is racing the CPU thread.. but it doesn't really matter, at worst, the inputs get displayed onscreen late.
-	if (!GSConfig.OsdShowInputs || VMManager::GetState() != VMState::Running)
+	if (!GSConfig.OsdShowInputs || 
+		FullscreenUI::HasActiveWindow())
 		return;
 
 	const float shadow_offset = std::ceil(scale);
@@ -639,7 +643,9 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 
 __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale, float margin, float spacing)
 {
-	if (!g_InputRecording.isActive() || FullscreenUI::HasActiveWindow())
+	if (!GSConfig.OsdShowInputRec ||
+		!g_InputRecording.isActive() ||
+		FullscreenUI::HasActiveWindow())
 		return;
 
 	const float shadow_offset = std::ceil(scale);
@@ -683,7 +689,10 @@ __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale
 
 __ri void ImGuiManager::DrawVideoCaptureOverlay(float& position_y, float scale, float margin, float spacing)
 {
-	if (!GSCapture::IsCapturing() || FullscreenUI::HasActiveWindow())
+	if (!GSConfig.OsdShowVideoCapture || 
+		!GSCapture::IsCapturing() || 
+		FullscreenUI::HasActiveWindow()
+		)
 		return;
 
 	const float shadow_offset = std::ceil(scale);
@@ -1104,10 +1113,14 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 
 void ImGuiManager::RenderOverlays()
 {
+	if (VMManager::GetState() != VMState::Running)
+		return;
+
 	const float scale = ImGuiManager::GetGlobalScale();
 	const float margin = std::ceil(10.0f * scale);
 	const float spacing = std::ceil(5.0f * scale);
 	float position_y = margin;
+
 	DrawVideoCaptureOverlay(position_y, scale, margin, spacing);
 	DrawInputRecordingOverlay(position_y, scale, margin, spacing);
 	if (GSConfig.OsdPerformancePos != OsdOverlayPos::None)
