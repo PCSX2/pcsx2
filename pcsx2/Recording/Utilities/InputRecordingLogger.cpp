@@ -6,6 +6,7 @@
 #include "DebugTools/Debug.h"
 #include "common/Console.h"
 #include "IconsPromptFont.h"
+#include "IconsFontAwesome5.h"
 #include "GS.h"
 #include "Host.h"
 

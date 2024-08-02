@@ -363,7 +363,6 @@ void GSCapture::LogAVError(int errnum, const char* format, ...)
 
 std::string GSCapture::GetCaptureTypeForMessage(bool capture_video, bool capture_audio)
 {
-	return capture_video ? (capture_audio ? "capturing audio and video" : "capturing video") : "capturing audio";
 	return capture_video ? capture_audio ? TRANSLATE("GSCapture","capturing audio and video") : TRANSLATE("GSCapture","capturing video") : TRANSLATE("GSCapture","capturing audio");
 }
 
@@ -832,8 +831,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 		return false;
 	}
 
-	Host::AddIconOSDMessage("GSCapture", ICON_FA_CAMERA,
-		fmt::format("Starting {} to '{}'.", GetCaptureTypeForMessage(capture_video, capture_audio), Path::GetFileName(s_filename)),
+	Host::AddIconOSDMessage("GSCapture", ICON_FA_VIDEO,
 		fmt::format(TRANSLATE_FS("GSCapture", "Starting {} to '{}'."), GetCaptureTypeForMessage(capture_video, capture_audio), Path::GetFileName(s_filename)),
 		Host::OSD_INFO_DURATION);
 
@@ -1249,16 +1247,14 @@ void GSCapture::InternalEndCapture(std::unique_lock<std::mutex>& lock)
 		if (!s_encoding_error)
 		{
 			ProcessAllInFlightFrames(lock);
-			Host::AddIconOSDMessage("GSCapture", ICON_FA_CAMERA,
+			Host::AddIconOSDMessage("GSCapture", ICON_FA_VIDEO_SLASH,
 				fmt::format(
-					"Stopped {} to '{}'.", GetCaptureTypeForMessage(IsCapturingVideo(), IsCapturingAudio()), Path::GetFileName(s_filename)),
 					TRANSLATE_FS("GSCapture", "Stopped {} to '{}'."), GetCaptureTypeForMessage(IsCapturingVideo(), IsCapturingAudio()), Path::GetFileName(s_filename)),
 				Host::OSD_INFO_DURATION);
 		}
 		else
 		{
-			Host::AddIconOSDMessage("GSCapture", ICON_FA_CAMERA,
-				fmt::format("Aborted {} due to encoding error in '{}'.", GetCaptureTypeForMessage(IsCapturingVideo(), IsCapturingAudio()),
+			Host::AddIconOSDMessage("GSCapture", ICON_FA_VIDEO_SLASH,
 				fmt::format(TRANSLATE_FS("GSCapture", "Aborted {} due to encoding error in '{}'."), GetCaptureTypeForMessage(IsCapturingVideo(), IsCapturingAudio()),
 					Path::GetFileName(s_filename)),
 				Host::OSD_INFO_DURATION);
