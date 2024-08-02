@@ -30,6 +30,7 @@ bool SaveStateBase::InputRecordingFreeze()
 #include "GameDatabase.h"
 #include "fmt/format.h"
 #include "GS.h"
+#include "Host.h"
 
 InputRecording g_InputRecording;
 
@@ -71,7 +72,7 @@ bool InputRecording::create(const std::string& fileName, const bool fromSaveStat
 	m_file.setGameName(VMManager::GetTitle(false));
 	m_file.writeHeader();
 	initializeState();
-	InputRec::log("Started new input recording");
+	InputRec::log(TRANSLATE_STR("InputRecording", "Started new input recording"), Host::OSD_INFO_DURATION);
 	InputRec::consoleLog(fmt::format("Filename {}", m_file.getFilename()));
 	return true;
 }
@@ -90,7 +91,7 @@ bool InputRecording::play(const std::string& filename)
 		if (!FileSystem::FileExists(savestatePath.c_str()))
 		{
 			InputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}", savestatePath));
-			InputRec::log("Savestate load failed");
+			InputRec::log(TRANSLATE_STR("InputRecording", "Savestate load failed for input recording"), Host::OSD_ERROR_DURATION);
 			m_file.close();
 			return false;
 		}
@@ -100,7 +101,7 @@ bool InputRecording::play(const std::string& filename)
 		const auto loaded = VMManager::LoadState(savestatePath.c_str());
 		if (!loaded)
 		{
-			InputRec::log("Savestate load failed, unsupported version?");
+			InputRec::log(TRANSLATE_STR("InputRecording", "Savestate load failed for input recording, unsupported version?"), Host::OSD_ERROR_DURATION);
 			m_file.close();
 			m_is_active = false;
 			return false;
@@ -117,7 +118,7 @@ bool InputRecording::play(const std::string& filename)
 	}
 	m_controls.setReplayMode();
 	initializeState();
-	InputRec::log("Replaying input recording");
+	InputRec::log(TRANSLATE_STR("InputRecording", "Replaying input recording"), Host::OSD_INFO_DURATION);
 	m_file.logRecordingMetadata();
 	if (VMManager::GetTitle(false) != m_file.getGameName())
 	{
@@ -135,12 +136,12 @@ void InputRecording::closeActiveFile()
 	if (m_file.close())
 	{
 		m_is_active = false;
-		InputRec::log("Input recording stopped");
+		InputRec::log(TRANSLATE_STR("InputRecording", "Input recording stopped"), Host::OSD_ERROR_DURATION);
 		MTGS::PresentCurrentFrame();
 	}
 	else
 	{
-		InputRec::log("Unable to stop input recording");
+		InputRec::log(TRANSLATE_STR("InputRecording", "Unable to stop input recording"), Host::OSD_ERROR_DURATION);
 	}
 }
 
@@ -228,7 +229,7 @@ void InputRecording::incFrameCounter()
 
 	if (m_frame_counter == std::numeric_limits<u32>::max())
 	{
-		// TODO - log the incredible achievment of playing for longer than 4 billion years, and end the recording
+		InputRec::log(TRANSLATE_STR("InputRecording", "Congratulations, you've been playing for far too long and thus have reached the limit of input recording! Stopping recording now..."), Host::OSD_CRITICAL_ERROR_DURATION);
 		stop();
 		return;
 	}

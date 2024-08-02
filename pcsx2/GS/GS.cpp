@@ -1151,16 +1151,16 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 				return;
 
 			static constexpr std::array<const char*, static_cast<int>(GSInterlaceMode::Count)> option_names = {{
-				"Automatic",
-				"Off",
-				"Weave (Top Field First)",
-				"Weave (Bottom Field First)",
-				"Bob (Top Field First)",
-				"Bob (Bottom Field First)",
-				"Blend (Top Field First)",
-				"Blend (Bottom Field First)",
-				"Adaptive (Top Field First)",
-				"Adaptive (Bottom Field First)",
+				TRANSLATE_NOOP("Hotkeys", "Automatic"),
+				TRANSLATE_NOOP("Hotkeys", "Off"),
+				TRANSLATE_NOOP("Hotkeys", "Weave (Top Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Weave (Bottom Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Bob (Top Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Bob (Bottom Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Blend (Top Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Blend (Bottom Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Adaptive (Top Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Adaptive (Bottom Field First)"),
 			}};
 
 			const GSInterlaceMode new_mode = static_cast<GSInterlaceMode>(
