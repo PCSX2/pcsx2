@@ -10406,6 +10406,8 @@ SCUS-97211:
   name: "ATV Offroad Fury 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    bilinearUpscale: 2 # Fixes broken textures.
 SCUS-97212:
   name: "My Street"
   region: "NTSC-U"
@@ -10523,6 +10525,8 @@ SCUS-97236:
 SCUS-97238:
   name: "ATV Offroad Fury 2 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    bilinearUpscale: 2 # Fixes broken textures.
 SCUS-97239:
   name: "Jet X2O [Demo]"
   region: "NTSC-U"
@@ -10929,6 +10933,8 @@ SCUS-97369:
   name: "ATV Offroad Fury 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    bilinearUpscale: 2 # Fixes broken textures.
 SCUS-97370:
   name: "NCAA Final Four 2004"
   region: "NTSC-U"
@@ -11571,6 +11577,8 @@ SCUS-97509:
 SCUS-97510:
   name: "ATV Offroad Fury 2 [Greatest Hits]"
   region: "NTSC-U"
+  gsHWFixes:
+    bilinearUpscale: 2 # Fixes broken textures.
 SCUS-97511:
   name: "SOCOM II - U.S. Navy SEALs [Greatest Hits]"
   region: "NTSC-U"
@@ -17359,6 +17367,8 @@ SLES-51813:
 SLES-51814:
   name: "ATV Offroad Fury 2"
   region: "PAL-E"
+  gsHWFixes:
+    bilinearUpscale: 2 # Fixes broken textures.
 SLES-51815:
   name: "Final Fantasy X-2"
   region: "PAL-E"
@@ -67117,6 +67127,8 @@ SLUS-21638:
   compat: 5
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  memcardFilters:
+    - "SLUS-21620"
 SLUS-21639:
   name: "NASCAR 08"
   region: "NTSC-U"
