@@ -6305,16 +6305,17 @@ void GSTextureCache::Target::Update(bool cannot_scale)
 				m_rt_alpha_scale = true;
 		}
 
-		ShaderConvert depth_shader = upscaled ? ShaderConvert::RGBA8_TO_FLOAT32_BILN : ShaderConvert::RGBA8_TO_FLOAT32;
+		const bool linear = upscaled && GSConfig.UserHacks_BilinearHack != GSBilinearDirtyMode::ForceNearest;
+		ShaderConvert depth_shader = linear ? ShaderConvert::RGBA8_TO_FLOAT32_BILN : ShaderConvert::RGBA8_TO_FLOAT32;
 		if (m_type == DepthStencil && GSLocalMemory::m_psm[m_TEX0.PSM].trbpp != 32)
 		{
 			switch (GSLocalMemory::m_psm[m_TEX0.PSM].trbpp)
 			{
 				case 24:
-					depth_shader = upscaled ? ShaderConvert::RGBA8_TO_FLOAT24_BILN : ShaderConvert::RGBA8_TO_FLOAT24;
+					depth_shader = linear ? ShaderConvert::RGBA8_TO_FLOAT24_BILN : ShaderConvert::RGBA8_TO_FLOAT24;
 					break;
 				case 16:
-					depth_shader = upscaled ? ShaderConvert::RGB5A1_TO_FLOAT16_BILN : ShaderConvert::RGB5A1_TO_FLOAT16;
+					depth_shader = linear ? ShaderConvert::RGB5A1_TO_FLOAT16_BILN : ShaderConvert::RGB5A1_TO_FLOAT16;
 					break;
 				default:
 					break;
