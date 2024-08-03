@@ -49,8 +49,10 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
   # The value of the speedhacks is assumed to be an integer,
   # but at the time of writing speedhacks are effectively booleans (0/1)
   speedHacks:
-    mvuFlagSpeedHack: 0
-    InstantVU1SpeedHack: 0
+    mvuFlag: 0
+    InstantVU1: 0
+    mtvu: 1
+    eeCycleRate: 0
   memcardFilters:
     - "SERIAL-123"
     - "SERIAL-456"

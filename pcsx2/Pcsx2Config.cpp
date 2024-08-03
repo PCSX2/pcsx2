@@ -272,6 +272,7 @@ void Pcsx2Config::SpeedhackOptions::Set(SpeedHack id, int value)
 			EECycleRate = static_cast<int>(std::clamp<int>(value, MIN_EE_CYCLE_RATE, MAX_EE_CYCLE_RATE));
 			break;
 			jNO_DEFAULT
+
 	}
 }
 
