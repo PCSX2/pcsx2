@@ -18,14 +18,23 @@
   <url type="faq">https://pcsx2.net/docs/</url>
   <url type="help">https://pcsx2.net/discord</url>
   <url type="translate">https://crowdin.com/project/pcsx2-emulator</url>
-  <url type="vcs-browser">https://github.com/PCSX2/pcsx2</url>
   <url type="contact">https://mastodon.social/@PCSX2</url>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/PCSX2/pcsx2/master/.github/workflows/scripts/linux/flatpak/screenshots/screenshot1.png</image>
+      <image>
+        https://raw.githubusercontent.com/PCSX2/pcsx2/master/.github/workflows/scripts/linux/flatpak/screenshots/screenshot1.png
+      </image>
+      <caption>
+        The main PCSX2 Qt interface
+      </caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/PCSX2/pcsx2/master/.github/workflows/scripts/linux/flatpak/screenshots/screenshot2.png</image>
+      <image>
+        https://raw.githubusercontent.com/PCSX2/pcsx2/master/.github/workflows/scripts/linux/flatpak/screenshots/screenshot2.png
+      </image>
+      <caption>
+        PCSX2 running a game
+      </caption>
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1"/>
