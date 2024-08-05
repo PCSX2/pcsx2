@@ -63,9 +63,9 @@ declare -a REMOVE_LIBS=(
 
 set -e
 
-LINUXDEPLOY=./linuxdeploy-x86_64.AppImage
-LINUXDEPLOY_PLUGIN_QT=./linuxdeploy-plugin-qt-x86_64.AppImage
-APPIMAGETOOL=./appimagetool-x86_64.AppImage
+LINUXDEPLOY=./linuxdeploy-x86_64
+LINUXDEPLOY_PLUGIN_QT=./linuxdeploy-plugin-qt-x86_64
+APPIMAGETOOL=./appimagetool-x86_64
 PATCHELF=patchelf
 
 if [ ! -f "$LINUXDEPLOY" ]; then
@@ -78,8 +78,11 @@ if [ ! -f "$LINUXDEPLOY_PLUGIN_QT" ]; then
 	chmod +x "$LINUXDEPLOY_PLUGIN_QT"
 fi
 
+# Using go-appimage
+# Backported from https://github.com/stenzek/duckstation/pull/3251
 if [ ! -f "$APPIMAGETOOL" ]; then
-	"$PCSX2DIR/tools/retry.sh" wget -O "$APPIMAGETOOL" https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+	APPIMAGETOOLURL=$(wget -q https://api.github.com/repos/probonopd/go-appimage/releases -O - | sed 's/[()",{} ]/\n/g' | grep -o 'https.*continuous.*tool.*86_64.*mage$' | head -1)
+	"$PCSX2DIR/tools/retry.sh" wget -O "$APPIMAGETOOL" "$APPIMAGETOOLURL"
 	chmod +x "$APPIMAGETOOL"
 fi
 
@@ -199,6 +202,16 @@ for hookpath in "$SCRIPTDIR/apprun-hooks"/*; do
 done
 
 echo "Generating AppImage..."
+GIT_VERSION=$(git tag --points-at HEAD)
+
+if [[ "${GIT_VERSION}" == "" ]]; then
+	# In the odd event that we run this script before the release gets tagged.
+	GIT_VERSION=$(git describe --tags)
+	if [[ "${GIT_VERSION}" == "" ]]; then
+		GIT_VERSION=$(git rev-parse HEAD)
+	fi
+fi
+
 rm -f "$NAME.AppImage"
-$APPIMAGETOOL -v "$OUTDIR" "$NAME.AppImage"
+ARCH=x86_64 VERSION="${GIT_VERSION}" "$APPIMAGETOOL" -s "$OUTDIR" && mv ./*.AppImage "$NAME.AppImage"
 
