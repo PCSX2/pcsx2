@@ -1199,6 +1199,9 @@
     <ClCompile Include="USB\usb-pad\usb-trance-vibrator.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-train.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
     <ClCompile Include="USB\usb-pad\usb-turntable.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
@@ -2143,6 +2146,9 @@
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-pad\usb-pad.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-train.h">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-pad\usb-trance-vibrator.h">
