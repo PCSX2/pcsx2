@@ -517,6 +517,7 @@ typedef struct rc_client_leaderboard_entry_t {
 typedef struct rc_client_leaderboard_entry_list_t {
   rc_client_leaderboard_entry_t* entries;
   uint32_t num_entries;
+  uint32_t total_entries;
   int32_t user_index;
 } rc_client_leaderboard_entry_list_t;
 

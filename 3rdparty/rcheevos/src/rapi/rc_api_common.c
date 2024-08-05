@@ -864,8 +864,11 @@ int rc_json_get_datetime(time_t* out, const rc_json_field_t* field, const char* 
 
   if (*field->value_start == '\"') {
     memset(&tm, 0, sizeof(tm));
-    if (sscanf_s(field->value_start + 1, "%d-%d-%d %d:%d:%d",
-        &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) == 6) {
+    if (sscanf_s(field->value_start + 1, "%d-%d-%d %d:%d:%d", /* DB format "2013-10-20 22:12:21" */
+                 &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) == 6 ||
+        /* NOTE: relies on sscanf stopping when it sees a non-digit after the seconds. could be 'Z', '.', '+', or '-' */
+        sscanf_s(field->value_start + 1, "%d-%d-%dT%d:%d:%d", /* ISO format "2013-10-20T22:12:21.000000Z */
+                 &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) == 6) {
       tm.tm_mon--; /* 0-based */
       tm.tm_year -= 1900; /* 1900 based */
 
