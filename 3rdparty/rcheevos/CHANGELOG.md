@@ -1,3 +1,12 @@
+# v11.5.0
+* add total_entries to rc_api_fetch_leaderboard_info_response_t
+* add RC_CLIENT_RAINTEGRATION_EVENT_MENU_CHANGED event
+* modify rc_client_begin_identify_and_load_game and rc_client_begin_change_media to use locally
+  registered filereader/cdreader for hash resolution when using rc_client_raintegration
+* add support for ISO-8601 timestamps in JSON responses
+* update RC_CONSOLE_MS_DOS hash logic to support parent archives
+* fix infinite loop that sometimes occurs when resetting while progress tracker is onscreen
+
 # v11.4.0
 * add RC_CONDITION_REMEMBER and RC_OPERAND_RECALL
 * add RC_OPERATOR_ADD and RC_OPERATOR_SUB

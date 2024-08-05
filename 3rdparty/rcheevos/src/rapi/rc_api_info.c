@@ -189,7 +189,8 @@ int rc_api_process_fetch_leaderboard_info_server_response(rc_api_fetch_leaderboa
     RC_JSON_NEW_FIELD("LBAuthor"),
     RC_JSON_NEW_FIELD("LBCreated"),
     RC_JSON_NEW_FIELD("LBUpdated"),
-    RC_JSON_NEW_FIELD("Entries") /* array */
+    RC_JSON_NEW_FIELD("Entries"), /* array */
+    RC_JSON_NEW_FIELD("TotalEntries")
     /* unused fields
     RC_JSON_NEW_FIELD("GameTitle"),
     RC_JSON_NEW_FIELD("ConsoleID"),
@@ -234,6 +235,8 @@ int rc_api_process_fetch_leaderboard_info_server_response(rc_api_fetch_leaderboa
   if (!rc_json_get_required_datetime(&response->created, &response->response, &leaderboarddata_fields[8], "LBCreated"))
     return RC_MISSING_VALUE;
   if (!rc_json_get_required_datetime(&response->updated, &response->response, &leaderboarddata_fields[9], "LBUpdated"))
+    return RC_MISSING_VALUE;
+  if (!rc_json_get_required_unum(&response->total_entries, &response->response, &leaderboarddata_fields[11], "TotalEntries"))
     return RC_MISSING_VALUE;
 
   if (!leaderboarddata_fields[1].value_end)

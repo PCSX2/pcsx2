@@ -809,7 +809,7 @@ uint32_t rc_runtime_progress_size(const rc_runtime_t* runtime, lua_State* L)
 
   result = rc_runtime_progress_serialize_internal(&progress);
   if (result != RC_OK)
-    return 0;
+    return result;
 
   return progress.offset;
 }

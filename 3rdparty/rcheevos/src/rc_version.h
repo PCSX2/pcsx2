@@ -8,7 +8,7 @@
 RC_BEGIN_C_DECLS
 
 #define RCHEEVOS_VERSION_MAJOR 11
-#define RCHEEVOS_VERSION_MINOR 4
+#define RCHEEVOS_VERSION_MINOR 5
 #define RCHEEVOS_VERSION_PATCH 0
 
 #define RCHEEVOS_MAKE_VERSION(major, minor, patch) (major * 1000000 + minor * 1000 + patch)

@@ -129,6 +129,9 @@ typedef struct rc_api_fetch_leaderboard_info_response_t {
   /* The number of items in the entries array */
   uint32_t num_entries;
 
+  /* The total number of entries on the server */
+  uint32_t total_entries;
+
   /* Common server-provided response information */
   rc_api_response_t response;
 }
