@@ -358,8 +358,8 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 
 __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spacing)
 {
-	if (!GSConfig.OsdShowSettings || 
-	FullscreenUI::HasActiveWindow())
+	if (!GSConfig.OsdShowSettings ||
+		FullscreenUI::HasActiveWindow())
 		return;
 
 	std::string text;
@@ -494,7 +494,7 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spacing)
 {
 	// Technically this is racing the CPU thread.. but it doesn't really matter, at worst, the inputs get displayed onscreen late.
-	if (!GSConfig.OsdShowInputs || 
+	if (!GSConfig.OsdShowInputs ||
 		FullscreenUI::HasActiveWindow())
 		return;
 
@@ -689,10 +689,9 @@ __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale
 
 __ri void ImGuiManager::DrawVideoCaptureOverlay(float& position_y, float scale, float margin, float spacing)
 {
-	if (!GSConfig.OsdShowVideoCapture || 
-		!GSCapture::IsCapturing() || 
-		FullscreenUI::HasActiveWindow()
-		)
+	if (!GSConfig.OsdShowVideoCapture ||
+		!GSCapture::IsCapturing() ||
+		FullscreenUI::HasActiveWindow())
 		return;
 
 	const float shadow_offset = std::ceil(scale);
