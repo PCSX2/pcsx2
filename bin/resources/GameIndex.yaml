@@ -17807,6 +17807,9 @@ SLES-51953:
   region: "PAL-M4"
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
+  memcardFilters: # Football Fusion with Total Club Manager 2004
+    - "SLES-52022"
+    - "SLES-59153"
 SLES-51954:
   name: "Max Payne 2 - The Fall of Max Payne"
   region: "PAL-E"
@@ -17986,6 +17989,9 @@ SLES-52022:
   region: "PAL-M4"
   clampModes:
     vu1ClampMode: 3 # Fixes 3D rendering.
+  memcardFilters: # Football Fusion with FIFA 2004
+    - "SLES-52022"
+    - "SLES-51953"
 SLES-52023:
   name: "Manhunt"
   region: "PAL-M5"
