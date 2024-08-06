@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 ///
-/// General FIR digital filter routines with MMX optimization. 
+/// General FIR digital filter routines with MMX optimization.
 ///
-/// Note : MMX optimized functions reside in a separate, platform-specific file, 
+/// Note : MMX optimized functions reside in a separate, platform-specific file,
 /// e.g. 'mmx_win.cpp' or 'mmx_gcc.cpp'
 ///
 /// Author        : Copyright (c) Olli Parviainen
@@ -41,11 +41,11 @@
 namespace soundtouch
 {
 
-class FIRFilter 
+class FIRFilter
 {
 protected:
     // Number of FIR filter taps
-    uint length;    
+    uint length;
     // Number of FIR filter taps divided by 8
     uint lengthDiv8;
 
@@ -59,11 +59,11 @@ protected:
     SAMPLETYPE *filterCoeffs;
     SAMPLETYPE *filterCoeffsStereo;
 
-    virtual uint evaluateFilterStereo(SAMPLETYPE *dest, 
-                                      const SAMPLETYPE *src, 
+    virtual uint evaluateFilterStereo(SAMPLETYPE *dest,
+                                      const SAMPLETYPE *src,
                                       uint numSamples) const;
-    virtual uint evaluateFilterMono(SAMPLETYPE *dest, 
-                                    const SAMPLETYPE *src, 
+    virtual uint evaluateFilterMono(SAMPLETYPE *dest,
+                                    const SAMPLETYPE *src,
                                     uint numSamples) const;
     virtual uint evaluateFilterMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSamples, uint numChannels);
 
@@ -71,26 +71,26 @@ public:
     FIRFilter();
     virtual ~FIRFilter();
 
-    /// Operator 'new' is overloaded so that it automatically creates a suitable instance 
+    /// Operator 'new' is overloaded so that it automatically creates a suitable instance
     /// depending on if we've a MMX-capable CPU available or not.
     static void * operator new(size_t s);
 
     static FIRFilter *newInstance();
 
-    /// Applies the filter to the given sequence of samples. 
-    /// Note : The amount of outputted samples is by value of 'filter_length' 
+    /// Applies the filter to the given sequence of samples.
+    /// Note : The amount of outputted samples is by value of 'filter_length'
     /// smaller than the amount of input samples.
     ///
     /// \return Number of samples copied to 'dest'.
-    uint evaluate(SAMPLETYPE *dest, 
-                  const SAMPLETYPE *src, 
-                  uint numSamples, 
+    uint evaluate(SAMPLETYPE *dest,
+                  const SAMPLETYPE *src,
+                  uint numSamples,
                   uint numChannels);
 
     uint getLength() const;
 
-    virtual void setCoefficients(const SAMPLETYPE *coeffs, 
-                                 uint newLength, 
+    virtual void setCoefficients(const SAMPLETYPE *coeffs,
+                                 uint newLength,
                                  uint uResultDivFactor);
 };
 

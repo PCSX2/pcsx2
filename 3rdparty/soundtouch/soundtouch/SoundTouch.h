@@ -1,27 +1,27 @@
 //////////////////////////////////////////////////////////////////////////////
 ///
-/// SoundTouch - main class for tempo/pitch/rate adjusting routines. 
+/// SoundTouch - main class for tempo/pitch/rate adjusting routines.
 ///
 /// Notes:
-/// - Initialize the SoundTouch object instance by setting up the sound stream 
-///   parameters with functions 'setSampleRate' and 'setChannels', then set 
+/// - Initialize the SoundTouch object instance by setting up the sound stream
+///   parameters with functions 'setSampleRate' and 'setChannels', then set
 ///   desired tempo/pitch/rate settings with the corresponding functions.
 ///
-/// - The SoundTouch class behaves like a first-in-first-out pipeline: The 
+/// - The SoundTouch class behaves like a first-in-first-out pipeline: The
 ///   samples that are to be processed are fed into one of the pipe by calling
-///   function 'putSamples', while the ready processed samples can be read 
+///   function 'putSamples', while the ready processed samples can be read
 ///   from the other end of the pipeline with function 'receiveSamples'.
-/// 
-/// - The SoundTouch processing classes require certain sized 'batches' of 
-///   samples in order to process the sound. For this reason the classes buffer 
-///   incoming samples until there are enough of samples available for 
+///
+/// - The SoundTouch processing classes require certain sized 'batches' of
+///   samples in order to process the sound. For this reason the classes buffer
+///   incoming samples until there are enough of samples available for
 ///   processing, then they carry out the processing step and consequently
 ///   make the processed samples available for outputting.
-/// 
-/// - For the above reason, the processing routines introduce a certain 
+///
+/// - For the above reason, the processing routines introduce a certain
 ///   'latency' between the input and output, so that the samples input to
-///   SoundTouch may not be immediately available in the output, and neither 
-///   the amount of outputtable samples may not immediately be in direct 
+///   SoundTouch may not be immediately available in the output, and neither
+///   the amount of outputtable samples may not immediately be in direct
 ///   relationship with the amount of previously input samples.
 ///
 /// - The tempo/pitch/rate control parameters can be altered during processing.
@@ -30,8 +30,8 @@
 ///   required.
 ///
 /// - This class utilizes classes 'TDStretch' for tempo change (without modifying
-///   pitch) and 'RateTransposer' for changing the playback rate (that is, both 
-///   tempo and pitch in the same ratio) of the sound. The third available control 
+///   pitch) and 'RateTransposer' for changing the playback rate (that is, both
+///   tempo and pitch in the same ratio) of the sound. The third available control
 ///   'pitch' (change pitch but maintain tempo) is produced by a combination of
 ///   combining the two other controls.
 ///
@@ -72,10 +72,10 @@ namespace soundtouch
 {
 
 /// Soundtouch library version string
-#define SOUNDTOUCH_VERSION          "2.3.1"
+#define SOUNDTOUCH_VERSION          "2.3.3"
 
 /// SoundTouch library version id
-#define SOUNDTOUCH_VERSION_ID       (20301)
+#define SOUNDTOUCH_VERSION_ID       (20303)
 
 //
 // Available setting IDs for the 'setSetting' & 'get_setting' functions:
@@ -91,55 +91,55 @@ namespace soundtouch
 ///  quality compromising)
 #define SETTING_USE_QUICKSEEK       2
 
-/// Time-stretch algorithm single processing sequence length in milliseconds. This determines 
-/// to how long sequences the original sound is chopped in the time-stretch algorithm. 
+/// Time-stretch algorithm single processing sequence length in milliseconds. This determines
+/// to how long sequences the original sound is chopped in the time-stretch algorithm.
 /// See "STTypes.h" or README for more information.
 #define SETTING_SEQUENCE_MS         3
 
-/// Time-stretch algorithm seeking window length in milliseconds for algorithm that finds the 
-/// best possible overlapping location. This determines from how wide window the algorithm 
-/// may look for an optimal joining location when mixing the sound sequences back together. 
+/// Time-stretch algorithm seeking window length in milliseconds for algorithm that finds the
+/// best possible overlapping location. This determines from how wide window the algorithm
+/// may look for an optimal joining location when mixing the sound sequences back together.
 /// See "STTypes.h" or README for more information.
 #define SETTING_SEEKWINDOW_MS       4
 
-/// Time-stretch algorithm overlap length in milliseconds. When the chopped sound sequences 
-/// are mixed back together, to form a continuous sound stream, this parameter defines over 
-/// how long period the two consecutive sequences are let to overlap each other. 
+/// Time-stretch algorithm overlap length in milliseconds. When the chopped sound sequences
+/// are mixed back together, to form a continuous sound stream, this parameter defines over
+/// how long period the two consecutive sequences are let to overlap each other.
 /// See "STTypes.h" or README for more information.
 #define SETTING_OVERLAP_MS          5
 
 
-/// Call "getSetting" with this ID to query processing sequence size in samples. 
-/// This value gives approximate value of how many input samples you'll need to 
+/// Call "getSetting" with this ID to query processing sequence size in samples.
+/// This value gives approximate value of how many input samples you'll need to
 /// feed into SoundTouch after initial buffering to get out a new batch of
-/// output samples. 
+/// output samples.
 ///
-/// This value does not include initial buffering at beginning of a new processing 
+/// This value does not include initial buffering at beginning of a new processing
 /// stream, use SETTING_INITIAL_LATENCY to get the initial buffering size.
 ///
-/// Notices: 
+/// Notices:
 /// - This is read-only parameter, i.e. setSetting ignores this parameter
-/// - This parameter value is not constant but change depending on 
+/// - This parameter value is not constant but change depending on
 ///   tempo/pitch/rate/samplerate settings.
 #define SETTING_NOMINAL_INPUT_SEQUENCE      6
 
 
-/// Call "getSetting" with this ID to query nominal average processing output 
-/// size in samples. This value tells approcimate value how many output samples 
+/// Call "getSetting" with this ID to query nominal average processing output
+/// size in samples. This value tells approcimate value how many output samples
 /// SoundTouch outputs once it does DSP processing run for a batch of input samples.
 ///
-/// Notices: 
+/// Notices:
 /// - This is read-only parameter, i.e. setSetting ignores this parameter
-/// - This parameter value is not constant but change depending on 
+/// - This parameter value is not constant but change depending on
 ///   tempo/pitch/rate/samplerate settings.
 #define SETTING_NOMINAL_OUTPUT_SEQUENCE     7
 
 
 /// Call "getSetting" with this ID to query initial processing latency, i.e.
-/// approx. how many samples you'll need to enter to SoundTouch pipeline before 
-/// you can expect to get first batch of ready output samples out. 
+/// approx. how many samples you'll need to enter to SoundTouch pipeline before
+/// you can expect to get first batch of ready output samples out.
 ///
-/// After the first output batch, you can then expect to get approx. 
+/// After the first output batch, you can then expect to get approx.
 /// SETTING_NOMINAL_OUTPUT_SEQUENCE ready samples out for every
 /// SETTING_NOMINAL_INPUT_SEQUENCE samples that you enter into SoundTouch.
 ///
@@ -149,18 +149,18 @@ namespace soundtouch
 ///        input sequence  = 4167 samples
 ///        output sequence = 3969 samples
 ///
-/// Accordingly, you can expect to feed in approx. 5509 samples at beginning of 
-/// the stream, and then you'll get out the first 3969 samples. After that, for 
-/// every approx. 4167 samples that you'll put in, you'll receive again approx. 
+/// Accordingly, you can expect to feed in approx. 5509 samples at beginning of
+/// the stream, and then you'll get out the first 3969 samples. After that, for
+/// every approx. 4167 samples that you'll put in, you'll receive again approx.
 /// 3969 samples out.
 ///
-/// This also means that average latency during stream processing is 
-/// INITIAL_LATENCY-OUTPUT_SEQUENCE/2, in the above example case 5509-3969/2 
+/// This also means that average latency during stream processing is
+/// INITIAL_LATENCY-OUTPUT_SEQUENCE/2, in the above example case 5509-3969/2
 /// = 3524 samples
-/// 
-/// Notices: 
+///
+/// Notices:
 /// - This is read-only parameter, i.e. setSetting ignores this parameter
-/// - This parameter value is not constant but change depending on 
+/// - This parameter value is not constant but change depending on
 ///   tempo/pitch/rate/samplerate settings.
 #define SETTING_INITIAL_LATENCY             8
 
@@ -193,7 +193,7 @@ private:
     /// Accumulator for how many samples in total have been read out from the processing so far
     long   samplesOutput;
 
-    /// Calculates effective rate & tempo valuescfrom 'virtualRate', 'virtualTempo' and 
+    /// Calculates effective rate & tempo valuescfrom 'virtualRate', 'virtualTempo' and
     /// 'virtualPitch' parameters.
     void calcEffectiveRateAndTempo();
 
@@ -237,7 +237,7 @@ public:
     /// represent lower pitches, larger values higher pitch.
     void setPitch(double newPitch);
 
-    /// Sets pitch change in octaves compared to the original pitch  
+    /// Sets pitch change in octaves compared to the original pitch
     /// (-1.00 .. +1.00)
     void setPitchOctaves(double newPitch);
 
@@ -253,20 +253,20 @@ public:
     void setSampleRate(uint srate);
 
     /// Get ratio between input and output audio durations, useful for calculating
-    /// processed output duration: if you'll process a stream of N samples, then 
+    /// processed output duration: if you'll process a stream of N samples, then
     /// you can expect to get out N * getInputOutputSampleRatio() samples.
     ///
-    /// This ratio will give accurate target duration ratio for a full audio track, 
+    /// This ratio will give accurate target duration ratio for a full audio track,
     /// given that the the whole track is processed with same processing parameters.
-    /// 
+    ///
     /// If this ratio is applied to calculate intermediate offsets inside a processing
-    /// stream, then this ratio is approximate and can deviate +- some tens of milliseconds 
+    /// stream, then this ratio is approximate and can deviate +- some tens of milliseconds
     /// from ideal offset, yet by end of the audio stream the duration ratio will become
     /// exact.
     ///
     /// Example: if processing with parameters "-tempo=15 -pitch=-3", the function
     /// will return value 0.8695652... Now, if processing an audio stream whose duration
-    /// is exactly one million audio samples, then you can expect the processed 
+    /// is exactly one million audio samples, then you can expect the processed
     /// output duration  be 0.869565 * 1000000 = 869565 samples.
     double getInputOutputSampleRatio();
 
@@ -289,8 +289,8 @@ public:
                                                     ///< contains data for both channels.
             ) override;
 
-    /// Output samples from beginning of the sample buffer. Copies requested samples to 
-    /// output buffer and removes them from the sample buffer. If there are less than 
+    /// Output samples from beginning of the sample buffer. Copies requested samples to
+    /// output buffer and removes them from the sample buffer. If there are less than
     /// 'numsample' samples in the buffer, returns all that available.
     ///
     /// \return Number of samples returned.
@@ -298,8 +298,8 @@ public:
         uint maxSamples                 ///< How many samples to receive at max.
         ) override;
 
-    /// Adjusts book-keeping so that given number of samples are removed from beginning of the 
-    /// sample buffer without copying them anywhere. 
+    /// Adjusts book-keeping so that given number of samples are removed from beginning of the
+    /// sample buffer without copying them anywhere.
     ///
     /// Used to reduce the number of samples in the buffer when accessing the sample buffer directly
     /// with 'ptrBegin' function.
@@ -312,7 +312,7 @@ public:
 
     /// Changes a setting controlling the processing system behaviour. See the
     /// 'SETTING_...' defines for available setting ID's.
-    /// 
+    ///
     /// \return 'true' if the setting was successfully changed
     bool setSetting(int settingId,   ///< Setting ID number. see SETTING_... defines.
                     int value        ///< New setting value.
@@ -338,7 +338,7 @@ public:
     /// classes 'FIFOProcessor' and 'FIFOSamplePipe')
     ///
     /// - receiveSamples() : Use this function to receive 'ready' processed samples from SoundTouch.
-    /// - numSamples()     : Get number of 'ready' samples that can be received with 
+    /// - numSamples()     : Get number of 'ready' samples that can be received with
     ///                      function 'receiveSamples()'
     /// - isEmpty()        : Returns nonzero if there aren't any 'ready' samples.
     /// - clear()          : Clears all samples from ready/processing buffers.
