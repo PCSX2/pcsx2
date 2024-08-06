@@ -58,14 +58,6 @@ jobs:
       CCACHE_MAXSIZE: 100M
 
     steps:
-      # Work around https://github.com/actions/runner-images/issues/8659
-      - name: Remove GCC 13 from runner image
-        shell: bash
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-jammy.list
-          sudo apt-get update
-          sudo apt-get install -y --allow-downgrades 'libc6=2.35-0ubuntu*' 'libc6-dev=2.35-0ubuntu*' libstdc++6=12.3.0-1ubuntu1~22.04 libgcc-s1=12.3.0-1ubuntu1~22.04
-
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
