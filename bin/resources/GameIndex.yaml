@@ -1134,6 +1134,8 @@ SCAJ-20015:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SCAJ-20016:
   name: "Warrior of Argus"
   region: "NTSC-C-E"
@@ -21532,6 +21534,8 @@ SLES-53363:
   compat: 5
   roundModes:
     eeRoundMode: 0 # Fixes commands not being visible.
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SLES-53364:
   name: "7 Sins"
   region: "PAL-G"
@@ -29138,6 +29142,8 @@ SLKA-25076:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SLKA-25077:
   name: "Culdcept II - Expansion"
   region: "NTSC-K"
@@ -29456,6 +29462,8 @@ SLKA-25160:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SLKA-25161:
   name: "Aqua Kids"
   region: "NTSC-K"
@@ -38217,6 +38225,8 @@ SLPM-65241:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SLPM-65242:
   name: "真・女神転生 III-NOCTURNE"
   name-sort: "しんめがみてんせい3-NOCTURNE"
@@ -38224,6 +38234,8 @@ SLPM-65242:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SLPM-65243:
   name: "電車でGO!プロフェッショナル2"
   name-sort: "でんしゃでごーぷろふぇっしょなる2"
@@ -38323,6 +38335,8 @@ SLPM-65259:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SLPM-65260:
   name: "凱歌の号砲"
   name-sort: "がいかのごうほう"
@@ -39448,6 +39462,8 @@ SLPM-65462:
   compat: 5
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SLPM-65463:
   name: "ROCKY"
   name-sort: "ROCKY"
@@ -46652,6 +46668,8 @@ SLPM-66681:
   compat: 5
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SLPM-66683:
   name: "デビルサマナー 葛葉ライドウ 対 アバドン王 初回生産版"
   name-sort: "でびるさまなー くずのはらいどう たい あばどんおう しょかいせいさんばん"
@@ -48964,6 +48982,8 @@ SLPM-74205:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SLPM-74206:
   name: "鬼武者 PlayStation 2 the Best"
   name-sort: "おにむしゃ PlayStation 2 the Best"
@@ -62697,6 +62717,8 @@ SLUS-20911:
   compat: 5
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SLUS-20912:
   name: "Superbikes TT"
   region: "NTSC-U"
@@ -68800,6 +68822,8 @@ SLUS-28045:
   region: "NTSC-U"
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SLUS-28046:
   name: "Guilty Gear Isuka [Trade Demo]"
   region: "NTSC-U"
