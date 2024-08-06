@@ -1,12 +1,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 ///
-/// A buffer class for temporarily storaging sound samples, operates as a 
+/// A buffer class for temporarily storaging sound samples, operates as a
 /// first-in-first-out pipe.
 ///
-/// Samples are added to the end of the sample buffer with the 'putSamples' 
+/// Samples are added to the end of the sample buffer with the 'putSamples'
 /// function, and are received from the beginning of the buffer by calling
-/// the 'receiveSamples' function. The class automatically removes the 
-/// outputted samples from the buffer, as well as grows the buffer size 
+/// the 'receiveSamples' function. The class automatically removes the
+/// outputted samples from the buffer, as well as grows the buffer size
 /// whenever necessary.
 ///
 /// Author        : Copyright (c) Olli Parviainen
@@ -50,12 +50,12 @@ FIFOSampleBuffer::FIFOSampleBuffer(int numChannels)
 {
     assert(numChannels > 0);
     sizeInBytes = 0; // reasonable initial value
-    buffer = NULL;
-    bufferUnaligned = NULL;
+    buffer = nullptr;
+    bufferUnaligned = nullptr;
     samplesInBuffer = 0;
     bufferPos = 0;
     channels = (uint)numChannels;
-    ensureCapacity(32);     // allocate initial capacity 
+    ensureCapacity(32);     // allocate initial capacity
 }
 
 
@@ -63,8 +63,8 @@ FIFOSampleBuffer::FIFOSampleBuffer(int numChannels)
 FIFOSampleBuffer::~FIFOSampleBuffer()
 {
     delete[] bufferUnaligned;
-    bufferUnaligned = NULL;
-    buffer = NULL;
+    bufferUnaligned = nullptr;
+    buffer = nullptr;
 }
 
 
@@ -82,11 +82,11 @@ void FIFOSampleBuffer::setChannels(int numChannels)
 
 
 // if output location pointer 'bufferPos' isn't zero, 'rewinds' the buffer and
-// zeroes this pointer by copying samples from the 'bufferPos' pointer 
+// zeroes this pointer by copying samples from the 'bufferPos' pointer
 // location on to the beginning of the buffer.
 void FIFOSampleBuffer::rewind()
 {
-    if (buffer && bufferPos) 
+    if (buffer && bufferPos)
     {
         memmove(buffer, ptrBegin(), sizeof(SAMPLETYPE) * channels * samplesInBuffer);
         bufferPos = 0;
@@ -94,7 +94,7 @@ void FIFOSampleBuffer::rewind()
 }
 
 
-// Adds 'numSamples' pcs of samples from the 'samples' memory position to 
+// Adds 'numSamples' pcs of samples from the 'samples' memory position to
 // the sample buffer.
 void FIFOSampleBuffer::putSamples(const SAMPLETYPE *samples, uint nSamples)
 {
@@ -107,7 +107,7 @@ void FIFOSampleBuffer::putSamples(const SAMPLETYPE *samples, uint nSamples)
 // samples.
 //
 // This function is used to update the number of samples in the sample buffer
-// when accessing the buffer directly with 'ptrEnd' function. Please be 
+// when accessing the buffer directly with 'ptrEnd' function. Please be
 // careful though!
 void FIFOSampleBuffer::putSamples(uint nSamples)
 {
@@ -119,31 +119,31 @@ void FIFOSampleBuffer::putSamples(uint nSamples)
 }
 
 
-// Returns a pointer to the end of the used part of the sample buffer (i.e. 
-// where the new samples are to be inserted). This function may be used for 
-// inserting new samples into the sample buffer directly. Please be careful! 
+// Returns a pointer to the end of the used part of the sample buffer (i.e.
+// where the new samples are to be inserted). This function may be used for
+// inserting new samples into the sample buffer directly. Please be careful!
 //
 // Parameter 'slackCapacity' tells the function how much free capacity (in
 // terms of samples) there _at least_ should be, in order to the caller to
-// successfully insert all the required samples to the buffer. When necessary, 
+// successfully insert all the required samples to the buffer. When necessary,
 // the function grows the buffer size to comply with this requirement.
 //
-// When using this function as means for inserting new samples, also remember 
-// to increase the sample count afterwards, by calling  the 
+// When using this function as means for inserting new samples, also remember
+// to increase the sample count afterwards, by calling  the
 // 'putSamples(numSamples)' function.
-SAMPLETYPE *FIFOSampleBuffer::ptrEnd(uint slackCapacity) 
+SAMPLETYPE *FIFOSampleBuffer::ptrEnd(uint slackCapacity)
 {
     ensureCapacity(samplesInBuffer + slackCapacity);
     return buffer + samplesInBuffer * channels;
 }
 
 
-// Returns a pointer to the beginning of the currently non-outputted samples. 
-// This function is provided for accessing the output samples directly. 
+// Returns a pointer to the beginning of the currently non-outputted samples.
+// This function is provided for accessing the output samples directly.
 // Please be careful!
 //
 // When using this function to output samples, also remember to 'remove' the
-// outputted samples from the buffer by calling the 
+// outputted samples from the buffer by calling the
 // 'receiveSamples(numSamples)' function
 SAMPLETYPE *FIFOSampleBuffer::ptrBegin()
 {
@@ -160,13 +160,13 @@ void FIFOSampleBuffer::ensureCapacity(uint capacityRequirement)
 {
     SAMPLETYPE *tempUnaligned, *temp;
 
-    if (capacityRequirement > getCapacity()) 
+    if (capacityRequirement > getCapacity())
     {
         // enlarge the buffer in 4kbyte steps (round up to next 4k boundary)
         sizeInBytes = (capacityRequirement * channels * sizeof(SAMPLETYPE) + 4095) & (uint)-4096;
         assert(sizeInBytes % 2 == 0);
         tempUnaligned = new SAMPLETYPE[sizeInBytes / sizeof(SAMPLETYPE) + 16 / sizeof(SAMPLETYPE)];
-        if (tempUnaligned == NULL)
+        if (tempUnaligned == nullptr)
         {
             ST_THROW_RT_ERROR("Couldn't allocate memory!\n");
         }
@@ -180,8 +180,8 @@ void FIFOSampleBuffer::ensureCapacity(uint capacityRequirement)
         buffer = temp;
         bufferUnaligned = tempUnaligned;
         bufferPos = 0;
-    } 
-    else 
+    }
+    else
     {
         // simply rewind the buffer (if necessary)
         rewind();

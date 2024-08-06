@@ -15,8 +15,8 @@
 
 <body class="normal">
   <hr>
-  <h1>SoundTouch audio processing library v2.3.1</h1>
-  <p class="normal">SoundTouch library Copyright &copy; Olli Parviainen 2001-2021</p>
+  <h1>SoundTouch audio processing library v2.3.3</h1>
+  <p class="normal">SoundTouch library Copyright &copy; Olli Parviainen 2001-2024</p>
   <hr>
   <h2>1. Introduction </h2>
   <p>SoundTouch is an open-source audio processing library that allows
@@ -35,7 +35,7 @@
   <p>Author email: oparviai 'at' iki.fi </p>
   <p>SoundTouch WWW page: <a href="http://soundtouch.surina.net">http://soundtouch.surina.net</a></p>
   <p>SoundTouch git repository: <a
-      href="https://gitlab.com/soundtouch/soundtouch.git">https://gitlab.com/soundtouch/soundtouch.git</a></p>
+      href="https://codeberg.org/soundtouch/soundtouch.git">https://codeberg.org/soundtouch/soundtouch.git</a></p>
   <hr>
   <h2>2. Compiling SoundTouch</h2>
   <p>Before compiling, notice that you can choose the sample data format if it's
@@ -131,10 +131,12 @@
   </table>
 
   <b>Compiling portable Shared Library / DLL version</b>
-  <p> The GNU autotools compilation does not automatically create a shared-library version of
-    SoundTouch (.so or .dll) that features position-independent code and C-language
-    api that are more suitable for cross-language development than C++ libraries.</p>
-  <p> Use script "make-gnu-dll-sh" to build a portable dynamic library version if such is desired.</p>
+  <p> The GNU autotools compilation automatically builds an additional dynamic-link version
+    of SoundTouch library that features position-independent code and "C"-style API that is
+    more suitable for calling the SoundTouch routines from other programming languages.</p>
+    <p>This dynamic-link library is built under source/SoundTouchDLL directory, whose
+    subdirectories also comtain simple example apps that use the dynamic-link library.
+  </p>
 
   <h4><b>2.2.2 Compiling with cmake</b></h4>
   <p>'cmake' build scripts are provided as an alternative to the autotools toolchain.</p>
@@ -145,6 +147,9 @@
     cmake .
     make -j
     make install</pre>
+  <p>To list available build options:</p>
+  <pre>
+    cmake -LH</pre>
   <p>To compile the additional portable Shared Library / DLL version with the native C-language API:</p>
   <pre>
     cmake . -DSOUNDTOUCH_DLL=ON
@@ -448,7 +453,7 @@
     <h2><a name="SoundStretch"></a>4. SoundStretch audio processing utility
     </h2>
     <p>SoundStretch audio processing utility<br>
-      Copyright (c) Olli Parviainen 2002-2015</p>
+      Copyright (c) Olli Parviainen 2002-2024</p>
     <p>SoundStretch is a simple command-line application that can change
       tempo, pitch and playback rates of WAV sound files. This program is
       intended primarily to demonstrate how the "SoundTouch" library can be
@@ -603,6 +608,18 @@
     <hr>
     <h2>5. Change History</h2>
     <h3>5.1. SoundTouch library Change History </h3>
+    <p><b>2.3.3:</b></p>
+    <ul class="current">
+        <li>Fixing compiler warnings, maintenance fixes to make/build files for various systems
+        </li>
+    </ul>
+    <p><b>2.3.2:</b></p>
+    <ul>
+        <li>Improve autotools makefiles to build the `SoundTouchDLL` dynamic-link link library with
+          C-style API. This library variation is easier to import and use from other programming
+          languages than the default C++ library.
+      </li>
+    </ul>
     <p><b>2.3.1:</b></p>
     <ul>
       <li>Adjusted cmake build settings and header files that cmake installs</li>
@@ -622,7 +639,7 @@
         window. This ensures that with zero tempo change the output will be same as input.
       </li>
       <li>Bugfix: Fix a bug in TDstrectch with too small initial skipFract value that occurred
-        with certain processing parameter settings: Replace assert with assignment that 
+        with certain processing parameter settings: Replace assert with assignment that
         corrects the situation.
       </li>
       <li>Remove OpenMP "_init_threading" workaround from Android build as it's not needed with concurrent
@@ -865,11 +882,14 @@
       <li> Initial release</li>
     </ul>
     <h3>5.2. SoundStretch application Change History </h3>
+    <p><b>2.3.3:</b></p>
+    <ul class="current_soundstretch">
+      <li>Added support for Asian / non-latin filenames in Windows. Gnu platform has supported them already earlier.</li>
+    </ul>
     <p><b>1.9:</b></p>
     <ul>
       <li>Added support for WAV file 'fact' information chunk.</li>
     </ul>
-
     <p><b>1.7.0:</b></p>
     <ul>
       <li>Bugfixes in Wavfile: exception string formatting, avoid getLengthMs() integer
@@ -966,6 +986,7 @@
       <li> Michael Pruett</li>
       <li> Rajeev Puran</li>
       <li> RJ Ryan</li>
+      <li> Serge Sans Paille</li>
       <li> John Sheehy</li>
       <li> Tim Shuttleworth</li>
       <li> Albert Sirvent</li>

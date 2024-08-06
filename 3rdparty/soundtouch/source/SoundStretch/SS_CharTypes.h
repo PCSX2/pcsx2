@@ -1,10 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 ///
-/// A header file for detecting the Intel MMX instructions set extension.
-///
-/// Please see 'mmx_win.cpp', 'mmx_cpp.cpp' and 'mmx_non_x86.cpp' for the
-/// routine implementations for x86 Windows, x86 gnu version and non-x86
-/// platforms, respectively.
+/// Char type for SoundStretch
 ///
 /// Author        : Copyright (c) Olli Parviainen
 /// Author e-mail : oparviai 'at' iki.fi
@@ -33,23 +29,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef _CPU_DETECT_H_
-#define _CPU_DETECT_H_
+#ifndef SS_CHARTYPE_H
+#define SS_CHARTYPE_H
 
-#include "STTypes.h"
+#include <string>
 
-#define SUPPORT_MMX         0x0001
-#define SUPPORT_3DNOW       0x0002
-#define SUPPORT_ALTIVEC     0x0004
-#define SUPPORT_SSE         0x0008
-#define SUPPORT_SSE2        0x0010
+namespace soundstretch
+{
+#if _WIN32
+    // wide-char types for supporting non-latin file paths in Windows
+    using CHARTYPE = wchar_t;
+    using STRING = std::wstring;
+    #define STRING_CONST(x) (L"" x)
+#else
+    // gnu platform can natively support UTF-8 paths using "char*" set
+    using CHARTYPE = char;
+    using STRING = std::string;
+    #define STRING_CONST(x) (x)
+#endif
+}
 
-/// Checks which instruction set extensions are supported by the CPU.
-///
-/// \return A bitmask of supported extensions, see SUPPORT_... defines.
-uint detectCPUextensions(void);
-
-/// Disables given set of instruction extensions. See SUPPORT_... defines.
-void disableExtensions(uint wDisableMask);
-
-#endif  // _CPU_DETECT_H_
+#endif //SS_CHARTYPE_H
