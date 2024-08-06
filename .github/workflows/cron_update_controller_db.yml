@@ -25,5 +25,6 @@ jobs:
           commit-message: "PAD: Update to latest controller database."
           committer: "PCSX2 Bot <PCSX2Bot@users.noreply.github.com>"
           author: "PCSX2 Bot <PCSX2Bot@users.noreply.github.com>"
-          body: "Weekly automatic update of SDL Controller DB"
-          reviewers: lightningterror
+          body: "Weekly automatic update of SDL Controller DB."
+          branch: update-controller-db
+          delete-branch: true
