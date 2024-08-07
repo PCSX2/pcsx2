@@ -705,6 +705,9 @@
     <QtUi Include="Settings\USBBindingWidget_Buzz.ui">
       <Filter>Settings</Filter>
     </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_DenshaCon.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
     <QtUi Include="Settings\USBBindingWidget_DrivingForce.ui">
       <Filter>Settings</Filter>
     </QtUi>
@@ -718,6 +721,12 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\USBBindingWidget_RealPlay.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_RyojouhenCon.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_ShinkansenCon.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\USBBindingWidget_TranceVibrator.ui">

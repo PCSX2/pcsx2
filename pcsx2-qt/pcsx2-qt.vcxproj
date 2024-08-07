@@ -439,6 +439,9 @@
     <QtUi Include="Settings\USBBindingWidget_Buzz.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_DenshaCon.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="Settings\USBBindingWidget_DrivingForce.ui">
       <FileType>Document</FileType>
     </QtUi>
@@ -452,6 +455,12 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\USBBindingWidget_RealPlay.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_RyojouhenCon.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_ShinkansenCon.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\USBBindingWidget_TranceVibrator.ui">
