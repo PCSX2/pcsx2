@@ -200,6 +200,7 @@
 		<file>icons/white/svg/window-2-line.svg</file>
 		<file>icons/white/svg/zoom-in-line.svg</file>
 		<file>icons/white/svg/zoom-out-line.svg</file>
+		<file>images/Denshacon.svg</file>
 		<file>images/Driving_Force.svg</file>
 		<file>images/DualShock_2.svg</file>
 		<file>images/GT_Force.svg</file>
@@ -207,5 +208,7 @@
 		<file>images/Jogcon.svg</file>
 		<file>images/Negcon.svg</file>
 		<file>images/Popn.svg</file>
+		<file>images/RyojouhenCon.svg</file>
+		<file>images/ShinkansenCon.svg</file>
 	</qresource>
 </RCC>
