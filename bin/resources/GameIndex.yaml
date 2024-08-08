@@ -17957,6 +17957,7 @@ SLES-52005:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lines in cutscenes.
+    preloadFrameData: 1 # Fixes invisible car rendering.
 SLES-52008:
   name: "NBA Live 2004"
   region: "PAL-M5"
@@ -18068,6 +18069,7 @@ SLES-52046:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lines in cutscenes.
+    preloadFrameData: 1 # Fixes invisible car rendering.
 SLES-52047:
   name: "The Sims - Bustin' Out"
   name-sort: "Sims, The - Bustin' Out"
@@ -25395,6 +25397,8 @@ SLES-54619:
 SLES-54620:
   name: "Snow White & the 7 Clever Boys"
   region: "PAL-M3"
+  gameFixes:
+    - InstantDMAHack # Fixes "VIF1 does not terminate" related stuttering.
 SLES-54622:
   name: "Grand Theft Auto - Vice City Stories"
   region: "PAL-M5"
@@ -29344,6 +29348,7 @@ SLKA-25129:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lines in cutscenes.
+    preloadFrameData: 1 # Fixes invisible car rendering.
 SLKA-25130:
   name: "Bloody Roar 4"
   region: "NTSC-K"
@@ -39374,6 +39379,7 @@ SLPM-65446:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lines in cutscenes.
+    preloadFrameData: 1 # Fixes invisible car rendering.
 SLPM-65447:
   name: "Kunoichi-忍-"
   name-sort: "Kunoichi"
@@ -40867,6 +40873,7 @@ SLPM-65725:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lines in cutscenes.
+    preloadFrameData: 1 # Fixes invisible car rendering.
 SLPM-65726:
   name: "EA BEST HITS スター・ウォーズ ジャンゴ・フェット"
   name-sort: "すたーうぉーず じゃんご ふぇっと [EA BEST HITS]"
@@ -61845,6 +61852,7 @@ SLUS-20751:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lines in cutscenes.
+    preloadFrameData: 1 # Fixes invisible car rendering.
 SLUS-20752:
   name: "Madden NFL 2004"
   region: "NTSC-U"
@@ -69208,6 +69216,7 @@ SLUS-29095:
   region: "NTSC-U"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lines in cutscenes.
+    preloadFrameData: 1 # Fixes invisible car rendering.
 SLUS-29096:
   name: "Final Night 2004 [Demo]"
   region: "NTSC-U"
