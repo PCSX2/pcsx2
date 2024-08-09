@@ -1282,6 +1282,16 @@ function(setup_main_executable target)
 		install(CODE "file(WRITE \"${CMAKE_SOURCE_DIR}/bin/qt.conf\" \"[Paths]\\nPlugins = ./QtPlugins\")")
 	endif()
 
+
+	if (UNIX AND NOT APPLE)
+		if (PACKAGE_MODE)
+			install(TARGETS pcsx2-qt DESTINATION ${CMAKE_INSTALL_FULL_BINDIR})
+			install(DIRECTORY ${CMAKE_SOURCE_DIR}/bin/resources DESTINATION ${CMAKE_INSTALL_FULL_DATADIR}/PCSX2)
+		else()
+			install(TARGETS pcsx2-qt DESTINATION ${CMAKE_SOURCE_DIR}/bin)
+		endif()
+	endif()
+
 	if(APPLE)
 		if(CMAKE_GENERATOR MATCHES "Xcode")
 			# If we're generating an xcode project, you can just add the shaders to the main pcsx2 target and xcode will deal with them properly
