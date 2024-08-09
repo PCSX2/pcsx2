@@ -25010,7 +25010,7 @@ SLES-54466:
   gsHWFixes:
     halfPixelOffset: 4 # Fixes bloom misalignment.
   patches:
-    C29911A79:
+    C2911A79:
       content: |-
         comment=COP2 Patch
         author=Fobes
