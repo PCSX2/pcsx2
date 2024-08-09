@@ -218,7 +218,8 @@ bool DebugInterface::m_pause_on_entry = false;
 
 bool DebugInterface::isAlive()
 {
-	return VMManager::HasValidVM() && g_FrameCount > 0;
+	const VMState state = VMManager::GetState();
+	return (state == VMState::Running || state == VMState::Paused) && g_FrameCount > 0;
 }
 
 bool DebugInterface::isCpuPaused()
