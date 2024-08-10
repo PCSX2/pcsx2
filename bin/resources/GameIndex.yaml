@@ -12079,6 +12079,8 @@ SLAJ-25018:
 SLAJ-25019:
   name: "The Lord of the Rings - The Return of the King"
   region: "NTSC-C"
+  clampModes:
+    vu1ClampMode: 3 # Fixes broken skybox and missing textures.
 SLAJ-25023:
   name: "Shin Sangoku Musou 3 - Moushouden"
   region: "NTSC-Unk"
@@ -13236,10 +13238,10 @@ SLES-50024:
   name: "NBA Live 2001"
   region: "PAL-G"
 SLES-50025:
-  name: "NBA 2001"
+  name: "NBA Live 2001"
   region: "PAL-I"
 SLES-50026:
-  name: "NBA 2001"
+  name: "NBA Live 2001"
   region: "PAL-S"
 SLES-50027:
   name: "NHL 2001"
@@ -13249,7 +13251,7 @@ SLES-50028:
   region: "PAL-G"
 SLES-50029:
   name: "NHL 2001"
-  region: "PAL-F"
+  region: "PAL-M2"
 SLES-50030:
   name: "SSX"
   region: "PAL-M3"
@@ -17975,18 +17977,28 @@ SLES-52017:
   name-sort: "Lord of the Rings, The - Return of the King"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes broken skybox and missing textures.
 SLES-52018:
   name: "Herr der Ringe, Der - Die Rückkehr des Königs"
   region: "PAL-G"
+  clampModes:
+    vu1ClampMode: 3 # Fixes broken skybox and missing textures.
 SLES-52019:
   name: "Seigneur des Anneaux, Le - Le Retour du roi"
   region: "PAL-F"
+  clampModes:
+    vu1ClampMode: 3 # Fixes broken skybox and missing textures.
 SLES-52020:
   name: "Señor de Los Anillos, El - El Retorno del Rey"
   region: "PAL-S"
+  clampModes:
+    vu1ClampMode: 3 # Fixes broken skybox and missing textures.
 SLES-52021:
   name: "Signore degli Anelli, Il - Il Ritorno del Re"
   region: "PAL-I"
+  clampModes:
+    vu1ClampMode: 3 # Fixes broken skybox and missing textures.
 SLES-52022:
   name: "Total Club Manager 2004"
   region: "PAL-M4"
@@ -29243,6 +29255,8 @@ SLKA-25098:
   name: "The Lord of the Rings - The Return of the King"
   name-sort: "Lord of the Rings, The - The Return of the King"
   region: "NTSC-K"
+  clampModes:
+    vu1ClampMode: 3 # Fixes broken skybox and missing textures.
 SLKA-25099:
   name: "The Urbz - Sims in the City"
   region: "NTSC-K"
@@ -39691,6 +39705,8 @@ SLPM-65503:
   name-en: "Lord of the Rings, The - The Return of the King"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes broken skybox and missing textures.
 SLPM-65504:
   name: "COOL GIRL 初回限定版 [ディスク1/2]"
   name-sort: "COOL GIRL しょかいげんていばん [でぃすく1/2]"
@@ -40890,6 +40906,8 @@ SLPM-65727:
   name-sort: "ろーど おぶ ざ りんぐ おうのきかん [EA BEST HITS]"
   name-en: "Lord of the Rings, The - The Return of the King [EA Best Hits]"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 3 # Fixes broken skybox and missing textures.
 SLPM-65728:
   name: "ホビットの冒険 ロード オブ ザ リング はじまりの物語"
   name-sort: "ほびっとのぼうけん ろーど おぶ ざ りんぐ はじまりのものがたり"
@@ -61992,6 +62010,8 @@ SLUS-20770:
   name: "The Lord of the Rings - The Return of the King"
   name-sort: "Lord of the Rings, The - The Return of the King"
   region: "NTSC-U"
+  clampModes:
+    vu1ClampMode: 3 # Fixes broken skybox and missing textures.
 SLUS-20771:
   name: "NCAA March Madness 2004"
   region: "NTSC-U"
