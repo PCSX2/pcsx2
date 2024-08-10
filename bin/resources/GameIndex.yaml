@@ -7169,6 +7169,12 @@ SCKA-20087:
     nativeScaling: 2 # Fixes post processing smoothness and position.
   memcardFilters:
     - "SCKA-20086"
+SCKA-20088:
+  name: "모두의 테니스"
+  name-en: "Everybody's Tennis"
+  region: "NTSC-K"
+  roundModes:
+    vu1RoundMode: 1 # Fixes the display of scores and text ingame.
 SCKA-20089:
   name: "BioHazard 4"
   region: "NTSC-K"
