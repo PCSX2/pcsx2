@@ -133,7 +133,8 @@ namespace usb_pad
 				{
 					case USB_DT_REPORT:
 						ret = sizeof(hid_report_descriptor);
-						memcpy(data, hid_report_descriptor, ret);
+						std::memcpy(data, hid_report_descriptor, ret);
+						p->actual_length = ret;
 						break;
 				}
 				break;
