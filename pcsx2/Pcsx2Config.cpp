@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "common/CocoaTools.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/SettingsInterface.h"
@@ -1859,7 +1860,15 @@ void Pcsx2Config::ClearInvalidPerGameConfiguration(SettingsInterface* si)
 
 void EmuFolders::SetAppRoot()
 {
-	const std::string program_path = FileSystem::GetProgramPath();
+	std::string program_path = FileSystem::GetProgramPath();
+#ifdef __APPLE__
+	const auto bundle_path = CocoaTools::GetNonTranslocatedBundlePath();
+	if (bundle_path.has_value())
+	{
+		// On macOS, override with the bundle path if launched from a bundle.
+		program_path = bundle_path.value();
+	}
+#endif
 	Console.WriteLnFmt("Program Path: {}", program_path);
 
 	AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
@@ -1879,7 +1888,8 @@ bool EmuFolders::SetResourcesDirectory()
 	#endif
 #else
 	// On macOS, this is in the bundle resources directory.
-	Resources = Path::Canonicalize(Path::Combine(AppRoot, "../Resources"));
+	const std::string program_path = FileSystem::GetProgramPath();
+	Resources = Path::Canonicalize(Path::Combine(Path::GetDirectory(program_path), "../Resources"));
 #endif
 
 	Console.WriteLnFmt("Resources Directory: {}", Resources);
