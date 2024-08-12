@@ -5370,7 +5370,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIPrimaryColor, 0.9f));
 
-	if (ImGui::BeginChild("state_titlebar", heading_size, false, ImGuiWindowFlags_NavFlattened))
+	if (ImGui::BeginChild("state_titlebar", heading_size, ImGuiChildFlags_NavFlattened, 0))
 	{
 		BeginNavBar();
 		if (NavButton(ICON_PF_BACKWARD, true, true))
@@ -5391,7 +5391,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 	bool close_handled = false;
 	if (s_save_state_selector_open &&
 		ImGui::BeginChild("state_list", ImVec2(io.DisplaySize.x, io.DisplaySize.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - heading_size.y),
-			false, ImGuiWindowFlags_NavFlattened))
+			ImGuiChildFlags_NavFlattened, 0))
 	{
 		BeginMenuButtons();
 
