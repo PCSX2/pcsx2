@@ -590,6 +590,9 @@ void ImGuiFullscreen::ForceKeyNavEnabled()
 
 bool ImGuiFullscreen::WantsToCloseMenu()
 {
+	// Used for the key macros below.
+	ImGuiContext& g = *ImGui::GetCurrentContext();
+
 	// Wait for the Close button to be released, THEN pressed
 	if (s_close_button_state == 0)
 	{
@@ -679,7 +682,7 @@ bool ImGuiFullscreen::BeginFullscreenColumnWindow(float start, float end, const 
 
 	ImGui::SetCursorPos(pos);
 
-	return ImGui::BeginChild(name, size, false, ImGuiWindowFlags_NavFlattened);
+	return ImGui::BeginChild(name, size, ImGuiChildFlags_NavFlattened, 0);
 }
 
 void ImGuiFullscreen::EndFullscreenColumnWindow()
