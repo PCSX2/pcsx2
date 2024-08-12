@@ -170,6 +170,7 @@ namespace EmuFolders
 	std::string Videos;
 
 	static bool ShouldUsePortableMode();
+	static std::string GetPortableModePath();
 } // namespace EmuFolders
 
 TraceFiltersEE::TraceFiltersEE()
@@ -1910,6 +1911,14 @@ bool EmuFolders::ShouldUsePortableMode()
 	return FileSystem::FileExists(Path::Combine(AppRoot, "portable.ini").c_str()) || FileSystem::FileExists(Path::Combine(AppRoot, "portable.txt").c_str());
 }
 
+std::string EmuFolders::GetPortableModePath()
+{
+	const auto portable_txt_path = Path::Combine(AppRoot, "portable.txt");
+	const auto portable_path = FileSystem::ReadFileToString(portable_txt_path.c_str()).value_or("");
+	const auto trimmed_path = StringUtil::StripWhitespace(portable_path);
+	return std::string(trimmed_path);
+}
+
 bool EmuFolders::SetDataDirectory(Error* error)
 {
 	if (!ShouldUsePortableMode())
@@ -1954,7 +1963,7 @@ bool EmuFolders::SetDataDirectory(Error* error)
 
 	// couldn't determine the data directory, or using portable mode? fallback to portable.
 	if (DataRoot.empty())
-		DataRoot = AppRoot;
+		DataRoot = Path::Combine(AppRoot, GetPortableModePath());
 
 	// inis is always below the data root
 	Settings = Path::Combine(DataRoot, "inis");
