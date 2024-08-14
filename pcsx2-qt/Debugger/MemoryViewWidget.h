@@ -18,11 +18,31 @@
 
 enum class MemoryViewType
 {
-	BYTE = 1,
-	BYTEHW = 2,
-	WORD = 4,
-	DWORD = 8,
+	BYTE,
+	BYTEHW,
+	WORD,
+	DWORD,
+	FLOAT,
 };
+
+const s32 MemoryViewTypeWidth[] =
+{
+	1,	//	BYTE
+	2,	//	BYTEHW
+	4,	//	WORD
+	8,	//	DWORD
+	4,	//	FLOAT
+};
+
+const s32 MemoryViewTypeVisualWidth[] =
+{
+	2,	//	BYTE
+	4,	//	BYTEHW
+	8,	//	WORD
+	16,	//	DWORD
+	14,	//	FLOAT
+};
+
 
 class MemoryViewTable
 {
@@ -146,6 +166,7 @@ private:
 	QAction* m_actionBYTEHW;
 	QAction* m_actionWORD;
 	QAction* m_actionDWORD;
+	QAction* m_actionFLOAT;
 
 	DebugInterface* m_cpu;
 	MemoryViewTable m_table;
