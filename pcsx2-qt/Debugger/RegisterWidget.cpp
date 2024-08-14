@@ -134,10 +134,7 @@ void RegisterWidget::paintEvent(QPaintEvent* event)
 				else
 					painter.setPen(this->palette().text().color());
 
-				if (categoryIndex == EECAT_VU0F && m_showVU0FFloat)
-					painter.drawText(m_fieldStartX[j], yStart, m_fieldWidth, m_rowHeight, Qt::AlignLeft,
-						painter.fontMetrics().elidedText(QString::number(std::bit_cast<float>(m_cpu->getRegister(categoryIndex, registerIndex)._u32[regIndex])), Qt::ElideRight, m_fieldWidth - painter.fontMetrics().averageCharWidth()));
-				else if (categoryIndex == EECAT_VU1F && m_showVU1FFloat)
+				if ((categoryIndex == EECAT_VU0F && m_showVU0FFloat) || (categoryIndex == EECAT_VU1F && m_showVU1FFloat))
 					painter.drawText(m_fieldStartX[j], yStart, m_fieldWidth, m_rowHeight, Qt::AlignLeft,
 						painter.fontMetrics().elidedText(QString::number(std::bit_cast<float>(m_cpu->getRegister(categoryIndex, registerIndex)._u32[regIndex])), Qt::ElideRight, m_fieldWidth - painter.fontMetrics().averageCharWidth()));
 				else

@@ -341,7 +341,8 @@ void MemoryViewTable::BackwardSelection()
 		if (!(selectedNibbleHI = !selectedNibbleHI))
 		{
 			// It works
-			if ((u32)(selectedAddress & (MemoryViewTypeWidth[static_cast<u32>(displayType)] - 1)) == (u32)(MemoryViewTypeWidth[static_cast<u32>(displayType)] - 1))
+			if (static_cast<u32>((MemoryViewTypeWidth[static_cast<u32>(displayType)] - 1) & selectedAddress) ==
+				static_cast<u32>(MemoryViewTypeWidth[static_cast<u32>(displayType)] - 1))
 				UpdateSelectedAddress(selectedAddress - (MemoryViewTypeWidth[static_cast<s32>(displayType)] * 2 - 1));
 			else
 				UpdateSelectedAddress(selectedAddress + 1);
