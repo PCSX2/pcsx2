@@ -405,6 +405,10 @@ const char* R5900DebugInterface::getRegisterCategoryName(int cat)
 			return "VU0f";
 		case EECAT_VU0I:
 			return "VU0i";
+		case EECAT_VU1F:
+			return "VU1f";
+		case EECAT_VU1I:
+			return "VU1i";
 		case EECAT_GSPRIV:
 			return "GS";
 		default:
@@ -418,11 +422,13 @@ int R5900DebugInterface::getRegisterSize(int cat)
 	{
 		case EECAT_GPR:
 		case EECAT_VU0F:
+		case EECAT_VU1F:
 			return 128;
 		case EECAT_CP0:
 		case EECAT_FPR:
 		case EECAT_FCR:
 		case EECAT_VU0I:
+		case EECAT_VU1I:
 			return 32;
 		case EECAT_GSPRIV:
 			return 64;
@@ -441,8 +447,10 @@ int R5900DebugInterface::getRegisterCount(int cat)
 		case EECAT_FPR:
 		case EECAT_FCR:
 		case EECAT_VU0I:
+		case EECAT_VU1I:
 			return 32;
 		case EECAT_VU0F:
+		case EECAT_VU1F:
 			return 33; // 32 + ACC
 		case EECAT_GSPRIV:
 			return 19;
@@ -458,12 +466,14 @@ DebugInterface::RegisterType R5900DebugInterface::getRegisterType(int cat)
 		case EECAT_GPR:
 		case EECAT_CP0:
 		case EECAT_VU0I:
+		case EECAT_VU1I:
 		case EECAT_FCR:
 		case EECAT_GSPRIV:
 		default:
 			return NORMAL;
 		case EECAT_FPR:
 		case EECAT_VU0F:
+		case EECAT_VU1F:
 			return SPECIAL;
 	}
 }
@@ -491,6 +501,7 @@ const char* R5900DebugInterface::getRegisterName(int cat, int num)
 		case EECAT_FCR:
 			return R5900::COP1_REG_FCR[num];
 		case EECAT_VU0F:
+		case EECAT_VU1F:
 			switch (num)
 			{
 				case 32: // ACC
@@ -499,6 +510,7 @@ const char* R5900DebugInterface::getRegisterName(int cat, int num)
 					return R5900::COP2_REG_FP[num];
 			}
 		case EECAT_VU0I:
+		case EECAT_VU1I:
 			return R5900::COP2_REG_CTL[num];
 		case EECAT_GSPRIV:
 			return R5900::GS_REG_PRIV[num];
@@ -552,6 +564,20 @@ u128 R5900DebugInterface::getRegister(int cat, int num)
 		case EECAT_VU0I:
 			result = u128::From32(VU0.VI[num].UL);
 			break;
+		case EECAT_VU1F:
+			switch (num)
+			{
+				case 32: // ACC
+					result = VU1.ACC.UQ;
+					break;
+				default:
+					result = VU1.VF[num].UQ;
+					break;
+			}
+			break;
+		case EECAT_VU1I:
+			result = u128::From32(VU1.VI[num].UL);
+			break;
 		case EECAT_GSPRIV:
 			result = gsNonMirroredRead(0x12000000 | R5900::GS_REG_PRIV_ADDR[num]);
 			break;
@@ -571,6 +597,7 @@ std::string R5900DebugInterface::getRegisterString(int cat, int num)
 		case EECAT_CP0:
 		case EECAT_FCR:
 		case EECAT_VU0F:
+		case EECAT_VU1F:
 			return StringUtil::U128ToString(getRegister(cat, num));
 		case EECAT_FPR:
 			return StringUtil::StdStringFromFormat("%f", fpuRegs.fpr[num].f);
@@ -649,6 +676,20 @@ void R5900DebugInterface::setRegister(int cat, int num, u128 newValue)
 			break;
 		case EECAT_VU0I:
 			VU0.VI[num].UL = newValue._u32[0];
+			break;
+		case EECAT_VU1F:
+			switch (num)
+			{
+				case 32: // ACC
+					VU1.ACC.UQ = newValue;
+					break;
+				default:
+					VU1.VF[num].UQ = newValue;
+					break;
+			}
+			break;
+		case EECAT_VU1I:
+			VU1.VI[num].UL = newValue._u32[0];
 			break;
 		case EECAT_GSPRIV:
 			memWrite64(0x12000000 | R5900::GS_REG_PRIV_ADDR[num], newValue.lo);

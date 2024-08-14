@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <bit>
 
-#define CAT_SHOW_FLOAT (categoryIndex == EECAT_FPR && m_showFPRFloat) || (categoryIndex == EECAT_VU0F && m_showVU0FFloat)
+#define CAT_SHOW_FLOAT (categoryIndex == EECAT_FPR && m_showFPRFloat) || (categoryIndex == EECAT_VU0F && m_showVU0FFloat) || (categoryIndex == EECAT_VU1F && m_showVU1FFloat)
 
 using namespace QtUtils;
 
@@ -78,7 +78,7 @@ void RegisterWidget::paintEvent(QPaintEvent* event)
 	m_fieldStartX[2] = titleStartX + (m_fieldWidth * 2);
 	m_fieldStartX[3] = titleStartX + (m_fieldWidth * 3);
 
-	if (categoryIndex == EECAT_VU0F)
+	if (categoryIndex == EECAT_VU0F || categoryIndex == EECAT_VU1F)
 	{
 		painter.fillRect(m_renderStart.x(), m_renderStart.y(), renderSize.width(), m_rowHeight, this->palette().highlight());
 
@@ -135,6 +135,9 @@ void RegisterWidget::paintEvent(QPaintEvent* event)
 					painter.setPen(this->palette().text().color());
 
 				if (categoryIndex == EECAT_VU0F && m_showVU0FFloat)
+					painter.drawText(m_fieldStartX[j], yStart, m_fieldWidth, m_rowHeight, Qt::AlignLeft,
+						painter.fontMetrics().elidedText(QString::number(std::bit_cast<float>(m_cpu->getRegister(categoryIndex, registerIndex)._u32[regIndex])), Qt::ElideRight, m_fieldWidth - painter.fontMetrics().averageCharWidth()));
+				else if (categoryIndex == EECAT_VU1F && m_showVU1FFloat)
 					painter.drawText(m_fieldStartX[j], yStart, m_fieldWidth, m_rowHeight, Qt::AlignLeft,
 						painter.fontMetrics().elidedText(QString::number(std::bit_cast<float>(m_cpu->getRegister(categoryIndex, registerIndex)._u32[regIndex])), Qt::ElideRight, m_fieldWidth - painter.fontMetrics().averageCharWidth()));
 				else
@@ -245,6 +248,13 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 	{
 		m_contextMenu->addAction(action = new QAction(m_showVU0FFloat ? tr("View as hex") : tr("View as float")));
 		connect(action, &QAction::triggered, this, [this]() { m_showVU0FFloat = !m_showVU0FFloat; });
+		m_contextMenu->addSeparator();
+	}
+
+	if (categoryIndex == EECAT_VU1F)
+	{
+		m_contextMenu->addAction(action = new QAction(m_showVU1FFloat ? tr("View as hex") : tr("View as float")));
+		connect(action, &QAction::triggered, this, [this]() { m_showVU1FFloat = !m_showVU1FFloat; });
 		m_contextMenu->addSeparator();
 	}
 

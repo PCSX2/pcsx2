@@ -76,5 +76,6 @@ private:
 
 	// TODO: Save this configuration ??
 	bool m_showVU0FFloat = false;
+	bool m_showVU1FFloat = false;
 	bool m_showFPRFloat = false;
 };
