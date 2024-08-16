@@ -1108,7 +1108,37 @@ namespace usb_msd
 	{
 		MSDState* s = new MSDState();
 
-		std::string path(USB::GetConfigString(si, port, TypeName(), "ImagePath"));
+		std::string path;
+		s->dev.speed = USB_SPEED_FULL;
+		s->desc.full = &s->desc_dev;
+
+		switch (type)
+		{
+			case IOMEGA_ZIP_100:
+				path = USB::GetConfigString(si, port, TypeName(), "ImagePathMsd");
+				s->desc.str = zip100_desc_strings;
+				if (usb_desc_parse_dev(zip100_dev_descriptor, sizeof(zip100_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(zip100_config_descriptor, sizeof(zip100_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				s->dev.klass.handle_control = usb_msd_handle_control;
+				s->dev.klass.handle_data = usb_msd_handle_data;
+				break;
+			case SONY_MSAC_US1:
+				path = USB::GetConfigString(si, port, TypeName(), "ImagePathMsac");
+				s->desc.str = sony_msac_desc_strings;
+				if (usb_desc_parse_dev(sony_msac_dev_descriptor, sizeof(sony_msac_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(sony_msac_config_descriptor, sizeof(sony_msac_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				s->dev.klass.handle_control = usb_msac_handle_control;
+				s->dev.klass.handle_data = usb_msac_handle_data;
+				break;
+			default:
+				pxAssertMsg(false, "Unhandled type");
+				break;
+		}
+
 		if (path.empty() || !(s->file = FileSystem::OpenCFile(path.c_str(), "r+b")))
 		{
 			Host::AddOSDMessage(fmt::format(TRANSLATE_FS("USB", "usb-msd: Could not open image file '{}'"), path),
@@ -1123,33 +1153,6 @@ namespace usb_msd
 		s->file_size = sd.Size;
 		s->f.mtime = sd.ModificationTime;
 		s->f.last_cmd = -1;
-		s->dev.speed = USB_SPEED_FULL;
-		s->desc.full = &s->desc_dev;
-
-		switch (type)
-		{
-			case IOMEGA_ZIP_100:
-				s->desc.str = zip100_desc_strings;
-				if (usb_desc_parse_dev(zip100_dev_descriptor, sizeof(zip100_dev_descriptor), s->desc, s->desc_dev) < 0)
-					goto fail;
-				if (usb_desc_parse_config(zip100_config_descriptor, sizeof(zip100_config_descriptor), s->desc_dev) < 0)
-					goto fail;
-				s->dev.klass.handle_control = usb_msd_handle_control;
-				s->dev.klass.handle_data = usb_msd_handle_data;
-				break;
-			case SONY_MSAC_US1:
-				s->desc.str = sony_msac_desc_strings;
-				if (usb_desc_parse_dev(sony_msac_dev_descriptor, sizeof(sony_msac_dev_descriptor), s->desc, s->desc_dev) < 0)
-					goto fail;
-				if (usb_desc_parse_config(sony_msac_config_descriptor, sizeof(sony_msac_config_descriptor), s->desc_dev) < 0)
-					goto fail;
-				s->dev.klass.handle_control = usb_msac_handle_control;
-				s->dev.klass.handle_data = usb_msac_handle_data;
-				break;
-			default:
-				pxAssertMsg(false, "Unhandled type");
-				break;
-		}
 
 		s->dev.klass.cancel_packet = usb_msd_cancel_io;
 		s->dev.klass.handle_attach = usb_desc_attach;
@@ -1221,10 +1224,26 @@ namespace usb_msd
 
 	std::span<const SettingInfo> MsdDevice::Settings(u32 subtype) const
 	{
-		static constexpr const SettingInfo settings[] = {
-			{SettingInfo::Type::Path, "ImagePath", TRANSLATE_NOOP("USB", "Image Path"),
-				TRANSLATE_NOOP("USB", "Sets the path to image which will back the virtual mass storage device.")},
-		};
-		return settings;
+		switch (subtype)
+		{
+			case IOMEGA_ZIP_100:
+			{
+				static constexpr const SettingInfo settings[] = {
+					{SettingInfo::Type::Path, "ImagePathMsd", TRANSLATE_NOOP("USB", "Image Path"),
+						TRANSLATE_NOOP("USB", "Sets the path to image which will back the virtual mass storage device.")},
+				};
+				return settings;
+			}
+			case SONY_MSAC_US1:
+			{
+				static constexpr const SettingInfo settings[] = {
+					{SettingInfo::Type::Path, "ImagePathMsac", TRANSLATE_NOOP("USB", "Image Path"),
+						TRANSLATE_NOOP("USB", "Sets the path to image which will back the virtual mass storage device.")},
+				};
+				return settings;
+			}
+			default:
+				return {};
+		}
 	}
 } // namespace usb_msd
