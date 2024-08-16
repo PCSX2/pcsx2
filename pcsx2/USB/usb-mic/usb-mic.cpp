@@ -27,7 +27,7 @@
 #include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/qemu-usb/USBinternal.h"
-#include "USB/usb-mic/usb-mic-singstar.h"
+#include "USB/usb-mic/usb-mic.h"
 #include "USB/usb-mic/audiodev.h"
 #include "USB/usb-mic/audiodev-noop.h"
 #include "USB/usb-mic/audiodev-cubeb.h"
@@ -93,15 +93,21 @@ namespace usb_mic
 		//uint8_t  fifo[2][200]; //on-chip 400byte fifo
 	};
 
-	static const USBDescStrings desc_strings = {
+	static const USBDescStrings singstar_desc_strings = {
 		"",
 		"Nam Tai E&E Products Ltd.",
 		"USBMIC",
 		"310420811",
 	};
 
+	static const USBDescStrings logitech_desc_strings = {
+		"",
+		"Logitech",
+		"USBMIC",
+	};
+
 	/* descriptor dumped from a real singstar MIC adapter */
-	static const uint8_t singstar_mic_dev_descriptor[] = {
+	static const uint8_t singstar_dev_descriptor[] = {
 		/* bLength             */ 0x12, //(18)
 		/* bDescriptorType     */ 0x01, //(1)
 		/* bcdUSB              */ WBVAL(0x0110), //(272)
@@ -116,11 +122,9 @@ namespace usb_mic
 		/* iProduct            */ 0x02, //(2)
 		/* iSerialNumber       */ 0x00, //(0) unused
 		/* bNumConfigurations  */ 0x01, //(1)
-
 	};
 
-	static const uint8_t singstar_mic_config_descriptor[] = {
-
+	static const uint8_t singstar_config_descriptor[] = {
 		/* Configuration 1 */
 		0x09, /* bLength */
 		USB_CONFIGURATION_DESCRIPTOR_TYPE, /* bDescriptorType */
@@ -304,6 +308,207 @@ namespace usb_mic
 		0 /* bLength */
 	};
 
+	static const uint8_t logitech_dev_descriptor[] = {
+		/* bLength             */ 0x12, //(18)
+		/* bDescriptorType     */ 0x01, //(1)
+		/* bcdUSB              */ WBVAL(0x0110), //(272)
+		/* bDeviceClass        */ 0x00, //(0)
+		/* bDeviceSubClass     */ 0x00, //(0)
+		/* bDeviceProtocol     */ 0x00, //(0)
+		/* bMaxPacketSize0     */ 0x08, //(8)
+		/* idVendor            */ WBVAL(0x046D),
+		/* idProduct           */ WBVAL(0x0000), //(0)
+		/* bcdDevice           */ WBVAL(0x0001), //(1)
+		/* iManufacturer       */ 0x01, //(1)
+		/* iProduct            */ 0x02, //(2)
+		/* iSerialNumber       */ 0x00, //(0) unused
+		/* bNumConfigurations  */ 0x01, //(1)
+
+	};
+
+	static const uint8_t logitech_config_descriptor[] = {
+		/* Configuration 1 */
+		0x09, /* bLength */
+		USB_CONFIGURATION_DESCRIPTOR_TYPE, /* bDescriptorType */
+		WBVAL(0x00b1), /* wTotalLength */
+		0x02, /* bNumInterfaces */
+		0x01, /* bConfigurationValue */
+		0x00, /* iConfiguration */
+		USB_CONFIG_BUS_POWERED, /* bmAttributes */
+		USB_CONFIG_POWER_MA(90), /* bMaxPower */
+
+		/* Interface 0, Alternate Setting 0, Audio Control */
+		USB_INTERFACE_DESC_SIZE, /* bLength */
+		USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		0x00, /* bInterfaceNumber */
+		0x00, /* bAlternateSetting */
+		0x00, /* bNumEndpoints */
+		USB_CLASS_AUDIO, /* bInterfaceClass */
+		AUDIO_SUBCLASS_AUDIOCONTROL, /* bInterfaceSubClass */
+		AUDIO_PROTOCOL_UNDEFINED, /* bInterfaceProtocol */
+		0x00, /* iInterface */
+
+		/* Audio Control Interface */
+		AUDIO_CONTROL_INTERFACE_DESC_SZ(1), /* bLength */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_CONTROL_HEADER, /* bDescriptorSubtype */
+		WBVAL(0x0100), /* 1.00 */ /* bcdADC */
+		WBVAL(0x0028), /* wTotalLength */
+		0x01, /* bInCollection */
+		0x01, /* baInterfaceNr */
+
+		/* Audio Input Terminal */
+		AUDIO_INPUT_TERMINAL_DESC_SIZE, /* bLength */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_CONTROL_INPUT_TERMINAL, /* bDescriptorSubtype */
+		0x01, /* bTerminalID */
+		WBVAL(AUDIO_TERMINAL_MICROPHONE), /* wTerminalType */
+		0x02, /* bAssocTerminal */
+		0x02, /* bNrChannels */
+		WBVAL(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R), /* wChannelConfig */
+		0x00, /* iChannelNames */
+		0x00, /* iTerminal */
+
+		/* Audio Output Terminal */
+		AUDIO_OUTPUT_TERMINAL_DESC_SIZE, /* bLength */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_CONTROL_OUTPUT_TERMINAL, /* bDescriptorSubtype */
+		0x02, /* bTerminalID */
+		WBVAL(AUDIO_TERMINAL_USB_STREAMING), /* wTerminalType */
+		0x01, /* bAssocTerminal */
+		0x03, /* bSourceID */
+		0x00, /* iTerminal */
+
+		/* Audio Feature Unit */
+		AUDIO_FEATURE_UNIT_DESC_SZ(2, 1), /* bLength */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_CONTROL_FEATURE_UNIT, /* bDescriptorSubtype */
+		0x03, /* bUnitID */
+		0x01, /* bSourceID */
+		0x01, /* bControlSize */
+		0x01, /* bmaControls(0) */
+		0x02, /* bmaControls(1) */
+		0x02, /* bmaControls(2) */
+		0x00, /* iTerminal */
+
+		/* Interface 1, Alternate Setting 0, Audio Streaming - Zero Bandwith */
+		USB_INTERFACE_DESC_SIZE, /* bLength */
+		USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		0x01, /* bInterfaceNumber */
+		0x00, /* bAlternateSetting */
+		0x00, /* bNumEndpoints */
+		USB_CLASS_AUDIO, /* bInterfaceClass */
+		AUDIO_SUBCLASS_AUDIOSTREAMING, /* bInterfaceSubClass */
+		AUDIO_PROTOCOL_UNDEFINED, /* bInterfaceProtocol */
+		0x00, /* iInterface */
+
+		/* Interface 1, Alternate Setting 1, Audio Streaming - Operational */
+		USB_INTERFACE_DESC_SIZE, /* bLength */
+		USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		0x01, /* bInterfaceNumber */
+		0x01, /* bAlternateSetting */
+		0x01, /* bNumEndpoints */
+		USB_CLASS_AUDIO, /* bInterfaceClass */
+		AUDIO_SUBCLASS_AUDIOSTREAMING, /* bInterfaceSubClass */
+		AUDIO_PROTOCOL_UNDEFINED, /* bInterfaceProtocol */
+		0x00, /* iInterface */
+
+		/* Audio Streaming Interface */
+		AUDIO_STREAMING_INTERFACE_DESC_SIZE, /* bLength */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_STREAMING_GENERAL, /* bDescriptorSubtype */
+		0x02, /* bTerminalLink */
+		0x01, /* bDelay */
+		WBVAL(AUDIO_FORMAT_PCM), /* wFormatTag */
+
+		/* Audio Type I Format */
+		AUDIO_FORMAT_TYPE_I_DESC_SZ(5), /* bLength */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_STREAMING_FORMAT_TYPE, /* bDescriptorSubtype */
+		AUDIO_FORMAT_TYPE_I, /* bFormatType */
+		0x01, /* bNrChannels */
+		0x02, /* bSubFrameSize */
+		0x10, /* bBitResolution */
+		0x05, /* bSamFreqType */
+		B3VAL(8000), /* tSamFreq 1 */
+		B3VAL(11025), /* tSamFreq 2 */
+		B3VAL(22050), /* tSamFreq 3 */
+		B3VAL(44100), /* tSamFreq 4 */
+		B3VAL(48000), /* tSamFreq 5 */
+
+		/* Endpoint - Standard Descriptor */
+		AUDIO_STANDARD_ENDPOINT_DESC_SIZE, /* bLength */
+		USB_ENDPOINT_DESCRIPTOR_TYPE, /* bDescriptorType */
+		USB_ENDPOINT_IN(1), /* bEndpointAddress */
+		USB_ENDPOINT_TYPE_ISOCHRONOUS | USB_ENDPOINT_SYNC_ASYNCHRONOUS, /* bmAttributes */
+		WBVAL(0x0064), /* wMaxPacketSize */
+		0x01, /* bInterval */
+		0x00, /* bRefresh */
+		0x00, /* bSynchAddress */
+
+		/* Endpoint - Audio Streaming */
+		AUDIO_STREAMING_ENDPOINT_DESC_SIZE, /* bLength */
+		AUDIO_ENDPOINT_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_ENDPOINT_GENERAL, /* bDescriptor */
+		0x01, /* bmAttributes */
+		0x00, /* bLockDelayUnits */
+		WBVAL(0x0000), /* wLockDelay */
+
+		/* Interface 1, Alternate Setting 2, Audio Streaming - ? */
+		USB_INTERFACE_DESC_SIZE, /* bLength */
+		USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		0x01, /* bInterfaceNumber */
+		0x02, /* bAlternateSetting */
+		0x01, /* bNumEndpoints */
+		USB_CLASS_AUDIO, /* bInterfaceClass */
+		AUDIO_SUBCLASS_AUDIOSTREAMING, /* bInterfaceSubClass */
+		AUDIO_PROTOCOL_UNDEFINED, /* bInterfaceProtocol */
+		0x00, /* iInterface */
+
+		/* Audio Streaming Interface */
+		AUDIO_STREAMING_INTERFACE_DESC_SIZE, /* bLength */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_STREAMING_GENERAL, /* bDescriptorSubtype */
+		0x02, /* bTerminalLink */
+		0x01, /* bDelay */
+		WBVAL(AUDIO_FORMAT_PCM), /* wFormatTag */
+
+		/* Audio Type I Format */
+		AUDIO_FORMAT_TYPE_I_DESC_SZ(5), /* bLength */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_STREAMING_FORMAT_TYPE, /* bDescriptorSubtype */
+		AUDIO_FORMAT_TYPE_I, /* bFormatType */
+		0x02, /* bNrChannels */
+		0x02, /* bSubFrameSize */
+		0x10, /* bBitResolution */
+		0x05, /* bSamFreqType */
+		B3VAL(8000), /* tSamFreq 1 */
+		B3VAL(11025), /* tSamFreq 2 */
+		B3VAL(22050), /* tSamFreq 3 */
+		B3VAL(44100), /* tSamFreq 4 */
+		B3VAL(48000), /* tSamFreq 5 */
+
+		/* Endpoint - Standard Descriptor */
+		AUDIO_STANDARD_ENDPOINT_DESC_SIZE, /* bLength */
+		USB_ENDPOINT_DESCRIPTOR_TYPE, /* bDescriptorType */
+		USB_ENDPOINT_IN(1), /* bEndpointAddress */
+		USB_ENDPOINT_TYPE_ISOCHRONOUS | USB_ENDPOINT_SYNC_ASYNCHRONOUS, /* bmAttributes */
+		WBVAL(0x00c8), /* wMaxPacketSize */
+		0x01, /* bInterval */
+		0x00, /* bRefresh */
+		0x00, /* bSynchAddress */
+
+		/* Endpoint - Audio Streaming */
+		AUDIO_STREAMING_ENDPOINT_DESC_SIZE, /* bLength */
+		AUDIO_ENDPOINT_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_ENDPOINT_GENERAL, /* bDescriptor */
+		0x01, /* bmAttributes */
+		0x00, /* bLockDelayUnits */
+		WBVAL(0x0000), /* wLockDelay */
+
+		/* Terminator */
+		0 /* bLength */
+	};
 
 	static void singstar_mic_handle_reset(USBDevice* dev)
 	{
@@ -701,13 +906,20 @@ namespace usb_mic
 		delete s;
 	}
 
-	USBDevice* SingstarDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
+	USBDevice* MicrophoneDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
-		return CreateDevice(si, port, subtype, true, SingstarDevice::TypeName());
+		if (subtype >= MIC_COUNT)
+			return nullptr;
+
+		static const bool dual_mic = subtype == MIC_SINGSTAR;
+		return CreateDevice(si, port, subtype, dual_mic, MicrophoneDevice::TypeName());
 	}
 
-	USBDevice* SingstarDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype, bool dual_mic, const char* devtype) const
+	USBDevice* MicrophoneDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype, bool dual_mic, const char* devtype) const
 	{
+		if (subtype >= MIC_COUNT)
+			return nullptr;
+
 		SINGSTARMICState* s = new SINGSTARMICState();
 
 		if (dual_mic)
@@ -777,11 +989,23 @@ namespace usb_mic
 		}
 
 		s->desc.full = &s->desc_dev;
-		s->desc.str = desc_strings;
-		if (usb_desc_parse_dev(singstar_mic_dev_descriptor, sizeof(singstar_mic_dev_descriptor), s->desc, s->desc_dev) < 0)
-			goto fail;
-		if (usb_desc_parse_config(singstar_mic_config_descriptor, sizeof(singstar_mic_config_descriptor), s->desc_dev) < 0)
-			goto fail;
+		switch (subtype)
+		{
+			case MIC_SINGSTAR:
+				s->desc.str = singstar_desc_strings;
+				if (usb_desc_parse_dev(singstar_dev_descriptor, sizeof(singstar_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(singstar_config_descriptor, sizeof(singstar_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				break;
+			case MIC_LOGITECH:
+				s->desc.str = logitech_desc_strings;
+				if (usb_desc_parse_dev(logitech_dev_descriptor, sizeof(logitech_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(logitech_config_descriptor, sizeof(logitech_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				break;
+		}
 
 		s->dev.speed = USB_SPEED_FULL;
 		s->dev.klass.handle_attach = usb_desc_attach;
@@ -791,7 +1015,7 @@ namespace usb_mic
 		s->dev.klass.set_interface = singstar_mic_set_interface;
 		s->dev.klass.unrealize = singstar_mic_handle_destroy;
 		s->dev.klass.usb_desc = &s->desc;
-		s->dev.klass.product_desc = desc_strings[2];
+		s->dev.klass.product_desc = singstar_desc_strings[2];
 
 		// set defaults
 		s->f.vol[0] = 240; /* 0 dB */
@@ -810,17 +1034,17 @@ namespace usb_mic
 		return nullptr;
 	}
 
-	const char* SingstarDevice::Name() const
+	const char* MicrophoneDevice::Name() const
 	{
-		return TRANSLATE_NOOP("USB", "Singstar");
+		return TRANSLATE_NOOP("USB", "Microphone");
 	}
 
-	const char* SingstarDevice::TypeName() const
+	const char* MicrophoneDevice::TypeName() const
 	{
 		return "singstar";
 	}
 
-	bool SingstarDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
+	bool MicrophoneDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
 	{
 		SINGSTARMICState* s = USB_CONTAINER_OF(dev, SINGSTARMICState, dev);
 		if (!sw.DoMarker("SINGSTARMICState"))
@@ -845,48 +1069,53 @@ namespace usb_mic
 		return !sw.HasError();
 	}
 
-	void SingstarDevice::UpdateSettings(USBDevice* dev, SettingsInterface& si) const
+	void MicrophoneDevice::UpdateSettings(USBDevice* dev, SettingsInterface& si) const
 	{
 		// TODO: Reload devices.
 	}
 
-	std::span<const SettingInfo> SingstarDevice::Settings(u32 subtype) const
+	std::span<const char*> MicrophoneDevice::SubTypes() const
 	{
-		static constexpr const SettingInfo info[] = {
-			{SettingInfo::Type::StringList, "player1_device_name", TRANSLATE_NOOP("USB", "Player 1 Device"),
-				TRANSLATE_NOOP("USB", "Selects the input for the first player."), "", nullptr, nullptr, nullptr,
-				nullptr, nullptr, &AudioDevice::GetInputDeviceList},
-			{SettingInfo::Type::StringList, "player2_device_name", TRANSLATE_NOOP("USB", "Player 2 Device"),
-				TRANSLATE_NOOP("USB", "Selects the input for the second player."), "", nullptr, nullptr, nullptr,
-				nullptr, nullptr, &AudioDevice::GetInputDeviceList},
-			{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Input Latency"),
-				TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
-				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", TRANSLATE_NOOP("USB", "%dms"), nullptr, nullptr, 1.0f},
+		static const char* subtypes[] = {
+			TRANSLATE_NOOP("USB", "Singstar"),
+			TRANSLATE_NOOP("USB", "Logitech"),
 		};
-		return info;
+		return subtypes;
 	}
 
-	const char* LogitechMicDevice::TypeName() const
+	std::span<const SettingInfo> MicrophoneDevice::Settings(u32 subtype) const
 	{
-		return "logitech_usbmic";
-	}
-
-	const char* LogitechMicDevice::Name() const
-	{
-		return TRANSLATE_NOOP("USB", "Logitech USB Mic");
-	}
-
-	std::span<const SettingInfo> LogitechMicDevice::Settings(u32 subtype) const
-	{
-		static constexpr const SettingInfo info[] = {
-			{SettingInfo::Type::StringList, "input_device_name", TRANSLATE_NOOP("USB", "Input Device"),
-				TRANSLATE_NOOP("USB", "Selects the device to read audio from."), "", nullptr, nullptr, nullptr, nullptr,
-				nullptr, &AudioDevice::GetInputDeviceList},
-			{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Input Latency"),
-				TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
-				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", TRANSLATE_NOOP("USB", "%dms"), nullptr, nullptr, 1.0f},
-		};
-		return info;
+		switch (subtype)
+		{
+			case MIC_SINGSTAR:
+			{
+				static constexpr const SettingInfo info[] = {
+					{SettingInfo::Type::StringList, "player1_device_name", TRANSLATE_NOOP("USB", "Player 1 Device"),
+						TRANSLATE_NOOP("USB", "Selects the input for the first player."), "", nullptr, nullptr, nullptr,
+						nullptr, nullptr, &AudioDevice::GetInputDeviceList},
+					{SettingInfo::Type::StringList, "player2_device_name", TRANSLATE_NOOP("USB", "Player 2 Device"),
+						TRANSLATE_NOOP("USB", "Selects the input for the second player."), "", nullptr, nullptr, nullptr,
+						nullptr, nullptr, &AudioDevice::GetInputDeviceList},
+					{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Input Latency"),
+						TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
+						AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", TRANSLATE_NOOP("USB", "%dms"), nullptr, nullptr, 1.0f},
+				};
+				return info;
+			}
+			case MIC_LOGITECH:
+			default:
+			{
+				static constexpr const SettingInfo info[] = {
+					{SettingInfo::Type::StringList, "input_device_name", TRANSLATE_NOOP("USB", "Input Device"),
+						TRANSLATE_NOOP("USB", "Selects the device to read audio from."), "", nullptr, nullptr, nullptr, nullptr,
+						nullptr, &AudioDevice::GetInputDeviceList},
+					{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Input Latency"),
+						TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
+						AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", TRANSLATE_NOOP("USB", "%dms"), nullptr, nullptr, 1.0f},
+				};
+				return info;
+			}
+		}
 	}
 } // namespace usb_mic
 

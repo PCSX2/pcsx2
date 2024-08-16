@@ -7,7 +7,14 @@
 
 namespace usb_mic
 {
-	class SingstarDevice : public DeviceProxy
+	enum MicrophoneType
+	{
+		MIC_SINGSTAR,
+		MIC_LOGITECH,
+		MIC_COUNT,
+	};
+
+	class MicrophoneDevice : public DeviceProxy
 	{
 	public:
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype, bool dual_mic, const char* devtype) const;
@@ -16,15 +23,7 @@ namespace usb_mic
 		const char* TypeName() const override;
 		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
-		std::span<const SettingInfo> Settings(u32 subtype) const override;
-	};
-
-	class LogitechMicDevice final : public SingstarDevice
-	{
-	public:
-		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
-		const char* TypeName() const override;
-		const char* Name() const override;
+		std::span<const char*> SubTypes() const override;
 		std::span<const SettingInfo> Settings(u32 subtype) const override;
 	};
 } // namespace usb_mic

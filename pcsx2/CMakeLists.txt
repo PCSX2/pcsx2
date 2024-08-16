@@ -379,8 +379,7 @@ set(pcsx2USBSources
 	USB/usb-lightgun/guncon2.cpp
 	USB/usb-mic/audiodev-cubeb.cpp
 	USB/usb-mic/usb-headset.cpp
-	USB/usb-mic/usb-mic-logitech.cpp
-	USB/usb-mic/usb-mic-singstar.cpp
+	USB/usb-mic/usb-mic.cpp
 	USB/usb-msd/usb-msd.cpp
 	USB/usb-pad/lg/lg_ff.cpp
 	USB/usb-pad/usb-buzz.cpp
@@ -418,7 +417,7 @@ set(pcsx2USBHeaders
 	USB/usb-mic/audiodev-noop.h
 	USB/usb-mic/audiodev.h
 	USB/usb-mic/usb-headset.h
-	USB/usb-mic/usb-mic-singstar.h
+	USB/usb-mic/usb-mic.h
 	USB/usb-msd/usb-msd.h
 	USB/usb-pad/lg/lg_ff.h
 	USB/usb-pad/usb-buzz.h
