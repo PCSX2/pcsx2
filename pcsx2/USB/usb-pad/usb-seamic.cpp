@@ -393,7 +393,7 @@ namespace usb_pad
 		if (!mic_proxy)
 			return nullptr;
 
-		USBDevice* mic = mic_proxy->CreateDevice(si, port, 0, false, TypeName());
+		USBDevice* mic = mic_proxy->CreateDevice(si, port, 0, false, 48000, TypeName());
 		if (!mic)
 			return nullptr;
 

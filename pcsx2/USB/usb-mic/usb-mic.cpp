@@ -55,13 +55,13 @@ namespace usb_mic
 {
 
 	/*
- * A USB audio device supports an arbitrary number of alternate
- * interface settings for each interface.  Each corresponds to a block
- * diagram of parameterized blocks.  This can thus refer to things like
- * number of channels, data rates, or in fact completely different
- * block diagrams.  Alternative setting 0 is always the null block diagram,
- * which is used by a disabled device.
- */
+	 * A USB audio device supports an arbitrary number of alternate
+	 * interface settings for each interface.  Each corresponds to a block
+	 * diagram of parameterized blocks.  This can thus refer to things like
+	 * number of channels, data rates, or in fact completely different
+	 * block diagrams.  Alternative setting 0 is always the null block diagram,
+	 * which is used by a disabled device.
+	 */
 	enum usb_audio_altset : int8_t
 	{
 		ALTSET_OFF = 0x00, /* No endpoint */
@@ -200,7 +200,7 @@ namespace usb_mic
 		AUDIO_PROTOCOL_UNDEFINED, /* bInterfaceProtocol */
 		0x00, /* iInterface */
 
-		/* Interface 1, Alternate Setting 1, Audio Streaming - Operational */
+		/* Interface 1, Alternate Setting 1, Audio Streaming - 1 channel */
 		USB_INTERFACE_DESC_SIZE, /* bLength */
 		USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
 		0x01, /* bInterfaceNumber */
@@ -252,7 +252,7 @@ namespace usb_mic
 		0x00, /* bLockDelayUnits */
 		WBVAL(0x0000), /* wLockDelay */
 
-		/* Interface 1, Alternate Setting 2, Audio Streaming - ? */
+		/* Interface 1, Alternate Setting 2, Audio Streaming - 2 channels */
 		USB_INTERFACE_DESC_SIZE, /* bLength */
 		USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
 		0x01, /* bInterfaceNumber */
@@ -402,7 +402,7 @@ namespace usb_mic
 		AUDIO_PROTOCOL_UNDEFINED, /* bInterfaceProtocol */
 		0x00, /* iInterface */
 
-		/* Interface 1, Alternate Setting 1, Audio Streaming - Operational */
+		/* Interface 1, Alternate Setting 1, Audio Streaming - 1 channel */
 		USB_INTERFACE_DESC_SIZE, /* bLength */
 		USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
 		0x01, /* bInterfaceNumber */
@@ -454,7 +454,7 @@ namespace usb_mic
 		0x00, /* bLockDelayUnits */
 		WBVAL(0x0000), /* wLockDelay */
 
-		/* Interface 1, Alternate Setting 2, Audio Streaming - ? */
+		/* Interface 1, Alternate Setting 2, Audio Streaming - 2 channels */
 		USB_INTERFACE_DESC_SIZE, /* bLength */
 		USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
 		0x01, /* bInterfaceNumber */
@@ -627,7 +627,7 @@ namespace usb_mic
 		Console.Warning("singstar: ep control cs %x, cn %X, %X %X data:", cs, cn, attrib, ep);
 		/*for(int i=0; i<length; i++)
 		Console.Warning("%02X ", data[i]);
-	Console.Warning("\n");*/
+		Console.Warning("\n");*/
 
 		switch (aid)
 		{
@@ -692,8 +692,8 @@ namespace usb_mic
 		switch (request)
 		{
 			/*
-    * Audio device specific request
-    */
+			 * Audio device specific request
+			 */
 			case ClassInterfaceRequest | AUDIO_REQUEST_GET_CUR:
 			case ClassInterfaceRequest | AUDIO_REQUEST_GET_MIN:
 			case ClassInterfaceRequest | AUDIO_REQUEST_GET_MAX:
@@ -749,24 +749,21 @@ namespace usb_mic
 	{
 		SINGSTARMICState* s = USB_CONTAINER_OF(dev, SINGSTARMICState, dev);
 		int ret = 0;
-		uint8_t devep = p->ep->nr;
 
 		switch (p->pid)
 		{
 			case USB_TOKEN_IN:
 				//Console.Warning("token in ep: %d len: %zd\n", devep, p->iov.size);
-				if (devep == 1)
 				{
-
 					//TODO
-					int outChns = s->f.intf == 1 ? 1 : 2;
+					int outChns = s->f.intf == 2 ? 2 : 1;
 					uint32_t frames, out_frames[2] = {0}, chn;
 					int16_t *src1, *src2;
 					int16_t* dst = (int16_t*)p->buffer_ptr;
 					size_t len = p->buffer_size;
 
 					// send only 1ms (bInterval) of samples
-					if (s->f.srate[0] == 48000 || s->f.srate[0] == 8000)
+					if (s->f.srate[0] == 48000 || s->f.srate[0] == 8000 || s->f.srate[0] == 16000)
 						len = std::min<u32>(p->buffer_size, outChns * sizeof(int16_t) * s->f.srate[0] / 1000);
 
 					//Divide 'len' bytes between 2 channels of 16 bits
@@ -912,10 +909,10 @@ namespace usb_mic
 			return nullptr;
 
 		static const bool dual_mic = subtype == MIC_SINGSTAR;
-		return CreateDevice(si, port, subtype, dual_mic, MicrophoneDevice::TypeName());
+		return CreateDevice(si, port, subtype, dual_mic, 48000, MicrophoneDevice::TypeName());
 	}
 
-	USBDevice* MicrophoneDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype, bool dual_mic, const char* devtype) const
+	USBDevice* MicrophoneDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype, bool dual_mic, const int samplerate, const char* devtype) const
 	{
 		if (subtype >= MIC_COUNT)
 			return nullptr;
@@ -985,6 +982,7 @@ namespace usb_mic
 						Host::OSD_ERROR_DURATION);
 					goto fail;
 				}
+				s->audsrc[i]->SetResampling(samplerate);
 			}
 		}
 
@@ -1020,8 +1018,8 @@ namespace usb_mic
 		// set defaults
 		s->f.vol[0] = 240; /* 0 dB */
 		s->f.vol[1] = 240; /* 0 dB */
-		s->f.srate[0] = 48000;
-		s->f.srate[1] = 48000;
+		s->f.srate[0] = samplerate;
+		s->f.srate[1] = samplerate;
 
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
