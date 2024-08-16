@@ -11,6 +11,7 @@ namespace usb_mic
 	{
 		MIC_SINGSTAR,
 		MIC_LOGITECH,
+		MIC_KONAMI,
 		MIC_COUNT,
 	};
 
