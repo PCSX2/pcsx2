@@ -390,8 +390,7 @@
     <ClCompile Include="USB\usb-lightgun\guncon2.cpp" />
     <ClCompile Include="USB\usb-mic\audiodev-cubeb.cpp" />
     <ClCompile Include="USB\usb-mic\usb-headset.cpp" />
-    <ClCompile Include="USB\usb-mic\usb-mic-logitech.cpp" />
-    <ClCompile Include="USB\usb-mic\usb-mic-singstar.cpp" />
+    <ClCompile Include="USB\usb-mic\usb-mic.cpp" />
     <ClCompile Include="USB\usb-msd\usb-msd.cpp" />
     <ClCompile Include="USB\usb-pad\lg\lg_ff.cpp" />
     <ClCompile Include="USB\usb-pad\usb-buzz.cpp" />
@@ -844,7 +843,7 @@
     <ClInclude Include="USB\usb-mic\audiodev-noop.h" />
     <ClInclude Include="USB\usb-mic\audiodev.h" />
     <ClInclude Include="USB\usb-mic\usb-headset.h" />
-    <ClInclude Include="USB\usb-mic\usb-mic-singstar.h" />
+    <ClInclude Include="USB\usb-mic\usb-mic.h" />
     <ClInclude Include="USB\usb-msd\usb-msd.h" />
     <ClInclude Include="USB\usb-pad\lg\lg_ff.h" />
     <ClInclude Include="USB\usb-pad\usb-buzz.h" />

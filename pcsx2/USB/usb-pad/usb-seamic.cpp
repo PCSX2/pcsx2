@@ -4,7 +4,7 @@
 #include "Host.h"
 #include "USB/usb-pad/usb-pad.h"
 #include "USB/qemu-usb/desc.h"
-#include "USB/usb-mic/usb-mic-singstar.h"
+#include "USB/usb-mic/usb-mic.h"
 #include "USB/USB.h"
 
 #include "common/Console.h"
@@ -388,8 +388,8 @@ namespace usb_pad
 
 	USBDevice* SeamicDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
-		const usb_mic::SingstarDevice* mic_proxy =
-			static_cast<usb_mic::SingstarDevice*>(RegisterDevice::instance().Device(DEVTYPE_SINGSTAR));
+		const usb_mic::MicrophoneDevice* mic_proxy =
+			static_cast<usb_mic::MicrophoneDevice*>(RegisterDevice::instance().Device(DEVTYPE_MICROPHONE));
 		if (!mic_proxy)
 			return nullptr;
 

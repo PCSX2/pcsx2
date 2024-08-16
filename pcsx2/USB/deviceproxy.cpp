@@ -8,7 +8,7 @@
 #include "usb-pad/usb-realplay.h"
 #include "usb-hid/usb-hid.h"
 #include "usb-mic/usb-headset.h"
-#include "usb-mic/usb-mic-singstar.h"
+#include "usb-mic/usb-mic.h"
 #include "usb-msd/usb-msd.h"
 #include "usb-pad/usb-pad.h"
 #include "usb-pad/usb-trance-vibrator.h"
@@ -68,8 +68,7 @@ void RegisterDevice::Register()
 		return;
 	inst.Add(DEVTYPE_PAD, new usb_pad::PadDevice());
 	inst.Add(DEVTYPE_MSD, new usb_msd::MsdDevice());
-	inst.Add(DEVTYPE_SINGSTAR, new usb_mic::SingstarDevice());
-	inst.Add(DEVTYPE_LOGITECH_MIC, new usb_mic::LogitechMicDevice());
+	inst.Add(DEVTYPE_MICROPHONE, new usb_mic::MicrophoneDevice());
 	inst.Add(DEVTYPE_LOGITECH_HEADSET, new usb_mic::HeadsetDevice());
 	inst.Add(DEVTYPE_HIDKEYBOARD, new usb_hid::HIDKbdDevice());
 	inst.Add(DEVTYPE_HIDMOUSE, new usb_hid::HIDMouseDevice());
