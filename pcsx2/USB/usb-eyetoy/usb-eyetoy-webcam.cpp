@@ -6,6 +6,8 @@
 #include "usb-eyetoy-webcam.h"
 #include "ov519.h"
 #include "USB/qemu-usb/desc.h"
+#include "USB/usb-mic/audio.h"
+#include "USB/usb-mic/usb-mic.h"
 #include "USB/USB.h"
 #include "StateWrapper.h"
 
@@ -23,7 +25,7 @@ namespace usb_eyetoy
 		u32 subtype;
 
 		std::unique_ptr<VideoDevice> videodev;
-		//	struct freeze {
+		USBDevice* mic;
 		uint8_t regs[0xFF]; //OV519
 		uint8_t i2c_regs[0xFF]; //OV764x
 
@@ -32,7 +34,6 @@ namespace usb_eyetoy
 		std::unique_ptr<unsigned char[]> mpeg_frame_data;
 		unsigned int mpeg_frame_size;
 		unsigned int mpeg_frame_offset;
-		//	} f;
 	} EYETOYState;
 
 	static const USBDescStrings desc_strings = {
@@ -103,8 +104,11 @@ namespace usb_eyetoy
 
 	static void eyetoy_handle_reset(USBDevice* dev)
 	{
-		reset_controller(USB_CONTAINER_OF(dev, EYETOYState, dev));
-		reset_sensor(USB_CONTAINER_OF(dev, EYETOYState, dev));
+		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
+		reset_controller(s);
+		reset_sensor(s);
+		if (s->mic)
+			s->mic->klass.handle_reset(s->mic);
 	}
 
 	static void webcam_handle_control_eyetoy(USBDevice* dev, USBPacket* p, int request, int value, int index, int length, uint8_t* data)
@@ -328,10 +332,8 @@ namespace usb_eyetoy
 				}
 				else if (devep == 2)
 				{
-					// get audio
-					//Console.Warning("get audio %d\n", len);
-					memset(data, 0, std::min(p->buffer_size, max_ep_size));
-					usb_packet_copy(p, data, std::min(p->buffer_size, max_ep_size));
+					if (s->mic)
+						s->mic->klass.handle_data(s->mic, p);
 				}
 				break;
 			case USB_TOKEN_OUT:
@@ -408,11 +410,18 @@ namespace usb_eyetoy
 	{
 		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
 		close_camera(s);
+		if (s->mic)
+			s->mic->klass.unrealize(s->mic);
 		delete s;
 	}
 
 	USBDevice* EyeToyWebCamDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
+		const usb_mic::MicrophoneDevice* mic_proxy =
+			static_cast<usb_mic::MicrophoneDevice*>(RegisterDevice::instance().Device(DEVTYPE_MICROPHONE));
+		if (!mic_proxy)
+			return nullptr;
+
 		std::unique_ptr<VideoDevice> videodev(VideoDevice::CreateInstance());
 		if (!videodev)
 		{
@@ -435,6 +444,8 @@ namespace usb_eyetoy
 				goto fail;
 			s->dev.klass.handle_control = webcam_handle_control_eyetoy;
 			s->dev.klass.handle_data = webcam_handle_data_eyetoy;
+
+			s->mic = mic_proxy->CreateDevice(si, port, 0, false, 16000, TypeName());
 		}
 		else if (subtype == TYPE_OV511P)
 		{
@@ -503,17 +514,42 @@ namespace usb_eyetoy
 	std::span<const char*> EyeToyWebCamDevice::SubTypes() const
 	{
 		static const char* subtypes[] = {
-			TRANSLATE_NOOP("USB", "Sony EyeToy"), TRANSLATE_NOOP("USB", "Konami Capture Eye")};
+			TRANSLATE_NOOP("USB", "Sony EyeToy"),
+			TRANSLATE_NOOP("USB", "Konami Capture Eye")
+		};
 		return subtypes;
 	}
 
 	std::span<const SettingInfo> EyeToyWebCamDevice::Settings(u32 subtype) const
 	{
-		static constexpr const SettingInfo info[] = {
-			{SettingInfo::Type::StringList, "device_name", TRANSLATE_NOOP("USB", "Device Name"),
-				TRANSLATE_NOOP("USB", "Selects the device to capture images from."), "", nullptr, nullptr, nullptr,
-				nullptr, nullptr, &VideoDevice::GetDeviceList},
-		};
-		return info;
+		switch (subtype)
+		{
+			case TYPE_EYETOY:
+			{
+				static constexpr const SettingInfo info[] = {
+					{SettingInfo::Type::StringList, "device_name", TRANSLATE_NOOP("USB", "Video Device"),
+						TRANSLATE_NOOP("USB", "Selects the device to capture images from."), "", nullptr, nullptr, nullptr,
+						nullptr, nullptr, &VideoDevice::GetDeviceList},
+					{SettingInfo::Type::StringList, "input_device_name", TRANSLATE_NOOP("USB", "Audio Device"),
+						TRANSLATE_NOOP("USB", "Selects the device to read audio from."), "", nullptr, nullptr, nullptr, nullptr,
+						nullptr, &AudioDevice::GetInputDeviceList},
+					{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Audio Latency"),
+						TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
+						AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", TRANSLATE_NOOP("USB", "%dms"), nullptr, nullptr, 1.0f},
+				};
+				return info;
+			}
+			case TYPE_OV511P:
+			{
+				static constexpr const SettingInfo info[] = {
+					{SettingInfo::Type::StringList, "device_name", TRANSLATE_NOOP("USB", "Video Device"),
+						TRANSLATE_NOOP("USB", "Selects the device to capture images from."), "", nullptr, nullptr, nullptr,
+						nullptr, nullptr, &VideoDevice::GetDeviceList},
+				};
+				return info;
+			}
+			default:
+				return {};
+		}
 	}
 } // namespace usb_eyetoy

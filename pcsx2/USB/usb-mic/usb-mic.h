@@ -17,7 +17,7 @@ namespace usb_mic
 	class MicrophoneDevice : public DeviceProxy
 	{
 	public:
-		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype, bool dual_mic, const char* devtype) const;
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype, bool dual_mic, const int samplerate, const char* devtype) const;
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
 		const char* Name() const override;
 		const char* TypeName() const override;
