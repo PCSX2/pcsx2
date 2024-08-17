@@ -1799,7 +1799,7 @@ public:
 
 	// TODO: ReadAndExpandBlock4_16
 
-	// ReadAndExpandBlock8H for AVX2 platforms with slow VPGATHERDD (Haswell, Zen, Zen2, Zen3)
+	// ReadAndExpandBlock8H for AVX2 platforms with slow VPGATHERDD (Haswell, Zen, Zen2, Zen3, Zen4)
 	// Also serves as the implementation for AVX / SSE
 	__forceinline static void ReadAndExpandBlock8H_32HSW(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
