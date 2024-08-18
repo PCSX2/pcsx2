@@ -13005,6 +13005,9 @@ static void ImGui::NavUpdateWindowing()
     const bool nav_keyboard_active = (io.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) != 0;
     const bool keyboard_next_window = allow_windowing && g.ConfigNavWindowingKeyNext && Shortcut(g.ConfigNavWindowingKeyNext, ImGuiInputFlags_Repeat | ImGuiInputFlags_RouteAlways, owner_id);
     const bool keyboard_prev_window = allow_windowing && g.ConfigNavWindowingKeyPrev && Shortcut(g.ConfigNavWindowingKeyPrev, ImGuiInputFlags_Repeat | ImGuiInputFlags_RouteAlways, owner_id);
+/*
+    Why do we need to patch ImGui to disable the nav menu...
+
     const bool start_windowing_with_gamepad = allow_windowing && nav_gamepad_active && !g.NavWindowingTarget && IsKeyPressed(ImGuiKey_NavGamepadMenu, ImGuiInputFlags_None);
     const bool start_windowing_with_keyboard = allow_windowing && !g.NavWindowingTarget && (keyboard_next_window || keyboard_prev_window); // Note: enabled even without NavEnableKeyboard!
     if (start_windowing_with_gamepad || start_windowing_with_keyboard)
@@ -13020,7 +13023,7 @@ static void ImGui::NavUpdateWindowing()
             if (keyboard_next_window || keyboard_prev_window)
                 SetKeyOwnersForKeyChord((g.ConfigNavWindowingKeyNext | g.ConfigNavWindowingKeyPrev) & ImGuiMod_Mask_, owner_id);
         }
-
+*/
     // Gamepad update
     g.NavWindowingTimer += io.DeltaTime;
     if (g.NavWindowingTarget && g.NavInputSource == ImGuiInputSource_Gamepad)

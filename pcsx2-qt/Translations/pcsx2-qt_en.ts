@@ -16868,12 +16868,12 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>Pcsx2Config</name>
     <message>
-        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1025"/>
+        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1026"/>
         <source>Disabled (Noisy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1026"/>
+        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1027"/>
         <source>TimeStretch (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
