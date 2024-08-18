@@ -20,6 +20,7 @@ namespace QtHost
 } // namespace QtHost
 
 static QString s_unthemed_style_name;
+static QPalette s_unthemed_palette;
 static bool s_unthemed_style_name_set;
 
 const char* QtHost::GetDefaultThemeName()
@@ -37,6 +38,7 @@ void QtHost::UpdateApplicationTheme()
 	{
 		s_unthemed_style_name_set = true;
 		s_unthemed_style_name = QApplication::style()->objectName();
+		s_unthemed_palette = QApplication::palette();
 	}
 
 	SetStyleFromSettings();
@@ -49,7 +51,7 @@ void QtHost::SetStyleFromSettings()
 
 	// setPalette() shouldn't be necessary, as the documentation claims that setStyle() resets the palette, but it
 	// is here, to work around a bug in 6.4.x and 6.5.x where the palette doesn't restore after changing themes.
-	qApp->setPalette(QPalette());
+	qApp->setPalette(QPalette(s_unthemed_palette));
 
 	if (theme == "fusion")
 	{
