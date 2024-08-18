@@ -141,6 +141,27 @@ namespace usb_pad
 		return true;
 	}
 
+	void TrainDevice::UpdateSettings(USBDevice* dev, SettingsInterface& si) const
+	{
+		TrainDeviceState* s = USB_CONTAINER_OF(dev, TrainDeviceState, dev);
+
+		s->passthrough = USB::GetConfigBool(si, s->port, TypeName(), "Passthrough", false);
+	}
+
+	std::span<const SettingInfo> TrainDevice::Settings(u32 subtype) const
+	{
+		static constexpr const SettingInfo passthrough = {
+			SettingInfo::Type::Boolean,
+			"Passthrough",
+			TRANSLATE_NOOP("USB", "Axes Passthrough"),
+			TRANSLATE_NOOP("USB", "Passes through the unprocessed input axis to the game. Enable if you are using a compatible Densha De Go! controller. Disable if you are using any other joystick."),
+			"false",
+		};
+
+		static constexpr const SettingInfo info[] = {passthrough};
+		return info;
+	}
+
 	static constexpr u32 button_mask(u32 bind_index)
 	{
 		return (1u << (bind_index - TrainControlID::BUTTONS_OFFSET));
@@ -444,8 +465,8 @@ namespace usb_pad
 			{
 				TrainConData_Type2 out = {};
 				out.control = 0x1;
-				out.brake = dct01_brake(s->data.brake);
-				out.power = dct01_power(s->data.power);
+				out.brake = s->passthrough ? s->data.brake : dct01_brake(s->data.brake);
+				out.power = s->passthrough ? s->data.power : dct01_power(s->data.power);
 				out.horn = 0xFF; // Button C doubles as horn.
 				out.hat = s->data.hatswitch;
 				out.buttons = dct01_buttons(s->data.buttons);
@@ -455,8 +476,8 @@ namespace usb_pad
 			case TRAIN_SHINKANSEN:
 			{
 				TrainConData_Shinkansen out = {};
-				out.brake = dct02_brake(s->data.brake);
-				out.power = dct02_power(s->data.power);
+				out.brake = s->passthrough ? s->data.brake : dct02_brake(s->data.brake);
+				out.power = s->passthrough ? s->data.power : dct02_power(s->data.power);
 				out.horn = 0xFF; // Button C doubles as horn, skip.
 				out.hat = s->data.hatswitch;
 				out.buttons = dct02_buttons(s->data.buttons);
@@ -466,8 +487,8 @@ namespace usb_pad
 			case TRAIN_RYOJOUHEN:
 			{
 				TrainConData_Ryojouhen out = {};
-				out.brake = dct03_brake(s->data.brake);
-				out.power = dct03_power(s->data.power);
+				out.brake = s->passthrough ? s->data.brake : dct03_brake(s->data.brake);
+				out.power = s->passthrough ? s->data.power : dct03_power(s->data.power);
 				out.horn = 0xFF; // Dedicated horn button, skip.
 				out.hat = s->data.hatswitch & 0x0F;
 				out.buttons = dct03_buttons(s->data.buttons);
@@ -524,6 +545,7 @@ namespace usb_pad
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
 		train_handle_reset(&s->dev);
+		UpdateSettings(&s->dev, si);
 
 		return &s->dev;
 

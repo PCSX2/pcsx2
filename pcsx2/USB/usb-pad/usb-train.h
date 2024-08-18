@@ -24,6 +24,8 @@ namespace usb_pad
 		const char* Name() const override;
 		const char* TypeName() const override;
 		std::span<const char*> SubTypes() const override;
+		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
+		std::span<const SettingInfo> Settings(u32 subtype) const override;
 		float GetBindingValue(const USBDevice* dev, u32 bind_index) const override;
 		void SetBindingValue(USBDevice* dev, u32 bind_index, float value) const override;
 		std::span<const InputBindingInfo> Bindings(u32 subtype) const override;
@@ -79,6 +81,7 @@ namespace usb_pad
 
 		u32 port = 0;
 		TrainDeviceTypes type = TRAIN_TYPE2;
+		bool passthrough = false;
 
 		struct
 		{
