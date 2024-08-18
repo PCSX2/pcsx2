@@ -9,6 +9,12 @@
 
 namespace usb_pad
 {
+	enum TrainDeviceTypes
+	{
+		TRAIN_TYPE2, // TCPP20009 or similar
+		TRAIN_SHINKANSEN, // TCPP20011
+		TRAIN_COUNT,
+	};
 
 	class TrainDevice final : public DeviceProxy
 	{
@@ -16,6 +22,7 @@ namespace usb_pad
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
 		const char* Name() const override;
 		const char* TypeName() const override;
+		std::span<const char*> SubTypes() const override;
 		float GetBindingValue(const USBDevice* dev, u32 bind_index) const override;
 		void SetBindingValue(USBDevice* dev, u32 bind_index, float value) const override;
 		std::span<const InputBindingInfo> Bindings(u32 subtype) const override;
@@ -33,11 +40,22 @@ namespace usb_pad
 		u8 buttons;
 	};
 	static_assert(sizeof(TrainConData_Type2) == 6);
+
+	struct TrainConData_Shinkansen
+	{
+		u8 brake;
+		u8 power;
+		u8 horn;
+		u8 hat;
+		u8 buttons;
+		u8 pad;
+	};
+	static_assert(sizeof(TrainConData_Shinkansen) == 6);
 #pragma pack(pop)
 
 	struct TrainDeviceState
 	{
-		TrainDeviceState(u32 port_);
+		TrainDeviceState(u32 port_, TrainDeviceTypes type_);
 		~TrainDeviceState();
 
 		void Reset();
@@ -48,6 +66,7 @@ namespace usb_pad
 		USBDescDevice desc_dev{};
 
 		u32 port = 0;
+		TrainDeviceTypes type = TRAIN_TYPE2;
 
 		struct
 		{
@@ -125,5 +144,17 @@ namespace usb_pad
 
 	// dct01_dev_descriptor
 	DEFINE_DCT_DEV_DESCRIPTOR(dct01, 0x04, 0x0004);
+
+	// ---- Shinkansen controller ----
+
+	static const USBDescStrings dct02_desc_strings = {
+		"",
+		"TAITO",
+		"TAITO_DENSYA_CON_T02",
+		"TCPP20011",
+	};
+
+	// dct02_dev_descriptor
+	DEFINE_DCT_DEV_DESCRIPTOR(dct02, 0x05, 0x0005);
 
 } // namespace usb_pad
