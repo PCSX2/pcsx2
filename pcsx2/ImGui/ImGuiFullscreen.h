@@ -112,9 +112,18 @@ namespace ImGuiFullscreen
 	void PushResetLayout();
 	void PopResetLayout();
 
-	void QueueResetFocus();
+	enum class FocusResetType : u8
+	{
+		None,
+		PopupOpened,
+		PopupClosed,
+		WindowChanged,
+		Other,
+	};
+	void QueueResetFocus(FocusResetType type);
 	bool ResetFocusHere();
 	bool IsFocusResetQueued();
+	FocusResetType GetQueuedFocusResetType();
 	void ForceKeyNavEnabled();
 
 	bool WantsToCloseMenu();
