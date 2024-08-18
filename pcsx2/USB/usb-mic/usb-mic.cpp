@@ -644,7 +644,7 @@ namespace usb_mic
 		0x00, 0x00,  // wLockDelay 0
 	};
 
-	static void singstar_mic_handle_reset(USBDevice* dev)
+	static void usb_mic_handle_reset(USBDevice* dev)
 	{
 		/* XXX: do it */
 		return;
@@ -769,7 +769,7 @@ namespace usb_mic
 		uint32_t aid = ATTRIB_ID(cs, attrib, ep);
 		int ret = USB_RET_STALL;
 
-		Console.Warning("singstar: ep control: cs=0x%x, cn=0x%X, attrib=0x%X, ep=0x%X", cs, cn, attrib, ep);
+		Console.Warning("usb_mic: ep control: cs=0x%x, cn=0x%X, attrib=0x%X, ep=0x%X", cs, cn, attrib, ep);
 		/*for(int i=0; i<length; i++)
 		Console.Warning("%02X ", data[i]);
 		Console.Warning("\n");*/
@@ -818,7 +818,7 @@ namespace usb_mic
 		return ret;
 	}
 
-	static void singstar_mic_set_interface(USBDevice* dev, int intf, int alt_old, int alt_new)
+	static void usb_mic_set_interface(USBDevice* dev, int intf, int alt_old, int alt_new)
 	{
 		SINGSTARMICState* s = USB_CONTAINER_OF(dev, SINGSTARMICState, dev);
 		s->f.intf = alt_new;
@@ -832,7 +832,7 @@ namespace usb_mic
 #endif
 	}
 
-	static void singstar_mic_handle_control(USBDevice* dev, USBPacket* p, int request, int value, int index, int length, uint8_t* data)
+	static void usb_mic_handle_control(USBDevice* dev, USBPacket* p, int request, int value, int index, int length, uint8_t* data)
 	{
 		SINGSTARMICState* s = USB_CONTAINER_OF(dev, SINGSTARMICState, dev);
 		int ret = 0;
@@ -856,7 +856,7 @@ namespace usb_mic
 				ret = usb_audio_get_control(s, request & 0xff, value, index, length, data);
 				if (ret < 0)
 				{
-					Console.Warning("singstar: fail: get control, req=%02x, val=%02x, idx=%02x, ret=%d", request, value, index, ret);
+					Console.Warning("usb_mic: fail: get control, req=%02x, val=%02x, idx=%02x, ret=%d", request, value, index, ret);
 					goto fail;
 				}
 				p->actual_length = ret;
@@ -869,7 +869,7 @@ namespace usb_mic
 				ret = usb_audio_set_control(s, request & 0xff, value, index, length, data);
 				if (ret < 0)
 				{
-					Console.Warning("singstar: fail: set control, req=%02x, val=%02x, idx=%02x", request, value, index);
+					Console.Warning("usb_mic: fail: set control, req=%02x, val=%02x, idx=%02x", request, value, index);
 					goto fail;
 				}
 				break;
@@ -900,7 +900,7 @@ namespace usb_mic
 		return (int16_t)((int32_t)sample * vol / 0xFF);
 	}
 
-	static void singstar_mic_handle_data(USBDevice* dev, USBPacket* p)
+	static void usb_mic_handle_data(USBDevice* dev, USBPacket* p)
 	{
 		SINGSTARMICState* s = USB_CONTAINER_OF(dev, SINGSTARMICState, dev);
 		int ret = 0;
@@ -1018,7 +1018,7 @@ namespace usb_mic
 					if (!file)
 					{
 						char name[1024] = {0};
-						snprintf(name, sizeof(name), "singstar_%dch_%uHz.raw", outChns, s->f.srate[0]);
+						snprintf(name, sizeof(name), "usb_mic_%dch_%uHz.raw", outChns, s->f.srate[0]);
 						file = fopen(name, "wb");
 					}
 
@@ -1036,7 +1036,7 @@ namespace usb_mic
 	}
 
 
-	static void singstar_mic_handle_destroy(USBDevice* dev)
+	static void usb_mic_handle_destroy(USBDevice* dev)
 	{
 		SINGSTARMICState* s = USB_CONTAINER_OF(dev, SINGSTARMICState, dev);
 		if (file)
@@ -1169,11 +1169,11 @@ namespace usb_mic
 
 		s->dev.speed = USB_SPEED_FULL;
 		s->dev.klass.handle_attach = usb_desc_attach;
-		s->dev.klass.handle_reset = singstar_mic_handle_reset;
-		s->dev.klass.handle_control = singstar_mic_handle_control;
-		s->dev.klass.handle_data = singstar_mic_handle_data;
-		s->dev.klass.set_interface = singstar_mic_set_interface;
-		s->dev.klass.unrealize = singstar_mic_handle_destroy;
+		s->dev.klass.handle_reset = usb_mic_handle_reset;
+		s->dev.klass.handle_control = usb_mic_handle_control;
+		s->dev.klass.handle_data = usb_mic_handle_data;
+		s->dev.klass.set_interface = usb_mic_set_interface;
+		s->dev.klass.unrealize = usb_mic_handle_destroy;
 		s->dev.klass.usb_desc = &s->desc;
 		s->dev.klass.product_desc = singstar_desc_strings[2];
 
@@ -1185,12 +1185,12 @@ namespace usb_mic
 
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
-		singstar_mic_handle_reset(&s->dev);
+		usb_mic_handle_reset(&s->dev);
 
 		return &s->dev;
 
 	fail:
-		singstar_mic_handle_destroy(&s->dev);
+		usb_mic_handle_destroy(&s->dev);
 		return nullptr;
 	}
 
