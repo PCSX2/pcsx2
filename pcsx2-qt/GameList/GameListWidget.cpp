@@ -349,7 +349,7 @@ void GameListWidget::onCoverScaleChanged()
 	m_list_view->setSpacing(m_model->getCoverArtSpacing());
 
 	QFont font;
-	font.setPointSizeF(16.0f * m_model->getCoverScale());
+	font.setPointSizeF(20.0f * m_model->getCoverScale());
 	m_list_view->setFont(font);
 }
 
