@@ -13,6 +13,7 @@ namespace usb_pad
 	{
 		TRAIN_TYPE2, // TCPP20009 or similar
 		TRAIN_SHINKANSEN, // TCPP20011
+		TRAIN_RYOJOUHEN, // TCPP20014
 		TRAIN_COUNT,
 	};
 
@@ -51,6 +52,17 @@ namespace usb_pad
 		u8 pad;
 	};
 	static_assert(sizeof(TrainConData_Shinkansen) == 6);
+
+	struct TrainConData_Ryojouhen
+	{
+		u8 brake;
+		u8 power;
+		u8 horn;
+		u8 hat;
+		u8 buttons;
+		u8 pad[3];
+	};
+	static_assert(sizeof(TrainConData_Ryojouhen) == 8);
 #pragma pack(pop)
 
 	struct TrainDeviceState
@@ -156,5 +168,17 @@ namespace usb_pad
 
 	// dct02_dev_descriptor
 	DEFINE_DCT_DEV_DESCRIPTOR(dct02, 0x05, 0x0005);
+
+	// ---- Ryojouhen controller ----
+
+	static const USBDescStrings dct03_desc_strings = {
+		"",
+		"TAITO",
+		"TAITO_DENSYA_CON_T03",
+		"TCPP20014",
+	};
+
+	// dct03_dev_descriptor
+	DEFINE_DCT_DEV_DESCRIPTOR(dct03, 0xFF, 0x0007);
 
 } // namespace usb_pad
