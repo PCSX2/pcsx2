@@ -1091,9 +1091,12 @@ bool ImGuiFullscreen::ActiveButton(const char* title, bool is_active, bool enabl
 {
 	if (is_active)
 	{
+    	// don't draw over a prerendered border
+		const float border_size = ImGui::GetStyle().FrameBorderSize;
+		const ImVec2 border_size_v = ImVec2(border_size, border_size);
 		ImVec2 pos, size;
 		GetMenuButtonFrameBounds(height, &pos, &size);
-		ImGui::RenderFrame(pos, pos + size, ImGui::GetColorU32(UIPrimaryColor), false);
+		ImGui::RenderFrame(pos + border_size_v, pos + size - border_size_v, ImGui::GetColorU32(UIPrimaryColor), false);
 	}
 
 	ImRect bb;
