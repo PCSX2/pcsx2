@@ -204,6 +204,8 @@ void GameListWidget::initialize()
 	else
 		m_ui.stack->setCurrentIndex(0);
 
+	setFocusProxy(m_ui.stack->currentWidget());
+
 	updateToolbar();
 	resizeTableViewColumnsToFit();
 }
@@ -257,7 +259,10 @@ void GameListWidget::onRefreshProgress(const QString& status, int current, int t
 {
 	// switch away from the placeholder while we scan, in case we find anything
 	if (m_ui.stack->currentIndex() == 2)
+	{
 		m_ui.stack->setCurrentIndex(Host::GetBaseBoolSettingValue("UI", "GameListGridView", false) ? 1 : 0);
+		setFocusProxy(m_ui.stack->currentWidget());
+	}
 
 	m_model->refresh();
 	emit refreshProgress(status, current, total);
@@ -275,7 +280,10 @@ void GameListWidget::onRefreshComplete()
 
 	// if we still had no games, switch to the helper widget
 	if (m_model->rowCount() == 0)
+	{
 		m_ui.stack->setCurrentIndex(2);
+		setFocusProxy(nullptr);
+	}
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -399,6 +407,7 @@ void GameListWidget::showGameList()
 	Host::SetBaseBoolSettingValue("UI", "GameListGridView", false);
 	Host::CommitBaseSettingChanges();
 	m_ui.stack->setCurrentIndex(0);
+	setFocusProxy(m_ui.stack->currentWidget());
 	resizeTableViewColumnsToFit();
 	updateToolbar();
 	emit layoutChange();
@@ -416,6 +425,7 @@ void GameListWidget::showGameGrid()
 	Host::SetBaseBoolSettingValue("UI", "GameListGridView", true);
 	Host::CommitBaseSettingChanges();
 	m_ui.stack->setCurrentIndex(1);
+	setFocusProxy(m_ui.stack->currentWidget());
 	updateToolbar();
 	emit layoutChange();
 }
