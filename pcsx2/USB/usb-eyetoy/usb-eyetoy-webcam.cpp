@@ -367,14 +367,14 @@ namespace usb_eyetoy
 							break;
 						}
 
-						static const unsigned int max_ep_size = 960; // 961
+						static const unsigned int max_ep_size = 961;
 						u8 data[max_ep_size];
 						pxAssert(p->buffer_size <= max_ep_size);
 
 						static constexpr const u8 header[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x28}; // 28 <> 29
 						std::memcpy(data, header, sizeof(header));
 
-						const u32 data_pk = std::min(p->buffer_size - static_cast<u32>(sizeof(header)), s->mpeg_frame_size);
+						const u32 data_pk = std::min(p->buffer_size - 1 - static_cast<u32>(sizeof(header)), s->mpeg_frame_size);
 						std::memcpy(data + sizeof(header), s->mpeg_frame_data.get(), data_pk);
 						usb_packet_copy(p, data, sizeof(header) + data_pk);
 
@@ -383,7 +383,7 @@ namespace usb_eyetoy
 					}
 					else if (s->mpeg_frame_offset < s->mpeg_frame_size)
 					{
-						const u32 data_pk = std::min(s->mpeg_frame_size - s->mpeg_frame_offset, p->buffer_size);
+						const u32 data_pk = std::min(s->mpeg_frame_size - s->mpeg_frame_offset, p->buffer_size - 1);
 						usb_packet_copy(p, s->mpeg_frame_data.get() + s->mpeg_frame_offset, data_pk);
 
 						s->mpeg_frame_offset += data_pk;
