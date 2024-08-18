@@ -25,6 +25,15 @@ namespace usb_pad
 		return "TrainController";
 	}
 
+	std::span<const char*> TrainDevice::SubTypes() const
+	{
+		static const char* subtypes[] = {
+			TRANSLATE_NOOP("USB", "Type 2"),
+			TRANSLATE_NOOP("USB", "Shinkansen"),
+		};
+		return subtypes;
+	}
+
 	enum TrainControlID
 	{
 		CID_TC_POWER,
@@ -47,22 +56,32 @@ namespace usb_pad
 
 	std::span<const InputBindingInfo> TrainDevice::Bindings(u32 subtype) const
 	{
-		static constexpr const InputBindingInfo bindings[] = {
-			{"Power", TRANSLATE_NOOP("USB", "Power"), ICON_PF_LEFT_ANALOG_DOWN, InputBindingInfo::Type::Axis, CID_TC_POWER, GenericInputBinding::LeftStickDown},
-			{"Brake", TRANSLATE_NOOP("USB", "Brake"), ICON_PF_LEFT_ANALOG_UP, InputBindingInfo::Type::Axis, CID_TC_BRAKE, GenericInputBinding::LeftStickUp},
-			{"Up", TRANSLATE_NOOP("USB", "D-Pad Up"), ICON_PF_DPAD_UP, InputBindingInfo::Type::Button, CID_TC_UP, GenericInputBinding::DPadUp},
-			{"Down", TRANSLATE_NOOP("USB", "D-Pad Down"), ICON_PF_DPAD_DOWN, InputBindingInfo::Type::Button, CID_TC_DOWN, GenericInputBinding::DPadDown},
-			{"Left", TRANSLATE_NOOP("USB", "D-Pad Left"), ICON_PF_DPAD_LEFT, InputBindingInfo::Type::Button, CID_TC_LEFT, GenericInputBinding::DPadLeft},
-			{"Right", TRANSLATE_NOOP("USB", "D-Pad Right"), ICON_PF_DPAD_RIGHT, InputBindingInfo::Type::Button, CID_TC_RIGHT, GenericInputBinding::DPadRight},
-			{"A", TRANSLATE_NOOP("USB", "A Button"), ICON_PF_KEY_A, InputBindingInfo::Type::Button, CID_TC_A, GenericInputBinding::Square},
-			{"B", TRANSLATE_NOOP("USB", "B Button"), ICON_PF_KEY_B, InputBindingInfo::Type::Button, CID_TC_B, GenericInputBinding::Cross},
-			{"C", TRANSLATE_NOOP("USB", "C Button"), ICON_PF_KEY_C, InputBindingInfo::Type::Button, CID_TC_C, GenericInputBinding::Circle},
-			{"D", TRANSLATE_NOOP("USB", "D Button"), ICON_PF_KEY_D, InputBindingInfo::Type::Button, CID_TC_D, GenericInputBinding::Triangle},
-			{"Select", TRANSLATE_NOOP("USB", "Select"), ICON_PF_SELECT_SHARE, InputBindingInfo::Type::Button, CID_TC_SELECT, GenericInputBinding::Select},
-			{"Start", TRANSLATE_NOOP("USB", "Start"), ICON_PF_START, InputBindingInfo::Type::Button, CID_TC_START, GenericInputBinding::Start},
-		};
+		switch (subtype)
+		{
+			case TRAIN_TYPE2:
+			case TRAIN_SHINKANSEN:
+			{
+				static constexpr const InputBindingInfo bindings[] = {
+					{"Power", TRANSLATE_NOOP("USB", "Power"), ICON_PF_LEFT_ANALOG_DOWN, InputBindingInfo::Type::Axis, CID_TC_POWER, GenericInputBinding::LeftStickDown},
+					{"Brake", TRANSLATE_NOOP("USB", "Brake"), ICON_PF_LEFT_ANALOG_UP, InputBindingInfo::Type::Axis, CID_TC_BRAKE, GenericInputBinding::LeftStickUp},
+					{"Up", TRANSLATE_NOOP("USB", "D-Pad Up"), ICON_PF_DPAD_UP, InputBindingInfo::Type::Button, CID_TC_UP, GenericInputBinding::DPadUp},
+					{"Down", TRANSLATE_NOOP("USB", "D-Pad Down"), ICON_PF_DPAD_DOWN, InputBindingInfo::Type::Button, CID_TC_DOWN, GenericInputBinding::DPadDown},
+					{"Left", TRANSLATE_NOOP("USB", "D-Pad Left"), ICON_PF_DPAD_LEFT, InputBindingInfo::Type::Button, CID_TC_LEFT, GenericInputBinding::DPadLeft},
+					{"Right", TRANSLATE_NOOP("USB", "D-Pad Right"), ICON_PF_DPAD_RIGHT, InputBindingInfo::Type::Button, CID_TC_RIGHT, GenericInputBinding::DPadRight},
+					{"A", TRANSLATE_NOOP("USB", "A Button"), ICON_PF_KEY_A, InputBindingInfo::Type::Button, CID_TC_A, GenericInputBinding::Square},
+					{"B", TRANSLATE_NOOP("USB", "B Button"), ICON_PF_KEY_B, InputBindingInfo::Type::Button, CID_TC_B, GenericInputBinding::Cross},
+					{"C", TRANSLATE_NOOP("USB", "C Button"), ICON_PF_KEY_C, InputBindingInfo::Type::Button, CID_TC_C, GenericInputBinding::Circle},
+					{"D", TRANSLATE_NOOP("USB", "D Button"), ICON_PF_KEY_D, InputBindingInfo::Type::Button, CID_TC_D, GenericInputBinding::Triangle},
+					{"Select", TRANSLATE_NOOP("USB", "Select"), ICON_PF_SELECT_SHARE, InputBindingInfo::Type::Button, CID_TC_SELECT, GenericInputBinding::Select},
+					{"Start", TRANSLATE_NOOP("USB", "Start"), ICON_PF_START, InputBindingInfo::Type::Button, CID_TC_START, GenericInputBinding::Start},
+				};
 
-		return bindings;
+				return bindings;
+			}
+			default:
+				break;
+		}
+		return {};
 	}
 
 	static void train_handle_reset(USBDevice* dev)
@@ -191,8 +210,9 @@ namespace usb_pad
 		}
 	}
 
-	TrainDeviceState::TrainDeviceState(u32 port_)
+	TrainDeviceState::TrainDeviceState(u32 port_, TrainDeviceTypes type_)
 		: port(port_)
+		, type(type_)
 	{
 		Reset();
 	}
@@ -273,8 +293,68 @@ namespace usb_pad
 		return notches[std::size(notches) - 1].second;
 	}
 
-// TrainControlID buttons are laid out in Type 2 ordering, no need to remap.
-#define dct01_buttons(buttons) (buttons)
+	static u8 dct02_power(u8 value)
+	{
+		// (N) 0x12 0x24 0x36 0x48 0x5A 0x6C 0x7E 0x90 0xA2 0xB4 0xC6 0xD7 0xE9 0xFB (P13)
+		static std::pair<u8, u8> const notches[] = {
+			// { control_in, emulated_out },
+			{0xF7, 0xFB},
+			{0xE4, 0xE9},
+			{0xD1, 0xD7},
+			{0xBE, 0xC6},
+			{0xAB, 0xB4},
+			{0x98, 0xA2},
+			{0x85, 0x90},
+			{0x72, 0x7E},
+			{0x5F, 0x6C},
+			{0x4C, 0x5A},
+			{0x39, 0x48},
+			{0x26, 0x36},
+			{0x13, 0x24},
+			{0x00, 0x12},
+		};
+
+		for (const auto& x : notches)
+		{
+			if (value >= x.first)
+				return x.second;
+		}
+		return notches[std::size(notches) - 1].second;
+	}
+	static u8 dct02_brake(u8 value)
+	{
+		// (NB) 0x1C 0x38 0x54 0x70 0x8B 0xA7 0xC3 0xDF 0xFB (EB)
+		static std::pair<u8, u8> const notches[] = {
+			// { control_in, emulated_out },
+			{0xF8, 0xFB},
+			{0xCA, 0xDF},
+			{0xAE, 0xC3},
+			{0x92, 0xA7},
+			{0x76, 0x8B},
+			{0x5A, 0x70},
+			{0x3E, 0x54},
+			{0x22, 0x38},
+			{0x00, 0x1C},
+		};
+
+		for (const auto& x : notches)
+		{
+			if (value >= x.first)
+				return x.second;
+		}
+		return notches[std::size(notches) - 1].second;
+	}
+
+#define get_ab(buttons) (button_at(buttons, CID_TC_A) | button_at(buttons, CID_TC_B))
+#define swap_cd(buttons) ((button_at(buttons, CID_TC_C) << 1) | (button_at(buttons, CID_TC_D) >> 1))
+#define get_ss(buttons) (button_at(buttons, CID_TC_START) | button_at(buttons, CID_TC_SELECT))
+
+	// TrainControlID buttons are laid out in Type 2 ordering, no need to remap.
+	constexpr u8 dct01_buttons(u8 buttons) { return buttons; }
+	constexpr u8 dct02_buttons(u8 buttons)
+	{
+		return ((get_ab(buttons) << 2) | (swap_cd(buttons) >> 2) | get_ss(buttons));
+	}
 
 	static void train_handle_data(USBDevice* dev, USBPacket* p)
 	{
@@ -289,25 +369,61 @@ namespace usb_pad
 
 		s->UpdateHatSwitch();
 
-		TrainConData_Type2 out = {};
-		out.control = 0x1;
-		out.brake = dct01_brake(s->data.brake);
-		out.power = dct01_power(s->data.power);
-		out.horn = 0xFF; // Button C doubles as horn.
-		out.hat = s->data.hatswitch;
-		out.buttons = dct01_buttons(s->data.buttons);
-		usb_packet_copy(p, &out, sizeof(out));
+		switch (s->type)
+		{
+			case TRAIN_TYPE2:
+			{
+				TrainConData_Type2 out = {};
+				out.control = 0x1;
+				out.brake = dct01_brake(s->data.brake);
+				out.power = dct01_power(s->data.power);
+				out.horn = 0xFF; // Button C doubles as horn.
+				out.hat = s->data.hatswitch;
+				out.buttons = dct01_buttons(s->data.buttons);
+				usb_packet_copy(p, &out, sizeof(out));
+				break;
+			}
+			case TRAIN_SHINKANSEN:
+			{
+				TrainConData_Shinkansen out = {};
+				out.brake = dct02_brake(s->data.brake);
+				out.power = dct02_power(s->data.power);
+				out.horn = 0xFF; // Button C doubles as horn, skip.
+				out.hat = s->data.hatswitch;
+				out.buttons = dct02_buttons(s->data.buttons);
+				usb_packet_copy(p, &out, sizeof(out));
+				break;
+			}
+			default:
+				Console.Error("Unhandled TrainController USB_TOKEN_IN pid=%d ep=%u type=%u", p->pid, p->ep->nr, s->type);
+				p->status = USB_RET_IOERROR;
+				return;
+		}
 	}
 
 	USBDevice* TrainDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
-		TrainDeviceState* s = new TrainDeviceState(port);
+		TrainDeviceState* s = new TrainDeviceState(port, static_cast<TrainDeviceTypes>(subtype));
 
 		s->desc.full = &s->desc_dev;
-		s->desc.str = dct01_desc_strings;
 
-		if (usb_desc_parse_dev(dct01_dev_descriptor, sizeof(dct01_dev_descriptor), s->desc, s->desc_dev) < 0)
-			goto fail;
+		switch (subtype)
+		{
+			case TRAIN_TYPE2:
+				s->desc.str = dct01_desc_strings;
+				if (usb_desc_parse_dev(dct01_dev_descriptor, sizeof(dct01_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				break;
+			case TRAIN_SHINKANSEN:
+				s->desc.str = dct02_desc_strings;
+				if (usb_desc_parse_dev(dct02_dev_descriptor, sizeof(dct02_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				break;
+
+			default:
+				goto fail;
+		}
+
 		if (usb_desc_parse_config(taito_denshacon_config_descriptor, sizeof(taito_denshacon_config_descriptor), s->desc_dev) < 0)
 			goto fail;
 
