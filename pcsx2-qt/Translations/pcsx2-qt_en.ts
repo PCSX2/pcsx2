@@ -18308,37 +18308,39 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1114"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1144"/>
         <source>usb-msd: Could not open image file &apos;{}&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1179"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1182"/>
         <source>Mass Storage Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1200"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1203"/>
         <source>Modification time to USB mass storage image changed, reattaching.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1216"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1219"/>
         <source>Iomega Zip-100 (Generic)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1217"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1220"/>
         <source>Sony MSAC-US1 (PictureParadise)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1225"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1232"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1240"/>
         <source>Image Path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1226"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1233"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1241"/>
         <source>Sets the path to image which will back the virtual mass storage device.</source>
         <translation type="unfinished"></translation>
     </message>
