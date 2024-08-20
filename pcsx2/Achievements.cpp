@@ -199,6 +199,7 @@ namespace Achievements
 	static std::string s_game_hash;
 	static std::string s_game_title;
 	static std::string s_game_icon;
+	static std::string s_game_icon_url;
 	static u32 s_game_crc;
 	static rc_client_user_game_summary_t s_game_summary;
 	static u32 s_game_id = 0;
@@ -401,6 +402,10 @@ const std::string& Achievements::GetRichPresenceString()
 	return s_rich_presence_string;
 }
 
+const std::string& Achievements::GetGameIconURL()
+{
+	return s_game_icon_url;
+}
 
 bool Achievements::Initialize()
 {
@@ -945,6 +950,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 	s_has_leaderboards = has_leaderboards;
 	s_has_rich_presence = rc_client_has_rich_presence(client);
 	s_game_icon = {};
+	s_game_icon_url = {};
 
 	// ensure fullscreen UI is ready for notifications
 	MTGS::RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
@@ -964,6 +970,16 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 				ReportRCError(err, "rc_client_game_get_image_url() failed: ");
 			}
 		}
+	}
+
+	char icon_url[64];
+	if (int err = rc_client_game_get_image_url(info, icon_url, std::size(icon_url)); err == RC_OK)
+	{
+		s_game_icon_url = icon_url;
+	}
+	else
+	{
+		ReportRCError(err, "rc_client_game_get_image_url() failed: ");
 	}
 
 	UpdateGameSummary();
@@ -990,6 +1006,7 @@ void Achievements::ClearGameInfo()
 	s_game_id = 0;
 	s_game_title = {};
 	s_game_icon = {};
+	s_game_icon_url = {};
 	s_has_achievements = false;
 	s_has_leaderboards = false;
 	s_has_rich_presence = false;
