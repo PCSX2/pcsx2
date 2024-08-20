@@ -3608,15 +3608,21 @@ void VMManager::UpdateDiscordPresence(bool update_session_time)
 	// https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
 	DiscordRichPresence rp = {};
 	rp.largeImageKey = "4k-pcsx2";
-	rp.largeImageText = "PCSX2 Emulator";
+	rp.largeImageText = "PCSX2 PS2 Emulator";
 	rp.startTimestamp = s_discord_presence_time_epoch;
 	rp.details = s_title.empty() ?  TRANSLATE("VMManager","No Game Running") : s_title.c_str();
 
 	std::string state_string;
+
 	if (Achievements::HasRichPresence())
 	{
+		auto lock = Achievements::GetLock();
+
 		state_string = StringUtil::Ellipsise(Achievements::GetRichPresenceString(), 128);
 		rp.state = state_string.c_str();
+
+		rp.largeImageKey = Achievements::GetGameIconURL().c_str();
+		rp.largeImageText = s_title.c_str();
 	}
 
 	Discord_UpdatePresence(&rp);
