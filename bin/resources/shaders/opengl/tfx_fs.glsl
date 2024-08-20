@@ -783,9 +783,15 @@ float As = As_rgba.a;
 
 	// PABE
 #if PS_PABE
+	// As_rgba needed for accumulation blend to manipulate Cd.
 	// No blending so early exit
 	if (As < 1.0f)
+	{
+		As_rgba.rgb = vec3(0.0f);
 		return;
+	}
+
+	As_rgba.rgb = vec3(1.0f);
 #endif
 
 #if SW_BLEND_NEEDS_RT
