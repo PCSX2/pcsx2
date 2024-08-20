@@ -4420,13 +4420,35 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	// Per pixel alpha blending
 	if (m_draw_env->PABE.PABE && GetAlphaMinMax().min < 128)
 	{
-		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars, Cartoon Network Racing, Simple 2000 Series Vol.81, SOTC, Super Robot Wars.
-		if (sw_blending)
+		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars, Cartoon Network Racing, Simple 2000 Series Vol.81, SOTC.
+		if (GetAlphaMinMax().max == 128 && m_conf.ps.blend_a == 0 && ((blend.dst == GSDevice::INV_SRC1_COLOR)
+			|| (blend.dst == GSDevice::INV_DST_ALPHA)
+			|| (blend.dst == GSDevice::INV_CONST_COLOR)))
 		{
-			GL_INS("PABE mode ENABLED");
-			if (features.texture_barrier)
+			// PABE disable blending:
+			// We can disable blending here as an optimization since alpha max is 128
+			// which if alpha is 1 in the formula Cs*Alpha + Cd*(1 - Alpha) will give us a result of Cs.
+			m_conf.blend = {};
+			m_conf.ps.no_color1 = true;
+			m_conf.ps.blend_a = m_conf.ps.blend_b = m_conf.ps.blend_c = m_conf.ps.blend_d = 0;
+
+			return;
+		}
+		else if (sw_blending)
+		{
+			if (accumulation_blend && (blend.op != GSDevice::OP_REV_SUBTRACT))
 			{
-				// Disable hw/sw blend and do pure sw blend with reading the framebuffer.
+				// PABE accumulation blend:
+				// Idea is to achieve final output Cs when As < 1, we do this with manipulating Cd using the src1 output.
+				// This can't be done with reverse subtraction as we want Cd to be 0 when As < 1.
+				// TODO: Blend mix is excluded as no games were found, otherwise it can be added.
+
+				m_conf.ps.pabe = 1;
+			}
+			else if (features.texture_barrier)
+			{
+				// PABE sw blend:
+				// Disable hw/sw mix and do pure sw blend with reading the framebuffer.
 				color_dest_blend   = false;
 				accumulation_blend = false;
 				blend_mix          = false;
@@ -4441,8 +4463,11 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			}
 			else
 			{
+				// PABE sw blend:
 				m_conf.ps.pabe = !(accumulation_blend || blend_mix);
 			}
+
+			GL_INS("PABE mode %s", m_conf.ps.pabe ? "ENABLED" : "DISABLED");
 		}
 	}
 
@@ -4516,9 +4541,13 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 					m_conf.ps.blend_b = 2;
 				}
 			}
+			else if (m_conf.ps.pabe)
+			{
+				m_conf.blend.dst_factor = GSDevice::SRC1_COLOR;
+			}
 
 			// Dual source output not needed (accumulation blend replaces it with ONE).
-			m_conf.ps.no_color1 = true;
+			m_conf.ps.no_color1 = (m_conf.ps.pabe == 0);
 		}
 		else if (blend_mix)
 		{

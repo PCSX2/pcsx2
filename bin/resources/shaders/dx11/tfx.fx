@@ -862,9 +862,15 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		// PABE
 		if (PS_PABE)
 		{
+			// As_rgba needed for accumulation blend to manipulate Cd.
 			// No blending so early exit
 			if (As < 1.0f)
+			{
+				As_rgba.rgb = (float3)0.0f;
 				return;
+			}
+
+			As_rgba.rgb = (float3)1.0f;
 		}
 
 		float4 RT = SW_BLEND_NEEDS_RT ? RtTexture.Load(int3(pos_xy, 0)) : (float4)0.0f;

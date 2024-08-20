@@ -925,9 +925,15 @@ struct PSMain
 			// PABE
 			if (PS_PABE)
 			{
+				// As_rgba needed for accumulation blend to manipulate Cd.
 				// No blending so early exit
 				if (As < 1.f)
+				{
+					As_rgba.rgb = float3(0.f);
 					return;
+				}
+
+				As_rgba.rgb = float3(1.f);
 			}
 
 			float Ad = PS_RTA_CORRECTION ? trunc(current_color.a * 128.1f) / 128.f : trunc(current_color.a * 255.1f) / 128.f;

@@ -1050,9 +1050,15 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 
 		// PABE
 		#if PS_PABE
+			// As_rgba needed for accumulation blend to manipulate Cd
 			// No blending so early exit
 			if (As < 1.0f)
+			{
+				As_rgba.rgb = vec3(0.0f);
 				return;
+			}
+
+			As_rgba.rgb = vec3(1.0f);
 		#endif
 
 		#if PS_FEEDBACK_LOOP_IS_NEEDED
