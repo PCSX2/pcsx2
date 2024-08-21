@@ -39,32 +39,6 @@ static __ri uint LinuxProt(const PageProtectionMode& mode)
 	return lnxmode;
 }
 
-void* HostSys::Mmap(void* base, size_t size, const PageProtectionMode& mode)
-{
-	pxAssertMsg((size & (__pagesize - 1)) == 0, "Size is page aligned");
-
-	if (mode.IsNone())
-		return nullptr;
-
-	const u32 prot = LinuxProt(mode);
-
-	u32 flags = MAP_PRIVATE | MAP_ANONYMOUS;
-
-	void* res = mmap(base, size, prot, flags, -1, 0);
-	if (res == MAP_FAILED)
-		return nullptr;
-
-	return res;
-}
-
-void HostSys::Munmap(void* base, size_t size)
-{
-	if (!base)
-		return;
-
-	munmap((void*)base, size);
-}
-
 void HostSys::MemProtect(void* baseaddr, size_t size, const PageProtectionMode& mode)
 {
 	pxAssertMsg((size & (__pagesize - 1)) == 0, "Size is page aligned");
@@ -112,28 +86,6 @@ void* HostSys::CreateSharedMemory(const char* name, size_t size)
 void HostSys::DestroySharedMemory(void* ptr)
 {
 	close(static_cast<int>(reinterpret_cast<intptr_t>(ptr)));
-}
-
-void* HostSys::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, const PageProtectionMode& mode)
-{
-	const uint lnxmode = LinuxProt(mode);
-
-	int flags = MAP_SHARED;
-#ifdef __APPLE__
-	if (mode.CanExecute())
-		flags |= MAP_JIT;
-#endif
-	void* ptr = mmap(0, size, lnxmode, flags, static_cast<int>(reinterpret_cast<intptr_t>(handle)), static_cast<off_t>(offset));
-	if (ptr == MAP_FAILED)
-		return nullptr;
-
-	return ptr;
-}
-
-void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
-{
-	if (munmap(baseaddr, size) != 0)
-		pxFailRel("Failed to unmap shared memory");
 }
 
 #ifndef __APPLE__
