@@ -439,6 +439,9 @@ static const void* _DynGen_EnterRecompiledCode()
 	// We never return through this function, instead we fastjmp() out.
 	// So we don't need to worry about preserving callee-saved registers, but we do need to align the stack.
 	xSUB(rsp, stack_size);
+
+	if (u8* ptr = xGetTextPtr())
+		xLoadFarAddr(RTEXTPTR, ptr);
 #endif
 
 	if (CHECK_FASTMEM)
@@ -611,6 +614,7 @@ static void recResetRaw()
 
 	EE::Profiler.Reset();
 
+	xSetTextPtr(R5900_TEXTPTR);
 	xSetPtr(SysMemory::GetEERec());
 	_DynGen_Dispatchers();
 	vtlb_DynGenDispatchers();
@@ -877,6 +881,7 @@ u8* recBeginThunk()
 	if (recPtr >= recPtrEnd)
 		eeRecNeedsReset = true;
 
+	xSetTextPtr(R5900_TEXTPTR);
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
 
@@ -2171,6 +2176,7 @@ static void recRecompile(const u32 startpc)
 		recResetRaw();
 	}
 
+	xSetTextPtr(R5900_TEXTPTR);
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
 
