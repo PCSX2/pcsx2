@@ -49,9 +49,6 @@ namespace Ps2MemSize
 
 namespace SysMemory
 {
-	static u8* TryAllocateVirtualMemory(const char* name, void* file_handle, uptr base, size_t size);
-	static u8* AllocateVirtualMemory(const char* name, void* file_handle, size_t size, size_t offset_from_base);
-
 	static bool AllocateMemoryMap();
 	static void DumpMemoryMap();
 	static void ReleaseMemoryMap();
@@ -59,6 +56,7 @@ namespace SysMemory
 	static u8* s_data_memory;
 	static void* s_data_memory_file_handle;
 	static u8* s_code_memory;
+	static std::unique_ptr<SharedMemoryMappingArea> s_memory_mapping_area;
 } // namespace SysMemory
 
 static void memAllocate();
@@ -86,45 +84,6 @@ namespace HostMemoryMap
 	}
 } // namespace HostMemoryMap
 
-u8* SysMemory::TryAllocateVirtualMemory(const char* name, void* file_handle, uptr base, size_t size)
-{
-	u8* baseptr;
-
-	if (file_handle)
-		baseptr = static_cast<u8*>(HostSys::MapSharedMemory(file_handle, 0, (void*)base, size, PageAccess_ReadWrite()));
-	else
-		baseptr = static_cast<u8*>(HostSys::Mmap((void*)base, size, PageAccess_Any()));
-
-	if (!baseptr)
-		return nullptr;
-
-	if (base != 0 && (uptr)baseptr != base)
-	{
-		if (file_handle)
-		{
-			if (baseptr)
-				HostSys::UnmapSharedMemory(baseptr, size);
-		}
-		else
-		{
-			if (baseptr)
-				HostSys::Munmap(baseptr, size);
-		}
-
-		return nullptr;
-	}
-
-	DevCon.WriteLn(Color_Gray, "%-32s @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " %s", name,
-		baseptr, (uptr)baseptr + size, fmt::format("[{}mb]", size / _1mb).c_str());
-
-	return baseptr;
-}
-
-u8* SysMemory::AllocateVirtualMemory(const char* name, void* file_handle, size_t size, size_t offset_from_base)
-{
-	return TryAllocateVirtualMemory(name, file_handle, 0, size);
-}
-
 bool SysMemory::AllocateMemoryMap()
 {
 	s_data_memory_file_handle = HostSys::CreateSharedMemory(HostSys::GetFileMappingName("pcsx2").c_str(), HostMemoryMap::MainSize);
@@ -135,16 +94,23 @@ bool SysMemory::AllocateMemoryMap()
 		return false;
 	}
 
-	if ((s_data_memory = AllocateVirtualMemory("Data Memory", s_data_memory_file_handle, HostMemoryMap::MainSize, 0)) == nullptr)
+	if (!(s_memory_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::MainSize + HostMemoryMap::CodeSize, true)))
 	{
-		Host::ReportErrorAsync("Error", "Failed to map data memory at an acceptable location.");
+		Host::ReportErrorAsync("Error", "Failed to map main memory.");
 		ReleaseMemoryMap();
 		return false;
 	}
 
-	if ((s_code_memory = AllocateVirtualMemory("Code Memory", nullptr, HostMemoryMap::CodeSize, HostMemoryMap::MainSize)) == nullptr)
+	if ((s_data_memory = s_memory_mapping_area->Map(s_data_memory_file_handle, 0, s_memory_mapping_area->BasePointer(), HostMemoryMap::MainSize, PageAccess_ReadWrite())) == nullptr)
 	{
-		Host::ReportErrorAsync("Error", "Failed to allocate code memory at an acceptable location.");
+		Host::ReportErrorAsync("Error", "Failed to map data memory.");
+		ReleaseMemoryMap();
+		return false;
+	}
+
+	if ((s_code_memory = s_memory_mapping_area->Map(nullptr, 0, s_memory_mapping_area->OffsetPointer(HostMemoryMap::MainSize), HostMemoryMap::CodeSize, PageAccess_Any())) == nullptr)
+	{
+		Host::ReportErrorAsync("Error", "Failed to allocate code memory.");
 		ReleaseMemoryMap();
 		return false;
 	}
@@ -186,15 +152,17 @@ void SysMemory::ReleaseMemoryMap()
 {
 	if (s_code_memory)
 	{
-		HostSys::Munmap(s_code_memory, HostMemoryMap::CodeSize);
+		s_memory_mapping_area->Unmap(s_code_memory, HostMemoryMap::CodeSize);
 		s_code_memory = nullptr;
 	}
 
 	if (s_data_memory)
 	{
-		HostSys::UnmapSharedMemory(s_data_memory, HostMemoryMap::MainSize);
+		s_memory_mapping_area->Unmap(s_data_memory, HostMemoryMap::MainSize);
 		s_data_memory = nullptr;
 	}
+
+	s_memory_mapping_area.reset();
 
 	if (s_data_memory_file_handle)
 	{
