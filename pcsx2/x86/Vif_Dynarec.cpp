@@ -22,7 +22,8 @@ void dVifRelease(int idx)
 }
 
 VifUnpackSSE_Dynarec::VifUnpackSSE_Dynarec(const nVifStruct& vif_, const nVifBlock& vifBlock_)
-	: v(vif_)
+	: vifPtr(rax)
+	, v(vif_)
 	, vB(vifBlock_)
 {
 	const int wl = vB.wl ? vB.wl : 256; //0 is taken as 256 (KH2)
@@ -48,9 +49,6 @@ __fi void makeMergeMaskAllColumns(u32& x)
 
 __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const
 {
-	const int idx = v.idx;
-	const vifStruct& vif = MTVU_VifX;
-
 	//This could have ended up copying the row when there was no row to write.1810080
 	const u32 m0 = vB.mask; //The actual mask example 0x03020100
 	const u32 m3 = ((m0 & 0xaaaaaaaa) >> 1) & ~m0; //all the upper bits, so our example 0x01010000 & 0xFCFDFEFF = 0x00010000 just the cols (shifted right for maskmerge)
@@ -58,14 +56,14 @@ __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const
 
 	if ((doMask && m2) || doMode)
 	{
-		xMOVAPS(rowReg, ptr128[&vif.MaskRow]);
+		xMOVAPS(rowReg, ptr128[vifPtr + (sptr)offsetof(vifStruct, MaskRow)]);
 		MSKPATH3_LOG("Moving row");
 	}
 
 	if (doMask && m3)
 	{
 		VIF_LOG("Merging Cols");
-		xMOVAPS(colRegs[0], ptr128[&vif.MaskCol]);
+		xMOVAPS(colRegs[0], ptr128[vifPtr + (sptr)offsetof(vifStruct, MaskCol)]);
 		if ((cS >= 2) && (m3 & 0x0000ff00)) xPSHUF.D(colRegs[1], colRegs[0], _v1);
 		if ((cS >= 3) && (m3 & 0x00ff0000)) xPSHUF.D(colRegs[2], colRegs[0], _v2);
 		if ((cS >= 4) && (m3 & 0xff000000)) xPSHUF.D(colRegs[3], colRegs[0], _v3);
@@ -143,8 +141,7 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 
 void VifUnpackSSE_Dynarec::writeBackRow() const
 {
-	const int idx = v.idx;
-	xMOVAPS(ptr128[&(MTVU_VifX.MaskRow)], rowReg);
+	xMOVAPS(ptr128[vifPtr + (sptr)offsetof(vifStruct, MaskRow)], rowReg);
 
 	VIF_LOG("nVif: writing back row reg! [doMode = %d]", doMode);
 }
@@ -247,6 +244,7 @@ void VifUnpackSSE_Dynarec::ProcessMasks()
 
 void VifUnpackSSE_Dynarec::CompileRoutine()
 {
+	const int idx       = v.idx;
 	const int wl        = vB.wl ? vB.wl : 256; // 0 is taken as 256 (KH2)
 	const int upkNum    = vB.upkType & 0xf;
 	const u8& vift      = nVifT[upkNum];
@@ -260,6 +258,7 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 	VIF_LOG("Compiling new block, unpack number %x, mode %x, masking %x, vNum %x", upkNum, doMode, doMask, vNum);
 
 	pxAssume(vCL == 0);
+	xLoadFarAddr(vifPtr, &MTVU_VifX);
 
 	// Need a zero register for V2_32/V3 unpacks.
 	const bool needXmmZero = (upkNum >= 8 && upkNum <= 10) || upkNum == 4;
@@ -434,6 +433,7 @@ _vifT __fi nVifBlock* dVifCompile(nVifBlock& block, bool isFill)
 	}
 
 	// Compile the block now
+	xSetTextPtr(nullptr);
 	xSetPtr(v.recWritePtr);
 
 	block.startPtr = (uptr)xGetAlignedCallTarget();

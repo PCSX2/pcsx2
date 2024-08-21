@@ -882,6 +882,8 @@ static void recReserve()
 		pxFailRel("Failed to allocate R3000 InstCache array.");
 }
 
+#define R3000A_TEXTPTR (&psxRegs.GPR.r[33])
+
 void recResetIOP()
 {
 	DevCon.WriteLn("iR3000A Recompiler reset.");
@@ -892,6 +894,7 @@ void recResetIOP()
 		extraRam = !extraRam;
 	}
 
+	xSetTextPtr(R3000A_TEXTPTR);
 	xSetPtr(SysMemory::GetIOPRec());
 	_DynGen_Dispatchers();
 	recPtr = xGetPtr();
@@ -1592,6 +1595,7 @@ static void iopRecRecompile(const u32 startpc)
 		recResetIOP();
 	}
 
+	xSetTextPtr(R3000A_TEXTPTR);
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
 

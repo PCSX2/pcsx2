@@ -1175,7 +1175,7 @@ mVUop(mVU_ILW)
 
 				xADD(gprT1, gprT2);
 			}
-			mVUaddrFix(mVU, gprT1q);
+			mVUaddrFix(mVU, gprT1q, gprT2q);
 		}
 
 		const xRegister32& regT = mVU.regAlloc->allocGPR(-1, _It_, mVUlow.backupVI);
@@ -1202,7 +1202,7 @@ mVUop(mVU_ILWR)
 		if (_Is_)
 		{
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
-			mVUaddrFix (mVU, gprT1q);
+			mVUaddrFix (mVU, gprT1q, gprT2q);
 
 			const xRegister32& regT = mVU.regAlloc->allocGPR(-1, _It_, mVUlow.backupVI);
 			xMOVZX(regT, ptr16[xComplexAddress(gprT2q, ptr, gprT1q)]);
@@ -1250,7 +1250,7 @@ mVUop(mVU_ISW)
 
 				xADD(gprT1, gprT2);
 			}
-			mVUaddrFix(mVU, gprT1q);
+			mVUaddrFix(mVU, gprT1q, gprT2q);
 		}
 
 		// If regT is dirty, the high bits might not be zero.
@@ -1281,7 +1281,7 @@ mVUop(mVU_ISWR)
 		if (_Is_)
 		{
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
-			mVUaddrFix(mVU, gprT1q);
+			mVUaddrFix(mVU, gprT1q, gprT2q);
 			is = gprT1q;
 		}
 		const xRegister32& regT = mVU.regAlloc->allocGPR(_It_, -1, false, true);
@@ -1348,7 +1348,7 @@ mVUop(mVU_LQ)
 
 				xADD(gprT1, gprT2);
 			}
-			mVUaddrFix(mVU, gprT1q);
+			mVUaddrFix(mVU, gprT1q, gprT2q);
 		}
 
 		const xmm& Ft = mVU.regAlloc->allocReg(-1, _Ft_, _X_Y_Z_W);
@@ -1372,7 +1372,7 @@ mVUop(mVU_LQD)
 			xDEC(regS);
 			xMOVSX(gprT1, xRegister16(regS)); // TODO: Confirm
 			mVU.regAlloc->clearNeeded(regS);
-			mVUaddrFix(mVU, gprT1q);
+			mVUaddrFix(mVU, gprT1q, gprT2q);
 			is = gprT1q;
 		}
 		else
@@ -1410,7 +1410,7 @@ mVUop(mVU_LQI)
 			xMOVSX(gprT1, xRegister16(regS)); // TODO: Confirm
 			xINC(regS);
 			mVU.regAlloc->clearNeeded(regS);
-			mVUaddrFix(mVU, gprT1q);
+			mVUaddrFix(mVU, gprT1q, gprT2q);
 			is = gprT1q;
 		}
 		if (!mVUlow.noWriteVF)
@@ -1453,7 +1453,7 @@ mVUop(mVU_SQ)
 
 				xADD(gprT1, gprT2);
 			}
-			mVUaddrFix(mVU, gprT1q);
+			mVUaddrFix(mVU, gprT1q, gprT2q);
 		}
 
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, _XYZW_PS ? -1 : 0, _X_Y_Z_W);
@@ -1477,7 +1477,7 @@ mVUop(mVU_SQD)
 			xDEC(regT);
 			xMOVZX(gprT1, xRegister16(regT));
 			mVU.regAlloc->clearNeeded(regT);
-			mVUaddrFix(mVU, gprT1q);
+			mVUaddrFix(mVU, gprT1q, gprT2q);
 			it = gprT1q;
 		}
 		else
@@ -1507,7 +1507,7 @@ mVUop(mVU_SQI)
 			xMOVZX(gprT1, xRegister16(regT));
 			xINC(regT);
 			mVU.regAlloc->clearNeeded(regT);
-			mVUaddrFix(mVU, gprT1q);
+			mVUaddrFix(mVU, gprT1q, gprT2q);
 		}
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, _XYZW_PS ? -1 : 0, _X_Y_Z_W);
 		if (_It_)
