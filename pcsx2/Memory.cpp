@@ -122,39 +122,7 @@ u8* SysMemory::TryAllocateVirtualMemory(const char* name, void* file_handle, upt
 
 u8* SysMemory::AllocateVirtualMemory(const char* name, void* file_handle, size_t size, size_t offset_from_base)
 {
-	// ARM64 does not need the rec areas to be in +/- 2GB.
-#ifdef _M_X86
-	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Virtual memory size is page aligned");
-
-	// Everything looks nicer when the start of all the sections is a nice round looking number.
-	// Also reduces the variation in the address due to small changes in code.
-	// Breaks ASLR but so does anything else that tries to make addresses constant for our debugging pleasure
-	uptr codeBase = (uptr)(void*)AllocateVirtualMemory / (1 << 28) * (1 << 28);
-
-	// The allocation is ~640mb in size, slighly under 3*2^28.
-	// We'll hope that the code generated for the PCSX2 executable stays under 512mb (which is likely)
-	// On x86-64, code can reach 8*2^28 from its address [-6*2^28, 4*2^28] is the region that allows for code in the 640mb allocation to reach 512mb of code that either starts at codeBase or 256mb before it.
-	// We start high and count down because on macOS code starts at the beginning of useable address space, so starting as far ahead as possible reduces address variations due to code size.  Not sure about other platforms.  Obviously this only actually affects what shows up in a debugger and won't affect performance or correctness of anything.
-	for (int offset = 4; offset >= -6; offset--)
-	{
-		uptr base = codeBase + (offset << 28) + offset_from_base;
-		if ((sptr)base < 0 || (sptr)(base + size - 1) < 0)
-		{
-			// VTLB will throw a fit if we try to put EE main memory here
-			continue;
-		}
-
-		if (u8* ret = TryAllocateVirtualMemory(name, file_handle, base, size))
-			return ret;
-
-		DevCon.Warning("%s: host memory @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " is unavailable; attempting to map elsewhere...", name,
-			base, base + size);
-	}
-#else
 	return TryAllocateVirtualMemory(name, file_handle, 0, size);
-#endif
-
-	return nullptr;
 }
 
 bool SysMemory::AllocateMemoryMap()
