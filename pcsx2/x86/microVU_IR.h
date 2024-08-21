@@ -411,6 +411,7 @@ public:
 			}
 		}
 
+		gprMap[RTEXTPTR.GetId()].usable = !xGetTextPtr();
 		gprMap[RFASTMEMBASE.GetId()].usable = !cop2mode || !CHECK_FASTMEM;
 	}
 
