@@ -345,6 +345,7 @@ void vtlb_DynGenDispatchers()
 			for (int sign = 0; sign < (!mode && bits < 3 ? 2 : 1); sign++)
 			{
 				xSetPtr(GetIndirectDispatcherPtr(mode, bits, !!sign));
+				xSetTextPtr(R5900_TEXTPTR);
 
 				DynGen_IndirectTlbDispatcher(mode, bits, !!sign);
 			}

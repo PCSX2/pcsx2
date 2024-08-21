@@ -207,15 +207,17 @@ static void mVUGenerateCopyPipelineState(mV)
 {
 	mVU.copyPLState = xGetAlignedCallTarget();
 
+	xLoadFarAddr(rdx, reinterpret_cast<u8*>(&mVU.prog.lpState));
+
 	if (cpuinfo_has_x86_avx())
 	{
 		xVMOVAPS(ymm0, ptr[rax]);
 		xVMOVAPS(ymm1, ptr[rax + 32u]);
 		xVMOVAPS(ymm2, ptr[rax + 64u]);
 
-		xVMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState)], ymm0);
-		xVMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 32u], ymm1);
-		xVMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 64u], ymm2);
+		xVMOVUPS(ptr[rdx], ymm0);
+		xVMOVUPS(ptr[rdx + 32u], ymm1);
+		xVMOVUPS(ptr[rdx + 64u], ymm2);
 
 		xVZEROUPPER();
 	}
@@ -228,12 +230,12 @@ static void mVUGenerateCopyPipelineState(mV)
 		xMOVAPS(xmm4, ptr[rax + 64u]);
 		xMOVAPS(xmm5, ptr[rax + 80u]);
 
-		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState)], xmm0);
-		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 16u], xmm1);
-		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 32u], xmm2);
-		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 48u], xmm3);
-		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 64u], xmm4);
-		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 80u], xmm5);
+		xMOVUPS(ptr[rdx], xmm0);
+		xMOVUPS(ptr[rdx + 16u], xmm1);
+		xMOVUPS(ptr[rdx + 32u], xmm2);
+		xMOVUPS(ptr[rdx + 48u], xmm3);
+		xMOVUPS(ptr[rdx + 64u], xmm4);
+		xMOVUPS(ptr[rdx + 80u], xmm5);
 	}
 
 	xRET();
@@ -326,6 +328,7 @@ _mVUt void* mVUexecute(u32 startPC, u32 cycles)
 	mVU.cycles = cycles;
 	mVU.totalCycles = cycles;
 
+	xSetTextPtr(mVU.textPtr());
 	xSetPtr(mVU.prog.x86ptr); // Set x86ptr to where last program left off
 	return mVUsearchProg<vuIndex>(startPC & vuLimit, (uptr)&mVU.prog.lpState); // Find and set correct program
 }

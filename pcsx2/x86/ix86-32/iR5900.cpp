@@ -445,6 +445,8 @@ static const void* _DynGen_EnterRecompiledCode()
 	xSUB(rsp, stack_size);
 #endif
 
+	if (u8* ptr = xGetTextPtr())
+		xMOV64(RTEXTPTR, (sptr)ptr);
 	if (CHECK_FASTMEM)
 		xMOV(RFASTMEMBASE, ptrNative[&vtlb_private::vtlbdata.fastmem_base]);
 
@@ -585,6 +587,7 @@ static void recResetRaw()
 
 	EE::Profiler.Reset();
 
+	xSetTextPtr(R5900_TEXTPTR);
 	xSetPtr(SysMemory::GetEERec());
 	_DynGen_Dispatchers();
 	vtlb_DynGenDispatchers();
@@ -897,6 +900,7 @@ u8* recBeginThunk()
 	if (recPtr >= recPtrEnd)
 		eeRecNeedsReset = true;
 
+	xSetTextPtr(R5900_TEXTPTR);
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
 
@@ -2191,6 +2195,7 @@ static void recRecompile(const u32 startpc)
 		recResetRaw();
 	}
 
+	xSetTextPtr(R5900_TEXTPTR);
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
 
