@@ -201,11 +201,16 @@ SharedMemoryMappingArea::~SharedMemoryMappingArea()
 }
 
 
-std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t size)
+std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t size, bool jit)
 {
 	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Size is page aligned");
 
-	void* alloc = mmap(nullptr, size, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+	uint flags = MAP_ANONYMOUS | MAP_PRIVATE;
+#ifdef __APPLE__
+	if (jit)
+		flags |= MAP_JIT;
+#endif
+	void* alloc = mmap(nullptr, size, PROT_NONE, flags, -1, 0);
 	if (alloc == MAP_FAILED)
 		return nullptr;
 
@@ -216,15 +221,26 @@ u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* ma
 {
 	pxAssert(static_cast<u8*>(map_base) >= m_base_ptr && static_cast<u8*>(map_base) < (m_base_ptr + m_size));
 
-	// MAP_FIXED is okay here, since we've reserved the entire region, and *want* to overwrite the mapping.
 	const uint lnxmode = LinuxProt(mode);
-	void* const ptr = mmap(map_base, map_size, lnxmode, MAP_SHARED | MAP_FIXED,
-		static_cast<int>(reinterpret_cast<intptr_t>(file_handle)), static_cast<off_t>(file_offset));
-	if (ptr == MAP_FAILED)
-		return nullptr;
+	if (file_handle)
+	{
+		const int fd = static_cast<int>(reinterpret_cast<intptr_t>(file_handle));
+		// MAP_FIXED is okay here, since we've reserved the entire region, and *want* to overwrite the mapping.
+		void* const ptr = mmap(map_base, map_size, lnxmode, MAP_SHARED | MAP_FIXED, fd, static_cast<off_t>(file_offset));
+		if (ptr == MAP_FAILED)
+			return nullptr;
+	}
+	else
+	{
+		// macOS doesn't seem to allow MAP_JIT with MAP_FIXED
+		// So we do the MAP_JIT in the allocation, and just mprotect here
+		// Note that this will only work the first time for a given region
+		if (mprotect(map_base, map_size, lnxmode) < 0)
+			return nullptr;
+	}
 
 	m_num_mappings++;
-	return static_cast<u8*>(ptr);
+	return static_cast<u8*>(map_base);
 }
 
 bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)

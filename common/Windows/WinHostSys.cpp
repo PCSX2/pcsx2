@@ -183,7 +183,7 @@ SharedMemoryMappingArea::PlaceholderMap::iterator SharedMemoryMappingArea::FindP
 		return m_placeholder_ranges.end();
 }
 
-std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t size)
+std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t size, bool jit)
 {
 	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Size is page aligned");
 
@@ -241,11 +241,22 @@ u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* ma
 	}
 
 	// actually do the mapping, replacing the placeholder on the range
-	if (!MapViewOfFile3(static_cast<HANDLE>(file_handle), GetCurrentProcess(),
-			map_base, file_offset, map_size, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0))
+	if (file_handle)
 	{
-		Console.Error("(SharedMemoryMappingArea) MapViewOfFile3() failed: %u", GetLastError());
-		return nullptr;
+		if (!MapViewOfFile3(static_cast<HANDLE>(file_handle), GetCurrentProcess(),
+				map_base, file_offset, map_size, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0))
+		{
+			Console.Error("(SharedMemoryMappingArea) MapViewOfFile3() failed: %u", GetLastError());
+			return nullptr;
+		}
+	}
+	else
+	{
+		if (!VirtualAlloc2(GetCurrentProcess(), map_base, map_size, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0))
+		{
+			Console.Error("(SharedMemoryMappingArea) VirtualAlloc2() failed: %u", GetLastError());
+			return nullptr;
+		}
 	}
 
 	const DWORD prot = ConvertToWinApi(mode);

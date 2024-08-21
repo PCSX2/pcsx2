@@ -146,7 +146,7 @@ namespace PageFaultHandler
 class SharedMemoryMappingArea
 {
 public:
-	static std::unique_ptr<SharedMemoryMappingArea> Create(size_t size);
+	static std::unique_ptr<SharedMemoryMappingArea> Create(size_t size, bool jit = false);
 
 	~SharedMemoryMappingArea();
 
