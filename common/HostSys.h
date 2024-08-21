@@ -148,7 +148,7 @@ namespace PageFaultHandler
 class SharedMemoryMappingArea
 {
 public:
-	static std::unique_ptr<SharedMemoryMappingArea> Create(size_t size);
+	static std::unique_ptr<SharedMemoryMappingArea> Create(size_t size, bool jit = false);
 
 	~SharedMemoryMappingArea();
 
@@ -160,7 +160,7 @@ public:
 	__fi u8* PagePointer(size_t page) const { return m_base_ptr + __pagesize * page; }
 
 	u8* Map(void* file_handle, size_t file_offset, void* map_base, size_t map_size, const PageProtectionMode& mode);
-	bool Unmap(void* map_base, size_t map_size);
+	bool Unmap(void* map_base, size_t map_size, bool is_file = true);
 
 private:
 	SharedMemoryMappingArea(u8* base_ptr, size_t size, size_t num_pages);
