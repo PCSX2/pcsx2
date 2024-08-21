@@ -14,19 +14,15 @@
 #include <fcntl.h>
 #include <mutex>
 #include <sys/mman.h>
-#include <ucontext.h>
 #include <unistd.h>
+#ifndef __APPLE__
+#include <ucontext.h>
+#endif
 
 #include "fmt/core.h"
 
 #if defined(__FreeBSD__)
 #include "cpuinfo.h"
-#endif
-
-// FreeBSD does not have MAP_FIXED_NOREPLACE, but does have MAP_EXCL.
-// MAP_FIXED combined with MAP_EXCL behaves like MAP_FIXED_NOREPLACE.
-#if defined(__FreeBSD__) && !defined(MAP_FIXED_NOREPLACE)
-#define MAP_FIXED_NOREPLACE (MAP_FIXED | MAP_EXCL)
 #endif
 
 static __ri uint LinuxProt(const PageProtectionMode& mode)
@@ -53,8 +49,6 @@ void* HostSys::Mmap(void* base, size_t size, const PageProtectionMode& mode)
 	const u32 prot = LinuxProt(mode);
 
 	u32 flags = MAP_PRIVATE | MAP_ANONYMOUS;
-	if (base)
-		flags |= MAP_FIXED_NOREPLACE;
 
 	void* res = mmap(base, size, prot, flags, -1, 0);
 	if (res == MAP_FAILED)
@@ -124,8 +118,12 @@ void* HostSys::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size
 {
 	const uint lnxmode = LinuxProt(mode);
 
-	const int flags = (baseaddr != nullptr) ? (MAP_SHARED | MAP_FIXED_NOREPLACE) : MAP_SHARED;
-	void* ptr = mmap(baseaddr, size, lnxmode, flags, static_cast<int>(reinterpret_cast<intptr_t>(handle)), static_cast<off_t>(offset));
+	int flags = MAP_SHARED;
+#ifdef __APPLE__
+	if (mode.CanExecute())
+		flags |= MAP_JIT;
+#endif
+	void* ptr = mmap(0, size, lnxmode, flags, static_cast<int>(reinterpret_cast<intptr_t>(handle)), static_cast<off_t>(offset));
 	if (ptr == MAP_FAILED)
 		return nullptr;
 
@@ -137,6 +135,8 @@ void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
 	if (munmap(baseaddr, size) != 0)
 		pxFailRel("Failed to unmap shared memory");
 }
+
+#ifndef __APPLE__
 
 size_t HostSys::GetRuntimePageSize()
 {
@@ -182,6 +182,8 @@ size_t HostSys::GetRuntimeCacheLineSize()
 	return (res > 0) ? static_cast<size_t>(res) : 0;
 #endif
 }
+
+#endif
 
 SharedMemoryMappingArea::SharedMemoryMappingArea(u8* base_ptr, size_t size, size_t num_pages)
 	: m_base_ptr(base_ptr)
@@ -235,6 +237,8 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 	m_num_mappings--;
 	return true;
 }
+
+#ifndef __APPLE__ // These are done in DarwinMisc
 
 namespace PageFaultHandler
 {
@@ -370,3 +374,4 @@ bool PageFaultHandler::Install(Error* error)
 	s_installed = true;
 	return true;
 }
+#endif // __APPLE__
