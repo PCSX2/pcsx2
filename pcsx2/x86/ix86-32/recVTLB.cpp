@@ -119,14 +119,12 @@ static void __vectorcall LogWriteQuad(u32 addr, __m128i val)
 namespace vtlb_private
 {
 	// ------------------------------------------------------------------------
-	// Prepares eax, ecx, and, ebx for Direct or Indirect operations.
-	// Returns the writeback pointer for ebx (return address from indirect handling)
+	// Prepares eax and ecx for Direct or Indirect operations.
 	//
 	static void DynGen_PrepRegs(int addr_reg, int value_reg, u32 sz, bool xmm)
 	{
-		EE::Profiler.EmitMem();
-
 		_freeX86reg(arg1regd);
+		EE::Profiler.EmitMem(addr_reg);
 		xMOV(arg1regd, xRegister32(addr_reg));
 
 		if (value_reg >= 0)
@@ -269,7 +267,7 @@ static void DynGen_HandlerTest(const GenDirectFn& gen_direct, int mode, int bits
 
 // ------------------------------------------------------------------------
 // Generates the various instances of the indirect dispatchers
-// In: arg1reg: vtlb entry, arg2reg: data ptr (if mode >= 64), rbx: function return ptr
+// In: arg1reg: vtlb entry, arg2reg: data ptr (if mode >= 64)
 // Out: eax: result (if mode < 64)
 static void DynGen_IndirectTlbDispatcher(int mode, int bits, bool sign)
 {
@@ -939,14 +937,13 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 	u32 num_gprs = 0;
 	u32 num_fprs = 0;
 
-	const u32 rbxid = static_cast<u32>(rbx.GetId());
 	const u32 arg1id = static_cast<u32>(arg1reg.GetId());
 	const u32 arg2id = static_cast<u32>(arg2reg.GetId());
 	const u32 arg3id = static_cast<u32>(arg3reg.GetId());
 
 	for (u32 i = 0; i < iREGCNT_GPR; i++)
 	{
-		if ((gpr_bitmask & (1u << i)) && (i == rbxid || i == arg1id || i == arg2id || xRegisterBase::IsCallerSaved(i)) && (!is_load || is_xmm || data_register != i))
+		if ((gpr_bitmask & (1u << i)) && (i == arg1id || i == arg2id || xRegisterBase::IsCallerSaved(i)) && (!is_load || is_xmm || data_register != i))
 			num_gprs++;
 	}
 	for (u32 i = 0; i < iREGCNT_XMM; i++)

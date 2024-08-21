@@ -381,10 +381,10 @@ static const void* _DynGen_JITCompile()
 	// void(**base)() = (void(**)())recLUT[addr >> 16];
 	// base[addr >> 2]();
 	xMOV(eax, ptr[&cpuRegs.pc]);
-	xMOV(ebx, eax);
+	xMOV(edx, eax);
 	xSHR(eax, 16);
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, recLUT, rax * wordsize)]);
-	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
+	xJMP(ptrNative[rdx * (wordsize / 4) + rcx]);
 
 	return retval;
 }
@@ -406,10 +406,10 @@ static const void* _DynGen_DispatcherReg()
 	// void(**base)() = (void(**)())recLUT[addr >> 16];
 	// base[addr >> 2]();
 	xMOV(eax, ptr[&cpuRegs.pc]);
-	xMOV(ebx, eax);
+	xMOV(edx, eax);
 	xSHR(eax, 16);
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, recLUT, rax * wordsize)]);
-	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
+	xJMP(ptrNative[rdx * (wordsize / 4) + rcx]);
 
 	return retval;
 }
@@ -2138,26 +2138,26 @@ static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 	// if new_v0 > 0 { jump to dispatcher because loop exited early }
 	// else new_v0 is 0, so exit loop
 
-	xMOV(ebx, ptr32[&cpuRegs.cycle]); // ebx = cycle
+	xMOV(r12d, ptr32[&cpuRegs.cycle]); // r12d = cycle
 	xMOV(ecx, ptr32[&cpuRegs.nextEventCycle]); // ecx = nextEventCycle
-	xCMP(ebx, ecx);
+	xCMP(r12d, ecx);
 	//xJAE((void*)DispatcherEvent); // jump to dispatcher if event immediately
 
 	// TODO: In the case where nextEventCycle < cycle because it's overflowed, tack 8
 	// cycles onto the event count, so hopefully it'll wrap around. This is pretty
 	// gross, but until we switch to 64-bit counters, not many better options.
 	xForwardJB8 not_dispatcher;
-	xADD(ebx, 8);
-	xMOV(ptr32[&cpuRegs.cycle], ebx);
+	xADD(r12d, 8);
+	xMOV(ptr32[&cpuRegs.cycle], r12d);
 	xJMP((void*)DispatcherEvent);
 	not_dispatcher.SetTarget();
 
 	xMOV(edx, ptr32[&cpuRegs.GPR.r[reg].UL[0]]); // eax = v0
-	xLEA(rax, ptrNative[rdx * 8 + rbx]); // edx = v0 * 8 + cycle
+	xLEA(rax, ptrNative[rdx * 8 + r12]); // edx = v0 * 8 + cycle
 	xCMP(rcx, rax);
 	xCMOVB(rax, rcx); // eax = new_cycles = min(v8 * 8, nextEventCycle)
 	xMOV(ptr32[&cpuRegs.cycle], eax); // writeback new_cycles
-	xSUB(eax, ebx); // new_cycles -= cycle
+	xSUB(eax, r12d); // new_cycles -= cycle
 	xSHR(eax, 3); // compute new v0 value
 	xSUB(edx, eax); // v0 -= cycle_diff
 	xMOV(ptr32[&cpuRegs.GPR.r[reg].UL[0]], edx); // write back new value of v0
