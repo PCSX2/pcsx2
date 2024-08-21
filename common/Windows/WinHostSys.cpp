@@ -35,22 +35,6 @@ static DWORD ConvertToWinApi(const PageProtectionMode& mode)
 	return winmode;
 }
 
-void* HostSys::Mmap(void* base, size_t size, const PageProtectionMode& mode)
-{
-	if (mode.IsNone())
-		return nullptr;
-
-	return VirtualAlloc(base, size, MEM_RESERVE | MEM_COMMIT, ConvertToWinApi(mode));
-}
-
-void HostSys::Munmap(void* base, size_t size)
-{
-	if (!base)
-		return;
-
-	VirtualFree((void*)base, 0, MEM_RELEASE);
-}
-
 void HostSys::MemProtect(void* baseaddr, size_t size, const PageProtectionMode& mode)
 {
 	pxAssert((size & (__pagesize - 1)) == 0);
@@ -75,29 +59,6 @@ void* HostSys::CreateSharedMemory(const char* name, size_t size)
 void HostSys::DestroySharedMemory(void* ptr)
 {
 	CloseHandle(static_cast<HANDLE>(ptr));
-}
-
-void* HostSys::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, const PageProtectionMode& mode)
-{
-	void* ret = MapViewOfFileEx(static_cast<HANDLE>(handle), FILE_MAP_READ | FILE_MAP_WRITE,
-		static_cast<DWORD>(offset >> 32), static_cast<DWORD>(offset), size, baseaddr);
-	if (!ret)
-		return nullptr;
-
-	const DWORD prot = ConvertToWinApi(mode);
-	if (prot != PAGE_READWRITE)
-	{
-		DWORD old_prot;
-		if (!VirtualProtect(ret, size, prot, &old_prot))
-			pxFail("Failed to protect memory mapping");
-	}
-	return ret;
-}
-
-void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
-{
-	if (!UnmapViewOfFile(baseaddr))
-		pxFail("Failed to unmap shared memory");
 }
 
 size_t HostSys::GetRuntimePageSize()
