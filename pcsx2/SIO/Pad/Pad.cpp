@@ -473,7 +473,8 @@ std::vector<std::string> Pad::GetInputProfileNames()
 {
 	FileSystem::FindResultsArray results;
 	FileSystem::FindFiles(EmuFolders::InputProfiles.c_str(), "*.ini",
-		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS,
+		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS |
+			FILESYSTEM_FIND_SORT_BY_NAME,
 		&results);
 
 	std::vector<std::string> ret;
