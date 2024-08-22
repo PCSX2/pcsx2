@@ -45,23 +45,33 @@ void QtHost::UpdateApplicationTheme()
 	SetIconThemeFromStyle();
 }
 
+bool QtHost::IsDarkApplicationTheme()
+{
+	QPalette palette = qApp->palette();
+	return (palette.windowText().color().value() > palette.window().color().value());
+}
+
+void QtHost::SetIconThemeFromStyle()
+{
+	const bool dark = IsDarkApplicationTheme();
+	QIcon::setThemeName(dark ? QStringLiteral("white") : QStringLiteral("black"));
+}
+
 void QtHost::SetStyleFromSettings()
 {
 	const std::string theme(Host::GetBaseStringSettingValue("UI", "Theme", GetDefaultThemeName()));
 
-	// setPalette() shouldn't be necessary, as the documentation claims that setStyle() resets the palette, but it
-	// is here, to work around a bug in 6.4.x and 6.5.x where the palette doesn't restore after changing themes.
-	qApp->setPalette(QPalette(s_unthemed_palette));
-
 	if (theme == "fusion")
 	{
 		qApp->setStyle(QStyleFactory::create("Fusion"));
+		qApp->setPalette(s_unthemed_palette);
 		qApp->setStyleSheet(QString());
 	}
 #ifdef _WIN32
 	else if (theme == "windowsvista")
 	{
 		qApp->setStyle(QStyleFactory::create("windowsvista"));
+		qApp->setPalette(s_unthemed_palette);
 		qApp->setStyleSheet(QString());
 	}
 #endif
@@ -98,6 +108,7 @@ void QtHost::SetStyleFromSettings()
 		darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
 		qApp->setPalette(darkPalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "darkfusionblue")
 	{
@@ -132,6 +143,7 @@ void QtHost::SetStyleFromSettings()
 		darkBluePalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
 		qApp->setPalette(darkBluePalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "GreyMatter")
 	{
@@ -167,6 +179,7 @@ void QtHost::SetStyleFromSettings()
 		greyMatterPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
 		qApp->setPalette(greyMatterPalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "UntouchedLagoon")
 	{
@@ -201,6 +214,7 @@ void QtHost::SetStyleFromSettings()
 		untouchedLagoonPalette.setColor(QPalette::Disabled, QPalette::Light, tameTeal);
 
 		qApp->setPalette(untouchedLagoonPalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "BabyPastel")
 	{
@@ -237,6 +251,7 @@ void QtHost::SetStyleFromSettings()
 		babyPastelPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
 		qApp->setPalette(babyPastelPalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "PizzaBrown")
 	{
@@ -273,6 +288,7 @@ void QtHost::SetStyleFromSettings()
 		pizzaPalette.setColor(QPalette::Disabled, QPalette::Light, gray.lighter());
 
 		qApp->setPalette(pizzaPalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "PCSX2Blue")
 	{
@@ -307,6 +323,7 @@ void QtHost::SetStyleFromSettings()
 		pcsx2BluePalette.setColor(QPalette::Disabled, QPalette::Light, darkBlue);
 
 		qApp->setPalette(pcsx2BluePalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "ScarletDevilRed")
 	{
@@ -339,6 +356,7 @@ void QtHost::SetStyleFromSettings()
 		scarletDevilPalette.setColor(QPalette::Disabled, QPalette::Light, darkRed);
 
 		qApp->setPalette(scarletDevilPalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "VioletAngelPurple")
 	{
@@ -371,6 +389,7 @@ void QtHost::SetStyleFromSettings()
 		violetAngelPalette.setColor(QPalette::Disabled, QPalette::Light, nauticalPurple);
 
 		qApp->setPalette(violetAngelPalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "CobaltSky")
 	{
@@ -407,6 +426,7 @@ void QtHost::SetStyleFromSettings()
 		cobaltSkyPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
 		qApp->setPalette(cobaltSkyPalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "Ruby")
 	{
@@ -439,6 +459,7 @@ void QtHost::SetStyleFromSettings()
 		rubyPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
 
 		qApp->setPalette(rubyPalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "Sapphire")
 	{
@@ -471,6 +492,7 @@ void QtHost::SetStyleFromSettings()
 		sapphirePalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
 
 		qApp->setPalette(sapphirePalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "Emerald")
 	{
@@ -503,6 +525,7 @@ void QtHost::SetStyleFromSettings()
 		emeraldPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
 
 		qApp->setPalette(emeraldPalette);
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "Custom")
 	{
@@ -525,18 +548,7 @@ void QtHost::SetStyleFromSettings()
 	else
 	{
 		qApp->setStyle(s_unthemed_style_name);
+		qApp->setPalette(s_unthemed_palette);
 		qApp->setStyleSheet(QString());
 	}
-}
-
-bool QtHost::IsDarkApplicationTheme()
-{
-	QPalette palette = qApp->palette();
-	return (palette.windowText().color().value() > palette.window().color().value());
-}
-
-void QtHost::SetIconThemeFromStyle()
-{
-	const bool dark = IsDarkApplicationTheme();
-	QIcon::setThemeName(dark ? QStringLiteral("white") : QStringLiteral("black"));
 }
