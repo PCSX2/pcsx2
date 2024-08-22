@@ -17,12 +17,14 @@
 #include "fmt/format.h"
 
 #include <QtCore/QSortFilterProxyModel>
+#include <QtGui/QPainter>
 #include <QtGui/QPixmap>
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
+#include <QtWidgets/QStyledItemDelegate>
 
 static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
 	".bin/.iso (ISO Disc Images)\n"
@@ -95,6 +97,40 @@ private:
 	QString m_filter_name;
 };
 
+namespace
+{
+	class GameListIconStyleDelegate final : public QStyledItemDelegate
+	{
+	public:
+		GameListIconStyleDelegate(QWidget* parent)
+			: QStyledItemDelegate(parent)
+		{
+		}
+		~GameListIconStyleDelegate() = default;
+
+		void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+		{
+			// https://stackoverflow.com/questions/32216568/how-to-set-icon-center-in-qtableview
+			Q_ASSERT(index.isValid());
+
+			// draw default item
+			QStyleOptionViewItem opt = option;
+			initStyleOption(&opt, index);
+			opt.icon = QIcon();
+			QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter, 0);
+
+			const QRect r = option.rect;
+			const QPixmap pix = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
+			const int pix_width = static_cast<int>(pix.width() / pix.devicePixelRatio());
+			const int pix_height = static_cast<int>(pix.width() / pix.devicePixelRatio());
+
+			// draw pixmap at center of item
+			const QPoint p = QPoint((r.width() - pix_width) / 2, (r.height() - pix_height) / 2);
+			painter->drawPixmap(r.topLeft() + p, pix);
+		}
+	};
+} // namespace
+
 GameListWidget::GameListWidget(QWidget* parent /* = nullptr */)
 	: QWidget(parent)
 {
@@ -152,6 +188,7 @@ void GameListWidget::initialize()
 	m_table_view->verticalHeader()->hide();
 	m_table_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	m_table_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
+	m_table_view->setItemDelegateForColumn(0, new GameListIconStyleDelegate(this));
 
 	loadTableViewColumnVisibilitySettings();
 	loadTableViewColumnSortSettings();
