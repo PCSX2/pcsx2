@@ -1196,7 +1196,7 @@ size_t FileSystem::ReadFileWithProgress(std::FILE* fp, void* dst, size_t length,
 			break;
 
 		const size_t read_size = std::min(length - done, chunk_size);
-		if (std::fread(static_cast<u8*>(dst)+ done, read_size, 1, fp) != 1)
+		if (std::fread(static_cast<u8*>(dst) + done, read_size, 1, fp) != 1)
 		{
 			Error::SetErrno(error, "fread() failed: ", errno);
 			break;
@@ -1460,7 +1460,24 @@ bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, Fin
 	}
 
 	// enter the recursive function
-	return (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) > 0);
+	if (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) == 0)
+		return false;
+
+	if (flags & FILESYSTEM_FIND_SORT_BY_NAME)
+	{
+		std::sort(results->begin(), results->end(), [](const FILESYSTEM_FIND_DATA& lhs, const FILESYSTEM_FIND_DATA& rhs) {
+			// directories first
+			if ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) !=
+				(rhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
+			{
+				return ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0);
+			}
+
+			return (StringUtil::Strcasecmp(lhs.FileName.c_str(), rhs.FileName.c_str()) < 0);
+		});
+	}
+
+	return true;
 }
 
 static void TranslateStat64(struct stat* st, const struct _stat64& st64)
@@ -2042,7 +2059,24 @@ bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, Fin
 	}
 
 	// enter the recursive function
-	return (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) > 0);
+	if (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) == 0)
+		return false;
+
+	if (flags & FILESYSTEM_FIND_SORT_BY_NAME)
+	{
+		std::sort(results->begin(), results->end(), [](const FILESYSTEM_FIND_DATA& lhs, const FILESYSTEM_FIND_DATA& rhs) {
+			// directories first
+			if ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) !=
+				(rhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
+			{
+				return ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0);
+			}
+
+			return (StringUtil::Strcasecmp(lhs.FileName.c_str(), rhs.FileName.c_str()) < 0);
+		});
+	}
+
+	return true;
 }
 
 bool FileSystem::StatFile(const char* path, struct stat* st)

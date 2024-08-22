@@ -1863,7 +1863,9 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
 	{
 		FileSystem::FindResultsArray results;
 		FileSystem::FindFiles(s_file_selector_current_directory.c_str(), "*",
-			FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
+			FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES |
+				FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_SORT_BY_NAME,
+			&results);
 
 		std::string parent_path;
 		std::string::size_type sep_pos = s_file_selector_current_directory.rfind(FS_OSPATH_SEPARATOR_CHARACTER);
