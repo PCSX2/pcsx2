@@ -586,6 +586,10 @@ void MainWindow::quit()
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 	}
 
+	// Big picture might still be active.
+	if (m_display_created)
+		g_emu_thread->stopFullscreenUI();
+
 	// Ensure subwindows are removed before quitting. That way the log window cancelling
 	// the close event won't cancel the quit process.
 	destroySubWindows();
@@ -1360,7 +1364,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		{
 			connect(menu.addAction(tr("Check Wiki Page")), &QAction::triggered, [this, entry]() { goToWikiPage(entry); });
 		}
-		
+
 		menu.addSeparator();
 
 		if (!s_vm_valid)
