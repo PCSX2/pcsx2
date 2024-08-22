@@ -537,7 +537,10 @@ void GameListWidget::loadTableViewColumnSortSettings()
 			.value_or(DEFAULT_SORT_COLUMN);
 	const bool sort_descending =
 		Host::GetBaseBoolSettingValue("GameListTableView", "SortDescending", DEFAULT_SORT_DESCENDING);
-	m_table_view->sortByColumn(sort_column, sort_descending ? Qt::DescendingOrder : Qt::AscendingOrder);
+	const Qt::SortOrder sort_order = sort_descending ? Qt::DescendingOrder : Qt::AscendingOrder;
+	m_sort_model->sort(sort_column, sort_order);
+	if (QHeaderView* hv = m_table_view->horizontalHeader())
+		hv->setSortIndicator(sort_column, sort_order);
 }
 
 void GameListWidget::saveTableViewColumnSortSettings()
