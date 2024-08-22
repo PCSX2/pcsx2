@@ -924,9 +924,16 @@ void GSDownloadTextureVK::Flush()
 
 	// Need to execute command buffer.
 	if (GSDeviceVK::GetInstance()->GetCurrentFenceCounter() == m_copy_fence_counter)
+	{
+		if (GSDeviceVK::GetInstance()->InRenderPass())
+			GSDeviceVK::GetInstance()->EndRenderPass();
+
 		GSDeviceVK::GetInstance()->ExecuteCommandBufferForReadback();
+	}
 	else
+	{
 		GSDeviceVK::GetInstance()->WaitForFenceCounter(m_copy_fence_counter);
+	}
 }
 
 #ifdef PCSX2_DEVBUILD
