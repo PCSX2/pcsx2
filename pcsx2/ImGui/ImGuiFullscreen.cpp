@@ -2679,16 +2679,17 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 			continue;
 		}
 
-		const ImVec2 title_size(text_font->CalcTextSizeA(title_font->FontSize, max_text_width, max_text_width,
+		const ImVec2 title_size(title_font->CalcTextSizeA(title_font->FontSize, max_text_width, max_text_width,
 			notif.title.c_str(), notif.title.c_str() + notif.title.size()));
 
 		const ImVec2 text_size(text_font->CalcTextSizeA(text_font->FontSize, max_text_width, max_text_width,
 			notif.text.c_str(), notif.text.c_str() + notif.text.size()));
 
-		const float box_width = std::max(
-			(horizontal_padding * 2.0f) + badge_size + horizontal_spacing + std::max(title_size.x, text_size.x), min_width);
+		const float box_width = std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
+											 ImCeil(std::max(title_size.x, text_size.x)),
+			min_width);
 		const float box_height =
-			std::max((vertical_padding * 2.0f) + title_size.y + vertical_spacing + text_size.y, min_height);
+			std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y), min_height);
 
 		u8 opacity;
 		if (time_passed < NOTIFICATION_FADE_IN_TIME)
