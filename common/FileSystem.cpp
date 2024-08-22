@@ -1945,7 +1945,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
 		outData.Attributes = 0;
 
 		struct stat sDir;
-		if (stat(full_path.c_str(), &sDir) < 0)
+		if (lstat(full_path.c_str(), &sDir) < 0)
 			continue;
 
 		if (S_ISDIR(sDir.st_mode))
@@ -2067,7 +2067,7 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
 
 	// stat file
 	struct stat sysStatData;
-	if (stat(path, &sysStatData) < 0)
+	if (lstat(path, &sysStatData) < 0)
 		return false;
 
 	// parse attributes
@@ -2123,7 +2123,7 @@ bool FileSystem::FileExists(const char* path)
 
 	// stat file
 	struct stat sysStatData;
-	if (stat(path, &sysStatData) < 0)
+	if (lstat(path, &sysStatData) < 0)
 		return false;
 
 	if (S_ISDIR(sysStatData.st_mode))
@@ -2140,7 +2140,7 @@ bool FileSystem::DirectoryExists(const char* path)
 
 	// stat file
 	struct stat sysStatData;
-	if (stat(path, &sysStatData) < 0)
+	if (lstat(path, &sysStatData) < 0)
 		return false;
 
 	if (S_ISDIR(sysStatData.st_mode))
@@ -2190,7 +2190,7 @@ bool FileSystem::CreateDirectoryPath(const char* path, bool recursive, Error* er
 	{
 		// check the attributes
 		struct stat sysStatData;
-		if (stat(path, &sysStatData) == 0 && S_ISDIR(sysStatData.st_mode))
+		if (lstat(path, &sysStatData) == 0 && S_ISDIR(sysStatData.st_mode))
 			return true;
 	}
 
@@ -2260,7 +2260,7 @@ bool FileSystem::DeleteFilePath(const char* path, Error* error)
 	}
 
 	struct stat sysStatData;
-	if (stat(path, &sysStatData) != 0 || S_ISDIR(sysStatData.st_mode))
+	if (lstat(path, &sysStatData) != 0 || S_ISDIR(sysStatData.st_mode))
 	{
 		Error::SetStringView(error, "File does not exist.");
 		return false;
@@ -2300,7 +2300,7 @@ bool FileSystem::DeleteDirectory(const char* path)
 		return false;
 
 	struct stat sysStatData;
-	if (stat(path, &sysStatData) != 0 || !S_ISDIR(sysStatData.st_mode))
+	if (lstat(path, &sysStatData) != 0 || !S_ISDIR(sysStatData.st_mode))
 		return false;
 
 	return (rmdir(path) == 0);
