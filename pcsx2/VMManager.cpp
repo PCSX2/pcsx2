@@ -660,11 +660,6 @@ void VMManager::LoadInputBindings(SettingsInterface& si, std::unique_lock<std::m
 			Host::Internal::SetInputSettingsLayer(s_input_settings_interface.get(), lock);
 		}
 	}
-	else if (SettingsInterface* gsi = Host::Internal::GetGameSettingsLayer();
-			 gsi && gsi->GetBoolValue("Pad", "UseGameSettingsForController", false))
-	{
-		InputManager::ReloadBindings(si, *gsi, si);
-	}
 	else
 	{
 		InputManager::ReloadBindings(si, si, si);
