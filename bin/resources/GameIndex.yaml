@@ -1208,6 +1208,8 @@ SCAJ-20027:
 SCAJ-20028:
   name: "Tales of Destiny 2"
   region: "NTSC-Unk"
+  speedHacks:
+    mvuFlag: 0 # Fixes graphical corruptions.
 SCAJ-20029:
   name: "R-Type Final"
   region: "NTSC-Unk"
@@ -1848,6 +1850,8 @@ SCAJ-20146:
   name: "Wang Da Yu Ju Xiang"
   region: "NTSC-C"
   compat: 5
+  roundModes:
+    eeRoundMode: 3 # Prevents Wander from moving when charging the floor.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -2142,6 +2146,8 @@ SCAJ-20195:
 SCAJ-20196:
   name: "Wang Da Yu Ju Xiang [PlayStation 2 the Best]"
   region: "NTSC-C"
+  roundModes:
+    eeRoundMode: 3 # Prevents Wander from moving when charging the floor.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -3964,6 +3970,8 @@ SCED-53947:
 SCED-53962:
   name: "Shadow of the Colossus [Demo]"
   region: "PAL-M5"
+  roundModes:
+    eeRoundMode: 3 # Prevents Wander from moving when charging the floor.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -5576,6 +5584,8 @@ SCES-53326:
   name: "Shadow of the Colossus"
   region: "PAL-E"
   compat: 5
+  roundModes:
+    eeRoundMode: 3 # Prevents Wander from moving when charging the floor.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -6629,6 +6639,8 @@ SCKA-20008:
   name: "Tales of Destiny 2"
   region: "NTSC-K"
   compat: 5
+  speedHacks:
+    mvuFlag: 0 # Fixes graphical corruptions.
 SCKA-20009:
   name: "R-Type Final"
   region: "NTSC-K"
@@ -6949,6 +6961,8 @@ SCKA-20053:
 SCKA-20054:
   name: "Tales of Destiny 2 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
+  speedHacks:
+    mvuFlag: 0 # Fixes graphical corruptions.
 SCKA-20055:
   name: "Mystic Nights"
   region: "NTSC-K"
@@ -6989,6 +7003,8 @@ SCKA-20061:
   name: "Wanda to Kyozou"
   region: "NTSC-K"
   compat: 5
+  roundModes:
+    eeRoundMode: 3 # Prevents Wander from moving when charging the floor.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -8550,6 +8566,8 @@ SCPS-15097:
   name-en: "Wanda to Kyozou"
   region: "NTSC-J"
   compat: 5
+  roundModes:
+    eeRoundMode: 3 # Prevents Wander from moving when charging the floor.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -9297,6 +9315,8 @@ SCPS-19320:
   name-sort: "わんだときょぞう PlayStation 2 the Best"
   name-en: "Wanda to Kyozou [PlayStation 2 the Best]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 3 # Prevents Wander from moving when charging the floor.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -9453,6 +9473,8 @@ SCPS-19333:
 SCPS-19335:
   name: "Wanda to Kyozou [PlayStation 2 the Best Reprint]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 3 # Prevents Wander from moving when charging the floor.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -9760,6 +9782,8 @@ SCPS-55049:
 SCPS-55050:
   name: "Tales of Destiny 2"
   region: "NTSC-J"
+  speedHacks:
+    mvuFlag: 0 # Fixes graphical corruptions.
 SCPS-55901:
   name: "Xenosaga Episode I - Der Wille zur Macht"
   region: "NTSC-J"
@@ -11344,6 +11368,8 @@ SCUS-97472:
   name: "Shadow of the Colossus"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 3 # Prevents Wander from moving when charging the floor.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -11561,6 +11587,8 @@ SCUS-97504:
 SCUS-97505:
   name: "Shadow of the Colossus [Demo]"
   region: "NTSC-U"
+  roundModes:
+    eeRoundMode: 3 # Prevents Wander from moving when charging the floor.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes water color.
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -52834,6 +52862,8 @@ SLPS-25172:
   name-sort: "ているず おぶ ですてぃにー2"
   name-en: "Tales of Destiny 2"
   region: "NTSC-J"
+  speedHacks:
+    mvuFlag: 0 # Fixes graphical corruptions.
 SLPS-25173:
   name: "Omoide ni Kawaru Kimi - Memories Off"
   region: "NTSC-J"
@@ -57466,6 +57496,8 @@ SLPS-72502:
   name-sort: "ているず おぶ でぃすてぃにー2 MEGA HITS!"
   name-en: "Tales of Destiny 2 [Mega Hits]"
   region: "NTSC-J"
+  speedHacks:
+    mvuFlag: 0 # Fixes graphical corruptions.
 SLPS-73001:
   name: "Pilot ni Narou! 2"
   region: "NTSC-J"
@@ -57715,6 +57747,8 @@ SLPS-73219:
   name-sort: "ているず おぶ でぃすてぃにー2 PlayStation 2 the Best"
   name-en: "Tales of Destiny 2 [PlayStation 2 the Best]"
   region: "NTSC-J"
+  speedHacks:
+    mvuFlag: 0 # Fixes graphical corruptions.
 SLPS-73220:
   name: "ウルトラマン PlayStation 2 the Best"
   name-sort: "うるとらまん PlayStation 2 the Best"
