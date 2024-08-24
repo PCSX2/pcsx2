@@ -2514,21 +2514,28 @@ void VMManager::LogCPUCapabilities()
 	Console.WriteLnFmt("  Processor        = {}", cpuinfo_get_package(0)->name);
 	Console.WriteLnFmt("  Core Count       = {} cores", cpuinfo_get_cores_count());
 	Console.WriteLnFmt("  Thread Count     = {} threads", cpuinfo_get_processors_count());
+	Console.WriteLnFmt("  Cluster Count    = {} clusters", cpuinfo_get_clusters_count());
 #ifdef _WIN32
 	LogUserPowerPlan();
 #endif
 
 #ifdef _M_X86
-	std::string features;
+	std::string extensions;
 	if (cpuinfo_has_x86_avx())
-		features += "AVX ";
+		extensions += "AVX ";
 	if (cpuinfo_has_x86_avx2())
-		features += "AVX2 ";
+		extensions += "AVX2 ";
+	if (cpuinfo_has_x86_avx512f())
+		extensions += "AVX512F ";
+#ifdef _M_ARM64
+	if (cpuinfo_has_arm_neon())
+		extensions += "NEON ";
+#endif
 
-	StringUtil::StripWhitespace(&features);
+	StringUtil::StripWhitespace(&extensions);
 
-	Console.WriteLn(Color_StrongBlack, "x86 Features Detected:");
-	Console.WriteLnFmt("  {}", features);
+	Console.WriteLn(Color_StrongBlack, "CPU Extensions Detected:");
+	Console.WriteLnFmt("  {}", extensions);
 	Console.WriteLn();
 #endif
 
