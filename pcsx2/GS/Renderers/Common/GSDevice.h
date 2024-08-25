@@ -176,6 +176,8 @@ enum class HWBlendType
 	SRC_ALPHA_DST_FACTOR    = 2, // Use the dest color as blend factor, Cs is set to (Alpha - 1).
 	SRC_DOUBLE              = 3, // Double source color.
 	SRC_HALF_ONE_DST_FACTOR = 4, // Use the dest color as blend factor, Cs is set to 0.5, additionally divide As or Af by 2.
+	SRC_INV_DST_BLEND_HALF  = 5, // Halve the alpha then double the final result.
+	INV_SRC_DST_BLEND_HALF  = 6, // Halve the alpha then double the final result.
 
 	BMIX1_ALPHA_HIGH_ONE    = 1, // Blend formula is replaced when alpha is higher than 1.
 	BMIX1_SRC_HALF          = 2, // Impossible blend will always be wrong on hw, divide Cs by 2.

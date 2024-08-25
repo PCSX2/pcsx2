@@ -1177,17 +1177,18 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 		#endif
 
 	#else
+
+		#if PS_BLEND_C == 2
+			vec3 Alpha = vec3(Af);
+		#else
+			vec3 Alpha = vec3(As);
+		#endif
+
 		#if PS_BLEND_HW == 1
 			// Needed for Cd * (As/Ad/F + 1) blending modes
 			Color.rgb = vec3(255.0f);
 		#elif PS_BLEND_HW == 2
 			// Cd*As,Cd*Ad or Cd*F
-
-			#if PS_BLEND_C == 2
-				float Alpha = Af;
-			#else
-				float Alpha = As;
-			#endif
 
 			Color.rgb = max(vec3(0.0f), (Alpha - vec3(1.0f)));
 			Color.rgb *= vec3(255.0f);
@@ -1201,16 +1202,20 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			float color_compensate = 255.0f / max(128.0f, max_color);
 			Color.rgb *= vec3(color_compensate);
 		#elif PS_BLEND_HW == 4
-			// Needed for Cd * (1 - Ad) and Cd*(1 + Alpha)
+			// Needed for Cd * (1 - Ad) and Cd*(1 + Alpha).
 
-			#if PS_BLEND_C == 2
-				float Alpha = Af;
-			#else
-				float Alpha = As;
-			#endif
-
-			As_rgba.rgb = vec3(Alpha) * vec3(128.0f / 255.0f);
+			As_rgba.rgb = Alpha * vec3(128.0f / 255.0f);
 			Color.rgb = vec3(127.5f);
+		#elif PS_BLEND_HW == 5
+			// Needed for Cs*Alpha + Cd*(1 - Alpha).
+			Alpha *= vec3(128.0f / 255.0f);
+			As_rgba.rgb = (Alpha - vec3(0.5f));
+			Color.rgb = (Color.rgb * Alpha);
+		#elif PS_BLEND_HW == 6
+			// Needed for Cd*Alpha + Cs*(1 - Alpha).
+			Alpha *= vec3(128.0f / 255.0f);
+			As_rgba.rgb = Alpha;
+			Color.rgb *= (Alpha - vec3(0.5f));
 		#endif
 	#endif
 }
