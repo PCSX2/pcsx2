@@ -959,6 +959,8 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 	}
 	else
 	{
+		float3 Alpha = PS_BLEND_C == 2 ? (float3)Af : (float3)As;
+
 		if (PS_BLEND_HW == 1)
 		{
 			// Needed for Cd * (As/Ad/F + 1) blending modes
@@ -967,8 +969,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		else if (PS_BLEND_HW == 2)
 		{
 			// Cd*As,Cd*Ad or Cd*F
-			float Alpha = PS_BLEND_C == 2 ? Af : As;
-			Color.rgb = saturate((float3)Alpha - (float3)1.0f) * (float3)255.0f;
+			Color.rgb = saturate(Alpha - (float3)1.0f) * (float3)255.0f;
 		}
 		else if (PS_BLEND_HW == 3 && PS_RTA_CORRECTION == 0)
 		{
@@ -983,10 +984,23 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		}
 		else if (PS_BLEND_HW == 4)
 		{
-			// Needed for Cd * (1 - Ad) and Cd*(1 + Alpha)
-			float Alpha = PS_BLEND_C == 2 ? Af : As;
-			As_rgba.rgb = (float3)Alpha * (float3)(128.0f / 255.0f);
+			// Needed for Cd * (1 - Ad) and Cd*(1 + Alpha).
+			As_rgba.rgb = Alpha * (float3)(128.0f / 255.0f);
 			Color.rgb = (float3)127.5f;
+		}
+		else if (PS_BLEND_HW == 5)
+		{
+			// Needed for Cs*Alpha + Cd*(1 - Alpha).
+			Alpha *= (float3)(128.0f / 255.0f);
+			As_rgba.rgb = (Alpha - (float3)0.5f);
+			Color.rgb = (Color.rgb * Alpha);
+		}
+		else if (PS_BLEND_HW == 6)
+		{
+			// Needed for Cd*Alpha + Cs*(1 - Alpha).
+			Alpha *= (float3)(128.0f / 255.0f);
+			As_rgba.rgb = Alpha;
+			Color.rgb *= (Alpha - (float3)0.5f);
 		}
 	}
 }
