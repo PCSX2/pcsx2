@@ -2112,7 +2112,7 @@
             <item row="2" column="0">
              <widget class="QCheckBox" name="disableMailboxPresentation">
               <property name="text">
-               <string extracomment="Mailbox Presentation: a type of graphics-rendering technique that has not been exposted to the public that often, so chances are you will need to keep the word mailbox in English. It does not have anything to do with postal mailboxes or email inboxes/outboxes.">Disable Mailbox Presentation</string>
+               <string extracomment="Mailbox Presentation: a type of graphics-rendering technique that has not been exposed to the public that often, so chances are you will need to keep the word mailbox in English. It does not have anything to do with postal mailboxes or email inboxes/outboxes.">Disable Mailbox Presentation</string>
               </property>
              </widget>
             </item>
