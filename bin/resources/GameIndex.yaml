@@ -31315,6 +31315,8 @@ SLPM-55087:
 SLPM-55088:
   name: "Never7 The Age of Infinity [Renai Game Selection]"
   region: "NTSC-J"
+  gameFixes:
+    - SkipMPEGHack # Prevents the game from freezing.
 SLPM-55089:
   name: "Naxat Soft Reach Mania Vol. 1 - CR Galaxy Angel"
   region: "NTSC-J"
@@ -40739,6 +40741,8 @@ SLPM-65689:
   name-sort: "すーぱーらいと2000 れんあいあどべんちゃー Never7〜the end of infinity〜"
   name-en: "Never 7 - The End of Infinity [SuperLite 2000 Series]"
   region: "NTSC-J"
+  gameFixes:
+    - SkipMPEGHack # Prevents the game from freezing.
 SLPM-65690:
   name: "此花4〜闇を祓う祈り〜"
   name-sort: "このはな4〜やみをはらういのり〜"
@@ -53315,6 +53319,8 @@ SLPS-25256:
   name-sort: "Never7 the end of infinity"
   name-en: "Never 7 - The End of Infinity"
   region: "NTSC-J"
+  gameFixes:
+    - SkipMPEGHack # Prevents the game from freezing.
 SLPS-25257:
   name: "想いのかけら 〜Close to 〜"
   name-sort: "おもいのかけら Close to"
