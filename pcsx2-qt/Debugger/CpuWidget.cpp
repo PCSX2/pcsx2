@@ -19,8 +19,6 @@
 
 #include "common/Console.h"
 
-#include "demangler/demangler.h"
-
 #include <QtGui/QClipboard>
 #include <QtWidgets/QMessageBox>
 #include <QtConcurrent/QtConcurrent>
@@ -141,7 +139,7 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	DebuggerSettingsManager::loadGameSettings(&m_savedAddressesModel);
 
 	connect(m_ui.memorySearchWidget, &MemorySearchWidget::addAddressToSavedAddressesList, this, &CpuWidget::addAddressToSavedAddressesList);
-	connect(m_ui.memorySearchWidget, &MemorySearchWidget::goToAddressInDisassemblyView, [this](u32 address) { m_ui.disassemblyWidget->gotoAddress(address);	});
+	connect(m_ui.memorySearchWidget, &MemorySearchWidget::goToAddressInDisassemblyView, [this](u32 address) { m_ui.disassemblyWidget->gotoAddress(address); });
 	connect(m_ui.memorySearchWidget, &MemorySearchWidget::goToAddressInMemoryView, m_ui.memoryviewWidget, &MemoryViewWidget::gotoAddress);
 	connect(m_ui.memorySearchWidget, &MemorySearchWidget::switchToMemoryViewTab, [this]() { m_ui.tabWidget->setCurrentWidget(m_ui.tab_memory); });
 	m_ui.memorySearchWidget->setCpu(&m_cpu);
@@ -598,20 +596,10 @@ void CpuWidget::updateFunctionList(bool whenEmpty)
 
 		m_ui.listFunctions->clear();
 
-		const auto demangler = demangler::CDemangler::createGcc();
 		const QString filter = m_ui.txtFuncSearch->text().toLower();
 		for (const auto& symbol : m_cpu.GetSymbolMap().GetAllSymbols(SymbolType::ST_FUNCTION))
 		{
 			QString symbolName = symbol.name.c_str();
-			if (m_demangleFunctions)
-			{
-				symbolName = QString(demangler->demangleToString(symbol.name).c_str());
-
-				// If the name isn't mangled, or it doesn't understand, it'll return an empty string
-				// Fall back to the original name if this is the case
-				if (symbolName.isEmpty())
-					symbolName = symbol.name.c_str();
-			}
 
 			if (filter.size() && !symbolName.toLower().contains(filter))
 				continue;
@@ -627,7 +615,6 @@ void CpuWidget::updateFunctionList(bool whenEmpty)
 	}
 	else
 	{
-		const auto demangler = demangler::CDemangler::createGcc();
 		const QString filter = m_ui.txtFuncSearch->text().toLower();
 
 		m_ui.treeModules->clear();
@@ -641,12 +628,6 @@ void CpuWidget::updateFunctionList(bool whenEmpty)
 					continue;
 
 				QString symbolName = QString(sym.name.c_str());
-				if (m_demangleFunctions)
-				{
-					QString demangledName = QString(demangler->demangleToString(sym.name).c_str());
-					if (!demangledName.isEmpty())
-						symbolName = demangledName;
-				}
 				QTreeWidgetItem* functionItem = new QTreeWidgetItem(moduleItem, QStringList(QString("%0 %1").arg(FilledQStringFromValue(sym.address, 16)).arg(symbolName)));
 				functionItem->setData(0, Qt::UserRole, sym.address);
 				functions.append(functionItem);
@@ -765,18 +746,6 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 
 		m_funclistContextMenu->addSeparator();
 	}
-	//: "Demangling" is the opposite of "Name mangling", which is a process where a compiler takes function names and combines them with other characteristics of the function (e.g. what types of data it accepts) to ensure they stay unique even when multiple functions exist with the same name (but different inputs / const-ness). See here: https://en.wikipedia.org/wiki/Name_mangling#C++
-	QAction* demangleAction = new QAction(tr("Demangle Symbols"), m_ui.listFunctions);
-	demangleAction->setCheckable(true);
-	demangleAction->setChecked(m_demangleFunctions);
-
-	connect(demangleAction, &QAction::triggered, [this] {
-		m_demangleFunctions = !m_demangleFunctions;
-		m_ui.disassemblyWidget->setDemangle(m_demangleFunctions);
-		updateFunctionList();
-	});
-
-	m_funclistContextMenu->addAction(demangleAction);
 
 	if (m_cpu.getCpuType() == BREAKPOINT_IOP)
 	{
@@ -839,20 +808,7 @@ void CpuWidget::onModuleTreeContextMenu(QPoint pos)
 		m_moduleTreeContextMenu->addAction(gotoMemory);
 	}
 
-	//: "Demangling" is the opposite of "Name mangling", which is a process where a compiler takes function names and combines them with other characteristics of the function (e.g. what types of data it accepts) to ensure they stay unique even when multiple functions exist with the same name (but different inputs / const-ness). See here: https://en.wikipedia.org/wiki/Name_mangling#C++
-	QAction* demangleAction = new QAction(tr("Demangle Symbols"), m_ui.treeModules);
-	demangleAction->setCheckable(true);
-	demangleAction->setChecked(m_demangleFunctions);
-
-	connect(demangleAction, &QAction::triggered, [this] {
-		m_demangleFunctions = !m_demangleFunctions;
-		m_ui.disassemblyWidget->setDemangle(m_demangleFunctions);
-		updateFunctionList();
-	});
-
 	m_moduleTreeContextMenu->addSeparator();
-
-	m_moduleTreeContextMenu->addAction(demangleAction);
 
 	QAction* moduleViewAction = new QAction(tr("Module Tree"), m_ui.treeModules);
 	moduleViewAction->setCheckable(true);

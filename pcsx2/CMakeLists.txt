@@ -1138,7 +1138,6 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	cubeb
 	rcheevos
 	discord-rpc
-	demangler
 	simpleini
 	freesurround
 	SDL2::SDL2
