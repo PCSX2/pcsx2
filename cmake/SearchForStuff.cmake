@@ -112,6 +112,9 @@ if(WIN32)
   add_subdirectory(3rdparty/rainterface EXCLUDE_FROM_ALL)
 endif()
 
+# Symbol table parser.
+add_subdirectory(3rdparty/ccc EXCLUDE_FROM_ALL)
+
 # Architecture-specific.
 if(_M_X86)
 	add_subdirectory(3rdparty/zydis EXCLUDE_FROM_ALL)
