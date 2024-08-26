@@ -1,0 +1,33 @@
+This code was taken from GCC 13.2.0 and specifically the libiberty library which
+contains files licensed under the GPL and the LGPL.
+
+Support for GCC 2.x-style symbols has been reintroduced by reversing the changes
+made by the commit that removed it:
+
+	From: Jason Merrill <jason@redhat.com>
+	Date: Sun, 23 Dec 2018 00:06:34 +0000 (-0500)
+	Subject: Remove support for demangling GCC 2.x era mangling schemes.
+	X-Git-Tag: releases/gcc-9.1.0~2159
+	X-Git-Url: https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff_plain;h=6c8120c5ff130e03d32ff15a8f0d0e703592a2af
+
+	Remove support for demangling GCC 2.x era mangling schemes.
+
+	libiberty/
+		* cplus-dem.c: Remove cplus_mangle_opname, cplus_demangle_opname,
+		internal_cplus_demangle, and all subroutines.
+		(libiberty_demanglers): Remove entries for ancient GNU (pre-3.0),
+		Lucid, ARM, HP, and EDG demangling styles.
+		(cplus_demangle): Remove 'work' variable.  Don't call
+		internal_cplus_demangle.
+	include/
+		* demangle.h: Remove support for ancient GNU (pre-3.0), Lucid,
+		ARM, HP, and EDG demangling styles.
+
+	From-SVN: r267363
+
+In addition, the cplus_demangle_opname function has been modified to address a
+memory safety issue:
+
+	/* CCC: Allocate the result on the heap to prevent buffer overruns. */
+	extern char *
+	cplus_demangle_opname (const char *opname, int options);

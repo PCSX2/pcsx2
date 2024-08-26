@@ -112,6 +112,9 @@ if(WIN32)
   add_subdirectory(3rdparty/rainterface EXCLUDE_FROM_ALL)
 endif()
 
+# Demangler for the debugger.
+add_subdirectory(3rdparty/demangler EXCLUDE_FROM_ALL)
+
 # Symbol table parser.
 add_subdirectory(3rdparty/ccc EXCLUDE_FROM_ALL)
 

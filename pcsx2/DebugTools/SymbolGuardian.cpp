@@ -3,6 +3,7 @@
 
 #include "SymbolGuardian.h"
 
+#include <demangle.h>
 #include <ccc/ast.h>
 #include <ccc/elf.h>
 #include <ccc/importer_flags.h>
@@ -222,6 +223,8 @@ ccc::ModuleHandle SymbolGuardian::ImportSymbolTables(
 	}
 
 	ccc::DemanglerFunctions demangler;
+	demangler.cplus_demangle = cplus_demangle;
+	demangler.cplus_demangle_opname = cplus_demangle_opname;
 
 	u32 importer_flags =
 		ccc::DEMANGLE_PARAMETERS |
