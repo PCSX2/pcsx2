@@ -7,8 +7,7 @@
 #include "Counters.h"
 #include "DEV9/DEV9.h"
 #include "DebugTools/DebugInterface.h"
-#include "DebugTools/MIPSAnalyst.h"
-#include "DebugTools/SymbolMap.h"
+#include "DebugTools/SymbolGuardian.h"
 #include "Elfheader.h"
 #include "FW.h"
 #include "GS.h"
@@ -447,6 +446,9 @@ void VMManager::Internal::CPUThreadShutdown()
 
 	// Ensure emulog gets flushed.
 	Log::SetFileOutputLevel(LOGLEVEL_NONE, std::string());
+
+	R3000SymbolGuardian.ShutdownWorkerThread();
+	R5900SymbolGuardian.ShutdownWorkerThread();
 }
 
 void VMManager::Internal::SetFileLogPath(std::string path)
@@ -1128,9 +1130,6 @@ void VMManager::HandleELFChange(bool verbose_patches_if_changed)
 	Console.WriteLn(Color_StrongOrange, fmt::format("ELF changed, active CRC {:08X} ({})", crc_to_report, s_elf_path));
 	Patch::ReloadPatches(s_disc_serial, crc_to_report, false, false, false, verbose_patches_if_changed);
 	ApplyCoreSettings();
-
-	MIPSAnalyst::ScanForFunctions(
-		R5900SymbolMap, s_elf_text_range.first, s_elf_text_range.first + s_elf_text_range.second, true);
 }
 
 void VMManager::UpdateELFInfo(std::string elf_path)
@@ -1154,6 +1153,25 @@ void VMManager::UpdateELFInfo(std::string elf_path)
 	s_elf_entry_point = elfo.GetEntryPoint();
 	s_elf_text_range = elfo.GetTextRange();
 	s_elf_path = std::move(elf_path);
+
+	R5900SymbolGuardian.Reset();
+
+	// Search for a .sym file to load symbols from.
+	std::string nocash_path;
+	CDVD_SourceType source_type = CDVDsys_GetSourceType();
+	if (source_type == CDVD_SourceType::Iso)
+	{
+		std::string iso_file_path = CDVDsys_GetFile(source_type);
+
+		std::string::size_type n = iso_file_path.rfind('.');
+		if (n == std::string::npos)
+			nocash_path = iso_file_path + ".sym";
+		else
+			nocash_path = iso_file_path.substr(0, n) + ".sym";
+	}
+
+	// Load the symbols stored in the ELF file.
+	R5900SymbolGuardian.ImportElf(elfo.ReleaseData(), s_elf_path, nocash_path);
 }
 
 void VMManager::ClearELFInfo()

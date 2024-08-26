@@ -63,11 +63,6 @@ public slots:
 	void onStackListContextMenu(QPoint pos);
 	void onStackListDoubleClick(const QModelIndex& index);
 
-	void updateFunctionList(bool whenEmpty = false);
-	void onFuncListContextMenu(QPoint pos);
-	void onFuncListDoubleClick(QListWidgetItem* item);
-	void onModuleTreeContextMenu(QPoint pos);
-	void onModuleTreeDoubleClick(QTreeWidgetItem* item);
 	void refreshDebugger();
 	void reloadCPUWidgets();
 
@@ -91,6 +86,4 @@ private:
 	QSortFilterProxyModel m_threadProxyModel;
 	StackModel m_stackModel;
 	SavedAddressesModel m_savedAddressesModel;
-
-	bool m_moduleView = true;
 };

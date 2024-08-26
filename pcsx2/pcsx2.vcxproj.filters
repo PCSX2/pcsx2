@@ -728,9 +728,6 @@
     <ClCompile Include="CDVD\BlockdumpFileReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
-    <ClCompile Include="DebugTools\SymbolMap.cpp">
-      <Filter>System\Ps2\Debug</Filter>
-    </ClCompile>
     <ClCompile Include="DebugTools\DebugInterface.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
@@ -1395,6 +1392,9 @@
     <ClCompile Include="SIO\Pad\PadPopn.cpp">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClCompile>
+    <ClCompile Include="DebugTools\SymbolGuardian.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
     <ClCompile Include="USB\usb-eyetoy\cam-jpeg.cpp">
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
     </ClCompile>
@@ -1660,9 +1660,6 @@
     </ClInclude>
     <ClInclude Include="x86\microVU_Profiler.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugTools\SymbolMap.h">
-      <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
     <ClInclude Include="DebugTools\DebugInterface.h">
       <Filter>System\Ps2\Debug</Filter>
@@ -2336,6 +2333,9 @@
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClInclude>
     <ClInclude Include="SupportURLs.h" />
+    <ClInclude Include="DebugTools\SymbolGuardian.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
     <ClInclude Include="USB\usb-eyetoy\cam-jpeg.h">
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
     </ClInclude>

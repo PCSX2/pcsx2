@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "SymbolMap.h"
+#include "SymbolGuardian.h"
 
 class DebugInterface;
 
@@ -22,7 +22,6 @@ namespace MIPSAnalyst
 		u32 start;
 		u32 end;
 		u64 hash;
-		u32 size;
 		bool isStraightLeaf;
 		bool hasHash;
 		bool suspectedNoReturn;
@@ -30,7 +29,7 @@ namespace MIPSAnalyst
 		char name[64];
 	};
 
-	void ScanForFunctions(SymbolMap& map, u32 startAddr, u32 endAddr, bool insertSymbols);
+	void ScanForFunctions(ccc::SymbolDatabase& database, u32 startAddr, u32 endAddr);
 
 	enum LoadStoreLRType { LOADSTORE_NORMAL, LOADSTORE_LEFT, LOADSTORE_RIGHT };
 

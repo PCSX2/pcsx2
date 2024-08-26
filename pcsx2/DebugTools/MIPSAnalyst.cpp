@@ -4,12 +4,9 @@
 #include "MIPSAnalyst.h"
 #include "Debug.h"
 #include "DebugInterface.h"
-#include "SymbolMap.h"
 #include "DebugInterface.h"
 #include "R5900.h"
 #include "R5900OpcodeTables.h"
-
-static std::vector<MIPSAnalyst::AnalyzedFunction> functions;
 
 #define MIPS_MAKE_J(addr)   (0x08000000 | ((addr)>>2))
 #define MIPS_MAKE_JAL(addr) (0x0C000000 | ((addr)>>2))
@@ -117,12 +114,6 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	static const char *DefaultFunctionName(char buffer[256], u32 startAddr) {
-		std::snprintf(buffer, 256, "z_un_%08x", startAddr);
-		return buffer;
-	}
-
-
 	static u32 ScanAheadForJumpback(u32 fromAddr, u32 knownStart, u32 knownEnd) {
 		static const u32 MAX_AHEAD_SCAN = 0x1000;
 		// Maybe a bit high... just to make sure we don't get confused by recursive tail recursion.
@@ -183,7 +174,8 @@ namespace MIPSAnalyst
 		return furthestJumpbackAddr;
 	}
 
-	void ScanForFunctions(SymbolMap& map, u32 startAddr, u32 endAddr, bool insertSymbols) {
+	void ScanForFunctions(ccc::SymbolDatabase& database, u32 startAddr, u32 endAddr) {
+		std::vector<MIPSAnalyst::AnalyzedFunction> functions;
 		AnalyzedFunction currentFunction = {startAddr};
 
 		u32 furthestBranch = 0;
@@ -192,19 +184,14 @@ namespace MIPSAnalyst
 		bool isStraightLeaf = true;
 		bool suspectedNoReturn = false;
 
-		functions.clear();
-
 		u32 addr;
 		for (addr = startAddr; addr <= endAddr; addr += 4) {
 			// Use pre-existing symbol map info if available. May be more reliable.
-			SymbolInfo syminfo;
-			if (map.GetSymbolInfo(&syminfo, addr, ST_FUNCTION)) {
-				addr = syminfo.address + syminfo.size - 4;
-
-				// We still need to insert the func for hashing purposes.
-				currentFunction.start = syminfo.address;
-				currentFunction.end = syminfo.address + syminfo.size - 4;
-				functions.push_back(currentFunction);
+			ccc::FunctionHandle existing_symbol_handle = database.functions.first_handle_from_starting_address(addr);
+			const ccc::Function* existing_symbol = database.functions.symbol_from_handle(existing_symbol_handle);
+			
+			if (existing_symbol && existing_symbol->address().valid() && existing_symbol->size() > 0) {
+				addr = existing_symbol->address().value + existing_symbol->size() - 4;
 				currentFunction.start = addr + 4;
 				furthestBranch = 0;
 				looking = false;
@@ -289,10 +276,18 @@ namespace MIPSAnalyst
 				}
 			}
 
+			// Prevent functions from being generated that overlap with existing
+			// symbols. This is mainly a problem with symbols from SNDLL symbol
+			// tables as they will have a size of zero.
+			ccc::FunctionHandle next_symbol_handle = database.functions.first_handle_from_starting_address(addr+8);
+			const ccc::Function* next_symbol = database.functions.symbol_from_handle(next_symbol_handle);
+			end |= next_symbol != nullptr;
+
 			if (end) {
-				// most functions are aligned to 8 or 16 bytes
-				// add the padding to this one
-				while (((addr+8) % 16)  && r5900Debug.read32(addr+8) == 0)
+				// Most functions are aligned to 8 or 16 bytes, so add padding
+				// to this one unless a symbol exists implying a new function
+				// follows immediately.
+				while (next_symbol == nullptr && ((addr+8) % 16) && r5900Debug.read32(addr+8) == 0)
 					addr += 4;
 
 				currentFunction.end = addr + 4;
@@ -312,13 +307,45 @@ namespace MIPSAnalyst
 
 		currentFunction.end = addr + 4;
 		functions.push_back(currentFunction);
+		
+		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("Analysis");
+		if(!source->valid())
+			return;
 
-		for (auto iter = functions.begin(); iter != functions.end(); iter++) {
-			iter->size = iter->end - iter->start + 4;
-			if (insertSymbols) {
-				char temp[256];
-				map.AddFunction(DefaultFunctionName(temp, iter->start), iter->start, iter->end - iter->start + 4, iter->suspectedNoReturn);
+		for (const AnalyzedFunction& function : functions) {
+			ccc::FunctionHandle handle = database.functions.first_handle_from_starting_address(function.start);
+			ccc::Function* symbol = database.functions.symbol_from_handle(handle);
+			
+			if (!symbol) {
+				std::string name;
+				
+				// The SNDLL importer may create label symbols for functions if
+				// they're not in a section named ".text" since it can't
+				// otherwise distinguish between functions and globals.
+				for (auto [address, handle] : database.labels.handles_from_starting_address(function.start)) {
+					ccc::Label* label = database.labels.symbol_from_handle(handle);
+					if (label && !label->is_junk) {
+						name = label->name();
+						break;
+					}
+				}
+				
+				if (name.empty()) {
+					name = StringUtil::StdStringFromFormat("z_un_%08x", function.start);
+				}
+
+				ccc::Result<ccc::Function*> symbol_result = database.functions.create_symbol(
+					std::move(name), function.start, *source, nullptr);
+				if (!symbol_result.success())
+					return;
+				symbol = *symbol_result;
 			}
+
+			if (symbol->size() == 0) {
+				symbol->set_size(function.end - function.start + 4);
+			}
+			
+			symbol->is_no_return = function.suspectedNoReturn;
 		}
 	}
 

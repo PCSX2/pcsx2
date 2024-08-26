@@ -12,7 +12,6 @@
 
 #include "R3000A.h"
 #include "IopMem.h"
-#include "SymbolMap.h"
 #include "VMManager.h"
 
 #include "common/StringUtil.h"
@@ -27,16 +26,16 @@ R3000DebugInterface r3000Debug;
 
 enum ReferenceIndexType
 {
-	REF_INDEX_PC       = 32,
-	REF_INDEX_HI       = 33,
-	REF_INDEX_LO       = 34,
+	REF_INDEX_PC = 32,
+	REF_INDEX_HI = 33,
+	REF_INDEX_LO = 34,
 	REF_INDEX_OPTARGET = 0x800,
-	REF_INDEX_OPSTORE  = 0x1000,
-	REF_INDEX_OPLOAD   = 0x2000,
-	REF_INDEX_IS_OPSL  = REF_INDEX_OPTARGET | REF_INDEX_OPSTORE | REF_INDEX_OPLOAD,
-	REF_INDEX_FPU      = 0x4000,
-	REF_INDEX_FPU_INT  = 0x8000,
-	REF_INDEX_VFPU     = 0x10000,
+	REF_INDEX_OPSTORE = 0x1000,
+	REF_INDEX_OPLOAD = 0x2000,
+	REF_INDEX_IS_OPSL = REF_INDEX_OPTARGET | REF_INDEX_OPSTORE | REF_INDEX_OPLOAD,
+	REF_INDEX_FPU = 0x4000,
+	REF_INDEX_FPU_INT = 0x8000,
+	REF_INDEX_VFPU = 0x10000,
 	REF_INDEX_VFPU_INT = 0x20000,
 	REF_INDEX_IS_FLOAT = REF_INDEX_FPU | REF_INDEX_VFPU,
 
@@ -109,10 +108,12 @@ public:
 
 	virtual bool parseSymbol(char* str, u64& symbolValue)
 	{
-		u32 value;
-		bool result = cpu->GetSymbolMap().GetLabelValue(str, value);
-		symbolValue = value;
-		return result;
+		SymbolInfo symbol = cpu->GetSymbolGuardian().SymbolWithName(std::string(str));
+		if (!symbol.address.valid())
+			return false;
+
+		symbolValue = symbol.address.value;
+		return true;
 	}
 
 	virtual u64 getReferenceValue(u64 referenceIndex)
@@ -131,7 +132,7 @@ public:
 			const R5900::OPCODE& opcode = R5900::GetInstruction(OP);
 			if (opcode.flags & IS_MEMORY)
 			{
-				// Fetch the address in the base register 
+				// Fetch the address in the base register
 				u32 target = cpuRegs.GPR.r[(OP >> 21) & 0x1F].UD[0];
 				// Add the offset (lower 16 bits)
 				target += static_cast<u16>(OP);
@@ -238,7 +239,7 @@ void DebugInterface::resumeCpu()
 
 char* DebugInterface::stringFromPointer(u32 p)
 {
-	const int BUFFER_LEN = 25;
+	const int BUFFER_LEN = 64;
 	static char buf[BUFFER_LEN] = {0};
 
 	if (!isValidAddress(p))
@@ -265,6 +266,46 @@ char* DebugInterface::stringFromPointer(u32 p)
 	buf[BUFFER_LEN - 1] = 0;
 	buf[BUFFER_LEN - 2] = '~';
 	return buf;
+}
+
+std::optional<u32> DebugInterface::getCallerStackPointer(const ccc::Function& currentFunction)
+{
+	u32 sp = getRegister(EECAT_GPR, 29);
+	u32 pc = getPC();
+
+	if (pc != currentFunction.address().value)
+	{
+		std::optional<u32> stack_frame_size = getStackFrameSize(currentFunction);
+		if (!stack_frame_size.has_value())
+			return std::nullopt;
+
+		sp += *stack_frame_size;
+	}
+
+	return sp;
+}
+
+std::optional<u32> DebugInterface::getStackFrameSize(const ccc::Function& function)
+{
+	s32 stack_frame_size = function.stack_frame_size;
+
+	if (stack_frame_size < 0)
+	{
+		// The stack frame size isn't stored in the symbol table, so we try
+		// to extract it from the code by checking for an instruction at the
+		// start of the current function that is in the form of
+		// "addui $sp, $sp, frame_size" instead.
+
+		u32 instruction = read32(function.address().value);
+
+		if ((instruction & 0xffff0000) == 0x27bd0000)
+			stack_frame_size = -(instruction & 0xffff);
+
+		if (stack_frame_size < 0)
+			return std::nullopt;
+	}
+
+	return (u32)stack_frame_size;
 }
 
 bool DebugInterface::initExpression(const char* exp, PostfixExpression& dest)
@@ -375,6 +416,14 @@ void R5900DebugInterface::write8(u32 address, u8 value)
 	memWrite8(address, value);
 }
 
+void R5900DebugInterface::write16(u32 address, u16 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	memWrite16(address, value);
+}
+
 void R5900DebugInterface::write32(u32 address, u32 value)
 {
 	if (!isValidAddress(address))
@@ -383,6 +432,21 @@ void R5900DebugInterface::write32(u32 address, u32 value)
 	memWrite32(address, value);
 }
 
+void R5900DebugInterface::write64(u32 address, u64 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	memWrite64(address, value);
+}
+
+void R5900DebugInterface::write128(u32 address, u128 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	memWrite128(address, value);
+}
 
 int R5900DebugInterface::getRegisterCategoryCount()
 {
@@ -727,9 +791,9 @@ u32 R5900DebugInterface::getCycles()
 	return cpuRegs.cycle;
 }
 
-SymbolMap& R5900DebugInterface::GetSymbolMap() const
+SymbolGuardian& R5900DebugInterface::GetSymbolGuardian() const
 {
-	return R5900SymbolMap;
+	return R5900SymbolGuardian;
 }
 
 std::vector<std::unique_ptr<BiosThread>> R5900DebugInterface::GetThreadList() const
@@ -788,7 +852,6 @@ u32 R3000DebugInterface::read32(u32 address, bool& valid)
 	if (!(valid = isValidAddress(address)))
 		return -1;
 	return iopMemRead32(address);
-
 }
 
 u64 R3000DebugInterface::read64(u32 address)
@@ -815,12 +878,40 @@ void R3000DebugInterface::write8(u32 address, u8 value)
 	iopMemWrite8(address, value);
 }
 
+void R3000DebugInterface::write16(u32 address, u16 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	iopMemWrite16(address, value);
+}
+
 void R3000DebugInterface::write32(u32 address, u32 value)
 {
 	if (!isValidAddress(address))
 		return;
 
 	iopMemWrite32(address, value);
+}
+
+void R3000DebugInterface::write64(u32 address, u64 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	iopMemWrite32(address + 0, value);
+	iopMemWrite32(address + 4, value >> 32);
+}
+
+void R3000DebugInterface::write128(u32 address, u128 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	iopMemWrite32(address + 0x0, value._u32[0]);
+	iopMemWrite32(address + 0x4, value._u32[1]);
+	iopMemWrite32(address + 0x8, value._u32[2]);
+	iopMemWrite32(address + 0xc, value._u32[3]);
 }
 
 int R3000DebugInterface::getRegisterCategoryCount()
@@ -1019,9 +1110,9 @@ u32 R3000DebugInterface::getCycles()
 	return psxRegs.cycle;
 }
 
-SymbolMap& R3000DebugInterface::GetSymbolMap() const
+SymbolGuardian& R3000DebugInterface::GetSymbolGuardian() const
 {
-	return R3000SymbolMap;
+	return R3000SymbolGuardian;
 }
 
 std::vector<std::unique_ptr<BiosThread>> R3000DebugInterface::GetThreadList() const

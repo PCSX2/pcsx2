@@ -24,7 +24,7 @@
 
 #include "DebugTools/Breakpoints.h"
 #include "DebugTools/MIPSAnalyst.h"
-#include "DebugTools/SymbolMap.h"
+#include "DebugTools/SymbolGuardian.h"
 #include "R5900OpcodeTables.h"
 
 #include "fmt/format.h"

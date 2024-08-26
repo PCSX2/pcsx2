@@ -4,7 +4,6 @@
 #include "CDVD/CDVDcommon.h"
 #include "CDVD/IsoReader.h"
 #include "CDVD/IsoFileFormats.h"
-#include "DebugTools/SymbolMap.h"
 #include "Config.h"
 #include "Host.h"
 #include "IconsFontAwesome5.h"
@@ -287,20 +286,6 @@ void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile)
 #endif
 
 	m_SourceFilename[enum_cast(srctype)] = std::move(newfile);
-
-	// look for symbol file
-	if (R5900SymbolMap.IsEmpty())
-	{
-		std::string symName;
-		std::string::size_type n = m_SourceFilename[enum_cast(srctype)].rfind('.');
-		if (n == std::string::npos)
-			symName = m_SourceFilename[enum_cast(srctype)] + ".sym";
-		else
-			symName = m_SourceFilename[enum_cast(srctype)].substr(0, n) + ".sym";
-
-		R5900SymbolMap.LoadNocashSym(symName.c_str());
-		R5900SymbolMap.SortSymbols();
-	}
 }
 
 const std::string& CDVDsys_GetFile(CDVD_SourceType srctype)
