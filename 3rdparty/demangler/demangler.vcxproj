@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(SolutionDir)common\vsprops\BaseProjectConfig.props" />
+  <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D31A6DD1-99CA-41D8-A230-1FAE913C8989}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset Condition="!$(Configuration.Contains(Clang))">$(DefaultPlatformToolset)</PlatformToolset>
+    <PlatformToolset Condition="$(Configuration.Contains(Clang))">ClangCL</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
+    <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="..\DefaultProjectRootDir.props" />
+    <Import Project="..\3rdparty.props" />
+    <Import Condition="$(Configuration.Contains(Debug))" Project="..\..\common\vsprops\CodeGen_Debug.props" />
+    <Import Condition="$(Configuration.Contains(Devel))" Project="..\..\common\vsprops\CodeGen_Devel.props" />
+    <Import Condition="$(Configuration.Contains(Release))" Project="..\..\common\vsprops\CodeGen_Release.props" />
+    <Import Condition="!$(Configuration.Contains(Release))" Project="..\..\common\vsprops\IncrementalLinking.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="include\ansidecl.h" />
+    <ClInclude Include="include\cp-demangle.h" />
+    <ClInclude Include="include\demangle.h" />
+    <ClInclude Include="include\dyn-string.h" />
+    <ClInclude Include="include\environ.h" />
+    <ClInclude Include="include\getopt.h" />
+    <ClInclude Include="include\libiberty.h" />
+    <ClInclude Include="include\safe-ctype.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\alloca.c" />
+    <ClCompile Include="src\argv.c" />
+    <ClCompile Include="src\cp-demangle.c" />
+    <ClCompile Include="src\cplus-dem.c" />
+    <ClCompile Include="src\d-demangle.c" />
+    <ClCompile Include="src\dyn-string.c" />
+    <ClCompile Include="src\getopt.c" />
+    <ClCompile Include="src\getopt1.c" />
+    <ClCompile Include="src\rust-demangle.c" />
+    <ClCompile Include="src\safe-ctype.c" />
+    <ClCompile Include="src\xexit.c" />
+    <ClCompile Include="src\xmalloc.c" />
+    <ClCompile Include="src\xmemdup.c" />
+    <ClCompile Include="src\xstrdup.c" />
+  </ItemGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>HAVE_DECL_BASENAME=1;HAVE_LIMITS_H;HAVE_STDLIB_H=1;HAVE_STRING_H=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

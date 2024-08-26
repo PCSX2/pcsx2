@@ -56,6 +56,7 @@
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64'">%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\xbyak</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64'">%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\zydis\include;$(SolutionDir)3rdparty\zydis\dependencies\zycore\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='ARM64'">%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\vixl\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\demangler\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\ccc\src</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -1004,6 +1005,9 @@
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\vixl\vixl.vcxproj" Condition="'$(Platform)'=='ARM64'">
       <Project>{8906836e-f06e-46e8-b11a-74e5e8c7b8fb}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\demangler\demangler.vcxproj">
+      <Project>{d31a6dd1-99ca-41d8-a230-1fae913c8989}</Project>
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\ccc\ccc.vcxproj">
       <Project>{2589f8ce-ea77-4b73-911e-64074569795b}</Project>
