@@ -48,7 +48,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\ccc\src</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)pcsx2</AdditionalIncludeDirectories>
       <!-- Needed for moc pch -->
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\Tools\InputRecording;$(ProjectDir)\Debugger;$(ProjectDir)\Debugger\Models</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\Tools\InputRecording;$(ProjectDir)\Debugger;$(ProjectDir)\Debugger\Models;$(ProjectDir)\Debugger\SymbolTree</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
@@ -87,6 +87,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ColorPickerButton.cpp" />
+    <ClCompile Include="Debugger\SymbolTree\NewSymbolDialogs.cpp" />
+    <ClCompile Include="Debugger\SymbolTree\SymbolTreeDelegates.cpp" />
+    <ClCompile Include="Debugger\SymbolTree\SymbolTreeLocation.cpp" />
+    <ClCompile Include="Debugger\SymbolTree\SymbolTreeModel.cpp" />
+    <ClCompile Include="Debugger\SymbolTree\SymbolTreeNode.cpp" />
+    <ClCompile Include="Debugger\SymbolTree\SymbolTreeWidgets.cpp" />
+    <ClCompile Include="Debugger\SymbolTree\TypeString.cpp" />
     <ClCompile Include="EarlyHardwareCheck.cpp" />
     <ClCompile Include="LogWindow.cpp" />
     <ClCompile Include="QtProgressCallback.cpp" />
@@ -176,6 +183,13 @@
     <QtMoc Include="QtProgressCallback.h" />
     <QtMoc Include="ColorPickerButton.h" />
     <QtMoc Include="LogWindow.h" />
+    <QtMoc Include="Debugger\SymbolTree\NewSymbolDialogs.h" />
+    <QtMoc Include="Debugger\SymbolTree\SymbolTreeDelegates.h" />
+    <QtMoc Include="Debugger\SymbolTree\SymbolTreeLocation.h" />
+    <QtMoc Include="Debugger\SymbolTree\SymbolTreeModel.h" />
+    <QtMoc Include="Debugger\SymbolTree\SymbolTreeNode.h" />
+    <QtMoc Include="Debugger\SymbolTree\SymbolTreeWidgets.h" />
+    <QtMoc Include="Debugger\SymbolTree\TypeString.h" />
     <ClInclude Include="Settings\ControllerSettingWidgetBinder.h" />
     <QtMoc Include="Settings\FolderSettingsWidget.h" />
     <QtMoc Include="Settings\DebugSettingsWidget.h" />
@@ -261,6 +275,13 @@
     <ClCompile Include="$(IntDir)Debugger\Models\moc_ThreadModel.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Models\moc_StackModel.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Models\moc_SavedAddressesModel.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_NewSymbolDialogs.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeDelegates.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeLocation.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeModel.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeNode.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeWidgets.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_TypeString.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListModel.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListRefreshThread.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListWidget.cpp" />
@@ -445,6 +466,8 @@
     <QtUi Include="Settings\ControllerMacroWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <None Include="Debugger\SymbolTree\NewSymbolDialog.ui" />
+    <None Include="Debugger\SymbolTree\SymbolTreeWidget.ui" />
     <QtUi Include="Settings\AudioExpansionSettingsDialog.ui">
       <FileType>Document</FileType>
     </QtUi>

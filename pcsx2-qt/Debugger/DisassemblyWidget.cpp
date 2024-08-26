@@ -15,6 +15,7 @@
 #include <QtGui/QClipboard>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
+#include "SymbolTree/NewSymbolDialogs.h"
 
 using namespace QtUtils;
 
@@ -181,6 +182,13 @@ void DisassemblyWidget::contextGoToAddress()
 
 void DisassemblyWidget::contextAddFunction()
 {
+	NewFunctionDialog* dialog = new NewFunctionDialog(*m_cpu, this);
+	dialog->setName(QString("func_%1").arg(m_selectedAddressStart, 8, 16, QChar('0')));
+	dialog->setAddress(m_selectedAddressStart);
+	if (m_selectedAddressEnd != m_selectedAddressStart)
+		dialog->setCustomSize(m_selectedAddressEnd - m_selectedAddressStart + 4);
+	if (dialog->exec() == QDialog::Accepted)
+		update();
 }
 
 void DisassemblyWidget::contextCopyFunctionName()

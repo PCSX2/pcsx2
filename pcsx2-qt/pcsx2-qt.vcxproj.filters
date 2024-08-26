@@ -28,6 +28,9 @@
     <Filter Include="Translations">
       <UniqueIdentifier>{ad04f939-64a0-4039-97aa-a38b8aa46855}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Debugger\SymbolTree">
+      <UniqueIdentifier>{a622b871-62ae-4b70-b9b2-6ee30ce7fa7a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\pcsx2\windows\PCSX2.rc" />
@@ -355,6 +358,27 @@
     <ClCompile Include="Debugger\DebuggerSettingsManager.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger\SymbolTree\NewSymbolDialogs.cpp">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\SymbolTree\SymbolTreeDelegates.cpp">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\SymbolTree\SymbolTreeLocation.cpp">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\SymbolTree\SymbolTreeModel.cpp">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\SymbolTree\SymbolTreeNode.cpp">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\SymbolTree\SymbolTreeWidgets.cpp">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\SymbolTree\TypeString.cpp">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClCompile>
     <ClCompile Include="VCRuntimeChecker.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -377,6 +401,27 @@
     </ClInclude>
     <ClInclude Include="Debugger\DebuggerSettingsManager.h">
       <Filter>Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\SymbolTree\NewSymbolDialogs.h">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\SymbolTree\SymbolTreeDelegates.h">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\SymbolTree\SymbolTreeLocation.h">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\SymbolTree\SymbolTreeModel.h">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\SymbolTree\SymbolTreeNode.h">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\SymbolTree\SymbolTreeWidgets.h">
+      <Filter>Debugger\SymbolTree</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\SymbolTree\TypeString.h">
+      <Filter>Debugger\SymbolTree</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -694,6 +739,12 @@
     </None>
     <None Include="Settings\ControllerMappingSettingsDialog.ui">
       <Filter>Settings</Filter>
+    </None>
+    <None Include="Debugger\SymbolTree\NewSymbolDialog.ui">
+      <Filter>Debugger\SymbolTree</Filter>
+    </None>
+    <None Include="Debugger\SymbolTree\SymbolTreeWidget.ui">
+      <Filter>Debugger\SymbolTree</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
