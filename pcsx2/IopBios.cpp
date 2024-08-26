@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
-#include "DebugTools/SymbolMap.h"
+#include "DebugTools/SymbolGuardian.h"
 #include "IopBios.h"
 #include "IopMem.h"
 #include "R3000A.h"
@@ -1053,40 +1053,94 @@ namespace R3000A
 		void LoadFuncs(u32 a0reg)
 		{
 			const std::string modname = iopMemReadString(a0reg + 12, 8);
-			ModuleVersion version = {iopMemRead8(a0 + 9), iopMemRead8(a0 + 8)};
-			DevCon.WriteLn(Color_Gray, "RegisterLibraryEntries: %8.8s version %x.%02x", modname.data(), version.major, version.minor);
+			s32 version_major = iopMemRead8(a0reg + 9);
+			s32 version_minor = iopMemRead8(a0reg + 8);
+			DevCon.WriteLn(Color_Gray, "RegisterLibraryEntries: %8.8s version %x.%02x", modname.data(), version_major, version_minor);
 
-			if (R3000SymbolMap.AddModule(modname, version))
-			{
+			R3000SymbolGuardian.ReadWrite([&](ccc::SymbolDatabase& database) {
+				ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("IRX Export Table");
+				if (!source.success())
+					return;
+
+				// Enumerate the module symbols that already exist for this IRX
+				// module. Really there should only be one.
+				std::vector<ccc::ModuleHandle> existing_modules;
+				for (const auto& pair : database.modules.handles_from_name(modname))
+				{
+					const ccc::Module* existing_module = database.modules.symbol_from_handle(pair.second);
+					if (!existing_module || !existing_module->is_irx)
+						continue;
+
+					// Different major versions, we treat this one as a different module.
+					if (existing_module->version_major != version_major)
+						continue;
+
+					// RegisterLibraryEntries will fail if the new minor ver is <= the old minor ver
+					// and the major version is the same.
+					if (existing_module->version_minor >= version_minor)
+						return;
+
+					existing_modules.emplace_back(existing_module->handle());
+				}
+
+				// Destroy the old symbols for this IRX module if any exist.
+				for (ccc::ModuleHandle existing_module : existing_modules)
+					database.destroy_symbols_from_module(existing_module, true);
+
+				ccc::Result<ccc::Module*> module_symbol = database.modules.create_symbol(modname, *source, nullptr);
+				if (!module_symbol.success())
+					return;
+
+				(*module_symbol)->is_irx = true;
+				(*module_symbol)->version_major = version_major;
+				(*module_symbol)->version_minor = version_minor;
+
 				u32 func = a0reg + 20;
 				u32 funcptr = iopMemRead32(func);
 				u32 index = 0;
 				while (funcptr != 0)
 				{
-					const std::string funcname = std::string(irxImportFuncname(modname, index));
-					if (!funcname.empty())
-					{
-						R3000SymbolMap.AddModuleExport(modname, version, fmt::format("{}[{:02}]::{}", modname, index, funcname).c_str(), funcptr, 0);
-					}
+					const char* unqualified_name = irxImportFuncname(modname, index);
+
+					std::string qualified_name;
+					if (unqualified_name && unqualified_name[0] != '\0')
+						qualified_name = fmt::format("{}[{:02}]::{}", modname, index, unqualified_name);
 					else
-					{
-						R3000SymbolMap.AddModuleExport(modname, version, fmt::format("{}[{:02}]::unkn_{:02}", modname, index, index).c_str(), funcptr, 0);
-					}
+						qualified_name = fmt::format("{}[{:02}]::unkn_{:02}", modname, index, index);
+
+					ccc::Result<ccc::Function*> function = database.functions.create_symbol(qualified_name, funcptr, *source, *module_symbol);
+					if (!function.success())
+						return;
+
 					index++;
 					func += 4;
 					funcptr = iopMemRead32(func);
 				}
-			}
+			});
 		}
 
 		void ReleaseFuncs(u32 a0reg)
 		{
 			const std::string modname = iopMemReadString(a0reg + 12, 8);
-			ModuleVersion version = {iopMemRead8(a0 + 9), iopMemRead8(a0 + 8)};
+			s32 version_major = iopMemRead8(a0reg + 9);
+			s32 version_minor = iopMemRead8(a0reg + 8);
 
-			DevCon.WriteLn(Color_Gray, "ReleaseLibraryEntries: %8.8s version %x.%02x", modname.data(), version.major, version.minor);
+			DevCon.WriteLn(Color_Gray, "ReleaseLibraryEntries: %8.8s version %x.%02x", modname.c_str(), version_major, version_minor);
 
-			R3000SymbolMap.RemoveModule(modname, version);
+			R3000SymbolGuardian.ReadWrite([&](ccc::SymbolDatabase& database) {
+				// Destroy the symbols for the module.
+				for (const auto& pair : database.modules.handles_from_name(modname))
+				{
+					const ccc::Module* existing_module = database.modules.symbol_from_handle(pair.second);
+					if (!existing_module || !existing_module->is_irx)
+						continue;
+
+					if (existing_module->version_major != version_major || existing_module->version_minor != version_minor)
+						continue;
+
+					database.destroy_symbols_from_module(existing_module->handle(), true);
+				}
+			});
 		}
 
 		int RegisterLibraryEntries_HLE()

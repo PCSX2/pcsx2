@@ -153,9 +153,9 @@ void DisassemblyWidget::contextFollowBranch()
 	if (line.type == DISTYPE_OPCODE || line.type == DISTYPE_MACRO)
 	{
 		if (line.info.isBranch)
-			gotoAddress(line.info.branchTarget);
+			gotoAddressAndSetFocus(line.info.branchTarget);
 		else if (line.info.hasRelevantAddress)
-			gotoAddress(line.info.releventAddress);
+			gotoAddressAndSetFocus(line.info.releventAddress);
 	}
 }
 
@@ -176,144 +176,93 @@ void DisassemblyWidget::contextGoToAddress()
 		return;
 	}
 
-	gotoAddress(targetAddress);
+	gotoAddressAndSetFocus(targetAddress);
 }
 
 void DisassemblyWidget::contextAddFunction()
 {
-	// Get current function
-	const u32 curAddress = m_selectedAddressStart;
-	const u32 curFuncAddr = m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart);
-	QString optionaldlgText;
-
-	if (curFuncAddr != SymbolMap::INVALID_ADDRESS)
-	{
-		if (curFuncAddr == curAddress) // There is already a function here
-		{
-			QMessageBox::warning(this, tr("Add Function Error"), tr("A function entry point already exists here. Consider renaming instead."));
-		}
-		else
-		{
-			const u32 prevSize = m_cpu->GetSymbolMap().GetFunctionSize(curFuncAddr);
-			u32 newSize = curAddress - curFuncAddr;
-
-			bool ok;
-			QString funcName = QInputDialog::getText(this, tr("Add Function"),
-				tr("Function will be (0x%1) instructions long.\nEnter function name").arg(prevSize - newSize, 0, 16), QLineEdit::Normal, "", &ok);
-			if (!ok)
-				return;
-
-			m_cpu->GetSymbolMap().SetFunctionSize(curFuncAddr, newSize); // End the current function to where we selected
-			newSize = prevSize - newSize;
-			m_cpu->GetSymbolMap().AddFunction(funcName.toLocal8Bit().constData(), curAddress, newSize);
-			m_cpu->GetSymbolMap().SortSymbols();
-		}
-	}
-	else
-	{
-		bool ok;
-		QString funcName = QInputDialog::getText(this, "Add Function",
-			tr("Function will be (0x%1) instructions long.\nEnter function name").arg(m_selectedAddressEnd + 4 - m_selectedAddressStart, 0, 16), QLineEdit::Normal, "", &ok);
-		if (!ok)
-			return;
-
-		m_cpu->GetSymbolMap().AddFunction(funcName.toLocal8Bit().constData(), m_selectedAddressStart, m_selectedAddressEnd + 4 - m_selectedAddressStart);
-		m_cpu->GetSymbolMap().SortSymbols();
-	}
 }
 
 void DisassemblyWidget::contextCopyFunctionName()
 {
-	QGuiApplication::clipboard()->setText(QString::fromStdString(m_cpu->GetSymbolMap().GetLabelName(m_selectedAddressStart)));
+	std::string name = m_cpu->GetSymbolGuardian().FunctionStartingAtAddress(m_selectedAddressStart).name;
+	QGuiApplication::clipboard()->setText(QString::fromStdString(name));
 }
 
 void DisassemblyWidget::contextRemoveFunction()
 {
-	u32 curFuncAddr = m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart);
+	m_cpu->GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+		ccc::Function* curFunc = database.functions.symbol_overlapping_address(m_selectedAddressStart);
+		if (!curFunc)
+			return;
 
-	if (curFuncAddr != SymbolMap::INVALID_ADDRESS)
-	{
-		u32 previousFuncAddr = m_cpu->GetSymbolMap().GetFunctionStart(curFuncAddr - 4);
-		if (previousFuncAddr != SymbolMap::INVALID_ADDRESS)
-		{
-			// Extend the previous function to replace the spot of the function that is going to be removed
-			u32 expandedSize = m_cpu->GetSymbolMap().GetFunctionSize(previousFuncAddr) + m_cpu->GetSymbolMap().GetFunctionSize(curFuncAddr);
-			m_cpu->GetSymbolMap().SetFunctionSize(previousFuncAddr, expandedSize);
-		}
+		ccc::Function* previousFunc = database.functions.symbol_overlapping_address(curFunc->address().value - 4);
+		if (previousFunc)
+			previousFunc->set_size(curFunc->size() + previousFunc->size());
 
-		m_cpu->GetSymbolMap().RemoveFunction(curFuncAddr);
-		m_cpu->GetSymbolMap().SortSymbols();
-	}
+		database.functions.mark_symbol_for_destruction(curFunc->handle(), &database);
+		database.destroy_marked_symbols();
+	});
 }
 
 void DisassemblyWidget::contextRenameFunction()
 {
-	const u32 curFuncAddress = m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart);
-	if (curFuncAddress != SymbolMap::INVALID_ADDRESS)
-	{
-		bool ok;
-		QString funcName = QInputDialog::getText(this, tr("Rename Function"), tr("Function name"), QLineEdit::Normal, m_cpu->GetSymbolMap().GetLabelName(curFuncAddress).c_str(), &ok);
-		if (!ok)
-			return;
+	const FunctionInfo curFunc = m_cpu->GetSymbolGuardian().FunctionOverlappingAddress(m_selectedAddressStart);
 
-		if (funcName.isEmpty())
-		{
-			QMessageBox::warning(this, tr("Rename Function Error"), tr("Function name cannot be nothing."));
-		}
-		else
-		{
-			m_cpu->GetSymbolMap().SetLabelName(funcName.toLocal8Bit().constData(), curFuncAddress);
-			m_cpu->GetSymbolMap().SortSymbols();
-			this->repaint();
-		}
-	}
-	else
+	if (!curFunc.address.valid())
 	{
 		QMessageBox::warning(this, tr("Rename Function Error"), tr("No function / symbol is currently selected."));
+		return;
 	}
+
+	QString oldName = QString::fromStdString(curFunc.name);
+
+	bool ok;
+	QString newName = QInputDialog::getText(this, tr("Rename Function"), tr("Function name"), QLineEdit::Normal, oldName, &ok);
+	if (!ok)
+		return;
+
+	if (newName.isEmpty())
+	{
+		QMessageBox::warning(this, tr("Rename Function Error"), tr("Function name cannot be nothing."));
+		return;
+	}
+
+	m_cpu->GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+		database.functions.rename_symbol(curFunc.handle, newName.toStdString());
+	});
 }
 
 void DisassemblyWidget::contextStubFunction()
 {
-	const u32 curFuncAddress = m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart);
-	if (curFuncAddress != SymbolMap::INVALID_ADDRESS)
-	{
-		Host::RunOnCPUThread([this, curFuncAddress, cpu = m_cpu] {
-			this->m_stubbedFunctions.insert({curFuncAddress, {cpu->read32(curFuncAddress), cpu->read32(curFuncAddress + 4)}});
-			cpu->write32(curFuncAddress, 0x03E00008); // jr $ra
-			cpu->write32(curFuncAddress + 4, 0x00000000); // nop
-			emit VMUpdate();
-		});
-	}
-	else // Stub the current opcode instead
-	{
-		Host::RunOnCPUThread([this, cpu = m_cpu] {
-			this->m_stubbedFunctions.insert({m_selectedAddressStart, {cpu->read32(m_selectedAddressStart), cpu->read32(m_selectedAddressStart + 4)}});
-			cpu->write32(m_selectedAddressStart, 0x03E00008); // jr $ra
-			cpu->write32(m_selectedAddressStart + 4, 0x00000000); // nop
-			emit VMUpdate();
-		});
-	}
+	FunctionInfo function = m_cpu->GetSymbolGuardian().FunctionOverlappingAddress(m_selectedAddressStart);
+	u32 address = function.address.valid() ? function.address.value : m_selectedAddressStart;
+
+	Host::RunOnCPUThread([this, address, cpu = m_cpu] {
+		this->m_stubbedFunctions.insert({address, {cpu->read32(address), cpu->read32(address + 4)}});
+		cpu->write32(address, 0x03E00008); // jr ra
+		cpu->write32(address + 4, 0x00000000); // nop
+		emit VMUpdate();
+	});
 }
 
 void DisassemblyWidget::contextRestoreFunction()
 {
-	const u32 curFuncAddress = m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart);
-	if (curFuncAddress != SymbolMap::INVALID_ADDRESS && m_stubbedFunctions.find(curFuncAddress) != m_stubbedFunctions.end())
+	u32 address = m_selectedAddressStart;
+	m_cpu->GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
+		const ccc::Function* function = database.functions.symbol_overlapping_address(m_selectedAddressStart);
+		if (function)
+			address = function->address().value;
+	});
+
+	auto stub = m_stubbedFunctions.find(address);
+	if (stub != m_stubbedFunctions.end())
 	{
-		Host::RunOnCPUThread([this, curFuncAddress, cpu = m_cpu] {
-			cpu->write32(curFuncAddress, std::get<0>(this->m_stubbedFunctions[curFuncAddress]));
-			cpu->write32(curFuncAddress + 4, std::get<1>(this->m_stubbedFunctions[curFuncAddress]));
-			this->m_stubbedFunctions.erase(curFuncAddress);
-			emit VMUpdate();
-		});
-	}
-	else if (m_stubbedFunctions.find(m_selectedAddressStart) != m_stubbedFunctions.end())
-	{
-		Host::RunOnCPUThread([this, cpu = m_cpu] {
-			cpu->write32(m_selectedAddressStart, std::get<0>(this->m_stubbedFunctions[m_selectedAddressStart]));
-			cpu->write32(m_selectedAddressStart + 4, std::get<1>(this->m_stubbedFunctions[m_selectedAddressStart]));
-			this->m_stubbedFunctions.erase(m_selectedAddressStart);
+		Host::RunOnCPUThread([this, address, cpu = m_cpu, stub] {
+			auto [first_instruction, second_instruction] = stub->second;
+			cpu->write32(address, first_instruction);
+			cpu->write32(address + 4, second_instruction);
+			this->m_stubbedFunctions.erase(address);
 			emit VMUpdate();
 		});
 	}
@@ -641,7 +590,7 @@ void DisassemblyWidget::keyPressEvent(QKeyEvent* event)
 			contextFollowBranch();
 			break;
 		case Qt::Key_Left:
-			gotoAddress(m_cpu->getPC());
+			gotoAddressAndSetFocus(m_cpu->getPC());
 			break;
 		case Qt::Key_O:
 			m_showInstructionOpcode = !m_showInstructionOpcode;
@@ -666,7 +615,7 @@ void DisassemblyWidget::customMenuRequested(QPoint pos)
 	contextMenu->addAction(action = new QAction(tr("&Copy Instruction Text"), this));
 	action->setShortcut(QKeySequence(Qt::Key_C));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyInstructionText);
-	if (m_selectedAddressStart == m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart))
+	if (m_cpu->GetSymbolGuardian().FunctionExistsWithStartingAddress(m_selectedAddressStart))
 	{
 		contextMenu->addAction(action = new QAction(tr("Copy Function Name"), this));
 		connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyFunctionName);
@@ -741,13 +690,8 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 	const bool isConditionalMet = line.info.conditionMet;
 	const bool isCurrentPC = m_cpu->getPC() == address;
 
-	bool isFunctionNoReturn = false;
-
-	const std::string addressSymbol = m_cpu->GetSymbolMap().GetLabelName(address);
-	if(m_cpu->GetSymbolMap().GetFunctionStart(address) == address)
-	{
-		isFunctionNoReturn = m_cpu->GetSymbolMap().GetFunctionNoReturn(address);
-	}
+	FunctionInfo function = m_cpu->GetSymbolGuardian().FunctionStartingAtAddress(address);
+	SymbolInfo symbol = m_cpu->GetSymbolGuardian().SymbolStartingAtAddress(address);
 	const bool showOpcode = m_showInstructionOpcode && m_cpu->isAlive();
 
 	QString lineString;
@@ -760,7 +704,7 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 		lineString = QString(" %1 %2  %3 %4  %5 %6");
 	}
 
-	if(isFunctionNoReturn)
+	if (function.is_no_return)
 	{
 		lineString = lineString.arg("NR");
 	}
@@ -769,13 +713,12 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 		lineString = lineString.arg("  ");
 	}
 
-	if (addressSymbol.empty()) // The address wont have symbol text if it's the start of a function for example
+	if (symbol.name.empty())
 		lineString = lineString.arg(address, 8, 16, QChar('0')).toUpper();
 	else
 	{
-		// We want this text elided
 		QFontMetrics metric(font);
-		QString symbolString = QString::fromStdString(addressSymbol);
+		QString symbolString = QString::fromStdString(symbol.name);
 
 		lineString = lineString.arg(metric.elidedText(symbolString, Qt::ElideRight, (selected ? 32 : 7) * font.pointSize()));
 	}
@@ -829,11 +772,11 @@ QColor DisassemblyWidget::GetAddressFunctionColor(u32 address)
 		};
 	}
 
-	const auto funNum = m_cpu->GetSymbolMap().GetFunctionNum(address);
-	if (funNum == -1)
-		return this->palette().text().color();
+	ccc::FunctionHandle handle = m_cpu->GetSymbolGuardian().FunctionOverlappingAddress(address).handle;
+	if (!handle.valid())
+		return palette().text().color();
 
-	return colors[funNum % 6];
+	return colors[handle.value % colors.size()];
 }
 
 QString DisassemblyWidget::FetchSelectionInfo(SelectionInfo selInfo)
@@ -859,6 +802,11 @@ QString DisassemblyWidget::FetchSelectionInfo(SelectionInfo selInfo)
 		}
 	}
 	return infoBlock;
+}
+
+void DisassemblyWidget::gotoAddressAndSetFocus(u32 address)
+{
+	gotoAddress(address, true);
 }
 
 void DisassemblyWidget::gotoAddress(u32 address, bool should_set_focus)
@@ -888,21 +836,9 @@ bool DisassemblyWidget::AddressCanRestore(u32 start, u32 end)
 
 bool DisassemblyWidget::FunctionCanRestore(u32 address)
 {
-	u32 funcStartAddress = m_cpu->GetSymbolMap().GetFunctionStart(address);
+	FunctionInfo function = m_cpu->GetSymbolGuardian().FunctionOverlappingAddress(address);
+	if (function.address.valid())
+		address = function.address.value;
 
-	if (funcStartAddress != SymbolMap::INVALID_ADDRESS)
-	{
-		if (m_stubbedFunctions.find(funcStartAddress) != this->m_stubbedFunctions.end())
-		{
-			return true;
-		}
-	}
-	else
-	{
-		if (m_stubbedFunctions.find(address) != this->m_stubbedFunctions.end())
-		{
-			return true;
-		}
-	}
-	return false;
+	return m_stubbedFunctions.find(address) != m_stubbedFunctions.end();
 }

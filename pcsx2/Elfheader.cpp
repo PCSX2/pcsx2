@@ -4,7 +4,7 @@
 #include "Elfheader.h"
 #include "CDVD/IsoReader.h"
 #include "DebugTools/Debug.h"
-#include "DebugTools/SymbolMap.h"
+#include "DebugTools/SymbolGuardian.h"
 
 #include "common/Error.h"
 #include "common/FileSystem.h"
@@ -303,8 +303,6 @@ void ElfObject::LoadSectionHeaders()
 	const u32 section_names_offset = secthead[(header.e_shstrndx == 0xffff ? 0 : header.e_shstrndx)].sh_offset;
 	const u8* sections_names = data.data() + section_names_offset;
 
-	int i_st = -1, i_dt = -1;
-
 	for( int i = 0 ; i < header.e_shnum ; i++ )
 	{
 		ELF_LOG( "ELF32 Section Header [%x] %s", i, &sections_names[ secthead[ i ].sh_name ] );
@@ -340,33 +338,6 @@ void ElfObject::LoadSectionHeaders()
 		ELF_LOG("info:      %08x", secthead[i].sh_info);
 		ELF_LOG("addralign: %08x", secthead[i].sh_addralign);
 		ELF_LOG("entsize:   %08x", secthead[i].sh_entsize);
-		// dump symbol table
-
-		if (secthead[ i ].sh_type == 0x02)
-		{
-			i_st = i;
-			i_dt = secthead[i].sh_link;
-		}
-	}
-
-	if ((i_st >= 0) && (i_dt >= 0))
-	{
-		if (secthead[i_dt].sh_offset < data.size() &&
-			secthead[i_st].sh_offset < data.size())
-		{
-			const char* SymNames = (char*)(data.data() + secthead[i_dt].sh_offset);
-			Elf32_Sym* eS = (Elf32_Sym*)(data.data() + secthead[i_st].sh_offset);
-			Console.WriteLn("found %d symbols", secthead[i_st].sh_size / sizeof(Elf32_Sym));
-
-			R5900SymbolMap.Clear();
-			for (uint i = 1; i < (secthead[i_st].sh_size / sizeof(Elf32_Sym)); i++)
-			{
-				if ((eS[i].st_value != 0) && (ELF32_ST_TYPE(eS[i].st_info) == 2))
-				{
-					R5900SymbolMap.AddLabel(&SymNames[eS[i].st_name], eS[i].st_value);
-				}
-			}
-		}
 	}
 }
 
