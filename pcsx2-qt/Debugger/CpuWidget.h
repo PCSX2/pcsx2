@@ -11,6 +11,7 @@
 #include "Models/ThreadModel.h"
 #include "Models/StackModel.h"
 #include "Models/SavedAddressesModel.h"
+#include "Debugger/SymbolTree/SymbolTreeWidgets.h"
 
 #include "QtHost.h"
 #include <QtWidgets/QWidget>
@@ -70,6 +71,8 @@ public slots:
 	void saveSavedAddressesToDebuggerSettings();
 
 private:
+	void setupSymbolTrees();
+
 	std::vector<QTableWidget*> m_registerTableViews;
 
 	QMenu* m_stacklistContextMenu = 0;
@@ -86,4 +89,9 @@ private:
 	QSortFilterProxyModel m_threadProxyModel;
 	StackModel m_stackModel;
 	SavedAddressesModel m_savedAddressesModel;
+
+	FunctionTreeWidget* m_function_tree = nullptr;
+	GlobalVariableTreeWidget* m_global_variable_tree = nullptr;
+	LocalVariableTreeWidget* m_local_variable_tree = nullptr;
+	ParameterVariableTreeWidget* m_parameter_variable_tree = nullptr;
 };

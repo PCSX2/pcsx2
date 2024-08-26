@@ -117,6 +117,8 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 		savedAddressesTableView->resizeColumnToContents(topLeft.column());
 	});
 
+	setupSymbolTrees();
+
 	DebuggerSettingsManager::loadGameSettings(&m_bpModel);
 	DebuggerSettingsManager::loadGameSettings(&m_savedAddressesModel);
 
@@ -135,6 +137,46 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 
 CpuWidget::~CpuWidget() = default;
 
+void CpuWidget::setupSymbolTrees()
+{
+	m_ui.tabFunctions->setLayout(new QVBoxLayout());
+	m_ui.tabGlobalVariables->setLayout(new QVBoxLayout());
+	m_ui.tabLocalVariables->setLayout(new QVBoxLayout());
+	m_ui.tabParameterVariables->setLayout(new QVBoxLayout());
+
+	m_ui.tabFunctions->layout()->setContentsMargins(0, 0, 0, 0);
+	m_ui.tabGlobalVariables->layout()->setContentsMargins(0, 0, 0, 0);
+	m_ui.tabLocalVariables->layout()->setContentsMargins(0, 0, 0, 0);
+	m_ui.tabParameterVariables->layout()->setContentsMargins(0, 0, 0, 0);
+
+	m_function_tree = new FunctionTreeWidget(m_cpu);
+	m_global_variable_tree = new GlobalVariableTreeWidget(m_cpu);
+	m_local_variable_tree = new LocalVariableTreeWidget(m_cpu);
+	m_parameter_variable_tree = new ParameterVariableTreeWidget(m_cpu);
+
+	m_ui.tabFunctions->layout()->addWidget(m_function_tree);
+	m_ui.tabGlobalVariables->layout()->addWidget(m_global_variable_tree);
+	m_ui.tabLocalVariables->layout()->addWidget(m_local_variable_tree);
+	m_ui.tabParameterVariables->layout()->addWidget(m_parameter_variable_tree);
+
+	connect(m_ui.tabWidgetRegFunc, &QTabWidget::currentChanged, m_function_tree, &SymbolTreeWidget::updateModel);
+	connect(m_ui.tabWidget, &QTabWidget::currentChanged, m_global_variable_tree, &SymbolTreeWidget::updateModel);
+	connect(m_ui.tabWidget, &QTabWidget::currentChanged, m_local_variable_tree, &SymbolTreeWidget::updateModel);
+
+	connect(m_function_tree, &SymbolTreeWidget::goToInDisassembly, m_ui.disassemblyWidget, &DisassemblyWidget::gotoAddressAndSetFocus);
+	connect(m_global_variable_tree, &SymbolTreeWidget::goToInDisassembly, m_ui.disassemblyWidget, &DisassemblyWidget::gotoAddressAndSetFocus);
+	connect(m_local_variable_tree, &SymbolTreeWidget::goToInDisassembly, m_ui.disassemblyWidget, &DisassemblyWidget::gotoAddressAndSetFocus);
+	connect(m_parameter_variable_tree, &SymbolTreeWidget::goToInDisassembly, m_ui.disassemblyWidget, &DisassemblyWidget::gotoAddressAndSetFocus);
+
+	connect(m_function_tree, &SymbolTreeWidget::goToInMemoryView, this, &CpuWidget::onGotoInMemory);
+	connect(m_global_variable_tree, &SymbolTreeWidget::goToInMemoryView, this, &CpuWidget::onGotoInMemory);
+	connect(m_local_variable_tree, &SymbolTreeWidget::goToInMemoryView, this, &CpuWidget::onGotoInMemory);
+	connect(m_parameter_variable_tree, &SymbolTreeWidget::goToInMemoryView, this, &CpuWidget::onGotoInMemory);
+
+	connect(m_function_tree, &SymbolTreeWidget::nameColumnClicked, m_ui.disassemblyWidget, &DisassemblyWidget::gotoAddressAndSetFocus);
+	connect(m_function_tree, &SymbolTreeWidget::locationColumnClicked, m_ui.disassemblyWidget, &DisassemblyWidget::gotoAddressAndSetFocus);
+}
+
 void CpuWidget::refreshDebugger()
 {
 	if (!m_cpu.isAlive())
@@ -144,6 +186,11 @@ void CpuWidget::refreshDebugger()
 	m_ui.disassemblyWidget->update();
 	m_ui.memoryviewWidget->update();
 	m_ui.memorySearchWidget->update();
+
+	m_function_tree->updateModel();
+	m_global_variable_tree->updateModel();
+	m_local_variable_tree->updateModel();
+	m_parameter_variable_tree->updateModel();
 }
 
 void CpuWidget::reloadCPUWidgets()
@@ -154,6 +201,9 @@ void CpuWidget::reloadCPUWidgets()
 	m_ui.registerWidget->update();
 	m_ui.disassemblyWidget->update();
 	m_ui.memoryviewWidget->update();
+
+	m_local_variable_tree->reset();
+	m_parameter_variable_tree->reset();
 }
 
 void CpuWidget::paintEvent(QPaintEvent* event)
