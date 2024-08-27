@@ -254,8 +254,6 @@ QVariant BreakpointModel::headerData(int section, Qt::Orientation orientation, i
 
 Qt::ItemFlags BreakpointModel::flags(const QModelIndex& index) const
 {
-	volatile const int row = index.row();
-
 	switch (index.column())
 	{
 		case BreakpointColumns::CONDITION:
