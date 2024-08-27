@@ -299,13 +299,13 @@ std::optional<u32> DebugInterface::getStackFrameSize(const ccc::Function& functi
 		u32 instruction = read32(function.address().value);
 
 		if ((instruction & 0xffff0000) == 0x27bd0000)
-			stack_frame_size = -(instruction & 0xffff);
+			stack_frame_size = -static_cast<s16>(instruction & 0xffff);
 
 		if (stack_frame_size < 0)
 			return std::nullopt;
 	}
 
-	return (u32)stack_frame_size;
+	return static_cast<u32>(stack_frame_size);
 }
 
 bool DebugInterface::initExpression(const char* exp, PostfixExpression& dest)

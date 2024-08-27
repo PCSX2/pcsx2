@@ -3,7 +3,6 @@
 
 #include "SymbolGuardian.h"
 
-#include <demangle.h>
 #include <ccc/ast.h>
 #include <ccc/elf.h>
 #include <ccc/importer_flags.h>
@@ -18,6 +17,8 @@
 #include "MIPSAnalyst.h"
 #include "Host.h"
 #include "VMManager.h"
+
+#include <demangle.h>
 
 SymbolGuardian R5900SymbolGuardian;
 SymbolGuardian R3000SymbolGuardian;
@@ -122,20 +123,6 @@ void SymbolGuardian::Reset()
 			(*symbol)->set_type(std::move(type));
 		}
 	});
-}
-
-static void CreateBuiltInDataType(
-	ccc::SymbolDatabase& database, ccc::SymbolSourceHandle source, const char* name, ccc::ast::BuiltInClass bclass)
-{
-	ccc::Result<ccc::DataType*> symbol = database.data_types.create_symbol(name, source, nullptr);
-	if (!symbol.success())
-		return;
-
-	std::unique_ptr<ccc::ast::BuiltIn> type = std::make_unique<ccc::ast::BuiltIn>();
-	type->name = name;
-	type->size_bytes = ccc::ast::builtin_class_size(bclass);
-	type->bclass = bclass;
-	(*symbol)->set_type(std::move(type));
 }
 
 void SymbolGuardian::ImportElf(std::vector<u8> elf, std::string elf_file_name, const std::string& nocash_path)

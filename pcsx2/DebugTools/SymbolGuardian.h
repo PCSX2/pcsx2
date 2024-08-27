@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <queue>
 #include <atomic>
 #include <thread>
 #include <functional>
@@ -103,9 +102,6 @@ protected:
 
 	std::thread m_import_thread;
 	std::atomic_bool m_interrupt_import_thread = false;
-
-	std::queue<ccc::SymbolDatabase> m_load_queue;
-	std::mutex m_load_queue_lock;
 };
 
 extern SymbolGuardian R5900SymbolGuardian;
