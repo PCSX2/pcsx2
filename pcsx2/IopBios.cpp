@@ -1128,18 +1128,24 @@ namespace R3000A
 			DevCon.WriteLn(Color_Gray, "ReleaseLibraryEntries: %8.8s version %x.%02x", modname.c_str(), version_major, version_minor);
 
 			R3000SymbolGuardian.ReadWrite([&](ccc::SymbolDatabase& database) {
-				// Destroy the symbols for the module.
+				// Enumerate the module symbols that exist for this IRX module.
+				// Really there should only be one.
+				std::vector<ccc::ModuleHandle> module_handles;
 				for (const auto& pair : database.modules.handles_from_name(modname))
 				{
-					const ccc::Module* existing_module = database.modules.symbol_from_handle(pair.second);
-					if (!existing_module || !existing_module->is_irx)
+					const ccc::Module* module_symbol = database.modules.symbol_from_handle(pair.second);
+					if (!module_symbol || !module_symbol->is_irx)
 						continue;
 
-					if (existing_module->version_major != version_major || existing_module->version_minor != version_minor)
+					if (module_symbol->version_major != version_major || module_symbol->version_minor != version_minor)
 						continue;
 
-					database.destroy_symbols_from_module(existing_module->handle(), true);
+					module_handles.emplace_back(module_symbol->handle());
 				}
+
+				// Destroy the symbols for the module.
+				for (ccc::ModuleHandle module_handle : module_handles)
+					database.destroy_symbols_from_module(module_handle, true);
 			});
 		}
 
