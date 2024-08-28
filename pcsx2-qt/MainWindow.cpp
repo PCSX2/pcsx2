@@ -872,6 +872,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 	m_ui.actionPause->setEnabled(running);
 	m_ui.actionScreenshot->setEnabled(running);
 	m_ui.menuChangeDisc->setEnabled(running);
+	m_ui.menuLoadState->setEnabled(running);
 	m_ui.menuSaveState->setEnabled(running);
 	m_ui.actionSaveGSDump->setEnabled(running);
 
@@ -880,6 +881,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 	m_ui.actionToolbarPause->setEnabled(running);
 	m_ui.actionToolbarScreenshot->setEnabled(running);
 	m_ui.actionToolbarChangeDisc->setEnabled(running);
+	m_ui.actionToolbarLoadState->setEnabled(running);
 	m_ui.actionToolbarSaveState->setEnabled(running);
 
 	m_ui.actionViewGameProperties->setEnabled(running);
@@ -2929,12 +2931,6 @@ void MainWindow::populateSaveStateMenu(QMenu* menu, const QString& serial, quint
 
 void MainWindow::updateGameDependentActions()
 {
-	const bool valid_serial_and_crc = (s_vm_valid && !s_current_disc_serial.isEmpty() && s_current_disc_crc != 0);
-	m_ui.menuLoadState->setEnabled(valid_serial_and_crc);
-	m_ui.actionToolbarLoadState->setEnabled(valid_serial_and_crc);
-	m_ui.menuSaveState->setEnabled(valid_serial_and_crc);
-	m_ui.actionToolbarSaveState->setEnabled(valid_serial_and_crc);
-
 	const bool can_use_pnach = (s_vm_valid && !s_current_disc_serial.isEmpty() && s_current_running_crc != 0);
 	m_ui.actionEditCheats->setEnabled(can_use_pnach);
 	m_ui.actionEditPatches->setEnabled(can_use_pnach);
