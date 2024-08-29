@@ -34,8 +34,8 @@ namespace usb_printer
 		0x02,        // iProduct (String Index)
 		0x00,        // iSerialNumber (String Index)
 		0x01,        // bNumConfigurations 1
-	};
-	static int dpp_mp1_dev_desciptor_size = sizeof(dpp_mp1_dev_desciptor);
+	};
+	static int dpp_mp1_dev_desciptor_size = sizeof(dpp_mp1_dev_desciptor);
 
 	static const uint8_t dpp_mp1_config_descriptor[] = {
 		0x09,        // bLength
@@ -70,31 +70,31 @@ namespace usb_printer
 		0x02,        // bmAttributes (Bulk)
 		0x40, 0x00,  // wMaxPacketSize 64
 		0x00,        // bInterval 0 (unit depends on device speed)
-	};
-	static int dpp_mp1_config_descriptor_size = sizeof(dpp_mp1_config_descriptor);
+	};
+	static int dpp_mp1_config_descriptor_size = sizeof(dpp_mp1_config_descriptor);
 
 	enum PrinterModel
 	{
 		Sony_DPP_MP1,
-	};
+	};
 
 	enum PrinterProtocol
 	{
 		ProtocolSonyUPD,
-	};
+	};
 
 	struct PrinterData
 	{
-		const PrinterModel model;
-		const char* commercial_name;
-		const uint8_t* device_descriptor;
-		const int device_descriptor_size;
-		const uint8_t* config_descriptor;
-		const int config_descriptor_size;
-		const USBDescStrings usb_strings;
-		const char* device_id;
-		const PrinterProtocol protocol;
-	};
+		const PrinterModel model;
+		const char* commercial_name;
+		const uint8_t* device_descriptor;
+		const int device_descriptor_size;
+		const uint8_t* config_descriptor;
+		const int config_descriptor_size;
+		const USBDescStrings usb_strings;
+		const char* device_id;
+		const PrinterProtocol protocol;
+	};
 
 	static const PrinterData sPrinters[] = {
 		{
@@ -103,35 +103,35 @@ namespace usb_printer
 			dpp_mp1_dev_desciptor, dpp_mp1_dev_desciptor_size,
 			dpp_mp1_config_descriptor, dpp_mp1_config_descriptor_size,
 			{"", "SONY", "USB printer"},
-			"MFG:SONY;MDL:DPP-MP1;DES:SONYDPP-MP1;CMD:SONY-Original;CLS:PRINTER",
+			"MFG:SONY;MDL:DPP-MP1;DES:SONYDPP-MP1;CMD:SONY-Original;CLS:PRINTER",
 			ProtocolSonyUPD,
 		},
-	};
+	};
 
 	class PrinterDevice final : public DeviceProxy
 	{
 	public:
-		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
-		const char* Name() const override;
-		const char* TypeName() const override;
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
+		const char* Name() const override;
+		const char* TypeName() const override;
 
-		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
-		std::span<const char*> SubTypes() const override;
-	};
+		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
+		std::span<const char*> SubTypes() const override;
+	};
 
 #pragma pack(push, 1)
 	struct BMPHeader
 	{
-		uint16_t magic;
-		uint32_t filesize;
-		uint32_t reserved;
-		uint32_t data_offset;
-		uint32_t core_header_size;
-		uint16_t width;
-		uint16_t height;
-		uint16_t planes;
-		uint16_t bpp;
-	};
+		uint16_t magic;
+		uint32_t filesize;
+		uint32_t reserved;
+		uint32_t data_offset;
+		uint32_t core_header_size;
+		uint16_t width;
+		uint16_t height;
+		uint16_t planes;
+		uint16_t bpp;
+	};
 #pragma pack(pop)
 
 } // namespace usb_printer

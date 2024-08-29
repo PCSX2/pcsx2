@@ -12,10 +12,10 @@ namespace R5900 {
 namespace Dynarec {
 namespace OpcodeImpl {
 
-	void recMULT();
-	void recMULTU();
-	void recDIV();
-	void recDIVU();
+	void recMULT();
+	void recMULTU();
+	void recDIV();
+	void recDIVU();
 
 } // namespace OpcodeImpl
 } // namespace Dynarec

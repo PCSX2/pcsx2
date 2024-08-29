@@ -13,18 +13,18 @@ namespace usb_mic
 		MIC_LOGITECH,
 		MIC_KONAMI,
 		MIC_COUNT,
-	};
+	};
 
 	class MicrophoneDevice : public DeviceProxy
 	{
 	public:
-		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype, bool dual_mic, const int samplerate, const char* devtype) const;
-		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
-		const char* Name() const override;
-		const char* TypeName() const override;
-		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
-		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
-		std::span<const char*> SubTypes() const override;
-		std::span<const SettingInfo> Settings(u32 subtype) const override;
-	};
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype, bool dual_mic, const int samplerate, const char* devtype) const;
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
+		const char* Name() const override;
+		const char* TypeName() const override;
+		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
+		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
+		std::span<const char*> SubTypes() const override;
+		std::span<const SettingInfo> Settings(u32 subtype) const override;
+	};
 } // namespace usb_mic

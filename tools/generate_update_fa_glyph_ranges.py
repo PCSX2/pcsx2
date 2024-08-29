@@ -13,7 +13,7 @@ import functools
 # of the GNU General Public License as published by the Free Software Found-
 # ation, either version 3 of the License, or (at your option) any later version.
 #
-# PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 # without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 # PURPOSE.  See the GNU General Public License for more details.
 #
@@ -63,8 +63,8 @@ with open(pf_file, "r") as f:
             continue
         u8_encodings[match[1]] = bytes.fromhex(match[2].replace("\\x", ""))
 
-out_pattern = "(static constexpr ImWchar range_fa\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
-out_pf_pattern = "(static constexpr ImWchar range_pf\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
+out_pattern = "(static constexpr ImWchar range_fa\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
+out_pf_pattern = "(static constexpr ImWchar range_pf\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
 
 def get_pairs(tokens):
     codepoints = list()

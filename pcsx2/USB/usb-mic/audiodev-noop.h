@@ -19,17 +19,17 @@ namespace usb_mic
 			~NoopAudioDevice() override {}
 			bool Start() override
 			{
-				return true;
+				return true;
 			}
 			void Stop() override {}
-			bool GetFrames(uint32_t* size) override { return true; }
+			bool GetFrames(uint32_t* size) override { return true; }
 			uint32_t GetBuffer(int16_t* outBuf, uint32_t outFrames) override
 			{
-				std::memset(outBuf, 0, outFrames * sizeof(int16_t));
-				return outFrames;
+				std::memset(outBuf, 0, outFrames * sizeof(int16_t));
+				return outFrames;
 			}
-			uint32_t SetBuffer(int16_t* inBuf, uint32_t inFrames) override { return inFrames; }
+			uint32_t SetBuffer(int16_t* inBuf, uint32_t inFrames) override { return inFrames; }
 			void SetResampling(int samplerate) override {}
-		};
+		};
 	} // namespace audiodev_noop
 } // namespace usb_mic

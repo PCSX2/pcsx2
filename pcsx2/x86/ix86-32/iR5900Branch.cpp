@@ -5,7 +5,7 @@
 #include "R5900OpcodeTables.h"
 #include "x86/iR5900.h"
 
-using namespace x86Emitter;
+using namespace x86Emitter;
 
 namespace R5900::Dynarec::OpcodeImpl
 {
@@ -15,24 +15,24 @@ namespace R5900::Dynarec::OpcodeImpl
 *********************************************************/
 #ifndef BRANCH_RECOMPILE
 
-namespace Interp = R5900::Interpreter::OpcodeImpl;
+namespace Interp = R5900::Interpreter::OpcodeImpl;
 
-REC_SYS(BEQ);
-REC_SYS(BEQL);
-REC_SYS(BNE);
-REC_SYS(BNEL);
-REC_SYS(BLTZ);
-REC_SYS(BGTZ);
-REC_SYS(BLEZ);
-REC_SYS(BGEZ);
-REC_SYS(BGTZL);
-REC_SYS(BLTZL);
-REC_SYS_DEL(BLTZAL, 31);
-REC_SYS_DEL(BLTZALL, 31);
-REC_SYS(BLEZL);
-REC_SYS(BGEZL);
-REC_SYS_DEL(BGEZAL, 31);
-REC_SYS_DEL(BGEZALL, 31);
+REC_SYS(BEQ);
+REC_SYS(BEQL);
+REC_SYS(BNE);
+REC_SYS(BNEL);
+REC_SYS(BLTZ);
+REC_SYS(BGTZ);
+REC_SYS(BLEZ);
+REC_SYS(BGEZ);
+REC_SYS(BGTZL);
+REC_SYS(BLTZL);
+REC_SYS_DEL(BLTZAL, 31);
+REC_SYS_DEL(BLTZALL, 31);
+REC_SYS(BLEZL);
+REC_SYS(BGEZL);
+REC_SYS_DEL(BGEZAL, 31);
+REC_SYS_DEL(BGEZALL, 31);
 
 #else
 
@@ -43,50 +43,50 @@ static void recSetBranchEQ(int bne, int process)
 
 	if (process & PROCESS_CONSTS)
 	{
-		_eeFlushAllDirty();
+		_eeFlushAllDirty();
 
-		_deleteGPRtoXMMreg(_Rt_, DELETE_REG_FLUSH_AND_FREE);
-		const int regt = _checkX86reg(X86TYPE_GPR, _Rt_, MODE_READ);
+		_deleteGPRtoXMMreg(_Rt_, DELETE_REG_FLUSH_AND_FREE);
+		const int regt = _checkX86reg(X86TYPE_GPR, _Rt_, MODE_READ);
 		if (regt >= 0)
-			xImm64Op(xCMP, xRegister64(regt), rax, g_cpuConstRegs[_Rs_].UD[0]);
+			xImm64Op(xCMP, xRegister64(regt), rax, g_cpuConstRegs[_Rs_].UD[0]);
 		else
-			xImm64Op(xCMP, ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]], rax, g_cpuConstRegs[_Rs_].UD[0]);
+			xImm64Op(xCMP, ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]], rax, g_cpuConstRegs[_Rs_].UD[0]);
 	}
 	else if (process & PROCESS_CONSTT)
 	{
-		_eeFlushAllDirty();
+		_eeFlushAllDirty();
 
-		_deleteGPRtoXMMreg(_Rs_, DELETE_REG_FLUSH_AND_FREE);
-		const int regs = _checkX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
+		_deleteGPRtoXMMreg(_Rs_, DELETE_REG_FLUSH_AND_FREE);
+		const int regs = _checkX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
 		if (regs >= 0)
-			xImm64Op(xCMP, xRegister64(regs), rax, g_cpuConstRegs[_Rt_].UD[0]);
+			xImm64Op(xCMP, xRegister64(regs), rax, g_cpuConstRegs[_Rt_].UD[0]);
 		else
-			xImm64Op(xCMP, ptr64[&cpuRegs.GPR.r[_Rs_].UD[0]], rax, g_cpuConstRegs[_Rt_].UD[0]);
+			xImm64Op(xCMP, ptr64[&cpuRegs.GPR.r[_Rs_].UD[0]], rax, g_cpuConstRegs[_Rt_].UD[0]);
 	}
 	else
 	{
 		// force S into register, since we need to load it, may as well cache.
-		_deleteGPRtoXMMreg(_Rt_, DELETE_REG_FLUSH_AND_FREE);
-		const int regs = _allocX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
-		const int regt = _checkX86reg(X86TYPE_GPR, _Rt_, MODE_READ);
-		_eeFlushAllDirty();
+		_deleteGPRtoXMMreg(_Rt_, DELETE_REG_FLUSH_AND_FREE);
+		const int regs = _allocX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
+		const int regt = _checkX86reg(X86TYPE_GPR, _Rt_, MODE_READ);
+		_eeFlushAllDirty();
 
 		if (regt >= 0)
-			xCMP(xRegister64(regs), xRegister64(regt));
+			xCMP(xRegister64(regs), xRegister64(regt));
 		else
-			xCMP(xRegister64(regs), ptr64[&cpuRegs.GPR.r[_Rt_]]);
+			xCMP(xRegister64(regs), ptr64[&cpuRegs.GPR.r[_Rt_]]);
 	}
 
 	if (bne)
-		j32Ptr[0] = JE32(0);
+		j32Ptr[0] = JE32(0);
 	else
-		j32Ptr[0] = JNE32(0);
+		j32Ptr[0] = JNE32(0);
 }
 
 static void recSetBranchL(int ltz)
 {
-	const int regs = _checkX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
-	const int regsxmm = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
+	const int regs = _checkX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
+	const int regsxmm = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
 	_eeFlushAllDirty();
 
 	if (regsxmm >= 0)

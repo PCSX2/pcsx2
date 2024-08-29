@@ -7,10 +7,10 @@
 
 #include "common/emitter/x86emitter.h"
 
-using namespace x86Emitter;
+using namespace x86Emitter;
 
-extern void  mVUmergeRegs(const xRegisterSSE& dest, const xRegisterSSE& src,  int xyzw, bool modXYZW = 0);
-extern void  mVUsaveReg(const xRegisterSSE& reg, xAddressVoid ptr, int xyzw, bool modXYZW);
+extern void  mVUmergeRegs(const xRegisterSSE& dest, const xRegisterSSE& src,  int xyzw, bool modXYZW = 0);
+extern void  mVUsaveReg(const xRegisterSSE& reg, xAddressVoid ptr, int xyzw, bool modXYZW);
 
 #define VUFT VIFUnpackFuncTable
 #define _v0 0

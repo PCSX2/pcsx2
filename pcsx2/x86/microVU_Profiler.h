@@ -42,7 +42,7 @@ enum microOpcode
 	opESQRT, opERSQRT, opESIN, opEATAN,
 	opEEXP, opXITOP, opXTOP, opXGKICK,
 	opLastOpcode
-};
+};
 
 static const char microOpcodeName[][16] = {
 	// Upper Instructions
@@ -81,7 +81,7 @@ static const char microOpcodeName[][16] = {
 	"EATANxy", "EATANxz", "ESUM", "ERCPR",
 	"ESQRT", "ERSQRT", "ESIN", "EATAN",
 	"EEXP", "XITOP", "XTOP", "XGKICK"
-};
+};
 
 #ifdef mVUprofileProg
 #include <utility>
@@ -90,54 +90,54 @@ static const char microOpcodeName[][16] = {
 
 struct microProfiler
 {
-	static const u32 progLimit = 10000;
-	u64 opStats[opLastOpcode];
-	u32 progCount;
-	int index;
+	static const u32 progLimit = 10000;
+	u64 opStats[opLastOpcode];
+	u32 progCount;
+	int index;
 	void Reset(int _index)
 	{
-		std::memset(this, 0, sizeof(*this));
-		index = _index;
+		std::memset(this, 0, sizeof(*this));
+		index = _index;
 	}
 	void EmitOp(microOpcode op)
 	{
-		xADD(ptr32[&(((u32*)opStats)[op * 2 + 0])], 1);
-		xADC(ptr32[&(((u32*)opStats)[op * 2 + 1])], 0);
+		xADD(ptr32[&(((u32*)opStats)[op * 2 + 0])], 1);
+		xADC(ptr32[&(((u32*)opStats)[op * 2 + 1])], 0);
 	}
 	void Print()
 	{
-		progCount++;
+		progCount++;
 		if ((progCount % progLimit) == 0)
 		{
-			u64 total = 0;
-			std::vector<std::pair<u32, u32>> v;
-			for (int i = 0; i < opLastOpcode; i++)
+			u64 total = 0;
+			std::vector<std::pair<u32, u32>> v;
+			for (int i = 0; i < opLastOpcode; i++)
 			{
-				total += opStats[i];
-				v.push_back(std::make_pair(opStats[i], i));
+				total += opStats[i];
+				v.push_back(std::make_pair(opStats[i], i));
 			}
-			std::sort(v.begin(), v.end());
-			std::reverse(v.begin(), v.end());
-			double dTotal = (double)total;
-			DevCon.WriteLn("microVU%d Profiler:", index);
-			for (u32 i = 0; i < v.size(); i++)
+			std::sort(v.begin(), v.end());
+			std::reverse(v.begin(), v.end());
+			double dTotal = (double)total;
+			DevCon.WriteLn("microVU%d Profiler:", index);
+			for (u32 i = 0; i < v.size(); i++)
 			{
-				u64 count = v[i].first;
-				double stat = (double)count / dTotal * 100.0;
-				std::string str = microOpcodeName[v[i].second];
-				str.resize(8, ' ');
+				u64 count = v[i].first;
+				double stat = (double)count / dTotal * 100.0;
+				std::string str = microOpcodeName[v[i].second];
+				str.resize(8, ' ');
 				DevCon.WriteLn("%s - [%3.4f%%][count=%u]",
-					str.c_str(), stat, (u32)count);
+					str.c_str(), stat, (u32)count);
 			}
-			DevCon.WriteLn("Total = 0x%x%x\n\n", (u32)(u64)(total >> 32), (u32)total);
+			DevCon.WriteLn("Total = 0x%x%x\n\n", (u32)(u64)(total >> 32), (u32)total);
 		}
 	}
-};
+};
 #else
 struct microProfiler
 {
 	__fi void Reset(int _index) {}
 	__fi void EmitOp(microOpcode op) {}
 	__fi void Print() {}
-};
+};
 #endif

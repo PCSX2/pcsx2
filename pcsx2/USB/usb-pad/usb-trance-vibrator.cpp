@@ -17,7 +17,7 @@ namespace usb_pad
 	static const USBDescStrings desc_strings = {
 		"",
 		"ASCII CORPORATION",
-		"ASCII Vib"};
+		"ASCII Vib"};
 
 	static uint8_t dev_descriptor[] = {
 		0x12,       // bLength
@@ -34,7 +34,7 @@ namespace usb_pad
 		0x02,       // iProduct (String Index)
 		0x00,       // iSerialNumber (String Index)
 		0x01,       // bNumConfigurations 1
-	};
+	};
 
 	static const uint8_t config_descriptor[] = {
 		0x09,       // bLength
@@ -62,40 +62,40 @@ namespace usb_pad
 		0x03,       // bmAttributes (Interrupt)
 		0x08, 0x00, // wMaxPacketSize 8
 		0x0A,       // bInterval 10 (unit depends on device speed)
-	};
+	};
 
 	TranceVibratorState::TranceVibratorState(u32 port_)
 		: port(port_)
 	{
 	}
 
-	TranceVibratorState::~TranceVibratorState() = default;
+	TranceVibratorState::~TranceVibratorState() = default;
 
 	static void trancevibrator_handle_control(USBDevice* dev, USBPacket* p,
 		int request, int value, int index, int length, uint8_t* data)
 	{
-		TranceVibratorState* s = USB_CONTAINER_OF(dev, TranceVibratorState, dev);
-		int ret = 0;
+		TranceVibratorState* s = USB_CONTAINER_OF(dev, TranceVibratorState, dev);
+		int ret = 0;
 
 		switch (request)
 		{
 			case InterfaceRequest | USB_REQ_GET_DESCRIPTOR:
-				break;
+				break;
 			case SET_IDLE:
-				break;
+				break;
 			case VendorDeviceOutRequest:
 				// Vibration = wValue
 				// LED1 = wIndex&1, LED2 = wIndex&2, LED3 = wIndex&4
-				InputManager::SetUSBVibrationIntensity(s->port, value & 0xff, 0);
-				break;
+				InputManager::SetUSBVibrationIntensity(s->port, value & 0xff, 0);
+				break;
 			default:
-				ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
+				ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
 				if (ret >= 0)
 				{
-					return;
+					return;
 				}
-				p->status = USB_RET_STALL;
-				break;
+				p->status = USB_RET_STALL;
+				break;
 		}
 	}
 
@@ -104,70 +104,70 @@ namespace usb_pad
 		switch (p->pid)
 		{
 			case USB_TOKEN_IN:
-				break;
+				break;
 			case USB_TOKEN_OUT:
-				break;
+				break;
 			default:
-				p->status = USB_RET_STALL;
-				break;
+				p->status = USB_RET_STALL;
+				break;
 		}
 	}
 
 	static void trancevibrator_unrealize(USBDevice* dev)
 	{
-		TranceVibratorState* s = USB_CONTAINER_OF(dev, TranceVibratorState, dev);
-		delete s;
+		TranceVibratorState* s = USB_CONTAINER_OF(dev, TranceVibratorState, dev);
+		delete s;
 	}
 
 	const char* TranceVibratorDevice::Name() const
 	{
-		return TRANSLATE_NOOP("USB", "Trance Vibrator (Rez)");
+		return TRANSLATE_NOOP("USB", "Trance Vibrator (Rez)");
 	}
 
 	const char* TranceVibratorDevice::TypeName() const
 	{
-		return "TranceVibrator";
+		return "TranceVibrator";
 	}
 
 	bool TranceVibratorDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
 	{
-		return true;
+		return true;
 	}
 
 	USBDevice* TranceVibratorDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
-		TranceVibratorState* s = new TranceVibratorState(port);
+		TranceVibratorState* s = new TranceVibratorState(port);
 
-		s->desc.full = &s->desc_dev;
-		s->desc.str = desc_strings;
+		s->desc.full = &s->desc_dev;
+		s->desc.str = desc_strings;
 
 		if (usb_desc_parse_dev(dev_descriptor, sizeof(dev_descriptor), s->desc, s->desc_dev) < 0)
-			goto fail;
+			goto fail;
 		if (usb_desc_parse_config(config_descriptor, sizeof(config_descriptor), s->desc_dev) < 0)
-			goto fail;
+			goto fail;
 
-		s->dev.speed = USB_SPEED_FULL;
-		s->dev.klass.handle_attach = usb_desc_attach;
-		s->dev.klass.handle_reset = nullptr;
-		s->dev.klass.handle_control = trancevibrator_handle_control;
-		s->dev.klass.handle_data = trancevibrator_handle_data;
-		s->dev.klass.unrealize = trancevibrator_unrealize;
-		s->dev.klass.usb_desc = &s->desc;
-		s->dev.klass.product_desc = nullptr;
+		s->dev.speed = USB_SPEED_FULL;
+		s->dev.klass.handle_attach = usb_desc_attach;
+		s->dev.klass.handle_reset = nullptr;
+		s->dev.klass.handle_control = trancevibrator_handle_control;
+		s->dev.klass.handle_data = trancevibrator_handle_data;
+		s->dev.klass.unrealize = trancevibrator_unrealize;
+		s->dev.klass.usb_desc = &s->desc;
+		s->dev.klass.product_desc = nullptr;
 
-		usb_desc_init(&s->dev);
-		usb_ep_init(&s->dev);
+		usb_desc_init(&s->dev);
+		usb_ep_init(&s->dev);
 
-		return &s->dev;
+		return &s->dev;
 
 	fail:
-		trancevibrator_unrealize(&s->dev);
-		return nullptr;
+		trancevibrator_unrealize(&s->dev);
+		return nullptr;
 	}
 
 	float TranceVibratorDevice::GetBindingValue(const USBDevice* dev, u32 bind_index) const
 	{
-		return 0.0f;
+		return 0.0f;
 	}
 
 	void TranceVibratorDevice::SetBindingValue(USBDevice* dev, u32 bind_index, float value) const
@@ -178,13 +178,13 @@ namespace usb_pad
 	{
 		static constexpr const InputBindingInfo bindings[] = {
 			{"Motor", TRANSLATE_NOOP("Pad", "Motor"), nullptr, InputBindingInfo::Type::Motor, 0, GenericInputBinding::LargeMotor},
-		};
+		};
 
-		return bindings;
+		return bindings;
 	}
 
 	std::span<const SettingInfo> TranceVibratorDevice::Settings(u32 subtype) const
 	{
-		return {};
+		return {};
 	}
 } // namespace usb_pad

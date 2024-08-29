@@ -15,19 +15,19 @@ namespace Dynarec {
 namespace OpcodeImpl {
 namespace COP0 {
 
-	void recMFC0();
-	void recMTC0();
-	void recBC0F();
-	void recBC0T();
-	void recBC0FL();
-	void recBC0TL();
-	void recTLBR();
-	void recTLBWI();
-	void recTLBWR();
-	void recTLBP();
-	void recERET();
-	void recDI();
-	void recEI();
+	void recMFC0();
+	void recMTC0();
+	void recBC0F();
+	void recBC0T();
+	void recBC0FL();
+	void recBC0TL();
+	void recTLBR();
+	void recTLBWI();
+	void recTLBWR();
+	void recTLBP();
+	void recERET();
+	void recDI();
+	void recEI();
 
 } // namespace COP0
 } // namespace OpcodeImpl

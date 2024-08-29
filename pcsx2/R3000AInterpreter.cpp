@@ -11,15 +11,15 @@
 #include "IopBios.h"
 #include "IopHw.h"
 
-using namespace R3000A;
+using namespace R3000A;
 
 // Used to flag delay slot instructions when throwig exceptions.
-bool iopIsDelaySlot = false;
+bool iopIsDelaySlot = false;
 
-static bool branch2 = 0;
-static u32 branchPC;
+static bool branch2 = 0;
+static u32 branchPC;
 
-static void doBranch(s32 tar);	// forward declared prototype
+static void doBranch(s32 tar);	// forward declared prototype
 
 /*********************************************************
 * Register branch logic                                  *
@@ -28,38 +28,38 @@ static void doBranch(s32 tar);	// forward declared prototype
 
 void psxBGEZ()         // Branch if Rs >= 0
 {
-	if (_i32(_rRs_) >= 0) doBranch(_BranchTarget_);
+	if (_i32(_rRs_) >= 0) doBranch(_BranchTarget_);
 }
 
 void psxBGEZAL()   // Branch if Rs >= 0 and link
 {
-	_SetLink(31);
+	_SetLink(31);
 	if (_i32(_rRs_) >= 0)
 	{
-		doBranch(_BranchTarget_);
+		doBranch(_BranchTarget_);
 	}
 }
 
 void psxBGTZ()          // Branch if Rs >  0
 {
-	if (_i32(_rRs_) > 0) doBranch(_BranchTarget_);
+	if (_i32(_rRs_) > 0) doBranch(_BranchTarget_);
 }
 
 void psxBLEZ()         // Branch if Rs <= 0
 {
-	if (_i32(_rRs_) <= 0) doBranch(_BranchTarget_);
+	if (_i32(_rRs_) <= 0) doBranch(_BranchTarget_);
 }
 void psxBLTZ()          // Branch if Rs <  0
 {
-	if (_i32(_rRs_) < 0) doBranch(_BranchTarget_);
+	if (_i32(_rRs_) < 0) doBranch(_BranchTarget_);
 }
 
 void psxBLTZAL()    // Branch if Rs <  0 and link
 {
-	_SetLink(31);
+	_SetLink(31);
 	if (_i32(_rRs_) < 0)
 		{
-			doBranch(_BranchTarget_);
+			doBranch(_BranchTarget_);
 		}
 }
 
@@ -70,12 +70,12 @@ void psxBLTZAL()    // Branch if Rs <  0 and link
 
 void psxBEQ()   // Branch if Rs == Rt
 {
-	if (_i32(_rRs_) == _i32(_rRt_)) doBranch(_BranchTarget_);
+	if (_i32(_rRs_) == _i32(_rRt_)) doBranch(_BranchTarget_);
 }
 
 void psxBNE()   // Branch if Rs != Rt
 {
-	if (_i32(_rRs_) != _i32(_rRt_)) doBranch(_BranchTarget_);
+	if (_i32(_rRs_) != _i32(_rRt_)) doBranch(_BranchTarget_);
 }
 
 /*********************************************************
@@ -85,17 +85,17 @@ void psxBNE()   // Branch if Rs != Rt
 void psxJ()
 {
 	// check for iop module import table magic
-	u32 delayslot = iopMemRead32(psxRegs.pc);
+	u32 delayslot = iopMemRead32(psxRegs.pc);
 	if (delayslot >> 16 == 0x2400 && irxImportExec(irxImportTableAddr(psxRegs.pc), delayslot & 0xffff))
-		return;
+		return;
 
-	doBranch(_JumpTarget_);
+	doBranch(_JumpTarget_);
 }
 
 void psxJAL()
 {
-	_SetLink(31);
-	doBranch(_JumpTarget_);
+	_SetLink(31);
+	doBranch(_JumpTarget_);
 }
 
 /*********************************************************
@@ -104,94 +104,94 @@ void psxJAL()
 *********************************************************/
 void psxJR()
 {
-	doBranch(_u32(_rRs_));
+	doBranch(_u32(_rRs_));
 }
 
 void psxJALR()
 {
 	if (_Rd_)
 	{
-		_SetLink(_Rd_);
+		_SetLink(_Rd_);
 	}
-	doBranch(_u32(_rRs_));
+	doBranch(_u32(_rRs_));
 }
 
 void psxBreakpoint(bool memcheck)
 {
-	u32 pc = psxRegs.pc;
+	u32 pc = psxRegs.pc;
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) != 0)
-		return;
+		return;
 
 	if (!memcheck)
 	{
-		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_IOP, pc);
+		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_IOP, pc);
 		if (cond && !cond->Evaluate())
-			return;
+			return;
 	}
 
-	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
-	VMManager::SetPaused(true);
-	Cpu->ExitExecution();
+	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
+	VMManager::SetPaused(true);
+	Cpu->ExitExecution();
 }
 
 void psxMemcheck(u32 op, u32 bits, bool store)
 {
 	// compute accessed address
-	u32 start = psxRegs.GPR.r[(op >> 21) & 0x1F];
+	u32 start = psxRegs.GPR.r[(op >> 21) & 0x1F];
 	if ((s16)op != 0)
-		start += (s16)op;
+		start += (s16)op;
 
-	u32 end = start + bits / 8;
+	u32 end = start + bits / 8;
 
-	auto checks = CBreakPoints::GetMemChecks(BREAKPOINT_IOP);
-	for (size_t i = 0; i < checks.size(); i++)
+	auto checks = CBreakPoints::GetMemChecks(BREAKPOINT_IOP);
+	for (size_t i = 0; i < checks.size(); i++)
 	{
-		auto& check = checks[i];
+		auto& check = checks[i];
 
 		if (check.result == 0)
-			continue;
+			continue;
 		if ((check.memCond & MEMCHECK_WRITE) == 0 && store)
-			continue;
+			continue;
 		if ((check.memCond & MEMCHECK_READ) == 0 && !store)
-			continue;
+			continue;
 
 		if (check.hasCond)
 		{
 			if (!check.cond.Evaluate())
-				continue;
+				continue;
 		}
 
 		if (start < check.end && check.start < end)
-			psxBreakpoint(true);
+			psxBreakpoint(true);
 	}
 }
 
 void psxCheckMemcheck()
 {
-	u32 pc = psxRegs.pc;
-	int needed = psxIsMemcheckNeeded(pc);
+	u32 pc = psxRegs.pc;
+	int needed = psxIsMemcheckNeeded(pc);
 	if (needed == 0)
-		return;
+		return;
 
-	u32 op = iopMemRead32(needed == 2 ? pc + 4 : pc);
+	u32 op = iopMemRead32(needed == 2 ? pc + 4 : pc);
 	// Yeah, we use the R5900 opcode table for the R3000
-	const R5900::OPCODE& opcode = R5900::GetInstruction(op);
+	const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
-	bool store = (opcode.flags & IS_STORE) != 0;
+	bool store = (opcode.flags & IS_STORE) != 0;
 	switch (opcode.flags & MEMTYPE_MASK)
 	{
 	case MEMTYPE_BYTE:
-		psxMemcheck(op, 8, store);
-		break;
+		psxMemcheck(op, 8, store);
+		break;
 	case MEMTYPE_HALF:
-		psxMemcheck(op, 16, store);
-		break;
+		psxMemcheck(op, 16, store);
+		break;
 	case MEMTYPE_WORD:
-		psxMemcheck(op, 32, store);
-		break;
+		psxMemcheck(op, 32, store);
+		break;
 	case MEMTYPE_DWORD:
-		psxMemcheck(op, 64, store);
-		break;
+		psxMemcheck(op, 64, store);
+		break;
 	}
 }
 
@@ -205,50 +205,50 @@ static __fi void execI()
 //#define EXTRA_DEBUG
 #if defined(EXTRA_DEBUG) || defined(PCSX2_DEVBUILD)
 	if (psxIsBreakpointNeeded(psxRegs.pc))
-		psxBreakpoint(false);
+		psxBreakpoint(false);
 
-	psxCheckMemcheck();
+	psxCheckMemcheck();
 #endif
 
 	// Inject IRX hack
 	if (psxRegs.pc == 0x1630 && EmuConfig.CurrentIRX.length() > 3) {
 		if (iopMemRead32(0x20018) == 0x1F) {
 			// FIXME do I need to increase the module count (0x1F -> 0x20)
-			iopMemWrite32(0x20094, 0xbffc0000);
+			iopMemWrite32(0x20094, 0xbffc0000);
 		}
 	}
 
-	psxRegs.code = iopMemRead32(psxRegs.pc);
+	psxRegs.code = iopMemRead32(psxRegs.pc);
 
-		PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
+		PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
 
-	psxRegs.pc+= 4;
-	psxRegs.cycle++;
+	psxRegs.pc+= 4;
+	psxRegs.cycle++;
 
-	psxBSC[psxRegs.code >> 26]();
+	psxBSC[psxRegs.code >> 26]();
 }
 
 static void doBranch(s32 tar) {
 	if (tar == 0x0)
-		DevCon.Warning("[R3000 Interpreter] Warning: Branch to 0x0!");
+		DevCon.Warning("[R3000 Interpreter] Warning: Branch to 0x0!");
 
 	// When upgrading the IOP, there are two resets, the second of which is a 'fake' reset
 	// This second 'reset' involves UDNL calling SYSMEM and LOADCORE directly, resetting LOADCORE's modules
 	// This detects when SYSMEM is called and clears the modules then
 	if(tar == 0x890)
 	{
-		DevCon.WriteLn(Color_Gray, "[R3000 Debugger] Branch to 0x890 (SYSMEM). Clearing modules.");
-		R3000SymbolGuardian.ClearIrxModules();
+		DevCon.WriteLn(Color_Gray, "[R3000 Debugger] Branch to 0x890 (SYSMEM). Clearing modules.");
+		R3000SymbolGuardian.ClearIrxModules();
 	}
 
-	branch2 = iopIsDelaySlot = true;
-	branchPC = tar;
-	execI();
-	PSXCPU_LOG( "\n" );
-	iopIsDelaySlot = false;
-	psxRegs.pc = branchPC;
+	branch2 = iopIsDelaySlot = true;
+	branchPC = tar;
+	execI();
+	PSXCPU_LOG( "\n" );
+	iopIsDelaySlot = false;
+	psxRegs.pc = branchPC;
 
-	iopEventTest();
+	iopEventTest();
 }
 
 static void intReserve() {
@@ -258,45 +258,45 @@ static void intAlloc() {
 }
 
 static void intReset() {
-	intAlloc();
+	intAlloc();
 }
 
 static s32 intExecuteBlock( s32 eeCycles )
 {
-	psxRegs.iopBreak = 0;
-	psxRegs.iopCycleEE = eeCycles;
-	u32 lastIOPCycle = 0;
+	psxRegs.iopBreak = 0;
+	psxRegs.iopCycleEE = eeCycles;
+	u32 lastIOPCycle = 0;
 
 	while (psxRegs.iopCycleEE > 0)
 	{
-		lastIOPCycle = psxRegs.cycle;
+		lastIOPCycle = psxRegs.cycle;
 		if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
-			psxBiosCall();
+			psxBiosCall();
 
-		branch2 = 0;
+		branch2 = 0;
 		while (!branch2)
-			execI();
+			execI();
 
 		
 		if ((psxHu32(HW_ICFG) & (1 << 3)))
 		{
 			// F = gcd(PS2CLK, PSXCLK) = 230400
-			const u32 cnum = 1280; // PS2CLK / F
-			const u32 cdenom = 147; // PSXCLK / F
+			const u32 cnum = 1280; // PS2CLK / F
+			const u32 cdenom = 147; // PSXCLK / F
 
 			//One of the Iop to EE delta clocks to be set in PS1 mode.
-			const u32 t = ((cnum * (psxRegs.cycle - lastIOPCycle)) + psxRegs.iopCycleEECarry);
-			psxRegs.iopCycleEE -= t / cdenom;
-			psxRegs.iopCycleEECarry = t % cdenom;
+			const u32 t = ((cnum * (psxRegs.cycle - lastIOPCycle)) + psxRegs.iopCycleEECarry);
+			psxRegs.iopCycleEE -= t / cdenom;
+			psxRegs.iopCycleEECarry = t % cdenom;
 		}
 		else
 		{ 
 			//default ps2 mode value
-			psxRegs.iopCycleEE -= (psxRegs.cycle - lastIOPCycle) * 8;
+			psxRegs.iopCycleEE -= (psxRegs.cycle - lastIOPCycle) * 8;
 		}
 	}
 
-	return psxRegs.iopBreak + psxRegs.iopCycleEE;
+	return psxRegs.iopBreak + psxRegs.iopCycleEE;
 }
 
 static void intClear(u32 Addr, u32 Size) {
@@ -311,4 +311,4 @@ R3000Acpu psxInt = {
 	intExecuteBlock,
 	intClear,
 	intShutdown
-};
+};

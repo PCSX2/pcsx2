@@ -17,50 +17,50 @@
 class Updater
 {
 public:
-	Updater(ProgressCallback* progress);
-	~Updater();
+	Updater(ProgressCallback* progress);
+	~Updater();
 
-	static void SetupLogging(ProgressCallback* progress, const std::string& destination_directory);
+	static void SetupLogging(ProgressCallback* progress, const std::string& destination_directory);
 
-	bool Initialize(std::string destination_directory);
+	bool Initialize(std::string destination_directory);
 
-	bool OpenUpdateZip(const char* path);
-	bool PrepareStagingDirectory();
-	bool StageUpdate();
-	bool CommitUpdate();
-	void CleanupStagingDirectory();
-	void RemoveUpdateZip();
+	bool OpenUpdateZip(const char* path);
+	bool PrepareStagingDirectory();
+	bool StageUpdate();
+	bool CommitUpdate();
+	void CleanupStagingDirectory();
+	void RemoveUpdateZip();
 
-	std::string FindPCSX2Exe() const;
+	std::string FindPCSX2Exe() const;
 
 private:
-	bool RecursiveDeleteDirectory(const char* path);
+	bool RecursiveDeleteDirectory(const char* path);
 
-	void CloseUpdateZip();
+	void CloseUpdateZip();
 
 	struct FileToUpdate
 	{
-		u32 file_index;
-		std::string destination_filename;
-	};
+		u32 file_index;
+		std::string destination_filename;
+	};
 
-	bool ParseZip();
+	bool ParseZip();
 
-	std::string m_zip_path;
-	std::string m_destination_directory;
-	std::string m_staging_directory;
+	std::string m_zip_path;
+	std::string m_destination_directory;
+	std::string m_staging_directory;
 
-	std::vector<FileToUpdate> m_update_paths;
-	std::vector<std::string> m_update_directories;
+	std::vector<FileToUpdate> m_update_paths;
+	std::vector<std::string> m_update_directories;
 
-	ProgressCallback* m_progress;
+	ProgressCallback* m_progress;
 
 #ifdef _WIN32
-	CFileInStream m_archive_stream = {};
-	CLookToRead2 m_look_stream = {};
-	CSzArEx m_archive = {};
+	CFileInStream m_archive_stream = {};
+	CLookToRead2 m_look_stream = {};
+	CSzArEx m_archive = {};
 
-	bool m_file_opened = false;
-	bool m_archive_opened = false;
+	bool m_file_opened = false;
+	bool m_archive_opened = false;
 #endif
-};
+};

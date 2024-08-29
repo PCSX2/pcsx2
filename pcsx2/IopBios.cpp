@@ -43,52 +43,52 @@
 
 typedef struct
 {
-	unsigned int mode;
-	unsigned int attr;
-	unsigned int size;
-	unsigned char ctime[8];
-	unsigned char atime[8];
-	unsigned char mtime[8];
-	unsigned int hisize;
-} fio_stat_t;
+	unsigned int mode;
+	unsigned int attr;
+	unsigned int size;
+	unsigned char ctime[8];
+	unsigned char atime[8];
+	unsigned char mtime[8];
+	unsigned int hisize;
+} fio_stat_t;
 typedef struct
 {
-	fio_stat_t _fioStat;
+	fio_stat_t _fioStat;
 	/** Number of subs (main) / subpart number (sub) */
-	unsigned int private_0;
-	unsigned int private_1;
-	unsigned int private_2;
-	unsigned int private_3;
-	unsigned int private_4;
+	unsigned int private_0;
+	unsigned int private_1;
+	unsigned int private_2;
+	unsigned int private_3;
+	unsigned int private_4;
 	/** Sector start.  */
-	unsigned int private_5;
-} fxio_stat_t;
+	unsigned int private_5;
+} fxio_stat_t;
 
 typedef struct
 {
-	fio_stat_t stat;
-	char name[256];
-	unsigned int unknown;
-} fio_dirent_t;
+	fio_stat_t stat;
+	char name[256];
+	unsigned int unknown;
+} fio_dirent_t;
 
 typedef struct
 {
-	fxio_stat_t stat;
-	char name[256];
-	unsigned int unknown;
-} fxio_dirent_t;
+	fxio_stat_t stat;
+	char name[256];
+	unsigned int unknown;
+} fxio_dirent_t;
 
-static std::string hostRoot;
+static std::string hostRoot;
 
 void Hle_SetHostRoot(const char* bootFilename)
 {
-	hostRoot = Path::ToNativePath(Path::GetDirectory(bootFilename));
-	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
+	hostRoot = Path::ToNativePath(Path::GetDirectory(bootFilename));
+	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
 }
 
 void Hle_ClearHostRoot()
 {
-	hostRoot = {};
+	hostRoot = {};
 }
 
 namespace R3000A
@@ -115,20 +115,20 @@ namespace R3000A
 	{
 		// Access flags
 		// Execute
-		int IXOTH;
+		int IXOTH;
 		// Write
-		int IWOTH;
+		int IWOTH;
 		// Read
-		int IROTH;
+		int IROTH;
 
 		// File mode flags
 		// Symlink
-		int IFLNK;
+		int IFLNK;
 		// Regular file
-		int IFREG;
+		int IFREG;
 		// Directory
-		int IFDIR;
-	};
+		int IFDIR;
+	};
 
 	fio_stat_flags ioman_stat{
 		0x01,
@@ -137,7 +137,7 @@ namespace R3000A
 		0x08,
 		0x10,
 		0x20,
-	};
+	};
 
 	fio_stat_flags iomanx_stat{
 		0x01,
@@ -146,267 +146,267 @@ namespace R3000A
 		0x4000,
 		0x2000,
 		0x1000,
-	};
+	};
 
 	// This is a workaround for GHS on *NIX platforms
 	// Whenever a program splits directories with a backslash (ulaunchelf)
 	// the directory is considered non-existant
 	static __fi std::string clean_path(const std::string& path)
 	{
-		std::string ret = path;
-		std::replace(ret.begin(), ret.end(), '\\', '/');
-		return ret;
+		std::string ret = path;
+		std::replace(ret.begin(), ret.end(), '\\', '/');
+		return ret;
 	}
 
 	static int host_stat(const std::string& path, fio_stat_t* host_stats, fio_stat_flags& stat = ioman_stat)
 	{
-		struct stat file_stats;
-		const std::string file_path(ioman::host_path(path, true));
+		struct stat file_stats;
+		const std::string file_path(ioman::host_path(path, true));
 
 		if (!FileSystem::StatFile(file_path.c_str(), &file_stats))
-			return -IOP_ENOENT;
+			return -IOP_ENOENT;
 
-		host_stats->size = file_stats.st_size;
-		host_stats->hisize = 0;
+		host_stats->size = file_stats.st_size;
+		host_stats->hisize = 0;
 
 		// Convert the mode.
-		host_stats->mode = (file_stats.st_mode & (stat.IROTH | stat.IWOTH | stat.IXOTH));
+		host_stats->mode = (file_stats.st_mode & (stat.IROTH | stat.IWOTH | stat.IXOTH));
 #ifndef _WIN32
 		if (S_ISLNK(file_stats.st_mode))
 		{
-			host_stats->mode |= stat.IFLNK;
+			host_stats->mode |= stat.IFLNK;
 		}
 #endif
 		if (S_ISREG(file_stats.st_mode))
 		{
-			host_stats->mode |= stat.IFREG;
+			host_stats->mode |= stat.IFREG;
 		}
 		if (S_ISDIR(file_stats.st_mode))
 		{
-			host_stats->mode |= stat.IFDIR;
+			host_stats->mode |= stat.IFDIR;
 		}
 
 		// Convert the creation time.
-		struct tm* loctime;
-		loctime = localtime(&(file_stats.st_ctime));
-		host_stats->ctime[6] = (unsigned char)loctime->tm_year;
-		host_stats->ctime[5] = (unsigned char)loctime->tm_mon + 1;
-		host_stats->ctime[4] = (unsigned char)loctime->tm_mday;
-		host_stats->ctime[3] = (unsigned char)loctime->tm_hour;
-		host_stats->ctime[2] = (unsigned char)loctime->tm_min;
-		host_stats->ctime[1] = (unsigned char)loctime->tm_sec;
+		struct tm* loctime;
+		loctime = localtime(&(file_stats.st_ctime));
+		host_stats->ctime[6] = (unsigned char)loctime->tm_year;
+		host_stats->ctime[5] = (unsigned char)loctime->tm_mon + 1;
+		host_stats->ctime[4] = (unsigned char)loctime->tm_mday;
+		host_stats->ctime[3] = (unsigned char)loctime->tm_hour;
+		host_stats->ctime[2] = (unsigned char)loctime->tm_min;
+		host_stats->ctime[1] = (unsigned char)loctime->tm_sec;
 
 		// Convert the access time.
-		loctime = localtime(&(file_stats.st_atime));
-		host_stats->atime[6] = (unsigned char)loctime->tm_year;
-		host_stats->atime[5] = (unsigned char)loctime->tm_mon + 1;
-		host_stats->atime[4] = (unsigned char)loctime->tm_mday;
-		host_stats->atime[3] = (unsigned char)loctime->tm_hour;
-		host_stats->atime[2] = (unsigned char)loctime->tm_min;
-		host_stats->atime[1] = (unsigned char)loctime->tm_sec;
+		loctime = localtime(&(file_stats.st_atime));
+		host_stats->atime[6] = (unsigned char)loctime->tm_year;
+		host_stats->atime[5] = (unsigned char)loctime->tm_mon + 1;
+		host_stats->atime[4] = (unsigned char)loctime->tm_mday;
+		host_stats->atime[3] = (unsigned char)loctime->tm_hour;
+		host_stats->atime[2] = (unsigned char)loctime->tm_min;
+		host_stats->atime[1] = (unsigned char)loctime->tm_sec;
 
 		// Convert the last modified time.
-		loctime = localtime(&(file_stats.st_mtime));
-		host_stats->mtime[6] = (unsigned char)loctime->tm_year;
-		host_stats->mtime[5] = (unsigned char)loctime->tm_mon + 1;
-		host_stats->mtime[4] = (unsigned char)loctime->tm_mday;
-		host_stats->mtime[3] = (unsigned char)loctime->tm_hour;
-		host_stats->mtime[2] = (unsigned char)loctime->tm_min;
-		host_stats->mtime[1] = (unsigned char)loctime->tm_sec;
+		loctime = localtime(&(file_stats.st_mtime));
+		host_stats->mtime[6] = (unsigned char)loctime->tm_year;
+		host_stats->mtime[5] = (unsigned char)loctime->tm_mon + 1;
+		host_stats->mtime[4] = (unsigned char)loctime->tm_mday;
+		host_stats->mtime[3] = (unsigned char)loctime->tm_hour;
+		host_stats->mtime[2] = (unsigned char)loctime->tm_min;
+		host_stats->mtime[1] = (unsigned char)loctime->tm_sec;
 
-		return 0;
+		return 0;
 	}
 
 	static int host_stat(const std::string& path, fxio_stat_t* host_stats)
 	{
-		return host_stat(path, &host_stats->_fioStat, iomanx_stat);
+		return host_stat(path, &host_stats->_fioStat, iomanx_stat);
 	}
 
 	// TODO: sandbox option, other permissions
 	class HostFile : public IOManFile
 	{
 	public:
-		int fd;
+		int fd;
 
 		HostFile(int hostfd)
 		{
-			fd = hostfd;
+			fd = hostfd;
 		}
 
-		virtual ~HostFile() = default;
+		virtual ~HostFile() = default;
 
 		static __fi int translate_error(int err)
 		{
 			if (err >= 0)
-				return err;
+				return err;
 
 			switch (err)
 			{
 				case -ENOENT:
-					return -IOP_ENOENT;
+					return -IOP_ENOENT;
 				case -EACCES:
-					return -IOP_EACCES;
+					return -IOP_EACCES;
 				case -EISDIR:
-					return -IOP_EISDIR;
+					return -IOP_EISDIR;
 				case -EIO:
 				default:
-					return -IOP_EIO;
+					return -IOP_EIO;
 			}
 		}
 
 		static int open(IOManFile** file, const std::string& full_path, s32 flags, u16 mode)
 		{
-			const std::string path(full_path.substr(full_path.find(':') + 1));
-			const std::string file_path(ioman::host_path(path, false));
-			int native_flags = O_BINARY; // necessary in Windows.
+			const std::string path(full_path.substr(full_path.find(':') + 1));
+			const std::string file_path(ioman::host_path(path, false));
+			int native_flags = O_BINARY; // necessary in Windows.
 
 			switch (flags & IOP_O_RDWR)
 			{
 				case IOP_O_RDONLY:
-					native_flags |= O_RDONLY;
-					break;
+					native_flags |= O_RDONLY;
+					break;
 				case IOP_O_WRONLY:
-					native_flags |= O_WRONLY;
-					break;
+					native_flags |= O_WRONLY;
+					break;
 				case IOP_O_RDWR:
-					native_flags |= O_RDWR;
-					break;
+					native_flags |= O_RDWR;
+					break;
 			}
 
 			if (flags & IOP_O_APPEND)
-				native_flags |= O_APPEND;
+				native_flags |= O_APPEND;
 			if (flags & IOP_O_CREAT)
-				native_flags |= O_CREAT;
+				native_flags |= O_CREAT;
 			if (flags & IOP_O_TRUNC)
-				native_flags |= O_TRUNC;
+				native_flags |= O_TRUNC;
 
 #ifdef _WIN32
-			const int native_mode = _S_IREAD | _S_IWRITE;
+			const int native_mode = _S_IREAD | _S_IWRITE;
 #else
-			const int native_mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+			const int native_mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 #endif
 
-			const int hostfd = FileSystem::OpenFDFile(file_path.c_str(), native_flags, native_mode);
+			const int hostfd = FileSystem::OpenFDFile(file_path.c_str(), native_flags, native_mode);
 			if (hostfd < 0)
-				return translate_error(hostfd);
+				return translate_error(hostfd);
 
-			*file = new HostFile(hostfd);
+			*file = new HostFile(hostfd);
 			if (!*file)
-				return -IOP_ENOMEM;
+				return -IOP_ENOMEM;
 
-			return 0;
+			return 0;
 		}
 
 		virtual void close()
 		{
-			::close(fd);
-			delete this;
+			::close(fd);
+			delete this;
 		}
 
 		virtual int lseek(s32 offset, s32 whence)
 		{
-			int err;
+			int err;
 
 			switch (whence)
 			{
 				case IOP_SEEK_SET:
-					err = ::lseek(fd, offset, SEEK_SET);
-					break;
+					err = ::lseek(fd, offset, SEEK_SET);
+					break;
 				case IOP_SEEK_CUR:
-					err = ::lseek(fd, offset, SEEK_CUR);
-					break;
+					err = ::lseek(fd, offset, SEEK_CUR);
+					break;
 				case IOP_SEEK_END:
-					err = ::lseek(fd, offset, SEEK_END);
-					break;
+					err = ::lseek(fd, offset, SEEK_END);
+					break;
 				default:
-					return -IOP_EIO;
+					return -IOP_EIO;
 			}
 
-			return translate_error(err);
+			return translate_error(err);
 		}
 
 		virtual int read(void* buf, u32 count) /* Flawfinder: ignore */
 		{
-			return translate_error(::read(fd, buf, count));
+			return translate_error(::read(fd, buf, count));
 		}
 
 		virtual int write(void* buf, u32 count)
 		{
-			return translate_error(::write(fd, buf, count));
+			return translate_error(::write(fd, buf, count));
 		}
-	};
+	};
 
 	class HostDir : public IOManDir
 	{
 	public:
-		FileSystem::FindResultsArray results;
-		FileSystem::FindResultsArray::iterator dir;
-		std::string basedir;
+		FileSystem::FindResultsArray results;
+		FileSystem::FindResultsArray::iterator dir;
+		std::string basedir;
 
 		HostDir(FileSystem::FindResultsArray results_, std::string basedir_)
 			: results(std::move(results_))
 			, basedir(std::move(basedir_))
 		{
-			dir = results.begin();
+			dir = results.begin();
 		}
 
-		virtual ~HostDir() = default;
+		virtual ~HostDir() = default;
 
 		static int open(IOManDir** dir, const std::string& full_path)
 		{
-			std::string relativePath = full_path.substr(full_path.find(':') + 1);
-			std::string path = ioman::host_path(relativePath, true);
+			std::string relativePath = full_path.substr(full_path.find(':') + 1);
+			std::string path = ioman::host_path(relativePath, true);
 
 			if (!FileSystem::DirectoryExists(path.c_str()))
-				return -IOP_ENOENT; // Should return ENOTDIR if path is a file?
+				return -IOP_ENOENT; // Should return ENOTDIR if path is a file?
 
-			FileSystem::FindResultsArray results;
-			FileSystem::FindFiles(path.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_HIDDEN_FILES, &results);
+			FileSystem::FindResultsArray results;
+			FileSystem::FindFiles(path.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_HIDDEN_FILES, &results);
 
-			*dir = new HostDir(std::move(results), std::move(path));
+			*dir = new HostDir(std::move(results), std::move(path));
 			if (!*dir)
-				return -IOP_ENOMEM;
+				return -IOP_ENOMEM;
 
-			return 0;
+			return 0;
 		}
 
 		virtual int read(void* buf, bool iomanX) /* Flawfinder: ignore */
 		{
 			if (dir == results.end())
-				return 0;
+				return 0;
 
 			if (iomanX)
 			{
-				fxio_dirent_t* hostcontent = (fxio_dirent_t*)buf;
-				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
-				host_stat(ioman::host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+				fxio_dirent_t* hostcontent = (fxio_dirent_t*)buf;
+				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
+				host_stat(ioman::host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
 			}
 			else
 			{
-				fio_dirent_t* hostcontent = (fio_dirent_t*)buf;
-				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
-				host_stat(ioman::host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+				fio_dirent_t* hostcontent = (fio_dirent_t*)buf;
+				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
+				host_stat(ioman::host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
 			}
 
-			dir = std::next(dir);
-			return 1;
+			dir = std::next(dir);
+			return 1;
 		}
 
 		virtual void close()
 		{
-			delete this;
+			delete this;
 		}
-	};
+	};
 
 	namespace ioman
 	{
-		const int firstfd = 0x100;
-		const int maxfds = 0x100;
-		int openfds = 0;
+		const int firstfd = 0x100;
+		const int maxfds = 0x100;
+		int openfds = 0;
 
 		int freefdcount()
 		{
-			return maxfds - openfds;
+			return maxfds - openfds;
 		}
 
 		struct filedesc
@@ -416,32 +416,32 @@ namespace R3000A
 				FILE_FREE,
 				FILE_FILE,
 				FILE_DIR,
-			} type;
+			} type;
 			union
 			{
-				IOManFile* file;
-				IOManDir* dir;
-			};
+				IOManFile* file;
+				IOManDir* dir;
+			};
 
 			constexpr filedesc()
 				: type(FILE_FREE)
 				, file(nullptr)
 			{
 			}
-			operator bool() const { return type != FILE_FREE; }
-			operator IOManFile*() const { return type == FILE_FILE ? file : NULL; }
-			operator IOManDir*() const { return type == FILE_DIR ? dir : NULL; }
+			operator bool() const { return type != FILE_FREE; }
+			operator IOManFile*() const { return type == FILE_FILE ? file : NULL; }
+			operator IOManDir*() const { return type == FILE_DIR ? dir : NULL; }
 			void operator=(IOManFile* f)
 			{
-				type = FILE_FILE;
-				file = f;
-				openfds++;
+				type = FILE_FILE;
+				file = f;
+				openfds++;
 			}
 			void operator=(IOManDir* d)
 			{
-				type = FILE_DIR;
-				dir = d;
-				openfds++;
+				type = FILE_DIR;
+				dir = d;
+				openfds++;
 			}
 
 			void close()
@@ -449,104 +449,104 @@ namespace R3000A
 				switch (type)
 				{
 					case FILE_FILE:
-						file->close();
-						file = NULL;
-						break;
+						file->close();
+						file = NULL;
+						break;
 					case FILE_DIR:
-						dir->close();
-						dir = NULL;
-						break;
+						dir->close();
+						dir = NULL;
+						break;
 					case FILE_FREE:
-						return;
+						return;
 				}
 
-				type = FILE_FREE;
-				openfds--;
+				type = FILE_FREE;
+				openfds--;
 			}
-		};
+		};
 
-		filedesc fds[maxfds];
+		filedesc fds[maxfds];
 
 		template <typename T>
 		T* getfd(int fd)
 		{
-			fd -= firstfd;
+			fd -= firstfd;
 
 			if (fd < 0 || fd >= maxfds)
-				return NULL;
+				return NULL;
 
-			return fds[fd];
+			return fds[fd];
 		}
 
 		template <typename T>
 		int allocfd(T* obj)
 		{
-			for (int i = 0; i < maxfds; i++)
+			for (int i = 0; i < maxfds; i++)
 			{
 				if (!fds[i])
 				{
-					fds[i] = obj;
-					return firstfd + i;
+					fds[i] = obj;
+					return firstfd + i;
 				}
 			}
 
-			obj->close();
-			return -IOP_EMFILE;
+			obj->close();
+			return -IOP_EMFILE;
 		}
 
 		void freefd(int fd)
 		{
-			fd -= firstfd;
+			fd -= firstfd;
 
 			if (fd < 0 || fd >= maxfds)
-				return;
+				return;
 
-			fds[fd].close();
+			fds[fd].close();
 		}
 
 		void reset()
 		{
-			for (int i = 0; i < maxfds; i++)
+			for (int i = 0; i < maxfds; i++)
 			{
 				if (fds[i])
-					fds[i].close();
+					fds[i].close();
 			}
 		}
 
 		bool is_host(const std::string_view path)
 		{
-			auto not_number_pos = path.find_first_not_of("0123456789", 4);
+			auto not_number_pos = path.find_first_not_of("0123456789", 4);
 			if (not_number_pos == std::string::npos)
-				return false;
+				return false;
 
-			return (path.compare(0, 4, "host") == 0 && path[not_number_pos] == ':');
+			return (path.compare(0, 4, "host") == 0 && path[not_number_pos] == ':');
 		}
 
 		std::string host_path(const std::string_view path, bool allow_open_host_root)
 		{
 			// We are NOT allowing to use the root of the host unit.
 			// For now it just supports relative folders from the location of the elf
-			std::string native_path(Path::Canonicalize(path));
-			std::string new_path;
+			std::string native_path(Path::Canonicalize(path));
+			std::string new_path;
 			if (!hostRoot.empty() && native_path.starts_with(hostRoot))
-				new_path = std::move(native_path);
+				new_path = std::move(native_path);
 			else if (!hostRoot.empty()) // relative paths
-				new_path = Path::Combine(hostRoot, native_path);
+				new_path = Path::Combine(hostRoot, native_path);
 
 			// Allow opening the ELF override.
 			if (new_path == VMManager::Internal::GetELFOverride())
-				return new_path;
+				return new_path;
 
 			// Allow nothing if hostfs isn't enabled.
 			if (!EmuConfig.HostFs)
 			{
-				new_path.clear();
-				return new_path;
+				new_path.clear();
+				return new_path;
 			}
 
 			// Double-check that it falls within the directory of the elf.
 			// Not a real sandbox, but emulators shouldn't be treated as such. Don't run untrusted code!
-			std::string canonicalized_path(Path::Canonicalize(new_path));
+			std::string canonicalized_path(Path::Canonicalize(new_path));
 
 			// Are we opening the root of host? (i.e. `host:.` or `host:`)
 			// We want to allow this as a directory open, but not as a file open.
@@ -559,322 +559,322 @@ namespace R3000A
 				{
 					Console.Error(fmt::format(
 						"IopHLE: Denying access to path outside of ELF directory. Requested path: '{}', Resolved path: '{}', ELF directory: '{}'",
-						path, new_path, hostRoot));
-					new_path.clear();
+						path, new_path, hostRoot));
+					new_path.clear();
 				}
 			}
 
-			return new_path;
+			return new_path;
 		}
 
 		int open_HLE()
 		{
-			IOManFile* file = NULL;
-			const std::string path = clean_path(Ra0);
-			s32 flags = a1;
-			u16 mode = a2;
+			IOManFile* file = NULL;
+			const std::string path = clean_path(Ra0);
+			s32 flags = a1;
+			u16 mode = a2;
 
 			if (is_host(path))
 			{
 				if (!freefdcount())
 				{
-					v0 = -IOP_EMFILE;
-					pc = ra;
-					return 1;
+					v0 = -IOP_EMFILE;
+					pc = ra;
+					return 1;
 				}
 
-				int err = HostFile::open(&file, path, flags, mode);
+				int err = HostFile::open(&file, path, flags, mode);
 
 				if (err != 0 || !file)
 				{
 					if (err == 0) // ???
-						err = -IOP_EIO;
+						err = -IOP_EIO;
 					if (file) // ??????
-						file->close();
-					v0 = err;
+						file->close();
+					v0 = err;
 				}
 				else
 				{
-					v0 = allocfd(file);
+					v0 = allocfd(file);
 					if ((s32)v0 < 0)
-						file->close();
+						file->close();
 				}
 
-				pc = ra;
-				return 1;
+				pc = ra;
+				return 1;
 			}
 
-			return 0;
+			return 0;
 		}
 
 		int close_HLE()
 		{
-			s32 fd = a0;
+			s32 fd = a0;
 
 			if (getfd<IOManFile>(fd))
 			{
-				freefd(fd);
-				v0 = 0;
-				pc = ra;
-				return 1;
+				freefd(fd);
+				v0 = 0;
+				pc = ra;
+				return 1;
 			}
 
-			return 0;
+			return 0;
 		}
 
 		int dopen_HLE()
 		{
-			IOManDir* dir = NULL;
-			const std::string path = clean_path(Ra0);
+			IOManDir* dir = NULL;
+			const std::string path = clean_path(Ra0);
 
 			if (is_host(path))
 			{
-				int err = HostDir::open(&dir, path);
+				int err = HostDir::open(&dir, path);
 
 				if (err != 0 || !dir)
 				{
 					if (err == 0)
-						err = -IOP_EIO;
+						err = -IOP_EIO;
 					if (dir)
-						dir->close();
-					v0 = err;
+						dir->close();
+					v0 = err;
 				}
 				else
 				{
-					v0 = allocfd(dir);
+					v0 = allocfd(dir);
 					if ((s32)v0 < 0)
-						dir->close();
+						dir->close();
 				}
 
-				pc = ra;
-				return 1;
+				pc = ra;
+				return 1;
 			}
 
-			return 0;
+			return 0;
 		}
 
 		int dclose_HLE()
 		{
-			s32 dir = a0;
+			s32 dir = a0;
 
 			if (getfd<IOManDir>(dir))
 			{
-				freefd(dir);
-				v0 = 0;
-				pc = ra;
-				return 1;
+				freefd(dir);
+				v0 = 0;
+				pc = ra;
+				return 1;
 			}
 
-			return 0;
+			return 0;
 		}
 
 		int _dread_HLE(bool iomanX)
 		{
-			s32 fh = a0;
-			u32 data = a1;
+			s32 fh = a0;
+			u32 data = a1;
 			if (iomanX)
 			{
 				if (IOManDir* dir = getfd<IOManDir>(fh))
 				{
-					char buf[sizeof(fxio_dirent_t)];
-					v0 = dir->read(&buf, iomanX); /* Flawfinder: ignore */
+					char buf[sizeof(fxio_dirent_t)];
+					v0 = dir->read(&buf, iomanX); /* Flawfinder: ignore */
 
-					for (s32 i = 0; i < (s32)sizeof(fxio_dirent_t); i++)
-						iopMemWrite8(data + i, buf[i]);
+					for (s32 i = 0; i < (s32)sizeof(fxio_dirent_t); i++)
+						iopMemWrite8(data + i, buf[i]);
 
-					pc = ra;
-					return 1;
+					pc = ra;
+					return 1;
 				}
 			}
 			else
 			{
 				if (IOManDir* dir = getfd<IOManDir>(fh))
 				{
-					char buf[sizeof(fio_dirent_t)];
-					v0 = dir->read(&buf); /* Flawfinder: ignore */
+					char buf[sizeof(fio_dirent_t)];
+					v0 = dir->read(&buf); /* Flawfinder: ignore */
 
-					for (s32 i = 0; i < (s32)sizeof(fio_dirent_t); i++)
-						iopMemWrite8(data + i, buf[i]);
+					for (s32 i = 0; i < (s32)sizeof(fio_dirent_t); i++)
+						iopMemWrite8(data + i, buf[i]);
 
-					pc = ra;
-					return 1;
+					pc = ra;
+					return 1;
 				}
 			}
-			return 0;
+			return 0;
 		}
 
 		int dread_HLE()
 		{
-			return _dread_HLE(false);
+			return _dread_HLE(false);
 		}
 
 		int dreadx_HLE()
 		{
-			return _dread_HLE(true);
+			return _dread_HLE(true);
 		}
 
 		int _getStat_HLE(bool iomanx)
 		{
-			const std::string path = clean_path(Ra0);
-			u32 data = a1;
+			const std::string path = clean_path(Ra0);
+			u32 data = a1;
 
 			if (is_host(path))
 			{
-				const std::string full_path = host_path(path.substr(path.find(':') + 1), true);
+				const std::string full_path = host_path(path.substr(path.find(':') + 1), true);
 				if (iomanx)
 				{
-					char buf[sizeof(fxio_stat_t)];
-					v0 = host_stat(full_path, (fxio_stat_t*)&buf);
+					char buf[sizeof(fxio_stat_t)];
+					v0 = host_stat(full_path, (fxio_stat_t*)&buf);
 
-					for (size_t i = 0; i < sizeof(fxio_stat_t); i++)
-						iopMemWrite8(data + i, buf[i]);
+					for (size_t i = 0; i < sizeof(fxio_stat_t); i++)
+						iopMemWrite8(data + i, buf[i]);
 				}
 				else
 				{
-					char buf[sizeof(fio_stat_t)];
-					v0 = host_stat(full_path, (fio_stat_t*)&buf);
+					char buf[sizeof(fio_stat_t)];
+					v0 = host_stat(full_path, (fio_stat_t*)&buf);
 
-					for (size_t i = 0; i < sizeof(fio_stat_t); i++)
-						iopMemWrite8(data + i, buf[i]);
+					for (size_t i = 0; i < sizeof(fio_stat_t); i++)
+						iopMemWrite8(data + i, buf[i]);
 				}
-				pc = ra;
-				return 1;
+				pc = ra;
+				return 1;
 			}
 
-			return 0;
+			return 0;
 		}
 
 		int getStat_HLE()
 		{
-			return _getStat_HLE(false);
+			return _getStat_HLE(false);
 		}
 
 		int getStatx_HLE()
 		{
-			return _getStat_HLE(true);
+			return _getStat_HLE(true);
 		}
 
 		int lseek_HLE()
 		{
-			s32 fd = a0;
-			s32 offset = a1;
-			s32 whence = a2;
+			s32 fd = a0;
+			s32 offset = a1;
+			s32 whence = a2;
 
 			if (IOManFile* file = getfd<IOManFile>(fd))
 			{
-				v0 = file->lseek(offset, whence);
-				pc = ra;
-				return 1;
+				v0 = file->lseek(offset, whence);
+				pc = ra;
+				return 1;
 			}
 
-			return 0;
+			return 0;
 		}
 
 		int remove_HLE()
 		{
-			const std::string full_path = clean_path(Ra0);
+			const std::string full_path = clean_path(Ra0);
 
 			if (is_host(full_path))
 			{
-				const std::string path = full_path.substr(full_path.find(':') + 1);
-				const std::string file_path(host_path(path, false));
-				const bool succeeded = FileSystem::DeleteFilePath(file_path.c_str());
+				const std::string path = full_path.substr(full_path.find(':') + 1);
+				const std::string file_path(host_path(path, false));
+				const bool succeeded = FileSystem::DeleteFilePath(file_path.c_str());
 				if (!succeeded)
-					Console.Warning("IOPHLE remove_HLE failed for '%s'", file_path.c_str());
-				v0 = succeeded ? 0 : -IOP_EIO;
-				pc = ra;
+					Console.Warning("IOPHLE remove_HLE failed for '%s'", file_path.c_str());
+				v0 = succeeded ? 0 : -IOP_EIO;
+				pc = ra;
 			}
-			return 0;
+			return 0;
 		}
 
 		int mkdir_HLE()
 		{
-			const std::string full_path = clean_path(Ra0);
+			const std::string full_path = clean_path(Ra0);
 
 			if (is_host(full_path))
 			{
-				const std::string path = full_path.substr(full_path.find(':') + 1);
-				const std::string folder_path(host_path(path, false)); // NOTE: Don't allow creating the ELF directory.
-				const bool succeeded = FileSystem::CreateDirectoryPath(folder_path.c_str(), false);
+				const std::string path = full_path.substr(full_path.find(':') + 1);
+				const std::string folder_path(host_path(path, false)); // NOTE: Don't allow creating the ELF directory.
+				const bool succeeded = FileSystem::CreateDirectoryPath(folder_path.c_str(), false);
 				if (!succeeded)
-					Console.Warning("IOPHLE mkdir_HLE failed for '%s'", folder_path.c_str());
-				v0 = succeeded ? 0 : -IOP_EIO;
-				pc = ra;
-				return 1;
+					Console.Warning("IOPHLE mkdir_HLE failed for '%s'", folder_path.c_str());
+				v0 = succeeded ? 0 : -IOP_EIO;
+				pc = ra;
+				return 1;
 			}
 
-			return 0;
+			return 0;
 		}
 
 		int read_HLE()
 		{
-			s32 fd = a0;
-			u32 data = a1;
-			u32 count = a2;
+			s32 fd = a0;
+			u32 data = a1;
+			u32 count = a2;
 
 			if (IOManFile* file = getfd<IOManFile>(fd))
 			{
-				auto buf = std::make_unique<char[]>(count);
+				auto buf = std::make_unique<char[]>(count);
 
-				v0 = file->read(buf.get(), count);
+				v0 = file->read(buf.get(), count);
 
-				for (s32 i = 0; i < (s32)v0; i++)
-					iopMemWrite8(data + i, buf[i]);
+				for (s32 i = 0; i < (s32)v0; i++)
+					iopMemWrite8(data + i, buf[i]);
 
-				pc = ra;
-				return 1;
+				pc = ra;
+				return 1;
 			}
 
-			return 0;
+			return 0;
 		}
 
 		int rmdir_HLE()
 		{
-			const std::string full_path = clean_path(Ra0);
+			const std::string full_path = clean_path(Ra0);
 
 			if (is_host(full_path))
 			{
-				const std::string path = full_path.substr(full_path.find(':') + 1);
-				const std::string folder_path(host_path(path, false)); // NOTE: Don't allow removing the elf directory itself.
-				const bool succeeded = FileSystem::DeleteDirectory(folder_path.c_str());
+				const std::string path = full_path.substr(full_path.find(':') + 1);
+				const std::string folder_path(host_path(path, false)); // NOTE: Don't allow removing the elf directory itself.
+				const bool succeeded = FileSystem::DeleteDirectory(folder_path.c_str());
 				if (!succeeded)
-					Console.Warning("IOPHLE rmdir_HLE failed for '%s'", folder_path.c_str());
-				v0 = succeeded ? 0 : -IOP_EIO;
-				pc = ra;
-				return 1;
+					Console.Warning("IOPHLE rmdir_HLE failed for '%s'", folder_path.c_str());
+				v0 = succeeded ? 0 : -IOP_EIO;
+				pc = ra;
+				return 1;
 			}
 
-			return 0;
+			return 0;
 		}
 
 		int write_HLE()
 		{
-			s32 fd = a0;
-			u32 data = a1;
-			u32 count = a2;
+			s32 fd = a0;
+			u32 data = a1;
+			u32 count = a2;
 
 			if (fd == 1) // stdout
 			{
-				const std::string s = Ra1;
-				iopConLog(ShiftJIS_ConvertString(s.data(), a2));
-				pc = ra;
-				v0 = a2;
-				return 1;
+				const std::string s = Ra1;
+				iopConLog(ShiftJIS_ConvertString(s.data(), a2));
+				pc = ra;
+				v0 = a2;
+				return 1;
 			}
 			else if (IOManFile* file = getfd<IOManFile>(fd))
 			{
-				auto buf = std::make_unique<char[]>(count);
+				auto buf = std::make_unique<char[]>(count);
 
-				for (u32 i = 0; i < count; i++)
-					buf[i] = iopMemRead8(data + i);
+				for (u32 i = 0; i < count; i++)
+					buf[i] = iopMemRead8(data + i);
 
-				v0 = file->write(buf.get(), count);
+				v0 = file->write(buf.get(), count);
 
-				pc = ra;
-				return 1;
+				pc = ra;
+				return 1;
 			}
 
-			return 0;
+			return 0;
 		}
 	} // namespace ioman
 
@@ -890,58 +890,58 @@ namespace R3000A
 #endif
 
 			// Emulate the expected Kprintf functionality:
-			iopMemWrite32(sp, a0);
-			iopMemWrite32(sp + 4, a1);
-			iopMemWrite32(sp + 8, a2);
-			iopMemWrite32(sp + 12, a3);
-			pc = ra;
+			iopMemWrite32(sp, a0);
+			iopMemWrite32(sp + 4, a1);
+			iopMemWrite32(sp + 8, a2);
+			iopMemWrite32(sp + 12, a3);
+			pc = ra;
 
-			const std::string fmt = Ra0;
+			const std::string fmt = Ra0;
 
 			// From here we're intercepting the Kprintf and piping it to our console, complete with
 			// printf-style formatting processing.  This part can be skipped if the user has the
 			// console disabled.
 
 			if (!SysConsole.iopConsole.IsActive())
-				return 1;
+				return 1;
 
-			char tmp[1024], tmp2[1024];
-			char* ptmp = tmp;
-			int n = 1, i = 0, j = 0;
+			char tmp[1024], tmp2[1024];
+			char* ptmp = tmp;
+			int n = 1, i = 0, j = 0;
 
 			while (fmt[i])
 			{
 				switch (fmt[i])
 				{
 					case '%':
-						j = 0;
-						tmp2[j++] = '%';
+						j = 0;
+						tmp2[j++] = '%';
 					_start:
 						switch (fmt[++i])
 						{
 							case '.':
 							case 'l':
-								tmp2[j++] = fmt[i];
-								goto _start;
+								tmp2[j++] = fmt[i];
+								goto _start;
 							default:
 								if (fmt[i] >= '0' && fmt[i] <= '9')
 								{
-									tmp2[j++] = fmt[i];
-									goto _start;
+									tmp2[j++] = fmt[i];
+									goto _start;
 								}
-								break;
+								break;
 						}
 
-						tmp2[j++] = fmt[i];
-						tmp2[j] = 0;
+						tmp2[j++] = fmt[i];
+						tmp2[j] = 0;
 
 						switch (fmt[i])
 						{
 							case 'f':
 							case 'F':
-								ptmp += sprintf(ptmp, tmp2, (float)iopMemRead32(sp + n * 4));
-								n++;
-								break;
+								ptmp += sprintf(ptmp, tmp2, (float)iopMemRead32(sp + n * 4));
+								n++;
+								break;
 
 							case 'a':
 							case 'A':
@@ -949,9 +949,9 @@ namespace R3000A
 							case 'E':
 							case 'g':
 							case 'G':
-								ptmp += sprintf(ptmp, tmp2, (double)iopMemRead32(sp + n * 4));
-								n++;
-								break;
+								ptmp += sprintf(ptmp, tmp2, (double)iopMemRead32(sp + n * 4));
+								n++;
+								break;
 
 							case 'p':
 							case 'i':
@@ -961,42 +961,42 @@ namespace R3000A
 							case 'O':
 							case 'x':
 							case 'X':
-								ptmp += sprintf(ptmp, tmp2, (u32)iopMemRead32(sp + n * 4));
-								n++;
-								break;
+								ptmp += sprintf(ptmp, tmp2, (u32)iopMemRead32(sp + n * 4));
+								n++;
+								break;
 
 							case 'c':
-								ptmp += sprintf(ptmp, tmp2, (u8)iopMemRead32(sp + n * 4));
-								n++;
-								break;
+								ptmp += sprintf(ptmp, tmp2, (u8)iopMemRead32(sp + n * 4));
+								n++;
+								break;
 
 							case 's':
 							{
-								std::string s = iopMemReadString(iopMemRead32(sp + n * 4));
-								ptmp += sprintf(ptmp, tmp2, s.data());
-								n++;
+								std::string s = iopMemReadString(iopMemRead32(sp + n * 4));
+								ptmp += sprintf(ptmp, tmp2, s.data());
+								n++;
 							}
-							break;
+							break;
 
 							case '%':
-								*ptmp++ = fmt[i];
-								break;
+								*ptmp++ = fmt[i];
+								break;
 
 							default:
-								break;
+								break;
 						}
-						i++;
-						break;
+						i++;
+						break;
 
 					default:
-						*ptmp++ = fmt[i++];
-						break;
+						*ptmp++ = fmt[i++];
+						break;
 				}
 			}
-			*ptmp = 0;
-			iopConLog(ShiftJIS_ConvertString(tmp, 1023));
+			*ptmp = 0;
+			iopConLog(ShiftJIS_ConvertString(tmp, 1023));
 
-			return 1;
+			return 1;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -1009,165 +1009,165 @@ namespace R3000A
 
 		u32 GetModList(u32 a0reg)
 		{
-			u32 lcptr = iopMemRead32(0x3f0);
-			u32 lcstring = irxFindLoadcore(lcptr);
-			u32 list = 0;
+			u32 lcptr = iopMemRead32(0x3f0);
+			u32 lcstring = irxFindLoadcore(lcptr);
+			u32 list = 0;
 
 			if (lcstring == 0)
 			{
-				list = lcptr - 0x20;
+				list = lcptr - 0x20;
 			}
 			else
 			{
-				list = lcstring + 0x18;
+				list = lcstring + 0x18;
 			}
 
-			u32 mod = iopMemRead32(list);
+			u32 mod = iopMemRead32(list);
 
 			while (mod != 0)
 			{
-				mod = iopMemRead32(mod);
+				mod = iopMemRead32(mod);
 			}
 
-			return list;
+			return list;
 		}
 
 		// Gets the thread list ptr from thbase
 		u32 GetThreadList(u32 a0reg, u32 version)
 		{
 			// Function 3 returns the main thread manager struct
-			u32 function = iopMemRead32(a0reg + 0x20);
+			u32 function = iopMemRead32(a0reg + 0x20);
 
 			// read the lui
-			u32 thstruct = (iopMemRead32(function) & 0xFFFF) << 16;
-			thstruct |= iopMemRead32(function + 4) & 0xFFFF;
+			u32 thstruct = (iopMemRead32(function) & 0xFFFF) << 16;
+			thstruct |= iopMemRead32(function + 4) & 0xFFFF;
 
-			u32 list = thstruct + 0x42c;
+			u32 list = thstruct + 0x42c;
 
 			if (version > 0x101)
-				list = thstruct + 0x430;
+				list = thstruct + 0x430;
 
-			return list;
+			return list;
 		}
 
 		void LoadFuncs(u32 a0reg)
 		{
-			const std::string modname = iopMemReadString(a0reg + 12, 8);
-			s32 version_major = iopMemRead8(a0reg + 9);
-			s32 version_minor = iopMemRead8(a0reg + 8);
-			DevCon.WriteLn(Color_Gray, "RegisterLibraryEntries: %8.8s version %x.%02x", modname.data(), version_major, version_minor);
+			const std::string modname = iopMemReadString(a0reg + 12, 8);
+			s32 version_major = iopMemRead8(a0reg + 9);
+			s32 version_minor = iopMemRead8(a0reg + 8);
+			DevCon.WriteLn(Color_Gray, "RegisterLibraryEntries: %8.8s version %x.%02x", modname.data(), version_major, version_minor);
 
 			R3000SymbolGuardian.ReadWrite([&](ccc::SymbolDatabase& database) {
-				ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("IRX Export Table");
+				ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("IRX Export Table");
 				if (!source.success())
-					return;
+					return;
 
 				// Enumerate the module symbols that already exist for this IRX
 				// module. Really there should only be one.
-				std::vector<ccc::ModuleHandle> existing_modules;
+				std::vector<ccc::ModuleHandle> existing_modules;
 				for (const auto& pair : database.modules.handles_from_name(modname))
 				{
-					const ccc::Module* existing_module = database.modules.symbol_from_handle(pair.second);
+					const ccc::Module* existing_module = database.modules.symbol_from_handle(pair.second);
 					if (!existing_module || !existing_module->is_irx)
-						continue;
+						continue;
 
 					// Different major versions, we treat this one as a different module.
 					if (existing_module->version_major != version_major)
-						continue;
+						continue;
 
 					// RegisterLibraryEntries will fail if the new minor ver is <= the old minor ver
 					// and the major version is the same.
 					if (existing_module->version_minor >= version_minor)
-						return;
+						return;
 
-					existing_modules.emplace_back(existing_module->handle());
+					existing_modules.emplace_back(existing_module->handle());
 				}
 
 				// Destroy the old symbols for this IRX module if any exist.
 				for (ccc::ModuleHandle existing_module : existing_modules)
-					database.destroy_symbols_from_module(existing_module, true);
+					database.destroy_symbols_from_module(existing_module, true);
 
-				ccc::Result<ccc::Module*> module_symbol = database.modules.create_symbol(modname, *source, nullptr);
+				ccc::Result<ccc::Module*> module_symbol = database.modules.create_symbol(modname, *source, nullptr);
 				if (!module_symbol.success())
-					return;
+					return;
 
-				(*module_symbol)->is_irx = true;
-				(*module_symbol)->version_major = version_major;
-				(*module_symbol)->version_minor = version_minor;
+				(*module_symbol)->is_irx = true;
+				(*module_symbol)->version_major = version_major;
+				(*module_symbol)->version_minor = version_minor;
 
-				u32 func = a0reg + 20;
-				u32 funcptr = iopMemRead32(func);
-				u32 index = 0;
+				u32 func = a0reg + 20;
+				u32 funcptr = iopMemRead32(func);
+				u32 index = 0;
 				while (funcptr != 0)
 				{
-					const char* unqualified_name = irxImportFuncname(modname, index);
+					const char* unqualified_name = irxImportFuncname(modname, index);
 
-					std::string qualified_name;
+					std::string qualified_name;
 					if (unqualified_name && unqualified_name[0] != '\0')
-						qualified_name = fmt::format("{}[{:02}]::{}", modname, index, unqualified_name);
+						qualified_name = fmt::format("{}[{:02}]::{}", modname, index, unqualified_name);
 					else
-						qualified_name = fmt::format("{}[{:02}]::unkn_{:02}", modname, index, index);
+						qualified_name = fmt::format("{}[{:02}]::unkn_{:02}", modname, index, index);
 
-					ccc::Result<ccc::Function*> function = database.functions.create_symbol(qualified_name, funcptr, *source, *module_symbol);
+					ccc::Result<ccc::Function*> function = database.functions.create_symbol(qualified_name, funcptr, *source, *module_symbol);
 					if (!function.success())
-						return;
+						return;
 
-					index++;
-					func += 4;
-					funcptr = iopMemRead32(func);
+					index++;
+					func += 4;
+					funcptr = iopMemRead32(func);
 				}
-			});
+			});
 		}
 
 		void ReleaseFuncs(u32 a0reg)
 		{
-			const std::string modname = iopMemReadString(a0reg + 12, 8);
-			s32 version_major = iopMemRead8(a0reg + 9);
-			s32 version_minor = iopMemRead8(a0reg + 8);
+			const std::string modname = iopMemReadString(a0reg + 12, 8);
+			s32 version_major = iopMemRead8(a0reg + 9);
+			s32 version_minor = iopMemRead8(a0reg + 8);
 
-			DevCon.WriteLn(Color_Gray, "ReleaseLibraryEntries: %8.8s version %x.%02x", modname.c_str(), version_major, version_minor);
+			DevCon.WriteLn(Color_Gray, "ReleaseLibraryEntries: %8.8s version %x.%02x", modname.c_str(), version_major, version_minor);
 
 			R3000SymbolGuardian.ReadWrite([&](ccc::SymbolDatabase& database) {
 				// Enumerate the module symbols that exist for this IRX module.
 				// Really there should only be one.
-				std::vector<ccc::ModuleHandle> module_handles;
+				std::vector<ccc::ModuleHandle> module_handles;
 				for (const auto& pair : database.modules.handles_from_name(modname))
 				{
-					const ccc::Module* module_symbol = database.modules.symbol_from_handle(pair.second);
+					const ccc::Module* module_symbol = database.modules.symbol_from_handle(pair.second);
 					if (!module_symbol || !module_symbol->is_irx)
-						continue;
+						continue;
 
 					if (module_symbol->version_major != version_major || module_symbol->version_minor != version_minor)
-						continue;
+						continue;
 
-					module_handles.emplace_back(module_symbol->handle());
+					module_handles.emplace_back(module_symbol->handle());
 				}
 
 				// Destroy the symbols for the module.
 				for (ccc::ModuleHandle module_handle : module_handles)
-					database.destroy_symbols_from_module(module_handle, true);
-			});
+					database.destroy_symbols_from_module(module_handle, true);
+			});
 		}
 
 		int RegisterLibraryEntries_HLE()
 		{
-			LoadFuncs(a0);
+			LoadFuncs(a0);
 
-			const std::string modname = iopMemReadString(a0 + 12);
+			const std::string modname = iopMemReadString(a0 + 12);
 			if (modname == "thbase")
 			{
-				const u32 version = iopMemRead32(a0 + 8);
-				CurrentBiosInformation.iopThreadListAddr = GetThreadList(a0, version);
+				const u32 version = iopMemRead32(a0 + 8);
+				CurrentBiosInformation.iopThreadListAddr = GetThreadList(a0, version);
 			}
 
-			CurrentBiosInformation.iopModListAddr = GetModList(a0);
-			return 0;
+			CurrentBiosInformation.iopModListAddr = GetModList(a0);
+			return 0;
 		}
 
 		int ReleaseLibraryEntries_HLE()
 		{
-			ReleaseFuncs(a0);
-			return 0;
+			ReleaseFuncs(a0);
+			return 0;
 		}
 	} // namespace loadcore
 
@@ -1192,18 +1192,18 @@ namespace R3000A
 			"INT_38",       "INT_39",       "INT_3A",      "INT_3B",		//38
 			"INT_3C",       "INT_3D",       "INT_3E",      "INT_3F",		//3C
 			"INT_MAX"														//40
-		};
+		};
 		// clang-format on
 
 		void RegisterIntrHandler_DEBUG()
 		{
 			if (a0 < std::size(intrname) - 1)
 			{
-				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr %s, handler %x", intrname[a0], a2);
+				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr %s, handler %x", intrname[a0], a2);
 			}
 			else
 			{
-				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr UNKNOWN (%d), handler %x", a0, a2);
+				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr UNKNOWN (%d), handler %x", a0, a2);
 			}
 		}
 	} // namespace intrman
@@ -1212,41 +1212,41 @@ namespace R3000A
 	{
 		void sceSifRegisterRpc_DEBUG()
 		{
-			DevCon.WriteLn(Color_Gray, "sifcmd sceSifRegisterRpc: rpc_id %x", a1);
+			DevCon.WriteLn(Color_Gray, "sifcmd sceSifRegisterRpc: rpc_id %x", a1);
 		}
 	} // namespace sifcmd
 
 	u32 irxFindLoadcore(u32 entrypc)
 	{
-		u32 i;
+		u32 i;
 
-		i = entrypc;
+		i = entrypc;
 		while (entrypc - i < 0x50)
 		{
 			// find loadcore string
 			if (iopMemRead32(i) == 0x49497350 && iopMemRead32(i + 4) == 0x64616F6C)
 			{
-				return i;
+				return i;
 			}
-			i -= 4;
+			i -= 4;
 		}
 
-		return 0;
+		return 0;
 	}
 
 	u32 irxImportTableAddr(u32 entrypc)
 	{
-		u32 i;
+		u32 i;
 
-		i = entrypc - 0x18;
+		i = entrypc - 0x18;
 		while (entrypc - i < 0x2000)
 		{
 			if (iopMemRead32(i) == 0x41e00000)
-				return i;
-			i -= 4;
+				return i;
+			i -= 4;
 		}
 
-		return 0;
+		return 0;
 	}
 
 	const char* irxImportFuncname(const std::string& libname, u16 index)
@@ -1256,21 +1256,21 @@ namespace R3000A
 		switch (index)
 		{
 			case 0:
-				return "start";
+				return "start";
 			// case 1: reinit?
 			case 2:
-				return "shutdown";
+				return "shutdown";
 				// case 3: ???
 		}
 
-		return "";
+		return "";
 	}
 
 	// clang-format off
 #define MODULE(n)          \
 	if (#n == libname)     \
 	{                      \
-		using namespace n; \
+		using namespace n; \
 		switch (index)     \
 		{
 #define END_MODULE \
@@ -1278,10 +1278,10 @@ namespace R3000A
 	}
 #define EXPORT_D(i, n) \
 	case (i):          \
-		return n##_DEBUG;
+		return n##_DEBUG;
 #define EXPORT_H(i, n) \
 	case (i):          \
-		return n##_HLE;
+		return n##_HLE;
 	// clang-format on
 
 	irxHLE irxImportHLE(const std::string& libname, u16 index)
@@ -1290,7 +1290,7 @@ namespace R3000A
 		// clang-format off
 		MODULE(loadcore)
 			EXPORT_H(  6, RegisterLibraryEntries)
-			EXPORT_H(  7, ReleaseLibraryEntries);
+			EXPORT_H(  7, ReleaseLibraryEntries);
 		END_MODULE
 		MODULE(sysmem)
 			EXPORT_H( 14, Kprintf)
@@ -1300,8 +1300,8 @@ namespace R3000A
 		// They are mostly compatible excluding stat structures
 		if(libname == "ioman" || libname == "iomanx")
 		{
-			const bool use_ioman = libname == "ioman";
-			using namespace ioman;
+			const bool use_ioman = libname == "ioman";
+			using namespace ioman;
 				switch(index)
 				{
 					EXPORT_H(  4, open)
@@ -1316,18 +1316,18 @@ namespace R3000A
 					EXPORT_H( 14, dclose)
 					case 15: // dread
 					if(use_ioman)
-						return dread_HLE;
+						return dread_HLE;
 					else
-						return dreadx_HLE;
+						return dreadx_HLE;
 					case 16: // getStat
 					if(use_ioman)
-						return getStat_HLE;
+						return getStat_HLE;
 					else
-						return getStatx_HLE;
+						return getStatx_HLE;
 				}
 		}
 		// clang-format on
-		return 0;
+		return 0;
 	}
 
 	irxDEBUG irxImportDebug(const std::string& libname, u16 index)
@@ -1341,7 +1341,7 @@ namespace R3000A
 		END_MODULE
 		// clang-format off
 
-		return 0;
+		return 0;
 	}
 
 #undef MODULE
@@ -1353,33 +1353,33 @@ namespace R3000A
 	{
 		PSXBIOS_LOG("%8.8s.%03d: %s (%x, %x, %x, %x)",
 			libname.data(), index, funcname ? funcname : "unknown",
-			a0, a1, a2, a3);
+			a0, a1, a2, a3);
 	}
 
 	void irxImportLog_rec(u32 import_table, u16 index, const char* funcname)
 	{
-		irxImportLog(iopMemReadString(import_table + 12, 8), index, funcname);
+		irxImportLog(iopMemReadString(import_table + 12, 8), index, funcname);
 	}
 
 	int irxImportExec(u32 import_table, u16 index)
 	{
 		if (!import_table)
-			return 0;
+			return 0;
 
-		std::string libname = iopMemReadString(import_table + 12, 8);
-		const char* funcname = irxImportFuncname(libname, index);
-		irxHLE hle = irxImportHLE(libname, index);
-		irxDEBUG debug = irxImportDebug(libname, index);
+		std::string libname = iopMemReadString(import_table + 12, 8);
+		const char* funcname = irxImportFuncname(libname, index);
+		irxHLE hle = irxImportHLE(libname, index);
+		irxDEBUG debug = irxImportDebug(libname, index);
 
-		irxImportLog(libname, index, funcname);
+		irxImportLog(libname, index, funcname);
 
 		if (debug)
-			debug();
+			debug();
 
 		if (hle)
-			return hle();
+			return hle();
 		else
-			return 0;
+			return 0;
 	}
 
 } // end namespace R3000A

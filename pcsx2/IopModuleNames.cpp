@@ -3,7 +3,7 @@
 
 #define MODULE(n) if (#n == libname) switch (index) {
 #define END_MODULE }
-#define EXPORT(i, n) case (i): return #n;
+#define EXPORT(i, n) case (i): return #n;
 
 // machine generated
 MODULE(cdvdman)

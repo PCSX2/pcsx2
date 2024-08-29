@@ -6,16 +6,16 @@
 //------------------------------------------------------------------
 // Declarations
 //------------------------------------------------------------------
-mVUop(mVU_UPPER_FD_00);
-mVUop(mVU_UPPER_FD_01);
-mVUop(mVU_UPPER_FD_10);
-mVUop(mVU_UPPER_FD_11);
-mVUop(mVULowerOP);
-mVUop(mVULowerOP_T3_00);
-mVUop(mVULowerOP_T3_01);
-mVUop(mVULowerOP_T3_10);
-mVUop(mVULowerOP_T3_11);
-mVUop(mVUunknown);
+mVUop(mVU_UPPER_FD_00);
+mVUop(mVU_UPPER_FD_01);
+mVUop(mVU_UPPER_FD_10);
+mVUop(mVU_UPPER_FD_11);
+mVUop(mVULowerOP);
+mVUop(mVULowerOP_T3_00);
+mVUop(mVULowerOP_T3_01);
+mVUop(mVULowerOP_T3_10);
+mVUop(mVULowerOP_T3_11);
+mVUop(mVUunknown);
 //------------------------------------------------------------------
 
 //------------------------------------------------------------------
@@ -54,7 +54,7 @@ static const Fnptr_mVUrecInst mVULOWER_OPCODE[128] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
-};
+};
 
 static const Fnptr_mVUrecInst mVULowerOP_T3_00_OPCODE[32] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
@@ -65,7 +65,7 @@ static const Fnptr_mVUrecInst mVULowerOP_T3_00_OPCODE[32] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVU_MFP    , mVU_XTOP   , mVU_XGKICK,
 	mVU_ESADD  , mVU_EATANxy, mVU_ESQRT  , mVU_ESIN,
-};
+};
 
 static const Fnptr_mVUrecInst mVULowerOP_T3_01_OPCODE[32] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
@@ -76,7 +76,7 @@ static const Fnptr_mVUrecInst mVULowerOP_T3_01_OPCODE[32] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVU_XITOP  , mVUunknown,
 	mVU_ERSADD , mVU_EATANxz, mVU_ERSQRT , mVU_EATAN,
-};
+};
 
 static const Fnptr_mVUrecInst mVULowerOP_T3_10_OPCODE[32] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
@@ -87,7 +87,7 @@ static const Fnptr_mVUrecInst mVULowerOP_T3_10_OPCODE[32] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVU_ELENG  , mVU_ESUM   , mVU_ERCPR  , mVU_EEXP,
-};
+};
 
 const Fnptr_mVUrecInst mVULowerOP_T3_11_OPCODE [32] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
@@ -98,7 +98,7 @@ const Fnptr_mVUrecInst mVULowerOP_T3_11_OPCODE [32] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVU_ERLENG , mVUunknown , mVU_WAITP  , mVUunknown,
-};
+};
 
 static const Fnptr_mVUrecInst mVULowerOP_OPCODE[64] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
@@ -117,7 +117,7 @@ static const Fnptr_mVUrecInst mVULowerOP_OPCODE[64] = {
 	mVU_IAND   , mVU_IOR    , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVULowerOP_T3_00, mVULowerOP_T3_01, mVULowerOP_T3_10, mVULowerOP_T3_11,
-};
+};
 
 static const Fnptr_mVUrecInst mVU_UPPER_OPCODE[64] = {
 	mVU_ADDx   , mVU_ADDy   , mVU_ADDz   , mVU_ADDw,
@@ -136,7 +136,7 @@ static const Fnptr_mVUrecInst mVU_UPPER_OPCODE[64] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown  , mVUunknown , mVUunknown,
 	mVU_UPPER_FD_00, mVU_UPPER_FD_01, mVU_UPPER_FD_10, mVU_UPPER_FD_11,
-};
+};
 
 static const Fnptr_mVUrecInst mVU_UPPER_FD_00_TABLE [32] = {
 	mVU_ADDAx  , mVU_SUBAx  , mVU_MADDAx , mVU_MSUBAx,
@@ -147,7 +147,7 @@ static const Fnptr_mVUrecInst mVU_UPPER_FD_00_TABLE [32] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
-};
+};
 
 static const Fnptr_mVUrecInst mVU_UPPER_FD_01_TABLE [32] = {
 	mVU_ADDAy  , mVU_SUBAy  , mVU_MADDAy , mVU_MSUBAy,
@@ -158,7 +158,7 @@ static const Fnptr_mVUrecInst mVU_UPPER_FD_01_TABLE [32] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
-};
+};
 
 static const Fnptr_mVUrecInst mVU_UPPER_FD_10_TABLE [32] = {
 	mVU_ADDAz  , mVU_SUBAz  , mVU_MADDAz , mVU_MSUBAz,
@@ -169,7 +169,7 @@ static const Fnptr_mVUrecInst mVU_UPPER_FD_10_TABLE [32] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
-};
+};
 
 static const Fnptr_mVUrecInst mVU_UPPER_FD_11_TABLE [32] = {
 	mVU_ADDAw  , mVU_SUBAw  , mVU_MADDAw , mVU_MSUBAw,
@@ -180,35 +180,35 @@ static const Fnptr_mVUrecInst mVU_UPPER_FD_11_TABLE [32] = {
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
 	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
-};
+};
 
 
 //------------------------------------------------------------------
 // Table Functions
 //------------------------------------------------------------------
 
-mVUop(mVU_UPPER_FD_00)  { mVU_UPPER_FD_00_TABLE   [((mVU.code >> 6) & 0x1f)](mX); }
-mVUop(mVU_UPPER_FD_01)  { mVU_UPPER_FD_01_TABLE   [((mVU.code >> 6) & 0x1f)](mX); }
-mVUop(mVU_UPPER_FD_10)  { mVU_UPPER_FD_10_TABLE   [((mVU.code >> 6) & 0x1f)](mX); }
-mVUop(mVU_UPPER_FD_11)  { mVU_UPPER_FD_11_TABLE   [((mVU.code >> 6) & 0x1f)](mX); }
-mVUop(mVULowerOP)       { mVULowerOP_OPCODE       [ (mVU.code & 0x3f) ](mX); }
-mVUop(mVULowerOP_T3_00) { mVULowerOP_T3_00_OPCODE [((mVU.code >> 6) & 0x1f)](mX); }
-mVUop(mVULowerOP_T3_01) { mVULowerOP_T3_01_OPCODE [((mVU.code >> 6) & 0x1f)](mX); }
-mVUop(mVULowerOP_T3_10) { mVULowerOP_T3_10_OPCODE [((mVU.code >> 6) & 0x1f)](mX); }
-mVUop(mVULowerOP_T3_11) { mVULowerOP_T3_11_OPCODE [((mVU.code >> 6) & 0x1f)](mX); }
-mVUop(mVUopU)           { mVU_UPPER_OPCODE        [ (mVU.code & 0x3f) ](mX); } // Gets Upper Opcode
-mVUop(mVUopL)           { mVULOWER_OPCODE         [ (mVU.code >>  25) ](mX); } // Gets Lower Opcode
+mVUop(mVU_UPPER_FD_00)  { mVU_UPPER_FD_00_TABLE   [((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVU_UPPER_FD_01)  { mVU_UPPER_FD_01_TABLE   [((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVU_UPPER_FD_10)  { mVU_UPPER_FD_10_TABLE   [((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVU_UPPER_FD_11)  { mVU_UPPER_FD_11_TABLE   [((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVULowerOP)       { mVULowerOP_OPCODE       [ (mVU.code & 0x3f) ](mX); }
+mVUop(mVULowerOP_T3_00) { mVULowerOP_T3_00_OPCODE [((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVULowerOP_T3_01) { mVULowerOP_T3_01_OPCODE [((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVULowerOP_T3_10) { mVULowerOP_T3_10_OPCODE [((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVULowerOP_T3_11) { mVULowerOP_T3_11_OPCODE [((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVUopU)           { mVU_UPPER_OPCODE        [ (mVU.code & 0x3f) ](mX); } // Gets Upper Opcode
+mVUop(mVUopL)           { mVULOWER_OPCODE         [ (mVU.code >>  25) ](mX); } // Gets Lower Opcode
 mVUop(mVUunknown)
 {
 	pass1
 	{
 		if (mVU.code != 0x8000033c)
-			mVUinfo.isBadOp = true;
+			mVUinfo.isBadOp = true;
 	}
 	pass2
 	{
 		if (mVU.code != 0x8000033c)
-			Console.Error("microVU%d: Unknown Micro VU opcode called (%x) [%04x]\n", getIndex, mVU.code, xPC);
+			Console.Error("microVU%d: Unknown Micro VU opcode called (%x) [%04x]\n", getIndex, mVU.code, xPC);
 	}
-	pass3 { mVUlog("Unknown", mVU.code); }
+	pass3 { mVUlog("Unknown", mVU.code); }
 }

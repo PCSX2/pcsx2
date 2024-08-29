@@ -22,132 +22,132 @@
 #include <vector>
 
 #ifdef _WIN32
-static constexpr char UPDATER_EXECUTABLE[] = "updater.exe";
-static constexpr char UPDATER_ARCHIVE_NAME[] = "update.7z";
+static constexpr char UPDATER_EXECUTABLE[] = "updater.exe";
+static constexpr char UPDATER_ARCHIVE_NAME[] = "update.7z";
 #endif
 
 static inline bool ExtractUpdater(const char* archive_path, const char* destination_path, std::string* error)
 {
 #if defined(_WIN32)
-	static constexpr size_t kInputBufSize = ((size_t)1 << 18);
-	static constexpr ISzAlloc g_Alloc = {SzAlloc, SzFree};
+	static constexpr size_t kInputBufSize = ((size_t)1 << 18);
+	static constexpr ISzAlloc g_Alloc = {SzAlloc, SzFree};
 
-	CFileInStream instream = {};
-	CLookToRead2 lookstream = {};
-	CSzArEx archive = {};
+	CFileInStream instream = {};
+	CLookToRead2 lookstream = {};
+	CSzArEx archive = {};
 
-	FileInStream_CreateVTable(&instream);
-	LookToRead2_CreateVTable(&lookstream, False);
-	CrcGenerateTable();
+	FileInStream_CreateVTable(&instream);
+	LookToRead2_CreateVTable(&lookstream, False);
+	CrcGenerateTable();
 
-	lookstream.buf = (Byte*)ISzAlloc_Alloc(&g_Alloc, kInputBufSize);
+	lookstream.buf = (Byte*)ISzAlloc_Alloc(&g_Alloc, kInputBufSize);
 	if (!lookstream.buf)
 	{
-		*error = "Failed to allocate input buffer?!";
-		return false;
+		*error = "Failed to allocate input buffer?!";
+		return false;
 	}
 
-	lookstream.bufSize = kInputBufSize;
-	lookstream.realStream = &instream.vt;
-	LookToRead2_INIT(&lookstream);
+	lookstream.bufSize = kInputBufSize;
+	lookstream.realStream = &instream.vt;
+	LookToRead2_INIT(&lookstream);
 	ScopedGuard buffer_guard([&lookstream]() {
-		ISzAlloc_Free(&g_Alloc, lookstream.buf);
-	});
+		ISzAlloc_Free(&g_Alloc, lookstream.buf);
+	});
 
 #ifdef _WIN32
-	WRes wres = InFile_OpenW(&instream.file, FileSystem::GetWin32Path(archive_path).c_str());
+	WRes wres = InFile_OpenW(&instream.file, FileSystem::GetWin32Path(archive_path).c_str());
 #else
-	WRes wres = InFile_Open(&instream.file, archive_path);
+	WRes wres = InFile_Open(&instream.file, archive_path);
 #endif
 	if (wres != 0)
 	{
-		*error = fmt::format("Failed to open '{0}': {1}", archive_path, wres);
-		return false;
+		*error = fmt::format("Failed to open '{0}': {1}", archive_path, wres);
+		return false;
 	}
 
 	ScopedGuard file_guard([&instream]() {
-		File_Close(&instream.file);
-	});
+		File_Close(&instream.file);
+	});
 
-	SzArEx_Init(&archive);
+	SzArEx_Init(&archive);
 
-	SRes res = SzArEx_Open(&archive, &lookstream.vt, &g_Alloc, &g_Alloc);
+	SRes res = SzArEx_Open(&archive, &lookstream.vt, &g_Alloc, &g_Alloc);
 	if (res != SZ_OK)
 	{
-		*error = fmt::format("SzArEx_Open() failed: {0} [{1}]", SZErrorToString(res), res);
-		return false;
+		*error = fmt::format("SzArEx_Open() failed: {0} [{1}]", SZErrorToString(res), res);
+		return false;
 	}
 	ScopedGuard archive_guard([&archive]() {
-		SzArEx_Free(&archive, &g_Alloc);
-	});
+		SzArEx_Free(&archive, &g_Alloc);
+	});
 
-	std::vector<UInt16> filename_buffer;
-	u32 updater_file_index = archive.NumFiles;
-	for (u32 file_index = 0; file_index < archive.NumFiles; file_index++)
+	std::vector<UInt16> filename_buffer;
+	u32 updater_file_index = archive.NumFiles;
+	for (u32 file_index = 0; file_index < archive.NumFiles; file_index++)
 	{
 		if (SzArEx_IsDir(&archive, file_index))
-			continue;
+			continue;
 
-		size_t filename_len = SzArEx_GetFileNameUtf16(&archive, file_index, nullptr);
+		size_t filename_len = SzArEx_GetFileNameUtf16(&archive, file_index, nullptr);
 		if (filename_len <= 1)
-			continue;
+			continue;
 
-		filename_buffer.resize(filename_len);
-		filename_len = SzArEx_GetFileNameUtf16(&archive, file_index, filename_buffer.data());
+		filename_buffer.resize(filename_len);
+		filename_len = SzArEx_GetFileNameUtf16(&archive, file_index, filename_buffer.data());
 
 		// TODO: This won't work on Linux (4-byte wchar_t).
-		const std::string filename(StringUtil::WideStringToUTF8String(reinterpret_cast<wchar_t*>(filename_buffer.data())));
+		const std::string filename(StringUtil::WideStringToUTF8String(reinterpret_cast<wchar_t*>(filename_buffer.data())));
 		if (filename != UPDATER_EXECUTABLE)
-			continue;
+			continue;
 
-		updater_file_index = file_index;
-		break;
+		updater_file_index = file_index;
+		break;
 	}
 
 	if (updater_file_index == archive.NumFiles)
 	{
-		*error = fmt::format("Updater executable ({}) not found in archive.", UPDATER_EXECUTABLE);
-		return false;
+		*error = fmt::format("Updater executable ({}) not found in archive.", UPDATER_EXECUTABLE);
+		return false;
 	}
 
-	UInt32 block_index = 0xFFFFFFFF; /* it can have any value before first call (if outBuffer = 0) */
-	Byte* out_buffer = 0; /* it must be 0 before first call for each new archive. */
-	size_t out_buffer_size = 0; /* it can have any value before first call (if outBuffer = 0) */
+	UInt32 block_index = 0xFFFFFFFF; /* it can have any value before first call (if outBuffer = 0) */
+	Byte* out_buffer = 0; /* it must be 0 before first call for each new archive. */
+	size_t out_buffer_size = 0; /* it can have any value before first call (if outBuffer = 0) */
 	ScopedGuard out_buffer_guard([&out_buffer]() {
 		if (out_buffer)
-			ISzAlloc_Free(&g_Alloc, out_buffer);
-	});
+			ISzAlloc_Free(&g_Alloc, out_buffer);
+	});
 
-	size_t out_offset = 0;
-	size_t extracted_size = 0;
+	size_t out_offset = 0;
+	size_t extracted_size = 0;
 	res = SzArEx_Extract(&archive, &lookstream.vt, updater_file_index,
-		&block_index, &out_buffer, &out_buffer_size, &out_offset, &extracted_size, &g_Alloc, &g_Alloc);
+		&block_index, &out_buffer, &out_buffer_size, &out_offset, &extracted_size, &g_Alloc, &g_Alloc);
 	if (res != SZ_OK)
 	{
 		*error = fmt::format("Failed to decompress {0} from 7z (file index=%u, error=%s)",
-			UPDATER_EXECUTABLE, updater_file_index, SZErrorToString(res));
-		return false;
+			UPDATER_EXECUTABLE, updater_file_index, SZErrorToString(res));
+		return false;
 	}
 
-	std::FILE* fp = FileSystem::OpenCFile(destination_path, "wb");
+	std::FILE* fp = FileSystem::OpenCFile(destination_path, "wb");
 	if (!fp)
 	{
-		*error = fmt::format("Failed to open '{0}' for writing.", destination_path);
-		return false;
+		*error = fmt::format("Failed to open '{0}' for writing.", destination_path);
+		return false;
 	}
 
-	const bool wrote_completely = std::fwrite(out_buffer + out_offset, extracted_size, 1, fp) == 1 && std::fflush(fp) == 0;
+	const bool wrote_completely = std::fwrite(out_buffer + out_offset, extracted_size, 1, fp) == 1 && std::fflush(fp) == 0;
 	if (std::fclose(fp) != 0 || !wrote_completely)
 	{
-		*error = fmt::format("Failed to write output file '{}'", destination_path);
-		FileSystem::DeleteFilePath(destination_path);
-		return false;
+		*error = fmt::format("Failed to write output file '{}'", destination_path);
+		FileSystem::DeleteFilePath(destination_path);
+		return false;
 	}
 
-	error->clear();
-	return true;
+	error->clear();
+	return true;
 #else
-	*error = "Not supported on this platform";
-	return false;
+	*error = "Not supported on this platform";
+	return false;
 #endif
 }
