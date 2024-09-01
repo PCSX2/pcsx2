@@ -25,6 +25,7 @@ public:
 	Tag tag = OBJECT;
 	ccc::MultiSymbolHandle symbol;
 	QString name;
+	QString mangled_name;
 	SymbolTreeLocation location;
 	bool is_location_editable = false;
 	std::optional<u32> size;

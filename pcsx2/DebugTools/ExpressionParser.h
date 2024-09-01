@@ -22,7 +22,7 @@ public:
 	virtual bool parseSymbol(char* str, u64& symbolValue) = 0;
 	virtual u64 getReferenceValue(u64 referenceIndex) = 0;
 	virtual ExpressionType getReferenceType(u64 referenceIndex) = 0;
-	virtual bool getMemoryValue(u32 address, int size, u64& dest, char* error) = 0;
+	virtual bool getMemoryValue(u32 address, int size, u64& dest, std::string& error) = 0;
 };
 
 bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, PostfixExpression& dest);
