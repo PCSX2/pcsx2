@@ -592,21 +592,20 @@ void MemoryViewWidget::contextPaste()
 void MemoryViewWidget::contextGoToAddress()
 {
 	bool ok;
-	QString targetString = QInputDialog::getText(this, tr("Go to address"), "",
+	QString targetString = QInputDialog::getText(this, tr("Go To In Memory View"), "",
 		QLineEdit::Normal, "", &ok);
 
 	if (!ok)
 		return;
 
-	const u32 targetAddress = targetString.toUInt(&ok, 16);
-
-	if (!ok)
+	u64 address = 0;
+	if (!m_cpu->evaluateExpression(targetString.toStdString().c_str(), address))
 	{
-		QMessageBox::warning(this, "Go to address error", "Invalid address");
+		QMessageBox::warning(this, tr("Cannot Go To"), getExpressionError());
 		return;
 	}
 
-	gotoAddress(targetAddress);
+	gotoAddress(static_cast<u32>(address));
 }
 
 void MemoryViewWidget::mouseDoubleClickEvent(QMouseEvent* event)

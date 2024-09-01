@@ -163,21 +163,20 @@ void DisassemblyWidget::contextFollowBranch()
 void DisassemblyWidget::contextGoToAddress()
 {
 	bool ok;
-	const QString targetString = QInputDialog::getText(this, tr("Go to address"), "",
+	const QString targetString = QInputDialog::getText(this, tr("Go To In Disassembly"), "",
 		QLineEdit::Normal, "", &ok);
 
 	if (!ok)
 		return;
 
-	const u32 targetAddress = targetString.toUInt(&ok, 16) & ~3;
-
-	if (!ok)
+	u64 address = 0;
+	if (!m_cpu->evaluateExpression(targetString.toStdString().c_str(), address))
 	{
-		QMessageBox::warning(this, tr("Go to address error"), tr("Invalid address"));
+		QMessageBox::warning(this, tr("Cannot Go To"), getExpressionError());
 		return;
 	}
 
-	gotoAddressAndSetFocus(targetAddress);
+	gotoAddressAndSetFocus(static_cast<u32>(address) & ~3);
 }
 
 void DisassemblyWidget::contextAddFunction()

@@ -79,6 +79,7 @@ public:
 	[[nodiscard]] virtual SymbolGuardian& GetSymbolGuardian() const = 0;
 	[[nodiscard]] virtual std::vector<std::unique_ptr<BiosThread>> GetThreadList() const = 0;
 
+	bool evaluateExpression(const char* expression, u64& dest);
 	bool initExpression(const char* exp, PostfixExpression& dest);
 	bool parseExpression(PostfixExpression& exp, u64& dest);
 	bool isAlive();

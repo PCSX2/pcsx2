@@ -362,6 +362,13 @@ void SymbolTreeWidget::setupMenu()
 	connect(copy_name, &QAction::triggered, this, &SymbolTreeWidget::onCopyName);
 	m_context_menu->addAction(copy_name);
 
+	if (m_flags & ALLOW_MANGLED_NAME_ACTIONS)
+	{
+		QAction* copy_mangled_name = new QAction(tr("Copy Mangled Name"), this);
+		connect(copy_mangled_name, &QAction::triggered, this, &SymbolTreeWidget::onCopyMangledName);
+		m_context_menu->addAction(copy_mangled_name);
+	}
+
 	QAction* copy_location = new QAction(tr("Copy Location"), this);
 	connect(copy_location, &QAction::triggered, this, &SymbolTreeWidget::onCopyLocation);
 	m_context_menu->addAction(copy_location);
@@ -482,6 +489,18 @@ void SymbolTreeWidget::onCopyName()
 		return;
 
 	QApplication::clipboard()->setText(node->name);
+}
+
+void SymbolTreeWidget::onCopyMangledName()
+{
+	SymbolTreeNode* node = currentNode();
+	if (!node)
+		return;
+
+	if (!node->mangled_name.isEmpty())
+		QApplication::clipboard()->setText(node->mangled_name);
+	else
+		QApplication::clipboard()->setText(node->name);
 }
 
 void SymbolTreeWidget::onCopyLocation()
@@ -611,7 +630,7 @@ SymbolTreeNode* SymbolTreeWidget::currentNode()
 // *****************************************************************************
 
 FunctionTreeWidget::FunctionTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_GROUPING, 4, cpu, parent)
+	: SymbolTreeWidget(ALLOW_GROUPING | ALLOW_MANGLED_NAME_ACTIONS, 4, cpu, parent)
 {
 }
 
@@ -652,6 +671,7 @@ std::unique_ptr<SymbolTreeNode> FunctionTreeWidget::buildNode(
 
 	std::unique_ptr<SymbolTreeNode> node = std::make_unique<SymbolTreeNode>();
 	node->name = std::move(work.name);
+	node->mangled_name = QString::fromStdString(function.mangled_name());
 	node->location = SymbolTreeLocation(SymbolTreeLocation::MEMORY, function.address().value);
 	node->size = function.size();
 	node->symbol = ccc::MultiSymbolHandle(function);
@@ -694,7 +714,7 @@ void FunctionTreeWidget::onNewButtonPressed()
 // *****************************************************************************
 
 GlobalVariableTreeWidget::GlobalVariableTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_GROUPING | ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN | ALLOW_TYPE_ACTIONS, 1, cpu, parent)
+	: SymbolTreeWidget(ALLOW_GROUPING | ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN | ALLOW_TYPE_ACTIONS | ALLOW_MANGLED_NAME_ACTIONS, 1, cpu, parent)
 {
 }
 
@@ -777,6 +797,7 @@ std::unique_ptr<SymbolTreeNode> GlobalVariableTreeWidget::buildNode(
 		{
 			const ccc::GlobalVariable& global_variable = static_cast<const ccc::GlobalVariable&>(*work.symbol);
 
+			node->mangled_name = QString::fromStdString(global_variable.mangled_name());
 			if (global_variable.type())
 				node->type = ccc::NodeHandle(global_variable, global_variable.type());
 			node->location = SymbolTreeLocation(SymbolTreeLocation::MEMORY, global_variable.address().value);

@@ -84,6 +84,7 @@ protected:
 	void onDeleteButtonPressed();
 
 	void onCopyName();
+	void onCopyMangledName();
 	void onCopyLocation();
 	void onRenameSymbol();
 	void onGoToInDisassembly();
@@ -117,7 +118,8 @@ protected:
 		NO_SYMBOL_TREE_FLAGS = 0,
 		ALLOW_GROUPING = 1 << 0,
 		ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN = 1 << 1,
-		ALLOW_TYPE_ACTIONS = 1 << 2
+		ALLOW_TYPE_ACTIONS = 1 << 2,
+		ALLOW_MANGLED_NAME_ACTIONS = 1 << 3
 	};
 
 	u32 m_flags;

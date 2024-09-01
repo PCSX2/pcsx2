@@ -10,16 +10,12 @@
 #include "GS.h" // Required for gsNonMirroredRead()
 #include "Counters.h"
 
+#include "Host.h"
 #include "R3000A.h"
 #include "IopMem.h"
 #include "VMManager.h"
 
 #include "common/StringUtil.h"
-
-#ifdef __clang__
-// TODO: The sprintf() usage here needs to be rewritten...
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif
 
 R5900DebugInterface r5900Debug;
 R3000DebugInterface r3000Debug;
@@ -45,8 +41,20 @@ enum ReferenceIndexType
 class MipsExpressionFunctions : public IExpressionFunctions
 {
 public:
-	explicit MipsExpressionFunctions(DebugInterface* cpu)
-		: cpu(cpu){};
+	explicit MipsExpressionFunctions(DebugInterface* cpu, bool enumerateSymbols)
+		: m_cpu(cpu)
+	{
+		if (!enumerateSymbols)
+			return;
+
+		m_cpu->GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
+			for (const ccc::Function& function : database.functions)
+				m_mangled_function_names_to_handles.emplace(function.mangled_name(), function.handle());
+
+			for (const ccc::GlobalVariable& global : database.global_variables)
+				m_mangled_global_names_to_handles.emplace(global.mangled_name(), global.handle());
+		});
+	}
 
 	virtual bool parseReference(char* str, u64& referenceIndex)
 	{
@@ -54,7 +62,7 @@ public:
 		{
 			char reg[8];
 			std::snprintf(reg, std::size(reg), "r%d", i);
-			if (StringUtil::Strcasecmp(str, reg) == 0 || StringUtil::Strcasecmp(str, cpu->getRegisterName(0, i)) == 0)
+			if (StringUtil::Strcasecmp(str, reg) == 0 || StringUtil::Strcasecmp(str, m_cpu->getRegisterName(0, i)) == 0)
 			{
 				referenceIndex = i;
 				return true;
@@ -108,27 +116,62 @@ public:
 
 	virtual bool parseSymbol(char* str, u64& symbolValue)
 	{
-		SymbolInfo symbol = cpu->GetSymbolGuardian().SymbolWithName(std::string(str));
-		if (!symbol.address.valid())
-			return false;
+		bool success = false;
+		m_cpu->GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
+			std::string name = str;
 
-		symbolValue = symbol.address.value;
-		return true;
+			// Check for mangled function names.
+			auto function_iterator = m_mangled_function_names_to_handles.find(name);
+			if (function_iterator != m_mangled_function_names_to_handles.end())
+			{
+				const ccc::Function* function = database.functions.symbol_from_handle(function_iterator->second);
+				if (function && function->address().valid())
+				{
+					symbolValue = function->address().value;
+					success = true;
+					return;
+				}
+			}
+
+			// Check for mangled global variable names.
+			auto global_iterator = m_mangled_global_names_to_handles.find(name);
+			if (global_iterator != m_mangled_global_names_to_handles.end())
+			{
+				const ccc::GlobalVariable* global = database.global_variables.symbol_from_handle(global_iterator->second);
+				if (global && global->address().valid())
+				{
+					symbolValue = global->address().value;
+					success = true;
+					return;
+				}
+			}
+
+			// Check for regular unmangled names.
+			const ccc::Symbol* symbol = database.symbol_with_name(name);
+			if (symbol && symbol->address().valid())
+			{
+				symbolValue = symbol->address().value;
+				success = true;
+				return;
+			}
+		});
+
+		return success;
 	}
 
 	virtual u64 getReferenceValue(u64 referenceIndex)
 	{
 		if (referenceIndex < 32)
-			return cpu->getRegister(0, referenceIndex)._u64[0];
+			return m_cpu->getRegister(0, referenceIndex)._u64[0];
 		if (referenceIndex == REF_INDEX_PC)
-			return cpu->getPC();
+			return m_cpu->getPC();
 		if (referenceIndex == REF_INDEX_HI)
-			return cpu->getHI()._u64[0];
+			return m_cpu->getHI()._u64[0];
 		if (referenceIndex == REF_INDEX_LO)
-			return cpu->getLO()._u64[0];
+			return m_cpu->getLO()._u64[0];
 		if (referenceIndex & REF_INDEX_IS_OPSL)
 		{
-			const u32 OP = memRead32(cpu->getPC());
+			const u32 OP = memRead32(m_cpu->getPC());
 			const R5900::OPCODE& opcode = R5900::GetInstruction(OP);
 			if (opcode.flags & IS_MEMORY)
 			{
@@ -154,7 +197,7 @@ public:
 		}
 		if (referenceIndex & REF_INDEX_FPU)
 		{
-			return cpu->getRegister(EECAT_FPR, referenceIndex & 0x1F)._u64[0];
+			return m_cpu->getRegister(EECAT_FPR, referenceIndex & 0x1F)._u64[0];
 		}
 		return -1;
 	}
@@ -168,7 +211,7 @@ public:
 		return EXPR_TYPE_UINT;
 	}
 
-	virtual bool getMemoryValue(u32 address, int size, u64& dest, char* error)
+	virtual bool getMemoryValue(u32 address, int size, u64& dest, std::string& error)
 	{
 		switch (size)
 		{
@@ -178,37 +221,40 @@ public:
 			case 8:
 				break;
 			default:
-				sprintf(error, "Invalid memory access size %d", size);
+				error = StringUtil::StdStringFromFormat(
+					TRANSLATE("ExpressionParser", "Invalid memory access size %d."), size);
 				return false;
 		}
 
 		if (address % size)
 		{
-			sprintf(error, "Invalid memory access (unaligned)");
+			error = TRANSLATE("ExpressionParser", "Invalid memory access (unaligned).");
 			return false;
 		}
 
 		switch (size)
 		{
 			case 1:
-				dest = cpu->read8(address);
+				dest = m_cpu->read8(address);
 				break;
 			case 2:
-				dest = cpu->read16(address);
+				dest = m_cpu->read16(address);
 				break;
 			case 4:
-				dest = cpu->read32(address);
+				dest = m_cpu->read32(address);
 				break;
 			case 8:
-				dest = cpu->read64(address);
+				dest = m_cpu->read64(address);
 				break;
 		}
 
 		return true;
 	}
 
-private:
-	DebugInterface* cpu;
+protected:
+	DebugInterface* m_cpu;
+	std::map<std::string, ccc::FunctionHandle> m_mangled_function_names_to_handles;
+	std::map<std::string, ccc::GlobalVariableHandle> m_mangled_global_names_to_handles;
 };
 
 //
@@ -308,18 +354,30 @@ std::optional<u32> DebugInterface::getStackFrameSize(const ccc::Function& functi
 	return static_cast<u32>(stack_frame_size);
 }
 
+bool DebugInterface::evaluateExpression(const char* expression, u64& dest)
+{
+	PostfixExpression postfix;
+
+	if (!initExpression(expression, postfix))
+		return false;
+
+	if (!parseExpression(postfix, dest))
+		return false;
+
+	return true;
+}
+
 bool DebugInterface::initExpression(const char* exp, PostfixExpression& dest)
 {
-	MipsExpressionFunctions funcs(this);
+	MipsExpressionFunctions funcs(this, true);
 	return initPostfixExpression(exp, &funcs, dest);
 }
 
 bool DebugInterface::parseExpression(PostfixExpression& exp, u64& dest)
 {
-	MipsExpressionFunctions funcs(this);
+	MipsExpressionFunctions funcs(this, false);
 	return parsePostfixExpression(exp, &funcs, dest);
 }
-
 
 //
 // R5900DebugInterface
