@@ -84,6 +84,7 @@ namespace FileSystem
 
 	/// Directory exists?
 	bool DirectoryExists(const char* path);
+	bool IsRealDirectory(const char* path);
 
 	/// Directory does not contain any files?
 	bool DirectoryIsEmpty(const char* path);
