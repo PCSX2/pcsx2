@@ -76,7 +76,7 @@
         </size>
        </property>
        <property name="title">
-        <string extracomment="Door buttons toggle to open or close train doors when this controller is used with Densha De GO! games.">Door Buttons"</string>
+        <string extracomment="Door buttons toggle to open or close train doors when this controller is used with Densha De GO! games.">Door Buttons</string>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <property name="spacing">
