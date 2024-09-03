@@ -5,6 +5,7 @@
 
 #include "common/Console.h"
 #include "Host.h"
+#include "IconsFontAwesome5.h"
 #include "IconsPromptFont.h"
 #include "Input/InputManager.h"
 #include "StateWrapper.h"
@@ -97,7 +98,7 @@ namespace usb_pad
 					{"Horn", TRANSLATE_NOOP("USB", "Horn"), ICON_PF_KEY_A, InputBindingInfo::Type::Button, CID_TC_B, GenericInputBinding::Cross},
 					{"LeftDoor", TRANSLATE_NOOP("USB", "Left Door"), ICON_PF_KEY_L, InputBindingInfo::Type::Button, CID_TC_L, GenericInputBinding::Square},
 					{"RightDoor", TRANSLATE_NOOP("USB", "Right Door"), ICON_PF_KEY_R, InputBindingInfo::Type::Button, CID_TC_R, GenericInputBinding::Triangle},
-					{"Camera", TRANSLATE_NOOP("USB", "Camera Button"), ICON_PF_CAMERA, InputBindingInfo::Type::Button, CID_TC_CAMERA, GenericInputBinding::R1},
+					{"Camera", TRANSLATE_NOOP("USB", "Camera Button"), ICON_FA_CAMERA, InputBindingInfo::Type::Button, CID_TC_CAMERA, GenericInputBinding::R1},
 					{"Select", TRANSLATE_NOOP("USB", "Select"), ICON_PF_SELECT_SHARE, InputBindingInfo::Type::Button, CID_TC_SELECT, GenericInputBinding::Select},
 					{"Start", TRANSLATE_NOOP("USB", "Start"), ICON_PF_START, InputBindingInfo::Type::Button, CID_TC_START, GenericInputBinding::Start},
 				};

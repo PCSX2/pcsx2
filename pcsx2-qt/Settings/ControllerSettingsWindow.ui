@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1305</width>
+    <width>1318</width>
     <height>690</height>
    </rect>
   </property>
@@ -35,13 +35,13 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>170</width>
+       <width>180</width>
        <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>170</width>
+       <width>200</width>
        <height>16777215</height>
       </size>
      </property>
@@ -50,6 +50,9 @@
        <width>32</width>
        <height>32</height>
       </size>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -64,11 +67,11 @@
     </widget>
    </item>
    <item row="1" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="profileLayout">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="profileLabel">
          <property name="text">
           <string>Editing Profile:</string>
          </property>
@@ -96,8 +99,7 @@
           <string>New Profile</string>
          </property>
          <property name="icon">
-          <iconset theme="plus-line">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="plus-line"/>
          </property>
         </widget>
        </item>
@@ -107,8 +109,7 @@
           <string>Apply Profile</string>
          </property>
          <property name="icon">
-          <iconset theme="folder-open-line">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="folder-open-line"/>
          </property>
         </widget>
        </item>
@@ -118,8 +119,7 @@
           <string>Delete Profile</string>
          </property>
          <property name="icon">
-          <iconset theme="minus-line">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="minus-line"/>
          </property>
         </widget>
        </item>
@@ -129,8 +129,7 @@
           <string>Mapping Settings</string>
          </property>
          <property name="icon">
-          <iconset theme="settings-3-line">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="settings-3-line"/>
          </property>
         </widget>
        </item>
@@ -140,8 +139,7 @@
           <string>Restore Defaults</string>
          </property>
          <property name="icon">
-          <iconset theme="restart-line">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="restart-line"/>
          </property>
         </widget>
        </item>
@@ -150,7 +148,7 @@
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="standardButtons">
-        <set>QDialogButtonBox::Close</set>
+        <set>QDialogButtonBox::StandardButton::Close</set>
        </property>
       </widget>
      </item>

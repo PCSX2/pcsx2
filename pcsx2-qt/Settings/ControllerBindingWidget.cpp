@@ -1029,7 +1029,8 @@ QIcon USBDeviceWidget::getIcon() const
 		{"guncon2", "guncon2-line"}, // GunCon 2
 		{"DJTurntable", "dj-hero-line"}, // DJ Hero TurnTable
 		{"Gametrak", "gametrak-line"}, // Gametrak Device
-		{"RealPlay", "realplay-sphere-line"} // RealPlay Device
+		{"RealPlay", "realplay-sphere-line"}, // RealPlay Device
+		{"TrainController", "train-line"} // Train Controller
 	};
 
 	for (size_t i = 0; i < std::size(icons); i++)
