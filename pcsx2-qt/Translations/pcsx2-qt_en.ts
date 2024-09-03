@@ -1974,29 +1974,20 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="99"/>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="114"/>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="130"/>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="138"/>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="152"/>
-        <source>Error</source>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="98"/>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="126"/>
+        <source>Invalid Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="99"/>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="130"/>
-        <source>Invalid address &quot;%1&quot;</source>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="113"/>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="148"/>
+        <source>Invalid Condition</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="114"/>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="152"/>
-        <source>Invalid condition &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Debugger/BreakpointDialog.cpp" line="138"/>
-        <source>Invalid size &quot;%1&quot;</source>
+        <location filename="../Debugger/BreakpointDialog.cpp" line="133"/>
+        <source>Invalid Size</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3919,48 +3910,48 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="619"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="618"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="621"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="620"/>
         <source>Copy Instruction Hex</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="640"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="639"/>
         <source>NOP Instruction(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="643"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="642"/>
         <source>Run to Cursor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="651"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="650"/>
         <source>Follow Branch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="657"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="656"/>
         <source>Go to in Memory View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="660"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="659"/>
         <source>Add Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="229"/>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="662"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="228"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="661"/>
         <source>Rename Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="664"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="663"/>
         <source>Remove Function</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3981,103 +3972,98 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="166"/>
-        <source>Go to address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="176"/>
-        <source>Go to address error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="176"/>
-        <source>Invalid address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="229"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="228"/>
         <source>Function name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="222"/>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="235"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="221"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="234"/>
         <source>Rename Function Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="235"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="234"/>
         <source>Function name cannot be nothing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="222"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="221"/>
         <source>No function / symbol is currently selected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="279"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="166"/>
+        <source>Go To In Disassembly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="175"/>
+        <source>Cannot Go To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="278"/>
         <source>Restore Function Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="279"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="278"/>
         <source>Unable to stub selected address.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="623"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="622"/>
         <source>&amp;Copy Instruction Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="628"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="627"/>
         <source>Copy Function Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="634"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="633"/>
         <source>Restore Instruction(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="637"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="636"/>
         <source>Asse&amp;mble new Instruction(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="645"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="644"/>
         <source>&amp;Jump to Cursor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="648"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="647"/>
         <source>Toggle &amp;Breakpoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="654"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="653"/>
         <source>&amp;Go to Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="668"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="667"/>
         <source>Restore Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="673"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="672"/>
         <source>Stub (NOP) Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="678"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="677"/>
         <source>Show &amp;Opcode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="693"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="692"/>
         <source>%1 NOT VALID ADDRESS</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4545,6 +4531,85 @@ Do you want to overwrite?</source>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="214"/>
         <source>Enter Custom Speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ExpressionParser</name>
+    <message>
+        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="225"/>
+        <source>Invalid memory access size %d.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="231"/>
+        <source>Invalid memory access (unaligned).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="244"/>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="271"/>
+        <source>Token too long.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="255"/>
+        <source>Invalid number &quot;%s&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="298"/>
+        <source>Invalid symbol &quot;%s&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="306"/>
+        <source>Invalid operator at &quot;%s&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="321"/>
+        <source>Closing parenthesis without opening one.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="335"/>
+        <source>Closing bracket without opening one.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="388"/>
+        <source>Parenthesis not closed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="447"/>
+        <source>Not enough arguments.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="462"/>
+        <source>Invalid memsize operator.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="506"/>
+        <source>Division by zero.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="517"/>
+        <source>Modulo by zero.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="596"/>
+        <source>Invalid tertiary operator.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="621"/>
+        <source>Invalid expression.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10379,7 +10444,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>GlobalVariableTreeWidget</name>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="745"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="765"/>
         <source>unknown function</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16134,7 +16199,6 @@ This action cannot be reversed, and you will lose any saves on the card.</source
     </message>
     <message>
         <location filename="../Debugger/MemoryViewWidget.cpp" line="504"/>
-        <location filename="../Debugger/MemoryViewWidget.cpp" line="595"/>
         <source>Go to address</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16186,6 +16250,16 @@ This action cannot be reversed, and you will lose any saves on the card.</source
     <message>
         <location filename="../Debugger/MemoryViewWidget.cpp" line="554"/>
         <source>Paste</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="595"/>
+        <source>Go To In Memory View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/MemoryViewWidget.cpp" line="604"/>
+        <source>Cannot Go To</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -18072,94 +18146,99 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="365"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="367"/>
+        <source>Copy Mangled Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="372"/>
         <source>Copy Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="371"/>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="502"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="378"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="521"/>
         <source>Rename Symbol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="377"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="384"/>
         <source>Go to in Disassembly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="381"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="388"/>
         <source>Go to in Memory View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="385"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="392"/>
         <source>Show Size Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="394"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="401"/>
         <source>Group by Module</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="401"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="408"/>
         <source>Group by Section</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="406"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="413"/>
         <source>Group by Source File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="416"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="423"/>
         <source>Sort by if type is known</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="427"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="434"/>
         <source>Reset children</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="430"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="437"/>
         <source>Change type temporarily</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="468"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="475"/>
         <source>Confirm Deletion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="468"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="475"/>
         <source>Delete &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="503"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="522"/>
         <source>Name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="563"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="582"/>
         <source>Change Type To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="564"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="583"/>
         <source>Type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="568"/>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="579"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="587"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="598"/>
         <source>Cannot Change Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="568"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="587"/>
         <source>That node cannot have a type.</source>
         <translation type="unfinished"></translation>
     </message>
