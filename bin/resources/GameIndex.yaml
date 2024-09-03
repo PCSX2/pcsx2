@@ -14049,6 +14049,9 @@ SLES-50310:
   name: "Freak Out"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns post effects.
+    autoFlush: 1 # Fixes ghosting.
 SLES-50314:
   name: "Giants - Citizen Kabuto"
   region: "PAL-E"
@@ -19332,7 +19335,7 @@ SLES-52569:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes misaligned bloom effects that streak on-screen, causes occasional trash shadows at places.
+    nativeScaling: 2 # Fixes post processing smoothness and position.
 SLES-52570:
   name: "Area 51"
   region: "PAL-M5"
@@ -24851,6 +24854,9 @@ SLES-54396:
   name: "Cricket 07"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes broken sprite rendering and mipmapping.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-54400:
   name: "Nickelodeon SpongeBob SquarePants - Creature from the Krusty Krab"
   region: "PAL-M7"
@@ -32227,6 +32233,9 @@ SLPM-60157:
 SLPM-60158:
   name: "Hippa Linda"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns post effects.
+    autoFlush: 1 # Fixes ghosting.
 SLPM-60159:
   name: "Dengeki PS2 PlayStation D47"
   region: "NTSC-J"
@@ -33685,6 +33694,9 @@ SLPM-62109:
   name-sort: "ひっぱりんだ"
   name-en: "Hippa Linda"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns post effects.
+    autoFlush: 1 # Fixes ghosting.
 SLPM-62111:
   name: "EGBrowser"
   region: "NTSC-J"
@@ -59041,6 +59053,9 @@ SLUS-20182:
   name: "Stretch Panic"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns post effects.
+    autoFlush: 1 # Fixes ghosting.
 SLUS-20183:
   name: "Tiny Toon Adventures - Defenders Of The Universe"
   region: "NTSC-U"
@@ -62640,7 +62655,7 @@ SLUS-20884:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes misaligned bloom effects that streak on-screen, causes occasional trash shadows at places.
+    nativeScaling: 2 # Fixes post processing smoothness and position.
 SLUS-20885:
   name: "The Red Star"
   name-sort: "Red Star, The"
