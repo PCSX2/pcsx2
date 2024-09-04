@@ -18465,8 +18465,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="917"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="442"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="367"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="73"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="92"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="74"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="93"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="433"/>
         <source>D-Pad Up</source>
         <translation type="unfinished"></translation>
@@ -18478,8 +18478,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="919"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="443"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="368"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="74"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="93"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="75"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="94"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="434"/>
         <source>D-Pad Down</source>
         <translation type="unfinished"></translation>
@@ -18491,8 +18491,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="920"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="444"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="369"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="75"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="94"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="76"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="95"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="435"/>
         <source>D-Pad Left</source>
         <translation type="unfinished"></translation>
@@ -18504,8 +18504,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="918"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="445"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="370"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="76"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="95"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="77"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="96"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="436"/>
         <source>D-Pad Right</source>
         <translation type="unfinished"></translation>
@@ -18552,8 +18552,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="915"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="977"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="365"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="81"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="101"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="82"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="102"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="441"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
@@ -18565,8 +18565,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="916"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="976"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="366"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="82"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="102"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="83"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="103"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="442"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
@@ -18889,8 +18889,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="75"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="103"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="132"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="72"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="91"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="73"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="92"/>
         <source>Brake</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19633,83 +19633,83 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="20"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="21"/>
         <source>Train Controller</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="31"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="32"/>
         <source>Type 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="32"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="33"/>
         <source>Shinkansen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="33"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="34"/>
         <source>Ryojōhen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="71"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="90"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="72"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="91"/>
         <source>Power</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="77"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="78"/>
         <source>A Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="78"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="79"/>
         <source>B Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="79"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="80"/>
         <source>C Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="80"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="81"/>
         <source>D Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="96"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="97"/>
         <source>Announce</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="97"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="98"/>
         <source>Horn</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="98"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="99"/>
         <source>Left Door</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="99"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="100"/>
         <source>Right Door</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="100"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="101"/>
         <source>Camera Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="156"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="157"/>
         <source>Axes Passthrough</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="157"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="158"/>
         <source>Passes through the unprocessed input axis to the game. Enable if you are using a compatible Densha De Go! controller. Disable if you are using any other joystick.</source>
         <translation type="unfinished"></translation>
     </message>
