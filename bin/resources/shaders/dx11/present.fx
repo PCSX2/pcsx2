@@ -142,19 +142,20 @@ PS_OUTPUT ps_filter_complex(PS_INPUT input) // triangular
 //Lottes CRT
 #define MaskingType 4                      //[1|2|3|4] The type of CRT shadow masking used. 1: compressed TV style, 2: Aperture-grille, 3: Stretched VGA style, 4: VGA style.
 #define ScanBrightness -8.00               //[-16.0 to 1.0] The overall brightness of the scanline effect. Lower for darker, higher for brighter.
-#define FilterCRTAmount -1.00              //[-4.0 to 1.0] The amount of filtering used, to replicate the TV CRT look. Lower for less, higher for more.
+#define FilterCRTAmount -3.00              //[-4.0 to 1.0] The amount of filtering used, to replicate the TV CRT look. Lower for less, higher for more.
 #define HorizontalWarp 0.00                //[0.0 to 0.1] The distortion warping effect for the horizontal (x) axis of the screen. Use small increments.
 #define VerticalWarp 0.00                  //[0.0 to 0.1] The distortion warping effect for the verticle (y) axis of the screen. Use small increments.
-#define MaskAmountDark 0.80                //[0.0 to 1.0] The value of the dark masking line effect used. Lower for darker lower end masking, higher for brighter.
+#define MaskAmountDark 0.50                //[0.0 to 1.0] The value of the dark masking line effect used. Lower for darker lower end masking, higher for brighter.
 #define MaskAmountLight 1.50               //[0.0 to 2.0] The value of the light masking line effect used. Lower for darker higher end masking, higher for brighter.
-#define ResolutionScale 2.00               //[0.1 to 4.0] The scale of the image resolution. Lowering this can give off a nice retro TV look. Raising it can clear up the image.
-#define MaskResolutionScale 0.80           //[0.1 to 2.0] The scale of the CRT mask resolution. Use this for balancing the scanline mask scale for difference resolution scaling.
+#define BloomPixel -1.50                   //[-2.0 -0.5] Pixel bloom radius. Higher for increased softness of bloom.
+#define BloomScanLine -2.0                 //[-4.0 -1.0] Scanline bloom radius. Higher for increased softness of bloom.
+#define BloomAmount 0.15                   //[0.0 1.0] Bloom intensity. Higher for brighter.
+#define Shape 2.0                          //[0.0 10.0] Kernal filter shape. Lower values will darken image and introduce moire patterns if used with curvature.
 #define UseShadowMask 1                    //[0 or 1] Enables, or disables the use of the CRT shadow mask. 0 is disabled, 1 is enabled.
 
 float ToLinear1(float c)
 {
-	c = saturate(c);
-	return c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4);
+	return c <= 0.04045 ? c / 12.92 : pow((abs(c) + 0.055) / 1.055, 2.4);
 }
 
 float3 ToLinear(float3 c)
@@ -164,8 +165,7 @@ float3 ToLinear(float3 c)
 
 float ToSrgb1(float c)
 {
-	c = saturate(c);
-	return c < 0.0031308 ? c * 12.92 : 1.055 * pow(c, 0.41666) - 0.055;
+	return c < 0.0031308 ? c * 12.92 : 1.055 * pow(abs(c), 0.41666) - 0.055;
 }
 
 float3 ToSrgb(float3 c)
@@ -175,9 +175,7 @@ float3 ToSrgb(float3 c)
 
 float3 Fetch(float2 pos, float2 off)
 {
-	float2 screenSize = u_source_resolution;
-	float2 res = (screenSize * ResolutionScale);
-	pos = round(pos * res + off) / res;
+	pos = (floor(pos * u_target_size + off) + float2(0.5, 0.5)) / u_target_size;
 	if (max(abs(pos.x - 0.5), abs(pos.y - 0.5)) > 0.5)
 	{
 		return float3(0.0, 0.0, 0.0);
@@ -190,9 +188,7 @@ float3 Fetch(float2 pos, float2 off)
 
 float2 Dist(float2 pos)
 {
-	float2 crtRes = u_rcp_target_resolution;
-	float2 res = (crtRes * MaskResolutionScale);
-	pos = (pos * res);
+	pos = pos * float2(640, 480);
 
 	return -((pos - floor(pos)) - float2(0.5, 0.5));
 }
@@ -215,7 +211,7 @@ float3 Horz3(float2 pos, float off)
 	float wc = Gaus(dst + 0.0, scale);
 	float wd = Gaus(dst + 1.0, scale);
 
-	return (b * wb) + (c * wc) + (d * wd) / (wb + wc + wd);
+	return (b * wb + c * wc + d * wd) / (wb + wc + wd);
 }
 
 float3 Horz5(float2 pos, float off)
@@ -236,7 +232,32 @@ float3 Horz5(float2 pos, float off)
 	float wd = Gaus(dst + 1.0, scale);
 	float we = Gaus(dst + 2.0, scale);
 
-	return (a * wa) + (b * wb) + (c * wc) + (d * wd) + (e * we) / (wa + wb + wc + wd + we);
+	return (a * wa + b * wb + c * wc + d * wd + e * we) / (wa + wb + wc + wd + we);
+}
+
+float3 Horz7(float2 pos, float off)
+{
+	float3 a = Fetch(pos, float2(-3.0, off));
+	float3 b = Fetch(pos, float2(-2.0, off));
+	float3 c = Fetch(pos, float2(-1.0, off));
+	float3 d = Fetch(pos, float2( 0.0, off));
+	float3 e = Fetch(pos, float2( 1.0, off));
+	float3 f = Fetch(pos, float2( 2.0, off));
+	float3 g = Fetch(pos, float2( 3.0, off));
+
+	float dst = Dist(pos).x;
+	// Convert distance to weight.
+	float scale = BloomPixel;
+	float wa = Gaus(dst - 3.0, scale);
+	float wb = Gaus(dst - 2.0, scale);
+	float wc = Gaus(dst - 1.0, scale);
+	float wd = Gaus(dst + 0.0, scale);
+	float we = Gaus(dst + 1.0, scale);
+	float wf = Gaus(dst + 2.0, scale);
+	float wg = Gaus(dst + 3.0, scale);
+
+	// Return filtered sample.
+	return (a * wa + b * wb + c * wc + d * wd + e * we + f * wf + g * wg) / (wa + wb + wc + wd + we + wf + wg);
 }
 
 // Return scanline weight.
@@ -244,6 +265,13 @@ float Scan(float2 pos, float off)
 {
 	float dst = Dist(pos).y;
 	return Gaus(dst + off, ScanBrightness);
+}
+
+float BloomScan(float2 pos, float off)
+{
+	float dst = Dist(pos).y;
+
+	return Gaus(dst + off, BloomScanLine);
 }
 
 float3 Tri(float2 pos)
@@ -257,6 +285,23 @@ float3 Tri(float2 pos)
 	float wc = Scan(pos, 1.0);
 
 	return (a * wa) + (b * wb) + (c * wc);
+}
+
+float3 Bloom(float2 pos)
+{
+	float3 a = Horz5(pos,-2.0);
+	float3 b = Horz7(pos,-1.0);
+	float3 c = Horz7(pos, 0.0);
+	float3 d = Horz7(pos, 1.0);
+	float3 e = Horz5(pos, 2.0);
+
+	float wa = BloomScan(pos,-2.0);
+	float wb = BloomScan(pos,-1.0); 
+	float wc = BloomScan(pos, 0.0);
+	float wd = BloomScan(pos, 1.0);
+	float we = BloomScan(pos, 2.0);
+
+	return a * wa + b * wb + c * wc + d * wd + e * we;
 }
 
 float2 Warp(float2 pos)
@@ -368,15 +413,15 @@ float3 Mask(float2 pos)
 
 float4 LottesCRTPass(float4 fragcoord)
 {
+	float4 color;
 	fragcoord -= u_target_rect;
 	float2 inSize = u_target_resolution - (2 * u_target_rect.xy);
-	float4 color;
-	float2 pos = Warp(fragcoord.xy / inSize);
 
-#if UseShadowMask == 0
+	float2 pos = Warp(fragcoord.xy / inSize);
 	color.rgb = Tri(pos);
-#else
-	color.rgb = Tri(pos) * Mask(fragcoord.xy);
+	color.rgb += Bloom(pos) * BloomAmount;
+#if UseShadowMask
+	color.rgb *= Mask(fragcoord.xy);
 #endif
 	color.rgb = ToSrgb(color.rgb);
 	color.a = 1.0;
