@@ -144,6 +144,9 @@ void av_bprint_init(AVBPrint *buf, unsigned size_init, unsigned size_max);
  * Init a print buffer using a pre-existing buffer.
  *
  * The buffer will not be reallocated.
+ * In case size equals zero, the AVBPrint will be initialized to use
+ * the internal buffer as if using AV_BPRINT_SIZE_COUNT_ONLY with
+ * av_bprint_init().
  *
  * @param buf     buffer structure to init
  * @param buffer  byte buffer to use for the string data
@@ -169,9 +172,9 @@ void av_bprint_chars(AVBPrint *buf, char c, unsigned n);
 /**
  * Append data to a print buffer.
  *
- * param buf  bprint buffer to use
- * param data pointer to data
- * param size size of data
+ * @param buf  bprint buffer to use
+ * @param data pointer to data
+ * @param size size of data
  */
 void av_bprint_append_data(AVBPrint *buf, const char *data, unsigned size);
 
@@ -179,9 +182,9 @@ struct tm;
 /**
  * Append a formatted date and time to a print buffer.
  *
- * param buf  bprint buffer to use
- * param fmt  date and time format string, see strftime()
- * param tm   broken-down time structure to translate
+ * @param buf  bprint buffer to use
+ * @param fmt  date and time format string, see strftime()
+ * @param tm   broken-down time structure to translate
  *
  * @note due to poor design of the standard strftime function, it may
  * produce poor results if the format string expands to a very long text and
