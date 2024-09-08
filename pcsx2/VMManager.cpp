@@ -938,10 +938,7 @@ bool VMManager::UpdateGameSettingsLayer()
 
 	std::string input_profile_name;
 	if (new_interface)
-	{
-		if (!new_interface->GetBoolValue("Pad", "UseGameSettingsForController", false))
-			new_interface->GetStringValue("EmuCore", "InputProfileName", &input_profile_name);
-	}
+		new_interface->GetStringValue("EmuCore", "InputProfileName", &input_profile_name);
 
 	if (!s_game_settings_interface && !new_interface && s_input_profile_name == input_profile_name)
 		return false;
