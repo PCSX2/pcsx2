@@ -661,7 +661,7 @@ void GSTextureReplacements::PrecacheReplacementTextures()
 
 	// predict whether the requests will come with mipmaps
 	// TODO: This will be wrong for hw mipmap games like Jak.
-	const bool mipmap = GSConfig.HWMipmap || GSConfig.TriFilter == TriFiltering::Forced;
+	const bool mipmap = (GSConfig.HWMipmapMode >= GSHWMipmapMode::Enabled || GSConfig.TriFilter == TriFiltering::Forced);
 
 	// pretty simple, just go through the filenames and if any aren't cached, cache them
 	for (const auto& it : s_replacement_texture_filenames)

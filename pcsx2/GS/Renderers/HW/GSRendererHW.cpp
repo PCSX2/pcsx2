@@ -16,7 +16,7 @@ GSRendererHW::GSRendererHW()
 	: GSRenderer()
 {
 	MULTI_ISA_SELECT(GSRendererHWPopulateFunctions)(*this);
-	m_mipmap = GSConfig.HWMipmap;
+	m_mipmap = (GSConfig.HWMipmapMode >= GSHWMipmapMode::Enabled);
 	SetTCOffset();
 
 	pxAssert(!g_texture_cache);
@@ -88,7 +88,7 @@ void GSRendererHW::Reset(bool hardware_reset)
 void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 {
 	GSRenderer::UpdateSettings(old_config);
-	m_mipmap = GSConfig.HWMipmap;
+	m_mipmap = (GSConfig.HWMipmapMode >= GSHWMipmapMode::Enabled);
 	SetTCOffset();
 }
 
@@ -2398,7 +2398,8 @@ void GSRendererHW::Draw()
 	GIFRegTEX0 TEX0 = {};
 	GSTextureCache::Source* src = nullptr;
 	TextureMinMaxResult tmm;
-
+	bool mipmap_active = false;
+	
 	// Disable texture mapping if the blend is black and using alpha from vertex.
 	if (m_process_texture)
 	{
@@ -2407,7 +2408,8 @@ void GSRendererHW::Draw()
 		m_lod = GSVector2i(0, 0);
 
 		// Code from the SW renderer
-		if (IsMipMapActive())
+		mipmap_active = IsMipMapActive();
+		if (mipmap_active)
 		{
 			const int interpolation = (context->TEX1.MMIN & 1) + 1; // 1: round, 2: tri
 
@@ -2464,25 +2466,39 @@ void GSRendererHW::Draw()
 			m_lod.x = std::min<int>(m_lod.x, mxl);
 			m_lod.y = std::min<int>(m_lod.y, mxl);
 
-			TEX0 = (m_lod.x == 0) ? m_cached_ctx.TEX0 : GetTex0Layer(m_lod.x);
-
-			// upload the full chain (with offset) for the hash cache, in case some other texture uses more levels
-			// for basic mipmapping, we can get away with just doing the base image, since all the mips get generated anyway.
-			hash_lod_range = GSVector2i(m_lod.x, GSConfig.HWMipmap ? mxl : m_lod.x);
-
-			MIP_CLAMP.MINU >>= m_lod.x;
-			MIP_CLAMP.MINV >>= m_lod.x;
-			MIP_CLAMP.MAXU >>= m_lod.x;
-			MIP_CLAMP.MAXV >>= m_lod.x;
-
-			for (int i = 0; i < m_lod.x; i++)
+			if (GSConfig.HWMipmapMode < GSHWMipmapMode::AllLevels)
 			{
-				m_vt.m_min.t *= 0.5f;
-				m_vt.m_max.t *= 0.5f;
-			}
+				TEX0 = (m_lod.x == 0) ? m_cached_ctx.TEX0 : GetTex0Layer(m_lod.x);
 
-			GL_CACHE("Mipmap LOD %d %d (%f %f) new size %dx%d (K %d L %u)", m_lod.x, m_lod.y, m_vt.m_lod.x, m_vt.m_lod.y, 1 << TEX0.TW, 1 << TEX0.TH, m_context->TEX1.K, m_context->TEX1.L);
+				// upload the full chain (with offset) for the hash cache, in case some other texture uses more levels
+				// for basic mipmapping, we can get away with just doing the base image, since all the mips get generated anyway.
+				hash_lod_range = GSVector2i(m_lod.x, mxl);
+
+				MIP_CLAMP.MINU >>= m_lod.x;
+				MIP_CLAMP.MINV >>= m_lod.x;
+				MIP_CLAMP.MAXU >>= m_lod.x;
+				MIP_CLAMP.MAXV >>= m_lod.x;
+
+				for (int i = 0; i < m_lod.x; i++)
+				{
+					m_vt.m_min.t *= 0.5f;
+					m_vt.m_max.t *= 0.5f;
+				}
+			}
+			else
+			{
+				hash_lod_range = GSVector2i(0, mxl);
+				TEX0 = m_cached_ctx.TEX0;
+			}
+			GL_CACHE("Mipmap LOD %d %d (%f %f) new size %dx%d (K %d L %u)", m_lod.x, m_lod.y, m_vt.m_lod.x, m_vt.m_lod.y,
+				(1 << m_cached_ctx.TEX0.TW) >> m_lod.x, (1 << m_cached_ctx.TEX0.TH) >> m_lod.x, m_context->TEX1.K, m_context->TEX1.L);
 		}
+		else if (GSConfig.HWMipmapMode >= GSHWMipmapMode::AllLevels && m_context->TEX1.MXL > 0 && !m_context->TEX1.LCM)
+		{
+			mipmap_active = true;
+			hash_lod_range = GSVector2i(0, std::min<int>(static_cast<int>(m_context->TEX1.MXL), 6));
+			TEX0 = m_cached_ctx.TEX0;
+			GL_CACHE("Looking up all %d texture LODs", hash_lod_range.y);		}
 		else
 		{
 			TEX0 = m_cached_ctx.TEX0;
@@ -2563,7 +2579,7 @@ void GSRendererHW::Draw()
 		else
 		{
 			src = tex_psm.depth ? g_texture_cache->LookupDepthSource(true, TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block(), req_color, req_alpha) :
-								  g_texture_cache->LookupSource(true, TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr,
+								  g_texture_cache->LookupSource(true, TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmapMode >= GSHWMipmapMode::Enabled || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr,
 					possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block(), req_color, req_alpha);
 
 			if (!src) [[unlikely]]
@@ -2958,7 +2974,7 @@ void GSRendererHW::Draw()
 		}
 
 		// Round 2
-		if (IsMipMapActive() && GSConfig.HWMipmap && !tex_psm.depth && !src->m_from_hash_cache)
+		if (mipmap_active && !tex_psm.depth && !src->m_from_hash_cache)
 		{
 			// Upload remaining texture layers
 			const GSVector4 tmin = m_vt.m_min.t;
@@ -4910,7 +4926,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	const bool shader_emulated_sampler = tex->m_palette || (tex->m_target && !m_conf.ps.shuffle && cpsm.fmt != 0) ||
 										 complex_wms_wmt || psm.depth || target_region;
 	const bool can_trilinear = !tex->m_palette && !tex->m_target && !m_conf.ps.shuffle;
-	const bool trilinear_manual = need_mipmap && GSConfig.HWMipmap;
+	bool trilinear_manual = need_mipmap && GSConfig.HWMipmapMode >= GSHWMipmapMode::Enabled;
 
 	bool bilinear = m_vt.IsLinear();
 	int trilinear = 0;
@@ -4925,7 +4941,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 			if (can_trilinear)
 			{
 				trilinear = static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
-				trilinear_auto = !tex->m_target && (!need_mipmap || !GSConfig.HWMipmap);
+				trilinear_auto = !tex->m_target && (!need_mipmap || GSConfig.HWMipmapMode == GSHWMipmapMode::Disabled);
 			}
 		}
 		break;
@@ -4934,10 +4950,10 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		case TriFiltering::Automatic:
 		{
 			// Can only use PS2 trilinear when mipmapping is enabled.
-			if (need_mipmap && GSConfig.HWMipmap && can_trilinear)
+			if (need_mipmap && GSConfig.HWMipmapMode >= GSHWMipmapMode::Enabled && can_trilinear)
 			{
 				trilinear = m_context->TEX1.MMIN;
-				trilinear_auto = !tex->m_target && !GSConfig.HWMipmap;
+				trilinear_auto = !tex->m_target && GSConfig.HWMipmapMode == GSHWMipmapMode::Disabled;
 			}
 		}
 		break;
@@ -4945,6 +4961,12 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		case TriFiltering::Off:
 		default:
 			break;
+	}
+	if (GSConfig.HWMipmapMode >= GSHWMipmapMode::Unclamped && !shader_emulated_sampler &&
+		m_context->TEX1.MXL > 0 && m_context->TEX1.MMIN >= 2 && m_context->TEX1.MMIN <= 5 && !m_context->TEX1.LCM)
+	{
+		trilinear = static_cast<u8>(m_vt.IsLinear() ? GS_MIN_FILTER::Linear_Mipmap_Linear : GS_MIN_FILTER::Nearest_Mipmap_Linear);
+		trilinear_manual = false;
 	}
 
 	// 1 and 0 are equivalent
@@ -5146,7 +5168,10 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	{
 		m_conf.cb_ps.LODParams.x = static_cast<float>(m_context->TEX1.K) / 16.0f;
 		m_conf.cb_ps.LODParams.y = static_cast<float>(1 << m_context->TEX1.L);
-		m_conf.cb_ps.LODParams.z = static_cast<float>(m_lod.x); // Offset because first layer is m_lod, dunno if we can do better
+		m_conf.cb_ps.LODParams.z = (GSConfig.HWMipmapMode >= GSHWMipmapMode::Unclamped) ?
+									   std::log2(rt ? rt->GetScale() : ds->GetScale()) :
+									   static_cast<float>((GSConfig.HWMipmapMode == GSHWMipmapMode::AllLevels) ? 0.0f : m_lod.x);
+
 		m_conf.cb_ps.LODParams.w = static_cast<float>(m_lod.y);
 		m_conf.ps.manual_lod = 1;
 	}

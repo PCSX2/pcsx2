@@ -762,7 +762,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 
 	// reload texture cache when trilinear filtering or TC options change
 	if (
-		(GSIsHardwareRenderer() && GSConfig.HWMipmap != old_config.HWMipmap) ||
+		(GSIsHardwareRenderer() && GSConfig.HWMipmapMode != old_config.HWMipmapMode) ||
 		GSConfig.TexturePreloading != old_config.TexturePreloading ||
 		GSConfig.TriFilter != old_config.TriFilter ||
 		GSConfig.GPUPaletteConversion != old_config.GPUPaletteConversion ||
@@ -1138,9 +1138,10 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 		[](s32 pressed) {
 			if (!pressed)
 			{
-				EmuConfig.GS.HWMipmap = !EmuConfig.GS.HWMipmap;
+				EmuConfig.GS.HWMipmapMode =
+					(EmuConfig.GS.HWMipmapMode >= GSHWMipmapMode::Enabled) ? GSHWMipmapMode::Disabled : GSHWMipmapMode::Enabled;
 				Host::AddKeyedOSDMessage("ToggleMipmapMode",
-					EmuConfig.GS.HWMipmap ?
+					(EmuConfig.GS.HWMipmapMode >= GSHWMipmapMode::Enabled) ?
 						TRANSLATE_STR("Hotkeys", "Hardware mipmapping is now enabled.") :
 						TRANSLATE_STR("Hotkeys", "Hardware mipmapping is now disabled."),
 					Host::OSD_INFO_DURATION);

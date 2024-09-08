@@ -286,6 +286,15 @@ enum class BiFiltering : u8
 	Forced_But_Sprite,
 };
 
+enum class GSHWMipmapMode : u8
+{
+	Disabled,
+	Enabled,
+	AllLevels,
+	Unclamped,
+	MaxCount
+};
+
 enum class TriFiltering : s8
 {
 	Automatic = -1,
@@ -637,7 +646,6 @@ struct Pcsx2Config
 					AutoFlushSW : 1,
 					PreloadFrameWithGSData : 1,
 					Mipmap : 1,
-					HWMipmap : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,
@@ -694,6 +702,7 @@ struct Pcsx2Config
 		float UpscaleMultiplier = 1.0f;
 
 		AccBlendLevel AccurateBlendingUnit = AccBlendLevel::Basic;
+		GSHWMipmapMode HWMipmapMode = GSHWMipmapMode::Disabled;
 		BiFiltering TextureFiltering = BiFiltering::PS2;
 		TexturePreloadingLevel TexturePreloading = TexturePreloadingLevel::Full;
 		GSDumpCompressionMethod GSDumpCompression = GSDumpCompressionMethod::Zstandard;

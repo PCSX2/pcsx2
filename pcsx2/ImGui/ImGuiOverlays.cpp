@@ -406,8 +406,8 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		if (GSConfig.HWDownloadMode != GSHardwareDownloadMode::Enabled)
 			APPEND("DL={} ", static_cast<unsigned>(GSConfig.HWDownloadMode));
 
-		if (GSConfig.HWMipmap)
-			APPEND("MM ");
+		if (GSConfig.HWMipmapMode != GSHWMipmapMode::Disabled)
+			APPEND("MM={} ", static_cast<unsigned>(GSConfig.HWMipmapMode));
 
 		// deliberately test global and print local here for auto values
 		if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
