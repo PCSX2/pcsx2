@@ -118,8 +118,10 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 	s_current_collator = QCollator(s_current_locale);
 
 	// Install the base qt translation first.
-#ifdef __APPLE__
+#if defined(__APPLE__)
 	const QString base_dir = QStringLiteral("%1/../Resources/translations").arg(qApp->applicationDirPath());
+#elif defined(PCSX2_APP_DATADIR)
+	const QString base_dir = QStringLiteral("%1/%2/translations").arg(qApp->applicationDirPath()).arg(PCSX2_APP_DATADIR);
 #else
 	const QString base_dir = QStringLiteral("%1/translations").arg(qApp->applicationDirPath());
 #endif
