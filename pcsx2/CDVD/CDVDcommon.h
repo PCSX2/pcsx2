@@ -10,19 +10,48 @@
 class Error;
 class ProgressCallback;
 
-typedef struct _cdvdSubQ
+typedef struct _cdvdTrackIndex
 {
-	u8 ctrl : 4; // control and mode bits
-	u8 mode : 4; // control and mode bits
+	bool isPregap;
+	u8 trackM; // current minute offset from first track (BCD encoded)
+	u8 trackS; // current sector offset from first track (BCD encoded)
+	u8 trackF; // current frame offset from first track (BCD encoded)
+	u8 discM; // current minute location on the disc (BCD encoded)
+	u8 discS; // current sector location on the disc (BCD encoded)
+	u8 discF; // current frame location on the disc (BCD encoded)
+
+} cdvdTrackIndex;
+
+typedef struct _cdvdTrack
+{
+	u32 start_lba; // Starting lba of track, note that some formats will be missing 2 seconds, cue, bin
+	u8 type; // Track Type
 	u8 trackNum; // current track number (1 to 99)
 	u8 trackIndex; // current index within track (0 to 99)
-	u8 trackM; // current minute location on the disc (BCD encoded)
-	u8 trackS; // current sector location on the disc (BCD encoded)
-	u8 trackF; // current frame location on the disc (BCD encoded)
+	u8 trackM; // current minute offset from first track (BCD encoded)
+	u8 trackS; // current sector offset from first track (BCD encoded)
+	u8 trackF; // current frame offset from first track (BCD encoded)
+	u8 discM; // current minute location on the disc (BCD encoded)
+	u8 discS; // current sector location on the disc (BCD encoded)
+	u8 discF; // current frame location on the disc (BCD encoded)
+
+	// 0 is pregap, 1 is data
+	_cdvdTrackIndex index[2];
+} cdvdTrack;
+
+typedef struct _cdvdSubQ
+{
+	u8 ctrl : 4; // control and adr bits
+	u8 adr : 4; // control and adr bits, note that adr determines what SubQ info we're recieving.
+	u8 trackNum; // current track number (1 to 99)
+	u8 trackIndex; // current index within track (0 to 99)
+	u8 trackM; // current minute offset from first track (BCD encoded)
+	u8 trackS; // current sector offset from first track (BCD encoded)
+	u8 trackF; // current frame offset from first track (BCD encoded)
 	u8 pad; // unused
-	u8 discM; // current minute offset from first track (BCD encoded)
-	u8 discS; // current sector offset from first track (BCD encoded)
-	u8 discF; // current frame offset from first track (BCD encoded)
+	u8 discM; // current minute location on the disc (BCD encoded)
+	u8 discS; // current sector location on the disc (BCD encoded)
+	u8 discF; // current frame location on the disc (BCD encoded)
 } cdvdSubQ;
 
 typedef struct _cdvdTD
@@ -64,6 +93,12 @@ typedef struct _cdvdTN
 #define CDVD_TYPE_DETCTCD 0x02 // Detecting Cd
 #define CDVD_TYPE_DETCT 0x01 // Detecting
 #define CDVD_TYPE_NODISC 0x00 // No Disc
+
+// SUBQ CONTROL:
+#define CDVD_CONTROL_AUDIO_PREEMPHASIS(control) ((control & (4 << 1)))
+#define CDVD_CONTROL_DIGITAL_COPY_ALLOWED(control) ((control & (5 << 1)))
+#define CDVD_CONTROL_IS_DATA(control) ((control & (6 << 1))) // Detects if track is Data or Audio
+#define CDVD_CONTROL_IS_QUADRAPHONIC_AUDIO(control) ((control & (7 << 1)))
 
 // CDVDgetTrayStatus returns:
 #define CDVD_TRAY_CLOSE 0x00
@@ -147,6 +182,10 @@ extern const CDVD_API* CDVD; // currently active CDVD access mode api (either Is
 extern const CDVD_API CDVDapi_Iso;
 extern const CDVD_API CDVDapi_Disc;
 extern const CDVD_API CDVDapi_NoDisc;
+
+extern u8 strack;
+extern u8 etrack;
+extern cdvdTrack tracks[100];
 
 extern void CDVDsys_ChangeSource(CDVD_SourceType type);
 extern void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile);

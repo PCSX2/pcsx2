@@ -65,7 +65,7 @@ static s32 ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 	// fake it
 	u8 min, sec, frm;
 	subq->ctrl = 4;
-	subq->mode = 1;
+	subq->adr = 1;
 	subq->trackNum = itob(1);
 	subq->trackIndex = itob(1);
 

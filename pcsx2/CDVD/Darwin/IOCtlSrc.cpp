@@ -241,6 +241,11 @@ bool IOCtlSrc::ReadCDInfo()
 #endif
 }
 
+bool IOCtlSrc::ReadTrackSubQ(cdvdSubQ* subQ) const
+{
+	return false;
+}
+
 bool IOCtlSrc::DiscReady()
 {
 #ifdef __APPLE__
