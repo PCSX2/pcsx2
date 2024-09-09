@@ -5,6 +5,7 @@
 #include "CDVD/CDVD.h"
 
 #include "common/Error.h"
+#include "common/Console.h"
 
 #include <linux/cdrom.h>
 #include <fcntl.h>
@@ -193,6 +194,35 @@ bool IOCtlSrc::ReadCDInfo()
 
 	return true;
 }
+
+bool IOCtlSrc::ReadTrackSubQ(cdvdSubQ* subQ) const
+{
+	cdrom_subchnl osSubQ;
+
+	osSubQ.cdsc_format = CDROM_MSF;
+
+	if (ioctl(m_device, CDROMSUBCHNL, &osSubQ) == -1)
+	{
+		Console.Error("SUB CHANNEL READ ERROR: %s\n", strerror(errno));
+		return false;
+	}
+
+	subQ->adr = osSubQ.cdsc_adr;
+	subQ->ctrl = osSubQ.cdsc_ctrl;
+	subQ->trackNum = osSubQ.cdsc_trk;
+	subQ->trackIndex = osSubQ.cdsc_ind;
+
+	subQ->discM = osSubQ.cdsc_absaddr.msf.minute;
+	subQ->discS = osSubQ.cdsc_absaddr.msf.second;
+	subQ->discF = osSubQ.cdsc_absaddr.msf.frame;
+
+	subQ->trackM = osSubQ.cdsc_reladdr.msf.minute;
+	subQ->trackS = osSubQ.cdsc_reladdr.msf.second;
+	subQ->trackF = osSubQ.cdsc_reladdr.msf.frame;
+
+	return true;
+}
+
 
 bool IOCtlSrc::DiscReady()
 {

@@ -4,6 +4,7 @@
 #include "CDVDdiscReader.h"
 #include "CDVD/CDVD.h"
 #include "Host.h"
+#include "common/Console.h"
 
 #include "common/Error.h"
 
@@ -22,10 +23,6 @@ static std::thread s_keepalive_thread;
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 // State Information                                                         //
-
-u8 strack;
-u8 etrack;
-track tracks[100];
 
 int curDiskType;
 int curTrayStatus;
@@ -270,20 +267,23 @@ static s32 DISCreadSubQ(u32 lsn, cdvdSubQ* subq)
 
 	memset(subq, 0, sizeof(cdvdSubQ));
 
-	lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
+	if (!src->ReadTrackSubQ(subq))
+	{
+		lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
 
-	u8 i = strack;
-	while (i < etrack && lsn >= tracks[i + 1].start_lba)
-		++i;
+		u8 i = strack;
+		while (i < etrack && lsn >= tracks[i + 1].start_lba)
+			++i;
 
-	lsn -= tracks[i].start_lba;
+		lsn -= tracks[i].start_lba;
 
-	lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
+		lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
 
-	subq->mode = 1;
-	subq->ctrl = tracks[i].type;
-	subq->trackNum = i;
-	subq->trackIndex = 1;
+		subq->adr = 1;
+		subq->ctrl = tracks[i].type;
+		subq->trackNum = i;
+		subq->trackIndex = 1;
+	}
 
 	return 0;
 }

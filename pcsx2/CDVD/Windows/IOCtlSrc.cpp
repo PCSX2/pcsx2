@@ -10,6 +10,7 @@
 #include <winioctl.h>
 #include <ntddcdvd.h>
 #include <ntddcdrm.h>
+#include <errno.h>
 // "typedef ignored" warning will disappear once we move to the Windows 10 SDK.
 #pragma warning(push)
 #pragma warning(disable : 4091)
@@ -299,6 +300,38 @@ bool IOCtlSrc::ReadCDInfo()
 
 	m_sectors = static_cast<u32>(info.Length.QuadPart / 2048);
 	m_media_type = -1;
+
+	return true;
+}
+
+bool IOCtlSrc::ReadTrackSubQ(cdvdSubQ* subQ) const
+{
+	CDROM_SUB_Q_DATA_FORMAT format;
+	SUB_Q_CHANNEL_DATA osSubQ{};
+	DWORD unused;
+
+	format.Format = IOCTL_CDROM_CURRENT_POSITION;
+
+	if (!DeviceIoControl(m_device, IOCTL_CDROM_READ_Q_CHANNEL, &format, sizeof(format), &osSubQ, sizeof(osSubQ), &unused, nullptr))
+	{
+		Console.Error("SUB CHANNEL READ ERROR: %d\n", errno);
+		return false;
+	}
+	else
+	{
+		subQ->adr = osSubQ.CurrentPosition.ADR;
+		subQ->ctrl = osSubQ.CurrentPosition.Control;
+		subQ->trackNum = osSubQ.CurrentPosition.TrackNumber;
+		subQ->trackIndex = osSubQ.CurrentPosition.IndexNumber;
+
+		subQ->trackM = osSubQ.CurrentPosition.TrackRelativeAddress[0];
+		subQ->trackS = osSubQ.CurrentPosition.TrackRelativeAddress[1];
+		subQ->trackF = osSubQ.CurrentPosition.TrackRelativeAddress[2];
+
+		subQ->discM = osSubQ.CurrentPosition.AbsoluteAddress[0];
+		subQ->discS = osSubQ.CurrentPosition.AbsoluteAddress[1];
+		subQ->discF = osSubQ.CurrentPosition.AbsoluteAddress[2];
+	}
 
 	return true;
 }
