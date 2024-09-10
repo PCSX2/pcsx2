@@ -1732,8 +1732,26 @@ bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive, Error* er
 		std::wstring tempPath;
 		tempPath.reserve(pathLength);
 
+		// for absolute paths, we need to skip over the path root
+		size_t rootLength = 0;
+		if (Path::IsAbsolute(Path))
+		{
+			const wchar_t* root_start = wpath.c_str();
+			wchar_t* root_end;
+			const HRESULT hr = PathCchSkipRoot(const_cast<wchar_t*>(root_start), &root_end);
+			if (FAILED(hr))
+			{
+				Error::SetHResult(error, "PathCchSkipRoot() failed: ", hr);
+				return false;
+			}
+			rootLength = static_cast<size_t>(root_end - root_start);
+
+			// copy path root
+			tempPath.append(wpath, 0, rootLength);
+		}
+
 		// create directories along the path
-		for (size_t i = 0; i < pathLength; i++)
+		for (size_t i = rootLength; i < pathLength; i++)
 		{
 			if (wpath[i] == L'\\' || wpath[i] == L'/')
 			{
