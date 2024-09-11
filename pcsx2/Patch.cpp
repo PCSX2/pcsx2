@@ -114,6 +114,7 @@ namespace Patch
 		std::optional<AspectRatioType> override_aspect_ratio;
 		std::optional<GSInterlaceMode> override_interlace_mode;
 		std::vector<PatchCommand> patches;
+		std::vector<DynamicPatch> dpatches;
 	};
 
 	struct PatchTextTable
@@ -132,6 +133,7 @@ namespace Patch
 		static void patch(PatchGroup* group, const std::string_view cmd, const std::string_view param);
 		static void gsaspectratio(PatchGroup* group, const std::string_view cmd, const std::string_view param);
 		static void gsinterlacemode(PatchGroup* group, const std::string_view cmd, const std::string_view param);
+		static void dpatch(PatchGroup* group, const std::string_view cmd, const std::string_view param);
 	} // namespace PatchFunc
 
 	static void TrimPatchLine(std::string& buffer);
@@ -187,6 +189,7 @@ namespace Patch
 		{0, "patch", &Patch::PatchFunc::patch},
 		{0, "gsaspectratio", &Patch::PatchFunc::gsaspectratio},
 		{0, "gsinterlacemode", &Patch::PatchFunc::gsinterlacemode},
+		{0, "dpatch", &Patch::PatchFunc::dpatch},
 		{0, nullptr, nullptr},
 	};
 } // namespace Patch
@@ -247,31 +250,34 @@ u32 Patch::LoadPatchesFromString(PatchList* patch_list, const std::string& patch
 
 	PatchGroup current_patch_group;
 	const auto add_current_patch = [patch_list, &current_patch_group]() {
-		if (current_patch_group.patches.empty())
-			return;
-
-		// Ungrouped/legacy patches should merge with other ungrouped patches.
-		if (current_patch_group.name.empty())
+		if (!current_patch_group.patches.empty())
 		{
-			const PatchList::iterator ungrouped_patch = std::find_if(patch_list->begin(), patch_list->end(),
-				[](const PatchGroup& pg) { return pg.name.empty(); });
-			if (ungrouped_patch != patch_list->end())
+			// Ungrouped/legacy patches should merge with other ungrouped patches.
+			if (current_patch_group.name.empty())
 			{
-				Console.WriteLn(Color_Gray, fmt::format(
-												"Patch: Merging {} new patch commands into ungrouped list.", current_patch_group.patches.size()));
+				const PatchList::iterator ungrouped_patch = std::find_if(patch_list->begin(), patch_list->end(),
+					[](const PatchGroup& pg) { return pg.name.empty(); });
+				if (ungrouped_patch != patch_list->end())
+				{
+					Console.WriteLn(Color_Gray, fmt::format(
+						"Patch: Merging {} new patch commands into ungrouped list.", current_patch_group.patches.size()));
 
-				ungrouped_patch->patches.reserve(ungrouped_patch->patches.size() + current_patch_group.patches.size());
-				for (PatchCommand& cmd : current_patch_group.patches)
-					ungrouped_patch->patches.push_back(std::move(cmd));
-			}
-			else
-			{
-				// Always add ungrouped patches, no sense to compare empty names.
-				patch_list->push_back(std::move(current_patch_group));
-			}
+					ungrouped_patch->patches.reserve(ungrouped_patch->patches.size() + current_patch_group.patches.size());
+					for (PatchCommand& cmd : current_patch_group.patches)
+						ungrouped_patch->patches.push_back(std::move(cmd));
+				}
+				else
+				{
+					// Always add ungrouped patches, no sense to compare empty names.
+					patch_list->push_back(std::move(current_patch_group));
+				}
 
-			return;
+				return;
+			}
 		}
+
+		if (current_patch_group.patches.empty() && current_patch_group.dpatches.empty())
+			return;
 
 		// Don't show patches with duplicate names, prefer the first loaded.
 		if (!ContainsPatchName(*patch_list, current_patch_group.name))
@@ -302,7 +308,7 @@ u32 Patch::LoadPatchesFromString(PatchList* patch_list, const std::string& patch
 				continue;
 			}
 
-			if (!current_patch_group.name.empty() || !current_patch_group.patches.empty())
+			if (!current_patch_group.name.empty() || !current_patch_group.patches.empty() || !current_patch_group.dpatches.empty())
 			{
 				add_current_patch();
 				current_patch_group = {};
@@ -318,7 +324,7 @@ u32 Patch::LoadPatchesFromString(PatchList* patch_list, const std::string& patch
 		LoadPatchLine(&current_patch_group, line);
 	}
 
-	if (!current_patch_group.name.empty() || !current_patch_group.patches.empty())
+	if (!current_patch_group.name.empty() || !current_patch_group.patches.empty() || !current_patch_group.dpatches.empty())
 		add_current_patch();
 
 	return static_cast<u32>(patch_list->size() - before);
@@ -623,13 +629,18 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 			s_active_patches.push_back(&ip);
 		}
 
+		for (const DynamicPatch& dp : p.dpatches)
+		{
+			s_active_dynamic_patches.push_back(dp);
+		}
+
 		if (p.override_aspect_ratio.has_value())
 			s_override_aspect_ratio = p.override_aspect_ratio;
 		if (p.override_interlace_mode.has_value())
 			s_override_interlace_mode = p.override_interlace_mode;
 
 		// Count unlabelled patches once per command, or one patch per group.
-		count += p.name.empty() ? static_cast<u32>(p.patches.size()) : 1;
+		count += p.name.empty() ? (static_cast<u32>(p.patches.size()) + static_cast<u32>(p.dpatches.size())) : 1;
 	}
 
 	return count;
@@ -688,6 +699,7 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	s_active_patches.clear();
 	s_override_aspect_ratio.reset();
 	s_override_interlace_mode.reset();
+	s_active_dynamic_patches.clear();
 
 	SmallString message;
 	u32 gp_count = 0;
@@ -899,6 +911,108 @@ void Patch::PatchFunc::gsinterlacemode(PatchGroup* group, const std::string_view
 	}
 
 	group->override_interlace_mode = static_cast<GSInterlaceMode>(interlace_mode.value());
+}
+
+void Patch::PatchFunc::dpatch(PatchGroup* group, const std::string_view cmd, const std::string_view param)
+{
+#define PATCH_ERROR(fstring, ...) \
+	Console.Error(fmt::format("(dPatch) Error Parsing: {}={}: " fstring, cmd, param, __VA_ARGS__))
+
+	// [0]=version/type,[1]=number of patterns,[2]=number of replacements
+	// Each pattern or replacement is [3]=offset,[4]=hex
+
+	const std::vector<std::string_view> pieces(StringUtil::SplitString(param, ',', false));
+	if (pieces.size() < 3)
+	{
+		PATCH_ERROR("Expected at least 3 data parameters; only found {}", pieces.size());
+		return;
+	}
+
+
+	std::string_view patterns_end, replacements_end;
+
+	// Implemented for possible future use so we don't have to break backcompat
+	std::optional<u32> dpatch_type = StringUtil::FromChars<u32>(pieces[0]);
+
+	std::optional<u32> num_patterns = StringUtil::FromChars<u32>(pieces[1], 16, &patterns_end);
+	std::optional<u32> num_replacements = StringUtil::FromChars<u32>(pieces[2], 16, &replacements_end);
+
+	if (!dpatch_type.has_value())
+	{
+		PATCH_ERROR("Malformed version/type '{}', a decimal number(e.g. 0,1,2) is expected", pieces[0]);
+		return;
+	}
+
+	if (dpatch_type.value() != 0)
+	{
+		PATCH_ERROR("Unsupported version/type '{}', only 0 is currently supported", pieces[0]);
+		return;
+	}
+
+	if (!num_patterns.has_value())
+	{
+		PATCH_ERROR("Malformed number of patterns '{}', a decimal number is expected", pieces[1]);
+		return;
+	}
+
+	if (!num_replacements.has_value())
+	{
+		PATCH_ERROR("Malformed number of replacements '{}', a decimal number is expected", pieces[2]);
+		return;
+	}
+
+	if (pieces.size() != ((num_patterns.value() * 2) + (num_replacements.value() * 2) + 3))
+	{
+		PATCH_ERROR("Expected 2 fields for each {} patterns and {} replacements; found {}", num_patterns.value(), num_replacements.value(), pieces.size() - 2);
+		return;
+	}
+
+	DynamicPatch dpatch;
+	for (u32 i = 0; i < num_patterns.value(); i++)
+	{
+		std::optional<u32> offset = StringUtil::FromChars<u32>(pieces[3 + (i * 2)], 16);
+		std::optional<u32> value = StringUtil::FromChars<u32>(pieces[4 + (i * 2)], 16);
+		if (!offset.has_value())
+		{
+			PATCH_ERROR("Malformed offset '{}', a hex number without prefix (e.g. 0123ABCD) is expected", pieces[3 + (i * 2)]);
+			return;
+		}
+		if (!value.has_value())
+		{
+			PATCH_ERROR("Malformed value '{}', a hex number without prefix (e.g. 0123ABCD) is expected", pieces[4 + (i * 2)]);
+			return;
+		}
+
+		DynamicPatchEntry pattern;
+		pattern.offset = offset.value();
+		pattern.value = value.value();
+
+		dpatch.pattern.push_back(pattern);
+	}
+
+	for (u32 i = 0; i < num_replacements.value(); i++)
+	{
+		std::optional<u32> offset = StringUtil::FromChars<u32>(pieces[3 + (num_patterns.value() * 2) + (i * 2)], 16);
+		std::optional<u32> value = StringUtil::FromChars<u32>(pieces[4 + (num_patterns.value() * 2) + (i * 2)], 16);
+		if (!offset.has_value())
+		{
+			PATCH_ERROR("Malformed offset '{}', a hex number without prefix (e.g. 0123ABCD) is expected", pieces[3 + (num_patterns.value() * 2) + (i * 2)]);
+			return;
+		}
+		if (!value.has_value())
+		{
+			PATCH_ERROR("Malformed value '{}', a hex number without prefix (e.g. 0123ABCD) is expected", pieces[4 + (num_patterns.value() * 2) + (i * 2)]);
+			return;
+		}
+
+		DynamicPatchEntry replacement;
+		replacement.offset = offset.value();
+		replacement.value = value.value();
+
+		dpatch.replacement.push_back(replacement);
+	}
+
+	group->dpatches.push_back(dpatch);
 }
 
 // This is for applying patches directly to memory
