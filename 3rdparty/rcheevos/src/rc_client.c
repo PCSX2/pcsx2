@@ -578,7 +578,13 @@ static int rc_client_get_image_url(char buffer[], size_t buffer_size, int image_
   image_request.image_name = image_name;
   result = rc_api_init_fetch_image_request(&request, &image_request);
   if (result == RC_OK)
-    snprintf(buffer, buffer_size, "%s", request.url);
+  {
+    const size_t url_length = strlen(request.url);
+    if (url_length >= buffer_size)
+      result = RC_INSUFFICIENT_BUFFER;
+    else
+      memcpy(buffer, request.url, url_length + 1);
+  }
 
   rc_api_destroy_request(&request);
   return result;
