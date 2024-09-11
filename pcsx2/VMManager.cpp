@@ -3633,15 +3633,17 @@ void VMManager::UpdateDiscordPresence(bool update_session_time)
 
 	std::string state_string;
 
+	auto lock = Achievements::GetLock();
+
 	if (Achievements::HasRichPresence())
 	{
-		auto lock = Achievements::GetLock();
+		rp.state = (state_string = StringUtil::Ellipsise(Achievements::GetRichPresenceString(), 128)).c_str();
 
-		state_string = StringUtil::Ellipsise(Achievements::GetRichPresenceString(), 128);
-		rp.state = state_string.c_str();
-
-		rp.largeImageKey = Achievements::GetGameIconURL().c_str();
-		rp.largeImageText = s_title.c_str();
+		if (const std::string& icon_url = Achievements::GetGameIconURL(); !icon_url.empty())
+		{
+			rp.largeImageKey = icon_url.c_str();
+			rp.largeImageText = s_title.c_str();
+		}
 	}
 
 	Discord_UpdatePresence(&rp);

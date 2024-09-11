@@ -66,6 +66,8 @@ namespace Achievements
 	static constexpr float INDICATOR_FADE_IN_TIME = 0.1f;
 	static constexpr float INDICATOR_FADE_OUT_TIME = 0.5f;
 
+	static constexpr size_t URL_BUFFER_SIZE = 256;
+
 	// Some API calls are really slow. Set a longer timeout.
 	static constexpr float SERVER_CALL_TIMEOUT = 60.0f;
 
@@ -804,7 +806,7 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
 	if (!s_has_rich_presence || !s_rich_presence_poll_time.ResetIfSecondsPassed(1.0))
 		return;
 
-	char buffer[512];
+	char buffer[URL_BUFFER_SIZE];
 	const size_t res = rc_client_get_rich_presence_message(s_client, buffer, std::size(buffer));
 	const std::string_view sv(buffer, res);
 	if (s_rich_presence_string == sv)
@@ -955,31 +957,21 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 	// ensure fullscreen UI is ready for notifications
 	MTGS::RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
 
-	if (const std::string_view badge_name = info->badge_name; !badge_name.empty())
+	char url_buffer[URL_BUFFER_SIZE];
+	if (int err = rc_client_game_get_image_url(info, url_buffer, std::size(url_buffer)); err == RC_OK)
 	{
-		s_game_icon = Path::Combine(s_image_directory, fmt::format("game_{}.png", info->id));
-		if (!FileSystem::FileExists(s_game_icon.c_str()))
-		{
-			char buf[512];
-			if (int err = rc_client_game_get_image_url(info, buf, std::size(buf)); err == RC_OK)
-			{
-				DownloadImage(buf, s_game_icon);
-			}
-			else
-			{
-				ReportRCError(err, "rc_client_game_get_image_url() failed: ");
-			}
-		}
-	}
-
-	char icon_url[64];
-	if (int err = rc_client_game_get_image_url(info, icon_url, std::size(icon_url)); err == RC_OK)
-	{
-		s_game_icon_url = icon_url;
+		s_game_icon_url = url_buffer;
 	}
 	else
 	{
 		ReportRCError(err, "rc_client_game_get_image_url() failed: ");
+	}
+
+	if (const std::string_view badge_name = info->badge_name; !badge_name.empty())
+	{
+		s_game_icon = Path::Combine(s_image_directory, fmt::format("game_{}.png", info->id));
+		if (!s_game_icon.empty() && !s_game_icon_url.empty() && !FileSystem::FileExists(s_game_icon.c_str()))
+			DownloadImage(s_game_icon_url, s_game_icon);
 	}
 
 	UpdateGameSummary();
@@ -1597,7 +1589,7 @@ std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t*
 
 	if (!FileSystem::FileExists(path.c_str()))
 	{
-		char buf[512];
+		char buf[URL_BUFFER_SIZE];
 		const int res = rc_client_achievement_get_image_url(achievement, state, buf, std::size(buf));
 		if (res == RC_OK)
 			DownloadImage(buf, path);
@@ -1625,7 +1617,7 @@ std::string Achievements::GetLeaderboardUserBadgePath(const rc_client_leaderboar
 
 	if (!FileSystem::FileExists(path.c_str()))
 	{
-		char buf[512];
+		char buf[URL_BUFFER_SIZE];
 		const int res = rc_client_leaderboard_entry_get_user_image_url(entry, buf, std::size(buf));
 		if (res == RC_OK)
 			DownloadImage(buf, path);
@@ -1799,7 +1791,7 @@ std::string Achievements::GetLoggedInUserBadgePath()
 	badge_path = GetUserBadgePath(user->username);
 	if (!FileSystem::FileExists(badge_path.c_str())) [[unlikely]]
 	{
-		char url[512];
+		char url[URL_BUFFER_SIZE];
 		const int res = rc_client_user_get_image_url(user, url, std::size(url));
 		if (res == RC_OK)
 			DownloadImage(url, badge_path);
