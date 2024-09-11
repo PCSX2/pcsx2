@@ -4,6 +4,7 @@
 #pragma once
 
 #include "common/Pcsx2Types.h"
+#include <string>
 #include <vector>
 
 typedef std::pair<u64,u64> ExpressionPair;
