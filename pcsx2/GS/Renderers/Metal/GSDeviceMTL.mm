@@ -857,6 +857,8 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		if (!m_dev.dev)
 			Host::ReportErrorAsync("No Metal Devices Available", "No Metal-supporting GPUs were found.  PCSX2 requires a Metal GPU (available on all macs from 2012 onwards).");
 	}
+
+	m_name = [[m_dev.dev name] UTF8String];
 	m_queue = MRCTransfer([m_dev.dev newCommandQueue]);
 
 	m_pass_desc = MRCTransfer([MTLRenderPassDescriptor new]);

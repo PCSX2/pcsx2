@@ -213,11 +213,17 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 
 		if (GSConfig.OsdShowHardwareInfo)
 		{
+			// CPU
 			text.clear();
 			text.append_format("CPU: {} ({}C/{}T)",
 				cpuinfo_get_package(0)->name,
 				cpuinfo_get_cores_count(),
 				cpuinfo_get_processors_count());
+			DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
+
+			// GPU
+			text.clear();
+			text.append_format("GPU: {}", g_gs_device->GetName());
 			DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 		}
 

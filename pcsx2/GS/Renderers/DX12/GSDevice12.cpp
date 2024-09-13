@@ -690,6 +690,8 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		return false;
 	}
 
+	m_name = D3D::GetAdapterName(m_adapter.get());
+
 	if (!CreateDescriptorHeaps() || !CreateCommandLists() || !CreateTimestampQuery())
 		return false;
 

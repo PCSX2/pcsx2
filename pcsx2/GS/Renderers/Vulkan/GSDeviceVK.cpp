@@ -2539,6 +2539,9 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	// Read device physical memory properties, we need it for allocating buffers
 	vkGetPhysicalDeviceProperties(m_physical_device, &m_device_properties);
 
+	// Stores the GPU name
+	m_name = m_device_properties.deviceName;
+
 	// We need this to be at least 32 byte aligned for AVX2 stores.
 	m_device_properties.limits.minUniformBufferOffsetAlignment =
 		std::max(m_device_properties.limits.minUniformBufferOffsetAlignment, static_cast<VkDeviceSize>(32));

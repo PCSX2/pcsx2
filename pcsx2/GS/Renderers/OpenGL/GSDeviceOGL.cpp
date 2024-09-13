@@ -184,6 +184,9 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	if (!CheckFeatures(buggy_pbo))
 		return false;
 
+	// Store adapter name currently in use
+	m_name = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+
 	SetSwapInterval();
 
 	// Render a frame as soon as possible to clear out whatever was previously being displayed.
