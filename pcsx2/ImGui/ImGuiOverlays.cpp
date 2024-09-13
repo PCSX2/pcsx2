@@ -25,7 +25,6 @@
 #include "SIO/Pad/PadBase.h"
 #include "USB/USB.h"
 #include "VMManager.h"
-#include "cpuinfo.h"
 
 #include "common/BitUtils.h"
 #include "common/FileSystem.h"
@@ -307,10 +306,16 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 		{
 			// CPU
 			text.clear();
-			text.append_format("CPU: {} ({}C/{}T)",
-				cpuinfo_get_package(0)->name,
-				cpuinfo_get_cores_count(),
-				cpuinfo_get_processors_count());
+			const CPUInfo& info = GetCPUInfo();
+			bool has_small = info.num_small_cores > 0;
+			bool has_ht = info.num_threads != info.num_big_cores + info.num_small_cores;
+			text.append_format("CPU: {}", info.name);
+			if (has_ht & has_small)
+				text.append_format(" ({}P/{}E/{}T)", info.num_big_cores, info.num_small_cores, info.num_threads);
+			else if (has_small)
+				text.append_format(" ({}P/{}E)", info.num_big_cores, info.num_small_cores);
+			else
+				text.append_format(" ({}C/{}T)", info.num_big_cores, info.num_threads);
 			DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
 
 			// GPU
