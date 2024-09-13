@@ -5,6 +5,10 @@
 #include "Console.h"
 #include "VectorIntrin.h"
 
+#ifndef __APPLE__
+#include "cpuinfo.h"
+#endif
+
 static u32 PAUSE_TIME = 0;
 
 static void MultiPause()
@@ -135,3 +139,43 @@ void AbortWithMessage(const char* msg)
 #endif
 	abort();
 }
+
+#ifndef __APPLE__
+// MacOS version is in DarwinMisc
+static CPUInfo CalcCPUInfo()
+{
+	CPUInfo out;
+	out.name = cpuinfo_get_package(0)->name;
+	out.num_threads = cpuinfo_get_processors_count();
+	out.num_clusters = cpuinfo_get_clusters_count();
+	out.num_big_cores = 0;
+	out.num_small_cores = 0;
+	const cpuinfo_cluster* clusters = cpuinfo_get_clusters();
+	uint64_t big_freq = 0;
+	for (uint32_t i = 0; i < out.num_clusters; i++)
+	{
+		const cpuinfo_cluster& cluster = clusters[i];
+		if (cluster.frequency > big_freq)
+		{
+			out.num_small_cores += out.num_big_cores;
+			out.num_big_cores = cluster.core_count;
+			big_freq = cluster.frequency;
+		}
+		else if (cluster.frequency == big_freq)
+		{
+			out.num_big_cores += cluster.core_count;
+		}
+		else
+		{
+			out.num_small_cores += cluster.core_count;
+		}
+	}
+	return out;
+}
+
+const CPUInfo& GetCPUInfo()
+{
+	static const CPUInfo info = CalcCPUInfo();
+	return info;
+}
+#endif

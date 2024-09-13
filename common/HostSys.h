@@ -192,6 +192,16 @@ extern const u32 SPIN_TIME_NS;
 
 extern std::string GetOSVersionString();
 
+struct CPUInfo {
+	std::string name;
+	u32 num_big_cores;
+	u32 num_small_cores;
+	u32 num_threads;
+	u32 num_clusters;
+};
+
+const CPUInfo& GetCPUInfo();
+
 namespace Common
 {
 	/// Enables or disables the screen saver from starting.
