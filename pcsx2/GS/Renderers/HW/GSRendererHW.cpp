@@ -4055,11 +4055,14 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const bool DATE, bool& DATE_PRIMID, bool& DATE_BARRIER,
 	GSTextureCache::Target* rt, bool can_scale_rt_alpha, bool& new_rt_alpha_scale)
 {
+	const GIFRegALPHA& ALPHA = m_context->ALPHA;
 	{
 		// AA1: Blending needs to be enabled on draw.
 		const bool AA1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
-		// PABE: Check condition early as an optimization.
-		const bool PABE = PRIM->ABE && m_draw_env->PABE.PABE && (GetAlphaMinMax().max < 128);
+		// PABE: Check condition early as an optimization, no blending when As < 128.
+		// For Cs*As + Cd*(1 - As) if As is 128 then blending can be disabled as well.
+		const bool PABE = PRIM->ABE && m_draw_env->PABE.PABE &&
+			((GetAlphaMinMax().max < 128) || (GetAlphaMinMax().max == 128 && ALPHA.A == 0 && ALPHA.B == 1 && ALPHA.C == 0 && ALPHA.D == 1));
 		// FBMASK: Color is not written, no need to do blending.
 		const u32 temp_fbmask = m_conf.ps.dst_fmt == GSLocalMemory::PSM_FMT_16 ? 0x00F8F8F8 : 0x00FFFFFF;
 		const bool FBMASK = (m_cached_ctx.FRAME.FBMSK & temp_fbmask) == temp_fbmask;
@@ -4078,7 +4081,6 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 
 	// Compute the blending equation to detect special case
 	const GSDevice::FeatureSupport features(g_gs_device->Features());
-	const GIFRegALPHA& ALPHA = m_context->ALPHA;
 	const GIFRegCOLCLAMP& COLCLAMP = m_draw_env->COLCLAMP;
 	// AFIX: Afix factor.
 	u8 AFIX = ALPHA.FIX;
@@ -4235,10 +4237,10 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	bool color_dest_blend = !!(blend_flag & BLEND_CD);
 
 	// HW blend can handle it, no need for sw or hdr colclip, Cd*Alpha or Cd*(1 - Alpha) where Alpha <= 128.
-	bool color_dest_blend2 = !m_draw_env->PABE.PABE && ((m_conf.ps.blend_a == 1 && m_conf.ps.blend_b == 2 && m_conf.ps.blend_d == 2) || ((m_conf.ps.blend_b == m_conf.ps.blend_d == 1) && m_conf.ps.blend_a == 2)) &&
+	bool color_dest_blend2 = !m_draw_env->PABE.PABE && ((m_conf.ps.blend_a == 1 && m_conf.ps.blend_b == 2 && m_conf.ps.blend_d == 2) || (m_conf.ps.blend_a == 2 && m_conf.ps.blend_b == 1 && m_conf.ps.blend_d == 1)) &&
 		(alpha_eq_less_one || (alpha_c1_eq_less_max_one && new_rt_alpha_scale));
 	// HW blend can handle it, no need for sw or hdr colclip, Cs*Alpha + Cd*(1 - Alpha) or Cd*Alpha + Cs*(1 - Alpha) where Alpha <= 128.
-	bool blend_zero_to_one_range = !m_draw_env->PABE.PABE && (((m_conf.ps.blend_b == m_conf.ps.blend_d == 1) && m_conf.ps.blend_a == 0) || (blend_flag & BLEND_MIX3)) &&
+	bool blend_zero_to_one_range = !m_draw_env->PABE.PABE && ((m_conf.ps.blend_a == 0 && m_conf.ps.blend_b == 1 && m_conf.ps.blend_d == 1) || (blend_flag & BLEND_MIX3)) &&
 		(alpha_eq_less_one || (alpha_c1_eq_less_max_one && new_rt_alpha_scale));
 
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
@@ -4431,20 +4433,11 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	if (m_draw_env->PABE.PABE && GetAlphaMinMax().min < 128)
 	{
 		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars, Cartoon Network Racing, Simple 2000 Series Vol.81, SOTC.
-		if (GetAlphaMinMax().max == 128 && m_conf.ps.blend_a == 0 && ((blend.dst == GSDevice::INV_SRC1_COLOR)
-			|| (blend.dst == GSDevice::INV_DST_ALPHA)
-			|| (blend.dst == GSDevice::INV_CONST_COLOR)))
-		{
-			// PABE disable blending:
-			// We can disable blending here as an optimization since alpha max is 128
-			// which if alpha is 1 in the formula Cs*Alpha + Cd*(1 - Alpha) will give us a result of Cs.
-			m_conf.blend = {};
-			m_conf.ps.no_color1 = true;
-			m_conf.ps.blend_a = m_conf.ps.blend_b = m_conf.ps.blend_c = m_conf.ps.blend_d = 0;
 
-			return;
-		}
-		else if (sw_blending)
+		// TODO: We can expand pabe hw to Cd*(1 - Alpha) where alpha is As or Af and replace the formula with Cs + 0 when As < 128,
+		// but need to find test cases where it makes a difference,
+		// C 12 Final Resistance triggers it but there's no difference and it's a psx game.
+		if (sw_blending)
 		{
 			if (accumulation_blend && (blend.op != GSDevice::OP_REV_SUBTRACT))
 			{
@@ -4811,9 +4804,9 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 
 		if (m_conf.ps.blend_c == 2 && (m_conf.ps.blend_hw == static_cast<u8>(HWBlendType::SRC_ALPHA_DST_FACTOR)
 			|| m_conf.ps.blend_hw == static_cast<u8>(HWBlendType::SRC_HALF_ONE_DST_FACTOR)
-			|| m_conf.blend_multi_pass.blend_hw == static_cast<u8>(HWBlendType::SRC_ALPHA_DST_FACTOR)
 			|| m_conf.ps.blend_hw == static_cast<u8>(HWBlendType::SRC_INV_DST_BLEND_HALF)
-			|| m_conf.ps.blend_hw == static_cast<u8>(HWBlendType::INV_SRC_DST_BLEND_HALF)))
+			|| m_conf.ps.blend_hw == static_cast<u8>(HWBlendType::INV_SRC_DST_BLEND_HALF)
+			|| m_conf.blend_multi_pass.blend_hw == static_cast<u8>(HWBlendType::SRC_ALPHA_DST_FACTOR)))
 		{
 			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
 		}
