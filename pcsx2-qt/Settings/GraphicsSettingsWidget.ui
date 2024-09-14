@@ -1622,24 +1622,10 @@
           </item>
           <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="osdOptionLayout">
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="osdShowResolution">
+            <item row="6" column="1">
+             <widget class="QCheckBox" name="osdShowVideoCapture">
               <property name="text">
-               <string>Show Resolution</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="osdShowFPS">
-              <property name="text">
-               <string>Show FPS</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QCheckBox" name="osdShowFrameTimes">
-              <property name="text">
-               <string>Show Frame Times</string>
+               <string>Show Video Capture Status</string>
               </property>
              </widget>
             </item>
@@ -1650,24 +1636,17 @@
               </property>
              </widget>
             </item>
+            <item row="5" column="1">
+             <widget class="QCheckBox" name="osdShowInputRec">
+              <property name="text">
+               <string>Show Input Recording Status</string>
+              </property>
+             </widget>
+            </item>
             <item row="4" column="1">
              <widget class="QCheckBox" name="osdShowInputs">
               <property name="text">
                <string>Show Inputs</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QCheckBox" name="osdShowSettings">
-              <property name="text">
-               <string>Show Settings</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QCheckBox" name="osdShowIndicators">
-              <property name="text">
-               <string>Show Indicators</string>
               </property>
              </widget>
             </item>
@@ -1685,24 +1664,31 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="osdShowVersion">
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="osdShowFrameTimes">
               <property name="text">
-               <string>Show PCSX2 Version</string>
+               <string>Show Frame Times</string>
               </property>
              </widget>
             </item>
-            <item row="5" column="1">
-             <widget class="QCheckBox" name="osdShowInputRec">
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="osdShowSettings">
               <property name="text">
-               <string>Show Input Recording Status</string>
+               <string>Show Settings</string>
               </property>
              </widget>
             </item>
-            <item row="6" column="1">
-             <widget class="QCheckBox" name="osdShowVideoCapture">
+            <item row="7" column="0">
+             <widget class="QCheckBox" name="warnAboutUnsafeSettings">
               <property name="text">
-               <string>Show Video Capture Status</string>
+               <string>Warn About Unsafe Settings</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="osdShowIndicators">
+              <property name="text">
+               <string>Show Indicators</string>
               </property>
              </widget>
             </item>
@@ -1720,10 +1706,31 @@
               </property>
              </widget>
             </item>
-            <item row="7" column="0">
-             <widget class="QCheckBox" name="warnAboutUnsafeSettings">
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="osdShowFPS">
               <property name="text">
-               <string>Warn About Unsafe Settings</string>
+               <string>Show FPS</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QCheckBox" name="osdShowVersion">
+              <property name="text">
+               <string>Show PCSX2 Version</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="osdShowResolution">
+              <property name="text">
+               <string>Show Resolution</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="osdShowVPS">
+              <property name="text">
+               <string>Show VPS</string>
               </property>
              </widget>
             </item>
