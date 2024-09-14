@@ -21,8 +21,10 @@ public:
 	void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
 protected:
-	// Without this, setModelData would only be called when a combo box was
-	// deselected rather than when an option was picked.
+	// These make it so the values inputted are written back to memory
+	// immediately when the widgets are interacted with rather than when they
+	// are deselected.
+	void onCheckBoxStateChanged(Qt::CheckState state);
 	void onComboBoxIndexChanged(int index);
 
 	DebugInterface& m_cpu;
