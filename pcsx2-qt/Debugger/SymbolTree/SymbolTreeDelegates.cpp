@@ -77,6 +77,7 @@ QWidget* SymbolTreeValueDelegate::createEditor(QWidget* parent, const QStyleOpti
 					{
 						QCheckBox* editor = new QCheckBox(parent);
 						editor->setChecked(value.toBool());
+						connect(editor, &QCheckBox::checkStateChanged, this, &SymbolTreeValueDelegate::onCheckBoxStateChanged);
 						result = editor;
 
 						break;
@@ -274,6 +275,13 @@ void SymbolTreeValueDelegate::setModelData(QWidget* editor, QAbstractItemModel* 
 
 	if (value.isValid())
 		model->setData(index, value, SymbolTreeModel::EDIT_ROLE);
+}
+
+void SymbolTreeValueDelegate::onCheckBoxStateChanged(Qt::CheckState state)
+{
+	QCheckBox* check_box = qobject_cast<QCheckBox*>(sender());
+	if (check_box)
+		commitData(check_box);
 }
 
 void SymbolTreeValueDelegate::onComboBoxIndexChanged(int index)
