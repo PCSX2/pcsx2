@@ -619,6 +619,7 @@ struct Pcsx2Config
 					SkipDuplicateFrames : 1,
 					OsdShowSpeed : 1,
 					OsdShowFPS : 1,
+					OsdShowVPS : 1,
 					OsdShowCPU : 1,
 					OsdShowGPU : 1,
 					OsdShowResolution : 1,
