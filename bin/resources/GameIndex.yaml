@@ -14842,8 +14842,8 @@ SLES-50723:
   name: "TOCA Race Driver"
   region: "PAL-M3"
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines, also works with normal vertex.
     mergeSprite: 1 # Fixes lighting.
+    halfPixelOffset: 1 # Fixes vertical lines
 SLES-50725:
   name: "V-Rally 3"
   region: "PAL-M5"
@@ -14940,8 +14940,8 @@ SLES-50767:
   name: "V8 Supercars Australia - Race Driver"
   region: "PAL-A"
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines, also works with normal vertex.
     mergeSprite: 1 # Fixes lighting.
+    halfPixelOffset: 1 # Fixes vertical lines
 SLES-50768:
   name: "Rally Championship"
   region: "PAL-Unk"
@@ -15107,14 +15107,14 @@ SLES-50816:
   region: "PAL-M3"
   compat: 5
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines, also works with normal vertex.
     mergeSprite: 1 # Fixes lighting.
+    halfPixelOffset: 1 # Fixes vertical lines
 SLES-50818:
   name: "Pro Race Driver"
   region: "PAL-I"
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines, also works with normal vertex.
     mergeSprite: 1 # Fixes lighting.
+    halfPixelOffset: 1 # Fixes vertical lines
 SLES-50820:
   name: "Micro Machines"
   region: "PAL-M5"
@@ -59748,8 +59748,8 @@ SLUS-20329:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines, also works with normal vertex.
     mergeSprite: 1 # Fixes lighting.
+    halfPixelOffset: 1 # Fixes vertical lines
 SLUS-20330:
   name: "NBA 2K2 - Sega Sports"
   region: "NTSC-U"
