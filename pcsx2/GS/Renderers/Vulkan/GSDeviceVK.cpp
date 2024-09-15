@@ -2054,7 +2054,7 @@ bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	if (!CheckFeatures())
 	{
-		Host::ReportErrorAsync("GS", "Your GPU does not support the required Vulkan features.");
+		Host::ReportErrorAsync("GS", TRANSLATE_SV("GSDeviceVK", "Your GPU does not support the required Vulkan features."));
 		return false;
 	}
 
@@ -2538,6 +2538,9 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 
 	// Read device physical memory properties, we need it for allocating buffers
 	vkGetPhysicalDeviceProperties(m_physical_device, &m_device_properties);
+
+	// Stores the GPU name
+	m_name = m_device_properties.deviceName;
 
 	// We need this to be at least 32 byte aligned for AVX2 stores.
 	m_device_properties.limits.minUniformBufferOffsetAlignment =

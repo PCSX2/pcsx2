@@ -805,6 +805,7 @@ public:
 	// clang-format on
 
 protected:
+	std::string m_name = "Unknown";
 	FeatureSupport m_features;
 	u32 m_max_texture_size = 0;
 
@@ -869,6 +870,9 @@ protected:
 public:
 	GSDevice();
 	virtual ~GSDevice();
+
+	/// Returns a string containing current adapter in use.
+	const std::string& GetName() const { return m_name; }
 
 	/// Returns a string representing the specified API.
 	static const char* RenderAPIToString(RenderAPI api);

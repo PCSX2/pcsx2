@@ -528,7 +528,7 @@ void GSUpdateDisplayWindow()
 {
 	if (!g_gs_device->UpdateWindow())
 	{
-		Host::ReportErrorAsync("Error", "Failed to change window after update. The log may contain more information.");
+		Host::ReportErrorAsync("Error", TRANSLATE_SV("GS", "Failed to change window after update. The log may contain more information."));
 		return;
 	}
 
