@@ -638,7 +638,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 	if (!GLAD_GL_VERSION_3_3)
 	{
 		Host::ReportErrorAsync(
-			"GS", fmt::format("OpenGL renderer is not supported. Only OpenGL {}.{}\n was found", major_gl, minor_gl));
+			"GS", fmt::format(TRANSLATE_FS("GSDeviceOGL", "OpenGL renderer is not supported. Only OpenGL {}.{}\n was found"), major_gl, minor_gl));
 		return false;
 	}
 

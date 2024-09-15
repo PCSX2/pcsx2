@@ -2054,7 +2054,7 @@ bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	if (!CheckFeatures())
 	{
-		Host::ReportErrorAsync("GS", "Your GPU does not support the required Vulkan features.");
+		Host::ReportErrorAsync("GS", TRANSLATE_SV("GSDeviceVK", "Your GPU does not support the required Vulkan features."));
 		return false;
 	}
 

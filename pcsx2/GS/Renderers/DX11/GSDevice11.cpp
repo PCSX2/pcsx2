@@ -112,7 +112,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	{
 		Host::ReportErrorAsync("GS",
 			fmt::format(
-				"Failed to create D3D device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required.",
+				TRANSLATE_FS("GS", "Failed to create D3D device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required."),
 				hr));
 		return false;
 	}
