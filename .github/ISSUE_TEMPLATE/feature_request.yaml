@@ -2,7 +2,7 @@
 name: Feature request
 description: Suggest a new feature or improve an existing one
 title: "[Feature Request]: "
-labels: ["Enhancement / Feature Request"]
+labels: ["Enhancement / Feature Request", "FR: Awaiting Consideration"]
 # assignees:
 #   - octocat
 body:
