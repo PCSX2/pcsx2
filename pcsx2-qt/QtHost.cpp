@@ -1059,9 +1059,15 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		if (speed != m_last_speed || vfps != m_last_video_fps || force)
 		{
 			QMetaObject::invokeMethod(g_main_window->getStatusVPSWidget(), "setText", Qt::QueuedConnection,
-				Q_ARG(const QString&, tr("VPS: %1 (%2%) ").arg(vfps, 0, 'f', 0).arg(speed, 0, 'f', 0)));
-			m_last_speed = speed;
+				Q_ARG(const QString&, tr("VPS: %1 ").arg(vfps, 0, 'f', 0)));
 			m_last_video_fps = vfps;
+
+		if (speed != m_last_speed || force)
+		{
+			QMetaObject::invokeMethod(g_main_window->getStatusSpeedWidget(), "setText", Qt::QueuedConnection,
+				Q_ARG(const QString&, tr("Speed: %1% ").arg(speed, 0, 'f', 0)));
+			m_last_speed = speed;
+		}
 		}
 	}
 }

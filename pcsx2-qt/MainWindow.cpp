@@ -228,16 +228,20 @@ void MainWindow::setupAdditionalUi()
 
 	m_status_resolution_widget = new QLabel(m_ui.statusBar);
 	m_status_resolution_widget->setFixedHeight(16);
-	m_status_resolution_widget->setFixedSize(70, 16);
+	m_status_resolution_widget->setFixedSize(75, 16);
 	m_status_resolution_widget->hide();
 
 	m_status_fps_widget = new QLabel(m_ui.statusBar);
-	m_status_fps_widget->setFixedSize(85, 16);
+	m_status_fps_widget->setFixedSize(60, 16);
 	m_status_fps_widget->hide();
 
 	m_status_vps_widget = new QLabel(m_ui.statusBar);
-	m_status_vps_widget->setFixedSize(125, 16);
+	m_status_vps_widget->setFixedSize(60, 16);
 	m_status_vps_widget->hide();
+
+	m_status_speed_widget = new QLabel(m_ui.statusBar);
+	m_status_speed_widget->setFixedSize(90, 16);
+	m_status_speed_widget->hide();
 
 	m_settings_toolbar_menu = new QMenu(m_ui.toolBar);
 	m_settings_toolbar_menu->addAction(m_ui.actionSettings);
@@ -953,6 +957,7 @@ void MainWindow::updateStatusBarWidgetVisibility()
 	Update(m_status_resolution_widget, s_vm_valid, 0);
 	Update(m_status_fps_widget, s_vm_valid, 0);
 	Update(m_status_vps_widget, s_vm_valid, 0);
+	Update(m_status_speed_widget, s_vm_valid, 0);
 }
 
 void MainWindow::updateWindowTitle()
@@ -1983,6 +1988,7 @@ void MainWindow::onVMStopped()
 	m_status_resolution_widget->setText(empty_string);
 	m_status_fps_widget->setText(empty_string);
 	m_status_vps_widget->setText(empty_string);
+	m_status_speed_widget->setText(empty_string);
 
 	updateEmulationActions(false, false, false);
 	updateGameDependentActions();
