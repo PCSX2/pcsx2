@@ -79,7 +79,7 @@ void AutoEject::CountDownTicks()
 
 	if (reinserted)
 	{
-		Host::AddIconOSDMessage("AutoEjectAllSet", ICON_PF_MEMORY_CARD,
+		Host::AddIconOSDMessage("AutoEjectCountDownFinished", ICON_PF_MEMORY_CARD,
 			TRANSLATE_SV("MemoryCard", "Memory Cards reinserted."), Host::OSD_INFO_DURATION);
 	}
 }
@@ -88,7 +88,7 @@ void AutoEject::Set(size_t port, size_t slot)
 {
 	if (mcds[port][slot].autoEjectTicks == 0)
 	{
-		mcds[port][slot].autoEjectTicks = 60; // 60 frames is enough.
+		mcds[port][slot].autoEjectTicks = 80; // Number of memcard commands which will be answered as all 0xFF (no signal)
 		mcds[port][slot].term = Terminator::NOT_READY; // Reset terminator to NOT_READY (0x66), forces the PS2 to recheck the memcard.
 	}
 }
@@ -101,7 +101,7 @@ void AutoEject::Clear(size_t port, size_t slot)
 void AutoEject::SetAll()
 {
 	Host::AddIconOSDMessage("AutoEjectAllSet", ICON_PF_MEMORY_CARD,
-		TRANSLATE_SV("MemoryCard", "Force ejecting all Memory Cards. Reinserting in 1 second."), Host::OSD_INFO_DURATION);
+		TRANSLATE_SV("MemoryCard", "Force ejecting all Memory Cards. Reinserting after game has detected them as ejected."), Host::OSD_INFO_DURATION);
 
 	for (size_t port = 0; port < SIO::PORTS; port++)
 	{

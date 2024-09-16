@@ -259,6 +259,8 @@ void Sio2::Memcard()
 			g_Sio2FifoOut.push_back(0xff);
 		}
 
+		// Remove one tick for this command.
+		AutoEject::CountDownTicks();
 		return;
 	}
 
