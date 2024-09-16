@@ -87,8 +87,8 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC)
 		{
 			if (((it->start >= rStart) && (it->start <= rEnd)) || ((it->end >= rStart) && (it->end <= rEnd))) // Starts after this prog but starts before the end of current prog
 			{
-				rStart = std::min(it->start, rStart); // Choose the earlier start
-				rEnd = std::max(it->end, rEnd);
+				mVUrange.start = rStart = std::min(it->start, rStart); // Choose the earlier start
+				mVUrange.end = rEnd = std::max(it->end, rEnd);
 				it = ranges->erase(it);
 			}
 			else
