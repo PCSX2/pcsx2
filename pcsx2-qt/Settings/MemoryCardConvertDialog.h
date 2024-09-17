@@ -41,6 +41,7 @@ private:
 	void SetType_32();
 	void SetType_64();
 	void SetType_Folder();
+	void FileOpenError(const QString errmsg);
 	
 	Ui::MemoryCardConvertDialog m_ui;
 
