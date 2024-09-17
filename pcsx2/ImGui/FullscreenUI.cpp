@@ -327,7 +327,6 @@ namespace FullscreenUI
 	static s32 GetEffectiveIntSetting(SettingsInterface* bsi, const char* section, const char* key, s32 default_value);
 	static void DoCopyGameSettings();
 	static void DoClearGameSettings();
-	static void CopyGlobalControllerSettingsToGame();
 	static void ResetControllerSettings();
 	static void DoLoadInputProfile();
 	static void DoSaveInputProfile();
@@ -4140,18 +4139,6 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
 
 	EndMenuButtons();
-}
-
-void FullscreenUI::CopyGlobalControllerSettingsToGame()
-{
-	SettingsInterface* dsi = GetEditingSettingsInterface(true);
-	SettingsInterface* ssi = GetEditingSettingsInterface(false);
-
-	Pad::CopyConfiguration(dsi, *ssi, true, true, false);
-	USB::CopyConfiguration(dsi, *ssi, true, true);
-	SetSettingsChanged(dsi);
-
-	ShowToast(std::string(), FSUI_STR("Per-game controller configuration initialized with global settings."));
 }
 
 void FullscreenUI::ResetControllerSettings()
