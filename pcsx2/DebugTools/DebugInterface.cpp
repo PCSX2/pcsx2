@@ -828,12 +828,16 @@ bool R5900DebugInterface::isValidAddress(u32 addr)
 				return true;
 			break;
 		case 8:
-		case 9:
 		case 0xA:
+			if(lopart <= 0xFFFFF)
+				return true;
+			break;
+		case 9:
 		case 0xB:
 			// [ 8000_0000 - BFFF_FFFF ] kernel
 			if (lopart >= 0xFC00000)
 				return true;
+			break;
 		case 0xF:
 			// [ 8000_0000 - BFFF_FFFF ] IOP or kernel stack
 			if (lopart >= 0xfff8000)
