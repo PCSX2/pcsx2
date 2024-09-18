@@ -829,7 +829,7 @@ bool R5900DebugInterface::isValidAddress(u32 addr)
 			break;
 		case 8:
 		case 0xA:
-			if(lopart <= 0xFFFFF)
+			if (lopart <= 0xFFFFF)
 				return true;
 			break;
 		case 9:
