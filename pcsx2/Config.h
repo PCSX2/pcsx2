@@ -196,6 +196,7 @@ enum class AspectRatioType : u8
 	RAuto4_3_3_2,
 	R4_3,
 	R16_9,
+	R10_7,
 	MaxCount
 };
 
@@ -205,6 +206,7 @@ enum class FMVAspectRatioSwitchType : u8
 	RAuto4_3_3_2,
 	R4_3,
 	R16_9,
+	R10_7,
 	MaxCount
 };
 
