@@ -553,6 +553,7 @@ const char* Pcsx2Config::GSOptions::AspectRatioNames[] = {
 	"Auto 4:3/3:2",
 	"4:3",
 	"16:9",
+	"10:7",
 	nullptr};
 
 const char* Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames[] = {
@@ -560,6 +561,7 @@ const char* Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames[] = {
 	"Auto 4:3/3:2",
 	"4:3",
 	"16:9",
+	"10:7",
 	nullptr};
 
 const char* Pcsx2Config::GSOptions::BlendingLevelNames[] = {

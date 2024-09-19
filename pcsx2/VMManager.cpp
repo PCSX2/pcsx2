@@ -877,6 +877,9 @@ void VMManager::RequestDisplaySize(float scale /*= 0.0f*/)
 		case AspectRatioType::R16_9:
 			x_scale = (16.0f / 9.0f) / (static_cast<float>(iwidth) / static_cast<float>(iheight));
 			break;
+		case AspectRatioType::R10_7:
+			x_scale = (10.0f / 7.0f) / (static_cast<float>(iwidth) / static_cast<float>(iheight));
+			break;
 		case AspectRatioType::Stretch:
 		default:
 			x_scale = 1.0f;
