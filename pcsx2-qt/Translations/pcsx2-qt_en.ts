@@ -2076,17 +2076,17 @@ Leaderboard Position: {1} of {2}</source>
 <context>
     <name>CDVD</name>
     <message>
-        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="281"/>
+        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="286"/>
         <source>Game disc location is on a removable drive, performance issues such as jittering and freezing may occur.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="376"/>
+        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="381"/>
         <source>Saving CDVD block dump to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="406"/>
+        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="411"/>
         <source>Precaching CDVD</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2111,7 +2111,7 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/CDVDdiscReader.cpp" line="198"/>
+        <location filename="../../pcsx2/CDVD/CDVDdiscReader.cpp" line="199"/>
         <source>Precaching is not supported for discs.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15539,25 +15539,25 @@ Close any other instances of PCSX2, or restart your computer.
     </message>
     <message>
         <location filename="../Settings/MemoryCardConvertDialog.ui" line="36"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="178"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="179"/>
         <source>8 MB File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardConvertDialog.ui" line="41"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="189"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="190"/>
         <source>16 MB File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardConvertDialog.ui" line="46"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="200"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="201"/>
         <source>32 MB File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardConvertDialog.ui" line="51"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="211"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="212"/>
         <source>64 MB File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15577,69 +15577,75 @@ Close any other instances of PCSX2, or restart your computer.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="44"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="148"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="304"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="45"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="149"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="320"/>
         <source>Uses a folder on your PC filesystem, instead of a file. Infinite capacity, while keeping the same compatibility as an 8 MB Memory Card.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="50"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="284"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="51"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="300"/>
         <source>A standard, 8 MB Memory Card. Most compatible, but smallest capacity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="53"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="289"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="54"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="305"/>
         <source>2x larger than a standard Memory Card. May have some compatibility issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="56"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="294"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="57"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="310"/>
         <source>4x larger than a standard Memory Card. Likely to have compatibility issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="59"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="299"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="60"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="315"/>
         <source>8x larger than a standard Memory Card. Likely to have compatibility issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="63"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="69"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="229"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="64"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="70"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="230"/>
         <source>Convert Memory Card Failed</source>
         <extracomment>MemoryCardType should be left as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="63"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="69"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="229"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="64"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="70"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="230"/>
         <source>Invalid MemoryCardType</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="101"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="102"/>
         <source>Conversion Complete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="101"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="102"/>
         <source>Memory Card &quot;%1&quot; converted to &quot;%2&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="222"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="223"/>
         <source>Your folder Memory Card has too much data inside it to be converted to a file Memory Card. The largest supported file Memory Card has a capacity of 64 MB. To convert your folder Memory Card, you must remove game folders until its size is 64 MB or less.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="222"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="223"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="325"/>
         <source>Cannot Convert Memory Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="325"/>
+        <source>There was an error when accessing the memory card directory. Error message: %0</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
