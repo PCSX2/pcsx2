@@ -1056,7 +1056,7 @@ void EmuThread::updatePerformanceMetrics(bool force)
 			m_last_game_fps = gfps;
 		}
 
-		if (speed != m_last_speed || vfps != m_last_video_fps || force)
+		if (vfps != m_last_video_fps || force)
 		{
 			QMetaObject::invokeMethod(g_main_window->getStatusVPSWidget(), "setText", Qt::QueuedConnection,
 				Q_ARG(const QString&, tr("VPS: %1 ").arg(vfps, 0, 'f', 0)));
