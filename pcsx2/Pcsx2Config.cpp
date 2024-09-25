@@ -1460,6 +1460,28 @@ bool Pcsx2Config::DebugOptions::operator==(const DebugOptions& right) const
 	return OpEqu(bitset) && OpEqu(FontWidth) && OpEqu(FontHeight) && OpEqu(WindowWidth) && OpEqu(WindowHeight) && OpEqu(MemoryViewBytesPerRow);
 }
 
+Pcsx2Config::SavestateOptions::SavestateOptions()
+{
+}
+
+void Pcsx2Config::SavestateOptions::LoadSave(SettingsWrapper& wrap)
+{
+	SettingsWrapSection("EmuCore");
+
+	SettingsWrapIntEnumEx(CompressionType, "SavestateCompressionType");
+	SettingsWrapIntEnumEx(CompressionRatio, "SavestateCompressionRatio");
+}
+
+bool Pcsx2Config::SavestateOptions::operator!=(const SavestateOptions& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::SavestateOptions::operator==(const SavestateOptions& right) const
+{
+	return OpEqu(CompressionType) && OpEqu(CompressionRatio);
+};
+
 Pcsx2Config::FilenameOptions::FilenameOptions()
 {
 }
@@ -1702,7 +1724,6 @@ Pcsx2Config::Pcsx2Config()
 	EnableGameFixes = true;
 	InhibitScreensaver = true;
 	BackupSavestate = true;
-	SavestateZstdCompression = true;
 	WarnAboutUnsafeSettings = true;
 
 	// To be moved to FileMemoryCard pluign (someday)
@@ -1741,7 +1762,6 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	SettingsWrapBitBool(HostFs);
 
 	SettingsWrapBitBool(BackupSavestate);
-	SettingsWrapBitBool(SavestateZstdCompression);
 	SettingsWrapBitBool(McdFolderAutoManage);
 
 	SettingsWrapBitBool(WarnAboutUnsafeSettings);
@@ -1755,6 +1775,7 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	DEV9.LoadSave(wrap);
 	Gamefixes.LoadSave(wrap);
 	Profiler.LoadSave(wrap);
+	Savestate.LoadSave(wrap);
 
 	Debugger.LoadSave(wrap);
 	Trace.LoadSave(wrap);

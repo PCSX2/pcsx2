@@ -32,9 +32,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-272</y>
         <width>790</width>
-        <height>765</height>
+        <height>997</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -48,7 +48,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="disclaimerLabel">
          <property name="text">
           <string>Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.</string>
          </property>
@@ -58,13 +58,13 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="eeSettings">
          <property name="title">
           <string extracomment="Emotion Engine = Commercial name of one of PS2's processors. Leave as-is unless there's an official name (like for Japanese).">EmotionEngine (MIPS-IV)</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_11">
+           <widget class="QLabel" name="eeRoundingLabel">
             <property name="text">
              <string extracomment="Rounding refers here to the mathematical term.">Rounding Mode:</string>
             </property>
@@ -95,7 +95,7 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_13">
+           <widget class="QLabel" name="eeDivRoundingLabel">
             <property name="text">
              <string extracomment="Rounding refers here to the mathematical term.">Division Rounding Mode:</string>
             </property>
@@ -126,7 +126,7 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="label_12">
+           <widget class="QLabel" name="eeClampLabel">
             <property name="text">
              <string extracomment="Clamping: Forcing out of bounds things in bounds by changing them to the closest possible value.  In this case, this refers to clamping large PS2 floating point values (which map to infinity or NaN in PCs' IEEE754 floats) to non-infinite ones.">Clamping Mode:</string>
             </property>
@@ -157,7 +157,7 @@
            </widget>
           </item>
           <item row="3" column="0" colspan="2">
-           <layout class="QGridLayout" name="gridLayout_4">
+           <layout class="QGridLayout" name="eeSettingsMisc">
             <item row="1" column="0">
              <widget class="QCheckBox" name="eeWaitLoopDetection">
               <property name="text">
@@ -213,13 +213,13 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="vuSettings">
          <property name="title">
           <string extracomment="Vector Unit/VU: refers to two of PS2's processors. Do not translate the full text or do so as a comment. Leave the acronym as-is.">Vector Units (VU)</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
           <item row="2" column="0">
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="vu1RoundingLabel">
             <property name="text">
              <string>VU1 Rounding Mode:</string>
             </property>
@@ -250,7 +250,7 @@
            </widget>
           </item>
           <item row="4" column="0" colspan="2">
-           <layout class="QGridLayout" name="gridLayout_6">
+           <layout class="QGridLayout" name="vuSettingsLayout">
             <item row="1" column="0">
              <widget class="QCheckBox" name="vuFlagHack">
               <property name="text">
@@ -306,21 +306,21 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_5">
+           <widget class="QLabel" name="vu0ClampLabel">
             <property name="text">
              <string>VU0 Clamping Mode:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="0">
-           <widget class="QLabel" name="label_6">
+           <widget class="QLabel" name="vu0RoundingLabel">
             <property name="text">
              <string>VU0 Rounding Mode:</string>
             </property>
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="label_4">
+           <widget class="QLabel" name="vu1ClampLabel">
             <property name="text">
              <string>VU1 Clamping Mode:</string>
             </property>
@@ -378,7 +378,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_3">
+        <widget class="QGroupBox" name="iopSettings">
          <property name="title">
           <string>I/O Processor (IOP, MIPS-I)</string>
          </property>
@@ -394,7 +394,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_4">
+        <widget class="QGroupBox" name="gameSettings">
          <property name="title">
           <string>Game Settings</string>
          </property>
@@ -417,24 +417,24 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="basicGroupBox">
+        <widget class="QGroupBox" name="framerateControlSettings">
          <property name="title">
           <string>Frame Rate Control</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_5">
+         <layout class="QGridLayout" name="framerateControlLayout">
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="palFrameRate">
             <property name="suffix">
              <string extracomment="hz=Hertz, as in the measuring unit. Shown after the corresponding number. Those languages who'd need to remove the space or do something in between should do so."> hz</string>
             </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
             <property name="minimum">
-             <double>10.0</double>
+             <double>10.000000000000000</double>
             </property>
             <property name="maximum">
-             <double>300.0</double>
+             <double>300.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
             </property>
            </widget>
           </item>
@@ -443,26 +443,26 @@
             <property name="suffix">
              <string> hz</string>
             </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
             <property name="minimum">
-             <double>10.0</double>
+             <double>10.000000000000000</double>
             </property>
             <property name="maximum">
-             <double>300.0</double>
+             <double>300.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
             </property>
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_7">
+           <widget class="QLabel" name="palLabel">
             <property name="text">
              <string>PAL Frame Rate:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="0">
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="ntscLabel">
             <property name="text">
              <string>NTSC Frame Rate:</string>
             </property>
@@ -472,11 +472,82 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_5">
+        <widget class="QGroupBox" name="savestateSettings">
+         <property name="title">
+          <string>Savestate Settings</string>
+         </property>
+         <layout class="QGridLayout" name="savestateSettingsLayout">
+          <item row="1" column="0">
+           <widget class="QLabel" name="savestateCompressionMethodLabel">
+            <property name="text">
+             <string>Compression Level:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="savestateCompressionLabel">
+            <property name="text">
+             <string>Compression Method:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="savestateCompressionMethod">
+            <item>
+             <property name="text">
+              <string>Uncompressed</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Deflate64</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Zstandard</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>LZMA2</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="savestateCompressionLevel">
+            <item>
+             <property name="text">
+              <string>Low (Fast)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Medium (Recommended)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>High</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Very High (Slow, Not Recommended)</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="pineSettings">
          <property name="title">
           <string>PINE Settings</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_8">
+         <layout class="QGridLayout" name="pineSettingsLayout">
           <item row="1" column="1">
            <widget class="QLineEdit" name="pineSlot">
             <property name="sizePolicy">
@@ -488,7 +559,7 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_8">
+           <widget class="QLabel" name="pineSlotLabel">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -511,7 +582,7 @@
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_2">
+        <spacer name="verticalSpacerBottom">
          <property name="orientation">
           <enum>Qt::Orientation::Vertical</enum>
          </property>
