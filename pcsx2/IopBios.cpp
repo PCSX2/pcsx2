@@ -153,9 +153,13 @@ namespace R3000A
 	// the directory is considered non-existant
 	static __fi std::string clean_path(const std::string& path)
 	{
+#ifndef _WIN32
 		std::string ret = path;
 		std::replace(ret.begin(), ret.end(), '\\', '/');
 		return ret;
+#else // This function will cause problems with Windows WSL / device paths where forward slashes are required
+		return path;
+#endif
 	}
 
 	static int host_stat(const std::string& path, fio_stat_t* host_stats, fio_stat_flags& stat = ioman_stat)
