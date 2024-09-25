@@ -914,9 +914,51 @@ static bool SaveState_ReadScreenshot(zip_t* zf, u32* out_width, u32* out_height,
 // --------------------------------------------------------------------------------------
 static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateScreenshotData* screenshot)
 {
-	// use zstd compression, it can be 10x+ faster for saving.
-	const u32 compression = EmuConfig.SavestateZstdCompression ? ZIP_CM_ZSTD : ZIP_CM_DEFLATE;
-	const u32 compression_level = 0;
+	u32 compression;
+	u32 compression_level;
+
+	if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::Zstandard)
+	{
+		compression = ZIP_CM_ZSTD;
+
+		if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Low)
+			compression_level = 1;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Medium)
+			compression_level = 3;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::High)
+			compression_level = 10;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::VeryHigh)
+			compression_level = 22;
+	}
+	else if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::Deflate64)
+	{
+		compression = ZIP_CM_DEFLATE64;
+		if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Low)
+			compression_level = 1;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Medium)
+			compression_level = 3;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::High)
+			compression_level = 7;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::VeryHigh)
+			compression_level = 9;
+	}
+	else if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::LZMA2)
+	{
+		compression = ZIP_CM_LZMA2;
+		if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Low)
+			compression_level = 1;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Medium)
+			compression_level = 3;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::High)
+			compression_level = 7;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::VeryHigh)
+			compression_level = 9;
+	}
+	else if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::Uncompressed)
+	{
+		compression = ZIP_CM_STORE;
+		compression_level = 0;
+	}
 
 	// version indicator
 	{
@@ -949,7 +991,7 @@ static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateSc
 			return false;
 		}
 
-		zip_set_file_compression(zf, fi, ZIP_CM_STORE, 0);
+		zip_set_file_compression(zf, fi, compression, compression_level);
 	}
 
 	const uint listlen = srclist->GetLength();
