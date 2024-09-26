@@ -9105,67 +9105,67 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="435"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="441"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="447"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="453"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="454"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="460"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="525"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="531"/>
         <source>Host GPU device encountered an error and was recovered. This may have broken rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="630"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="636"/>
         <source>CAS is not available, your graphics driver does not support the required functionality.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="685"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="691"/>
         <source>with no compression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="692"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="698"/>
         <source>with LZMA compression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="699"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="705"/>
         <source>with Zstandard compression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="705"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="711"/>
         <source>Saving {0} GS dump {1} to &apos;{2}&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="706"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="712"/>
         <source>single frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="706"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="712"/>
         <source>multi-frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="726"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="732"/>
         <source>Failed to render/download screenshot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="737"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="743"/>
         <source>Saved GS dump to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10510,31 +10510,31 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.ui" line="94"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="125"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="130"/>
         <source>Auto Standard (4:3 Interlaced / 3:2 Progressive)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.ui" line="99"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="130"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="135"/>
         <source>Standard (4:3)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.ui" line="104"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="135"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="140"/>
         <source>Widescreen (16:9)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="112"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="117"/>
         <source>FMV Aspect Ratio Override:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="120"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1028"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1090"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="125"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1038"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1100"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="47"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="453"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="526"/>
@@ -10544,11 +10544,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="151"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="510"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1116"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2174"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2235"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="161"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="520"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1126"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2184"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2245"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="22"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="468"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="520"/>
@@ -10557,89 +10557,89 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="161"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="171"/>
         <source>Weave (Top Field First, Sawtooth)</source>
         <extracomment>Weave: deinterlacing method that can be translated or left as-is in English. Sawtooth: refers to the jagged effect weave deinterlacing has on motion.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="166"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="176"/>
         <source>Weave (Bottom Field First, Sawtooth)</source>
         <extracomment>Weave: deinterlacing method that can be translated or left as-is in English. Sawtooth: refers to the jagged effect weave deinterlacing has on motion.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="171"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="181"/>
         <source>Bob (Top Field First, Full Frames)</source>
         <extracomment>Bob: deinterlacing method that refers to the way it makes video look like it&apos;s bobbing up and down.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="176"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="186"/>
         <source>Bob (Bottom Field First, Full Frames)</source>
         <extracomment>Bob: deinterlacing method that refers to the way it makes video look like it&apos;s bobbing up and down.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="181"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="191"/>
         <source>Blend (Top Field First, Merge 2 Fields)</source>
         <extracomment>Blend: deinterlacing method that blends the colors of the two frames, can be translated or left as-is in English.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="186"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="196"/>
         <source>Blend (Bottom Field First, Merge 2 Fields)</source>
         <extracomment>Blend: deinterlacing method that blends the colors of the two frames, can be translated or left as-is in English.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="191"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="201"/>
         <source>Adaptive (Top Field First, Similar to Bob + Weave)</source>
         <extracomment>Adaptive: deinterlacing method that should be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="196"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="206"/>
         <source>Adaptive (Bottom Field First, Similar to Bob + Weave)</source>
         <extracomment>Adaptive: deinterlacing method that should be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="204"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="214"/>
         <source>Bilinear Filtering:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="212"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1582"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1608"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2193"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="222"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1592"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1618"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2203"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="217"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="227"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="440"/>
         <source>Bilinear (Smooth)</source>
         <extracomment>Smooth: Refers to the texture clarity.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="222"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="232"/>
         <source>Bilinear (Sharp)</source>
         <extracomment>Sharp: Refers to the texture clarity.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="299"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="309"/>
         <source>Vertical Stretch:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="284"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="306"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1366"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1561"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="294"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="316"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1376"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1571"/>
         <source>%</source>
         <extracomment>Percentage sign that shows next to a value. You might want to add a space before if your language requires it.
 ----------
@@ -10647,50 +10647,50 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="319"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="329"/>
         <source>Crop:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="328"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="338"/>
         <source>Left:</source>
         <extracomment>Warning: short space constraints. Abbreviate if necessary.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="335"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="352"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="369"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="386"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="345"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="362"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="379"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="396"/>
         <source>px</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="345"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="355"/>
         <source>Top:</source>
         <extracomment>Warning: short space constraints. Abbreviate if necessary.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="362"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="372"/>
         <source>Right:</source>
         <extracomment>Warning: short space constraints. Abbreviate if necessary.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="379"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="389"/>
         <source>Bottom:</source>
         <extracomment>Warning: short space constraints. Abbreviate if necessary.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="438"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="448"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
         <source>Screen Offsets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="445"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="455"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="449"/>
         <source>Show Overscan</source>
         <translation type="unfinished"></translation>
@@ -10706,24 +10706,24 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="421"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="431"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
         <source>Anti-Blur</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="424"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="434"/>
         <source>Ctrl+S</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="431"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="441"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="437"/>
         <source>Disable Interlace Offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="230"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="240"/>
         <source>Screenshot Size:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10738,246 +10738,246 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="259"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="269"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="474"/>
         <source>PNG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="264"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="274"/>
         <source>JPEG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="277"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="287"/>
         <source>Quality:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="455"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="634"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="465"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="644"/>
         <source>Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="461"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="471"/>
         <source>Internal Resolution:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="551"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1064"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="561"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1074"/>
         <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="471"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="640"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="481"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="650"/>
         <source>Texture Filtering:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="479"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="660"/>
-        <source>Nearest</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="484"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="665"/>
-        <source>Bilinear (Forced)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.ui" line="489"/>
         <location filename="../Settings/GraphicsSettingsWidget.ui" line="670"/>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="513"/>
-        <source>Bilinear (PS2)</source>
+        <source>Nearest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.ui" line="494"/>
         <location filename="../Settings/GraphicsSettingsWidget.ui" line="675"/>
+        <source>Bilinear (Forced)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="499"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="680"/>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="513"/>
+        <source>Bilinear (PS2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="504"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="685"/>
         <source>Bilinear (Forced excluding sprite)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="502"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="512"/>
         <source>Trilinear Filtering:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="515"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="525"/>
         <source>Off (None)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="520"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="530"/>
         <source>Trilinear (PS2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="525"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="535"/>
         <source>Trilinear (Forced)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="533"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="543"/>
         <source>Anisotropic Filtering:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="543"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="553"/>
         <source>Dithering:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="556"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="566"/>
         <source>Scaled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="561"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="571"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="529"/>
         <source>Unscaled (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="574"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="584"/>
         <source>Blending Accuracy:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="582"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="592"/>
         <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="587"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="597"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
         <source>Basic (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="592"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="602"/>
         <source>Medium</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="597"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="607"/>
         <source>High</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="602"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="612"/>
         <source>Full (Slow)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="607"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="617"/>
         <source>Maximum (Very Slow)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2211"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2221"/>
         <source>Texture Preloading:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2198"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2208"/>
         <source>Partial</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2203"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2213"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="542"/>
         <source>Full (Hash Cache)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="683"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="693"/>
         <source>Software Rendering Threads:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="921"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="931"/>
         <source>Skip Draw Range:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="948"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="958"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="597"/>
         <source>Disable Depth Conversion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="983"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="993"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="546"/>
         <source>GPU Palette Conversion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="617"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="627"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="550"/>
         <source>Manual Hardware Renderer Fixes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2150"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2160"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="559"/>
         <source>Spin GPU During Readbacks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2157"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2167"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="555"/>
         <source>Spin CPU During Readbacks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="690"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="700"/>
         <source> threads</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="624"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="699"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="634"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="709"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="510"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="573"/>
         <source>Mipmapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="706"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="716"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="568"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="593"/>
         <source>Auto Flush</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="716"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="726"/>
         <source>Hardware Fixes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2240"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2250"/>
         <source>Force Disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2245"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2255"/>
         <source>Force Enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="722"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="732"/>
         <source>CPU Sprite Render Size:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="732"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="818"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="825"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="742"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="828"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="835"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="578"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="581"/>
         <source>0 (Disabled)</source>
@@ -10985,63 +10985,63 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="737"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="747"/>
         <source>1 (64 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="742"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="752"/>
         <source>2 (128 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="747"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="757"/>
         <source>3 (192 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="752"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="762"/>
         <source>4 (256 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="757"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="767"/>
         <source>5 (320 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="762"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="772"/>
         <source>6 (384 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="767"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="777"/>
         <source>7 (448 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="772"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="782"/>
         <source>8 (512 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="777"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="787"/>
         <source>9 (576 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="782"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="792"/>
         <source>10 (640 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="962"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="972"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="601"/>
         <source>Disable Safe Features</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="976"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="986"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="618"/>
         <source>Preload Frame Data</source>
         <translation type="unfinished"></translation>
@@ -11052,443 +11052,449 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="830"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="840"/>
         <source>1 (Normal)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="835"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="845"/>
         <source>2 (Aggressive)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="811"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="821"/>
         <source>Software CLUT Render:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="843"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="853"/>
         <source>GPU Target CLUT:</source>
         <extracomment>CLUT: Color Look Up Table, often referred to as a palette in non-PS2 things.  GPU Target CLUT: GPU handling of when a game uses data from a render target as a CLUT.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="851"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="877"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="903"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="861"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="887"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="913"/>
         <source>Disabled (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="856"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="866"/>
         <source>Enabled (Exact Match)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="861"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="871"/>
         <source>Enabled (Check Inside Target)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1014"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1024"/>
         <source>Upscaling Fixes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1020"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1030"/>
         <source>Half Pixel Offset:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1033"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1043"/>
         <source>Normal (Vertex)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1038"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1048"/>
         <source>Special (Texture)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1043"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1053"/>
         <source>Special (Texture - Aggressive)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1082"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1092"/>
         <source>Round Sprite:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1095"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1105"/>
         <source>Half</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1100"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1110"/>
         <source>Full</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1134"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1144"/>
         <source>Texture Offsets:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1143"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1153"/>
         <source>X:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1157"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1167"/>
         <source>Y:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1189"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1199"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
         <source>Merge Sprite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1175"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1185"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="652"/>
         <source>Align Sprite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="143"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="153"/>
         <source>Deinterlacing:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="156"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="166"/>
         <source>No Deinterlacing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="407"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="417"/>
         <source>Apply Widescreen Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="414"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="424"/>
         <source>Apply No-Interlacing Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="240"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="250"/>
         <source>Window Resolution (Aspect Corrected)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="245"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="255"/>
         <source>Internal Resolution (Aspect Corrected)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="250"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="260"/>
         <source>Internal Resolution (No Aspect Correction)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="269"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="279"/>
         <source>WebP</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="566"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="576"/>
         <source>Force 32bit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="791"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="801"/>
         <source>Sprites Only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="796"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="806"/>
         <source>Sprites/Triangles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="801"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="811"/>
         <source>Blended Sprites/Triangles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="869"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="879"/>
         <source>Auto Flush:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="882"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="892"/>
         <source>Enabled (Sprites Only)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="887"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="897"/>
         <source>Enabled (All Primitives)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="895"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="905"/>
         <source>Texture Inside RT:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="908"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="918"/>
         <source>Inside Target</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="913"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="923"/>
         <source>Merge Targets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="955"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="965"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="610"/>
         <source>Disable Partial Source Invalidation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="969"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="979"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="624"/>
         <source>Read Targets When Closing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="997"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1007"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
         <source>Estimate Texture Region</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1004"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1014"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="608"/>
         <source>Disable Render Fixes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1048"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1058"/>
         <source>Align To Native</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1182"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1192"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="666"/>
         <source>Unscaled Palette Texture Draws</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1108"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1118"/>
         <source>Bilinear Dirty Upscale:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1121"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1131"/>
         <source>Force Bilinear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1126"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1136"/>
         <source>Force Nearest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1206"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1216"/>
         <source>Texture Replacement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1263"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1273"/>
         <source>Search Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1272"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2011"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1282"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2021"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1279"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2018"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1289"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2028"/>
         <source>Open...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1286"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2025"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1296"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2035"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1293"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1303"/>
         <source>PCSX2 will dump and load texture replacements from this directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1212"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1222"/>
         <source>Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1239"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1249"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="672"/>
         <source>Dump Textures</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1246"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1256"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="674"/>
         <source>Dump Mipmaps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1253"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1263"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="676"/>
         <source>Dump FMV Textures</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1232"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1242"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
         <source>Load Textures</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1056"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="109"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="145"/>
+        <source>Native (10:7)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1066"/>
         <source>Native Scaling</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1069"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1079"/>
         <source>Normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1074"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1084"/>
         <source>Aggressive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1196"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1206"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="656"/>
         <source>Force Even Sprite Position</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1218"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1228"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
         <source>Precache Textures</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1317"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1327"/>
         <source>Post-Processing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1323"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1333"/>
         <source>Sharpening/Anti-Aliasing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1329"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1339"/>
         <source>Contrast Adaptive Sharpening:</source>
         <extracomment>You might find an official translation for this on AMD&apos;s website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1339"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1407"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1349"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1417"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="688"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
         <source>None (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1344"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1354"/>
         <source>Sharpen Only (Internal Resolution)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1349"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1359"/>
         <source>Sharpen and Resize (Display Resolution)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1359"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1369"/>
         <source>Sharpness:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1383"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1393"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="697"/>
         <source>FXAA</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1393"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1403"/>
         <source>Filters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1399"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1409"/>
         <source>TV Shader:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1412"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1422"/>
         <source>Scanline Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1417"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1427"/>
         <source>Diagonal Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1422"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1432"/>
         <source>Triangular Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1427"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1437"/>
         <source>Wave Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1432"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1442"/>
         <source>Lottes CRT</source>
         <extracomment>Lottes = Timothy Lottes, the creator of the shader filter. Leave as-is. CRT= Cathode Ray Tube, an old type of television technology.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1437"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1447"/>
         <source>4xRGSS downsampling (4x Rotated Grid SuperSampling)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1442"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1452"/>
         <source>NxAGSS downsampling (Nx Automatic Grid SuperSampling)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1450"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1460"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
         <source>Shade Boost</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1472"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1482"/>
         <source>Brightness:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1489"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1499"/>
         <source>Contrast:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11498,298 +11504,298 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1542"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1552"/>
         <source>OSD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1548"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1558"/>
         <source>On-Screen Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1554"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1564"/>
         <source>OSD Scale:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1691"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1701"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="739"/>
         <source>Show Indicators</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1726"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1736"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
         <source>Show Resolution</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1649"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1659"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="745"/>
         <source>Show Inputs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1635"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1645"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="734"/>
         <source>Show GPU Usage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1677"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1687"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="742"/>
         <source>Show Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1712"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1722"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="720"/>
         <source>Show FPS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2122"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2132"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="829"/>
         <source>Disable Mailbox Presentation</source>
         <extracomment>Mailbox Presentation: a type of graphics-rendering technique that has not been exposed to the public that often, so chances are you will need to keep the word mailbox in English. It does not have anything to do with postal mailboxes or email inboxes/outboxes.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2143"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2153"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="833"/>
         <source>Extended Upscaling Multipliers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2262"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2272"/>
         <source>Disable Shader Cache</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2269"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2279"/>
         <source>Disable Vertex Shader Expand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1705"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1715"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="736"/>
         <source>Show Statistics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1225"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1235"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
         <source>Asynchronous Texture Loading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1506"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1516"/>
         <source>Saturation:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1698"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1708"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="732"/>
         <source>Show CPU Usage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1684"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1694"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="763"/>
         <source>Warn About Unsafe Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1759"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1769"/>
         <source>Recording</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2000"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2010"/>
         <source>Video Dumping Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1768"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1778"/>
         <source>Capture Setup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1574"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1584"/>
         <source>OSD Messages Position:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1587"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1597"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
         <source>Left (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1600"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1610"/>
         <source>OSD Performance Position:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1618"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1628"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
         <source>Right (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1670"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1680"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="748"/>
         <source>Show Frame Times</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1719"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1729"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="751"/>
         <source>Show PCSX2 Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1663"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1673"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="760"/>
         <source>Show Hardware Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1642"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1652"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="757"/>
         <source>Show Input Recording Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1628"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1638"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="754"/>
         <source>Show Video Capture Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1733"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1743"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
         <source>Show VPS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1765"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1775"/>
         <source>capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1774"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1784"/>
         <source>Container:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1807"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1875"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1817"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1885"/>
         <source>Codec:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1840"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1975"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1850"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1985"/>
         <source>Extra Arguments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1853"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1863"/>
         <source>Capture Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1885"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1895"/>
         <source>Format:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1918"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1928"/>
         <source>Resolution:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1943"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1953"/>
         <source>x</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1966"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1976"/>
         <source>Auto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1988"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1998"/>
         <source>Capture Video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2051"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2061"/>
         <source>Advanced</source>
         <extracomment>Advanced here refers to the advanced graphics options.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2057"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2067"/>
         <source>Advanced Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2063"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2073"/>
         <source>Hardware Download Mode:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2071"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2081"/>
         <source>Accurate (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2076"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2086"/>
         <source>Disable Readbacks (Synchronize GS Thread)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2081"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2091"/>
         <source>Unsynchronized (Non-Deterministic)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2086"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2096"/>
         <source>Disabled (Ignore Transfers)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2094"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2104"/>
         <source>GS Dump Compression:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2102"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2112"/>
         <source>Uncompressed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2107"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2117"/>
         <source>LZMA (xz)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2112"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2122"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="809"/>
         <source>Zstandard (zst)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2136"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2146"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="823"/>
         <source>Skip Presenting Duplicate Frames</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2129"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2139"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="813"/>
         <source>Use Blit Swap Chain</source>
         <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft&apos;s Terminology Portal.
@@ -11799,56 +11805,56 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1817"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1895"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1827"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1905"/>
         <source>Bitrate:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1824"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1902"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1834"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1912"/>
         <source> kbps</source>
         <extracomment>Unit that will appear next to a number. Alter the space or whatever is needed before the text depending on your language.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2166"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2176"/>
         <source>Allow Exclusive Fullscreen:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2179"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2189"/>
         <source>Disallowed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2184"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2194"/>
         <source>Allowed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2221"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2231"/>
         <source>Debugging Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2227"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2237"/>
         <source>Override Texture Barriers:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2276"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2286"/>
         <source>Use Debug Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1656"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1666"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="726"/>
         <source>Show Speed Percentages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2255"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2265"/>
         <source>Disable Framebuffer Fetch</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12059,7 +12065,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="990"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1000"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="614"/>
         <source>Framebuffer Conversion</source>
         <translation type="unfinished"></translation>
@@ -12521,7 +12527,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="400"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="410"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="460"/>
         <source>Integer Scaling</source>
         <translation type="unfinished"></translation>
@@ -12621,7 +12627,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1613"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1623"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="489"/>
         <source>Left</source>
         <translation type="unfinished"></translation>
@@ -12650,7 +12656,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1592"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1602"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="495"/>
         <source>Right</source>
         <translation type="unfinished"></translation>
@@ -17192,12 +17198,12 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>Pcsx2Config</name>
     <message>
-        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1029"/>
+        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1031"/>
         <source>Disabled (Noisy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1030"/>
+        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1032"/>
         <source>TimeStretch (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20635,42 +20641,42 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>VMManager</name>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1859"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1862"/>
         <source>Failed to back up old save state {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1844"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1847"/>
         <source>Failed to save save state: {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1013"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1016"/>
         <source>PS2 BIOS ({})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1074"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1077"/>
         <source>Unknown Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1254"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1257"/>
         <source>CDVD precaching was cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1260"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1263"/>
         <source>CDVD precaching failed: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1353"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1356"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1354"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1357"/>
         <source>PCSX2 requires a PS2 BIOS in order to run.
 
 For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn&apos;t count).
@@ -20681,265 +20687,265 @@ Please consult the FAQs and Guides for further instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1445"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1448"/>
         <source>Resuming state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1450"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1453"/>
         <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1818"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1821"/>
         <source>Failed to load save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1891"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1894"/>
         <source>State saved to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1898"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1901"/>
         <source>Failed to save save state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1966"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2003"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1969"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2006"/>
         <source>Loading state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1977"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1980"/>
         <source>Failed to load state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1996"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1999"/>
         <source>There is no save state in slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2014"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2017"/>
         <source>Failed to load state from slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2020"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2023"/>
         <source>Loading state from slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2029"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2032"/>
         <source>Failed to save state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2046"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2049"/>
         <source>Failed to save state to slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2053"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2056"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2219"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2222"/>
         <source>Frame advancing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2247"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2250"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2253"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2256"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2262"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2265"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2271"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2274"/>
         <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3056"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3059"/>
         <source>Cheats have been disabled due to achievements hardcore mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3109"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3112"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3113"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3116"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3123"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3126"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3163"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3166"/>
         <source>Mipmapping is disabled. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3169"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3172"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3632"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3635"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3128"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3131"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3133"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3136"/>
         <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3138"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3141"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3175"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3178"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3181"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3184"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3186"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3189"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3191"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3194"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3198"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3201"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3203"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3206"/>
         <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3208"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3211"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3213"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3216"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3217"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3220"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3219"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3222"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3238"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3241"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3243"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3246"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3248"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3251"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3253"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3256"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3258"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3261"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3263"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3266"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3268"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3271"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3271"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3274"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3275"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3278"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3280"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3283"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3143"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3146"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3148"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3151"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3153"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3156"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3158"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3161"/>
         <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
         <translation type="unfinished"></translation>
     </message>
