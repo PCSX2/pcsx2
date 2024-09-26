@@ -171,7 +171,7 @@ public:
 			return m_cpu->getLO()._u64[0];
 		if (referenceIndex & REF_INDEX_IS_OPSL)
 		{
-			const u32 OP = memRead32(m_cpu->getPC());
+			const u32 OP = m_cpu->read32(m_cpu->getPC());
 			const R5900::OPCODE& opcode = R5900::GetInstruction(OP);
 			if (opcode.flags & IS_MEMORY)
 			{
@@ -393,7 +393,11 @@ u32 R5900DebugInterface::read8(u32 address)
 	if (!isValidAddress(address))
 		return -1;
 
-	return memRead8(address);
+	u8 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u8)))
+		return -1;
+
+	return value;
 }
 
 u32 R5900DebugInterface::read8(u32 address, bool& valid)
@@ -401,7 +405,11 @@ u32 R5900DebugInterface::read8(u32 address, bool& valid)
 	if (!(valid = isValidAddress(address)))
 		return -1;
 
-	return memRead8(address);
+	u8 value;
+	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u8))))
+		return -1;
+
+	return value;
 }
 
 
@@ -410,7 +418,11 @@ u32 R5900DebugInterface::read16(u32 address)
 	if (!isValidAddress(address) || address % 2)
 		return -1;
 
-	return memRead16(address);
+	u16 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u16)))
+		return -1;
+
+	return static_cast<u32>(value);
 }
 
 u32 R5900DebugInterface::read16(u32 address, bool& valid)
@@ -418,7 +430,11 @@ u32 R5900DebugInterface::read16(u32 address, bool& valid)
 	if (!(valid = (isValidAddress(address) || address % 2)))
 		return -1;
 
-	return memRead16(address);
+	u16 value;
+	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u16))))
+		return -1;
+
+	return static_cast<u32>(value);
 }
 
 u32 R5900DebugInterface::read32(u32 address)
@@ -426,7 +442,11 @@ u32 R5900DebugInterface::read32(u32 address)
 	if (!isValidAddress(address) || address % 4)
 		return -1;
 
-	return memRead32(address);
+	u32 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u32)))
+		return -1;
+
+	return value;
 }
 
 u32 R5900DebugInterface::read32(u32 address, bool& valid)
@@ -434,7 +454,11 @@ u32 R5900DebugInterface::read32(u32 address, bool& valid)
 	if (!(valid = (isValidAddress(address) || address % 4)))
 		return -1;
 
-	return memRead32(address);
+	u32 value;
+	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u32))))
+		return -1;
+
+	return value;
 }
 
 u64 R5900DebugInterface::read64(u32 address)
@@ -442,7 +466,11 @@ u64 R5900DebugInterface::read64(u32 address)
 	if (!isValidAddress(address) || address % 8)
 		return -1;
 
-	return memRead64(address);
+	u64 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u64)))
+		return -1;
+
+	return value;
 }
 
 u64 R5900DebugInterface::read64(u32 address, bool& valid)
@@ -450,7 +478,11 @@ u64 R5900DebugInterface::read64(u32 address, bool& valid)
 	if (!(valid = (isValidAddress(address) || address % 8)))
 		return -1;
 
-	return memRead64(address);
+	u64 value;
+	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u64))))
+		return -1;
+
+	return value;
 }
 
 u128 R5900DebugInterface::read128(u32 address)
@@ -462,7 +494,11 @@ u128 R5900DebugInterface::read128(u32 address)
 		return result;
 	}
 
-	memRead128(address, result);
+	if (!vtlb_memSafeReadBytes(address, &result, sizeof(u128)))
+	{
+		result.hi = result.lo = -1;
+	}
+
 	return result;
 }
 
@@ -471,7 +507,7 @@ void R5900DebugInterface::write8(u32 address, u8 value)
 	if (!isValidAddress(address))
 		return;
 
-	memWrite8(address, value);
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u8));
 }
 
 void R5900DebugInterface::write16(u32 address, u16 value)
@@ -479,7 +515,7 @@ void R5900DebugInterface::write16(u32 address, u16 value)
 	if (!isValidAddress(address))
 		return;
 
-	memWrite16(address, value);
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u16));
 }
 
 void R5900DebugInterface::write32(u32 address, u32 value)
@@ -487,7 +523,7 @@ void R5900DebugInterface::write32(u32 address, u32 value)
 	if (!isValidAddress(address))
 		return;
 
-	memWrite32(address, value);
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u32));
 }
 
 void R5900DebugInterface::write64(u32 address, u64 value)
@@ -495,7 +531,7 @@ void R5900DebugInterface::write64(u32 address, u64 value)
 	if (!isValidAddress(address))
 		return;
 
-	memWrite64(address, value);
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u64));
 }
 
 void R5900DebugInterface::write128(u32 address, u128 value)
@@ -503,7 +539,7 @@ void R5900DebugInterface::write128(u32 address, u128 value)
 	if (!isValidAddress(address))
 		return;
 
-	memWrite128(address, value);
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u128));
 }
 
 int R5900DebugInterface::getRegisterCategoryCount()

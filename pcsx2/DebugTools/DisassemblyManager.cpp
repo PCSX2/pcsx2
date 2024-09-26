@@ -23,7 +23,7 @@ static u32 computeHash(u32 address, u32 size)
 	u32 hash = 0xBACD7814;
 	while (address < end)
 	{
-		hash += memRead32(address);
+		hash += r5900Debug.read32(address);
 		address += 4;
 	}
 	return hash;
@@ -918,7 +918,7 @@ void DisassemblyData::createLines()
 		bool inString = false;
 		while (pos < end)
 		{
-			u8 b = memRead8(pos++);
+			u8 b = r5900Debug.read8(pos++);
 			if (b >= 0x20 && b <= 0x7F)
 			{
 				if (currentLine.size()+1 >= maxChars)
@@ -995,18 +995,18 @@ void DisassemblyData::createLines()
 			switch (type)
 			{
 			case DATATYPE_BYTE:
-				value = memRead8(pos);
+				value = cpu->read8(pos);
 				std::snprintf(buffer,std::size(buffer),"0x%02X",value);
 				pos++;
 				break;
 			case DATATYPE_HALFWORD:
-				value = memRead16(pos);
+				value = cpu->read16(pos);
 				std::snprintf(buffer,std::size(buffer),"0x%04X",value);
 				pos += 2;
 				break;
 			case DATATYPE_WORD:
 				{
-					value = memRead32(pos);
+					value = cpu->read32(pos);
 					const std::string label = cpu->GetSymbolGuardian().SymbolStartingAtAddress(value).name;
 					if (!label.empty())
 						std::snprintf(buffer,std::size(buffer),"%s",label.c_str());
