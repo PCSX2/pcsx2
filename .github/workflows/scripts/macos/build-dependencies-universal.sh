@@ -40,15 +40,15 @@ fi
 
 FREETYPE=2.13.2
 HARFBUZZ=8.3.1
-SDL=SDL2-2.30.3
-ZSTD=1.5.5
+SDL=SDL2-2.30.8
+ZSTD=1.5.6
 LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
 LIBPNG=1.6.43
 LIBJPEG=9f
-LIBWEBP=1.3.2
+LIBWEBP=1.4.0
 FFMPEG=6.0
-MOLTENVK=1.2.8
-QT=6.7.1
+MOLTENVK=1.2.9
+QT=6.7.2
 
 SHADERC=2024.1
 SHADERC_GLSLANG=142052fa30f9eca191aa9dcf65359fcaed09eeec
@@ -76,19 +76,19 @@ CMAKE_ARCH_UNIVERSAL=-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
 cat > SHASUMS <<EOF
 12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d  freetype-$FREETYPE.tar.xz
 19a54fe9596f7a47c502549fce8e8a10978c697203774008cc173f8360b19a9a  harfbuzz-$HARFBUZZ.tar.gz
-820440072f8f5b50188c1dae104f2ad25984de268785be40c41a099a510f0aec  $SDL.tar.gz
-9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4  zstd-$ZSTD.tar.gz
+380c295ea76b9bd72d90075793971c8bcb232ba0a69a9b14da4ae8f603350058  $SDL.tar.gz
+8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1  zstd-$ZSTD.tar.gz
 0728800155f3ed0a0c87e03addbd30ecbe374f7b080678bbca1506051d50dec3  $LZ4.tar.gz
 6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c  libpng-$LIBPNG.tar.xz
-2a499607df669e40258e53d0ade8035ba4ec0175244869d1025d460562aa09b4  libwebp-$LIBWEBP.tar.gz
+61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5  libwebp-$LIBWEBP.tar.gz
 04705c110cb2469caa79fb71fba3d7bf834914706e9641a4589485c1f832565b  jpegsrc.v$LIBJPEG.tar.gz
 57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082  ffmpeg-$FFMPEG.tar.xz
-85beaf8abfcc54d9da0ff0257ae311abd9e7aa96e53da37e1c37d6bc04ac83cd  v$MOLTENVK.tar.gz
-b7338da1bdccb4d861e714efffaa83f174dfe37e194916bfd7ec82279a6ace19  qtbase-everywhere-src-$QT.tar.xz
-a733b98f771064d000476b8861f822143982749448ba8abf9f1813edb8dfe79f  qtimageformats-everywhere-src-$QT.tar.xz
-3ed5b80f7228c41dd463b7a57284ed273d224d1c323c0dd78c5209635807cbce  qtsvg-everywhere-src-$QT.tar.xz
-0953cddf6248f3959279a10904892e8a98eb3e463d729a174b6fc47febd99824  qttools-everywhere-src-$QT.tar.xz
-03d71565872b0e0e7303349071df031ab0f922f6dbdd3a5ec1ade9e188e4fbf4  qttranslations-everywhere-src-$QT.tar.xz
+f415a09385030c6510a936155ce211f617c31506db5fbc563e804345f1ecf56e  v$MOLTENVK.tar.gz
+c5f22a5e10fb162895ded7de0963328e7307611c688487b5d152c9ee64767599  qtbase-everywhere-src-$QT.tar.xz
+e1a1d8785fae67d16ad0a443b01d5f32663a6b68d275f1806ebab257485ce5d6  qtimageformats-everywhere-src-$QT.tar.xz
+fb0d1286a35be3583fee34aeb5843c94719e07193bdf1d4d8b0dc14009caef01  qtsvg-everywhere-src-$QT.tar.xz
+58e855ad1b2533094726c8a425766b63a04a0eede2ed85086860e54593aa4b2a  qttools-everywhere-src-$QT.tar.xz
+9845780b5dc1b7279d57836db51aeaf2e4a1160c42be09750616f39157582ca9  qttranslations-everywhere-src-$QT.tar.xz
 eb3b5f0c16313d34f208d90c2fa1e588a23283eed63b101edd5422be6165d528  shaderc-$SHADERC.tar.gz
 aa27e4454ce631c5a17924ce0624eac736da19fc6f5a2ab15a6c58da7b36950f  shaderc-glslang-$SHADERC_GLSLANG.tar.gz
 5d866ce34a4b6908e262e5ebfffc0a5e11dd411640b5f24c85a80ad44c0d4697  shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz
@@ -330,20 +330,6 @@ echo "Installing Qt Tools..."
 rm -fr "qttools-everywhere-src-$QT"
 tar xf "qttools-everywhere-src-$QT.tar.xz"
 cd "qttools-everywhere-src-$QT"
-# Linguist relies on a library in the Designer target, which takes 5-7 minutes to build on the CI
-# Avoid it by not building Linguist, since we only need the tools that come with it
-patch -u src/linguist/CMakeLists.txt <<EOF
---- src/linguist/CMakeLists.txt
-+++ src/linguist/CMakeLists.txt
-@@ -14,7 +14,7 @@
- add_subdirectory(lrelease-pro)
- add_subdirectory(lupdate)
- add_subdirectory(lupdate-pro)
--if(QT_FEATURE_process AND QT_FEATURE_pushbutton AND QT_FEATURE_toolbutton AND TARGET Qt::Widgets AND NOT no-png)
-+if(QT_FEATURE_process AND QT_FEATURE_pushbutton AND QT_FEATURE_toolbutton AND TARGET Qt::Widgets AND TARGET Qt::PrintSupport AND NOT no-png)
-     add_subdirectory(linguist)
- endif()
-EOF
 mkdir build
 cd build
 "$INSTALLDIR/bin/qt-configure-module" .. -- "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=OFF -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF
