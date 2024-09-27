@@ -17158,12 +17158,12 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>Patch</name>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="342"/>
+        <location filename="../../pcsx2/Patch.cpp" line="348"/>
         <source>Failed to open {}. Built-in game patches are not available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="698"/>
+        <location filename="../../pcsx2/Patch.cpp" line="710"/>
         <source>%n GameDB patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -17172,7 +17172,7 @@ Ejecting {3} and replacing it with {2}.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="705"/>
+        <location filename="../../pcsx2/Patch.cpp" line="717"/>
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -17181,7 +17181,7 @@ Ejecting {3} and replacing it with {2}.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="712"/>
+        <location filename="../../pcsx2/Patch.cpp" line="724"/>
         <source>%n cheat patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -17190,7 +17190,7 @@ Ejecting {3} and replacing it with {2}.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="727"/>
+        <location filename="../../pcsx2/Patch.cpp" line="739"/>
         <source>No cheats or patches (widescreen, compatibility or others) are found / enabled.</source>
         <translation type="unfinished"></translation>
     </message>
