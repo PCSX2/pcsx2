@@ -1,6 +1,6 @@
 /*
  zip_file_set_mtime.c -- set modification time of entry.
- Copyright (C) 2014-2022 Dieter Baron and Thomas Klausner
+ Copyright (C) 2014-2024 Dieter Baron and Thomas Klausner
 
  This file is part of libzip, a library to manipulate ZIP archives.
  The authors can be contacted at <info@libzip.org>
@@ -35,17 +35,11 @@
 
 ZIP_EXTERN int
 zip_file_set_dostime(zip_t *za, zip_uint64_t idx, zip_uint16_t dtime, zip_uint16_t ddate, zip_flags_t flags) {
-    time_t mtime;
-    mtime = _zip_d2u_time(dtime, ddate);
-    return zip_file_set_mtime(za, idx, mtime, flags);
-}
-
-ZIP_EXTERN int
-zip_file_set_mtime(zip_t *za, zip_uint64_t idx, time_t mtime, zip_flags_t flags) {
     zip_entry_t *e;
 
-    if (_zip_get_dirent(za, idx, 0, NULL) == NULL)
+    if (_zip_get_dirent(za, idx, 0, NULL) == NULL) {
         return -1;
+    }
 
     if (ZIP_IS_RDONLY(za)) {
         zip_error_set(&za->error, ZIP_ER_RDONLY, 0);
@@ -70,8 +64,20 @@ zip_file_set_mtime(zip_t *za, zip_uint64_t idx, time_t mtime, zip_flags_t flags)
         }
     }
 
-    e->changes->last_mod = mtime;
+    e->changes->last_mod.time = dtime;
+    e->changes->last_mod.date = ddate;
     e->changes->changed |= ZIP_DIRENT_LAST_MOD;
 
     return 0;
+}
+
+ZIP_EXTERN int
+zip_file_set_mtime(zip_t *za, zip_uint64_t idx, time_t mtime, zip_flags_t flags) {
+    zip_dostime_t dostime;
+
+    if (_zip_u2d_time(mtime, &dostime, &za->error) < 0) {
+        return -1;
+    }
+
+    return zip_file_set_dostime(za, idx, dostime.time, dostime.date, flags);
 }

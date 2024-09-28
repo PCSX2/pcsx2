@@ -250,6 +250,7 @@ add_library(zip STATIC
   lib/zip_unchange_archive.c
   lib/zip_unchange_data.c
   lib/zip_utf-8.c
+  lib/zip_source_get_dostime.c
   ${CMAKE_CURRENT_BINARY_DIR}/zip_err_str.c
   )
 

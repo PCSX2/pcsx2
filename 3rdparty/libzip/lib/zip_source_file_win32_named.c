@@ -1,6 +1,6 @@
 /*
   zip_source_file_win32_named.c -- source for Windows file opened by name
-  Copyright (C) 1999-2020 Dieter Baron and Thomas Klausner
+  Copyright (C) 1999-2024 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -32,6 +32,13 @@
 */
 
 #include "zip_source_file_win32.h"
+
+/* ACL is not available when targeting the games API partition */
+#if defined(WINAPI_FAMILY_PARTITION) && defined(WINAPI_PARTITION_GAMES)
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+#define ACL_UNSUPPORTED
+#endif
+#endif
 
 static zip_int64_t _zip_win32_named_op_commit_write(zip_source_file_context_t *ctx);
 static zip_int64_t _zip_win32_named_op_create_temp_output(zip_source_file_context_t *ctx);
@@ -110,7 +117,11 @@ _zip_win32_named_op_create_temp_output(zip_source_file_context_t *ctx) {
 
     if ((HANDLE)ctx->f != INVALID_HANDLE_VALUE && GetFileType((HANDLE)ctx->f) == FILE_TYPE_DISK) {
         si = DACL_SECURITY_INFORMATION | UNPROTECTED_DACL_SECURITY_INFORMATION;
+    #ifdef ACL_UNSUPPORTED
+        success = ERROR_NOT_SUPPORTED;
+    #else
         success = GetSecurityInfo((HANDLE)ctx->f, SE_FILE_OBJECT, si, NULL, NULL, &dacl, NULL, &psd);
+    #endif
         if (success == ERROR_SUCCESS) {
             sa.nLength = sizeof(SECURITY_ATTRIBUTES);
             sa.bInheritHandle = FALSE;
@@ -210,8 +221,18 @@ _zip_win32_named_op_stat(zip_source_file_context_t *ctx, zip_source_file_stat_t 
     st->regular_file = false;
 
     if (file_attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) {
-        if ((file_attributes.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE | FILE_ATTRIBUTE_REPARSE_POINT)) == 0) {
-            st->regular_file = true;
+        if ((file_attributes.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) == 0) {
+            if (file_attributes.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+                WIN32_FIND_DATA find_data;
+                /* Deduplication on Windows replaces files with reparse points;
+		 * accept them as regular files. */
+                if (file_ops->find_first_file(ctx->fname, &find_data) != INVALID_HANDLE_VALUE) {
+                    st->regular_file = (find_data.dwReserved0 == IO_REPARSE_TAG_DEDUP);
+                }
+            }
+            else {
+                st->regular_file = true;
+            }
         }
     }
 

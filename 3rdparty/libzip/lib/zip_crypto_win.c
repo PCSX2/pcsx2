@@ -1,6 +1,6 @@
 /*
   zip_crypto_win.c -- Windows Crypto API wrapper.
-  Copyright (C) 2018-2021 Dieter Baron and Thomas Klausner
+  Copyright (C) 2018-2023 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -36,9 +36,6 @@
 #include "zipint.h"
 
 #include "zip_crypto.h"
-
-#define WIN32_LEAN_AND_MEAN
-#define NOCRYPT
 
 #include <windows.h>
 

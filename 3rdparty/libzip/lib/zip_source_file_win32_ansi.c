@@ -1,6 +1,6 @@
 /*
   zip_source_file_win32_ansi.c -- source for Windows file opened by ANSI name
-  Copyright (C) 1999-2020 Dieter Baron and Thomas Klausner
+  Copyright (C) 1999-2024 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -34,24 +34,28 @@
 #include "zip_source_file_win32.h"
 
 static char *ansi_allocate_tempname(const char *name, size_t extra_chars, size_t *lengthp);
+static HANDLE __stdcall ansi_create_file(const void *name, DWORD access, DWORD share_mode, PSECURITY_ATTRIBUTES security_attributes, DWORD creation_disposition, DWORD file_attributes, HANDLE template_file);
+static BOOL __stdcall ansi_delete_file(const void *name);
+static DWORD __stdcall ansi_get_file_attributes(const void *name);
+static BOOL __stdcall ansi_get_file_attributes_ex(const void *name, GET_FILEEX_INFO_LEVELS info_level, void *information);
 static void ansi_make_tempname(char *buf, size_t len, const char *name, zip_uint32_t i);
+static BOOL __stdcall ansi_move_file(const void *from, const void *to, DWORD flags);
+static BOOL __stdcall ansi_set_file_attributes(const void *name, DWORD attributes);
+static HANDLE __stdcall ansi_find_first_file(const void *name, void* data);
 
 /* clang-format off */
-DONT_WARN_INCOMPATIBLE_FN_PTR_BEGIN
-
 zip_win32_file_operations_t ops_ansi = {
     ansi_allocate_tempname,
-    CreateFileA,
-    DeleteFileA,
-    GetFileAttributesA,
-    GetFileAttributesExA,
+    ansi_create_file,
+    ansi_delete_file,
+    ansi_get_file_attributes,
+    ansi_get_file_attributes_ex,
     ansi_make_tempname,
-    MoveFileExA,
-    SetFileAttributesA,
-    strdup
+    ansi_move_file,
+    ansi_set_file_attributes,
+    strdup,
+    ansi_find_first_file,
 };
-
-DONT_WARN_INCOMPATIBLE_FN_PTR_END
 /* clang-format on */
 
 ZIP_EXTERN zip_source_t *
@@ -80,8 +84,49 @@ ansi_allocate_tempname(const char *name, size_t extra_chars, size_t *lengthp) {
     return (char *)malloc(*lengthp);
 }
 
+static HANDLE __stdcall
+ansi_create_file(const void *name, DWORD access, DWORD share_mode, PSECURITY_ATTRIBUTES security_attributes, DWORD creation_disposition, DWORD file_attributes, HANDLE template_file)
+{
+    return CreateFileA((const char *)name, access, share_mode, security_attributes, creation_disposition, file_attributes, template_file);
+}
+
+static BOOL __stdcall
+ansi_delete_file(const void *name)
+{
+    return DeleteFileA((const char *)name);
+}
+
+static DWORD __stdcall
+ansi_get_file_attributes(const void *name)
+{
+    return GetFileAttributesA((const char *)name);
+}
+
+static BOOL __stdcall
+ansi_get_file_attributes_ex(const void *name, GET_FILEEX_INFO_LEVELS info_level, void *information)
+{
+    return GetFileAttributesExA((const char *)name, info_level, information);
+}
 
 static void
 ansi_make_tempname(char *buf, size_t len, const char *name, zip_uint32_t i) {
     snprintf_s(buf, len, "%s.%08x", name, i);
+}
+
+static BOOL __stdcall
+ansi_move_file(const void *from, const void *to, DWORD flags)
+{
+    return MoveFileExA((const char *)from, (const char *)to, flags);
+}
+
+static BOOL __stdcall
+ansi_set_file_attributes(const void *name, DWORD attributes)
+{
+    return SetFileAttributesA((const char *)name, attributes);
+}
+
+static HANDLE __stdcall
+ansi_find_first_file(const void *name, void *data)
+{
+    return FindFirstFileA((const char *)name, data); 
 }

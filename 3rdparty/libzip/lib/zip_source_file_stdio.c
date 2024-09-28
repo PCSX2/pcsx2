@@ -1,6 +1,6 @@
 /*
   zip_source_file_stdio.c -- read-only stdio file source implementation
-  Copyright (C) 2020 Dieter Baron and Thomas Klausner
+  Copyright (C) 2020-2023 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>

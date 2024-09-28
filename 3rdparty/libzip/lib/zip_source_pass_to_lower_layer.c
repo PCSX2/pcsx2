@@ -1,6 +1,6 @@
 /*
   zip_source_pass_to_lower_layer.c -- pass command to lower layer
-  Copyright (C) 2022 Dieter Baron and Thomas Klausner
+  Copyright (C) 2022-2024 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -47,11 +47,11 @@ zip_int64_t zip_source_pass_to_lower_layer(zip_source_t *src, void *data, zip_ui
 
     case ZIP_SOURCE_ACCEPT_EMPTY:
     case ZIP_SOURCE_ERROR:
+    case ZIP_SOURCE_GET_DOS_TIME:
     case ZIP_SOURCE_READ:
     case ZIP_SOURCE_SEEK:
     case ZIP_SOURCE_TELL:
         return _zip_source_call(src, data, length, command);
-
 
     case ZIP_SOURCE_BEGIN_WRITE:
     case ZIP_SOURCE_BEGIN_WRITE_CLONING:
