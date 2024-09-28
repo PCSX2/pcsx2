@@ -1181,3 +1181,84 @@ std::vector<std::unique_ptr<BiosThread>> R3000DebugInterface::GetThreadList() co
 {
 	return getIOPThreads();
 }
+
+ElfMemoryReader::ElfMemoryReader(const ccc::ElfFile& elf)
+	: m_elf(elf)
+{
+}
+
+u32 ElfMemoryReader::read8(u32 address)
+{
+	ccc::Result<u8> result = m_elf.get_object_virtual<u8>(address);
+	if (!result.success())
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read8(u32 address, bool& valid)
+{
+	ccc::Result<u8> result = m_elf.get_object_virtual<u8>(address);
+	valid = result.success();
+	if (!valid)
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read16(u32 address)
+{
+	ccc::Result<u16> result = m_elf.get_object_virtual<u16>(address);
+	if (!result.success())
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read16(u32 address, bool& valid)
+{
+	ccc::Result<u16> result = m_elf.get_object_virtual<u16>(address);
+	valid = result.success();
+	if (!valid)
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read32(u32 address)
+{
+	ccc::Result<u32> result = m_elf.get_object_virtual<u32>(address);
+	if (!result.success())
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read32(u32 address, bool& valid)
+{
+	ccc::Result<u32> result = m_elf.get_object_virtual<u32>(address);
+	valid = result.success();
+	if (!valid)
+		return 0;
+
+	return *result;
+}
+
+u64 ElfMemoryReader::read64(u32 address)
+{
+	ccc::Result<u64> result = m_elf.get_object_virtual<u64>(address);
+	if (!result.success())
+		return 0;
+
+	return *result;
+}
+
+u64 ElfMemoryReader::read64(u32 address, bool& valid)
+{
+	ccc::Result<u64> result = m_elf.get_object_virtual<u64>(address);
+	valid = result.success();
+	if (!valid)
+		return 0;
+
+	return *result;
+}

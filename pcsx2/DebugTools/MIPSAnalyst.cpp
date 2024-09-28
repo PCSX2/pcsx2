@@ -23,9 +23,9 @@
 
 namespace MIPSAnalyst
 {
-	u32 GetJumpTarget(u32 addr)
+	u32 GetJumpTarget(u32 addr, MemoryReader& reader)
 	{
-		u32 op = r5900Debug.read32(addr);
+		u32 op = reader.read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		if ((opcode.flags & IS_BRANCH) && (opcode.flags & BRANCHTYPE_MASK) == BRANCHTYPE_JUMP)
@@ -37,9 +37,9 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	u32 GetBranchTarget(u32 addr)
+	u32 GetBranchTarget(u32 addr, MemoryReader& reader)
 	{
-		u32 op = r5900Debug.read32(addr);
+		u32 op = reader.read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		int branchType = (opcode.flags & BRANCHTYPE_MASK);
@@ -49,9 +49,9 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	u32 GetBranchTargetNoRA(u32 addr)
+	u32 GetBranchTargetNoRA(u32 addr, MemoryReader& reader)
 	{
-		u32 op = r5900Debug.read32(addr);
+		u32 op = reader.read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		int branchType = (opcode.flags & BRANCHTYPE_MASK);
@@ -66,9 +66,9 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	u32 GetSureBranchTarget(u32 addr)
+	u32 GetSureBranchTarget(u32 addr, MemoryReader& reader)
 	{
-		u32 op = r5900Debug.read32(addr);
+		u32 op = reader.read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		if ((opcode.flags & IS_BRANCH) && (opcode.flags & BRANCHTYPE_MASK) == BRANCHTYPE_BRANCH)
@@ -114,7 +114,7 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	static u32 ScanAheadForJumpback(u32 fromAddr, u32 knownStart, u32 knownEnd) {
+	static u32 ScanAheadForJumpback(u32 fromAddr, u32 knownStart, u32 knownEnd, MemoryReader& reader) {
 		static const u32 MAX_AHEAD_SCAN = 0x1000;
 		// Maybe a bit high... just to make sure we don't get confused by recursive tail recursion.
 		static const u32 MAX_FUNC_SIZE = 0x20000;
@@ -133,10 +133,10 @@ namespace MIPSAnalyst
 		u32 furthestJumpbackAddr = INVALIDTARGET;
 
 		for (u32 ahead = fromAddr; ahead < fromAddr + MAX_AHEAD_SCAN; ahead += 4) {
-			u32 aheadOp = r5900Debug.read32(ahead);
-			u32 target = GetBranchTargetNoRA(ahead);
+			u32 aheadOp = reader.read32(ahead);
+			u32 target = GetBranchTargetNoRA(ahead, reader);
 			if (target == INVALIDTARGET && ((aheadOp & 0xFC000000) == 0x08000000)) {
-				target = GetJumpTarget(ahead);
+				target = GetJumpTarget(ahead, reader);
 			}
 
 			if (target != INVALIDTARGET) {
@@ -157,10 +157,10 @@ namespace MIPSAnalyst
 
 		if (closestJumpbackAddr != INVALIDTARGET && furthestJumpbackAddr == INVALIDTARGET) {
 			for (u32 behind = closestJumpbackTarget; behind < fromAddr; behind += 4) {
-				u32 behindOp = r5900Debug.read32(behind);
-				u32 target = GetBranchTargetNoRA(behind);
+				u32 behindOp = reader.read32(behind);
+				u32 target = GetBranchTargetNoRA(behind, reader);
 				if (target == INVALIDTARGET && ((behindOp & 0xFC000000) == 0x08000000)) {
-					target = GetJumpTarget(behind);
+					target = GetJumpTarget(behind, reader);
 				}
 
 				if (target != INVALIDTARGET) {
@@ -174,7 +174,7 @@ namespace MIPSAnalyst
 		return furthestJumpbackAddr;
 	}
 
-	void ScanForFunctions(ccc::SymbolDatabase& database, u32 startAddr, u32 endAddr) {
+	void ScanForFunctions(ccc::SymbolDatabase& database, MemoryReader& reader, u32 startAddr, u32 endAddr) {
 		std::vector<MIPSAnalyst::AnalyzedFunction> functions;
 		AnalyzedFunction currentFunction = {startAddr};
 
@@ -199,9 +199,9 @@ namespace MIPSAnalyst
 				continue;
 			}
 
-			u32 op = r5900Debug.read32(addr);
+			u32 op = reader.read32(addr);
 
-			u32 target = GetBranchTargetNoRA(addr);
+			u32 target = GetBranchTargetNoRA(addr, reader);
 			if (target != INVALIDTARGET) {
 				isStraightLeaf = false;
 				if (target > furthestBranch) {
@@ -218,7 +218,7 @@ namespace MIPSAnalyst
 					}
 				}
 			} else if ((op & 0xFC000000) == 0x08000000) {
-				u32 sureTarget = GetJumpTarget(addr);
+				u32 sureTarget = GetJumpTarget(addr, reader);
 				// Check for a tail call.  Might not even have a jr ra.
 				if (sureTarget != INVALIDTARGET && sureTarget < currentFunction.start) {
 					if (furthestBranch > addr) {
@@ -230,7 +230,7 @@ namespace MIPSAnalyst
 				} else if (sureTarget != INVALIDTARGET && sureTarget > addr && sureTarget > furthestBranch) {
 					// A jump later.  Probably tail, but let's check if it jumps back.
 					u32 knownEnd = furthestBranch == 0 ? addr : furthestBranch;
-					u32 jumpback = ScanAheadForJumpback(sureTarget, currentFunction.start, knownEnd);
+					u32 jumpback = ScanAheadForJumpback(sureTarget, currentFunction.start, knownEnd, reader);
 					if (jumpback != INVALIDTARGET && jumpback > addr && jumpback > knownEnd) {
 						furthestBranch = jumpback;
 					} else {
@@ -256,10 +256,10 @@ namespace MIPSAnalyst
 
 			if (looking) {
 				if (addr >= furthestBranch) {
-					u32 sureTarget = GetSureBranchTarget(addr);
+					u32 sureTarget = GetSureBranchTarget(addr, reader);
 					// Regular j only, jals are to new funcs.
 					if (sureTarget == INVALIDTARGET && ((op & 0xFC000000) == 0x08000000)) {
-						sureTarget = GetJumpTarget(addr);
+						sureTarget = GetJumpTarget(addr, reader);
 					}
 
 					if (sureTarget != INVALIDTARGET && sureTarget < addr) {
@@ -268,7 +268,7 @@ namespace MIPSAnalyst
 						// Okay, we have a downward jump.  Might be an else or a tail call...
 						// If there's a jump back upward in spitting distance of it, it's an else.
 						u32 knownEnd = furthestBranch == 0 ? addr : furthestBranch;
-						u32 jumpback = ScanAheadForJumpback(sureTarget, currentFunction.start, knownEnd);
+						u32 jumpback = ScanAheadForJumpback(sureTarget, currentFunction.start, knownEnd, reader);
 						if (jumpback != INVALIDTARGET && jumpback > addr && jumpback > knownEnd) {
 							furthestBranch = jumpback;
 						}
@@ -287,7 +287,7 @@ namespace MIPSAnalyst
 				// Most functions are aligned to 8 or 16 bytes, so add padding
 				// to this one unless a symbol exists implying a new function
 				// follows immediately.
-				while (next_symbol == nullptr && ((addr+8) % 16) && r5900Debug.read32(addr+8) == 0)
+				while (next_symbol == nullptr && ((addr+8) % 16) && reader.read32(addr+8) == 0)
 					addr += 4;
 
 				currentFunction.end = addr + 4;
@@ -309,8 +309,10 @@ namespace MIPSAnalyst
 		functions.push_back(currentFunction);
 		
 		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("Analysis");
-		if(!source->valid())
+		if (!source.success()) {
+			Console.Error("MIPSAnalyst: %s", source.error().message.c_str());
 			return;
+		}
 
 		for (const AnalyzedFunction& function : functions) {
 			ccc::FunctionHandle handle = database.functions.first_handle_from_starting_address(function.start);
@@ -336,8 +338,10 @@ namespace MIPSAnalyst
 
 				ccc::Result<ccc::Function*> symbol_result = database.functions.create_symbol(
 					std::move(name), function.start, *source, nullptr);
-				if (!symbol_result.success())
+				if (!symbol_result.success()) {
+					Console.Error("MIPSAnalyst: %s", symbol_result.error().message.c_str());
 					return;
+				}
 				symbol = *symbol_result;
 			}
 
