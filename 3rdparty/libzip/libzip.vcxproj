@@ -146,6 +146,7 @@
     <ClCompile Include="lib\zip_unchange_archive.c" />
     <ClCompile Include="lib\zip_unchange_data.c" />
     <ClCompile Include="lib\zip_utf-8.c" />
+    <ClCompile Include="lib\zip_source_get_dostime.c" />
     <ClCompile Include="msvc\zip_err_str.c" />
   </ItemGroup>
   <ItemGroup>

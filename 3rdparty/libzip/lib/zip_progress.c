@@ -1,6 +1,6 @@
 /*
  zip_progress.c -- progress reporting
- Copyright (C) 2017-2020 Dieter Baron and Thomas Klausner
+ Copyright (C) 2017-2024 Dieter Baron and Thomas Klausner
 
  This file is part of libzip, a library to manipulate ZIP archives.
  The authors can be contacted at <info@libzip.org>
@@ -191,7 +191,7 @@ _zip_progress_update(zip_progress_t *progress, double sub_current) {
     if (progress->callback_progress != NULL) {
         current = ZIP_MIN(ZIP_MAX(sub_current, 0.0), 1.0) * (progress->end - progress->start) + progress->start;
 
-        if (current - progress->last_update > progress->precision) {
+        if (current - progress->last_update > progress->precision || (progress->last_update < 1 && current == 1)) {
             progress->callback_progress(progress->za, current, progress->ud_progress);
             progress->last_update = current;
         }

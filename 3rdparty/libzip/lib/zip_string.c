@@ -1,6 +1,6 @@
 /*
   zip_string.c -- string handling (with encoding)
-  Copyright (C) 2012-2021 Dieter Baron and Thomas Klausner
+  Copyright (C) 2012-2024 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -88,8 +88,10 @@ _zip_string_get(zip_string_t *string, zip_uint32_t *lenp, zip_flags_t flags, zip
 
     if ((flags & ZIP_FL_ENC_RAW) == 0) {
         /* start guessing */
-        if (string->encoding == ZIP_ENCODING_UNKNOWN)
-            _zip_guess_encoding(string, ZIP_ENCODING_UNKNOWN);
+        if (string->encoding == ZIP_ENCODING_UNKNOWN) {
+            /* guess encoding, sets string->encoding */
+            (void)_zip_guess_encoding(string, ZIP_ENCODING_UNKNOWN);
+        }
 
         if (((flags & ZIP_FL_ENC_STRICT) && string->encoding != ZIP_ENCODING_ASCII && string->encoding != ZIP_ENCODING_UTF8_KNOWN) || (string->encoding == ZIP_ENCODING_CP437)) {
             if (string->converted == NULL) {
@@ -105,6 +107,20 @@ _zip_string_get(zip_string_t *string, zip_uint32_t *lenp, zip_flags_t flags, zip
     if (lenp)
         *lenp = string->length;
     return string->raw;
+}
+
+bool _zip_string_is_ascii(const zip_string_t *string) {
+    if (string->encoding != ZIP_ENCODING_ASCII) {
+        zip_uint16_t i;
+
+        for (i = 0; i < string->length; i++) {
+            if (string->raw[i] & 0x80) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 

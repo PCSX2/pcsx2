@@ -1,6 +1,6 @@
 /*
-  zip_dir_add.c -- add directory
-  Copyright (C) 1999-2022 Dieter Baron and Thomas Klausner
+  zip_source_get_dostime.c -- get modification time in DOS format from source
+  Copyright (C) 2024 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -32,61 +32,41 @@
 */
 
 
-#include <stdlib.h>
-#include <string.h>
-
 #include "zipint.h"
 
-
-/* NOTE: Signed due to -1 on error.  See zip_add.c for more details. */
-
-ZIP_EXTERN zip_int64_t
-zip_dir_add(zip_t *za, const char *name, zip_flags_t flags) {
-    size_t len;
-    zip_int64_t idx;
-    char *s;
-    zip_source_t *source;
-
-    if (ZIP_IS_RDONLY(za)) {
-        zip_error_set(&za->error, ZIP_ER_RDONLY, 0);
+/* Returns -1 on error, 0 on no dostime available, 1 for dostime returned */
+int
+zip_source_get_dos_time(zip_source_t *src, zip_dostime_t *dos_time) {
+    if (src->source_closed) {
+        return -1;
+    }
+    if (dos_time == NULL) {
+        zip_error_set(&src->error, ZIP_ER_INVAL, 0);
         return -1;
     }
 
-    if (name == NULL) {
-        zip_error_set(&za->error, ZIP_ER_INVAL, 0);
-        return -1;
+    if (src->write_state == ZIP_SOURCE_WRITE_REMOVED) {
+        zip_error_set(&src->error, ZIP_ER_READ, ENOENT);
     }
 
-    s = NULL;
-    len = strlen(name);
+    if (zip_source_supports(src) & ZIP_SOURCE_MAKE_COMMAND_BITMASK(ZIP_SOURCE_GET_DOS_TIME)) {
+        zip_int64_t n = _zip_source_call(src, dos_time, sizeof(*dos_time), ZIP_SOURCE_GET_DOS_TIME);
 
-    if (name[len - 1] != '/') {
-        if (len > SIZE_MAX - 2 || (s = (char *)malloc(len + 2)) == NULL) {
-            zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
+        if (n < 0) {
             return -1;
         }
-        (void)strncpy_s(s, len + 2, name, len);
-        s[len] = '/';
-        s[len + 1] = '\0';
+        else if (n == 0) {
+            return 0;
+        }
+        else if (n == sizeof(*dos_time)) {
+            return 1;
+        }
+        else {
+            zip_error_set(&src->error, ZIP_ER_INTERNAL, 0);
+            return -1;
+        }
     }
-
-    if ((source = zip_source_buffer(za, NULL, 0, 0)) == NULL) {
-        free(s);
-        return -1;
-    }
-
-    idx = _zip_file_replace(za, ZIP_UINT64_MAX, s ? s : name, source, flags);
-
-    free(s);
-
-    if (idx < 0)
-        zip_source_free(source);
     else {
-        if (zip_file_set_external_attributes(za, (zip_uint64_t)idx, 0, ZIP_OPSYS_DEFAULT, ZIP_EXT_ATTRIB_DEFAULT_DIR) < 0) {
-            zip_delete(za, (zip_uint64_t)idx);
-            return -1;
-        }
+        return 0;
     }
-
-    return idx;
 }
