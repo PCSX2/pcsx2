@@ -3,10 +3,8 @@
 
 #pragma once
 
+#include "DebugInterface.h"
 #include "SymbolGuardian.h"
-
-class DebugInterface;
-
 
 #define MIPS_GET_OP(op)   ((op>>26) & 0x3F)
 #define MIPS_GET_FUNC(op) (op & 0x3F)
@@ -29,7 +27,7 @@ namespace MIPSAnalyst
 		char name[64];
 	};
 
-	void ScanForFunctions(ccc::SymbolDatabase& database, u32 startAddr, u32 endAddr);
+	void ScanForFunctions(ccc::SymbolDatabase& database, MemoryReader& reader, u32 startAddr, u32 endAddr);
 
 	enum LoadStoreLRType { LOADSTORE_NORMAL, LOADSTORE_LEFT, LOADSTORE_RIGHT };
 

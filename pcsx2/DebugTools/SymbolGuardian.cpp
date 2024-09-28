@@ -134,16 +134,15 @@ void SymbolGuardian::ImportElf(std::vector<u8> elf, std::string elf_file_name, c
 		return;
 	}
 
-	std::unique_ptr<ccc::ElfSymbolFile> symbol_file =
-		std::make_unique<ccc::ElfSymbolFile>(std::move(*parsed_elf), std::move(elf_file_name));
+	ccc::ElfSymbolFile symbol_file(std::move(*parsed_elf), std::move(elf_file_name));
 
 	ShutdownWorkerThread();
 
-	m_import_thread = std::thread([this, nocash_path, file = std::move(symbol_file)]() {
+	m_import_thread = std::thread([this, nocash_path, worker_symbol_file = std::move(symbol_file)]() {
 		Threading::SetNameOfCurrentThread("Symbol Worker");
 
 		ccc::SymbolDatabase temp_database;
-		ImportSymbolTables(temp_database, *file, &m_interrupt_import_thread);
+		ImportSymbolTables(temp_database, worker_symbol_file, &m_interrupt_import_thread);
 
 		if (m_interrupt_import_thread)
 			return;
@@ -153,40 +152,24 @@ void SymbolGuardian::ImportElf(std::vector<u8> elf, std::string elf_file_name, c
 		if (m_interrupt_import_thread)
 			return;
 
-		ComputeOriginalFunctionHashes(temp_database, file->elf());
+		ComputeOriginalFunctionHashes(temp_database, worker_symbol_file.elf());
 
 		if (m_interrupt_import_thread)
 			return;
 
-		// Wait for the ELF to be loaded into memory, otherwise the call to
-		// ScanForFunctions below won't work.
-		while (true)
-		{
-			bool has_booted_elf = false;
-			Host::RunOnCPUThread([&]() {
-				has_booted_elf = VMManager::Internal::HasBootedELF();
-			},
-				true);
-
-			if (has_booted_elf)
-				break;
-
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		ReadWrite([&](ccc::SymbolDatabase& database) {
+			database.merge_from(temp_database);
 
 			if (m_interrupt_import_thread)
 				return;
-		}
 
-		Host::RunOnCPUThread([this, &temp_database, &file, nocash_path]() {
-			ReadWrite([&](ccc::SymbolDatabase& database) {
-				database.merge_from(temp_database);
-
-				const ccc::ElfProgramHeader* entry_segment = file->elf().entry_point_segment();
-				if (entry_segment)
-					MIPSAnalyst::ScanForFunctions(database, entry_segment->vaddr, entry_segment->vaddr + entry_segment->filesz);
-			});
-		},
-			true);
+			const ccc::ElfProgramHeader* entry_segment = worker_symbol_file.elf().entry_point_segment();
+			if (entry_segment)
+			{
+				ElfMemoryReader reader(worker_symbol_file.elf());
+				MIPSAnalyst::ScanForFunctions(database, reader, entry_segment->vaddr, entry_segment->vaddr + entry_segment->filesz);
+			}
+		});
 	});
 }
 
