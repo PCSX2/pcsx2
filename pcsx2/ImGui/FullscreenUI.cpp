@@ -15,6 +15,7 @@
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiFullscreen.h"
 #include "ImGui/ImGuiManager.h"
+#include "ImGui/ImGuiOverlays.h"
 #include "Input/InputManager.h"
 #include "MTGS.h"
 #include "Patch.h"
@@ -715,6 +716,12 @@ void FullscreenUI::OpenPauseMenu()
 {
 	if (!VMManager::HasValidVM())
 		return;
+
+	if (SaveStateSelectorUI::IsOpen())
+	{
+		SaveStateSelectorUI::Close();
+		return;
+	}
 
 	MTGS::RunOnGSThread([]() {
 		if (!ImGuiManager::InitializeFullscreenUI() || s_current_main_window != MainWindowType::None)
