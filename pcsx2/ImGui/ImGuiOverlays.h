@@ -12,13 +12,14 @@ namespace ImGuiManager
 
 namespace SaveStateSelectorUI
 {
-	static constexpr float DEFAULT_OPEN_TIME = 7.5f;
+	static constexpr float DEFAULT_OPEN_TIME = 5.0f;
 
 	void Open(float open_time = DEFAULT_OPEN_TIME);
 	void RefreshList(const std::string& serial, u32 crc);
 	void DestroyTextures();
 	void Clear();
 	void Close();
+	bool IsOpen();
 
 	void SelectNextSlot(bool open_selector);
 	void SelectPreviousSlot(bool open_selector);
