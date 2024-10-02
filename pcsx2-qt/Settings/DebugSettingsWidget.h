@@ -8,6 +8,7 @@
 #include "ui_DebugSettingsWidget.h"
 
 class SettingsWindow;
+class DebugAnalysisSettingsWidget;
 
 class DebugSettingsWidget : public QWidget
 {
@@ -22,6 +23,7 @@ private Q_SLOTS:
 
 private:
 	SettingsWindow* m_dialog;
+	DebugAnalysisSettingsWidget* m_analysis_settings;
 
 	Ui::DebugSettingsWidget m_ui;
 };

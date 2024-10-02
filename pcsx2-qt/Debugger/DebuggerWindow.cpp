@@ -5,9 +5,11 @@
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
+#include "DebugTools/SymbolImporter.h"
 #include "VMManager.h"
 #include "QtHost.h"
 #include "MainWindow.h"
+#include "AnalysisOptionsDialog.h"
 
 DebuggerWindow::DebuggerWindow(QWidget* parent)
 	: QMainWindow(parent)
@@ -28,6 +30,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	connect(m_ui.actionStepInto, &QAction::triggered, this, &DebuggerWindow::onStepInto);
 	connect(m_ui.actionStepOver, &QAction::triggered, this, &DebuggerWindow::onStepOver);
 	connect(m_ui.actionStepOut, &QAction::triggered, this, &DebuggerWindow::onStepOut);
+	connect(m_ui.actionAnalyse, &QAction::triggered, this, &DebuggerWindow::onAnalyse);
 	connect(m_ui.actionOnTop, &QAction::triggered, [this] { this->setWindowFlags(this->windowFlags() ^ Qt::WindowStaysOnTopHint); this->show(); });
 
 	connect(g_emu_thread, &EmuThread::onVMPaused, this, &DebuggerWindow::onVMStateChanged);
@@ -38,7 +41,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	// We can't do this in the designer, but we want to right align the actionOnTop action in the toolbar
 	QWidget* spacer = new QWidget(this);
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	m_ui.toolBar->insertWidget(m_ui.actionOnTop, spacer);
+	m_ui.toolBar->insertWidget(m_ui.actionAnalyse, spacer);
 
 	m_cpuWidget_r5900 = new CpuWidget(this, r5900Debug);
 	m_cpuWidget_r3000 = new CpuWidget(this, r3000Debug);
@@ -126,4 +129,26 @@ void DebuggerWindow::onStepOut()
 {
 	CpuWidget* currentCpu = static_cast<CpuWidget*>(m_ui.cpuTabs->currentWidget());
 	currentCpu->onStepOut();
+}
+
+void DebuggerWindow::onAnalyse()
+{
+	AnalysisOptionsDialog* dialog = new AnalysisOptionsDialog(this);
+	dialog->show();
+}
+
+void DebuggerWindow::showEvent(QShowEvent* event)
+{
+	Host::RunOnCPUThread([]() {
+		R5900SymbolImporter.OnDebuggerOpened();
+	});
+	QMainWindow::showEvent(event);
+}
+
+void DebuggerWindow::hideEvent(QHideEvent* event)
+{
+	Host::RunOnCPUThread([]() {
+		R5900SymbolImporter.OnDebuggerClosed();
+	});
+	QMainWindow::hideEvent(event);
 }

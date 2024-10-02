@@ -8,13 +8,13 @@ SymbolGuardian R3000SymbolGuardian;
 
 void SymbolGuardian::Read(ReadCallback callback) const noexcept
 {
-	std::shared_lock l(m_big_symbol_lock);
+	std::shared_lock lock(m_big_symbol_lock);
 	callback(m_database);
 }
 
 void SymbolGuardian::ReadWrite(ReadWriteCallback callback) noexcept
 {
-	std::unique_lock l(m_big_symbol_lock);
+	std::unique_lock lock(m_big_symbol_lock);
 	callback(m_database);
 }
 

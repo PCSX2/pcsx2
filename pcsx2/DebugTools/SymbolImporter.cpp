@@ -12,6 +12,7 @@
 #include "common/Console.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 
@@ -22,7 +23,6 @@
 
 #include <demangle.h>
 
-SymbolImporter R3000SymbolImporter(R3000SymbolGuardian);
 SymbolImporter R5900SymbolImporter(R5900SymbolGuardian);
 
 struct DefaultBuiltInType
@@ -84,7 +84,40 @@ SymbolImporter::SymbolImporter(SymbolGuardian& guardian)
 void SymbolImporter::OnElfChanged(std::vector<u8> elf, const std::string& elf_file_name)
 {
 	Reset();
-	AnalyseElf(std::move(elf), elf_file_name);
+
+	if (EmuConfig.DebuggerAnalysis.RunCondition == DebugAnalysisCondition::NEVER)
+	{
+		m_symbol_table_loaded_on_boot = false;
+		return;
+	}
+
+	if (!m_debugger_open && EmuConfig.DebuggerAnalysis.RunCondition == DebugAnalysisCondition::IF_DEBUGGER_IS_OPEN)
+	{
+		m_symbol_table_loaded_on_boot = false;
+		return;
+	}
+
+	AnalyseElf(std::move(elf), elf_file_name, EmuConfig.DebuggerAnalysis);
+
+	m_symbol_table_loaded_on_boot = true;
+}
+
+void SymbolImporter::OnDebuggerOpened()
+{
+	m_debugger_open = true;
+
+	if (EmuConfig.DebuggerAnalysis.RunCondition == DebugAnalysisCondition::NEVER)
+		return;
+
+	if (m_symbol_table_loaded_on_boot)
+		return;
+
+	LoadAndAnalyseElf(EmuConfig.DebuggerAnalysis);
+}
+
+void SymbolImporter::OnDebuggerClosed()
+{
+	m_debugger_open = false;
 }
 
 void SymbolImporter::Reset()
@@ -94,7 +127,7 @@ void SymbolImporter::Reset()
 	m_guardian.ReadWrite([&](ccc::SymbolDatabase& database) {
 		database.clear();
 
-		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("Built-in");
+		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("Built-In");
 		if (!source.success())
 			return;
 
@@ -116,7 +149,24 @@ void SymbolImporter::Reset()
 	});
 }
 
-void SymbolImporter::AnalyseElf(std::vector<u8> elf, const std::string& elf_file_name)
+void SymbolImporter::LoadAndAnalyseElf(Pcsx2Config::DebugAnalysisOptions options)
+{
+	const std::string& elf_path = VMManager::GetCurrentELF();
+
+	Error error;
+	ElfObject elfo;
+	if (elf_path.empty() || !cdvdLoadElf(&elfo, elf_path, false, &error))
+	{
+		if (!elf_path.empty())
+			Console.Error(fmt::format("Failed to read ELF for symbol import: {}: {}", elf_path, error.GetDescription()));
+		return;
+	}
+
+	AnalyseElf(elfo.ReleaseData(), elf_path, options);
+}
+
+void SymbolImporter::AnalyseElf(
+	std::vector<u8> elf, const std::string& elf_file_name, Pcsx2Config::DebugAnalysisOptions options)
 {
 	// Search for a .sym file to load symbols from.
 	std::string nocash_path;
@@ -143,36 +193,33 @@ void SymbolImporter::AnalyseElf(std::vector<u8> elf, const std::string& elf_file
 
 	ShutdownWorkerThread();
 
-	m_import_thread = std::thread([this, nocash_path, worker_symbol_file = std::move(symbol_file)]() {
+	m_import_thread = std::thread([this, nocash_path, options, worker_symbol_file = std::move(symbol_file)]() {
 		Threading::SetNameOfCurrentThread("Symbol Worker");
 
 		ccc::SymbolDatabase temp_database;
-		ImportSymbolTables(temp_database, worker_symbol_file, &m_interrupt_import_thread);
+
+		ImportSymbols(temp_database, worker_symbol_file, nocash_path, options, &m_interrupt_import_thread);
 
 		if (m_interrupt_import_thread)
 			return;
 
-		ImportNocashSymbols(temp_database, nocash_path);
+		if (options.GenerateFunctionHashes)
+			ComputeOriginalFunctionHashes(temp_database, worker_symbol_file.elf());
 
 		if (m_interrupt_import_thread)
 			return;
 
-		const ccc::ElfProgramHeader* entry_segment = worker_symbol_file.elf().entry_point_segment();
-		if (entry_segment)
-		{
-			ElfMemoryReader reader(worker_symbol_file.elf());
-			MIPSAnalyst::ScanForFunctions(temp_database, reader, entry_segment->vaddr, entry_segment->vaddr + entry_segment->filesz);
-		}
-
-		if (m_interrupt_import_thread)
-			return;
-
-		ComputeOriginalFunctionHashes(temp_database, worker_symbol_file.elf());
+		ScanForFunctions(temp_database, worker_symbol_file, options);
 
 		if (m_interrupt_import_thread)
 			return;
 
 		m_guardian.ReadWrite([&](ccc::SymbolDatabase& database) {
+			ClearExistingSymbols(database, options);
+
+			if (m_interrupt_import_thread)
+				return;
+
 			database.merge_from(temp_database);
 		});
 	});
@@ -180,55 +227,145 @@ void SymbolImporter::AnalyseElf(std::vector<u8> elf, const std::string& elf_file
 
 void SymbolImporter::ShutdownWorkerThread()
 {
-	m_interrupt_import_thread = true;
 	if (m_import_thread.joinable())
+	{
+		m_interrupt_import_thread = true;
 		m_import_thread.join();
-	m_interrupt_import_thread = false;
+		m_interrupt_import_thread = false;
+	}
 }
 
-
-ccc::ModuleHandle SymbolImporter::ImportSymbolTables(
-	ccc::SymbolDatabase& database, const ccc::SymbolFile& symbol_file, const std::atomic_bool* interrupt)
+void SymbolImporter::ClearExistingSymbols(ccc::SymbolDatabase& database, const Pcsx2Config::DebugAnalysisOptions& options)
 {
-	ccc::Result<std::vector<std::unique_ptr<ccc::SymbolTable>>> symbol_tables = symbol_file.get_all_symbol_tables();
-	if (!symbol_tables.success())
+	std::vector<ccc::SymbolSourceHandle> sources_to_destroy;
+	for (const ccc::SymbolSource& source : database.symbol_sources)
 	{
-		ccc::report_error(symbol_tables.error());
-		return ccc::ModuleHandle();
+		bool should_destroy = ShouldClearSymbolsFromSourceByDefault(source.name());
+
+		for (const DebugSymbolSource& source_config : options.SymbolSources)
+			if (source_config.Name == source.name())
+				should_destroy = source_config.ClearDuringAnalysis;
+
+		if (should_destroy)
+			sources_to_destroy.emplace_back(source.handle());
 	}
 
+	for (ccc::SymbolSourceHandle handle : sources_to_destroy)
+		database.destroy_symbols_from_source(handle, true);
+}
+
+bool SymbolImporter::ShouldClearSymbolsFromSourceByDefault(const std::string& source_name)
+{
+	return source_name.find("Symbol Table") != std::string::npos ||
+		   source_name == "ELF Section Headers" ||
+		   source_name == "Function Scanner" ||
+		   source_name == "Nocash Symbols";
+}
+
+void SymbolImporter::ImportSymbols(
+	ccc::SymbolDatabase& database,
+	const ccc::ElfSymbolFile& elf,
+	const std::string& nocash_path,
+	const Pcsx2Config::DebugAnalysisOptions& options,
+	const std::atomic_bool* interrupt)
+{
 	ccc::DemanglerFunctions demangler;
-	demangler.cplus_demangle = cplus_demangle;
-	demangler.cplus_demangle_opname = cplus_demangle_opname;
+	if (options.DemangleSymbols)
+	{
+		demangler.cplus_demangle = cplus_demangle;
+		demangler.cplus_demangle_opname = cplus_demangle_opname;
+	}
 
 	u32 importer_flags =
-		ccc::DEMANGLE_PARAMETERS |
-		ccc::DEMANGLE_RETURN_TYPE |
 		ccc::NO_MEMBER_FUNCTIONS |
 		ccc::NO_OPTIMIZED_OUT_FUNCTIONS |
 		ccc::UNIQUE_FUNCTIONS;
 
-	ccc::Result<ccc::ModuleHandle> module_handle = ccc::import_symbol_tables(
-		database, symbol_file.name(), *symbol_tables, importer_flags, demangler, interrupt);
-	if (!module_handle.success())
+	if (options.DemangleParameters)
+		importer_flags |= ccc::DEMANGLE_PARAMETERS;
+
+	if (options.ImportSymbolsFromELF)
 	{
-		ccc::report_error(module_handle.error());
-		return ccc::ModuleHandle();
+		ccc::Result<std::vector<std::unique_ptr<ccc::SymbolTable>>> symbol_tables = elf.get_all_symbol_tables();
+		if (!symbol_tables.success())
+		{
+			ccc::report_error(symbol_tables.error());
+		}
+		else
+		{
+			ccc::Result<ccc::ModuleHandle> module_handle = ccc::import_symbol_tables(
+				database, elf.name(), *symbol_tables, importer_flags, demangler, interrupt);
+			if (!module_handle.success())
+			{
+				ccc::report_error(module_handle.error());
+			}
+		}
+	}
+
+	if (!nocash_path.empty() && options.ImportSymFileFromDefaultLocation)
+	{
+		if (!ImportNocashSymbols(database, nocash_path))
+			Console.Error("Failed to read symbol file from default location '%s'.", nocash_path.c_str());
+	}
+
+	for (const DebugExtraSymbolFile& extra_symbol_file : options.ExtraSymbolFiles)
+	{
+		if (*interrupt)
+			return;
+
+		if (StringUtil::EndsWithNoCase(extra_symbol_file.Path, ".sym"))
+		{
+			if (!ImportNocashSymbols(database, extra_symbol_file.Path))
+				Console.Error("Failed to read extra symbol file '%s'.", extra_symbol_file.Path.c_str());
+			continue;
+		}
+
+		Error error;
+		std::optional<std::vector<u8>> image = FileSystem::ReadBinaryFile(extra_symbol_file.Path.c_str());
+		if (!image.has_value())
+		{
+			Console.Error("Failed to read extra symbol file '%s'.", extra_symbol_file.Path.c_str());
+			continue;
+		}
+
+		std::string file_name(Path::GetFileName(extra_symbol_file.Path));
+
+		ccc::Result<std::unique_ptr<ccc::SymbolFile>> symbol_file = ccc::parse_symbol_file(std::move(*image), file_name.c_str());
+		if (!symbol_file.success())
+		{
+			ccc::report_error(symbol_file.error());
+			continue;
+		}
+
+		ccc::Result<std::vector<std::unique_ptr<ccc::SymbolTable>>> symbol_tables = elf.get_all_symbol_tables();
+		if (!symbol_tables.success())
+		{
+			ccc::report_error(symbol_tables.error());
+			continue;
+		}
+
+		ccc::Result<ccc::ModuleHandle> module_handle = ccc::import_symbol_tables(
+			database, elf.name(), *symbol_tables, importer_flags, demangler, interrupt);
+		if (!module_handle.success())
+		{
+			ccc::report_error(module_handle.error());
+			continue;
+		}
 	}
 
 	Console.WriteLn("Imported %d symbols.", database.symbol_count());
 
-	return *module_handle;
+	return;
 }
 
-bool SymbolImporter::ImportNocashSymbols(ccc::SymbolDatabase& database, const std::string& file_name)
+bool SymbolImporter::ImportNocashSymbols(ccc::SymbolDatabase& database, const std::string& file_path)
 {
-	ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("Nocash Symbols");
-	if (!source.success())
+	FILE* f = FileSystem::OpenCFile(file_path.c_str(), "r");
+	if (!f)
 		return false;
 
-	FILE* f = FileSystem::OpenCFile(file_name.c_str(), "r");
-	if (!f)
+	ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("Nocash Symbols");
+	if (!source.success())
 		return false;
 
 	while (!feof(f))
@@ -342,6 +479,46 @@ bool SymbolImporter::ImportNocashSymbols(ccc::SymbolDatabase& database, const st
 
 	fclose(f);
 	return true;
+}
+
+void SymbolImporter::ScanForFunctions(
+	ccc::SymbolDatabase& database, const ccc::ElfSymbolFile& elf, const Pcsx2Config::DebugAnalysisOptions& options)
+{
+	u32 start_address = 0;
+	u32 end_address = 0;
+	if (options.CustomFunctionScanRange)
+	{
+		start_address = static_cast<u32>(std::stoull(options.FunctionScanStartAddress.c_str(), nullptr, 16));
+		end_address = static_cast<u32>(std::stoull(options.FunctionScanEndAddress.c_str(), nullptr, 16));
+	}
+	else
+	{
+		const ccc::ElfProgramHeader* entry_segment = elf.elf().entry_point_segment();
+		if (!entry_segment)
+			return;
+
+		start_address = entry_segment->vaddr;
+		end_address = entry_segment->vaddr + entry_segment->filesz;
+	}
+
+	switch (options.FunctionScanMode)
+	{
+		case DebugFunctionScanMode::SCAN_ELF:
+		{
+			ElfMemoryReader reader(elf.elf());
+			MIPSAnalyst::ScanForFunctions(database, reader, start_address, end_address);
+			break;
+		}
+		case DebugFunctionScanMode::SCAN_MEMORY:
+		{
+			MIPSAnalyst::ScanForFunctions(database, r5900Debug, start_address, end_address);
+			break;
+		}
+		case DebugFunctionScanMode::SKIP:
+		{
+			break;
+		}
+	}
 }
 
 void SymbolImporter::ComputeOriginalFunctionHashes(ccc::SymbolDatabase& database, const ccc::ElfFile& elf)

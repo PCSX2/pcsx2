@@ -83,7 +83,7 @@ public:
 	virtual u32 getCycles() = 0;
 	virtual BreakPointCpu getCpuType() = 0;
 	virtual SymbolGuardian& GetSymbolGuardian() const = 0;
-	virtual SymbolImporter& GetSymbolImporter() const = 0;
+	virtual SymbolImporter* GetSymbolImporter() const = 0;
 	virtual std::vector<std::unique_ptr<BiosThread>> GetThreadList() const = 0;
 
 	bool evaluateExpression(const char* expression, u64& dest);
@@ -139,7 +139,7 @@ public:
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
 	SymbolGuardian& GetSymbolGuardian() const override;
-	SymbolImporter& GetSymbolImporter() const override;
+	SymbolImporter* GetSymbolImporter() const override;
 	std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
@@ -182,7 +182,7 @@ public:
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
 	SymbolGuardian& GetSymbolGuardian() const override;
-	SymbolImporter& GetSymbolImporter() const override;
+	SymbolImporter* GetSymbolImporter() const override;
 	std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
