@@ -447,7 +447,6 @@ void VMManager::Internal::CPUThreadShutdown()
 	// Ensure emulog gets flushed.
 	Log::SetFileOutputLevel(LOGLEVEL_NONE, std::string());
 
-	R3000SymbolImporter.ShutdownWorkerThread();
 	R5900SymbolImporter.ShutdownWorkerThread();
 }
 
@@ -1413,9 +1412,9 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 
 				Achievements::ConfirmHardcoreModeDisableAsync(trigger,
 					[boot_params = std::move(boot_params)](bool approved) mutable {
-					if (approved && Initialize(std::move(boot_params)))
-						SetState(VMState::Running);
-				});
+						if (approved && Initialize(std::move(boot_params)))
+							SetState(VMState::Running);
+					});
 
 				return false;
 			}
@@ -3098,7 +3097,7 @@ void VMManager::WarnAboutUnsafeSettings()
 		append(ICON_FA_TACHOMETER_ALT,
 			TRANSLATE_SV("VMManager", "Cycle rate/skip is not at default, this may crash or make games run too slow."));
 	}
-	
+
 	const bool is_sw_renderer = EmuConfig.GS.Renderer == GSRendererType::SW;
 	if (!is_sw_renderer)
 	{
@@ -3615,7 +3614,7 @@ void VMManager::UpdateDiscordPresence(bool update_session_time)
 	rp.largeImageKey = "4k-pcsx2";
 	rp.largeImageText = "PCSX2 PS2 Emulator";
 	rp.startTimestamp = s_discord_presence_time_epoch;
-	rp.details = s_title.empty() ?  TRANSLATE("VMManager","No Game Running") : s_title.c_str();
+	rp.details = s_title.empty() ? TRANSLATE("VMManager", "No Game Running") : s_title.c_str();
 
 	std::string state_string;
 

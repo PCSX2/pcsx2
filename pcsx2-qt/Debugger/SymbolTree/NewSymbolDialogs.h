@@ -50,14 +50,14 @@ protected:
 
 protected slots:
 	virtual bool parseUserInput() = 0;
-	
+
 protected:
 	virtual void createSymbol() = 0;
 
 	void setupRegisterField();
 	void setupSizeField();
 	void setupFunctionField();
-	
+
 	void connectInputWidgets();
 	void updateErrorMessage(QString error_message);
 
@@ -75,14 +75,14 @@ protected:
 
 	u32 storageType() const;
 	void onStorageTabChanged(int index);
-	
+
 	std::string parseName(QString& error_message);
 	u32 parseAddress(QString& error_message);
 
 	DebugInterface& m_cpu;
 	Ui::NewSymbolDialog m_ui;
 
-u32 m_alignment;
+	u32 m_alignment;
 	std::vector<ccc::FunctionHandle> m_functions;
 };
 
@@ -96,7 +96,7 @@ public:
 protected:
 	bool parseUserInput() override;
 	void createSymbol() override;
-	
+
 	std::string m_name;
 	u32 m_address = 0;
 	u32 m_size = 0;
@@ -114,7 +114,7 @@ public:
 protected:
 	bool parseUserInput() override;
 	void createSymbol() override;
-	
+
 	std::string m_name;
 	u32 m_address;
 	std::unique_ptr<ccc::ast::Node> m_type;
@@ -130,7 +130,7 @@ public:
 protected:
 	bool parseUserInput() override;
 	void createSymbol() override;
-	
+
 	std::string m_name;
 	std::variant<ccc::GlobalStorage, ccc::RegisterStorage, ccc::StackStorage> m_storage;
 	u32 m_address = 0;
@@ -148,7 +148,7 @@ public:
 protected:
 	bool parseUserInput() override;
 	void createSymbol() override;
-	
+
 	std::string m_name;
 	std::variant<ccc::RegisterStorage, ccc::StackStorage> m_storage;
 	std::unique_ptr<ccc::ast::Node> m_type;

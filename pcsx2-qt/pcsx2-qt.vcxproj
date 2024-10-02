@@ -97,6 +97,7 @@
     <ClCompile Include="EarlyHardwareCheck.cpp" />
     <ClCompile Include="LogWindow.cpp" />
     <ClCompile Include="QtProgressCallback.cpp" />
+    <ClCompile Include="Settings\DebugAnalysisSettingsWidget.cpp" />
     <ClCompile Include="Settings\DebugSettingsWidget.cpp" />
     <ClCompile Include="Settings\FolderSettingsWidget.cpp" />
     <ClCompile Include="Settings\GameCheatSettingsWidget.cpp" />
@@ -106,6 +107,7 @@
     <ClCompile Include="Themes.cpp" />
     <ClCompile Include="Tools\InputRecording\InputRecordingViewer.cpp" />
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp" />
+    <ClCompile Include="Debugger\AnalysisOptionsDialog.cpp" />
     <ClCompile Include="Debugger\CpuWidget.cpp" />
     <ClCompile Include="Debugger\DebuggerWindow.cpp" />
     <ClCompile Include="Debugger\DisassemblyWidget.cpp" />
@@ -192,6 +194,7 @@
     <QtMoc Include="Debugger\SymbolTree\TypeString.h" />
     <ClInclude Include="Settings\ControllerSettingWidgetBinder.h" />
     <QtMoc Include="Settings\FolderSettingsWidget.h" />
+    <QtMoc Include="Settings\DebugAnalysisSettingsWidget.h" />
     <QtMoc Include="Settings\DebugSettingsWidget.h" />
     <QtMoc Include="Settings\GameCheatSettingsWidget.h" />
     <QtMoc Include="Settings\GamePatchSettingsWidget.h" />
@@ -206,6 +209,7 @@
     <QtMoc Include="Tools\InputRecording\NewInputRecordingDlg.h" />
     <QtMoc Include="Tools\InputRecording\InputRecordingViewer.h" />
     <ClInclude Include="QtUtils.h" />
+    <QtMoc Include="Debugger\AnalysisOptionsDialog.h" />
     <QtMoc Include="Debugger\CpuWidget.h" />
     <QtMoc Include="Debugger\DebuggerWindow.h" />
     <QtMoc Include="Debugger\DisassemblyWidget.h" />
@@ -263,7 +267,9 @@
     <ClCompile Include="$(IntDir)Settings\moc_GameSummaryWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_AchievementLoginDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_AchievementSettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_DebugAnalysisSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_DebugSettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_AnalysisOptionsDialog.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWindow.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_CpuWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_DisassemblyWidget.cpp" />
@@ -392,6 +398,9 @@
     <QtUi Include="Tools\InputRecording\InputRecordingViewer.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="Debugger\AnalysisOptionsDialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="Debugger\DebuggerWindow.ui">
       <FileType>Document</FileType>
     </QtUi>
@@ -421,6 +430,9 @@
     <QtTs Include="Translations\pcsx2-qt_en.ts">
       <FileType>Document</FileType>
     </QtTs>
+    <QtUi Include="Settings\DebugAnalysisSettingsWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="Settings\DebugSettingsWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
