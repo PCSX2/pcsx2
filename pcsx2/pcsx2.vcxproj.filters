@@ -1398,6 +1398,9 @@
     <ClCompile Include="DebugTools\SymbolGuardian.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="DebugTools\SymbolImporter.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
     <ClCompile Include="USB\usb-eyetoy\cam-jpeg.cpp">
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
     </ClCompile>
@@ -2340,6 +2343,9 @@
     </ClInclude>
     <ClInclude Include="SupportURLs.h" />
     <ClInclude Include="DebugTools\SymbolGuardian.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\SymbolImporter.h">
       <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-eyetoy\cam-jpeg.h">

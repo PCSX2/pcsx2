@@ -61,7 +61,7 @@ void SymbolTreeWidget::reset()
 
 	m_ui.treeView->setColumnHidden(SymbolTreeModel::SIZE, !m_show_size_column || !m_show_size_column->isChecked());
 
-	m_cpu.GetSymbolGuardian().UpdateFunctionHashes(m_cpu);
+	m_cpu.GetSymbolImporter().UpdateFunctionHashes(m_cpu);
 
 	SymbolFilters filters;
 	std::unique_ptr<SymbolTreeNode> root;
