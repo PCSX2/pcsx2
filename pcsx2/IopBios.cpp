@@ -1086,6 +1086,9 @@ namespace R3000A
 
 		void LoadFuncs(u32 a0reg)
 		{
+			if (!EmuConfig.DebuggerAnalysis.GenerateSymbolsForIRXExports)
+				return;
+
 			const std::string modname = iopMemReadString(a0reg + 12, 8);
 			s32 version_major = iopMemRead8(a0reg + 9);
 			s32 version_minor = iopMemRead8(a0reg + 8);

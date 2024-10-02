@@ -21,6 +21,11 @@ public slots:
 	void onStepInto();
 	void onStepOver();
 	void onStepOut();
+	void onAnalyse();
+
+protected:
+	void showEvent(QShowEvent* event);
+	void hideEvent(QHideEvent *event);
 
 private:
 	Ui::DebuggerWindow m_ui;

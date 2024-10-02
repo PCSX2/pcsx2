@@ -308,7 +308,7 @@ namespace MIPSAnalyst
 		currentFunction.end = addr + 4;
 		functions.push_back(currentFunction);
 		
-		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("Analysis");
+		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("Function Scanner");
 		if (!source.success()) {
 			Console.Error("MIPSAnalyst: %s", source.error().message.c_str());
 			return;

@@ -337,7 +337,7 @@ void NewFunctionDialog::createSymbol()
 
 	QString error_message;
 	m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
-		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("User-defined");
+		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("User-Defined");
 		if (!source.success())
 		{
 			error_message = tr("Cannot create symbol source.");
@@ -398,7 +398,7 @@ void NewGlobalVariableDialog::createSymbol()
 
 	QString error_message;
 	m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
-		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("User-defined");
+		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("User-Defined");
 		if (!source.success())
 		{
 			error_message = tr("Cannot create symbol source.");
@@ -508,7 +508,7 @@ void NewLocalVariableDialog::createSymbol()
 			return;
 		}
 
-		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("User-defined");
+		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("User-Defined");
 		if (!source.success())
 		{
 			error_message = tr("Cannot create symbol source.");
@@ -622,7 +622,7 @@ void NewParameterVariableDialog::createSymbol()
 			return;
 		}
 
-		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("User-defined");
+		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("User-Defined");
 		if (!source.success())
 		{
 			error_message = tr("Cannot create symbol source.");
