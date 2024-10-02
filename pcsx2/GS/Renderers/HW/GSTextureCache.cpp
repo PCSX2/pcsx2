@@ -6013,8 +6013,11 @@ void GSTextureCache::Source::Flush(u32 count, int layer, const GSOffset& off)
 	const SourceRegion region((layer == 0) ? m_region : m_region.AdjustForMipmap(layer));
 
 	// For the invalid tex0 case, the region might be larger than TEX0.TW/TH.
-	const int tw = std::max(region.GetWidth(), 1 << m_TEX0.TW);
-	const int th = std::max(region.GetHeight(), 1 << m_TEX0.TH);
+	// Clamp TW/TH to 11, as GS memory loops around 2048,
+	// anything higher than 12 causes a crash when texture mapping isn't supported like in Direct3D11.
+	const GSVector2i tex0_tw_th = GSVector2i(std::min(static_cast<int>(m_TEX0.TW), 11), std::min(static_cast<int>(m_TEX0.TH), 11));
+	const int tw = std::max(region.GetWidth(), 1 << tex0_tw_th.x);
+	const int th = std::max(region.GetHeight(), 1 << tex0_tw_th.y);
 	const GSVector4i tex_r(region.GetRect(tw, th));
 
 	int pitch = std::max(tw, psm.bs.x) * sizeof(u32);
