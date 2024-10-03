@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>698</width>
-    <height>494</height>
+    <height>512</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -24,18 +24,11 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="groupBox_4">
+    <widget class="QGroupBox" name="behaviourGroup">
      <property name="title">
       <string>Behaviour</string>
      </property>
      <layout class="QGridLayout" name="formLayout_4">
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="saveStateOnShutdown">
-        <property name="text">
-         <string>Save State On Shutdown</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
        <widget class="QCheckBox" name="inhibitScreensaver">
         <property name="text">
@@ -50,17 +43,17 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="discordPresence">
+        <property name="text">
+         <string>Enable Discord Presence</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1">
        <widget class="QCheckBox" name="pauseOnStart">
         <property name="text">
          <string>Pause On Start</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="pauseOnFocusLoss">
-        <property name="text">
-         <string>Pause On Focus Loss</string>
         </property>
        </widget>
       </item>
@@ -71,17 +64,10 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QCheckBox" name="discordPresence">
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="pauseOnFocusLoss">
         <property name="text">
-         <string>Enable Discord Presence</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="backupSaveStates">
-        <property name="text">
-         <string>Create Save State Backups</string>
+         <string>Pause On Focus Loss</string>
         </property>
        </widget>
       </item>
@@ -89,7 +75,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="gameDisplayGroup">
      <property name="title">
       <string>Game Display</string>
      </property>
@@ -146,7 +132,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="languageLabel">
         <property name="text">
          <string>Language:</string>
         </property>
@@ -156,7 +142,7 @@
        <widget class="QComboBox" name="language"/>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="themeLabel">
         <property name="text">
          <string>Theme:</string>
         </property>
@@ -182,14 +168,14 @@
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_4">
+       <widget class="QLabel" name="updaterChannelLabel">
         <property name="text">
          <string>Update Channel:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="currentVersionLabel">
         <property name="text">
          <string>Current Version:</string>
         </property>
@@ -199,7 +185,7 @@
        <widget class="QComboBox" name="autoUpdateTag"/>
       </item>
       <item row="2" column="0" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
+       <layout class="QHBoxLayout" name="automaticUpdaterCheckGroup" stretch="1,0">
         <item>
          <widget class="QCheckBox" name="autoUpdateEnabled">
           <property name="text">
