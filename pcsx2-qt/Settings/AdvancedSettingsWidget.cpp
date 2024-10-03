@@ -65,6 +65,9 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 	connect(m_ui.savestateCompressionMethod, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
 		&AdvancedSettingsWidget::onSavestateCompressionTypeChanged);
 
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.backupSaveStates, "EmuCore", "BackupSavestate", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnShutdown, "EmuCore", "SaveStateOnShutdown", false);
+
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pineEnable, "EmuCore", "EnablePINE", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.pineSlot, "EmuCore", "PINESlot", 28011);
 
@@ -138,6 +141,14 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 	dialog->registerWidgetHelp(m_ui.savestateCompressionLevel, tr("Savestate Compression Level"), tr("Medium"),
 		tr("Determines the level to be used when compressing savestates."));
+
+	dialog->registerWidgetHelp(m_ui.saveStateOnShutdown, tr("Save State On Shutdown"), tr("Unchecked"),
+		tr("Automatically saves the emulator state when powering down or exiting. You can then "
+		   "resume directly from where you left off next time."));
+
+	dialog->registerWidgetHelp(m_ui.backupSaveStates, tr("Create Save State Backups"), tr("Checked"),
+		//: Do not translate the ".backup" extension.
+		tr("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix."));
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
