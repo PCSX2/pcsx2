@@ -53928,7 +53928,7 @@ SLPS-25361:
 SLPS-25362:
   name: "鉄人28号"
   name-sort: "てつじん28ごう"
-  name-en: "Tetsujin 28 Go"
+  name-en: "Tetsujin 28-gō"
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 2 # Fixes Depth of Field effect.
