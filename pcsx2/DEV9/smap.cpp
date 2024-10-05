@@ -119,19 +119,18 @@ u32 wswap(u32 d)
 
 void tx_process()
 {
-	//we loop based on count ? or just *use* it ?
-	const u32 cnt = dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT);
-	//spams// printf("tx_process : %u cnt frames !\n",cnt);
-
 	NetPacket pk;
-	u32 fc = 0;
-	for (fc = 0; fc < cnt; fc++)
+	// We will loop though TX_BD, sending any that are ready
+	// stopping once we reach one that isn't ready
+	// SMAP_R_TXFIFO_FRAME_CNT is decremented, but otherwise isn't used
+	// This seems to match HW behaviour
+	u32 cnt = 0;
+	while (true)
 	{
 		smap_bd_t* pbd = ((smap_bd_t*)&dev9.dev9R[SMAP_BD_TX_BASE & 0xffff]) + dev9.txbdi;
 
 		if (!(pbd->ctrl_stat & SMAP_BD_TX_READY))
 		{
-			Console.Error("DEV9: SMAP: ERROR : !pbd->ctrl_stat&SMAP_BD_TX_READY");
 			break;
 		}
 		if (pbd->length & 3)
@@ -212,18 +211,19 @@ void tx_process()
 
 		//decrease frame count -- this is not thread safe
 		dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT)--;
+		cnt++;
 	}
 
-	//spams// emu_printf("processed %u frames, %u count, cnt = %u\n",fc,dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT),cnt);
-	//if some error/early exit signal TXDNV
-	if (fc != cnt || cnt == 0)
+	// if we actualy send something set TXEND
+	if (cnt != 0)
 	{
-		Console.Error("DEV9: SMAP: WARN : (fc!=cnt || cnt==0) but packet send request was made oO..");
+		_DEV9irq(SMAP_INTR_TXEND, 100); //now ? or when the fifo is empty ? i guess now atm
+	}
+	else
+	{
+		Console.Error("DEV9: SMAP: WARN : Current BD_TX was not ready, but packet send request was made");
 		_DEV9irq(SMAP_INTR_TXDNV, 0);
 	}
-	//if we actualy send something send TXEND
-	if (fc != 0)
-		_DEV9irq(SMAP_INTR_TXEND, 100); //now ? or when the fifo is empty ? i guess now atm
 }
 
 
