@@ -9515,7 +9515,8 @@ SCPS-51012:
   name: "Gigantic Drive"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 2 # Fixes DOF effect.
+    autoFlush: 2 # Fixes Depth of Field effect.
+    halfPixelOffset: 4 # Aligns Depth of Field.
 SCPS-51013:
   name: "Torneko's Adventure 3"
   region: "NTSC-J"
@@ -9609,6 +9610,7 @@ SCPS-55014:
   gsHWFixes:
     halfPixelOffset: 4 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
+    mergeSprite: 1 # Fixes incorrect blur when Round Sprite is enabled.
 SCPS-55015:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
@@ -16651,6 +16653,7 @@ SLES-51399:
   gsHWFixes:
     halfPixelOffset: 4 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
+    mergeSprite: 1 # Fixes incorrect blur when Round Sprite is enabled.
 SLES-51400:
   name: "Tenchu - Wrath of Heaven"
   region: "PAL-S"
@@ -17605,7 +17608,8 @@ SLES-51856:
   name: "Monster Attack"
   region: "PAL-E"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes depth of field positioning.
+    autoFlush: 2 # Fixes Depth of Field effect.
+    halfPixelOffset: 4 # Aligns Depth of Field.
 SLES-51859:
   name: "Billiards Xciting"
   region: "PAL-E"
@@ -25058,8 +25062,9 @@ SLES-54464:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post processing positioning.
-    nativeScaling: 1 # Fixes post processing effects caused by upscaling.
+    autoFlush: 2 # Fixes Depth of Field effect.
+    halfPixelOffset: 4 # Aligns Depth of Field.
+    nativeScaling: 1 # Fixes Depth of Field effect.
 SLES-54465:
   name: "CSI - 3 Dimensions of Murder"
   region: "PAL-M5"
@@ -28942,8 +28947,9 @@ SLKA-15058:
   name-sort: "Terra Defence Force, The 2"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post processing positioning.
-    nativeScaling: 1 # Fixes post processing effects caused by upscaling.
+    autoFlush: 2 # Fixes Depth of Field effect.
+    halfPixelOffset: 4 # Aligns Depth of Field.
+    nativeScaling: 1 # Fixes Depth of Field effect.
 SLKA-15060:
   name: "Raiden III"
   region: "NTSC-K"
@@ -34109,7 +34115,8 @@ SLPM-62209:
   name-en: "Gigantic Drive"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 2 # Fixes DOF effect.
+    autoFlush: 2 # Fixes Depth of Field effect.
+    halfPixelOffset: 4 # Aligns Depth of Field.
 SLPM-62211:
   name: "18WHEELER"
   name-sort: "18WHEELER"
@@ -34728,7 +34735,8 @@ SLPM-62344:
   name-en: "Simple 2000 Series Vol. 31 - The Chikyuu Boueigun"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes depth of field positioning.
+    autoFlush: 2 # Fixes Depth of Field effect.
+    halfPixelOffset: 4 # Aligns Depth of Field.
 SLPM-62345:
   name: "SIMPLE2000シリーズVol.32 THE戦車"
   name-sort: "しんぷる2000しりーずVol.32 THEせんしゃ"
@@ -36269,8 +36277,9 @@ SLPM-62652:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes depth of field positioning.
-    nativeScaling: 1 # Fixes post processing effects due to upscaling.
+    autoFlush: 2 # Fixes Depth of Field effect.
+    halfPixelOffset: 4 # Aligns Depth of Field.
+    nativeScaling: 1 # Fixes Depth of Field effect.
 SLPM-62653:
   name: "Psikyo Shooting Collection Vol.1 - Strikers 1945 1-2 [Taito The Best]"
   region: "NTSC-J"
@@ -48744,6 +48753,7 @@ SLPM-67524:
   gsHWFixes:
     halfPixelOffset: 4 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
+    mergeSprite: 1 # Fixes incorrect blur when Round Sprite is enabled.
 SLPM-67525:
   name: "Medal of Honor - Frontline"
   region: "NTSC-K"
@@ -52547,6 +52557,7 @@ SLPS-25112:
   gsHWFixes:
     halfPixelOffset: 4 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
+    mergeSprite: 1 # Fixes incorrect blur when Round Sprite is enabled.
 SLPS-25113:
   name: "絶体絶命都市"
   name-sort: "ぜったいぜつめいとし"
@@ -53917,8 +53928,11 @@ SLPS-25361:
 SLPS-25362:
   name: "鉄人28号"
   name-sort: "てつじん28ごう"
-  name-en: "Tetsujin 28 Go"
+  name-en: "Tetsujin 28-gō"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 2 # Fixes Depth of Field effect.
+    halfPixelOffset: 4 # Aligns Depth of Field.
 SLPS-25363:
   name: "桜坂消防隊"
   name-sort: "さくらざかしょうぼうたい"
@@ -56126,12 +56140,17 @@ SLPS-25731:
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves sky rendering.
     textureInsideRT: 1 # Fixes texture corruption.
 SLPS-25732:
   name: "ARMORED CORE 3 (ARMORED CORE PREMIUM BOX同梱用)"
   name-sort: "あーまーどこあ3"
   name-en: "Armored Core 3"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 4 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
+    mergeSprite: 1 # Fixes incorrect blur when Round Sprite is enabled.
 SLPS-25733:
   name: "スーパーロボット大戦OG ORIGINAL GENERATIONS"
   name-sort: "すーぱーろぼっとたいせんOG ORIGINAL GENERATIONS"
@@ -60301,6 +60320,7 @@ SLUS-20435:
   gsHWFixes:
     halfPixelOffset: 4 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
+    mergeSprite: 1 # Fixes incorrect blur when Round Sprite is enabled.
 SLUS-20436:
   name: "Guilty Gear X2"
   region: "NTSC-U"
@@ -60345,11 +60365,12 @@ SLUS-20444:
   name: "Tankers"
   region: "NTSC-U"
 SLUS-20445:
-  name: "Robot Alchemic Drive - RAD"
+  name: "Robot Alchemic Drive - R.A.D."
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 2 # Fixes DOF effect.
+    autoFlush: 2 # Fixes Depth of Field effect.
+    halfPixelOffset: 4 # Aligns Depth of Field.
 SLUS-20446:
   name: "Agassi Tennis Generation"
   region: "NTSC-U"
@@ -69070,10 +69091,11 @@ SLUS-29022:
   name: "UFC - Throwdown [Regular Demo]"
   region: "NTSC-U"
 SLUS-29025:
-  name: "R.A.D. - Robot Alchemic Drive [Demo]"
+  name: "Robot Alchemic Drive - R.A.D. [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 2 # Fixes DOF effect.
+    autoFlush: 2 # Fixes Depth of Field effect.
+    halfPixelOffset: 4 # Aligns Depth of Field.
 SLUS-29026:
   name: "MX SuperFly [Demo]"
   region: "NTSC-U"
