@@ -402,6 +402,16 @@ namespace R3000A
 		}
 	};
 
+	struct fileHandle
+	{
+		u32 fd_index;
+		std::string full_path;
+		s32 flags;
+		u16 mode;
+	};
+
+	std::vector<fileHandle> handles;
+
 	namespace ioman
 	{
 		const int firstfd = 0x100;
@@ -515,6 +525,7 @@ namespace R3000A
 				if (fds[i])
 					fds[i].close();
 			}
+			handles.clear();
 		}
 
 		bool is_host(const std::string_view path)
@@ -604,6 +615,13 @@ namespace R3000A
 						file->close();
 				}
 
+				fileHandle handle;
+				handle.fd_index = v0 - firstfd;
+				handle.flags = flags;
+				handle.full_path = path;
+				handle.mode = mode;
+				handles.push_back(handle);
+
 				pc = ra;
 				return 1;
 			}
@@ -618,6 +636,16 @@ namespace R3000A
 			if (getfd<IOManFile>(fd))
 			{
 				freefd(fd);
+
+				for (size_t i = 0; i < handles.size(); i++)
+				{
+					if (handles[i].fd_index == (u32) fd - firstfd)
+					{
+						handles.erase(handles.begin() + i);
+						break;
+					}
+				}
+
 				v0 = 0;
 				pc = ra;
 				return 1;
@@ -1387,3 +1415,62 @@ namespace R3000A
 	}
 
 } // end namespace R3000A
+
+bool SaveStateBase::handleFreeze()
+{
+	if (!EmuConfig.HostFs) //if hostfs isn't enabled, skip loading/saving file handles
+		return IsOkay();
+
+	if (IsLoading())
+		R3000A::ioman::reset();
+
+	if (!FreezeTag("hostHandles"))
+		return false;
+
+	const int firstfd = R3000A::ioman::firstfd;
+	size_t handleCount = R3000A::handles.size();
+	Freeze(handleCount);
+
+	for (size_t i = 0; i < handleCount; i++)
+	{
+		if (IsLoading())
+		{
+			//load the parameters for opening the file
+			s32 pos;
+			Freeze(pos);
+
+			R3000A::fileHandle handle;
+			Freeze(handle.flags);
+			FreezeString(handle.full_path);
+			Freeze(handle.mode);
+			R3000A::handles.push_back(handle);
+
+			//reopen the file
+			IOManFile* file = NULL;
+			R3000A::HostFile::open(&file, handle.full_path, handle.flags, handle.mode);
+			if (!file)
+			{
+				Console.Warning("Failed to open file: '%s'", handle.full_path.c_str());
+				continue;
+			}
+			R3000A::handles[i].fd_index = R3000A::ioman::allocfd(file) - firstfd;
+
+			//seek file to position when saved
+			file->lseek(pos, SEEK_SET);
+		}
+		else
+		{
+			//save the current file position
+			const u32 fd = R3000A::handles[i].fd_index;
+			IOManFile* file = R3000A::ioman::getfd<IOManFile>(fd + firstfd);
+			s32 pos = file->lseek(0, SEEK_CUR);
+			Freeze(pos);
+
+			//save the parameters for opening the file
+			Freeze(R3000A::handles[i].flags);
+			FreezeString(R3000A::handles[i].full_path);
+			Freeze(R3000A::handles[i].mode);
+		}
+	}
+	return IsOkay();
+}

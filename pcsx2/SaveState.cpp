@@ -275,6 +275,8 @@ bool SaveStateBase::FreezeInternals(Error* error)
 
 	okay = okay && InputRecordingFreeze();
 
+	okay = okay && handleFreeze(); //file handles
+
 	return okay;
 }
 
