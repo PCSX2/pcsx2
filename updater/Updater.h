@@ -1,11 +1,12 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include "common/ProgressCallback.h"
 
 #ifdef _WIN32
+#include "common/RedtapeWindows.h"
 #include "7z.h"
 #include "7zFile.h"
 #endif

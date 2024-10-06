@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #define FMT_32 0
 #define FMT_24 1
@@ -162,6 +162,7 @@ cbuffer cb1
 	uint4 FbMask;
 	float4 HalfTexel;
 	float4 MinMax;
+	float4 LODParams;
 	float4 STRange;
 	int4 ChannelShuffle;
 	float2 TC_OffsetHack;
@@ -207,10 +208,10 @@ float4 sample_c(float2 uv, float uv_w)
 	return Texture.Sample(TextureSampler, uv);
 #elif PS_MANUAL_LOD == 1
 	// FIXME add LOD: K - ( LOG2(Q) * (1 << L))
-	float K = MinMax.x;
-	float L = MinMax.y;
-	float bias = MinMax.z;
-	float max_lod = MinMax.w;
+	float K = LODParams.x;
+	float L = LODParams.y;
+	float bias = LODParams.z;
+	float max_lod = LODParams.w;
 
 	float gs_lod = K - log2(abs(uv_w)) * L;
 	// FIXME max useful ?
@@ -339,7 +340,7 @@ uint4 sample_4_index(float4 uv, float uv_w)
 		
 	if (PS_RTA_SRC_CORRECTION)
 	{
-		i = uint4(c * 128.55f); // Denormalize value
+		i = uint4(round(c * 128.25f)); // Denormalize value
 	}
 	else
 	{
@@ -766,23 +767,25 @@ float4 ps_color(PS_INPUT input)
 	float4 T = sample_color(st, input.t.w);
 #endif
 
-	if ((SW_BLEND || PS_TFX != 1) && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
+	if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC)
 	{
 		uint4 denorm_c_before = uint4(T);
 		if (PS_PROCESS_BA & SHUFFLE_READ)
 		{
-			T.r = float((denorm_c_before.b << 3) & 0xF8);
-			T.g = float(((denorm_c_before.b >> 2) & 0x38) | ((denorm_c_before.a << 6) & 0xC0));
-			T.b = float((denorm_c_before.a << 1) & 0xF8);
-			T.a = float(denorm_c_before.a & 0x80);
+			T.r = float((denorm_c_before.b << 3) & 0xF8u);
+			T.g = float(((denorm_c_before.b >> 2) & 0x38u) | ((denorm_c_before.a << 6) & 0xC0u));
+			T.b = float((denorm_c_before.a << 1) & 0xF8u);
+			T.a = float(denorm_c_before.a & 0x80u);
 		}
 		else
 		{
-			T.r = float((denorm_c_before.r << 3) & 0xF8);
-			T.g = float(((denorm_c_before.r >> 2) & 0x38) | ((denorm_c_before.g << 6) & 0xC0));
-			T.b = float((denorm_c_before.g << 1) & 0xF8);
-			T.a = float(denorm_c_before.g & 0x80);
+			T.r = float((denorm_c_before.r << 3) & 0xF8u);
+			T.g = float(((denorm_c_before.r >> 2) & 0x38u) | ((denorm_c_before.g << 6) & 0xC0u));
+			T.b = float((denorm_c_before.g << 1) & 0xF8u);
+			T.a = float(denorm_c_before.g & 0x80u);
 		}
+		
+		T.a = (T.a >= 127.5f ? TA.y : !PS_AEM || any(int3(T.rgb) & 0xF8) ? TA.x : 0) * 255.0f;
 	}
 
 	float4 C = tfx(T, input.c);
@@ -803,7 +806,7 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 
 void ps_dither(inout float3 C, float As, float2 pos_xy)
 {
-	if (PS_DITHER)
+	if (PS_DITHER > 0 && PS_DITHER < 3)
 	{
 		int2 fpos;
 
@@ -833,7 +836,7 @@ void ps_color_clamp_wrap(inout float3 C)
 {
 	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
 	// so we need to limit the color depth on dithered items
-	if (SW_BLEND || PS_DITHER || PS_FBMASK)
+	if (SW_BLEND || (PS_DITHER > 0 && PS_DITHER < 3) || PS_FBMASK)
 	{
 		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
 			C += 7.0f; // Need to round up, not down since the shader will invert
@@ -843,7 +846,7 @@ void ps_color_clamp_wrap(inout float3 C)
 			C = clamp(C, (float3)0.0f, (float3)255.0f);
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
-		if (PS_DST_FMT == FMT_16 && (PS_BLEND_MIX == 0 || PS_DITHER))
+		if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && (PS_BLEND_MIX == 0 || PS_DITHER))
 			C = (float3)((int3)C & (int3)0xF8);
 		else if (PS_COLCLIP == 1 || PS_HDR == 1)
 			C = (float3)((int3)C & (int3)0xFF);
@@ -859,9 +862,15 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		// PABE
 		if (PS_PABE)
 		{
+			// As_rgba needed for accumulation blend to manipulate Cd.
 			// No blending so early exit
 			if (As < 1.0f)
+			{
+				As_rgba.rgb = (float3)0.0f;
 				return;
+			}
+
+			As_rgba.rgb = (float3)1.0f;
 		}
 
 		float4 RT = SW_BLEND_NEEDS_RT ? RtTexture.Load(int3(pos_xy, 0)) : (float4)0.0f;
@@ -871,17 +880,17 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			uint4 denorm_rt = uint4(RT);
 			if (PS_PROCESS_BA & SHUFFLE_WRITE)
 			{
-				RT.r = float((denorm_rt.b << 3) & 0xF8);
-				RT.g = float(((denorm_rt.b >> 2) & 0x38) | ((denorm_rt.a << 6) & 0xC0));
-				RT.b = float((denorm_rt.a << 1) & 0xF8);
-				RT.a = float(denorm_rt.a & 0x80);
+				RT.r = float((denorm_rt.b << 3) & 0xF8u);
+				RT.g = float(((denorm_rt.b >> 2) & 0x38u) | ((denorm_rt.a << 6) & 0xC0u));
+				RT.b = float((denorm_rt.a << 1) & 0xF8u);
+				RT.a = float(denorm_rt.a & 0x80u);
 			}
 			else
 			{
-				RT.r = float((denorm_rt.r << 3) & 0xF8);
-				RT.g = float(((denorm_rt.r >> 2) & 0x38) | ((denorm_rt.g << 6) & 0xC0));
-				RT.b = float((denorm_rt.g << 1) & 0xF8);
-				RT.a = float(denorm_rt.g & 0x80);
+				RT.r = float((denorm_rt.r << 3) & 0xF8u);
+				RT.g = float(((denorm_rt.r >> 2) & 0x38u) | ((denorm_rt.g << 6) & 0xC0u));
+				RT.b = float((denorm_rt.g << 1) & 0xF8u);
+				RT.a = float(denorm_rt.g & 0x80u);
 			}
 		}
 		
@@ -898,7 +907,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
 		float C_clamped = C;
 		if (PS_BLEND_MIX > 0 && PS_BLEND_HW != 1 && PS_BLEND_HW != 2)
-			C_clamped = min(C_clamped, 1.0f);
+			C_clamped = saturate(C_clamped);
 
 		if (PS_BLEND_A == PS_BLEND_B)
 			Color.rgb = D;
@@ -950,20 +959,17 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 	}
 	else
 	{
+		float3 Alpha = PS_BLEND_C == 2 ? (float3)Af : (float3)As;
+
 		if (PS_BLEND_HW == 1)
 		{
 			// Needed for Cd * (As/Ad/F + 1) blending modes
-
 			Color.rgb = (float3)255.0f;
 		}
 		else if (PS_BLEND_HW == 2)
 		{
 			// Cd*As,Cd*Ad or Cd*F
-
-			float Alpha = PS_BLEND_C == 2 ? Af : As;
-
-			Color.rgb = saturate((float3)Alpha - (float3)1.0f);
-			Color.rgb *= (float3)255.0f;
+			Color.rgb = saturate(Alpha - (float3)1.0f) * (float3)255.0f;
 		}
 		else if (PS_BLEND_HW == 3 && PS_RTA_CORRECTION == 0)
 		{
@@ -975,6 +981,26 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			float max_color = max(max(Color.r, Color.g), Color.b);
 			float color_compensate = 255.0f / max(128.0f, max_color);
 			Color.rgb *= (float3)color_compensate;
+		}
+		else if (PS_BLEND_HW == 4)
+		{
+			// Needed for Cd * (1 - Ad) and Cd*(1 + Alpha).
+			As_rgba.rgb = Alpha * (float3)(128.0f / 255.0f);
+			Color.rgb = (float3)127.5f;
+		}
+		else if (PS_BLEND_HW == 5)
+		{
+			// Needed for Cs*Alpha + Cd*(1 - Alpha).
+			Alpha *= (float3)(128.0f / 255.0f);
+			As_rgba.rgb = (Alpha - (float3)0.5f);
+			Color.rgb = (Color.rgb * Alpha);
+		}
+		else if (PS_BLEND_HW == 6)
+		{
+			// Needed for Cd*Alpha + Cs*(1 - Alpha).
+			Alpha *= (float3)(128.0f / 255.0f);
+			As_rgba.rgb = Alpha;
+			Color.rgb *= (Alpha - (float3)0.5f);
 		}
 	}
 }
@@ -1056,27 +1082,27 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	if (PS_SHUFFLE)
 	{
-		if ((SW_BLEND || PS_TFX != 1) && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
+		if (!PS_SHUFFLE_SAME && !PS_READ16_SRC)
 		{
 			uint4 denorm_c_after = uint4(C);
 			if (PS_PROCESS_BA & SHUFFLE_READ)
 			{
-				C.b = float(((denorm_c_after.r >> 3) & 0x1F) | ((denorm_c_after.g << 2) & 0xE0));
-				C.a = float(((denorm_c_after.g >> 6) & 0x3) | ((denorm_c_after.b >> 1) & 0x7C) | (denorm_c_after.a & 0x80));
+				C.b = float(((denorm_c_after.r >> 3) & 0x1Fu) | ((denorm_c_after.g << 2) & 0xE0u));
+				C.a = float(((denorm_c_after.g >> 6) & 0x3u) | ((denorm_c_after.b >> 1) & 0x7Cu) | (denorm_c_after.a & 0x80u));
 			}
 			else
 			{
-				C.r = float(((denorm_c_after.r >> 3) & 0x1F) | ((denorm_c_after.g << 2) & 0xE0));
-				C.g = float(((denorm_c_after.g >> 6) & 0x3) | ((denorm_c_after.b >> 1) & 0x7C) | (denorm_c_after.a & 0x80));
+				C.r = float(((denorm_c_after.r >> 3) & 0x1Fu) | ((denorm_c_after.g << 2) & 0xE0u));
+				C.g = float(((denorm_c_after.g >> 6) & 0x3u) | ((denorm_c_after.b >> 1) & 0x7Cu) | (denorm_c_after.a & 0x80u));
 			}
 		}
 
-		uint4 denorm_c = uint4(C);
-		uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
 
 		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 		if (PS_SHUFFLE_SAME)
 		{
+			uint4 denorm_c = uint4(C);
+			
 			if (PS_PROCESS_BA & SHUFFLE_READ)
 				C = (float4)(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
 			else
@@ -1085,6 +1111,8 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		// Copy of a 16bit source in to this target
 		else if (PS_READ16_SRC)
 		{
+			uint4 denorm_c = uint4(C);
+			uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
 			C.rb = (float2)float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5));
 			if (denorm_c.a & 0x80u)
 				C.ga = (float2)float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u));
@@ -1096,43 +1124,21 @@ PS_OUTPUT ps_main(PS_INPUT input)
 			if (PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 			{
 				C.rb = C.br;
-				if ((denorm_c.a & 0x80u) != 0u)
-					C.g = float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u));
-				else
-					C.g = float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u));
-					
-				if ((denorm_c.g & 0x80u) != 0u)
-					C.a = float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u));
-				else
-					C.a = float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u));
+				float g_temp = C.g;
+				
+				C.g = C.a;
+				C.a = g_temp;
 			}
 			else if(PS_PROCESS_BA & SHUFFLE_READ)
 			{
 				C.rb = C.bb;
-				if ((denorm_c.a & 0x80u) != 0u)
-					C.ga =  (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
-				else
-					C.ga =  (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+				C.ga = C.aa;
 			}
 			else
 			{
 				C.rb = C.rr;
-				if ((denorm_c.g & 0x80u) != 0u)
-					C.ga =  (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
-				else
-					C.ga =  (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+				C.ga = C.gg;
 			}
-		}
-		else // Basically a direct copy but a shuffle of both pairs of channels, so green and alpha get modified by TEXA
-		{
-			if ((denorm_c.g & 0x80u) != 0u)
-				C.g = float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u));
-			else
-				C.g = float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u));
-			if ((denorm_c.a & 0x80u) != 0u)
-				C.a = float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u));
-			else
-				C.a = float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u));
 		}
 	}
 

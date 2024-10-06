@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "FileSystem.h"
 #include "Error.h"
@@ -8,6 +8,7 @@
 #include "Console.h"
 #include "StringUtil.h"
 #include "Path.h"
+#include "ProgressCallback.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -137,7 +138,7 @@ static inline void PathAppendString(std::string& dst, const T& src)
 	}
 }
 
-std::string Path::SanitizeFileName(const std::string_view& str, bool strip_slashes /* = true */)
+std::string Path::SanitizeFileName(const std::string_view str, bool strip_slashes /* = true */)
 {
 	std::string ret;
 	ret.reserve(str.length());
@@ -191,7 +192,7 @@ void Path::SanitizeFileName(std::string* str, bool strip_slashes /* = true */)
 #endif
 }
 
-bool Path::IsValidFileName(const std::string_view& str, bool allow_slashes)
+bool Path::IsValidFileName(const std::string_view str, bool allow_slashes)
 {
 	const size_t len = str.length();
 	size_t pos = 0;
@@ -272,7 +273,7 @@ std::wstring FileSystem::GetWin32Path(std::string_view str)
 
 #endif
 
-bool Path::IsAbsolute(const std::string_view& path)
+bool Path::IsAbsolute(const std::string_view path)
 {
 #ifdef _WIN32
 	return (path.length() >= 3 && ((path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z')) &&
@@ -283,7 +284,7 @@ bool Path::IsAbsolute(const std::string_view& path)
 #endif
 }
 
-std::string Path::RealPath(const std::string_view& path)
+std::string Path::RealPath(const std::string_view path)
 {
 	// Resolve non-absolute paths first.
 	std::vector<std::string_view> components;
@@ -457,7 +458,7 @@ std::string Path::RealPath(const std::string_view& path)
 	return realpath;
 }
 
-std::string Path::ToNativePath(const std::string_view& path)
+std::string Path::ToNativePath(const std::string_view path)
 {
 	std::string ret;
 	PathAppendString(ret, path);
@@ -477,7 +478,7 @@ void Path::ToNativePath(std::string* path)
 	*path = Path::ToNativePath(*path);
 }
 
-std::string Path::Canonicalize(const std::string_view& path)
+std::string Path::Canonicalize(const std::string_view path)
 {
 	std::vector<std::string_view> components = Path::SplitNativePath(path);
 	std::vector<std::string_view> new_components;
@@ -513,7 +514,7 @@ void Path::Canonicalize(std::string* path)
 	*path = Canonicalize(*path);
 }
 
-std::string Path::MakeRelative(const std::string_view& path, const std::string_view& relative_to)
+std::string Path::MakeRelative(const std::string_view path, const std::string_view relative_to)
 {
 	// simple algorithm, we just work on the components. could probably be better, but it'll do for now.
 	std::vector<std::string_view> path_components(SplitNativePath(path));
@@ -560,7 +561,7 @@ std::string Path::MakeRelative(const std::string_view& path, const std::string_v
 	return JoinNativePath(new_components);
 }
 
-std::string_view Path::GetExtension(const std::string_view& path)
+std::string_view Path::GetExtension(const std::string_view path)
 {
 	const std::string_view::size_type pos = path.rfind('.');
 	if (pos == std::string_view::npos)
@@ -569,7 +570,7 @@ std::string_view Path::GetExtension(const std::string_view& path)
 		return path.substr(pos + 1);
 }
 
-std::string_view Path::StripExtension(const std::string_view& path)
+std::string_view Path::StripExtension(const std::string_view path)
 {
 	const std::string_view::size_type pos = path.rfind('.');
 	if (pos == std::string_view::npos)
@@ -578,7 +579,7 @@ std::string_view Path::StripExtension(const std::string_view& path)
 	return path.substr(0, pos);
 }
 
-std::string Path::ReplaceExtension(const std::string_view& path, const std::string_view& new_extension)
+std::string Path::ReplaceExtension(const std::string_view path, const std::string_view new_extension)
 {
 	const std::string_view::size_type pos = path.rfind('.');
 	if (pos == std::string_view::npos)
@@ -589,7 +590,7 @@ std::string Path::ReplaceExtension(const std::string_view& path, const std::stri
 	return ret;
 }
 
-static std::string_view::size_type GetLastSeperatorPosition(const std::string_view& filename, bool include_separator)
+static std::string_view::size_type GetLastSeperatorPosition(const std::string_view filename, bool include_separator)
 {
 	std::string_view::size_type last_separator = filename.rfind('/');
 	if (include_separator && last_separator != std::string_view::npos)
@@ -609,7 +610,7 @@ static std::string_view::size_type GetLastSeperatorPosition(const std::string_vi
 	return last_separator;
 }
 
-std::string_view Path::GetDirectory(const std::string_view& path)
+std::string_view Path::GetDirectory(const std::string_view path)
 {
 	const std::string::size_type pos = GetLastSeperatorPosition(path, false);
 	if (pos == std::string_view::npos)
@@ -618,7 +619,7 @@ std::string_view Path::GetDirectory(const std::string_view& path)
 	return path.substr(0, pos);
 }
 
-std::string_view Path::GetFileName(const std::string_view& path)
+std::string_view Path::GetFileName(const std::string_view path)
 {
 	const std::string_view::size_type pos = GetLastSeperatorPosition(path, true);
 	if (pos == std::string_view::npos)
@@ -627,7 +628,7 @@ std::string_view Path::GetFileName(const std::string_view& path)
 	return path.substr(pos);
 }
 
-std::string_view Path::GetFileTitle(const std::string_view& path)
+std::string_view Path::GetFileTitle(const std::string_view path)
 {
 	const std::string_view filename(GetFileName(path));
 	const std::string::size_type pos = filename.rfind('.');
@@ -637,7 +638,7 @@ std::string_view Path::GetFileTitle(const std::string_view& path)
 	return filename.substr(0, pos);
 }
 
-std::string Path::ChangeFileName(const std::string_view& path, const std::string_view& new_filename)
+std::string Path::ChangeFileName(const std::string_view path, const std::string_view new_filename)
 {
 	std::string ret;
 	PathAppendString(ret, path);
@@ -664,12 +665,12 @@ std::string Path::ChangeFileName(const std::string_view& path, const std::string
 	return ret;
 }
 
-void Path::ChangeFileName(std::string* path, const std::string_view& new_filename)
+void Path::ChangeFileName(std::string* path, const std::string_view new_filename)
 {
 	*path = ChangeFileName(*path, new_filename);
 }
 
-std::string Path::AppendDirectory(const std::string_view& path, const std::string_view& new_dir)
+std::string Path::AppendDirectory(const std::string_view path, const std::string_view new_dir)
 {
 	std::string ret;
 	if (!new_dir.empty())
@@ -711,12 +712,12 @@ std::string Path::AppendDirectory(const std::string_view& path, const std::strin
 	return ret;
 }
 
-void Path::AppendDirectory(std::string* path, const std::string_view& new_dir)
+void Path::AppendDirectory(std::string* path, const std::string_view new_dir)
 {
 	*path = AppendDirectory(*path, new_dir);
 }
 
-std::vector<std::string_view> Path::SplitWindowsPath(const std::string_view& path)
+std::vector<std::string_view> Path::SplitWindowsPath(const std::string_view path)
 {
 	std::vector<std::string_view> parts;
 
@@ -754,7 +755,7 @@ std::string Path::JoinWindowsPath(const std::vector<std::string_view>& component
 	return StringUtil::JoinString(components.begin(), components.end(), '\\');
 }
 
-std::vector<std::string_view> Path::SplitNativePath(const std::string_view& path)
+std::vector<std::string_view> Path::SplitNativePath(const std::string_view path)
 {
 #ifdef _WIN32
 	return SplitWindowsPath(path);
@@ -821,7 +822,7 @@ std::vector<std::string> FileSystem::GetRootDirectoryList()
 	return results;
 }
 
-std::string Path::BuildRelativePath(const std::string_view& filename, const std::string_view& new_filename)
+std::string Path::BuildRelativePath(const std::string_view filename, const std::string_view new_filename)
 {
 	std::string new_string;
 
@@ -832,7 +833,7 @@ std::string Path::BuildRelativePath(const std::string_view& filename, const std:
 	return new_string;
 }
 
-std::string Path::Combine(const std::string_view& base, const std::string_view& next)
+std::string Path::Combine(const std::string_view base, const std::string_view next)
 {
 	std::string ret;
 	ret.reserve(base.length() + next.length() + 1);
@@ -1171,7 +1172,7 @@ bool FileSystem::WriteBinaryFile(const char* filename, const void* data, size_t 
 	return true;
 }
 
-bool FileSystem::WriteStringToFile(const char* filename, const std::string_view& sv)
+bool FileSystem::WriteStringToFile(const char* filename, const std::string_view sv)
 {
 	ManagedCFilePtr fp = OpenManagedCFile(filename, "wb");
 	if (!fp)
@@ -1181,6 +1182,31 @@ bool FileSystem::WriteStringToFile(const char* filename, const std::string_view&
 		return false;
 
 	return true;
+}
+
+size_t FileSystem::ReadFileWithProgress(std::FILE* fp, void* dst, size_t length,
+	ProgressCallback* progress, Error* error, size_t chunk_size)
+{
+	progress->SetProgressRange(100);
+
+	size_t done = 0;
+	while (done < length)
+	{
+		if (progress->IsCancelled())
+			break;
+
+		const size_t read_size = std::min(length - done, chunk_size);
+		if (std::fread(static_cast<u8*>(dst) + done, read_size, 1, fp) != 1)
+		{
+			Error::SetErrno(error, "fread() failed: ", errno);
+			break;
+		}
+
+		progress->SetProgressValue((done * 100) / length);
+		done += read_size;
+	}
+
+	return done;
 }
 
 bool FileSystem::EnsureDirectoryExists(const char* path, bool recursive, Error* error)
@@ -1434,7 +1460,24 @@ bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, Fin
 	}
 
 	// enter the recursive function
-	return (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) > 0);
+	if (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) == 0)
+		return false;
+
+	if (flags & FILESYSTEM_FIND_SORT_BY_NAME)
+	{
+		std::sort(results->begin(), results->end(), [](const FILESYSTEM_FIND_DATA& lhs, const FILESYSTEM_FIND_DATA& rhs) {
+			// directories first
+			if ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) !=
+				(rhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
+			{
+				return ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0);
+			}
+
+			return (StringUtil::Strcasecmp(lhs.FileName.c_str(), rhs.FileName.c_str()) < 0);
+		});
+	}
+
+	return true;
 }
 
 static void TranslateStat64(struct stat* st, const struct _stat64& st64)
@@ -1607,6 +1650,21 @@ bool FileSystem::DirectoryExists(const char* path)
 		return false;
 }
 
+bool FileSystem::IsRealDirectory(const char* path)
+{
+	// convert to wide string
+	const std::wstring wpath = GetWin32Path(path);
+	if (wpath.empty())
+		return false;
+
+	// determine attributes for the path. if it's a directory, things have to be handled differently..
+	const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
+	if (fileAttributes == INVALID_FILE_ATTRIBUTES)
+		return false;
+
+	return ((fileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT)) != FILE_ATTRIBUTE_DIRECTORY);
+}
+
 bool FileSystem::DirectoryIsEmpty(const char* path)
 {
 	std::wstring wpath = GetWin32Path(path);
@@ -1674,8 +1732,26 @@ bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive, Error* er
 		std::wstring tempPath;
 		tempPath.reserve(pathLength);
 
+		// for absolute paths, we need to skip over the path root
+		size_t rootLength = 0;
+		if (Path::IsAbsolute(Path))
+		{
+			const wchar_t* root_start = wpath.c_str();
+			wchar_t* root_end;
+			const HRESULT hr = PathCchSkipRoot(const_cast<wchar_t*>(root_start), &root_end);
+			if (FAILED(hr))
+			{
+				Error::SetHResult(error, "PathCchSkipRoot() failed: ", hr);
+				return false;
+			}
+			rootLength = static_cast<size_t>(root_end - root_start);
+
+			// copy path root
+			tempPath.append(wpath, 0, rootLength);
+		}
+
 		// create directories along the path
-		for (size_t i = 0; i < pathLength; i++)
+		for (size_t i = rootLength; i < pathLength; i++)
 		{
 			if (wpath[i] == L'\\' || wpath[i] == L'/')
 			{
@@ -1725,17 +1801,29 @@ bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive, Error* er
 	}
 }
 
-bool FileSystem::DeleteFilePath(const char* path)
+bool FileSystem::DeleteFilePath(const char* path, Error* error)
 {
 	if (path[0] == '\0')
+	{
+		Error::SetStringView(error, "Path is empty.");
 		return false;
+	}
 
 	const std::wstring wpath = GetWin32Path(path);
 	const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
 	if (fileAttributes == INVALID_FILE_ATTRIBUTES || fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+	{
+		Error::SetStringView(error, "File does not exist.");
 		return false;
+	}
 
-	return (DeleteFileW(wpath.c_str()) == TRUE);
+	if (!DeleteFileW(wpath.c_str()))
+	{
+		Error::SetWin32(error, "DeleteFileW() failed: ", GetLastError());
+		return false;
+	}
+
+	return true;
 }
 
 bool FileSystem::RenamePath(const char* old_path, const char* new_path, Error* error)
@@ -2004,7 +2092,24 @@ bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, Fin
 	}
 
 	// enter the recursive function
-	return (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) > 0);
+	if (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) == 0)
+		return false;
+
+	if (flags & FILESYSTEM_FIND_SORT_BY_NAME)
+	{
+		std::sort(results->begin(), results->end(), [](const FILESYSTEM_FIND_DATA& lhs, const FILESYSTEM_FIND_DATA& rhs) {
+			// directories first
+			if ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) !=
+				(rhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
+			{
+				return ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0);
+			}
+
+			return (StringUtil::Strcasecmp(lhs.FileName.c_str(), rhs.FileName.c_str()) < 0);
+		});
+	}
+
+	return true;
 }
 
 bool FileSystem::StatFile(const char* path, struct stat* st)
@@ -2111,6 +2216,15 @@ bool FileSystem::DirectoryExists(const char* path)
 		return false;
 }
 
+bool FileSystem::IsRealDirectory(const char* path)
+{
+	struct stat sysStatData;
+	if (lstat(path, &sysStatData) < 0)
+		return false;
+
+	return (S_ISDIR(sysStatData.st_mode) && !S_ISLNK(sysStatData.st_mode));
+}
+
 bool FileSystem::DirectoryIsEmpty(const char* path)
 {
 	DIR* pDir = opendir(path);
@@ -2213,16 +2327,28 @@ bool FileSystem::CreateDirectoryPath(const char* path, bool recursive, Error* er
 	}
 }
 
-bool FileSystem::DeleteFilePath(const char* path)
+bool FileSystem::DeleteFilePath(const char* path, Error* error)
 {
 	if (path[0] == '\0')
+	{
+		Error::SetStringView(error, "Path is empty.");
 		return false;
+	}
 
 	struct stat sysStatData;
 	if (stat(path, &sysStatData) != 0 || S_ISDIR(sysStatData.st_mode))
+	{
+		Error::SetStringView(error, "File does not exist.");
 		return false;
+	}
 
-	return (unlink(path) == 0);
+	if (unlink(path) != 0)
+	{
+		Error::SetErrno(error, "unlink() failed: ", errno);
+		return false;
+	}
+
+	return true;
 }
 
 bool FileSystem::RenamePath(const char* old_path, const char* new_path, Error* error)

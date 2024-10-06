@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include "ui_ControllerSettingsWindow.h"
@@ -63,6 +63,7 @@ public:
 	void setIntValue(const char* section, const char* key, s32 value);
 	void setStringValue(const char* section, const char* key, const char* value);
 	void clearSettingValue(const char* section, const char* key);
+	void saveAndReloadGameSettings();
 
 Q_SIGNALS:
 	void inputProfileSwitched();
@@ -74,7 +75,7 @@ private Q_SLOTS:
 	void onCategoryCurrentRowChanged(int row);
 	void onCurrentProfileChanged(int index);
 	void onNewProfileClicked();
-	void onLoadProfileClicked();
+	void onApplyProfileClicked();
 	void onDeleteProfileClicked();
 	void onMappingSettingsClicked();
 	void onRestoreDefaultsClicked();

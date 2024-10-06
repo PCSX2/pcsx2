@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -59,6 +59,21 @@ private:
 	bool commandStage = false;
 	u32 responseBytes = 0;
 
+	// Since we reordered the buttons for better UI, we need to remap them here.
+	static constexpr std::array<u8, Inputs::LENGTH> bitmaskMapping = {{
+		5, // PAD_YELLOW_LEFT
+		12, // PAD_YELLOW_RIGHT
+		6, // PAD_BLUE_LEFT
+		7, // PAD_BLUE_RIGHT
+		4, // PAD_WHITE_LEFT
+		0, // PAD_WHITE_RIGHT
+		3, // PAD_GREEN_LEFT
+		1, // PAD_GREEN_RIGHT
+		2, // PAD_RED
+		11, // PAD_START
+		8, // PAD_SELECT
+	}};
+
 	void ConfigLog();
 
 	u8 Mystery(u8 commandByte);
@@ -81,6 +96,7 @@ public:
 	const Pad::ControllerInfo& GetInfo() const override;
 	void Set(u32 index, float value) override;
 	void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right) override;
+	void SetRawPressureButton(u32 index, const std::tuple<bool, u8> value) override;
 	void SetAxisScale(float deadzone, float scale) override;
 	float GetVibrationScale(u32 motor) const override;
 	void SetVibrationScale(u32 motor, float scale) override;

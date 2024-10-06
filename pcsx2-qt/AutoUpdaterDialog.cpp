@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "AutoUpdaterDialog.h"
 #include "MainWindow.h"
@@ -264,6 +264,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
 						const QJsonObject asset_object(asset_value.toObject());
 						const QJsonArray additional_tags_array(asset_object["additionalTags"].toArray());
 						bool is_symbols = false;
+						bool is_installer = false;
 						bool is_avx2 = false;
 						bool is_sse4 = false;
 						bool is_perfect_match = false;
@@ -274,6 +275,12 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
 							{
 								// we're not interested in symbols downloads
 								is_symbols = true;
+								break;
+							}
+							if (additional_tag_str == QStringLiteral("installer"))
+							{
+								// we're not interested in installer download
+								is_installer = true;
 								break;
 							}
 							else if (additional_tag_str == QStringLiteral("SSE4"))
@@ -299,6 +306,11 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
 							continue;
 						}
 
+						if (is_installer)
+						{
+							// skip this asset
+							continue;
+						}
 #ifdef _M_X86
 						if (is_avx2 && cpuinfo_has_x86_avx2())
 						{
@@ -502,6 +514,11 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 			download_result = processUpdate(data, progress.GetDialog());
 		},
 		&progress);
+
+
+	// Since we're going to block, don't allow the timer to poll, otherwise the progress callback can cause the timer to
+	// run, and recursively poll again.
+	m_http_poll_timer->stop();
 
 	// Block until completion.
 	while (m_http->HasAnyRequests())
@@ -892,7 +909,7 @@ void AutoUpdaterDialog::cleanupAfterUpdate()
 
 #else
 
-bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDialog& progress)
+bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& data, QProgressDialog& progress)
 {
 	return false;
 }

@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
 #include "CDVD/CDVD.h"
@@ -18,6 +18,7 @@
 
 #include "common/AlignedMalloc.h"
 #include "common/FastJmp.h"
+#include "common/HeapArray.h"
 #include "common/Perf.h"
 
 // Only for MOVQ workaround.
@@ -68,9 +69,10 @@ eeProfiler EE::Profiler;
 
 #define X86
 
-static u8* recRAMCopy = nullptr;
-static u8* recLutReserve_RAM = nullptr;
-static const size_t recLutSize = (Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) * wordsize / 4;
+static DynamicHeapArray<u8, 4096> recRAMCopy;
+static DynamicHeapArray<u8, 4096> recLutReserve_RAM;
+static size_t recLutSize;
+static bool extraRam;
 
 static BASEBLOCK* recRAM = nullptr; // and the ptr to the blocks here
 static BASEBLOCK* recROM = nullptr; // and here
@@ -497,24 +499,19 @@ static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 		base[i].SetFnptr((uptr)JITCompile);
 }
 
-static void recReserve()
+static void recReserveRAM()
 {
-	recPtr = SysMemory::GetEERec();
-	recPtrEnd = SysMemory::GetEERecEnd() - _64kb;
+	recLutSize = (Ps2MemSize::ExposedRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) * wordsize / 4;
 
-	if (!recRAMCopy)
-	{
-		recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
-	}
+	if (recRAMCopy.size() != Ps2MemSize::ExposedRam)
+		recRAMCopy.resize(Ps2MemSize::ExposedRam);
 
-	if (!recRAM)
-	{
-		recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
-	}
+	if (recLutReserve_RAM.size() != recLutSize)
+		recLutReserve_RAM.resize(recLutSize);
 
-	BASEBLOCK* basepos = (BASEBLOCK*)recLutReserve_RAM;
+	BASEBLOCK* basepos = reinterpret_cast<BASEBLOCK*>(recLutReserve_RAM.data());
 	recRAM = basepos;
-	basepos += (Ps2MemSize::MainRam / 4);
+	basepos += (Ps2MemSize::ExposedRam / 4);
 	recROM = basepos;
 	basepos += (Ps2MemSize::Rom / 4);
 	recROM1 = basepos;
@@ -525,7 +522,7 @@ static void recReserve()
 	for (int i = 0; i < 0x10000; i++)
 		recLUT_SetPage(recLUT, 0, 0, 0, i, 0);
 
-	for (int i = 0x0000; i < (int)(Ps2MemSize::MainRam / 0x10000); i++)
+	for (int i = 0x0000; i < (int)(Ps2MemSize::ExposedRam / 0x10000); i++)
 	{
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x0000, i, i);
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x2000, i, i);
@@ -551,12 +548,19 @@ static void recReserve()
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0xa000, i, i - 0x1e00);
 	}
 
-	for (int i = 0x1e40; i < 0x1e48; i++)
+	for (int i = 0x1e40; i < 0x1e80; i++)
 	{
 		recLUT_SetPage(recLUT, hwLUT, recROM2, 0x0000, i, i - 0x1e40);
 		recLUT_SetPage(recLUT, hwLUT, recROM2, 0x8000, i, i - 0x1e40);
 		recLUT_SetPage(recLUT, hwLUT, recROM2, 0xa000, i, i - 0x1e40);
 	}
+}
+
+static void recReserve()
+{
+	recPtr = SysMemory::GetEERec();
+	recPtrEnd = SysMemory::GetEERecEnd() - _64kb;
+	recReserveRAM();
 
 	pxAssertRel(!s_pInstCache, "InstCache not allocated");
 	s_nInstCacheSize = 128;
@@ -565,13 +569,19 @@ static void recReserve()
 		pxFailRel("Failed to allocate R5900 InstCache array");
 }
 
-alignas(16) static u16 manual_page[Ps2MemSize::MainRam >> 12];
-alignas(16) static u8 manual_counter[Ps2MemSize::MainRam >> 12];
+alignas(16) static u16 manual_page[Ps2MemSize::TotalRam >> 12];
+alignas(16) static u8 manual_counter[Ps2MemSize::TotalRam >> 12];
 
 ////////////////////////////////////////////////////
 static void recResetRaw()
 {
 	Console.WriteLn(Color_StrongBlack, "EE/iR5900 Recompiler Reset");
+
+	if (CHECK_EXTRAMEM != extraRam)
+	{
+		recReserveRAM();
+		extraRam = !extraRam;
+	}
 
 	EE::Profiler.Reset();
 
@@ -580,8 +590,8 @@ static void recResetRaw()
 	vtlb_DynGenDispatchers();
 	recPtr = xGetPtr();
 
-	ClearRecLUT((BASEBLOCK*)recLutReserve_RAM, recLutSize);
-	memset(recRAMCopy, 0, Ps2MemSize::MainRam);
+	ClearRecLUT(reinterpret_cast<BASEBLOCK*>(recLutReserve_RAM.data()), recLutSize);
+	recRAMCopy.fill(0);
 
 	maxrecmem = 0;
 
@@ -589,7 +599,6 @@ static void recResetRaw()
 		memset(s_pInstCache, 0, sizeof(EEINST) * s_nInstCacheSize);
 
 	recBlocks.Reset();
-	mmap_ResetBlockTracking();
 	vtlb_ClearLoadStoreInfo();
 
 	g_branch = 0;
@@ -598,8 +607,8 @@ static void recResetRaw()
 
 void recShutdown()
 {
-	safe_aligned_free(recRAMCopy);
-	safe_aligned_free(recLutReserve_RAM);
+	recRAMCopy.deallocate();
+	recLutReserve_RAM.deallocate();
 
 	recBlocks.Reset();
 
@@ -682,7 +691,7 @@ static void recExecute()
 	if (!fastjmp_set(&m_SetJmp_StateCheck))
 	{
 		eeCpuExecuting = true;
-		((void(*)())EnterRecompiledCode)();
+		((void (*)())EnterRecompiledCode)();
 
 		// Generally unreachable code here ...
 	}
@@ -1325,9 +1334,10 @@ u32 scaleblockcycles_clear()
 	DevCon.WriteLn(L"Unscaled overall: %d,  scaled overall: %d,  relative EE clock speed: %d %%",
 		unscaled_overall, scaled_overall, static_cast<int>(100 * ratio));
 #endif
-	s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
+	const s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
+	const bool lowcycles = (s_nBlockCycles <= 40);
 
-	if (cyclerate > 1)
+	if (!lowcycles && cyclerate > 1)
 	{
 		s_nBlockCycles &= (0x1 << (cyclerate + 2)) - 1;
 	}
@@ -1525,23 +1535,32 @@ void dynarecCheckBreakpoint()
 	recExitExecution();
 }
 
-void dynarecMemcheck()
+void dynarecMemcheck(size_t i)
 {
-	const u32 pc = cpuRegs.pc;
+	const u32 op = memRead32(cpuRegs.pc);
+	const OPCODE& opcode = GetInstruction(op);
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_EE, pc) != 0)
 		return;
+
+	auto mc = CBreakPoints::GetMemChecks(BREAKPOINT_EE)[i];
+
+	if (mc.hasCond)
+	{
+		if (!mc.cond.Evaluate())
+			return;
+	}
+
+	if (mc.result & MEMCHECK_LOG)
+	{
+		if (opcode.flags & IS_STORE)
+			DevCon.WriteLn("Hit store breakpoint @0x%x", cpuRegs.pc);
+		else
+			DevCon.WriteLn("Hit load breakpoint @0x%x", cpuRegs.pc);
+	}
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_EE);
 	VMManager::SetPaused(true);
 	recExitExecution();
-}
-
-void dynarecMemLogcheck(u32 start, bool store)
-{
-	if (store)
-		DevCon.WriteLn("Hit store breakpoint @0x%x", start);
-	else
-		DevCon.WriteLn("Hit load breakpoint @0x%x", start);
 }
 
 void recMemcheck(u32 op, u32 bits, bool store)
@@ -1568,9 +1587,9 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	{
 		if (checks[i].result == 0)
 			continue;
-		if ((checks[i].cond & MEMCHECK_WRITE) == 0 && store)
+		if ((checks[i].memCond & MEMCHECK_WRITE) == 0 && store)
 			continue;
-		if ((checks[i].cond & MEMCHECK_READ) == 0 && !store)
+		if ((checks[i].memCond & MEMCHECK_READ) == 0 && !store)
 			continue;
 
 		// logic: memAddress < bpEnd && bpStart < memAddress+memSize
@@ -1584,33 +1603,10 @@ void recMemcheck(u32 op, u32 bits, bool store)
 		xForwardJGE8 next2; // if start >= address+size then goto next2
 
 		// hit the breakpoint
-		if (checks[i].result & MEMCHECK_LOG)
-		{
-			xMOV(edx, store);
-			// Preserve ecx (address) and edx (address+size) because we aren't breaking
-			// out of this loops iteration and dynarecMemLogcheck will clobber them
-			// Also keep 16 byte stack alignment
-			if (!(checks[i].result & MEMCHECK_BREAK))
-			{
-				xPUSH(eax);
-				xPUSH(ebx);
-				xPUSH(ecx);
-				xPUSH(edx);
-				xFastCall((void*)dynarecMemLogcheck, ecx, edx);
-				xPOP(edx);
-				xPOP(ecx);
-				xPOP(ebx);
-				xPOP(eax);
-			}
-			else
-			{
-				xFastCall((void*)dynarecMemLogcheck, ecx, edx);
-			}
-		}
 		if (checks[i].result & MEMCHECK_BREAK)
 		{
-			// Don't need to preserve edx and ecx, we don't return
-			xFastCall((void*)dynarecMemcheck);
+			xMOV(eax, i);
+			xFastCall((void*)dynarecMemcheck, eax);
 		}
 
 		next1.SetTarget();
@@ -1711,7 +1707,7 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 	g_pCurInstInfo++;
 
 	// pc might be past s_nEndBlock if the last instruction in the block is a DI.
-	if (pc <= s_nEndBlock)
+	if (pc <= s_nEndBlock && (g_pCurInstInfo + (s_nEndBlock - pc) / 4 + 1) <= s_pInstCache + s_nInstCacheSize)
 	{
 		int count;
 		for (u32 i = 0; i < iREGCNT_GPR; ++i)
@@ -2638,7 +2634,7 @@ StartRecomp:
 	pxAssert((pc - startpc) >> 2 <= 0xffff);
 	s_pCurBlockEx->size = (pc - startpc) >> 2;
 
-	if (HWADDR(pc) <= Ps2MemSize::MainRam)
+	if (HWADDR(pc) <= Ps2MemSize::ExposedRam)
 	{
 		BASEBLOCKEX* oldBlock;
 		int i;

@@ -1,190 +1,33 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#if defined(__APPLE__)
-#define _XOPEN_SOURCE
-#endif
+#include "common/Assertions.h"
+#include "common/BitUtils.h"
+#include "common/Console.h"
+#include "common/CrashHandler.h"
+#include "common/Error.h"
+#include "common/HostSys.h"
 
-#if !defined(_WIN32)
 #include <cstdio>
-#include <sys/mman.h>
-#include <signal.h>
-#include <errno.h>
+#include <csignal>
+#include <cerrno>
 #include <fcntl.h>
-#include <unistd.h>
-
 #include <mutex>
+#include <sys/mman.h>
+#include <ucontext.h>
+#include <unistd.h>
 
 #include "fmt/core.h"
 
-#include "common/BitUtils.h"
-#include "common/Assertions.h"
-#include "common/Console.h"
-#include "common/HostSys.h"
-
-// Apple uses the MAP_ANON define instead of MAP_ANONYMOUS, but they mean
-// the same thing.
-#if defined(__APPLE__) && !defined(MAP_ANONYMOUS)
-#define MAP_ANONYMOUS MAP_ANON
+#if defined(__FreeBSD__)
+#include "cpuinfo.h"
 #endif
 
-#include <cerrno>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <unistd.h>
-
-#ifndef __APPLE__
-#include <ucontext.h>
+// FreeBSD does not have MAP_FIXED_NOREPLACE, but does have MAP_EXCL.
+// MAP_FIXED combined with MAP_EXCL behaves like MAP_FIXED_NOREPLACE.
+#if defined(__FreeBSD__) && !defined(MAP_FIXED_NOREPLACE)
+#define MAP_FIXED_NOREPLACE (MAP_FIXED | MAP_EXCL)
 #endif
-
-static std::recursive_mutex s_exception_handler_mutex;
-static PageFaultHandler s_exception_handler_callback;
-static bool s_in_exception_handler;
-
-#ifdef __APPLE__
-#include <mach/task.h>
-#include <mach/mach_init.h>
-#include <mach/mach_port.h>
-#endif
-
-#if defined(__APPLE__) || defined(__aarch64__)
-static struct sigaction s_old_sigbus_action;
-#endif
-#if !defined(__APPLE__) || defined(__aarch64__)
-static struct sigaction s_old_sigsegv_action;
-#endif
-
-static void CallExistingSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
-{
-#if defined(__aarch64__)
-	const struct sigaction& sa = (signal == SIGBUS) ? s_old_sigbus_action : s_old_sigsegv_action;
-#elif defined(__APPLE__)
-	const struct sigaction& sa = s_old_sigbus_action;
-#else
-	const struct sigaction& sa = s_old_sigsegv_action;
-#endif
-
-	if (sa.sa_flags & SA_SIGINFO)
-	{
-		sa.sa_sigaction(signal, siginfo, ctx);
-	}
-	else if (sa.sa_handler == SIG_DFL)
-	{
-		// Re-raising the signal would just queue it, and since we'd restore the handler back to us,
-		// we'd end up right back here again. So just abort, because that's probably what it'd do anyway.
-		abort();
-	}
-	else if (sa.sa_handler != SIG_IGN)
-	{
-		sa.sa_handler(signal);
-	}
-}
-
-// Linux implementation of SIGSEGV handler.  Bind it using sigaction().
-static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
-{
-	// Executing the handler concurrently from multiple threads wouldn't go down well.
-	std::unique_lock lock(s_exception_handler_mutex);
-
-	// Prevent recursive exception filtering.
-	if (s_in_exception_handler)
-	{
-		lock.unlock();
-		CallExistingSignalHandler(signal, siginfo, ctx);
-		return;
-	}
-
-	// Note: Use of stdio functions isn't safe here.  Avoid console logs, assertions, file logs,
-	// or just about anything else useful. However, that's really only a concern if the signal
-	// occurred within those functions. The logging which we do only happens when the exception
-	// occurred within JIT code.
-
-#if defined(__APPLE__) && defined(__x86_64__)
-	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
-#elif defined(__FreeBSD__) && defined(__x86_64__)
-	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_rip);
-#elif defined(__x86_64__)
-	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_RIP]);
-#elif defined(__aarch64__)
-	#ifndef __APPLE__
-		void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.pc);
-	#else
-		void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
-	#endif
-#else
-	void* const exception_pc = nullptr;
-#endif
-
-	const PageFaultInfo pfi{
-		reinterpret_cast<uptr>(exception_pc), reinterpret_cast<uptr>(siginfo->si_addr) & ~static_cast<uptr>(__pagemask)};
-
-	s_in_exception_handler = true;
-
-	const bool handled = s_exception_handler_callback(pfi);
-
-	s_in_exception_handler = false;
-
-	// Resumes execution right where we left off (re-executes instruction that caused the SIGSEGV).
-	if (handled)
-		return;
-
-	// Call old signal handler, which will likely dump core.
-	lock.unlock();
-	CallExistingSignalHandler(signal, siginfo, ctx);
-}
-
-bool HostSys::InstallPageFaultHandler(PageFaultHandler handler)
-{
-	std::unique_lock lock(s_exception_handler_mutex);
-	pxAssertRel(!s_exception_handler_callback, "A page fault handler is already registered.");
-	if (!s_exception_handler_callback)
-	{
-		struct sigaction sa;
-
-		sigemptyset(&sa.sa_mask);
-		sa.sa_flags = SA_SIGINFO;
-		sa.sa_sigaction = SysPageFaultSignalFilter;
-#ifdef __linux__
-		// Don't block the signal from executing recursively, we want to fire the original handler.
-		sa.sa_flags |= SA_NODEFER;
-#endif
-#if defined(__APPLE__) || defined(__aarch64__)
-		// MacOS uses SIGBUS for memory permission violations, as well as SIGSEGV on ARM64.
-		if (sigaction(SIGBUS, &sa, &s_old_sigbus_action) != 0)
-			return false;
-#endif
-#if !defined(__APPLE__) || defined(__aarch64__)
-		if (sigaction(SIGSEGV, &sa, &s_old_sigsegv_action) != 0)
-			return false;
-#endif
-#if defined(__APPLE__) && defined(__aarch64__)
-		// Stops LLDB getting in a EXC_BAD_ACCESS loop when passing page faults to PCSX2.
-		task_set_exception_ports(mach_task_self(), EXC_MASK_BAD_ACCESS, MACH_PORT_NULL, EXCEPTION_DEFAULT, 0);
-#endif
-	}
-
-	s_exception_handler_callback = handler;
-	return true;
-}
-
-void HostSys::RemovePageFaultHandler(PageFaultHandler handler)
-{
-	std::unique_lock lock(s_exception_handler_mutex);
-	pxAssertRel(!s_exception_handler_callback || s_exception_handler_callback == handler,
-		"Not removing the same handler previously registered.");
-	if (!s_exception_handler_callback)
-		return;
-
-	s_exception_handler_callback = nullptr;
-
-	struct sigaction sa;
-#if defined(__APPLE__) || defined(__aarch64__)
-	sigaction(SIGBUS, &s_old_sigbus_action, &sa);
-#endif
-#if !defined(__APPLE__) || defined(__aarch64__)
-	sigaction(SIGSEGV, &s_old_sigsegv_action, &sa);
-#endif
-}
 
 static __ri uint LinuxProt(const PageProtectionMode& mode)
 {
@@ -211,12 +54,7 @@ void* HostSys::Mmap(void* base, size_t size, const PageProtectionMode& mode)
 
 	u32 flags = MAP_PRIVATE | MAP_ANONYMOUS;
 	if (base)
-		flags |= MAP_FIXED;
-
-#if defined(__APPLE__) && defined(_M_ARM64)
-	if (mode.CanExecute())
-		flags |= MAP_JIT;
-#endif
+		flags |= MAP_FIXED_NOREPLACE;
 
 	void* res = mmap(base, size, prot, flags, -1, 0);
 	if (res == MAP_FAILED)
@@ -286,7 +124,7 @@ void* HostSys::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size
 {
 	const uint lnxmode = LinuxProt(mode);
 
-	const int flags = (baseaddr != nullptr) ? (MAP_SHARED | MAP_FIXED) : MAP_SHARED;
+	const int flags = (baseaddr != nullptr) ? (MAP_SHARED | MAP_FIXED_NOREPLACE) : MAP_SHARED;
 	void* ptr = mmap(baseaddr, size, lnxmode, flags, static_cast<int>(reinterpret_cast<intptr_t>(handle)), static_cast<off_t>(offset));
 	if (ptr == MAP_FAILED)
 		return nullptr;
@@ -296,18 +134,54 @@ void* HostSys::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size
 
 void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
 {
-	if (mmap(baseaddr, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED)
+	if (munmap(baseaddr, size) != 0)
 		pxFailRel("Failed to unmap shared memory");
 }
 
-#ifdef _M_ARM64
-
-void HostSys::FlushInstructionCache(void* address, u32 size)
+size_t HostSys::GetRuntimePageSize()
 {
-	__builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address) + size);
+	int res = sysconf(_SC_PAGESIZE);
+	return (res > 0) ? static_cast<size_t>(res) : 0;
 }
 
+size_t HostSys::GetRuntimeCacheLineSize()
+{
+#if defined(__FreeBSD__)
+	if (!cpuinfo_initialize())
+		return 0;
+
+	u32 max_line_size = 0;
+	for (u32 i = 0; i < cpuinfo_get_processors_count(); i++)
+	{
+		const u32 l1i = cpuinfo_get_processor(i)->cache.l1i->line_size;
+		const u32 l1d = cpuinfo_get_processor(i)->cache.l1d->line_size;
+		const u32 res = std::max<u32>(l1i, l1d);
+
+		max_line_size = std::max<u32>(max_line_size, res);
+	}
+
+	return static_cast<size_t>(max_line_size);
+#else
+	int l1i = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
+	int l1d = sysconf(_SC_LEVEL1_ICACHE_LINESIZE);
+	int res = (l1i > l1d) ? l1i : l1d;
+	for (int index = 0; index < 16; index++)
+	{
+		char buf[128];
+		snprintf(buf, sizeof(buf), "/sys/devices/system/cpu/cpu0/cache/index%d/coherency_line_size", index);
+		std::FILE* fp = std::fopen(buf, "rb");
+		if (!fp)
+			break;
+
+		std::fread(buf, sizeof(buf), 1, fp);
+		std::fclose(fp);
+		int val = std::atoi(buf);
+		res = (val > res) ? val : res;
+	}
+
+	return (res > 0) ? static_cast<size_t>(res) : 0;
 #endif
+}
 
 SharedMemoryMappingArea::SharedMemoryMappingArea(u8* base_ptr, size_t size, size_t num_pages)
 	: m_base_ptr(base_ptr)
@@ -340,6 +214,7 @@ u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* ma
 {
 	pxAssert(static_cast<u8*>(map_base) >= m_base_ptr && static_cast<u8*>(map_base) < (m_base_ptr + m_size));
 
+	// MAP_FIXED is okay here, since we've reserved the entire region, and *want* to overwrite the mapping.
 	const uint lnxmode = LinuxProt(mode);
 	void* const ptr = mmap(map_base, map_size, lnxmode, MAP_SHARED | MAP_FIXED,
 		static_cast<int>(reinterpret_cast<intptr_t>(file_handle)), static_cast<off_t>(file_offset));
@@ -361,23 +236,137 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 	return true;
 }
 
-#endif
-
-#if defined(_M_ARM64) && defined(__APPLE__)
-
-static thread_local int s_code_write_depth = 0;
-
-void HostSys::BeginCodeWrite()
+namespace PageFaultHandler
 {
-	if ((s_code_write_depth++) == 0)
-		pthread_jit_write_protect_np(0);
+	static std::recursive_mutex s_exception_handler_mutex;
+	static bool s_in_exception_handler = false;
+	static bool s_installed = false;
+} // namespace PageFaultHandler
+
+#ifdef _M_ARM64
+
+void HostSys::FlushInstructionCache(void* address, u32 size)
+{
+	__builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address) + size);
 }
 
-void HostSys::EndCodeWrite()
+[[maybe_unused]] static bool IsStoreInstruction(const void* ptr)
 {
-	pxAssert(s_code_write_depth > 0);
-	if ((--s_code_write_depth) == 0)
-		pthread_jit_write_protect_np(1);
+	u32 bits;
+	std::memcpy(&bits, ptr, sizeof(bits));
+
+	// Based on vixl's disassembler Instruction::IsStore().
+	// if (Mask(LoadStoreAnyFMask) != LoadStoreAnyFixed)
+	if ((bits & 0x0a000000) != 0x08000000)
+		return false;
+
+	// if (Mask(LoadStorePairAnyFMask) == LoadStorePairAnyFixed)
+	if ((bits & 0x3a000000) == 0x28000000)
+	{
+		// return Mask(LoadStorePairLBit) == 0
+		return (bits & (1 << 22)) == 0;
+	}
+
+	switch (bits & 0xC4C00000)
+	{
+		case 0x00000000: // STRB_w
+		case 0x40000000: // STRH_w
+		case 0x80000000: // STR_w
+		case 0xC0000000: // STR_x
+		case 0x04000000: // STR_b
+		case 0x44000000: // STR_h
+		case 0x84000000: // STR_s
+		case 0xC4000000: // STR_d
+		case 0x04800000: // STR_q
+			return true;
+
+		default:
+			return false;
+	}
 }
 
+#endif // _M_ARM64
+
+namespace PageFaultHandler
+{
+	static void SignalHandler(int sig, siginfo_t* info, void* ctx);
+} // namespace PageFaultHandler
+
+void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
+{
+#if defined(__linux__)
+	void* const exception_address = reinterpret_cast<void*>(info->si_addr);
+
+#if defined(_M_X86)
+	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_RIP]);
+	const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_ERR] & 2) != 0;
+#elif defined(_M_ARM64)
+	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.pc);
+	const bool is_write = IsStoreInstruction(exception_pc);
 #endif
+
+#elif defined(__FreeBSD__)
+
+#if defined(_M_X86)
+	void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_addr);
+	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_rip);
+	const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_err & 2) != 0;
+#elif defined(_M_ARM64)
+	void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__far);
+	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
+	const bool is_write = IsStoreInstruction(exception_pc);
+#endif
+
+#endif
+
+	// Executing the handler concurrently from multiple threads wouldn't go down well.
+	s_exception_handler_mutex.lock();
+
+	// Prevent recursive exception filtering.
+	HandlerResult result = HandlerResult::ExecuteNextHandler;
+	if (!s_in_exception_handler)
+	{
+		s_in_exception_handler = true;
+		result = HandlePageFault(exception_pc, exception_address, is_write);
+		s_in_exception_handler = false;
+	}
+
+	s_exception_handler_mutex.unlock();
+
+	// Resumes execution right where we left off (re-executes instruction that caused the SIGSEGV).
+	if (result == HandlerResult::ContinueExecution)
+		return;
+
+	// We couldn't handle it. Pass it off to the crash dumper.
+	CrashHandler::CrashSignalHandler(sig, info, ctx);
+}
+
+bool PageFaultHandler::Install(Error* error)
+{
+	std::unique_lock lock(s_exception_handler_mutex);
+	pxAssertRel(!s_installed, "Page fault handler has already been installed.");
+
+	struct sigaction sa;
+
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO | SA_NODEFER;
+	sa.sa_sigaction = SignalHandler;
+
+	if (sigaction(SIGSEGV, &sa, nullptr) != 0)
+	{
+		Error::SetErrno(error, "sigaction() for SIGSEGV failed: ", errno);
+		return false;
+	}
+
+#ifdef _M_ARM64
+	// We can get SIGBUS on ARM64.
+	if (sigaction(SIGBUS, &sa, nullptr) != 0)
+	{
+		Error::SetErrno(error, "sigaction() for SIGBUS failed: ", errno);
+		return false;
+	}
+#endif
+
+	s_installed = true;
+	return true;
+}

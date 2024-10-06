@@ -57,18 +57,20 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/AdvancedSettingsWidget.cpp
 	Settings/AdvancedSettingsWidget.h
 	Settings/AdvancedSettingsWidget.ui
+	Settings/AudioExpansionSettingsDialog.ui
 	Settings/AudioSettingsWidget.cpp
 	Settings/AudioSettingsWidget.h
 	Settings/AudioSettingsWidget.ui
+	Settings/AudioStretchSettingsDialog.ui
 	Settings/BIOSSettingsWidget.cpp
 	Settings/BIOSSettingsWidget.h
 	Settings/BIOSSettingsWidget.ui
-	Settings/ControllerBindingWidget.ui
 	Settings/ControllerBindingWidget_DualShock2.ui
 	Settings/ControllerBindingWidget_Guitar.ui
 	Settings/ControllerBindingWidget_Popn.ui
-	Settings/ControllerBindingWidgets.cpp
-	Settings/ControllerBindingWidgets.h
+	Settings/ControllerBindingWidget.cpp
+	Settings/ControllerBindingWidget.h
+	Settings/ControllerBindingWidget.ui
 	Settings/ControllerLEDSettingsDialog.ui
 	Settings/ControllerGlobalSettingsWidget.cpp
 	Settings/ControllerGlobalSettingsWidget.h
@@ -144,9 +146,12 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/SettingsWindow.cpp
 	Settings/SettingsWindow.h
 	Settings/SettingsWindow.ui
+	Settings/USBBindingWidget_DenshaCon.ui
 	Settings/USBBindingWidget_DrivingForce.ui
 	Settings/USBBindingWidget_GTForce.ui
 	Settings/USBBindingWidget_GunCon2.ui
+	Settings/USBBindingWidget_RyojouhenCon.ui
+	Settings/USBBindingWidget_ShinkansenCon.ui
 	Debugger/CpuWidget.cpp
 	Debugger/CpuWidget.h
 	Debugger/CpuWidget.ui
@@ -178,6 +183,22 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/Models/StackModel.h
 	Debugger/Models/SavedAddressesModel.cpp
 	Debugger/Models/SavedAddressesModel.h
+	Debugger/SymbolTree/NewSymbolDialogs.cpp
+	Debugger/SymbolTree/NewSymbolDialogs.h
+	Debugger/SymbolTree/NewSymbolDialog.ui
+	Debugger/SymbolTree/SymbolTreeLocation.cpp
+	Debugger/SymbolTree/SymbolTreeLocation.h
+	Debugger/SymbolTree/SymbolTreeModel.cpp
+	Debugger/SymbolTree/SymbolTreeModel.h
+	Debugger/SymbolTree/SymbolTreeNode.cpp
+	Debugger/SymbolTree/SymbolTreeNode.h
+	Debugger/SymbolTree/SymbolTreeDelegates.cpp
+	Debugger/SymbolTree/SymbolTreeDelegates.h
+	Debugger/SymbolTree/SymbolTreeWidgets.cpp
+	Debugger/SymbolTree/SymbolTreeWidgets.h
+	Debugger/SymbolTree/SymbolTreeWidget.ui
+	Debugger/SymbolTree/TypeString.cpp
+	Debugger/SymbolTree/TypeString.h
 	Tools/InputRecording/NewInputRecordingDlg.cpp
 	Tools/InputRecording/NewInputRecordingDlg.h
 	Tools/InputRecording/NewInputRecordingDlg.ui
@@ -211,6 +232,7 @@ target_link_libraries(pcsx2-qt PRIVATE
 target_compile_definitions(pcsx2-qt PRIVATE QT_NO_EXCEPTIONS)
 
 if(WIN32)
+	target_sources(pcsx2-qt PRIVATE VCRuntimeChecker.cpp)
 	set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_SOURCE_DIR}/bin/translations")
 	qt_add_lrelease(pcsx2-qt TS_FILES ${TS_FILES})
 	copy_base_translations(pcsx2-qt)

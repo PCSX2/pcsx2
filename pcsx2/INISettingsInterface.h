@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include "common/SettingsInterface.h"
@@ -23,6 +23,7 @@ public:
 	bool Save(Error* error = nullptr) override;
 
 	void Clear() override;
+	bool IsEmpty() override;
 
 	bool GetIntValue(const char* section, const char* key, int* value) const override;
 	bool GetUIntValue(const char* section, const char* key, uint* value) const override;
@@ -41,6 +42,8 @@ public:
 	bool ContainsValue(const char* section, const char* key) const override;
 	void DeleteValue(const char* section, const char* key) override;
 	void ClearSection(const char* section) override;
+	void RemoveSection(const char* section) override;
+	void RemoveEmptySections() override;
 
 	std::vector<std::string> GetStringList(const char* section, const char* key) const override;
 	void SetStringList(const char* section, const char* key, const std::vector<std::string>& items) override;

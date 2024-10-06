@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
 #include "GS/Renderers/Vulkan/VKBuilders.h"
 #include "GS/Renderers/Vulkan/VKSwapChain.h"
+#include "VMManager.h"
 
 #include "common/Assertions.h"
 #include "common/CocoaTools.h"
@@ -17,11 +18,13 @@
 #include <X11/Xlib.h>
 #endif
 
-VKSwapChain::VKSwapChain(
-	const WindowInfo& wi, VkSurfaceKHR surface, VsyncMode vsync, std::optional<bool> exclusive_fullscreen_control)
+static_assert(VKSwapChain::NUM_SEMAPHORES == (GSDeviceVK::NUM_COMMAND_BUFFERS + 1));
+
+VKSwapChain::VKSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
+	std::optional<bool> exclusive_fullscreen_control)
 	: m_window_info(wi)
 	, m_surface(surface)
-	, m_vsync_mode(vsync)
+	, m_present_mode(present_mode)
 	, m_exclusive_fullscreen_control(exclusive_fullscreen_control)
 {
 }
@@ -134,11 +137,11 @@ void VKSwapChain::DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, VkSu
 #endif
 }
 
-std::unique_ptr<VKSwapChain> VKSwapChain::Create(
-	const WindowInfo& wi, VkSurfaceKHR surface, VsyncMode vsync, std::optional<bool> exclusive_fullscreen_control)
+std::unique_ptr<VKSwapChain> VKSwapChain::Create(const WindowInfo& wi, VkSurfaceKHR surface,
+	VkPresentModeKHR present_mode, std::optional<bool> exclusive_fullscreen_control)
 {
 	std::unique_ptr<VKSwapChain> swap_chain =
-		std::unique_ptr<VKSwapChain>(new VKSwapChain(wi, surface, vsync, exclusive_fullscreen_control));
+		std::unique_ptr<VKSwapChain>(new VKSwapChain(wi, surface, present_mode, exclusive_fullscreen_control));
 	if (!swap_chain->CreateSwapChain())
 		return nullptr;
 
@@ -226,17 +229,7 @@ static const char* PresentModeToString(VkPresentModeKHR mode)
 	}
 }
 
-static VkPresentModeKHR GetPreferredPresentModeForVsyncMode(VsyncMode mode)
-{
-	if (mode == VsyncMode::On)
-		return VK_PRESENT_MODE_FIFO_KHR;
-	else if (mode == VsyncMode::Adaptive)
-		return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
-	else
-		return VK_PRESENT_MODE_IMMEDIATE_KHR;
-}
-
-std::optional<VkPresentModeKHR> VKSwapChain::SelectPresentMode(VkSurfaceKHR surface, VsyncMode vsync)
+bool VKSwapChain::SelectPresentMode(VkSurfaceKHR surface, GSVSyncMode* vsync_mode, VkPresentModeKHR* present_mode)
 {
 	VkResult res;
 	u32 mode_count;
@@ -245,7 +238,7 @@ std::optional<VkPresentModeKHR> VKSwapChain::SelectPresentMode(VkSurfaceKHR surf
 	if (res != VK_SUCCESS || mode_count == 0)
 	{
 		LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: ");
-		return std::nullopt;
+		return false;
 	}
 
 	std::vector<VkPresentModeKHR> present_modes(mode_count);
@@ -254,48 +247,70 @@ std::optional<VkPresentModeKHR> VKSwapChain::SelectPresentMode(VkSurfaceKHR surf
 	pxAssert(res == VK_SUCCESS);
 
 	// Checks if a particular mode is supported, if it is, returns that mode.
-	auto CheckForMode = [&present_modes](VkPresentModeKHR check_mode) {
+	const auto CheckForMode = [&present_modes](VkPresentModeKHR check_mode) {
 		auto it = std::find_if(present_modes.begin(), present_modes.end(),
 			[check_mode](VkPresentModeKHR mode) { return check_mode == mode; });
 		return it != present_modes.end();
 	};
 
-	// Use preferred mode if available.
-	const VkPresentModeKHR preferred_mode = GetPreferredPresentModeForVsyncMode(vsync);
-	VkPresentModeKHR selected_mode;
-	if (CheckForMode(preferred_mode))
+	switch (*vsync_mode)
 	{
-		selected_mode = preferred_mode;
-	}
-	else if (vsync != VsyncMode::On && CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
-	{
-		// Prefer mailbox over fifo for adaptive vsync/no-vsync.
-		selected_mode = VK_PRESENT_MODE_MAILBOX_KHR;
-	}
-	else if (vsync != VsyncMode::Off && CheckForMode(VK_PRESENT_MODE_FIFO_KHR))
-	{
-		// Fallback to FIFO if we're using any kind of vsync.
-		// This should never fail, FIFO is mandated.
-		selected_mode = VK_PRESENT_MODE_FIFO_KHR;
-	}
-	else
-	{
-		// Fall back to whatever is available.
-		selected_mode = present_modes[0];
+		case GSVSyncMode::Disabled:
+		{
+			// Prefer immediate > mailbox > fifo.
+			if (CheckForMode(VK_PRESENT_MODE_IMMEDIATE_KHR))
+			{
+				*present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+			}
+			else if (CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
+			{
+				WARNING_LOG("Immediate not supported for vsync-disabled, using mailbox.");
+				*present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+				*vsync_mode = GSVSyncMode::Mailbox;
+			}
+			else
+			{
+				WARNING_LOG("Mailbox not supported for vsync-disabled, using FIFO.");
+				*present_mode = VK_PRESENT_MODE_FIFO_KHR;
+				*vsync_mode = GSVSyncMode::FIFO;
+			}
+		}
+		break;
+
+		case GSVSyncMode::FIFO:
+		{
+			// FIFO is always available.
+			*present_mode = VK_PRESENT_MODE_FIFO_KHR;
+		}
+		break;
+
+		case GSVSyncMode::Mailbox:
+		{
+			// Mailbox > fifo.
+			if (CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
+			{
+				*present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+			}
+			else
+			{
+				WARNING_LOG("Mailbox not supported for vsync-mailbox, using FIFO.");
+				*present_mode = VK_PRESENT_MODE_FIFO_KHR;
+				*vsync_mode = GSVSyncMode::FIFO;
+			}
+		}
+		break;
+
+			jNO_DEFAULT
 	}
 
-	DevCon.WriteLn("(SwapChain) Preferred present mode: %s, selected: %s", PresentModeToString(preferred_mode),
-		PresentModeToString(selected_mode));
-
-	return selected_mode;
+	return true;
 }
 
 bool VKSwapChain::CreateSwapChain()
 {
-	// Select swap chain format and present mode
+	// Select swap chain format
 	std::optional<VkSurfaceFormatKHR> surface_format = SelectSurfaceFormat(m_surface);
-	std::optional<VkPresentModeKHR> present_mode = SelectPresentMode(m_surface, m_vsync_mode);
-	if (!surface_format.has_value() || !present_mode.has_value())
+	if (!surface_format.has_value())
 		return false;
 
 	// Look up surface properties to determine image count and dimensions
@@ -308,12 +323,12 @@ bool VKSwapChain::CreateSwapChain()
 		return false;
 	}
 
-	// Select number of images in swap chain, we prefer one buffer in the background to work on
-	u32 image_count = std::max(surface_capabilities.minImageCount + 1u, 2u);
-
+	// Select number of images in swap chain, we prefer one buffer in the background to work on in triple-buffered mode.
 	// maxImageCount can be zero, in which case there isn't an upper limit on the number of buffers.
-	if (surface_capabilities.maxImageCount > 0)
-		image_count = std::min(image_count, surface_capabilities.maxImageCount);
+	u32 image_count = std::clamp<u32>(
+		(m_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) ? 3 : 2, surface_capabilities.minImageCount,
+		(surface_capabilities.maxImageCount == 0) ? std::numeric_limits<u32>::max() : surface_capabilities.maxImageCount);
+	DEV_LOG("Creating a swap chain with {} images in present mode {}", image_count, PresentModeToString(m_present_mode));
 
 	// Determine the dimensions of the swap chain. Values of -1 indicate the size we specify here
 	// determines window size?
@@ -357,7 +372,7 @@ bool VKSwapChain::CreateSwapChain()
 	// Now we can actually create the swap chain
 	VkSwapchainCreateInfoKHR swap_chain_info = {VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR, nullptr, 0, m_surface,
 		image_count, surface_format->format, surface_format->colorSpace, size, 1u, image_usage,
-		VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, transform, alpha, present_mode.value(), VK_TRUE, old_swap_chain};
+		VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, transform, alpha, m_present_mode, VK_TRUE, old_swap_chain};
 	std::array<uint32_t, 2> indices = {{
 		GSDeviceVK::GetInstance()->GetGraphicsQueueFamilyIndex(),
 		GSDeviceVK::GetInstance()->GetPresentQueueFamilyIndex(),
@@ -442,15 +457,10 @@ bool VKSwapChain::CreateSwapChain()
 		m_images.push_back(std::move(texture));
 	}
 
-	// We don't actually need +1 semaphores, or, more than one really.
-	// But, the validation layer gets cranky if we don't fence wait before the next image acquire.
-	// So, add an additional semaphore to ensure that we're never acquiring before fence waiting.
-	const u32 semaphore_count = (image_count + 1);
-	m_semaphores.reserve(semaphore_count);
 	m_current_semaphore = 0;
-	for (u32 i = 0; i < semaphore_count; i++)
+	for (u32 i = 0; i < NUM_SEMAPHORES; i++)
 	{
-		ImageSemaphores sema;
+		ImageSemaphores& sema = m_semaphores[i];
 
 		const VkSemaphoreCreateInfo semaphore_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0};
 		res = vkCreateSemaphore(
@@ -467,10 +477,9 @@ bool VKSwapChain::CreateSwapChain()
 		{
 			LOG_VULKAN_ERROR(res, "vkCreateSemaphore failed: ");
 			vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), sema.available_semaphore, nullptr);
+			sema.available_semaphore = VK_NULL_HANDLE;
 			return false;
 		}
-
-		m_semaphores.push_back(sema);
 	}
 
 	return true;
@@ -486,10 +495,12 @@ void VKSwapChain::DestroySwapChainImages()
 	m_images.clear();
 	for (auto& it : m_semaphores)
 	{
-		vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), it.rendering_finished_semaphore, nullptr);
-		vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), it.available_semaphore, nullptr);
+		if (it.rendering_finished_semaphore != VK_NULL_HANDLE)
+			vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), it.rendering_finished_semaphore, nullptr);
+		if (it.available_semaphore != VK_NULL_HANDLE)
+			vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), it.available_semaphore, nullptr);
 	}
-	m_semaphores.clear();
+	m_semaphores = {};
 
 	m_image_acquire_result.reset();
 }
@@ -534,11 +545,34 @@ VkResult VKSwapChain::AcquireNextImage()
 
 void VKSwapChain::ReleaseCurrentImage()
 {
+	if (!m_image_acquire_result.has_value())
+		return;
+
+	if ((m_image_acquire_result.value() == VK_SUCCESS || m_image_acquire_result.value() == VK_SUBOPTIMAL_KHR) &&
+		GSDeviceVK::GetInstance()->GetOptionalExtensions().vk_ext_swapchain_maintenance1)
+	{
+		GSDeviceVK::GetInstance()->WaitForGPUIdle();
+
+		const VkReleaseSwapchainImagesInfoEXT info = {.sType = VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_EXT,
+			.swapchain = m_swap_chain,
+			.imageIndexCount = 1,
+			.pImageIndices = &m_current_image};
+		VkResult res = vkReleaseSwapchainImagesEXT(GSDeviceVK::GetInstance()->GetDevice(), &info);
+		if (res != VK_SUCCESS)
+			LOG_VULKAN_ERROR(res, "vkReleaseSwapchainImagesEXT() failed: ");
+	}
+
+	m_image_acquire_result.reset();
+}
+
+void VKSwapChain::ResetImageAcquireResult()
+{
 	m_image_acquire_result.reset();
 }
 
 bool VKSwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_scale)
 {
+	ReleaseCurrentImage();
 	DestroySwapChainImages();
 
 	if (new_width != 0 && new_height != 0)
@@ -558,15 +592,16 @@ bool VKSwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_scale
 	return true;
 }
 
-bool VKSwapChain::SetVSync(VsyncMode mode)
+bool VKSwapChain::SetPresentMode(VkPresentModeKHR present_mode)
 {
-	if (m_vsync_mode == mode)
+	if (m_present_mode == present_mode)
 		return true;
 
-	m_vsync_mode = mode;
+	m_present_mode = present_mode;
 
 	// Recreate the swap chain with the new present mode.
-	DevCon.WriteLn("Recreating swap chain to change present mode.");
+	INFO_LOG("Recreating swap chain to change present mode.");
+	ReleaseCurrentImage();
 	DestroySwapChainImages();
 	if (!CreateSwapChain())
 	{

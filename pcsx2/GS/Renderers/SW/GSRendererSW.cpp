@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/SW/GSRendererSW.h"
 #include "GS/GSGL.h"
 #include "GS/GSPng.h"
+#include "GS/GSUtil.h"
 
 #include "common/StringUtil.h"
 
@@ -1050,11 +1051,13 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				gd.sel.tfx = TFX_DECAL;
 			}
 
+			CalculatePrimitiveCoversWithoutGaps();
+
 			bool mipmap = IsMipMapActive();
 
 			GIFRegTEX0 TEX0 = m_context->GetSizeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t), m_vt.IsLinear(), mipmap);
 
-			GSVector4i r = GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf, true, m_index.tail < 3).coverage;
+			GSVector4i r = GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf, true).coverage;
 
 			GSTextureCacheSW::Texture* t = m_tc->Lookup(TEX0, env.TEXA);
 
@@ -1160,7 +1163,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 						return false;
 					}
 
-					GSVector4i r = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, gd.sel.ltf, true, m_index.tail < 3).coverage;
+					GSVector4i r = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, gd.sel.ltf, true).coverage;
 
 					data->SetSource(t, r, i);
 				}

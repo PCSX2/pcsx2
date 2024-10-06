@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
-#include "SymbolMap.h"
+#include "SymbolGuardian.h"
 #include "common/Threading.h"
 #include "common/Pcsx2Types.h"
 #include "DebugInterface.h"
@@ -94,7 +94,6 @@ private:
 	int num;
 };
 
-
 class DisassemblyMacro: public DisassemblyEntry
 {
 public:
@@ -124,6 +123,14 @@ private:
 	int dataSize;
 };
 
+enum DataType
+{
+	DATATYPE_NONE,
+	DATATYPE_BYTE,
+	DATATYPE_HALFWORD,
+	DATATYPE_WORD,
+	DATATYPE_ASCII
+};
 
 class DisassemblyData: public DisassemblyEntry
 {

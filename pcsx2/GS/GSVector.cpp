@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GSVector.h"
 #include <array>
@@ -58,6 +58,8 @@ constinit const GSVector4 GSVector4::m_x4f800000 = cxpr(0x4f800000);
 constinit const GSVector4 GSVector4::m_xc1e00000000fffff = cxpr64(0xc1e00000000fffffull);
 constinit const GSVector4 GSVector4::m_max = cxpr(FLT_MAX);
 constinit const GSVector4 GSVector4::m_min = cxpr(FLT_MIN);
+
+#ifdef _M_X86
 
 constinit const GSVector8 GSVector8::m_half = cxpr(0.5f);
 constinit const GSVector8 GSVector8::m_one = cxpr(1.0f);
@@ -142,6 +144,8 @@ constinit const GSVector8i GSVector8i::m_x0f[33] =
 	cxpr(0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x000f0f0f),
 	cxpr(0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f),
 };
+
+#endif
 
 GSVector4i GSVector4i::fit(int arx, int ary) const
 {

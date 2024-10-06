@@ -1,6 +1,6 @@
 /*
   zip_crypto_gnutls.h -- definitions for GnuTLS wrapper.
-  Copyright (C) 2018-2021 Dieter Baron and Thomas Klausner
+  Copyright (C) 2018-2022 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>

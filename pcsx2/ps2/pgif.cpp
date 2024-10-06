@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2016 Wisi, 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "ps2/Iop/IopHw_Internal.h"
 #include "ps2/HwInternal.h"

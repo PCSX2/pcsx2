@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include <atomic>
 #include <chrono>
@@ -17,9 +17,11 @@
 
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/CrashHandler.h"
 #include "common/FileSystem.h"
 #include "common/MemorySettingsInterface.h"
 #include "common/Path.h"
+#include "common/ProgressCallback.h"
 #include "common/SettingsWrapper.h"
 #include "common/StringUtil.h"
 
@@ -34,6 +36,7 @@
 #include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/ImGui/FullscreenUI.h"
+#include "pcsx2/ImGui/ImGuiFullscreen.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/MTGS.h"
@@ -92,6 +95,8 @@ bool GSRunner::InitializeConfig()
 	if (!EmuFolders::SetResourcesDirectory() || !EmuFolders::SetDataDirectory(nullptr))
 		return false;
 
+	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
+
 	const char* error;
 	if (!VMManager::PerformEarlyHardwareChecks(&error))
 		return false;
@@ -106,7 +111,7 @@ bool GSRunner::InitializeConfig()
 
 	// complete as quickly as possible
 	si.SetBoolValue("EmuCore/GS", "FrameLimitEnable", false);
-	si.SetIntValue("EmuCore/GS", "VsyncEnable", static_cast<int>(VsyncMode::Off));
+	si.SetIntValue("EmuCore/GS", "VsyncEnable", false);
 
 	// ensure all input sources are disabled, we're not using them
 	si.SetBoolValue("InputSources", "SDL", false);
@@ -164,40 +169,35 @@ void Host::SetDefaultUISettings(SettingsInterface& si)
 	// nothing
 }
 
-void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
+std::unique_ptr<ProgressCallback> Host::CreateHostProgressCallback()
 {
-	if (!title.empty() && !message.empty())
-	{
-		Console.Error(
-			"ReportErrorAsync: %.*s: %.*s", static_cast<int>(title.size()), title.data(), static_cast<int>(message.size()), message.data());
-	}
-	else if (!message.empty())
-	{
-		Console.Error("ReportErrorAsync: %.*s", static_cast<int>(message.size()), message.data());
-	}
+	return ProgressCallback::CreateNullProgressCallback();
 }
 
-bool Host::ConfirmMessage(const std::string_view& title, const std::string_view& message)
+void Host::ReportErrorAsync(const std::string_view title, const std::string_view message)
 {
 	if (!title.empty() && !message.empty())
-	{
-		Console.Error(
-			"ConfirmMessage: %.*s: %.*s", static_cast<int>(title.size()), title.data(), static_cast<int>(message.size()), message.data());
-	}
+		ERROR_LOG("ReportErrorAsync: {}: {}", title, message);
 	else if (!message.empty())
-	{
-		Console.Error("ConfirmMessage: %.*s", static_cast<int>(message.size()), message.data());
-	}
+		ERROR_LOG("ReportErrorAsync: {}", message);
+}
+
+bool Host::ConfirmMessage(const std::string_view title, const std::string_view message)
+{
+	if (!title.empty() && !message.empty())
+		ERROR_LOG("ConfirmMessage: {}: {}", title, message);
+	else if (!message.empty())
+		ERROR_LOG("ConfirmMessage: {}", message);
 
 	return true;
 }
 
-void Host::OpenURL(const std::string_view& url)
+void Host::OpenURL(const std::string_view url)
 {
 	// noop
 }
 
-bool Host::CopyTextToClipboard(const std::string_view& text)
+bool Host::CopyTextToClipboard(const std::string_view text)
 {
 	return false;
 }
@@ -217,11 +217,11 @@ std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
 	return GSRunner::GetPlatformWindowInfo();
 }
 
-void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
+void Host::OnInputDeviceConnected(const std::string_view identifier, const std::string_view device_name)
 {
 }
 
-void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
+void Host::OnInputDeviceDisconnected(const InputBindingKey key, const std::string_view identifier)
 {
 }
 
@@ -272,7 +272,7 @@ void Host::BeginPresentFrame()
 
 		const bool idle_frame = s_total_frames && (last_draws == s_total_internal_draws && last_uploads == s_total_uploads);
 
-		if(!idle_frame)
+		if (!idle_frame)
 			s_total_drawn_frames++;
 
 		s_total_frames++;
@@ -314,15 +314,15 @@ void Host::OnPerformanceMetricsUpdated()
 {
 }
 
-void Host::OnSaveStateLoading(const std::string_view& filename)
+void Host::OnSaveStateLoading(const std::string_view filename)
 {
 }
 
-void Host::OnSaveStateLoaded(const std::string_view& filename, bool was_successful)
+void Host::OnSaveStateLoaded(const std::string_view filename, bool was_successful)
 {
 }
 
-void Host::OnSaveStateSaved(const std::string_view& filename)
+void Host::OnSaveStateSaved(const std::string_view filename)
 {
 }
 
@@ -399,7 +399,18 @@ void Host::OnCreateMemoryCardOpenRequested()
 	// noop
 }
 
-std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
+bool Host::ShouldPreferHostFileSelector()
+{
+	return false;
+}
+
+void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directory, FileSelectorCallback callback,
+	FileSelectorFilters filters, std::string_view initial_directory)
+{
+	callback(std::string());
+}
+
+std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view str)
 {
 	return std::nullopt;
 }
@@ -538,7 +549,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 
 				s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks", true);
 
-				if(str.find("af") != std::string::npos)
+				if (str.find("af") != std::string::npos)
 					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_AutoFlush", true);
 				if (str.find("cpufb") != std::string::npos)
 					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_CPU_FB_Conversion", true);
@@ -667,6 +678,7 @@ void GSRunner::DumpStats()
 
 int main(int argc, char* argv[])
 {
+	CrashHandler::Install();
 	GSRunner::InitializeConsole();
 
 	if (!GSRunner::InitializeConfig())
@@ -720,7 +732,7 @@ void Host::PumpMessagesOnCPUThread()
 }
 
 s32 Host::Internal::GetTranslatedStringImpl(
-	const std::string_view& context, const std::string_view& msg, char* tbuf, size_t tbuf_space)
+	const std::string_view context, const std::string_view msg, char* tbuf, size_t tbuf_space)
 {
 	if (msg.size() > tbuf_space)
 		return -1;
@@ -729,6 +741,23 @@ s32 Host::Internal::GetTranslatedStringImpl(
 
 	std::memcpy(tbuf, msg.data(), msg.size());
 	return static_cast<s32>(msg.size());
+}
+
+std::string Host::TranslatePluralToString(const char* context, const char* msg, const char* disambiguation, int count)
+{
+	TinyString count_str = TinyString::from_format("{}", count);
+
+	std::string ret(msg);
+	for (;;)
+	{
+		std::string::size_type pos = ret.find("%n");
+		if (pos == std::string::npos)
+			break;
+
+		ret.replace(pos, pos + 2, count_str.view());
+	}
+
+	return ret;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -834,7 +863,7 @@ int wmain(int argc, wchar_t** argv)
 	u8_args.reserve(static_cast<size_t>(argc));
 	for (int i = 0; i < argc; i++)
 		u8_args.push_back(StringUtil::WideStringToUTF8String(argv[i]));
-	
+
 	std::vector<char*> u8_argptrs;
 	u8_argptrs.reserve(u8_args.size());
 	for (int i = 0; i < argc; i++)

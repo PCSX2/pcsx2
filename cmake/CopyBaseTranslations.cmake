@@ -1,7 +1,6 @@
 function(copy_base_translations target)
-  get_target_property(MOC_EXECUTABLE_LOCATION Qt6::moc IMPORTED_LOCATION)
-  get_filename_component(QT_BINARY_DIRECTORY "${MOC_EXECUTABLE_LOCATION}" DIRECTORY)
-  find_program(LCONVERT_EXE lconvert HINTS "${QT_BINARY_DIRECTORY}")
+  get_target_property(LCONVERT_EXE Qt6::lconvert IMPORTED_LOCATION)
+  get_filename_component(QT_BINARY_DIRECTORY "${LCONVERT_EXE}" DIRECTORY)
   set(BASE_TRANSLATIONS_DIR "${QT_BINARY_DIRECTORY}/../translations")
 
   if(NOT APPLE)
@@ -33,7 +32,7 @@ function(copy_base_translations target)
         LIST(APPEND srcQmFiles "${qmFile}")
       endforeach()
       add_custom_command(OUTPUT ${outPath}
-        COMMAND "${LCONVERT_EXE}" -verbose -of qm -o "${outPath}" ${srcQmFiles}
+        COMMAND Qt6::lconvert -verbose -of qm -o "${outPath}" ${srcQmFiles}
         DEPENDS ${srcQmFiles}
       )
       set(path "${outPath}")

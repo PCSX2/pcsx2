@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -49,7 +49,7 @@ static inline bool ExtractUpdater(const char* archive_path, const char* destinat
 
 	lookstream.bufSize = kInputBufSize;
 	lookstream.realStream = &instream.vt;
-	LookToRead2_Init(&lookstream);
+	LookToRead2_INIT(&lookstream);
 	ScopedGuard buffer_guard([&lookstream]() {
 		ISzAlloc_Free(&g_Alloc, lookstream.buf);
 	});

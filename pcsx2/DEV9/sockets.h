@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include <vector>
@@ -27,6 +27,10 @@ class SocketAdapter : public NetAdapter
 
 	ThreadSafeMap<Sessions::ConnectionKey, Sessions::BaseSession*> connections;
 	ThreadSafeMap<u16, Sessions::BaseSession*> fixedUDPPorts;
+
+	std::thread::id sendThreadId;
+	std::vector<Sessions::BaseSession*> deleteQueueSendThread;
+	std::vector<Sessions::BaseSession*> deleteQueueRecvThread;
 
 public:
 	SocketAdapter();

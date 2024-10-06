@@ -9,16 +9,17 @@
 		<file>icons/black/svg/band-aid-line.svg</file>
 		<file>icons/black/svg/brush-line.svg</file>
 		<file>icons/black/svg/buzz-controller-line.svg</file>
+		<file>icons/black/svg/camera-video.svg</file>
 		<file>icons/black/svg/cheats-line.svg</file>
 		<file>icons/black/svg/checkbox-multiple-blank-line.svg</file>
 		<file>icons/black/svg/chip-line.svg</file>
 		<file>icons/black/svg/close-line.svg</file>
 		<file>icons/black/svg/controller-line.svg</file>
 		<file>icons/black/svg/controller-strike-line.svg</file>
+		<file>icons/black/svg/debugger-line.svg</file>
 		<file>icons/black/svg/debug-step-into-line.svg</file>
 		<file>icons/black/svg/debug-step-out-line.svg</file>
 		<file>icons/black/svg/debug-step-over-line.svg</file>
-		<file>icons/black/svg/debugger-line.svg</file>
 		<file>icons/black/svg/delete-back-2-line.svg</file>
 		<file>icons/black/svg/disc-2-line.svg</file>
 		<file>icons/black/svg/disc-eject-line.svg</file>
@@ -46,6 +47,7 @@
 		<file>icons/black/svg/folder-settings-line.svg</file>
 		<file>icons/black/svg/fullscreen-line.svg</file>
 		<file>icons/black/svg/function-line.svg</file>
+		<file>icons/black/svg/gametrak-line.svg</file>
 		<file>icons/black/svg/github.svg</file>
 		<file>icons/black/svg/global-line.svg</file>
 		<file>icons/black/svg/guitar-line.svg</file>
@@ -54,6 +56,7 @@
 		<file>icons/black/svg/heart-circle-line.svg</file>
 		<file>icons/black/svg/image-fill.svg</file>
 		<file>icons/black/svg/interface-line.svg</file>
+		<file>icons/black/svg/jogcon-line.svg</file>
 		<file>icons/black/svg/keyboard-2-line.svg</file>
 		<file>icons/black/svg/keyboard-line.svg</file>
 		<file>icons/black/svg/keyboardmania-line.svg</file>
@@ -65,6 +68,7 @@
 		<file>icons/black/svg/minus-line.svg</file>
 		<file>icons/black/svg/mouse-line.svg</file>
 		<file>icons/black/svg/msd-line.svg</file>
+		<file>icons/black/svg/negcon-line.svg</file>
 		<file>icons/black/svg/pause-line.svg</file>
 		<file>icons/black/svg/pencil-line.svg</file>
 		<file>icons/black/svg/pin-filled.svg</file>
@@ -73,6 +77,7 @@
 		<file>icons/black/svg/Popn-line.svg</file>
 		<file>icons/black/svg/price-tag-3-line.svg</file>
 		<file>icons/black/svg/printer-line.svg</file>
+		<file>icons/black/svg/realplay-sphere-line.svg</file>
 		<file>icons/black/svg/refresh-line.svg</file>
 		<file>icons/black/svg/restart-line.svg</file>
 		<file>icons/black/svg/save-3-line.svg</file>
@@ -82,6 +87,8 @@
 		<file>icons/black/svg/shut-down-line.svg</file>
 		<file>icons/black/svg/singstar-line.svg</file>
 		<file>icons/black/svg/tools-line.svg</file>
+		<file>icons/black/svg/train-line.svg</file>
+		<file>icons/black/svg/trance-vibrator-line.svg</file>
 		<file>icons/black/svg/trash-fill.svg</file>
 		<file>icons/black/svg/trophy-line.svg</file>
 		<file>icons/black/svg/tv-2-line.svg</file>
@@ -105,16 +112,17 @@
 		<file>icons/white/svg/band-aid-line.svg</file>
 		<file>icons/white/svg/brush-line.svg</file>
 		<file>icons/white/svg/buzz-controller-line.svg</file>
+		<file>icons/white/svg/camera-video.svg</file>
 		<file>icons/white/svg/cheats-line.svg</file>
 		<file>icons/white/svg/checkbox-multiple-blank-line.svg</file>
 		<file>icons/white/svg/chip-line.svg</file>
 		<file>icons/white/svg/close-line.svg</file>
 		<file>icons/white/svg/controller-line.svg</file>
 		<file>icons/white/svg/controller-strike-line.svg</file>
+		<file>icons/white/svg/debugger-line.svg</file>
 		<file>icons/white/svg/debug-step-into-line.svg</file>
 		<file>icons/white/svg/debug-step-out-line.svg</file>
 		<file>icons/white/svg/debug-step-over-line.svg</file>
-		<file>icons/white/svg/debugger-line.svg</file>
 		<file>icons/white/svg/delete-back-2-line.svg</file>
 		<file>icons/white/svg/disc-2-line.svg</file>
 		<file>icons/white/svg/disc-eject-line.svg</file>
@@ -142,6 +150,7 @@
 		<file>icons/white/svg/folder-settings-line.svg</file>
 		<file>icons/white/svg/fullscreen-line.svg</file>
 		<file>icons/white/svg/function-line.svg</file>
+		<file>icons/white/svg/gametrak-line.svg</file>
 		<file>icons/white/svg/github.svg</file>
 		<file>icons/white/svg/global-line.svg</file>
 		<file>icons/white/svg/guitar-line.svg</file>
@@ -150,6 +159,7 @@
 		<file>icons/white/svg/heart-circle-line.svg</file>
 		<file>icons/white/svg/image-fill.svg</file>
 		<file>icons/white/svg/interface-line.svg</file>
+		<file>icons/white/svg/jogcon-line.svg</file>
 		<file>icons/white/svg/keyboard-2-line.svg</file>
 		<file>icons/white/svg/keyboard-line.svg</file>
 		<file>icons/white/svg/keyboardmania-line.svg</file>
@@ -161,6 +171,7 @@
 		<file>icons/white/svg/minus-line.svg</file>
 		<file>icons/white/svg/mouse-line.svg</file>
 		<file>icons/white/svg/msd-line.svg</file>
+		<file>icons/white/svg/negcon-line.svg</file>
 		<file>icons/white/svg/pause-line.svg</file>
 		<file>icons/white/svg/pencil-line.svg</file>
 		<file>icons/white/svg/pin-filled.svg</file>
@@ -169,6 +180,7 @@
 		<file>icons/white/svg/Popn-line.svg</file>
 		<file>icons/white/svg/price-tag-3-line.svg</file>
 		<file>icons/white/svg/printer-line.svg</file>
+		<file>icons/white/svg/realplay-sphere-line.svg</file>
 		<file>icons/white/svg/refresh-line.svg</file>
 		<file>icons/white/svg/restart-line.svg</file>
 		<file>icons/white/svg/save-3-line.svg</file>
@@ -178,6 +190,8 @@
 		<file>icons/white/svg/shut-down-line.svg</file>
 		<file>icons/white/svg/singstar-line.svg</file>
 		<file>icons/white/svg/tools-line.svg</file>
+		<file>icons/white/svg/train-line.svg</file>
+		<file>icons/white/svg/trance-vibrator-line.svg</file>
 		<file>icons/white/svg/trash-fill.svg</file>
 		<file>icons/white/svg/trophy-line.svg</file>
 		<file>icons/white/svg/tv-2-line.svg</file>
@@ -188,10 +202,15 @@
 		<file>icons/white/svg/window-2-line.svg</file>
 		<file>icons/white/svg/zoom-in-line.svg</file>
 		<file>icons/white/svg/zoom-out-line.svg</file>
+		<file>images/Denshacon.svg</file>
 		<file>images/Driving_Force.svg</file>
 		<file>images/DualShock_2.svg</file>
 		<file>images/GT_Force.svg</file>
 		<file>images/Guitar.svg</file>
+		<file>images/Jogcon.svg</file>
+		<file>images/Negcon.svg</file>
 		<file>images/Popn.svg</file>
+		<file>images/RyojouhenCon.svg</file>
+		<file>images/ShinkansenCon.svg</file>
 	</qresource>
 </RCC>

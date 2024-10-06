@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Input/InputSource.h"
 #include "Host.h"
@@ -60,7 +60,7 @@ InputBindingKey InputSource::MakeGenericControllerMotorKey(InputSourceType clazz
 }
 
 std::optional<InputBindingKey> InputSource::ParseGenericControllerKey(
-	InputSourceType clazz, const std::string_view& source, const std::string_view& sub_binding)
+	InputSourceType clazz, const std::string_view source, const std::string_view sub_binding)
 {
 	// try to find the number, this function doesn't care about whether it's xinput or sdl or whatever
 	std::string_view::size_type pos = 0;

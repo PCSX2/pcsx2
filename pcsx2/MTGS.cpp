@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS.h"
 #include "Gif_Unit.h"
@@ -61,12 +61,12 @@ namespace MTGS
 
 	static void SetEvent();
 
-	alignas(32) BufferedData RingBuffer;
+	alignas(__cachelinesize) BufferedData RingBuffer;
 
 	// note: when m_ReadPos == m_WritePos, the fifo is empty
 	// Threading info: m_ReadPos is updated by the MTGS thread. m_WritePos is updated by the EE thread
-	alignas(64) static std::atomic<unsigned int> s_ReadPos; // cur pos gs is reading from
-	alignas(64) static std::atomic<unsigned int> s_WritePos; // cur pos ee thread is writing to
+	alignas(__cachelinesize) static std::atomic<unsigned int> s_ReadPos; // cur pos gs is reading from
+	alignas(__cachelinesize) static std::atomic<unsigned int> s_WritePos; // cur pos ee thread is writing to
 
 	// These vars maintain instance data for sending Data Packets.
 	// Only one data packet can be constructed and uploaded at a time.
@@ -165,7 +165,8 @@ void MTGS::ThreadEntryPoint()
 
 		// try initializing.. this could fail
 		std::memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS));
-		const bool opened = GSopen(EmuConfig.GS, EmuConfig.GS.Renderer, RingBuffer.Regs);
+		const bool opened = GSopen(EmuConfig.GS, EmuConfig.GS.Renderer, RingBuffer.Regs,
+			VMManager::GetEffectiveVSyncMode(), VMManager::ShouldAllowPresentThrottle());
 		s_open_flag.store(opened, std::memory_order_release);
 
 		// notify emu thread that we finished opening (or failed)
@@ -211,6 +212,11 @@ void MTGS::ResetGS(bool hardware_reset)
 
 	if (hardware_reset)
 		SetEvent();
+}
+
+int MTGS::GetCurrentVsyncQueueSize()
+{
+	return s_QueuedFrameCount.load(std::memory_order_acquire);
 }
 
 struct RingCmdPacket_Vsync
@@ -551,7 +557,7 @@ void MTGS::MainLoop()
 
 			uint newringpos = (s_ReadPos.load(std::memory_order_relaxed) + ringposinc) & RingBufferMask;
 
-			if (EmuConfig.GS.SynchronousMTGS)
+			if (IsDevBuild && EmuConfig.GS.SynchronousMTGS) [[unlikely]]
 			{
 				pxAssert(s_WritePos == newringpos);
 			}
@@ -675,7 +681,7 @@ void MTGS::SendDataPacket()
 
 	s_WritePos.store(s_packet_writepos, std::memory_order_release);
 
-	if (EmuConfig.GS.SynchronousMTGS)
+	if (IsDevBuild && EmuConfig.GS.SynchronousMTGS) [[unlikely]]
 	{
 		WaitGS();
 	}
@@ -815,7 +821,7 @@ __fi void MTGS::_FinishSimplePacket()
 	pxAssert(future_writepos != s_ReadPos.load(std::memory_order_acquire));
 	s_WritePos.store(future_writepos, std::memory_order_release);
 
-	if (EmuConfig.GS.SynchronousMTGS)
+	if (IsDevBuild && EmuConfig.GS.SynchronousMTGS) [[unlikely]]
 		WaitGS();
 	else
 		++s_CopyDataTally;
@@ -840,7 +846,7 @@ void MTGS::SendSimpleGSPacket(Command type, u32 offset, u32 size, GIF_PATH path)
 {
 	SendSimplePacket(type, (int)offset, (int)size, (int)path);
 
-	if (!EmuConfig.GS.SynchronousMTGS)
+	if (!IsDevBuild || !EmuConfig.GS.SynchronousMTGS) [[likely]]
 	{
 		s_CopyDataTally += size / 16;
 		if (s_CopyDataTally > 0x2000)
@@ -931,7 +937,6 @@ void MTGS::ApplySettings()
 
 	RunOnGSThread([opts = EmuConfig.GS]() {
 		GSUpdateConfig(opts);
-		GSSetVSyncMode(Host::GetEffectiveVSyncMode());
 	});
 
 	// We need to synchronize the thread when changing any settings when the download mode
@@ -970,19 +975,16 @@ void MTGS::UpdateDisplayWindow()
 	});
 }
 
-void MTGS::SetVSyncMode(VsyncMode mode)
+void MTGS::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 {
 	pxAssertRel(IsOpen(), "MTGS is running");
 
-	RunOnGSThread([mode]() {
-		Console.WriteLn("Vsync is %s", mode == VsyncMode::Off ? "OFF" : (mode == VsyncMode::Adaptive ? "ADAPTIVE" : "ON"));
-		GSSetVSyncMode(mode);
-	});
+	RunOnGSThread([mode, allow_present_throttle]() { GSSetVSyncMode(mode, allow_present_throttle); });
 }
 
 void MTGS::UpdateVSyncMode()
 {
-	SetVSyncMode(Host::GetEffectiveVSyncMode());
+	SetVSyncMode(VMManager::GetEffectiveVSyncMode(), VMManager::ShouldAllowPresentThrottle());
 }
 
 void MTGS::SetSoftwareRendering(bool software, GSInterlaceMode interlace, bool display_message /* = true */)

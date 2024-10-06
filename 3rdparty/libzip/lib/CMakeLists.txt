@@ -82,6 +82,7 @@ add_library(zip
   zip_source_file_stdio.c
   zip_source_free.c
   zip_source_function.c
+  zip_source_get_dostime.c
   zip_source_get_file_attributes.c
   zip_source_is_deleted.c
   zip_source_layered.c
@@ -117,6 +118,7 @@ add_library(zip
 add_library(libzip::zip ALIAS zip)
 
 if(WIN32)
+  target_compile_definitions(zip PRIVATE WIN32_LEAN_AND_MEAN)
   target_sources(zip PRIVATE
     zip_source_file_win32.c
     zip_source_file_win32_named.c
@@ -172,7 +174,8 @@ if(HAVE_CRYPTO)
 endif()
 
 if(SHARED_LIB_VERSIONNING)
-  set_target_properties(zip PROPERTIES VERSION 5.5 SOVERSION 5)
+  # MACHO_*_VERSION can be removed when SOVERSION gets increased. Cf #405
+  set_target_properties(zip PROPERTIES VERSION 5.5 SOVERSION 5 MACHO_CURRENT_VERSION 6.5 MACHO_COMPATIBILITY_VERSION 6)
 endif()
 
 target_link_libraries(zip PRIVATE ZLIB::ZLIB)

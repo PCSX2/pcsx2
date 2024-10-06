@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Input/InputManager.h"
 #include "USB/usb-pad/usb-pad-sdl-ff.h"
@@ -32,7 +32,7 @@ namespace usb_pad
 		}
 	}
 
-	std::unique_ptr<SDLFFDevice> SDLFFDevice::Create(const std::string_view& device)
+	std::unique_ptr<SDLFFDevice> SDLFFDevice::Create(const std::string_view device)
 	{
 		SDLInputSource* source = static_cast<SDLInputSource*>(InputManager::GetInputSourceInterface(InputSourceType::SDL));
 		if (!source)
@@ -57,7 +57,7 @@ namespace usb_pad
 		return ret;
 	}
 
-	void SDLFFDevice::CreateEffects(const std::string_view& device)
+	void SDLFFDevice::CreateEffects(const std::string_view device)
 	{
 		constexpr u32 length = 10000; // 10 seconds since NFS games seem to not issue new commands while rotating.
 

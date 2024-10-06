@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -117,6 +117,7 @@ public:
 	~ElfObject();
 
 	__fi const std::vector<u8>& GetData() const { return data; }
+	__fi std::vector<u8> ReleaseData() const { return std::move(data); }
 	__fi const ELF_HEADER& GetHeader() const { return *reinterpret_cast<const ELF_HEADER*>(data.data()); }
 	__fi u32 GetSize() const { return static_cast<u32>(data.size()); }
 

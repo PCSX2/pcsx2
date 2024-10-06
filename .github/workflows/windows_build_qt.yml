@@ -55,10 +55,12 @@ jobs:
       POWERSHELL_TELEMETRY_OPTOUT: 1
 
     steps:
+      - name: Tempfix Clang
+        if: inputs.configuration == 'CMake'
+        run: choco uninstall llvm
+        
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       # actions/checkout elides tags, fetch them primarily for releases
       - name: Fetch Tags

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Achievements.h"
 #include "GS.h"
@@ -44,11 +44,11 @@ static void HotkeyAdjustVolume(s32 fixed, s32 delta)
 	if (!VMManager::HasValidVM())
 		return;
 
-	const s32 current_vol = SPU2::GetOutputVolume();
+	const s32 current_vol = static_cast<s32>(SPU2::GetOutputVolume());
 	const s32 new_volume =
-		std::clamp((fixed >= 0) ? fixed : (current_vol + delta), 0, Pcsx2Config::SPU2Options::MAX_VOLUME);
+		std::clamp((fixed >= 0) ? fixed : (current_vol + delta), 0, static_cast<s32>(Pcsx2Config::SPU2Options::MAX_VOLUME));
 	if (current_vol != new_volume)
-		SPU2::SetOutputVolume(new_volume);
+		SPU2::SetOutputVolume(static_cast<u32>(new_volume));
 
 	if (new_volume == 0)
 	{
@@ -93,10 +93,9 @@ static bool CanPause()
 	const float delta = static_cast<float>(Common::Timer::ConvertValueToSeconds(time - s_last_pause_time));
 	if (delta < PAUSE_INTERVAL)
 	{
-		Host::AddIconOSDMessage(
-			"PauseCooldown", ICON_FA_CLOCK,
-			fmt::format(TRANSLATE_FS("Hotkeys", "You cannot pause until another {:.1f} seconds have passed."),
-				PAUSE_INTERVAL - delta),
+		Host::AddIconOSDMessage("PauseCooldown", ICON_FA_CLOCK,
+			TRANSLATE_PLURAL_STR("Hotkeys", "You cannot pause until another %n second(s) have passed.",
+				"", static_cast<int>(std::ceil(PAUSE_INTERVAL - delta))),
 			Host::OSD_QUICK_DURATION);
 		return false;
 	}
@@ -197,7 +196,7 @@ DEFINE_HOTKEY("DecreaseVolume", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_N
 	})
 DEFINE_HOTKEY("Mute", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"), [](s32 pressed) {
 	if (!pressed && VMManager::HasValidVM())
-		HotkeyAdjustVolume((SPU2::GetOutputVolume() == 0) ? EmuConfig.SPU2.FinalVolume : 0, 0);
+		HotkeyAdjustVolume((SPU2::GetOutputVolume() == 0) ? SPU2::GetResetVolume() : 0, 0);
 })
 DEFINE_HOTKEY(
 	"FrameAdvance", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Frame Advance"), [](s32 pressed) {
@@ -246,6 +245,14 @@ DEFINE_HOTKEY("SaveStateAndSelectNextSlot", TRANSLATE_NOOP("Hotkeys", "Save Stat
 		{
 			SaveStateSelectorUI::SaveCurrentSlot();
 			SaveStateSelectorUI::SelectNextSlot(false);
+		}
+	})
+DEFINE_HOTKEY("SelectNextSlotAndSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"),
+	TRANSLATE_NOOP("Hotkeys", "Select Next Slot and Save State"), [](s32 pressed) {
+		if (!pressed && VMManager::HasValidVM())
+		{
+			SaveStateSelectorUI::SelectNextSlot(false);
+			SaveStateSelectorUI::SaveCurrentSlot();
 		}
 	})
 

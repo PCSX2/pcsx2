@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include <stdlib.h>
@@ -24,6 +24,7 @@
 
 #include "PacketReader/MAC_Address.h"
 #include "PacketReader/IP/IP_Address.h"
+#include "InternalServers/DHCP_Logger.h"
 #include "InternalServers/DHCP_Server.h"
 #include "InternalServers/DNS_Logger.h"
 #include "InternalServers/DNS_Server.h"
@@ -99,6 +100,7 @@ private:
 	bool dhcpOn = false;
 
 protected:
+	InternalServers::DHCP_Logger dhcpLogger;
 	InternalServers::DHCP_Server dhcpServer = InternalServers::DHCP_Server([&] { InternalSignalReceived(); });
 	InternalServers::DNS_Logger dnsLogger;
 	InternalServers::DNS_Server dnsServer = InternalServers::DNS_Server([&] { InternalSignalReceived(); });

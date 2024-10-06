@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GameListModel.h"
 #include "QtHost.h"
@@ -259,6 +259,17 @@ int GameListModel::columnCount(const QModelIndex& parent) const
 	return Column_Count;
 }
 
+QString GameListModel::formatTimespan(time_t timespan)
+{
+	// avoid an extra string conversion
+	const u32 hours = static_cast<u32>(timespan / 3600);
+	const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
+	if (hours > 0)
+		return qApp->translate("GameList", "%n hours", "", hours);
+	else
+		return qApp->translate("GameList", "%n minutes", "", minutes);
+}
+
 QVariant GameListModel::data(const QModelIndex& index, int role) const
 {
 	if (!index.isValid())
@@ -296,7 +307,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 					if (ge->total_played_time == 0)
 						return {};
 					else
-						return QString::fromStdString(GameList::FormatTimespan(ge->total_played_time, true));
+						return formatTimespan(ge->total_played_time);
 				}
 
 				case Column_LastPlayed:

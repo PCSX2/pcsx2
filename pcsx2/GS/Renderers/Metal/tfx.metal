@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GSMTLShaderCommon.h"
 
@@ -67,7 +67,6 @@ constant bool PS_TALES_OF_ABYSS_HLE [[function_constant(GSMTLConstantIndex_PS_TA
 constant bool PS_TEX_IS_FB          [[function_constant(GSMTLConstantIndex_PS_TEX_IS_FB)]];
 constant bool PS_AUTOMATIC_LOD      [[function_constant(GSMTLConstantIndex_PS_AUTOMATIC_LOD)]];
 constant bool PS_MANUAL_LOD         [[function_constant(GSMTLConstantIndex_PS_MANUAL_LOD)]];
-constant bool PS_POINT_SAMPLER      [[function_constant(GSMTLConstantIndex_PS_POINT_SAMPLER)]];
 constant bool PS_REGION_RECT        [[function_constant(GSMTLConstantIndex_PS_REGION_RECT)]];
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
 
@@ -324,16 +323,6 @@ struct PSMain
 		if (PS_REGION_RECT)
 			return read_tex(uint2(uv));
 
-		if (PS_POINT_SAMPLER)
-		{
-			// Weird issue with ATI/AMD cards,
-			// it looks like they add 127/128 of a texel to sampling coordinates
-			// occasionally causing point sampling to erroneously round up.
-			// I'm manually adjusting coordinates to the centre of texels here,
-			// though the centre is just paranoia, the top left corner works fine.
-			// As of 2018 this issue is still present.
-			uv = (trunc(uv * cb.wh.zw) + 0.5) / cb.wh.zw;
-		}
 		if (!PS_ADJS && !PS_ADJT)
 		{
 			uv *= cb.st_scale;
@@ -356,10 +345,10 @@ struct PSMain
 		}
 		else if (PS_MANUAL_LOD)
 		{
-			float K = cb.uv_min_max.x;
-			float L = cb.uv_min_max.y;
-			float bias = cb.uv_min_max.z;
-			float max_lod = cb.uv_min_max.w;
+			float K = cb.lod_params.x;
+			float L = cb.lod_params.y;
+			float bias = cb.lod_params.z;
+			float max_lod = cb.lod_params.w;
 
 			float gs_lod = K - log2(abs(in.t.w)) * L;
 			// FIXME max useful ?
@@ -492,7 +481,7 @@ struct PSMain
 		
 		if (PS_RTA_SRC_CORRECTION)
 		{
-			i = uint4(c * 128.55f); // Denormalize value
+			i = uint4(round(c * 128.25f)); // Denormalize value
 		}
 		else
 		{
@@ -532,7 +521,12 @@ struct PSMain
 
 	float4 fetch_c(ushort2 uv)
 	{
-		return PS_TEX_IS_DEPTH ? tex_depth.read(uv) : tex.read(uv);
+		if (PS_TEX_IS_FB)
+			return current_color;
+		else if (PS_TEX_IS_DEPTH)
+			return tex_depth.read(uv);
+		else
+			return tex.read(uv);
 	}
 
 	// MARK: Depth sampling
@@ -831,7 +825,7 @@ struct PSMain
 		else
 			T = sample_color(st);
 
-		if ((SW_BLEND || PS_TFX != 1) && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
+		if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC)
 		{
 			uint4 denorm_c_before = uint4(T);
 			if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -848,6 +842,8 @@ struct PSMain
 				T.b = float((denorm_c_before.g << 1) & 0xF8);
 				T.a = float(denorm_c_before.g & 0x80);
 			}
+			
+			T.a = (T.a >= 127.5 ? cb.ta.y : !PS_AEM || any((int3(T.rgb) & 0xF8) != 0) ? cb.ta.x : 0.f) * 255.f;
 		}
 	
 		float4 C = tfx(T, IIP ? in.c : in.fc);
@@ -865,7 +861,7 @@ struct PSMain
 
 	void ps_dither(thread float4& C, float As)
 	{
-		if (PS_DITHER == 0)
+		if (PS_DITHER == 0 || PS_DITHER == 3)
 			return;
 		ushort2 fpos;
 		if (PS_DITHER == 2)
@@ -891,7 +887,7 @@ struct PSMain
 	void ps_color_clamp_wrap(thread float4& C)
 	{
 		// When dithering the bottom 3 bits become meaningless and cause lines in the picture so we need to limit the color depth on dithered items
-		if (!SW_BLEND && !PS_DITHER && !PS_FBMASK)
+		if (!SW_BLEND && !(PS_DITHER > 0 && PS_DITHER < 3) && !PS_FBMASK)
 			return;
 
 		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
@@ -907,7 +903,7 @@ struct PSMain
 		// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 		// GS: Color = 1, Alpha = 255 => output 1
 		// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-		if (PS_DST_FMT == FMT_16 && (PS_BLEND_MIX == 0 || PS_DITHER))
+		if (PS_DST_FMT == FMT_16 && PS_DITHER < 3 && (PS_BLEND_MIX == 0 || PS_DITHER))
 			// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 			C.rgb = float3(short3(C.rgb) & 0xF8);
 		else if (PS_COLCLIP || PS_HDR)
@@ -929,9 +925,15 @@ struct PSMain
 			// PABE
 			if (PS_PABE)
 			{
+				// As_rgba needed for accumulation blend to manipulate Cd.
 				// No blending so early exit
 				if (As < 1.f)
+				{
+					As_rgba.rgb = float3(0.f);
 					return;
+				}
+
+				As_rgba.rgb = float3(1.f);
 			}
 
 			float Ad = PS_RTA_CORRECTION ? trunc(current_color.a * 128.1f) / 128.f : trunc(current_color.a * 255.1f) / 128.f;
@@ -967,7 +969,7 @@ struct PSMain
 			// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
 			float C_clamped = C;
 			if (PS_BLEND_MIX > 0 && PS_BLEND_HW != 1 && PS_BLEND_HW != 2)
-				C_clamped = min(C_clamped, 1.f);
+				C_clamped = saturate(C_clamped);
 
 			if (PS_BLEND_A == PS_BLEND_B)
 				Color.rgb = D;
@@ -1019,13 +1021,14 @@ struct PSMain
 		}
 		else
 		{
-			// Needed for Cd * (As/Ad/F + 1) blending mdoes
 			if (PS_BLEND_HW == 1)
 			{
+				// Needed for Cd * (As/Ad/F + 1) blending modes
 				Color.rgb = 255.f;
 			}
 			else if (PS_BLEND_HW == 2)
 			{
+				// Cd*As,Cd*Ad or Cd*F
 				float Alpha = PS_BLEND_C == 2 ? cb.alpha_fix : As;
 				Color.rgb = saturate(Alpha - 1.f) * 255.f;
 			}
@@ -1124,7 +1127,7 @@ struct PSMain
 
 		if (PS_SHUFFLE)
 		{
-			if ((SW_BLEND || PS_TFX != 1) && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
+			if (!PS_SHUFFLE_SAME && !PS_READ16_SRC)
 			{
 				uint4 denorm_c_after = uint4(C);
 				if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1139,12 +1142,11 @@ struct PSMain
 				}
 			}
 
-			uint4 denorm_c = uint4(C);
-			uint2 denorm_TA = uint2(cb.ta * 255.5f);
-
 			// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 			if (PS_SHUFFLE_SAME)
 			{
+				uint4 denorm_c = uint4(C);
+				
 				if (PS_PROCESS_BA & SHUFFLE_READ)
 					C = (denorm_c.b & 0x7F) | (denorm_c.a & 0x80);
 				else
@@ -1153,6 +1155,9 @@ struct PSMain
 			// Copy of a 16bit source in to this target
 			else if (PS_READ16_SRC)
 			{
+				uint4 denorm_c = uint4(C);
+				uint2 denorm_TA = uint2(cb.ta * 255.5f);
+				
 				C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7) << 5);
 				if (denorm_c.a & 0x80)
 					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80);
@@ -1164,43 +1169,21 @@ struct PSMain
 				if (PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 				{
 					C.rb = C.br;
-					if ((denorm_c.a & 0x80) != 0)
-						C.g = (denorm_c.a & 0x7F) | (denorm_TA.y & 0x80);
-					else
-						C.g = (denorm_c.a & 0x7F) | (denorm_TA.x & 0x80);
-						
-					if ((denorm_c.g & 0x80) != 0)
-						C.a = (denorm_c.g & 0x7F) | (denorm_TA.y & 0x80);
-					else
-						C.a = (denorm_c.g & 0x7F) | (denorm_TA.x & 0x80);
+					float g_temp = C.g;
+					
+					C.g = C.a;
+					C.a = g_temp;
 				}
 				else if(PS_PROCESS_BA & SHUFFLE_READ)
 				{
 					C.rb = C.bb;
-					if ((denorm_c.a & 0x80) != 0)
-						C.ga =  (denorm_c.a & 0x7F) | (denorm_TA.y & 0x80);
-					else
-						C.ga =  (denorm_c.a & 0x7F) | (denorm_TA.x & 0x80);
+					C.ga = C.aa;
 				}
 				else
 				{
 					C.rb = C.rr;
-					if ((denorm_c.g & 0x80) != 0)
-						C.ga = (denorm_c.g & 0x7F) | (denorm_TA.y & 0x80);
-					else
-						C.ga = (denorm_c.g & 0x7F) | (denorm_TA.x & 0x80);
+					C.ga = C.gg;
 				}
-			}
-			else // Basically a direct copy but a shuffle of both pairs of channels, so green and alpha get modified by TEXA
-			{
-				if ((denorm_c.g & 0x80) != 0)
-					C.g = (denorm_c.g & 0x7F) | (denorm_TA.y & 0x80);
-				else
-					C.g = (denorm_c.g & 0x7F) | (denorm_TA.x & 0x80);
-				if ((denorm_c.a & 0x80) != 0)
-					C.a = (denorm_c.a & 0x7F) | (denorm_TA.y & 0x80);
-				else
-					C.a = (denorm_c.a & 0x7F) | (denorm_TA.x & 0x80);
 			}
 		}
 		

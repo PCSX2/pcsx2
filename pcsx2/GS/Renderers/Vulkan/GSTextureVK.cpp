@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/GSGL.h"
 #include "GS/GSPerfMon.h"
@@ -924,9 +924,16 @@ void GSDownloadTextureVK::Flush()
 
 	// Need to execute command buffer.
 	if (GSDeviceVK::GetInstance()->GetCurrentFenceCounter() == m_copy_fence_counter)
+	{
+		if (GSDeviceVK::GetInstance()->InRenderPass())
+			GSDeviceVK::GetInstance()->EndRenderPass();
+
 		GSDeviceVK::GetInstance()->ExecuteCommandBufferForReadback();
+	}
 	else
+	{
 		GSDeviceVK::GetInstance()->WaitForFenceCounter(m_copy_fence_counter);
+	}
 }
 
 #ifdef PCSX2_DEVBUILD

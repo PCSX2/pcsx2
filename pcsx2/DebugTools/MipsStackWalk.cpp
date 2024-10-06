@@ -1,8 +1,8 @@
-// SPDX-FileCopyrightText: 2014 PPSSPP Project, 2014-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-2.0+
 
 #include "MipsStackWalk.h"
-#include "SymbolMap.h"
+#include "SymbolGuardian.h"
 #include "MIPSAnalyst.h"
 #include "DebugInterface.h"
 #include "R5900OpcodeTables.h"
@@ -26,12 +26,11 @@ namespace MipsStackWalk
 
 	static u32 GuessEntry(DebugInterface* cpu, u32 pc)
 	{
-		SymbolInfo info;
-		if (cpu->GetSymbolMap().GetSymbolInfo(&info, pc))
-		{
-			return info.address;
-		}
-		return INVALIDTARGET;
+		FunctionInfo function = cpu->GetSymbolGuardian().FunctionOverlappingAddress(pc);
+		if (!function.address.valid())
+			return INVALIDTARGET;
+
+		return function.address.value;
 	}
 
 	bool IsSWInstr(const R5900::OPCODE& op)

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 struct VS_INPUT
 {
@@ -73,6 +73,25 @@ PS_OUTPUT ps_copy(PS_INPUT input)
 float ps_depth_copy(PS_INPUT input) : SV_Depth
 {
 	return sample_c(input.t).r;
+}
+
+PS_OUTPUT ps_downsample_copy(PS_INPUT input)
+{
+	int DownsampleFactor = DOFFSET;
+	int2 ClampMin = int2(EMODA, EMODC);
+	float Weight = BGColor.x;
+
+	int2 coord = max(int2(input.p.xy) * DownsampleFactor, ClampMin);
+
+	PS_OUTPUT output;
+	output.c = (float4)0;
+	for (int yoff = 0; yoff < DownsampleFactor; yoff++)
+	{
+		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
+			output.c += Texture.Load(int3(coord + int2(xoff, yoff), 0));
+	}
+	output.c /= Weight;
+	return output;
 }
 
 PS_OUTPUT ps_filter_transparency(PS_INPUT input)
@@ -216,6 +235,13 @@ float rgb5a1_to_depth16(float4 val)
 {
 	uint4 c = uint4(val * 255.5f);
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
+}
+
+float ps_convert_float32_float24(PS_INPUT input) : SV_Depth
+{
+	// Truncates depth value to 24bits
+	uint d = uint(sample_c(input.t).r * exp2(32.0f)) & 0xFFFFFFu;
+	return float(d) * exp2(-32.0f);
 }
 
 float ps_convert_rgba8_float32(PS_INPUT input) : SV_Depth

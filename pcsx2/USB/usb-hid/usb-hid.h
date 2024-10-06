@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include "SaveState.h"
@@ -31,14 +31,4 @@ namespace usb_hid
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
 		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 	};
-
-	class BeatManiaDevice final : public HIDKbdDevice
-	{
-	public:
-		const char* Name() const override;
-		const char* TypeName() const override;
-		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
-		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
-	};
-
 } // namespace usb_hid

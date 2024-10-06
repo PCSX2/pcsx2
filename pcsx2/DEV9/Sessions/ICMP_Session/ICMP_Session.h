@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include <atomic>
@@ -47,30 +47,29 @@ namespace Sessions
 
 			static PingType icmpConnectionKind;
 
-			//Sockets
+			// Sockets
 			int icmpSocket{-1};
 			std::chrono::steady_clock::time_point icmpDeathClockStart;
 			u16 icmpId;
 
 #endif
 
-			//Return buffers
+			// Return buffers
 			PingResult result{};
 			int icmpResponseBufferLen{0};
-			std::unique_ptr<u8[]> icmpResponseBuffer;
+			std::unique_ptr<std::byte[]> icmpResponseBuffer;
 
 		public:
 			Ping(int requestSize);
-			bool IsInitialised();
+			bool IsInitialised() const;
 			PingResult* Recv();
 			bool Send(PacketReader::IP::IP_Address parAdapterIP, PacketReader::IP::IP_Address parDestIP, int parTimeToLive, PacketReader::PayloadPtr* parPayload);
 
 			~Ping();
 		};
 
-		SimpleQueue<PacketReader::IP::ICMP::ICMP_Packet*> _recvBuff;
 		std::mutex ping_mutex;
-		std::vector<Ping*> pings;
+		std::vector<std::unique_ptr<Ping>> pings;
 		ThreadSafeMap<Sessions::ConnectionKey, Sessions::BaseSession*>* connections;
 
 		std::atomic<int> open{0};
@@ -78,7 +77,7 @@ namespace Sessions
 	public:
 		ICMP_Session(ConnectionKey parKey, PacketReader::IP::IP_Address parAdapterIP, ThreadSafeMap<Sessions::ConnectionKey, Sessions::BaseSession*>* parConnections);
 
-		virtual PacketReader::IP::IP_Payload* Recv();
+		virtual std::optional<ReceivedPayload> Recv();
 		virtual bool Send(PacketReader::IP::IP_Payload* payload);
 		bool Send(PacketReader::IP::IP_Payload* payload, PacketReader::IP::IP_Packet* packet);
 		virtual void Reset();

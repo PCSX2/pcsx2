@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/OpenGL/GLContext.h"
 #include "GS/Renderers/OpenGL/GSDeviceOGL.h"
@@ -146,26 +146,20 @@ bool GSDeviceOGL::HasSurface() const
 	return m_window_info.type != WindowInfo::Type::Surfaceless;
 }
 
-void GSDeviceOGL::SetVSync(VsyncMode mode)
+void GSDeviceOGL::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 {
-	if (m_vsync_mode == mode || m_gl_context->GetWindowInfo().type == WindowInfo::Type::Surfaceless)
+	m_allow_present_throttle = allow_present_throttle;
+
+	if (m_vsync_mode == mode)
 		return;
 
-	// Window framebuffer has to be bound to call SetSwapInterval.
-	GLint current_fbo = 0;
-	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-	if (mode != VsyncMode::Adaptive || !m_gl_context->SetSwapInterval(-1))
-		m_gl_context->SetSwapInterval(static_cast<s32>(mode != VsyncMode::Off));
-
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 	m_vsync_mode = mode;
+	SetSwapInterval();
 }
 
-bool GSDeviceOGL::Create()
+bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 {
-	if (!GSDevice::Create())
+	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
 		return false;
 
 	// GL is a pain and needs the window super early to create the context.
@@ -189,6 +183,9 @@ bool GSDeviceOGL::Create()
 	bool buggy_pbo;
 	if (!CheckFeatures(buggy_pbo))
 		return false;
+
+	// Store adapter name currently in use
+	m_name = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 
 	SetSwapInterval();
 
@@ -367,6 +364,12 @@ bool GSDeviceOGL::Create()
 			{
 				m_convert.ps[i].RegisterUniform("offset");
 				m_convert.ps[i].RegisterUniform("scale");
+			}
+			else if (static_cast<ShaderConvert>(i) == ShaderConvert::DOWNSAMPLE_COPY)
+			{
+				m_convert.ps[i].RegisterUniform("ClampMin");
+				m_convert.ps[i].RegisterUniform("DownsampleFactor");
+				m_convert.ps[i].RegisterUniform("Weight");
 			}
 		}
 
@@ -606,7 +609,7 @@ bool GSDeviceOGL::CreateTextureFX()
 
 bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 {
-	bool vendor_id_amd = false;
+	//bool vendor_id_amd = false;
 	bool vendor_id_nvidia = false;
 	//bool vendor_id_intel = false;
 
@@ -615,7 +618,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 		std::strstr(vendor, "ATI"))
 	{
 		Console.WriteLn(Color_StrongRed, "OGL: AMD GPU detected.");
-		vendor_id_amd = true;
+		//vendor_id_amd = true;
 	}
 	else if (std::strstr(vendor, "NVIDIA Corporation"))
 	{
@@ -635,7 +638,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 	if (!GLAD_GL_VERSION_3_3)
 	{
 		Host::ReportErrorAsync(
-			"GS", fmt::format("OpenGL renderer is not supported. Only OpenGL {}.{}\n was found", major_gl, minor_gl));
+			"GS", fmt::format(TRANSLATE_FS("GSDeviceOGL", "OpenGL renderer is not supported. Only OpenGL {}.{}\n was found"), major_gl, minor_gl));
 		return false;
 	}
 
@@ -712,7 +715,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 		Console.Warning("Not using PBOs for texture downloads, this may reduce performance.");
 
 	// optional features based on context
-	m_features.broken_point_sampler = vendor_id_amd;
+	m_features.broken_point_sampler = false;
 	m_features.primitive_id = true;
 
 	m_features.framebuffer_fetch = GLAD_GL_EXT_shader_framebuffer_fetch;
@@ -767,6 +770,10 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 		(point_range[0] <= GSConfig.UpscaleMultiplier && point_range[1] >= GSConfig.UpscaleMultiplier);
 	m_features.line_expand = false;
 
+	GLint max_texture_size = 1024;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+	m_max_texture_size = std::max(1024u, static_cast<u32>(max_texture_size));
+
 	Console.WriteLn("Using %s for point expansion, %s for line expansion and %s for sprite expansion.",
 		m_features.point_expand ? "hardware" : (m_features.vs_expand ? "vertex expanding" : "UNSUPPORTED"),
 		m_features.line_expand ? "hardware" : (m_features.vs_expand ? "vertex expanding" : "UNSUPPORTED"),
@@ -777,8 +784,23 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 
 void GSDeviceOGL::SetSwapInterval()
 {
-	const int interval = ((m_vsync_mode == VsyncMode::Adaptive) ? -1 : ((m_vsync_mode == VsyncMode::On) ? 1 : 0));
-	m_gl_context->SetSwapInterval(interval);
+	if (m_window_info.type == WindowInfo::Type::Surfaceless)
+		return;
+
+	// OpenGL does not support mailbox, only effectively FIFO.
+	// Fall back to manual throttling in this case.
+	m_vsync_mode = (m_vsync_mode == GSVSyncMode::Mailbox) ? GSVSyncMode::FIFO : m_vsync_mode;
+
+	// Window framebuffer has to be bound to call SetSwapInterval.
+	const s32 interval = static_cast<s32>(m_vsync_mode == GSVSyncMode::FIFO);
+	GLint current_fbo = 0;
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+	if (!m_gl_context->SetSwapInterval(interval))
+		WARNING_LOG("Failed to set swap interval to {}", interval);
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
 
 void GSDeviceOGL::DestroyResources()
@@ -868,9 +890,7 @@ bool GSDeviceOGL::UpdateWindow()
 	if (m_window_info.type != WindowInfo::Type::Surfaceless)
 	{
 		// reset vsync rate, since it (usually) gets lost
-		if (m_vsync_mode != VsyncMode::Adaptive || !m_gl_context->SetSwapInterval(-1))
-			m_gl_context->SetSwapInterval(static_cast<s32>(m_vsync_mode != VsyncMode::Off));
-
+		SetSwapInterval();
 		RenderBlankFrame();
 	}
 
@@ -1248,14 +1268,14 @@ GSTexture* GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& are
 	return tex;
 }
 
-std::string GSDeviceOGL::GetShaderSource(const std::string_view& entry, GLenum type, const std::string_view& glsl_h_code, const std::string_view& macro_sel)
+std::string GSDeviceOGL::GetShaderSource(const std::string_view entry, GLenum type, const std::string_view glsl_h_code, const std::string_view macro_sel)
 {
 	std::string src = GenGlslHeader(entry, type, macro_sel);
 	src += glsl_h_code;
 	return src;
 }
 
-std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum type, const std::string_view& macro)
+std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type, const std::string_view macro)
 {
 	std::string header;
 
@@ -1360,7 +1380,6 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_COLCLIP {}\n", sel.colclip)
 		+ fmt::format("#define PS_DATE {}\n", sel.date)
 		+ fmt::format("#define PS_TCOFFSETHACK {}\n", sel.tcoffsethack)
-		+ fmt::format("#define PS_POINT_SAMPLER {}\n", sel.point_sampler)
 		+ fmt::format("#define PS_REGION_RECT {}\n", sel.region_rect)
 		+ fmt::format("#define PS_BLEND_A {}\n", sel.blend_a)
 		+ fmt::format("#define PS_BLEND_B {}\n", sel.blend_b)
@@ -1591,6 +1610,29 @@ void GSDeviceOGL::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 off
 	PSSetSamplerState(m_convert.pt);
 
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
+	DrawStretchRect(GSVector4::zero(), dRect, dTex->GetSize());
+}
+
+void GSDeviceOGL::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
+{
+	CommitClear(sTex, false);
+
+	constexpr ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
+	GLProgram& prog = m_convert.ps[static_cast<int>(shader)];
+	prog.Bind();
+	prog.Uniform2iv(0, clamp_min.v);
+	prog.Uniform1i(1, downsample_factor);
+	prog.Uniform1f(2, static_cast<float>(downsample_factor * downsample_factor));
+
+	OMSetDepthStencilState(m_convert.dss);
+	OMSetBlendState(false);
+	OMSetColorMaskState();
+	OMSetRenderTargets(dTex, nullptr);
+
+	PSSetShaderResource(0, sTex);
+	PSSetSamplerState(m_convert.pt);
+
+	//const GSVector4 dRect = GSVector4(dTex->GetRect());
 	DrawStretchRect(GSVector4::zero(), dRect, dTex->GetSize());
 }
 
@@ -2049,9 +2091,9 @@ bool GSDeviceOGL::CreateImGuiProgram()
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)IM_OFFSETOF(ImDrawVert, pos));
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)IM_OFFSETOF(ImDrawVert, uv));
-	glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)IM_OFFSETOF(ImDrawVert, col));
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)offsetof(ImDrawVert, pos));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)offsetof(ImDrawVert, uv));
+	glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)offsetof(ImDrawVert, col));
 
 	glBindVertexArray(GLState::vao);
 	return true;
@@ -2573,20 +2615,21 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	SendHWDraw(config, psel.ps.IsFeedbackLoop());
 
-	if (config.blend_second_pass.enable)
+	if (config.blend_multi_pass.enable)
 	{
 		if (config.blend.IsEffective(config.colormask))
 		{
-			OMSetBlendState(config.blend_second_pass.blend.enable, s_gl_blend_factors[config.blend_second_pass.blend.src_factor],
-				s_gl_blend_factors[config.blend_second_pass.blend.dst_factor], s_gl_blend_ops[config.blend_second_pass.blend.op],
-				s_gl_blend_factors[config.blend_second_pass.blend.src_factor_alpha], s_gl_blend_factors[config.blend_second_pass.blend.dst_factor_alpha],
-				config.blend_second_pass.blend.constant_enable, config.blend_second_pass.blend.constant);
+			OMSetBlendState(config.blend_multi_pass.blend.enable, s_gl_blend_factors[config.blend_multi_pass.blend.src_factor],
+				s_gl_blend_factors[config.blend_multi_pass.blend.dst_factor], s_gl_blend_ops[config.blend_multi_pass.blend.op],
+				s_gl_blend_factors[config.blend_multi_pass.blend.src_factor_alpha], s_gl_blend_factors[config.blend_multi_pass.blend.dst_factor_alpha],
+				config.blend_multi_pass.blend.constant_enable, config.blend_multi_pass.blend.constant);
 		}
 		else
 		{
 			OMSetBlendState();
 		}
-		psel.ps.blend_hw = config.blend_second_pass.blend_hw;
+		psel.ps.blend_hw = config.blend_multi_pass.blend_hw;
+		psel.ps.dither = config.blend_multi_pass.dither;
 		SetupPipeline(psel);
 		SendHWDraw(config, psel.ps.IsFeedbackLoop());
 	}

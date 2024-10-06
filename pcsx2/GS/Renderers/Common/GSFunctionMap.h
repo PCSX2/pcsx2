@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -180,9 +180,12 @@ public:
 		}
 		else
 		{
+			HostSys::BeginCodeWrite();
+
 			u8* code_ptr = GSCodeReserve::ReserveMemory(MAX_SIZE);
 			CG cg(key, code_ptr, MAX_SIZE);
-			pxAssert(cg.getSize() < MAX_SIZE);
+			cg.Generate();
+			pxAssert(cg.GetSize() < MAX_SIZE);
 
 #if 0
 			fprintf(stderr, "%s Location:%p Size:%zu Key:%llx\n", m_name.c_str(), code_ptr, cg.getSize(), (u64)key);
@@ -190,9 +193,13 @@ public:
 			sel.Print();
 #endif
 
-			GSCodeReserve::CommitMemory(cg.getSize());
+			const u32 size = static_cast<u32>(cg.GetSize());
+			GSCodeReserve::CommitMemory(size);
 
-			ret = (VALUE)cg.getCode();
+			HostSys::EndCodeWrite();
+			HostSys::FlushInstructionCache(code_ptr, static_cast<u32>(size));
+
+			ret = (VALUE)cg.GetCode();
 
 			m_cgmap[key] = ret;
 		}

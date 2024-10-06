@@ -1,7 +1,9 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
+
+#include "GS/GS.h"
 
 #include <string>
 #include <vector>
@@ -12,6 +14,6 @@
 
 class GSDevice;
 GSDevice* MakeGSDeviceMTL();
-std::vector<std::string> GetMetalAdapterList();
+std::vector<GSAdapterInfo> GetMetalAdapterList();
 
 #endif

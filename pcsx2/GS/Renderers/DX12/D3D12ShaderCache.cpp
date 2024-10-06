@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/DX12/D3D12ShaderCache.h"
 #include "GS/Renderers/DX11/D3D.h"
@@ -253,7 +253,7 @@ bool D3D12ShaderCache::ReadExisting(const std::string& index_filename, const std
 	return true;
 }
 
-std::string D3D12ShaderCache::GetCacheBaseFileName(const std::string_view& type, D3D_FEATURE_LEVEL feature_level, bool debug)
+std::string D3D12ShaderCache::GetCacheBaseFileName(const std::string_view type, D3D_FEATURE_LEVEL feature_level, bool debug)
 {
 	std::string base_filename = "d3d12_";
 	base_filename += type;
@@ -286,7 +286,7 @@ union MD5Hash
 };
 
 D3D12ShaderCache::CacheIndexKey D3D12ShaderCache::GetShaderCacheKey(
-	EntryType type, const std::string_view& shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point)
+	EntryType type, const std::string_view shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point)
 {
 	union
 	{

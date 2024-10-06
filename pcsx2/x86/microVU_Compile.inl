@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -81,16 +81,14 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC)
 	if (mVUrange.start <= cur_pc)
 	{
 		mVUrange.end = cur_pc;
-		s32& rStart = mVUrange.start;
-		s32& rEnd = mVUrange.end;
-		std::deque<microRange>::iterator it(ranges->begin());
-		it++;
-		for (;it != ranges->end();)
+		s32 rStart = mVUrange.start;
+		s32 rEnd = mVUrange.end;
+		for (auto it = ranges->begin() + 1; it != ranges->end();)
 		{
 			if (((it->start >= rStart) && (it->start <= rEnd)) || ((it->end >= rStart) && (it->end <= rEnd))) // Starts after this prog but starts before the end of current prog
 			{
-				rStart = std::min(it->start, rStart); // Choose the earlier start
-				rEnd = std::max(it->end, rEnd);
+				mVUrange.start = rStart = std::min(it->start, rStart); // Choose the earlier start
+				mVUrange.end = rEnd = std::max(it->end, rEnd);
 				it = ranges->erase(it);
 			}
 			else

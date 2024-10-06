@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "LogWindow.h"
 #include "MainWindow.h"
@@ -37,10 +37,7 @@ LogWindow::LogWindow(bool attach_to_main)
 	Log::SetHostOutputLevel(GetWindowLogLevel(), &LogWindow::logCallback);
 }
 
-LogWindow::~LogWindow()
-{
-	Log::SetHostOutputLevel(LOGLEVEL_NONE, nullptr);
-}
+LogWindow::~LogWindow() = default;
 
 void LogWindow::updateSettings()
 {

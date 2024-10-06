@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #ifdef VERTEX_SHADER
 
@@ -56,6 +56,28 @@ void ps_copy()
 void ps_depth_copy()
 {
   gl_FragDepth = sample_c(v_tex).r;
+}
+#endif
+
+#ifdef ps_downsample_copy
+layout(push_constant) uniform cb10
+{
+	ivec2 ClampMin;
+	int DownsampleFactor;
+	int pad0;
+	float Weight;
+	vec3 pad1;
+};
+void ps_downsample_copy()
+{
+	ivec2 coord = max(ivec2(gl_FragCoord.xy) * DownsampleFactor, ClampMin);
+	vec4 result = vec4(0);
+	for (int yoff = 0; yoff < DownsampleFactor; yoff++)
+	{
+		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
+			result += texelFetch(samp0, coord + ivec2(xoff, yoff), 0);
+	}
+	o_col0 = result / Weight;
 }
 #endif
 
@@ -191,6 +213,15 @@ float rgb5a1_to_depth16(vec4 unorm)
 	uvec4 c = uvec4(unorm * vec4(255.5f));
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
 }
+
+#ifdef ps_convert_float32_float24
+void ps_convert_float32_float24()
+{
+	// Truncates depth value to 24bits
+	uint d = uint(sample_c(v_tex).r * exp2(32.0f)) & 0xFFFFFFu;
+	gl_FragDepth = float(d) * exp2(-32.0f);
+}
+#endif
 
 #ifdef ps_convert_rgba8_float32
 void ps_convert_rgba8_float32()

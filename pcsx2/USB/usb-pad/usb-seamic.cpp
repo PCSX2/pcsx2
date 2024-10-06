@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Host.h"
 #include "USB/usb-pad/usb-pad.h"
 #include "USB/qemu-usb/desc.h"
-#include "USB/usb-mic/usb-mic-singstar.h"
+#include "USB/usb-mic/usb-mic.h"
 #include "USB/USB.h"
 
 #include "common/Console.h"
@@ -296,7 +296,7 @@ namespace usb_pad
 				{
 					case USB_DT_REPORT:
 						ret = sizeof(hid_report_descriptor);
-						memcpy(data, hid_report_descriptor, ret);
+						std::memcpy(data, hid_report_descriptor, ret);
 						p->actual_length = ret;
 						break;
 					default:
@@ -308,7 +308,6 @@ namespace usb_pad
 				if (length > 0)
 				{
 					p->actual_length = 0;
-					//p->status = USB_RET_SUCCESS;
 				}
 				break;
 			case SET_IDLE:
@@ -389,12 +388,12 @@ namespace usb_pad
 
 	USBDevice* SeamicDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
-		const usb_mic::SingstarDevice* mic_proxy =
-			static_cast<usb_mic::SingstarDevice*>(RegisterDevice::instance().Device(DEVTYPE_SINGSTAR));
+		const usb_mic::MicrophoneDevice* mic_proxy =
+			static_cast<usb_mic::MicrophoneDevice*>(RegisterDevice::instance().Device(DEVTYPE_MICROPHONE));
 		if (!mic_proxy)
 			return nullptr;
 
-		USBDevice* mic = mic_proxy->CreateDevice(si, port, 0, false, TypeName());
+		USBDevice* mic = mic_proxy->CreateDevice(si, port, 0, false, 48000, TypeName());
 		if (!mic)
 			return nullptr;
 

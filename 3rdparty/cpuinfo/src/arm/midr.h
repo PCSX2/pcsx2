@@ -1,40 +1,39 @@
 #pragma once
 #include <stdint.h>
 
-
-#define CPUINFO_ARM_MIDR_IMPLEMENTER_MASK  UINT32_C(0xFF000000)
-#define CPUINFO_ARM_MIDR_VARIANT_MASK      UINT32_C(0x00F00000)
+#define CPUINFO_ARM_MIDR_IMPLEMENTER_MASK UINT32_C(0xFF000000)
+#define CPUINFO_ARM_MIDR_VARIANT_MASK UINT32_C(0x00F00000)
 #define CPUINFO_ARM_MIDR_ARCHITECTURE_MASK UINT32_C(0x000F0000)
-#define CPUINFO_ARM_MIDR_PART_MASK         UINT32_C(0x0000FFF0)
-#define CPUINFO_ARM_MIDR_REVISION_MASK     UINT32_C(0x0000000F)
+#define CPUINFO_ARM_MIDR_PART_MASK UINT32_C(0x0000FFF0)
+#define CPUINFO_ARM_MIDR_REVISION_MASK UINT32_C(0x0000000F)
 
-#define CPUINFO_ARM_MIDR_IMPLEMENTER_OFFSET  24
-#define CPUINFO_ARM_MIDR_VARIANT_OFFSET      20
+#define CPUINFO_ARM_MIDR_IMPLEMENTER_OFFSET 24
+#define CPUINFO_ARM_MIDR_VARIANT_OFFSET 20
 #define CPUINFO_ARM_MIDR_ARCHITECTURE_OFFSET 16
-#define CPUINFO_ARM_MIDR_PART_OFFSET          4
-#define CPUINFO_ARM_MIDR_REVISION_OFFSET      0
+#define CPUINFO_ARM_MIDR_PART_OFFSET 4
+#define CPUINFO_ARM_MIDR_REVISION_OFFSET 0
 
-#define CPUINFO_ARM_MIDR_ARM1156         UINT32_C(0x410FB560)
-#define CPUINFO_ARM_MIDR_CORTEX_A7       UINT32_C(0x410FC070)
-#define CPUINFO_ARM_MIDR_CORTEX_A9       UINT32_C(0x410FC090)
-#define CPUINFO_ARM_MIDR_CORTEX_A15      UINT32_C(0x410FC0F0)
-#define CPUINFO_ARM_MIDR_CORTEX_A17      UINT32_C(0x410FC0E0)
-#define CPUINFO_ARM_MIDR_CORTEX_A35      UINT32_C(0x410FD040)
-#define CPUINFO_ARM_MIDR_CORTEX_A53      UINT32_C(0x410FD030)
-#define CPUINFO_ARM_MIDR_CORTEX_A55      UINT32_C(0x410FD050)
-#define CPUINFO_ARM_MIDR_CORTEX_A57      UINT32_C(0x410FD070)
-#define CPUINFO_ARM_MIDR_CORTEX_A72      UINT32_C(0x410FD080)
-#define CPUINFO_ARM_MIDR_CORTEX_A73      UINT32_C(0x410FD090)
-#define CPUINFO_ARM_MIDR_CORTEX_A75      UINT32_C(0x410FD0A0)
-#define CPUINFO_ARM_MIDR_KRYO280_GOLD    UINT32_C(0x51AF8001)
-#define CPUINFO_ARM_MIDR_KRYO280_SILVER  UINT32_C(0x51AF8014)
-#define CPUINFO_ARM_MIDR_KRYO385_GOLD    UINT32_C(0x518F802D)
-#define CPUINFO_ARM_MIDR_KRYO385_SILVER  UINT32_C(0x518F803C)
+#define CPUINFO_ARM_MIDR_ARM1156 UINT32_C(0x410FB560)
+#define CPUINFO_ARM_MIDR_CORTEX_A7 UINT32_C(0x410FC070)
+#define CPUINFO_ARM_MIDR_CORTEX_A9 UINT32_C(0x410FC090)
+#define CPUINFO_ARM_MIDR_CORTEX_A15 UINT32_C(0x410FC0F0)
+#define CPUINFO_ARM_MIDR_CORTEX_A17 UINT32_C(0x410FC0E0)
+#define CPUINFO_ARM_MIDR_CORTEX_A35 UINT32_C(0x410FD040)
+#define CPUINFO_ARM_MIDR_CORTEX_A53 UINT32_C(0x410FD030)
+#define CPUINFO_ARM_MIDR_CORTEX_A55 UINT32_C(0x410FD050)
+#define CPUINFO_ARM_MIDR_CORTEX_A57 UINT32_C(0x410FD070)
+#define CPUINFO_ARM_MIDR_CORTEX_A72 UINT32_C(0x410FD080)
+#define CPUINFO_ARM_MIDR_CORTEX_A73 UINT32_C(0x410FD090)
+#define CPUINFO_ARM_MIDR_CORTEX_A75 UINT32_C(0x410FD0A0)
+#define CPUINFO_ARM_MIDR_KRYO280_GOLD UINT32_C(0x51AF8001)
+#define CPUINFO_ARM_MIDR_KRYO280_SILVER UINT32_C(0x51AF8014)
+#define CPUINFO_ARM_MIDR_KRYO385_GOLD UINT32_C(0x518F802D)
+#define CPUINFO_ARM_MIDR_KRYO385_SILVER UINT32_C(0x518F803C)
 #define CPUINFO_ARM_MIDR_KRYO_SILVER_821 UINT32_C(0x510F2010)
-#define CPUINFO_ARM_MIDR_KRYO_GOLD       UINT32_C(0x510F2050)
+#define CPUINFO_ARM_MIDR_KRYO_GOLD UINT32_C(0x510F2050)
 #define CPUINFO_ARM_MIDR_KRYO_SILVER_820 UINT32_C(0x510F2110)
-#define CPUINFO_ARM_MIDR_EXYNOS_M1_M2    UINT32_C(0x530F0010)
-#define CPUINFO_ARM_MIDR_DENVER2         UINT32_C(0x4E0F0030)
+#define CPUINFO_ARM_MIDR_EXYNOS_M1_M2 UINT32_C(0x530F0010)
+#define CPUINFO_ARM_MIDR_DENVER2 UINT32_C(0x4E0F0030)
 
 inline static uint32_t midr_set_implementer(uint32_t midr, uint32_t implementer) {
 	return (midr & ~CPUINFO_ARM_MIDR_IMPLEMENTER_MASK) |
@@ -176,7 +175,9 @@ inline static uint32_t midr_score_core(uint32_t midr) {
 		case UINT32_C(0x4100D440): /* Cortex-X1 */
 		case UINT32_C(0x4100D480): /* Cortex-X2 */
 		case UINT32_C(0x4100D4E0): /* Cortex-X3 */
-			/* These cores are in big role w.r.t Cortex-A75/-A76/-A77/-A78/-A710/-A715 */
+			/* These cores are in big role w.r.t
+			 * Cortex-A75/-A76/-A77/-A78/-A710/-A715
+			 */
 			return 6;
 		case UINT32_C(0x4100D080): /* Cortex-A72 */
 		case UINT32_C(0x4100D090): /* Cortex-A73 */
@@ -204,7 +205,8 @@ inline static uint32_t midr_score_core(uint32_t midr) {
 			/* These cores are always in big role */
 			return 5;
 		case UINT32_C(0x4100D070): /* Cortex-A57 */
-			/* Cortex-A57 can be in LITTLE role w.r.t. Denver 2, or in big role w.r.t. Cortex-A53 */
+			/* Cortex-A57 can be in LITTLE role w.r.t. Denver 2, or
+			 * in big role w.r.t. Cortex-A53 */
 			return 4;
 #if CPUINFO_ARCH_ARM64
 		case UINT32_C(0x4100D060): /* Cortex-A65 */
@@ -212,7 +214,8 @@ inline static uint32_t midr_score_core(uint32_t midr) {
 		case UINT32_C(0x4100D030): /* Cortex-A53 */
 		case UINT32_C(0x4100D050): /* Cortex-A55 */
 		case UINT32_C(0x4100D460): /* Cortex-A510 */
-			/* Cortex-A53 is usually in LITTLE role, but can be in big role w.r.t. Cortex-A35 */
+			/* Cortex-A53 is usually in LITTLE role, but can be in
+			 * big role w.r.t. Cortex-A35 */
 			return 2;
 		case UINT32_C(0x4100D040): /* Cortex-A35 */
 #if CPUINFO_ARCH_ARM
@@ -227,10 +230,12 @@ inline static uint32_t midr_score_core(uint32_t midr) {
 			return 1;
 		default:
 			/*
-			 * Unknown cores, or cores which do not have big/LITTLE roles.
-			 * To be future-proof w.r.t. cores not yet recognized in cpuinfo, assume position between
-			 * Cortex-A57/A72/A73/A75 and Cortex-A53/A55. Then at least future cores paired with
-			 * one of these known cores will be properly scored.
+			 * Unknown cores, or cores which do not have big/LITTLE
+			 * roles. To be future-proof w.r.t. cores not yet
+			 * recognized in cpuinfo, assume position between
+			 * Cortex-A57/A72/A73/A75 and Cortex-A53/A55. Then at
+			 * least future cores paired with one of these known
+			 * cores will be properly scored.
 			 */
 			return 3;
 	}

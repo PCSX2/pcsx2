@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "SIO/Pad/PadNotConnected.h"
 
@@ -32,6 +32,11 @@ void PadNotConnected::Set(u32 index, float value)
 }
 
 void PadNotConnected::SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right)
+{
+
+}
+
+void PadNotConnected::SetRawPressureButton(u32 index, const std::tuple<bool, u8> value)
 {
 
 }

@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(SolutionDir)common\vsprops\BaseProjectConfig.props" />
   <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1E3D706C-1D95-4E1B-BDF2-CA3D0007DF7F}</ProjectGuid>
+    <ProjectGuid>{D31A6DD1-99CA-41D8-A230-1FAE913C8989}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -30,29 +30,36 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="src\demangler.cpp" />
-    <ClCompile Include="src\demtools.cpp" />
-    <ClCompile Include="src\gparser.cpp" />
-    <ClCompile Include="src\igrams.cpp" />
-    <ClCompile Include="src\stgrammars\borlandll.cpp" />
-    <ClCompile Include="src\stgrammars\gccll.cpp" />
-    <ClCompile Include="src\stgrammars\msll.cpp" />
+    <ClInclude Include="include\ansidecl.h" />
+    <ClInclude Include="include\cp-demangle.h" />
+    <ClInclude Include="include\demangle.h" />
+    <ClInclude Include="include\dyn-string.h" />
+    <ClInclude Include="include\environ.h" />
+    <ClInclude Include="include\getopt.h" />
+    <ClInclude Include="include\libiberty.h" />
+    <ClInclude Include="include\safe-ctype.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\demangler\demangler.h" />
-    <ClInclude Include="include\demangler\demglobal.h" />
-    <ClInclude Include="include\demangler\demtools.h" />
-    <ClInclude Include="include\demangler\gparser.h" />
-    <ClInclude Include="include\demangler\igrams.h" />
-    <ClInclude Include="include\demangler\stgrammars\borlandll.h" />
-    <ClInclude Include="include\demangler\stgrammars\gccll.h" />
-    <ClInclude Include="include\demangler\stgrammars\msll.h" />
+    <ClCompile Include="src\alloca.c" />
+    <ClCompile Include="src\argv.c" />
+    <ClCompile Include="src\cp-demangle.c" />
+    <ClCompile Include="src\cplus-dem.c" />
+    <ClCompile Include="src\d-demangle.c" />
+    <ClCompile Include="src\dyn-string.c" />
+    <ClCompile Include="src\getopt.c" />
+    <ClCompile Include="src\getopt1.c" />
+    <ClCompile Include="src\rust-demangle.c" />
+    <ClCompile Include="src\safe-ctype.c" />
+    <ClCompile Include="src\xexit.c" />
+    <ClCompile Include="src\xmalloc.c" />
+    <ClCompile Include="src\xmemdup.c" />
+    <ClCompile Include="src\xstrdup.c" />
   </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_DECL_BASENAME=1;HAVE_LIMITS_H;HAVE_STDLIB_H=1;HAVE_STRING_H=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

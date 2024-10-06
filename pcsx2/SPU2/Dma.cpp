@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "SPU2/Global.h"
+#include "SPU2/defs.h"
+#include "SPU2/Debug.h"
 #include "SPU2/Dma.h"
 #include "SPU2/spu2.h"
 #include "R3000A.h"
@@ -344,15 +345,15 @@ void V_Core::FinishDMAwrite()
 
 	DMAICounter = (DMAICounter - ReadSize) * 4;
 
-	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
+	if (((psxCounters[6].startCycle + psxCounters[6].deltaCycles) - psxRegs.cycle) > (u32)DMAICounter)
 	{
-		psxCounters[6].sCycleT = psxRegs.cycle;
-		psxCounters[6].CycleT = DMAICounter;
+		psxCounters[6].startCycle = psxRegs.cycle;
+		psxCounters[6].deltaCycles = DMAICounter;
 
-		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-		psxNextsCounter = psxRegs.cycle;
-		if (psxCounters[6].CycleT < psxNextCounter)
-			psxNextCounter = psxCounters[6].CycleT;
+		psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
+		psxNextStartCounter = psxRegs.cycle;
+		if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
+			psxNextDeltaCounter = psxCounters[6].deltaCycles;
 	}
 
 	ActiveTSA = TDA;
@@ -438,15 +439,15 @@ void V_Core::FinishDMAread()
 	else
 		DMAICounter = 4;
 
-	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
+	if (((psxCounters[6].startCycle + psxCounters[6].deltaCycles) - psxRegs.cycle) > (u32)DMAICounter)
 	{
-		psxCounters[6].sCycleT = psxRegs.cycle;
-		psxCounters[6].CycleT = DMAICounter;
+		psxCounters[6].startCycle = psxRegs.cycle;
+		psxCounters[6].deltaCycles = DMAICounter;
 
-		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-		psxNextsCounter = psxRegs.cycle;
-		if (psxCounters[6].CycleT < psxNextCounter)
-			psxNextCounter = psxCounters[6].CycleT;
+		psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
+		psxNextStartCounter = psxRegs.cycle;
+		if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
+			psxNextDeltaCounter = psxCounters[6].deltaCycles;
 	}
 
 	ActiveTSA = TDA;
@@ -469,15 +470,15 @@ void V_Core::DoDMAread(u16* pMem, u32 size)
 	//Regs.ATTR |= 0x30;
 	TADR = MADR + (size << 1);
 
-	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
+	if (((psxCounters[6].startCycle + psxCounters[6].deltaCycles) - psxRegs.cycle) > (u32)DMAICounter)
 	{
-		psxCounters[6].sCycleT = psxRegs.cycle;
-		psxCounters[6].CycleT = DMAICounter;
+		psxCounters[6].startCycle = psxRegs.cycle;
+		psxCounters[6].deltaCycles = DMAICounter;
 
-		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-		psxNextsCounter = psxRegs.cycle;
-		if (psxCounters[6].CycleT < psxNextCounter)
-			psxNextCounter = psxCounters[6].CycleT;
+		psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
+		psxNextStartCounter = psxRegs.cycle;
+		if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
+			psxNextDeltaCounter = psxCounters[6].deltaCycles;
 	}
 
 	if (SPU2::MsgDMA())

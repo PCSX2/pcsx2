@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -71,7 +71,7 @@ private:
 
 	static std::string GetShaderCacheBaseFileName(bool debug);
 	static std::string GetPipelineCacheBaseFileName(bool debug);
-	static CacheIndexKey GetCacheKey(u32 type, const std::string_view& shader_code);
+	static CacheIndexKey GetCacheKey(u32 type, const std::string_view shader_code);
 	static std::optional<VKShaderCache::SPIRVCodeVector> CompileShaderToSPV(
 		u32 stage, std::string_view source, bool debug);
 

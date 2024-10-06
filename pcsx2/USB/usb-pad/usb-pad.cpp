@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "usb-pad.h"
 #include "USB/qemu-usb/USBinternal.h"
@@ -36,12 +36,6 @@ namespace usb_pad
 		"1234567890AB",
 		"Licensed by Sony Computer Entertainment America",
 		"Harmonix Drum Kit for PlayStation(R)3"};
-
-	static const USBDescStrings buzz_desc_strings = {
-		"",
-		"Logitech Buzz(tm) Controller V1",
-		"",
-		"Logitech"};
 
 	static const USBDescStrings kbm_desc_strings = {
 		"",
@@ -337,18 +331,6 @@ namespace usb_pad
 				w->lo |= (data.hatswitch & 0xF) << 16;
 
 				return len;
-			}
-
-			case WT_BUZZ_CONTROLLER:
-			{
-				// https://gist.github.com/Lewiscowles1986/eef220dac6f0549e4702393a7b9351f6
-				buf[0] = 0x7f;
-				buf[1] = 0x7f;
-				buf[2] = data.buttons & 0xff;
-				buf[3] = (data.buttons >> 8) & 0xff;
-				buf[4] = 0xf0 | ((data.buttons >> 16) & 0xf);
-
-				return 5;
 			}
 
 			case WT_SEGA_SEAMIC:
@@ -695,11 +677,6 @@ namespace usb_pad
 							ret = sizeof(pad_driving_force_hid_separate_report_descriptor);
 							memcpy(data, pad_driving_force_hid_separate_report_descriptor, ret);
 						}
-						else if (s->type == WT_BUZZ_CONTROLLER)
-						{
-							ret = sizeof(buzz_hid_report_descriptor);
-							memcpy(data, buzz_hid_report_descriptor, ret);
-						}
 						p->actual_length = ret;
 						break;
 					default:
@@ -875,14 +852,14 @@ namespace usb_pad
 		return GetWheelSettings(static_cast<PS2WheelTypes>(subtype));
 	}
 
-	void PadDevice::InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const
+	void PadDevice::InputDeviceConnected(USBDevice* dev, const std::string_view identifier) const
 	{
 		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
 		if (s->mFFdevName == identifier && s->HasFF())
 			s->OpenFFDevice();
 	}
 
-	void PadDevice::InputDeviceDisconnected(USBDevice* dev, const std::string_view& identifier) const
+	void PadDevice::InputDeviceDisconnected(USBDevice* dev, const std::string_view identifier) const
 	{
 		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
 		if (s->mFFdevName == identifier)
@@ -937,6 +914,10 @@ namespace usb_pad
 			{"Orange", TRANSLATE_NOOP("USB", "Orange"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Cross},
 			{"Select", TRANSLATE_NOOP("USB", "Select"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
 			{"Start", TRANSLATE_NOOP("USB", "Start"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
+			{"D-Pad Up", TRANSLATE_NOOP("USB", "D-Pad Up"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_UP, GenericInputBinding::DPadUp},
+			{"D-Pad Right", TRANSLATE_NOOP("USB", "D-Pad Right"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_RIGHT, GenericInputBinding::DPadRight},
+			{"D-Pad Down", TRANSLATE_NOOP("USB", "D-Pad Down"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_DOWN, GenericInputBinding::DPadDown},
+			{"D-Pad Left", TRANSLATE_NOOP("USB", "D-Pad Left"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_LEFT, GenericInputBinding::DPadLeft},
 		};
 
 		return bindings;
@@ -945,80 +926,6 @@ namespace usb_pad
 	std::span<const SettingInfo> RBDrumKitDevice::Settings(u32 subtype) const
 	{
 		return {};
-	}
-
-	// ---- Buzz ----
-
-	const char* BuzzDevice::Name() const
-	{
-		return TRANSLATE_NOOP("USB", "Buzz Controller");
-	}
-
-	const char* BuzzDevice::TypeName() const
-	{
-		return "BuzzDevice";
-	}
-
-	std::span<const char*> BuzzDevice::SubTypes() const
-	{
-		return {};
-	}
-
-	std::span<const InputBindingInfo> BuzzDevice::Bindings(u32 subtype) const
-	{
-		static constexpr const InputBindingInfo bindings[] = {
-			{"Red1", TRANSLATE_NOOP("USB", "Player 1 Red"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Circle},
-			{"Blue1", TRANSLATE_NOOP("USB", "Player 1 Blue"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::R1},
-			{"Orange1", TRANSLATE_NOOP("USB", "Player 1 Orange"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Cross},
-			{"Green1", TRANSLATE_NOOP("USB", "Player 1 Green"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Triangle},
-			{"Yellow1", TRANSLATE_NOOP("USB", "Player 1 Yellow"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Square},
-
-			{"Red2", TRANSLATE_NOOP("USB", "Player 2 Red"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::Unknown},
-			{"Blue2", TRANSLATE_NOOP("USB", "Player 2 Blue"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Unknown},
-			{"Orange2", TRANSLATE_NOOP("USB", "Player 2 Orange"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Unknown},
-			{"Green2", TRANSLATE_NOOP("USB", "Player 2 Green"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown},
-			{"Yellow2", TRANSLATE_NOOP("USB", "Player 2 Yellow"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown},
-
-			{"Red3", TRANSLATE_NOOP("USB", "Player 3 Red"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON10, GenericInputBinding::Unknown},
-			{"Blue3", TRANSLATE_NOOP("USB", "Player 3 Blue"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON14, GenericInputBinding::Unknown},
-			{"Orange3", TRANSLATE_NOOP("USB", "Player 3 Orange"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON13, GenericInputBinding::Unknown},
-			{"Green3", TRANSLATE_NOOP("USB", "Player 3 Green"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON12, GenericInputBinding::Unknown},
-			{"Yellow3", TRANSLATE_NOOP("USB", "Player 3 Yellow"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON11, GenericInputBinding::Unknown},
-
-			{"Red4", TRANSLATE_NOOP("USB", "Player 4 Red"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON15, GenericInputBinding::Unknown},
-			{"Blue4", TRANSLATE_NOOP("USB", "Player 4 Blue"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON19, GenericInputBinding::Unknown},
-			{"Orange4", TRANSLATE_NOOP("USB", "Player 4 Orange"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON18, GenericInputBinding::Unknown},
-			{"Green4", TRANSLATE_NOOP("USB", "Player 4 Green"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON17, GenericInputBinding::Unknown},
-			{"Yellow4", TRANSLATE_NOOP("USB", "Player 4 Yellow"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON16, GenericInputBinding::Unknown},
-		};
-
-		return bindings;
-	}
-
-	std::span<const SettingInfo> BuzzDevice::Settings(u32 subtype) const
-	{
-		return {};
-	}
-
-	USBDevice* BuzzDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
-	{
-		PadState* s = new PadState(port, WT_BUZZ_CONTROLLER);
-
-		s->desc.full = &s->desc_dev;
-		s->desc.str = buzz_desc_strings;
-
-		if (usb_desc_parse_dev(buzz_dev_descriptor, sizeof(buzz_dev_descriptor), s->desc, s->desc_dev) < 0)
-			goto fail;
-		if (usb_desc_parse_config(buzz_config_descriptor, sizeof(buzz_config_descriptor), s->desc_dev) < 0)
-			goto fail;
-
-		pad_init(s);
-
-		return &s->dev;
-
-	fail:
-		pad_handle_destroy(&s->dev);
-		return nullptr;
 	}
 
 	// ---- Keyboardmania ----

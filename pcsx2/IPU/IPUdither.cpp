@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
 
@@ -11,11 +11,18 @@
 MULTI_ISA_UNSHARED_START
 
 void ipu_dither_reference(const macroblock_rgb32 &rgb32, macroblock_rgb16 &rgb16, int dte);
+
+#if defined(_M_X86)
 void ipu_dither_sse2(const macroblock_rgb32 &rgb32, macroblock_rgb16 &rgb16, int dte);
+#endif
 
 __ri void ipu_dither(const macroblock_rgb32 &rgb32, macroblock_rgb16 &rgb16, int dte)
 {
+#if defined(_M_X86)
     ipu_dither_sse2(rgb32, rgb16, dte);
+#else
+    ipu_dither_reference(rgb32, rgb16, dte);
+#endif
 }
 
 __ri void ipu_dither_reference(const macroblock_rgb32 &rgb32, macroblock_rgb16 &rgb16, int dte)
@@ -52,6 +59,8 @@ __ri void ipu_dither_reference(const macroblock_rgb32 &rgb32, macroblock_rgb16 &
         }
     }
 }
+
+#if defined(_M_X86)
 
 __ri void ipu_dither_sse2(const macroblock_rgb32 &rgb32, macroblock_rgb16 &rgb16, int dte)
 {
@@ -109,5 +118,7 @@ __ri void ipu_dither_sse2(const macroblock_rgb32 &rgb32, macroblock_rgb16 &rgb16
         }
     }
 }
+
+#endif
 
 MULTI_ISA_UNSHARED_END

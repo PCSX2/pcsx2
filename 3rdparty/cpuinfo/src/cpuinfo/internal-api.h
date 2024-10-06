@@ -1,22 +1,21 @@
 #pragma once
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-	#include <windows.h>
+#include <windows.h>
 #endif
 
 #include <cpuinfo.h>
 #include <cpuinfo/common.h>
 
-
 enum cpuinfo_cache_level {
-	cpuinfo_cache_level_1i  = 0,
-	cpuinfo_cache_level_1d  = 1,
-	cpuinfo_cache_level_2   = 2,
-	cpuinfo_cache_level_3   = 3,
-	cpuinfo_cache_level_4   = 4,
+	cpuinfo_cache_level_1i = 0,
+	cpuinfo_cache_level_1d = 1,
+	cpuinfo_cache_level_2 = 2,
+	cpuinfo_cache_level_3 = 3,
+	cpuinfo_cache_level_4 = 4,
 	cpuinfo_cache_level_max = 5,
 };
 
@@ -36,26 +35,27 @@ extern CPUINFO_INTERNAL uint32_t cpuinfo_cache_count[cpuinfo_cache_level_max];
 extern CPUINFO_INTERNAL uint32_t cpuinfo_max_cache_size;
 
 #if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64 || CPUINFO_ARCH_RISCV32 || CPUINFO_ARCH_RISCV64
-	extern CPUINFO_INTERNAL struct cpuinfo_uarch_info* cpuinfo_uarchs;
-	extern CPUINFO_INTERNAL uint32_t cpuinfo_uarchs_count;
+extern CPUINFO_INTERNAL struct cpuinfo_uarch_info* cpuinfo_uarchs;
+extern CPUINFO_INTERNAL uint32_t cpuinfo_uarchs_count;
 #else
-	extern CPUINFO_INTERNAL struct cpuinfo_uarch_info cpuinfo_global_uarch;
+extern CPUINFO_INTERNAL struct cpuinfo_uarch_info cpuinfo_global_uarch;
 #endif
 
 #ifdef __linux__
-	extern CPUINFO_INTERNAL uint32_t cpuinfo_linux_cpu_max;
-	extern CPUINFO_INTERNAL const struct cpuinfo_processor** cpuinfo_linux_cpu_to_processor_map;
-	extern CPUINFO_INTERNAL const struct cpuinfo_core** cpuinfo_linux_cpu_to_core_map;
+extern CPUINFO_INTERNAL uint32_t cpuinfo_linux_cpu_max;
+extern CPUINFO_INTERNAL const struct cpuinfo_processor** cpuinfo_linux_cpu_to_processor_map;
+extern CPUINFO_INTERNAL const struct cpuinfo_core** cpuinfo_linux_cpu_to_core_map;
 #endif
 
 CPUINFO_PRIVATE void cpuinfo_x86_mach_init(void);
 CPUINFO_PRIVATE void cpuinfo_x86_linux_init(void);
+CPUINFO_PRIVATE void cpuinfo_x86_freebsd_init(void);
 #if defined(_WIN32) || defined(__CYGWIN__)
-	#if CPUINFO_ARCH_ARM64
-		CPUINFO_PRIVATE BOOL CALLBACK cpuinfo_arm_windows_init(PINIT_ONCE init_once, PVOID parameter, PVOID* context);
-	#else
-		CPUINFO_PRIVATE BOOL CALLBACK cpuinfo_x86_windows_init(PINIT_ONCE init_once, PVOID parameter, PVOID* context);
-	#endif
+#if CPUINFO_ARCH_ARM64
+CPUINFO_PRIVATE BOOL CALLBACK cpuinfo_arm_windows_init(PINIT_ONCE init_once, PVOID parameter, PVOID* context);
+#else
+CPUINFO_PRIVATE BOOL CALLBACK cpuinfo_x86_windows_init(PINIT_ONCE init_once, PVOID parameter, PVOID* context);
+#endif
 #endif
 CPUINFO_PRIVATE void cpuinfo_arm_mach_init(void);
 CPUINFO_PRIVATE void cpuinfo_arm_linux_init(void);

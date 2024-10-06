@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GSMTLShaderCommon.h"
 
@@ -182,6 +182,22 @@ fragment DepthOut ps_depth_copy(ConvertShaderData data [[stage_in]], ConvertPSDe
 	return res.sample(data.t);
 }
 
+fragment float4 ps_downsample_copy(ConvertShaderData data [[stage_in]],
+	texture2d<float> texture [[texture(GSMTLTextureIndexNonHW)]],
+	constant GSMTLDownsamplePSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
+{
+	uint2 coord = max(uint2(data.p.xy) * uniform.downsample_factor, uniform.clamp_min);
+
+	float4 result = float4(0.0, 0.0, 0.0, 0.0);
+	for (uint yoff = 0; yoff < uniform.downsample_factor; yoff++)
+	{
+		for (uint xoff = 0; xoff < uniform.downsample_factor; xoff++)
+			result += texture.read(coord + uint2(xoff, yoff), 0);
+	}
+	result /= uniform.weight;
+	return result;
+}
+
 static float rgba8_to_depth32(half4 unorm)
 {
 	return float(as_type<uint>(uchar4(unorm * 255.5h))) * 0x1p-32f;
@@ -232,6 +248,13 @@ struct ConvertToDepthRes
 		return mix(mix(depthTL, depthTR, mix_vals.x), mix(depthBL, depthBR, mix_vals.x), mix_vals.y);
 	}
 };
+
+fragment DepthOut ps_convert_float32_float24(ConvertShaderData data [[stage_in]], ConvertPSDepthRes res)
+{
+	// Truncates depth value to 24bits
+	uint val = uint(res.sample(data.t) * 0x1p32) & 0xFFFFFF;
+	return float(val) * 0x1p-32f;
+}
 
 fragment DepthOut ps_convert_rgba8_float32(ConvertShaderData data [[stage_in]], ConvertToDepthRes res)
 {

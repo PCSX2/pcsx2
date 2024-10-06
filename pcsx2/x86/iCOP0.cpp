@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 // Important Note to Future Developers:
 //   None of the COP0 instructions are really critical performance items,
@@ -140,9 +140,6 @@ void recMFC0()
 		xMOV(ptr32[&cpuRegs.cycle], ecx); // update cycles
 		xMOV(eax, ecx);
 		xSUB(eax, ptr[&cpuRegs.lastCOP0Cycle]);
-		u8* skipInc = JNZ8(0);
-		xINC(eax);
-		x86SetJ8(skipInc);
 		xADD(ptr[&cpuRegs.CP0.n.Count], eax);
 		xMOV(ptr[&cpuRegs.lastCOP0Cycle], ecx);
 

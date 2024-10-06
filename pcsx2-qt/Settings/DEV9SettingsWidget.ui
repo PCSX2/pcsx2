@@ -101,7 +101,7 @@
            </widget>
           </item>
           <item row="0" column="0">
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="ethInterceptDHCPLabel">
             <property name="text">
              <string>Intercept DHCP:</string>
             </property>
@@ -305,7 +305,7 @@
         </item>
        </layout>
       </item>
-      <item row="2" column="1" colspan="2">
+      <item row="2" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QLabel" name="hddSizeMinLabel">
@@ -353,13 +353,6 @@
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QPushButton" name="hddCreate">
-          <property name="text">
-           <string>Create Image</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
       <item row="1" column="0">
@@ -373,6 +366,13 @@
        <widget class="QLabel" name="hddSizeLabel">
         <property name="text">
          <string>HDD Size (GiB):</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QPushButton" name="hddCreate">
+        <property name="text">
+         <string>Create Image</string>
         </property>
        </widget>
       </item>

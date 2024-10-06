@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Config.h"
 #include "GS/Renderers/Common/GSDevice.h"
@@ -42,10 +42,10 @@ wil::com_ptr_nothrow<IDXGIFactory5> D3D::CreateFactory(bool debug)
 	return factory;
 }
 
-static std::string FixupDuplicateAdapterNames(const std::vector<std::string>& adapter_names, std::string adapter_name)
+static std::string FixupDuplicateAdapterNames(const std::vector<GSAdapterInfo>& adapters, std::string adapter_name)
 {
-	if (std::any_of(adapter_names.begin(), adapter_names.end(),
-			[&adapter_name](const std::string& other) { return (adapter_name == other); }))
+	if (std::any_of(adapters.begin(), adapters.end(),
+			[&adapter_name](const GSAdapterInfo& other) { return (adapter_name == other.name); }))
 	{
 		std::string original_adapter_name = std::move(adapter_name);
 
@@ -54,73 +54,72 @@ static std::string FixupDuplicateAdapterNames(const std::vector<std::string>& ad
 		{
 			adapter_name = fmt::format("{} ({})", original_adapter_name.c_str(), current_extra);
 			current_extra++;
-		} while (std::any_of(adapter_names.begin(), adapter_names.end(),
-			[&adapter_name](const std::string& other) { return (adapter_name == other); }));
+		} while (std::any_of(adapters.begin(), adapters.end(),
+			[&adapter_name](const GSAdapterInfo& other) { return (adapter_name == other.name); }));
 	}
 
 	return adapter_name;
 }
 
-std::vector<std::string> D3D::GetAdapterNames(IDXGIFactory5* factory)
+std::vector<GSAdapterInfo> D3D::GetAdapterInfo(IDXGIFactory5* factory)
 {
-	std::vector<std::string> adapter_names;
+	std::vector<GSAdapterInfo> adapters;
 
 	wil::com_ptr_nothrow<IDXGIAdapter1> adapter;
 	for (u32 index = 0;; index++)
 	{
-		const HRESULT hr = factory->EnumAdapters1(index, adapter.put());
+		HRESULT hr = factory->EnumAdapters1(index, adapter.put());
 		if (hr == DXGI_ERROR_NOT_FOUND)
 			break;
 
 		if (FAILED(hr))
 		{
-			Console.Error(fmt::format("IDXGIFactory2::EnumAdapters() returned %08X", hr));
+			ERROR_LOG("IDXGIFactory2::EnumAdapters() returned {:08X}", static_cast<unsigned>(hr));
 			continue;
 		}
 
-		adapter_names.push_back(FixupDuplicateAdapterNames(adapter_names, GetAdapterName(adapter.get())));
+		GSAdapterInfo ai;
+		ai.name = FixupDuplicateAdapterNames(adapters, GetAdapterName(adapter.get()));
+
+		// Unfortunately we can't get any properties such as feature level without creating the device.
+		// So just assume a max of the D3D11 max across the board.
+		ai.max_texture_size = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+		ai.max_upscale_multiplier = GSGetMaxUpscaleMultiplier(ai.max_texture_size);
+
+		wil::com_ptr_nothrow<IDXGIOutput> output;
+		if (SUCCEEDED(hr = adapter->EnumOutputs(0, &output)))
+		{
+			UINT num_modes = 0;
+			if (SUCCEEDED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
+			{
+				std::vector<DXGI_MODE_DESC> dmodes(num_modes);
+				if (SUCCEEDED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, dmodes.data())))
+				{
+					for (const DXGI_MODE_DESC& mode : dmodes)
+					{
+						ai.fullscreen_modes.push_back(GSDevice::GetFullscreenModeString(mode.Width, mode.Height,
+							static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator)));
+					}
+				}
+				else
+				{
+					ERROR_LOG("GetDisplayModeList() (2) failed: {:08X}", static_cast<unsigned>(hr));
+				}
+			}
+			else
+			{
+				ERROR_LOG("GetDisplayModeList() failed: {:08X}", static_cast<unsigned>(hr));
+			}
+		}
+		else
+		{
+			ERROR_LOG("EnumOutputs() failed: {:08X}", static_cast<unsigned>(hr));
+		}
+
+		adapters.push_back(std::move(ai));
 	}
 
-	return adapter_names;
-}
-
-std::vector<std::string> D3D::GetFullscreenModes(IDXGIFactory5* factory, const std::string_view& adapter_name)
-{
-	std::vector<std::string> modes;
-	HRESULT hr;
-
-	wil::com_ptr_nothrow<IDXGIAdapter1> adapter = GetChosenOrFirstAdapter(factory, adapter_name);
-	if (!adapter)
-		return modes;
-
-	wil::com_ptr_nothrow<IDXGIOutput> output;
-	if (FAILED(hr = adapter->EnumOutputs(0, &output)))
-	{
-		Console.Error("EnumOutputs() failed: %08X", hr);
-		return modes;
-	}
-
-	UINT num_modes = 0;
-	if (FAILED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
-	{
-		Console.Error("GetDisplayModeList() failed: %08X", hr);
-		return modes;
-	}
-
-	std::vector<DXGI_MODE_DESC> dmodes(num_modes);
-	if (FAILED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, dmodes.data())))
-	{
-		Console.Error("GetDisplayModeList() (2) failed: %08X", hr);
-		return modes;
-	}
-
-	for (const DXGI_MODE_DESC& mode : dmodes)
-	{
-		modes.push_back(GSDevice::GetFullscreenModeString(mode.Width, mode.Height,
-			static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator)));
-	}
-
-	return modes;
+	return adapters;
 }
 
 bool D3D::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect, u32 width,
@@ -187,7 +186,7 @@ bool D3D::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const 
 	if (FAILED(hr = intersecting_output->FindClosestMatchingMode(&request_mode, fullscreen_mode, nullptr)) ||
 		request_mode.Format != format)
 	{
-		Console.Error("Failed to find closest matching mode, hr=%08X", hr);
+		ERROR_LOG("Failed to find closest matching mode, hr={:08X}", static_cast<unsigned>(hr));
 		return false;
 	}
 
@@ -196,14 +195,14 @@ bool D3D::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const 
 	return true;
 }
 
-wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetAdapterByName(IDXGIFactory5* factory, const std::string_view& name)
+wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetAdapterByName(IDXGIFactory5* factory, const std::string_view name)
 {
 	if (name.empty())
 		return {};
 
 	// This might seem a bit odd to cache the names.. but there's a method to the madness.
 	// We might have two GPUs with the same name... :)
-	std::vector<std::string> adapter_names;
+	std::vector<GSAdapterInfo> adapter_names;
 
 	wil::com_ptr_nothrow<IDXGIAdapter1> adapter;
 	for (u32 index = 0;; index++)
@@ -214,18 +213,19 @@ wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetAdapterByName(IDXGIFactory5* factory
 
 		if (FAILED(hr))
 		{
-			Console.Error(fmt::format("IDXGIFactory2::EnumAdapters() returned %08X", hr));
+			ERROR_LOG("IDXGIFactory2::EnumAdapters() returned {:08X}", static_cast<unsigned>(hr));
 			continue;
 		}
 
-		std::string adapter_name = FixupDuplicateAdapterNames(adapter_names, GetAdapterName(adapter.get()));
-		if (adapter_name == name)
+		GSAdapterInfo ai;
+		ai.name = FixupDuplicateAdapterNames(adapter_names, GetAdapterName(adapter.get()));
+		if (ai.name == name)
 		{
-			Console.WriteLn(fmt::format("D3D: Found adapter '{}'", adapter_name));
+			INFO_LOG("D3D: Found adapter '{}'", ai.name);
 			return adapter;
 		}
 
-		adapter_names.push_back(std::move(adapter_name));
+		adapter_names.push_back(std::move(ai));
 	}
 
 	Console.Warning(fmt::format("Adapter '{}' not found.", name));
@@ -242,7 +242,7 @@ wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetFirstAdapter(IDXGIFactory5* factory)
 	return adapter;
 }
 
-wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetChosenOrFirstAdapter(IDXGIFactory5* factory, const std::string_view& name)
+wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetChosenOrFirstAdapter(IDXGIFactory5* factory, const std::string_view name)
 {
 	wil::com_ptr_nothrow<IDXGIAdapter1> adapter = GetAdapterByName(factory, name);
 	if (!adapter)
@@ -318,8 +318,6 @@ std::string D3D::GetDriverVersionFromLUID(const LUID& luid)
 	return ret;
 }
 
-#ifdef _M_X86
-
 D3D::VendorID D3D::GetVendorID(IDXGIAdapter1* adapter)
 {
 	DXGI_ADAPTER_DESC1 desc;
@@ -382,6 +380,7 @@ GSRendererType D3D::GetPreferredRenderer()
 			Console.Error("D3D12CreateDevice() for automatic renderer failed: %08X", hr);
 		return device;
 	};
+#ifdef ENABLE_VULKAN
 	static constexpr auto check_for_mapping_layers = []() {
 		PCWSTR familyName = L"Microsoft.D3DMappingLayers_8wekyb3d8bbwe";
 		UINT32 numPackages = 0, bufferLength = 0;
@@ -391,7 +390,7 @@ GSRendererType D3D::GetPreferredRenderer()
 			Host::AddIconOSDMessage("VKDriverUnsupported", ICON_FA_TV,
 				TRANSLATE_STR("GS",
 					"Your system has the \"OpenCL, OpenGL, and Vulkan Compatibility Pack\" installed.\n"
-					"This Vulkan driver crashes PCSX2 on some GPUs.\n" 
+					"This Vulkan driver crashes PCSX2 on some GPUs.\n"
 					"To use the Vulkan renderer, you should remove this app package."),
 				Host::OSD_WARNING_DURATION);
 			return true;
@@ -405,9 +404,7 @@ GSRendererType D3D::GetPreferredRenderer()
 		if (check_for_mapping_layers())
 			return false;
 
-		std::vector<std::string> vk_adapter_names;
-		GSDeviceVK::GetAdaptersAndFullscreenModes(&vk_adapter_names, nullptr);
-		if (!vk_adapter_names.empty())
+		if (!GSDeviceVK::EnumerateGPUs().empty())
 			return true;
 
 		Host::AddIconOSDMessage("VKDriverUnsupported", ICON_FA_TV, TRANSLATE_STR("GS",
@@ -416,6 +413,9 @@ GSRendererType D3D::GetPreferredRenderer()
 			"       to use the Vulkan renderer."), Host::OSD_WARNING_DURATION);
 		return false;
 	};
+#else
+	static constexpr auto check_vulkan_supported = []() { return false; };
+#endif
 
 	switch (GetVendorID(adapter.get()))
 	{
@@ -470,16 +470,18 @@ GSRendererType D3D::GetPreferredRenderer()
 
 		default:
 		{
-			// Default is D3D11
+			// Default is D3D11, but prefer DX12 on ARM (better drivers).
+#ifdef _M_ARM64
+			return GSRendererType::DX12;
+#else
 			return GSRendererType::DX11;
+#endif
 		}
 	}
 }
 
-#endif // _M_X86
-
 wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEATURE_LEVEL feature_level, bool debug,
-	const std::string_view& code, const D3D_SHADER_MACRO* macros /* = nullptr */,
+	const std::string_view code, const D3D_SHADER_MACRO* macros /* = nullptr */,
 	const char* entry_point /* = "main" */)
 {
 	const char* target;

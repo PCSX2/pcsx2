@@ -104,11 +104,25 @@
     </widget>
    </item>
    <item row="4" column="1">
-    <widget class="QLineEdit" name="serial">
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_8">
+     <item>
+      <widget class="QLineEdit" name="serial">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="checkWiki">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Check Wiki</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item row="5" column="0">
     <widget class="QLabel" name="label_36">
@@ -363,54 +377,10 @@
     </widget>
    </item>
    <item row="8" column="1">
-    <widget class="QComboBox" name="compatibility">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="editable">
+    <widget class="QLineEdit" name="compatibility">
+     <property name="readOnly">
       <bool>true</bool>
      </property>
-     <item>
-      <property name="text">
-       <string>Unknown</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Not Bootable</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Reaches Intro</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Reaches Menu</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>In-Game</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Playable</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Perfect</string>
-      </property>
-     </item>
     </widget>
    </item>
    <item row="9" column="0">

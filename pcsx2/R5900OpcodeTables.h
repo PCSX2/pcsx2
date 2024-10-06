@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -14,13 +14,15 @@ enum Syscall : u8
 	SetVTLBRefillHandler = 13,
 	StartThread = 34,
 	ChangeThreadPriority = 41,
+	RFU060 = 60,
 	SetOsdConfigParam = 74,
 	GetOsdConfigParam = 75,
 	SetOsdConfigParam2 = 110,
 	GetOsdConfigParam2 = 111,
 	sysPrintOut = 117,
 	sceSifSetDma = 119,
-	Deci2Call = 124
+	Deci2Call = 124,
+	GetMemorySize = 127
 };
 
 // TODO : Move these into the OpcodeTables namespace

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "TCP_Session.h"
 
@@ -18,13 +18,13 @@ using namespace PacketReader::IP::TCP;
 
 namespace Sessions
 {
-	void TCP_Session::PushRecvBuff(TCP_Packet* tcp)
+	void TCP_Session::PushRecvBuff(std::unique_ptr<TCP_Packet> tcp)
 	{
-		_recvBuff.Enqueue(tcp);
+		_recvBuff.Enqueue(std::move(tcp));
 	}
-	TCP_Packet* TCP_Session::PopRecvBuff()
+	std::unique_ptr<TCP_Packet> TCP_Session::PopRecvBuff()
 	{
-		TCP_Packet* ret;
+		std::unique_ptr<TCP_Packet> ret;
 		if (_recvBuff.Dequeue(&ret))
 			return ret;
 		else
@@ -90,27 +90,27 @@ namespace Sessions
 		if (delta > 0.5 * UINT_MAX)
 		{
 			delta = -static_cast<s64>(UINT_MAX) + a - b - 1;
-			Console.Error("DEV9: TCP: [PS2] SequenceNumber Overflow Detected");
-			Console.Error("DEV9: TCP: [PS2] New Data Offset: %d bytes", delta);
+			Console.Error("DEV9: TCP: [PS2] Sequence number overflow detected");
+			Console.Error("DEV9: TCP: [PS2] New data offset: %d bytes", delta);
 		}
 		if (delta < -0.5 * UINT_MAX)
 		{
 			delta = UINT_MAX - b + a + 1;
-			Console.Error("DEV9: TCP: [PS2] SequenceNumber Overflow Detected");
-			Console.Error("DEV9: TCP: [PS2] New Data Offset: %d bytes", delta);
+			Console.Error("DEV9: TCP: [PS2] Sequence number overflow detected");
+			Console.Error("DEV9: TCP: [PS2] New data offset: %d bytes", delta);
 		}
 		return delta;
 	}
 
-	TCP_Packet* TCP_Session::CreateBasePacket(PayloadData* data)
+	std::unique_ptr<TCP_Packet> TCP_Session::CreateBasePacket(PayloadData* data)
 	{
-		//DevCon.WriteLn("Creating Base Packet");
+		//DevCon.WriteLn("Creating base packet");
 		if (data == nullptr)
 			data = new PayloadData(0);
 
-		TCP_Packet* ret = new TCP_Packet(data);
+		std::unique_ptr<TCP_Packet> ret = std::make_unique<TCP_Packet>(data);
 
-		//and now to setup THE ENTIRE THING
+		// Setup common packet infomation
 		ret->sourcePort = destPort;
 		ret->destinationPort = srcPort;
 
@@ -149,7 +149,6 @@ namespace Sessions
 
 	void TCP_Session::Reset()
 	{
-		//CloseSocket();
 		RaiseEventConnectionClosed();
 	}
 
@@ -157,18 +156,16 @@ namespace Sessions
 	{
 		CloseSocket();
 
-		//Clear out _recvBuff
+		// Clear out _recvBuff
 		while (!_recvBuff.IsQueueEmpty())
 		{
-			TCP_Packet* retPay;
+			std::unique_ptr<TCP_Packet> retPay;
 			if (!_recvBuff.Dequeue(&retPay))
 			{
 				using namespace std::chrono_literals;
 				std::this_thread::sleep_for(1ms);
 				continue;
 			}
-
-			delete retPay;
 		}
 	}
 } // namespace Sessions

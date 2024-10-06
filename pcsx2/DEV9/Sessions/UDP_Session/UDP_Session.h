@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include <atomic>
@@ -28,33 +28,29 @@ namespace Sessions
 
 		u16 srcPort = 0;
 		u16 destPort = 0;
-		//Broadcast
-		const bool isBroadcast; // = false;
-		bool isMulticast = false;
-		const bool isFixedPort; // = false;
-		//EndBroadcast
+		// UDP_Session flags
+		const bool isBroadcast;
+		const bool isMulticast;
+		const bool isFixedPort;
 
 		std::atomic<std::chrono::steady_clock::time_point> deathClockStart;
 		const static std::chrono::duration<std::chrono::steady_clock::rep, std::chrono::steady_clock::period> MAX_IDLE;
 
 	public:
-		//Normal Port
+		// Normal Port
 		UDP_Session(ConnectionKey parKey, PacketReader::IP::IP_Address parAdapterIP);
-		//Fixed Port
+		// Fixed Port
 #ifdef _WIN32
 		UDP_Session(ConnectionKey parKey, PacketReader::IP::IP_Address parAdapterIP, bool parIsBroadcast, bool parIsMulticast, SOCKET parClient);
 #elif defined(__POSIX__)
 		UDP_Session(ConnectionKey parKey, PacketReader::IP::IP_Address parAdapterIP, bool parIsBroadcast, bool parIsMulticast, int parClient);
 #endif
 
-		virtual PacketReader::IP::IP_Payload* Recv();
+		virtual std::optional<ReceivedPayload> Recv();
 		virtual bool WillRecive(PacketReader::IP::IP_Address parDestIP);
 		virtual bool Send(PacketReader::IP::IP_Payload* payload);
 		virtual void Reset();
 
 		virtual ~UDP_Session();
-
-	private:
-		void CloseSocket();
 	};
 } // namespace Sessions

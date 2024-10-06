@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/AlignedMalloc.h"
 #include "common/Console.h"
@@ -661,8 +661,7 @@ void GSTextureReplacements::PrecacheReplacementTextures()
 
 	// predict whether the requests will come with mipmaps
 	// TODO: This will be wrong for hw mipmap games like Jak.
-	const bool mipmap = GSConfig.HWMipmap >= HWMipmapLevel::Basic ||
-						GSConfig.TriFilter == TriFiltering::Forced;
+	const bool mipmap = GSConfig.HWMipmap || GSConfig.TriFilter == TriFiltering::Forced;
 
 	// pretty simple, just go through the filenames and if any aren't cached, cache them
 	for (const auto& it : s_replacement_texture_filenames)

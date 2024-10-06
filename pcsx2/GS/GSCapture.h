@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include <string>
@@ -21,7 +21,7 @@ namespace GSCapture
 {
 	bool BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string filename);
 	bool DeliverVideoFrame(GSTexture* stex);
-	void DeliverAudioPacket(const s16* frames); // SndOutPacketSize
+	void DeliverAudioPacket(const s16* frames); // AudioStream::CHUNK_SIZE
 	void EndCapture();
 
 	bool IsCapturing();
@@ -37,4 +37,8 @@ namespace GSCapture
 	using CodecList = std::vector<CodecName>;
 	CodecList GetVideoCodecList(const char* container);
 	CodecList GetAudioCodecList(const char* container);
+
+	using FormatName = std::pair<int , std::string>; // id,name
+	using FormatList = std::vector<FormatName>;
+	FormatList GetVideoFormatList(const char* codec);
 }; // namespace GSCapture

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "QtUtils.h"
 
@@ -12,6 +12,53 @@
 #include "IconsPromptFont.h"
 
 #include <QtGui/QKeyEvent>
+
+u8 map_text_to_keycode(const QString& text)
+{
+	if (text == "!")
+		return Qt::Key_1;
+	if (text == "@")
+		return Qt::Key_2;
+	if (text == "#")
+		return Qt::Key_3;
+	if (text == "$")
+		return Qt::Key_4;
+	if (text == "%")
+		return Qt::Key_5;
+	if (text == "^")
+		return Qt::Key_6;
+	if (text == "&")
+		return Qt::Key_7;
+	if (text == "*")
+		return Qt::Key_8;
+	if (text == "(")
+		return Qt::Key_9;
+	if (text == ")")
+		return Qt::Key_0;
+	if (text == "_")
+		return Qt::Key_Minus;
+	if (text == "+")
+		return Qt::Key_Equal;
+	if (text == "?")
+		return Qt::Key_Slash;
+	if (text == ":")
+		return Qt::Key_Semicolon;
+	if (text == "\"")
+		return Qt::Key_Apostrophe;
+	if (text == "~")
+		return Qt::Key_QuoteLeft;
+	if (text == "<")
+		return Qt::Key_Comma;
+	if (text == ">")
+		return Qt::Key_Period;
+	if (text == "|")
+		return Qt::Key_Backslash;
+	if (text == "{")
+		return Qt::Key_BracketLeft;
+	if (text == "}")
+		return Qt::Key_BracketRight;
+	return 0; // No remapping
+}
 
 struct KeyCodeName
 {
@@ -460,7 +507,7 @@ static constexpr const KeyCodeName s_qt_key_names[] = {
 	{Qt::Key_Camera, "Camera", nullptr},
 	{Qt::Key_CameraFocus, "CameraFocus", nullptr}};
 
-std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
+std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view str)
 {
 	std::string_view compare_name = str;
 	u32 modifier_bits = 0;
@@ -519,7 +566,15 @@ const char* InputManager::ConvertHostKeyboardCodeToIcon(u32 code)
 
 u32 QtUtils::KeyEventToCode(const QKeyEvent* ev)
 {
+	const QString text = ev->text();
+	const u8 keycode = map_text_to_keycode(text); // Map special text symbols to keycodes
 	int key = ev->key();
+
+	if (keycode != 0)
+	{
+		key = keycode; // Override key if mapped
+	}
+
 	Qt::KeyboardModifiers modifiers = ev->modifiers();
 
 #ifdef __APPLE__

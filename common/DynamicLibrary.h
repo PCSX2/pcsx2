@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -45,6 +45,9 @@ public:
 	/// Returns true if the library was loaded and can be used.
 	bool Open(const char* filename, Error* error);
 
+	/// Adopts, or takes ownership of an existing opened library.
+	void Adopt(void* handle);
+
 	/// Unloads the library, any function pointers from this library are no longer valid.
 	void Close();
 
@@ -60,6 +63,9 @@ public:
 		*ptr = reinterpret_cast<T>(GetSymbolAddress(name));
 		return *ptr != nullptr;
 	}
+
+	/// Returns the opaque OS-specific handle.
+	void* GetHandle() const { return m_handle; }
 
 	/// Move assignment, transfer ownership.
 	DynamicLibrary& operator=(DynamicLibrary&& move);

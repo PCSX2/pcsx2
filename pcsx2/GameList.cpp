@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "CDVD/CDVD.h"
 #include "Elfheader.h"
@@ -54,10 +54,10 @@ namespace GameList
 	using CacheMap = UnorderedStringMap<Entry>;
 	using PlayedTimeMap = UnorderedStringMap<PlayedTimeEntry>;
 
-	static bool IsScannableFilename(const std::string_view& path);
+	static bool IsScannableFilename(const std::string_view path);
 
 	static bool GetIsoSerialAndCRC(const std::string& path, s32* disc_type, std::string* serial, u32* crc);
-	static Region ParseDatabaseRegion(const std::string_view& db_region);
+	static Region ParseDatabaseRegion(const std::string_view db_region);
 	static bool GetElfListEntry(const std::string& path, GameList::Entry* entry);
 	static bool GetIsoListEntry(const std::string& path, GameList::Entry* entry);
 
@@ -99,14 +99,14 @@ const char* GameList::EntryTypeToString(EntryType type)
 
 const char* GameList::EntryTypeToDisplayString(EntryType type)
 {
-	static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{"PS2 Disc", "PS1 Disc", "ELF"}};
+	static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{TRANSLATE("GameList", "PS2 Disc"), TRANSLATE("GameList", "PS1 Disc"), TRANSLATE("GameList", "ELF")}};
 	return names[static_cast<int>(type)];
 }
 
 const char* GameList::RegionToString(Region region)
 {
 	static std::array<const char*, static_cast<int>(Region::Count)> names = {{"NTSC-B", "NTSC-C", "NTSC-HK", "NTSC-J", "NTSC-K", "NTSC-T",
-		"NTSC-U", "Other", "PAL-A", "PAL-AF", "PAL-AU", "PAL-BE", "PAL-E", "PAL-F", "PAL-FI", "PAL-G", "PAL-GR", "PAL-I", "PAL-IN", "PAL-M",
+		"NTSC-U", TRANSLATE("GameList", "Other"), "PAL-A", "PAL-AF", "PAL-AU", "PAL-BE", "PAL-E", "PAL-F", "PAL-FI", "PAL-G", "PAL-GR", "PAL-I", "PAL-IN", "PAL-M",
 		"PAL-NL", "PAL-NO", "PAL-P", "PAL-PL", "PAL-R", "PAL-S", "PAL-SC", "PAL-SW", "PAL-SWI", "PAL-UK"}};
 
 	return names[static_cast<int>(region)];
@@ -117,19 +117,19 @@ const char* GameList::EntryCompatibilityRatingToString(CompatibilityRating ratin
 	// clang-format off
 	switch (rating)
 	{
-	case CompatibilityRating::Unknown: return "Unknown";
-	case CompatibilityRating::Nothing: return "Nothing";
-	case CompatibilityRating::Intro: return "Intro";
-	case CompatibilityRating::Menu: return "Menu";
-	case CompatibilityRating::InGame: return "InGame";
-	case CompatibilityRating::Playable: return "Playable";
-	case CompatibilityRating::Perfect: return "Perfect";
-	default: return "";
+		case CompatibilityRating::Unknown:  return TRANSLATE("GameList", "Unknown");
+		case CompatibilityRating::Nothing:  return TRANSLATE("GameList", "Nothing");
+		case CompatibilityRating::Intro:    return TRANSLATE("GameList", "Intro");
+		case CompatibilityRating::Menu:     return TRANSLATE("GameList", "Menu");
+		case CompatibilityRating::InGame:   return TRANSLATE("GameList", "In-Game");
+		case CompatibilityRating::Playable: return TRANSLATE("GameList", "Playable");
+		case CompatibilityRating::Perfect:  return TRANSLATE("GameList", "Perfect");
+		default: return "";
 	}
 	// clang-format on
 }
 
-bool GameList::IsScannableFilename(const std::string_view& path)
+bool GameList::IsScannableFilename(const std::string_view path)
 {
 	return VMManager::IsDiscFileName(path) || VMManager::IsElfFileName(path);
 }
@@ -212,7 +212,7 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 	return true;
 }
 
-GameList::Region GameList::ParseDatabaseRegion(const std::string_view& db_region)
+GameList::Region GameList::ParseDatabaseRegion(const std::string_view db_region)
 {
 	// clang-format off
 						////// NTSC //////
@@ -747,7 +747,7 @@ const GameList::Entry* GameList::GetEntryByCRC(u32 crc)
 	return nullptr;
 }
 
-const GameList::Entry* GameList::GetEntryBySerialAndCRC(const std::string_view& serial, u32 crc)
+const GameList::Entry* GameList::GetEntryBySerialAndCRC(const std::string_view serial, u32 crc)
 {
 	for (const Entry& entry : s_entries)
 	{
@@ -1139,9 +1139,9 @@ std::string GameList::FormatTimespan(std::time_t timespan, bool long_format)
 	else
 	{
 		if (hours > 0)
-			ret = fmt::format(TRANSLATE_FS("GameList", "{} hours"), hours);
+			ret.assign(TRANSLATE_PLURAL_STR("GameList", "%n hours", "", hours));
 		else
-			ret = fmt::format(TRANSLATE_FS("GameList", "{} minutes"), minutes);
+			ret.assign(TRANSLATE_PLURAL_STR("GameList", "%n minutes", "", minutes));
 	}
 
 	return ret;

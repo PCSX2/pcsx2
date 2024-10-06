@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "SIO/Pad/PadPopn.h"
 #include "SIO/Pad/Pad.h"
@@ -376,21 +376,6 @@ void PadPopn::Set(u32 index, float value)
 		return;
 	}
 
-	// Since we reordered the buttons for better UI, we need to remap them here.
-	static constexpr std::array<u8, Inputs::LENGTH> bitmaskMapping = {{
-		5, // PAD_YELLOW_LEFT
-		12, // PAD_YELLOW_RIGHT
-		6, // PAD_BLUE_LEFT
-		7, // PAD_BLUE_RIGHT
-		4, // PAD_WHITE_LEFT
-		0, // PAD_WHITE_RIGHT
-		3, // PAD_GREEN_LEFT
-		1, // PAD_GREEN_RIGHT
-		2, // PAD_RED
-		11, // PAD_START
-		8, // PAD_SELECT
-	}};
-
 	this->rawInputs[index] = static_cast<u8>(std::clamp(value * 255.0f, 0.0f, 255.0f));
 
 	if (value)
@@ -405,6 +390,20 @@ void PadPopn::Set(u32 index, float value)
 
 void PadPopn::SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right)
 {
+}
+
+void PadPopn::SetRawPressureButton(u32 index, const std::tuple<bool, u8> value)
+{
+	this->rawInputs[index] = std::get<1>(value);
+
+	if (std::get<0>(value))
+	{
+		this->buttons &= ~(1u << bitmaskMapping[index]);
+	}
+	else
+	{
+		this->buttons |= (1u << bitmaskMapping[index]);
+	}
 }
 
 void PadPopn::SetAxisScale(float deadzone, float scale)

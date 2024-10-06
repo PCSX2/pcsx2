@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "pcsx2/SIO/Pad/Pad.h"
 #include "GameSummaryWidget.h"
@@ -35,10 +35,6 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
 		m_ui.region->setItemIcon(i,
 			QIcon(QStringLiteral("%1/icons/flags/%2.png").arg(base_path).arg(GameList::RegionToString(static_cast<GameList::Region>(i)))));
 	}
-	for (int i = 1; i < m_ui.compatibility->count(); i++)
-	{
-		m_ui.compatibility->setItemIcon(i, QIcon(QStringLiteral("%1/icons/star-%2.png").arg(base_path).arg(i)));
-	}
 
 	m_entry_path = entry->path;
 	populateInputProfiles();
@@ -49,11 +45,13 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
 	connect(m_ui.inputProfile, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onInputProfileChanged);
 	connect(m_ui.verify, &QAbstractButton::clicked, this, &GameSummaryWidget::onVerifyClicked);
 	connect(m_ui.searchHash, &QAbstractButton::clicked, this, &GameSummaryWidget::onSearchHashClicked);
+	connect(m_ui.checkWiki, &QAbstractButton::clicked, this, [this, entry]() { onCheckWikiClicked(entry); });
 
 	bool has_custom_title = false, has_custom_region = false;
 	GameList::CheckCustomAttributesForPath(m_entry_path, has_custom_title, has_custom_region);
 	m_ui.restoreTitle->setEnabled(has_custom_title);
 	m_ui.restoreRegion->setEnabled(has_custom_region);
+	m_ui.checkWiki->setEnabled(!entry->serial.empty());
 }
 
 GameSummaryWidget::~GameSummaryWidget() = default;
@@ -74,7 +72,17 @@ void GameSummaryWidget::populateDetails(const GameList::Entry* entry)
 	m_ui.crc->setText(QString::fromStdString(fmt::format("{:08X}", entry->crc)));
 	m_ui.type->setCurrentIndex(static_cast<int>(entry->type));
 	m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
-	m_ui.compatibility->setCurrentIndex(static_cast<int>(entry->compatibility_rating));
+	//: First arg is a GameList compat; second is a string with space followed by star rating OR empty if Unknown compat
+	m_ui.compatibility->setText(tr("%0%1")
+		.arg(GameList::EntryCompatibilityRatingToString(entry->compatibility_rating))
+		.arg([entry]() {
+			if (entry->compatibility_rating == GameList::CompatibilityRating::Unknown)
+				return QStringLiteral("");
+
+			const qsizetype compatibility_value = static_cast<qsizetype>(entry->compatibility_rating);
+			//: First arg is filled-in stars for game compatibility; second is empty stars; should be swapped for RTL languages
+			return tr(" %0%1").arg(QStringLiteral("★").repeated(compatibility_value - 1)).arg(QStringLiteral("☆").repeated(6 - compatibility_value));
+		}()));
 
 	int row = 0;
 	m_ui.detailsFormLayout->getWidgetPosition(m_ui.titleSort, &row, nullptr);
@@ -346,6 +354,11 @@ void GameSummaryWidget::onSearchHashClicked()
 		return;
 
 	QtUtils::OpenURL(this, fmt::format("http://redump.org/discs/quicksearch/{}", m_redump_search_keyword).c_str());
+}
+
+void GameSummaryWidget::onCheckWikiClicked(const GameList::Entry* entry)
+{
+	QtUtils::OpenURL(this, fmt::format("https://wiki.pcsx2.net/{}", entry->serial).c_str());
 }
 
 void GameSummaryWidget::setVerifyResult(QString error)

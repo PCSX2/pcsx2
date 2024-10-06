@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
 #include "Hardware.h"
@@ -91,7 +91,7 @@ __fi tDMA_TAG* SPRdmaGetAddr(u32 addr, bool write)
 	// FIXME: Why??? DMA uses physical addresses
 	addr &= 0x1ffffff0;
 
-	if (addr < Ps2MemSize::MainRam)
+	if (addr < Ps2MemSize::ExposedRam)
 	{
 		return (tDMA_TAG*)&eeMem->Main[addr];
 	}
@@ -154,7 +154,7 @@ __ri tDMA_TAG *dmaGetAddr(u32 addr, bool write)
 	// FIXME: Why??? DMA uses physical addresses
 	addr &= 0x1ffffff0;
 
-	if (addr < Ps2MemSize::MainRam)
+	if (addr < Ps2MemSize::ExposedRam)
 	{
 		return (tDMA_TAG*)&eeMem->Main[addr];
 	}

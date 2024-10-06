@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -110,6 +110,7 @@ struct psxRegisters {
 	// Tracks current number of cycles IOP can run in EE cycles. When it dips below zero,
 	// control is returned to the EE.
 	s32 iopCycleEE;
+	u32 iopCycleEECarry;
 
 	u32 sCycle[32];		// start cycle for signaled ints
 	s32 eCycle[32];		// cycle delta for signaled ints (sCycle + eCycle == branch cycle)
@@ -168,8 +169,8 @@ extern u32 EEoCycle;
 
 #endif
 
-extern s32 psxNextCounter;
-extern u32 psxNextsCounter;
+extern s32 psxNextDeltaCounter;
+extern u32 psxNextStartCounter;
 extern bool iopEventAction;
 extern bool iopEventTestIsActive;
 

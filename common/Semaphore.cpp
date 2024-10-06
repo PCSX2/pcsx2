@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Threading.h"
 #include "common/Assertions.h"
@@ -137,7 +137,7 @@ void Threading::WorkSema::Reset()
 	m_state = STATE_RUNNING_0;
 }
 
-#if !defined(__APPLE__) // macOS implementations are in DarwinSemaphore
+#if !defined(__APPLE__) // macOS implementations are in DarwinThreads
 
 Threading::KernelSemaphore::KernelSemaphore()
 {

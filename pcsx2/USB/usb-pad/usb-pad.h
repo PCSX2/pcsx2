@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -61,7 +61,6 @@ namespace usb_pad
 		WT_DRIVING_FORCE_PRO_1102, //hw with buggy hid report?
 		WT_GT_FORCE, //formula gp
 		WT_ROCKBAND1_DRUMKIT,
-		WT_BUZZ_CONTROLLER,
 		WT_SEGA_SEAMIC,
 		WT_KEYBOARDMANIA_CONTROLLER,
 		WT_COUNT,
@@ -77,8 +76,8 @@ namespace usb_pad
 		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
 		float GetBindingValue(const USBDevice* dev, u32 bind_index) const override;
 		void SetBindingValue(USBDevice* dev, u32 bind_index, float value) const override;
-		void InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const override;
-		void InputDeviceDisconnected(USBDevice* dev, const std::string_view& identifier) const override;
+		void InputDeviceConnected(USBDevice* dev, const std::string_view identifier) const override;
+		void InputDeviceDisconnected(USBDevice* dev, const std::string_view identifier) const override;
 		std::span<const char*> SubTypes() const override;
 		std::span<const InputBindingInfo> Bindings(u32 subtype) const override;
 		std::span<const SettingInfo> Settings(u32 subtype) const override;
@@ -93,17 +92,6 @@ namespace usb_pad
 		std::span<const InputBindingInfo> Bindings(u32 subtype) const override;
 		std::span<const SettingInfo> Settings(u32 subtype) const override;
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
-	};
-
-	class BuzzDevice final : public PadDevice
-	{
-	public:
-		const char* Name() const;
-		const char* TypeName() const;
-		std::span<const char*> SubTypes() const;
-		std::span<const InputBindingInfo> Bindings(u32 subtype) const;
-		std::span<const SettingInfo> Settings(u32 subtype) const;
-		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const;
 	};
 
 	class SeamicDevice final : public PadDevice
@@ -1106,105 +1094,6 @@ namespace usb_pad
 		0xC0,             // End Collection
 
 		// 137 bytes
-	};
-
-	//////////
-	// Buzz //
-	//////////
-
-	static const uint8_t buzz_dev_descriptor[] = {
-		0x12,       // bLength
-		0x01,       // bDescriptorType (Device)
-		0x00, 0x02, // bcdUSB 2.00
-		0x00,       // bDeviceClass (Use class information in the Interface Descriptors)
-		0x00,       // bDeviceSubClass
-		0x00,       // bDeviceProtocol
-		0x08,       // bMaxPacketSize0 8
-		0x4C, 0x05, // idVendor 0x054C
-		0x02, 0x00, // idProduct 0x0002
-		0xA1, 0x05, // bcdDevice 11.01
-		0x03,       // iManufacturer (String Index)
-		0x01,       // iProduct (String Index)
-		0x00,       // iSerialNumber (String Index)
-		0x01,       // bNumConfigurations 1
-	};
-
-	static const uint8_t buzz_config_descriptor[] = {
-		0x09,       // bLength
-		0x02,       // bDescriptorType (Configuration)
-		0x22, 0x00, // wTotalLength 34
-		0x01,       // bNumInterfaces 1
-		0x01,       // bConfigurationValue
-		0x00,       // iConfiguration (String Index)
-		0x80,       // bmAttributes
-		0x32,       // bMaxPower 100mA
-
-		0x09, // bLength
-		0x04, // bDescriptorType (Interface)
-		0x00, // bInterfaceNumber 0
-		0x00, // bAlternateSetting
-		0x01, // bNumEndpoints 1
-		0x03, // bInterfaceClass
-		0x00, // bInterfaceSubClass
-		0x00, // bInterfaceProtocol
-		0x00, // iInterface (String Index)
-
-		0x09,       // bLength
-		0x21,       // bDescriptorType (HID)
-		0x11, 0x01, // bcdHID 1.11
-		0x33,       // bCountryCode
-		0x01,       // bNumDescriptors
-		0x22,       // bDescriptorType[0] (HID)
-		0x4E, 0x00, // wDescriptorLength[0] 78
-
-		0x07,       // bLength
-		0x05,       // bDescriptorType (Endpoint)
-		0x81,       // bEndpointAddress (IN/D2H)
-		0x03,       // bmAttributes (Interrupt)
-		0x08, 0x00, // wMaxPacketSize 8
-		0x0A,       // bInterval 10 (unit depends on device speed)
-	};
-
-	static const uint8_t buzz_hid_report_descriptor[] = {
-		0x05, 0x01,       // Usage Page (Generic Desktop Ctrls)
-		0x09, 0x04,       // Usage (Joystick)
-		0xA1, 0x01,       // Collection (Application)
-		0xA1, 0x02,       //   Collection (Logical)
-		0x75, 0x08,       //     Report Size (8)
-		0x95, 0x02,       //     Report Count (2)
-		0x15, 0x00,       //     Logical Minimum (0)
-		0x26, 0xFF, 0x00, //     Logical Maximum (255)
-		0x35, 0x00,       //     Physical Minimum (0)
-		0x46, 0xFF, 0x00, //     Physical Maximum (255)
-		0x09, 0x30,       //     Usage (X)
-		0x09, 0x31,       //     Usage (Y)
-		0x81, 0x02,       //     Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x75, 0x01,       //     Report Size (1)
-		0x95, 0x14,       //     Report Count (20)
-		0x25, 0x01,       //     Logical Maximum (1)
-		0x45, 0x01,       //     Physical Maximum (1)
-		0x05, 0x09,       //     Usage Page (Button)
-		0x19, 0x01,       //     Usage Minimum (0x01)
-		0x29, 0x14,       //     Usage Maximum (0x14)
-		0x81, 0x02,       //     Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x06, 0x00, 0xFF, //     Usage Page (Vendor Defined 0xFF00)
-		0x75, 0x01,       //     Report Size (1)
-		0x95, 0x04,       //     Report Count (4)
-		0x25, 0x01,       //     Logical Maximum (1)
-		0x45, 0x01,       //     Physical Maximum (1)
-		0x09, 0x01,       //     Usage (0x01)
-		0x81, 0x02,       //     Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0xC0,             //   End Collection
-		0xA1, 0x02,       //   Collection (Logical)
-		0x75, 0x08,       //     Report Size (8)
-		0x95, 0x07,       //     Report Count (7)
-		0x26, 0xFF, 0x00, //     Logical Maximum (255)
-		0x46, 0xFF, 0x00, //     Physical Maximum (255)
-		0x09, 0x02,       //     Usage (0x02)
-		0x91, 0x02,       //     Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
-		0xC0,             //   End Collection
-		0xC0,             // End Collection
-						  // 78 bytes
 	};
 
 	///////////////////

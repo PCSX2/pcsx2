@@ -1,12 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
-#include "SymbolMap.h"
-
-class DebugInterface;
-
+#include "DebugInterface.h"
+#include "SymbolGuardian.h"
 
 #define MIPS_GET_OP(op)   ((op>>26) & 0x3F)
 #define MIPS_GET_FUNC(op) (op & 0x3F)
@@ -22,7 +20,6 @@ namespace MIPSAnalyst
 		u32 start;
 		u32 end;
 		u64 hash;
-		u32 size;
 		bool isStraightLeaf;
 		bool hasHash;
 		bool suspectedNoReturn;
@@ -30,7 +27,7 @@ namespace MIPSAnalyst
 		char name[64];
 	};
 
-	void ScanForFunctions(SymbolMap& map, u32 startAddr, u32 endAddr, bool insertSymbols);
+	void ScanForFunctions(ccc::SymbolDatabase& database, MemoryReader& reader, u32 startAddr, u32 endAddr);
 
 	enum LoadStoreLRType { LOADSTORE_NORMAL, LOADSTORE_LEFT, LOADSTORE_RIGHT };
 

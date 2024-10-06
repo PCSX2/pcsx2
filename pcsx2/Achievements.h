@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -9,11 +9,14 @@
 
 #include <functional>
 #include <mutex>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
 
 class Error;
+
+class SaveStateBase;
 
 namespace Achievements
 {
@@ -51,8 +54,8 @@ namespace Achievements
 	void IdleUpdate();
 
 	/// Saves/loads state.
-	void LoadState(const u8* state_data, u32 state_data_size);
-	std::vector<u8> SaveState();
+	void LoadState(std::span<const u8> data);
+	void SaveState(SaveStateBase& writer);
 
 	/// Attempts to log in to RetroAchievements using the specified credentials.
 	/// If the login is successful, the token returned by the server will be saved.
@@ -65,7 +68,7 @@ namespace Achievements
 	void GameChanged(u32 disc_crc, u32 crc);
 
 	/// Re-enables hardcode mode if it is enabled in the settings.
-	bool ResetHardcoreMode();
+	bool ResetHardcoreMode(bool is_booting);
 
 	/// Forces hardcore mode off until next reset.
 	void DisableHardcoreMode();
@@ -104,6 +107,10 @@ namespace Achievements
 	/// Returns the current rich presence string.
 	/// Should be called with the lock held.
 	const std::string& GetRichPresenceString();
+
+	/// Returns the current game icon url.
+	/// Should be called with the lock held.
+	const std::string& GetGameIconURL();
 
 	/// Returns the RetroAchievements title for the current game.
 	/// Should be called with the lock held.

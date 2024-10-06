@@ -26,7 +26,6 @@
 # For more information, please refer to <http://unlicense.org/>
 
 SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
-source "$SCRIPTDIR/functions.sh"
 
 if [ "$#" -ne 4 ]; then
     echo "Syntax: $0 <path to pcsx2 directory> <path to build directory> <deps prefix> <output name>"
@@ -42,6 +41,10 @@ BINARY=pcsx2-qt
 APPDIRNAME=PCSX2.AppDir
 STRIP=strip
 
+declare -a MANUAL_LIBS=(
+	"libshaderc_shared.so.1"
+)
+
 declare -a MANUAL_QT_LIBS=(
 	"libQt6WaylandEglClientHwIntegration.so.6"
 )
@@ -52,30 +55,57 @@ declare -a MANUAL_QT_PLUGINS=(
 	"wayland-shell-integration"
 )
 
+declare -a REMOVE_LIBS=(
+	'libwayland-client.so*'
+	'libwayland-cursor.so*'
+	'libwayland-egl.so*'
+)
+
 set -e
 
-LINUXDEPLOY=./linuxdeploy-x86_64.AppImage
-LINUXDEPLOY_PLUGIN_QT=./linuxdeploy-plugin-qt-x86_64.AppImage
-APPIMAGETOOL=./appimagetool-x86_64.AppImage
+LINUXDEPLOY=./linuxdeploy-x86_64
+LINUXDEPLOY_PLUGIN_QT=./linuxdeploy-plugin-qt-x86_64
+APPIMAGETOOL=./appimagetool-x86_64
 PATCHELF=patchelf
 
 if [ ! -f "$LINUXDEPLOY" ]; then
-	retry_command wget -O "$LINUXDEPLOY" https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+	"$PCSX2DIR/tools/retry.sh" wget -O "$LINUXDEPLOY" https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
 	chmod +x "$LINUXDEPLOY"
 fi
 
 if [ ! -f "$LINUXDEPLOY_PLUGIN_QT" ]; then
-	retry_command wget -O "$LINUXDEPLOY_PLUGIN_QT" https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+	"$PCSX2DIR/tools/retry.sh" wget -O "$LINUXDEPLOY_PLUGIN_QT" https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
 	chmod +x "$LINUXDEPLOY_PLUGIN_QT"
 fi
 
+# Using go-appimage
+# Backported from https://github.com/stenzek/duckstation/pull/3251
 if [ ! -f "$APPIMAGETOOL" ]; then
-	retry_command wget -O "$APPIMAGETOOL" https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+	APPIMAGETOOLURL=$(wget -q https://api.github.com/repos/probonopd/go-appimage/releases -O - | sed 's/[()",{} ]/\n/g' | grep -o 'https.*continuous.*tool.*86_64.*mage$' | head -1)
+	"$PCSX2DIR/tools/retry.sh" wget -O "$APPIMAGETOOL" "$APPIMAGETOOLURL"
 	chmod +x "$APPIMAGETOOL"
 fi
 
 OUTDIR=$(realpath "./$APPDIRNAME")
 rm -fr "$OUTDIR"
+
+echo "Locating extra libraries..."
+EXTRA_LIBS_ARGS=""
+for lib in "${MANUAL_LIBS[@]}"; do
+	srcpath=$(find "$DEPSDIR" -name "$lib")
+	if [ ! -f "$srcpath" ]; then
+		echo "Missinge extra library $lib. Exiting."
+		exit 1
+	fi
+
+	echo "Found $lib at $srcpath."
+
+	if [ "$EXTRA_LIBS_ARGS" == "" ]; then
+		EXTRA_LIBS_ARGS="--library=$srcpath"
+	else
+		EXTRA_LIBS_ARGS="$EXTRA_LIBS_ARGS,$srcpath"
+	fi
+done
 
 # Why the nastyness? linuxdeploy strips our main binary, and there's no option to turn it off.
 # It also doesn't strip the Qt libs. We can't strip them after running linuxdeploy, because
@@ -98,11 +128,12 @@ cp "$PCSX2DIR/.github/workflows/scripts/linux/pcsx2-qt.desktop" "net.pcsx2.PCSX2
 cp "$PCSX2DIR/bin/resources/icons/AppIconLarge.png" "PCSX2.png"
 
 echo "Running linuxdeploy to create AppDir..."
-EXTRA_QT_PLUGINS="core;gui;network;svg;waylandclient;widgets;xcbqpa" \
+EXTRA_QT_PLUGINS="core;gui;svg;waylandclient;widgets;xcbqpa" \
 EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so" \
+DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
-$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" \
+$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" $EXTRA_LIBS_ARGS \
 --desktop-file="net.pcsx2.PCSX2.desktop" --icon-file="PCSX2.png"
 
 echo "Copying resources into AppDir..."
@@ -136,6 +167,16 @@ for GROUP in "${MANUAL_QT_PLUGINS[@]}"; do
 	done
 done
 
+# Why do we have to manually remove these libs? Because the linuxdeploy Qt plugin
+# copies them, not the "main" linuxdeploy binary, and plugins don't inherit the
+# include list...
+for lib in "${REMOVE_LIBS[@]}"; do
+	for libpath in $(find "$OUTDIR/usr/lib" -name "$lib"); do
+		echo "    Removing problematic library ${libpath}."
+		rm -f "$libpath"
+	done
+done
+
 # Restore unstripped deps (for cache).
 rm -fr "$DEPSDIR"
 mv "$DEPSDIR.bak" "$DEPSDIR"
@@ -161,6 +202,16 @@ for hookpath in "$SCRIPTDIR/apprun-hooks"/*; do
 done
 
 echo "Generating AppImage..."
+GIT_VERSION=$(git tag --points-at HEAD)
+
+if [[ "${GIT_VERSION}" == "" ]]; then
+	# In the odd event that we run this script before the release gets tagged.
+	GIT_VERSION=$(git describe --tags)
+	if [[ "${GIT_VERSION}" == "" ]]; then
+		GIT_VERSION=$(git rev-parse HEAD)
+	fi
+fi
+
 rm -f "$NAME.AppImage"
-$APPIMAGETOOL -v "$OUTDIR" "$NAME.AppImage"
+ARCH=x86_64 VERSION="${GIT_VERSION}" "$APPIMAGETOOL" -s "$OUTDIR" && mv ./*.AppImage "$NAME.AppImage"
 

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -58,7 +58,8 @@ public slots:
 	void contextRestoreFunction();
 	void contextShowOpcode();
 
-	void gotoAddress(u32 address, bool should_set_focus = true);
+	void gotoAddressAndSetFocus(u32 address);
+	void gotoAddress(u32 address, bool should_set_focus);
 
 	void setDemangle(bool demangle) { m_demangleFunctions = demangle; };
 signals:

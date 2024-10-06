@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include "common/Pcsx2Types.h"
+#include <string>
 #include <vector>
 
 typedef std::pair<u64,u64> ExpressionPair;
@@ -22,7 +23,7 @@ public:
 	virtual bool parseSymbol(char* str, u64& symbolValue) = 0;
 	virtual u64 getReferenceValue(u64 referenceIndex) = 0;
 	virtual ExpressionType getReferenceType(u64 referenceIndex) = 0;
-	virtual bool getMemoryValue(u32 address, int size, u64& dest, char* error) = 0;
+	virtual bool getMemoryValue(u32 address, int size, u64& dest, std::string& error) = 0;
 };
 
 bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, PostfixExpression& dest);

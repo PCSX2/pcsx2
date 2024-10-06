@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "ChdFileReader.h"
 
@@ -8,6 +8,8 @@
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/ProgressCallback.h"
+#include "common/SmallString.h"
 #include "common/StringUtil.h"
 
 #include "libchdr/chd.h"
@@ -18,15 +20,11 @@ static constexpr u32 MAX_PARENTS = 32; // Surely someone wouldn't be insane enou
 static std::vector<std::pair<std::string, chd_header>> s_chd_hash_cache; // <filename, header>
 static std::recursive_mutex s_chd_hash_cache_mutex;
 
-ChdFileReader::ChdFileReader()
-{
-	m_blocksize = 2048;
-	ChdFile = nullptr;
-}
+ChdFileReader::ChdFileReader() = default;
 
 ChdFileReader::~ChdFileReader()
 {
-	Close();
+	pxAssert(!ChdFile);
 }
 
 static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level)
@@ -187,6 +185,32 @@ bool ChdFileReader::Open2(std::string filename, Error* error)
 	{
 		Console.Warning("Failed to parse CHD TOC, file size may be incorrect.");
 		file_size = static_cast<u64>(chd_header->unitbytes) * chd_header->unitcount;
+	}
+
+	return true;
+}
+
+bool ChdFileReader::Precache2(ProgressCallback* progress, Error* error)
+{
+	if (!CheckAvailableMemoryForPrecaching(chd_get_compressed_size(ChdFile), error))
+		return false;
+
+	progress->SetProgressRange(100);
+
+	const auto callback = [](size_t pos, size_t total, void* param) -> bool {
+		ProgressCallback* progress = static_cast<ProgressCallback*>(param);
+		const u32 percent = static_cast<u32>((pos * 100) / total);
+		progress->SetProgressValue(std::min<u32>(percent, 100));
+		return !progress->IsCancelled();
+	};
+
+	const chd_error cerror = chd_precache_progress(ChdFile, callback, progress);
+	if (cerror != CHDERR_NONE)
+	{
+		if (cerror != CHDERR_CANCELLED)
+			Error::SetStringView(error, "Failed to read part of the file.");
+
+		return false;
 	}
 
 	return true;

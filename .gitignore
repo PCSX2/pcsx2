@@ -63,6 +63,7 @@ oprofile_data/
 *.kdev4
 /.kdev4*
 
+# Resources and docs in /bin are tracked
 /bin/**/*.dll
 /bin/**/*.dmp
 /bin/**/*.exp
@@ -93,6 +94,9 @@ oprofile_data/
 /bin/portable.ini
 /bin/portable.txt
 
+# Resources and docs copied from /bin
+/bin-arm64
+
 # Manually added by user.
 /bin/resources/patches.zip
 
@@ -102,7 +106,9 @@ oprofile_data/
 /bin/resources/fonts/NotoSansSC-Regular.ttf
 /bin/resources/fonts/NotoSansTC-Regular.ttf
 
+/deps-build
 /deps
+/deps-arm64
 /ipch
 
 !/3rdparty/libjpeg/change.log
@@ -113,3 +119,4 @@ oprofile_data/
 CMakeSettings.json
 /ci-artifacts/
 /out/
+/.cache/

@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -66,6 +66,7 @@ public:
 #endif
 
 	// helpers for setting
+	static void Clear(Error* errptr);
 	static void SetErrno(Error* errptr, int err);
 	static void SetErrno(Error* errptr, std::string_view prefix, int err);
 	static void SetSocket(Error* errptr, int err);

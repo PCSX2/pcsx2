@@ -1,7 +1,9 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
+
+#include "common/FileSystem.h"
 
 #include <memory>
 #include <string>
@@ -305,9 +307,12 @@ public:
 protected:
 	GSDumpFile();
 
-	virtual bool Open(std::FILE* fp, Error* error) = 0;
+	virtual bool Open(FileSystem::ManagedCFilePtr fp, Error* error) = 0;
 	virtual bool IsEof() = 0;
 	virtual size_t Read(void* ptr, size_t size) = 0;
+
+protected:
+	FileSystem::ManagedCFilePtr m_fp;
 
 private:
 	std::string m_serial;

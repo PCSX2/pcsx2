@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include <atomic>
@@ -20,7 +20,7 @@ namespace Sessions
 	class UDP_FixedPort : public BaseSession
 	{
 	private:
-		std::atomic<bool> open{true};
+		std::atomic<bool> open{false};
 
 #ifdef _WIN32
 		SOCKET client = INVALID_SOCKET;
@@ -38,7 +38,9 @@ namespace Sessions
 	public:
 		UDP_FixedPort(ConnectionKey parKey, PacketReader::IP::IP_Address parAdapterIP, u16 parPort);
 
-		virtual PacketReader::IP::IP_Payload* Recv();
+		void Init();
+
+		virtual std::optional<ReceivedPayload> Recv();
 		virtual bool Send(PacketReader::IP::IP_Payload* payload);
 		virtual void Reset();
 

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include <simd/simd.h>
@@ -66,6 +66,13 @@ struct GSMTLIndexedConvertPSUniform
 	uint dbw;
 };
 
+struct GSMTLDownsamplePSUniform
+{
+	vector_uint2 clamp_min;
+	uint downsample_factor;
+	float weight;
+};
+
 struct GSMTLMainVertex
 {
 	vector_float2 st;
@@ -111,6 +118,7 @@ struct GSMTLMainPSUniform
 		vector_float4 uv_min_max;
 		vector_uint4 uv_msk_fix;
 	};
+	vector_float4 lod_params;
 	vector_float4 st_range;
 	struct
 	{
@@ -204,7 +212,6 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_TEX_IS_FB,
 	GSMTLConstantIndex_PS_AUTOMATIC_LOD,
 	GSMTLConstantIndex_PS_MANUAL_LOD,
-	GSMTLConstantIndex_PS_POINT_SAMPLER,
 	GSMTLConstantIndex_PS_REGION_RECT,
 	GSMTLConstantIndex_PS_SCANMSK,
 };

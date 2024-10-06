@@ -4,7 +4,7 @@
   <ItemDefinitionGroup>
     <Link>
       <AdditionalLibraryDirectories>$(DepsLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;libjpeg.lib;libpng16.lib;libwebp.lib;lz4.lib;SDL2.lib;shaderc_shared.lib;zlib.lib;zstd.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;libjpeg.lib;libpng16.lib;libwebp.lib;lz4.lib;SDL2.lib;zlib.lib;zstd.lib</AdditionalDependencies>
    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

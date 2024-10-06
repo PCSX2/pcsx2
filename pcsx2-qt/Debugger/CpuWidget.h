@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -11,6 +11,7 @@
 #include "Models/ThreadModel.h"
 #include "Models/StackModel.h"
 #include "Models/SavedAddressesModel.h"
+#include "Debugger/SymbolTree/SymbolTreeWidgets.h"
 
 #include "QtHost.h"
 #include <QtWidgets/QWidget>
@@ -63,12 +64,6 @@ public slots:
 	void onStackListContextMenu(QPoint pos);
 	void onStackListDoubleClick(const QModelIndex& index);
 
-	void updateFunctionList(bool whenEmpty = false);
-	void onFuncListContextMenu(QPoint pos);
-	void onFuncListDoubleClick(QListWidgetItem* item);
-	bool getDemangleFunctions() const { return m_demangleFunctions; }
-	void onModuleTreeContextMenu(QPoint pos);
-	void onModuleTreeDoubleClick(QTreeWidgetItem* item);
 	void refreshDebugger();
 	void reloadCPUWidgets();
 
@@ -76,6 +71,8 @@ public slots:
 	void saveSavedAddressesToDebuggerSettings();
 
 private:
+	void setupSymbolTrees();
+
 	std::vector<QTableWidget*> m_registerTableViews;
 
 	QMenu* m_stacklistContextMenu = 0;
@@ -93,6 +90,8 @@ private:
 	StackModel m_stackModel;
 	SavedAddressesModel m_savedAddressesModel;
 
-	bool m_demangleFunctions = true;
-	bool m_moduleView = true;
+	FunctionTreeWidget* m_function_tree = nullptr;
+	GlobalVariableTreeWidget* m_global_variable_tree = nullptr;
+	LocalVariableTreeWidget* m_local_variable_tree = nullptr;
+	ParameterVariableTreeWidget* m_parameter_variable_tree = nullptr;
 };

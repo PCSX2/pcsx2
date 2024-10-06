@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2004 Gianni Tedesco, 2006 CodeSourcery, 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-2.0+
 
 #include "USB/qemu-usb/qusb.h"

@@ -1,16 +1,16 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
-#include "CDVD.h"
-#include "AsyncFileReader.h"
-#include "CompressedFileReader.h"
+#include "CDVD/CDVD.h"
+#include "CDVD/ThreadedFileReader.h"
 #include <memory>
 #include <string>
 #include <vector>
 
 class Error;
+class ProgressCallback;
 
 enum isoType
 {
@@ -30,14 +30,9 @@ class InputIsoFile final
 {
 	DeclareNoncopyableObject(InputIsoFile);
 
-	static const uint MaxReadUnit = 128;
-
-protected:
-	uint ReadUnit;
-
 protected:
 	std::string m_filename;
-	AsyncFileReader* m_reader;
+	std::unique_ptr<ThreadedFileReader> m_reader;
 
 	u32 m_current_lsn;
 
@@ -53,8 +48,7 @@ protected:
 
 	bool m_read_inprogress;
 	uint m_read_lsn;
-	uint m_read_count;
-	u8 m_readbuffer[MaxReadUnit * CD_FRAMESIZE_RAW];
+	u8 m_readbuffer[CD_FRAMESIZE_RAW];
 
 public:
 	InputIsoFile();
@@ -71,8 +65,8 @@ public:
 		return m_filename;
 	}
 
-	bool Test(std::string srcfile);
-	bool Open(std::string srcfile, Error* error, bool testOnly);
+	bool Open(std::string srcfile, Error* error);
+	bool Precache(ProgressCallback* progress, Error* error);
 	void Close();
 	bool Detect(bool readType = true);
 

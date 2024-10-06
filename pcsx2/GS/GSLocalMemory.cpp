@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/GS.h"
 #include "GS/GSLocalMemory.h"
@@ -370,6 +370,13 @@ std::vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 
 	int tw = std::max<int>(1 << TEX0.TW, bs.x);
 	int th = std::max<int>(1 << TEX0.TH, bs.y);
+
+	// Limit the size to the maximum size of the GS memory, there's no point in mapping more than this.
+	if ((tw * th) > static_cast<int>(VM_SIZE))
+	{
+		tw = 2048;
+		th = 2048;
+	}
 
 	GSOffset off = GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 	GSOffset::BNHelper bn = off.bnMulti(0, 0);

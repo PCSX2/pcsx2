@@ -1,10 +1,9 @@
 #include <stdint.h>
 
 #include <cpuinfo.h>
-#include <x86/cpuid.h>
-#include <cpuinfo/utils.h>
 #include <cpuinfo/log.h>
-
+#include <cpuinfo/utils.h>
+#include <x86/cpuid.h>
 
 enum cache_type {
 	cache_type_none = 0,
@@ -16,8 +15,7 @@ enum cache_type {
 bool cpuinfo_x86_decode_deterministic_cache_parameters(
 	struct cpuid_regs regs,
 	struct cpuinfo_x86_caches* cache,
-	uint32_t* package_cores_max)
-{
+	uint32_t* package_cores_max) {
 	const uint32_t type = regs.eax & UINT32_C(0x1F);
 	if (type == cache_type_none) {
 		return false;
@@ -46,112 +44,106 @@ bool cpuinfo_x86_decode_deterministic_cache_parameters(
 		case 1:
 			switch (type) {
 				case cache_type_unified:
-					cache->l1d = cache->l1i = (struct cpuinfo_x86_cache) {
+					cache->l1d = cache->l1i = (struct cpuinfo_x86_cache){
 						.size = associativity * partitions * line_size * sets,
 						.associativity = associativity,
 						.sets = sets,
 						.partitions = partitions,
 						.line_size = line_size,
 						.flags = flags | CPUINFO_CACHE_UNIFIED,
-						.apic_bits = apic_bits
-					};
+						.apic_bits = apic_bits};
 					break;
 				case cache_type_data:
-					cache->l1d = (struct cpuinfo_x86_cache) {
+					cache->l1d = (struct cpuinfo_x86_cache){
 						.size = associativity * partitions * line_size * sets,
 						.associativity = associativity,
 						.sets = sets,
 						.partitions = partitions,
 						.line_size = line_size,
 						.flags = flags,
-						.apic_bits = apic_bits
-					};
+						.apic_bits = apic_bits};
 					break;
 				case cache_type_instruction:
-					cache->l1i = (struct cpuinfo_x86_cache) {
+					cache->l1i = (struct cpuinfo_x86_cache){
 						.size = associativity * partitions * line_size * sets,
 						.associativity = associativity,
 						.sets = sets,
 						.partitions = partitions,
 						.line_size = line_size,
 						.flags = flags,
-						.apic_bits = apic_bits
-					};
+						.apic_bits = apic_bits};
 					break;
 			}
 			break;
 		case 2:
 			switch (type) {
 				case cache_type_instruction:
-					cpuinfo_log_warning("unexpected L2 instruction cache reported in leaf 0x00000004 is ignored");
+					cpuinfo_log_warning(
+						"unexpected L2 instruction cache reported in leaf 0x00000004 is ignored");
 					break;
 				case cache_type_unified:
 					flags |= CPUINFO_CACHE_UNIFIED;
 				case cache_type_data:
-					cache->l2 = (struct cpuinfo_x86_cache) {
+					cache->l2 = (struct cpuinfo_x86_cache){
 						.size = associativity * partitions * line_size * sets,
 						.associativity = associativity,
 						.sets = sets,
 						.partitions = partitions,
 						.line_size = line_size,
 						.flags = flags,
-						.apic_bits = apic_bits
-					};
+						.apic_bits = apic_bits};
 					break;
 			}
 			break;
 		case 3:
 			switch (type) {
 				case cache_type_instruction:
-					cpuinfo_log_warning("unexpected L3 instruction cache reported in leaf 0x00000004 is ignored");
+					cpuinfo_log_warning(
+						"unexpected L3 instruction cache reported in leaf 0x00000004 is ignored");
 					break;
 				case cache_type_unified:
 					flags |= CPUINFO_CACHE_UNIFIED;
 				case cache_type_data:
-					cache->l3 = (struct cpuinfo_x86_cache) {
+					cache->l3 = (struct cpuinfo_x86_cache){
 						.size = associativity * partitions * line_size * sets,
 						.associativity = associativity,
 						.sets = sets,
 						.partitions = partitions,
 						.line_size = line_size,
 						.flags = flags,
-						.apic_bits = apic_bits
-					};
+						.apic_bits = apic_bits};
 					break;
 			}
 			break;
 		case 4:
 			switch (type) {
 				case cache_type_instruction:
-					cpuinfo_log_warning("unexpected L4 instruction cache reported in leaf 0x00000004 is ignored");
+					cpuinfo_log_warning(
+						"unexpected L4 instruction cache reported in leaf 0x00000004 is ignored");
 					break;
 				case cache_type_unified:
 					flags |= CPUINFO_CACHE_UNIFIED;
 				case cache_type_data:
-					cache->l4 = (struct cpuinfo_x86_cache) {
+					cache->l4 = (struct cpuinfo_x86_cache){
 						.size = associativity * partitions * line_size * sets,
 						.associativity = associativity,
 						.sets = sets,
 						.partitions = partitions,
 						.line_size = line_size,
 						.flags = flags,
-						.apic_bits = apic_bits
-					};
+						.apic_bits = apic_bits};
 					break;
 			}
 			break;
 		default:
-			cpuinfo_log_warning("unexpected L%"PRIu32" cache reported in leaf 0x00000004 is ignored", level);
+			cpuinfo_log_warning(
+				"unexpected L%" PRIu32 " cache reported in leaf 0x00000004 is ignored", level);
 			break;
 	}
 	return true;
 }
 
-
-bool cpuinfo_x86_decode_cache_properties(
-	struct cpuid_regs regs,
-	struct cpuinfo_x86_caches* cache)
-{
+bool cpuinfo_x86_decode_cache_properties(struct cpuid_regs regs, struct cpuinfo_x86_caches* cache) {
 	const uint32_t type = regs.eax & UINT32_C(0x1F);
 	if (type == cache_type_none) {
 		return false;
@@ -175,82 +167,80 @@ bool cpuinfo_x86_decode_cache_properties(
 		case 1:
 			switch (type) {
 				case cache_type_unified:
-					cache->l1d = cache->l1i = (struct cpuinfo_x86_cache) {
+					cache->l1d = cache->l1i = (struct cpuinfo_x86_cache){
 						.size = associativity * partitions * line_size * sets,
 						.associativity = associativity,
 						.sets = sets,
 						.partitions = partitions,
 						.line_size = line_size,
 						.flags = flags | CPUINFO_CACHE_UNIFIED,
-						.apic_bits = apic_bits
-					};
+						.apic_bits = apic_bits};
 					break;
 				case cache_type_data:
-					cache->l1d = (struct cpuinfo_x86_cache) {
+					cache->l1d = (struct cpuinfo_x86_cache){
 						.size = associativity * partitions * line_size * sets,
 						.associativity = associativity,
 						.sets = sets,
 						.partitions = partitions,
 						.line_size = line_size,
 						.flags = flags,
-						.apic_bits = apic_bits
-					};
+						.apic_bits = apic_bits};
 					break;
 				case cache_type_instruction:
-					cache->l1i = (struct cpuinfo_x86_cache) {
+					cache->l1i = (struct cpuinfo_x86_cache){
 						.size = associativity * partitions * line_size * sets,
 						.associativity = associativity,
 						.sets = sets,
 						.partitions = partitions,
 						.line_size = line_size,
 						.flags = flags,
-						.apic_bits = apic_bits
-					};
+						.apic_bits = apic_bits};
 					break;
 			}
 			break;
 		case 2:
 			switch (type) {
 				case cache_type_instruction:
-					cpuinfo_log_warning("unexpected L2 instruction cache reported in leaf 0x8000001D is ignored");
+					cpuinfo_log_warning(
+						"unexpected L2 instruction cache reported in leaf 0x8000001D is ignored");
 					break;
 				case cache_type_unified:
 					flags |= CPUINFO_CACHE_UNIFIED;
 				case cache_type_data:
-					cache->l2 = (struct cpuinfo_x86_cache) {
+					cache->l2 = (struct cpuinfo_x86_cache){
 						.size = associativity * partitions * line_size * sets,
 						.associativity = associativity,
 						.sets = sets,
 						.partitions = partitions,
 						.line_size = line_size,
 						.flags = flags,
-						.apic_bits = apic_bits
-					};
+						.apic_bits = apic_bits};
 					break;
 			}
 			break;
 		case 3:
 			switch (type) {
 				case cache_type_instruction:
-					cpuinfo_log_warning("unexpected L3 instruction cache reported in leaf 0x8000001D is ignored");
+					cpuinfo_log_warning(
+						"unexpected L3 instruction cache reported in leaf 0x8000001D is ignored");
 					break;
 				case cache_type_unified:
 					flags |= CPUINFO_CACHE_UNIFIED;
 				case cache_type_data:
-					cache->l3 = (struct cpuinfo_x86_cache) {
+					cache->l3 = (struct cpuinfo_x86_cache){
 						.size = associativity * partitions * line_size * sets,
 						.associativity = associativity,
 						.sets = sets,
 						.partitions = partitions,
 						.line_size = line_size,
 						.flags = flags,
-						.apic_bits = apic_bits
-					};
+						.apic_bits = apic_bits};
 					break;
 			}
 			break;
 		default:
-			cpuinfo_log_warning("unexpected L%"PRIu32" cache reported in leaf 0x8000001D is ignored", level);
+			cpuinfo_log_warning(
+				"unexpected L%" PRIu32 " cache reported in leaf 0x8000001D is ignored", level);
 			break;
 	}
 	return true;

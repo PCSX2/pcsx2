@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -53,7 +53,8 @@ namespace GameDatabaseSchema
 		TextureInsideRT,
 		AlignSprite,
 		MergeSprite,
-		WildArmsHack,
+		Mipmap,
+		ForceEvenSpritePosition,
 		BilinearUpscale,
 		NativePaletteDraw,
 		EstimateTextureRegion,
@@ -61,13 +62,13 @@ namespace GameDatabaseSchema
 		PCRTCOverscan,
 
 		// integer settings
-		Mipmap,
 		TrilinearFiltering,
 		SkipDrawStart,
 		SkipDrawEnd,
 		HalfBottomOverride,
 		HalfPixelOffset,
 		RoundSprite,
+		NativeScaling,
 		TexturePreloading,
 		Deinterlace,
 		CPUSpriteRenderBW,
@@ -125,13 +126,13 @@ namespace GameDatabaseSchema
 namespace GameDatabase
 {
 	void ensureLoaded();
-	const GameDatabaseSchema::GameEntry* findGame(const std::string_view& serial);
+	const GameDatabaseSchema::GameEntry* findGame(const std::string_view serial);
 
 	struct TrackHash
 	{
 		static constexpr u32 SIZE = 16;
 
-		bool parseHash(const std::string_view& str);
+		bool parseHash(const std::string_view str);
 		std::string toString() const;
 
 #define MAKE_OPERATOR(op) \

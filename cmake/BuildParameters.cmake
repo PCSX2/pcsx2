@@ -1,12 +1,16 @@
 # Extra preprocessor definitions that will be added to all pcsx2 builds
 set(PCSX2_DEFS "")
 
+include(GNUInstallDirs)
+
 #-------------------------------------------------------------------------------
 # Misc option
 #-------------------------------------------------------------------------------
 option(ENABLE_TESTS "Enables building the unit tests" ON)
+option(ENABLE_GSRUNNER "Enables building the GSRunner" OFF)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
+option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
 
 #-------------------------------------------------------------------------------
 # Graphical option
@@ -23,6 +27,7 @@ if(UNIX AND NOT APPLE)
 	option(ENABLE_SETCAP "Enable networking capability for DEV9" OFF)
 	option(X11_API "Enable X11 support" ON)
 	option(WAYLAND_API "Enable Wayland support" ON)
+	option(USE_BACKTRACE "Enable libbacktrace support" ON)
 endif()
 
 if(UNIX)
@@ -99,6 +104,28 @@ if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_HOST_SYSTEM_PR
 			endif()
 		endif()
 	endif()
+elseif("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR
+       "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
+	message(STATUS "Building for Apple Silicon (ARM64).")
+	list(APPEND PCSX2_DEFS _M_ARM64=1)
+	set(_M_ARM64 TRUE)
+	add_compile_options("-march=armv8.4-a" "-mcpu=apple-m1")
+
+	# If we're running on Linux, we need to detect the page/cache line size.
+	# It could be a virtual machine with 4K pages, or 16K with Asahi.
+	if(LINUX)
+		detect_page_size()
+		list(APPEND PCSX2_DEFS OVERRIDE_HOST_PAGE_SIZE=${HOST_PAGE_SIZE})
+		detect_cache_line_size()
+		list(APPEND PCSX2_DEFS OVERRIDE_HOST_CACHE_LINE_SIZE=${HOST_CACHE_LINE_SIZE})
+	endif()
+	
+	# Windows page/cache line size seems to match x68-64 
+	if(WIN32)
+		list(APPEND PCSX2_DEFS OVERRIDE_HOST_PAGE_SIZE=0x1000)
+		# Value of std::hardware_destructive_interference_size for ARM64 on MSVC toolset 14.40.33807
+		list(APPEND PCSX2_DEFS OVERRIDE_HOST_CACHE_LINE_SIZE=64)
+	endif()
 else()
 	message(FATAL_ERROR "Unsupported architecture: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 endif()
@@ -112,6 +139,7 @@ if(MSVC AND NOT USE_CLANG_CL)
 		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:externConstexpr>"
 		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>"
 		"$<$<COMPILE_LANGUAGE:CXX>:/permissive->"
+		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>"
 		"/Zo"
 		"/utf-8"
 	)
@@ -173,6 +201,15 @@ if(MSVC)
 		$<${CONFIG_REL_NO_DEB}:/OPT:ICF>
 	)
 endif()
+
+if(PACKAGE_MODE)
+	file(RELATIVE_PATH relative_datadir ${CMAKE_INSTALL_FULL_BINDIR} ${CMAKE_INSTALL_FULL_DATADIR}/PCSX2)
+
+	# Compile all source codes with those defines
+	list(APPEND PCSX2_DEFS
+		PCSX2_APP_DATADIR="${relative_datadir}")
+endif()
+
 
 if(USE_VTUNE)
 	list(APPEND PCSX2_DEFS ENABLE_VTUNE)

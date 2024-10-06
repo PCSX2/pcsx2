@@ -37,15 +37,15 @@ target_include_directories(cubeb
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>
 )
 
-add_library(speex OBJECT subprojects/speex/resample.c)
-set_target_properties(speex PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-target_include_directories(speex INTERFACE subprojects)
-target_compile_definitions(speex PUBLIC
-  OUTSIDE_SPEEX
-  FLOATING_POINT
-  EXPORT=
-  RANDOM_PREFIX=speex
-)
+  add_library(speex OBJECT subprojects/speex/resample.c)
+  set_target_properties(speex PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+  target_include_directories(speex INTERFACE subprojects)
+  target_compile_definitions(speex PUBLIC
+    OUTSIDE_SPEEX
+    FLOATING_POINT
+    EXPORT=
+    RANDOM_PREFIX=speex
+  )
 
 # $<BUILD_INTERFACE:> required because of https://gitlab.kitware.com/cmake/cmake/-/issues/15415
 target_link_libraries(cubeb PRIVATE $<BUILD_INTERFACE:speex>)
@@ -58,16 +58,19 @@ find_package(Threads)
 target_link_libraries(cubeb PRIVATE Threads::Threads)
 
 if(LAZY_LOAD_LIBS)
-  if(NOT APPLE AND NOT WIN32)
-    # Skip checks on MacOS because it takes ages in XCode.
-    check_include_files(pulse/pulseaudio.h USE_PULSE)
-    check_include_files(alsa/asoundlib.h   USE_ALSA)
-    check_include_files(jack/jack.h        USE_JACK)
-    check_include_files(sndio.h            USE_SNDIO)
+  if(NOT APPLE AND NOT WIN32) # Skip checks on MacOS because it takes ages in XCode.
+  check_include_files(pulse/pulseaudio.h USE_PULSE)
+  check_include_files(alsa/asoundlib.h   USE_ALSA)
+  check_include_files(jack/jack.h        USE_JACK)
+  check_include_files(sndio.h            USE_SNDIO)
 
-    if(USE_PULSE OR USE_ALSA OR USE_JACK OR USE_SNDIO)
-      target_link_libraries(cubeb PRIVATE ${CMAKE_DL_LIBS})
+  if(USE_PULSE OR USE_ALSA OR USE_JACK OR USE_SNDIO OR USE_AAUDIO)
+    target_link_libraries(cubeb PRIVATE ${CMAKE_DL_LIBS})
+
+    if(ANDROID)
+      target_compile_definitions(cubeb PRIVATE __ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__)
     endif()
+  endif()
   endif()
 
 elseif(NOT APPLE AND NOT WIN32)
@@ -123,56 +126,56 @@ if(USE_SNDIO)
 endif()
 
 if(APPLE)
-  check_include_files(AudioUnit/AudioUnit.h USE_AUDIOUNIT)
-  if(USE_AUDIOUNIT)
-    target_sources(cubeb PRIVATE
-      src/cubeb_audiounit.cpp
-      src/cubeb_osx_run_loop.cpp)
-    target_compile_definitions(cubeb PRIVATE USE_AUDIOUNIT)
-    target_link_libraries(cubeb PRIVATE "-framework AudioUnit" "-framework CoreAudio" "-framework CoreServices")
-  endif()
+check_include_files(AudioUnit/AudioUnit.h USE_AUDIOUNIT)
+if(USE_AUDIOUNIT)
+  target_sources(cubeb PRIVATE
+    src/cubeb_audiounit.cpp
+    src/cubeb_osx_run_loop.cpp)
+  target_compile_definitions(cubeb PRIVATE USE_AUDIOUNIT)
+  target_link_libraries(cubeb PRIVATE "-framework AudioUnit" "-framework CoreAudio" "-framework CoreServices")
+endif()
 endif()
 
 if(WIN32)
-  check_include_files(audioclient.h USE_WASAPI)
-  if(USE_WASAPI)
-    target_sources(cubeb PRIVATE
-      src/cubeb_wasapi.cpp)
-    target_compile_definitions(cubeb PRIVATE USE_WASAPI)
-    target_link_libraries(cubeb PRIVATE avrt ole32 ksuser)
-  endif()
+check_include_files(audioclient.h USE_WASAPI)
+if(USE_WASAPI)
+  target_sources(cubeb PRIVATE
+    src/cubeb_wasapi.cpp)
+  target_compile_definitions(cubeb PRIVATE USE_WASAPI)
+  target_link_libraries(cubeb PRIVATE ole32 ksuser)
+endif()
 
-  check_include_files("windows.h;mmsystem.h" USE_WINMM)
-  if(USE_WINMM)
-    target_sources(cubeb PRIVATE
-      src/cubeb_winmm.c)
-    target_compile_definitions(cubeb PRIVATE USE_WINMM)
-    target_link_libraries(cubeb PRIVATE winmm)
-  endif()
+check_include_files("windows.h;mmsystem.h" USE_WINMM)
+if(USE_WINMM)
+  target_sources(cubeb PRIVATE
+    src/cubeb_winmm.c)
+  target_compile_definitions(cubeb PRIVATE USE_WINMM)
+  target_link_libraries(cubeb PRIVATE winmm)
+endif()
 endif()
 
 if(NOT WIN32 AND NOT APPLE)
-  check_include_files(sys/soundcard.h HAVE_SYS_SOUNDCARD_H)
-  if(HAVE_SYS_SOUNDCARD_H)
-    try_compile(USE_OSS "${PROJECT_BINARY_DIR}/compile_tests"
-      ${PROJECT_SOURCE_DIR}/cmake/compile_tests/oss_is_v4.c)
-    if(USE_OSS)
-      # strlcpy is not available on BSD systems that use glibc,
-      # like Debian kfreebsd, so try using libbsd if available
-      include(CheckSymbolExists)
-      check_symbol_exists(strlcpy string.h HAVE_STRLCPY)
-      if(NOT HAVE_STRLCPY)
-        pkg_check_modules(libbsd-overlay IMPORTED_TARGET libbsd-overlay)
-        if(libbsd-overlay_FOUND)
-          target_link_libraries(cubeb PRIVATE PkgConfig::libbsd-overlay)
-          set(HAVE_STRLCPY true)
-        endif()
-      endif()
-      if (HAVE_STRLCPY)
-        target_sources(cubeb PRIVATE
-          src/cubeb_oss.c)
-        target_compile_definitions(cubeb PRIVATE USE_OSS)
+check_include_files(sys/soundcard.h HAVE_SYS_SOUNDCARD_H)
+if(HAVE_SYS_SOUNDCARD_H)
+  try_compile(USE_OSS "${PROJECT_BINARY_DIR}/compile_tests"
+    ${PROJECT_SOURCE_DIR}/cmake/compile_tests/oss_is_v4.c)
+  if(USE_OSS)
+    # strlcpy is not available on BSD systems that use glibc,
+    # like Debian kfreebsd, so try using libbsd if available
+    include(CheckSymbolExists)
+    check_symbol_exists(strlcpy string.h HAVE_STRLCPY)
+    if(NOT HAVE_STRLCPY)
+      pkg_check_modules(libbsd-overlay IMPORTED_TARGET libbsd-overlay)
+      if(libbsd-overlay_FOUND)
+        target_link_libraries(cubeb PRIVATE PkgConfig::libbsd-overlay)
+        set(HAVE_STRLCPY true)
       endif()
     endif()
+    if (HAVE_STRLCPY)
+      target_sources(cubeb PRIVATE
+        src/cubeb_oss.c)
+      target_compile_definitions(cubeb PRIVATE USE_OSS)
+    endif()
   endif()
+endif()
 endif()

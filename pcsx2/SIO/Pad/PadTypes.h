@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -64,6 +64,8 @@ namespace Pad
 		NotConnected,
 		DualShock2,
 		Guitar,
+		Jogcon,
+		Negcon,
 		Popn,
 		Count
 	};
@@ -90,7 +92,7 @@ namespace Pad
 		const char* GetLocalizedName() const;
 
 		/// Returns the index of the specified binding point, by name.
-		std::optional<u32> GetBindIndex(const std::string_view& name) const;
+		std::optional<u32> GetBindIndex(const std::string_view name) const;
 	};
 
 	// Total number of pad ports, across both multitaps.

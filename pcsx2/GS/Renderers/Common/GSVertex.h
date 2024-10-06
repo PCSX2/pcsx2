@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -21,10 +21,14 @@ struct alignas(32) GSVertex
 			u32 FOG;        // FOG:28
 		};
 
+#if defined(_M_X86)
 #if _M_SSE >= 0x500
 		__m256i mx;
 #endif
 		__m128i m[2];
+#elif defined(_M_ARM64)
+		int32x4_t m[2];
+#endif
 	};
 };
 

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -283,7 +283,7 @@ public:
 	RenderAPI GetRenderAPI() const override;
 	bool HasSurface() const override;
 
-	bool Create() override;
+	bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle) override;
 	void Destroy() override;
 
 	bool UpdateWindow() override;
@@ -292,7 +292,7 @@ public:
 	void DestroySurface() override;
 	std::string GetDriverInfo() const override;
 
-	void SetVSync(VsyncMode mode) override;
+	void SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle) override;
 
 	PresentResult BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
@@ -324,6 +324,7 @@ public:
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) override;
 	void UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
 	void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) override;
+	void FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect) override;
 
 	void DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader) override;
 	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds);
@@ -353,9 +354,9 @@ public:
 	void SetScissor(const GSVector4i& scissor);
 
 	bool CreateTextureFX();
-	std::string GetShaderSource(const std::string_view& entry, GLenum type, const std::string_view& glsl_h_code,
-		const std::string_view& macro_sel = std::string_view());
-	std::string GenGlslHeader(const std::string_view& entry, GLenum type, const std::string_view& macro);
+	std::string GetShaderSource(const std::string_view entry, GLenum type, const std::string_view glsl_h_code,
+		const std::string_view macro_sel = std::string_view());
+	std::string GenGlslHeader(const std::string_view entry, GLenum type, const std::string_view macro);
 	std::string GetVSSource(VSSelector sel);
 	std::string GetPSSource(const PSSelector& sel);
 	GLuint CreateSampler(PSSamplerSelector sel);

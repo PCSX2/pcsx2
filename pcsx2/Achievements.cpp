@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
@@ -14,6 +14,7 @@
 #include "IopMem.h"
 #include "MTGS.h"
 #include "Memory.h"
+#include "SaveState.h"
 #include "VMManager.h"
 #include "svnrev.h"
 #include "vtlb.h"
@@ -23,6 +24,7 @@
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/HTTPDownloader.h"
+#include "common/HeapArray.h"
 #include "common/MD5Digest.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
@@ -52,9 +54,6 @@
 
 namespace Achievements
 {
-	// Size of the EE physical memory exposed to RetroAchievements.
-	static constexpr u32 EXPOSED_EE_MEMORY_SIZE = Ps2MemSize::MainRam + Ps2MemSize::Scratch;
-
 	static constexpr u32 LEADERBOARD_NEARBY_ENTRIES_TO_FETCH = 10;
 	static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 20;
 
@@ -66,6 +65,8 @@ namespace Achievements
 
 	static constexpr float INDICATOR_FADE_IN_TIME = 0.1f;
 	static constexpr float INDICATOR_FADE_OUT_TIME = 0.5f;
+
+	static constexpr size_t URL_BUFFER_SIZE = 256;
 
 	// Some API calls are really slow. Set a longer timeout.
 	static constexpr float SERVER_CALL_TIMEOUT = 60.0f;
@@ -111,7 +112,7 @@ namespace Achievements
 		};
 	} // namespace
 
-	static void ReportError(const std::string_view& sv);
+	static void ReportError(const std::string_view sv);
 	template <typename... T>
 	static void ReportFmtError(fmt::format_string<T...> fmt, T&&... args);
 	template <typename... T>
@@ -125,12 +126,15 @@ namespace Achievements
 	static std::string GetGameHash(const std::string& elf_path);
 	static void SetHardcoreMode(bool enabled, bool force_display_message);
 	static bool IsLoggedInOrLoggingIn();
-	static bool IsUnknownGame();
+	static bool CanEnableHardcoreMode();
 	static void ShowLoginSuccess(const rc_client_t* client);
 	static void IdentifyGame(u32 disc_crc, u32 crc);
 	static void BeginLoadGame();
 	static void UpdateGameSummary();
 	static void DownloadImage(std::string url, std::string cache_filename);
+
+	// Size of the EE physical memory exposed to RetroAchievements.
+	static u32 GetExposedEEMemorySize();
 
 	static bool CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
 	static void DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
@@ -168,7 +172,7 @@ namespace Achievements
 	static void UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lock);
 
 	static std::string GetAchievementBadgePath(const rc_client_achievement_t* achievement, int state);
-	static std::string GetUserBadgePath(const std::string_view& username);
+	static std::string GetUserBadgePath(const std::string_view username);
 	static std::string GetLeaderboardUserBadgePath(const rc_client_leaderboard_entry_t* entry);
 
 	static void DrawAchievement(const rc_client_achievement_t* cheevo);
@@ -197,6 +201,7 @@ namespace Achievements
 	static std::string s_game_hash;
 	static std::string s_game_title;
 	static std::string s_game_icon;
+	static std::string s_game_icon_url;
 	static u32 s_game_crc;
 	static rc_client_user_game_summary_t s_game_summary;
 	static u32 s_game_id = 0;
@@ -242,7 +247,7 @@ void Achievements::EndLoadingScreen(bool was_running_idle)
 	ImGuiFullscreen::CloseBackgroundProgressDialog("achievements_loading");
 }
 
-void Achievements::ReportError(const std::string_view& sv)
+void Achievements::ReportError(const std::string_view sv)
 {
 	std::string error = fmt::format("Achievements error: {}", sv);
 	Console.Error(error);
@@ -324,7 +329,7 @@ std::string Achievements::GetGameHash(const std::string& elf_path)
 
 void Achievements::DownloadImage(std::string url, std::string cache_filename)
 {
-	auto callback = [cache_filename](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
+	auto callback = [cache_filename = std::move(cache_filename)](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
 		if (status_code != HTTPDownloader::HTTP_STATUS_OK)
 			return;
 
@@ -399,6 +404,10 @@ const std::string& Achievements::GetRichPresenceString()
 	return s_rich_presence_string;
 }
 
+const std::string& Achievements::GetGameIconURL()
+{
+	return s_game_icon_url;
+}
 
 bool Achievements::Initialize()
 {
@@ -442,6 +451,11 @@ bool Achievements::Initialize()
 		DisplayHardcoreDeferredMessage();
 
 	return true;
+}
+
+u32 Achievements::GetExposedEEMemorySize()
+{
+	return Ps2MemSize::ExposedRam + Ps2MemSize::Scratch;
 }
 
 bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
@@ -510,7 +524,7 @@ void Achievements::UpdateSettings(const Pcsx2Config::AchievementsOptions& old_co
 		// Hardcore mode can only be enabled through reset (ResetChallengeMode()).
 		if (s_hardcore_mode && !EmuConfig.Achievements.HardcoreMode)
 		{
-			ResetHardcoreMode();
+			ResetHardcoreMode(false);
 		}
 		else if (!s_hardcore_mode && EmuConfig.Achievements.HardcoreMode)
 		{
@@ -599,7 +613,7 @@ void Achievements::ClientMessageCallback(const char* message, const rc_client_t*
 
 uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client)
 {
-	if ((static_cast<u64>(address) + num_bytes) > EXPOSED_EE_MEMORY_SIZE) [[unlikely]]
+	if ((static_cast<u64>(address) + num_bytes) > GetExposedEEMemorySize()) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory peek of %u bytes at %08X.", num_bytes, address);
 		return 0u;
@@ -608,12 +622,12 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 	// RA uses a fake memory map with the scratchpad directly above physical memory.
 	// The scratchpad is not meant to be accessible via physical addressing, only virtual.
 	// This also means that the upper 96MB of memory will never be accessible to achievements.
-	const u8* ptr = (address < Ps2MemSize::MainRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::MainRam];
+	const u8* ptr = (address < Ps2MemSize::ExposedRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::ExposedRam];
 
 	// Fast paths for known data sizes.
 	switch (num_bytes)
 	{
-		// clang-format off
+			// clang-format off
 		case 1: std::memcpy(buffer, ptr, 1); break;
 		case 2: std::memcpy(buffer, ptr, 2); break;
 		case 4: std::memcpy(buffer, ptr, 4); break;
@@ -792,7 +806,7 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
 	if (!s_has_rich_presence || !s_rich_presence_poll_time.ResetIfSecondsPassed(1.0))
 		return;
 
-	char buffer[512];
+	char buffer[URL_BUFFER_SIZE];
 	const size_t res = rc_client_get_rich_presence_message(s_client, buffer, std::size(buffer));
 	const std::string_view sv(buffer, res);
 	if (s_rich_presence_string == sv)
@@ -938,25 +952,26 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 	s_has_leaderboards = has_leaderboards;
 	s_has_rich_presence = rc_client_has_rich_presence(client);
 	s_game_icon = {};
+	s_game_icon_url = {};
 
 	// ensure fullscreen UI is ready for notifications
 	MTGS::RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
 
+	char url_buffer[URL_BUFFER_SIZE];
+	if (int err = rc_client_game_get_image_url(info, url_buffer, std::size(url_buffer)); err == RC_OK)
+	{
+		s_game_icon_url = url_buffer;
+	}
+	else
+	{
+		ReportRCError(err, "rc_client_game_get_image_url() failed: ");
+	}
+
 	if (const std::string_view badge_name = info->badge_name; !badge_name.empty())
 	{
 		s_game_icon = Path::Combine(s_image_directory, fmt::format("game_{}.png", info->id));
-		if (!FileSystem::FileExists(s_game_icon.c_str()))
-		{
-			char buf[512];
-			if (int err = rc_client_game_get_image_url(info, buf, std::size(buf)); err == RC_OK)
-			{
-				DownloadImage(buf, s_game_icon);
-			}
-			else
-			{
-				ReportRCError(err, "rc_client_game_get_image_url() failed: ");
-			}
-		}
+		if (!s_game_icon.empty() && !s_game_icon_url.empty() && !FileSystem::FileExists(s_game_icon.c_str()))
+			DownloadImage(s_game_icon_url, s_game_icon);
 	}
 
 	UpdateGameSummary();
@@ -983,6 +998,7 @@ void Achievements::ClearGameInfo()
 	s_game_id = 0;
 	s_game_title = {};
 	s_game_icon = {};
+	s_game_icon_url = {};
 	s_has_achievements = false;
 	s_has_leaderboards = false;
 	s_has_rich_presence = false;
@@ -1011,9 +1027,14 @@ void Achievements::DisplayAchievementSummary()
 		std::string summary;
 		if (s_game_summary.num_core_achievements > 0)
 		{
-			summary = fmt::format(TRANSLATE_FS("Achievements", "You have unlocked {0} of {1} achievements, and earned {2} of {3} points."),
-				s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements, s_game_summary.points_unlocked,
-				s_game_summary.points_core);
+			summary = fmt::format(
+				TRANSLATE_FS("Achievements", "{0}, {1}."),
+				SmallString::from_format(TRANSLATE_PLURAL_FS("Achievements", "You have unlocked {} of %n achievements",
+											 "Achievement popup", s_game_summary.num_core_achievements),
+					s_game_summary.num_unlocked_achievements),
+				SmallString::from_format(TRANSLATE_PLURAL_FS("Achievements", "and earned {} of %n points", "Achievement popup",
+											 s_game_summary.points_core),
+					s_game_summary.points_unlocked));
 		}
 		else
 		{
@@ -1040,8 +1061,8 @@ void Achievements::DisplayHardcoreDeferredMessage()
 		if (VMManager::HasValidVM() && EmuConfig.Achievements.HardcoreMode && !s_hardcore_mode &&
 			ImGuiManager::InitializeFullscreenUI())
 		{
-			ImGuiFullscreen::ShowToast(
-				std::string(), TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
+			Host::AddIconOSDMessage(
+				"hardcore_on_reset", ICON_PF_DUMBELL, TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
 				Host::OSD_WARNING_DURATION);
 		}
 	});
@@ -1094,8 +1115,11 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 	if (EmuConfig.Achievements.Notifications)
 	{
 		std::string title = fmt::format(TRANSLATE_FS("Achievements", "Mastered {}"), s_game_title);
-		std::string message = fmt::format(TRANSLATE_FS("Achievements", "{0} achievements, {1} points"),
-			s_game_summary.num_unlocked_achievements, s_game_summary.points_unlocked);
+		std::string message = fmt::format(
+			TRANSLATE_FS("Achievements", "{0}, {1}"),
+			TRANSLATE_PLURAL_STR("Achievements", "%n achievements", "Mastery popup",
+				s_game_summary.num_unlocked_achievements),
+			TRANSLATE_PLURAL_STR("Achievements", "%n points", "Mastery popup", s_game_summary.points_unlocked));
 
 		MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon]() {
 			if (ImGuiManager::InitializeFullscreenUI())
@@ -1328,9 +1352,8 @@ void Achievements::HandleServerDisconnectedEvent(const rc_client_event_t* event)
 	MTGS::RunOnGSThread([]() {
 		if (ImGuiManager::InitializeFullscreenUI())
 		{
-			ImGuiFullscreen::ShowToast(TRANSLATE_STR("Achievements", "Achievements Disconnected"),
-				TRANSLATE_STR("Achievements", "An unlock request could not be completed. We will keep retrying to submit this request."),
-				Host::OSD_ERROR_DURATION);
+			ImGuiFullscreen::AddNotification("achievements_disconnect", Host::OSD_ERROR_DURATION, TRANSLATE_STR("Achievements", "Achievements Disconnected"),
+				TRANSLATE_STR("Achievements", "An unlock request could not be completed. We will keep retrying to submit this request."), s_game_icon);
 		}
 	});
 }
@@ -1342,8 +1365,8 @@ void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
 	MTGS::RunOnGSThread([]() {
 		if (ImGuiManager::InitializeFullscreenUI())
 		{
-			ImGuiFullscreen::ShowToast(TRANSLATE_STR("Achievements", "Achievements Reconnected"),
-				TRANSLATE_STR("Achievements", "All pending unlock requests have completed."), Host::OSD_INFO_DURATION);
+			ImGuiFullscreen::AddNotification("achievements_reconnect", Host::OSD_INFO_DURATION, TRANSLATE_STR("Achievements", "Achievements Reconnected"),
+				TRANSLATE_STR("Achievements", "All pending unlock requests have completed."), s_game_icon);
 		}
 	});
 }
@@ -1393,7 +1416,7 @@ void Achievements::DisableHardcoreMode()
 		SetHardcoreMode(false, true);
 }
 
-bool Achievements::ResetHardcoreMode()
+bool Achievements::ResetHardcoreMode(bool is_booting)
 {
 	if (!IsActive())
 		return false;
@@ -1407,7 +1430,10 @@ bool Achievements::ResetHardcoreMode()
 	// which gets called before ResetHardcoreMode().
 	const bool wanted_hardcore_mode = (IsLoggedInOrLoggingIn() || s_load_game_request) &&
 									  EmuConfig.Achievements.HardcoreMode;
-	if (s_hardcore_mode == wanted_hardcore_mode || (wanted_hardcore_mode && IsUnknownGame()))
+	if (s_hardcore_mode == wanted_hardcore_mode)
+		return false;
+
+	if (!is_booting && wanted_hardcore_mode && !CanEnableHardcoreMode())
 		return false;
 
 	SetHardcoreMode(wanted_hardcore_mode, false);
@@ -1427,7 +1453,7 @@ void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
 		MTGS::RunOnGSThread([enabled]() {
 			if (ImGuiManager::InitializeFullscreenUI())
 			{
-				ImGuiFullscreen::ShowToast(std::string(),
+				Host::AddIconOSDMessage("hardcore_status", ICON_PF_DUMBELL,
 					enabled ? TRANSLATE_STR("Achievements", "Hardcore mode is now enabled.") :
 							  TRANSLATE_STR("Achievements", "Hardcore mode is now disabled."),
 					Host::OSD_INFO_DURATION);
@@ -1450,7 +1476,7 @@ void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
 	Host::OnAchievementsHardcoreModeChanged(enabled);
 }
 
-void Achievements::LoadState(const u8* state_data, u32 state_data_size)
+void Achievements::LoadState(std::span<const u8> data)
 {
 	const auto lock = GetLock();
 
@@ -1463,14 +1489,14 @@ void Achievements::LoadState(const u8* state_data, u32 state_data_size)
 #ifdef ENABLE_RAINTEGRATION
 	if (IsUsingRAIntegration())
 	{
-		if (state_data_size == 0)
+		if (data.empty())
 		{
 			Console.Warning("State is missing cheevos data, resetting RAIntegration");
 			RA_OnReset();
 		}
 		else
 		{
-			RA_RestoreState(reinterpret_cast<const char*>(state_data));
+			RA_RestoreState(reinterpret_cast<const char*>(data.data()));
 		}
 
 		return;
@@ -1487,7 +1513,7 @@ void Achievements::LoadState(const u8* state_data, u32 state_data_size)
 		EndLoadingScreen(was_running_idle);
 	}
 
-	if (state_data_size == 0)
+	if (data.empty())
 	{
 		// reset runtime, no data (state might've been created without cheevos)
 		Console.Warning("State is missing cheevos data, resetting runtime");
@@ -1497,7 +1523,7 @@ void Achievements::LoadState(const u8* state_data, u32 state_data_size)
 
 	// These routines scare me a bit.. the data isn't bounds checked.
 	// Really hope that nobody puts any thing malicious in a save state...
-	const int result = rc_client_deserialize_progress(s_client, state_data);
+	const int result = rc_client_deserialize_progress_sized(s_client, data.data(), data.size());
 	if (result != RC_OK)
 	{
 		Console.Warning("Failed to deserialize cheevos state (%d), resetting", result);
@@ -1505,10 +1531,8 @@ void Achievements::LoadState(const u8* state_data, u32 state_data_size)
 	}
 }
 
-std::vector<u8> Achievements::SaveState()
+void Achievements::SaveState(SaveStateBase& writer)
 {
-	std::vector<u8> ret;
-
 	const auto lock = GetLock();
 
 #ifdef ENABLE_RAINTEGRATION
@@ -1517,16 +1541,18 @@ std::vector<u8> Achievements::SaveState()
 		const int size = RA_CaptureState(nullptr, 0);
 
 		const u32 data_size = (size >= 0) ? static_cast<u32>(size) : 0;
-		ret.resize(data_size);
-
-		const int result = RA_CaptureState(reinterpret_cast<char*>(ret.data()), static_cast<int>(data_size));
-		if (result != static_cast<int>(data_size))
+		if (data_size > 0)
 		{
-			Console.Warning("Failed to serialize cheevos state from RAIntegration.");
-			ret.clear();
+			writer.PrepBlock(static_cast<int>(data_size));
+
+			const int result = RA_CaptureState(reinterpret_cast<char*>(writer.GetBlockPtr()), static_cast<int>(data_size));
+			if (result != static_cast<int>(data_size))
+				Console.Warning("Failed to serialize cheevos state from RAIntegration.");
+			else
+				writer.CommitBlock(static_cast<int>(data_size));
 		}
 
-		return ret;
+		return;
 	}
 #endif
 
@@ -1534,18 +1560,17 @@ std::vector<u8> Achievements::SaveState()
 	{
 		// internally this happens twice.. not great.
 		const size_t data_size = rc_client_progress_size(s_client);
-		ret.resize(data_size);
-
-		const int result = rc_client_serialize_progress(s_client, ret.data());
-		if (result != RC_OK)
+		if (data_size > 0)
 		{
-			// set data to zero, effectively serializing nothing
-			Console.Warning("Failed to serialize cheevos state (%d)", result);
-			ret.clear();
+			writer.PrepBlock(static_cast<int>(data_size));
+
+			const int result = rc_client_serialize_progress_sized(s_client, writer.GetBlockPtr(), data_size);
+			if (result != RC_OK)
+				Console.Warning("Failed to serialize cheevos state (%d)", result);
+			else
+				writer.CommitBlock(static_cast<int>(data_size));
 		}
 	}
-
-	return ret;
 }
 
 
@@ -1564,7 +1589,7 @@ std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t*
 
 	if (!FileSystem::FileExists(path.c_str()))
 	{
-		char buf[512];
+		char buf[URL_BUFFER_SIZE];
 		const int res = rc_client_achievement_get_image_url(achievement, state, buf, std::size(buf));
 		if (res == RC_OK)
 			DownloadImage(buf, path);
@@ -1575,7 +1600,7 @@ std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t*
 	return path;
 }
 
-std::string Achievements::GetUserBadgePath(const std::string_view& username)
+std::string Achievements::GetUserBadgePath(const std::string_view username)
 {
 	// definitely want to sanitize usernames... :)
 	std::string path;
@@ -1592,7 +1617,7 @@ std::string Achievements::GetLeaderboardUserBadgePath(const rc_client_leaderboar
 
 	if (!FileSystem::FileExists(path.c_str()))
 	{
-		char buf[512];
+		char buf[URL_BUFFER_SIZE];
 		const int res = rc_client_leaderboard_entry_get_user_image_url(entry, buf, std::size(buf));
 		if (res == RC_OK)
 			DownloadImage(buf, path);
@@ -1608,9 +1633,9 @@ bool Achievements::IsLoggedInOrLoggingIn()
 	return (rc_client_get_user_info(s_client) != nullptr || s_login_request);
 }
 
-bool Achievements::IsUnknownGame()
+bool Achievements::CanEnableHardcoreMode()
 {
-	return (s_game_id == 0 && !s_load_game_request);
+	return (s_load_game_request || s_has_achievements || s_has_leaderboards);
 }
 
 bool Achievements::Login(const char* username, const char* password, Error* error)
@@ -1766,7 +1791,7 @@ std::string Achievements::GetLoggedInUserBadgePath()
 	badge_path = GetUserBadgePath(user->username);
 	if (!FileSystem::FileExists(badge_path.c_str())) [[unlikely]]
 	{
-		char url[512];
+		char url[URL_BUFFER_SIZE];
 		const int res = rc_client_user_get_image_url(user, url, std::size(url));
 		if (res == RC_OK)
 			DownloadImage(url, badge_path);
@@ -1838,30 +1863,32 @@ void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::fun
 	}
 #endif
 
-	if (!FullscreenUI::Initialize())
-	{
-		Host::AddOSDMessage(fmt::format(TRANSLATE_FS("Cannot {} while hardcode mode is active.", trigger)),
-			Host::OSD_WARNING_DURATION);
-		callback(false);
-		return;
-	}
+	MTGS::RunOnGSThread([trigger = TinyString(trigger), callback = std::move(callback)]() {
+		if (!FullscreenUI::Initialize())
+		{
+			Host::AddOSDMessage(fmt::format(TRANSLATE_FS("Cannot {} while hardcore mode is active.", trigger)),
+				Host::OSD_WARNING_DURATION);
+			callback(false);
+			return;
+		}
 
-	auto real_callback = [callback = std::move(callback)](bool res) mutable {
-		// don't run the callback in the middle of rendering the UI
-		Host::RunOnCPUThread([callback = std::move(callback), res]() {
-			if (res)
-				DisableHardcoreMode();
-			callback(res);
-		});
-	};
+		auto real_callback = [callback = std::move(callback)](bool res) mutable {
+			// don't run the callback in the middle of rendering the UI
+			Host::RunOnCPUThread([callback = std::move(callback), res]() {
+				if (res)
+					DisableHardcoreMode();
+				callback(res);
+			});
+		};
 
-	ImGuiFullscreen::OpenConfirmMessageDialog(
-		TRANSLATE_STR("Achievements", "Confirm Hardcore Mode"),
-		fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you "
-												 "want to disable hardcore mode? {0} will be cancelled if you select No."),
-			trigger),
-		std::move(real_callback), fmt::format(ICON_FA_CHECK " {}", TRANSLATE_SV("Achievements", "Yes")),
-		fmt::format(ICON_FA_TIMES " {}", TRANSLATE_SV("Achievements", "No")));
+		ImGuiFullscreen::OpenConfirmMessageDialog(
+			TRANSLATE_STR("Achievements", "Confirm Hardcore Mode"),
+			fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you "
+													 "want to disable hardcore mode? {0} will be cancelled if you select No."),
+				trigger),
+			std::move(real_callback), fmt::format(ICON_FA_CHECK " {}", TRANSLATE_SV("Achievements", "Yes")),
+			fmt::format(ICON_FA_TIMES " {}", TRANSLATE_SV("Achievements", "No")));
+	});
 }
 
 void Achievements::ClearUIState()
@@ -2155,7 +2182,7 @@ void Achievements::DrawAchievementsWindow()
 	const float heading_height = ImGuiFullscreen::LayoutScale(heading_height_unscaled);
 
 	if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(0.0f, 0.0f), ImVec2(display_size.x, heading_height), "achievements_heading",
-			heading_background, 0.0f, 0.0f, ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
+			heading_background, 0.0f, ImVec2(), ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
 	{
 		ImRect bb;
 		bool visible, hovered;
@@ -2256,8 +2283,10 @@ void Achievements::DrawAchievementsWindow()
 
 	ImGui::SetNextWindowBgAlpha(alpha);
 
-	if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(0.0f, heading_height), ImVec2(display_size.x, display_size.y - heading_height),
-			"achievements", background, 0.0f, 0.0f, 0))
+	if (ImGuiFullscreen::BeginFullscreenWindow(
+			ImVec2(0.0f, heading_height),
+			ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
+			"achievements", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
 	{
 		static bool buckets_collapsed[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {};
 		static const char* bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
@@ -2329,7 +2358,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 									  LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + 30.0f) - points_template_size.x);
 	const ImVec2 summary_text_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, summary_wrap_width, cheevo->description,
 		cheevo->description + summary_length));
-	
+
 	// Messy, but need to undo LayoutScale in MenuButtonFrame()...
 	const float extra_summary_height = LayoutUnscale(std::max(summary_text_size.y - g_medium_font->FontSize, 0.0f));
 
@@ -2512,8 +2541,9 @@ void Achievements::DrawLeaderboardsWindow()
 		g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, "WWWWWWWWWWW").x;
 	const float column_spacing = spacing * 2.0f;
 
-	if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(0.0f, 0.0f), ImVec2(display_size.x, heading_height), "leaderboards_heading",
-			heading_background, 0.0f, 0.0f, ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
+	if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(), ImVec2(display_size.x, heading_height), "leaderboards_heading",
+			heading_background, 0.0f, ImVec2(),
+			ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
 	{
 		bool visible, hovered;
 		ImGuiFullscreen::MenuButtonFrame(
@@ -2684,8 +2714,10 @@ void Achievements::DrawLeaderboardsWindow()
 
 	if (!is_leaderboard_open)
 	{
-		if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(0.0f, heading_height), ImVec2(display_size.x, display_size.y - heading_height),
-				"leaderboards", background, 0.0f, 0.0f, 0))
+		if (ImGuiFullscreen::BeginFullscreenWindow(
+				ImVec2(0.0f, heading_height),
+				ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
+				"leaderboards", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
 		{
 			ImGuiFullscreen::BeginMenuButtons();
 
@@ -2702,8 +2734,10 @@ void Achievements::DrawLeaderboardsWindow()
 	}
 	else
 	{
-		if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(0.0f, heading_height), ImVec2(display_size.x, display_size.y - heading_height),
-				"leaderboard", background, 0.0f, 0.0f, 0))
+		if (ImGuiFullscreen::BeginFullscreenWindow(
+				ImVec2(0.0f, heading_height),
+				ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
+				"leaderboard", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
 		{
 			ImGuiFullscreen::BeginMenuButtons();
 
@@ -2905,7 +2939,8 @@ void Achievements::LeaderboardFetchNearbyCallback(
 
 	if (result != RC_OK)
 	{
-		ImGuiFullscreen::ShowToast(TRANSLATE("Achievements", "Leaderboard download failed"), error_message);
+		ImGuiFullscreen::AddNotification("leaderboard_dl_fail", Host::OSD_INFO_DURATION,
+			TRANSLATE("Achievements", "Leaderboard Download Failed"), error_message, s_game_icon);
 		CloseLeaderboard();
 		return;
 	}
@@ -2924,7 +2959,8 @@ void Achievements::LeaderboardFetchAllCallback(
 
 	if (result != RC_OK)
 	{
-		ImGuiFullscreen::ShowToast(TRANSLATE("Achievements", "Leaderboard download failed"), error_message);
+		ImGuiFullscreen::AddNotification("leaderboard_dl_fail", Host::OSD_INFO_DURATION,
+			TRANSLATE("Achievements", "Leaderboard Download Failed"), error_message, s_game_icon);
 		CloseLeaderboard();
 		return;
 	}
@@ -3011,7 +3047,7 @@ void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_hand
 	RA_SetConsoleID(PlayStation2);
 
 	// EE physical memory and scratchpad are currently exposed (matching direct rcheevos implementation).
-	RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory, EXPOSED_EE_MEMORY_SIZE);
+	RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory, GetExposedEEMemorySize());
 	RA_InstallMemoryBankBlockReader(0, RACallbackReadBlock);
 
 	// Fire off a login anyway. Saves going into the menu and doing it.
@@ -3118,50 +3154,50 @@ void Achievements::RAIntegration::RACallbackLoadROM(const char* unused)
 
 unsigned char Achievements::RAIntegration::RACallbackReadMemory(unsigned int address)
 {
-	if ((static_cast<u64>(address) + sizeof(unsigned char)) > EXPOSED_EE_MEMORY_SIZE)
+	if ((static_cast<u64>(address) + sizeof(unsigned char)) > GetExposedEEMemorySize())
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory peek at %08X.", address);
 		return 0u;
 	}
 
 	unsigned char value;
-	const u8* ptr = (address < Ps2MemSize::MainRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::MainRam];
+	const u8* ptr = (address < Ps2MemSize::ExposedRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::ExposedRam];
 	std::memcpy(&value, ptr, sizeof(value));
 	return value;
 }
 
 unsigned int Achievements::RAIntegration::RACallbackReadBlock(unsigned int address, unsigned char* buffer, unsigned int bytes)
 {
-	if ((address >= EXPOSED_EE_MEMORY_SIZE)) [[unlikely]]
+	if ((address >= GetExposedEEMemorySize())) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds block memory read for %u bytes at %08X.", bytes, address);
 		return 0u;
 	}
 
-	if (address < Ps2MemSize::MainRam && (address + bytes) > Ps2MemSize::MainRam) [[unlikely]]
+	if (address < Ps2MemSize::ExposedRam && (address + bytes) > Ps2MemSize::ExposedRam) [[unlikely]]
 	{
 		// Split across RAM+Scratch.
-		const unsigned int bytes_from_ram = Ps2MemSize::MainRam - address;
+		const unsigned int bytes_from_ram = Ps2MemSize::ExposedRam - address;
 		const unsigned int bytes_from_scratch = bytes - bytes_from_ram;
 		return (RACallbackReadBlock(address, buffer, bytes_from_ram) +
 				RACallbackReadBlock(address + bytes_from_ram, buffer + bytes_from_ram, bytes_from_scratch));
 	}
 
-	const unsigned int read_byte_count = std::min<unsigned int>(EXPOSED_EE_MEMORY_SIZE - address, bytes);
-	const u8* ptr = (address < Ps2MemSize::MainRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::MainRam];
+	const unsigned int read_byte_count = std::min<unsigned int>(GetExposedEEMemorySize() - address, bytes);
+	const u8* ptr = (address < Ps2MemSize::ExposedRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::ExposedRam];
 	std::memcpy(buffer, ptr, read_byte_count);
 	return read_byte_count;
 }
 
 void Achievements::RAIntegration::RACallbackWriteMemory(unsigned int address, unsigned char value)
 {
-	if ((static_cast<u64>(address) + sizeof(value)) > EXPOSED_EE_MEMORY_SIZE) [[unlikely]]
+	if ((static_cast<u64>(address) + sizeof(value)) > GetExposedEEMemorySize()) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory poke at %08X (value %08X).", address, value);
 		return;
 	}
 
-	u8* ptr = (address < Ps2MemSize::MainRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::MainRam];
+	u8* ptr = (address < Ps2MemSize::ExposedRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::ExposedRam];
 	std::memcpy(ptr, &value, sizeof(value));
 }
 

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/HW/GSRendererHW.h"
 #include "GS/Renderers/HW/GSHwHack.h"
@@ -137,9 +137,17 @@ bool GSHwHack::GSC_SFEX3(GSRendererHW& r, int& skip)
 	{
 		if (RTME && RFBP == 0x00500 && RFPSM == PSMCT16 && RTBP0 == 0x00f00 && RTPSM == PSMCT16)
 		{
-			// Not an upscaling issue.
-			// Elements on the screen show double/distorted.
-			skip = 2;
+			// This draw copies/downscales the RT, but does so in a weird way, by copying it in two halves,
+			// downscaling from 640x224 to 320x112, but splitting it in to 320x64 and 320x48 next to each other.
+			// It then halves the page width on the next draw so they appear one above the other, which is what our TC doesn't support.
+			// This modified that weird halving draw to just draw it as one 320x112 chunk, it then works correctly.
+			// Skipping is no good as the copy is used again later, and it causes a weird shimmer/echo effect every other frame.
+
+			// Add on the height from the second part of the draw to the first, to make it one big rect.
+			r.m_vertex.buff[1].XYZ.Y += r.m_vertex.buff[r.m_vertex.tail - 1].XYZ.Y - r.m_context->XYOFFSET.OFY;
+			r.m_vertex.buff[1].V = r.m_vertex.buff[r.m_vertex.tail - 1].V;
+			r.m_vertex.tail = 2;
+			r.m_index.tail = 2;
 		}
 	}
 
@@ -186,10 +194,12 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 			return true;
 		}
 
-		if (!s_nativeres && RTME && RTEX0.TFX == 1 && RFPSM == RTPSM && std::abs(static_cast<int>(RFBP - RTBP0)) == 0x180 && RTPSM == PSMCT32 && RFBMSK == 0xFF000000)
+		if (!s_nativeres && r.PRIM->PRIM == GS_SPRITE && RTME && RTEX0.TFX == 1 && RFPSM == RTPSM && RTPSM == PSMCT32 && RFBMSK == 0xFF000000 && r.m_index.tail > 2)
 		{
 			// Don't enable hack on native res.
 			// Fixes ghosting/blur effect and white lines appearing in stages: Moonfit Wilderness, Acid Rain - caused by upscaling.
+			// Game copies the framebuffer as individual page rects with slight offsets (like 1/16 of a pixel etc) which doesn't wokr well with upscaling.
+			// This should catch all the scenarios, maybe overdoes it, but it's for 1 game and it's non-detrimental, it's better than squares all over the screen.
 			const GSVector4i draw_size(r.m_vt.m_min.p.x, r.m_vt.m_min.p.y, r.m_vt.m_max.p.x + 1.0f, r.m_vt.m_max.p.y + 1.0f);
 			const GSVector4i read_size(r.m_vt.m_min.t.x, r.m_vt.m_min.t.y, r.m_vt.m_max.t.x + 0.5f, r.m_vt.m_max.t.y + 0.5f);
 			r.ReplaceVerticesWithSprite(draw_size, read_size, GSVector2i(read_size.width(), read_size.height()), draw_size);
@@ -272,12 +282,14 @@ bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, int& skip)
 
 		case 2: // downsample
 		{
-			const GSVector4i downsample_rect = GSVector4i(0, 0, ((main_fb_size.x / 2) - 1), ((main_fb_size.y / 2) - 1));
-			const GSVector4i uv_rect = GSVector4i(0, 0, (downsample_rect.z * 2) - std::min(r.GetUpscaleMultiplier()-1.0f, 4.0f) * 3 , (downsample_rect.w * 2) - std::min(r.GetUpscaleMultiplier()-1.0f, 4.0f) * 3);
+			const GSVector4i downsample_rect = GSVector4i(0, 0, ((main_fb_size.x / 2)), ((main_fb_size.y / 2)));
+			const GSVector4i uv_rect = GSVector4i(0, 0, main_fb_size.x, main_fb_size.y);
 			r.ReplaceVerticesWithSprite(downsample_rect, uv_rect, main_fb_size, downsample_rect);
 			downsample_fb = GIFRegTEX0::Create(RFBP, RFBW, RFPSM);
 			state = 3;
 			GL_INS("GSC_BurnoutGames(): Downsampling.");
+			// Fix up the texture width so the native scaling code can properly detect it as a downscale.
+			RTBW = RFBW * 2;
 			return true;
 		}
 
@@ -575,22 +587,6 @@ bool GSHwHack::GSC_SteambotChronicles(GSRendererHW& r, int& skip)
 			{
 				skip = 100; // deletes most others(too high deletes the buggy sea completely;c, too low causes glitches to be visible)
 			}
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::GSC_GetawayGames(GSRendererHW& r, int& skip)
-{
-	if (GSConfig.AccurateBlendingUnit >= AccBlendLevel::High)
-		return true;
-
-	if (skip == 0)
-	{
-		if ((RFBP == 0 || RFBP == 0x1180 || RFBP == 0x1400) && RTPSM == PSMT8H && RFBMSK == 0)
-		{
-			skip = 1; // Removes fog wall.
 		}
 	}
 
@@ -1432,7 +1428,9 @@ bool GSHwHack::MV_Ico(GSRendererHW& r)
 	const GSVector4i draw_rc = GSVector4i(0, 0, RWIDTH, RHEIGHT).rintersect(dst->GetUnscaledRect());
 	dst->UpdateValidChannels(PSMCT32, 0);
 	dst->UpdateValidity(draw_rc);
-	dst->RTADecorrect();
+	dst->UnscaleRTAlpha();
+	dst->m_alpha_min = 0;
+	dst->m_alpha_max = 255;
 
 	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(
 		dst->GetTexture(), nullptr, dst->GetScale(), src->GetTexture(), src->GetScale(), draw_rc);
@@ -1501,9 +1499,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 
 	// Upscaling hacks
 	CRC_F(GSC_UltramanFightingEvolution),
-
-	// Accurate Blending
-	CRC_F(GSC_GetawayGames),
 };
 
 const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] = {
@@ -1524,7 +1519,7 @@ const GSHwHack::Entry<GSRendererHW::MV_Ptr> GSHwHack::s_move_handler_functions[]
 
 #undef CRC_F
 
-s16 GSLookupGetSkipCountFunctionId(const std::string_view& name)
+s16 GSLookupGetSkipCountFunctionId(const std::string_view name)
 {
 	for (u32 i = 0; i < std::size(GSHwHack::s_get_skip_count_functions); i++)
 	{
@@ -1535,7 +1530,7 @@ s16 GSLookupGetSkipCountFunctionId(const std::string_view& name)
 	return -1;
 }
 
-s16 GSLookupBeforeDrawFunctionId(const std::string_view& name)
+s16 GSLookupBeforeDrawFunctionId(const std::string_view name)
 {
 	for (u32 i = 0; i < std::size(GSHwHack::s_before_draw_functions); i++)
 	{
@@ -1546,7 +1541,7 @@ s16 GSLookupBeforeDrawFunctionId(const std::string_view& name)
 	return -1;
 }
 
-s16 GSLookupMoveHandlerFunctionId(const std::string_view& name)
+s16 GSLookupMoveHandlerFunctionId(const std::string_view name)
 {
 	for (u32 i = 0; i < std::size(GSHwHack::s_move_handler_functions); i++)
 	{

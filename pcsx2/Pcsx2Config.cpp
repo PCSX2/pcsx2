@@ -1,6 +1,7 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
+#include "common/CocoaTools.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/SettingsInterface.h"
@@ -10,12 +11,13 @@
 #include "Config.h"
 #include "GS.h"
 #include "CDVD/CDVDcommon.h"
+#include "Host.h"
+#include "Host/AudioStream.h"
 #include "SIO/Memcard/MemoryCardFile.h"
 #include "SIO/Pad/Pad.h"
 #include "USB/USB.h"
 
 #include "fmt/format.h"
-
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
 #include <KnownFolders.h>
@@ -168,6 +170,7 @@ namespace EmuFolders
 	std::string Videos;
 
 	static bool ShouldUsePortableMode();
+	static std::string GetPortableModePath();
 } // namespace EmuFolders
 
 TraceFiltersEE::TraceFiltersEE()
@@ -241,7 +244,7 @@ const char* Pcsx2Config::SpeedhackOptions::GetSpeedHackName(SpeedHack id)
 	return s_speed_hack_names[static_cast<u32>(id)];
 }
 
-std::optional<SpeedHack> Pcsx2Config::SpeedhackOptions::ParseSpeedHackName(const std::string_view& name)
+std::optional<SpeedHack> Pcsx2Config::SpeedhackOptions::ParseSpeedHackName(const std::string_view name)
 {
 	for (u32 i = 0; i < std::size(s_speed_hack_names); i++)
 	{
@@ -498,7 +501,7 @@ bool Pcsx2Config::CpuOptions::operator!=(const CpuOptions& right) const
 
 bool Pcsx2Config::CpuOptions::operator==(const CpuOptions& right) const
 {
-	return OpEqu(FPUFPCR) && OpEqu(FPUDivFPCR) && OpEqu(VU0FPCR) && OpEqu(VU1FPCR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
+	return OpEqu(FPUFPCR) && OpEqu(FPUDivFPCR) && OpEqu(VU0FPCR) && OpEqu(VU1FPCR) && OpEqu(Recompiler);
 }
 
 Pcsx2Config::CpuOptions::CpuOptions()
@@ -511,13 +514,11 @@ Pcsx2Config::CpuOptions::CpuOptions()
 
 	VU0FPCR = DEFAULT_VU_FP_CONTROL_REGISTER;
 	VU1FPCR = DEFAULT_VU_FP_CONTROL_REGISTER;
-	AffinityControlMode = 0;
+	ExtraMemory = false;
 }
 
 void Pcsx2Config::CpuOptions::ApplySanityCheck()
 {
-	AffinityControlMode = std::min<u32>(AffinityControlMode, 6);
-
 	Recompiler.ApplySanityCheck();
 }
 
@@ -542,7 +543,7 @@ void Pcsx2Config::CpuOptions::LoadSave(SettingsWrapper& wrap)
 	read_fpcr(VU0FPCR, "VU0");
 	read_fpcr(VU1FPCR, "VU1");
 
-	SettingsWrapEntry(AffinityControlMode);
+	SettingsWrapBitBool(ExtraMemory);
 
 	Recompiler.LoadSave(wrap);
 }
@@ -552,6 +553,7 @@ const char* Pcsx2Config::GSOptions::AspectRatioNames[] = {
 	"Auto 4:3/3:2",
 	"4:3",
 	"16:9",
+	"10:7",
 	nullptr};
 
 const char* Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames[] = {
@@ -559,6 +561,7 @@ const char* Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames[] = {
 	"Auto 4:3/3:2",
 	"4:3",
 	"16:9",
+	"10:7",
 	nullptr};
 
 const char* Pcsx2Config::GSOptions::BlendingLevelNames[] = {
@@ -618,11 +621,12 @@ Pcsx2Config::GSOptions::GSOptions()
 	DisableShaderCache = false;
 	DisableFramebufferFetch = false;
 	DisableVertexShaderExpand = false;
-	DisableThreadedPresentation = false;
 	SkipDuplicateFrames = false;
-	OsdShowMessages = true;
+	OsdMessagesPos = OsdOverlayPos::TopLeft;
+	OsdPerformancePos = OsdOverlayPos::TopRight;
 	OsdShowSpeed = false;
 	OsdShowFPS = false;
+	OsdShowVPS = false;
 	OsdShowCPU = false;
 	OsdShowGPU = false;
 	OsdShowResolution = false;
@@ -631,6 +635,10 @@ Pcsx2Config::GSOptions::GSOptions()
 	OsdShowSettings = false;
 	OsdShowInputs = false;
 	OsdShowFrameTimes = false;
+	OsdShowVersion = false;
+	OsdShowHardwareInfo = false;
+	OsdShowVideoCapture = true;
+	OsdShowInputRec = true;
 
 	HWDownloadMode = GSHardwareDownloadMode::Enabled;
 	HWSpinGPUForReadbacks = false;
@@ -639,6 +647,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	AutoFlushSW = true;
 	PreloadFrameWithGSData = false;
 	Mipmap = true;
+	HWMipmap = true;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -650,7 +659,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	UserHacks_DisableSafeFeatures = false;
 	UserHacks_DisableRenderFixes = false;
 	UserHacks_MergePPSprite = false;
-	UserHacks_WildHack = false;
+	UserHacks_ForceEvenSpritePosition = false;
 	UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
 	UserHacks_NativePaletteDraw = false;
 
@@ -689,8 +698,6 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 	return (
 		OpEqu(bitset) &&
 
-		OpEqu(VsyncEnable) &&
-
 		OpEqu(InterlaceMode) &&
 		OpEqu(LinearPresent) &&
 
@@ -701,11 +708,12 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(Crop[3]) &&
 
 		OpEqu(OsdScale) &&
+		OpEqu(OsdMessagesPos) &&
+		OpEqu(OsdPerformancePos) &&
 
 		OpEqu(Renderer) &&
 		OpEqu(UpscaleMultiplier) &&
 
-		OpEqu(HWMipmap) &&
 		OpEqu(AccurateBlendingUnit) &&
 		OpEqu(TextureFiltering) &&
 		OpEqu(TexturePreloading) &&
@@ -727,6 +735,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_AutoFlush) &&
 		OpEqu(UserHacks_HalfPixelOffset) &&
 		OpEqu(UserHacks_RoundSprite) &&
+		OpEqu(UserHacks_NativeScaling) &&
 		OpEqu(UserHacks_TCOffsetX) &&
 		OpEqu(UserHacks_TCOffsetY) &&
 		OpEqu(UserHacks_CPUSpriteRenderBW) &&
@@ -752,6 +761,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 
 		OpEqu(CaptureContainer) &&
 		OpEqu(VideoCaptureCodec) &&
+		OpEqu(VideoCaptureFormat) &&
 		OpEqu(VideoCaptureParameters) &&
 		OpEqu(AudioCaptureCodec) &&
 		OpEqu(AudioCaptureParameters) &&
@@ -780,7 +790,6 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(DisableShaderCache) &&
 		   OpEqu(DisableFramebufferFetch) &&
 		   OpEqu(DisableVertexShaderExpand) &&
-		   OpEqu(DisableThreadedPresentation) &&
 		   OpEqu(OverrideTextureBarriers) &&
 		   OpEqu(ExclusiveFullscreenControl);
 }
@@ -790,11 +799,14 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapSection("EmuCore/GS");
 
 #ifdef PCSX2_DEVBUILD
-	SettingsWrapEntry(SynchronousMTGS);
+	SettingsWrapBitBool(SynchronousMTGS);
 #endif
-	SettingsWrapEntry(VsyncQueueSize);
 
-	wrap.EnumEntry(CURRENT_SETTINGS_SECTION, "VsyncEnable", VsyncEnable, NULL, VsyncEnable);
+	SettingsWrapBitBool(VsyncEnable);
+	SettingsWrapBitBool(DisableMailboxPresentation);
+	SettingsWrapBitBool(ExtendedUpscalingMultipliers);
+
+	SettingsWrapEntry(VsyncQueueSize);
 
 	SettingsWrapEntry(FramerateNTSC);
 	SettingsWrapEntry(FrameratePAL);
@@ -810,158 +822,142 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntryEx(Crop[2], "CropRight");
 	SettingsWrapEntryEx(Crop[3], "CropBottom");
 
-#define GSSettingInt(var) SettingsWrapBitfield(var)
-#define GSSettingIntEx(var, name) SettingsWrapBitfieldEx(var, name)
-#define GSSettingBool(var) SettingsWrapBitBool(var)
-#define GSSettingBoolEx(var, name) SettingsWrapBitBoolEx(var, name)
-#define GSSettingFloat(var) SettingsWrapEntry(var)
-#define GSSettingFloatEx(var, name) SettingsWrapEntryEx(var, name)
-#define GSSettingIntEnumEx(var, name) SettingsWrapIntEnumEx(var, name)
-#define GSSettingString(var) SettingsWrapEntry(var)
-#define GSSettingStringEx(var, name) SettingsWrapEntryEx(var, name)
-
 	// Unfortunately, because code in the GS still reads the setting by key instead of
 	// using these variables, we need to use the old names. Maybe post 2.0 we can change this.
-	GSSettingBoolEx(PCRTCAntiBlur, "pcrtc_antiblur");
-	GSSettingBoolEx(DisableInterlaceOffset, "disable_interlace_offset");
-	GSSettingBoolEx(PCRTCOffsets, "pcrtc_offsets");
-	GSSettingBoolEx(PCRTCOverscan, "pcrtc_overscan");
-	GSSettingBool(IntegerScaling);
-	GSSettingBool(UseDebugDevice);
-	GSSettingBool(UseBlitSwapChain);
-	GSSettingBool(DisableShaderCache);
-	GSSettingBool(DisableFramebufferFetch);
-	GSSettingBool(DisableVertexShaderExpand);
-	GSSettingBool(DisableThreadedPresentation);
-	GSSettingBool(SkipDuplicateFrames);
-	GSSettingBool(OsdShowMessages);
-	GSSettingBool(OsdShowSpeed);
-	GSSettingBool(OsdShowFPS);
-	GSSettingBool(OsdShowCPU);
-	GSSettingBool(OsdShowGPU);
-	GSSettingBool(OsdShowResolution);
-	GSSettingBool(OsdShowGSStats);
-	GSSettingBool(OsdShowIndicators);
-	GSSettingBool(OsdShowSettings);
-	GSSettingBool(OsdShowInputs);
-	GSSettingBool(OsdShowFrameTimes);
+	SettingsWrapBitBoolEx(PCRTCAntiBlur, "pcrtc_antiblur");
+	SettingsWrapBitBoolEx(DisableInterlaceOffset, "disable_interlace_offset");
+	SettingsWrapBitBoolEx(PCRTCOffsets, "pcrtc_offsets");
+	SettingsWrapBitBoolEx(PCRTCOverscan, "pcrtc_overscan");
+	SettingsWrapBitBool(IntegerScaling);
+	SettingsWrapBitBool(UseDebugDevice);
+	SettingsWrapBitBool(UseBlitSwapChain);
+	SettingsWrapBitBool(DisableShaderCache);
+	SettingsWrapBitBool(DisableFramebufferFetch);
+	SettingsWrapBitBool(DisableVertexShaderExpand);
+	SettingsWrapBitBool(SkipDuplicateFrames);
+	SettingsWrapBitBool(OsdShowSpeed);
+	SettingsWrapBitBool(OsdShowFPS);
+	SettingsWrapBitBool(OsdShowVPS);
+	SettingsWrapBitBool(OsdShowCPU);
+	SettingsWrapBitBool(OsdShowGPU);
+	SettingsWrapBitBool(OsdShowResolution);
+	SettingsWrapBitBool(OsdShowGSStats);
+	SettingsWrapBitBool(OsdShowIndicators);
+	SettingsWrapBitBool(OsdShowSettings);
+	SettingsWrapBitBool(OsdShowInputs);
+	SettingsWrapBitBool(OsdShowFrameTimes);
+	SettingsWrapBitBool(OsdShowVersion);
+	SettingsWrapBitBool(OsdShowHardwareInfo);
+	SettingsWrapBitBool(OsdShowVideoCapture);
+	SettingsWrapBitBool(OsdShowInputRec);
 
-	GSSettingBool(HWSpinGPUForReadbacks);
-	GSSettingBool(HWSpinCPUForReadbacks);
-	GSSettingBoolEx(GPUPaletteConversion, "paltex");
-	GSSettingBoolEx(AutoFlushSW, "autoflush_sw");
-	GSSettingBoolEx(PreloadFrameWithGSData, "preload_frame_with_gs_data");
-	GSSettingBoolEx(Mipmap, "mipmap");
-	GSSettingBoolEx(ManualUserHacks, "UserHacks");
-	GSSettingBoolEx(UserHacks_AlignSpriteX, "UserHacks_align_sprite_X");
-	GSSettingIntEnumEx(UserHacks_AutoFlush, "UserHacks_AutoFlushLevel");
-	GSSettingBoolEx(UserHacks_CPUFBConversion, "UserHacks_CPU_FB_Conversion");
-	GSSettingBoolEx(UserHacks_ReadTCOnClose, "UserHacks_ReadTCOnClose");
-	GSSettingBoolEx(UserHacks_DisableDepthSupport, "UserHacks_DisableDepthSupport");
-	GSSettingBoolEx(UserHacks_DisablePartialInvalidation, "UserHacks_DisablePartialInvalidation");
-	GSSettingBoolEx(UserHacks_DisableSafeFeatures, "UserHacks_Disable_Safe_Features");
-	GSSettingBoolEx(UserHacks_DisableRenderFixes, "UserHacks_DisableRenderFixes");
-	GSSettingBoolEx(UserHacks_MergePPSprite, "UserHacks_merge_pp_sprite");
-	GSSettingBoolEx(UserHacks_WildHack, "UserHacks_WildHack");
-	GSSettingIntEnumEx(UserHacks_BilinearHack, "UserHacks_BilinearHack");
-	GSSettingBoolEx(UserHacks_NativePaletteDraw, "UserHacks_NativePaletteDraw");
-	GSSettingIntEnumEx(UserHacks_TextureInsideRt, "UserHacks_TextureInsideRt");
-	GSSettingBoolEx(UserHacks_EstimateTextureRegion, "UserHacks_EstimateTextureRegion");
-	GSSettingBoolEx(FXAA, "fxaa");
-	GSSettingBool(ShadeBoost);
-	GSSettingBoolEx(DumpGSData, "dump");
-	GSSettingBoolEx(SaveRT, "save");
-	GSSettingBoolEx(SaveFrame, "savef");
-	GSSettingBoolEx(SaveTexture, "savet");
-	GSSettingBoolEx(SaveDepth, "savez");
-	GSSettingBool(DumpReplaceableTextures);
-	GSSettingBool(DumpReplaceableMipmaps);
-	GSSettingBool(DumpTexturesWithFMVActive);
-	GSSettingBool(DumpDirectTextures);
-	GSSettingBool(DumpPaletteTextures);
-	GSSettingBool(LoadTextureReplacements);
-	GSSettingBool(LoadTextureReplacementsAsync);
-	GSSettingBool(PrecacheTextureReplacements);
-	GSSettingBool(EnableVideoCapture);
-	GSSettingBool(EnableVideoCaptureParameters);
-	GSSettingBool(VideoCaptureAutoResolution);
-	GSSettingBool(EnableAudioCapture);
-	GSSettingBool(EnableAudioCaptureParameters);
+	SettingsWrapBitBool(HWSpinGPUForReadbacks);
+	SettingsWrapBitBool(HWSpinCPUForReadbacks);
+	SettingsWrapBitBoolEx(GPUPaletteConversion, "paltex");
+	SettingsWrapBitBoolEx(AutoFlushSW, "autoflush_sw");
+	SettingsWrapBitBoolEx(PreloadFrameWithGSData, "preload_frame_with_gs_data");
+	SettingsWrapBitBoolEx(Mipmap, "mipmap");
+	SettingsWrapBitBoolEx(ManualUserHacks, "UserHacks");
+	SettingsWrapBitBoolEx(UserHacks_AlignSpriteX, "UserHacks_align_sprite_X");
+	SettingsWrapIntEnumEx(UserHacks_AutoFlush, "UserHacks_AutoFlushLevel");
+	SettingsWrapBitBoolEx(UserHacks_CPUFBConversion, "UserHacks_CPU_FB_Conversion");
+	SettingsWrapBitBoolEx(UserHacks_ReadTCOnClose, "UserHacks_ReadTCOnClose");
+	SettingsWrapBitBoolEx(UserHacks_DisableDepthSupport, "UserHacks_DisableDepthSupport");
+	SettingsWrapBitBoolEx(UserHacks_DisablePartialInvalidation, "UserHacks_DisablePartialInvalidation");
+	SettingsWrapBitBoolEx(UserHacks_DisableSafeFeatures, "UserHacks_Disable_Safe_Features");
+	SettingsWrapBitBoolEx(UserHacks_DisableRenderFixes, "UserHacks_DisableRenderFixes");
+	SettingsWrapBitBoolEx(UserHacks_MergePPSprite, "UserHacks_merge_pp_sprite");
+	SettingsWrapBitBoolEx(UserHacks_ForceEvenSpritePosition, "UserHacks_ForceEvenSpritePosition");
+	SettingsWrapIntEnumEx(UserHacks_BilinearHack, "UserHacks_BilinearHack");
+	SettingsWrapBitBoolEx(UserHacks_NativePaletteDraw, "UserHacks_NativePaletteDraw");
+	SettingsWrapIntEnumEx(UserHacks_TextureInsideRt, "UserHacks_TextureInsideRt");
+	SettingsWrapBitBoolEx(UserHacks_EstimateTextureRegion, "UserHacks_EstimateTextureRegion");
+	SettingsWrapBitBoolEx(FXAA, "fxaa");
+	SettingsWrapBitBool(ShadeBoost);
+	SettingsWrapBitBoolEx(DumpGSData, "dump");
+	SettingsWrapBitBoolEx(SaveRT, "save");
+	SettingsWrapBitBoolEx(SaveFrame, "savef");
+	SettingsWrapBitBoolEx(SaveTexture, "savet");
+	SettingsWrapBitBoolEx(SaveDepth, "savez");
+	SettingsWrapBitBool(DumpReplaceableTextures);
+	SettingsWrapBitBool(DumpReplaceableMipmaps);
+	SettingsWrapBitBool(DumpTexturesWithFMVActive);
+	SettingsWrapBitBool(DumpDirectTextures);
+	SettingsWrapBitBool(DumpPaletteTextures);
+	SettingsWrapBitBool(LoadTextureReplacements);
+	SettingsWrapBitBool(LoadTextureReplacementsAsync);
+	SettingsWrapBitBool(PrecacheTextureReplacements);
+	SettingsWrapBitBool(EnableVideoCapture);
+	SettingsWrapBitBool(EnableVideoCaptureParameters);
+	SettingsWrapBitBool(VideoCaptureAutoResolution);
+	SettingsWrapBitBool(EnableAudioCapture);
+	SettingsWrapBitBool(EnableAudioCaptureParameters);
 
-	GSSettingIntEnumEx(LinearPresent, "linear_present_mode");
-	GSSettingIntEnumEx(InterlaceMode, "deinterlace_mode");
+	SettingsWrapIntEnumEx(LinearPresent, "linear_present_mode");
+	SettingsWrapIntEnumEx(InterlaceMode, "deinterlace_mode");
 
-	GSSettingFloat(OsdScale);
+	SettingsWrapEntry(OsdScale);
+	SettingsWrapIntEnumEx(OsdMessagesPos, "OsdMessagesPos");
+	SettingsWrapIntEnumEx(OsdPerformancePos, "OsdPerformancePos");
 
-	GSSettingIntEnumEx(Renderer, "Renderer");
-	GSSettingFloatEx(UpscaleMultiplier, "upscale_multiplier");
+	SettingsWrapIntEnumEx(Renderer, "Renderer");
+	SettingsWrapEntryEx(UpscaleMultiplier, "upscale_multiplier");
 
-	// ~51x would the upper bound here for 32768x32768 textures, but you'll run out VRAM long before then.
-	UpscaleMultiplier = std::clamp(UpscaleMultiplier, 0.5f, 50.0f);
-
-	GSSettingIntEnumEx(HWMipmap, "mipmap_hw");
-	GSSettingIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
-	GSSettingIntEnumEx(TextureFiltering, "filter");
-	GSSettingIntEnumEx(TexturePreloading, "texture_preloading");
-	GSSettingIntEnumEx(GSDumpCompression, "GSDumpCompression");
-	GSSettingIntEnumEx(HWDownloadMode, "HWDownloadMode");
-	GSSettingIntEnumEx(CASMode, "CASMode");
-	GSSettingIntEx(CAS_Sharpness, "CASSharpness");
-	GSSettingIntEx(Dithering, "dithering_ps2");
-	GSSettingIntEx(MaxAnisotropy, "MaxAnisotropy");
-	GSSettingIntEx(SWExtraThreads, "extrathreads");
-	GSSettingIntEx(SWExtraThreadsHeight, "extrathreads_height");
-	GSSettingIntEx(TVShader, "TVShader");
-	GSSettingIntEx(SkipDrawStart, "UserHacks_SkipDraw_Start");
-	GSSettingIntEx(SkipDrawEnd, "UserHacks_SkipDraw_End");
+	SettingsWrapBitBoolEx(HWMipmap, "hw_mipmap");
+	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
+	SettingsWrapIntEnumEx(TextureFiltering, "filter");
+	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");
+	SettingsWrapIntEnumEx(GSDumpCompression, "GSDumpCompression");
+	SettingsWrapIntEnumEx(HWDownloadMode, "HWDownloadMode");
+	SettingsWrapIntEnumEx(CASMode, "CASMode");
+	SettingsWrapBitfieldEx(CAS_Sharpness, "CASSharpness");
+	SettingsWrapBitfieldEx(Dithering, "dithering_ps2");
+	SettingsWrapBitfieldEx(MaxAnisotropy, "MaxAnisotropy");
+	SettingsWrapBitfieldEx(SWExtraThreads, "extrathreads");
+	SettingsWrapBitfieldEx(SWExtraThreadsHeight, "extrathreads_height");
+	SettingsWrapBitfieldEx(TVShader, "TVShader");
+	SettingsWrapBitfieldEx(SkipDrawStart, "UserHacks_SkipDraw_Start");
+	SettingsWrapBitfieldEx(SkipDrawEnd, "UserHacks_SkipDraw_End");
 	SkipDrawEnd = std::max(SkipDrawStart, SkipDrawEnd);
 
-	GSSettingIntEnumEx(UserHacks_HalfPixelOffset, "UserHacks_HalfPixelOffset");
-	GSSettingIntEx(UserHacks_RoundSprite, "UserHacks_round_sprite_offset");
-	GSSettingIntEx(UserHacks_TCOffsetX, "UserHacks_TCOffsetX");
-	GSSettingIntEx(UserHacks_TCOffsetY, "UserHacks_TCOffsetY");
-	GSSettingIntEx(UserHacks_CPUSpriteRenderBW, "UserHacks_CPUSpriteRenderBW");
-	GSSettingIntEx(UserHacks_CPUSpriteRenderLevel, "UserHacks_CPUSpriteRenderLevel");
-	GSSettingIntEx(UserHacks_CPUCLUTRender, "UserHacks_CPUCLUTRender");
-	GSSettingIntEnumEx(UserHacks_GPUTargetCLUTMode, "UserHacks_GPUTargetCLUTMode");
-	GSSettingIntEnumEx(TriFilter, "TriFilter");
-	GSSettingIntEx(OverrideTextureBarriers, "OverrideTextureBarriers");
+	SettingsWrapIntEnumEx(UserHacks_HalfPixelOffset, "UserHacks_HalfPixelOffset");
+	SettingsWrapBitfieldEx(UserHacks_RoundSprite, "UserHacks_round_sprite_offset");
+	SettingsWrapIntEnumEx(UserHacks_NativeScaling, "UserHacks_native_scaling");
+	SettingsWrapBitfieldEx(UserHacks_TCOffsetX, "UserHacks_TCOffsetX");
+	SettingsWrapBitfieldEx(UserHacks_TCOffsetY, "UserHacks_TCOffsetY");
+	SettingsWrapBitfieldEx(UserHacks_CPUSpriteRenderBW, "UserHacks_CPUSpriteRenderBW");
+	SettingsWrapBitfieldEx(UserHacks_CPUSpriteRenderLevel, "UserHacks_CPUSpriteRenderLevel");
+	SettingsWrapBitfieldEx(UserHacks_CPUCLUTRender, "UserHacks_CPUCLUTRender");
+	SettingsWrapIntEnumEx(UserHacks_GPUTargetCLUTMode, "UserHacks_GPUTargetCLUTMode");
+	SettingsWrapIntEnumEx(TriFilter, "TriFilter");
+	SettingsWrapBitfieldEx(OverrideTextureBarriers, "OverrideTextureBarriers");
 
-	GSSettingInt(ShadeBoost_Brightness);
-	GSSettingInt(ShadeBoost_Contrast);
-	GSSettingInt(ShadeBoost_Saturation);
-	GSSettingInt(ExclusiveFullscreenControl);
-	GSSettingIntEx(PNGCompressionLevel, "png_compression_level");
-	GSSettingIntEx(SaveN, "saven");
-	GSSettingIntEx(SaveL, "savel");
+	SettingsWrapBitfield(ShadeBoost_Brightness);
+	SettingsWrapBitfield(ShadeBoost_Contrast);
+	SettingsWrapBitfield(ShadeBoost_Saturation);
+	SettingsWrapBitfield(ExclusiveFullscreenControl);
+	SettingsWrapBitfieldEx(PNGCompressionLevel, "png_compression_level");
+	SettingsWrapBitfieldEx(SaveN, "saven");
+	SettingsWrapBitfieldEx(SaveL, "savel");
 
-	GSSettingStringEx(CaptureContainer, "CaptureContainer");
-	GSSettingStringEx(VideoCaptureCodec, "VideoCaptureCodec");
-	GSSettingStringEx(VideoCaptureParameters, "VideoCaptureParameters");
-	GSSettingStringEx(AudioCaptureCodec, "AudioCaptureCodec");
-	GSSettingStringEx(AudioCaptureParameters, "AudioCaptureParameters");
-	GSSettingIntEx(VideoCaptureBitrate, "VideoCaptureBitrate");
-	GSSettingIntEx(VideoCaptureWidth, "VideoCaptureWidth");
-	GSSettingIntEx(VideoCaptureHeight, "VideoCaptureHeight");
-	GSSettingIntEx(AudioCaptureBitrate, "AudioCaptureBitrate");
+	SettingsWrapEntryEx(CaptureContainer, "CaptureContainer");
+	SettingsWrapEntryEx(VideoCaptureCodec, "VideoCaptureCodec");
+	SettingsWrapEntryEx(VideoCaptureFormat, "VideoCaptureFormat");
+	SettingsWrapEntryEx(VideoCaptureParameters, "VideoCaptureParameters");
+	SettingsWrapEntryEx(AudioCaptureCodec, "AudioCaptureCodec");
+	SettingsWrapEntryEx(AudioCaptureParameters, "AudioCaptureParameters");
+	SettingsWrapBitfieldEx(VideoCaptureBitrate, "VideoCaptureBitrate");
+	SettingsWrapBitfieldEx(VideoCaptureWidth, "VideoCaptureWidth");
+	SettingsWrapBitfieldEx(VideoCaptureHeight, "VideoCaptureHeight");
+	SettingsWrapBitfieldEx(AudioCaptureBitrate, "AudioCaptureBitrate");
 
-	GSSettingString(Adapter);
-	GSSettingString(HWDumpDirectory);
+	SettingsWrapEntry(Adapter);
+	SettingsWrapEntry(HWDumpDirectory);
 	if (!HWDumpDirectory.empty() && !Path::IsAbsolute(HWDumpDirectory))
 		HWDumpDirectory = Path::Combine(EmuFolders::DataRoot, HWDumpDirectory);
-	GSSettingString(SWDumpDirectory);
+	SettingsWrapEntry(SWDumpDirectory);
 	if (!SWDumpDirectory.empty() && !Path::IsAbsolute(SWDumpDirectory))
 		SWDumpDirectory = Path::Combine(EmuFolders::DataRoot, SWDumpDirectory);
-
-#undef GSSettingInt
-#undef GSSettingIntEx
-#undef GSSettingBool
-#undef GSSettingBoolEx
-#undef GSSettingFloat
-#undef GSSettingEnumEx
-#undef GSSettingIntEnumEx
-#undef GSSettingString
-#undef GSSettingStringEx
 
 	// Sanity check: don't dump a bunch of crap in the current working directory.
 	if (DumpGSData && (HWDumpDirectory.empty() || SWDumpDirectory.empty()))
@@ -978,12 +974,13 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 
 	UserHacks_AlignSpriteX = false;
 	UserHacks_MergePPSprite = false;
-	UserHacks_WildHack = false;
+	UserHacks_ForceEvenSpritePosition = false;
 	UserHacks_NativePaletteDraw = false;
 	UserHacks_DisableSafeFeatures = false;
 	UserHacks_DisableRenderFixes = false;
 	UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
 	UserHacks_RoundSprite = 0;
+	UserHacks_NativeScaling = GSNativeScaling::Off;
 	UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
 	GPUPaletteConversion = false;
 	PreloadFrameWithGSData = false;
@@ -1011,11 +1008,12 @@ void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 
 	UserHacks_AlignSpriteX = false;
 	UserHacks_MergePPSprite = false;
-	UserHacks_WildHack = false;
+	UserHacks_ForceEvenSpritePosition = false;
 	UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
 	UserHacks_NativePaletteDraw = false;
 	UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
 	UserHacks_RoundSprite = 0;
+	UserHacks_NativeScaling = GSNativeScaling::Off;
 	UserHacks_TCOffsetX = 0;
 	UserHacks_TCOffsetY = 0;
 }
@@ -1025,10 +1023,42 @@ bool Pcsx2Config::GSOptions::UseHardwareRenderer() const
 	return (Renderer != GSRendererType::Null && Renderer != GSRendererType::SW);
 }
 
+static constexpr const std::array s_spu2_sync_mode_names = {
+	"Disabled",
+	"TimeStretch"
+};
+static constexpr const std::array s_spu2_sync_mode_display_names = {
+	TRANSLATE_NOOP("Pcsx2Config", "Disabled (Noisy)"),
+	TRANSLATE_NOOP("Pcsx2Config", "TimeStretch (Recommended)"),
+};
+
+const char* Pcsx2Config::SPU2Options::GetSyncModeName(SPU2SyncMode mode)
+{
+	return (static_cast<size_t>(mode) < s_spu2_sync_mode_names.size()) ? s_spu2_sync_mode_names[static_cast<size_t>(mode)] : "";
+}
+
+const char* Pcsx2Config::SPU2Options::GetSyncModeDisplayName(SPU2SyncMode mode)
+{
+	return (static_cast<size_t>(mode) < s_spu2_sync_mode_display_names.size()) ?
+			   Host::TranslateToCString("Pcsx2Config", s_spu2_sync_mode_display_names[static_cast<size_t>(mode)]) :
+			   "";
+}
+
+std::optional<Pcsx2Config::SPU2Options::SPU2SyncMode> Pcsx2Config::SPU2Options::ParseSyncMode(const char* name)
+{
+	for (u8 i = 0; i < static_cast<u8>(SPU2SyncMode::Count); i++)
+	{
+		if (std::strcmp(name, s_spu2_sync_mode_names[i]) == 0)
+			return static_cast<SPU2SyncMode>(i);
+	}
+
+	return std::nullopt;
+}
+
+
 Pcsx2Config::SPU2Options::SPU2Options()
 {
 	bitset = 0;
-	OutputModule = "cubeb";
 }
 
 void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
@@ -1042,7 +1072,6 @@ void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapBitBoolEx(MsgVoiceOff, "Show_Messages_Voice_Off");
 		SettingsWrapBitBoolEx(MsgDMA, "Show_Messages_DMA_Transfer");
 		SettingsWrapBitBoolEx(MsgAutoDMA, "Show_Messages_AutoDMA");
-		SettingsWrapBitBoolEx(MsgOverruns, "Show_Messages_Overruns");
 		SettingsWrapBitBoolEx(MsgCache, "Show_Messages_CacheStats");
 
 		SettingsWrapBitBoolEx(AccessLog, "Log_Register_Access");
@@ -1061,7 +1090,6 @@ void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 			MsgVoiceOff = false;
 			MsgDMA = false;
 			MsgAutoDMA = false;
-			MsgOverruns = false;
 			MsgCache = false;
 			AccessLog = false;
 			DMALog = false;
@@ -1071,28 +1099,19 @@ void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 			RegDump = false;
 		}
 	}
-	{
-		SettingsWrapSection("SPU2/Mixing");
-
-		SettingsWrapEntry(FinalVolume);
-	}
 
 	{
 		SettingsWrapSection("SPU2/Output");
-
-		SettingsWrapEntry(OutputModule);
-		SettingsWrapEntry(BackendName);
+		SettingsWrapEntry(OutputVolume);
+		SettingsWrapEntry(FastForwardVolume);
+		SettingsWrapEntry(OutputMuted);
+		SettingsWrapParsedEnum(Backend, "Backend", &AudioStream::ParseBackendName, &AudioStream::GetBackendName);
+		SettingsWrapParsedEnum(SyncMode, "SyncMode", &ParseSyncMode, &GetSyncModeName);
+		SettingsWrapEntry(DriverName);
 		SettingsWrapEntry(DeviceName);
-		SettingsWrapEntry(Latency);
-		SettingsWrapEntry(OutputLatency);
-		SettingsWrapBitBool(OutputLatencyMinimal);
-		SynchMode = static_cast<SynchronizationMode>(wrap.EntryBitfield(CURRENT_SETTINGS_SECTION, "SynchMode", static_cast<int>(SynchMode), static_cast<int>(SynchMode)));
-		SettingsWrapEntry(SpeakerConfiguration);
-		SettingsWrapEntry(DplDecodingLevel);
+		StreamParameters.LoadSave(wrap, CURRENT_SETTINGS_SECTION);
 	}
-
-	// clampy clamp
-}
+	}
 
 bool Pcsx2Config::SPU2Options::operator!=(const SPU2Options& right) const
 {
@@ -1102,21 +1121,12 @@ bool Pcsx2Config::SPU2Options::operator!=(const SPU2Options& right) const
 bool Pcsx2Config::SPU2Options::operator==(const SPU2Options& right) const
 {
 	return OpEqu(bitset) &&
-
-		   OpEqu(SynchMode) &&
-
-		   OpEqu(FinalVolume) &&
-		   OpEqu(Latency) &&
-		   OpEqu(OutputLatency) &&
-		   OpEqu(SpeakerConfiguration) &&
-		   OpEqu(DplDecodingLevel) &&
-
-		   OpEqu(SequenceLenMS) &&
-		   OpEqu(SeekWindowMS) &&
-		   OpEqu(OverlapMS) &&
-
-		   OpEqu(OutputModule) &&
-		   OpEqu(BackendName) &&
+		   OpEqu(OutputVolume) &&
+		   OpEqu(FastForwardVolume) &&
+		   OpEqu(OutputMuted) &&
+		   OpEqu(Backend) &&
+		   OpEqu(StreamParameters) &&
+		   OpEqu(DriverName) &&
 		   OpEqu(DeviceName);
 }
 
@@ -1146,6 +1156,7 @@ void Pcsx2Config::DEV9Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapEntry(EthEnable);
 		SettingsWrapEnumEx(EthApi, "EthApi", NetApiNames);
 		SettingsWrapEntry(EthDevice);
+		SettingsWrapEntry(EthLogDHCP);
 		SettingsWrapEntry(EthLogDNS);
 
 		SettingsWrapEntry(InterceptDHCP);
@@ -1239,6 +1250,7 @@ bool Pcsx2Config::DEV9Options::operator==(const DEV9Options& right) const
 	return OpEqu(EthEnable) &&
 		   OpEqu(EthApi) &&
 		   OpEqu(EthDevice) &&
+		   OpEqu(EthLogDHCP) &&
 		   OpEqu(EthLogDNS) &&
 
 		   OpEqu(InterceptDHCP) &&
@@ -1448,6 +1460,28 @@ bool Pcsx2Config::DebugOptions::operator==(const DebugOptions& right) const
 	return OpEqu(bitset) && OpEqu(FontWidth) && OpEqu(FontHeight) && OpEqu(WindowWidth) && OpEqu(WindowHeight) && OpEqu(MemoryViewBytesPerRow);
 }
 
+Pcsx2Config::SavestateOptions::SavestateOptions()
+{
+}
+
+void Pcsx2Config::SavestateOptions::LoadSave(SettingsWrapper& wrap)
+{
+	SettingsWrapSection("EmuCore");
+
+	SettingsWrapIntEnumEx(CompressionType, "SavestateCompressionType");
+	SettingsWrapIntEnumEx(CompressionRatio, "SavestateCompressionRatio");
+}
+
+bool Pcsx2Config::SavestateOptions::operator!=(const SavestateOptions& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::SavestateOptions::operator==(const SavestateOptions& right) const
+{
+	return OpEqu(CompressionType) && OpEqu(CompressionRatio);
+};
+
 Pcsx2Config::FilenameOptions::FilenameOptions()
 {
 }
@@ -1473,7 +1507,6 @@ Pcsx2Config::EmulationSpeedOptions::EmulationSpeedOptions()
 {
 	bitset = 0;
 
-	FrameLimitEnable = true;
 	SyncToHostRefreshRate = false;
 }
 
@@ -1497,6 +1530,7 @@ void Pcsx2Config::EmulationSpeedOptions::LoadSave(SettingsWrapper& wrap)
 	// This was in the wrong place... but we can't change it without breaking existing configs.
 	//SettingsWrapBitBool(SyncToHostRefreshRate);
 	SyncToHostRefreshRate = wrap.EntryBitBool("EmuCore/GS", "SyncToHostRefreshRate", SyncToHostRefreshRate, SyncToHostRefreshRate);
+	UseVSyncForTiming = wrap.EntryBitBool("EmuCore/GS", "UseVSyncForTiming", UseVSyncForTiming, UseVSyncForTiming);
 }
 
 bool Pcsx2Config::EmulationSpeedOptions::operator==(const EmulationSpeedOptions& right) const
@@ -1690,7 +1724,6 @@ Pcsx2Config::Pcsx2Config()
 	EnableGameFixes = true;
 	InhibitScreensaver = true;
 	BackupSavestate = true;
-	SavestateZstdCompression = true;
 	WarnAboutUnsafeSettings = true;
 
 	// To be moved to FileMemoryCard pluign (someday)
@@ -1712,7 +1745,7 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 
 	SettingsWrapBitBool(CdvdVerboseReads);
 	SettingsWrapBitBool(CdvdDumpBlocks);
-	SettingsWrapBitBool(CdvdShareWrite);
+	SettingsWrapBitBool(CdvdPrecache);
 	SettingsWrapBitBool(EnablePatches);
 	SettingsWrapBitBool(EnableCheats);
 	SettingsWrapBitBool(EnablePINE);
@@ -1720,6 +1753,7 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnableNoInterlacingPatches);
 	SettingsWrapBitBool(EnableFastBoot);
 	SettingsWrapBitBool(EnableFastBootFastForward);
+	SettingsWrapBitBool(EnableThreadPinning);
 	SettingsWrapBitBool(EnableRecordingTools);
 	SettingsWrapBitBool(EnableGameFixes);
 	SettingsWrapBitBool(SaveStateOnShutdown);
@@ -1728,7 +1762,6 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	SettingsWrapBitBool(HostFs);
 
 	SettingsWrapBitBool(BackupSavestate);
-	SettingsWrapBitBool(SavestateZstdCompression);
 	SettingsWrapBitBool(McdFolderAutoManage);
 
 	SettingsWrapBitBool(WarnAboutUnsafeSettings);
@@ -1742,6 +1775,7 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	DEV9.LoadSave(wrap);
 	Gamefixes.LoadSave(wrap);
 	Profiler.LoadSave(wrap);
+	Savestate.LoadSave(wrap);
 
 	Debugger.LoadSave(wrap);
 	Trace.LoadSave(wrap);
@@ -1843,9 +1877,24 @@ void Pcsx2Config::ClearConfiguration(SettingsInterface* dest_si)
 	temp.LoadSaveCore(wrapper);
 }
 
+void Pcsx2Config::ClearInvalidPerGameConfiguration(SettingsInterface* si)
+{
+	// Deprecated in favor of patches.
+	si->DeleteValue("EmuCore", "EnableWideScreenPatches");
+	si->DeleteValue("EmuCore", "EnableNoInterlacingPatches");
+}
+
 void EmuFolders::SetAppRoot()
 {
-	const std::string program_path = FileSystem::GetProgramPath();
+	std::string program_path = FileSystem::GetProgramPath();
+#ifdef __APPLE__
+	const auto bundle_path = CocoaTools::GetNonTranslocatedBundlePath();
+	if (bundle_path.has_value())
+	{
+		// On macOS, override with the bundle path if launched from a bundle.
+		program_path = bundle_path.value();
+	}
+#endif
 	Console.WriteLnFmt("Program Path: {}", program_path);
 
 	AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
@@ -1856,12 +1905,17 @@ void EmuFolders::SetAppRoot()
 
 bool EmuFolders::SetResourcesDirectory()
 {
-#ifndef __APPLE__
-	// On Windows/Linux, these are in the binary directory.
-	Resources = Path::Combine(AppRoot, "resources");
+#ifndef __APPLE__  
+	#ifndef PCSX2_APP_DATADIR
+		// On Windows/Linux, these are in the binary directory.
+		Resources = Path::Combine(AppRoot, "resources");
+	#else
+		Resources = Path::Canonicalize(Path::Combine(AppRoot, PCSX2_APP_DATADIR "/resources"));
+	#endif
 #else
 	// On macOS, this is in the bundle resources directory.
-	Resources = Path::Canonicalize(Path::Combine(AppRoot, "../Resources"));
+	const std::string program_path = FileSystem::GetProgramPath();
+	Resources = Path::Canonicalize(Path::Combine(Path::GetDirectory(program_path), "../Resources"));
 #endif
 
 	Console.WriteLnFmt("Resources Directory: {}", Resources);
@@ -1880,6 +1934,14 @@ bool EmuFolders::ShouldUsePortableMode()
 {
 	// Check whether portable.ini exists in the program directory.
 	return FileSystem::FileExists(Path::Combine(AppRoot, "portable.ini").c_str()) || FileSystem::FileExists(Path::Combine(AppRoot, "portable.txt").c_str());
+}
+
+std::string EmuFolders::GetPortableModePath()
+{
+	const auto portable_txt_path = Path::Combine(AppRoot, "portable.txt");
+	const auto portable_path = FileSystem::ReadFileToString(portable_txt_path.c_str()).value_or("");
+	const auto trimmed_path = StringUtil::StripWhitespace(portable_path);
+	return std::string(trimmed_path);
 }
 
 bool EmuFolders::SetDataDirectory(Error* error)
@@ -1926,7 +1988,7 @@ bool EmuFolders::SetDataDirectory(Error* error)
 
 	// couldn't determine the data directory, or using portable mode? fallback to portable.
 	if (DataRoot.empty())
-		DataRoot = AppRoot;
+		DataRoot = Path::Combine(AppRoot, GetPortableModePath());
 
 	// inis is always below the data root
 	Settings = Path::Combine(DataRoot, "inis");

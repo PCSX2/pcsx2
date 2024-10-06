@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
@@ -23,7 +23,7 @@
 namespace Host
 {
 	static std::pair<const char*, u32> LookupTranslationString(
-		const std::string_view& context, const std::string_view& msg);
+		const std::string_view context, const std::string_view msg);
 
 	static std::mutex s_settings_mutex;
 	static LayeredSettingsInterface s_layered_settings_interface;
@@ -37,7 +37,7 @@ namespace Host
 	static u32 s_translation_string_cache_pos;
 } // namespace Host
 
-std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view& context, const std::string_view& msg)
+std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view context, const std::string_view msg)
 {
 	// TODO: TranslatableString, compile-time hashing.
 
@@ -114,18 +114,18 @@ add_string:
 	return ret;
 }
 
-const char* Host::TranslateToCString(const std::string_view& context, const std::string_view& msg)
+const char* Host::TranslateToCString(const std::string_view context, const std::string_view msg)
 {
 	return LookupTranslationString(context, msg).first;
 }
 
-std::string_view Host::TranslateToStringView(const std::string_view& context, const std::string_view& msg)
+std::string_view Host::TranslateToStringView(const std::string_view context, const std::string_view msg)
 {
 	const auto mp = LookupTranslationString(context, msg);
 	return std::string_view(mp.first, mp.second);
 }
 
-std::string Host::TranslateToString(const std::string_view& context, const std::string_view& msg)
+std::string Host::TranslateToString(const std::string_view context, const std::string_view msg)
 {
 	return std::string(TranslateToStringView(context, msg));
 }
@@ -138,7 +138,7 @@ void Host::ClearTranslationCache()
 	s_translation_string_mutex.unlock();
 }
 
-void Host::ReportFormattedErrorAsync(const std::string_view& title, const char* format, ...)
+void Host::ReportFormattedErrorAsync(const std::string_view title, const char* format, ...)
 {
 	std::va_list ap;
 	va_start(ap, format);
@@ -147,7 +147,7 @@ void Host::ReportFormattedErrorAsync(const std::string_view& title, const char* 
 	ReportErrorAsync(title, message);
 }
 
-bool Host::ConfirmFormattedMessage(const std::string_view& title, const char* format, ...)
+bool Host::ConfirmFormattedMessage(const std::string_view title, const char* format, ...)
 {
 	std::va_list ap;
 	va_start(ap, format);
@@ -170,12 +170,6 @@ std::unique_lock<std::mutex> Host::GetSettingsLock()
 SettingsInterface* Host::GetSettingsInterface()
 {
 	return &s_layered_settings_interface;
-}
-
-SettingsInterface* Host::GetSettingsInterfaceForBindings()
-{
-	SettingsInterface* input_layer = s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_INPUT);
-	return input_layer ? input_layer : &s_layered_settings_interface;
 }
 
 std::string Host::GetBaseStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
@@ -378,14 +372,12 @@ void Host::Internal::SetBaseSettingsLayer(SettingsInterface* sif)
 	s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_BASE, sif);
 }
 
-void Host::Internal::SetGameSettingsLayer(SettingsInterface* sif)
+void Host::Internal::SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& settings_lock)
 {
-	std::unique_lock lock(s_settings_mutex);
 	s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_GAME, sif);
 }
 
-void Host::Internal::SetInputSettingsLayer(SettingsInterface* sif)
+void Host::Internal::SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& settings_lock)
 {
-	std::unique_lock lock(s_settings_mutex);
 	s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_INPUT, sif);
 }

@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/GS.h"
 #include "GS/GSGL.h"
@@ -676,9 +676,9 @@ bool GSDevice12::HasSurface() const
 	return static_cast<bool>(m_swap_chain);
 }
 
-bool GSDevice12::Create()
+bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 {
-	if (!GSDevice::Create())
+	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
 		return false;
 
 	if (!CreateDevice())
@@ -689,6 +689,8 @@ bool GSDevice12::Create()
 		Console.Error("Your GPU does not support the required D3D12 features.");
 		return false;
 	}
+
+	m_name = D3D::GetAdapterName(m_adapter.get());
 
 	if (!CreateDescriptorHeaps() || !CreateCommandLists() || !CreateTimestampQuery())
 		return false;
@@ -755,28 +757,38 @@ void GSDevice12::Destroy()
 	DestroyResources();
 }
 
-bool GSDevice12::GetHostRefreshRate(float* refresh_rate)
+void GSDevice12::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 {
-	if (m_swap_chain && m_is_exclusive_fullscreen)
+	m_allow_present_throttle = allow_present_throttle;
+
+	// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+	if (mode == GSVSyncMode::Mailbox && m_is_exclusive_fullscreen)
 	{
-		DXGI_SWAP_CHAIN_DESC desc;
-		if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
-			desc.BufferDesc.RefreshRate.Denominator > 0)
-		{
-			DevCon.WriteLn(
-				"using fs rr: %u %u", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
-			*refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
-							static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
-			return true;
-		}
+		WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+		mode = GSVSyncMode::FIFO;
 	}
 
-	return GSDevice::GetHostRefreshRate(refresh_rate);
+	if (m_vsync_mode == mode)
+		return;
+
+	const u32 old_buffer_count = GetSwapChainBufferCount();
+	m_vsync_mode = mode;
+	if (!m_swap_chain)
+		return;
+
+	if (GetSwapChainBufferCount() != old_buffer_count)
+	{
+		DestroySwapChain();
+		if (!CreateSwapChain())
+			pxFailRel("Failed to recreate swap chain after vsync change.");
+	}
 }
 
-void GSDevice12::SetVSync(VsyncMode mode)
+u32 GSDevice12::GetSwapChainBufferCount() const
 {
-	m_vsync_mode = mode;
+	// With vsync off, we only need two buffers. Same for blocking vsync.
+	// With triple buffering, we need three.
+	return (m_vsync_mode == GSVSyncMode::Mailbox) ? 3 : 2;
 }
 
 bool GSDevice12::CreateSwapChain()
@@ -801,6 +813,13 @@ bool GSDevice12::CreateSwapChain()
 			D3D::GetRequestedExclusiveFullscreenModeDesc(m_dxgi_factory.get(), client_rc, fullscreen_width,
 				fullscreen_height, fullscreen_refresh_rate, swap_chain_format, &fullscreen_mode,
 				fullscreen_output.put());
+
+		// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+		if (m_vsync_mode == GSVSyncMode::Mailbox && m_is_exclusive_fullscreen)
+		{
+			WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+			m_vsync_mode = GSVSyncMode::FIFO;
+		}
 	}
 	else
 	{
@@ -812,7 +831,7 @@ bool GSDevice12::CreateSwapChain()
 	swap_chain_desc.Height = static_cast<u32>(client_rc.bottom - client_rc.top);
 	swap_chain_desc.Format = swap_chain_format;
 	swap_chain_desc.SampleDesc.Count = 1;
-	swap_chain_desc.BufferCount = 3;
+	swap_chain_desc.BufferCount = GetSwapChainBufferCount();
 	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
@@ -933,10 +952,6 @@ bool GSDevice12::CreateSwapChainRTV()
 		{
 			m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
 												 static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
-		}
-		else
-		{
-			m_window_info.surface_refresh_rate = 0.0f;
 		}
 	}
 
@@ -1109,11 +1124,9 @@ void GSDevice12::EndPresent()
 		return;
 	}
 
-	const bool vsync = static_cast<UINT>(m_vsync_mode != VsyncMode::Off);
-	if (!vsync && m_using_allow_tearing)
-		m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
-	else
-		m_swap_chain->Present(static_cast<UINT>(vsync), 0);
+	const UINT sync_interval = static_cast<UINT>(m_vsync_mode == GSVSyncMode::FIFO);
+	const UINT flags = (m_vsync_mode == GSVSyncMode::Disabled && m_using_allow_tearing) ? DXGI_PRESENT_ALLOW_TEARING : 0;
+	m_swap_chain->Present(sync_interval, flags);
 
 	InvalidateCachedState();
 }
@@ -1216,6 +1229,8 @@ bool GSDevice12::CheckFeatures()
 							  SupportsTextureFormat(DXGI_FORMAT_BC3_UNORM);
 	m_features.bptc_textures = SupportsTextureFormat(DXGI_FORMAT_BC7_UNORM);
 
+	m_max_texture_size = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+
 	BOOL allow_tearing_supported = false;
 	HRESULT hr = m_dxgi_factory->CheckFeatureSupport(
 		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
@@ -1278,22 +1293,19 @@ void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_f
 
 GSTexture* GSDevice12::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
-	const u32 clamped_width = static_cast<u32>(std::clamp<int>(width, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
-	const u32 clamped_height = static_cast<u32>(std::clamp<int>(height, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
-
 	DXGI_FORMAT dxgi_format, srv_format, rtv_format, dsv_format;
 	LookupNativeFormat(format, &dxgi_format, &srv_format, &rtv_format, &dsv_format);
 
 	const DXGI_FORMAT uav_format = (type == GSTexture::Type::RWTexture) ? dxgi_format : DXGI_FORMAT_UNKNOWN;
 
-	std::unique_ptr<GSTexture12> tex(GSTexture12::Create(type, format, clamped_width, clamped_height, levels,
+	std::unique_ptr<GSTexture12> tex(GSTexture12::Create(type, format, width, height, levels,
 		dxgi_format, srv_format, rtv_format, dsv_format, uav_format));
 	if (!tex)
 	{
 		// We're probably out of vram, try flushing the command buffer to release pending textures.
 		PurgePool();
 		ExecuteCommandListAndRestartRenderPass(true, "Couldn't allocate texture.");
-		tex = GSTexture12::Create(type, format, clamped_width, clamped_height, levels, dxgi_format, srv_format,
+		tex = GSTexture12::Create(type, format, width, height, levels, dxgi_format, srv_format,
 			rtv_format, dsv_format, uav_format);
 	}
 
@@ -1465,6 +1477,28 @@ void GSDevice12::ConvertToIndexedTexture(
 
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	const ShaderConvert shader = ShaderConvert::RGBA_TO_8I;
+	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
+		m_convert[static_cast<int>(shader)].get(), false, true);
+}
+
+void GSDevice12::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
+{
+	struct Uniforms
+	{
+		float weight;
+		float pad0[3];
+		GSVector2i clamp_min;
+		int downsample_factor;
+		int pad1;
+	};
+
+	const Uniforms cb = {
+		static_cast<float>(downsample_factor * downsample_factor), {}, clamp_min, static_cast<int>(downsample_factor), 0};
+	SetUtilityRootSignature();
+	SetUtilityPushConstants(&cb, sizeof(cb));
+
+	//const GSVector4 dRect = GSVector4(dTex->GetRect());
+	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
 	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
 		m_convert[static_cast<int>(shader)].get(), false, true);
 }
@@ -2019,9 +2053,14 @@ void GSDevice12::RenderImGui()
 
 			SetScissor(GSVector4i(clip));
 
-			// Since we don't have the GSTexture...
 			GSTexture12* tex = static_cast<GSTexture12*>(pcmd->GetTexID());
-			D3D12DescriptorHandle handle = tex ? tex->GetSRVDescriptor() : m_null_texture->GetSRVDescriptor();
+			D3D12DescriptorHandle handle = m_null_texture->GetSRVDescriptor();
+			if (tex)
+			{
+				tex->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+				handle = tex->GetSRVDescriptor();
+			}
+
 			if (m_utility_texture_cpu != handle)
 			{
 				m_utility_texture_cpu = handle;
@@ -3943,13 +3982,14 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		DrawIndexedPrimitive();
 
 	// blend second pass
-	if (config.blend_second_pass.enable)
+	if (config.blend_multi_pass.enable)
 	{
-		if (config.blend_second_pass.blend.constant_enable)
-			SetBlendConstants(config.blend_second_pass.blend.constant);
+		if (config.blend_multi_pass.blend.constant_enable)
+			SetBlendConstants(config.blend_multi_pass.blend.constant);
 
-		pipe.bs = config.blend_second_pass.blend;
-		pipe.ps.blend_hw = config.blend_second_pass.blend_hw;
+		pipe.bs = config.blend_multi_pass.blend;
+		pipe.ps.blend_hw = config.blend_multi_pass.blend_hw;
+		pipe.ps.dither = config.blend_multi_pass.dither;
 		if (BindDrawPipeline(pipe))
 			DrawIndexedPrimitive();
 	}

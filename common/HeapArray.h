@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -251,7 +251,11 @@ public:
 
 	void fill(const_reference value) { std::fill(begin(), end(), value); }
 
-	void swap(this_type& move) { std::swap(m_data, move.m_data); }
+	void swap(this_type& move)
+	{
+		std::swap(m_data, move.m_data);
+		std::swap(m_size, move.m_size);
+	}
 
 	void resize(size_t new_size) { internal_resize(new_size, m_data, m_size); }
 
@@ -362,7 +366,7 @@ private:
 
 			if (prev_ptr)
 			{
-				std::memcpy(m_data, prev_ptr, prev_size * sizeof(T));
+				std::memcpy(m_data, prev_ptr, std::min(size, prev_size) * sizeof(T));
 				std::free(prev_ptr);
 			}
 #endif

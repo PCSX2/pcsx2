@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -81,6 +81,8 @@ private:
 	void setColumnDisplayNames();
 	void loadOrGenerateCover(const GameList::Entry* ge);
 	void invalidateCoverForPath(const std::string& path);
+
+	static QString formatTimespan(time_t timespan);
 
 	float m_cover_scale = 0.0f;
 	std::atomic<u32> m_cover_scale_counter{0};

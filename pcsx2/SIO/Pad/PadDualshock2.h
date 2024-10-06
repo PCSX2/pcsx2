@@ -1,5 +1,5 @@
-﻿// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+﻿// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -85,6 +85,29 @@ private:
 	// Used to store the last vibration mapping request the PS2 made for the large motor.
 	u8 largeMotorLastConfig = 0xff;
 
+	// Since we reordered the buttons for better UI, we need to remap them here.
+	static constexpr std::array<u8, Inputs::LENGTH> bitmaskMapping = {{
+		12, // PAD_UP
+		13, // PAD_RIGHT
+		14, // PAD_DOWN
+		15, // PAD_LEFT
+		4, // PAD_TRIANGLE
+		5, // PAD_CIRCLE
+		6, // PAD_CROSS
+		7, // PAD_SQUARE
+		8, // PAD_SELECT
+		11, // PAD_START
+		2, // PAD_L1
+		0, // PAD_L2
+		3, // PAD_R1
+		1, // PAD_R2
+		9, // PAD_L3
+		10, // PAD_R3
+		16, // PAD_ANALOG
+		17, // PAD_PRESSURE
+		// remainder are analogs and not used here
+	}};
+
 	void ConfigLog();
 
 	u8 Mystery(u8 commandByte);
@@ -117,6 +140,7 @@ public:
 	const Pad::ControllerInfo& GetInfo() const override;
 	void Set(u32 index, float value) override;
 	void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right) override;
+	void SetRawPressureButton(u32 index, const std::tuple<bool, u8> value) override;
 	void SetAxisScale(float deadzone, float scale) override;
 	float GetVibrationScale(u32 motor) const override;
 	void SetVibrationScale(u32 motor, float scale) override;

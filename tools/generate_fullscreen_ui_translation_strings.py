@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 
 START_IDENT = "// TRANSLATION-STRING-AREA-BEGIN"

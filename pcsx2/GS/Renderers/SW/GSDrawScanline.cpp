@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/SW/GSDrawScanline.h"
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
@@ -7,6 +7,8 @@
 #include "GS/Renderers/SW/GSRasterizer.h"
 
 #include "common/Console.h"
+
+#include <fstream>
 
 // Comment to disable all dynamic code generation.
 #define ENABLE_JIT_RASTERIZER
@@ -36,6 +38,64 @@ GSDrawScanline::~GSDrawScanline()
 		DevCon.WriteLn("SW JIT generated %zu bytes of code", used);
 }
 
+bool GSDrawScanline::ShouldUseCDrawScanline(u64 key)
+{
+	static std::map<u64, bool> s_use_c_draw_scanline;
+	static std::mutex s_use_c_draw_scanline_mutex;
+
+	static const char* const fname = getenv("USE_C_DRAW_SCANLINE");
+	if (!fname)
+		return false;
+
+	std::lock_guard<std::mutex> l(s_use_c_draw_scanline_mutex);
+
+	if (s_use_c_draw_scanline.empty())
+	{
+		std::ifstream file(fname);
+		if (file)
+		{
+			for (std::string str; std::getline(file, str);)
+			{
+				u64 key;
+				char yn;
+				if (sscanf(str.c_str(), "%" PRIx64 " %c", &key, &yn) == 2)
+				{
+					if (yn != 'Y' && yn != 'N' && yn != 'y' && yn != 'n')
+						Console.Warning("Failed to parse %s: Not y/n", str.c_str());
+					s_use_c_draw_scanline[key] = (yn == 'Y' || yn == 'y') ? true : false;
+				}
+				else
+				{
+					Console.Warning("Failed to process line %s", str.c_str());
+				}
+			}
+		}
+	}
+
+	auto idx = s_use_c_draw_scanline.find(key);
+	if (idx == s_use_c_draw_scanline.end())
+	{
+		s_use_c_draw_scanline[key] = false;
+		// Rewrite file
+		FILE* file = fopen(fname, "w");
+		if (file)
+		{
+			for (const auto& pair : s_use_c_draw_scanline)
+			{
+				fprintf(file, "%016" PRIX64 " %c %s\n", pair.first, pair.second ? 'Y' : 'N', GSScanlineSelector(pair.first).to_string().c_str());
+			}
+			fclose(file);
+		}
+		else
+		{
+			Console.Warning("Failed to write C draw scanline usage config: %s", strerror(errno));
+		}
+		return false;
+	}
+
+	return idx->second;
+}
+
 void GSDrawScanline::BeginDraw(const GSRasterizerData& data, GSScanlineLocalData& local)
 {
 	const GSScanlineGlobalData& global = data.global;
@@ -43,21 +103,7 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData& data, GSScanlineLocalData
 
 	if (global.sel.mmin && global.sel.lcm)
 	{
-#if defined(__GNUC__) && _M_SSE >= 0x501
-		// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80286
-		//
-		// GCC 4.9/5/6 doesn't generate correct AVX2 code for extract32<0>. It is fixed in GCC7
-		// Intrinsic code is _mm_cvtsi128_si32(_mm256_castsi256_si128(m))
-		// It seems recent Clang got _mm256_cvtsi256_si32(m) instead. I don't know about GCC.
-		//
-		// Generated code keep the integer in an XMM register but bit [64:32] aren't cleared.
-		// So the srl16 shift will be huge and v will be 0.
-		//
-		int lod_x = global.lod.i.x0;
-		GSVector4i v = global.t.minmax.srl16(lod_x);
-#else
 		GSVector4i v = global.t.minmax.srl16(global.lod.i.extract32<0>()); //.x);
-#endif
 
 		v = v.upl16(v);
 

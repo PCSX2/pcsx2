@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #define INITGUID
 
@@ -145,7 +145,9 @@ void DInputSource::Shutdown()
 {
 	while (!m_controllers.empty())
 	{
-		InputManager::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(m_controllers.size() - 1)));
+		const u32 index = static_cast<u32>(m_controllers.size() - 1);
+		InputManager::OnInputDeviceDisconnected({{.source_type = InputSourceType::DInput, .source_index = index}},
+			GetDeviceIdentifier(index));
 		m_controllers.pop_back();
 	}
 }
@@ -245,7 +247,9 @@ void DInputSource::PollEvents()
 
 			if (hr != DI_OK)
 			{
-				InputManager::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(i)));
+				InputManager::OnInputDeviceDisconnected(
+					{{.source_type = InputSourceType::DInput, .source_index = static_cast<u32>(i)}},
+					GetDeviceIdentifier(static_cast<u32>(i)));
 				m_controllers.erase(m_controllers.begin() + i);
 				continue;
 			}
@@ -286,7 +290,7 @@ std::vector<InputBindingKey> DInputSource::EnumerateMotors()
 	return {};
 }
 
-bool DInputSource::GetGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping)
+bool DInputSource::GetGenericBindingMapping(const std::string_view device, InputManager::GenericInputBindingMapping* mapping)
 {
 	return {};
 }
@@ -301,7 +305,7 @@ void DInputSource::UpdateMotorState(InputBindingKey large_key, InputBindingKey s
 	// not supported
 }
 
-std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_view& device, const std::string_view& binding)
+std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_view device, const std::string_view binding)
 {
 	if (!device.starts_with("DInput-") || binding.empty())
 		return std::nullopt;

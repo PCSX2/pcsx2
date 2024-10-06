@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -44,10 +44,12 @@
 
 struct ProcessorFeatures
 {
-	enum class VectorISA { None, SSE4, AVX, AVX2 };
+#ifdef _M_X86
+	enum class VectorISA { SSE4, AVX, AVX2 };
 	VectorISA vectorISA;
 	bool hasFMA;
 	bool hasSlowGather;
+#endif
 };
 
 extern const ProcessorFeatures g_cpu;

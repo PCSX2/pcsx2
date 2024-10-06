@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/BitUtils.h"
 #include "common/Console.h"
@@ -28,7 +28,7 @@ static constexpr LoaderDefinition s_loaders[] = {
 };
 
 
-GSTextureReplacements::ReplacementTextureLoader GSTextureReplacements::GetLoader(const std::string_view& filename)
+GSTextureReplacements::ReplacementTextureLoader GSTextureReplacements::GetLoader(const std::string_view filename)
 {
 	const std::string_view extension(Path::GetExtension(filename));
 	if (extension.empty())

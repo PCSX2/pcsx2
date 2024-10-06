@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GameDatabase.h"
 #include "GS/GS.h"
@@ -27,13 +27,13 @@
 namespace GameDatabaseSchema
 {
 	static const char* getHWFixName(GSHWFixId id);
-	static std::optional<GSHWFixId> parseHWFixName(const std::string_view& name);
+	static std::optional<GSHWFixId> parseHWFixName(const std::string_view name);
 	static bool isUserHackHWFix(GSHWFixId id);
 } // namespace GameDatabaseSchema
 
 namespace GameDatabase
 {
-	static void parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node);
+	static void parseAndInsert(const std::string_view serial, const c4::yml::NodeRef& node);
 	static void initDatabase();
 } // namespace GameDatabase
 
@@ -84,7 +84,7 @@ const char* GameDatabaseSchema::GameEntry::compatAsString() const
 	}
 }
 
-void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node)
+void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::NodeRef& node)
 {
 	GameDatabaseSchema::GameEntry gameEntry;
 	if (node.has_child("name"))
@@ -370,19 +370,20 @@ static const char* s_gs_hw_fix_names[] = {
 	"textureInsideRT",
 	"alignSprite",
 	"mergeSprite",
-	"wildArmsHack",
+	"mipmap",
+	"forceEvenSpritePosition",
 	"bilinearUpscale",
 	"nativePaletteDraw",
 	"estimateTextureRegion",
 	"PCRTCOffsets",
 	"PCRTCOverscan",
-	"mipmap",
 	"trilinearFiltering",
 	"skipDrawStart",
 	"skipDrawEnd",
 	"halfBottomOverride",
 	"halfPixelOffset",
 	"roundSprite",
+	"nativeScaling",
 	"texturePreloading",
 	"deinterlace",
 	"cpuSpriteRenderBW",
@@ -404,7 +405,7 @@ const char* GameDatabaseSchema::getHWFixName(GSHWFixId id)
 	return s_gs_hw_fix_names[static_cast<u32>(id)];
 }
 
-static std::optional<GameDatabaseSchema::GSHWFixId> GameDatabaseSchema::parseHWFixName(const std::string_view& name)
+static std::optional<GameDatabaseSchema::GSHWFixId> GameDatabaseSchema::parseHWFixName(const std::string_view name)
 {
 	for (u32 i = 0; i < std::size(s_gs_hw_fix_names); i++)
 	{
@@ -602,8 +603,8 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::MergeSprite:
 			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_MergePPSprite) == value);
 
-		case GSHWFixId::WildArmsHack:
-			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_WildHack) == value);
+		case GSHWFixId::ForceEvenSpritePosition:
+			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_ForceEvenSpritePosition) == value);
 
 		case GSHWFixId::BilinearUpscale:
 			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_BilinearHack) == value);
@@ -621,7 +622,7 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 			return (static_cast<int>(config.PCRTCOverscan) == value);
 
 		case GSHWFixId::Mipmap:
-			return (config.HWMipmap == HWMipmapLevel::Automatic || static_cast<int>(config.HWMipmap) == value);
+			return (static_cast<int>(config.HWMipmap) == value);
 
 		case GSHWFixId::TrilinearFiltering:
 			return (config.TriFilter == TriFiltering::Automatic || static_cast<int>(config.TriFilter) == value);
@@ -637,6 +638,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 
 		case GSHWFixId::RoundSprite:
 			return (config.UpscaleMultiplier <= 1.0f || config.UserHacks_RoundSprite == value);
+
+		case GSHWFixId::NativeScaling:
+			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_NativeScaling) == value);
 
 		case GSHWFixId::TexturePreloading:
 			return (static_cast<int>(config.TexturePreloading) <= value);
@@ -688,6 +692,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 	// Only apply GS HW fixes if the user hasn't manually enabled HW fixes.
 	const bool apply_auto_fixes = !config.ManualUserHacks;
+	const bool is_sw_renderer = EmuConfig.GS.Renderer == GSRendererType::SW;
 	if (!apply_auto_fixes)
 		Console.Warning("[GameDB] Manual GS hardware renderer fixes are enabled, not using automatic hardware renderer fixes from GameDB.");
 
@@ -747,8 +752,8 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 				config.UserHacks_MergePPSprite = (value > 0);
 				break;
 
-			case GSHWFixId::WildArmsHack:
-				config.UserHacks_WildHack = (value > 0);
+			case GSHWFixId::ForceEvenSpritePosition:
+				config.UserHacks_ForceEvenSpritePosition = (value > 0);
 				break;
 
 			case GSHWFixId::BilinearUpscale:
@@ -775,16 +780,8 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 				break;
 
 			case GSHWFixId::Mipmap:
-			{
-				if (value >= 0 && value <= static_cast<int>(HWMipmapLevel::Full))
-				{
-					if (config.HWMipmap == HWMipmapLevel::Automatic)
-						config.HWMipmap = static_cast<HWMipmapLevel>(value);
-					else if (config.HWMipmap == HWMipmapLevel::Off)
-						Console.Warning("[GameDB] Game requires mipmapping but it has been force disabled.");
-				}
-			}
-			break;
+				config.HWMipmap = (value > 0);
+				break;
 
 			case GSHWFixId::TrilinearFiltering:
 			{
@@ -792,8 +789,8 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 				{
 					if (config.TriFilter == TriFiltering::Automatic)
 						config.TriFilter = static_cast<TriFiltering>(value);
-					else if (config.TriFilter == TriFiltering::Off)
-						Console.Warning("[GameDB] Game requires trilinear filtering but it has been force disabled.");
+					else if (config.TriFilter > TriFiltering::Off)
+						Console.Warning("[GameDB] Game requires trilinear filtering to be disabled.");
 				}
 			}
 			break;
@@ -815,6 +812,10 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 			case GSHWFixId::RoundSprite:
 				config.UserHacks_RoundSprite = value;
+				break;
+
+			case GSHWFixId::NativeScaling:
+				config.UserHacks_NativeScaling = static_cast<GSNativeScaling>(value);
 				break;
 
 			case GSHWFixId::TexturePreloading:
@@ -881,7 +882,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 			case GSHWFixId::RecommendedBlendingLevel:
 			{
-				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && static_cast<int>(EmuConfig.GS.AccurateBlendingUnit) < value)
+				if (!is_sw_renderer && value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && static_cast<int>(EmuConfig.GS.AccurateBlendingUnit) < value)
 				{
 					Host::AddKeyedOSDMessage("HWBlendingWarning",
 						fmt::format(TRANSLATE_FS("GameDatabase",
@@ -924,7 +925,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 	// fixup skipdraw range just in case the db has a bad range (but the linter should catch this)
 	config.SkipDrawEnd = std::max(config.SkipDrawStart, config.SkipDrawEnd);
 
-	if (!disabled_fixes.empty())
+	if (!is_sw_renderer && !disabled_fixes.empty())
 	{
 		Host::AddKeyedOSDMessage("HWFixesWarning",
 			fmt::format(ICON_FA_MAGIC " {}\n{}",
@@ -993,7 +994,7 @@ void GameDatabase::ensureLoaded()
 	});
 }
 
-const GameDatabaseSchema::GameEntry* GameDatabase::findGame(const std::string_view& serial)
+const GameDatabaseSchema::GameEntry* GameDatabase::findGame(const std::string_view serial)
 {
 	GameDatabase::ensureLoaded();
 
@@ -1001,7 +1002,7 @@ const GameDatabaseSchema::GameEntry* GameDatabase::findGame(const std::string_vi
 	return (iter != s_game_db.end()) ? &iter->second : nullptr;
 }
 
-bool GameDatabase::TrackHash::parseHash(const std::string_view& str)
+bool GameDatabase::TrackHash::parseHash(const std::string_view str)
 {
 	constexpr u32 expected_length = SIZE * 2;
 	if (str.length() != expected_length)
@@ -1064,7 +1065,7 @@ static bool parseHashDatabaseEntry(const c4::yml::NodeRef& node)
 		node["serial"] >> entry.serial;
 
 	const u32 index = static_cast<u32>(s_hash_database.size());
-	for (const ryml::NodeRef& n : node["hashes"].children())
+	for (const ryml::ConstNodeRef& n : node["hashes"].children())
 	{
 		if (!n.is_map() || !n.has_child("size") || !n.has_child("md5"))
 		{

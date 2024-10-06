@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -110,6 +110,12 @@ namespace VMManager
 	/// Reloads game patches.
 	void ReloadPatches(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
 
+	/// Reloads input sources.
+	void ReloadInputSources();
+
+	/// Reloads input bindings.
+	void ReloadInputBindings();
+
 	/// Returns the save state filename for the given game serial/crc.
 	std::string GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot);
 
@@ -150,8 +156,17 @@ namespace VMManager
 	/// EmuConfig.EmulationSpeed without going through the usual config apply.
 	void UpdateTargetSpeed();
 
+	/// Returns true if the target speed is being synchronized with the host's refresh rate.
+	bool IsTargetSpeedAdjustedToHost();
+
 	/// Returns the current frame rate of the virtual machine.
 	float GetFrameRate();
+
+	/// Returns the desired vsync mode, depending on the runtime environment.
+	GSVSyncMode GetEffectiveVSyncMode();
+
+	/// Returns true if presents can be skipped, when running outside of normal speed.
+	bool ShouldAllowPresentThrottle();
 
 	/// Runs the virtual machine for the specified number of video frames, and then automatically pauses.
 	void FrameAdvance(u32 num_frames = 1);
@@ -167,37 +182,37 @@ namespace VMManager
 	bool ChangeGSDump(const std::string& path);
 
 	/// Returns true if the specified path is an ELF.
-	bool IsElfFileName(const std::string_view& path);
+	bool IsElfFileName(const std::string_view path);
 
 	/// Returns true if the specified path is a blockdump.
-	bool IsBlockDumpFileName(const std::string_view& path);
+	bool IsBlockDumpFileName(const std::string_view path);
 
 	/// Returns true if the specified path is a GS Dump.
-	bool IsGSDumpFileName(const std::string_view& path);
+	bool IsGSDumpFileName(const std::string_view path);
 
 	/// Returns true if the specified path is a save state.
-	bool IsSaveStateFileName(const std::string_view& path);
+	bool IsSaveStateFileName(const std::string_view path);
 
 	/// Returns true if the specified path is a disc image.
-	bool IsDiscFileName(const std::string_view& path);
+	bool IsDiscFileName(const std::string_view path);
 
 	/// Returns true if the specified path is a disc/elf/etc.
-	bool IsLoadableFileName(const std::string_view& path);
+	bool IsLoadableFileName(const std::string_view path);
 
 	/// Returns the serial to use when computing the game settings path for the current game.
 	std::string GetSerialForGameSettings();
 
 	/// Returns the path for the game settings ini file for the specified CRC.
-	std::string GetGameSettingsPath(const std::string_view& game_serial, u32 game_crc);
+	std::string GetGameSettingsPath(const std::string_view game_serial, u32 game_crc);
 
 	/// Returns the ISO override for an ELF via gamesettings.
 	std::string GetDiscOverrideFromGameSettings(const std::string& elf_path);
 
 	/// Returns the path for the input profile ini file with the specified name (may not exist).
-	std::string GetInputProfilePath(const std::string_view& name);
+	std::string GetInputProfilePath(const std::string_view name);
 
 	/// Returns the path for the debugger settings json file for the specified game serial and CRC.
-	std::string GetDebuggerSettingsFilePath(const std::string_view& game_serial, u32 game_crc);
+	std::string GetDebuggerSettingsFilePath(const std::string_view game_serial, u32 game_crc);
 
 	/// Returns the path for the debugger settings json file for the current game.
 	std::string GetDebuggerSettingsFilePathForCurrentGame();
@@ -208,10 +223,6 @@ namespace VMManager
 
 	/// Initializes default configuration in the specified file for the specified categories.
 	void SetDefaultSettings(SettingsInterface& si, bool folders, bool core, bool controllers, bool hotkeys, bool ui);
-
-	/// Returns a list of processors in the system, and their corresponding affinity mask.
-	/// This list is ordered by most performant to least performant for pinning threads to.
-	const std::vector<u32>& GetSortedProcessorList();
 
 	/// Returns the time elapsed in the current play session.
 	u64 GetSessionPlayedTime();
@@ -246,6 +257,9 @@ namespace VMManager
 		/// Updates the variables in the EmuFolders namespace, reloading subsystems if needed.
 		void UpdateEmuFolders();
 
+		/// Returns true if the VM was fast booted.
+		bool WasFastBooted();
+
 		/// Returns true if fast booting is active (requested but ELF not started).
 		bool IsFastBootInProgress();
 
@@ -266,6 +280,9 @@ namespace VMManager
 
 		/// Resets/clears all execution/code caches.
 		void ClearCPUExecutionCaches();
+
+		/// Returns a list of processors in the system, suitable for pinning for the software renderer.
+		const std::vector<u32>& GetSoftwareRendererProcessorList();
 
 		const std::string& GetELFOverride();
 		bool IsExecutionInterrupted();
@@ -304,14 +321,14 @@ namespace Host
 	void OnPerformanceMetricsUpdated();
 
 	/// Called when a save state is loading, before the file is processed.
-	void OnSaveStateLoading(const std::string_view& filename);
+	void OnSaveStateLoading(const std::string_view filename);
 
 	/// Called after a save state is successfully loaded. If the save state was invalid, was_successful will be false.
-	void OnSaveStateLoaded(const std::string_view& filename, bool was_successful);
+	void OnSaveStateLoaded(const std::string_view filename, bool was_successful);
 
 	/// Called when a save state is being created/saved. The compression/write to disk is asynchronous, so this callback
 	/// just signifies that the save has started, not necessarily completed.
-	void OnSaveStateSaved(const std::string_view& filename);
+	void OnSaveStateSaved(const std::string_view filename);
 
 	/// Provided by the host; called when the running executable changes.
 	void OnGameChanged(const std::string& title, const std::string& elf_override, const std::string& disc_path,

@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -343,7 +343,7 @@ private:
 #endif
 
 template <u32 L>
-__fi SmallStackString<L> SmallStackString<L>::from_sprintf(const char* format, ...)
+SmallStackString<L> SmallStackString<L>::from_sprintf(const char* format, ...)
 {
 	std::va_list ap;
 	va_start(ap, format);

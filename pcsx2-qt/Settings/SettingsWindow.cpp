@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "MainWindow.h"
 #include "QtHost.h"
@@ -299,11 +299,12 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
 	{
 		auto lock = Host::GetSettingsLock();
 		Pcsx2Config::CopyConfiguration(m_sif.get(), *Host::Internal::GetBaseSettingsLayer());
+		Pcsx2Config::ClearInvalidPerGameConfiguration(m_sif.get());
 	}
-	m_sif->Save();
-	g_emu_thread->reloadGameSettings();
+	saveAndReloadGameSettings();
 
-	QMessageBox::information(reopen(), tr("PCSX2 Settings"), tr("Per-game configuration copied from global settings."));
+
+	reopen(tr("Per-game configuration copied from global settings."));
 }
 
 void SettingsWindow::onClearSettingsClicked()
@@ -322,20 +323,18 @@ void SettingsWindow::onClearSettingsClicked()
 	m_game_patch_settings_widget->disableAllPatches();
 
 	Pcsx2Config::ClearConfiguration(m_sif.get());
-	m_sif->Save();
-	g_emu_thread->reloadGameSettings();
+	saveAndReloadGameSettings();
 
-	QMessageBox::information(reopen(), tr("PCSX2 Settings"), tr("Per-game configuration cleared."));
+	reopen(tr("Per-game configuration cleared."));
 }
 
-SettingsWindow* SettingsWindow::reopen()
+void SettingsWindow::reopen(const QString& message)
 {
 	// This doesn't work for global settings, because MainWindow maintains a pointer.
 	if (!m_sif)
-		return this;
+		return;
 
-	close();
-
+	// After closing, this pointer is freed. So we need to grab everything early.
 	std::unique_ptr<INISettingsInterface> new_sif = std::make_unique<INISettingsInterface>(m_sif->GetFileName());
 	if (FileSystem::FileExists(new_sif->GetFileName().c_str()))
 		new_sif->Load();
@@ -345,9 +344,14 @@ SettingsWindow* SettingsWindow::reopen()
 
 	SettingsWindow* dlg = new SettingsWindow(std::move(new_sif), game, m_serial, m_disc_crc, m_filename);
 	dlg->QWidget::setWindowTitle(windowTitle());
-	dlg->show();
 
-	return dlg;
+	// See note above.
+	QtHost::RunOnUIThread([this, dlg, message]() {
+		close();
+		dlg->show();
+		if (!message.isEmpty())
+			QMessageBox::information(dlg, tr("PCSX2 Settings"), message);
+	});
 }
 
 void SettingsWindow::addWidget(QWidget* widget, QString title, QString icon, QString help_text)
@@ -560,8 +564,7 @@ void SettingsWindow::setBoolSettingValue(const char* section, const char* key, s
 	if (m_sif)
 	{
 		value.has_value() ? m_sif->SetBoolValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-		m_sif->Save();
-		g_emu_thread->reloadGameSettings();
+		saveAndReloadGameSettings();
 	}
 	else
 	{
@@ -576,8 +579,7 @@ void SettingsWindow::setIntSettingValue(const char* section, const char* key, st
 	if (m_sif)
 	{
 		value.has_value() ? m_sif->SetIntValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-		m_sif->Save();
-		g_emu_thread->reloadGameSettings();
+		saveAndReloadGameSettings();
 	}
 	else
 	{
@@ -592,8 +594,7 @@ void SettingsWindow::setFloatSettingValue(const char* section, const char* key, 
 	if (m_sif)
 	{
 		value.has_value() ? m_sif->SetFloatValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-		m_sif->Save();
-		g_emu_thread->reloadGameSettings();
+		saveAndReloadGameSettings();
 	}
 	else
 	{
@@ -608,8 +609,7 @@ void SettingsWindow::setStringSettingValue(const char* section, const char* key,
 	if (m_sif)
 	{
 		value.has_value() ? m_sif->SetStringValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-		m_sif->Save();
-		g_emu_thread->reloadGameSettings();
+		saveAndReloadGameSettings();
 	}
 	else
 	{
@@ -632,8 +632,7 @@ void SettingsWindow::removeSettingValue(const char* section, const char* key)
 	if (m_sif)
 	{
 		m_sif->DeleteValue(section, key);
-		m_sif->Save();
-		g_emu_thread->reloadGameSettings();
+		saveAndReloadGameSettings();
 	}
 	else
 	{
@@ -643,7 +642,14 @@ void SettingsWindow::removeSettingValue(const char* section, const char* key)
 	}
 }
 
-void SettingsWindow::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& title, std::string serial, u32 disc_crc)
+void SettingsWindow::saveAndReloadGameSettings()
+{
+	pxAssert(m_sif);
+	QtHost::SaveGameSettings(m_sif.get(), true);
+	g_emu_thread->reloadGameSettings();
+}
+
+void SettingsWindow::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view title, std::string serial, u32 disc_crc)
 {
 	std::string filename = VMManager::GetGameSettingsPath(serial, disc_crc);
 

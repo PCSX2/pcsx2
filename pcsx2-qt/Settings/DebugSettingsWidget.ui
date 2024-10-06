@@ -91,7 +91,7 @@
           <item row="1" column="1">
            <widget class="QSpinBox" name="startDraw">
             <property name="maximum">
-             <number>99999</number>
+             <number>99999999</number>
             </property>
            </widget>
           </item>
@@ -108,7 +108,7 @@
              <number>1</number>
             </property>
             <property name="maximum">
-             <number>99999</number>
+             <number>99999999</number>
             </property>
            </widget>
           </item>

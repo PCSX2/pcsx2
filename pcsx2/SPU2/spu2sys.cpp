@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 // ======================================================================================
 //  spu2sys.cpp -- Emulation module for the SPU2 'virtual machine'
@@ -11,8 +11,10 @@
 #include "IopDma.h"
 #include "IopHw.h"
 #include "R3000A.h"
+#include "SPU2/Debug.h"
+#include "SPU2/defs.h"
 #include "SPU2/Dma.h"
-#include "SPU2/Global.h"
+#include "SPU2/regs.h"
 #include "SPU2/spu2.h"
 
 #include "common/Console.h"
@@ -214,10 +216,10 @@ void V_Voice::Stop()
 	ADSR.Phase = V_ADSR::PHASE_STOPPED;
 }
 
-uint TickInterval = 768;
-static const int SanityInterval = 4800;
+static constexpr uint TickInterval = 768;
+static constexpr int SanityInterval = 4800;
 
-__forceinline bool StartQueuedVoice(uint coreidx, uint voiceidx)
+__forceinline static bool StartQueuedVoice(uint coreidx, uint voiceidx)
 {
 	V_Voice& vc(Cores[coreidx].Voices[voiceidx]);
 
@@ -275,11 +277,6 @@ __forceinline void TimeUpdate(u32 cClocks)
 		lClocks = cClocks - dClocks;
 	}
 
-	if (EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::ASync)
-		SndBuffer::UpdateTempoChangeAsyncMixing();
-	else
-		TickInterval = 768; // Reset to default, in case the user hotswitched from async to something else.
-
 	//Update Mixing Progress
 	while (dClocks >= TickInterval)
 	{
@@ -307,10 +304,8 @@ __forceinline void TimeUpdate(u32 cClocks)
 				if(Cores[c].KeyOn & (1 << v))
 					if(StartQueuedVoice(c, v))
 						Cores[c].KeyOn &= ~(1 << v);
-		// Note: IOP does not use MMX regs, so no need to save them.
-		//SaveMMXRegs();
-		Mix();
-		//RestoreMMXRegs();
+
+		spu2Mix();
 	}
 
 	//Update DMA4 interrupt delay counter
@@ -354,15 +349,15 @@ __forceinline void TimeUpdate(u32 cClocks)
 		}
 		else
 		{
-			if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)Cores[0].DMAICounter)
+			if (((psxCounters[6].startCycle + psxCounters[6].deltaCycles) - psxRegs.cycle) > (u32)Cores[0].DMAICounter)
 			{
-				psxCounters[6].sCycleT = psxRegs.cycle;
-				psxCounters[6].CycleT = Cores[0].DMAICounter;
+				psxCounters[6].startCycle = psxRegs.cycle;
+				psxCounters[6].deltaCycles = Cores[0].DMAICounter;
 
-				psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-				psxNextsCounter = psxRegs.cycle;
-				if (psxCounters[6].CycleT < psxNextCounter)
-					psxNextCounter = psxCounters[6].CycleT;
+				psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
+				psxNextStartCounter = psxRegs.cycle;
+				if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
+					psxNextDeltaCounter = psxCounters[6].deltaCycles;
 			}
 		}
 	}
@@ -407,15 +402,15 @@ __forceinline void TimeUpdate(u32 cClocks)
 		}
 		else
 		{
-			if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)Cores[1].DMAICounter)
+			if (((psxCounters[6].startCycle + psxCounters[6].deltaCycles) - psxRegs.cycle) > (u32)Cores[1].DMAICounter)
 			{
-				psxCounters[6].sCycleT = psxRegs.cycle;
-				psxCounters[6].CycleT = Cores[1].DMAICounter;
+				psxCounters[6].startCycle = psxRegs.cycle;
+				psxCounters[6].deltaCycles = Cores[1].DMAICounter;
 
-				psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-				psxNextsCounter = psxRegs.cycle;
-				if (psxCounters[6].CycleT < psxNextCounter)
-					psxNextCounter = psxCounters[6].CycleT;
+				psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
+				psxNextStartCounter = psxRegs.cycle;
+				if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
+					psxNextDeltaCounter = psxCounters[6].deltaCycles;
 			}
 		}
 	}

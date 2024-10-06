@@ -1,7 +1,9 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
+
+#include "common/Pcsx2Types.h"
 
 #define MADR (Index == 0 ? HW_DMA4_MADR : HW_DMA7_MADR)
 #define TADR (Index == 0 ? HW_DMA4_TADR : HW_DMA7_TADR)

@@ -1,14 +1,17 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "MultiISA.h"
-#include <xbyak/xbyak_util.h>
+
+#include "common/Console.h"
+
+#include "cpuinfo.h"
 
 #ifdef _WIN32
 #define strcasecmp _stricmp
 #endif
 
-static Xbyak::util::Cpu s_cpu;
+#ifdef _M_X86
 
 static ProcessorFeatures::VectorISA getCurrentISA()
 {
@@ -31,21 +34,25 @@ static ProcessorFeatures::VectorISA getCurrentISA()
 			return ProcessorFeatures::VectorISA::SSE4;
 		}
 	}
-	if (s_cpu.has(Xbyak::util::Cpu::tAVX2) && s_cpu.has(Xbyak::util::Cpu::tBMI1) && s_cpu.has(Xbyak::util::Cpu::tBMI2))
+
+	if (cpuinfo_has_x86_avx2() && cpuinfo_has_x86_bmi() && cpuinfo_has_x86_bmi2())
 		return ProcessorFeatures::VectorISA::AVX2;
-	else if (s_cpu.has(Xbyak::util::Cpu::tAVX))
+	else if (cpuinfo_has_x86_avx())
 		return ProcessorFeatures::VectorISA::AVX;
-	else if (s_cpu.has(Xbyak::util::Cpu::tSSE41))
-		return ProcessorFeatures::VectorISA::SSE4;
 	else
-		return ProcessorFeatures::VectorISA::None;
+		return ProcessorFeatures::VectorISA::SSE4;
 }
+
+#endif
 
 static ProcessorFeatures getProcessorFeatures()
 {
+	cpuinfo_initialize();
+
 	ProcessorFeatures features = {};
+#if defined(_M_X86)
 	features.vectorISA = getCurrentISA();
-	features.hasFMA = s_cpu.has(Xbyak::util::Cpu::tFMA);
+	features.hasFMA = cpuinfo_has_x86_fma3();
 	if (const char* over = getenv("OVERRIDE_FMA"))
 	{
 		features.hasFMA = over[0] == 'Y' || over[0] == 'y' || over[0] == '1';
@@ -59,11 +66,10 @@ static ProcessorFeatures getProcessorFeatures()
 	}
 	else if (features.vectorISA == ProcessorFeatures::VectorISA::AVX2)
 	{
-		if (s_cpu.has(Xbyak::util::Cpu::tINTEL))
+		if (cpuinfo_get_cores_count() > 0 && cpuinfo_get_core(0)->vendor == cpuinfo_vendor_intel)
 		{
 			// Slow on Haswell
-			// CPUID data from https://en.wikichip.org/wiki/intel/cpuid
-			features.hasSlowGather = s_cpu.displayModel == 0x46 || s_cpu.displayModel == 0x45 || s_cpu.displayModel == 0x3c;
+			features.hasSlowGather = (cpuinfo_get_uarchs_count() == 0 || cpuinfo_get_uarch(0)->uarch == cpuinfo_uarch_haswell);
 		}
 		else
 		{
@@ -73,6 +79,7 @@ static ProcessorFeatures getProcessorFeatures()
 			features.hasSlowGather = true;
 		}
 	}
+#endif
 	return features;
 }
 

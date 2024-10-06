@@ -68,83 +68,6 @@
       <string>System Settings</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
-      <item row="3" column="0" colspan="2">
-       <layout class="QGridLayout" name="systemSettingsLayout">
-        <item row="0" column="1">
-         <widget class="QCheckBox" name="instantVU1">
-          <property name="text">
-           <string>Enable Instant VU1</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="cheats">
-          <property name="text">
-           <string>Enable Cheats</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QCheckBox" name="MTVU">
-          <property name="text">
-           <string>Enable Multithreaded VU1 (MTVU)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QCheckBox" name="hostFilesystem">
-          <property name="text">
-           <string>Enable Host Filesystem</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QCheckBox" name="fastCDVD">
-          <property name="text">
-           <string>Enable Fast CDVD</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>EE Cycle Skipping:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="eeCycleSkipping">
-        <item>
-         <property name="text">
-          <string>Disabled</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Mild Underclock</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Moderate Underclock</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Maximum Underclock</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>EE Cycle Rate:</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="eeCycleRate">
         <item>
@@ -184,15 +107,8 @@
         </item>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Affinity Control:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="affinityControl">
+      <item row="1" column="1">
+       <widget class="QComboBox" name="eeCycleSkipping">
         <item>
          <property name="text">
           <string>Disabled</string>
@@ -200,34 +116,79 @@
         </item>
         <item>
          <property name="text">
-          <string>EE &gt; VU &gt; GS</string>
+          <string>Mild Underclock</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>EE &gt; GS &gt; VU</string>
+          <string>Moderate Underclock</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>VU &gt; EE &gt; GS</string>
+          <string>Maximum Underclock</string>
          </property>
         </item>
-        <item>
-         <property name="text">
-          <string>VU &gt; GS &gt; EE</string>
-         </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <layout class="QGridLayout" name="systemSettingsLayout">
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="cheats">
+          <property name="text">
+           <string>Enable Cheats</string>
+          </property>
+         </widget>
         </item>
-        <item>
-         <property name="text">
-          <string>GS &gt; EE &gt; VU</string>
-         </property>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="MTVU">
+          <property name="text">
+           <string>Enable Multithreaded VU1 (MTVU)</string>
+          </property>
+         </widget>
         </item>
-        <item>
-         <property name="text">
-          <string>GS &gt; VU &gt; EE</string>
-         </property>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="hostFilesystem">
+          <property name="text">
+           <string>Enable Host Filesystem</string>
+          </property>
+         </widget>
         </item>
+        <item row="2" column="1">
+         <widget class="QCheckBox" name="fastCDVD">
+          <property name="text">
+           <string>Enable Fast CDVD</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="precacheCDVD">
+          <property name="text">
+           <string>Enable CDVD Precaching</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="threadPinning">
+          <property name="text">
+           <string>Enable Thread Pinning</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>EE Cycle Rate:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>EE Cycle Skipping:</string>
+        </property>
        </widget>
       </item>
      </layout>
@@ -261,6 +222,20 @@
       </item>
       <item row="3" column="0" colspan="2">
        <layout class="QGridLayout" name="basicCheckboxGridLayout">
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="useVSyncForTiming">
+          <property name="text">
+           <string>Use Host VSync Timing</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="syncToHostRefreshRate">
+          <property name="text">
+           <string>Sync to Host Refresh Rate</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0">
          <widget class="QCheckBox" name="optimalFramePacing">
           <property name="text">
@@ -268,10 +243,10 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="QCheckBox" name="syncToHostRefreshRate">
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="vsync">
           <property name="text">
-           <string>Scale To Host Refresh Rate</string>
+           <string>Vertical Sync (VSync)</string>
           </property>
          </widget>
         </item>
@@ -283,7 +258,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>

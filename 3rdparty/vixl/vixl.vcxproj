@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(SolutionDir)common\vsprops\BaseProjectConfig.props" />
+  <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8906836E-F06E-46E8-B11A-74E5E8C7B8FB}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset Condition="!$(Configuration.Contains(Clang))">$(DefaultPlatformToolset)</PlatformToolset>
+    <PlatformToolset Condition="$(Configuration.Contains(Clang))">ClangCL</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
+    <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="..\DefaultProjectRootDir.props" />
+    <Import Project="..\3rdparty.props" />
+    <Import Condition="$(Configuration.Contains(Debug))" Project="..\..\common\vsprops\CodeGen_Debug.props" />
+    <Import Condition="$(Configuration.Contains(Devel))" Project="..\..\common\vsprops\CodeGen_Devel.props" />
+    <Import Condition="$(Configuration.Contains(Release))" Project="..\..\common\vsprops\CodeGen_Release.props" />
+    <Import Condition="!$(Configuration.Contains(Release))" Project="..\..\common\vsprops\IncrementalLinking.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <PreprocessorDefinitions>VIXL_INCLUDE_TARGET_AARCH64;VIXL_CODE_BUFFER_MALLOC;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(Configuration.Contains(Debug))">_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(Configuration.Contains(Devel))">NDEBUG;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(Configuration.Contains(Release))">NDEBUG;_SECURE_SCL_=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)include\vixl;$(ProjectDir)include\vixl\aarch64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/Zc:__cplusplus /Zo /utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\vixl\aarch64\abi-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\assembler-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\constants-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\cpu-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\cpu-features-auditor-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\decoder-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\decoder-constants-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\decoder-visitor-map-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\disasm-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\instructions-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\macro-assembler-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\operands-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\registers-aarch64.h" />
+    <ClInclude Include="include\vixl\assembler-base-vixl.h" />
+    <ClInclude Include="include\vixl\code-buffer-vixl.h" />
+    <ClInclude Include="include\vixl\code-generation-scopes-vixl.h" />
+    <ClInclude Include="include\vixl\compiler-intrinsics-vixl.h" />
+    <ClInclude Include="include\vixl\cpu-features.h" />
+    <ClInclude Include="include\vixl\globals-vixl.h" />
+    <ClInclude Include="include\vixl\invalset-vixl.h" />
+    <ClInclude Include="include\vixl\macro-assembler-interface.h" />
+    <ClInclude Include="include\vixl\platform-vixl.h" />
+    <ClInclude Include="include\vixl\pool-manager-impl.h" />
+    <ClInclude Include="include\vixl\pool-manager.h" />
+    <ClInclude Include="include\vixl\utils-vixl.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\aarch64\assembler-aarch64.cc" />
+    <ClCompile Include="src\aarch64\assembler-sve-aarch64.cc" />
+    <ClCompile Include="src\aarch64\cpu-aarch64.cc" />
+    <ClCompile Include="src\aarch64\cpu-features-auditor-aarch64.cc" />
+    <ClCompile Include="src\aarch64\decoder-aarch64.cc" />
+    <ClCompile Include="src\aarch64\disasm-aarch64.cc" />
+    <ClCompile Include="src\aarch64\instructions-aarch64.cc" />
+    <ClCompile Include="src\aarch64\logic-aarch64.cc" />
+    <ClCompile Include="src\aarch64\macro-assembler-aarch64.cc" />
+    <ClCompile Include="src\aarch64\macro-assembler-sve-aarch64.cc" />
+    <ClCompile Include="src\aarch64\operands-aarch64.cc" />
+    <ClCompile Include="src\aarch64\pointer-auth-aarch64.cc" />
+    <ClCompile Include="src\aarch64\registers-aarch64.cc" />
+    <ClCompile Include="src\code-buffer-vixl.cc" />
+    <ClCompile Include="src\compiler-intrinsics-vixl.cc" />
+    <ClCompile Include="src\cpu-features.cc" />
+    <ClCompile Include="src\utils-vixl.cc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

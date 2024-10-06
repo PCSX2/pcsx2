@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -7,6 +7,7 @@
 #include "common/RedtapeWindows.h"
 #endif
 
+#include "CDVDcommon.h"
 #include "common/Pcsx2Defs.h"
 
 #include <array>
@@ -16,16 +17,6 @@
 #include <vector>
 
 class Error;
-
-struct track
-{
-	u32 start_lba;
-	u8 type;
-};
-
-extern u8 strack;
-extern u8 etrack;
-extern track tracks[100];
 
 extern int curDiskType;
 extern int curTrayStatus;
@@ -70,6 +61,7 @@ public:
 	const std::vector<toc_entry>& ReadTOC() const;
 	bool ReadSectors2048(u32 sector, u32 count, u8* buffer) const;
 	bool ReadSectors2352(u32 sector, u32 count, u8* buffer) const;
+	bool ReadTrackSubQ(cdvdSubQ* subq) const;
 	u32 GetLayerBreakAddress() const;
 	s32 GetMediaType() const;
 	void SetSpindleSpeed(bool restore_defaults) const;

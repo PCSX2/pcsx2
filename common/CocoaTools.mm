@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #if ! __has_feature(objc_arc)
 	#error "Compile this with -fobjc-arc"
@@ -62,6 +62,27 @@ void CocoaTools::DestroyMetalLayer(WindowInfo* wi)
 	wi->surface_handle = nullptr;
 	[view setLayer:nil];
 	[view setWantsLayer:NO];
+}
+
+std::optional<float> CocoaTools::GetViewRefreshRate(const WindowInfo& wi)
+{
+	if (![NSThread isMainThread])
+	{
+		std::optional<float> ret;
+		dispatch_sync(dispatch_get_main_queue(), [&ret, wi]{ ret = GetViewRefreshRate(wi); });
+		return ret;
+	}
+
+	std::optional<float> ret;
+	NSView* const view = (__bridge NSView*)wi.window_handle;
+	const u32 did = [[[[[view window] screen] deviceDescription] valueForKey:@"NSScreenNumber"] unsignedIntValue];
+	if (CGDisplayModeRef mode = CGDisplayCopyDisplayMode(did))
+	{
+		ret = CGDisplayModeGetRefreshRate(mode);
+		CGDisplayModeRelease(mode);
+	}
+	
+	return ret;
 }
 
 // MARK: - Theme Change Handlers
@@ -132,6 +153,17 @@ bool Common::PlaySoundAsync(const char* path)
 }
 
 // MARK: - Updater
+
+std::optional<std::string> CocoaTools::GetBundlePath()
+{
+  std::optional<std::string> ret;
+  @autoreleasepool {
+    NSURL* url = [NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]];
+    if (url)
+      ret = std::string([url fileSystemRepresentation]);
+  }
+  return ret;
+}
 
 std::optional<std::string> CocoaTools::GetNonTranslocatedBundlePath()
 {

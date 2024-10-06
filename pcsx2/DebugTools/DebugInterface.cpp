@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "DebugInterface.h"
 #include "Memory.h"
@@ -10,33 +10,28 @@
 #include "GS.h" // Required for gsNonMirroredRead()
 #include "Counters.h"
 
+#include "Host.h"
 #include "R3000A.h"
 #include "IopMem.h"
-#include "SymbolMap.h"
 #include "VMManager.h"
 
 #include "common/StringUtil.h"
-
-#ifdef __clang__
-// TODO: The sprintf() usage here needs to be rewritten...
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif
 
 R5900DebugInterface r5900Debug;
 R3000DebugInterface r3000Debug;
 
 enum ReferenceIndexType
 {
-	REF_INDEX_PC       = 32,
-	REF_INDEX_HI       = 33,
-	REF_INDEX_LO       = 34,
+	REF_INDEX_PC = 32,
+	REF_INDEX_HI = 33,
+	REF_INDEX_LO = 34,
 	REF_INDEX_OPTARGET = 0x800,
-	REF_INDEX_OPSTORE  = 0x1000,
-	REF_INDEX_OPLOAD   = 0x2000,
-	REF_INDEX_IS_OPSL  = REF_INDEX_OPTARGET | REF_INDEX_OPSTORE | REF_INDEX_OPLOAD,
-	REF_INDEX_FPU      = 0x4000,
-	REF_INDEX_FPU_INT  = 0x8000,
-	REF_INDEX_VFPU     = 0x10000,
+	REF_INDEX_OPSTORE = 0x1000,
+	REF_INDEX_OPLOAD = 0x2000,
+	REF_INDEX_IS_OPSL = REF_INDEX_OPTARGET | REF_INDEX_OPSTORE | REF_INDEX_OPLOAD,
+	REF_INDEX_FPU = 0x4000,
+	REF_INDEX_FPU_INT = 0x8000,
+	REF_INDEX_VFPU = 0x10000,
 	REF_INDEX_VFPU_INT = 0x20000,
 	REF_INDEX_IS_FLOAT = REF_INDEX_FPU | REF_INDEX_VFPU,
 
@@ -46,8 +41,20 @@ enum ReferenceIndexType
 class MipsExpressionFunctions : public IExpressionFunctions
 {
 public:
-	explicit MipsExpressionFunctions(DebugInterface* cpu)
-		: cpu(cpu){};
+	explicit MipsExpressionFunctions(DebugInterface* cpu, bool enumerateSymbols)
+		: m_cpu(cpu)
+	{
+		if (!enumerateSymbols)
+			return;
+
+		m_cpu->GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
+			for (const ccc::Function& function : database.functions)
+				m_mangled_function_names_to_handles.emplace(function.mangled_name(), function.handle());
+
+			for (const ccc::GlobalVariable& global : database.global_variables)
+				m_mangled_global_names_to_handles.emplace(global.mangled_name(), global.handle());
+		});
+	}
 
 	virtual bool parseReference(char* str, u64& referenceIndex)
 	{
@@ -55,10 +62,16 @@ public:
 		{
 			char reg[8];
 			std::snprintf(reg, std::size(reg), "r%d", i);
-
-			if (StringUtil::Strcasecmp(str, reg) == 0 || StringUtil::Strcasecmp(str, cpu->getRegisterName(0, i)) == 0)
+			if (StringUtil::Strcasecmp(str, reg) == 0 || StringUtil::Strcasecmp(str, m_cpu->getRegisterName(0, i)) == 0)
 			{
 				referenceIndex = i;
+				return true;
+			}
+
+			std::snprintf(reg, std::size(reg), "f%d", i);
+			if (StringUtil::Strcasecmp(str, reg) == 0)
+			{
+				referenceIndex = i | REF_INDEX_FPU;
 				return true;
 			}
 		}
@@ -103,29 +116,66 @@ public:
 
 	virtual bool parseSymbol(char* str, u64& symbolValue)
 	{
-		u32 value;
-		bool result = cpu->GetSymbolMap().GetLabelValue(str, value);
-		symbolValue = value;
-		return result;
+		bool success = false;
+		m_cpu->GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
+			std::string name = str;
+
+			// Check for mangled function names.
+			auto function_iterator = m_mangled_function_names_to_handles.find(name);
+			if (function_iterator != m_mangled_function_names_to_handles.end())
+			{
+				const ccc::Function* function = database.functions.symbol_from_handle(function_iterator->second);
+				if (function && function->address().valid())
+				{
+					symbolValue = function->address().value;
+					success = true;
+					return;
+				}
+			}
+
+			// Check for mangled global variable names.
+			auto global_iterator = m_mangled_global_names_to_handles.find(name);
+			if (global_iterator != m_mangled_global_names_to_handles.end())
+			{
+				const ccc::GlobalVariable* global = database.global_variables.symbol_from_handle(global_iterator->second);
+				if (global && global->address().valid())
+				{
+					symbolValue = global->address().value;
+					success = true;
+					return;
+				}
+			}
+
+			// Check for regular unmangled names.
+			const ccc::Symbol* symbol = database.symbol_with_name(name);
+			if (symbol && symbol->address().valid())
+			{
+				symbolValue = symbol->address().value;
+				success = true;
+				return;
+			}
+		});
+
+		return success;
 	}
 
 	virtual u64 getReferenceValue(u64 referenceIndex)
 	{
 		if (referenceIndex < 32)
-			return cpu->getRegister(0, referenceIndex)._u64[0];
+			return m_cpu->getRegister(0, referenceIndex)._u64[0];
 		if (referenceIndex == REF_INDEX_PC)
-			return cpu->getPC();
+			return m_cpu->getPC();
 		if (referenceIndex == REF_INDEX_HI)
-			return cpu->getHI()._u64[0];
+			return m_cpu->getHI()._u64[0];
 		if (referenceIndex == REF_INDEX_LO)
-			return cpu->getLO()._u64[0];
+			return m_cpu->getLO()._u64[0];
 		if (referenceIndex & REF_INDEX_IS_OPSL)
 		{
-			const u32 OP = memRead32(cpu->getPC());
+			const u32 OP = m_cpu->read32(m_cpu->getPC());
 			const R5900::OPCODE& opcode = R5900::GetInstruction(OP);
 			if (opcode.flags & IS_MEMORY)
 			{
-				// Fetch the address in the base register 
+				// Fetch the address in the base register
 				u32 target = cpuRegs.GPR.r[(OP >> 21) & 0x1F].UD[0];
 				// Add the offset (lower 16 bits)
 				target += static_cast<u16>(OP);
@@ -145,6 +195,10 @@ public:
 			}
 			return 0;
 		}
+		if (referenceIndex & REF_INDEX_FPU)
+		{
+			return m_cpu->getRegister(EECAT_FPR, referenceIndex & 0x1F)._u64[0];
+		}
 		return -1;
 	}
 
@@ -157,7 +211,7 @@ public:
 		return EXPR_TYPE_UINT;
 	}
 
-	virtual bool getMemoryValue(u32 address, int size, u64& dest, char* error)
+	virtual bool getMemoryValue(u32 address, int size, u64& dest, std::string& error)
 	{
 		switch (size)
 		{
@@ -167,37 +221,40 @@ public:
 			case 8:
 				break;
 			default:
-				sprintf(error, "Invalid memory access size %d", size);
+				error = StringUtil::StdStringFromFormat(
+					TRANSLATE("ExpressionParser", "Invalid memory access size %d."), size);
 				return false;
 		}
 
 		if (address % size)
 		{
-			sprintf(error, "Invalid memory access (unaligned)");
+			error = TRANSLATE("ExpressionParser", "Invalid memory access (unaligned).");
 			return false;
 		}
 
 		switch (size)
 		{
 			case 1:
-				dest = cpu->read8(address);
+				dest = m_cpu->read8(address);
 				break;
 			case 2:
-				dest = cpu->read16(address);
+				dest = m_cpu->read16(address);
 				break;
 			case 4:
-				dest = cpu->read32(address);
+				dest = m_cpu->read32(address);
 				break;
 			case 8:
-				dest = cpu->read64(address);
+				dest = m_cpu->read64(address);
 				break;
 		}
 
 		return true;
 	}
 
-private:
-	DebugInterface* cpu;
+protected:
+	DebugInterface* m_cpu;
+	std::map<std::string, ccc::FunctionHandle> m_mangled_function_names_to_handles;
+	std::map<std::string, ccc::GlobalVariableHandle> m_mangled_global_names_to_handles;
 };
 
 //
@@ -228,7 +285,7 @@ void DebugInterface::resumeCpu()
 
 char* DebugInterface::stringFromPointer(u32 p)
 {
-	const int BUFFER_LEN = 25;
+	const int BUFFER_LEN = 64;
 	static char buf[BUFFER_LEN] = {0};
 
 	if (!isValidAddress(p))
@@ -257,18 +314,70 @@ char* DebugInterface::stringFromPointer(u32 p)
 	return buf;
 }
 
+std::optional<u32> DebugInterface::getCallerStackPointer(const ccc::Function& currentFunction)
+{
+	u32 sp = getRegister(EECAT_GPR, 29);
+	u32 pc = getPC();
+
+	if (pc != currentFunction.address().value)
+	{
+		std::optional<u32> stack_frame_size = getStackFrameSize(currentFunction);
+		if (!stack_frame_size.has_value())
+			return std::nullopt;
+
+		sp += *stack_frame_size;
+	}
+
+	return sp;
+}
+
+std::optional<u32> DebugInterface::getStackFrameSize(const ccc::Function& function)
+{
+	s32 stack_frame_size = function.stack_frame_size;
+
+	if (stack_frame_size < 0)
+	{
+		// The stack frame size isn't stored in the symbol table, so we try
+		// to extract it from the code by checking for an instruction at the
+		// start of the current function that is in the form of
+		// "addui $sp, $sp, frame_size" instead.
+
+		u32 instruction = read32(function.address().value);
+
+		if ((instruction & 0xffff0000) == 0x27bd0000)
+			stack_frame_size = -static_cast<s16>(instruction & 0xffff);
+
+		if (stack_frame_size < 0)
+			return std::nullopt;
+	}
+
+	return static_cast<u32>(stack_frame_size);
+}
+
+bool DebugInterface::evaluateExpression(const char* expression, u64& dest)
+{
+	PostfixExpression postfix;
+
+	if (!initExpression(expression, postfix))
+		return false;
+
+	if (!parseExpression(postfix, dest))
+		return false;
+
+	return true;
+}
+
 bool DebugInterface::initExpression(const char* exp, PostfixExpression& dest)
 {
-	MipsExpressionFunctions funcs(this);
+	MipsExpressionFunctions funcs(this, true);
 	return initPostfixExpression(exp, &funcs, dest);
 }
 
 bool DebugInterface::parseExpression(PostfixExpression& exp, u64& dest)
 {
-	MipsExpressionFunctions funcs(this);
+	MipsExpressionFunctions funcs(this, false);
 	return parsePostfixExpression(exp, &funcs, dest);
 }
-
 
 //
 // R5900DebugInterface
@@ -284,7 +393,11 @@ u32 R5900DebugInterface::read8(u32 address)
 	if (!isValidAddress(address))
 		return -1;
 
-	return memRead8(address);
+	u8 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u8)))
+		return -1;
+
+	return value;
 }
 
 u32 R5900DebugInterface::read8(u32 address, bool& valid)
@@ -292,7 +405,11 @@ u32 R5900DebugInterface::read8(u32 address, bool& valid)
 	if (!(valid = isValidAddress(address)))
 		return -1;
 
-	return memRead8(address);
+	u8 value;
+	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u8))))
+		return -1;
+
+	return value;
 }
 
 
@@ -301,7 +418,11 @@ u32 R5900DebugInterface::read16(u32 address)
 	if (!isValidAddress(address) || address % 2)
 		return -1;
 
-	return memRead16(address);
+	u16 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u16)))
+		return -1;
+
+	return static_cast<u32>(value);
 }
 
 u32 R5900DebugInterface::read16(u32 address, bool& valid)
@@ -309,7 +430,11 @@ u32 R5900DebugInterface::read16(u32 address, bool& valid)
 	if (!(valid = (isValidAddress(address) || address % 2)))
 		return -1;
 
-	return memRead16(address);
+	u16 value;
+	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u16))))
+		return -1;
+
+	return static_cast<u32>(value);
 }
 
 u32 R5900DebugInterface::read32(u32 address)
@@ -317,7 +442,11 @@ u32 R5900DebugInterface::read32(u32 address)
 	if (!isValidAddress(address) || address % 4)
 		return -1;
 
-	return memRead32(address);
+	u32 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u32)))
+		return -1;
+
+	return value;
 }
 
 u32 R5900DebugInterface::read32(u32 address, bool& valid)
@@ -325,7 +454,11 @@ u32 R5900DebugInterface::read32(u32 address, bool& valid)
 	if (!(valid = (isValidAddress(address) || address % 4)))
 		return -1;
 
-	return memRead32(address);
+	u32 value;
+	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u32))))
+		return -1;
+
+	return value;
 }
 
 u64 R5900DebugInterface::read64(u32 address)
@@ -333,7 +466,11 @@ u64 R5900DebugInterface::read64(u32 address)
 	if (!isValidAddress(address) || address % 8)
 		return -1;
 
-	return memRead64(address);
+	u64 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u64)))
+		return -1;
+
+	return value;
 }
 
 u64 R5900DebugInterface::read64(u32 address, bool& valid)
@@ -341,7 +478,11 @@ u64 R5900DebugInterface::read64(u32 address, bool& valid)
 	if (!(valid = (isValidAddress(address) || address % 8)))
 		return -1;
 
-	return memRead64(address);
+	u64 value;
+	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u64))))
+		return -1;
+
+	return value;
 }
 
 u128 R5900DebugInterface::read128(u32 address)
@@ -353,7 +494,11 @@ u128 R5900DebugInterface::read128(u32 address)
 		return result;
 	}
 
-	memRead128(address, result);
+	if (!vtlb_memSafeReadBytes(address, &result, sizeof(u128)))
+	{
+		result.hi = result.lo = -1;
+	}
+
 	return result;
 }
 
@@ -362,7 +507,15 @@ void R5900DebugInterface::write8(u32 address, u8 value)
 	if (!isValidAddress(address))
 		return;
 
-	memWrite8(address, value);
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u8));
+}
+
+void R5900DebugInterface::write16(u32 address, u16 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u16));
 }
 
 void R5900DebugInterface::write32(u32 address, u32 value)
@@ -370,9 +523,24 @@ void R5900DebugInterface::write32(u32 address, u32 value)
 	if (!isValidAddress(address))
 		return;
 
-	memWrite32(address, value);
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u32));
 }
 
+void R5900DebugInterface::write64(u32 address, u64 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u64));
+}
+
+void R5900DebugInterface::write128(u32 address, u128 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u128));
+}
 
 int R5900DebugInterface::getRegisterCategoryCount()
 {
@@ -670,7 +838,7 @@ bool R5900DebugInterface::isValidAddress(u32 addr)
 			// [ 0000_8000 - 01FF_FFFF ] RAM
 			// [ 2000_8000 - 21FF_FFFF ] RAM MIRROR
 			// [ 3000_8000 - 31FF_FFFF ] RAM MIRROR
-			if (lopart >= 0x80000 && lopart <= 0x1ffFFff)
+			if (lopart >= 0x80000 && lopart < Ps2MemSize::ExposedRam)
 				return !!vtlb_GetPhyPtr(lopart);
 			break;
 		case 1:
@@ -696,12 +864,16 @@ bool R5900DebugInterface::isValidAddress(u32 addr)
 				return true;
 			break;
 		case 8:
-		case 9:
 		case 0xA:
+			if (lopart <= 0xFFFFF)
+				return true;
+			break;
+		case 9:
 		case 0xB:
 			// [ 8000_0000 - BFFF_FFFF ] kernel
 			if (lopart >= 0xFC00000)
 				return true;
+			break;
 		case 0xF:
 			// [ 8000_0000 - BFFF_FFFF ] IOP or kernel stack
 			if (lopart >= 0xfff8000)
@@ -717,9 +889,9 @@ u32 R5900DebugInterface::getCycles()
 	return cpuRegs.cycle;
 }
 
-SymbolMap& R5900DebugInterface::GetSymbolMap() const
+SymbolGuardian& R5900DebugInterface::GetSymbolGuardian() const
 {
-	return R5900SymbolMap;
+	return R5900SymbolGuardian;
 }
 
 std::vector<std::unique_ptr<BiosThread>> R5900DebugInterface::GetThreadList() const
@@ -778,7 +950,6 @@ u32 R3000DebugInterface::read32(u32 address, bool& valid)
 	if (!(valid = isValidAddress(address)))
 		return -1;
 	return iopMemRead32(address);
-
 }
 
 u64 R3000DebugInterface::read64(u32 address)
@@ -805,12 +976,40 @@ void R3000DebugInterface::write8(u32 address, u8 value)
 	iopMemWrite8(address, value);
 }
 
+void R3000DebugInterface::write16(u32 address, u16 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	iopMemWrite16(address, value);
+}
+
 void R3000DebugInterface::write32(u32 address, u32 value)
 {
 	if (!isValidAddress(address))
 		return;
 
 	iopMemWrite32(address, value);
+}
+
+void R3000DebugInterface::write64(u32 address, u64 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	iopMemWrite32(address + 0, value);
+	iopMemWrite32(address + 4, value >> 32);
+}
+
+void R3000DebugInterface::write128(u32 address, u128 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	iopMemWrite32(address + 0x0, value._u32[0]);
+	iopMemWrite32(address + 0x4, value._u32[1]);
+	iopMemWrite32(address + 0x8, value._u32[2]);
+	iopMemWrite32(address + 0xc, value._u32[3]);
 }
 
 int R3000DebugInterface::getRegisterCategoryCount()
@@ -1009,12 +1208,93 @@ u32 R3000DebugInterface::getCycles()
 	return psxRegs.cycle;
 }
 
-SymbolMap& R3000DebugInterface::GetSymbolMap() const
+SymbolGuardian& R3000DebugInterface::GetSymbolGuardian() const
 {
-	return R3000SymbolMap;
+	return R3000SymbolGuardian;
 }
 
 std::vector<std::unique_ptr<BiosThread>> R3000DebugInterface::GetThreadList() const
 {
 	return getIOPThreads();
+}
+
+ElfMemoryReader::ElfMemoryReader(const ccc::ElfFile& elf)
+	: m_elf(elf)
+{
+}
+
+u32 ElfMemoryReader::read8(u32 address)
+{
+	ccc::Result<u8> result = m_elf.get_object_virtual<u8>(address);
+	if (!result.success())
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read8(u32 address, bool& valid)
+{
+	ccc::Result<u8> result = m_elf.get_object_virtual<u8>(address);
+	valid = result.success();
+	if (!valid)
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read16(u32 address)
+{
+	ccc::Result<u16> result = m_elf.get_object_virtual<u16>(address);
+	if (!result.success())
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read16(u32 address, bool& valid)
+{
+	ccc::Result<u16> result = m_elf.get_object_virtual<u16>(address);
+	valid = result.success();
+	if (!valid)
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read32(u32 address)
+{
+	ccc::Result<u32> result = m_elf.get_object_virtual<u32>(address);
+	if (!result.success())
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read32(u32 address, bool& valid)
+{
+	ccc::Result<u32> result = m_elf.get_object_virtual<u32>(address);
+	valid = result.success();
+	if (!valid)
+		return 0;
+
+	return *result;
+}
+
+u64 ElfMemoryReader::read64(u32 address)
+{
+	ccc::Result<u64> result = m_elf.get_object_virtual<u64>(address);
+	if (!result.success())
+		return 0;
+
+	return *result;
+}
+
+u64 ElfMemoryReader::read64(u32 address, bool& valid)
+{
+	ccc::Result<u64> result = m_elf.get_object_virtual<u64>(address);
+	valid = result.success();
+	if (!valid)
+		return 0;
+
+	return *result;
 }

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "R3000A.h"
 #include "Common.h"
@@ -44,6 +44,7 @@ void psxReset()
 
 	psxRegs.iopBreak = 0;
 	psxRegs.iopCycleEE = -1;
+	psxRegs.iopCycleEECarry = 0;
 	psxRegs.iopNextEventCycle = psxRegs.cycle + 4;
 
 	psxHwReset();
@@ -135,8 +136,8 @@ __fi void PSX_INT( IopEventId n, s32 ecycle )
 	psxRegs.eCycle[n] = ecycle;
 
 	psxSetNextBranchDelta(ecycle);
-
-	const s32 iopDelta = (psxRegs.iopNextEventCycle - psxRegs.cycle) * 8;
+	const float mutiplier = static_cast<float>(PS2CLK) / static_cast<float>(PSXCLK);
+	const s32 iopDelta = (psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier;
 
 	if (psxRegs.iopCycleEE < iopDelta)
 	{
@@ -207,7 +208,7 @@ __ri void iopEventTest()
 {
 	psxRegs.iopNextEventCycle = psxRegs.cycle + iopWaitCycles;
 
-	if (psxTestCycle(psxNextsCounter, psxNextCounter))
+	if (psxTestCycle(psxNextStartCounter, psxNextDeltaCounter))
 	{
 		psxRcntUpdate();
 		iopEventAction = true;
@@ -216,8 +217,8 @@ __ri void iopEventTest()
 	{
 		// start the next branch at the next counter event by default
 		// the interrupt code below will assign nearer branches if needed.
-		if (psxNextCounter < static_cast<s32>(psxRegs.iopNextEventCycle - psxNextsCounter))
-			psxRegs.iopNextEventCycle = psxNextsCounter + psxNextCounter;
+		if (psxNextDeltaCounter < static_cast<s32>(psxRegs.iopNextEventCycle - psxNextStartCounter))
+			psxRegs.iopNextEventCycle = psxNextStartCounter + psxNextDeltaCounter;
 	}
 
 	if (psxRegs.interrupt)

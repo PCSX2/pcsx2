@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -112,9 +112,12 @@ public Q_SLOTS:
 	void queueSnapshot(quint32 gsdump_frames);
 	void beginCapture(const QString& path);
 	void endCapture();
-
+	void setAudioOutputVolume(int volume, int fast_forward_volume);
+	void setAudioOutputMuted(bool muted);
+	
 Q_SIGNALS:
 	bool messageConfirmed(const QString& title, const QString& message);
+	void statusMessage(const QString& message);
 
 	std::optional<WindowInfo> onAcquireRenderWindowRequested(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
 	void onResizeRenderWindowRequested(qint32 width, qint32 height);
@@ -158,9 +161,6 @@ Q_SIGNALS:
 
 	/// Called when achievements login is requested.
 	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
-
-	/// Called when achievements login succeeds. Also happens on startup.
-	void onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points, quint32 unread_messages);
 
 	/// Called when achievements are reloaded/refreshed (e.g. game change, login, option change).
 	void onAchievementsRefreshed(quint32 id, const QString& game_info_string);
@@ -280,6 +280,9 @@ namespace QtHost
 
 	/// Returns the URL to a runtime-downloaded resource.
 	std::string GetRuntimeDownloadedResourceURL(std::string_view name);
+
+	/// Saves a game settings interface.
+	bool SaveGameSettings(SettingsInterface* sif, bool delete_if_empty);
 
 	/// Downloads the specified URL to the provided path.
 	bool DownloadFile(QWidget* parent, const QString& title, std::string url, const std::string& path);

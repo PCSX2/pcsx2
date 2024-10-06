@@ -95,6 +95,8 @@ int rc_parse_memref(const char** memaddr, uint8_t* size, uint32_t* address) {
     switch (*aux++) {
       case 'f': case 'F': *size = RC_MEMSIZE_FLOAT; break;
       case 'b': case 'B': *size = RC_MEMSIZE_FLOAT_BE; break;
+      case 'h': case 'H': *size = RC_MEMSIZE_DOUBLE32; break;
+      case 'i': case 'I': *size = RC_MEMSIZE_DOUBLE32_BE; break;
       case 'm': case 'M': *size = RC_MEMSIZE_MBF32; break;
       case 'l': case 'L': *size = RC_MEMSIZE_MBF32_LE; break;
 
@@ -193,6 +195,29 @@ static void rc_transform_memref_float_be(rc_typed_value_t* value) {
                             ((value->value.u32 & 0x00007F00) << 8);
   const int32_t exponent = (int32_t)(((value->value.u32 & 0x0000007F) << 1) |
                                      ((value->value.u32 & 0x00008000) >> 15)) - 127;
+  const int sign = (value->value.u32 & 0x00000080);
+  value->value.f32 = rc_build_float(mantissa, exponent, sign);
+  value->type = RC_VALUE_TYPE_FLOAT;
+}
+
+static void rc_transform_memref_double32(rc_typed_value_t* value)
+{
+  /* decodes the four most significant bytes of an IEEE 754 double into a float */
+  const uint32_t mantissa = (value->value.u32 & 0x000FFFFF) << 3;
+  const int32_t exponent = (int32_t)((value->value.u32 >> 20) & 0x7FF) - 1023;
+  const int sign = (value->value.u32 & 0x80000000);
+  value->value.f32 = rc_build_float(mantissa, exponent, sign);
+  value->type = RC_VALUE_TYPE_FLOAT;
+}
+
+static void rc_transform_memref_double32_be(rc_typed_value_t* value)
+{
+  /* decodes the four most significant bytes of an IEEE 754 double in big endian format into a float */
+  const uint32_t mantissa = (((value->value.u32 & 0xFF000000) >> 24) |
+    ((value->value.u32 & 0x00FF0000) >> 8) |
+    ((value->value.u32 & 0x00000F00) << 8)) << 3;
+  const int32_t exponent = (int32_t)(((value->value.u32 & 0x0000007F) << 4) |
+    ((value->value.u32 & 0x0000F000) >> 12)) - 1023;
   const int sign = (value->value.u32 & 0x00000080);
   value->value.f32 = rc_build_float(mantissa, exponent, sign);
   value->type = RC_VALUE_TYPE_FLOAT;
@@ -322,6 +347,14 @@ void rc_transform_memref_value(rc_typed_value_t* value, uint8_t size) {
       rc_transform_memref_float_be(value);
       break;
 
+    case RC_MEMSIZE_DOUBLE32:
+      rc_transform_memref_double32(value);
+      break;
+
+    case RC_MEMSIZE_DOUBLE32_BE:
+      rc_transform_memref_double32_be(value);
+      break;
+
     case RC_MEMSIZE_MBF32:
       rc_transform_memref_mbf32(value);
       break;
@@ -358,6 +391,8 @@ static const uint32_t rc_memref_masks[] = {
   0xffffffff, /* RC_MEMSIZE_MBF32      */
   0xffffffff, /* RC_MEMSIZE_MBF32_LE   */
   0xffffffff, /* RC_MEMSIZE_FLOAT_BE   */
+  0xffffffff, /* RC_MEMSIZE_DOUBLE32   */
+  0xffffffff, /* RC_MEMSIZE_DOUBLE32_BE*/
   0xffffffff  /* RC_MEMSIZE_VARIABLE   */
 };
 
@@ -395,6 +430,8 @@ static const uint8_t rc_memref_shared_sizes[] = {
   RC_MEMSIZE_32_BITS, /* RC_MEMSIZE_MBF32      */
   RC_MEMSIZE_32_BITS, /* RC_MEMSIZE_MBF32_LE   */
   RC_MEMSIZE_32_BITS, /* RC_MEMSIZE_FLOAT_BE   */
+  RC_MEMSIZE_32_BITS, /* RC_MEMSIZE_DOUBLE32   */
+  RC_MEMSIZE_32_BITS, /* RC_MEMSIZE_DOUBLE32_BE*/
   RC_MEMSIZE_32_BITS  /* RC_MEMSIZE_VARIABLE   */
 };
 

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -103,6 +103,9 @@ namespace ImGuiManager
 
 	/// Sets the position of a software cursor, used when we have relative coordinates such as controllers.
 	void SetSoftwareCursorPosition(u32 index, float pos_x, float pos_y);
+
+	/// Strips icon characters from a string.
+	std::string StripIconCharacters(std::string_view str);
 } // namespace ImGuiManager
 
 namespace Host

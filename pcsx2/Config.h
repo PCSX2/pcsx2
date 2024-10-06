@@ -1,10 +1,13 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
+#include "Host/AudioStreamTypes.h"
+
 #include "common/Pcsx2Defs.h"
 #include "common/FPControl.h"
+
 #include <array>
 #include <string>
 #include <optional>
@@ -187,19 +190,13 @@ enum class SpeedHack
 	MaxCount,
 };
 
-enum class VsyncMode
-{
-	Off,
-	On,
-	Adaptive,
-};
-
 enum class AspectRatioType : u8
 {
 	Stretch,
 	RAuto4_3_3_2,
 	R4_3,
 	R16_9,
+	R10_7,
 	MaxCount
 };
 
@@ -209,6 +206,7 @@ enum class FMVAspectRatioSwitchType : u8
 	RAuto4_3_3_2,
 	R4_3,
 	R16_9,
+	R10_7,
 	MaxCount
 };
 
@@ -251,6 +249,14 @@ enum class GSRendererType : s8
 	DX12 = 15,
 };
 
+enum class GSVSyncMode : u8
+{
+	Disabled,
+	FIFO,
+	Mailbox,
+	Count
+};
+
 enum class GSInterlaceMode : u8
 {
 	Automatic,
@@ -290,14 +296,6 @@ enum class TriFiltering : s8
 	Forced,
 };
 
-enum class HWMipmapLevel : s8
-{
-	Automatic = -1,
-	Off,
-	Basic,
-	Full
-};
-
 enum class AccBlendLevel : u8
 {
 	Minimum,
@@ -306,6 +304,13 @@ enum class AccBlendLevel : u8
 	High,
 	Full,
 	Maximum,
+};
+
+enum class OsdOverlayPos : u8
+{
+	None,
+	TopLeft,
+	TopRight,
 };
 
 enum class TexturePreloadingLevel : u8
@@ -335,6 +340,22 @@ enum class GSDumpCompressionMethod : u8
 	Uncompressed,
 	LZMA,
 	Zstandard,
+};
+
+enum class SavestateCompressionMethod : u8
+{
+	Uncompressed = 0,
+	Deflate64 = 1,
+	Zstandard = 2,
+	LZMA2 = 3
+};
+
+enum class SavestateCompressionLevel : u8
+{
+	Low = 0,
+	Medium = 1,
+	High = 2,
+	VeryHigh = 3,
 };
 
 enum class GSHardwareDownloadMode : u8
@@ -388,6 +409,14 @@ enum class GSHalfPixelOffset : u8
 	Special,
 	SpecialAggressive,
 	Native,
+	MaxCount
+};
+
+enum class GSNativeScaling : u8
+{
+	Off,
+	Normal,
+	Aggressive,
 	MaxCount
 };
 
@@ -537,14 +566,17 @@ struct Pcsx2Config
 	// ------------------------------------------------------------------------
 	struct CpuOptions
 	{
+		BITFIELD32()
+		bool
+			ExtraMemory : 1;
+		BITFIELD_END
+
 		RecompilerOptions Recompiler;
 
 		FPControlRegister FPUFPCR;
 		FPControlRegister FPUDivFPCR;
 		FPControlRegister VU0FPCR;
 		FPControlRegister VU1FPCR;
-
-		u32 AffinityControlMode;
 
 		CpuOptions();
 		void LoadSave(SettingsWrapper& wrap);
@@ -578,7 +610,7 @@ struct Pcsx2Config
 		static constexpr int DEFAULT_VIDEO_CAPTURE_BITRATE = 6000;
 		static constexpr int DEFAULT_VIDEO_CAPTURE_WIDTH = 640;
 		static constexpr int DEFAULT_VIDEO_CAPTURE_HEIGHT = 480;
-		static constexpr int DEFAULT_AUDIO_CAPTURE_BITRATE = 160;
+		static constexpr int DEFAULT_AUDIO_CAPTURE_BITRATE = 192;
 		static const char* DEFAULT_CAPTURE_CONTAINER;
 
 		union
@@ -588,6 +620,10 @@ struct Pcsx2Config
 			struct
 			{
 				bool
+					SynchronousMTGS : 1,
+					VsyncEnable : 1,
+					DisableMailboxPresentation : 1,
+					ExtendedUpscalingMultipliers : 1,
 					PCRTCAntiBlur : 1,
 					DisableInterlaceOffset : 1,
 					PCRTCOffsets : 1,
@@ -598,11 +634,10 @@ struct Pcsx2Config
 					DisableShaderCache : 1,
 					DisableFramebufferFetch : 1,
 					DisableVertexShaderExpand : 1,
-					DisableThreadedPresentation : 1,
 					SkipDuplicateFrames : 1,
-					OsdShowMessages : 1,
 					OsdShowSpeed : 1,
 					OsdShowFPS : 1,
+					OsdShowVPS : 1,
 					OsdShowCPU : 1,
 					OsdShowGPU : 1,
 					OsdShowResolution : 1,
@@ -610,15 +645,18 @@ struct Pcsx2Config
 					OsdShowIndicators : 1,
 					OsdShowSettings : 1,
 					OsdShowInputs : 1,
-					OsdShowFrameTimes : 1;
-
-				bool
+					OsdShowFrameTimes : 1,
+					OsdShowVersion : 1,
+					OsdShowVideoCapture: 1,
+					OsdShowInputRec : 1,
+					OsdShowHardwareInfo : 1,
 					HWSpinGPUForReadbacks : 1,
 					HWSpinCPUForReadbacks : 1,
 					GPUPaletteConversion : 1,
 					AutoFlushSW : 1,
 					PreloadFrameWithGSData : 1,
 					Mipmap : 1,
+					HWMipmap : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,
@@ -628,7 +666,7 @@ struct Pcsx2Config
 					UserHacks_DisableSafeFeatures : 1,
 					UserHacks_DisableRenderFixes : 1,
 					UserHacks_MergePPSprite : 1,
-					UserHacks_WildHack : 1,
+					UserHacks_ForceEvenSpritePosition : 1,
 					UserHacks_NativePaletteDraw : 1,
 					UserHacks_EstimateTextureRegion : 1,
 					FXAA : 1,
@@ -656,12 +694,6 @@ struct Pcsx2Config
 
 		int VsyncQueueSize = 2;
 
-		// forces the MTGS to execute tags/tasks in fully blocking/synchronous
-		// style. Useful for debugging potential bugs in the MTGS pipeline.
-		bool SynchronousMTGS = false;
-
-		VsyncMode VsyncEnable = VsyncMode::Off;
-
 		float FramerateNTSC = DEFAULT_FRAME_RATE_NTSC;
 		float FrameratePAL = DEFAULT_FRAME_RATE_PAL;
 
@@ -673,12 +705,13 @@ struct Pcsx2Config
 		float StretchY = 100.0f;
 		int Crop[4] = {};
 
-		float OsdScale = 100.0;
+		float OsdScale = 100.0f;
+		OsdOverlayPos OsdMessagesPos = OsdOverlayPos::TopLeft;
+		OsdOverlayPos OsdPerformancePos = OsdOverlayPos::TopRight;
 
 		GSRendererType Renderer = GSRendererType::Auto;
 		float UpscaleMultiplier = 1.0f;
 
-		HWMipmapLevel HWMipmap = HWMipmapLevel::Automatic;
 		AccBlendLevel AccurateBlendingUnit = AccBlendLevel::Basic;
 		BiFiltering TextureFiltering = BiFiltering::PS2;
 		TexturePreloadingLevel TexturePreloading = TexturePreloadingLevel::Full;
@@ -697,6 +730,7 @@ struct Pcsx2Config
 		GSHWAutoFlushLevel UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
 		GSHalfPixelOffset UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
 		s8 UserHacks_RoundSprite = 0;
+		GSNativeScaling UserHacks_NativeScaling = GSNativeScaling::Off;
 		s32 UserHacks_TCOffsetX = 0;
 		s32 UserHacks_TCOffsetY = 0;
 		u8 UserHacks_CPUSpriteRenderBW = 0;
@@ -727,6 +761,7 @@ struct Pcsx2Config
 
 		std::string CaptureContainer = DEFAULT_CAPTURE_CONTAINER;
 		std::string VideoCaptureCodec;
+		std::string VideoCaptureFormat;
 		std::string VideoCaptureParameters;
 		std::string AudioCaptureCodec;
 		std::string AudioCaptureParameters;
@@ -765,28 +800,22 @@ struct Pcsx2Config
 
 	struct SPU2Options
 	{
-		enum class SynchronizationMode
+		enum class SPU2SyncMode : u8
 		{
+			Disabled,
 			TimeStretch,
-			ASync,
-			NoSync,
+			Count
 		};
 
 		static constexpr s32 MAX_VOLUME = 200;
-		
-		static constexpr s32 MIN_LATENCY = 3;
-		static constexpr s32 MIN_LATENCY_TIMESTRETCH = 15;
-		static constexpr s32 MAX_LATENCY = 750;
+		static constexpr AudioBackend DEFAULT_BACKEND = AudioBackend::Cubeb;
+		static constexpr SPU2SyncMode DEFAULT_SYNC_MODE = SPU2SyncMode::TimeStretch;
 
-		static constexpr s32 MIN_SEQUENCE_LEN = 20;
-		static constexpr s32 MAX_SEQUENCE_LEN = 100;
-		static constexpr s32 MIN_SEEKWINDOW = 10;
-		static constexpr s32 MAX_SEEKWINDOW = 30;
-		static constexpr s32 MIN_OVERLAP = 5;
-		static constexpr s32 MAX_OVERLAP = 15;
+		static std::optional<SPU2SyncMode> ParseSyncMode(const char* str);
+		static const char* GetSyncModeName(SPU2SyncMode backend);
+		static const char* GetSyncModeDisplayName(SPU2SyncMode backend);
 
 		BITFIELD32()
-		bool OutputLatencyMinimal : 1;
 		bool
 			DebugEnabled : 1,
 			MsgToConsole : 1,
@@ -794,7 +823,6 @@ struct Pcsx2Config
 			MsgVoiceOff : 1,
 			MsgDMA : 1,
 			MsgAutoDMA : 1,
-			MsgOverruns : 1,
 			MsgCache : 1,
 			AccessLog : 1,
 			DMALog : 1,
@@ -805,25 +833,22 @@ struct Pcsx2Config
 			VisualDebugEnabled : 1;
 		BITFIELD_END
 
-		SynchronizationMode SynchMode = SynchronizationMode::TimeStretch;
+		u32 OutputVolume = 100;
+		u32 FastForwardVolume = 100;
+		bool OutputMuted = false;
 
-		s32 FinalVolume = 100;
-		s32 Latency = 60;
-		s32 OutputLatency = 20;
-		s32 SpeakerConfiguration = 0;
-		s32 DplDecodingLevel = 0;
+		AudioBackend Backend = DEFAULT_BACKEND;
+		SPU2SyncMode SyncMode = DEFAULT_SYNC_MODE;
+		AudioStreamParameters StreamParameters;
 
-		s32 SequenceLenMS = 30;
-		s32 SeekWindowMS = 20;
-		s32 OverlapMS = 10;
-
-		std::string OutputModule;
-		std::string BackendName;
+		std::string DriverName;
 		std::string DeviceName;
 
 		SPU2Options();
 
 		void LoadSave(SettingsWrapper& wrap);
+
+		bool IsTimeStretchEnabled() const { return (SyncMode == SPU2SyncMode::TimeStretch); }
 
 		bool operator==(const SPU2Options& right) const;
 		bool operator!=(const SPU2Options& right) const;
@@ -863,6 +888,7 @@ struct Pcsx2Config
 		bool EthEnable{false};
 		NetApi EthApi{NetApi::Unset};
 		std::string EthDevice;
+		bool EthLogDHCP{false};
 		bool EthLogDNS{false};
 
 		bool InterceptDHCP{false};
@@ -963,7 +989,7 @@ struct Pcsx2Config
 		bool operator!=(const SpeedhackOptions& right) const;
 
 		static const char* GetSpeedHackName(SpeedHack id);
-		static std::optional<SpeedHack> ParseSpeedHackName(const std::string_view& name);
+		static std::optional<SpeedHack> ParseSpeedHackName(const std::string_view name);
 	};
 
 	struct DebugOptions
@@ -992,8 +1018,8 @@ struct Pcsx2Config
 	struct EmulationSpeedOptions
 	{
 		BITFIELD32()
-		bool FrameLimitEnable : 1;
 		bool SyncToHostRefreshRate : 1;
+		bool UseVSyncForTiming : 1;
 		BITFIELD_END
 
 		float NominalScalar{1.0f};
@@ -1119,13 +1145,25 @@ struct Pcsx2Config
 		bool operator!=(const AchievementsOptions& right) const;
 	};
 
+	struct SavestateOptions
+	{
+		SavestateOptions();
+		void LoadSave(SettingsWrapper& wrap);
+	
+		SavestateCompressionMethod CompressionType = SavestateCompressionMethod::Zstandard;
+		SavestateCompressionLevel CompressionRatio = SavestateCompressionLevel::Medium;
+		
+		bool operator==(const SavestateOptions& right) const;
+		bool operator!=(const SavestateOptions& right) const;
+	};
+
 	// ------------------------------------------------------------------------
 
 	BITFIELD32()
 	bool
 		CdvdVerboseReads : 1, // enables cdvd read activity verbosely dumped to the console
 		CdvdDumpBlocks : 1, // enables cdvd block dumping
-		CdvdShareWrite : 1, // allows the iso to be modified while it's loaded
+		CdvdPrecache : 1, // enables cdvd precaching of compressed images
 		EnablePatches : 1, // enables patch detection and application
 		EnableCheats : 1, // enables cheat detection and application
 		EnablePINE : 1, // enables inter-process communication
@@ -1133,6 +1171,7 @@ struct Pcsx2Config
 		EnableNoInterlacingPatches : 1,
 		EnableFastBoot : 1,
 		EnableFastBootFastForward : 1,
+		EnableThreadPinning : 1,
 		// TODO - Vaser - where are these settings exposed in the Qt UI?
 		EnableRecordingTools : 1,
 		EnableGameFixes : 1, // enables automatic game fixes
@@ -1140,7 +1179,6 @@ struct Pcsx2Config
 		EnableDiscordPresence : 1, // enables discord rich presence integration
 		InhibitScreensaver : 1,
 		BackupSavestate : 1,
-		SavestateZstdCompression : 1,
 		McdFolderAutoManage : 1,
 
 		HostFs : 1,
@@ -1155,6 +1193,7 @@ struct Pcsx2Config
 	ProfilerOptions Profiler;
 	DebugOptions Debugger;
 	EmulationSpeedOptions EmulationSpeed;
+	SavestateOptions Savestate;
 	SPU2Options SPU2;
 	DEV9Options DEV9;
 	USBOptions USB;
@@ -1201,6 +1240,9 @@ struct Pcsx2Config
 
 	/// Clears all core keys from the specified interface.
 	static void ClearConfiguration(SettingsInterface* dest_si);
+
+	/// Removes keys that are not valid for per-game settings.
+	static void ClearInvalidPerGameConfiguration(SettingsInterface* si);
 };
 
 extern Pcsx2Config EmuConfig;
@@ -1250,12 +1292,17 @@ namespace EmuFolders
 
 // ------------ CPU / Recompiler Options ---------------
 
+#ifdef _M_X86 // TODO(Stenzek): Remove me once EE/VU/IOP recs are added.
 #define THREAD_VU1 (EmuConfig.Cpu.Recompiler.EnableVU1 && EmuConfig.Speedhacks.vuThread)
+#else
+#define THREAD_VU1 false
+#endif
 #define INSTANT_VU1 (EmuConfig.Speedhacks.vu1Instant)
 #define CHECK_EEREC (EmuConfig.Cpu.Recompiler.EnableEE)
 #define CHECK_CACHE (EmuConfig.Cpu.Recompiler.EnableEECache)
 #define CHECK_IOPREC (EmuConfig.Cpu.Recompiler.EnableIOP)
 #define CHECK_FASTMEM (EmuConfig.Cpu.Recompiler.EnableEE && EmuConfig.Cpu.Recompiler.EnableFastmem)
+#define CHECK_EXTRAMEM (memGetExtraMemMode())
 
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK (EmuConfig.Gamefixes.VuAddSubHack) // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.

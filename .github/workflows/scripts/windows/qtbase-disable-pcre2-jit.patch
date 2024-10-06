@@ -1,0 +1,35 @@
+--- qtbase/src/3rdparty/pcre2/CMakeLists.txt	2024-03-19 08:46:43.000000000 -0700
++++ qtbase/src/3rdparty/pcre2/CMakeLists.txt	2024-06-06 21:52:20.539619500 -0700
+@@ -41,6 +41,7 @@
+         src/pcre2_xclass.c
+     DEFINES
+         HAVE_CONFIG_H
++        PCRE2_DISABLE_JIT
+     PUBLIC_DEFINES
+         PCRE2_CODE_UNIT_WIDTH=16
+     PUBLIC_INCLUDE_DIRECTORIES
+@@ -52,23 +53,8 @@
+ ## Scopes:
+ #####################################################################
+ 
+-qt_internal_extend_target(BundledPcre2 CONDITION QNX OR UIKIT
+-    DEFINES
+-        PCRE2_DISABLE_JIT
+-)
+-
+-qt_internal_extend_target(BundledPcre2 CONDITION (TEST_architecture_arch STREQUAL "arm") AND WIN32
+-    DEFINES
+-        PCRE2_DISABLE_JIT
+-)
+-
+-qt_internal_extend_target(BundledPcre2 CONDITION (TEST_architecture_arch STREQUAL "arm64") AND WIN32
+-    DEFINES
+-        PCRE2_DISABLE_JIT
+-)
+-
+ if (APPLE)
+-    target_compile_options(BundledPcre2 PRIVATE "SHELL:-Xarch_arm64 -DPCRE2_DISABLE_JIT")
++    target_compile_options(BundledPcre2 PRIVATE "SHELL:-Xarch_arm64")
+ endif()
+ 
+ qt_internal_extend_target(BundledPcre2 CONDITION WIN32

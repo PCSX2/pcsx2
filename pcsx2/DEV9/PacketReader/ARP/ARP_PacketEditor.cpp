@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "ARP_PacketEditor.h"
 
@@ -61,5 +61,10 @@ namespace PacketReader::ARP
 	{
 		int offset = 8 + 2 * GetHardwareAddressLength() + GetProtocolAddressLength();
 		return &basePkt->data[offset];
+	}
+
+	int ARP_PacketEditor::GetLength()
+	{
+		return 8 + 2 * GetHardwareAddressLength() + 2 * GetProtocolAddressLength();
 	}
 } // namespace PacketReader::ARP

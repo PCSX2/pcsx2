@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 //#version 420 // Keep it for editor detection
 
@@ -66,6 +66,24 @@ void ps_depth_copy()
 }
 #endif
 
+#ifdef ps_downsample_copy
+uniform ivec2 ClampMin;
+uniform int DownsampleFactor;
+uniform float Weight;
+
+void ps_downsample_copy()
+{
+	ivec2 coord = max(ivec2(gl_FragCoord.xy) * DownsampleFactor, ClampMin);
+	vec4 result = vec4(0);
+	for (int yoff = 0; yoff < DownsampleFactor; yoff++)
+	{
+		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
+			result += texelFetch(TextureSampler, coord + ivec2(xoff, yoff), 0);
+	}
+	SV_Target0 = result / Weight;
+}
+#endif
+
 #ifdef ps_convert_rgba8_16bits
 // Need to be careful with precision here, it can break games like Spider-Man 3 and Dogs Life
 void ps_convert_rgba8_16bits()
@@ -125,6 +143,15 @@ float rgb5a1_to_depth16(vec4 unorm)
 	uvec4 c = uvec4(unorm * vec4(255.5f));
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
 }
+
+#ifdef ps_convert_float32_float24
+void ps_convert_float32_float24()
+{
+	// Truncates depth value to 24bits
+	uint d = uint(sample_c().r * exp2(32.0f)) & 0xFFFFFFu;
+	gl_FragDepth = float(d) * exp2(-32.0f);
+}
+#endif
 
 #ifdef ps_convert_rgba8_float32
 void ps_convert_rgba8_float32()

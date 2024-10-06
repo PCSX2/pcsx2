@@ -1,15 +1,15 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 // Includes appropriate intrinsic header based on platform.
 
 #pragma once
 
+#if defined(_M_X86)
+
 #ifdef _MSC_VER
 #include <intrin.h>
 #endif
-
-#if defined(_M_X86)
 
 #if defined(__AVX2__)
 #define _M_SSE 0x501
@@ -36,11 +36,7 @@
 #include <immintrin.h>
 
 #elif defined(_M_ARM64)
-#if defined(_MSC_VER) && !defined(__clang__)
-#include <arm64_neon.h>
-#else
 #include <arm_neon.h>
-#endif
 #endif
 
 #ifdef __APPLE__

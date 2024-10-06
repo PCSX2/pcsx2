@@ -1,11 +1,11 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
 #include "Gif_Unit.h"
 #include "MTVU.h"
 #include "VMManager.h"
-#include "x86/newVif.h"
+#include "Vif_Dynarec.h"
 
 #include <thread>
 

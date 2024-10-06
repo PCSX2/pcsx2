@@ -1,7 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
+
+#include "GS/MultiISA.h"
+#include "common/Assertions.h"
 
 // Xbyak pulls in windows.h, and breaks everything.
 #ifdef _WIN32
@@ -13,8 +16,6 @@
 
 #include "xbyak/xbyak.h"
 #include "xbyak/xbyak_util.h"
-#include "GS/MultiISA.h"
-#include "common/Assertions.h"
 
 /// Code generator that automatically selects between SSE and AVX, x86 and x64 so you don't have to
 /// Should make combined SSE and AVX codegen much easier
@@ -41,7 +42,7 @@ private:
 	}
 
 public:
-	Xbyak::CodeGenerator& actual;
+	Xbyak::CodeGenerator actual;
 
 	using AddressReg = Xbyak::Reg64;
 	using RipType = Xbyak::RegRip;
@@ -58,13 +59,16 @@ public:
 	const RipType rip{};
 	const Xbyak::AddressFrame ptr{0}, byte{8}, word{16}, dword{32}, qword{64}, xword{128}, yword{256}, zword{512};
 
-	GSNewCodeGenerator(Xbyak::CodeGenerator* actual, const ProcessorFeatures& cpu)
-		: actual(*actual)
-		, hasAVX(cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX)
-		, hasAVX2(cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX2)
-		, hasFMA(cpu.hasFMA)
+	GSNewCodeGenerator(void* code, size_t maxsize)
+		: actual(maxsize, code)
+		, hasAVX(g_cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX)
+		, hasAVX2(g_cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX2)
+		, hasFMA(g_cpu.hasFMA)
 	{
 	}
+
+	size_t GetSize() const { return actual.getSize(); }
+	const u8* GetCode() const { return actual.getCode(); }
 
 
 // ------------ Forwarding instructions ------------
@@ -86,10 +90,6 @@ public:
 // Implementation details:
 // ACTUAL_FORWARD_*: Actually forward the function of the given type
 // FORWARD#: First validates the arguments (e.g. make sure you're not passing registers over 7 on x86), then forwards to an ACTUAL_FORWARD_*
-
-// Big thanks to https://stackoverflow.com/a/24028231 for helping me figure out how to work around MSVC's terrible macro expander
-// Of course GCC/Clang don't like the workaround so enjoy the ifdefs
-#define EXPAND_ARGS(macro, args) macro args
 
 #define ACTUAL_FORWARD_BASE(name, ...) \
 	actual.name(__VA_ARGS__);
@@ -148,15 +148,9 @@ public:
 		ACTUAL_FORWARD_##category(name, a, b, c, d) \
 	}
 
-#if defined(__GNUC__) || (defined(_MSC_VER) && defined(__clang__))
-	#define FORWARD_(argcount, ...) FORWARD##argcount(__VA_ARGS__)
-	// Gets the macro evaluator to evaluate in the right order
-	#define FORWARD(...) FORWARD_(__VA_ARGS__)
-#else
-	#define FORWARD_(argcount, ...) EXPAND_ARGS(FORWARD##argcount, (__VA_ARGS__))
-	// Gets the macro evaluator to evaluate in the right order
-	#define FORWARD(...) EXPAND_ARGS(FORWARD_, (__VA_ARGS__))
-#endif
+#define FORWARD_(argcount, ...) FORWARD##argcount(__VA_ARGS__)
+// Gets the macro evaluator to evaluate in the right order
+#define FORWARD(...) FORWARD_(__VA_ARGS__)
 
 #define FORWARD_SSE_XMM0(name) \
 	void name(const Xmm& a, const Operand& b) \
@@ -176,21 +170,12 @@ public:
 #define ADD_ONE_2 3
 #define ADD_ONE_3 4
 
-#if defined(__GNUC__) || defined(_MSC_VER) && defined(__clang__)
-	#define SFORWARD(argcount, name, ...) FORWARD(argcount, SSE, name, __VA_ARGS__)
-	#define AFORWARD_(argcount, name, arg1, ...) \
-		SFORWARD(argcount, name, arg1, __VA_ARGS__) \
-		FORWARD(ADD_ONE_##argcount, AVX, v##name, arg1, arg1, __VA_ARGS__)
-	// Gets the macro evaluator to evaluate in the right order
-	#define AFORWARD(...) EXPAND_ARGS(AFORWARD_, (__VA_ARGS__))
-#else
-	#define SFORWARD(argcount, name, ...) EXPAND_ARGS(FORWARD, (argcount, SSE, name, __VA_ARGS__))
-	#define AFORWARD_(argcount, name, arg1, ...) \
-		EXPAND_ARGS(SFORWARD, (argcount, name, arg1, __VA_ARGS__)) \
-		EXPAND_ARGS(FORWARD, (ADD_ONE_##argcount, AVX, v##name, arg1, arg1, __VA_ARGS__))
-	// Gets the macro evaluator to evaluate in the right order
-	#define AFORWARD(...) EXPAND_ARGS(AFORWARD_, (__VA_ARGS__))
-#endif
+#define SFORWARD(argcount, name, ...) FORWARD(argcount, SSE, name, __VA_ARGS__)
+#define AFORWARD_(argcount, name, arg1, ...) \
+	SFORWARD(argcount, name, arg1, __VA_ARGS__) \
+	FORWARD(ADD_ONE_##argcount, AVX, v##name, arg1, arg1, __VA_ARGS__)
+// Gets the macro evaluator to evaluate in the right order
+#define AFORWARD(...) AFORWARD_(__VA_ARGS__)
 
 #define FORWARD_OO_OI(name) \
 	FORWARD(2, BASE, name, ARGS_OO) \
@@ -252,6 +237,7 @@ public:
 	AFORWARD(2, cvtss2sd,  ARGS_XO)
 	SFORWARD(2, cvttps2dq, ARGS_XO)
 	SFORWARD(2, cvttsd2si, const AddressReg&, const Operand&);
+	AFORWARD(2, divps,	   ARGS_XO)
 	SFORWARD(3, extractps, const Operand&, const Xmm&, u8)
 	AFORWARD(2, maxps,     ARGS_XO)
 	AFORWARD(2, minps,     ARGS_XO)

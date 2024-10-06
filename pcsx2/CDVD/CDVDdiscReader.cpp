@@ -1,8 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "CDVDdiscReader.h"
 #include "CDVD/CDVD.h"
+#include "Host.h"
+#include "common/Console.h"
 
 #include "common/Error.h"
 
@@ -21,10 +23,6 @@ static std::thread s_keepalive_thread;
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 // State Information                                                         //
-
-u8 strack;
-u8 etrack;
-track tracks[100];
 
 int curDiskType;
 int curTrayStatus;
@@ -78,31 +76,35 @@ void cdvdParseTOC()
 	strack = 0xFF;
 	etrack = 0;
 
+	int i = 0;
+
 	for (auto& entry : src->ReadTOC())
 	{
 		if (entry.track < 1 || entry.track > 99)
 			continue;
 		strack = std::min(strack, entry.track);
 		etrack = std::max(etrack, entry.track);
-		tracks[entry.track].start_lba = entry.lba;
+		tracks[i].start_lba = entry.lba;
 		if ((entry.control & 0x0C) == 0x04)
 		{
 			std::array<u8, 2352> buffer;
 			// Byte 15 of a raw CD data sector determines the track mode
 			if (src->ReadSectors2352(entry.lba, 1, buffer.data()) && (buffer[15] & 3) == 2)
 			{
-				tracks[entry.track].type = CDVD_MODE2_TRACK;
+				tracks[i].type = CDVD_MODE2_TRACK;
 			}
 			else
 			{
-				tracks[entry.track].type = CDVD_MODE1_TRACK;
+				tracks[i].type = CDVD_MODE1_TRACK;
 			}
 		}
 		else
 		{
-			tracks[entry.track].type = CDVD_AUDIO_TRACK;
+			tracks[i].type = CDVD_AUDIO_TRACK;
 		}
 		fprintf(stderr, "Track %u start sector: %u\n", entry.track, entry.lba);
+
+		i += 1;
 	}
 }
 
@@ -192,6 +194,12 @@ static bool DISCopen(std::string filename, Error* error)
 	return true;
 }
 
+static bool DISCprecache(ProgressCallback* progress, Error* error)
+{
+	Error::SetStringView(error, TRANSLATE_SV("CDVD", "Precaching is not supported for discs."));
+	return false;
+}
+
 static void DISCclose()
 {
 	StopKeepAliveThread();
@@ -263,20 +271,23 @@ static s32 DISCreadSubQ(u32 lsn, cdvdSubQ* subq)
 
 	memset(subq, 0, sizeof(cdvdSubQ));
 
-	lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
+	if (!src->ReadTrackSubQ(subq))
+	{
+		lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
 
-	u8 i = strack;
-	while (i < etrack && lsn >= tracks[i + 1].start_lba)
-		++i;
+		u8 i = strack;
+		while (i < etrack && lsn >= tracks[i + 1].start_lba)
+			++i;
 
-	lsn -= tracks[i].start_lba;
+		lsn -= tracks[i].start_lba;
 
-	lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
+		lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
 
-	subq->mode = 1;
-	subq->ctrl = tracks[i].type;
-	subq->trackNum = i;
-	subq->trackIndex = 1;
+		subq->adr = 1;
+		subq->ctrl = tracks[i].type;
+		subq->trackNum = i;
+		subq->trackIndex = 1;
+	}
 
 	return 0;
 }
@@ -531,6 +542,7 @@ const CDVD_API CDVDapi_Disc =
 	{
 		DISCclose,
 		DISCopen,
+		DISCprecache,
 		DISCreadTrack,
 		DISCgetBuffer,
 		DISCreadSubQ,

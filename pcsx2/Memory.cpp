@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 /*
 
@@ -36,10 +36,16 @@ BIOS
 #include "ps2/BiosTools.h"
 
 #include "common/AlignedMalloc.h"
+#include "common/Error.h"
 
 #ifdef ENABLECACHE
 #include "Cache.h"
 #endif
+
+namespace Ps2MemSize
+{
+	u32 ExposedRam = MainRam;
+} // namespace Ps2MemSize
 
 namespace SysMemory
 {
@@ -66,6 +72,7 @@ static u16 s_dve_regs[0xff];
 static bool s_ba_command_executing = false;
 static bool s_ba_error_detected = false;
 static u16 s_ba_current_reg = 0;
+static bool s_extra_memory = false;
 
 namespace HostMemoryMap
 {
@@ -91,7 +98,7 @@ u8* SysMemory::TryAllocateVirtualMemory(const char* name, void* file_handle, upt
 	if (!baseptr)
 		return nullptr;
 
-	if ((uptr)baseptr != base)
+	if (base != 0 && (uptr)baseptr != base)
 	{
 		if (file_handle)
 		{
@@ -115,6 +122,8 @@ u8* SysMemory::TryAllocateVirtualMemory(const char* name, void* file_handle, upt
 
 u8* SysMemory::AllocateVirtualMemory(const char* name, void* file_handle, size_t size, size_t offset_from_base)
 {
+	// ARM64 does not need the rec areas to be in +/- 2GB.
+#ifdef _M_X86
 	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Virtual memory size is page aligned");
 
 	// Everything looks nicer when the start of all the sections is a nice round looking number.
@@ -141,6 +150,9 @@ u8* SysMemory::AllocateVirtualMemory(const char* name, void* file_handle, size_t
 		DevCon.Warning("%s: host memory @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " is unavailable; attempting to map elsewhere...", name,
 			base, base + size);
 	}
+#else
+	return TryAllocateVirtualMemory(name, file_handle, 0, size);
+#endif
 
 	return nullptr;
 }
@@ -280,6 +292,19 @@ u8* SysMemory::GetCodePtr(size_t offset)
 void* SysMemory::GetDataFileHandle()
 {
 	return s_data_memory_file_handle;
+}
+
+bool memGetExtraMemMode()
+{
+	return s_extra_memory;
+}
+
+void memSetExtraMemMode(bool mode)
+{
+	s_extra_memory = mode;
+
+	// update the amount of RAM exposed to the VM
+	Ps2MemSize::ExposedRam = mode ? Ps2MemSize::TotalRam : Ps2MemSize::MainRam;
 }
 
 void memSetKernelMode() {
@@ -442,9 +467,10 @@ void memMapVUmicro()
 void memMapPhy()
 {
 	// Main memory
-	vtlb_MapBlock(eeMem->Main,	0x00000000,Ps2MemSize::MainRam);//mirrored on first 256 mb ?
+	vtlb_MapBlock(eeMem->Main,	0x00000000,Ps2MemSize::ExposedRam);//mirrored on first 256 mb ?
+
 	// High memory, uninstalled on the configuration we emulate
-	vtlb_MapHandler(null_handler, Ps2MemSize::MainRam, 0x10000000 - Ps2MemSize::MainRam);
+	vtlb_MapHandler(null_handler, Ps2MemSize::ExposedRam, 0x10000000 - Ps2MemSize::ExposedRam);
 
 	// Various ROMs (all read-only)
 	vtlb_MapBlock(eeMem->ROM,	0x1fc00000, Ps2MemSize::Rom);
@@ -965,8 +991,8 @@ void memClearPageAddr(u32 vaddr)
 ///////////////////////////////////////////////////////////////////////////
 // PS2 Memory Init / Reset / Shutdown
 
-EEVM_MemoryAllocMess* eeMem = NULL;
-alignas(__pagesize) u8 eeHw[Ps2MemSize::Hardware];
+EEVM_MemoryAllocMess* eeMem = nullptr;
+alignas(__pagealignsize) u8 eeHw[Ps2MemSize::Hardware];
 
 
 void memBindConditionalHandlers()
@@ -1145,13 +1171,23 @@ void memRelease()
 	eeMem = nullptr;
 }
 
-bool SaveStateBase::memFreeze()
+bool SaveStateBase::memFreeze(Error* error)
 {
 	Freeze(s_ba);
 	Freeze(s_dve_regs);
 	Freeze(s_ba_command_executing);
 	Freeze(s_ba_error_detected);
 	Freeze(s_ba_current_reg);
+
+	bool extra_memory = s_extra_memory;
+	Freeze(extra_memory);
+
+	if (extra_memory != s_extra_memory)
+	{
+		Error::SetStringFmt(error, "Memory size mismatch, save state requires {}, but VM currently has {}.",
+			extra_memory ? "128MB" : "32MB", s_extra_memory ? "128MB" : "32MB");
+		return false;
+	}
 
 	return IsOkay();
 }

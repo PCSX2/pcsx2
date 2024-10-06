@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -34,6 +34,7 @@ namespace ImGuiFullscreen
 	static constexpr float LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY = 26.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
+	static constexpr float LAYOUT_MENU_WINDOW_X_PADDING = 12.0f;
 	static constexpr float LAYOUT_FOOTER_PADDING = 10.0f;
 	static constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_PADDING * 2.0f;
 	static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
@@ -66,35 +67,18 @@ namespace ImGuiFullscreen
 	extern ImVec4 UISecondaryWeakColor;
 	extern ImVec4 UISecondaryTextColor;
 
-	static __fi float DPIScale(float v) { return ImGui::GetIO().DisplayFramebufferScale.x * v; }
-	static __fi float DPIScale(int v) { return ImGui::GetIO().DisplayFramebufferScale.x * static_cast<float>(v); }
+	static __fi float LayoutScale(float v) { return ImCeil(g_layout_scale * v); }
+	static __fi ImVec2 LayoutScale(const ImVec2& v) { return ImVec2(ImCeil(v.x * g_layout_scale), ImCeil(v.y * g_layout_scale)); }
+	static __fi ImVec2 LayoutScale(float x, float y) { return ImVec2(ImCeil(x * g_layout_scale), ImCeil(y * g_layout_scale)); }
 
-	static __fi ImVec2 DPIScale(const ImVec2& v)
-	{
-		const ImVec2& fbs = ImGui::GetIO().DisplayFramebufferScale;
-		return ImVec2(v.x * fbs.x, v.y * fbs.y);
-	}
-
-	static __fi float WindowWidthScale(float v) { return ImGui::GetWindowWidth() * v; }
-	static __fi float WindowHeightScale(float v) { return ImGui::GetWindowHeight() * v; }
-
-	static __fi float LayoutScale(float v) { return g_layout_scale * v; }
-	static __fi ImVec2 LayoutScale(const ImVec2& v) { return ImVec2(v.x * g_layout_scale, v.y * g_layout_scale); }
-	static __fi ImVec2 LayoutScale(float x, float y) { return ImVec2(x * g_layout_scale, y * g_layout_scale); }
-
-	static __fi ImVec2 LayoutScaleAndOffset(float x, float y)
-	{
-		return ImVec2(g_layout_padding_left + x * g_layout_scale, g_layout_padding_top + y * g_layout_scale);
-	}
-
-	static __fi float LayoutUnscale(float v) { return g_rcp_layout_scale * v; }
-	static __fi ImVec2 LayoutUnscale(const ImVec2& v) { return ImVec2(v.x * g_rcp_layout_scale, v.y * g_rcp_layout_scale); }
-	static __fi ImVec2 LayoutUnscale(float x, float y) { return ImVec2(x * g_rcp_layout_scale, y * g_rcp_layout_scale); }
+	static __fi float LayoutUnscale(float v) { return ImCeil(g_rcp_layout_scale * v); }
+	static __fi ImVec2 LayoutUnscale(const ImVec2& v) { return ImVec2(ImCeil(v.x * g_rcp_layout_scale), ImCeil(v.y * g_rcp_layout_scale)); }
+	static __fi ImVec2 LayoutUnscale(float x, float y) { return ImVec2(ImCeil(x * g_rcp_layout_scale), ImCeil(y * g_rcp_layout_scale)); }
 
 	static __fi ImVec4 ModAlpha(const ImVec4& v, float a) { return ImVec4(v.x, v.y, v.z, a); }
 	static __fi ImVec4 MulAlpha(const ImVec4& v, float a) { return ImVec4(v.x, v.y, v.z, v.w * a); }
 
-	static __fi std::string_view RemoveHash(const std::string_view& s)
+	static __fi std::string_view RemoveHash(const std::string_view s)
 	{
 		const std::string_view::size_type pos = s.find('#');
 		return (pos != std::string_view::npos) ? s.substr(0, pos) : s;
@@ -128,9 +112,18 @@ namespace ImGuiFullscreen
 	void PushResetLayout();
 	void PopResetLayout();
 
-	void QueueResetFocus();
+	enum class FocusResetType : u8
+	{
+		None,
+		PopupOpened,
+		PopupClosed,
+		WindowChanged,
+		Other,
+	};
+	void QueueResetFocus(FocusResetType type);
 	bool ResetFocusHere();
 	bool IsFocusResetQueued();
+	FocusResetType GetQueuedFocusResetType();
 	void ForceKeyNavEnabled();
 
 	bool WantsToCloseMenu();
@@ -148,9 +141,11 @@ namespace ImGuiFullscreen
 	void EndFullscreenColumnWindow();
 
 	bool BeginFullscreenWindow(float left, float top, float width, float height, const char* name,
-		const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f, float padding = 0.0f, ImGuiWindowFlags flags = 0);
+		const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f, const ImVec2& padding = ImVec2(),
+		ImGuiWindowFlags flags = 0);
 	bool BeginFullscreenWindow(const ImVec2& position, const ImVec2& size, const char* name,
-		const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f, float padding = 0.0f, ImGuiWindowFlags flags = 0);
+		const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f, const ImVec2& padding = ImVec2(),
+		ImGuiWindowFlags flags = 0);
 	void EndFullscreenWindow();
 
 	bool IsGamepadInputSource();
@@ -172,6 +167,8 @@ namespace ImGuiFullscreen
 	bool MenuHeadingButton(const char* title, const char* value = nullptr, bool enabled = true, bool draw_line = true);
 	bool ActiveButton(const char* title, bool is_active, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
 		ImFont* font = g_large_font);
+	bool ActiveButtonWithRightText(const char* title, const char* right_title, bool is_active, bool enabled = true,
+		float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
 	bool MenuButton(const char* title, const char* summary, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
 		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 	bool MenuButtonWithoutSummary(const char* title, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
@@ -188,10 +185,6 @@ namespace ImGuiFullscreen
 		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 	bool ThreeWayToggleButton(const char* title, const char* summary, std::optional<bool>* v, bool enabled = true,
 		float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
-	bool RangeButton(const char* title, const char* summary, s32* value, s32 min, s32 max, s32 increment, const char* format = "%d",
-		bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
-	bool RangeButton(const char* title, const char* summary, float* value, float min, float max, float increment, const char* format = "%f",
-		bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 	bool EnumChoiceButtonImpl(const char* title, const char* summary, s32* value_pointer,
 		const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count, bool enabled, float height, ImFont* font,
 		ImFont* summary_font);
@@ -282,3 +275,17 @@ namespace ImGuiFullscreen
 	void GetFileSelectorHelpText(SmallStringBase& dest);
 	void GetInputDialogHelpText(SmallStringBase& dest);
 } // namespace ImGuiFullscreen
+
+// Host UI triggers from Big Picture mode.
+namespace Host
+{
+	/// Returns true if native file dialogs should be preferred over Big Picture.
+	bool ShouldPreferHostFileSelector();
+
+	/// Opens a file selector dialog.
+	using FileSelectorCallback = std::function<void(const std::string& path)>;
+	using FileSelectorFilters = std::vector<std::string>;
+	void OpenHostFileSelectorAsync(std::string_view title, bool select_directory, FileSelectorCallback callback,
+		FileSelectorFilters filters = FileSelectorFilters(),
+		std::string_view initial_directory = std::string_view());
+} // namespace Host

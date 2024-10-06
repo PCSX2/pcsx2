@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -31,13 +31,12 @@ using namespace std::chrono_literals;
 namespace Sessions
 {
 	const std::chrono::duration<std::chrono::steady_clock::rep, std::chrono::steady_clock::period>
-		UDP_Session::MAX_IDLE = 120s; //See RFC 4787 Section 4.3
-
-	//TODO, figure out handling of multicast
+		UDP_Session::MAX_IDLE = 120s; // See RFC 4787 section 4.3
 
 	UDP_Session::UDP_Session(ConnectionKey parKey, IP_Address parAdapterIP)
 		: UDP_BaseSession(parKey, parAdapterIP)
 		, isBroadcast(false)
+		, isMulticast(false)
 		, isFixedPort(false)
 		, deathClockStart(std::chrono::steady_clock::now())
 	{
@@ -60,27 +59,27 @@ namespace Sessions
 	{
 	}
 
-	IP_Payload* UDP_Session::Recv()
+	std::optional<ReceivedPayload> UDP_Session::Recv()
 	{
-		if (!open)
-			return nullptr;
+		if (!open.load())
+			return std::nullopt;
 
 		if (isFixedPort)
 		{
 			if (std::chrono::steady_clock::now() - deathClockStart.load() > MAX_IDLE)
 			{
-				CloseSocket();
-				Console.WriteLn("DEV9: UDP: UDPFixed Max Idle Reached");
+				Console.WriteLn("DEV9: UDP: Fixed port max idle reached");
+				open.store(false);
 				RaiseEventConnectionClosed();
 			}
-			return nullptr;
+			return std::nullopt;
 		}
 
 		int ret;
 		fd_set sReady;
 		fd_set sExcept;
 
-		timeval nowait{0};
+		timeval nowait{};
 		FD_ZERO(&sReady);
 		FD_ZERO(&sExcept);
 		FD_SET(client, &sReady);
@@ -91,7 +90,7 @@ namespace Sessions
 		if (ret == SOCKET_ERROR)
 		{
 			hasData = false;
-			Console.Error("DEV9: UDP: Select Failed. Error Code: %d",
+			Console.Error("DEV9: UDP: Select failed. Error code: %d",
 #ifdef _WIN32
 				WSAGetLastError());
 #elif defined(__POSIX__)
@@ -105,15 +104,15 @@ namespace Sessions
 			int error = 0;
 #ifdef _WIN32
 			int len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0)
-				Console.Error("DEV9: UDP: Unkown UDP Connection Error (getsockopt Error: %d)", WSAGetLastError());
+			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
+				Console.Error("DEV9: UDP: Unknown UDP connection error (getsockopt error: %d)", WSAGetLastError());
 #elif defined(__POSIX__)
 			socklen_t len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0)
-				Console.Error("DEV9: UDP: Unkown UDP Connection Error (getsockopt Error: %d)", errno);
+			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
+				Console.Error("DEV9: UDP: Unknown UDP connection error (getsockopt error: %d)", errno);
 #endif
 			else
-				Console.Error("DEV9: UDP: Recv Error: %d", error);
+				Console.Error("DEV9: UDP: Recv error: %d", error);
 		}
 		else
 			hasData = FD_ISSET(client, &sReady);
@@ -123,10 +122,10 @@ namespace Sessions
 			unsigned long available = 0;
 			PayloadData* recived = nullptr;
 			std::unique_ptr<u8[]> buffer;
-			sockaddr endpoint{0};
+			sockaddr_in endpoint{};
 
-			//FIONREAD returns total size of all available messages
-			//but we will read one message at a time
+			// FIONREAD returns total size of all available messages
+			// however, we only read one message at a time
 #ifdef _WIN32
 			ret = ioctlsocket(client, FIONREAD, &available);
 #elif defined(__POSIX__)
@@ -141,49 +140,48 @@ namespace Sessions
 #elif defined(__POSIX__)
 				socklen_t fromlen = sizeof(endpoint);
 #endif
-				ret = recvfrom(client, (char*)buffer.get(), available, 0, &endpoint, &fromlen);
+				ret = recvfrom(client, reinterpret_cast<char*>(buffer.get()), available, 0, reinterpret_cast<sockaddr*>(&endpoint), &fromlen);
 			}
 
 			if (ret == SOCKET_ERROR)
 			{
-				Console.Error("DEV9: UDP: Recv Error: %d",
+				Console.Error("DEV9: UDP: Recv error: %d",
 #ifdef _WIN32
 					WSAGetLastError());
 #elif defined(__POSIX__)
 					errno);
 #endif
 				RaiseEventConnectionClosed();
-				return nullptr;
+				return std::nullopt;
 			}
 
 			recived = new PayloadData(ret);
 			memcpy(recived->data.get(), buffer.get(), ret);
 
-			UDP_Packet* iRet = new UDP_Packet(recived);
+			std::unique_ptr<UDP_Packet> iRet = std::make_unique<UDP_Packet>(recived);
 			iRet->destinationPort = srcPort;
 			iRet->sourcePort = destPort;
 
 			deathClockStart.store(std::chrono::steady_clock::now());
 
-			return iRet;
+			return ReceivedPayload{destIP, std::move(iRet)};
 		}
 
 		if (std::chrono::steady_clock::now() - deathClockStart.load() > MAX_IDLE)
 		{
-			//CloseSocket();
-			Console.WriteLn("DEV9: UDP: Max Idle Reached");
+			Console.WriteLn("DEV9: UDP: Max idle reached");
 			RaiseEventConnectionClosed();
 		}
 
-		return nullptr;
+		return std::nullopt;
 	}
 
 	bool UDP_Session::WillRecive(IP_Address parDestIP)
 	{
-		if (!open)
+		if (!open.load())
 			return false;
 
-		if (isBroadcast || (parDestIP == destIP))
+		if (isBroadcast || isMulticast || (parDestIP == destIP))
 		{
 			deathClockStart.store(std::chrono::steady_clock::now());
 			return true;
@@ -200,25 +198,18 @@ namespace Sessions
 
 		if (destPort != 0)
 		{
-			//client already created
+			// Already created client!?
 			if (!(udp.destinationPort == destPort && udp.sourcePort == srcPort))
 			{
-				Console.Error("DEV9: UDP: Packet invalid for current session (Duplicate key?)");
+				Console.Error("DEV9: UDP: Packet invalid for current session (duplicate key?)");
 				return false;
 			}
 		}
 		else
 		{
-			//create client
+			// Create client
 			destPort = udp.destinationPort;
 			srcPort = udp.sourcePort;
-
-			//Multicast address start with 0b1110
-			if ((destIP.bytes[0] & 0xF0) == 0xE0)
-			{
-				isMulticast = true;
-				Console.Error("DEV9: UDP: Unexpected Multicast Connection");
-			}
 
 			int ret;
 			client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -234,8 +225,8 @@ namespace Sessions
 				return false;
 			}
 
-			const int reuseAddress = true; //BOOL
-			ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuseAddress, sizeof(reuseAddress));
+			const int reuseAddress = true; // BOOL on Windows
+			ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuseAddress), sizeof(reuseAddress));
 
 			if (ret == SOCKET_ERROR)
 				Console.Error("DEV9: UDP: Failed to set SO_REUSEADDR. Error: %d",
@@ -247,11 +238,11 @@ namespace Sessions
 
 			if (adapterIP.integer != 0)
 			{
-				sockaddr_in endpoint{0};
+				sockaddr_in endpoint{};
 				endpoint.sin_family = AF_INET;
-				*(IP_Address*)&endpoint.sin_addr = adapterIP;
+				endpoint.sin_addr = std::bit_cast<in_addr>(adapterIP);
 
-				ret = bind(client, (const sockaddr*)&endpoint, sizeof(endpoint));
+				ret = bind(client, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 
 				if (ret == SOCKET_ERROR)
 					Console.Error("DEV9: UDP: Failed to bind socket. Error: %d",
@@ -262,14 +253,12 @@ namespace Sessions
 #endif
 			}
 
-			pxAssert(isMulticast == false);
-
-			sockaddr_in endpoint{0};
+			sockaddr_in endpoint{};
 			endpoint.sin_family = AF_INET;
-			*(IP_Address*)&endpoint.sin_addr = destIP;
+			endpoint.sin_addr = std::bit_cast<in_addr>(destIP);
 			endpoint.sin_port = htons(destPort);
 
-			ret = connect(client, (const sockaddr*)&endpoint, sizeof(endpoint));
+			ret = connect(client, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 
 			if (ret == SOCKET_ERROR)
 			{
@@ -284,33 +273,33 @@ namespace Sessions
 			}
 
 			if (srcPort != 0)
-				open = true;
+				open.store(true);
 		}
 
 		PayloadPtr* udpPayload = static_cast<PayloadPtr*>(udp.GetPayload());
 
-		//Send
+		// Send Packet
 		int ret = SOCKET_ERROR;
 		if (isBroadcast)
 		{
-			sockaddr_in endpoint{0};
+			sockaddr_in endpoint{};
 			endpoint.sin_family = AF_INET;
 			endpoint.sin_addr.s_addr = INADDR_BROADCAST;
 			endpoint.sin_port = htons(destPort);
 
-			ret = sendto(client, (const char*)udpPayload->data, udpPayload->GetLength(), 0, (const sockaddr*)&endpoint, sizeof(endpoint));
+			ret = sendto(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 		}
-		else if (isMulticast | isFixedPort)
+		else if (isFixedPort)
 		{
-			sockaddr_in endpoint{0};
+			sockaddr_in endpoint{};
 			endpoint.sin_family = AF_INET;
-			*(IP_Address*)&endpoint.sin_addr = destIP;
+			endpoint.sin_addr = std::bit_cast<in_addr>(destIP);
 			endpoint.sin_port = htons(destPort);
 
-			ret = sendto(client, (const char*)udpPayload->data, udpPayload->GetLength(), 0, (const sockaddr*)&endpoint, sizeof(endpoint));
+			ret = sendto(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 		}
 		else
-			ret = send(client, (const char*)udpPayload->data, udpPayload->GetLength(), 0);
+			ret = send(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0);
 
 		if (ret == SOCKET_ERROR)
 		{
@@ -319,13 +308,14 @@ namespace Sessions
 #elif defined(__POSIX__)
 			ret = errno;
 #endif
-			Console.Error("DEV9: UDP: Send Error %d", ret);
+			Console.Error("DEV9: UDP: Send error %d", ret);
 
-			//We can recive an ICMP Port Unreacable error, which can get raised in send (and maybe sendto?)
-			//On Windows this an WSAECONNRESET error, although I've not been able to reproduce in testing
-			//On Linux this is an ECONNREFUSED error (Testing needed to confirm full behaviour)
-
-			//The decision to ignore the error and retry was made to allow R&C Deadlock ressurection team to packet capture eveything
+			/*
+			 * We can receive an ICMP Port Unreacable error, which can get raised in send (and maybe sendto?)
+			 * On Windows this is an WSAECONNRESET error, although I've not been able to reproduce in testing
+			 * On Linux this is an ECONNREFUSED error (Testing needed to confirm full behaviour)
+			 * We ignore the error and resend to allow packet capture (i.e. wireshark) for server resurrection projects
+			 */
 #ifdef _WIN32
 			if (ret == WSAECONNRESET)
 #elif defined(__POSIX__)
@@ -335,20 +325,19 @@ namespace Sessions
 				pxAssert(isBroadcast == false && isMulticast == false);
 				if (isFixedPort)
 				{
-					sockaddr_in endpoint{0};
+					sockaddr_in endpoint{};
 					endpoint.sin_family = AF_INET;
-					*(IP_Address*)&endpoint.sin_addr = destIP;
+					endpoint.sin_addr = std::bit_cast<in_addr>(destIP);
 					endpoint.sin_port = htons(destPort);
 
-					ret = sendto(client, (const char*)udpPayload->data, udpPayload->GetLength(), 0, (const sockaddr*)&endpoint, sizeof(endpoint));
+					ret = sendto(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 				}
 				else
-					//Do we need to clear the error somehow?
-					ret = send(client, (const char*)udpPayload->data, udpPayload->GetLength(), 0);
+					ret = send(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0);
 
 				if (ret == SOCKET_ERROR)
 				{
-					Console.Error("DEV9: UDP: Send Error (Second attempt) %d",
+					Console.Error("DEV9: UDP: Send error (second attempt) %d",
 #ifdef _WIN32
 						WSAGetLastError());
 #elif defined(__POSIX__)
@@ -371,9 +360,14 @@ namespace Sessions
 		return true;
 	}
 
-	void UDP_Session::CloseSocket()
+	void UDP_Session::Reset()
 	{
-		open = false;
+		RaiseEventConnectionClosed();
+	}
+
+	UDP_Session::~UDP_Session()
+	{
+		open.store(false);
 		if (!isFixedPort && client != INVALID_SOCKET)
 		{
 #ifdef _WIN32
@@ -383,16 +377,5 @@ namespace Sessions
 #endif
 			client = INVALID_SOCKET;
 		}
-	}
-
-	void UDP_Session::Reset()
-	{
-		//CloseSocket();
-		RaiseEventConnectionClosed();
-	}
-
-	UDP_Session::~UDP_Session()
-	{
-		CloseSocket();
 	}
 } // namespace Sessions

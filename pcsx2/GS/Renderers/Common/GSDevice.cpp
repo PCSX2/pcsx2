@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/GSGL.h"
@@ -9,9 +9,11 @@
 #include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/FileSystem.h"
+#include "common/HostSys.h"
 #include "common/Path.h"
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
+#include "common/Threading.h"
 
 #include "imgui.h"
 
@@ -62,7 +64,9 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::RGBA8_TO_FLOAT24_BILN:  return "ps_convert_rgba8_float24_biln";
 		case ShaderConvert::RGBA8_TO_FLOAT16_BILN:  return "ps_convert_rgba8_float16_biln";
 		case ShaderConvert::RGB5A1_TO_FLOAT16_BILN: return "ps_convert_rgb5a1_float16_biln";
+		case ShaderConvert::FLOAT32_TO_FLOAT24:     return "ps_convert_float32_float24";
 		case ShaderConvert::DEPTH_COPY:             return "ps_depth_copy";
+		case ShaderConvert::DOWNSAMPLE_COPY:        return "ps_downsample_copy";
 		case ShaderConvert::RGBA_TO_8I:             return "ps_convert_rgba_8i";
 		case ShaderConvert::CLUT_4:                 return "ps_convert_clut_4";
 		case ShaderConvert::CLUT_8:                 return "ps_convert_clut_8";
@@ -305,9 +309,10 @@ int GSDevice::GetMipmapLevelsForSize(int width, int height)
 	return std::min(static_cast<int>(std::log2(std::max(width, height))) + 1, MAXIMUM_TEXTURE_MIPMAP_LEVELS);
 }
 
-bool GSDevice::Create()
+bool GSDevice::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 {
-	m_vsync_mode = Host::GetEffectiveVSyncMode();
+	m_vsync_mode = vsync_mode;
+	m_allow_present_throttle = allow_present_throttle;
 	return true;
 }
 
@@ -337,15 +342,42 @@ bool GSDevice::AcquireWindow(bool recreate_window)
 	return true;
 }
 
-bool GSDevice::GetHostRefreshRate(float* refresh_rate)
+bool GSDevice::ShouldSkipPresentingFrame()
 {
-	if (m_window_info.surface_refresh_rate > 0.0f)
-	{
-		*refresh_rate = m_window_info.surface_refresh_rate;
-		return true;
-	}
+	// Only needed with FIFO.
+	if (!m_allow_present_throttle || m_vsync_mode != GSVSyncMode::FIFO)
+		return false;
 
-	return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
+	const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
+	const u64 throttle_period = static_cast<u64>(static_cast<double>(GetTickFrequency()) / static_cast<double>(throttle_rate));
+
+	const u64 now = GetCPUTicks();
+	const double diff = now - m_last_frame_displayed_time;
+	if (diff < throttle_period)
+		return true;
+
+	m_last_frame_displayed_time = now;
+	return false;
+}
+
+void GSDevice::ThrottlePresentation()
+{
+	// Manually throttle presentation when vsync isn't enabled, so we don't try to render the
+	// fullscreen UI at thousands of FPS and make the gpu go brrrrrrrr.
+	const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
+
+	const u64 sleep_period = static_cast<u64>(static_cast<double>(GetTickFrequency()) / static_cast<double>(throttle_rate));
+	const u64 current_ts = GetCPUTicks();
+
+	// Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
+	// allow time for the actual rendering.
+	const u64 max_variance = sleep_period * 2;
+	if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - m_last_frame_displayed_time))) > max_variance)
+		m_last_frame_displayed_time = current_ts + sleep_period;
+	else
+		m_last_frame_displayed_time += sleep_period;
+
+	Threading::SleepUntil(m_last_frame_displayed_time);
 }
 
 void GSDevice::ClearRenderTarget(GSTexture* t, u32 c)
@@ -396,9 +428,15 @@ bool GSDevice::UpdateImGuiFontTexture()
 	return true;
 }
 
+void GSDevice::TextureRecycleDeleter::operator()(GSTexture* const tex)
+{
+	g_gs_device->Recycle(tex);
+}
+
 GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_unused_texture)
 {
-	const GSVector2i size(width, height);
+	const GSVector2i size(std::clamp(width, 1, static_cast<int>(g_gs_device->GetMaxTextureSize())),
+		std::clamp(height, 1, static_cast<int>(g_gs_device->GetMaxTextureSize())));
 	FastList<GSTexture*>& pool = m_pool[type != GSTexture::Type::Texture];
 
 	GSTexture* t = nullptr;
@@ -438,14 +476,14 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 		}
 		else
 		{
-			t = CreateSurface(type, width, height, levels, format);
+			t = CreateSurface(type, size.x, size.y, levels, format);
 			if (!t)
 			{
-				Console.Error("GS: Memory allocation failure for %dx%d texture. Purging pool and retrying.", width, height);
+				ERROR_LOG("GS: Memory allocation failure for {}x{} texture. Purging pool and retrying.", size.x, size.y);
 				PurgePool();
 				if (!t)
 				{
-					Console.Error("GS: Memory allocation failure for %dx%d texture after purging pool.", width, height);
+					ERROR_LOG("GS: Memory allocation failure for {}x{} texture after purging pool.", size.x, size.y);
 					return nullptr;
 				}
 			}
@@ -889,7 +927,7 @@ const std::array<HWBlend, 3*3*3*3> GSDevice::m_blendMap =
 	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
 	{ BLEND_ACCU               , OP_ADD          , SRC1_COLOR      , CONST_ONE}       , // 0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
 	{ BLEND_NO_REC             , OP_ADD          , SRC1_COLOR      , CONST_ZERO}      , // 0202: (Cs -  0)*As +  0 ==> Cs*As
-	{ BLEND_A_MAX              , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
+	{ BLEND_A_MAX | BLEND_HW8  , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
 	{ BLEND_HW3                , OP_ADD          , DST_ALPHA       , CONST_ONE}       , // 0211: (Cs -  0)*Ad + Cd ==> Cs*Ad + Cd
 	{ BLEND_HW3                , OP_ADD          , DST_ALPHA       , CONST_ZERO}      , // 0212: (Cs -  0)*Ad +  0 ==> Cs*Ad
 	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
@@ -916,7 +954,7 @@ const std::array<HWBlend, 3*3*3*3> GSDevice::m_blendMap =
 	{ BLEND_HW4                , OP_ADD          , CONST_ONE       , SRC1_COLOR}      , // 1200: (Cd -  0)*As + Cs ==> Cs + Cd*As
 	{ BLEND_HW1                , OP_ADD          , DST_COLOR       , SRC1_COLOR}      , // 1201: (Cd -  0)*As + Cd ==> Cd*(1 + As)
 	{ BLEND_HW2                , OP_ADD          , DST_COLOR       , SRC1_COLOR}      , // 1202: (Cd -  0)*As +  0 ==> Cd*As
-	{ 0                        , OP_ADD          , CONST_ONE       , DST_ALPHA}       , // 1210: (Cd -  0)*Ad + Cs ==> Cs + Cd*Ad
+	{ BLEND_HW6                , OP_ADD          , CONST_ONE       , DST_ALPHA}       , // 1210: (Cd -  0)*Ad + Cs ==> Cs + Cd*Ad
 	{ BLEND_HW1                , OP_ADD          , DST_COLOR       , DST_ALPHA}       , // 1211: (Cd -  0)*Ad + Cd ==> Cd*(1 + Ad)
 	{ BLEND_HW5                , OP_ADD          , CONST_ZERO      , DST_ALPHA}       , // 1212: (Cd -  0)*Ad +  0 ==> Cd*Ad
 	{ BLEND_HW4                , OP_ADD          , CONST_ONE       , CONST_COLOR}     , // 1220: (Cd -  0)*F  + Cs ==> Cs + Cd*F
@@ -925,7 +963,7 @@ const std::array<HWBlend, 3*3*3*3> GSDevice::m_blendMap =
 	{ BLEND_NO_REC             , OP_ADD          , INV_SRC1_COLOR  , CONST_ZERO}      , // 2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
 	{ BLEND_ACCU               , OP_REV_SUBTRACT , SRC1_COLOR      , CONST_ONE}       , // 2001: (0  - Cs)*As + Cd ==> Cd - Cs*As
 	{ BLEND_NO_REC             , OP_REV_SUBTRACT , SRC1_COLOR      , CONST_ZERO}      , // 2002: (0  - Cs)*As +  0 ==> 0 - Cs*As
-	{ 0                        , OP_ADD          , INV_DST_ALPHA   , CONST_ZERO}      , // 2010: (0  - Cs)*Ad + Cs ==> Cs*(1 - Ad)
+	{ BLEND_HW9                , OP_ADD          , INV_DST_ALPHA   , CONST_ZERO}      , // 2010: (0  - Cs)*Ad + Cs ==> Cs*(1 - Ad)
 	{ BLEND_HW3                , OP_REV_SUBTRACT , DST_ALPHA       , CONST_ONE}       , // 2011: (0  - Cs)*Ad + Cd ==> Cd - Cs*Ad
 	{ 0                        , OP_REV_SUBTRACT , DST_ALPHA       , CONST_ZERO}      , // 2012: (0  - Cs)*Ad +  0 ==> 0 - Cs*Ad
 	{ BLEND_NO_REC             , OP_ADD          , INV_CONST_COLOR , CONST_ZERO}      , // 2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
@@ -934,8 +972,8 @@ const std::array<HWBlend, 3*3*3*3> GSDevice::m_blendMap =
 	{ BLEND_HW4                , OP_SUBTRACT     , CONST_ONE       , SRC1_COLOR}      , // 2100: (0  - Cd)*As + Cs ==> Cs - Cd*As
 	{ 0                        , OP_ADD          , CONST_ZERO      , INV_SRC1_COLOR}  , // 2101: (0  - Cd)*As + Cd ==> Cd*(1 - As)
 	{ 0                        , OP_SUBTRACT     , CONST_ZERO      , SRC1_COLOR}      , // 2102: (0  - Cd)*As +  0 ==> 0 - Cd*As
-	{ 0                        , OP_SUBTRACT     , CONST_ONE       , DST_ALPHA}       , // 2110: (0  - Cd)*Ad + Cs ==> Cs - Cd*Ad
-	{ 0                        , OP_ADD          , CONST_ZERO      , INV_DST_ALPHA}   , // 2111: (0  - Cd)*Ad + Cd ==> Cd*(1 - Ad)
+	{ BLEND_HW6                , OP_SUBTRACT     , CONST_ONE       , DST_ALPHA}       , // 2110: (0  - Cd)*Ad + Cs ==> Cs - Cd*Ad
+	{ BLEND_HW7                , OP_ADD          , CONST_ZERO      , INV_DST_ALPHA}   , // 2111: (0  - Cd)*Ad + Cd ==> Cd*(1 - Ad)
 	{ 0                        , OP_SUBTRACT     , CONST_ZERO      , DST_ALPHA}       , // 2112: (0  - Cd)*Ad +  0 ==> 0 - Cd*Ad
 	{ BLEND_HW4                , OP_SUBTRACT     , CONST_ONE       , CONST_COLOR}     , // 2120: (0  - Cd)*F  + Cs ==> Cs - Cd*F
 	{ 0                        , OP_ADD          , CONST_ZERO      , INV_CONST_COLOR} , // 2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)

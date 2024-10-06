@@ -1,7 +1,7 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "Global.h"
+#include "SPU2/defs.h"
 #include "GS/GSVector.h"
 
 #include "common/Console.h"
@@ -102,7 +102,7 @@ StereoOut32 V_Core::DoReverb(StereoOut32 Input)
 
 	for (int i = 0; i < 2; i++)
 	{
-		if (Cores[i].IRQEnable && ((Cores[i].IRQA >= EffectsStartA) && (Cores[i].IRQA <= EffectsEndA)))
+		if (FxEnable && Cores[i].IRQEnable && ((Cores[i].IRQA >= EffectsStartA) && (Cores[i].IRQA <= EffectsEndA)))
 		{
 			if ((Cores[i].IRQA == same_src) || (Cores[i].IRQA == diff_src) ||
 				(Cores[i].IRQA == same_dst) || (Cores[i].IRQA == diff_dst) ||

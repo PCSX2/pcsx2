@@ -23,12 +23,18 @@ jobs:
           FLATHUB_RELEASE=$(curl -L -s https://flathub.org/api/v2/appstream/net.pcsx2.PCSX2 | jq -r '.releases | max_by(.version) | .version')
           echo "Latest PCSX2 release is: '${PCSX2_RELEASE}'"
           echo "Latest Flathub release is: '${FLATHUB_RELEASE}'"
+          PCSX2_RELEASE=$(echo $PCSX2_RELEASE | sed 's/[^0-9]*//g')
+          FLATHUB_RELEASE=$(echo $FLATHUB_RELEASE | sed 's/[^0-9]*//g')
           echo "PCSX2_RELEASE=${PCSX2_RELEASE}" >> "$GITHUB_OUTPUT"
           echo "FLATHUB_RELEASE=${FLATHUB_RELEASE}" >> "$GITHUB_OUTPUT"
 
   build:
     needs: check
-    if: needs.check.outputs.FLATHUB_RELEASE < needs.check.outputs.PCSX2_RELEASE
+    # outputs are automatically compared as strings. This doesn't work in our favour
+    # Use fromJson() to convert them to proper integers...
+    # see: https://github.com/github/docs/pull/25870
+    # and: https://github.com/orgs/community/discussions/57480
+    #if: fromJson(needs.check.outputs.FLATHUB_RELEASE) < fromJson(needs.check.outputs.PCSX2_RELEASE)
     name: "Build and publish Flatpak"
     uses: ./.github/workflows/linux_build_flatpak.yml
     with:

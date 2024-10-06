@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Config.h"
 #include "Counters.h"
@@ -48,6 +48,8 @@
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
 
+#include "IconsFontAwesome5.h"
+
 #include "fmt/format.h"
 
 #include <fstream>
@@ -55,8 +57,6 @@
 Pcsx2Config::GSOptions GSConfig;
 
 static GSRendererType GSCurrentRenderer;
-
-static u64 s_next_manual_present_time;
 
 GSRendererType GSGetCurrentRenderer()
 {
@@ -98,7 +98,8 @@ static RenderAPI GetAPIForRenderer(GSRendererType renderer)
 	}
 }
 
-static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool recreate_window)
+static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool recreate_window,
+	GSVSyncMode vsync_mode, bool allow_present_throttle)
 {
 	const RenderAPI new_api = GetAPIForRenderer(renderer);
 	switch (new_api)
@@ -133,7 +134,7 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 			return false;
 	}
 
-	bool okay = g_gs_device->Create();
+	bool okay = g_gs_device->Create(vsync_mode, allow_present_throttle);
 	if (okay)
 	{
 		okay = ImGuiManager::Initialize();
@@ -172,6 +173,24 @@ static void CloseGSDevice(bool clear_state)
 	g_gs_device.reset();
 }
 
+static void GSClampUpscaleMultiplier(Pcsx2Config::GSOptions& config)
+{
+	const u32 max_upscale_multiplier = GSGetMaxUpscaleMultiplier(g_gs_device->GetMaxTextureSize());
+	if (config.UpscaleMultiplier <= static_cast<float>(max_upscale_multiplier))
+	{
+		// Shouldn't happen, but just in case.
+		if (config.UpscaleMultiplier < 1.0f)
+			config.UpscaleMultiplier = 1.0f;
+		return;
+	}
+
+	Host::AddIconOSDMessage("GSUpscaleMultiplierInvalid", ICON_FA_EXCLAMATION_TRIANGLE,
+		fmt::format(TRANSLATE_FS("GS", "Configured upscale multiplier {}x is above your GPU's supported multiplier of {}x."),
+			config.UpscaleMultiplier, max_upscale_multiplier),
+		Host::OSD_WARNING_DURATION);
+	config.UpscaleMultiplier = static_cast<float>(max_upscale_multiplier);
+}
+
 static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 {
 	// Must be done first, initialization routines in GSState use GSIsHardwareRenderer().
@@ -185,6 +204,7 @@ static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 	}
 	else if (renderer != GSRendererType::SW)
 	{
+		GSClampUpscaleMultiplier(GSConfig);
 		g_gs_renderer = std::make_unique<GSRendererHW>();
 	}
 	else
@@ -210,14 +230,24 @@ static void CloseGSRenderer()
 	}
 }
 
-bool GSreopen(bool recreate_device, GSRendererType new_renderer, std::optional<const Pcsx2Config::GSOptions*> old_config)
+bool GSreopen(bool recreate_device, bool recreate_renderer, GSRendererType new_renderer,
+	std::optional<const Pcsx2Config::GSOptions*> old_config)
 {
 	Console.WriteLn("Reopening GS with %s device", recreate_device ? "new" : "existing");
 
 	g_gs_renderer->Flush(GSState::GSFlushReason::GSREOPEN);
 
-	if (GSConfig.UserHacks_ReadTCOnClose)
+	if (recreate_device && !recreate_renderer)
+	{
+		// Keeping the renderer around, this probably means we lost the device, so toss everything.
+		g_gs_renderer->PurgeTextureCache(true, true, true);
+		g_gs_device->ClearCurrent();
+		g_gs_device->PurgePool();
+	}
+	else if (GSConfig.UserHacks_ReadTCOnClose)
+	{
 		g_gs_renderer->ReadbackTextureCache();
+	}
 
 	std::string capture_filename;
 	GSVector2i capture_size;
@@ -232,29 +262,35 @@ bool GSreopen(bool recreate_device, GSRendererType new_renderer, std::optional<c
 	u8* basemem = g_gs_renderer->GetRegsMem();
 
 	freezeData fd = {};
-	if (g_gs_renderer->Freeze(&fd, true) != 0)
+	std::unique_ptr<u8[]> fd_data;
+	if (recreate_renderer)
 	{
-		Console.Error("(GSreopen) Failed to get GS freeze size");
-		return false;
-	}
+		if (g_gs_renderer->Freeze(&fd, true) != 0)
+		{
+			Console.Error("(GSreopen) Failed to get GS freeze size");
+			return false;
+		}
 
-	std::unique_ptr<u8[]> fd_data = std::make_unique<u8[]>(fd.size);
-	fd.data = fd_data.get();
-	if (g_gs_renderer->Freeze(&fd, false) != 0)
-	{
-		Console.Error("(GSreopen) Failed to freeze GS");
-		return false;
-	}
+		fd_data = std::make_unique<u8[]>(fd.size);
+		fd.data = fd_data.get();
+		if (g_gs_renderer->Freeze(&fd, false) != 0)
+		{
+			Console.Error("(GSreopen) Failed to freeze GS");
+			return false;
+		}
 
-	CloseGSRenderer();
+		CloseGSRenderer();
+	}
 
 	if (recreate_device)
 	{
 		// We need a new render window when changing APIs.
 		const bool recreate_window = (g_gs_device->GetRenderAPI() != GetAPIForRenderer(GSConfig.Renderer));
+		const GSVSyncMode vsync_mode = g_gs_device->GetVSyncMode();
+		const bool allow_present_throttle = g_gs_device->IsPresentThrottleAllowed();
 		CloseGSDevice(false);
 
-		if (!OpenGSDevice(new_renderer, false, recreate_window))
+		if (!OpenGSDevice(new_renderer, false, recreate_window, vsync_mode, allow_present_throttle))
 		{
 			Host::AddKeyedOSDMessage("GSReopenFailed",
 				TRANSLATE_STR("GS", "Failed to reopen, restoring old configuration."),
@@ -265,7 +301,7 @@ bool GSreopen(bool recreate_device, GSRendererType new_renderer, std::optional<c
 			if (old_config.has_value())
 				GSConfig = *old_config.value();
 
-			if (!OpenGSDevice(GSConfig.Renderer, false, recreate_window))
+			if (!OpenGSDevice(GSConfig.Renderer, false, recreate_window, vsync_mode, allow_present_throttle))
 			{
 				pxFailRel("Failed to reopen GS on old config");
 				Host::ReleaseRenderWindow();
@@ -274,16 +310,19 @@ bool GSreopen(bool recreate_device, GSRendererType new_renderer, std::optional<c
 		}
 	}
 
-	if (!OpenGSRenderer(new_renderer, basemem))
+	if (recreate_renderer)
 	{
-		Console.Error("(GSreopen) Failed to create new renderer");
-		return false;
-	}
+		if (!OpenGSRenderer(new_renderer, basemem))
+		{
+			Console.Error("(GSreopen) Failed to create new renderer");
+			return false;
+		}
 
-	if (g_gs_renderer->Defrost(&fd) != 0)
-	{
-		Console.Error("(GSreopen) Failed to defrost");
-		return false;
+		if (g_gs_renderer->Defrost(&fd) != 0)
+		{
+			Console.Error("(GSreopen) Failed to defrost");
+			return false;
+		}
 	}
 
 	if (!capture_filename.empty())
@@ -292,14 +331,15 @@ bool GSreopen(bool recreate_device, GSRendererType new_renderer, std::optional<c
 	return true;
 }
 
-bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* basemem)
+bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* basemem,
+	GSVSyncMode vsync_mode, bool allow_present_throttle)
 {
 	GSConfig = config;
 
 	if (renderer == GSRendererType::Auto)
 		renderer = GSUtil::GetPreferredRenderer();
 
-	bool res = OpenGSDevice(renderer, true, false);
+	bool res = OpenGSDevice(renderer, true, false, vsync_mode, allow_present_throttle);
 	if (res)
 	{
 		res = OpenGSRenderer(renderer, basemem);
@@ -454,29 +494,13 @@ void GSPresentCurrentFrame()
 
 void GSThrottlePresentation()
 {
-	if (g_gs_device->GetVsyncMode() != VsyncMode::Off)
+	if (g_gs_device->GetVSyncMode() == GSVSyncMode::FIFO)
 	{
 		// Let vsync take care of throttling.
 		return;
 	}
 
-	// Manually throttle presentation when vsync isn't enabled, so we don't try to render the
-	// fullscreen UI at thousands of FPS and make the gpu go brrrrrrrr.
-	const float surface_refresh_rate = g_gs_device->GetWindowInfo().surface_refresh_rate;
-	const float throttle_rate = (surface_refresh_rate > 0.0f) ? surface_refresh_rate : 60.0f;
-
-	const u64 sleep_period = static_cast<u64>(static_cast<double>(GetTickFrequency()) / static_cast<double>(throttle_rate));
-	const u64 current_ts = GetCPUTicks();
-
-	// Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
-	// allow time for the actual rendering.
-	const u64 max_variance = sleep_period * 2;
-	if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - s_next_manual_present_time))) > max_variance)
-		s_next_manual_present_time = current_ts + sleep_period;
-	else
-		s_next_manual_present_time += sleep_period;
-
-	Threading::SleepUntil(s_next_manual_present_time);
+	g_gs_device->ThrottlePresentation();
 }
 
 void GSGameChanged()
@@ -504,16 +528,23 @@ void GSUpdateDisplayWindow()
 {
 	if (!g_gs_device->UpdateWindow())
 	{
-		Host::ReportErrorAsync("Error", "Failed to change window after update. The log may contain more information.");
+		Host::ReportErrorAsync("Error", TRANSLATE_SV("GS", "Failed to change window after update. The log may contain more information."));
 		return;
 	}
 
 	ImGuiManager::WindowResized();
 }
 
-void GSSetVSyncMode(VsyncMode mode)
+void GSSetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 {
-	g_gs_device->SetVSync(mode);
+	static constexpr std::array<const char*, static_cast<size_t>(GSVSyncMode::Count)> modes = {{
+		"Disabled",
+		"FIFO",
+		"Mailbox",
+	}};
+	Console.WriteLnFmt(Color_StrongCyan, "Setting vsync mode: {}{}", modes[static_cast<size_t>(mode)],
+		allow_present_throttle ? " (throttle allowed)" : "");
+	g_gs_device->SetVSyncMode(mode, allow_present_throttle);
 }
 
 bool GSWantsExclusiveFullscreen()
@@ -526,17 +557,21 @@ bool GSWantsExclusiveFullscreen()
 	return GSDevice::GetRequestedExclusiveFullscreenMode(&width, &height, &refresh_rate);
 }
 
-bool GSGetHostRefreshRate(float* refresh_rate)
+std::optional<float> GSGetHostRefreshRate()
 {
 	if (!g_gs_device)
-		return false;
+		return std::nullopt;
 
-	return g_gs_device->GetHostRefreshRate(refresh_rate);
+	const float surface_refresh_rate = g_gs_device->GetWindowInfo().surface_refresh_rate;
+	if (surface_refresh_rate == 0.0f)
+		return std::nullopt;
+	else
+		return surface_refresh_rate;
 }
 
-void GSGetAdaptersAndFullscreenModes(
-	GSRendererType renderer, std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes)
+std::vector<GSAdapterInfo> GSGetAdapterInfo(GSRendererType renderer)
 {
+	std::vector<GSAdapterInfo> ret;
 	switch (renderer)
 	{
 #ifdef _WIN32
@@ -545,12 +580,7 @@ void GSGetAdaptersAndFullscreenModes(
 		{
 			auto factory = D3D::CreateFactory(false);
 			if (factory)
-			{
-				if (adapters)
-					*adapters = D3D::GetAdapterNames(factory.get());
-				if (fullscreen_modes)
-					*fullscreen_modes = D3D::GetFullscreenModes(factory.get(), EmuConfig.GS.Adapter);
-			}
+				ret = D3D::GetAdapterInfo(factory.get());
 		}
 		break;
 #endif
@@ -558,7 +588,7 @@ void GSGetAdaptersAndFullscreenModes(
 #ifdef ENABLE_VULKAN
 		case GSRendererType::VK:
 		{
-			GSDeviceVK::GetAdaptersAndFullscreenModes(adapters, fullscreen_modes);
+			ret = GSDeviceVK::GetAdapterInfo();
 		}
 		break;
 #endif
@@ -566,8 +596,7 @@ void GSGetAdaptersAndFullscreenModes(
 #ifdef __APPLE__
 		case GSRendererType::Metal:
 		{
-			if (adapters)
-				*adapters = GetMetalAdapterList();
+			ret = GetMetalAdapterList();
 		}
 		break;
 #endif
@@ -575,6 +604,14 @@ void GSGetAdaptersAndFullscreenModes(
 		default:
 			break;
 	}
+
+	return ret;
+}
+
+u32 GSGetMaxUpscaleMultiplier(u32 max_texture_size)
+{
+	// Maximum GS target size is 1280x1280. Assume we want to upscale the max size target.
+	return std::max(max_texture_size / 1280, 1u);
 }
 
 GSVideoMode GSgetDisplayMode()
@@ -693,16 +730,19 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	// Options which need a full teardown/recreate.
 	if (!GSConfig.RestartOptionsAreEqual(old_config))
 	{
-		if (!GSreopen(true, GSConfig.Renderer, &old_config))
+		if (!GSreopen(true, true, GSConfig.Renderer, &old_config))
 			pxFailRel("Failed to do full GS reopen");
 		return;
 	}
+
+	// Ensure upscale multiplier is in range.
+	GSClampUpscaleMultiplier(GSConfig);
 
 	// Options which aren't using the global struct yet, so we need to recreate all GS objects.
 	if (GSConfig.SWExtraThreads != old_config.SWExtraThreads ||
 		GSConfig.SWExtraThreadsHeight != old_config.SWExtraThreadsHeight)
 	{
-		if (!GSreopen(false, GSConfig.Renderer, &old_config))
+		if (!GSreopen(false, true, GSConfig.Renderer, &old_config))
 			pxFailRel("Failed to do quick GS reopen");
 
 		return;
@@ -738,7 +778,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		if (GSConfig.UserHacks_ReadTCOnClose)
 			g_gs_renderer->ReadbackTextureCache();
 		g_gs_renderer->PurgeTextureCache(true, true, true);
-		g_gs_renderer->PurgePool();
+		g_gs_device->ClearCurrent();
+		g_gs_device->PurgePool();
 	}
 
 	// clear out the sampler cache when AF options change, since the anisotropy gets baked into them
@@ -776,7 +817,7 @@ void GSSetSoftwareRendering(bool software_renderer, GSInterlaceMode new_interlac
 		// Config might be SW, and we're switching to HW -> use Auto.
 		const GSRendererType renderer = (software_renderer ? GSRendererType::SW :
 			(GSConfig.Renderer == GSRendererType::SW ? GSRendererType::Auto : GSConfig.Renderer));
-		if (!GSreopen(false, renderer, std::nullopt))
+		if (!GSreopen(false, true, renderer, std::nullopt))
 			pxFailRel("Failed to reopen GS for renderer switch.");
 	}
 }
@@ -1002,17 +1043,15 @@ static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 
 static void HotkeyToggleOSD()
 {
-	GSConfig.OsdShowMessages ^= EmuConfig.GS.OsdShowMessages;
-	GSConfig.OsdShowSpeed ^= EmuConfig.GS.OsdShowSpeed;
-	GSConfig.OsdShowFPS ^= EmuConfig.GS.OsdShowFPS;
-	GSConfig.OsdShowCPU ^= EmuConfig.GS.OsdShowCPU;
-	GSConfig.OsdShowGPU ^= EmuConfig.GS.OsdShowGPU;
-	GSConfig.OsdShowResolution ^= EmuConfig.GS.OsdShowResolution;
-	GSConfig.OsdShowGSStats ^= EmuConfig.GS.OsdShowGSStats;
-	GSConfig.OsdShowIndicators ^= EmuConfig.GS.OsdShowIndicators;
 	GSConfig.OsdShowSettings ^= EmuConfig.GS.OsdShowSettings;
 	GSConfig.OsdShowInputs ^= EmuConfig.GS.OsdShowInputs;
-	GSConfig.OsdShowFrameTimes ^= EmuConfig.GS.OsdShowFrameTimes;
+	GSConfig.OsdShowInputRec ^= EmuConfig.GS.OsdShowInputRec;
+	GSConfig.OsdShowVideoCapture ^= EmuConfig.GS.OsdShowVideoCapture;
+
+	GSConfig.OsdMessagesPos =
+		GSConfig.OsdMessagesPos == OsdOverlayPos::None ? EmuConfig.GS.OsdMessagesPos : OsdOverlayPos::None;
+	GSConfig.OsdPerformancePos =
+		GSConfig.OsdPerformancePos == OsdOverlayPos::None ? EmuConfig.GS.OsdPerformancePos : OsdOverlayPos::None;
 }
 
 BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphics"),
@@ -1095,28 +1134,18 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 					Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(EmuConfig.CurrentAspectRatio)]),
 				Host::OSD_QUICK_DURATION);
 		}},
-	{"CycleMipmapMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Cycle Hardware Mipmapping"),
+	{"ToggleMipmapMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Hardware Mipmapping"),
 		[](s32 pressed) {
-			if (pressed)
-				return;
-
-			static constexpr s32 CYCLE_COUNT = 4;
-			static constexpr std::array<const char*, CYCLE_COUNT> option_names = {
-				{"Automatic", "Off", "Basic (Generated)", "Full (PS2)"}};
-
-			const HWMipmapLevel new_level =
-				static_cast<HWMipmapLevel>(((static_cast<s32>(EmuConfig.GS.HWMipmap) + 2) % CYCLE_COUNT) - 1);
-			Host::AddKeyedOSDMessage("CycleMipmapMode",
-				fmt::format(TRANSLATE_FS("Hotkeys", "Hardware mipmapping set to '{}'."),
-					option_names[static_cast<s32>(new_level) + 1]),
-				Host::OSD_QUICK_DURATION);
-			EmuConfig.GS.HWMipmap = new_level;
-
-			MTGS::RunOnGSThread([new_level]() {
-				GSConfig.HWMipmap = new_level;
-				g_gs_renderer->PurgeTextureCache(true, false, true);
-				g_gs_renderer->PurgePool();
-			});
+			if (!pressed)
+			{
+				EmuConfig.GS.HWMipmap = !EmuConfig.GS.HWMipmap;
+				Host::AddKeyedOSDMessage("ToggleMipmapMode",
+					EmuConfig.GS.HWMipmap ?
+						TRANSLATE_STR("Hotkeys", "Hardware mipmapping is now enabled.") :
+						TRANSLATE_STR("Hotkeys", "Hardware mipmapping is now disabled."),
+					Host::OSD_INFO_DURATION);
+				MTGS::ApplySettings();
+			}
 		}},
 	{"CycleInterlaceMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Cycle Deinterlace Mode"),
 		[](s32 pressed) {
@@ -1124,16 +1153,16 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 				return;
 
 			static constexpr std::array<const char*, static_cast<int>(GSInterlaceMode::Count)> option_names = {{
-				"Automatic",
-				"Off",
-				"Weave (Top Field First)",
-				"Weave (Bottom Field First)",
-				"Bob (Top Field First)",
-				"Bob (Bottom Field First)",
-				"Blend (Top Field First)",
-				"Blend (Bottom Field First)",
-				"Adaptive (Top Field First)",
-				"Adaptive (Bottom Field First)",
+				TRANSLATE_NOOP("Hotkeys", "Automatic"),
+				TRANSLATE_NOOP("Hotkeys", "Off"),
+				TRANSLATE_NOOP("Hotkeys", "Weave (Top Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Weave (Bottom Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Bob (Top Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Bob (Bottom Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Blend (Top Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Blend (Bottom Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Adaptive (Top Field First)"),
+				TRANSLATE_NOOP("Hotkeys", "Adaptive (Bottom Field First)"),
 			}};
 
 			const GSInterlaceMode new_mode = static_cast<GSInterlaceMode>(

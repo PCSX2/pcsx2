@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "QtUtils.h"
 
@@ -14,11 +14,13 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStatusBar>
+#include <QtWidgets/QSlider>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QTreeView>
@@ -187,7 +189,7 @@ namespace QtUtils
 		return OpenURL(parent, QUrl(url));
 	}
 
-	QString StringViewToQString(const std::string_view& str)
+	QString StringViewToQString(const std::string_view str)
 	{
 		return str.empty() ? QString() : QString::fromUtf8(str.data(), str.size());
 	}
@@ -200,6 +202,15 @@ namespace QtUtils
 			new_font.setItalic(inherited);
 			widget->setFont(new_font);
 		}
+	}
+
+	void BindLabelToSlider(QSlider* slider, QLabel* label, float range /*= 1.0f*/)
+	{
+		auto update_label = [label, range](int new_value) {
+			label->setText(QString::number(static_cast<int>(new_value) / range));
+		};
+		update_label(slider->value());
+		QObject::connect(slider, &QSlider::valueChanged, label, std::move(update_label));
 	}
 
 	void SetWindowResizeable(QWidget* widget, bool resizeable)
@@ -291,6 +302,21 @@ namespace QtUtils
 		wi.surface_width = static_cast<u32>(static_cast<qreal>(widget->width()) * dpr);
 		wi.surface_height = static_cast<u32>(static_cast<qreal>(widget->height()) * dpr);
 		wi.surface_scale = static_cast<float>(dpr);
+
+		// Query refresh rate, we need it for sync.
+		std::optional<float> surface_refresh_rate = WindowInfo::QueryRefreshRateForWindow(wi);
+		if (!surface_refresh_rate.has_value())
+		{
+			// Fallback to using the screen, getting the rate for Wayland is an utter mess otherwise.
+			const QScreen* widget_screen = widget->screen();
+			if (!widget_screen)
+				widget_screen = QGuiApplication::primaryScreen();
+			surface_refresh_rate = widget_screen ? static_cast<float>(widget_screen->refreshRate()) : 0.0f;
+		}
+
+		wi.surface_refresh_rate = surface_refresh_rate.value();
+		INFO_LOG("Surface refresh rate: {} hz", wi.surface_refresh_rate);
+
 		return wi;
 	}
 

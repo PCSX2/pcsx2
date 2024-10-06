@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2007 CodeSourcery, 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/desc.h"
@@ -21,6 +21,136 @@
 
 namespace usb_msd
 {
+	static const USBDescStrings zip100_desc_strings = {
+		"",
+		"Iomega",
+		"USB Zip 100",
+		"00000000000PCSX2",
+	};
+
+	static const USBDescStrings sony_msac_desc_strings = {
+		"",
+		"Sony",
+		"MSAC-US1"
+	};
+
+	static const uint8_t zip100_dev_descriptor[] = {
+		0x12,        // bLength
+		0x01,        // bDescriptorType (Device)
+		0x10, 0x01,  // bcdUSB 0.10
+		0x00,        // bDeviceClass (Use class information in the Interface Descriptors)
+		0x00,        // bDeviceSubClass
+		0x00,        // bDeviceProtocol
+		0x40,        // bMaxPacketSize0 8
+		0x9B, 0x05,  // idVendor 0x059B
+		0x34, 0x00,  // idProduct 0x0034
+		0x00, 0x01,  // bcdDevice 0.00
+		0x01,        // iManufacturer (String Index)
+		0x02,        // iProduct (String Index)
+		0x03,        // iSerialNumber (String Index)
+		0x01,        // bNumConfigurations 1
+	};
+
+	static const uint8_t zip100_config_descriptor[] = {
+		0x09,        // bLength
+		0x02,        // bDescriptorType (Configuration)
+		0x27, 0x00,  // wTotalLength 39
+		0x01,        // bNumInterfaces 1
+		0x01,        // bConfigurationValue
+		0x00,        // iConfiguration (String Index)
+		0xC0,        // bmAttributes Self Powered
+		0x00,        // bMaxPower 0mA
+
+		0x09,        // bLength
+		0x04,        // bDescriptorType (Interface)
+		0x00,        // bInterfaceNumber 0
+		0x00,        // bAlternateSetting
+		0x03,        // bNumEndpoints 3
+		0x08,        // bInterfaceClass
+		0x06,        // bInterfaceSubClass
+		0x50,        // bInterfaceProtocol
+		0x00,        // iInterface (String Index)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x01,        // bEndpointAddress (OUT/H2D)
+		0x02,        // bmAttributes (Bulk)
+		0x40, 0x00,  // wMaxPacketSize 64
+		0x00,        // bInterval 0 (unit depends on device speed)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x82,        // bEndpointAddress (IN/D2H)
+		0x02,        // bmAttributes (Bulk)
+		0x40, 0x00,  // wMaxPacketSize 64
+		0x00,        // bInterval 0 (unit depends on device speed)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x83,        // bEndpointAddress (IN/D2H)
+		0x03,        // bmAttributes (Interrupt)
+		0x02, 0x00,  // wMaxPacketSize 8
+		0x20,        // bInterval 32 (unit depends on device speed)
+	};
+
+	static const uint8_t sony_msac_dev_descriptor[] = {
+		0x12,        // bLength
+		0x01,        // bDescriptorType (Device)
+		0x10, 0x01,  // bcdUSB 1.10
+		0x00,        // bDeviceClass (Use class information in the Interface Descriptors)
+		0x00,        // bDeviceSubClass
+		0x00,        // bDeviceProtocol
+		0x08,        // bMaxPacketSize0 8
+		0x4C, 0x05,  // idVendor 0x054C
+		0x2d, 0x00,  // idProduct 0x002D
+		0x00, 0x01,  // bcdDevice 1.00
+		0x01,        // iManufacturer (String Index)
+		0x02,        // iProduct (String Index)
+		0x00,        // iSerialNumber (String Index)
+		0x01,        // bNumConfigurations 1
+	};
+
+	static const uint8_t sony_msac_config_descriptor[] = {
+		0x09,        // bLength
+		0x02,        // bDescriptorType (Configuration)
+		0x27, 0x00,  // wTotalLength 39
+		0x01,        // bNumInterfaces 1
+		0x01,        // bConfigurationValue
+		0x00,        // iConfiguration (String Index)
+		0x80,        // bmAttributes
+		0x32,        // bMaxPower 100mA
+
+		0x09,        // bLength
+		0x04,        // bDescriptorType (Interface)
+		0x00,        // bInterfaceNumber 0
+		0x00,        // bAlternateSetting
+		0x03,        // bNumEndpoints 3
+		0x08,        // bInterfaceClass
+		0x04,        // bInterfaceSubClass
+		0x01,        // bInterfaceProtocol
+		0x00,        // iInterface (String Index)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x01,        // bEndpointAddress (OUT/H2D)
+		0x02,        // bmAttributes (Bulk)
+		0x40, 0x00,  // wMaxPacketSize 64
+		0x00,        // bInterval 0 (unit depends on device speed)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x82,        // bEndpointAddress (IN/D2H)
+		0x02,        // bmAttributes (Bulk)
+		0x40, 0x00,  // wMaxPacketSize 64
+		0x00,        // bInterval 0 (unit depends on device speed)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x83,        // bEndpointAddress (IN/D2H)
+		0x03,        // bmAttributes (Interrupt)
+		0x00, 0x00,  // wMaxPacketSize 0
+		0xFF,        // bInterval 255 (unit depends on device speed)
+	};
 
 	struct usb_msd_cbw
 	{
@@ -97,146 +227,7 @@ namespace usb_msd
 		USBDescDevice desc_dev;
 	} MSDState;
 
-	static const uint8_t qemu_msd_dev_descriptor[] = {
-		0x12, /*  u8 bLength; */
-		0x01, /*  u8 bDescriptorType; Device */
-		0x10, 0x00, /*  u16 bcdUSB; v1.0 */
-
-		0x00, /*  u8  bDeviceClass; */
-		0x00, /*  u8  bDeviceSubClass; */
-		0x00, /*  u8  bDeviceProtocol; [ low/full speeds only ] */
-		0x08, /*  u8  bMaxPacketSize0; 8 Bytes */
-
-		/* Vendor and product id are arbitrary.  */
-		0xf4, 0x46, /*  u16 idVendor; */
-		0x01, 0x00, /*  u16 idProduct; */
-		0x00, 0x00, /*  u16 bcdDevice */
-
-		0x01, /*  u8  iManufacturer; */
-		0x02, /*  u8  iProduct; */
-		0x03, /*  u8  iSerialNumber; */
-		0x01 /*  u8  bNumConfigurations; */
-	};
-
-	static const uint8_t qemu_msd_config_descriptor[] = {
-
-		/* one configuration */
-		0x09, /*  u8  bLength; */
-		0x02, /*  u8  bDescriptorType; Configuration */
-		0x20, 0x00, /*  u16 wTotalLength; */
-		0x01, /*  u8  bNumInterfaces; (1) */
-		0x01, /*  u8  bConfigurationValue; */
-		0x00, /*  u8  iConfiguration; */
-		0xc0, /*  u8  bmAttributes;
-                 Bit 7: must be set,
-                     6: Self-powered,
-                     5: Remote wakeup,
-                     4..0: resvd */
-		0x00, /*  u8  MaxPower; */
-
-		/* one interface */
-		0x09, /*  u8  if_bLength; */
-		0x04, /*  u8  if_bDescriptorType; Interface */
-		0x00, /*  u8  if_bInterfaceNumber; */
-		0x00, /*  u8  if_bAlternateSetting; */
-		0x02, /*  u8  if_bNumEndpoints; */
-		0x08, /*  u8  if_bInterfaceClass; MASS STORAGE */
-		0x06, /*  u8  if_bInterfaceSubClass; SCSI */
-		0x50, /*  u8  if_bInterfaceProtocol; Bulk Only */
-		0x00, /*  u8  if_iInterface; */
-
-		/* Bulk-In endpoint */
-		0x07, /*  u8  ep_bLength; */
-		0x05, /*  u8  ep_bDescriptorType; Endpoint */
-		0x81, /*  u8  ep_bEndpointAddress; IN Endpoint 1 */
-		0x02, /*  u8  ep_bmAttributes; Bulk */
-		0x40, 0x00, /*  u16 ep_wMaxPacketSize; */
-		0x00, /*  u8  ep_bInterval; */
-
-		/* Bulk-Out endpoint */
-		0x07, /*  u8  ep_bLength; */
-		0x05, /*  u8  ep_bDescriptorType; Endpoint */
-		0x02, /*  u8  ep_bEndpointAddress; OUT Endpoint 2 */
-		0x02, /*  u8  ep_bmAttributes; Bulk */
-		0x00, 0x02, /*  u16 ep_wMaxPacketSize; */
-		0x00 /*  u8  ep_bInterval; */
-	};
-
-	enum
-	{
-		STR_MANUFACTURER = 1,
-		STR_PRODUCT,
-		STR_SERIALNUMBER,
-		STR_CONFIG_FULL,
-	};
-
-	static const USBDescStrings desc_strings = {
-		"",
-		/*[STR_MANUFACTURER] = */ "QEMU",
-		/*[STR_PRODUCT]      = */ "QEMU USB HARDDRIVE",
-		/*[STR_SERIALNUMBER] = */ "1",
-		/*[STR_CONFIG_FULL]  = */ "Full speed config (usb 1.1)",
-	};
-
-	//static std::vector<USBDescEndpoint> desc_iface_full_eps
-	//{
-	//{USB_DIR_IN | 0x01, USB_ENDPOINT_XFER_BULK, 64},
-	//{USB_DIR_OUT | 0x02, USB_ENDPOINT_XFER_BULK, 64},
-	//};
-
-	//static const USBDescIface desc_iface_full {
-	///*.bInterfaceNumber              = */ 0,
-	///*.bNumEndpoints                 = */ 2,
-	///*.bInterfaceClass               = */ USB_CLASS_MASS_STORAGE,
-	///*.bInterfaceSubClass            = */ 0x06, /* SCSI */
-	///*.bInterfaceProtocol            = */ 0x50, /* Bulk */
-	///*.eps = */ desc_iface_full_eps,
-	//};
-
-	//static const std::vector<USBDescConfig> desc_device_full_confs {
-	//{
-	///* .bNumInterfaces        = */ 1,
-	///* .bConfigurationValue   = */ 1,
-	///* .iConfiguration        = */ STR_CONFIG_FULL,
-	///* .bmAttributes          = */ USB_CFG_ATT_ONE | USB_CFG_ATT_SELFPOWER,
-	///* bMaxPower */  0,
-	///* nif_groups  0,*/
-	///* if_groups */  {},
-	///* .nif = 1,*/
-	///* .ifs = */ {desc_iface_full},
-	//},
-	//};
-
-	//static const USBDescDevice desc_device_full = {
-	///* .bcdUSB                        = */ 0x0200,
-	///* .bDeviceClass */     0,
-	///* .bDeviceSubClass */  0,
-	///* .bDeviceProtocol */  0,
-	///* .bMaxPacketSize0               = */ 8,
-	///* .bNumConfigurations            = */ 1,
-	///* .confs = */ desc_device_full_confs,
-	//};
-
-	//static const USBDesc desc = {
-	///*.id = */ {
-	///*.idVendor          = */ 0x46f4, /* CRC16() of "QEMU" */
-	///*.idProduct         = */ 0x0001,
-	///*.bcdDevice         = */ 0,
-	///*.iManufacturer     = */ STR_MANUFACTURER,
-	///*.iProduct          = */ STR_PRODUCT,
-	///*.iSerialNumber     = */ STR_SERIALNUMBER,
-	//},
-	///*.full  = */ &desc_device_full,
-	///*.high  = */ nullptr,
-	///*.super = */ nullptr,
-	///*.str   = */ desc_strings,
-	///*.msos  = */ nullptr,
-	//};
-
-	/*
- *      SCSI opcodes
- */
-
+// SCSI opcodes
 #define TEST_UNIT_READY 0x00
 #define REZERO_UNIT 0x01
 #define REQUEST_SENSE 0x03
@@ -262,6 +253,7 @@ namespace usb_msd
 #define SEND_DIAGNOSTIC 0x1d
 #define ALLOW_MEDIUM_REMOVAL 0x1e
 
+#define READ_FORMAT_CAPACITIES 0x23
 #define SET_WINDOW 0x24
 #define READ_CAPACITY_10 0x25
 #define READ_10 0x28
@@ -407,6 +399,9 @@ namespace usb_msd
 	const struct SCSISense sense_code_OUT_OF_RANGE = {
 		ILLEGAL_REQUEST, 0x21, 0x00};
 
+	const struct SCSISense sense_code_UNIT_ATTENTION = {
+		UNIT_ATTENTION, 0x28, 0x00};
+
 	/* Illegal request, Invalid Transfer Tag */
 	//const struct SCSISense sense_code_INVALID_TAG = {
 	//    .key = ILLEGAL_REQUEST, .asc = 0x4b, .ascq = 0x01
@@ -535,12 +530,8 @@ namespace usb_msd
 	static void usb_msd_copy_data(MSDState* s, USBPacket* p)
 	{
 		size_t len, file_ret;
-		len = p->buffer_size - p->actual_length;
-		//if (len > s->scsi_len)
-		//    len = s->scsi_len;
-
-		if (len > sizeof(s->f.buf))
-			len = sizeof(s->f.buf);
+		len = std::min<size_t>(p->buffer_size - p->actual_length, sizeof(s->f.buf));
+		len = std::min<size_t>(len, s->f.data_len);
 
 		//TODO No async reader/writer so do it right here
 		if (s->f.tag == s->f.file_op_tag)
@@ -587,6 +578,9 @@ namespace usb_msd
 	{
 		int64_t lba;
 		uint32_t xfer_len;
+		int64_t lbas;
+		uint32_t *last_lba, *blk_len;
+
 		s->f.last_cmd = cbw->cmd[0];
 
 		s->f.result = COMMAND_PASSED;
@@ -602,26 +596,69 @@ namespace usb_msd
 				//s->f.result = COMMAND_FAILED;
 				//set_sense(s, SENSE_CODE(LUN_NOT_READY));
 				break;
+
 			case REQUEST_SENSE: //device shall keep old sense data
-				memcpy(s->f.buf, s->f.sense_buf,
-					/* XXX the UFI device shall return only the number of bytes requested, as is */
-					cbw->cmd[4] < sizeof(s->f.sense_buf) ? (size_t)cbw->cmd[4] : sizeof(s->f.sense_buf));
+				memcpy(s->f.buf, s->f.sense_buf, std::min<size_t>(cbw->cmd[4], sizeof(s->f.sense_buf)));
 				break;
+
 			case INQUIRY:
 				memset(s->f.buf, 0, sizeof(s->f.buf));
-				s->f.buf[0] = 0; //SCSI Peripheral Device Type: 0x0 - direct access device, 0x1f - unknown/no device
-				s->f.buf[1] = 1 << 7; //removable
-				s->f.buf[3] = 1; //UFI response data format
+				s->f.buf[0] = 0; // SCSI Peripheral Device Type: 0x0 - direct access device, 0x1f - unknown/no device
+				s->f.buf[1] = 1 << 7; // Removable
+				s->f.buf[2] = 0x02; // Version
+				s->f.buf[3] = 0x02; // UFI response data format
 				//inq data len can be zero
-				strncpy((char*)&s->f.buf[8], "QEMU", 8); //8 bytes vendor
-				strncpy((char*)&s->f.buf[16], "USB Drive", 16); //16 bytes product
-				strncpy((char*)&s->f.buf[32], "1.00", 4); //4 bytes product revision
+				strncpy((char*)&s->f.buf[8], "IOMEGA  ", 8);        //8 bytes vendor
+				strncpy((char*)&s->f.buf[16], "ZIP 100         ", 16); //16 bytes product
+				strncpy((char*)&s->f.buf[32], "E.08", 4);       //4 bytes product revision
+				set_sense(s, SENSE_CODE(UNIT_ATTENTION));
+				break;
+
+			case MODE_SENSE:
+				memset(s->f.buf, 0, sizeof(s->f.buf));
+				s->f.buf[0] = cbw->cmd[4] - 1;
+				break;
+
+			case START_STOP:
+				memset(s->f.buf, 0, sizeof(s->f.buf));
+				break;
+
+			case ALLOW_MEDIUM_REMOVAL:
+				memset(s->f.buf, 0, sizeof(s->f.buf));
+				break;
+
+			case READ_FORMAT_CAPACITIES:
+				memset(s->f.buf, 0, sizeof(s->f.buf));
+
+				if (s->file_size == 0)
+				{
+					s->f.result = COMMAND_FAILED;
+					set_sense(s, SENSE_CODE(UNKNOWN_ERROR));
+					break;
+				}
+
+				last_lba = (uint32_t*)&s->f.buf[4];
+				blk_len = (uint32_t*)&s->f.buf[8];
+				*blk_len = LBA_BLOCK_SIZE;
+
+				lbas = s->file_size / LBA_BLOCK_SIZE;
+				if (lbas > 0xFFFFFFFF)
+				{
+					s->f.result = COMMAND_FAILED;
+					set_sense(s, SENSE_CODE(OUT_OF_RANGE));
+					*last_lba = 0xFFFFFFFF;
+				}
+				else
+					*last_lba = static_cast<uint32_t>(lbas);
+
+				*last_lba = bswap32(*last_lba);
+				*blk_len = bswap32(*blk_len);
+				s->f.buf[3] = 0x08;
+				s->f.buf[8] = 0x02;
+				s->f.data_len = 12;
 				break;
 
 			case READ_CAPACITY_10:
-				int64_t lbas;
-				uint32_t *last_lba, *blk_len;
-
 				memset(s->f.buf, 0, sizeof(s->f.buf));
 
 				if (s->file_size == 0) //TODO
@@ -742,6 +779,8 @@ namespace usb_msd
 				data[0] = 0;
 				p->actual_length = 1;
 				break;
+			case EndpointOutRequest | USB_REQ_CLEAR_FEATURE:
+				break;
 			default:
 				p->status = USB_RET_STALL;
 				break;
@@ -776,7 +815,7 @@ namespace usb_msd
 		switch (p->pid)
 		{
 			case USB_TOKEN_OUT:
-				if (devep != 2)
+				if (devep != 1)
 					goto fail;
 
 				switch (s->f.mode)
@@ -863,7 +902,7 @@ namespace usb_msd
 				break;
 
 			case USB_TOKEN_IN:
-				if (devep != 1)
+				if (devep != 2)
 					goto fail;
 
 				switch (s->f.mode)
@@ -902,15 +941,6 @@ namespace usb_msd
 						break;
 
 					case USB_MSDM_DATAIN:
-						//if (len == 13) goto send_csw;
-						if (p->buffer_size > s->f.data_len)
-						{
-							//len = s->f.data_len;
-							s->f.result = COMMAND_FAILED;
-							set_sense(s, SENSE_CODE(UNRECOVERED_READ_ERROR));
-							goto fail;
-						}
-
 						//if (s->scsi_len)
 						{
 							usb_msd_copy_data(s, p);
@@ -927,12 +957,6 @@ namespace usb_msd
 									s->f.mode = USB_MSDM_CSW;
 								}
 							}
-						}
-
-						if ((size_t)p->actual_length < p->buffer_size)
-						{
-							s->packet = p;
-							p->status = USB_RET_ASYNC;
 						}
 						break;
 
@@ -960,11 +984,161 @@ namespace usb_msd
 		delete s;
 	}
 
-	USBDevice* MsdDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
+	// Sony MSAC-US1
+	static void usb_msac_handle_control(USBDevice* dev, USBPacket* p, int request, int value,
+		int index, int length, uint8_t* data)
+	{
+		MSDState* s = USB_CONTAINER_OF(dev, MSDState, dev);
+		int ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
+
+		if (ret >= 0)
+		{
+			return;
+		}
+
+		switch (request)
+		{
+			case ClassInterfaceOutRequest:
+				switch (data[0])
+				{
+					case REQUEST_SENSE:
+					{
+						s->f.mode = USB_MSDM_CBW;
+						s->f.data_len = data[4];
+						memset(s->f.buf, 0, s->f.data_len);
+						s->f.buf[0] = 0x70;
+						s->f.buf[7] = 0x0A;
+						break;
+					}
+					case INQUIRY:
+					{
+						s->f.mode = USB_MSDM_CBW;
+						s->f.data_len = data[4];
+						memset(s->f.buf, 0, s->f.data_len);
+						s->f.buf[1] = 0x80;
+						s->f.buf[3] = 1;
+						s->f.buf[4] = 0x1f;
+						strncpy((char*)&s->f.buf[8], "Sony    ", 8);
+						strncpy((char*)&s->f.buf[16], "MSAC-US1        ", 16);
+						strncpy((char*)&s->f.buf[32], "1.00", 4);
+						break;
+					}
+					case READ_CAPACITY_10:
+					{
+						s->f.mode = USB_MSDM_CBW;
+						s->f.data_len = 8;
+						memset(s->f.buf, 0, s->f.data_len);
+
+						if (s->file_size == 0)
+						{
+							break;
+						}
+
+						uint32_t* last_lba = (uint32_t*)&s->f.buf[0];
+						uint32_t* blk_len = (uint32_t*)&s->f.buf[4];
+						*blk_len = bswap32(LBA_BLOCK_SIZE);
+
+						int64_t lbas = s->file_size / LBA_BLOCK_SIZE;
+						if (lbas > 0xFFFFFFFF)
+						{
+							*last_lba = bswap32(0xFFFFFFFF);
+						}
+						else
+						{
+							*last_lba = bswap32(static_cast<uint32_t>(lbas - 1));
+						}
+						break;
+					}
+					case READ_10:
+					{
+						s->f.mode = USB_MSDM_DATAIN;
+						const int64_t lba = bswap32(*(uint32_t*)&data[2]);
+						const uint16_t xfer_len = bswap16(*(uint16_t*)&data[7]);
+						if (xfer_len == 0)
+						{
+							break;
+						}
+
+						FileSystem::FSeek64(s->file, lba * LBA_BLOCK_SIZE, SEEK_SET);
+						break;
+					}
+					default:
+						Console.Warning("usb-msd: Unhandled MSAC command : %02x", data[0]);
+						p->status = USB_RET_STALL;
+						break;
+				}
+				break;
+			default:
+				p->status = USB_RET_STALL;
+				break;
+		}
+	}
+
+	static void usb_msac_handle_data(USBDevice* dev, USBPacket* p)
+	{
+		MSDState* s = (MSDState*)dev;
+		const uint8_t devep = p->ep->nr;
+
+		switch (p->pid)
+		{
+			case USB_TOKEN_IN:
+				if (devep != 2)
+					goto fail;
+
+				if (s->f.mode == USB_MSDM_CBW)
+				{
+					usb_packet_copy(p, s->f.buf, s->f.data_len);
+				}
+				else if (s->f.mode == USB_MSDM_DATAIN)
+				{
+					size_t read_size = fread(s->f.buf, 1, p->buffer_size, s->file);
+					s->f.data_len = p->buffer_size;
+					usb_packet_copy(p, s->f.buf, read_size);
+				}
+				break;
+
+			default:
+			fail:
+				p->status = USB_RET_STALL;
+				break;
+		}
+	}
+
+	USBDevice* MsdDevice::CreateDevice(SettingsInterface& si, u32 port, u32 type) const
 	{
 		MSDState* s = new MSDState();
 
-		std::string path(USB::GetConfigString(si, port, TypeName(), "ImagePath"));
+		std::string path;
+		s->dev.speed = USB_SPEED_FULL;
+		s->desc.full = &s->desc_dev;
+
+		switch (type)
+		{
+			case IOMEGA_ZIP_100:
+				path = USB::GetConfigString(si, port, TypeName(), "ImagePathMsd");
+				s->desc.str = zip100_desc_strings;
+				if (usb_desc_parse_dev(zip100_dev_descriptor, sizeof(zip100_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(zip100_config_descriptor, sizeof(zip100_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				s->dev.klass.handle_control = usb_msd_handle_control;
+				s->dev.klass.handle_data = usb_msd_handle_data;
+				break;
+			case SONY_MSAC_US1:
+				path = USB::GetConfigString(si, port, TypeName(), "ImagePathMsac");
+				s->desc.str = sony_msac_desc_strings;
+				if (usb_desc_parse_dev(sony_msac_dev_descriptor, sizeof(sony_msac_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(sony_msac_config_descriptor, sizeof(sony_msac_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				s->dev.klass.handle_control = usb_msac_handle_control;
+				s->dev.klass.handle_data = usb_msac_handle_data;
+				break;
+			default:
+				pxAssertMsg(false, "Unhandled type");
+				break;
+		}
+
 		if (path.empty() || !(s->file = FileSystem::OpenCFile(path.c_str(), "r+b")))
 		{
 			Host::AddOSDMessage(fmt::format(TRANSLATE_FS("USB", "usb-msd: Could not open image file '{}'"), path),
@@ -979,23 +1153,13 @@ namespace usb_msd
 		s->file_size = sd.Size;
 		s->f.mtime = sd.ModificationTime;
 		s->f.last_cmd = -1;
-		s->dev.speed = USB_SPEED_FULL;
-
-		s->desc.full = &s->desc_dev;
-		s->desc.str = desc_strings;
-		if (usb_desc_parse_dev(qemu_msd_dev_descriptor, sizeof(qemu_msd_dev_descriptor), s->desc, s->desc_dev) < 0)
-			goto fail;
-		if (usb_desc_parse_config(qemu_msd_config_descriptor, sizeof(qemu_msd_config_descriptor), s->desc_dev) < 0)
-			goto fail;
 
 		s->dev.klass.cancel_packet = usb_msd_cancel_io;
 		s->dev.klass.handle_attach = usb_desc_attach;
 		s->dev.klass.handle_reset = usb_msd_handle_reset;
-		s->dev.klass.handle_control = usb_msd_handle_control;
-		s->dev.klass.handle_data = usb_msd_handle_data;
 		s->dev.klass.unrealize = usb_msd_handle_destroy;
 		s->dev.klass.usb_desc = &s->desc;
-		s->dev.klass.product_desc = desc_strings[STR_PRODUCT];
+		s->dev.klass.product_desc = nullptr;
 
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
@@ -1049,13 +1213,37 @@ namespace usb_msd
 		// TODO: Handle changes to path.
 	}
 
-	std::span<const SettingInfo> MsdDevice::Settings(u32 subtype) const
+	std::span<const char*> MsdDevice::SubTypes() const
 	{
-		static constexpr const SettingInfo settings[] = {
-			{SettingInfo::Type::Path, "ImagePath", TRANSLATE_NOOP("USB", "Image Path"),
-				TRANSLATE_NOOP("USB", "Sets the path to image which will back the virtual mass storage device.")},
+		static const char* subtypes[] = {
+			TRANSLATE_NOOP("USB", "Iomega Zip-100 (Generic)"),
+			TRANSLATE_NOOP("USB", "Sony MSAC-US1 (PictureParadise)")
 		};
-		return settings;
+		return subtypes;
 	}
 
+	std::span<const SettingInfo> MsdDevice::Settings(u32 subtype) const
+	{
+		switch (subtype)
+		{
+			case IOMEGA_ZIP_100:
+			{
+				static constexpr const SettingInfo settings[] = {
+					{SettingInfo::Type::Path, "ImagePathMsd", TRANSLATE_NOOP("USB", "Image Path"),
+						TRANSLATE_NOOP("USB", "Sets the path to image which will back the virtual mass storage device.")},
+				};
+				return settings;
+			}
+			case SONY_MSAC_US1:
+			{
+				static constexpr const SettingInfo settings[] = {
+					{SettingInfo::Type::Path, "ImagePathMsac", TRANSLATE_NOOP("USB", "Image Path"),
+						TRANSLATE_NOOP("USB", "Sets the path to image which will back the virtual mass storage device.")},
+				};
+				return settings;
+			}
+			default:
+				return {};
+		}
+	}
 } // namespace usb_msd

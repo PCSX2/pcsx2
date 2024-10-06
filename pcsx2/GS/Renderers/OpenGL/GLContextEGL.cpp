@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/OpenGL/GLContextEGL.h"
 
@@ -312,6 +312,11 @@ bool GLContextEGL::DoneCurrent()
 	return eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
+bool GLContextEGL::SupportsNegativeSwapInterval() const
+{
+	return m_supports_negative_swap_interval;
+}
+
 bool GLContextEGL::SetSwapInterval(s32 interval)
 {
 	return eglSwapInterval(m_display, interval);
@@ -492,6 +497,19 @@ bool GLContextEGL::CreateContext(const Version& version, EGLContext share_contex
 	}
 
 	Console.WriteLnFmt("Got GL version {}.{}", version.major_version, version.minor_version);
+
+	EGLint min_swap_interval, max_swap_interval;
+	m_supports_negative_swap_interval = false;
+	if (eglGetConfigAttrib(m_display, config.value(), EGL_MIN_SWAP_INTERVAL, &min_swap_interval) &&
+		eglGetConfigAttrib(m_display, config.value(), EGL_MAX_SWAP_INTERVAL, &max_swap_interval))
+	{
+		DEV_LOG("EGL_MIN_SWAP_INTERVAL = {}", min_swap_interval);
+		DEV_LOG("EGL_MAX_SWAP_INTERVAL = {}", max_swap_interval);
+		m_supports_negative_swap_interval = (min_swap_interval <= -1);
+	}
+
+	INFO_LOG("Negative swap interval/tear-control is {}supported", m_supports_negative_swap_interval ? "" : "NOT ");
+
 	m_config = config.value();
 	m_version = version;
 	return true;

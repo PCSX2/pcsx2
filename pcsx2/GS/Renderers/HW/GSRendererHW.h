@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -15,6 +15,13 @@ MULTI_ISA_DEF(class GSRendererHWFunctions;)
 MULTI_ISA_DEF(void GSRendererHWPopulateFunctions(GSRendererHW& renderer);)
 
 class GSHwHack;
+
+enum ClearType
+{
+	NotClear,
+	NormalClear,
+	ClearWithDraw
+};
 
 class GSRendererHW : public GSRenderer
 {
@@ -48,7 +55,8 @@ private:
 	float alpha1(int L, int X0, int X1);
 	void SwSpriteRender();
 	bool CanUseSwSpriteRender();
-	bool IsConstantDirectWriteMemClear();
+	int IsScalingDraw(GSTextureCache::Source* src, bool no_gaps);
+	ClearType IsConstantDirectWriteMemClear();
 	u32 GetConstantDirectWriteMemClearColor() const;
 	u32 GetConstantDirectWriteMemClearDepth() const;
 	bool IsReallyDithered() const;
@@ -87,14 +95,15 @@ private:
 	void SetupIA(float target_scale, float sx, float sy);
 	void EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
 	bool EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only);
-	void EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER, GSTextureCache::Target* rt);
+	void EmulateBlending(int rt_alpha_min, int rt_alpha_max, const bool DATE, bool& DATE_PRIMID, bool& DATE_BARRIER, GSTextureCache::Target* rt,
+		bool can_scale_rt_alpha, bool& new_rt_alpha_scale);
 	void CleanupDraw(bool invalidate_temp_src);
 
 	void EmulateTextureSampler(const GSTextureCache::Target* rt, const GSTextureCache::Target* ds,
-		GSTextureCache::Source* tex, const TextureMinMaxResult& tmm, GSTexture*& src_copy);
+		GSTextureCache::Source* tex, const TextureMinMaxResult& tmm, GSDevice::RecycledTexture& src_copy);
 	void HandleTextureHazards(const GSTextureCache::Target* rt, const GSTextureCache::Target* ds,
 		const GSTextureCache::Source* tex, const TextureMinMaxResult& tmm, GSTextureCache::SourceRegion& source_region,
-		bool& target_region, GSVector2i& unscaled_size, float& scale, GSTexture*& src_copy);
+		bool& target_region, GSVector2i& unscaled_size, float& scale, GSDevice::RecycledTexture& src_copy);
 	bool CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextureCache::Source* tex,
 		const TextureMinMaxResult& tmm);
 
@@ -225,10 +234,13 @@ public:
 	/// Called by the texture cache to know for certain whether there is a channel shuffle.
 	bool TestChannelShuffle(GSTextureCache::Target* src);
 
-	/// Returns true if the specified texture address matches the frame or Z buffer.
-	bool IsTBPFrameOrZ(u32 tbp);
+	/// Returns true if the Frame and TEX0 are sharing channels
+	bool ChannelsSharedTEX0FRAME();
 
-	//// Returns true if the draws appear to be a manual deswizzle.
+	/// Returns true if the specified texture address matches the frame or Z buffer.
+	bool IsTBPFrameOrZ(u32 tbp, bool frame_only = false);
+
+	/// Returns true if the draws appear to be a manual deswizzle.
 	void HandleManualDeswizzle();
 
 	/// Offsets the current draw, used for RT-in-RT. Offsets are relative to the *current* FBP, not the new FBP.

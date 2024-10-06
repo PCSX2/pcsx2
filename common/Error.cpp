@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Error.h"
 #include "StringUtil.h"
@@ -8,6 +8,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <cwctype>
 #include <type_traits>
 
 // Platform-specific includes
@@ -28,6 +29,12 @@ Error::~Error() = default;
 void Error::Clear()
 {
 	m_description = {};
+}
+
+void Error::Clear(Error* errptr)
+{
+	if (errptr)
+		errptr->Clear();
 }
 
 void Error::SetErrno(int err)
@@ -102,8 +109,11 @@ void Error::SetWin32(std::string_view prefix, unsigned long err)
 	m_type = Type::Win32;
 
 	WCHAR buf[128];
-	const DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, LANG_USER_DEFAULT, buf,
+	DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, LANG_USER_DEFAULT, buf,
 		static_cast<DWORD>(std::size(buf)), nullptr);
+	while (r > 0 && std::iswspace(buf[r - 1]))
+		r--;
+
 	if (r > 0)
 	{
 		m_description =
@@ -137,16 +147,20 @@ void Error::SetHResult(std::string_view prefix, long err)
 	m_type = Type::HResult;
 
 	WCHAR buf[128];
-	const DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, LANG_USER_DEFAULT, buf,
+	DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, LANG_USER_DEFAULT, buf,
 		static_cast<DWORD>(std::size(buf)), nullptr);
+	while (r > 0 && std::iswspace(buf[r - 1]))
+		r--;
+
 	if (r > 0)
 	{
-		m_description =
-			fmt::format("{}HRESULT {:08X}: {}", prefix, err, StringUtil::WideStringToUTF8String(std::wstring_view(buf, r)));
+		m_description = fmt::format("{}HRESULT {:08X}: {}", prefix, static_cast<unsigned>(err),
+			StringUtil::WideStringToUTF8String(std::wstring_view(buf, r)));
 	}
 	else
 	{
-		m_description = fmt::format("{}HRESULT {:08X}: <Could not resolve system error ID>", prefix, err);
+		m_description = fmt::format("{}HRESULT {:08X}: <Could not resolve system error ID>", prefix,
+			static_cast<unsigned>(err));
 	}
 }
 

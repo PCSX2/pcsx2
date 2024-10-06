@@ -1,14 +1,13 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
-#include "DebugTools/SymbolMap.h"
+#include "DebugTools/SymbolGuardian.h"
 #include "IopBios.h"
 #include "IopMem.h"
 #include "R3000A.h"
 #include "R5900.h"
 #include "ps2/BiosTools.h"
-#include "x86/iR3000A.h"
 #include "VMManager.h"
 
 #include <ctype.h>
@@ -149,65 +148,24 @@ namespace R3000A
 		0x1000,
 	};
 
-	static std::string host_path(const std::string& path, bool allow_open_host_root)
-	{
-		// We are NOT allowing to use the root of the host unit.
-		// For now it just supports relative folders from the location of the elf
-		std::string native_path(Path::Canonicalize(path));
-		std::string new_path;
-		if (!hostRoot.empty() && native_path.starts_with(hostRoot))
-			new_path = std::move(native_path);
-		else if (!hostRoot.empty()) // relative paths
-			new_path = Path::Combine(hostRoot, native_path);
-
-		// Allow opening the ELF override.
-		if (new_path == VMManager::Internal::GetELFOverride())
-			return new_path;
-
-		// Allow nothing if hostfs isn't enabled.
-		if (!EmuConfig.HostFs)
-		{
-			new_path.clear();
-			return new_path;
-		}
-
-		// Double-check that it falls within the directory of the elf.
-		// Not a real sandbox, but emulators shouldn't be treated as such. Don't run untrusted code!
-		std::string canonicalized_path(Path::Canonicalize(new_path));
-
-		// Are we opening the root of host? (i.e. `host:.` or `host:`)
-		// We want to allow this as a directory open, but not as a file open.
-		if (!allow_open_host_root || canonicalized_path != hostRoot)
-		{
-			// Only allow descendants of the hostfs directory.
-			if (canonicalized_path.length() <= hostRoot.length() || // Length has to be equal or longer,
-				!canonicalized_path.starts_with(hostRoot) || // and start with the host root,
-				canonicalized_path[hostRoot.length()] != FS_OSPATH_SEPARATOR_CHARACTER) // and we can't access a sibling.
-			{
-				Console.Error(fmt::format(
-					"IopHLE: Denying access to path outside of ELF directory. Requested path: '{}', Resolved path: '{}', ELF directory: '{}'",
-					path, new_path, hostRoot));
-				new_path.clear();
-			}
-		}
-
-		return new_path;
-	}
-
 	// This is a workaround for GHS on *NIX platforms
 	// Whenever a program splits directories with a backslash (ulaunchelf)
 	// the directory is considered non-existant
-	static __fi std::string clean_path(const std::string path)
+	static __fi std::string clean_path(const std::string& path)
 	{
+#ifndef _WIN32
 		std::string ret = path;
 		std::replace(ret.begin(), ret.end(), '\\', '/');
 		return ret;
+#else // This function will cause problems with Windows WSL / device paths where forward slashes are required
+		return path;
+#endif
 	}
 
-	static int host_stat(const std::string path, fio_stat_t* host_stats, fio_stat_flags& stat = ioman_stat)
+	static int host_stat(const std::string& path, fio_stat_t* host_stats, fio_stat_flags& stat = ioman_stat)
 	{
 		struct stat file_stats;
-		const std::string file_path(host_path(path, true));
+		const std::string file_path(ioman::host_path(path, true));
 
 		if (!FileSystem::StatFile(file_path.c_str(), &file_stats))
 			return -IOP_ENOENT;
@@ -263,7 +221,7 @@ namespace R3000A
 		return 0;
 	}
 
-	static int host_stat(const std::string path, fxio_stat_t* host_stats)
+	static int host_stat(const std::string& path, fxio_stat_t* host_stats)
 	{
 		return host_stat(path, &host_stats->_fioStat, iomanx_stat);
 	}
@@ -303,7 +261,7 @@ namespace R3000A
 		static int open(IOManFile** file, const std::string& full_path, s32 flags, u16 mode)
 		{
 			const std::string path(full_path.substr(full_path.find(':') + 1));
-			const std::string file_path(host_path(path, false));
+			const std::string file_path(ioman::host_path(path, false));
 			int native_flags = O_BINARY; // necessary in Windows.
 
 			switch (flags & IOP_O_RDWR)
@@ -401,7 +359,7 @@ namespace R3000A
 		static int open(IOManDir** dir, const std::string& full_path)
 		{
 			std::string relativePath = full_path.substr(full_path.find(':') + 1);
-			std::string path = host_path(relativePath, true);
+			std::string path = ioman::host_path(relativePath, true);
 
 			if (!FileSystem::DirectoryExists(path.c_str()))
 				return -IOP_ENOENT; // Should return ENOTDIR if path is a file?
@@ -425,13 +383,13 @@ namespace R3000A
 			{
 				fxio_dirent_t* hostcontent = (fxio_dirent_t*)buf;
 				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
-				host_stat(host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+				host_stat(ioman::host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
 			}
 			else
 			{
 				fio_dirent_t* hostcontent = (fio_dirent_t*)buf;
 				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
-				host_stat(host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+				host_stat(ioman::host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
 			}
 
 			dir = std::next(dir);
@@ -559,13 +517,58 @@ namespace R3000A
 			}
 		}
 
-		bool is_host(const std::string path)
+		bool is_host(const std::string_view path)
 		{
 			auto not_number_pos = path.find_first_not_of("0123456789", 4);
 			if (not_number_pos == std::string::npos)
 				return false;
 
 			return (path.compare(0, 4, "host") == 0 && path[not_number_pos] == ':');
+		}
+
+		std::string host_path(const std::string_view path, bool allow_open_host_root)
+		{
+			// We are NOT allowing to use the root of the host unit.
+			// For now it just supports relative folders from the location of the elf
+			std::string native_path(Path::Canonicalize(path));
+			std::string new_path;
+			if (!hostRoot.empty() && native_path.starts_with(hostRoot))
+				new_path = std::move(native_path);
+			else if (!hostRoot.empty()) // relative paths
+				new_path = Path::Combine(hostRoot, native_path);
+
+			// Allow opening the ELF override.
+			if (new_path == VMManager::Internal::GetELFOverride())
+				return new_path;
+
+			// Allow nothing if hostfs isn't enabled.
+			if (!EmuConfig.HostFs)
+			{
+				new_path.clear();
+				return new_path;
+			}
+
+			// Double-check that it falls within the directory of the elf.
+			// Not a real sandbox, but emulators shouldn't be treated as such. Don't run untrusted code!
+			std::string canonicalized_path(Path::Canonicalize(new_path));
+
+			// Are we opening the root of host? (i.e. `host:.` or `host:`)
+			// We want to allow this as a directory open, but not as a file open.
+			if (!allow_open_host_root || canonicalized_path != hostRoot)
+			{
+				// Only allow descendants of the hostfs directory.
+				if (canonicalized_path.length() <= hostRoot.length() || // Length has to be equal or longer,
+					!canonicalized_path.starts_with(hostRoot) || // and start with the host root,
+					canonicalized_path[hostRoot.length()] != FS_OSPATH_SEPARATOR_CHARACTER) // and we can't access a sibling.
+				{
+					Console.Error(fmt::format(
+						"IopHLE: Denying access to path outside of ELF directory. Requested path: '{}', Resolved path: '{}', ELF directory: '{}'",
+						path, new_path, hostRoot));
+					new_path.clear();
+				}
+			}
+
+			return new_path;
 		}
 
 		int open_HLE()
@@ -1054,40 +1057,100 @@ namespace R3000A
 		void LoadFuncs(u32 a0reg)
 		{
 			const std::string modname = iopMemReadString(a0reg + 12, 8);
-			ModuleVersion version = {iopMemRead8(a0 + 9), iopMemRead8(a0 + 8)};
-			DevCon.WriteLn(Color_Gray, "RegisterLibraryEntries: %8.8s version %x.%02x", modname.data(), version.major, version.minor);
+			s32 version_major = iopMemRead8(a0reg + 9);
+			s32 version_minor = iopMemRead8(a0reg + 8);
+			DevCon.WriteLn(Color_Gray, "RegisterLibraryEntries: %8.8s version %x.%02x", modname.data(), version_major, version_minor);
 
-			if (R3000SymbolMap.AddModule(modname, version))
-			{
+			R3000SymbolGuardian.ReadWrite([&](ccc::SymbolDatabase& database) {
+				ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("IRX Export Table");
+				if (!source.success())
+					return;
+
+				// Enumerate the module symbols that already exist for this IRX
+				// module. Really there should only be one.
+				std::vector<ccc::ModuleHandle> existing_modules;
+				for (const auto& pair : database.modules.handles_from_name(modname))
+				{
+					const ccc::Module* existing_module = database.modules.symbol_from_handle(pair.second);
+					if (!existing_module || !existing_module->is_irx)
+						continue;
+
+					// Different major versions, we treat this one as a different module.
+					if (existing_module->version_major != version_major)
+						continue;
+
+					// RegisterLibraryEntries will fail if the new minor ver is <= the old minor ver
+					// and the major version is the same.
+					if (existing_module->version_minor >= version_minor)
+						return;
+
+					existing_modules.emplace_back(existing_module->handle());
+				}
+
+				// Destroy the old symbols for this IRX module if any exist.
+				for (ccc::ModuleHandle existing_module : existing_modules)
+					database.destroy_symbols_from_module(existing_module, true);
+
+				ccc::Result<ccc::Module*> module_symbol = database.modules.create_symbol(modname, *source, nullptr);
+				if (!module_symbol.success())
+					return;
+
+				(*module_symbol)->is_irx = true;
+				(*module_symbol)->version_major = version_major;
+				(*module_symbol)->version_minor = version_minor;
+
 				u32 func = a0reg + 20;
 				u32 funcptr = iopMemRead32(func);
 				u32 index = 0;
 				while (funcptr != 0)
 				{
-					const std::string funcname = std::string(irxImportFuncname(modname, index));
-					if (!funcname.empty())
-					{
-						R3000SymbolMap.AddModuleExport(modname, version, fmt::format("{}[{:02}]::{}", modname, index, funcname).c_str(), funcptr, 0);
-					}
+					const char* unqualified_name = irxImportFuncname(modname, index);
+
+					std::string qualified_name;
+					if (unqualified_name && unqualified_name[0] != '\0')
+						qualified_name = fmt::format("{}[{:02}]::{}", modname, index, unqualified_name);
 					else
-					{
-						R3000SymbolMap.AddModuleExport(modname, version, fmt::format("{}[{:02}]::unkn_{:02}", modname, index, index).c_str(), funcptr, 0);
-					}
+						qualified_name = fmt::format("{}[{:02}]::unkn_{:02}", modname, index, index);
+
+					ccc::Result<ccc::Function*> function = database.functions.create_symbol(qualified_name, funcptr, *source, *module_symbol);
+					if (!function.success())
+						return;
+
 					index++;
 					func += 4;
 					funcptr = iopMemRead32(func);
 				}
-			}
+			});
 		}
 
 		void ReleaseFuncs(u32 a0reg)
 		{
 			const std::string modname = iopMemReadString(a0reg + 12, 8);
-			ModuleVersion version = {iopMemRead8(a0 + 9), iopMemRead8(a0 + 8)};
+			s32 version_major = iopMemRead8(a0reg + 9);
+			s32 version_minor = iopMemRead8(a0reg + 8);
 
-			DevCon.WriteLn(Color_Gray, "ReleaseLibraryEntries: %8.8s version %x.%02x", modname.data(), version.major, version.minor);
+			DevCon.WriteLn(Color_Gray, "ReleaseLibraryEntries: %8.8s version %x.%02x", modname.c_str(), version_major, version_minor);
 
-			R3000SymbolMap.RemoveModule(modname, version);
+			R3000SymbolGuardian.ReadWrite([&](ccc::SymbolDatabase& database) {
+				// Enumerate the module symbols that exist for this IRX module.
+				// Really there should only be one.
+				std::vector<ccc::ModuleHandle> module_handles;
+				for (const auto& pair : database.modules.handles_from_name(modname))
+				{
+					const ccc::Module* module_symbol = database.modules.symbol_from_handle(pair.second);
+					if (!module_symbol || !module_symbol->is_irx)
+						continue;
+
+					if (module_symbol->version_major != version_major || module_symbol->version_minor != version_minor)
+						continue;
+
+					module_handles.emplace_back(module_symbol->handle());
+				}
+
+				// Destroy the symbols for the module.
+				for (ccc::ModuleHandle module_handle : module_handles)
+					database.destroy_symbols_from_module(module_handle, true);
+			});
 		}
 
 		int RegisterLibraryEntries_HLE()

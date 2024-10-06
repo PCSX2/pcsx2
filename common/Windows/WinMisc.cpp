@@ -1,7 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
-
-#if defined(_WIN32)
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/FileSystem.h"
 #include "common/HostSys.h"
@@ -81,7 +79,7 @@ std::string GetOSVersionString()
 	return retval;
 }
 
-bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
+bool Common::InhibitScreensaver(bool inhibit)
 {
 	EXECUTION_STATE flags = ES_CONTINUOUS;
 	if (inhibit)
@@ -126,4 +124,3 @@ void Threading::SleepUntil(u64 ticks)
 	}
 }
 
-#endif

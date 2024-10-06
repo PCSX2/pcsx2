@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -98,6 +98,7 @@ public:
 	__fi QLabel* getStatusResolutionWidget() const { return m_status_resolution_widget; }
 	__fi QLabel* getStatusFPSWidget() const { return m_status_fps_widget; }
 	__fi QLabel* getStatusVPSWidget() const { return m_status_vps_widget; }
+	__fi QLabel* getStatusSpeedWidget() const { return m_status_speed_widget; }
 
 	/// Rescans a single file. NOTE: Happens on UI thread.
 	void rescanFile(const std::string& path);
@@ -110,6 +111,8 @@ public Q_SLOTS:
 	void cancelGameListRefresh();
 	void reportError(const QString& title, const QString& message);
 	bool confirmMessage(const QString& title, const QString& message);
+	void onStatusMessage(const QString& message);
+
 	void runOnUIThread(const std::function<void()>& func);
 	void requestReset();
 	bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool default_save_to_state = true);
@@ -163,11 +166,13 @@ private Q_SLOTS:
 	void updateTheme();
 	void reloadThemeSpecificImages();
 	void updateLanguage();
+	void onThemeChanged();
+	void onLanguageChanged();
 	void onScreenshotActionTriggered();
 	void onSaveGSDumpActionTriggered();
 	void onBlockDumpActionToggled(bool checked);
 	void onShowAdvancedSettingsToggled(bool checked);
-	void onToolsVideoCaptureToggled(bool checked);
+	void onVideoCaptureToggled(bool checked);
 	void onSettingsTriggeredFromToolbar();
 
 	// Input Recording
@@ -190,7 +195,6 @@ private Q_SLOTS:
 	void onCaptureStopped();
 
 	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
-	void onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points, quint32 unread_messages);
 	void onAchievementsHardcoreModeChanged(bool enabled);
 
 protected:
@@ -264,6 +268,7 @@ private:
 		const GameList::Entry* entry, std::optional<s32> save_slot = std::nullopt, std::optional<bool> fast_boot = std::nullopt);
 	void setGameListEntryCoverImage(const GameList::Entry* entry);
 	void clearGameListEntryPlayTime(const GameList::Entry* entry);
+	void goToWikiPage(const GameList::Entry* entry);
 
 	std::optional<bool> promptForResumeState(const QString& save_state_path);
 	void loadSaveStateSlot(s32 slot);
@@ -291,6 +296,7 @@ private:
 	QLabel* m_status_renderer_widget = nullptr;
 	QLabel* m_status_fps_widget = nullptr;
 	QLabel* m_status_vps_widget = nullptr;
+	QLabel* m_status_speed_widget = nullptr;
 	QLabel* m_status_resolution_widget = nullptr;
 
 	QMenu* m_settings_toolbar_menu = nullptr;

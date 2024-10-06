@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -155,6 +155,26 @@ struct alignas(32) GSScanlineGlobalData // per batch variables, this is like a p
 	GSVector4 l; // TEX1.L * -0x10000
 	struct { GSVector4i i, f; } lod; // lcm == 1
 
+#endif
+
+#ifdef _M_ARM64
+	// Mini version of constant data for ARM64, we don't need all of it
+	alignas(16) u32 const_test_128b[8][4] = {
+		{0x00000000, 0x00000000, 0x00000000, 0x00000000},
+		{0xffffffff, 0x00000000, 0x00000000, 0x00000000},
+		{0xffffffff, 0xffffffff, 0x00000000, 0x00000000},
+		{0xffffffff, 0xffffffff, 0xffffffff, 0x00000000},
+		{0x00000000, 0xffffffff, 0xffffffff, 0xffffffff},
+		{0x00000000, 0x00000000, 0xffffffff, 0xffffffff},
+		{0x00000000, 0x00000000, 0x00000000, 0xffffffff},
+		{0x00000000, 0x00000000, 0x00000000, 0x00000000},
+	};
+	alignas(16) u16 const_movemaskw_mask[8] = {0x3, 0xc, 0x30, 0xc0, 0x300, 0xc00, 0x3000, 0xc000};
+	alignas(16) float const_log2_coef[4] = {
+		0.204446009836232697516f,
+		-1.04913055217340124191f,
+		2.28330284476918490682f,
+		1.0f};
 #endif
 };
 

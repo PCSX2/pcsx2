@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -16,8 +16,7 @@
 #include <string_view>
 #include <vector>
 
-enum class VsyncMode;
-
+class ProgressCallback;
 class SettingsInterface;
 
 namespace Host
@@ -31,16 +30,19 @@ namespace Host
 
 	/// Returns a localized version of the specified string within the specified context.
 	/// The pointer is guaranteed to be valid until the next language change.
-	const char* TranslateToCString(const std::string_view& context, const std::string_view& msg);
+	const char* TranslateToCString(const std::string_view context, const std::string_view msg);
 
 	/// Returns a localized version of the specified string within the specified context.
 	/// The view is guaranteed to be valid until the next language change.
 	/// NOTE: When passing this to fmt, positional arguments should be used in the base string, as
 	/// not all locales follow the same word ordering.
-	std::string_view TranslateToStringView(const std::string_view& context, const std::string_view& msg);
+	std::string_view TranslateToStringView(const std::string_view context, const std::string_view msg);
 
 	/// Returns a localized version of the specified string within the specified context.
-	std::string TranslateToString(const std::string_view& context, const std::string_view& msg);
+	std::string TranslateToString(const std::string_view context, const std::string_view msg);
+
+	/// Returns a localized version of the specified string within the specified context, adjusting for plurals using %n.
+	std::string TranslatePluralToString(const char* context, const char* msg, const char* disambiguation, int count);
 
 	/// Clears the translation cache. All previously used strings should be considered invalid.
 	void ClearTranslationCache();
@@ -48,23 +50,23 @@ namespace Host
 	/// Adds OSD messages, duration is in seconds.
 	void AddOSDMessage(std::string message, float duration = 2.0f);
 	void AddKeyedOSDMessage(std::string key, std::string message, float duration = 2.0f);
-	void AddIconOSDMessage(std::string key, const char* icon, const std::string_view& message, float duration = 2.0f);
+	void AddIconOSDMessage(std::string key, const char* icon, const std::string_view message, float duration = 2.0f);
 	void RemoveKeyedOSDMessage(std::string key);
 	void ClearOSDMessages();
 
 	/// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
-	void ReportErrorAsync(const std::string_view& title, const std::string_view& message);
-	void ReportFormattedErrorAsync(const std::string_view& title, const char* format, ...);
+	void ReportErrorAsync(const std::string_view title, const std::string_view message);
+	void ReportFormattedErrorAsync(const std::string_view title, const char* format, ...);
 
 	/// Displays a synchronous confirmation on the UI thread, i.e. blocks the caller.
-	bool ConfirmMessage(const std::string_view& title, const std::string_view& message);
-	bool ConfirmFormattedMessage(const std::string_view& title, const char* format, ...);
+	bool ConfirmMessage(const std::string_view title, const std::string_view message);
+	bool ConfirmFormattedMessage(const std::string_view title, const char* format, ...);
 
 	/// Opens a URL, using the default application.
-	void OpenURL(const std::string_view& url);
+	void OpenURL(const std::string_view url);
 
 	/// Copies the provided text to the host's clipboard, if present.
-	bool CopyTextToClipboard(const std::string_view& text);
+	bool CopyTextToClipboard(const std::string_view text);
 
 	/// Requests settings reset. Can be called from any thread, will call back and apply on the CPU thread.
 	bool RequestResetSettings(bool folders, bool core, bool controllers, bool hotkeys, bool ui);
@@ -127,12 +129,11 @@ namespace Host
 	std::unique_lock<std::mutex> GetSettingsLock();
 	SettingsInterface* GetSettingsInterface();
 
-	/// Returns the settings interface that controller bindings should be loaded from.
-	/// If an input profile is being used, this will be the input layer, otherwise the layered interface.
-	SettingsInterface* GetSettingsInterfaceForBindings();
-
 	/// Sets host-specific default settings.
 	void SetDefaultUISettings(SettingsInterface& si);
+
+	/// Creates a progress callback that displays in the host.
+	std::unique_ptr<ProgressCallback> CreateHostProgressCallback();
 
 	namespace Internal
 	{
@@ -149,13 +150,13 @@ namespace Host
 		void SetBaseSettingsLayer(SettingsInterface* sif);
 
 		/// Sets the game settings layer. Called by VMManager when the game changes.
-		void SetGameSettingsLayer(SettingsInterface* sif);
+		void SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& settings_lock);
 
 		/// Sets the input profile settings layer. Called by VMManager when the game changes.
-		void SetInputSettingsLayer(SettingsInterface* sif);
+		void SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& settings_lock);
 
 		/// Implementation to retrieve a translated string.
-		s32 GetTranslatedStringImpl(const std::string_view& context, const std::string_view& msg, char* tbuf, size_t tbuf_space);
+		s32 GetTranslatedStringImpl(const std::string_view context, const std::string_view msg, char* tbuf, size_t tbuf_space);
 	} // namespace Internal
 } // namespace Host
 
@@ -164,6 +165,10 @@ namespace Host
 #define TRANSLATE_SV(context, msg) Host::TranslateToStringView(context, msg)
 #define TRANSLATE_STR(context, msg) Host::TranslateToString(context, msg)
 #define TRANSLATE_FS(context, msg) fmt::runtime(Host::TranslateToStringView(context, msg))
+#define TRANSLATE_PLURAL_STR(context, msg, disambiguation, count) \
+	Host::TranslatePluralToString(context, msg, disambiguation, count)
+#define TRANSLATE_PLURAL_FS(context, msg, disambiguation, count) \
+	fmt::runtime(Host::TranslatePluralToString(context, msg, disambiguation, count))
 
 // Does not translate the string at runtime, but allows the UI to in its own way.
 #define TRANSLATE_NOOP(context, msg) msg

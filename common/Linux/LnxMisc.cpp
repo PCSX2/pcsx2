@@ -1,11 +1,12 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
-
-#if !defined(_WIN32) && !defined(__APPLE__)
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Pcsx2Types.h"
+#include "common/Console.h"
 #include "common/HostSys.h"
+#include "common/Path.h"
 #include "common/ScopedGuard.h"
+#include "common/SmallString.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
@@ -158,7 +159,7 @@ static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* 
 	return true;
 }
 
-bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
+bool Common::InhibitScreensaver(bool inhibit)
 {
 	return SetScreensaverInhibitDBus(inhibit, "PCSX2", "PCSX2 VM is running.");
 }
@@ -173,7 +174,28 @@ bool Common::PlaySoundAsync(const char* path)
 
 	// Since we set SA_NOCLDWAIT in Qt, we don't need to wait here.
 	int res = posix_spawnp(&pid, cmdname, nullptr, nullptr, const_cast<char**>(argv), environ);
-	return (res == 0);
+	if (res == 0)
+		return true;
+
+	// Try gst-play-1.0.
+	const char* gst_play_cmdname = "gst-play-1.0";
+	const char* gst_play_argv[] = {cmdname, path, nullptr};
+	res = posix_spawnp(&pid, gst_play_cmdname, nullptr, nullptr, const_cast<char**>(gst_play_argv), environ);
+	if (res == 0)
+		return true;
+
+	// gst-launch? Bit messier for sure.
+	TinyString location_str = TinyString::from_format("location={}", path);
+	TinyString parse_str = TinyString::from_format("{}parse", Path::GetExtension(path));
+	const char* gst_launch_cmdname = "gst-launch-1.0";
+	const char* gst_launch_argv[] = {
+		gst_launch_cmdname, "filesrc", location_str.c_str(), "!", parse_str.c_str(), "!", "alsasink", nullptr};
+	res = posix_spawnp(&pid, gst_launch_cmdname, nullptr, nullptr, const_cast<char**>(gst_launch_argv), environ);
+	if (res == 0)
+		return true;
+
+	Console.ErrorFmt("Failed to play sound effect {}. Make sure you have aplay, gst-play-1.0, or gst-launch-1.0 available.", path);
+	return false;
 #else
 	return false;
 #endif
@@ -191,5 +213,3 @@ void Threading::SleepUntil(u64 ticks)
 	ts.tv_nsec = static_cast<long>(ticks % 1000000000ULL);
 	clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, nullptr);
 }
-
-#endif

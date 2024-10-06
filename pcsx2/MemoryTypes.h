@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include "common/Pcsx2Defs.h"
@@ -8,9 +8,10 @@ namespace Ps2MemSize
 {
 	static constexpr u32 MainRam = _32mb;      // 32 MB main memory.
 	static constexpr u32 ExtraRam = _1mb * 96; // 32+96 MB devkit memory.
+	static constexpr u32 TotalRam = _1mb * 128;// 128 MB total memory.
 	static constexpr u32 Rom = _1mb * 4;       // 4 MB main rom
 	static constexpr u32 Rom1 = _1mb * 4;      // DVD player
-	static constexpr u32 Rom2 = 0x00080000;    // Chinese rom extension
+	static constexpr u32 Rom2 = _1mb * 4;      // Chinese rom extension
 	static constexpr u32 Hardware = _64kb;
 	static constexpr u32 Scratch = _16kb;
 
@@ -18,6 +19,8 @@ namespace Ps2MemSize
 	static constexpr u32 IopHardware = _64kb;
 
 	static constexpr u32 GSregs = 0x00002000; // 8k for the GS registers and stuff.
+
+	extern u32 ExposedRam;
 } // namespace Ps2MemSize
 
 typedef u8 mem8_t;
@@ -56,8 +59,8 @@ struct IopVM_MemoryAllocMess
 // order to allow for simpler macros and reference handles to be defined  (we can safely use
 // compile-time references to registers instead of having to use instance variables).
 
-alignas(__pagesize) extern u8 eeHw[Ps2MemSize::Hardware];
-alignas(__pagesize) extern u8 iopHw[Ps2MemSize::IopHardware];
+alignas(__pagealignsize) extern u8 eeHw[Ps2MemSize::Hardware];
+alignas(__pagealignsize) extern u8 iopHw[Ps2MemSize::IopHardware];
 
 
 extern EEVM_MemoryAllocMess* eeMem;

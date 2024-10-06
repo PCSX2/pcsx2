@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -30,6 +30,7 @@ protected:
 	bool m_process_texture = false;
 	bool m_copy_16bit_to_target_shuffle = false;
 	bool m_same_group_texture_shuffle = false;
+	bool m_downscale_source = false;
 
 	virtual GSTexture* GetOutput(int i, float& scale, int& y_offset) = 0;
 	virtual GSTexture* GetFeedbackOutput(float& scale) { return nullptr; }
@@ -43,8 +44,6 @@ public:
 	virtual void Destroy();
 
 	virtual void UpdateRenderFixes();
-
-	void PurgePool();
 
 	virtual void VSync(u32 field, bool registers_written, bool idle_frame);
 	virtual bool CanUpscale() { return false; }

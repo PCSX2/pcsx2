@@ -69,6 +69,7 @@ static void rc_client_raintegration_load_dll(rc_client_t* client,
   raintegration->get_host_url = (rc_client_raintegration_get_string_func_t)GetProcAddress(hDLL, "_RA_HostUrl");
   raintegration->init_client = (rc_client_raintegration_init_client_func_t)GetProcAddress(hDLL, "_RA_InitClient");
   raintegration->init_client_offline = (rc_client_raintegration_init_client_func_t)GetProcAddress(hDLL, "_RA_InitOffline");
+  raintegration->set_console_id = (rc_client_raintegration_set_int_func_t)GetProcAddress(hDLL, "_RA_SetConsoleID");
   raintegration->shutdown = (rc_client_raintegration_action_func_t)GetProcAddress(hDLL, "_RA_Shutdown");
 
   raintegration->update_main_window_handle = (rc_client_raintegration_hwnd_action_func_t)GetProcAddress(hDLL, "_RA_UpdateHWnd");
@@ -77,7 +78,10 @@ static void rc_client_raintegration_load_dll(rc_client_t* client,
   raintegration->get_menu = (rc_client_raintegration_get_menu_func_t)GetProcAddress(hDLL, "_Rcheevos_RAIntegrationGetMenu");
   raintegration->activate_menu_item = (rc_client_raintegration_activate_menuitem_func_t)GetProcAddress(hDLL, "_Rcheevos_ActivateRAIntegrationMenuItem");
   raintegration->set_write_memory_function = (rc_client_raintegration_set_write_memory_func_t)GetProcAddress(hDLL, "_Rcheevos_SetRAIntegrationWriteMemoryFunction");
+  raintegration->set_get_game_name_function = (rc_client_raintegration_set_get_game_name_func_t)GetProcAddress(hDLL, "_Rcheevos_SetRAIntegrationGetGameNameFunction");
   raintegration->set_event_handler = (rc_client_raintegration_set_event_handler_func_t)GetProcAddress(hDLL, "_Rcheevos_SetRAIntegrationEventHandler");
+  raintegration->has_modifications = (rc_client_raintegration_get_int_func_t)GetProcAddress(hDLL, "_Rcheevos_HasModifications");
+  raintegration->get_achievement_state = (rc_client_raintegration_get_achievement_state_func_t)GetProcAddress(hDLL, "_Rcheevos_GetAchievementState");
 
   if (!raintegration->get_version ||
       !raintegration->init_client ||
@@ -147,7 +151,8 @@ static void rc_client_init_raintegration(rc_client_t* client,
     const char* host_url = client->state.raintegration->get_host_url();
     if (host_url) {
       if (strcmp(host_url, "OFFLINE") != 0) {
-        rc_client_set_host(client, host_url);
+        if (strcmp(host_url, "https://retroachievements.org") != 0)
+          rc_client_set_host(client, host_url);
       }
       else if (client->state.raintegration->init_client_offline) {
         init_func = client->state.raintegration->init_client_offline;
@@ -201,6 +206,7 @@ static void rc_client_init_raintegration(rc_client_t* client,
       /* attach the external client and call the callback */
       client->state.external_client = external_client;
 
+      client->state.raintegration->hMainWindow = version_validation_callback_data->main_window_handle;
       client->state.raintegration->bIsInited = 1;
 
       version_validation_callback_data->callback(RC_OK, NULL,
@@ -349,18 +355,26 @@ rc_client_async_handle_t* rc_client_begin_load_raintegration(rc_client_t* client
 
 void rc_client_raintegration_update_main_window_handle(rc_client_t* client, HWND main_window_handle)
 {
-   if (client && client->state.raintegration &&
-       client->state.raintegration->bIsInited &&
-       client->state.raintegration->update_main_window_handle)
-   {
+  if (client && client->state.raintegration) {
+    client->state.raintegration->hMainWindow = main_window_handle;
+
+    if (client->state.raintegration->bIsInited &&
+        client->state.raintegration->update_main_window_handle) {
       client->state.raintegration->update_main_window_handle(main_window_handle);
-   }
+    }
+  }
 }
 
 void rc_client_raintegration_set_write_memory_function(rc_client_t* client, rc_client_raintegration_write_memory_func_t handler)
 {
   if (client && client->state.raintegration && client->state.raintegration->set_write_memory_function)
     client->state.raintegration->set_write_memory_function(client, handler);
+}
+
+void rc_client_raintegration_set_get_game_name_function(rc_client_t* client, rc_client_raintegration_get_game_name_func_t handler)
+{
+  if (client && client->state.raintegration && client->state.raintegration->set_get_game_name_function)
+    client->state.raintegration->set_get_game_name_function(client, handler);
 }
 
 void rc_client_raintegration_set_event_handler(rc_client_t* client,
@@ -374,12 +388,39 @@ const rc_client_raintegration_menu_t* rc_client_raintegration_get_menu(const rc_
 {
   if (!client || !client->state.raintegration ||
       !client->state.raintegration->bIsInited ||
-      !client->state.raintegration->get_menu)
-  {
+      !client->state.raintegration->get_menu) {
     return NULL;
   }
 
   return client->state.raintegration->get_menu();
+}
+
+void rc_client_raintegration_set_console_id(rc_client_t* client, uint32_t console_id)
+{
+  if (client && client->state.raintegration && client->state.raintegration->set_console_id)
+    client->state.raintegration->set_console_id(console_id);
+}
+
+int rc_client_raintegration_has_modifications(const rc_client_t* client)
+{
+  if (!client || !client->state.raintegration ||
+      !client->state.raintegration->bIsInited ||
+      !client->state.raintegration->has_modifications) {
+    return 0;
+  }
+
+  return client->state.raintegration->has_modifications();
+}
+
+int rc_client_raintegration_get_achievement_state(const rc_client_t* client, uint32_t achievement_id)
+{
+  if (!client || !client->state.raintegration ||
+      !client->state.raintegration->bIsInited ||
+      !client->state.raintegration->get_achievement_state) {
+    return RC_CLIENT_RAINTEGRATION_ACHIEVEMENT_STATE_NONE;
+  }
+
+  return client->state.raintegration->get_achievement_state(achievement_id);
 }
 
 void rc_client_raintegration_rebuild_submenu(rc_client_t* client, HMENU hMenu)
@@ -413,7 +454,7 @@ void rc_client_raintegration_rebuild_submenu(rc_client_t* client, HMENU hMenu)
             if (menuitem->checked)
                flags |= MF_CHECKED;
             if (!menuitem->enabled)
-               flags |= MF_DISABLED | MF_GRAYED;
+               flags |= MF_GRAYED;
 
             AppendMenuA(hPopupMenu, flags, menuitem->id, menuitem->label);
          }
@@ -428,7 +469,7 @@ void rc_client_raintegration_rebuild_submenu(rc_client_t* client, HMENU hMenu)
 
       UINT flags = MF_POPUP | MF_STRING;
       if (!menu || !menu->num_items)
-         flags |= MF_DISABLED | MF_GRAYED;
+         flags |= MF_GRAYED;
 
       while (--nIndex >= 0)
       {
@@ -443,6 +484,9 @@ void rc_client_raintegration_rebuild_submenu(rc_client_t* client, HMENU hMenu)
          AppendMenuA(hMenu, flags, (UINT_PTR)hPopupMenu, menuText);
       else
          ModifyMenuA(hMenu, nIndex, flags | MF_BYPOSITION, (UINT_PTR)hPopupMenu, menuText);
+
+      if (client->state.raintegration->hMainWindow && GetMenu(client->state.raintegration->hMainWindow) == hMenu)
+        DrawMenuBar(client->state.raintegration->hMainWindow);
    }
 
    client->state.raintegration->hPopupMenu = hPopupMenu;
@@ -457,15 +501,18 @@ void rc_client_raintegration_update_menu_item(const rc_client_t* client, const r
          flags |= MF_CHECKED;
 
       CheckMenuItem(client->state.raintegration->hPopupMenu, menuitem->id, flags | MF_BYCOMMAND);
+
+      flags = (menuitem->enabled) ? MF_ENABLED : MF_GRAYED;
+      EnableMenuItem(client->state.raintegration->hPopupMenu, menuitem->id, flags | MF_BYCOMMAND);
    }
 }
 
-int rc_client_raintegration_activate_menu_item(const rc_client_t* client, uint32_t nMenuItemId)
+int rc_client_raintegration_activate_menu_item(const rc_client_t* client, uint32_t menu_item_id)
 {
    if (!client || !client->state.raintegration || !client->state.raintegration->activate_menu_item)
       return 0;
 
-   return client->state.raintegration->activate_menu_item(nMenuItemId);
+   return client->state.raintegration->activate_menu_item(menu_item_id);
 }
 
 void rc_client_unload_raintegration(rc_client_t* client)
@@ -476,6 +523,9 @@ void rc_client_unload_raintegration(rc_client_t* client)
     return;
 
   RC_CLIENT_LOG_INFO(client, "Unloading RA_Integration")
+
+  if (client->state.external_client && client->state.external_client->destroy)
+    client->state.external_client->destroy();
 
   if (client->state.raintegration->shutdown)
     client->state.raintegration->shutdown();

@@ -2,11 +2,6 @@
 <ui version="4.0">
  <class>SettingsWindow</class>
  <widget class="QWidget" name="SettingsWindow">
-  <property name="windowIcon">
-   <iconset>
-    <normalon>:/icons/AppIcon64.png</normalon>
-   </iconset>
-  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -23,6 +18,11 @@
   </property>
   <property name="windowTitle">
    <string>PCSX2 Settings</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normalon>:/icons/AppIcon64.png</normalon>
+   </iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
    <item row="0" column="0">
@@ -51,6 +51,9 @@
        <height>32</height>
       </size>
      </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
    <item row="0" column="1">
@@ -68,13 +71,13 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>120</height>
+       <height>122</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>120</height>
+       <height>122</height>
       </size>
      </property>
      <property name="readOnly">
@@ -108,7 +111,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "BreakpointDialog.h"
 #include "DebugTools/Breakpoints.h"
@@ -44,7 +44,7 @@ BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, Breakpo
 		m_ui.txtAddress->setText(QtUtils::FilledQStringFromValue(bp->addr, 16));
 
 		if (bp->hasCond)
-			m_ui.txtCondition->setText(QString::fromLocal8Bit(bp->cond.expressionString));
+			m_ui.txtCondition->setText(QString::fromStdString(bp->cond.expressionString));
 	}
 	else if (const auto* mc = std::get_if<MemCheck>(&bp_mc))
 	{
@@ -53,12 +53,15 @@ BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, Breakpo
 		m_ui.txtAddress->setText(QtUtils::FilledQStringFromValue(mc->start, 16));
 		m_ui.txtSize->setText(QtUtils::FilledQStringFromValue(mc->end - mc->start, 16));
 
-		m_ui.chkRead->setChecked(mc->cond & MEMCHECK_READ);
-		m_ui.chkWrite->setChecked(mc->cond & MEMCHECK_WRITE);
-		m_ui.chkChange->setChecked(mc->cond & MEMCHECK_WRITE_ONCHANGE);
+		m_ui.chkRead->setChecked(mc->memCond & MEMCHECK_READ);
+		m_ui.chkWrite->setChecked(mc->memCond & MEMCHECK_WRITE);
+		m_ui.chkChange->setChecked(mc->memCond & MEMCHECK_WRITE_ONCHANGE);
 
 		m_ui.chkEnable->setChecked(mc->result & MEMCHECK_BREAK);
 		m_ui.chkLog->setChecked(mc->result & MEMCHECK_LOG);
+
+		if (mc->hasCond)
+			m_ui.txtCondition->setText(QString::fromStdString(mc->cond.expressionString));
 	}
 }
 
@@ -70,7 +73,6 @@ void BreakpointDialog::onRdoButtonToggled()
 {
 	const bool isExecute = m_ui.rdoExecute->isChecked();
 
-	m_ui.grpExecute->setEnabled(isExecute);
 	m_ui.grpMemory->setEnabled(!isExecute);
 
 	m_ui.chkLog->setEnabled(!isExecute);
@@ -91,10 +93,9 @@ void BreakpointDialog::accept()
 		PostfixExpression expr;
 
 		u64 address;
-		if (!m_cpu->initExpression(m_ui.txtAddress->text().toLocal8Bit().constData(), expr) ||
-			!m_cpu->parseExpression(expr, address))
+		if (!m_cpu->evaluateExpression(m_ui.txtAddress->text().toStdString().c_str(), address))
 		{
-			QMessageBox::warning(this, tr("Error"), tr("Invalid address \"%1\"").arg(m_ui.txtAddress->text()));
+			QMessageBox::warning(this, tr("Invalid Address"), getExpressionError());
 			return;
 		}
 
@@ -107,39 +108,50 @@ void BreakpointDialog::accept()
 			bp->hasCond = true;
 			bp->cond.debug = m_cpu;
 
-			if (!m_cpu->initExpression(m_ui.txtCondition->text().toLocal8Bit().constData(), expr))
+			if (!m_cpu->initExpression(m_ui.txtCondition->text().toStdString().c_str(), expr))
 			{
-				QMessageBox::warning(this, tr("Error"), tr("Invalid condition \"%1\"").arg(getExpressionError()));
+				QMessageBox::warning(this, tr("Invalid Condition"), getExpressionError());
 				return;
 			}
 
 			bp->cond.expression = expr;
-			strncpy(&bp->cond.expressionString[0], m_ui.txtCondition->text().toLocal8Bit().constData(),
-				sizeof(bp->cond.expressionString));
+			bp->cond.expressionString = m_ui.txtCondition->text().toStdString();
 		}
 	}
 	if (auto* mc = std::get_if<MemCheck>(&m_bp_mc))
 	{
-		PostfixExpression expr;
-
 		u64 startAddress;
-		if (!m_cpu->initExpression(m_ui.txtAddress->text().toLocal8Bit().constData(), expr) ||
-			!m_cpu->parseExpression(expr, startAddress))
+		if (!m_cpu->evaluateExpression(m_ui.txtAddress->text().toStdString().c_str(), startAddress))
 		{
-			QMessageBox::warning(this, tr("Error"), tr("Invalid address \"%1\"").arg(m_ui.txtAddress->text()));
+			QMessageBox::warning(this, tr("Invalid Address"), getExpressionError());
 			return;
 		}
 
 		u64 size;
-		if (!m_cpu->initExpression(m_ui.txtSize->text().toLocal8Bit(), expr) ||
-			!m_cpu->parseExpression(expr, size) || !size)
+		if (!m_cpu->evaluateExpression(m_ui.txtSize->text().toStdString().c_str(), size) || !size)
 		{
-			QMessageBox::warning(this, tr("Error"), tr("Invalid size \"%1\"").arg(m_ui.txtSize->text()));
+			QMessageBox::warning(this, tr("Invalid Size"), getExpressionError());
 			return;
 		}
 
 		mc->start = startAddress;
 		mc->end = startAddress + size;
+
+		if (!m_ui.txtCondition->text().isEmpty())
+		{
+			mc->hasCond = true;
+			mc->cond.debug = m_cpu;
+
+			PostfixExpression expr;
+			if (!m_cpu->initExpression(m_ui.txtCondition->text().toStdString().c_str(), expr))
+			{
+				QMessageBox::warning(this, tr("Invalid Condition"), getExpressionError());
+				return;
+			}
+
+			mc->cond.expression = expr;
+			mc->cond.expressionString = m_ui.txtCondition->text().toStdString();
+		}
 
 		int condition = 0;
 		if (m_ui.chkRead->isChecked())
@@ -149,7 +161,7 @@ void BreakpointDialog::accept()
 		if (m_ui.chkChange->isChecked())
 			condition |= MEMCHECK_WRITE_ONCHANGE;
 
-		mc->cond = static_cast<MemCheckCondition>(condition);
+		mc->memCond = static_cast<MemCheckCondition>(condition);
 
 		int result = 0;
 		if (m_ui.chkEnable->isChecked())

@@ -34,25 +34,6 @@ target_sources(common PRIVATE
 	Timer.cpp
 	WAVWriter.cpp
 	WindowInfo.cpp
-	emitter/avx.cpp
-	emitter/bmi.cpp
-	emitter/fpu.cpp
-	emitter/groups.cpp
-	emitter/jmp.cpp
-	emitter/legacy.cpp
-	emitter/legacy_sse.cpp
-	emitter/movs.cpp
-	emitter/simd.cpp
-	emitter/x86emitter.cpp
-	Darwin/DarwinThreads.cpp
-	Darwin/DarwinMisc.cpp
-	Darwin/DarwinSemaphore.cpp
-	Linux/LnxHostSys.cpp
-	Linux/LnxThreads.cpp
-	Linux/LnxMisc.cpp
-	Windows/WinThreads.cpp
-	Windows/WinHostSys.cpp
-	Windows/WinMisc.cpp
 )
 
 # x86emitter headers
@@ -101,57 +82,73 @@ target_sources(common PRIVATE
 	WAVWriter.h
 	WindowInfo.h
 	WrappedMemCopy.h
-	emitter/implement/dwshift.h
-	emitter/implement/group1.h
-	emitter/implement/group2.h
-	emitter/implement/group3.h
-	emitter/implement/helpers.h
-	emitter/implement/incdec.h
-	emitter/implement/jmpcall.h
-	emitter/implement/movs.h
-	emitter/implement/simd_arithmetic.h
-	emitter/implement/simd_comparisons.h
-	emitter/implement/simd_helpers.h
-	emitter/implement/simd_moremovs.h
-	emitter/implement/simd_shufflepack.h
-	emitter/implement/simd_templated_helpers.h
-	emitter/implement/test.h
-	emitter/implement/xchg.h
-	emitter/instructions.h
-	emitter/internal.h
-	emitter/legacy_instructions.h
-	emitter/legacy_internal.h
-	emitter/legacy_types.h
-	emitter/x86emitter.h
-	emitter/x86types.h
-	Darwin/DarwinMisc.h
 )
 
-set_source_files_properties(PrecompiledHeader.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
+if(_M_X86)
+	target_sources(common PRIVATE
+		emitter/avx.cpp
+		emitter/bmi.cpp
+		emitter/fpu.cpp
+		emitter/groups.cpp
+		emitter/jmp.cpp
+		emitter/legacy.cpp
+		emitter/legacy_sse.cpp
+		emitter/movs.cpp
+		emitter/simd.cpp
+		emitter/x86emitter.cpp
+	)
 
-if(USE_VTUNE)
-	target_link_libraries(common PUBLIC Vtune::Vtune)
+	target_sources(common PRIVATE
+		emitter/implement/dwshift.h
+		emitter/implement/group1.h
+		emitter/implement/group2.h
+		emitter/implement/group3.h
+		emitter/implement/helpers.h
+		emitter/implement/incdec.h
+		emitter/implement/jmpcall.h
+		emitter/implement/movs.h
+		emitter/implement/simd_arithmetic.h
+		emitter/implement/simd_comparisons.h
+		emitter/implement/simd_helpers.h
+		emitter/implement/simd_moremovs.h
+		emitter/implement/simd_shufflepack.h
+		emitter/implement/simd_templated_helpers.h
+		emitter/implement/test.h
+		emitter/implement/xchg.h
+		emitter/instructions.h
+		emitter/internal.h
+		emitter/legacy_instructions.h
+		emitter/legacy_internal.h
+		emitter/legacy_types.h
+		emitter/x86emitter.h
+		emitter/x86types.h
+	)
 endif()
 
 if(WIN32)
 	enable_language(ASM_MASM)
-	target_sources(common PRIVATE FastJmp.asm)
-	target_link_libraries(common PUBLIC WIL::WIL winmm pathcch)
 	target_sources(common PRIVATE
-		CrashHandler.cpp
-		CrashHandler.h
 		FastJmp.asm
 		HTTPDownloaderWinHTTP.cpp
 		HTTPDownloaderWinHTTP.h
 		StackWalker.cpp
 		StackWalker.h
+		Windows/WinThreads.cpp
+		Windows/WinHostSys.cpp
+		Windows/WinMisc.cpp
 	)
-endif()
-
-if(APPLE)
+	target_link_libraries(common PUBLIC
+		WIL::WIL
+		winmm
+		pathcch
+	)
+elseif(APPLE)
 	target_sources(common PRIVATE
 		CocoaTools.mm
 		CocoaTools.h
+		Darwin/DarwinThreads.cpp
+		Darwin/DarwinMisc.cpp
+		Darwin/DarwinMisc.h
 	)
 	target_compile_options(common PRIVATE -fobjc-arc)
 	target_link_options(common PRIVATE -fobjc-link-runtime)
@@ -159,15 +156,33 @@ if(APPLE)
 		"-framework Foundation"
 		"-framework IOKit"
 	)
-endif()
-
-if(UNIX AND NOT APPLE)
-	target_include_directories(common PRIVATE ${DBUS_INCLUDE_DIRS})
-	target_link_libraries(common PRIVATE ${DBUS_LINK_LIBRARIES} X11::X11 X11::Xrandr)
-  if(TARGET libbacktrace::libbacktrace)
+else()
+	target_sources(common PRIVATE
+		Linux/LnxHostSys.cpp
+		Linux/LnxThreads.cpp
+		Linux/LnxMisc.cpp
+	)
+	target_include_directories(common PRIVATE
+		${DBUS_INCLUDE_DIRS}
+	)
+	target_link_libraries(common PRIVATE
+		${DBUS_LINK_LIBRARIES}
+		X11::X11
+		X11::Xrandr
+	)
+	if(USE_BACKTRACE)
 		target_compile_definitions(common PRIVATE "HAS_LIBBACKTRACE=1")
 		target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
-  endif()
+	endif()
+	if(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+		target_link_libraries(common PRIVATE cpuinfo)
+	endif()
+endif()
+
+set_source_files_properties(PrecompiledHeader.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
+
+if(USE_VTUNE)
+	target_link_libraries(common PUBLIC Vtune::Vtune)
 endif()
 
 if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
@@ -181,7 +196,9 @@ if(NOT WIN32)
 		HTTPDownloaderCurl.cpp
 		HTTPDownloaderCurl.h
 	)
-	target_link_libraries(common PRIVATE CURL::libcurl)
+	target_link_libraries(common PRIVATE
+		CURL::libcurl
+	)
 endif()
 
 target_link_libraries(common PRIVATE

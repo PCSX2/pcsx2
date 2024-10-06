@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #ifdef __APPLE__
 
@@ -13,10 +13,14 @@ namespace CocoaTools
 {
 	bool CreateMetalLayer(WindowInfo* wi);
 	void DestroyMetalLayer(WindowInfo* wi);
+	std::optional<float> GetViewRefreshRate(const WindowInfo& wi);
+
 	/// Add a handler to be run when macOS changes between dark and light themes
 	void AddThemeChangeHandler(void* ctx, void(handler)(void* ctx));
 	/// Remove a handler previously added using AddThemeChangeHandler with the given context
 	void RemoveThemeChangeHandler(void* ctx);
+	/// Returns the bundle path.
+	std::optional<std::string> GetBundlePath();
 	/// Get the bundle path to the actual application without any translocation fun
 	std::optional<std::string> GetNonTranslocatedBundlePath();
 	/// Move the given file to the trash, and return the path to its new location

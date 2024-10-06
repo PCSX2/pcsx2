@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -121,7 +121,7 @@ namespace GameList
 	const Entry* GetEntryByIndex(u32 index);
 	const Entry* GetEntryForPath(const char* path);
 	const Entry* GetEntryByCRC(u32 crc);
-	const Entry* GetEntryBySerialAndCRC(const std::string_view& serial, u32 crc);
+	const Entry* GetEntryBySerialAndCRC(const std::string_view serial, u32 crc);
 	u32 GetEntryCount();
 
 	/// Populates the game list with files in the configured directories.

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "iR3000A.h"
 #include "R3000A.h"
@@ -1126,6 +1126,31 @@ static __fi u32 psxScaleBlockCycles()
 	return s_psxBlockCycles;
 }
 
+static void iPsxAddEECycles(u32 blockCycles)
+{
+	if (!(psxHu32(HW_ICFG) & (1 << 3))) [[likely]]
+	{
+		if (blockCycles != 0xFFFFFFFF)
+			xSUB(ptr32[&psxRegs.iopCycleEE], blockCycles * 8);
+		else
+			xSUB(ptr32[&psxRegs.iopCycleEE], eax);
+		return;
+	}
+
+	// F = gcd(PS2CLK, PSXCLK) = 230400
+	const u32 cnum = 1280; // PS2CLK / F
+	const u32 cdenom = 147; // PSXCLK / F
+
+	if (blockCycles != 0xFFFFFFFF)
+		xMOV(eax, blockCycles * cnum);
+	xADD(eax, ptr32[&psxRegs.iopCycleEECarry]);
+	xMOV(ecx, cdenom);
+	xXOR(edx, edx);
+	xUDIV(ecx);
+	xMOV(ptr32[&psxRegs.iopCycleEECarry], edx);
+	xSUB(ptr32[&psxRegs.iopCycleEE], eax);
+}
+
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 {
 	u32 blockCycles = psxScaleBlockCycles();
@@ -1143,7 +1168,7 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		xMOV(ptr32[&psxRegs.cycle], eax);
 		xSUB(eax, ecx);
 		xSHL(eax, 3);
-		xSUB(ptr32[&psxRegs.iopCycleEE], eax);
+		iPsxAddEECycles(0xFFFFFFFF);
 		xJLE(iopExitRecompiledCode);
 
 		xFastCall((void*)iopEventTest);
@@ -1156,16 +1181,16 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	}
 	else
 	{
-		xMOV(eax, ptr32[&psxRegs.cycle]);
-		xADD(eax, blockCycles);
-		xMOV(ptr32[&psxRegs.cycle], eax); // update cycles
+		xMOV(ebx, ptr32[&psxRegs.cycle]);
+		xADD(ebx, blockCycles);
+		xMOV(ptr32[&psxRegs.cycle], ebx); // update cycles
 
 		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
-		xSUB(ptr32[&psxRegs.iopCycleEE], blockCycles * 8);
+		iPsxAddEECycles(blockCycles);
 		xJLE(iopExitRecompiledCode);
 
 		// check if an event is pending
-		xSUB(eax, ptr32[&psxRegs.iopNextEventCycle]);
+		xSUB(ebx, ptr32[&psxRegs.iopNextEventCycle]);
 		xForwardJS<u8> nointerruptpending;
 
 		xFastCall((void*)iopEventTest);
@@ -1212,7 +1237,7 @@ void rpsxSYSCALL()
 	j8Ptr[0] = JE8(0);
 
 	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
-	xSUB(ptr32[&psxRegs.iopCycleEE], psxScaleBlockCycles() * 8);
+	iPsxAddEECycles(psxScaleBlockCycles());
 	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
 
 	// jump target for skipping blockCycle updates
@@ -1234,7 +1259,7 @@ void rpsxBREAK()
 	xCMP(ptr32[&psxRegs.pc], psxpc - 4);
 	j8Ptr[0] = JE8(0);
 	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
-	xSUB(ptr32[&psxRegs.iopCycleEE], psxScaleBlockCycles() * 8);
+	iPsxAddEECycles(psxScaleBlockCycles());
 	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1277,11 +1302,29 @@ static bool psxDynarecCheckBreakpoint()
 	return true;
 }
 
-static bool psxDynarecMemcheck()
+static bool psxDynarecMemcheck(size_t i)
 {
-	u32 pc = psxRegs.pc;
+	const u32 pc = psxRegs.pc;
+	const u32 op = iopMemRead32(pc);
+	const R5900::OPCODE& opcode = R5900::GetInstruction(op);
+	auto mc = CBreakPoints::GetMemChecks(BREAKPOINT_IOP)[i];
+
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) == pc)
 		return false;
+
+	if (mc.hasCond)
+	{
+		if (!mc.cond.Evaluate())
+			return false;
+	}
+
+	if (mc.result & MEMCHECK_LOG)
+	{
+		if (opcode.flags & IS_STORE)
+			DevCon.WriteLn("Hit R3000 store breakpoint @0x%x", pc);
+		else
+			DevCon.WriteLn("Hit R3000 load breakpoint @0x%x", pc);
+	}
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
 	VMManager::SetPaused(true);
@@ -1289,14 +1332,6 @@ static bool psxDynarecMemcheck()
 	// Exit the EE too.
 	Cpu->ExitExecution();
 	return true;
-}
-
-static void psxDynarecMemLogcheck(u32 start, bool store)
-{
-	if (store)
-		DevCon.WriteLn("Hit store breakpoint @0x%x", start);
-	else
-		DevCon.WriteLn("Hit load breakpoint @0x%x", start);
 }
 
 static void psxRecMemcheck(u32 op, u32 bits, bool store)
@@ -1319,9 +1354,9 @@ static void psxRecMemcheck(u32 op, u32 bits, bool store)
 	{
 		if (checks[i].result == 0)
 			continue;
-		if ((checks[i].cond & MEMCHECK_WRITE) == 0 && store)
+		if ((checks[i].memCond & MEMCHECK_WRITE) == 0 && store)
 			continue;
-		if ((checks[i].cond & MEMCHECK_READ) == 0 && !store)
+		if ((checks[i].memCond & MEMCHECK_READ) == 0 && !store)
 			continue;
 
 		// logic: memAddress < bpEnd && bpStart < memAddress+memSize
@@ -1335,25 +1370,11 @@ static void psxRecMemcheck(u32 op, u32 bits, bool store)
 		xForwardJGE8 next2; // if start >= address+size then goto next2
 
 		// hit the breakpoint
-		if (checks[i].result & MEMCHECK_LOG)
-		{
-			xMOV(edx, store);
 
-			// Refer to the EE recompiler for an explaination
-			if(!(checks[i].result & MEMCHECK_BREAK))
-			{
-				xPUSH(eax); xPUSH(ebx); xPUSH(ecx); xPUSH(edx);
-				xFastCall((void*)psxDynarecMemLogcheck, ecx, edx);
-				xPOP(edx); xPOP(ecx); xPOP(ebx); xPOP(eax);
-			}
-			else
-			{
-				xFastCall((void*)psxDynarecMemLogcheck, ecx, edx);
-			}
-		}
 		if (checks[i].result & MEMCHECK_BREAK)
 		{
-			xFastCall((void*)psxDynarecMemcheck);
+			xMOV(eax, i);
+			xFastCall((void*)psxDynarecMemcheck, eax);
 			xTEST(al, al);
 			xJNZ(iopExitRecompiledCode);
 		}
@@ -1523,7 +1544,7 @@ static void iopRecRecompile(const u32 startpc)
 	if(startpc == 0x890)
 	{
 		DevCon.WriteLn(Color_Gray, "[R3000 Debugger] Branch to 0x890 (SYSMEM). Clearing modules.");
-		R3000SymbolMap.ClearModules();
+		R3000SymbolGuardian.ClearIrxModules();
 	}
 
 	// Inject IRX hack
@@ -1719,7 +1740,7 @@ StartRecomp:
 		else
 		{
 			xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
-			xSUB(ptr32[&psxRegs.iopCycleEE], psxScaleBlockCycles() * 8);
+			iPsxAddEECycles(psxScaleBlockCycles());
 		}
 
 		if (willbranch3 || !psxbranch)

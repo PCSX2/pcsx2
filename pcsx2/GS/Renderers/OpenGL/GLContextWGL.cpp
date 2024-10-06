@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/OpenGL/GLContextWGL.h"
 
@@ -150,6 +150,11 @@ bool GLContextWGL::MakeCurrent()
 bool GLContextWGL::DoneCurrent()
 {
 	return wglMakeCurrent(m_dc, nullptr);
+}
+
+bool GLContextWGL::SupportsNegativeSwapInterval() const
+{
+	return GLAD_WGL_EXT_swap_control && GLAD_WGL_EXT_swap_control_tear;
 }
 
 bool GLContextWGL::SetSwapInterval(s32 interval)

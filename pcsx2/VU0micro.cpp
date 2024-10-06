@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 // This module contains code shared by both the dynarec and interpreter versions
 // of the VU0 micro.
@@ -29,6 +29,8 @@ static __fi void vu0SetMicroFlags(u32* flags, u32 value)
 {
 #ifdef _M_X86
 	_mm_store_si128(reinterpret_cast<__m128i*>(flags), _mm_set1_epi32(value));
+#elif defined(_M_ARM64)
+	vst1q_u32(flags, vdupq_n_u32(value));
 #else
 	flags[0] = flags[1] = flags[2] = flags[3] = value;
 #endif

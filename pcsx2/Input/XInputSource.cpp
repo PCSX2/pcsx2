@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Input/XInputSource.h"
 #include "Input/InputManager.h"
@@ -226,7 +226,7 @@ void XInputSource::PollEvents()
 			else
 			{
 				if (result != ERROR_DEVICE_NOT_CONNECTED)
-					Console.Warning("XInputGetState(%u) failed: 0x%08X / 0x%08X", i, result, GetLastError());
+					WARNING_LOG("XInputGetState({}) failed: 0x{:08X} / 0x{:08X}", i, result, GetLastError());
 
 				if (was_connected)
 					HandleControllerDisconnection(i);
@@ -250,7 +250,7 @@ std::vector<std::pair<std::string, std::string>> XInputSource::EnumerateDevices(
 	return ret;
 }
 
-std::optional<InputBindingKey> XInputSource::ParseKeyString(const std::string_view& device, const std::string_view& binding)
+std::optional<InputBindingKey> XInputSource::ParseKeyString(const std::string_view device, const std::string_view binding)
 {
 	if (!device.starts_with("XInput-") || binding.empty())
 		return std::nullopt;
@@ -383,7 +383,7 @@ std::vector<InputBindingKey> XInputSource::EnumerateMotors()
 	return ret;
 }
 
-bool XInputSource::GetGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping)
+bool XInputSource::GetGenericBindingMapping(const std::string_view device, InputManager::GenericInputBindingMapping* mapping)
 {
 	if (!device.starts_with("XInput-"))
 		return false;
@@ -402,33 +402,33 @@ bool XInputSource::GetGenericBindingMapping(const std::string_view& device, Inpu
 		const GenericInputBinding negative = s_xinput_generic_binding_axis_mapping[i][0];
 		const GenericInputBinding positive = s_xinput_generic_binding_axis_mapping[i][1];
 		if (negative != GenericInputBinding::Unknown)
-			mapping->emplace_back(negative, StringUtil::StdStringFromFormat("XInput-%d/-%s", pid, s_axis_names[i]));
+			mapping->emplace_back(negative, fmt::format("XInput-{}/-{}", pid, s_axis_names[i]));
 
 		if (positive != GenericInputBinding::Unknown)
-			mapping->emplace_back(positive, StringUtil::StdStringFromFormat("XInput-%d/+%s", pid, s_axis_names[i]));
+			mapping->emplace_back(positive, fmt::format("XInput-{}/+{}", pid, s_axis_names[i]));
 	}
 	for (u32 i = 0; i < std::size(s_xinput_generic_binding_button_mapping); i++)
 	{
 		const GenericInputBinding binding = s_xinput_generic_binding_button_mapping[i];
 		if (binding != GenericInputBinding::Unknown)
-			mapping->emplace_back(binding, StringUtil::StdStringFromFormat("XInput-%d/%s", pid, s_button_names[i]));
+			mapping->emplace_back(binding, fmt::format("XInput-{}/{}", pid, s_button_names[i]));
 	}
 
 	if (m_controllers[pid].has_small_motor)
-		mapping->emplace_back(GenericInputBinding::SmallMotor, StringUtil::StdStringFromFormat("XInput-%d/SmallMotor", pid));
+		mapping->emplace_back(GenericInputBinding::SmallMotor, fmt::format("XInput-{}/SmallMotor", pid));
 	if (m_controllers[pid].has_large_motor)
-		mapping->emplace_back(GenericInputBinding::LargeMotor, StringUtil::StdStringFromFormat("XInput-%d/LargeMotor", pid));
+		mapping->emplace_back(GenericInputBinding::LargeMotor, fmt::format("XInput-{}/LargeMotor", pid));
 
 	return true;
 }
 
 void XInputSource::HandleControllerConnection(u32 index)
 {
-	Console.WriteLn("XInput controller %u connected.", index);
+	INFO_LOG("XInput controller {} connected.", index);
 
 	XINPUT_CAPABILITIES caps = {};
 	if (m_xinput_get_capabilities(index, 0, &caps) != ERROR_SUCCESS)
-		Console.Warning("Failed to get XInput capabilities for controller %u", index);
+		WARNING_LOG("Failed to get XInput capabilities for controller {}", index);
 
 	ControllerData& cd = m_controllers[index];
 	cd.connected = true;
@@ -438,13 +438,17 @@ void XInputSource::HandleControllerConnection(u32 index)
 	cd.last_state_scp = {};
 
 	InputManager::OnInputDeviceConnected(
-		StringUtil::StdStringFromFormat("XInput-%u", index), StringUtil::StdStringFromFormat("XInput Controller %u", index));
+		fmt::format("XInput-{}", index), fmt::format("XInput Controller {}", index));
 }
 
 void XInputSource::HandleControllerDisconnection(u32 index)
 {
-	Console.WriteLn("XInput controller %u disconnected.", index);
-	InputManager::OnInputDeviceDisconnected(StringUtil::StdStringFromFormat("XInput-%u", index));
+	INFO_LOG("XInput controller {} disconnected.", index);
+	InputManager::OnInputDeviceDisconnected({{
+												.source_type = InputSourceType::XInput,
+												.source_index = index,
+											}},
+		fmt::format("XInput-{}", index));
 	m_controllers[index] = {};
 }
 
@@ -485,7 +489,7 @@ void XInputSource::CheckForStateChanges(u32 index, const XINPUT_STATE& new_state
 			{
 				const GenericInputBinding generic_key = (button < std::size(s_xinput_generic_binding_button_mapping)) ?
 															s_xinput_generic_binding_button_mapping[button] :
-                                                            GenericInputBinding::Unknown;
+															GenericInputBinding::Unknown;
 				const float value = ((new_button_bits & button_mask) != 0) ? 1.0f : 0.0f;
 				InputManager::InvokeEvents(MakeGenericControllerButtonKey(InputSourceType::XInput, index, button), value, generic_key);
 			}

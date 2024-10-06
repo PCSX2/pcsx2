@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS.h"
 #include "GSDevice11.h"
@@ -80,9 +80,9 @@ RenderAPI GSDevice11::GetRenderAPI() const
 	return RenderAPI::D3D11;
 }
 
-bool GSDevice11::Create()
+bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 {
-	if (!GSDevice::Create())
+	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
 		return false;
 
 	UINT create_flags = 0;
@@ -112,7 +112,7 @@ bool GSDevice11::Create()
 	{
 		Host::ReportErrorAsync("GS",
 			fmt::format(
-				"Failed to create D3D device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required.",
+				TRANSLATE_FS("GS", "Failed to create D3D device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required."),
 				hr));
 		return false;
 	}
@@ -147,7 +147,10 @@ bool GSDevice11::Create()
 
 	wil::com_ptr_nothrow<IDXGIDevice> dxgi_device;
 	if (m_dev.try_query_to(&dxgi_device) && SUCCEEDED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.put()))))
+	{
 		Console.WriteLn(fmt::format("D3D Adapter: {}", D3D::GetAdapterName(dxgi_adapter.get())));
+		m_name = D3D::GetAdapterName(dxgi_adapter.get());
+	}
 	else
 		Console.Error("Failed to obtain D3D adapter name.");
 
@@ -595,13 +598,10 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 			m_features.vs_expand = false;
 		}
 	}
-}
 
-int GSDevice11::GetMaxTextureSize() const
-{
-	return (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
-			   D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION :
-			   D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
+							 D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
+							 D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 }
 
 bool GSDevice11::HasSurface() const
@@ -609,28 +609,38 @@ bool GSDevice11::HasSurface() const
 	return static_cast<bool>(m_swap_chain);
 }
 
-bool GSDevice11::GetHostRefreshRate(float* refresh_rate)
+void GSDevice11::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 {
-	if (m_swap_chain && m_is_exclusive_fullscreen)
+	m_allow_present_throttle = allow_present_throttle;
+
+	// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+	if (mode == GSVSyncMode::Mailbox && m_is_exclusive_fullscreen)
 	{
-		DXGI_SWAP_CHAIN_DESC desc;
-		if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
-			desc.BufferDesc.RefreshRate.Denominator > 0)
-		{
-			DevCon.WriteLn(
-				"using fs rr: %u %u", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
-			*refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
-							static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
-			return true;
-		}
+		WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+		mode = GSVSyncMode::FIFO;
 	}
 
-	return GSDevice::GetHostRefreshRate(refresh_rate);
+	if (m_vsync_mode == mode)
+		return;
+
+	const u32 old_buffer_count = GetSwapChainBufferCount();
+	m_vsync_mode = mode;
+	if (!m_swap_chain)
+		return;
+
+	if (GetSwapChainBufferCount() != old_buffer_count)
+	{
+		DestroySwapChain();
+		if (!CreateSwapChain())
+			pxFailRel("Failed to recreate swap chain after vsync change.");
+	}
 }
 
-void GSDevice11::SetVSync(VsyncMode mode)
+u32 GSDevice11::GetSwapChainBufferCount() const
 {
-	m_vsync_mode = mode;
+	// With vsync off, we only need two buffers. Same for blocking vsync.
+	// With triple buffering, we need three.
+	return (m_vsync_mode == GSVSyncMode::Mailbox) ? 3 : 2;
 }
 
 bool GSDevice11::CreateSwapChain()
@@ -655,6 +665,13 @@ bool GSDevice11::CreateSwapChain()
 			D3D::GetRequestedExclusiveFullscreenModeDesc(m_dxgi_factory.get(), client_rc, fullscreen_width,
 				fullscreen_height, fullscreen_refresh_rate, swap_chain_format, &fullscreen_mode,
 				fullscreen_output.put());
+
+		// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+		if (m_vsync_mode == GSVSyncMode::Mailbox && m_is_exclusive_fullscreen)
+		{
+			WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+			m_vsync_mode = GSVSyncMode::FIFO;
+		}
 	}
 	else
 	{
@@ -668,7 +685,7 @@ bool GSDevice11::CreateSwapChain()
 	swap_chain_desc.Height = static_cast<u32>(client_rc.bottom - client_rc.top);
 	swap_chain_desc.Format = swap_chain_format;
 	swap_chain_desc.SampleDesc.Count = 1;
-	swap_chain_desc.BufferCount = 3;
+	swap_chain_desc.BufferCount = GetSwapChainBufferCount();
 	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swap_chain_desc.SwapEffect =
 		m_using_flip_model_swap_chain ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
@@ -790,10 +807,6 @@ bool GSDevice11::CreateSwapChainRTV()
 		{
 			m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
 												 static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
-		}
-		else
-		{
-			m_window_info.surface_refresh_rate = 0.0f;
 		}
 	}
 
@@ -928,7 +941,7 @@ GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 	// This blows our our GPU usage number considerably, so read the timestamp before the final blit
 	// in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
 	// the time, when it's more like a couple of percent.
-	if (m_vsync_mode != VsyncMode::Off && m_gpu_timing_enabled)
+	if (m_vsync_mode == GSVSyncMode::FIFO && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
 	m_ctx->ClearRenderTargetView(m_swap_chain_rtv.get(), s_present_clear_color.data());
@@ -957,14 +970,12 @@ void GSDevice11::EndPresent()
 	RenderImGui();
 
 	// See note in BeginPresent() for why it's conditional on vsync-off.
-	const bool vsync_on = m_vsync_mode != VsyncMode::Off;
-	if (!vsync_on && m_gpu_timing_enabled)
+	if (m_vsync_mode != GSVSyncMode::FIFO && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
-	if (!vsync_on && m_using_allow_tearing)
-		m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
-	else
-		m_swap_chain->Present(static_cast<UINT>(vsync_on), 0);
+	const UINT sync_interval = static_cast<UINT>(m_vsync_mode == GSVSyncMode::FIFO);
+	const UINT flags = (m_vsync_mode == GSVSyncMode::Disabled && m_using_allow_tearing) ? DXGI_PRESENT_ALLOW_TEARING : 0;
+	m_swap_chain->Present(sync_interval, flags);
 
 	if (m_gpu_timing_enabled)
 		KickTimestampQuery();
@@ -1039,6 +1050,10 @@ void GSDevice11::PopTimestampQuery()
 					static_cast<double>(end - start) / (static_cast<double>(disjoint.Frequency) / 1000.0));
 				m_read_timestamp_query = (m_read_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
 				m_waiting_timestamp_queries--;
+			}
+			else
+			{
+				break;
 			}
 		}
 	}
@@ -1170,10 +1185,8 @@ void GSDevice11::InsertDebugMessage(DebugMessageCategory category, const char* f
 GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
 	D3D11_TEXTURE2D_DESC desc = {};
-
-	// Texture limit for D3D10/11 min 1, max 8192 D3D10, max 16384 D3D11.
-	desc.Width = std::clamp(width, 1, GetMaxTextureSize());
-	desc.Height = std::clamp(height, 1, GetMaxTextureSize());
+	desc.Width = width;
+	desc.Height = height;
 	desc.Format = GSTexture11::GetDXGIFormat(format);
 	desc.MipLevels = levels;
 	desc.ArraySize = 1;
@@ -1443,6 +1456,25 @@ void GSDevice11::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offs
 	StretchRect(sTex, GSVector4::zero(), dTex, dRect, m_convert.ps[static_cast<int>(shader)].get(), m_merge.cb.get(), nullptr, false);
 }
 
+void GSDevice11::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
+{
+	struct Uniforms
+	{
+		float weight;
+		float pad0[3];
+		GSVector2i clamp_min;
+		int downsample_factor;
+		int pad1;
+	};
+
+	const Uniforms cb = {
+		static_cast<float>(downsample_factor * downsample_factor), {}, clamp_min, static_cast<int>(downsample_factor), 0};
+	m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
+
+	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
+	StretchRect(sTex, GSVector4::zero(), dTex, dRect, m_convert.ps[static_cast<int>(shader)].get(), m_merge.cb.get(), nullptr, false);
+}
+
 void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
 {
 	IASetInputLayout(m_convert.il.get());
@@ -1574,7 +1606,7 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 
 	if (feedback_write_1)
 	{
-		StretchRect(sTex[0], full_r, sTex[2], dRect[2], m_convert.ps[static_cast<int>(ShaderConvert::YUV)].get(),
+		StretchRect(dTex, full_r, sTex[2], dRect[2], m_convert.ps[static_cast<int>(ShaderConvert::YUV)].get(),
 			m_merge.cb.get(), nullptr, linear);
 	}
 }
@@ -1971,9 +2003,9 @@ bool GSDevice11::CreateImGuiResources()
 	// clang-format off
 	static constexpr D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT,   0, (UINT)IM_OFFSETOF(ImDrawVert, pos), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,   0, (UINT)IM_OFFSETOF(ImDrawVert, uv),  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR",    0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, (UINT)IM_OFFSETOF(ImDrawVert, col), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT,   0, (UINT)offsetof(ImDrawVert, pos), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,   0, (UINT)offsetof(ImDrawVert, uv),  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",    0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, (UINT)offsetof(ImDrawVert, col), D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 	// clang-format on
 
@@ -2624,11 +2656,12 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
 	DrawIndexedPrimitive();
 
-	if (config.blend_second_pass.enable)
+	if (config.blend_multi_pass.enable)
 	{
-		config.ps.blend_hw = config.blend_second_pass.blend_hw;
+		config.ps.blend_hw = config.blend_multi_pass.blend_hw;
+		config.ps.dither = config.blend_multi_pass.dither;
 		SetupPS(config.ps, &config.cb_ps, config.sampler);
-		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend_second_pass.blend), config.blend_second_pass.blend.constant);
+		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend_multi_pass.blend), config.blend_multi_pass.blend.constant);
 		DrawIndexedPrimitive();
 	}
 

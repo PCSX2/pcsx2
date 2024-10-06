@@ -37,6 +37,24 @@ static void rc_json_skip_whitespace(rc_json_iterator_t* iterator)
     ++iterator->json;
 }
 
+static int rc_json_find_substring(rc_json_iterator_t* iterator, const char* substring)
+{
+  const char first = *substring;
+  const size_t substring_len = strlen(substring);
+  const char* end = iterator->end - substring_len;
+
+  while (iterator->json <= end) {
+    if (*iterator->json == first) {
+      if (memcmp(iterator->json, substring, substring_len) == 0)
+        return 1;
+    }
+
+    ++iterator->json;
+  }
+
+  return 0;
+}
+
 static int rc_json_find_closing_quote(rc_json_iterator_t* iterator)
 {
   while (iterator->json < iterator->end) {
@@ -237,8 +255,6 @@ int rc_json_get_next_object_field(rc_json_iterator_t* iterator, rc_json_field_t*
 }
 
 int rc_json_get_object_string_length(const char* json) {
-  const char* json_start = json;
-
   rc_json_iterator_t iterator;
   memset(&iterator, 0, sizeof(iterator));
   iterator.json = json;
@@ -246,34 +262,41 @@ int rc_json_get_object_string_length(const char* json) {
 
   rc_json_parse_object(&iterator, NULL, 0, NULL);
 
-  return (int)(iterator.json - json_start);
+  if (iterator.json == json) /* not JSON */
+    return (int)strlen(json);
+
+  return (int)(iterator.json - json);
 }
 
 static int rc_json_extract_html_error(rc_api_response_t* response, const rc_api_server_response_t* server_response) {
-  const char* json = server_response->body;
-  const char* end = json;
+  rc_json_iterator_t iterator;
+  memset(&iterator, 0, sizeof(iterator));
+  iterator.json = server_response->body;
+  iterator.end = server_response->body + server_response->body_length;
 
-  const char* title_start = strstr(json, "<title>");
-  if (title_start) {
-    title_start += 7;
-    if (isdigit((int)*title_start)) {
-      const char* title_end = strstr(title_start + 7, "</title>");
-      if (title_end) {
-        response->error_message = rc_buffer_strncpy(&response->buffer, title_start, title_end - title_start);
-        response->succeeded = 0;
-        return RC_INVALID_JSON;
-      }
+  /* if the title contains an HTTP status code(i.e "404 Not Found"), return the title */
+  if (rc_json_find_substring(&iterator, "<title>")) {
+    const char* title_start = iterator.json + 7;
+    if (isdigit((int)*title_start) && rc_json_find_substring(&iterator, "</title>")) {
+      response->error_message = rc_buffer_strncpy(&response->buffer, title_start, iterator.json - title_start);
+      response->succeeded = 0;
+      return RC_INVALID_JSON;
     }
   }
 
-  while (*end && *end != '\n' && end - json < 200)
-    ++end;
+  /* title not found, or did not start with an error code, return the first line of the response */
+  iterator.json = server_response->body;
 
-  if (end > json && end[-1] == '\r')
-    --end;
+  while (iterator.json < iterator.end && *iterator.json != '\n' &&
+         iterator.json - server_response->body < 200) {
+    ++iterator.json;
+  }
 
-  if (end > json)
-    response->error_message = rc_buffer_strncpy(&response->buffer, json, end - json);
+  if (iterator.json > server_response->body && iterator.json[-1] == '\r')
+    --iterator.json;
+
+  if (iterator.json > server_response->body)
+    response->error_message = rc_buffer_strncpy(&response->buffer, server_response->body, iterator.json - server_response->body);
 
   response->succeeded = 0;
   return RC_INVALID_JSON;
@@ -841,8 +864,11 @@ int rc_json_get_datetime(time_t* out, const rc_json_field_t* field, const char* 
 
   if (*field->value_start == '\"') {
     memset(&tm, 0, sizeof(tm));
-    if (sscanf_s(field->value_start + 1, "%d-%d-%d %d:%d:%d",
-        &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) == 6) {
+    if (sscanf_s(field->value_start + 1, "%d-%d-%d %d:%d:%d", /* DB format "2013-10-20 22:12:21" */
+                 &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) == 6 ||
+        /* NOTE: relies on sscanf stopping when it sees a non-digit after the seconds. could be 'Z', '.', '+', or '-' */
+        sscanf_s(field->value_start + 1, "%d-%d-%dT%d:%d:%d", /* ISO format "2013-10-20T22:12:21.000000Z */
+                 &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) == 6) {
       tm.tm_mon--; /* 0-based */
       tm.tm_year -= 1900; /* 1900 based */
 
@@ -913,6 +939,27 @@ int rc_json_get_required_bool(int* out, rc_api_response_t* response, const rc_js
     return 1;
 
   return rc_json_missing_field(response, field);
+}
+
+void rc_json_extract_filename(rc_json_field_t* field) {
+  if (field->value_end) {
+    const char* str = field->value_end;
+
+    /* remove the extension */
+    while (str > field->value_start && str[-1] != '/') {
+      --str;
+      if (*str == '.') {
+        field->value_end = str;
+        break;
+      }
+    }
+
+    /* find the path separator */
+    while (str > field->value_start && str[-1] != '/')
+      --str;
+
+    field->value_start = str;
+  }
 }
 
 /* --- rc_api_request --- */
@@ -1150,6 +1197,9 @@ static void rc_api_update_host(char** host, const char* hostname) {
 }
 
 void rc_api_set_host(const char* hostname) {
+  if (hostname && strcmp(hostname, RETROACHIEVEMENTS_HOST) == 0)
+    hostname = NULL;
+
   rc_api_update_host(&g_host, hostname);
 
   if (!hostname) {

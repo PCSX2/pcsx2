@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Updater.h"
 #include "Windows/resource.h"
@@ -9,7 +9,6 @@
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 #include "common/ProgressCallback.h"
-#include "common/RedtapeWindows.h"
 #include "common/RedtapeWilCom.h"
 
 #include <CommCtrl.h>
@@ -488,7 +487,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (!updater.CommitUpdate())
 	{
 		progress.ModalError(
-			"Failed to commit update. Your installation may be corrupted, please re-download a fresh version from GitHub.");
+			"Failed to commit update. Your installation may be corrupted, please re-download a fresh version from pcsx2.net.");
 		return 1;
 	}
 

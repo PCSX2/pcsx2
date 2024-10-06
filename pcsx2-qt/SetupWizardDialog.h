@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -33,6 +33,7 @@ private Q_SLOTS:
 	void biosListItemChanged(const QTreeWidgetItem* current, const QTreeWidgetItem* previous);
 
 	void onDirectoryListContextMenuRequested(const QPoint& point);
+	void onDirectoryListSelectionChanged();
 	void onAddSearchDirectoryButtonClicked();
 	void onRemoveSearchDirectoryButtonClicked();
 	void refreshDirectoryList();

@@ -42,6 +42,13 @@ public:
   {
     return (shared_state.load(std::memory_order_relaxed) & BACK_DIRTY_BIT) != 0;
   }
+  // Reset state and indices to initial values.
+  void invalidate()
+  {
+    shared_state.store(0, std::memory_order_release);
+    input_idx = 1;
+    output_idx = 2;
+  }
 
 private:
   // Publish a value to the consumer. Returns true if the data was overwritten

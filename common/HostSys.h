@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -9,6 +9,8 @@
 #include <map>
 #include <memory>
 #include <string>
+
+class Error;
 
 // --------------------------------------------------------------------------------------
 //  PageProtectionMode
@@ -83,14 +85,6 @@ static __fi PageProtectionMode PageAccess_Any()
 	return PageProtectionMode().All();
 }
 
-struct PageFaultInfo
-{
-	uptr pc;
-	uptr addr;
-};
-
-using PageFaultHandler = bool(*)(const PageFaultInfo& info);
-
 // --------------------------------------------------------------------------------------
 //  HostSys
 // --------------------------------------------------------------------------------------
@@ -111,12 +105,6 @@ namespace HostSys
 	extern void* MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, const PageProtectionMode& mode);
 	extern void UnmapSharedMemory(void* baseaddr, size_t size);
 
-	/// Installs the specified page fault handler. Only one handler can be active at once.
-	bool InstallPageFaultHandler(PageFaultHandler handler);
-
-	/// Removes the page fault handler. handler is only specified to check against the active callback.
-	void RemovePageFaultHandler(PageFaultHandler handler);
-
 	/// JIT write protect for Apple Silicon. Needs to be called prior to writing to any RWX pages.
 #if !defined(__APPLE__) || !defined(_M_ARM64)
 	// clang-format -off
@@ -135,7 +123,25 @@ namespace HostSys
 #else
 	void FlushInstructionCache(void* address, u32 size);
 #endif
-}
+
+	/// Returns the size of pages for the current host.
+	size_t GetRuntimePageSize();
+
+	/// Returns the size of a cache line for the current host.
+	size_t GetRuntimeCacheLineSize();
+} // namespace HostSys
+
+namespace PageFaultHandler
+{
+	enum class HandlerResult
+	{
+		ContinueExecution,
+		ExecuteNextHandler,
+	};
+
+	HandlerResult HandlePageFault(void* exception_pc, void* fault_address, bool is_write);
+	bool Install(Error* error = nullptr);
+} // namespace PageFaultHandler
 
 class SharedMemoryMappingArea
 {
@@ -186,6 +192,9 @@ extern std::string GetOSVersionString();
 
 namespace Common
 {
+	/// Enables or disables the screen saver from starting.
+	bool InhibitScreensaver(bool inhibit);
+
 	/// Abstracts platform-specific code for asynchronously playing a sound.
 	/// On Windows, this will use PlaySound(). On Linux, it will shell out to aplay. On MacOS, it uses NSSound.
 	bool PlaySoundAsync(const char* path);

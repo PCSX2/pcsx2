@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -21,9 +21,8 @@
 
 MULTI_ISA_UNSHARED_START
 
-class GSDrawScanlineCodeGenerator2 : public GSNewCodeGenerator
+class GSDrawScanlineCodeGenerator : public GSNewCodeGenerator
 {
-	using _parent = GSNewCodeGenerator;
 	using XYm = DRAW_SCANLINE_VECTOR_REGISTER;
 
 	constexpr static bool isXmm = std::is_same<XYm, Xbyak::Xmm>::value;
@@ -72,7 +71,7 @@ class GSDrawScanlineCodeGenerator2 : public GSNewCodeGenerator
 	const XYm _z, _f, _s, _t, _q, _f_rb, _f_ga;
 
 public:
-	GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, u64 key);
+	GSDrawScanlineCodeGenerator(u64 key, void* code, size_t maxsize);
 	void Generate();
 
 private:

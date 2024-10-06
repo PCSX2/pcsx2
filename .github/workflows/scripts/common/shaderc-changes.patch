@@ -1,13 +1,18 @@
+diff --git a/CHANGES b/CHANGES
+index 5d3dd16..587b612 100644
 --- a/CHANGES
 +++ b/CHANGES
-@@ -1,6 +1,6 @@
- Revision history for Shaderc
+@@ -4,7 +4,7 @@ v2024.1
+  - Update dependencies
+  - Propagate test/install options to Glslang
  
 -v2024.0
 +v2024.0 2024-03-09
   - Update dependencies
   - Utilities:
      - Use Python3 explicitly in utility scripts
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ffcb54b..7c1a6d8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -117,6 +117,9 @@ if(MSVC)
@@ -34,6 +39,8 @@
  define_pkg_config_file(shaderc -lshaderc_shared)
 -define_pkg_config_file(shaderc_static "-lshaderc ${EXTRA_STATIC_PKGCONFIG_LIBS} -lshaderc_util")
 -define_pkg_config_file(shaderc_combined -lshaderc_combined)
+diff --git a/libshaderc/CMakeLists.txt b/libshaderc/CMakeLists.txt
+index df9a88d..b15e5d7 100644
 --- a/libshaderc/CMakeLists.txt
 +++ b/libshaderc/CMakeLists.txt
 @@ -24,13 +24,6 @@ set(SHADERC_SOURCES
@@ -103,48 +110,372 @@
  if(${SHADERC_ENABLE_TESTS})
    add_executable(shaderc_c_smoke_test ./src/shaderc_c_smoke_test.c)
    shaderc_default_c_compile_options(shaderc_c_smoke_test)
+diff --git a/libshaderc/include/shaderc/shaderc.h b/libshaderc/include/shaderc/shaderc.h
+index 3a3e97d..65d5b77 100644
 --- a/libshaderc/include/shaderc/shaderc.h
 +++ b/libshaderc/include/shaderc/shaderc.h
-@@ -319,6 +319,10 @@ SHADERC_EXPORT void shaderc_compile_options_set_source_language(
- SHADERC_EXPORT void shaderc_compile_options_set_generate_debug_info(
-     shaderc_compile_options_t options);
+@@ -317,7 +317,7 @@ SHADERC_EXPORT void shaderc_compile_options_set_source_language(
  
-+// Sets the compiler mode to emit non-semantic debug information in the output.
-+SHADERC_EXPORT void shaderc_compile_options_set_emit_non_semantic_debug_info(
-+    shaderc_compile_options_t options);
-+
+ // Sets the compiler mode to generate debug information in the output.
+ SHADERC_EXPORT void shaderc_compile_options_set_generate_debug_info(
+-    shaderc_compile_options_t options);
++    shaderc_compile_options_t options, bool enabled, bool enable_non_semantic);
+ 
  // Sets the compiler optimization level to the given level. Only the last one
  // takes effect if multiple calls of this function exist.
- SHADERC_EXPORT void shaderc_compile_options_set_optimization_level(
+@@ -506,6 +506,10 @@ SHADERC_EXPORT void shaderc_compile_options_set_invert_y(
+ SHADERC_EXPORT void shaderc_compile_options_set_nan_clamp(
+     shaderc_compile_options_t options, bool enable);
+ 
++// Returns a string representation of the specified compilation status.
++SHADERC_EXPORT const char* shaderc_compilation_status_to_string(
++    shaderc_compilation_status status);
++
+ // An opaque handle to the results of a call to any shaderc_compile_into_*()
+ // function.
+ typedef struct shaderc_compilation_result* shaderc_compilation_result_t;
+@@ -529,28 +533,31 @@ typedef struct shaderc_compilation_result* shaderc_compilation_result_t;
+ // present.  May be safely called from multiple threads without explicit
+ // synchronization. If there was failure in allocating the compiler object,
+ // null will be returned.
+-SHADERC_EXPORT shaderc_compilation_result_t shaderc_compile_into_spv(
++SHADERC_EXPORT shaderc_compilation_status shaderc_compile_into_spv(
+     const shaderc_compiler_t compiler, const char* source_text,
+     size_t source_text_size, shaderc_shader_kind shader_kind,
+     const char* input_file_name, const char* entry_point_name,
+-    const shaderc_compile_options_t additional_options);
++    const shaderc_compile_options_t additional_options,
++    shaderc_compilation_result_t* result);
+ 
+ // Like shaderc_compile_into_spv, but the result contains SPIR-V assembly text
+ // instead of a SPIR-V binary module.  The SPIR-V assembly syntax is as defined
+ // by the SPIRV-Tools open source project.
+-SHADERC_EXPORT shaderc_compilation_result_t shaderc_compile_into_spv_assembly(
++SHADERC_EXPORT shaderc_compilation_status shaderc_compile_into_spv_assembly(
+     const shaderc_compiler_t compiler, const char* source_text,
+     size_t source_text_size, shaderc_shader_kind shader_kind,
+     const char* input_file_name, const char* entry_point_name,
+-    const shaderc_compile_options_t additional_options);
++    const shaderc_compile_options_t additional_options,
++    shaderc_compilation_result_t* result);
+ 
+ // Like shaderc_compile_into_spv, but the result contains preprocessed source
+ // code instead of a SPIR-V binary module
+-SHADERC_EXPORT shaderc_compilation_result_t shaderc_compile_into_preprocessed_text(
++SHADERC_EXPORT shaderc_compilation_status shaderc_compile_into_preprocessed_text(
+     const shaderc_compiler_t compiler, const char* source_text,
+     size_t source_text_size, shaderc_shader_kind shader_kind,
+     const char* input_file_name, const char* entry_point_name,
+-    const shaderc_compile_options_t additional_options);
++    const shaderc_compile_options_t additional_options,
++    shaderc_compilation_result_t* result);
+ 
+ // Takes an assembly string of the format defined in the SPIRV-Tools project
+ // (https://github.com/KhronosGroup/SPIRV-Tools/blob/master/syntax.md),
+@@ -561,10 +568,11 @@ SHADERC_EXPORT shaderc_compilation_result_t shaderc_compile_into_preprocessed_te
+ // May be safely called from multiple threads without explicit synchronization.
+ // If there was failure in allocating the compiler object, null will be
+ // returned.
+-SHADERC_EXPORT shaderc_compilation_result_t shaderc_assemble_into_spv(
++SHADERC_EXPORT shaderc_compilation_status shaderc_assemble_into_spv(
+     const shaderc_compiler_t compiler, const char* source_assembly,
+     size_t source_assembly_size,
+-    const shaderc_compile_options_t additional_options);
++    const shaderc_compile_options_t additional_options,
++    shaderc_compilation_result_t* result);
+ 
+ // The following functions, operating on shaderc_compilation_result_t objects,
+ // offer only the basic thread-safety guarantee.
+diff --git a/libshaderc/include/shaderc/shaderc.hpp b/libshaderc/include/shaderc/shaderc.hpp
+index 3817af8..5592b49 100644
 --- a/libshaderc/include/shaderc/shaderc.hpp
 +++ b/libshaderc/include/shaderc/shaderc.hpp
-@@ -172,6 +172,12 @@ class CompileOptions {
-     shaderc_compile_options_set_generate_debug_info(options_);
+@@ -168,8 +168,9 @@ class CompileOptions {
    }
  
-+  // Sets the compiler mode to emit non-semantic debug information in the
-+  // output.
-+  void SetEmitNonSemanticDebugInfo() {
-+    shaderc_compile_options_set_emit_non_semantic_debug_info(options_);
-+  }
-+
+   // Sets the compiler mode to generate debug information in the output.
+-  void SetGenerateDebugInfo() {
+-    shaderc_compile_options_set_generate_debug_info(options_);
++  void SetGenerateDebugInfo(bool enabled, bool non_semantic_debug_info) {
++    shaderc_compile_options_set_generate_debug_info(options_, enabled,
++      non_sematic_debug_info);
+   }
+ 
    // Sets the compiler optimization level to the given level. Only the last one
-   // takes effect if multiple calls of this function exist.
-   void SetOptimizationLevel(shaderc_optimization_level level) {
+@@ -425,9 +426,10 @@ class Compiler {
+                                         const char* input_file_name,
+                                         const char* entry_point_name,
+                                         const CompileOptions& options) const {
+-    shaderc_compilation_result_t compilation_result = shaderc_compile_into_spv(
++    shaderc_compilation_result_t compilation_result = nullptr;
++    shaderc_compile_into_spv(
+         compiler_, source_text, source_text_size, shader_kind, input_file_name,
+-        entry_point_name, options.options_);
++        entry_point_name, options.options_, &compilation_result);
+     return SpvCompilationResult(compilation_result);
+   }
+ 
+@@ -451,9 +453,10 @@ class Compiler {
+                                         size_t source_text_size,
+                                         shaderc_shader_kind shader_kind,
+                                         const char* input_file_name) const {
+-    shaderc_compilation_result_t compilation_result =
+-        shaderc_compile_into_spv(compiler_, source_text, source_text_size,
+-                                 shader_kind, input_file_name, "main", nullptr);
++    shaderc_compilation_result_t compilation_result = nullptr;
++    shaderc_compile_into_spv(compiler_, source_text, source_text_size,
++                             shader_kind, input_file_name, "main", nullptr,
++                             &compilation_result);
+     return SpvCompilationResult(compilation_result);
+   }
+ 
+@@ -504,8 +507,11 @@ class Compiler {
+   SpvCompilationResult AssembleToSpv(const char* source_assembly,
+                                      size_t source_assembly_size,
+                                      const CompileOptions& options) const {
+-    return SpvCompilationResult(shaderc_assemble_into_spv(
+-        compiler_, source_assembly, source_assembly_size, options.options_));
++    shaderc_compilation_result_t compilation_result = nullptr;
++    shaderc_assemble_into_spv(
++        compiler_, source_assembly, source_assembly_size, options.options_,
++        &compilation_result);
++    return SpvCompilationResult(compilation_result);
+   }
+ 
+   // Assembles the given SPIR-V assembly and returns a SPIR-V binary module
+@@ -513,8 +519,11 @@ class Compiler {
+   // Like the first AssembleToSpv method but uses the default compiler options.
+   SpvCompilationResult AssembleToSpv(const char* source_assembly,
+                                      size_t source_assembly_size) const {
+-    return SpvCompilationResult(shaderc_assemble_into_spv(
+-        compiler_, source_assembly, source_assembly_size, nullptr));
++    shaderc_compilation_result_t compilation_result = nullptr;
++    shaderc_assemble_into_spv(
++        compiler_, source_assembly, source_assembly_size, nullptr,
++        &compilation_result);
++    return SpvCompilationResult(compilation_result);
+   }
+ 
+   // Assembles the given SPIR-V assembly and returns a SPIR-V binary module
+@@ -523,9 +532,11 @@ class Compiler {
+   // std::string.
+   SpvCompilationResult AssembleToSpv(const std::string& source_assembly,
+                                      const CompileOptions& options) const {
+-    return SpvCompilationResult(
+-        shaderc_assemble_into_spv(compiler_, source_assembly.data(),
+-                                  source_assembly.size(), options.options_));
++    shaderc_compilation_result_t compilation_result = nullptr;
++    shaderc_assemble_into_spv(
++      compiler_, source_assembly.data(), source_assembly.size(),
++      options.options_, &compilation_result);
++    return SpvCompilationResult(compilation_result);
+   }
+ 
+   // Assembles the given SPIR-V assembly and returns a SPIR-V binary module
+@@ -533,8 +544,10 @@ class Compiler {
+   // Like the first AssembleToSpv method but the source is provided as a
+   // std::string and also uses default compiler options.
+   SpvCompilationResult AssembleToSpv(const std::string& source_assembly) const {
+-    return SpvCompilationResult(shaderc_assemble_into_spv(
+-        compiler_, source_assembly.data(), source_assembly.size(), nullptr));
++    shaderc_compilation_result_t compilation_result = nullptr;
++    shaderc_assemble_into_spv(compiler_, source_assembly.data(),
++      source_assembly.size(), nullptr, &compilation_result);
++    return SpvCompilationResult(compilation_result);
+   }
+ 
+   // Compiles the given source GLSL and returns the SPIR-V assembly text
+@@ -544,10 +557,11 @@ class Compiler {
+       const char* source_text, size_t source_text_size,
+       shaderc_shader_kind shader_kind, const char* input_file_name,
+       const char* entry_point_name, const CompileOptions& options) const {
+-    shaderc_compilation_result_t compilation_result =
+-        shaderc_compile_into_spv_assembly(
+-            compiler_, source_text, source_text_size, shader_kind,
+-            input_file_name, entry_point_name, options.options_);
++    shaderc_compilation_result_t compilation_result = nullptr;
++    shaderc_compile_into_spv_assembly(
++        compiler_, source_text, source_text_size, shader_kind,
++        input_file_name, entry_point_name, options.options_,
++        &compilation_result);
+     return AssemblyCompilationResult(compilation_result);
+   }
+ 
+@@ -592,10 +606,10 @@ class Compiler {
+       const char* source_text, size_t source_text_size,
+       shaderc_shader_kind shader_kind, const char* input_file_name,
+       const CompileOptions& options) const {
+-    shaderc_compilation_result_t compilation_result =
+-        shaderc_compile_into_preprocessed_text(
++    shaderc_compilation_result_t compilation_result;
++    shaderc_compile_into_preprocessed_text(
+             compiler_, source_text, source_text_size, shader_kind,
+-            input_file_name, "main", options.options_);
++            input_file_name, "main", options.options_, &compilation_result);
+     return PreprocessedSourceCompilationResult(compilation_result);
+   }
+ 
+diff --git a/libshaderc/src/shaderc.cc b/libshaderc/src/shaderc.cc
+index 63f1bbc..c1a9b12 100644
 --- a/libshaderc/src/shaderc.cc
 +++ b/libshaderc/src/shaderc.cc
-@@ -422,6 +422,11 @@ void shaderc_compile_options_set_generate_debug_info(
-   options->compiler.SetGenerateDebugInfo();
+@@ -418,8 +418,12 @@ void shaderc_compile_options_set_source_language(
  }
  
-+void shaderc_compile_options_set_emit_non_semantic_debug_info(
-+    shaderc_compile_options_t options) {
-+  options->compiler.SetEmitNonSemanticDebugInfo();
+ void shaderc_compile_options_set_generate_debug_info(
+-    shaderc_compile_options_t options) {
+-  options->compiler.SetGenerateDebugInfo();
++    shaderc_compile_options_t options, bool enabled, bool enable_non_semantic) {
++  if (enabled) {
++    options->compiler.SetGenerateDebugInfo();
++    if (enable_non_semantic)
++      options->compiler.SetEmitNonSemanticDebugInfo();
++  }
+ }
+ 
+ void shaderc_compile_options_set_optimization_level(
+@@ -591,8 +595,31 @@ void shaderc_compiler_release(shaderc_compiler_t compiler) {
+   delete compiler;
+ }
+ 
++const char* shaderc_compilation_status_to_string(shaderc_compilation_status status)
++{
++  static constexpr const std::pair<shaderc_compilation_status, const char*> status_names[] = {
++    {shaderc_compilation_status_success, "shaderc_compilation_status_success"},
++    {shaderc_compilation_status_invalid_stage, "shaderc_compilation_status_invalid_stage"},
++    {shaderc_compilation_status_compilation_error, "shaderc_compilation_status_compilation_error"},
++    {shaderc_compilation_status_internal_error, "shaderc_compilation_status_internal_error"},
++    {shaderc_compilation_status_null_result_object, "shaderc_compilation_status_null_result_object"},
++    {shaderc_compilation_status_invalid_assembly, "shaderc_compilation_status_invalid_assembly"},
++    {shaderc_compilation_status_validation_error, "shaderc_compilation_status_validation_error"},
++    {shaderc_compilation_status_transformation_error, "shaderc_compilation_status_transformation_error"},
++    {shaderc_compilation_status_configuration_error, "shaderc_compilation_status_configuration_error"},
++  };
++
++  for (const auto& it : status_names)
++  {
++    if (status == it.first)
++      return it.second;
++  }
++
++  return "shaderc_compilation_status_unknown";
 +}
 +
- void shaderc_compile_options_set_optimization_level(
-     shaderc_compile_options_t options, shaderc_optimization_level level) {
-   auto opt_level = shaderc_util::Compiler::OptimizationLevel::Zero;
+ namespace {
+-shaderc_compilation_result_t CompileToSpecifiedOutputType(
++shaderc_compilation_result_vector* CompileToSpecifiedOutputType(
+     const shaderc_compiler_t compiler, const char* source_text,
+     size_t source_text_size, shaderc_shader_kind shader_kind,
+     const char* input_file_name, const char* entry_point_name,
+@@ -669,48 +696,59 @@ shaderc_compilation_result_t CompileToSpecifiedOutputType(
+ }
+ }  // anonymous namespace
+ 
+-shaderc_compilation_result_t shaderc_compile_into_spv(
++shaderc_compilation_status shaderc_compile_into_spv(
+     const shaderc_compiler_t compiler, const char* source_text,
+     size_t source_text_size, shaderc_shader_kind shader_kind,
+     const char* input_file_name, const char* entry_point_name,
+-    const shaderc_compile_options_t additional_options) {
+-  return CompileToSpecifiedOutputType(
++    const shaderc_compile_options_t additional_options,
++    shaderc_compilation_result_t* result) {
++  shaderc_compilation_result_vector* resultv = CompileToSpecifiedOutputType(
+       compiler, source_text, source_text_size, shader_kind, input_file_name,
+       entry_point_name, additional_options,
+       shaderc_util::Compiler::OutputType::SpirvBinary);
++  *result = resultv;
++  return resultv ? resultv->compilation_status : shaderc_compilation_status_internal_error;
+ }
+ 
+-shaderc_compilation_result_t shaderc_compile_into_spv_assembly(
++shaderc_compilation_status shaderc_compile_into_spv_assembly(
+     const shaderc_compiler_t compiler, const char* source_text,
+     size_t source_text_size, shaderc_shader_kind shader_kind,
+     const char* input_file_name, const char* entry_point_name,
+-    const shaderc_compile_options_t additional_options) {
+-  return CompileToSpecifiedOutputType(
++    const shaderc_compile_options_t additional_options,
++    shaderc_compilation_result_t* result) {
++  shaderc_compilation_result_vector* resultv = CompileToSpecifiedOutputType(
+       compiler, source_text, source_text_size, shader_kind, input_file_name,
+       entry_point_name, additional_options,
+       shaderc_util::Compiler::OutputType::SpirvAssemblyText);
++  *result = resultv;
++  return resultv ? resultv->compilation_status : shaderc_compilation_status_internal_error;
+ }
+ 
+-shaderc_compilation_result_t shaderc_compile_into_preprocessed_text(
++shaderc_compilation_status shaderc_compile_into_preprocessed_text(
+     const shaderc_compiler_t compiler, const char* source_text,
+     size_t source_text_size, shaderc_shader_kind shader_kind,
+     const char* input_file_name, const char* entry_point_name,
+-    const shaderc_compile_options_t additional_options) {
+-  return CompileToSpecifiedOutputType(
++    const shaderc_compile_options_t additional_options,
++    shaderc_compilation_result_t* result) {
++  shaderc_compilation_result_vector* resultv = CompileToSpecifiedOutputType(
+       compiler, source_text, source_text_size, shader_kind, input_file_name,
+       entry_point_name, additional_options,
+       shaderc_util::Compiler::OutputType::PreprocessedText);
++  *result = resultv;
++  return resultv ? resultv->compilation_status : shaderc_compilation_status_internal_error;
+ }
+ 
+-shaderc_compilation_result_t shaderc_assemble_into_spv(
++shaderc_compilation_status shaderc_assemble_into_spv(
+     const shaderc_compiler_t compiler, const char* source_assembly,
+     size_t source_assembly_size,
+-    const shaderc_compile_options_t additional_options) {
+-  auto* result = new (std::nothrow) shaderc_compilation_result_spv_binary;
+-  if (!result) return nullptr;
+-  result->compilation_status = shaderc_compilation_status_invalid_assembly;
+-  if (!compiler->initializer) return result;
+-  if (source_assembly == nullptr) return result;
++    const shaderc_compile_options_t additional_options,
++    shaderc_compilation_result_t* result) {
++  auto* bresult = new (std::nothrow) shaderc_compilation_result_spv_binary;
++  if (!bresult) return shaderc_compilation_status_internal_error;
++  bresult->compilation_status = shaderc_compilation_status_invalid_assembly;
++  *result = bresult;
++  if (!compiler->initializer) return bresult->compilation_status;
++  if (source_assembly == nullptr) return bresult->compilation_status;
+ 
+   TRY_IF_EXCEPTIONS_ENABLED {
+     spv_binary assembling_output_data = nullptr;
+@@ -724,22 +762,22 @@ shaderc_compilation_result_t shaderc_assemble_into_spv(
+         GetCompilerTargetEnvVersion(target_env_version),
+         {source_assembly, source_assembly + source_assembly_size},
+         &assembling_output_data, &errors);
+-    result->num_errors = !assembling_succeeded;
++    bresult->num_errors = !assembling_succeeded;
+     if (assembling_succeeded) {
+-      result->SetOutputData(assembling_output_data);
+-      result->output_data_size =
++      bresult->SetOutputData(assembling_output_data);
++      bresult->output_data_size =
+           assembling_output_data->wordCount * sizeof(uint32_t);
+-      result->compilation_status = shaderc_compilation_status_success;
++      bresult->compilation_status = shaderc_compilation_status_success;
+     } else {
+-      result->messages = std::move(errors);
+-      result->compilation_status = shaderc_compilation_status_invalid_assembly;
++      bresult->messages = std::move(errors);
++      bresult->compilation_status = shaderc_compilation_status_invalid_assembly;
+     }
+   }
+   CATCH_IF_EXCEPTIONS_ENABLED(...) {
+-    result->compilation_status = shaderc_compilation_status_internal_error;
++    bresult->compilation_status = shaderc_compilation_status_internal_error;
+   }
+ 
+-  return result;
++  return bresult->compilation_status;
+ }
+ 
+ size_t shaderc_result_get_length(const shaderc_compilation_result_t result) {
+diff --git a/libshaderc_util/include/libshaderc_util/compiler.h b/libshaderc_util/include/libshaderc_util/compiler.h
+index d9d02b9..b076ec8 100644
 --- a/libshaderc_util/include/libshaderc_util/compiler.h
 +++ b/libshaderc_util/include/libshaderc_util/compiler.h
 @@ -195,6 +195,7 @@ class Compiler {
@@ -177,6 +508,8 @@
    // Optimization passes to be applied.
    std::vector<PassId> enabled_opt_passes_;
  
+diff --git a/libshaderc_util/src/compiler.cc b/libshaderc_util/src/compiler.cc
+index e5f5d10..1f9e6a5 100644
 --- a/libshaderc_util/src/compiler.cc
 +++ b/libshaderc_util/src/compiler.cc
 @@ -341,6 +341,11 @@ std::tuple<bool, std::vector<uint32_t>, size_t> Compiler::Compile(
@@ -202,6 +535,8 @@
  void Compiler::SetOptimizationLevel(Compiler::OptimizationLevel level) {
    // Clear previous settings first.
    enabled_opt_passes_.clear();
+diff --git a/third_party/CMakeLists.txt b/third_party/CMakeLists.txt
+index d44f62a..83966b6 100644
 --- a/third_party/CMakeLists.txt
 +++ b/third_party/CMakeLists.txt
 @@ -20,9 +20,9 @@ set(SHADERC_TINT_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/tint" CACHE STRING
@@ -229,11 +564,13 @@
      if (NOT "${SPIRV_SKIP_TESTS}")
        if (MSVC)
          if (${MSVC_VERSION} LESS 1920)
-@@ -83,7 +86,7 @@ endif()
- 
- if (NOT TARGET glslang)
-   if (IS_DIRECTORY ${SHADERC_GLSLANG_DIR})
+@@ -87,8 +90,8 @@ if (NOT TARGET glslang)
+       # Glslang tests are off by default. Turn them on if testing Shaderc.
+       set(GLSLANG_TESTS ON)
+     endif()
+-    set(GLSLANG_ENABLE_INSTALL $<NOT:${SKIP_GLSLANG_INSTALL}>)
 -    add_subdirectory(${SHADERC_GLSLANG_DIR} glslang)
++    set(GLSLANG_ENABLE_INSTALL OFF)
 +    add_subdirectory(${SHADERC_GLSLANG_DIR} glslang EXCLUDE_FROM_ALL)
    endif()
    if (NOT TARGET glslang)

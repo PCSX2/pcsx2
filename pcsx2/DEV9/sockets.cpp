@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Assertions.h"
 #include "common/StringUtil.h"
+#include "common/ScopedGuard.h"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -49,73 +50,39 @@ std::vector<AdapterEntry> SocketAdapter::GetAdapters()
 	nic.push_back(autoEntry);
 
 #ifdef _WIN32
-	int neededSize = 128;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-
-	PIP_ADAPTER_ADDRESSES pAdapterInfo;
-
-	DWORD dwStatus = GetAdaptersAddresses(
-		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-		NULL,
-		AdapterInfo.get(),
-		&dwBufLen);
-
-	if (dwStatus == ERROR_BUFFER_OVERFLOW)
-	{
-		DevCon.WriteLn("DEV9: PCAPGetWin32Adapter() buffer too small, resizing");
-		//
-		neededSize = dwBufLen / sizeof(IP_ADAPTER_ADDRESSES) + 1;
-		AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-		DevCon.WriteLn("DEV9: New size %i", neededSize);
-
-		dwStatus = GetAdaptersAddresses(
-			AF_UNSPEC,
-			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-			NULL,
-			AdapterInfo.get(),
-			&dwBufLen);
-	}
-
-	if (dwStatus != ERROR_SUCCESS)
+	AdapterUtils::AdapterBuffer adapterInfo;
+	PIP_ADAPTER_ADDRESSES pAdapter = AdapterUtils::GetAllAdapters(&adapterInfo);
+	if (pAdapter == nullptr)
 		return nic;
-
-	pAdapterInfo = AdapterInfo.get();
 
 	do
 	{
-		if (pAdapterInfo->IfType != IF_TYPE_SOFTWARE_LOOPBACK &&
-			pAdapterInfo->OperStatus == IfOperStatusUp)
+		if (pAdapter->IfType != IF_TYPE_SOFTWARE_LOOPBACK &&
+			pAdapter->OperStatus == IfOperStatusUp)
 		{
 			AdapterEntry entry;
 			entry.type = Pcsx2Config::DEV9Options::NetApi::Sockets;
-			entry.name = StringUtil::WideStringToUTF8String(pAdapterInfo->FriendlyName);
-			entry.guid = pAdapterInfo->AdapterName;
+			entry.name = StringUtil::WideStringToUTF8String(pAdapter->FriendlyName);
+			entry.guid = pAdapter->AdapterName;
 
 			nic.push_back(entry);
 		}
 
-		pAdapterInfo = pAdapterInfo->Next;
-	} while (pAdapterInfo);
+		pAdapter = pAdapter->Next;
+	} while (pAdapter);
 
 #elif defined(__POSIX__)
-	ifaddrs* adapterInfo;
-	ifaddrs* pAdapter;
-
-	int error = getifaddrs(&adapterInfo);
-	if (error)
+	AdapterUtils::AdapterBuffer adapterInfo;
+	ifaddrs* pAdapter = GetAllAdapters(&adapterInfo);
+	if (pAdapter == nullptr)
 		return nic;
-
-	pAdapter = adapterInfo;
 
 	do
 	{
 		if ((pAdapter->ifa_flags & IFF_LOOPBACK) == 0 &&
 			(pAdapter->ifa_flags & IFF_UP) != 0 &&
 			pAdapter->ifa_addr != nullptr &&
-			pAdapter->ifa_addr->sa_family == AF_INET)
+			AdapterUtils::ReadAddressFamily(pAdapter->ifa_addr) == AF_INET)
 		{
 			AdapterEntry entry;
 			entry.type = Pcsx2Config::DEV9Options::NetApi::Sockets;
@@ -127,8 +94,6 @@ std::vector<AdapterEntry> SocketAdapter::GetAdapters()
 
 		pAdapter = pAdapter->ifa_next;
 	} while (pAdapter);
-
-	freeifaddrs(adapterInfo);
 #endif
 
 	return nic;
@@ -216,6 +181,8 @@ SocketAdapter::SocketAdapter()
 		wsa_init = true;
 #endif
 
+	sendThreadId = std::this_thread::get_id();
+
 	initialized = true;
 }
 
@@ -234,6 +201,13 @@ bool SocketAdapter::recv(NetPacket* pkt)
 	if (NetAdapter::recv(pkt))
 		return true;
 
+	ScopedGuard cleanup([&]() {
+		// Garbage collect closed connections
+		for (BaseSession* s : deleteQueueRecvThread)
+			delete s;
+		deleteQueueRecvThread.clear();
+	});
+
 	EthernetFrame* bFrame;
 	if (!vRecBuffer.Dequeue(&bFrame))
 	{
@@ -246,13 +220,13 @@ bool SocketAdapter::recv(NetPacket* pkt)
 			if (!connections.TryGetValue(key, &session))
 				continue;
 
-			IP_Payload* pl = session->Recv();
+			std::optional<ReceivedPayload> pl = session->Recv();
 
-			if (pl != nullptr)
+			if (pl.has_value())
 			{
-				IP_Packet* ipPkt = new IP_Packet(pl);
+				IP_Packet* ipPkt = new IP_Packet(pl->payload.release());
 				ipPkt->destinationIP = session->sourceIP;
-				ipPkt->sourceIP = session->destIP;
+				ipPkt->sourceIP = pl->sourceIP;
 
 				EthernetFrame frame(ipPkt);
 				frame.sourceMAC = internalMAC;
@@ -281,6 +255,14 @@ bool SocketAdapter::send(NetPacket* pkt)
 	InspectSend(pkt);
 	if (NetAdapter::send(pkt))
 		return true;
+
+	pxAssert(std::this_thread::get_id() == sendThreadId);
+	ScopedGuard cleanup([&]() {
+		// Garbage collect closed connections
+		for (BaseSession* s : deleteQueueSendThread)
+			delete s;
+		deleteQueueSendThread.clear();
+	});
 
 	EthernetFrame frame(pkt);
 
@@ -513,12 +495,20 @@ bool SocketAdapter::SendUDP(ConnectionKey Key, IP_Packet* ipPkt)
 
 				connections.Add(fKey, fPort);
 				fixedUDPPorts.Add(udp.sourcePort, fPort);
+
+				fPort->Init();
 			}
 
 			Console.WriteLn("DEV9: Socket: Creating New UDP Connection from FixedPort %d to %d", udp.sourcePort, udp.destinationPort);
 			s = fPort->NewClientSession(Key,
 				ipPkt->destinationIP == dhcpServer.broadcastIP || ipPkt->destinationIP == IP_Address{{{255, 255, 255, 255}}},
 				(ipPkt->destinationIP.bytes[0] & 0xF0) == 0xE0);
+
+			if (s == nullptr)
+			{
+				Console.Error("DEV9: Socket: Failed to Create New UDP Connection from FixedPort");
+				return false;
+			}
 		}
 		else
 		{
@@ -548,9 +538,12 @@ void SocketAdapter::HandleConnectionClosed(BaseSession* sender)
 {
 	const ConnectionKey key = sender->key;
 	connections.Remove(key);
-	//Note, we delete something that is calling us
-	//this is probably going to cause issues
-	delete sender;
+
+	// Defer deleting the connection untill we have left the calling session's callstack
+	if (std::this_thread::get_id() == sendThreadId)
+		deleteQueueSendThread.push_back(sender);
+	else
+		deleteQueueRecvThread.push_back(sender);
 
 	switch (key.protocol)
 	{
@@ -577,9 +570,12 @@ void SocketAdapter::HandleFixedPortClosed(BaseSession* sender)
 	ConnectionKey key = sender->key;
 	connections.Remove(key);
 	fixedUDPPorts.Remove(key.ps2Port);
-	//Note, we delete something that is calling us
-	//this is probably going to cause issues
-	delete sender;
+
+	// Defer deleting the connection untill we have left the calling session's callstack
+	if (std::this_thread::get_id() == sendThreadId)
+		deleteQueueSendThread.push_back(sender);
+	else
+		deleteQueueRecvThread.push_back(sender);
 
 	Console.WriteLn("DEV9: Socket: Closed Dead UDP Fixed Port to %d", key.ps2Port);
 }
@@ -603,6 +599,16 @@ SocketAdapter::~SocketAdapter()
 	}
 	connections.Clear();
 	fixedUDPPorts.Clear(); //fixedUDP sessions already deleted via connections
+
+	//Clear out any delete queues
+	DevCon.WriteLn("DEV9: Socket: Found %d Connections in send delete queue", deleteQueueSendThread.size());
+	DevCon.WriteLn("DEV9: Socket: Found %d Connections in recv delete queue", deleteQueueRecvThread.size());
+	for (BaseSession* s : deleteQueueSendThread)
+		delete s;
+	for (BaseSession* s : deleteQueueRecvThread)
+		delete s;
+	deleteQueueSendThread.clear();
+	deleteQueueRecvThread.clear();
 
 	//Clear out vRecBuffer
 	while (!vRecBuffer.IsQueueEmpty())

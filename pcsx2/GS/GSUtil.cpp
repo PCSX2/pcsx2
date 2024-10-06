@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/GS.h"
 #include "GS/GSExtra.h"
@@ -191,10 +191,10 @@ u32 GSUtil::GetChannelMask(u32 spsm)
 u32 GSUtil::GetChannelMask(u32 spsm, u32 fbmsk)
 {
 	u32 mask = GetChannelMask(spsm);
-	mask &= (fbmsk & 0xFF) ? (~0x1 & 0xf) : 0xf;
-	mask &= (fbmsk & 0xFF00) ? (~0x2 & 0xf) : 0xf;
-	mask &= (fbmsk & 0xFF0000) ? (~0x4 & 0xf) : 0xf;
-	mask &= (fbmsk & 0xFF000000) ? (~0x8 & 0xf) : 0xf;
+	mask &= ((fbmsk & 0xFF) == 0xFF) ? (~0x1 & 0xf) : 0xf;
+	mask &= ((fbmsk & 0xFF00) == 0xFF00) ? (~0x2 & 0xf) : 0xf;
+	mask &= ((fbmsk & 0xFF0000) == 0xFF0000) ? (~0x4 & 0xf) : 0xf;
+	mask &= ((fbmsk & 0xFF000000) == 0xFF000000) ? (~0x8 & 0xf) : 0xf;
 	return mask;
 }
 
@@ -207,6 +207,9 @@ GSRendererType GSUtil::GetPreferredRenderer()
 #if defined(__APPLE__)
 		// Mac: Prefer Metal hardware.
 		preferred_renderer = GSRendererType::Metal;
+#elif defined(_WIN32) && defined(_M_ARM64)
+		// Default to DX12 on Windows-on-ARM.
+		preferred_renderer = GSRendererType::DX12;
 #elif defined(_WIN32)
 		// Use D3D device info to select renderer.
 		preferred_renderer = D3D::GetPreferredRenderer();

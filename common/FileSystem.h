@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 
 class Error;
+class ProgressCallback;
 
 #ifdef _WIN32
 #define FS_OSPATH_SEPARATOR_CHARACTER '\\'
@@ -38,6 +39,7 @@ enum FILESYSTEM_FIND_FLAGS
 	FILESYSTEM_FIND_FOLDERS = (1 << 3),
 	FILESYSTEM_FIND_FILES = (1 << 4),
 	FILESYSTEM_FIND_KEEP_ARRAY = (1 << 5),
+	FILESYSTEM_FIND_SORT_BY_NAME = (1 << 6),
 };
 
 struct FILESYSTEM_STAT_DATA
@@ -82,12 +84,13 @@ namespace FileSystem
 
 	/// Directory exists?
 	bool DirectoryExists(const char* path);
+	bool IsRealDirectory(const char* path);
 
 	/// Directory does not contain any files?
 	bool DirectoryIsEmpty(const char* path);
 
 	/// Delete file
-	bool DeleteFilePath(const char* path);
+	bool DeleteFilePath(const char* path, Error* error = nullptr);
 
 	/// Rename file
 	bool RenamePath(const char* OldPath, const char* NewPath, Error* error = nullptr);
@@ -130,7 +133,9 @@ namespace FileSystem
 	std::optional<std::string> ReadFileToString(const char* filename);
 	std::optional<std::string> ReadFileToString(std::FILE* fp);
 	bool WriteBinaryFile(const char* filename, const void* data, size_t data_length);
-	bool WriteStringToFile(const char* filename, const std::string_view& sv);
+	bool WriteStringToFile(const char* filename, const std::string_view sv);
+	size_t ReadFileWithProgress(std::FILE* fp, void* dst, size_t length, ProgressCallback* progress,
+		Error* error = nullptr, size_t chunk_size = 16 * 1024 * 1024);
 
 	/// creates a directory in the local filesystem
 	/// if the directory already exists, the return value will be true.

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Config.h"
 #include "GS/Renderers/OpenGL/GLProgram.h"
@@ -491,7 +491,7 @@ void GLProgram::BindUniformBlock(const char* name, u32 index)
 		glUniformBlockBinding(m_program_id, location, index);
 }
 
-void GLProgram::SetName(const std::string_view& name)
+void GLProgram::SetName(const std::string_view name)
 {
 	if (name.empty())
 		return;

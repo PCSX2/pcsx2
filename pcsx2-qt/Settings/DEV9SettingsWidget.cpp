@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QFileDialog>
@@ -56,90 +56,16 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	// Eth Enabled
 	//////////////////////////////////////////////////////////////////////////
 	//Connect needs to be after BindWidgetToBoolSetting to ensure correct order of execution for disabling a per game setting
-	//but we then need to manually call onEthAutoChanged to update the UI on fist load
+	//we then need to manually call onEthAutoChanged to update the UI on fist load (done in show)
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ethEnabled, "DEV9/Eth", "EthEnable", false);
-	onEthEnabledChanged(m_ui.ethEnabled->checkState());
 	connect(m_ui.ethEnabled, &QCheckBox::checkStateChanged, this, &DEV9SettingsWidget::onEthEnabledChanged);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Eth Device Settings
 	//////////////////////////////////////////////////////////////////////////
 	connect(m_ui.ethDevType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DEV9SettingsWidget::onEthDeviceTypeChanged);
-
-	m_api_list.push_back(Pcsx2Config::DEV9Options::NetApi::Unset);
-
-	for (const AdapterEntry& adapter : PCAPAdapter::GetAdapters())
-		AddAdapter(adapter);
-#ifdef _WIN32
-	for (const AdapterEntry& adapter : TAPAdapter::GetAdapters())
-		AddAdapter(adapter);
-#endif
-	for (const AdapterEntry& adapter : SocketAdapter::GetAdapters())
-		AddAdapter(adapter);
-
-	std::sort(m_api_list.begin(), m_api_list.end());
-	for (auto& list : m_adapter_list)
-		std::sort(list.begin(), list.end(), [](const AdapterEntry& a, AdapterEntry& b) { return a.name < b.name; });
-
-	for (const Pcsx2Config::DEV9Options::NetApi& na : m_api_list)
-	{
-		m_api_namelist.push_back(s_api_name[static_cast<int>(na)]);
-		m_api_valuelist.push_back(Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(na)]);
-	}
-
-	m_api_namelist.push_back(nullptr);
-	m_api_valuelist.push_back(nullptr);
-
-	//We replace the blank entry with one for global settings
-	if (m_dialog->isPerGameSettings())
-	{
-		const std::string valueAPI = Host::GetBaseStringSettingValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]);
-		for (int i = 0; Pcsx2Config::DEV9Options::NetApiNames[i] != nullptr; i++)
-		{
-			if (valueAPI == Pcsx2Config::DEV9Options::NetApiNames[i])
-			{
-				m_global_api = static_cast<Pcsx2Config::DEV9Options::NetApi>(i);
-				break;
-			}
-		}
-
-		std::vector<AdapterEntry> baseList = m_adapter_list[static_cast<u32>(m_global_api)];
-
-		std::string baseAdapter = " ";
-		const std::string valueGUID = Host::GetBaseStringSettingValue("DEV9/Eth", "EthDevice", "");
-		for (size_t i = 0; i < baseList.size(); i++)
-		{
-			if (baseList[i].guid == valueGUID)
-			{
-				baseAdapter = baseList[i].name;
-				break;
-			}
-		}
-
-		m_adapter_list[static_cast<u32>(Pcsx2Config::DEV9Options::NetApi::Unset)][0].name = baseAdapter;
-	}
-
-	if (m_dialog->isPerGameSettings())
-		m_ui.ethDevType->addItem(tr("Use Global Setting [%1]").arg(QString::fromUtf8(Pcsx2Config::DEV9Options::NetApiNames[static_cast<u32>(m_global_api)])));
-	else
-		m_ui.ethDevType->addItem(qApp->translate("DEV9SettingsWidget", m_api_namelist[0]));
-
-	for (int i = 1; m_api_namelist[i] != nullptr; i++)
-		m_ui.ethDevType->addItem(qApp->translate("DEV9SettingsWidget", m_api_namelist[i]));
-
-	const std::string value = m_dialog->getStringValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]).value();
-
-	for (int i = 0; m_api_namelist[i] != nullptr; i++)
-	{
-		if (value == m_api_valuelist[i])
-		{
-			m_ui.ethDevType->setCurrentIndex(i);
-			break;
-		}
-	}
-	//onEthDeviceTypeChanged gets called automatically
-
 	connect(m_ui.ethDev, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DEV9SettingsWidget::onEthDeviceChanged);
+	//Comboboxes populated in show event
 
 	//////////////////////////////////////////////////////////////////////////
 	// DHCP Settings
@@ -271,6 +197,10 @@ void DEV9SettingsWidget::onEthEnabledChanged(Qt::CheckState state)
 {
 	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Eth", "EthEnable", false) : state;
 
+	//Populate Eth Device Settings
+	if (enabled)
+		LoadAdapters();
+
 	m_ui.ethDevType->setEnabled(enabled);
 	m_ui.ethDevTypeLabel->setEnabled(enabled);
 	m_ui.ethDevLabel->setEnabled(enabled);
@@ -336,6 +266,7 @@ void DEV9SettingsWidget::onEthDeviceTypeChanged(int index)
 			break;
 	}
 
+	m_ui.ethInterceptDHCPLabel->setEnabled((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::None);
 	m_ui.ethInterceptDHCP->setEnabled((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::None);
 	onEthDHCPInterceptChanged(m_ui.ethInterceptDHCP->checkState());
 }
@@ -790,6 +721,7 @@ void DEV9SettingsWidget::UpdateHddSizeUIEnabled()
 	else
 		enableSizeUI = m_ui.hddFile->isEnabled();
 
+	m_ui.hddLBA48->setEnabled(enableSizeUI);
 	m_ui.hddSizeLabel->setEnabled(enableSizeUI);
 	m_ui.hddSizeSlider->setEnabled(enableSizeUI);
 	m_ui.hddSizeMaxLabel->setEnabled(enableSizeUI);
@@ -830,21 +762,29 @@ void DEV9SettingsWidget::showEvent(QShowEvent* event)
 {
 	QWidget::showEvent(event);
 
-	//The API combobox dosn't set the EthApi field, that is performed by the device combobox (in addition to saving the device)
-	//This means that this setting can get out of sync with true value, so revert to that if the ui is closed and opened
-	const std::string value = m_dialog->getStringValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]).value();
+	//Update the ethernet UI, as not done by constructor
+	if (m_firstShow)
+		onEthEnabledChanged(m_ui.ethEnabled->checkState());
 
-	//disconnect temporally to prevent saving a vaule already in the config file
-	disconnect(m_ui.ethDev, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DEV9SettingsWidget::onEthDeviceChanged);
-	for (int i = 0; m_api_namelist[i] != nullptr; i++)
+	if (m_adaptersLoaded)
 	{
-		if (value == m_api_valuelist[i])
+		//The API combobox dosn't set the EthApi field, that is performed by the device combobox (in addition to saving the device)
+		//This means that this setting can get out of sync with true value, so revert to that if the ui is closed and opened
+		const std::string value = m_dialog->getStringValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]).value();
+
+		//SignalBlocker to prevent saving a value already in the config file
+		QSignalBlocker sb(m_ui.ethDev);
+		for (int i = 0; m_api_namelist[i] != nullptr; i++)
 		{
-			m_ui.ethDevType->setCurrentIndex(i);
-			break;
+			if (value == m_api_valuelist[i])
+			{
+				m_ui.ethDevType->setCurrentIndex(i);
+				break;
+			}
 		}
 	}
-	connect(m_ui.ethDev, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DEV9SettingsWidget::onEthDeviceChanged);
+
+	m_firstShow = false;
 }
 
 /*
@@ -890,6 +830,89 @@ void DEV9SettingsWidget::AddAdapter(const AdapterEntry& adapter)
 	}
 
 	m_adapter_list[idx].push_back(adapter);
+}
+
+void DEV9SettingsWidget::LoadAdapters()
+{
+	if (m_adaptersLoaded)
+		return;
+
+	QSignalBlocker sb(m_ui.ethDev);
+
+	m_api_list.push_back(Pcsx2Config::DEV9Options::NetApi::Unset);
+
+	for (const AdapterEntry& adapter : PCAPAdapter::GetAdapters())
+		AddAdapter(adapter);
+#ifdef _WIN32
+	for (const AdapterEntry& adapter : TAPAdapter::GetAdapters())
+		AddAdapter(adapter);
+#endif
+	for (const AdapterEntry& adapter : SocketAdapter::GetAdapters())
+		AddAdapter(adapter);
+
+	std::sort(m_api_list.begin(), m_api_list.end());
+	for (auto& list : m_adapter_list)
+		std::sort(list.begin(), list.end(), [](const AdapterEntry& a, AdapterEntry& b) { return a.name < b.name; });
+
+	for (const Pcsx2Config::DEV9Options::NetApi& na : m_api_list)
+	{
+		m_api_namelist.push_back(s_api_name[static_cast<int>(na)]);
+		m_api_valuelist.push_back(Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(na)]);
+	}
+
+	m_api_namelist.push_back(nullptr);
+	m_api_valuelist.push_back(nullptr);
+
+	//We replace the blank entry with one for global settings
+	if (m_dialog->isPerGameSettings())
+	{
+		const std::string valueAPI = Host::GetBaseStringSettingValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]);
+		for (int i = 0; Pcsx2Config::DEV9Options::NetApiNames[i] != nullptr; i++)
+		{
+			if (valueAPI == Pcsx2Config::DEV9Options::NetApiNames[i])
+			{
+				m_global_api = static_cast<Pcsx2Config::DEV9Options::NetApi>(i);
+				break;
+			}
+		}
+
+		std::vector<AdapterEntry> baseList = m_adapter_list[static_cast<u32>(m_global_api)];
+
+		std::string baseAdapter = " ";
+		const std::string valueGUID = Host::GetBaseStringSettingValue("DEV9/Eth", "EthDevice", "");
+		for (size_t i = 0; i < baseList.size(); i++)
+		{
+			if (baseList[i].guid == valueGUID)
+			{
+				baseAdapter = baseList[i].name;
+				break;
+			}
+		}
+
+		m_adapter_list[static_cast<u32>(Pcsx2Config::DEV9Options::NetApi::Unset)][0].name = baseAdapter;
+	}
+
+	if (m_dialog->isPerGameSettings())
+		m_ui.ethDevType->addItem(tr("Use Global Setting [%1]").arg(QString::fromUtf8(Pcsx2Config::DEV9Options::NetApiNames[static_cast<u32>(m_global_api)])));
+	else
+		m_ui.ethDevType->addItem(qApp->translate("DEV9SettingsWidget", m_api_namelist[0]));
+
+	for (int i = 1; m_api_namelist[i] != nullptr; i++)
+		m_ui.ethDevType->addItem(qApp->translate("DEV9SettingsWidget", m_api_namelist[i]));
+
+	const std::string value = m_dialog->getStringValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]).value();
+
+	for (int i = 0; m_api_namelist[i] != nullptr; i++)
+	{
+		if (value == m_api_valuelist[i])
+		{
+			m_ui.ethDevType->setCurrentIndex(i);
+			break;
+		}
+	}
+	//onEthDeviceTypeChanged gets called automatically
+
+	m_adaptersLoaded = true;
 }
 
 void DEV9SettingsWidget::RefreshHostList()

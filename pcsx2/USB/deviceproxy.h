@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -26,20 +26,22 @@ enum DeviceType : s32
 	DEVTYPE_NONE = -1,
 	DEVTYPE_PAD = 0,
 	DEVTYPE_MSD,
-	DEVTYPE_SINGSTAR,
-	DEVTYPE_LOGITECH_MIC,
+	DEVTYPE_MICROPHONE,
 	DEVTYPE_LOGITECH_HEADSET,
-	DEVTYPE_HIDKBD,
+	DEVTYPE_HIDKEYBOARD,
 	DEVTYPE_HIDMOUSE,
 	DEVTYPE_RBKIT,
 	DEVTYPE_BUZZ,
 	DEVTYPE_EYETOY,
-	DEVTYPE_BEATMANIA_DADADA,
+	DEVTYPE_TRANCE_VIBRATOR,
 	DEVTYPE_SEGA_SEAMIC,
 	DEVTYPE_PRINTER,
 	DEVTYPE_KEYBOARDMANIA,
 	DEVTYPE_GUNCON2,
-	DEVTYPE_DJ
+	DEVTYPE_DJ,
+	DEVTYPE_GAMETRAK,
+	DEVTYPE_REALPLAY,
+	DEVTYPE_TRAIN,
 };
 
 class DeviceProxy
@@ -61,8 +63,8 @@ public:
 	virtual bool Freeze(USBDevice* dev, StateWrapper& sw) const;
 	virtual void UpdateSettings(USBDevice* dev, SettingsInterface& si) const;
 
-	virtual void InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const;
-	virtual void InputDeviceDisconnected(USBDevice* dev, const std::string_view& identifier) const;
+	virtual void InputDeviceConnected(USBDevice* dev, const std::string_view identifier) const;
+	virtual void InputDeviceDisconnected(USBDevice* dev, const std::string_view identifier) const;
 };
 
 class RegisterDevice
@@ -90,7 +92,7 @@ public:
 		registerDeviceMap[key] = std::unique_ptr<DeviceProxy>(creator);
 	}
 
-	DeviceProxy* Device(const std::string_view& name)
+	DeviceProxy* Device(const std::string_view name)
 	{
 		auto proxy = std::find_if(registerDeviceMap.begin(),
 								  registerDeviceMap.end(),
@@ -108,7 +110,7 @@ public:
 		return (it != registerDeviceMap.end()) ? it->second.get() : nullptr;
 	}
 
-	DeviceType Index(const std::string_view& name)
+	DeviceType Index(const std::string_view name)
 	{
 		auto proxy = std::find_if(registerDeviceMap.begin(),
 								  registerDeviceMap.end(),

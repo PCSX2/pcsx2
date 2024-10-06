@@ -179,7 +179,7 @@
               "minimum": 0,
               "maximum": 1
             },
-            "wildArmsHack": {
+            "forceEvenSpritePosition": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1
@@ -238,6 +238,11 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 4
+            },
+            "nativeScaling": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
             },
             "roundSprite": {
               "type": "integer",

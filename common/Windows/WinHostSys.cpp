@@ -1,86 +1,19 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#if defined(_WIN32)
-
-#include "common/BitUtils.h"
-#include "common/RedtapeWindows.h"
-#include "common/Console.h"
 #include "common/HostSys.h"
-#include "common/StringUtil.h"
 #include "common/AlignedMalloc.h"
 #include "common/Assertions.h"
+#include "common/BitUtils.h"
+#include "common/Console.h"
+#include "common/Error.h"
+#include "common/RedtapeWindows.h"
+#include "common/StringUtil.h"
 
 #include "fmt/core.h"
 #include "fmt/format.h"
 
 #include <mutex>
-
-static std::recursive_mutex s_exception_handler_mutex;
-static PageFaultHandler s_exception_handler_callback;
-static void* s_exception_handler_handle;
-static bool s_in_exception_handler;
-
-long __stdcall SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
-{
-	// Executing the handler concurrently from multiple threads wouldn't go down well.
-	std::unique_lock lock(s_exception_handler_mutex);
-
-	// Prevent recursive exception filtering.
-	if (s_in_exception_handler)
-		return EXCEPTION_CONTINUE_SEARCH;
-
-	// Only interested in page faults.
-	if (eps->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
-		return EXCEPTION_CONTINUE_SEARCH;
-
-#if defined(_M_AMD64)
-	void* const exception_pc = reinterpret_cast<void*>(eps->ContextRecord->Rip);
-#elif defined(_M_ARM64)
-	void* const exception_pc = reinterpret_cast<void*>(eps->ContextRecord->Pc);
-#else
-	void* const exception_pc = nullptr;
-#endif
-
-	const PageFaultInfo pfi{(uptr)exception_pc, (uptr)eps->ExceptionRecord->ExceptionInformation[1]};
-
-	s_in_exception_handler = true;
-
-	const bool handled = s_exception_handler_callback(pfi);
-
-	s_in_exception_handler = false;
-	
-	return handled ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
-}
-
-bool HostSys::InstallPageFaultHandler(PageFaultHandler handler)
-{
-	std::unique_lock lock(s_exception_handler_mutex);
-	pxAssertRel(!s_exception_handler_callback, "A page fault handler is already registered.");
-	if (!s_exception_handler_handle)
-	{
-		s_exception_handler_handle = AddVectoredExceptionHandler(TRUE, SysPageFaultExceptionFilter);
-		if (!s_exception_handler_handle)
-			return false;
-	}
-
-	s_exception_handler_callback = handler;
-	return true;
-}
-
-void HostSys::RemovePageFaultHandler(PageFaultHandler handler)
-{
-	std::unique_lock lock(s_exception_handler_mutex);
-	pxAssertRel(!s_exception_handler_callback || s_exception_handler_callback == handler,
-		"Not removing the same handler previously registered.");
-	s_exception_handler_callback = nullptr;
-
-	if (s_exception_handler_handle)
-	{
-		RemoveVectoredExceptionHandler(s_exception_handler_handle);
-		s_exception_handler_handle = {};
-	}
-}
 
 static DWORD ConvertToWinApi(const PageProtectionMode& mode)
 {
@@ -165,6 +98,35 @@ void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
 {
 	if (!UnmapViewOfFile(baseaddr))
 		pxFail("Failed to unmap shared memory");
+}
+
+size_t HostSys::GetRuntimePageSize()
+{
+	SYSTEM_INFO si = {};
+	GetSystemInfo(&si);
+	return si.dwPageSize;
+}
+
+size_t HostSys::GetRuntimeCacheLineSize()
+{
+	DWORD size = 0;
+	if (!GetLogicalProcessorInformation(nullptr, &size) && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+		return 0;
+
+	std::unique_ptr<SYSTEM_LOGICAL_PROCESSOR_INFORMATION[]> lpi =
+		std::make_unique<SYSTEM_LOGICAL_PROCESSOR_INFORMATION[]>(
+			(size + (sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION) - 1)) / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION));
+	if (!GetLogicalProcessorInformation(lpi.get(), &size))
+		return 0;
+
+	u32 max_line_size = 0;
+	for (u32 i = 0; i < size / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION); i++)
+	{
+		if (lpi[i].Relationship == RelationCache)
+			max_line_size = std::max<u32>(max_line_size, lpi[i].Cache.LineSize);
+	}
+
+	return max_line_size;
 }
 
 #ifdef _M_ARM64
@@ -323,7 +285,7 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 
 		// combine placeholders before and the range we're unmapping, i.e. to the left
 		if (!VirtualFreeEx(GetCurrentProcess(), OffsetPointer(left_it->first),
-				 left_it->second - left_it->first, MEM_RELEASE | MEM_COALESCE_PLACEHOLDERS))
+				left_it->second - left_it->first, MEM_RELEASE | MEM_COALESCE_PLACEHOLDERS))
 		{
 			pxFail("Failed to coalesce placeholders left for unmap");
 		}
@@ -355,4 +317,60 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 	return true;
 }
 
+namespace PageFaultHandler
+{
+	static LONG ExceptionHandler(PEXCEPTION_POINTERS exi);
+
+	static std::recursive_mutex s_exception_handler_mutex;
+	static bool s_in_exception_handler = false;
+	static bool s_installed = false;
+} // namespace PageFaultHandler
+
+LONG PageFaultHandler::ExceptionHandler(PEXCEPTION_POINTERS exi)
+{
+	// Executing the handler concurrently from multiple threads wouldn't go down well.
+	std::unique_lock lock(s_exception_handler_mutex);
+
+	// Prevent recursive exception filtering.
+	if (s_in_exception_handler)
+		return EXCEPTION_CONTINUE_SEARCH;
+
+	// Only interested in page faults.
+	if (exi->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
+		return EXCEPTION_CONTINUE_SEARCH;
+
+#if defined(_M_X86)
+	void* const exception_pc = reinterpret_cast<void*>(exi->ContextRecord->Rip);
+#elif defined(_M_ARM64)
+	void* const exception_pc = reinterpret_cast<void*>(exi->ContextRecord->Pc);
+#else
+	void* const exception_pc = nullptr;
 #endif
+
+	void* const exception_address = reinterpret_cast<void*>(exi->ExceptionRecord->ExceptionInformation[1]);
+	const bool is_write = exi->ExceptionRecord->ExceptionInformation[0] == 1;
+
+	s_in_exception_handler = true;
+
+	const HandlerResult handled = HandlePageFault(exception_pc, exception_address, is_write);
+
+	s_in_exception_handler = false;
+
+	return (handled == HandlerResult::ContinueExecution) ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
+}
+
+bool PageFaultHandler::Install(Error* error)
+{
+	std::unique_lock lock(s_exception_handler_mutex);
+	pxAssertRel(!s_installed, "Page fault handler has already been installed.");
+
+	PVOID handle = AddVectoredExceptionHandler(1, ExceptionHandler);
+	if (!handle)
+	{
+		Error::SetWin32(error, "AddVectoredExceptionHandler() failed: ", GetLastError());
+		return false;
+	}
+
+	s_installed = true;
+	return true;
+}

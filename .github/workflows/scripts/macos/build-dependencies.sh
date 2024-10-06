@@ -7,6 +7,10 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
+# The bundled ffmpeg has a lot of things disabled to reduce code size.
+# Users may want to use system ffmpeg for additional features
+: ${BUILD_FFMPEG:=1}
+
 export MACOSX_DEPLOYMENT_TARGET=11.0
 
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
@@ -18,20 +22,20 @@ fi
 
 FREETYPE=2.13.2
 HARFBUZZ=8.3.1
-SDL=SDL2-2.30.2
-ZSTD=1.5.5
+SDL=SDL2-2.30.8
+ZSTD=1.5.6
 LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
 LIBPNG=1.6.43
 LIBJPEG=9f
-LIBWEBP=1.3.2
+LIBWEBP=1.4.0
 FFMPEG=6.0
-MOLTENVK=1.2.8
-QT=6.7.0
+MOLTENVK=1.2.9
+QT=6.7.2
 
-SHADERC=2024.0
-SHADERC_GLSLANG=d73712b8f6c9047b09e99614e20d456d5ada2390
-SHADERC_SPIRVHEADERS=8b246ff75c6615ba4532fe4fde20f1be090c3764
-SHADERC_SPIRVTOOLS=04896c462d9f3f504c99a4698605b6524af813c1
+SHADERC=2024.1
+SHADERC_GLSLANG=142052fa30f9eca191aa9dcf65359fcaed09eeec
+SHADERC_SPIRVHEADERS=5e3ad389ee56fca27c9705d093ae5387ce404df4
+SHADERC_SPIRVTOOLS=dd4b663e13c07fea4fbb3f70c1c91c86731099f7
 
 mkdir -p deps-build
 cd deps-build
@@ -42,6 +46,7 @@ export CFLAGS="-I$INSTALLDIR/include $CFLAGS"
 export CXXFLAGS="-I$INSTALLDIR/include $CXXFLAGS"
 CMAKE_COMMON=(
 	-DCMAKE_BUILD_TYPE=Release
+	-DCMAKE_SHARED_LINKER_FLAGS="-dead_strip -dead_strip_dylibs"
 	-DCMAKE_PREFIX_PATH="$INSTALLDIR"
 	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR"
 	-DCMAKE_OSX_ARCHITECTURES="x86_64"
@@ -51,27 +56,27 @@ CMAKE_COMMON=(
 cat > SHASUMS <<EOF
 12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d  freetype-$FREETYPE.tar.xz
 19a54fe9596f7a47c502549fce8e8a10978c697203774008cc173f8360b19a9a  harfbuzz-$HARFBUZZ.tar.gz
-891d66ac8cae51361d3229e3336ebec1c407a8a2a063b61df14f5fdf3ab5ac31  $SDL.tar.gz
-9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4  zstd-$ZSTD.tar.gz
+380c295ea76b9bd72d90075793971c8bcb232ba0a69a9b14da4ae8f603350058  $SDL.tar.gz
+8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1  zstd-$ZSTD.tar.gz
 0728800155f3ed0a0c87e03addbd30ecbe374f7b080678bbca1506051d50dec3  $LZ4.tar.gz
 6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c  libpng-$LIBPNG.tar.xz
-2a499607df669e40258e53d0ade8035ba4ec0175244869d1025d460562aa09b4  libwebp-$LIBWEBP.tar.gz
+61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5  libwebp-$LIBWEBP.tar.gz
 04705c110cb2469caa79fb71fba3d7bf834914706e9641a4589485c1f832565b  jpegsrc.v$LIBJPEG.tar.gz
 57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082  ffmpeg-$FFMPEG.tar.xz
-85beaf8abfcc54d9da0ff0257ae311abd9e7aa96e53da37e1c37d6bc04ac83cd  v$MOLTENVK.tar.gz
-11b2e29e2e52fb0e3b453ea13bbe51a10fdff36e1c192d8868c5a40233b8b254  qtbase-everywhere-src-$QT.tar.xz
-516ce07ec8dd5a11c59816fe33ddb71d4f691d0ebbc1798ac338f23b86c029a7  qtimageformats-everywhere-src-$QT.tar.xz
-1518f40e08ff5e6153a6e26e5b95b033413ac143b70795dc1317e7f73ebf922d  qtsvg-everywhere-src-$QT.tar.xz
-c8da6b239e82fe1e23465cbf0936c0da5a334438d3fb433e19c503cbb1abee7b  qttools-everywhere-src-$QT.tar.xz
-26fc8047062ca4bacd1bd953be86fd39c6e0a5f5e9920c72ba9d40876cea4b56  qttranslations-everywhere-src-$QT.tar.xz
-c761044e4e204be8e0b9a2d7494f08671ca35b92c4c791c7049594ca7514197f  shaderc-$SHADERC.tar.gz
-d27f7359156a92749f8fd4681d1d518c736864213c431cf8144ecc2fb6689a2d  shaderc-glslang-$SHADERC_GLSLANG.tar.gz
-cfeed5f9a97d12a9761a26e7f5bd10fedb1a8ce92033075151ae3bc7206fc229  shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz
-c0d01e758a543b3a358cb97af02c6817ebd3f5ff13a2edf9fb220646a3d67999  shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz
+f415a09385030c6510a936155ce211f617c31506db5fbc563e804345f1ecf56e  v$MOLTENVK.tar.gz
+c5f22a5e10fb162895ded7de0963328e7307611c688487b5d152c9ee64767599  qtbase-everywhere-src-$QT.tar.xz
+e1a1d8785fae67d16ad0a443b01d5f32663a6b68d275f1806ebab257485ce5d6  qtimageformats-everywhere-src-$QT.tar.xz
+fb0d1286a35be3583fee34aeb5843c94719e07193bdf1d4d8b0dc14009caef01  qtsvg-everywhere-src-$QT.tar.xz
+58e855ad1b2533094726c8a425766b63a04a0eede2ed85086860e54593aa4b2a  qttools-everywhere-src-$QT.tar.xz
+9845780b5dc1b7279d57836db51aeaf2e4a1160c42be09750616f39157582ca9  qttranslations-everywhere-src-$QT.tar.xz
+eb3b5f0c16313d34f208d90c2fa1e588a23283eed63b101edd5422be6165d528  shaderc-$SHADERC.tar.gz
+aa27e4454ce631c5a17924ce0624eac736da19fc6f5a2ab15a6c58da7b36950f  shaderc-glslang-$SHADERC_GLSLANG.tar.gz
+5d866ce34a4b6908e262e5ebfffc0a5e11dd411640b5f24c85a80ad44c0d4697  shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz
+03ee1a2c06f3b61008478f4abe9423454e53e580b9488b47c8071547c6a9db47  shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz
 EOF
 
 curl -L \
-	-O "https://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE.tar.xz" \
+	-o "freetype-$FREETYPE.tar.xz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz/download" \
 	-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
 	-O "https://libsdl.org/release/$SDL.tar.gz" \
 	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
@@ -102,22 +107,24 @@ make -C build "-j$NPROCS"
 make -C build install
 cd ..
 
-echo "Installing FFmpeg..."
-rm -fr "ffmpeg-$FFMPEG"
-tar xf "ffmpeg-$FFMPEG.tar.xz"
-cd "ffmpeg-$FFMPEG"
-LDFLAGS="-dead_strip $LDFLAGS" CFLAGS="-Os $CFLAGS" CXXFLAGS="-Os $CXXFLAGS" \
-	./configure --prefix="$INSTALLDIR" \
-	--enable-cross-compile --arch=x86_64 --cc='clang -arch x86_64' --cxx='clang++ -arch x86_64' \
-	--disable-all --disable-autodetect --disable-static --enable-shared \
-	--enable-avcodec --enable-avformat --enable-avutil --enable-swresample --enable-swscale \
-	--enable-audiotoolbox --enable-videotoolbox \
-	--enable-encoder=ffv1,qtrle,pcm_s16be,pcm_s16le,*_at,*_videotoolbox \
-	--enable-muxer=avi,matroska,mov,mp3,mp4,wav \
-	--enable-protocol=file
-make "-j$NPROCS"
-make install
-cd ..
+if [ "$BUILD_FFMPEG" -ne 0 ]; then
+	echo "Installing FFmpeg..."
+	rm -fr "ffmpeg-$FFMPEG"
+	tar xf "ffmpeg-$FFMPEG.tar.xz"
+	cd "ffmpeg-$FFMPEG"
+	LDFLAGS="-dead_strip $LDFLAGS" CFLAGS="-Os $CFLAGS" CXXFLAGS="-Os $CXXFLAGS" \
+		./configure --prefix="$INSTALLDIR" \
+		--enable-cross-compile --arch=x86_64 --cc='clang -arch x86_64' --cxx='clang++ -arch x86_64' \
+		--disable-all --disable-autodetect --disable-static --enable-shared \
+		--enable-avcodec --enable-avformat --enable-avutil --enable-swresample --enable-swscale \
+		--enable-audiotoolbox --enable-videotoolbox \
+		--enable-encoder=ffv1,qtrle,pcm_s16be,pcm_s16le,*_at,*_videotoolbox \
+		--enable-muxer=avi,matroska,mov,mp3,mp4,wav \
+		--enable-protocol=file
+	make "-j$NPROCS"
+	make install
+	cd ..
+fi
 
 echo "Installing Zstd..."
 rm -fr "zstd-$ZSTD"
@@ -141,7 +148,7 @@ echo "Installing libpng..."
 rm -fr "libpng-$LIBPNG"
 tar xf "libpng-$LIBPNG.tar.xz"
 cd "libpng-$LIBPNG"
-cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -B build
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_FRAMEWORK=OFF -B build
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
@@ -200,8 +207,10 @@ echo "Installing MoltenVK..."
 rm -fr "MoltenVK-${MOLTENVK}"
 tar xf "v$MOLTENVK.tar.gz"
 cd "MoltenVK-${MOLTENVK}"
-./fetchDependencies --macos
-make macos
+sed -i '' 's/xcodebuild "$@"/xcodebuild $XCODEBUILD_EXTRA_ARGS "$@"/g' fetchDependencies
+sed -i '' 's/XCODEBUILD :=/XCODEBUILD ?=/g' Makefile
+XCODEBUILD_EXTRA_ARGS="VALID_ARCHS=x86_64" ./fetchDependencies --macos
+XCODEBUILD="set -o pipefail && xcodebuild VALID_ARCHS=x86_64" make macos
 cp Package/Latest/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib "$INSTALLDIR/lib/"
 cd ..
 
@@ -209,13 +218,28 @@ echo "Installing Qt Base..."
 rm -fr "qtbase-everywhere-src-$QT"
 tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
+
 # since we don't have a direct reference to QtSvg, it doesn't deployed directly from the main binary
 # (only indirectly from iconengines), and the libqsvg.dylib imageformat plugin does not get deployed.
 # We could run macdeployqt twice, but that's even more janky than patching it.
+
+# https://github.com/qt/qtbase/commit/7b018629c3c3ab23665bf1da00c43c1546042035
+# The QProcess default wait time of 30s may be too short in e.g. CI environments where processes may be blocked
+# for a longer time waiting for CPU or IO.
+
 patch -u src/tools/macdeployqt/shared/shared.cpp <<EOF
 --- shared.cpp
 +++ shared.cpp
-@@ -1119,14 +1119,8 @@
+@@ -152,7 +152,7 @@
+     LogDebug() << " inspecting" << binaryPath;
+     QProcess otool;
+     otool.start("otool", QStringList() << "-L" << binaryPath);
+-    otool.waitForFinished();
++    otool.waitForFinished(-1);
+ 
+     if (otool.exitStatus() != QProcess::NormalExit || otool.exitCode() != 0) {
+         LogError() << otool.readAllStandardError();
+@@ -1122,14 +1122,8 @@
          addPlugins(QStringLiteral("networkinformation"));
      }
  
@@ -233,7 +257,7 @@ patch -u src/tools/macdeployqt/shared/shared.cpp <<EOF
  
      // Platforminputcontext plugins if QtGui is in use
 EOF
-cmake -B build "${CMAKE_COMMON[@]}" -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
+cmake -B build "${CMAKE_COMMON[@]}" -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
@@ -264,23 +288,9 @@ echo "Installing Qt Tools..."
 rm -fr "qttools-everywhere-src-$QT"
 tar xf "qttools-everywhere-src-$QT.tar.xz"
 cd "qttools-everywhere-src-$QT"
-# Linguist relies on a library in the Designer target, which takes 5-7 minutes to build on the CI
-# Avoid it by not building Linguist, since we only need the tools that come with it
-patch -u src/linguist/CMakeLists.txt <<EOF
---- src/linguist/CMakeLists.txt
-+++ src/linguist/CMakeLists.txt
-@@ -14,7 +14,7 @@
- add_subdirectory(lrelease-pro)
- add_subdirectory(lupdate)
- add_subdirectory(lupdate-pro)
--if(QT_FEATURE_process AND QT_FEATURE_pushbutton AND QT_FEATURE_toolbutton AND TARGET Qt::Widgets AND NOT no-png)
-+if(QT_FEATURE_process AND QT_FEATURE_pushbutton AND QT_FEATURE_toolbutton AND TARGET Qt::Widgets AND TARGET Qt::PrintSupport AND NOT no-png)
-     add_subdirectory(linguist)
- endif()
-EOF
 mkdir build
 cd build
-"$INSTALLDIR/bin/qt-configure-module" .. -- "${CMAKE_COMMON[@]}" -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=OFF -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF
+"$INSTALLDIR/bin/qt-configure-module" .. -- "${CMAKE_COMMON[@]}" -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=ON -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF
 make "-j$NPROCS"
 make install
 cd ../..

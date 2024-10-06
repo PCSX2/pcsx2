@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
 
@@ -8,7 +8,6 @@
 #include "R5900.h"
 #include "R5900OpcodeTables.h"
 #include "GS.h"
-#include "CDVD/CDVD.h"
 #include "ps2/BiosTools.h"
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
@@ -954,44 +953,74 @@ void SYSCALL()
 			}
 		}
 		break;
+		case Syscall::RFU060:
+			if (CHECK_EXTRAMEM && cpuRegs.GPR.n.a1.UL[0] == 0xFFFFFFFF)
+			{
+				cpuRegs.GPR.n.a1.UL[0] = Ps2MemSize::ExposedRam - cpuRegs.GPR.n.a2.SL[0];
+			}
+			break;
 		case Syscall::SetOsdConfigParam:
+			// The whole thing gets written back to BIOS memory, so it'll be in the right place, no need to continue HLEing
 			AllowParams1 = true;
 			break;
 		case Syscall::GetOsdConfigParam:
-			if(!NoOSD && !AllowParams1)
+			if (!NoOSD && !AllowParams1)
 			{
+				ReadOSDConfigParames();
+
 				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
-				u8 params[16];
 
-				cdvdReadLanguageParams(params);
+				memWrite32(memaddr, configParams1.UL[0]);
+				
+				// Call the set function, as we need to set this back to the BIOS storage position.
+				if (cpuRegs.GPR.n.v1.SL[0] < 0)
+					cpuRegs.GPR.n.v1.SL[0] = -Syscall::SetOsdConfigParam;
+				else
+					cpuRegs.GPR.n.v1.UC[0] = Syscall::SetOsdConfigParam;
 
-				u32 osdconf = 0;
-				u32 timezone = params[4] | ((u32)(params[3] & 0x7) << 8);
-
-				osdconf |= params[1] & 0x1F;						// SPDIF, Screen mode, RGB/Comp, Jap/Eng Switch (Early bios)
-				osdconf |= (u32)params[0] << 5;						// PS1 Mode Settings
-				osdconf |= (u32)((params[2] & 0xE0) >> 5) << 13;	// OSD Ver (Not sure but best guess)
-				osdconf |= (u32)(params[2] & 0x1F) << 16;			// Language
-				osdconf |= timezone << 21;							// Timezone
-
-				memWrite32(memaddr, osdconf);
-				return;
+				AllowParams1 = true;
 			}
 			break;
 		case Syscall::SetOsdConfigParam2:
-			AllowParams2 = true;
+			if (!AllowParams2)
+			{
+				ReadOSDConfigParames();
+
+				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
+				u32 size = cpuRegs.GPR.n.a1.UL[0];
+				u32 offset = cpuRegs.GPR.n.a2.UL[0];
+
+				if (offset == 0 && size >= 4)
+					AllowParams2 = true;
+
+				for (u32 i = 0; i < size; i++)
+				{
+					if (offset >= 4)
+						break;
+
+					configParams2.UC[offset++] = memRead8(memaddr++);
+				}
+			}
 			break;
 		case Syscall::GetOsdConfigParam2:
 			if (!NoOSD && !AllowParams2)
 			{
+				ReadOSDConfigParames();
+
 				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
-				u8 params[16];
+				u32 size = cpuRegs.GPR.n.a1.UL[0];
+				u32 offset = cpuRegs.GPR.n.a2.UL[0];
 
-				cdvdReadLanguageParams(params);
+				if (offset + size > 2)
+					Console.Warning("Warning: GetOsdConfigParam2 Reading extended language/version configs, may be incorrect!");
 
-				u32 osdconf2 = (((u32)params[3] & 0x78) << 9);  // Daylight Savings, 24hr clock, Date format
-
-				memWrite32(memaddr, osdconf2);
+				for (u32 i = 0; i < size; i++)
+				{
+					if (offset >= 4)
+						memWrite8(memaddr++, 0);
+					else
+						memWrite8(memaddr++, configParams2.UC[offset++]);
+				}
 				return;
 			}
 			break;
@@ -1039,7 +1068,6 @@ void SYSCALL()
 			// The only thing this code is used for is the one log message, so don't execute it if we aren't logging bios messages.
 			if (SysTraceActive(EE.Bios))
 			{
-				t_sif_dma_transfer *dmat;
 				//struct t_sif_cmd_header	*hdr;
 				//struct t_sif_rpc_bind *bind;
 				//struct t_rpc_server_data *server;
@@ -1051,7 +1079,7 @@ void SYSCALL()
 				if (n_transfer >= 0)
 				{
 					addr = cpuRegs.GPR.n.a0.UL[0] + n_transfer * sizeof(t_sif_dma_transfer);
-					dmat = (t_sif_dma_transfer*)PSM(addr);
+					t_sif_dma_transfer* dmat = (t_sif_dma_transfer*)PSM(addr);
 
 					BIOS_LOG("bios_%s: n_transfer=%d, size=%x, attr=%x, dest=%x, src=%x",
 							R5900::bios[cpuRegs.GPR.n.v1.UC[0]], n_transfer,
@@ -1125,6 +1153,13 @@ void SYSCALL()
 			}
 			break;
 		}
+		case Syscall::GetMemorySize:
+			if (CHECK_EXTRAMEM)
+			{
+				cpuRegs.GPR.n.v0.UL[0] = Ps2MemSize::ExposedRam;
+				return;
+			}
+			break;
 
 
 		default:

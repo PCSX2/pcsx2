@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-2.0+
 
 /* NOTE: While part of this header is originally from libmpeg2, which is GPL - licensed,
@@ -168,7 +168,7 @@ static constexpr VLC_ALIGNED16 MVtab MV_10[] = {
 
 
 static constexpr DMVtab DMV_2[] = {
-	{0, 1}, {0, 1}, {1, 2}, {-1, 2}};
+	{0, 1}, {0, 1}, {1, 2}, {(s8)-1, 2}};
 
 
 static constexpr VLC_ALIGNED16 CBPtab CBP_7[] = {

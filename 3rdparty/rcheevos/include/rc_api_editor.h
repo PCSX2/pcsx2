@@ -43,6 +43,7 @@ typedef struct rc_api_fetch_code_notes_response_t {
 rc_api_fetch_code_notes_response_t;
 
 RC_EXPORT int RC_CCONV rc_api_init_fetch_code_notes_request(rc_api_request_t* request, const rc_api_fetch_code_notes_request_t* api_params);
+/* [deprecated] use rc_api_process_fetch_code_notes_server_response instead */
 RC_EXPORT int RC_CCONV rc_api_process_fetch_code_notes_response(rc_api_fetch_code_notes_response_t* response, const char* server_response);
 RC_EXPORT int RC_CCONV rc_api_process_fetch_code_notes_server_response(rc_api_fetch_code_notes_response_t* response, const rc_api_server_response_t* server_response);
 RC_EXPORT void RC_CCONV rc_api_destroy_fetch_code_notes_response(rc_api_fetch_code_notes_response_t* response);
@@ -76,6 +77,7 @@ typedef struct rc_api_update_code_note_response_t {
 rc_api_update_code_note_response_t;
 
 RC_EXPORT int RC_CCONV rc_api_init_update_code_note_request(rc_api_request_t* request, const rc_api_update_code_note_request_t* api_params);
+/* [deprecated] use rc_api_process_update_code_note_server_response instead */
 RC_EXPORT int RC_CCONV rc_api_process_update_code_note_response(rc_api_update_code_note_response_t* response, const char* server_response);
 RC_EXPORT int RC_CCONV rc_api_process_update_code_note_server_response(rc_api_update_code_note_response_t* response, const rc_api_server_response_t* server_response);
 RC_EXPORT void RC_CCONV rc_api_destroy_update_code_note_response(rc_api_update_code_note_response_t* response);
@@ -124,6 +126,7 @@ typedef struct rc_api_update_achievement_response_t {
 rc_api_update_achievement_response_t;
 
 RC_EXPORT int RC_CCONV rc_api_init_update_achievement_request(rc_api_request_t* request, const rc_api_update_achievement_request_t* api_params);
+/* [deprecated] use rc_api_process_update_achievement_server_response instead */
 RC_EXPORT int RC_CCONV rc_api_process_update_achievement_response(rc_api_update_achievement_response_t* response, const char* server_response);
 RC_EXPORT int RC_CCONV rc_api_process_update_achievement_server_response(rc_api_update_achievement_response_t* response, const rc_api_server_response_t* server_response);
 RC_EXPORT void RC_CCONV rc_api_destroy_update_achievement_response(rc_api_update_achievement_response_t* response);
@@ -174,6 +177,7 @@ typedef struct rc_api_update_leaderboard_response_t {
 rc_api_update_leaderboard_response_t;
 
 RC_EXPORT int RC_CCONV rc_api_init_update_leaderboard_request(rc_api_request_t* request, const rc_api_update_leaderboard_request_t* api_params);
+/* [deprecated] use rc_api_process_update_leaderboard_server_response instead */
 RC_EXPORT int RC_CCONV rc_api_process_update_leaderboard_response(rc_api_update_leaderboard_response_t* response, const char* server_response);
 RC_EXPORT int RC_CCONV rc_api_process_update_leaderboard_server_response(rc_api_update_leaderboard_response_t* response, const rc_api_server_response_t* server_response);
 RC_EXPORT void RC_CCONV rc_api_destroy_update_leaderboard_response(rc_api_update_leaderboard_response_t* response);
@@ -204,6 +208,7 @@ typedef struct rc_api_fetch_badge_range_response_t {
 rc_api_fetch_badge_range_response_t;
 
 RC_EXPORT int RC_CCONV rc_api_init_fetch_badge_range_request(rc_api_request_t* request, const rc_api_fetch_badge_range_request_t* api_params);
+/* [deprecated] use rc_api_process_fetch_badge_range_server_response instead */
 RC_EXPORT int RC_CCONV rc_api_process_fetch_badge_range_response(rc_api_fetch_badge_range_response_t* response, const char* server_response);
 RC_EXPORT int RC_CCONV rc_api_process_fetch_badge_range_server_response(rc_api_fetch_badge_range_response_t* response, const rc_api_server_response_t* server_response);
 RC_EXPORT void RC_CCONV rc_api_destroy_fetch_badge_range_response(rc_api_fetch_badge_range_response_t* response);
@@ -244,6 +249,7 @@ typedef struct rc_api_add_game_hash_response_t {
 rc_api_add_game_hash_response_t;
 
 RC_EXPORT int RC_CCONV rc_api_init_add_game_hash_request(rc_api_request_t* request, const rc_api_add_game_hash_request_t* api_params);
+/* [deprecated] use rc_api_process_add_game_hash_server_response instead */
 RC_EXPORT int RC_CCONV rc_api_process_add_game_hash_response(rc_api_add_game_hash_response_t* response, const char* server_response);
 RC_EXPORT int RC_CCONV rc_api_process_add_game_hash_server_response(rc_api_add_game_hash_response_t* response, const rc_api_server_response_t* server_response);
 RC_EXPORT void RC_CCONV rc_api_destroy_add_game_hash_response(rc_api_add_game_hash_response_t* response);

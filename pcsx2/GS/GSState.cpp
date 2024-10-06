@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/GSState.h"
 #include "GS/GSDump.h"
@@ -223,7 +223,7 @@ void GSState::ResetHandlers()
 	m_fpGIFPackedRegHandlers[GIF_REG_PRIM] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerPRIM;
 	m_fpGIFPackedRegHandlers[GIF_REG_RGBA] = &GSState::GIFPackedRegHandlerRGBA;
 	m_fpGIFPackedRegHandlers[GIF_REG_STQ] = &GSState::GIFPackedRegHandlerSTQ;
-	m_fpGIFPackedRegHandlers[GIF_REG_UV] = GSConfig.UserHacks_WildHack ? &GSState::GIFPackedRegHandlerUV_Hack : &GSState::GIFPackedRegHandlerUV;
+	m_fpGIFPackedRegHandlers[GIF_REG_UV] = GSConfig.UserHacks_ForceEvenSpritePosition ? &GSState::GIFPackedRegHandlerUV_Hack : &GSState::GIFPackedRegHandlerUV;
 	m_fpGIFPackedRegHandlers[GIF_REG_TEX0_1] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerTEX0<0>;
 	m_fpGIFPackedRegHandlers[GIF_REG_TEX0_2] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerTEX0<1>;
 	m_fpGIFPackedRegHandlers[GIF_REG_CLAMP_1] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerCLAMP<0>;
@@ -244,7 +244,7 @@ void GSState::ResetHandlers()
 	m_fpGIFRegHandlers[GIF_A_D_REG_RGBAQ] = &GSState::GIFRegHandlerRGBAQ;
 	m_fpGIFRegHandlers[GIF_A_D_REG_RGBAQ + 0x10] = &GSState::GIFRegHandlerRGBAQ;
 	m_fpGIFRegHandlers[GIF_A_D_REG_ST] = &GSState::GIFRegHandlerST;
-	m_fpGIFRegHandlers[GIF_A_D_REG_UV] = GSConfig.UserHacks_WildHack ? &GSState::GIFRegHandlerUV_Hack : &GSState::GIFRegHandlerUV;
+	m_fpGIFRegHandlers[GIF_A_D_REG_UV] = GSConfig.UserHacks_ForceEvenSpritePosition ? &GSState::GIFRegHandlerUV_Hack : &GSState::GIFRegHandlerUV;
 	m_fpGIFRegHandlers[GIF_A_D_REG_TEX0_1] = &GSState::GIFRegHandlerTEX0<0>;
 	m_fpGIFRegHandlers[GIF_A_D_REG_TEX0_2] = &GSState::GIFRegHandlerTEX0<1>;
 	m_fpGIFRegHandlers[GIF_A_D_REG_CLAMP_1] = &GSState::GIFRegHandlerCLAMP<0>;
@@ -310,7 +310,7 @@ void GSState::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 	if (
 		GSConfig.AutoFlushSW != old_config.AutoFlushSW ||
 		GSConfig.UserHacks_AutoFlush != old_config.UserHacks_AutoFlush ||
-		GSConfig.UserHacks_WildHack != old_config.UserHacks_WildHack)
+		GSConfig.UserHacks_ForceEvenSpritePosition != old_config.UserHacks_ForceEvenSpritePosition)
 	{
 		ResetHandlers();
 	}
@@ -495,7 +495,11 @@ void GSState::DumpVertices(const std::string& filename)
 			file << uv_U << DEL << uv_V;
 		}
 		else
-			file << v.ST.S << "(" << std::bit_cast<u32>(v.ST.S) << ")" << DEL << v.ST.T << "(" << std::bit_cast<u32>(v.ST.T) << ")" << DEL << v.RGBAQ.Q << "(" << std::bit_cast<u32>(v.RGBAQ.Q) << ")";
+		{
+			float x = (v.ST.S / v.RGBAQ.Q) * (1 << m_context->TEX0.TW);
+			float y = (v.ST.T / v.RGBAQ.Q) * (1 << m_context->TEX0.TH);
+			file << v.ST.S << "(" << std::hex << std::bit_cast<u32>(v.ST.S) << ")" << DEL << v.ST.T << "(" << std::hex << std::bit_cast<u32>(v.ST.T) << ")" << DEL << v.RGBAQ.Q << "(" << std::hex << std::bit_cast<u32>(v.RGBAQ.Q) << ") - " << x << "," << y;
+		}
 
 		file << std::endl;
 	}
@@ -903,6 +907,9 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
+		if (m_prev_env.CTXT[i].TEX0.TBP0 != m_env.CTXT[i].TEX0.TBP0)
+			m_texflush_flag = false;
+
 		if ((m_prev_env.CTXT[i].TEX0.U64 ^ m_env.CTXT[i].TEX0.U64) & mask)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_TEX0);
 		else
@@ -1177,7 +1184,10 @@ void GSState::GIFRegHandlerFOGCOL(const GIFReg* RESTRICT r)
 void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 {
 	GL_REG("TEXFLUSH = 0x%x_%x PRIM TME %x", r->U32[1], r->U32[0], PRIM->TME);
-	m_texflush_flag = true;
+
+	// No need to do a flush if TEX0 has changed
+	if (!(m_dirty_gs_regs & (1 << DIRTY_REG_TEX0)))
+		m_texflush_flag = true;
 }
 
 template <int i>
@@ -1739,7 +1749,7 @@ void GSState::FlushPrim()
 					GSVector4i* RESTRICT vert_ptr = (GSVector4i*)&m_vertex.buff[i];
 					GSVector4i v = vert_ptr[1];
 					v = v.xxxx().u16to32().sub32(m_xyof);
-					v = v.blend32<12>(v.sra32(4));
+					v = v.blend32<12>(v.sra32<4>());
 					m_vertex.xy[i & 3] = v;
 					m_vertex.xy_tail = unused;
 				}
@@ -2816,7 +2826,7 @@ void GSState::GrowVertexBuffer()
 	m_index.buff = index;
 }
 
-bool GSState::TrianglesAreQuads() const
+bool GSState::TrianglesAreQuads(bool shuffle_check) const
 {
 	// If this is a quad, there should only be two distinct values for both X and Y, which
 	// also happen to be the minimum/maximum bounds of the primitive.
@@ -2829,10 +2839,17 @@ bool GSState::TrianglesAreQuads() const
 		if (idx > 0)
 		{
 			const u16* const prev_tri= m_index.buff + (idx - 3);
-			const GSVertex& vert = v[i[0]];
-			const GSVertex& last_vert = v[i[2]];
-			if (vert.XYZ != m_vertex.buff[prev_tri[0]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[1]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[2]].XYZ &&
-				last_vert.XYZ != m_vertex.buff[prev_tri[0]].XYZ && last_vert.XYZ != m_vertex.buff[prev_tri[1]].XYZ && last_vert.XYZ != m_vertex.buff[prev_tri[2]].XYZ)
+			GIFRegXYZ vert = v[i[0]].XYZ;
+			GIFRegXYZ last_vert = v[i[2]].XYZ;
+
+			if (shuffle_check)
+			{
+				vert.X -= 8 << 4;
+				last_vert.X -= 8 << 4;
+			}
+
+			if (vert != m_vertex.buff[prev_tri[0]].XYZ && vert != m_vertex.buff[prev_tri[1]].XYZ && vert != m_vertex.buff[prev_tri[2]].XYZ &&
+				last_vert != m_vertex.buff[prev_tri[0]].XYZ && last_vert != m_vertex.buff[prev_tri[1]].XYZ && last_vert != m_vertex.buff[prev_tri[2]].XYZ)
 				return false;
 		}
 		// Degenerate triangles should've been culled already, so we can check indices.
@@ -2922,7 +2939,7 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 
 			if (all.rintersect(sprite).rempty())
 			{
-				all = all.runion_ordered(sprite);
+				all = all.runion(sprite);
 			}
 			else
 			{
@@ -2981,41 +2998,8 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 	return overlap;
 }
 
-bool GSState::PrimitiveCoversWithoutGaps()
+bool GSState::SpriteDrawWithoutGaps()
 {
-	if (m_primitive_covers_without_gaps.has_value())
-		return m_primitive_covers_without_gaps.value();
-
-	// Draw shouldn't be offset.
-	if (((m_r.eq32(GSVector4i::zero())).mask() & 0xff) != 0xff)
-	{
-		m_primitive_covers_without_gaps = false;
-		return false;
-	}
-
-	if (m_vt.m_primclass == GS_POINT_CLASS)
-	{
-		m_primitive_covers_without_gaps = (m_vertex.next < 2);
-		return m_primitive_covers_without_gaps.value();
-	}
-	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
-	{
-		m_primitive_covers_without_gaps = (m_index.tail == 6 && TrianglesAreQuads());
-		return m_primitive_covers_without_gaps.value();
-	}
-	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
-	{
-		m_primitive_covers_without_gaps = false;
-		return false;
-	}
-
-	// Simple case: one sprite.
-	if (m_index.tail == 2)
-	{
-		m_primitive_covers_without_gaps = true;
-		return true;
-	}
-
 	// Check that the height matches. Xenosaga 3 draws a letterbox around
 	// the FMV with a sprite at the top and bottom of the framebuffer.
 	const GSVertex* v = &m_vertex.buff[0];
@@ -3023,26 +3007,23 @@ bool GSState::PrimitiveCoversWithoutGaps()
 	const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
 
 	// Horizontal Match.
-	if ((first_dpX >> 4) == m_r_no_scissor.z)
+	if (((first_dpX + 8) >> 4) == m_r_no_scissor.z)
 	{
 		// Borrowed from MergeSprite() modified to calculate heights.
 		for (u32 i = 2; i < m_vertex.next; i += 2)
 		{
 			const int last_pY = v[i - 1].XYZ.Y;
 			const int dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
+
 			if (std::abs(dpY - first_dpY) >= 16 || std::abs(static_cast<int>(v[i].XYZ.Y) - last_pY) >= 16)
-			{
-				m_primitive_covers_without_gaps = false;
 				return false;
-			}
 		}
 
-		m_primitive_covers_without_gaps = true;
 		return true;
 	}
 
 	// Vertical Match.
-	if ((first_dpY >> 4) == m_r_no_scissor.w)
+	if (((first_dpY + 8) >> 4) == m_r_no_scissor.w)
 	{
 		// Borrowed from MergeSprite().
 		const int offset_X = m_context->XYOFFSET.OFX;
@@ -3058,32 +3039,59 @@ bool GSState::PrimitiveCoversWithoutGaps()
 			{
 				const int prev_X = last_start_X - offset_X;
 				if (std::abs(dpX - prev_X) >= 16 || std::abs(this_start_X - offset_X) >= 16)
-				{
-					m_primitive_covers_without_gaps = false;
 					return false;
-				}
 			}
 			else
 			{
-				if (std::abs(dpX - first_dpX) >= 16 || std::abs(this_start_X - last_pX) >= 16)
-				{
-					m_primitive_covers_without_gaps = false;
+				if ((std::abs(dpX - first_dpX) >= 16 && (i + 2) < m_vertex.next) || std::abs(this_start_X - last_pX) >= 16)
 					return false;
-				}
 			}
 		}
 
-		m_primitive_covers_without_gaps = true;
 		return true;
 	}
 
-	m_primitive_covers_without_gaps = false;
 	return false;
+}
+
+void GSState::CalculatePrimitiveCoversWithoutGaps()
+{
+	m_primitive_covers_without_gaps = FullCover;
+
+	// Draw shouldn't be offset.
+	if (((m_r.eq32(GSVector4i::zero())).mask() & 0xff) != 0xff)
+		m_primitive_covers_without_gaps = GapsFound;
+
+	if (m_vt.m_primclass == GS_POINT_CLASS)
+	{
+		m_primitive_covers_without_gaps = (m_vertex.next < 2) ? m_primitive_covers_without_gaps : GapsFound;
+		return;
+	}
+	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+	{
+		m_primitive_covers_without_gaps = (m_index.tail == 6 && TrianglesAreQuads()) ? m_primitive_covers_without_gaps : GapsFound;
+		return;
+	}
+	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
+	{
+		m_primitive_covers_without_gaps = GapsFound;
+		return;
+	}
+
+	// Simple case: one sprite.
+	if (m_primitive_covers_without_gaps != GapsFound && m_index.tail == 2)
+		return;
+
+	m_primitive_covers_without_gaps = SpriteDrawWithoutGaps() ? (m_primitive_covers_without_gaps == GapsFound ? SpriteNoGaps : m_primitive_covers_without_gaps) : GapsFound;
 }
 
 __forceinline bool GSState::IsAutoFlushDraw(u32 prim)
 {
 	if (!PRIM->TME || (GSConfig.UserHacks_AutoFlush == GSHWAutoFlushLevel::SpritesOnly && prim != GS_SPRITE))
+		return false;
+
+	// Not using the same channels.
+	if (!(GSUtil::GetChannelMask(m_context->TEX0.PSM) & GSUtil::GetChannelMask(m_context->FRAME.PSM, m_context->FRAME.FBMSK | ~(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk))))
 		return false;
 
 	const u32 frame_mask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
@@ -3229,8 +3237,8 @@ __forceinline void GSState::HandleAutoFlush()
 			const float s = std::min((m_v.ST.S / m_v.RGBAQ.Q), 1.0f);
 			const float t = std::min((m_v.ST.T / m_v.RGBAQ.Q), 1.0f);
 
-			tex_coord.x = (int)((1 << m_context->TEX0.TW) * s);
-			tex_coord.y = (int)((1 << m_context->TEX0.TH) * t);
+			tex_coord.x = static_cast<int>((1 << m_context->TEX0.TW) * s);
+			tex_coord.y = static_cast<int>((1 << m_context->TEX0.TH) * t);
 		}
 
 		GSVector4i tex_rect = tex_coord.xyxy();
@@ -3252,8 +3260,8 @@ __forceinline void GSState::HandleAutoFlush()
 				const float s = std::min((v->ST.S / v->RGBAQ.Q), 1.0f);
 				const float t = std::min((v->ST.T / v->RGBAQ.Q), 1.0f);
 
-				tex_coord.x = (int)((1 << m_context->TEX0.TW) * s);
-				tex_coord.y = (int)((1 << m_context->TEX0.TH) * t);
+				tex_coord.x = static_cast<int>(std::round((1 << m_context->TEX0.TW) * s));
+				tex_coord.y = static_cast<int>(std::round((1 << m_context->TEX0.TH) * t));
 			}
 
 			tex_rect.x = std::min(tex_rect.x, tex_coord.x);
@@ -3268,8 +3276,9 @@ __forceinline void GSState::HandleAutoFlush()
 		if (tex_rect.y == tex_rect.w)
 			tex_rect += GSVector4i::cxpr(0, 0, 0, 1);
 
+		const bool swap_index = index_swap && GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GS_SPRITE_CLASS;
 		// Get the last texture position from the last draw.
-		const GSVertex* v = &m_vertex.buff[m_index.buff[m_index.tail - (index_swap ? n : 1)]];
+		const GSVertex* v = &m_vertex.buff[m_index.buff[m_index.tail - (swap_index ? n : 1)]];
 
 		if (PRIM->FST)
 		{
@@ -3281,8 +3290,8 @@ __forceinline void GSState::HandleAutoFlush()
 			const float s = std::min((v->ST.S / v->RGBAQ.Q), 1.0f);
 			const float t = std::min((v->ST.T / v->RGBAQ.Q), 1.0f);
 
-			tex_coord.x = (int)((1 << m_context->TEX0.TW) * s);
-			tex_coord.y = (int)((1 << m_context->TEX0.TH) * t);
+			tex_coord.x = static_cast<int>(std::round((1 << m_context->TEX0.TW) * s));
+			tex_coord.y = static_cast<int>(std::round((1 << m_context->TEX0.TH) * t));
 		}
 
 		const int clamp_minu = m_context->CLAMP.MINU;
@@ -3338,6 +3347,11 @@ __forceinline void GSState::HandleAutoFlush()
 		// Nothing being drawn intersect with the new texture, so no point in checking further.
 		if (tex_psm.depth == frame_psm.depth && tex_rect.rintersect(temp_draw_rect).rempty())
 			return;
+		else if (m_texflush_flag)
+		{
+			Flush(GSFlushReason::AUTOFLUSH);
+			return;
+		}
 
 		const int tex_page_mask_x = ~(tex_psm.pgs.x - 1);
 		const int tex_page_mask_y = ~(tex_psm.pgs.y - 1);
@@ -3346,7 +3360,7 @@ __forceinline void GSState::HandleAutoFlush()
 		const GSVector4i tex_page = tex_rect.xyxy() & tex_page_mask;
 
 		// Crossed page since last draw end
-		if (!tex_page.eq(last_tex_page) || m_texflush_flag)
+		if (!tex_page.eq(last_tex_page))
 		{
 			// Make sure the format matches, otherwise the coordinates aren't gonna match, so the draws won't intersect.
 			if (tex_psm.bpp == frame_psm.bpp && (m_context->FRAME.FBW == m_context->TEX0.TBW))
@@ -3561,8 +3575,13 @@ __forceinline void GSState::VertexKick(u32 skip)
 				break;
 		}
 
+#ifndef _M_ARM64
 		// We only care about the xy passing the skip test. zw is the offset coordinates for native culling.
 		skip |= test.mask() & 0xff;
+#else
+		// mask() is slow on ARM, so just pull the bits out instead, thankfully we only care about the first 4 bytes.
+		skip |= (static_cast<u64>(test.extract64<0>()) & UINT64_C(0x8080808080808080)) != 0;
+#endif
 	}
 
 	if (skip != 0)
@@ -3743,7 +3762,7 @@ static bool UsesRegionRepeat(int fix, int msk, int min, int max, int* min_out, i
 	return sets_bits || clears_bits;
 }
 
-GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize, bool no_gaps)
+GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize)
 {
 	// TODO: some of the +1s can be removed if linear == false
 
@@ -3833,26 +3852,14 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 			if (!clamp_to_tsize && ((m_vt.m_min.t.floor() == GSVector4::zero()).mask() & 0x3) == 0x3)
 				st = st.max(GSVector4::zero());
 		}
-		else
-		{
-			// When drawing a sprite with point sampling, the UV range sampled is exclusive of the ending
-			// coordinate. Except, when the position is also offset backwards. We only do this for the
-			// hardware renderers currently, it does create some issues in software. Hardware needs the
-			// UVs to be within the target size, otherwise it can't translate sub-targets (see 10 Pin -
-			// Champions Alley and Miami Vice).
-			if (!clamp_to_tsize && m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1)
-			{
-				const int mask = (m_vt.m_min.p.floor() != m_vt.m_min.p).mask();
-				if (!(mask & 0x1))
-					st.z = std::max(st.x, st.z - 0.5f);
-				if (!(mask & 0x2))
-					st.w = std::max(st.y, st.w - 0.5f);
-			}
-		}
 
+		// draw will get scissored, adjust UVs to suit
+		const GSVector2 pos_range(std::max(m_vt.m_max.p.x - m_vt.m_min.p.x, 1.0f), std::max(m_vt.m_max.p.y - m_vt.m_min.p.y, 1.0f));
+		const GSVector2 uv_range(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
+		const GSVector2 grad(uv_range / pos_range);
 		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
 		// optimization doesn't work when perspective correction is enabled.
-		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1 && no_gaps)
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1 && m_primitive_covers_without_gaps != NoGapsType::GapsFound)
 		{
 			// When coordinates are fractional, GS appears to draw to the right/bottom (effectively
 			// taking the ceiling), not to the top/left (taking the floor).
@@ -3860,10 +3867,6 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 			const GSVector4i scissored_rc(int_rc.rintersect(m_context->scissor.in));
 			if (!int_rc.eq(scissored_rc))
 			{
-				// draw will get scissored, adjust UVs to suit
-				const GSVector2 pos_range(m_vt.m_max.p.x - m_vt.m_min.p.x, m_vt.m_max.p.y - m_vt.m_min.p.y);
-				const GSVector2 uv_range(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
-				const GSVector2 grad(uv_range / pos_range);
 
 				const GSVertex* vert_first = &m_vertex.buff[m_index.buff[0]];
 				const GSVertex* vert_second = &m_vertex.buff[m_index.buff[1]];
@@ -3889,7 +3892,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 						new_st.x += floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
 				}
 				// we need to check that it's not going to repeat over the non-clipped part
-				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(new_st.x) & ~tw_mask) == (static_cast<int>(new_st.z) & ~tw_mask)))
+				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(new_st.x) & ~tw_mask) == (static_cast<int>(new_st.z - 1) & ~tw_mask)))
 				{
 					st.x = new_st.x;
 					st.z = new_st.z;
@@ -3913,7 +3916,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 					else
 						new_st.y += floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
 				}
-				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(new_st.y) & ~th_mask) == (static_cast<int>(new_st.w) & ~th_mask)))
+				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(new_st.y) & ~th_mask) == (static_cast<int>(new_st.w - 1) & ~th_mask)))
 				{
 					st.y = new_st.y;
 					st.w = new_st.w;
@@ -3924,15 +3927,19 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 		const GSVector4i uv = GSVector4i(st.floor());
 		uses_border = GSVector4::cast((uv < vr).blend32<0xc>(uv >= vr)).mask();
 
+		// Need to make sure we don't oversample, this can cause trouble in grabbing textures.
+		// This may be inaccurate depending on the draw, but adding 1 all the time is wrong too.
+		const int inclusive_x_req = ((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.x < 1.0f || (grad.x == 1.0f && m_vt.m_max.p.x != floor(m_vt.m_max.p.x)))) ? 1 : 0;
+		const int inclusive_y_req = ((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.y < 1.0f || (grad.y == 1.0f && m_vt.m_max.p.y != floor(m_vt.m_max.p.y)))) ? 1 : 0;
+	
 		// Roughly cut out the min/max of the read (Clamp)
-
 		switch (wms)
 		{
 			case CLAMP_REPEAT:
 				if ((uv.x & ~tw_mask) == (uv.z & ~tw_mask))
 				{
 					vr.x = std::max(vr.x, uv.x & tw_mask);
-					vr.z = std::min(vr.z, (uv.z & tw_mask) + 1);
+					vr.z = std::min(vr.z, (uv.z & tw_mask) + inclusive_x_req);
 				}
 				break;
 			case CLAMP_CLAMP:
@@ -3940,7 +3947,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 				if (vr.x < uv.x)
 					vr.x = std::min(uv.x, vr.z - 1);
 				if (vr.z > (uv.z + 1))
-					vr.z = std::max(uv.z, vr.x) + 1;
+					vr.z = std::max(uv.z, vr.x) + inclusive_x_req;
 				break;
 			case CLAMP_REGION_REPEAT:
 				if (UsesRegionRepeat(maxu, minu, uv.x, uv.z, &vr.x, &vr.z) || maxu >= tw)
@@ -3954,7 +3961,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 				if ((uv.y & ~th_mask) == (uv.w & ~th_mask))
 				{
 					vr.y = std::max(vr.y, uv.y & th_mask);
-					vr.w = std::min(vr.w, (uv.w & th_mask) + 1);
+					vr.w = std::min(vr.w, (uv.w & th_mask) + inclusive_y_req);
 				}
 				break;
 			case CLAMP_CLAMP:
@@ -3962,7 +3969,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 				if (vr.y < uv.y)
 					vr.y = std::min(uv.y, vr.w - 1);
 				if (vr.w > (uv.w + 1))
-					vr.w = std::max(uv.w, vr.y) + 1;
+					vr.w = std::max(uv.w, vr.y) + inclusive_y_req;
 				break;
 			case CLAMP_REGION_REPEAT:
 				if (UsesRegionRepeat(maxv, minv, uv.y, uv.w, &vr.y, &vr.w) || maxv >= th)
@@ -3984,7 +3991,19 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 		// - NFSMW (strange rectangles on screen, might be unrelated)
 		// - Lupin 3rd (huge problems, textures sizes seem to be randomly specified)
 
-		vr = (vr + GSVector4i(-1, +1).xxyy()).rintersect(tr);
+		const bool inc_x = vr.x < tr.z;
+		const bool inc_y = vr.y < tr.w;
+		vr = (vr + GSVector4i(inc_x ? 0 : -1, inc_y ? 0 : -1, inc_x ? 1 : 0, inc_y ? 1 : 0)).rintersect(tr);
+	}
+	else if (vr.xxzz().rempty())
+	{
+		const bool inc_x = vr.x < tr.z;
+		vr = (vr + GSVector4i(inc_x ? 0 : -1, 0, inc_x ? 1 : 0, 0)).rintersect(tr);
+	}
+	else if (vr.yyww().rempty())
+	{
+		const bool inc_y = vr.y < tr.w;
+		vr = (vr + GSVector4i(0, inc_y ? 0 : -1, 0, inc_y ? 1 : 0)).rintersect(tr);
 	}
 
 	return { vr, uses_border };

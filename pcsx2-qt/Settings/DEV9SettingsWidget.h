@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -52,6 +52,7 @@ protected:
 
 private:
 	void AddAdapter(const AdapterEntry& adapter);
+	void LoadAdapters();
 	void RefreshHostList();
 	int CountHostsConfig();
 	std::optional<std::vector<HostEntryUi>> ListHostsConfig();
@@ -66,9 +67,12 @@ private:
 
 	Ui::DEV9SettingsWidget m_ui;
 
+	bool m_firstShow{true};
+
 	QStandardItemModel* m_ethHost_model;
 	QSortFilterProxyModel* m_ethHosts_proxy;
 
+	bool m_adaptersLoaded{false};
 	std::vector<Pcsx2Config::DEV9Options::NetApi> m_api_list;
 	std::vector<const char*> m_api_namelist;
 	std::vector<const char*> m_api_valuelist;

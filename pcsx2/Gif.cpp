@@ -1,11 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
 #include "GS.h"
 #include "Gif_Unit.h"
 #include "Vif_Dma.h"
-#include "x86/iR5900.h"
 
 // A three-way toggle used to determine if the GIF is stalling (transferring) or done (finished).
 // Should be a gifstate_t rather then int, but I don't feel like possibly interfering with savestates right now.
@@ -119,10 +118,7 @@ int GIF_Fifo::read_fifo()
 		return 0;
 	}
 
-	int readpos = 0;
-	int sizeRead = 0;
-
-	sizeRead = gifUnit.TransferGSPacketData(GIF_TRANS_DMA, (u8*)&data, fifoSize * 16) / 16; //returns the size actually read
+	const int sizeRead = gifUnit.TransferGSPacketData(GIF_TRANS_DMA, (u8*)&data, fifoSize * 16) / 16; //returns the size actually read
 
 	GIF_LOG("GIF FIFO Read %d QW from FIFO Current Size %d", sizeRead, fifoSize);
 
@@ -131,7 +127,7 @@ int GIF_Fifo::read_fifo()
 		if (sizeRead > 0)
 		{
 			const int copyAmount = fifoSize - sizeRead;
-			readpos = sizeRead * 4;
+			const int readpos = sizeRead * 4;
 
 			for (int i = 0; i < copyAmount; i++)
 				CopyQWC(&data[i * 4], &data[readpos + (i * 4)]);

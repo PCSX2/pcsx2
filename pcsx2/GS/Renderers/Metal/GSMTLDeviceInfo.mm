@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GSMTLDeviceInfo.h"
 #include "GS/GS.h"
@@ -180,7 +180,7 @@ GSMTLDevice::GSMTLDevice(MRCOwned<id<MTLDevice>> dev)
 	if (char* env = getenv("MTL_SLOW_COLOR_COMPRESSION"))
 		features.slow_color_compression = env[0] == '1' || env[0] == 'y' || env[0] == 'Y';
 	else
-		features.slow_color_compression = [[dev name] containsString:@"AMD"];
+		features.slow_color_compression = [[dev name] containsString:@"AMD"] || [[dev name] isEqualToString:@"Intel HD Graphics 4000"];
 
 	features.max_texsize = 8192;
 	if ([dev supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v1])

@@ -49,7 +49,7 @@ jobs:
     name: ${{ inputs.jobName }}
     runs-on: ${{ inputs.os }}
     container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.6
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.7
       options: --privileged
     timeout-minutes: 60
 
@@ -57,7 +57,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
           set-safe-directory: ${{ env.GITHUB_WORKSPACE }}
 
       # Work around container ownership issue
@@ -95,12 +94,6 @@ jobs:
           cd bin/resources
           wget "${{ inputs.patchesUrl }}/patches.zip"
 
-      - name: Generate AppStream XML
-        run: |
-          ./.github/workflows/scripts/linux/generate-metainfo.sh .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
-          cat .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
-          flatpak-builder-lint appstream .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
-
       - name: Validate manifest
         run: |
           flatpak-builder-lint manifest .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
@@ -120,9 +113,9 @@ jobs:
           restore-cache: true
           cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
 
-      - name: Validate build
-        run: |
-          flatpak-builder-lint repo repo
+      #- name: Validate build
+      #  run: |
+      #    flatpak-builder-lint repo repo
 
       - name: Push to Flathub beta
         if: inputs.publish == true && inputs.branch == 'beta'

@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Console.h"
 #include "common/StringUtil.h"
@@ -392,7 +392,7 @@ namespace usb_eyetoy
 				{
 					const size_t comprLen = jo_write_mpeg(
 						comprBuf.data(), data, frame_width, frame_height, JO_BGR24, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_FLIP_Y);
-					comprBuf.resize(comprBufSize);
+					comprBuf.resize(comprLen);
 				}
 				else if (frame_format == format_jpeg)
 				{
@@ -435,7 +435,7 @@ namespace usb_eyetoy
 										float r = src[2];
 										float g = src[1];
 										float b = src[0];
-										comprBuf[in_pos++] = 0.299f * r + 0.587f * g + 0.114f * b;
+										comprBuf[in_pos++] = std::clamp<u8>(0.299f * r + 0.587f * g + 0.114f * b, 1, 255);
 									}
 								}
 					comprBuf.resize(80 * 64);
@@ -472,7 +472,7 @@ namespace usb_eyetoy
 			if (frame_format == format_mpeg)
 			{
 				const size_t comprLen = jo_write_mpeg(comprBuf.data(), rgbData, frame_width, frame_height, JO_RGB24, JO_NONE, JO_NONE);
-				comprBuf.resize(comprBufSize);
+				comprBuf.resize(comprLen);
 			}
 			else if (frame_format == format_jpeg)
 			{
@@ -498,7 +498,7 @@ namespace usb_eyetoy
 				{
 					for (int x = 0; x < 80; x++)
 					{
-						comprBuf[80 * y + x] = 255 * y / 80;
+						comprBuf[80 * y + x] = std::clamp<u8>(255 * y / 80, 1, 255);
 					}
 				}
 			}

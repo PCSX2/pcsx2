@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "BreakpointModel.h"
 
@@ -47,12 +47,12 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OFFSET:
 					return QtUtils::FilledQStringFromValue(bp->addr, 16);
 				case BreakpointColumns::SIZE_LABEL:
-					return m_cpu.GetSymbolMap().GetLabelName(bp->addr).c_str();
+					return QString::fromStdString(m_cpu.GetSymbolGuardian().FunctionStartingAtAddress(bp->addr).name);
 				case BreakpointColumns::OPCODE:
 					// Note: Fix up the disassemblymanager so we can use it here, instead of calling a function through the disassemblyview (yuck)
 					return m_cpu.disasm(bp->addr, true).c_str();
 				case BreakpointColumns::CONDITION:
-					return bp->hasCond ? QString::fromLocal8Bit(bp->cond.expressionString) : "";
+					return bp->hasCond ? QString::fromStdString(bp->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
 					return tr("--");
 			}
@@ -66,10 +66,10 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::TYPE:
 				{
 					QString type("");
-					type += (mc->cond & MEMCHECK_READ) ? tr("Read") : "";
-					type += ((mc->cond & MEMCHECK_READWRITE) == MEMCHECK_READWRITE) ? ", " : " ";
+					type += (mc->memCond & MEMCHECK_READ) ? tr("Read") : "";
+					type += ((mc->memCond & MEMCHECK_READWRITE) == MEMCHECK_READWRITE) ? ", " : " ";
 					//: (C) = changes, as in "look for changes".
-					type += (mc->cond & MEMCHECK_WRITE) ? (mc->cond & MEMCHECK_WRITE_ONCHANGE) ? tr("Write(C)") : tr("Write") : "";
+					type += (mc->memCond & MEMCHECK_WRITE) ? (mc->memCond & MEMCHECK_WRITE_ONCHANGE) ? tr("Write(C)") : tr("Write") : "";
 					return type;
 				}
 				case BreakpointColumns::OFFSET:
@@ -79,7 +79,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OPCODE:
 					return tr("--"); // Our address is going to point to memory, no purpose in printing the op
 				case BreakpointColumns::CONDITION:
-					return tr("--"); // No condition on memchecks
+					return mc->hasCond ? QString::fromStdString(mc->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
 					return QString::number(mc->numHits);
 			}
@@ -100,12 +100,12 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OFFSET:
 					return bp->addr;
 				case BreakpointColumns::SIZE_LABEL:
-					return m_cpu.GetSymbolMap().GetLabelName(bp->addr).c_str();
+					return QString::fromStdString(m_cpu.GetSymbolGuardian().FunctionStartingAtAddress(bp->addr).name);
 				case BreakpointColumns::OPCODE:
 					// Note: Fix up the disassemblymanager so we can use it here, instead of calling a function through the disassemblyview (yuck)
-					return m_cpu.disasm(bp->addr, true).c_str();
+					return m_cpu.disasm(bp->addr, false).c_str();
 				case BreakpointColumns::CONDITION:
-					return bp->hasCond ? QString::fromLocal8Bit(bp->cond.expressionString) : "";
+					return bp->hasCond ? QString::fromStdString(bp->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
 					return 0;
 			}
@@ -117,7 +117,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::ENABLED:
 					return (mc->result & MEMCHECK_BREAK);
 				case BreakpointColumns::TYPE:
-					return mc->cond;
+					return mc->memCond;
 				case BreakpointColumns::OFFSET:
 					return mc->start;
 				case BreakpointColumns::SIZE_LABEL:
@@ -125,7 +125,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OPCODE:
 					return "";
 				case BreakpointColumns::CONDITION:
-					return "";
+					return mc->hasCond ? QString::fromStdString(mc->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
 					return mc->numHits;
 			}
@@ -146,12 +146,12 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OFFSET:
 					return QtUtils::FilledQStringFromValue(bp->addr, 16);
 				case BreakpointColumns::SIZE_LABEL:
-					return m_cpu.GetSymbolMap().GetLabelName(bp->addr).c_str();
+					return QString::fromStdString(m_cpu.GetSymbolGuardian().FunctionStartingAtAddress(bp->addr).name);
 				case BreakpointColumns::OPCODE:
 					// Note: Fix up the disassemblymanager so we can use it here, instead of calling a function through the disassemblyview (yuck)
-					return m_cpu.disasm(bp->addr, true).c_str();
+					return m_cpu.disasm(bp->addr, false).c_str();
 				case BreakpointColumns::CONDITION:
-					return bp->hasCond ? QString::fromLocal8Bit(bp->cond.expressionString) : "";
+					return bp->hasCond ? QString::fromStdString(bp->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
 					return 0;
 			}
@@ -161,7 +161,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 			switch (index.column())
 			{
 				case BreakpointColumns::TYPE:
-					return mc->cond;
+					return mc->memCond;
 				case BreakpointColumns::OFFSET:
 					return QtUtils::FilledQStringFromValue(mc->start, 16);
 				case BreakpointColumns::SIZE_LABEL:
@@ -169,7 +169,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OPCODE:
 					return "";
 				case BreakpointColumns::CONDITION:
-					return "";
+					return mc->hasCond ? QString::fromStdString(mc->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
 					return mc->numHits;
 				case BreakpointColumns::ENABLED:
@@ -254,16 +254,10 @@ QVariant BreakpointModel::headerData(int section, Qt::Orientation orientation, i
 
 Qt::ItemFlags BreakpointModel::flags(const QModelIndex& index) const
 {
-	volatile const int row = index.row();
-
-	bool is_breakpoint = std::holds_alternative<BreakPoint>(m_breakpoints.at(row));
-
 	switch (index.column())
 	{
 		case BreakpointColumns::CONDITION:
-			if (is_breakpoint)
-				return Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEditable;
-			[[fallthrough]];
+			return Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEditable;
 		case BreakpointColumns::TYPE:
 		case BreakpointColumns::OPCODE:
 		case BreakpointColumns::HITS:
@@ -292,7 +286,7 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 		else if (const auto* mc = std::get_if<MemCheck>(&bp_mc))
 		{
 			Host::RunOnCPUThread([cpu = this->m_cpu.getCpuType(), mc = *mc] {
-				CBreakPoints::ChangeMemCheck(cpu, mc.start, mc.end, mc.cond,
+				CBreakPoints::ChangeMemCheck(cpu, mc.start, mc.end, mc.memCond,
 					MemCheckResult(mc.result ^ MEMCHECK_BREAK));
 			});
 		}
@@ -303,40 +297,71 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 	{
 		auto bp_mc = m_breakpoints.at(index.row());
 
-		if (std::holds_alternative<MemCheck>(bp_mc))
-			return false;
-
-		const auto bp = std::get<BreakPoint>(bp_mc);
-
-		const QString condValue = value.toString();
-
-		if (condValue.isEmpty())
+		if (auto* bp = std::get_if<BreakPoint>(&bp_mc))
 		{
-			if (bp.hasCond)
+			const QString condValue = value.toString();
+
+			if (condValue.isEmpty())
 			{
-				Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), bp] {
-					CBreakPoints::ChangeBreakPointRemoveCond(cpu, bp.addr);
+				if (bp->hasCond)
+				{
+					Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), bp] {
+						CBreakPoints::ChangeBreakPointRemoveCond(cpu, bp->addr);
+					});
+				}
+			}
+			else
+			{
+				PostfixExpression expr;
+
+				if (!m_cpu.initExpression(condValue.toLocal8Bit().constData(), expr))
+				{
+					QMessageBox::warning(nullptr, "Condition Error", QString(getExpressionError()));
+					return false;
+				}
+
+				BreakPointCond cond;
+				cond.debug = &m_cpu;
+				cond.expression = expr;
+				cond.expressionString = condValue.toStdString();
+
+				Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), bp, cond] {
+					CBreakPoints::ChangeBreakPointAddCond(cpu, bp->addr, cond);
 				});
 			}
 		}
-		else
+		else if (auto* mc = std::get_if<MemCheck>(&bp_mc))
 		{
-			PostfixExpression expr;
+			const QString condValue = value.toString();
 
-			if (!m_cpu.initExpression(condValue.toLocal8Bit().constData(), expr))
+			if (condValue.isEmpty())
 			{
-				QMessageBox::warning(nullptr, "Condition Error", QString(getExpressionError()));
-				return false;
+				if (mc->hasCond)
+				{
+					Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), mc] {
+						CBreakPoints::ChangeMemCheckRemoveCond(cpu, mc->start, mc->end);
+					});
+				}
 			}
+			else
+			{
+				PostfixExpression expr;
 
-			BreakPointCond cond;
-			cond.debug = &m_cpu;
-			cond.expression = expr;
-			strcpy(&cond.expressionString[0], condValue.toLocal8Bit().constData());
+				if (!m_cpu.initExpression(condValue.toLocal8Bit().constData(), expr))
+				{
+					QMessageBox::warning(nullptr, "Condition Error", QString(getExpressionError()));
+					return false;
+				}
 
-			Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), bp, cond] {
-				CBreakPoints::ChangeBreakPointAddCond(cpu, bp.addr, cond);
-			});
+				BreakPointCond cond;
+				cond.debug = &m_cpu;
+				cond.expression = expr;
+				cond.expressionString = condValue.toStdString();
+
+				Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), mc, cond] {
+					CBreakPoints::ChangeMemCheckAddCond(cpu, mc->start, mc->end, cond);
+				});
+			}
 		}
 		emit dataChanged(index, index);
 		return true;
@@ -401,7 +426,11 @@ bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<Break
 		else if (const auto* mc = std::get_if<MemCheck>(&bp_mc))
 		{
 			Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), mc = *mc] {
-				CBreakPoints::AddMemCheck(cpu, mc.start, mc.end, mc.cond, mc.result);
+				CBreakPoints::AddMemCheck(cpu, mc.start, mc.end, mc.memCond, mc.result);
+				if (mc.hasCond)
+				{
+					CBreakPoints::ChangeMemCheckAddCond(cpu, mc.start, mc.end, mc.cond);
+				}
 			});
 		}
 	}
@@ -413,18 +442,15 @@ bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<Break
 void BreakpointModel::refreshData()
 {
 	Host::RunOnCPUThread([this]() mutable {
-
 		std::vector<BreakpointMemcheck> all_breakpoints;
 		std::ranges::move(CBreakPoints::GetBreakpoints(m_cpu.getCpuType(), false), std::back_inserter(all_breakpoints));
 		std::ranges::move(CBreakPoints::GetMemChecks(m_cpu.getCpuType()), std::back_inserter(all_breakpoints));
 
 		QtHost::RunOnUIThread([this, breakpoints = std::move(all_breakpoints)]() mutable {
-			
 			beginResetModel();
 			m_breakpoints = std::move(breakpoints);
 			endResetModel();
 		});
-
 	});
 }
 
@@ -470,7 +496,7 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 				return;
 			}
 			bp.cond.expression = expr;
-			strncpy(&bp.cond.expressionString[0], fields[BreakpointModel::BreakpointColumns::CONDITION].toUtf8().constData(), sizeof(bp.cond.expressionString));
+			bp.cond.expressionString = fields[BreakpointModel::BreakpointColumns::CONDITION].toStdString();
 		}
 
 		// Enabled
@@ -492,7 +518,7 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 			Console.WriteLn("Debugger Breakpoint Model: Failed to parse cond type '%s', skipping", fields[BreakpointModel::BreakpointColumns::TYPE].toUtf8().constData());
 			return;
 		}
-		mc.cond = static_cast<MemCheckCondition>(type);
+		mc.memCond = static_cast<MemCheckCondition>(type);
 
 		// Address
 		QString test = fields[BreakpointModel::BreakpointColumns::OFFSET];
@@ -509,6 +535,22 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 		{
 			Console.WriteLn("Debugger Breakpoint Model: Failed to parse length '%s', skipping", fields[BreakpointModel::BreakpointColumns::SIZE_LABEL].toUtf8().constData());
 			return;
+		}
+
+		// Condition
+		if (!fields[BreakpointModel::BreakpointColumns::CONDITION].isEmpty())
+		{
+			PostfixExpression expr;
+			mc.hasCond = true;
+			mc.cond.debug = &m_cpu;
+
+			if (!m_cpu.initExpression(fields[BreakpointModel::BreakpointColumns::CONDITION].toUtf8().constData(), expr))
+			{
+				Console.WriteLn("Debugger Breakpoint Model: Failed to parse cond '%s', skipping", fields[BreakpointModel::BreakpointColumns::CONDITION].toUtf8().constData());
+				return;
+			}
+			mc.cond.expression = expr;
+			mc.cond.expressionString = fields[BreakpointModel::BreakpointColumns::CONDITION].toStdString();
 		}
 
 		// Result

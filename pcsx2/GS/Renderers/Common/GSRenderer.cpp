@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiManager.h"
@@ -73,11 +73,6 @@ void GSRenderer::Reset(bool hardware_reset)
 void GSRenderer::Destroy()
 {
 	GSCapture::EndCapture();
-}
-
-void GSRenderer::PurgePool()
-{
-	g_gs_device->PurgePool();
 }
 
 void GSRenderer::UpdateRenderFixes()
@@ -262,26 +257,27 @@ GSVector2i GSRenderer::GetInternalResolution()
 
 float GSRenderer::GetModXYOffset()
 {
-	float mod_xy = 0.0f;
-
 	if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::Normal)
 	{
-		mod_xy = GetUpscaleMultiplier();
-		switch (static_cast<int>(std::round(mod_xy)))
+		float mod_xy = GetUpscaleMultiplier();
+		const int rounded_mod_xy = static_cast<int>(std::round(mod_xy));
+		if (rounded_mod_xy > 1)
 		{
-			case 2: case 4: case 6: case 8: mod_xy += 0.2f; break;
-			case 3: case 7:                 mod_xy += 0.1f; break;
-			case 5:                         mod_xy += 0.3f; break;
-			default:                        mod_xy = 0.0f; break;
+			if (!(rounded_mod_xy & 1))
+				return mod_xy += 0.2f;
+			else if (!(rounded_mod_xy & 2))
+				return mod_xy += 0.3f;
+			else
+				return mod_xy += 0.1f;
 		}
 	}
 
-	return mod_xy;
+	return 0.0f;
 }
 
 static float GetCurrentAspectRatioFloat(bool is_progressive)
 {
-	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount) + 1> ars = {{4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 3.0f / 2.0f}};
+	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount) + 1> ars = {{4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 10.0f / 7.0f, 3.0f / 2.0f}};
 	return ars[static_cast<u32>(GSConfig.AspectRatio) + (3u * (is_progressive && GSConfig.AspectRatio == AspectRatioType::RAuto4_3_3_2))];
 }
 
@@ -304,7 +300,13 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 		targetAr = 4.0f / 3.0f;
 	}
 	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R16_9)
+	{
 		targetAr = 16.0f / 9.0f;
+	}
+	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R10_7)
+	{
+		targetAr = 10.0f / 7.0f;
+	}
 
 	const float crop_adjust = (static_cast<float>(src_rect.width()) / static_cast<float>(src_size.x)) /
 		(static_cast<float>(src_rect.height()) / static_cast<float>(src_size.y));
@@ -518,7 +520,7 @@ bool GSRenderer::BeginPresentFrame(bool frame_skip)
 
 	// Device lost, something went really bad.
 	// Let's just toss out everything, and try to hobble on.
-	if (!GSreopen(true, GSGetCurrentRenderer(), std::nullopt))
+	if (!GSreopen(true, false, GSGetCurrentRenderer(), std::nullopt))
 	{
 		pxFailRel("Failed to recreate GS device after loss.");
 		return false;
@@ -585,12 +587,13 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	m_last_draw_n = s_n;
 	m_last_transfer_n = s_transfer_n;
 
-	if (skip_frame)
+	// Skip presentation when running uncapped while vsync is on.
+	if (skip_frame || g_gs_device->ShouldSkipPresentingFrame())
 	{
 		if (BeginPresentFrame(true))
 			EndPresentFrame();
 
-		PerformanceMetrics::Update(registers_written, fb_sprite_frame, true);
+		PerformanceMetrics::Update(registers_written, fb_sprite_frame, skip_frame);
 		return;
 	}
 

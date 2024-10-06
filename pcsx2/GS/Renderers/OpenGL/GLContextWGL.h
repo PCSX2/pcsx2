@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -27,6 +27,7 @@ public:
 	bool IsCurrent() override;
 	bool MakeCurrent() override;
 	bool DoneCurrent() override;
+	bool SupportsNegativeSwapInterval() const override;
 	bool SetSwapInterval(s32 interval) override;
 	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 

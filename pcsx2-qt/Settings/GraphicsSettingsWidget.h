@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -29,12 +29,18 @@ private Q_SLOTS:
 	void onSWTextureFilteringChange();
 	void onRendererChanged(int index);
 	void onAdapterChanged(int index);
+	void onUpscaleMultiplierChanged();
 	void onTrilinearFilteringChanged();
 	void onGpuPaletteConversionChanged(int state);
 	void onCPUSpriteRenderBWChanged();
 	void onFullscreenModeChanged(int index);
+	void onTextureDumpChanged();
+	void onTextureReplacementChanged();
 	void onShadeBoostChanged();
+	void onMessagesPosChanged();
+	void onPerformancePosChanged();
 	void onCaptureContainerChanged();
+	void onCaptureCodecChanged();
 	void onEnableVideoCaptureChanged();
 	void onEnableVideoCaptureArgumentsChanged();
 	void onVideoCaptureAutoResolutionChanged();
@@ -44,6 +50,7 @@ private Q_SLOTS:
 private:
 	GSRendererType getEffectiveRenderer() const;
 	void updateRendererDependentOptions();
+	void populateUpscaleMultipliers(u32 max_upscale_multiplier);
 	void resetManualHardwareFixes();
 
 	SettingsWindow* m_dialog;

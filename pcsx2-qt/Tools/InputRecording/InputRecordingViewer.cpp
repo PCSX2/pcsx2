@@ -1,11 +1,13 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "InputRecordingViewer.h"
 
 #include "QtUtils.h"
+#include <QtCore/QDir>
 #include <QtCore/QString>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QMessageBox>
 #include <QtWidgets/qfiledialog.h>
 
 // TODO - for now this uses a very naive implementation that fills the entire table
@@ -89,13 +91,17 @@ void InputRecordingViewer::openFile()
 	}
 	if (!fileNames.isEmpty())
 	{
-		const std::string fileName = fileNames.first().toStdString();
+		const std::string fileName = QDir::toNativeSeparators(fileNames.first()).toStdString();
 		m_file_open = m_file.openExisting(fileName);
 		m_ui.actionClose->setEnabled(m_file_open);
 		if (m_file_open)
 		{
 			loadTable();
-		} // TODO else error
+		}
+		else
+		{
+			QMessageBox::critical(this, tr("Opening Recording Failed"), tr("Failed to open file: %1").arg(QString::fromUtf8(fileName.c_str())));
+		}
 	}
 }
 

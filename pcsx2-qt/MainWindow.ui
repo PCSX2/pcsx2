@@ -210,7 +210,7 @@
     <addaction name="separator"/>
     <addaction name="actionToggleSoftwareRendering"/>
     <addaction name="menuInputRecording"/>
-    <addaction name="actionToolsVideoCapture"/>
+    <addaction name="actionVideoCapture"/>
     <addaction name="separator"/>
     <addaction name="actionEnableSystemConsole"/>
     <addaction name="actionEnableDebugConsole"/>
@@ -260,7 +260,9 @@
    <addaction name="actionToolbarReset"/>
    <addaction name="actionToolbarPause"/>
    <addaction name="actionToolbarChangeDisc"/>
+   <addaction name="separator"/>
    <addaction name="actionToolbarScreenshot"/>
+   <addaction name="actionVideoCapture"/>
    <addaction name="separator"/>
    <addaction name="actionToolbarLoadState"/>
    <addaction name="actionToolbarSaveState"/>
@@ -1080,12 +1082,16 @@
     <string>Recording Viewer</string>
    </property>
   </action>
-  <action name="actionToolsVideoCapture">
+  <action name="actionVideoCapture">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
     <string>Video Capture</string>
+   </property>
+   <property name="icon">
+    <iconset theme="camera-video">
+     <normaloff>.</normaloff>.</iconset>
    </property>
   </action>
   <action name="actionEditCheats">

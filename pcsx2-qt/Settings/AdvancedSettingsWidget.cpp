@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
@@ -24,10 +24,12 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeWaitLoopDetection, "EmuCore/Speedhacks", "WaitLoop", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeFastmem, "EmuCore/CPU/Recompiler", "EnableFastmem", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnTLBMiss, "EmuCore/CPU/Recompiler", "PauseOnTLBMiss", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.extraMemory, "EmuCore/CPU", "ExtraMemory", false);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0Recompiler, "EmuCore/CPU/Recompiler", "EnableVU0", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1Recompiler, "EmuCore/CPU/Recompiler", "EnableVU1", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vuFlagHack, "EmuCore/Speedhacks", "vuFlagHack", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.instantVU1, "EmuCore/Speedhacks", "vu1Instant", true);
 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeRoundingMode, "EmuCore/CPU", "FPU.Roundmode", static_cast<int>(FPRoundMode::ChopZero));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeDivRoundingMode, "EmuCore/CPU", "FPUDiv.Roundmode", static_cast<int>(FPRoundMode::Nearest));
@@ -54,12 +56,24 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.ntscFrameRate, "EmuCore/GS", "FramerateNTSC", 59.94f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.palFrameRate, "EmuCore/GS", "FrameratePAL", 50.00f);
 
+	SettingWidgetBinder::BindWidgetToIntSetting(
+		sif, m_ui.savestateCompressionMethod, "EmuCore", "SavestateCompressionType", static_cast<int>(SavestateCompressionMethod::Zstandard));
+
+	SettingWidgetBinder::BindWidgetToIntSetting(
+		sif, m_ui.savestateCompressionLevel, "EmuCore", "SavestateCompressionRatio", static_cast<int>(SavestateCompressionLevel::Medium));
+
+	connect(m_ui.savestateCompressionMethod, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+		&AdvancedSettingsWidget::onSavestateCompressionTypeChanged);
+
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.backupSaveStates, "EmuCore", "BackupSavestate", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnShutdown, "EmuCore", "SaveStateOnShutdown", false);
+
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pineEnable, "EmuCore", "EnablePINE", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.pineSlot, "EmuCore", "PINESlot", 28011);
 
 	dialog->registerWidgetHelp(m_ui.eeRoundingMode, tr("Rounding Mode"), tr("Chop/Zero (Default)"), tr("Changes how PCSX2 handles rounding while emulating the Emotion Engine's Floating Point Unit (EE FPU). "
 	"Because the various FPUs in the PS2 are non-compliant with international standards, some games may need different modes to do math correctly. The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
-	dialog->registerWidgetHelp(m_ui.eeDivRoundingMode, tr("Division Rounding Mode"), tr("Nearest (Default)"), tr("Determines how the results of floating-point division is rounded. Some games need specific settings; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
+	dialog->registerWidgetHelp(m_ui.eeDivRoundingMode, tr("Division Rounding Mode"), tr("Nearest (Default)"), tr("Determines how the results of floating-point division are rounded. Some games need specific settings; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
 
 	dialog->registerWidgetHelp(m_ui.eeClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr("Changes how PCSX2 handles keeping floats in a standard x86 range. "
 	"The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
@@ -86,6 +100,9 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 		   "end of the block, not on the instruction which caused the exception. Refer to the console to see the address where the invalid "
 		   "access occurred."));
 
+	dialog->registerWidgetHelp(m_ui.extraMemory, tr("Enable 128MB RAM (Dev Console)"), tr("Unchecked"),
+		tr("Exposes an additional 96MB of memory to the virtual machine."));
+
 	dialog->registerWidgetHelp(m_ui.vu0RoundingMode, tr("VU0 Rounding Mode"), tr("Chop/Zero (Default)"), tr("Changes how PCSX2 handles rounding while emulating the Emotion Engine's Vector Unit 0 (EE VU0). "
 	"The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.</b>"));
 
@@ -96,6 +113,9 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 	"The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
 	dialog->registerWidgetHelp(m_ui.vu1ClampMode, tr("VU1 Clamping Mode"), tr("Normal (Default)"), tr("Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine's Vector Unit 1 (EE VU1). "
 	"The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
+
+	dialog->registerWidgetHelp(m_ui.instantVU1, tr("Enable Instant VU1"), tr("Checked"), tr("Runs VU1 instantly. Provides a modest speed improvement in most games. "
+		   "Safe for most games, but a few games may exhibit graphical errors."));
 
 	//: VU0 = Vector Unit 0. One of the PS2's processors.
 	dialog->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler (Micro Mode)"), tr("Checked"), tr("Enables VU0 Recompiler."));
@@ -115,6 +135,20 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 	dialog->registerWidgetHelp(m_ui.patches, tr("Enable Compatibility Patches"), tr("Checked"),
 		tr("Automatically loads and applies compatibility patches to known problematic games."));
+
+	dialog->registerWidgetHelp(m_ui.savestateCompressionMethod, tr("Savestate Compression Method"), tr("Zstandard"),
+		tr("Determines the algorithm to be used when compressing savestates."));
+
+	dialog->registerWidgetHelp(m_ui.savestateCompressionLevel, tr("Savestate Compression Level"), tr("Medium"),
+		tr("Determines the level to be used when compressing savestates."));
+
+	dialog->registerWidgetHelp(m_ui.saveStateOnShutdown, tr("Save State On Shutdown"), tr("Unchecked"),
+		tr("Automatically saves the emulator state when powering down or exiting. You can then "
+		   "resume directly from where you left off next time."));
+
+	dialog->registerWidgetHelp(m_ui.backupSaveStates, tr("Create Save State Backups"), tr("Checked"),
+		//: Do not translate the ".backup" extension.
+		tr("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix."));
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
@@ -180,4 +214,11 @@ void AdvancedSettingsWidget::setClampingMode(int vunum, int index)
 		"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0ExtraOverflow" : "vu1ExtraOverflow") : "fpuExtraOverflow"), second);
 	m_dialog->setBoolSettingValue(
 		"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0Overflow" : "vu1Overflow") : "fpuOverflow"), first);
+}
+
+void AdvancedSettingsWidget::onSavestateCompressionTypeChanged()
+{
+	const bool uncompressed = (m_dialog->getEffectiveIntValue("EmuCore", "SavestateCompressionType", static_cast<int>(SavestateCompressionMethod::Zstandard)) ==
+							   static_cast<int>(SavestateCompressionMethod::Uncompressed));
+	m_ui.savestateCompressionLevel->setDisabled(uncompressed);
 }

@@ -88,85 +88,6 @@ namespace usb_hid
 		"USB JIS Mini Keyboard",
 	};
 
-
-	/* mostly the same values as the Bochs USB Keyboard device */
-	static const uint8_t kbd_dev_desc[] = {
-		0x12, /*  u8 bLength; */
-		0x01, /*  u8 bDescriptorType; Device */
-		0x10, 0x00, /*  u16 bcdUSB; v1.0 */
-
-		0x00, /*  u8  bDeviceClass; */
-		0x00, /*  u8  bDeviceSubClass; */
-		0x00, /*  u8  bDeviceProtocol; [ low/full speeds only ] */
-		0x08, /*  u8  bMaxPacketSize0; 8 Bytes */
-
-		//  0x27, 0x06, /*  u16 idVendor; */
-		0x4C, 0x05,
-		// 0x01, 0x00, /*  u16 idProduct; */
-		0x00, 0x10,
-		0x00, 0x00, /*  u16 bcdDevice */
-
-		STR_MANUFACTURER, /*  u8  iManufacturer; */
-		STR_PRODUCT_KEYBOARD, /*  u8  iProduct; */
-		STR_SERIALNUMBER, /*  u8  iSerialNumber; */
-		0x01 /*  u8  bNumConfigurations; */
-	};
-
-	static const uint8_t kbd_config_desc[] = {
-		/* one configuration */
-		0x09, /*  u8  bLength; */
-		0x02, /*  u8  bDescriptorType; Configuration */
-		0x22, 0x00, /*  u16 wTotalLength; */
-		0x01, /*  u8  bNumInterfaces; (1) */
-		0x01, /*  u8  bConfigurationValue; */
-		0x04, /*  u8  iConfiguration; */
-		0xa0, /*  u8  bmAttributes;
-                 Bit 7: must be set,
-                     6: Self-powered,
-                     5: Remote wakeup,
-                     4..0: resvd */
-		50, /*  u8  MaxPower; */
-
-		/* USB 1.1:
-     * USB 2.0, single TT organization (mandatory):
-     *  one interface, protocol 0
-     *
-     * USB 2.0, multiple TT organization (optional):
-     *  two interfaces, protocols 1 (like single TT)
-     *  and 2 (multiple TT mode) ... config is
-     *  sometimes settable
-     *  NOT IMPLEMENTED
-     */
-
-		/* one interface */
-		0x09, /*  u8  if_bLength; */
-		0x04, /*  u8  if_bDescriptorType; Interface */
-		0x00, /*  u8  if_bInterfaceNumber; */
-		0x00, /*  u8  if_bAlternateSetting; */
-		0x01, /*  u8  if_bNumEndpoints; */
-		0x03, /*  u8  if_bInterfaceClass; */
-		0x01, /*  u8  if_bInterfaceSubClass; */
-		0x01, /*  u8  if_bInterfaceProtocol; [usb1.1 or single tt] */
-		0x05, /*  u8  if_iInterface; */
-
-		/* HID descriptor */
-		0x09, /*  u8  bLength; */
-		0x21, /*  u8 bDescriptorType; */
-		0x01, 0x00, /*  u16 HID_class */
-		0x00, /*  u8 country_code */
-		0x01, /*  u8 num_descriptors */
-		0x22, /*  u8 type; Report */
-		63, 0, /*  u16 len */
-
-		/* one endpoint (status change endpoint) */
-		0x07, /*  u8  ep_bLength; */
-		0x05, /*  u8  ep_bDescriptorType; Endpoint */
-		0x81, /*  u8  ep_bEndpointAddress; IN Endpoint 1 */
-		0x03, /*  u8  ep_bmAttributes; Interrupt */
-		0x08, 0x00, /*  u16 ep_wMaxPacketSize; */
-		0x0a, /*  u8  ep_bInterval; (255ms -- usb 2.0 spec) */
-	};
-
 	/* mostly the same values as the Bochs USB Mouse device */
 	static const uint8_t qemu_mouse_dev_descriptor[] = {
 		0x12, /*  u8 bLength; */
@@ -368,41 +289,6 @@ namespace usb_hid
 		0xc0, /* End Collection */
 	};
 
-	static const uint8_t qemu_keyboard_hid_report_descriptor[] = {
-		0x05, 0x01, /* Usage Page (Generic Desktop) */
-		0x09, 0x06, /* Usage (Keyboard) */
-		0xa1, 0x01, /* Collection (Application) */
-		0x75, 0x01, /*   Report Size (1) */
-		0x95, 0x08, /*   Report Count (8) */
-		0x05, 0x07, /*   Usage Page (Key Codes) */
-		0x19, 0xe0, /*   Usage Minimum (224) */
-		0x29, 0xe7, /*   Usage Maximum (231) */
-		0x15, 0x00, /*   Logical Minimum (0) */
-		0x25, 0x01, /*   Logical Maximum (1) */
-		0x81, 0x02, /*   Input (Data, Variable, Absolute) */
-		0x95, 0x01, /*   Report Count (1) */
-		0x75, 0x08, /*   Report Size (8) */
-		0x81, 0x01, /*   Input (Constant) */
-		0x95, 0x05, /*   Report Count (5) */
-		0x75, 0x01, /*   Report Size (1) */
-		0x05, 0x08, /*   Usage Page (LEDs) */
-		0x19, 0x01, /*   Usage Minimum (1) */
-		0x29, 0x05, /*   Usage Maximum (5) */
-		0x91, 0x02, /*   Output (Data, Variable, Absolute) */
-		0x95, 0x01, /*   Report Count (1) */
-		0x75, 0x03, /*   Report Size (3) */
-		0x91, 0x01, /*   Output (Constant) */
-		0x95, 0x06, /*   Report Count (6) */
-		0x75, 0x08, /*   Report Size (8) */
-		0x15, 0x00, /*   Logical Minimum (0) */
-		0x25, 0xff, /*   Logical Maximum (255) */
-		0x05, 0x07, /*   Usage Page (Key Codes) */
-		0x19, 0x00, /*   Usage Minimum (0) */
-		0x29, 0xff, /*   Usage Maximum (255) */
-		0x81, 0x00, /*   Input (Data, Array) */
-		0xc0, /* End Collection */
-	};
-
 	static const uint8_t beatmania_dev_desc[] = {
 		0x12, /*  u8 bLength; */
 		0x01, /*  u8 bDescriptorType; Device */
@@ -546,7 +432,7 @@ namespace usb_hid
 		{Q_KEY_CODE_CUT, "Cut"},
 		{Q_KEY_CODE_D, "D"},
 		{Q_KEY_CODE_DELETE, "Delete"},
-		{Q_KEY_CODE_DOT, "Dot"},
+		{Q_KEY_CODE_DOT, "Period"},
 		{Q_KEY_CODE_DOWN, "Down"},
 		{Q_KEY_CODE_E, "E"},
 		{Q_KEY_CODE_END, "End"},
@@ -701,16 +587,8 @@ namespace usb_hid
 						}
 						else if (hs->kind == HID_KEYBOARD)
 						{
-							if (hs->sub_kind == HID_SUBKIND_BEATMANIA)
-							{
-								p->actual_length = sizeof(beatmania_dadada_hid_report_descriptor);
-								memcpy(data, beatmania_dadada_hid_report_descriptor, p->actual_length);
-							}
-							else
-							{
-								p->actual_length = sizeof(qemu_keyboard_hid_report_descriptor);
-								memcpy(data, qemu_keyboard_hid_report_descriptor, p->actual_length);
-							}
+							p->actual_length = sizeof(beatmania_dadada_hid_report_descriptor);
+							memcpy(data, beatmania_dadada_hid_report_descriptor, p->actual_length);
 						}
 						break;
 					default:
@@ -893,11 +771,11 @@ namespace usb_hid
 	{
 		UsbHIDState* s = new UsbHIDState(port);
 		s->desc.full = &s->desc_dev;
-		s->desc.str = desc_strings;
+		s->desc.str = beatmania_dadada_desc_strings;
 
-		if (usb_desc_parse_dev(kbd_dev_desc, sizeof(kbd_dev_desc), s->desc, s->desc_dev) < 0)
+		if (usb_desc_parse_dev(beatmania_dev_desc, sizeof(beatmania_dev_desc), s->desc, s->desc_dev) < 0)
 			goto fail;
-		if (usb_desc_parse_config(kbd_config_desc, sizeof(kbd_config_desc), s->desc_dev) < 0)
+		if (usb_desc_parse_config(beatmania_config_desc, sizeof(beatmania_config_desc), s->desc_dev) < 0)
 			goto fail;
 
 		s->dev.speed = USB_SPEED_FULL;
@@ -940,7 +818,7 @@ namespace usb_hid
 
 	const char* HIDKbdDevice::Name() const
 	{
-		return TRANSLATE_NOOP("USB", "HID Keyboard");
+		return TRANSLATE_NOOP("USB", "HID Keyboard (Konami)");
 	}
 
 	const char* HIDKbdDevice::TypeName() const
@@ -973,7 +851,6 @@ namespace usb_hid
 		sw.Do(&s->hid.n);
 		sw.Do(&s->hid.protocol);
 		sw.Do(&s->hid.idle);
-		sw.Do(&s->hid.idle_pending);
 
 		return !sw.HasError();
 	}
@@ -1036,7 +913,6 @@ namespace usb_hid
 		sw.Do(&s->hid.n);
 		sw.Do(&s->hid.protocol);
 		sw.Do(&s->hid.idle);
-		sw.Do(&s->hid.idle_pending);
 
 		return !sw.HasError();
 	}
@@ -1083,59 +959,4 @@ namespace usb_hid
 		else
 			s->QueueMouseAxisState(static_cast<InputPointerAxis>(bind - INPUT_BUTTON__MAX), value);
 	}
-
-	// ---- BeatMania Da Da Da!! ----
-
-	USBDevice* BeatManiaDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
-	{
-		UsbHIDState* s = new UsbHIDState(port);
-
-		s->desc.full = &s->desc_dev;
-		s->desc.str = beatmania_dadada_desc_strings;
-
-		if (usb_desc_parse_dev(beatmania_dev_desc, sizeof(beatmania_dev_desc), s->desc, s->desc_dev) < 0)
-			goto fail;
-		if (usb_desc_parse_config(beatmania_config_desc, sizeof(beatmania_config_desc), s->desc_dev) < 0)
-			goto fail;
-
-		s->dev.speed = USB_SPEED_FULL;
-		s->dev.klass.handle_attach = usb_desc_attach;
-		s->dev.klass.handle_reset = usb_hid_handle_reset;
-		s->dev.klass.handle_control = usb_hid_handle_control;
-		s->dev.klass.handle_data = usb_hid_handle_data;
-		s->dev.klass.unrealize = usb_hid_unrealize;
-		s->dev.klass.usb_desc = &s->desc;
-		s->dev.klass.product_desc = s->desc.str[2];
-
-		usb_desc_init(&s->dev);
-		usb_ep_init(&s->dev);
-		s->intr = usb_ep_get(&s->dev, USB_TOKEN_IN, 1);
-		hid_init(&s->hid, HID_KEYBOARD, usb_hid_changed);
-		s->hid.sub_kind = HID_SUBKIND_BEATMANIA;
-
-		usb_hid_handle_reset(&s->dev);
-
-		s->SetKeycodeMapping();
-
-		return &s->dev;
-	fail:
-		usb_hid_unrealize(&s->dev);
-		return nullptr;
-	}
-
-	const char* BeatManiaDevice::Name() const
-	{
-		return TRANSLATE_NOOP("USB", "Konami Keyboard");
-	}
-
-	const char* BeatManiaDevice::TypeName() const
-	{
-		return "beatmania";
-	}
-
-	bool BeatManiaDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
-	{
-		return HIDKbdDevice::Freeze(dev, sw);
-	}
-
 } // namespace usb_hid
