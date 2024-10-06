@@ -718,286 +718,309 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="71"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="74"/>
         <source>Rounding Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="71"/>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="103"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="74"/>
         <location filename="../Settings/AdvancedSettingsWidget.cpp" line="106"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
         <source>Chop/Zero (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="71"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="74"/>
         <source>Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Floating Point Unit (EE FPU). Because the various FPUs in the PS2 are non-compliant with international standards, some games may need different modes to do math correctly. The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="73"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="76"/>
         <source>Division Rounding Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="73"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="76"/>
         <source>Nearest (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="73"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="76"/>
         <source>Determines how the results of floating-point division are rounded. Some games need specific settings; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="75"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
         <source>Clamping Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="75"/>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="111"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="112"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="114"/>
         <source>Normal (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="75"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
         <source>Changes how PCSX2 handles keeping floats in a standard x86 range. The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="127"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="81"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="130"/>
         <source>Enable Recompiler</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="88"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="81"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="85"/>
         <location filename="../Settings/AdvancedSettingsWidget.cpp" line="91"/>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="114"/>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="94"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="117"/>
         <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="125"/>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="127"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="124"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="128"/>
         <location filename="../Settings/AdvancedSettingsWidget.cpp" line="130"/>
         <location filename="../Settings/AdvancedSettingsWidget.cpp" line="133"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="136"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="149"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="79"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
         <source>Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="85"/>
         <source>Wait Loop Detection</source>
         <extracomment>Wait loop: When the game makes the CPU do nothing (loop/spin) while it waits for something to happen (usually an interrupt).</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="83"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="86"/>
         <source>Moderate speedup for some games, with no known side effects.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="85"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="88"/>
         <source>Enable Cache (Slow)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="85"/>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="95"/>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="100"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="88"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="98"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="103"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="145"/>
         <source>Unchecked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="85"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="88"/>
         <source>Interpreter only, provided for diagnostic.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="88"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="91"/>
         <source>INTC Spin Detection</source>
         <extracomment>INTC = Name of a PS2 register, leave as-is. &quot;spin&quot; = to make a cpu (or gpu) actively do nothing while you wait for something. Like spinning in a circle, you&apos;re moving but not actually going anywhere.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="89"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
         <source>Huge speedup for some games, with almost no compatibility side effects.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="91"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="94"/>
         <source>Enable Fast Memory Access</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="93"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="96"/>
         <source>Uses backpatching to avoid register flushing on every memory access.</source>
         <extracomment>&quot;Backpatching&quot; = To edit previously generated code to change what it does (in this case, we generate direct memory accesses, then backpatch them to jump to a fancier handler function when we realize they need the fancier handler function)</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="95"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="98"/>
         <source>Pause On TLB Miss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="96"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="99"/>
         <source>Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing. Note that the VM will pause after the end of the block, not on the instruction which caused the exception. Refer to the console to see the address where the invalid access occurred.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="100"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="103"/>
         <source>Enable 128MB RAM (Dev Console)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="101"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="104"/>
         <source>Exposes an additional 96MB of memory to the virtual machine.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="103"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="106"/>
         <source>VU0 Rounding Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="103"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="106"/>
         <source>Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Vector Unit 0 (EE VU0). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="106"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
         <source>VU1 Rounding Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="106"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
         <source>Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Vector Unit 1 (EE VU1). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="112"/>
         <source>VU0 Clamping Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="112"/>
         <source>Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine&apos;s Vector Unit 0 (EE VU0). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="111"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="114"/>
         <source>VU1 Clamping Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="111"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="114"/>
         <source>Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine&apos;s Vector Unit 1 (EE VU1). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="114"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="117"/>
         <source>Enable Instant VU1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="114"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="117"/>
         <source>Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
         <source>Enable VU0 Recompiler (Micro Mode)</source>
         <extracomment>VU0 = Vector Unit 0. One of the PS2&apos;s processors.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
         <source>Enables VU0 Recompiler.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="124"/>
         <source>Enable VU1 Recompiler</source>
         <extracomment>VU1 = Vector Unit 1. One of the PS2&apos;s processors.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="124"/>
         <source>Enables VU1 Recompiler.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="125"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="128"/>
         <source>mVU Flag Hack</source>
         <extracomment>mVU = PCSX2&apos;s recompiler for VU (Vector Unit) code (full name: microVU)</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="125"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="128"/>
         <source>Good speedup and high compatibility, may cause graphical errors.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="128"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="131"/>
         <source>Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="130"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="133"/>
         <source>Enable Game Fixes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="131"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="134"/>
         <source>Automatically loads and applies fixes to known problematic games on game start.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="133"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="136"/>
         <source>Enable Compatibility Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="134"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="137"/>
         <source>Automatically loads and applies compatibility patches to known problematic games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="136"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="139"/>
         <source>Savestate Compression Method</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="136"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="139"/>
         <source>Zstandard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="137"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="140"/>
         <source>Determines the algorithm to be used when compressing savestates.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="139"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="142"/>
         <source>Savestate Compression Level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="139"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="142"/>
         <source>Medium</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="140"/>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="143"/>
         <source>Determines the level to be used when compressing savestates.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="145"/>
+        <source>Save State On Shutdown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="146"/>
+        <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="149"/>
+        <source>Create Save State Backups</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AdvancedSettingsWidget.cpp" line="151"/>
+        <source>Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix.</source>
+        <extracomment>Do not translate the &quot;.backup&quot; extension.</extracomment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1213,29 +1236,39 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="422"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="490"/>
+        <source>Create Save State Backups</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="497"/>
+        <source>Save State On Shutdown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="507"/>
         <source>Frame Rate Control</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="428"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="444"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="513"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="529"/>
         <source> hz</source>
         <extracomment>hz=Hertz, as in the measuring unit. Shown after the corresponding number. Those languages who&apos;d need to remove the space or do something in between should do so.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="460"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="545"/>
         <source>PAL Frame Rate:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="467"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="552"/>
         <source>NTSC Frame Rate:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="477"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="422"/>
         <source>Savestate Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1245,62 +1278,62 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="490"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="428"/>
         <source>Compression Method:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="498"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="460"/>
         <source>Uncompressed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="503"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="465"/>
         <source>Deflate64</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="508"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="470"/>
         <source>Zstandard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="513"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="475"/>
         <source>LZMA2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="522"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="436"/>
         <source>Low (Fast)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="527"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="441"/>
         <source>Medium (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="532"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="446"/>
         <source>High</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="537"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="451"/>
         <source>Very High (Slow, Not Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="548"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="562"/>
         <source>PINE Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="570"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="584"/>
         <source>Slot:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="577"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="591"/>
         <source>Enable</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13684,7 +13717,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1124"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1130"/>
         <source>Save slot {0} selected ({1}).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13722,43 +13755,48 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="783"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="784"/>
         <source>Save state selector is unavailable without a valid game serial.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="869"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="871"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="871"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="873"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="873"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="875"/>
         <source>Select Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="875"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="877"/>
         <source>Select Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="928"/>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="950"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="879"/>
+        <source>Close Menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="932"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="954"/>
         <source>Save Slot {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="951"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="955"/>
         <source>No save present in this slot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1121"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1127"/>
         <source>no save yet</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14097,132 +14135,120 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="63"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="70"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
         <source>Pause On Focus Loss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="42"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="140"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="35"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="138"/>
         <source>Inhibit Screensaver</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="35"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
-        <source>Save State On Shutdown</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="56"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
         <source>Pause On Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="49"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="143"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="42"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
         <source>Confirm Shutdown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="84"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
-        <source>Create Save State Backups</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="77"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="49"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
         <source>Enable Discord Presence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="70"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="154"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="63"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
         <source>Pause On Controller Disconnection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="94"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="80"/>
         <source>Game Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="100"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="86"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
         <source>Start Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="107"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="93"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
         <source>Double-Click Toggles Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="114"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="100"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
         <source>Render To Separate Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="121"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="107"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
         <source>Hide Main Window When Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="128"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="176"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="114"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
         <source>Disable Window Resizing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="135"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="121"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
         <source>Hide Cursor In Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="145"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="131"/>
         <source>Preferences</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="151"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="137"/>
         <source>Language:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="161"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="147"/>
         <source>Theme:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="174"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="160"/>
         <source>Automatic Updater</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="187"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="173"/>
         <source>Update Channel:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="194"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="180"/>
         <source>Current Version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="206"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="111"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="192"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="109"/>
         <source>Enable Automatic Update Check</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="213"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="199"/>
         <source>Check for Updates...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14322,66 +14348,59 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="111"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="140"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="143"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="109"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="138"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="112"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="110"/>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="120"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="118"/>
         <source>%1 (%2)</source>
         <extracomment>Variable %1 shows the version number and variable %2 shows a timestamp.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="139"/>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="142"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the virtual machine when the hotkey is pressed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="147"/>
-        <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="174"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="166"/>
         <source>Allows switching in and out of fullscreen mode by double-clicking the game window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="177"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="169"/>
         <source>Prevents the main window from being resized.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="176"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
         <source>Unchecked</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14391,43 +14410,37 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="145"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="147"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
-        <source>Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix.</source>
-        <extracomment>Do not translate the &quot;.backup&quot; extension.</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="160"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
         <source>Automatically switches to fullscreen mode when a game is started.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="154"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="157"/>
         <source>Renders the game to a separate window, instead of the main window. If unchecked, the game will display over the top of the game list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="160"/>
         <source>Hides the main window (with the game list) when a game is running, requires Render To Separate Window to be enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="171"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="163"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation type="unfinished"></translation>
     </message>
