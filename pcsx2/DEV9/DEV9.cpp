@@ -310,6 +310,9 @@ u8 DEV9read8(u32 addr)
 	u8 hard = 0;
 	switch (addr)
 	{
+		case 0x10000020:
+			//DevCon.WriteLn("DEV9: SPD_R_20 8bit read %x", 1);
+			return 1;
 		case SPD_R_PIO_DATA:
 
 			/*if(dev9.eeprom_dir!=1)
@@ -534,8 +537,7 @@ void DEV9write8(u32 addr, u8 value)
 	switch (addr)
 	{
 		case 0x10000020:
-			Console.Error("DEV9: SPD_R_INTR_CAUSE, WTFH ?");
-			dev9.irqcause = 0xff;
+			//DevCon.WriteLn("DEV9: SPD_R_20 8bit write %x", value);
 			break;
 		case SPD_R_INTR_STAT:
 			Console.Error("DEV9: SPD_R_INTR_STAT,  WTFH ?");
