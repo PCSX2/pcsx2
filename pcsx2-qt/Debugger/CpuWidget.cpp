@@ -154,6 +154,11 @@ void CpuWidget::setupSymbolTrees()
 	m_local_variable_tree = new LocalVariableTreeWidget(m_cpu);
 	m_parameter_variable_tree = new ParameterVariableTreeWidget(m_cpu);
 
+	m_function_tree->updateModel();
+	m_global_variable_tree->updateModel();
+	m_local_variable_tree->updateModel();
+	m_parameter_variable_tree->updateModel();
+
 	m_ui.tabFunctions->layout()->addWidget(m_function_tree);
 	m_ui.tabGlobalVariables->layout()->addWidget(m_global_variable_tree);
 	m_ui.tabLocalVariables->layout()->addWidget(m_local_variable_tree);
