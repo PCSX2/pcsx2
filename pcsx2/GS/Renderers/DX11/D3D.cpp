@@ -445,9 +445,7 @@ GSRendererType D3D::GetPreferredRenderer()
 
 		case VendorID::Intel:
 		{
-			// Older Intel GPUs prior to Xe seem to have broken OpenGL drivers which choke
-			// on some of our shaders, causing what appears to be GPU timeouts+device removals.
-			// Vulkan has broken barriers, also prior to Xe.
+			// Vulkan has broken barriers, prior to Xe.
 
 			// Sampler feedback Tier 0.9 is only present in Tiger Lake/Xe/Arc, so we can use that to
 			// differentiate between them. Unfortunately, that requires a D3D12 device.
@@ -456,10 +454,16 @@ GSRendererType D3D::GetPreferredRenderer()
 			{
 				D3D12_FEATURE_DATA_D3D12_OPTIONS7 opts = {};
 				if (SUCCEEDED(device12->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &opts, sizeof(opts))) &&
-					opts.SamplerFeedbackTier >= D3D12_SAMPLER_FEEDBACK_TIER_0_9)
+					(opts.SamplerFeedbackTier >= D3D12_SAMPLER_FEEDBACK_TIER_0_9) &&
+					check_vulkan_supported())
 				{
 					Console.WriteLn("Sampler feedback tier 0.9 found for Intel GPU, defaulting to Vulkan.");
-					return check_vulkan_supported() ? GSRendererType::VK : GSRendererType::DX11;
+					return GSRendererType::VK;
+				}
+				else
+				{
+					Console.WriteLn("Sampler feedback tier 0.9 or Vulkan not found for Intel GPU, using OpenGL.");
+					return GSRendererType::OGL;
 				}
 			}
 
