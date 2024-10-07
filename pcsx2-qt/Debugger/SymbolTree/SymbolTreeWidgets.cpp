@@ -445,6 +445,8 @@ void SymbolTreeWidget::setupMenu()
 void SymbolTreeWidget::openMenu(QPoint pos)
 {
 	SymbolTreeNode* node = currentNode();
+	if (!node)
+		return;
 
 	bool node_is_object = node->tag == SymbolTreeNode::OBJECT;
 	bool node_is_symbol = node->symbol.valid();
