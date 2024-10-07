@@ -661,25 +661,29 @@ void GSDrawScanlineCodeGenerator::Init()
 
 		lea(a0.cvt32(), ptr[a0 + a1 - vecints]);
 
-		// GSVector4i test = m_test[skip] | m_test[7 + (steps & (steps >> 31))];
-
-		mov(eax, a0.cvt32());
-		sar(eax, 31); // GH: 31 to extract the sign of the register
-		and_(eax, a0.cvt32());
-		if (isXmm)
-			shl(eax, 4); // * sizeof(m_test[0])
-		cdqe();
-
 		if (isXmm)
 		{
+			// GSVector4i test = m_test[skip] | m_test[7 + (steps & (steps >> 31))];
+			mov(eax, a0.cvt32());
+			sar(eax, 31); // GH: 31 to extract the sign of the register
+			and_(eax, a0.cvt32());
+			shl(eax, 4); // * sizeof(m_test[0])
+			cdqe();
 			shl(a1.cvt32(), 4); // * sizeof(m_test[0])
 			movdqa(_test, ptr[a1 + _m_const + offsetof(GSScanlineConstantData128B, m_test[0])]);
 			por(_test, ptr[rax + _m_const + offsetof(GSScanlineConstantData128B, m_test[7])]);
 		}
 		else
 		{
-			pmovsxbd(_test, ptr[a1 * 8 + _m_const + offsetof(GSScanlineConstantData256B, m_test[0])]);
-			pmovsxbd(xym0, ptr[rax * 8 + _m_const + offsetof(GSScanlineConstantData256B, m_test[15])]);
+			// GSVector8i test = loadu(&m_test[16 - skip]) | loadu(&m_test[steps >= 0 ? 0 : -steps]);
+			mov(eax, a1.cvt32());
+			neg(rax); // rax = -skip
+			pmovsxbd(_test, ptr[rax + _m_const + offsetof(GSScanlineConstantData256B, m_test[16])]);
+			xor_(t0.cvt32(), t0.cvt32());
+			mov(eax, a0.cvt32());
+			neg(eax);               // eax = -steps
+			cmovs(eax, t0.cvt32()); // if (eax < 0) eax = 0
+			pmovsxbd(xym0, ptr[rax + _m_const + offsetof(GSScanlineConstantData256B, m_test[0])]);
 			por(_test, xym0);
 			shl(a1.cvt32(), 5); // * sizeof(m_test[0])
 		}
@@ -922,7 +926,7 @@ void GSDrawScanlineCodeGenerator::Init()
 /// Inputs: a0=steps, t0=fza_offset
 /// Outputs[x86]: xym0=z xym2=s, xym3=t, xym4=q, xym5=rb, xym6=ga, xym7=test
 /// Destroys[x86]: all
-/// Destroys[x64]: xym0, xym1, xym2, xym3
+/// Destroys[x64]: xym0, xym1, xym2, xym3, t2
 void GSDrawScanlineCodeGenerator::Step()
 {
 	// steps -= 4;
@@ -1048,19 +1052,22 @@ void GSDrawScanlineCodeGenerator::Step()
 
 	if (!m_sel.notest)
 	{
+#if USING_XMM
 		// test = m_test[7 + (steps & (steps >> 31))];
 
 		mov(eax, a0.cvt32());
 		sar(eax, 31); // GH: 31 to extract the sign of the register
 		and_(eax, a0.cvt32());
-		if (isXmm)
-			shl(eax, 4);
+		shl(eax, 4);
 		cdqe();
-
-#if USING_XMM
 		movdqa(_test, ptr[rax + _m_const + offsetof(GSScanlineConstantData128B, m_test[7])]);
 #else
-		pmovsxbd(_test, ptr[rax * 8 + _m_const + offsetof(GSScanlineConstantData256B, m_test[15])]);
+		// test = loadu(&m_test[steps >= 0 ? 0 : -steps]);
+		xor_(t2.cvt32(), t2.cvt32());
+		mov(eax, a0.cvt32());
+		neg(eax);               // eax = -steps
+		cmovs(eax, t2.cvt32()); // if (eax < 0) eax = 0;
+		pmovsxbd(_test, ptr[rax + _m_const + offsetof(GSScanlineConstantData256B, m_test[0])]);
 #endif
 	}
 }
@@ -1655,29 +1662,54 @@ void GSDrawScanlineCodeGenerator::SampleTextureLOD()
 		pslld(xym4, 9);
 		psrld(xym4, 9);
 
-		auto log2_coeff = [this](int i) -> Address
+#if USING_YMM
+		auto load_log2_coeff = [this](const XYm& reg, int i)
 		{
-			ptr[_m_const + log2_coeff_offset(i)];
+			vbroadcastss(reg, ptr[_m_const + log2_coeff_offset(i)]);
 		};
+		auto log2_coeff = [this, &load_log2_coeff](int i)
+		{
+			load_log2_coeff(xym6, i);
+			return xym6;
+		};
+#else
+		auto log2_coeff = [this](int i) -> Operand
+		{
+			return ptr[_m_const + log2_coeff_offset(i)];
+		};
+		auto load_log2_coeff = [this, &log2_coeff](const XYm& reg, int i)
+		{
+			movaps(reg, log2_coeff(i));
+		};
+#endif
 
-		orps(xym4, log2_coeff(3));
+		load_log2_coeff(xym1, 3);
+		orps(xym4, xym1);
 
 		// xym4 = mant(q) | 1.0f
 
 		if (hasFMA)
 		{
-			movaps(xym5, log2_coeff(0)); // c0
+			load_log2_coeff(xym5, 0); // c0
 			vfmadd213ps(xym5, xym4, log2_coeff(1)); // c0 * xym4 + c1
 			vfmadd213ps(xym5, xym4, log2_coeff(2)); // (c0 * xym4 + c1) * xym4 + c2
-			subps(xym4, log2_coeff(3)); // xym4 - 1.0f
+			subps(xym4, xym1); // xym4 - 1.0f
 			vfmadd213ps(xym4, xym5, xym0); // ((c0 * xym4 + c1) * xym4 + c2) * (xym4 - 1.0f) + xym0
 		}
 		else
 		{
-			THREEARG(mulps, xym5, xym4, log2_coeff(0));
+			if (hasAVX)
+			{
+				vmulps(xym5, xym4, log2_coeff(0));
+			}
+			else
+			{
+				load_log2_coeff(xym5, 0);
+				mulps(xym5, xym4);
+			}
 			addps(xym5, log2_coeff(1));
 			mulps(xym5, xym4);
-			subps(xym4, log2_coeff(3));
+			subps(xym4, xym1);
 			addps(xym5, log2_coeff(2));
 			mulps(xym4, xym5);
 			addps(xym4, xym0);

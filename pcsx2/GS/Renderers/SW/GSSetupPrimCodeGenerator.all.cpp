@@ -110,7 +110,12 @@ void GSSetupPrimCodeGenerator::Generate()
 
 		for (int i = 0; i < (m_sel.notest ? 2 : many_regs ? 9 : 5); i++)
 		{
-			movaps(XYm(3 + i), ptr[rax + i * vecsize]);
+			if (isXmm)
+				movaps(XYm(3 + i), ptr[rax + i * vecsize]);
+			else if (i == 0)
+				vbroadcastss(xym3, ptr[rax]);
+			else
+				movups(XYm(3 + i), ptr[rax + (9 - i) * sizeof(float)]);
 		}
 	}
 
@@ -253,7 +258,7 @@ void GSSetupPrimCodeGenerator::Depth_YMM()
 				if (i < 4 || many_regs)
 					vmulps(ymm0, Ymm(4 + i), ymm1);
 				else
-					vmulps(ymm0, ymm1, ptr[g_const_256b.m_shift[i + 1]]);
+					vmulps(ymm0, ymm1, ptr[&g_const_256b.m_shift[8 - i]]);
 				cvttps2dq(ymm0, ymm0);
 				pshuflw(ymm0, ymm0, _MM_SHUFFLE(2, 2, 0, 0));
 				pshufhw(ymm0, ymm0, _MM_SHUFFLE(2, 2, 0, 0));
@@ -281,7 +286,7 @@ void GSSetupPrimCodeGenerator::Depth_YMM()
 				if (i < 4 || many_regs)
 					vmulps(ymm1, Ymm(4 + i), ymm0);
 				else
-					vmulps(ymm1, ymm0, ptr[g_const_256b.m_shift[i + 1]]);
+					vmulps(ymm1, ymm0, ptr[&g_const_256b.m_shift[8 - i]]);
 				movaps(_rip_local_di(i, z), ymm1);
 			}
 		}
@@ -356,7 +361,7 @@ void GSSetupPrimCodeGenerator::Texture()
 			if (i < 4 || many_regs)
 				THREEARG(mulps, xym2, XYm(4 + i), xym1);
 			else
-				vmulps(ymm2, ymm1, ptr[g_const_256b.m_shift[i + 1]]);
+				vmulps(ymm2, ymm1, ptr[&g_const_256b.m_shift[8 - i]]);
 
 			if (m_sel.fst)
 			{
@@ -424,7 +429,7 @@ void GSSetupPrimCodeGenerator::Color()
 			if (i < 4 || many_regs)
 				THREEARG(mulps, xym0, XYm(4 + i), xym2);
 			else
-				vmulps(ymm0, ymm2, ptr[g_const_256b.m_shift[i + 1]]);
+				vmulps(ymm0, ymm2, ptr[&g_const_256b.m_shift[8 - i]]);
 			cvttps2dq(xym0, xym0);
 			packssdw(xym0, xym0);
 
@@ -433,7 +438,7 @@ void GSSetupPrimCodeGenerator::Color()
 			if (i < 4 || many_regs)
 				THREEARG(mulps, xym1, XYm(4 + i), xym3);
 			else
-				vmulps(ymm1, ymm3, ptr[g_const_256b.m_shift[i + 1]]);
+				vmulps(ymm1, ymm3, ptr[&g_const_256b.m_shift[8 - i]]);
 			cvttps2dq(xym1, xym1);
 			packssdw(xym1, xym1);
 
@@ -460,7 +465,7 @@ void GSSetupPrimCodeGenerator::Color()
 			if (i < 4 || many_regs)
 				THREEARG(mulps, xym0, XYm(4 + i), xym2);
 			else
-				vmulps(ymm0, ymm2, ptr[g_const_256b.m_shift[i + 1]]);
+				vmulps(ymm0, ymm2, ptr[&g_const_256b.m_shift[8 - i]]);
 			cvttps2dq(xym0, xym0);
 			packssdw(xym0, xym0);
 
@@ -469,7 +474,7 @@ void GSSetupPrimCodeGenerator::Color()
 			if (i < 4 || many_regs)
 				THREEARG(mulps, xym1, XYm(4 + i), xym3);
 			else
-				vmulps(ymm1, ymm3, ptr[g_const_256b.m_shift[i + 1]]);
+				vmulps(ymm1, ymm3, ptr[&g_const_256b.m_shift[8 - i]]);
 			cvttps2dq(xym1, xym1);
 			packssdw(xym1, xym1);
 

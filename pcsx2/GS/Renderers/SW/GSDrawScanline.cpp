@@ -207,10 +207,11 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, cons
 	constexpr int vlen = sizeof(VectorF) / sizeof(float);
 
 #if _M_SSE >= 0x501
-	const GSVector8* shift = (GSVector8*)g_const_256b.m_shift;
-	const GSVector4 step_shift = GSVector4::broadcast32(&shift[0]);
+	auto load_shift = [](int i) { return GSVector8::load<false>(&g_const_256b.m_shift[8 - i]); };
+	const GSVector4 step_shift = GSVector4::broadcast32(&g_const_256b.m_shift[0]);
 #else
-	const GSVector4* shift = (GSVector4*)g_const_128b.m_shift;
+	static const GSVector4* shift = reinterpret_cast<const GSVector4*>(g_const_128b.m_shift);
+	auto load_shift = [](int i) { return shift[1 + i]; };
 	const GSVector4 step_shift = shift[0];
 #endif
 
@@ -234,22 +235,23 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, cons
 
 				for (int i = 0; i < vlen; i++)
 				{
-					local.d[i].f = VectorI(df * shift[1 + i]).xxzzlh();
+					local.d[i].f = VectorI(df * load_shift(i)).xxzzlh();
 				}
 			}
 
 			if (has_z && !sel.zequal)
 			{
-				const GSVector4 dz = GSVector4::broadcast64(&dscan.p.z);
 				const VectorF dzf(static_cast<float>(dscan.p.F64[1]));
 #if _M_SSE >= 0x501
-				GSVector4::storel(&local.d8.p.z, dz.mul64(GSVector4::f32to64(shift)));
+				double dz = dscan.p.F64[1] * g_const_256b.m_shift[0];
+				memcpy(&local.d8.p.z, &dz, sizeof(dz));
 #else
+				const GSVector4 dz = GSVector4::broadcast64(&dscan.p.z);
 				local.d4.z = dz.mul64(GSVector4::f32to64(shift));
 #endif
 				for (int i = 0; i < vlen; i++)
 				{
-					local.d[i].z = dzf * shift[i + 1];
+					local.d[i].z = dzf * load_shift(i);
 				}
 			}
 		}
@@ -297,7 +299,7 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, cons
 
 			for (int i = 0; i < vlen; i++)
 			{
-				VectorF v = dstq * shift[1 + i];
+				VectorF v = dstq * load_shift(i);
 
 				if (sel.fst)
 				{
@@ -336,8 +338,8 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, cons
 
 			for (int i = 0; i < vlen; i++)
 			{
-				VectorI r = VectorI(dr * shift[1 + i]).ps32();
-				VectorI b = VectorI(db * shift[1 + i]).ps32();
+				VectorI r = VectorI(dr * load_shift(i)).ps32();
+				VectorI b = VectorI(db * load_shift(i)).ps32();
 
 				local.d[i].rb = r.upl16(b);
 			}
@@ -347,8 +349,8 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, cons
 
 			for (int i = 0; i < vlen; i++)
 			{
-				VectorI g = VectorI(dg * shift[1 + i]).ps32();
-				VectorI a = VectorI(da * shift[1 + i]).ps32();
+				VectorI g = VectorI(dg * load_shift(i)).ps32();
+				VectorI a = VectorI(da * load_shift(i)).ps32();
 
 				local.d[i].ga = g.upl16(a);
 			}
@@ -515,7 +517,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 		steps = pixels + skip - vlen;
 		left -= skip;
 #if _M_SSE >= 0x501
-		test = GSVector8i::i8to32(g_const_256b.m_test[skip]) | GSVector8i::i8to32(g_const_256b.m_test[15 + (steps & (steps >> 31))]);
+		test = GSVector8i::i8to32(&g_const_256b.m_test[16 - skip]) | GSVector8i::i8to32(&g_const_256b.m_test[0 - (steps & (steps >> 31))]);
 #else
 		test = const_test[skip] | const_test[7 + (steps & (steps >> 31))];
 #endif
@@ -1756,7 +1758,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 		if (!sel.notest)
 		{
 #if _M_SSE >= 0x501
-			test = GSVector8i::i8to32(g_const_256b.m_test[15 + (steps & (steps >> 31))]);
+			test = GSVector8i::i8to32(&g_const_256b.m_test[0 - (steps & (steps >> 31))]);
 #else
 			test = const_test[7 + (steps & (steps >> 31))];
 #endif
