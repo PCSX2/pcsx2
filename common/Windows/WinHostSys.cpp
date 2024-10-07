@@ -149,6 +149,7 @@ std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t 
 	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Size is page aligned");
 
 	void* alloc = VirtualAlloc2(GetCurrentProcess(), nullptr, size, MEM_RESERVE | MEM_RESERVE_PLACEHOLDER, PAGE_NOACCESS, nullptr, 0);
+	Console.WriteLn("VirtualAlloc2(_, nullptr, %zx, MEM_RESERVE | MEM_RESERVE_PLACEHOLDER, PAGE_NOACCESS, nullptr, 0) => %p", size, alloc);
 	if (!alloc)
 		return nullptr;
 
@@ -175,6 +176,7 @@ u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* ma
 	{
 		phit->second = map_offset;
 
+		Console.WriteLn("VirtualFreeEx(_, %p, %zx, MEM_RELEASE | MEM_PRESERVE_PLACEHOLDER)", OffsetPointer(phit->first), (map_offset - phit->first));
 		// split it (i.e. left..start and start..end are now separated)
 		if (!VirtualFreeEx(GetCurrentProcess(), OffsetPointer(phit->first),
 				(map_offset - phit->first), MEM_RELEASE | MEM_PRESERVE_PLACEHOLDER))
@@ -194,6 +196,7 @@ u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* ma
 		// split out end..ph_end
 		m_placeholder_ranges.emplace(map_offset + map_size, old_ph_end);
 
+		Console.WriteLn("VirtualFreeEx(_, %p, %zx, MEM_RELEASE | MEM_PRESERVE_PLACEHOLDER)", OffsetPointer(map_offset), map_size);
 		if (!VirtualFreeEx(GetCurrentProcess(), OffsetPointer(map_offset), map_size,
 				MEM_RELEASE | MEM_PRESERVE_PLACEHOLDER))
 		{
@@ -204,6 +207,7 @@ u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* ma
 	// actually do the mapping, replacing the placeholder on the range
 	if (file_handle)
 	{
+		Console.WriteLn("MapViewOfFile3(%p, _, %p, %zx, %zx, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0)", file_handle, map_base, file_offset, map_size);
 		if (!MapViewOfFile3(static_cast<HANDLE>(file_handle), GetCurrentProcess(),
 				map_base, file_offset, map_size, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0))
 		{
@@ -213,6 +217,7 @@ u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* ma
 	}
 	else
 	{
+		Console.WriteLn("VirtualAlloc2(_, %p, %zx, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0)", map_base, map_size);
 		if (!VirtualAlloc2(GetCurrentProcess(), map_base, map_size, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0))
 		{
 			Console.Error("(SharedMemoryMappingArea) VirtualAlloc2() failed: %u", GetLastError());
@@ -241,6 +246,7 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 	pxAssert(Common::IsAlignedPow2(map_size, __pagesize));
 
 	// unmap the specified range
+	Console.WriteLn("UnmapViewOfFile2(_, %p, MEM_PRESERVE_PLACEHOLDER)", map_base);
 	if (!UnmapViewOfFile2(GetCurrentProcess(), map_base, MEM_PRESERVE_PLACEHOLDER))
 	{
 		Console.Error("(SharedMemoryMappingArea) UnmapViewOfFile2() failed: %u", GetLastError());
@@ -256,6 +262,7 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 		left_it->second = map_offset + map_size;
 
 		// combine placeholders before and the range we're unmapping, i.e. to the left
+		Console.WriteLn("VirtualFreeEx(_, %p, %zx, MEM_RELEASE | MEM_COALESCE_PLACEHOLDERS)", OffsetPointer(left_it->first), left_it->second - left_it->first);
 		if (!VirtualFreeEx(GetCurrentProcess(), OffsetPointer(left_it->first),
 				left_it->second - left_it->first, MEM_RELEASE | MEM_COALESCE_PLACEHOLDERS))
 		{
@@ -278,6 +285,7 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 		m_placeholder_ranges.erase(right_it);
 
 		// combine our placeholder and the next, i.e. to the right
+		Console.WriteLn("VirtualFreeEx(_, %p, %zx, MEM_RELEASE | MEM_COALESCE_PLACEHOLDERS)", OffsetPointer(left_it->first), left_it->second - left_it->first);
 		if (!VirtualFreeEx(GetCurrentProcess(), OffsetPointer(left_it->first),
 				left_it->second - left_it->first, MEM_RELEASE | MEM_COALESCE_PLACEHOLDERS))
 		{
