@@ -67,6 +67,12 @@ using namespace Xbyak;
 	#define _rip_local_d_p(x) _rip_local_d(x)
 #endif
 
+#if USING_YMM
+static constexpr const GSScanlineConstantData256B& g_const = g_const_256b;
+#else
+static constexpr const GSScanlineConstantData128B& g_const = g_const_128b;
+#endif
+
 template <typename A, typename B>
 static bool IsInRipRelativeRange(A* a, B* b)
 {
@@ -667,13 +673,13 @@ void GSDrawScanlineCodeGenerator::Init()
 		if (isXmm)
 		{
 			shl(a1.cvt32(), 4); // * sizeof(m_test[0])
-			movdqa(_test, ptr[a1 + _m_const + offsetof(GSScanlineConstantData, m_test_128b[0])]);
-			por(_test, ptr[rax + _m_const + offsetof(GSScanlineConstantData, m_test_128b[7])]);
+			movdqa(_test, ptr[a1 + _m_const + offsetof(GSScanlineConstantData128B, m_test[0])]);
+			por(_test, ptr[rax + _m_const + offsetof(GSScanlineConstantData128B, m_test[7])]);
 		}
 		else
 		{
-			pmovsxbd(_test, ptr[a1 * 8 + _m_const + offsetof(GSScanlineConstantData, m_test_256b[0])]);
-			pmovsxbd(xym0, ptr[rax * 8 + _m_const + offsetof(GSScanlineConstantData, m_test_256b[15])]);
+			pmovsxbd(_test, ptr[a1 * 8 + _m_const + offsetof(GSScanlineConstantData256B, m_test[0])]);
+			pmovsxbd(xym0, ptr[rax * 8 + _m_const + offsetof(GSScanlineConstantData256B, m_test[15])]);
 			por(_test, xym0);
 			shl(a1.cvt32(), 5); // * sizeof(m_test[0])
 		}
@@ -1052,9 +1058,9 @@ void GSDrawScanlineCodeGenerator::Step()
 		cdqe();
 
 #if USING_XMM
-		movdqa(_test, ptr[rax + _m_const + offsetof(GSScanlineConstantData, m_test_128b[7])]);
+		movdqa(_test, ptr[rax + _m_const + offsetof(GSScanlineConstantData128B, m_test[7])]);
 #else
-		pmovsxbd(_test, ptr[rax * 8 + _m_const + offsetof(GSScanlineConstantData, m_test_256b[15])]);
+		pmovsxbd(_test, ptr[rax * 8 + _m_const + offsetof(GSScanlineConstantData256B, m_test[15])]);
 #endif
 	}
 }
@@ -1594,11 +1600,7 @@ static int log2_coeff_offset(int i)
 {
 	// Yay, you can't offsetof with non-constant array indices
 	uptr base = reinterpret_cast<uptr>(&g_const);
-#if USING_XMM
-	uptr target = reinterpret_cast<uptr>(&g_const.m_log2_coef_128b[i]);
-#else
-	uptr target = reinterpret_cast<uptr>(&g_const.m_log2_coef_256b[i]);
-#endif
+	uptr target = reinterpret_cast<uptr>(&g_const.m_log2_coef[i]);
 	return target - base;
 };
 

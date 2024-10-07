@@ -15,7 +15,8 @@
 
 #if MULTI_ISA_COMPILE_ONCE
 // Lack of a better home
-constexpr GSScanlineConstantData g_const;
+constexpr GSScanlineConstantData256B g_const_256b;
+constexpr GSScanlineConstantData128B g_const_128b;
 #endif
 
 MULTI_ISA_UNSHARED_IMPL;
@@ -206,10 +207,10 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, cons
 	constexpr int vlen = sizeof(VectorF) / sizeof(float);
 
 #if _M_SSE >= 0x501
-	const GSVector8* shift = (GSVector8*)g_const.m_shift_256b;
+	const GSVector8* shift = (GSVector8*)g_const_256b.m_shift;
 	const GSVector4 step_shift = GSVector4::broadcast32(&shift[0]);
 #else
-	const GSVector4* shift = (GSVector4*)g_const.m_shift_128b;
+	const GSVector4* shift = (GSVector4*)g_const_128b.m_shift;
 	const GSVector4 step_shift = shift[0];
 #endif
 
@@ -494,7 +495,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 	constexpr int vlen = sizeof(VectorF) / sizeof(float);
 
 #if _M_SSE < 0x501
-	const GSVector4i* const_test = (GSVector4i*)g_const.m_test_128b;
+	const GSVector4i* const_test = (GSVector4i*)g_const_128b.m_test;
 #endif
 	VectorI test;
 	VectorF z0, z1;
@@ -514,7 +515,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 		steps = pixels + skip - vlen;
 		left -= skip;
 #if _M_SSE >= 0x501
-		test = GSVector8i::i8to32(g_const.m_test_256b[skip]) | GSVector8i::i8to32(g_const.m_test_256b[15 + (steps & (steps >> 31))]);
+		test = GSVector8i::i8to32(g_const_256b.m_test[skip]) | GSVector8i::i8to32(g_const_256b.m_test[15 + (steps & (steps >> 31))]);
 #else
 		test = const_test[skip] | const_test[7 + (steps & (steps >> 31))];
 #endif
@@ -1755,7 +1756,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 		if (!sel.notest)
 		{
 #if _M_SSE >= 0x501
-			test = GSVector8i::i8to32(g_const.m_test_256b[15 + (steps & (steps >> 31))]);
+			test = GSVector8i::i8to32(g_const_256b.m_test[15 + (steps & (steps >> 31))]);
 #else
 			test = const_test[7 + (steps & (steps >> 31))];
 #endif
