@@ -218,7 +218,7 @@ u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* ma
 	else
 	{
 		Console.WriteLn("VirtualAlloc2(_, %p, %zx, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0)", map_base, map_size);
-		if (!VirtualAlloc2(GetCurrentProcess(), map_base, map_size, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0))
+		if (!VirtualAlloc2(GetCurrentProcess(), map_base, map_size, MEM_RESERVE | MEM_COMMIT | MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0))
 		{
 			Console.Error("(SharedMemoryMappingArea) VirtualAlloc2() failed: %u", GetLastError());
 			return nullptr;
