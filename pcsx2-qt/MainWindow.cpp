@@ -2017,6 +2017,7 @@ void MainWindow::onVMStopped()
 	m_status_fps_widget->setText(empty_string);
 	m_status_vps_widget->setText(empty_string);
 	m_status_speed_widget->setText(empty_string);
+	m_status_verbose_widget->setText(empty_string);
 
 	updateEmulationActions(false, false, false);
 	updateGameDependentActions();
