@@ -20,6 +20,8 @@ static const auto& _locals = x3;
 static const auto& _scratchaddr = x7;
 static const auto& _vscratch = v31;
 
+static constexpr const GSScanlineConstantData128B& g_const = g_const_128b;
+
 #define _local(field) MemOperand(_locals, offsetof(GSScanlineLocalData, field))
 #define armAsm (&m_emitter)
 
@@ -38,10 +40,10 @@ void GSSetupPrimCodeGenerator::Generate()
 	const bool needs_shift = ((m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS) || m_en.t || (m_en.c && m_sel.iip);
 	if (needs_shift)
 	{
-		armAsm->Mov(x4, reinterpret_cast<intptr_t>(g_const.m_shift_128b));
+		armAsm->Mov(x4, reinterpret_cast<intptr_t>(g_const.m_shift));
 		for (int i = 0; i < (m_sel.notest ? 2 : 5); i++)
 		{
-			armAsm->Ldr(VRegister(3 + i, kFormat16B), MemOperand(x4, i * sizeof(g_const.m_shift_128b[0])));
+			armAsm->Ldr(VRegister(3 + i, kFormat16B), MemOperand(x4, i * sizeof(g_const.m_shift[0])));
 		}
 	}
 
