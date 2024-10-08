@@ -409,7 +409,7 @@ Login token generated on %2.</source>
       <source>You have unlocked {} of %n achievements</source>
       <comment>Achievement popup</comment>
       <translation>
-        <numerusform>您已经解锁了 %n 个成就中的 { } 个</numerusform>
+        <numerusform>您已经解锁了 %n 个成就中的 {} 个</numerusform>
       </translation>
     </message>
     <message numerus="yes">
@@ -417,7 +417,7 @@ Login token generated on %2.</source>
       <source>and earned {} of %n points</source>
       <comment>Achievement popup</comment>
       <translation>
-        <numerusform>并且获得了 %n 点数中的 { } 点</numerusform>
+        <numerusform>并且获得了 %n 点数中的 {} 点</numerusform>
       </translation>
     </message>
     <message>
