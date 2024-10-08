@@ -613,14 +613,16 @@ namespace R3000A
 					v0 = allocfd(file);
 					if ((s32)v0 < 0)
 						file->close();
+					else
+					{
+						fileHandle handle;
+						handle.fd_index = v0 - firstfd;
+						handle.flags = flags;
+						handle.full_path = path;
+						handle.mode = mode;
+						handles.push_back(handle);
+					}
 				}
-
-				fileHandle handle;
-				handle.fd_index = v0 - firstfd;
-				handle.flags = flags;
-				handle.full_path = path;
-				handle.mode = mode;
-				handles.push_back(handle);
 
 				pc = ra;
 				return 1;
@@ -1463,7 +1465,7 @@ bool SaveStateBase::handleFreeze()
 			//save the current file position
 			const u32 fd = R3000A::handles[i].fd_index;
 			IOManFile* file = R3000A::ioman::getfd<IOManFile>(fd + firstfd);
-			s32 pos = file->lseek(0, SEEK_CUR);
+			s32 pos = file ? file->lseek(0, SEEK_CUR) : 0;
 			Freeze(pos);
 
 			//save the parameters for opening the file
