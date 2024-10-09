@@ -646,6 +646,7 @@ void GSgetStats(SmallStringBase& info)
 		const double fillrate = pm.Get(GSPerfMon::Fillrate);
 		double pps = fps * fillrate;
 		char prefix = '\0';
+		
 		if (pps >= 170000000)
 		{
 			pps /= 1073741824; // Gpps
@@ -665,7 +666,6 @@ void GSgetStats(SmallStringBase& info)
 		{
 			prefix = '\0';
 		}
-
 
 		info.format("{} SW | {} SP | {} P | {} D | {:.2f} S | {:.2f} U | {:.2f} {}pps",
 			api_name,
