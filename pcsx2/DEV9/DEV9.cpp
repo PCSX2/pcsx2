@@ -287,95 +287,20 @@ void FIFOIntr()
 	}
 }
 
-u8 DEV9read8(u32 addr)
+u16 SpeedRead(u32 addr, int width)
 {
-	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
-		return 0;
-
-	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
-	{
-		Console.Error("DEV9: ATA does not support 8bit reads %lx", addr);
-		return 0;
-	}
-	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
-	{
-		//smap
-		return smap_read8(addr);
-	}
-	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
-	{
-		return static_cast<u8>(FLASHread32(addr, 1));
-	}
-
-	u8 hard = 0;
-	switch (addr)
-	{
-		case SPD_R_PIO_DATA:
-
-			/*if(dev9.eeprom_dir!=1)
-			{
-				hard=0;
-				break;
-			}*/
-
-			if (dev9.eeprom_state == EEPROM_TDATA)
-			{
-				if (dev9.eeprom_command == 2) //read
-				{
-					if (dev9.eeprom_bit != 0xFF)
-						hard = ((dev9.eeprom[dev9.eeprom_address] << dev9.eeprom_bit) & 0x8000) >> 11;
-					dev9.eeprom_bit++;
-					if (dev9.eeprom_bit == 16)
-					{
-						dev9.eeprom_address++;
-						dev9.eeprom_bit = 0;
-					}
-				}
-			}
-			//DevCon.WriteLn("DEV9: SPD_R_PIO_DATA 8bit read %x", hard);
-			return hard;
-
-		case DEV9_R_REV:
-			hard = 0x32; // expansion bay
-			//DevCon.WriteLn("DEV9: DEV9_R_REV 8bit read %x", hard);
-			return hard;
-
-		default:
-			hard = dev9Ru8(addr);
-			Console.Error("DEV9: Unknown 8bit read at address %lx value %x", addr, hard);
-			return hard;
-	}
-}
-
-u16 DEV9read16(u32 addr)
-{
-	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
-		return 0;
-
-	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
-	{
-		return dev9.ata->Read16(addr);
-	}
-	
-	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
-	{
-		//smap
-		return smap_read16(addr);
-	}
-	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
-	{
-		return static_cast<u16>(FLASHread32(addr, 2));
-	}
-
 	u16 hard = 0;
 	switch (addr)
 	{
+		case 0x10000020:
+			//DevCon.WriteLn("DEV9: SPD_R_20 %dbit read %x", width, 1);
+			return 1;
 		case SPD_R_INTR_STAT:
-			//DevCon.WriteLn("DEV9: SPD_R_INTR_STAT 16bit read %x", dev9.irqcause);
+			//DevCon.WriteLn("DEV9: SPD_R_INTR_STAT %dbit read %x", width, dev9.irqcause);
 			return dev9.irqcause;
 
 		case SPD_R_INTR_MASK:
-			//DevCon.WriteLn("DEV9: SPD_R_INTR_MASK 16bit read %x", dev9.irqmask);
+			//DevCon.WriteLn("DEV9: SPD_R_INTR_MASK %dbit read %x", width, dev9.irqmask);
 			return dev9.irqmask;
 
 		case SPD_R_PIO_DATA:
@@ -388,7 +313,7 @@ u16 DEV9read16(u32 addr)
 
 			if (dev9.eeprom_state == EEPROM_TDATA)
 			{
-				if (dev9.eeprom_command == 2) //read
+				if (dev9.eeprom_command == 2) // read
 				{
 					if (dev9.eeprom_bit != 0xFF)
 						hard = ((dev9.eeprom[dev9.eeprom_address] << dev9.eeprom_bit) & 0x8000) >> 11;
@@ -400,22 +325,16 @@ u16 DEV9read16(u32 addr)
 					}
 				}
 			}
-			//DevCon.WriteLn("DEV9: SPD_R_PIO_DATA 16bit read %x", hard);
-			return hard;
-
-		case DEV9_R_REV:
-			//hard = 0x0030; // expansion bay
-			//DevCon.WriteLn("DEV9: DEV9_R_REV 16bit read %x", dev9.irqmask);
-			hard = 0x0032;
+			//DevCon.WriteLn("DEV9: SPD_R_PIO_DATA %dbit read %x", width, hard);
 			return hard;
 
 		case SPD_R_REV_1:
-			//DevCon.WriteLn("DEV9: SPD_R_REV_1 16bit read %x", 0);
+			//DevCon.WriteLn("DEV9: SPD_R_REV_1 %dbit read %x", width, 0);
 			return 0;
 
 		case SPD_R_REV_2:
-			hard = 0x0011;
-			//DevCon.WriteLn("DEV9: STD_R_REV_2 16bit read %x", hard);
+			hard = 0x11;
+			//DevCon.WriteLn("DEV9: STD_R_REV_2 %dbit read %x", width, hard);
 			return hard;
 
 		case SPD_R_REV_3:
@@ -426,21 +345,21 @@ u16 DEV9read16(u32 addr)
 
 			// TODO: Do we need flash? my 50003 model doesn't report this, but it does report DVR capable aka (1<<4), was that intended?
 			hard |= SPD_CAPS_ATA | SPD_CAPS_FLASH;
-			//DevCon.WriteLn("DEV9: SPD_R_REV_3 16bit read %x", hard);
+			//DevCon.WriteLn("DEV9: SPD_R_REV_3 %dbit read %x", width, hard);
 			return hard;
 
 		case SPD_R_0e:
-			hard = 0x0002; //Have HDD module inserted
-			DevCon.WriteLn("DEV9: SPD_R_0e 16bit read %x", hard);
+			hard = 0x0002; // Have HDD module inserted
+			DevCon.WriteLn("DEV9: SPD_R_0e %dbit read %x", width, hard);
 			return hard;
 		case SPD_R_XFR_CTRL:
-			DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL 16bit read %x", dev9.xfr_ctrl);
+			DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL %dbit read %x", width, dev9.xfr_ctrl);
 			return dev9.xfr_ctrl;
 		case SPD_R_DBUF_STAT:
 		{
-			if (dev9.if_ctrl & SPD_IF_READ) //Semi async
+			if (dev9.if_ctrl & SPD_IF_READ) // Semi async
 			{
-				HDDWriteFIFO(); //Yes this is not a typo
+				HDDWriteFIFO(); // Yes this is not a typo
 			}
 			else
 			{
@@ -449,7 +368,7 @@ u16 DEV9read16(u32 addr)
 			FIFOIntr();
 
 			const u8 count = static_cast<u8>((dev9.fifo_bytes_write - dev9.fifo_bytes_read) / 512);
-			if (dev9.xfr_ctrl & SPD_XFR_WRITE) //or ifRead?
+			if (dev9.xfr_ctrl & SPD_XFR_WRITE) // or ifRead?
 			{
 				hard = static_cast<u8>(SPD_DBUF_AVAIL_MAX - count);
 				hard |= (count == 0) ? SPD_DBUF_STAT_1 : static_cast<u16>(0);
@@ -460,8 +379,8 @@ u16 DEV9read16(u32 addr)
 				hard = count;
 				hard |= (count < SPD_DBUF_AVAIL_MAX) ? SPD_DBUF_STAT_1 : static_cast<u16>(0);
 				hard |= (count == 0) ? SPD_DBUF_STAT_2 : static_cast<u16>(0);
-				//If overflow (HDD->SPEED), set both SPD_DBUF_STAT_2 & SPD_DBUF_STAT_FULL
-				//and overflow INTR set
+				// If overflow (HDD->SPEED), set both SPD_DBUF_STAT_2 & SPD_DBUF_STAT_FULL
+				// and overflow INTR set
 			}
 
 			if (count == SPD_DBUF_AVAIL_MAX)
@@ -469,192 +388,42 @@ u16 DEV9read16(u32 addr)
 				hard |= SPD_DBUF_STAT_FULL;
 			}
 
-			//DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT 16bit read %x", hard);
+			//DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT %dbit read %x", width, hard);
 			return hard;
 		}
 		case SPD_R_IF_CTRL:
-			//DevCon.WriteLn("DEV9: SPD_R_IF_CTRL 16bit read %x", dev9.if_ctrl);
+			//DevCon.WriteLn("DEV9: SPD_R_IF_CTRL %dbit read %x", width,, dev9.if_ctrl);
 			return dev9.if_ctrl;
 		default:
 			hard = dev9Ru16(addr);
-			Console.Error("DEV9: Unknown 16bit read at address %lx value %x", addr, hard);
+			Console.Error("DEV9: Unknown %dbit read at address %lx value %x", width, addr, hard);
 			return hard;
 	}
 }
 
-u32 DEV9read32(u32 addr)
+void SpeedWrite(u32 addr, u16 value, int width)
 {
-	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
-		return 0;
-
-	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
-	{
-		Console.Error("DEV9: ATA does not support 32bit reads %lx", addr);
-		return 0;
-	}
-	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
-	{
-		//smap
-		return smap_read32(addr);
-	}
-	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
-	{
-		return static_cast<u32>(FLASHread32(addr, 4));
-	}
-
-	const u32 hard = dev9Ru32(addr);
-	Console.Error("DEV9: Unknown 32bit read at address %lx value %x", addr, hard);
-	return hard;
-}
-
-void DEV9write8(u32 addr, u8 value)
-{
-	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
-		return;
-
-	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
-	{
-#ifdef ENABLE_ATA
-		ata_write<1>(addr, value);
-#endif
-		return;
-	}
-	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
-	{
-		//smap
-		smap_write8(addr, value);
-		return;
-	}
-	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
-	{
-		FLASHwrite32(addr, static_cast<u32>(value), 1);
-		return;
-	}
-
 	switch (addr)
 	{
 		case 0x10000020:
-			Console.Error("DEV9: SPD_R_INTR_CAUSE, WTFH ?");
-			dev9.irqcause = 0xff;
-			break;
+			// DevCon.WriteLn("DEV9: SPD_R_20 %dbit write %x", wisth, value);
+			return;
 		case SPD_R_INTR_STAT:
-			Console.Error("DEV9: SPD_R_INTR_STAT,  WTFH ?");
+			Console.Error("DEV9: SPD_R_INTR_STAT %dbit write, WTF? %x", width, value);
 			dev9.irqcause = value;
 			return;
-		case SPD_R_INTR_MASK:
-			Console.Error("DEV9: SPD_R_INTR_MASK8, WTFH ?");
-			break;
-
-		case SPD_R_PIO_DIR:
-			//DevCon.WriteLn("DEV9: SPD_R_PIO_DIR 8bit write %x", value);
-
-			if ((value & 0xc0) != 0xc0)
-				return;
-
-			if ((value & 0x30) == 0x20)
-			{
-				dev9.eeprom_state = 0;
-			}
-			dev9.eeprom_dir = (value >> 4) & 3;
-
-			return;
-
-		case SPD_R_PIO_DATA:
-			//DevCon.WriteLn("DEV9: SPD_R_PIO_DATA 8bit write %x", value);
-
-			if ((value & 0xc0) != 0xc0)
-				return;
-
-			switch (dev9.eeprom_state)
-			{
-				case EEPROM_READY:
-					dev9.eeprom_command = 0;
-					dev9.eeprom_state++;
-					break;
-				case EEPROM_OPCD0:
-					dev9.eeprom_command = (value >> 4) & 2;
-					dev9.eeprom_state++;
-					dev9.eeprom_bit = 0xFF;
-					break;
-				case EEPROM_OPCD1:
-					dev9.eeprom_command |= (value >> 5) & 1;
-					dev9.eeprom_state++;
-					break;
-				case EEPROM_ADDR0:
-				case EEPROM_ADDR1:
-				case EEPROM_ADDR2:
-				case EEPROM_ADDR3:
-				case EEPROM_ADDR4:
-				case EEPROM_ADDR5:
-					dev9.eeprom_address =
-						(dev9.eeprom_address & (63 ^ (1 << (dev9.eeprom_state - EEPROM_ADDR0)))) |
-						((value >> (dev9.eeprom_state - EEPROM_ADDR0)) & (0x20 >> (dev9.eeprom_state - EEPROM_ADDR0)));
-					dev9.eeprom_state++;
-					break;
-				case EEPROM_TDATA:
-				{
-					if (dev9.eeprom_command == 1) //write
-					{
-						dev9.eeprom[dev9.eeprom_address] =
-							(dev9.eeprom[dev9.eeprom_address] & (63 ^ (1 << dev9.eeprom_bit))) |
-							((value >> dev9.eeprom_bit) & (0x8000 >> dev9.eeprom_bit));
-						dev9.eeprom_bit++;
-						if (dev9.eeprom_bit == 16)
-						{
-							dev9.eeprom_address++;
-							dev9.eeprom_bit = 0;
-						}
-					}
-				}
-				break;
-				default:
-					Console.Error("DEV9: Unknown EEPROM COMMAND");
-					break;
-			}
-			return;
-		default:
-			dev9Ru8(addr) = value;
-			Console.Error("DEV9: Unknown 8bit write at address %lx value %x", addr, value);
-			return;
-	}
-}
-
-void DEV9write16(u32 addr, u16 value)
-{
-	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
-		return;
-
-	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
-	{
-		dev9.ata->Write16(addr, value);
-		return;
-	}
-	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
-	{
-		//smap
-		smap_write16(addr, value);
-		return;
-	}
-	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
-	{
-		FLASHwrite32(addr, static_cast<u32>(value), 2);
-		return;
-	}
-
-	switch (addr)
-	{
-		case SPD_R_INTR_MASK:
-			//DevCon.WriteLn("DEV9: SPD_R_INTR_MASK 16bit write %x	, checking for masked/unmasked interrupts", value);
+		case SPD_R_INTR_MASK: // 8bit writes affect whole reg
+			//DevCon.WriteLn("DEV9: SPD_R_INTR_MASK %dbit write %x", checking for masked/unmasked interrupts", width, value);
 			if ((dev9.irqmask != value) && ((dev9.irqmask | value) & dev9.irqcause))
 			{
-				//DevCon.WriteLn("DEV9: SPD_R_INTR_MASK16 firing unmasked interrupts");
+				//DevCon.WriteLn("DEV9: SPD_R_INTR_MASK firing unmasked interrupts");
 				dev9Irq(1);
 			}
 			dev9.irqmask = value;
-			break;
+			return;
 
 		case SPD_R_PIO_DIR:
-			//DevCon.WriteLn("DEV9: SPD_R_PIO_DIR 16bit write %x", value);
+			DevCon.WriteLn("DEV9: SPD_R_PIO_DIR %dbit write %x", width, value);
 
 			if ((value & 0xc0) != 0xc0)
 				return;
@@ -664,11 +433,10 @@ void DEV9write16(u32 addr, u16 value)
 				dev9.eeprom_state = 0;
 			}
 			dev9.eeprom_dir = (value >> 4) & 3;
-
 			return;
 
 		case SPD_R_PIO_DATA:
-			//DevCon.WriteLn("DEV9: SPD_R_PIO_DATA 16bit write %x", value);
+			//DevCon.WriteLn("DEV9: SPD_R_PIO_DATA %dbit write %x", width, value);
 
 			if ((value & 0xc0) != 0xc0)
 				return;
@@ -701,7 +469,7 @@ void DEV9write16(u32 addr, u16 value)
 					break;
 				case EEPROM_TDATA:
 				{
-					if (dev9.eeprom_command == 1) //write
+					if (dev9.eeprom_command == 1) // write
 					{
 						dev9.eeprom[dev9.eeprom_address] =
 							(dev9.eeprom[dev9.eeprom_address] & (63 ^ (1 << dev9.eeprom_bit))) |
@@ -713,8 +481,8 @@ void DEV9write16(u32 addr, u16 value)
 							dev9.eeprom_bit = 0;
 						}
 					}
+					break;
 				}
-				break;
 				default:
 					Console.Error("DEV9: Unknown EEPROM COMMAND");
 					break;
@@ -722,7 +490,7 @@ void DEV9write16(u32 addr, u16 value)
 			return;
 
 		case SPD_R_DMA_CTRL:
-			//DevCon.WriteLn("DEV9: SPD_R_IF_CTRL 16bit write %x", value);
+			//DevCon.WriteLn("DEV9: SPD_R_IF_CTRL %dbit write %x", width, value);
 			dev9.dma_ctrl = value;
 
 			//if (value & SPD_DMA_TO_SMAP)
@@ -748,7 +516,7 @@ void DEV9write16(u32 addr, u16 value)
 
 			break;
 		case SPD_R_XFR_CTRL:
-			//DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL 16bit write %x", value);
+			//DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL %dbit write %x", width, value);
 			dev9.xfr_ctrl = value;
 
 			//if (value & SPD_XFR_WRITE)
@@ -772,7 +540,7 @@ void DEV9write16(u32 addr, u16 value)
 
 			break;
 		case SPD_R_DBUF_STAT:
-			//DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT 16bit write %x", value);
+			//DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT %dbit write %x", width, value);
 
 			if ((value & SPD_DBUF_RESET_FIFO) != 0)
 			{
@@ -790,7 +558,7 @@ void DEV9write16(u32 addr, u16 value)
 			break;
 
 		case SPD_R_IF_CTRL:
-			//DevCon.WriteLn("DEV9: SPD_R_IF_CTRL 16bit write %x", value);
+			//DevCon.WriteLn("DEV9: SPD_R_IF_CTRL %dbit write %x", width, value);
 			dev9.if_ctrl = value;
 
 			//if (value & SPD_IF_UDMA)
@@ -848,7 +616,7 @@ void DEV9write16(u32 addr, u16 value)
 
 			break;
 		case SPD_R_PIO_MODE: //ATA only? or includes EEPROM?
-			//DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 16bit write %x", value);
+			//DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 16bit %dbit write %x", width, value);
 			dev9.pio_mode = value;
 
 			switch (value)
@@ -874,8 +642,8 @@ void DEV9write16(u32 addr, u16 value)
 					break;
 			}
 			break;
-		case SPD_R_MDMA_MODE: //ATA only? or includes EEPROM?
-			DevCon.WriteLn("DEV9: SPD_R_MDMA_MODE 16bit write %x", value);
+		case SPD_R_MDMA_MODE:
+			DevCon.WriteLn("DEV9: SPD_R_MDMA_MODE 16bit write %dbit write %x", width, value);
 			dev9.mdma_mode = value;
 
 			switch (value)
@@ -895,8 +663,8 @@ void DEV9write16(u32 addr, u16 value)
 			}
 
 			break;
-		case SPD_R_UDMA_MODE: //ATA only?
-			DevCon.WriteLn("DEV9: SPD_R_UDMA_MODE 16bit write %x", value);
+		case SPD_R_UDMA_MODE:
+			DevCon.WriteLn("DEV9: SPD_R_UDMA_MODE 16bit write %dbit write %x", width, value);
 			dev9.udma_mode = value;
 
 			switch (value)
@@ -923,10 +691,187 @@ void DEV9write16(u32 addr, u16 value)
 			break;
 
 		default:
-			dev9Ru16(addr) = value;
-			Console.Error("DEV9: *Unknown 16bit write at address %lx value %x", addr, value);
+			dev9Ru8(addr) = value;
+			Console.Error("DEV9: Unknown %dbit write at address %lx value %x", width, addr, value);
 			return;
 	}
+}
+
+u8 DEV9read8(u32 addr)
+{
+	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
+		return 0;
+
+	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
+	{
+		Console.Error("DEV9: ATA does not support 8bit reads %lx", addr);
+		return 0;
+	}
+	// Note, ATA regs within range of addresses used by Speed
+	if (addr >= SPD_REGBASE && addr < SMAP_REGBASE)
+	{
+		// speed
+		return SpeedRead(addr, 8);
+	}
+	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
+	{
+		// smap
+		return smap_read8(addr);
+	}
+	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
+	{
+		return static_cast<u8>(FLASHread32(addr, 1));
+	}
+
+	u8 hard = 0;
+	switch (addr)
+	{
+		case DEV9_R_REV:
+			hard = 0x32; // expansion bay
+			//DevCon.WriteLn("DEV9: DEV9_R_REV 8bit read %x", hard);
+			return hard;
+
+		default:
+			hard = dev9Ru8(addr);
+			Console.Error("DEV9: Unknown 8bit read at address %lx value %x", addr, hard);
+			return hard;
+	}
+}
+
+u16 DEV9read16(u32 addr)
+{
+	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
+		return 0;
+
+	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
+	{
+		return dev9.ata->Read16(addr);
+	}
+	// Note, ATA regs within range of addresses used by Speed
+	if (addr >= SPD_REGBASE && addr < SMAP_REGBASE)
+	{
+		// speed
+		return SpeedRead(addr, 16);
+	}
+	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
+	{
+		// smap
+		return smap_read16(addr);
+	}
+	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
+	{
+		return static_cast<u16>(FLASHread32(addr, 2));
+	}
+
+	u16 hard = 0;
+	switch (addr)
+	{
+		case DEV9_R_REV:
+			//hard = 0x0030; // expansion bay
+			//DevCon.WriteLn("DEV9: DEV9_R_REV 16bit read %x", dev9.irqmask);
+			hard = 0x0032;
+			return hard;
+
+		default:
+			hard = dev9Ru16(addr);
+			Console.Error("DEV9: Unknown 16bit read at address %lx value %x", addr, hard);
+			return hard;
+	}
+}
+
+u32 DEV9read32(u32 addr)
+{
+	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
+		return 0;
+
+	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
+	{
+		Console.Error("DEV9: ATA does not support 32bit reads %lx", addr);
+		return 0;
+	}
+	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
+	{
+		//smap
+		return smap_read32(addr);
+	}
+	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
+	{
+		return static_cast<u32>(FLASHread32(addr, 4));
+	}
+
+	const u32 hard = dev9Ru32(addr);
+	Console.Error("DEV9: Unknown 32bit read at address %lx value %x", addr, hard);
+	return hard;
+}
+
+void DEV9write8(u32 addr, u8 value)
+{
+	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
+		return;
+
+	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
+	{
+#ifdef ENABLE_ATA
+		ata_write<1>(addr, value);
+#endif
+		Console.Error("DEV9: ATA does not support 8bit writes %lx", addr);
+		return;
+	}
+	// Note, ATA regs within range of addresses used by Speed
+	if (addr >= SPD_REGBASE && addr < SMAP_REGBASE)
+	{
+		// speed
+		SpeedWrite(addr, value, 8);
+		return;
+	}
+	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
+	{
+		// smap
+		smap_write8(addr, value);
+		return;
+	}
+	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
+	{
+		FLASHwrite32(addr, static_cast<u32>(value), 1);
+		return;
+	}
+
+	Console.Error("DEV9: Unknown 8bit write at address %lx value %x", addr, value);
+	return;
+}
+
+void DEV9write16(u32 addr, u16 value)
+{
+	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
+		return;
+
+	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
+	{
+		dev9.ata->Write16(addr, value);
+		return;
+	}
+	// Note, ATA regs within range of addresses used by Speed
+	if (addr >= SPD_REGBASE && addr < SMAP_REGBASE)
+	{
+		// speed
+		SpeedWrite(addr, value, 16);
+		return;
+	}
+	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
+	{
+		// smap
+		smap_write16(addr, value);
+		return;
+	}
+	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
+	{
+		FLASHwrite32(addr, static_cast<u32>(value), 2);
+		return;
+	}
+
+	dev9Ru16(addr) = value;
+	Console.Error("DEV9: *Unknown 16bit write at address %lx value %x", addr, value);
+	return;
 }
 
 void DEV9write32(u32 addr, u32 value)
