@@ -3481,6 +3481,8 @@ SCED-52759:
   region: "PAL-M5"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -3510,6 +3512,8 @@ SCED-52846:
   region: "PAL-E"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -3581,6 +3585,8 @@ SCED-52899:
   region: "PAL-M5"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -5078,6 +5084,8 @@ SCES-52004:
   compat: 5
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -5409,6 +5417,8 @@ SCES-52893:
   region: "PAL-E-GR-R"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -6913,6 +6923,8 @@ SCKA-20048:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -7125,6 +7137,8 @@ SCKA-20078:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -11075,6 +11089,8 @@ SCUS-97402:
   compat: 5
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -11215,6 +11231,8 @@ SCUS-97431:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -11223,6 +11241,8 @@ SCUS-97432:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -11666,6 +11686,8 @@ SCUS-97517:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -12839,6 +12861,8 @@ SLED-52899:
   region: "PAL-M5"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -17957,6 +17981,8 @@ SLES-51981:
   region: "PAL-E"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     roundSprite: 1 # Fixes slight blur.
 SLES-51982:
@@ -17964,6 +17990,8 @@ SLES-51982:
   region: "PAL-M3"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     roundSprite: 1 # Fixes slight blur.
 SLES-51986:
@@ -43492,6 +43520,8 @@ SLPM-66151:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
@@ -62369,6 +62399,8 @@ SLUS-20828:
   compat: 5
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     roundSprite: 1 # Fixes slight blur.
 SLUS-20830:
@@ -69846,6 +69878,8 @@ TCES-52004:
   region: "PAL-E"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gameFixes:
+    - IbitHack # Reduces VU recompilation.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 2 # Fixes post effects.
