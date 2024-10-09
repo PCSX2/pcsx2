@@ -5,6 +5,7 @@
 
 #include <QtWidgets/QStyledItemDelegate>
 
+#include "DebugTools/DebugInterface.h"
 #include "DebugTools/SymbolGuardian.h"
 
 class SymbolTreeValueDelegate : public QStyledItemDelegate
