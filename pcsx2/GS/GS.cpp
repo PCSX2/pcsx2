@@ -644,14 +644,37 @@ void GSgetStats(SmallStringBase& info)
 	{
 		const double fps = GetVerticalFrequency();
 		const double fillrate = pm.Get(GSPerfMon::Fillrate);
-		info.format("{} SW | {} S | {} P | {} D | {:.2f} U | {:.2f} D | {:.2f} mpps",
+		double pps = fps * fillrate;
+		char prefix = '\0';
+		
+		if (pps >= 170000000)
+		{
+			pps /= 1073741824; // Gpps
+			prefix = 'G';
+		}
+		else if (pps >= 35000000)
+		{
+			pps /= 1048576; // Mpps
+			prefix = 'M';
+		}
+		else if (pps >= 1024)
+		{
+			pps /= 1024;
+			prefix = 'K';
+		}
+		else
+		{
+			prefix = '\0';
+		}
+
+		info.format("{} SW | {} SP | {} P | {} D | {:.2f} S | {:.2f} U | {:.2f} {}pps",
 			api_name,
 			(int)pm.Get(GSPerfMon::SyncPoint),
 			(int)pm.Get(GSPerfMon::Prim),
 			(int)pm.Get(GSPerfMon::Draw),
 			pm.Get(GSPerfMon::Swizzle) / 1024,
 			pm.Get(GSPerfMon::Unswizzle) / 1024,
-			fps * fillrate / (1024 * 1024));
+			pps,prefix);
 	}
 	else if (GSCurrentRenderer == GSRendererType::Null)
 	{
