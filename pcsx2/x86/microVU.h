@@ -123,6 +123,7 @@ struct microVU
 	s32 cycles;       // Cycles Counter
 
 	VURegs& regs() const { return ::vuRegs[index]; }
+	void* textPtr() const { return (index && THREAD_VU1) ? (void*)&regs().VF[9] : (void*)R5900_TEXTPTR; }
 
 	__fi REG_VI& getVI(uint reg) const { return regs().VI[reg]; }
 	__fi VECTOR& getVF(uint reg) const { return regs().VF[reg]; }
