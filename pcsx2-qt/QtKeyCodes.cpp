@@ -566,16 +566,17 @@ const char* InputManager::ConvertHostKeyboardCodeToIcon(u32 code)
 
 u32 QtUtils::KeyEventToCode(const QKeyEvent* ev)
 {
+	Qt::KeyboardModifiers modifiers = ev->modifiers();
 	const QString text = ev->text();
-	const u8 keycode = map_text_to_keycode(text); // Map special text symbols to keycodes
+	// Map special text symbols to keycodes if we're using Shift modifier.
+	// Also check that we're not using Keypad modifier otherwise "NumpadAsterisk" would return "8" keycode
+	// and "NumpadPlus" would return "Equal" keycode.
+	const bool set_keycode = (modifiers & Qt::ShiftModifier) && !(modifiers & Qt::KeypadModifier);
+	const u8 keycode = set_keycode ? map_text_to_keycode(text) : 0;
 	int key = ev->key();
 
 	if (keycode != 0)
-	{
 		key = keycode; // Override key if mapped
-	}
-
-	Qt::KeyboardModifiers modifiers = ev->modifiers();
 
 #ifdef __APPLE__
 	// On macOS, Qt applies the Keypad modifier regardless of whether the arrow keys, or numpad was pressed.
