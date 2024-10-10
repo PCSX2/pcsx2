@@ -108,13 +108,13 @@ static void FillPipelineCacheHeader(VK_PIPELINE_CACHE_HEADER* header)
 	X(shaderc_compile_options_set_generate_debug_info) \
 	X(shaderc_compile_options_set_optimization_level) \
 	X(shaderc_compile_options_set_target_env) \
-	X(shaderc_compilation_status_to_string) \
 	X(shaderc_compile_into_spv) \
 	X(shaderc_result_release) \
 	X(shaderc_result_get_length) \
 	X(shaderc_result_get_num_warnings) \
 	X(shaderc_result_get_bytes) \
-	X(shaderc_result_get_error_message)
+	X(shaderc_result_get_error_message) \
+	X(shaderc_result_get_compilation_status)
 
 // TODO: NOT thread safe, yet.
 namespace dyn_shaderc
@@ -216,21 +216,25 @@ std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileShaderToSPV(
 
 	dyn_shaderc::shaderc_compile_options_set_source_language(options, shaderc_source_language_glsl);
 	dyn_shaderc::shaderc_compile_options_set_target_env(options, shaderc_target_env_vulkan, 0);
+#ifdef SHADERC_PCSX2_CUSTOM
 	dyn_shaderc::shaderc_compile_options_set_generate_debug_info(options, debug,
 		debug && GSDeviceVK::GetInstance()->GetOptionalExtensions().vk_khr_shader_non_semantic_info);
+#else
+	if (debug)
+		dyn_shaderc::shaderc_compile_options_set_generate_debug_info(options);
+#endif
 	dyn_shaderc::shaderc_compile_options_set_optimization_level(
 		options, debug ? shaderc_optimization_level_zero : shaderc_optimization_level_performance);
 
-	shaderc_compilation_result_t result;
-	const shaderc_compilation_status status = dyn_shaderc::shaderc_compile_into_spv(
+	const shaderc_compilation_result_t result = dyn_shaderc::shaderc_compile_into_spv(
 		dyn_shaderc::s_compiler, source.data(), source.length(), static_cast<shaderc_shader_kind>(stage), "source",
-		"main", options, &result);
-	if (status != shaderc_compilation_status_success)
+		"main", options);
+
+	if (!result || dyn_shaderc::shaderc_result_get_compilation_status(result) != shaderc_compilation_status_success)
 	{
 		const std::string_view errors(result ? dyn_shaderc::shaderc_result_get_error_message(result) :
 											   "null result object");
-		ERROR_LOG("Failed to compile shader to SPIR-V: {}\n{}",
-			dyn_shaderc::shaderc_compilation_status_to_string(status), errors);
+		ERROR_LOG("Failed to compile shader to SPIR-V: {}", errors);
 		DumpBadShader(source, errors);
 	}
 	else
