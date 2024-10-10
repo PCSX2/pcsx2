@@ -4998,6 +4998,12 @@ SCES-51684:
     autoFlush: 2 # Fixes sun luminosity.
     halfPixelOffset: 2 # Aligns Depth of Field.
     nativeScaling: 2 # Fixes Depth of Field effect.
+  patches:
+    80802EA9:
+      content: |-
+        author=JordanTheToaster
+        // Fixes branch in delay slot performance penalty.
+        patch=1,EE,002AA578,word,00000000
 SCES-51685:
   name: "Primal"
   region: "PAL-E-R"
@@ -7203,7 +7209,7 @@ SCKA-20090:
   region: "NTSC-K"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Depth of field effect aligned properly + Shifts buildings correctly.
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
 SCKA-20091:
   name: "MLB 07 - The Show"
@@ -17785,6 +17791,7 @@ SLES-51917:
   roundModes:
     eeRoundMode: 0 # Fixes SPS with water in some places.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes eye color.
     textureInsideRT: 1 # Fixes the shape of shadows.
     autoFlush: 2 # Fixes water rendering.
     halfPixelOffset: 3 # Fixes bloom misalignment, needs this harsh offset for autoflush.
@@ -21235,8 +21242,9 @@ SLES-53192:
   name-sort: "Nightmare Before Christmas, The - Tim Burton's"
   region: "PAL-M5"
   gsHWFixes:
-    forceEvenSpritePosition: 1 # Fixes blurriness.
-    mergeSprite: 1 # Fixes misaligned lights.
+    halfPixelOffset: 2 # Aligns post Effect and bloom.
+    nativeScaling: 2 # Fixes post effect position and alignment.
+    autoFlush: 1 # Fixes light glow and alignment.
 SLES-53193:
   name: "Puzzle Party - 10 Games"
   region: "PAL-E"
@@ -25162,7 +25170,7 @@ SLES-54490:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Depth of field effect aligned properly + Shifts buildings correctly.
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
 SLES-54492:
   name: "Need for Speed - Carbon [Collector's Edition]"
@@ -26131,6 +26139,7 @@ SLES-54819:
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_Manhunt2"
+    autoFlush: 1 # Fixes missing lights and light intensity.
 SLES-54820:
   name: "Stuntman - Ignition"
   region: "PAL-M5"
@@ -32887,8 +32896,9 @@ SLPM-61090:
   name: "Tim Burton's The Nightmare Before Christmas [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    forceEvenSpritePosition: 1 # Fixes blurriness.
-    mergeSprite: 1 # Fixes misaligned lights.
+    halfPixelOffset: 2 # Aligns post Effect and bloom.
+    nativeScaling: 2 # Fixes post effect position and alignment.
+    autoFlush: 1 # Fixes light glow and alignment.
 SLPM-61091:
   name: "Berserk - Millennium Falcon-hen - Seima Senki no Shou"
   region: "NTSC-J"
@@ -41049,8 +41059,9 @@ SLPM-65739:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    forceEvenSpritePosition: 1 # Fixes blurriness.
-    mergeSprite: 1 # Fixes misaligned lights.
+    halfPixelOffset: 2 # Aligns post Effect and bloom.
+    nativeScaling: 2 # Fixes post effect position and alignment.
+    autoFlush: 1 # Fixes light glow and alignment.
 SLPM-65740:
   name: "Jリーグ ウイニングイレブン8 〜Asia Championship〜"
   name-sort: "Jりーぐ ういにんぐいれぶん8 〜Asia Championship〜"
@@ -43364,8 +43375,9 @@ SLPM-66131:
   name-en: "Tim Burton's The Nightmare Before Christmas [Premium Pack]"
   region: "NTSC-J"
   gsHWFixes:
-    forceEvenSpritePosition: 1 # Fixes blurriness.
-    mergeSprite: 1 # Fixes misaligned lights.
+    halfPixelOffset: 2 # Aligns post Effect and bloom.
+    nativeScaling: 2 # Fixes post effect position and alignment.
+    autoFlush: 1 # Fixes light glow and alignment.
 SLPM-66132:
   name: "GLADIATOR ROAD TO FREEDOM REMIX"
   name-sort: "GLADIATOR ROAD TO FREEDOM REMIX"
@@ -45928,7 +45940,7 @@ SLPM-66550:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Depth of field effect aligned properly + Shifts buildings correctly.
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
 SLPM-66551:
   name: "APPLESEED EX(アップルシード エクス)"
@@ -46866,8 +46878,9 @@ SLPM-66697:
   name-en: "Nightmare Before Christmas, The [CapKore]"
   region: "NTSC-J"
   gsHWFixes:
-    forceEvenSpritePosition: 1 # Fixes blurriness.
-    mergeSprite: 1 # Fixes misaligned lights.
+    halfPixelOffset: 2 # Aligns post Effect and bloom.
+    nativeScaling: 2 # Fixes post effect position and alignment.
+    autoFlush: 1 # Fixes light glow and alignment.
 SLPM-66698:
   name: "史上最強の弟子ケンイチ 激闘!ラグナレク八拳豪"
   name-sort: "しじょうさいきょうのでしけんいち げきとう!らぐなれくはちけんごう"
@@ -49283,7 +49296,7 @@ SLPM-74241:
   name-en: "God Hand [PlayStation 2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Depth of field effect aligned properly + Shifts buildings correctly.
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
 SLPM-74242:
   name: "Devil May Cry 3 Special Edition PlayStation 2 the Best"
@@ -62057,6 +62070,7 @@ SLUS-20763:
   roundModes:
     eeRoundMode: 0 # Fixes SPS with water in some places.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes eye color.
     textureInsideRT: 1 # Fixes the shape of shadows.
     autoFlush: 2 # Fixes water rendering.
     halfPixelOffset: 3 # Fixes bloom misalignment, needs this harsh offset for autoflush.
@@ -62539,8 +62553,9 @@ SLUS-20860:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    forceEvenSpritePosition: 1 # Fixes blurriness.
-    mergeSprite: 1 # Fixes misaligned lights.
+    halfPixelOffset: 2 # Aligns post Effect and bloom.
+    nativeScaling: 2 # Fixes post effect position and alignment.
+    autoFlush: 1 # Fixes light glow and alignment.
 SLUS-20861:
   name: "MTV Music Generator 3 - This is the Remix"
   region: "NTSC-U"
@@ -66597,7 +66612,7 @@ SLUS-21503:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Depth of field effect aligned properly + Shifts buildings correctly.
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
 SLUS-21536:
   name: "The Sims 2 - Pets"
@@ -67024,6 +67039,7 @@ SLUS-21613:
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_Manhunt2"
+    autoFlush: 1 # Fixes missing lights and light intensity.
 SLUS-21614:
   name: "Star Wars - The Force Unleashed"
   region: "NTSC-U"
@@ -69281,6 +69297,7 @@ SLUS-29082:
   roundModes:
     eeRoundMode: 0 # Fixes SPS with water in some places.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes eye color.
     textureInsideRT: 1 # Fixes the shape of shadows.
     autoFlush: 2 # Fixes water rendering.
     halfPixelOffset: 3 # Fixes bloom misalignment, needs this harsh offset for autoflush.
