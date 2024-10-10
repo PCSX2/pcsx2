@@ -4998,6 +4998,12 @@ SCES-51684:
     autoFlush: 2 # Fixes sun luminosity.
     halfPixelOffset: 2 # Aligns Depth of Field.
     nativeScaling: 2 # Fixes Depth of Field effect.
+  patches:
+    80802EA9:
+      content: |-
+        author=JordanTheToaster
+        // Fixes branch in delay slot performance penalty.
+        patch=1,EE,002AA578,word,00000000
 SCES-51685:
   name: "Primal"
   region: "PAL-E-R"
@@ -7203,7 +7209,7 @@ SCKA-20090:
   region: "NTSC-K"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Depth of field effect aligned properly + Shifts buildings correctly.
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
 SCKA-20091:
   name: "MLB 07 - The Show"
@@ -25162,7 +25168,7 @@ SLES-54490:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Depth of field effect aligned properly + Shifts buildings correctly.
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
 SLES-54492:
   name: "Need for Speed - Carbon [Collector's Edition]"
@@ -26131,6 +26137,7 @@ SLES-54819:
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_Manhunt2"
+    autoFlush: 1 # Fixes missing lights and light intensity.
 SLES-54820:
   name: "Stuntman - Ignition"
   region: "PAL-M5"
@@ -45928,7 +45935,7 @@ SLPM-66550:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Depth of field effect aligned properly + Shifts buildings correctly.
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
 SLPM-66551:
   name: "APPLESEED EX(アップルシード エクス)"
@@ -49283,7 +49290,7 @@ SLPM-74241:
   name-en: "God Hand [PlayStation 2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Depth of field effect aligned properly + Shifts buildings correctly.
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
 SLPM-74242:
   name: "Devil May Cry 3 Special Edition PlayStation 2 the Best"
@@ -66597,7 +66604,7 @@ SLUS-21503:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Depth of field effect aligned properly + Shifts buildings correctly.
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
 SLUS-21536:
   name: "The Sims 2 - Pets"
@@ -67024,6 +67031,7 @@ SLUS-21613:
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_Manhunt2"
+    autoFlush: 1 # Fixes missing lights and light intensity.
 SLUS-21614:
   name: "Star Wars - The Force Unleashed"
   region: "NTSC-U"
