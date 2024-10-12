@@ -153,6 +153,30 @@ void tx_process()
 			{
 				Console.Error("DEV9: SMAP: ERROR: odd , !pbd->pointer>0x1000 | 0x%X %u", pbd->pointer, pbd->length);
 			}
+
+			// SMAP drivers send a very specfic frame during init, then check SPD_R_INTR_STAT for SMAP_INTR_RXEND | SMAP_INTR_TXEND | SMAP_INTR_TXDNV.
+			// SMAP_INTR_TXEND is set normally, SMAP_INTR_RXEND is supposed to be set here, but we currently don't emulate that.
+			// SMAP_INTR_TXDNV is set somewhere, unsure where, we only set it in failure (instead of SMAP_INTR_TXEND), but is included in the hack here.
+			if (pbd->length == 0x5EA && pbd->pointer == 0x1000)
+			{
+				u32* ptr = (u32*)&dev9.txfifo[base];
+
+				bool test = true;
+				for (u32 i = 0; i < 0x5EA; i += 4)
+				{
+					if (*ptr++ != i)
+					{
+						test = false;
+						break;
+					}
+				}
+				if (test)
+				{
+					Console.WriteLn("DEV9: Adapter Detection Hack - Resetting RX/TX");
+					_DEV9irq(SMAP_INTR_RXEND | SMAP_INTR_TXDNV, 100);
+				}
+			}
+
 			//increase fifo pointer(s)
 			//uh does that even exist on real h/w ?
 			/*
@@ -250,12 +274,6 @@ void emac3_write(u32 addr)
 			break;
 		case SMAP_R_EMAC3_TxMODE1_L:
 			//DevCon.WriteLn("DEV9: SMAP_R_EMAC3_TxMODE1_L 32bit write %x", value);
-			if (value == 0x380f0000)
-			{
-				Console.WriteLn("DEV9: Adapter Detection Hack - Resetting RX/TX");
-				ad_reset();
-				_DEV9irq(SMAP_INTR_RXEND | SMAP_INTR_TXEND | SMAP_INTR_TXDNV, 5);
-			}
 			break;
 		case SMAP_R_EMAC3_STA_CTRL_L:
 			//DevCon.WriteLn("DEV9: SMAP: SMAP_R_EMAC3_STA_CTRL write %x", value);
