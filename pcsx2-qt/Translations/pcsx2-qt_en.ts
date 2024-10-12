@@ -3439,87 +3439,87 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="361"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="366"/>
         <source>Breakpoint List Context Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="365"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="506"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="370"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="511"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="373"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="378"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="379"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="633"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="681"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="384"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="638"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="686"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="384"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="569"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="389"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="574"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="393"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="542"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="646"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="694"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="398"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="547"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="651"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="699"/>
         <source>Copy all as CSV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="403"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="549"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="408"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="554"/>
         <source>Paste from CSV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="631"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="636"/>
         <source>Thread List Context Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="525"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="530"/>
         <source>Go to in Disassembly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="407"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="555"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="412"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="560"/>
         <source>Load from Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="414"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="562"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="419"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="567"/>
         <source>Save to Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="517"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="522"/>
         <source>Go to in Memory View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="533"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="538"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="533"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="538"/>
         <source>Copy Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="679"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="684"/>
         <source>Stack List Context Menu</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9268,7 +9268,7 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1036"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1059"/>
         <source>Upscale multiplier set to {}x.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10639,7 +10639,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>GlobalVariableTreeWidget</name>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="765"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="767"/>
         <source>unknown function</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13257,190 +13257,190 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1057"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1065"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1085"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1092"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1101"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1107"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1113"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1119"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1080"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1088"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1108"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1115"/>
         <location filename="../../pcsx2/GS/GS.cpp" line="1124"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1137"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1150"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1178"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1190"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1204"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1130"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1136"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1142"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1160"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1173"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1201"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1213"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1227"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1058"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1081"/>
         <source>Save Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1065"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1088"/>
         <source>Toggle Video Capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1085"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1108"/>
         <source>Save Single Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1092"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1115"/>
         <source>Save Multi Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1102"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1125"/>
         <source>Toggle Software Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1108"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1131"/>
         <source>Increase Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1114"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1137"/>
         <source>Decrease Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1119"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1142"/>
         <source>Toggle On-Screen Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1124"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
         <source>Cycle Aspect Ratio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1133"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1156"/>
         <source>Aspect ratio set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1137"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1160"/>
         <source>Toggle Hardware Mipmapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1144"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1167"/>
         <source>Hardware mipmapping is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1145"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1168"/>
         <source>Hardware mipmapping is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1150"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1173"/>
         <source>Cycle Deinterlace Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1156"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1179"/>
         <source>Automatic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1157"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1180"/>
         <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1158"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1181"/>
         <source>Weave (Top Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1159"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1182"/>
         <source>Weave (Bottom Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1160"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1183"/>
         <source>Bob (Top Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1161"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1184"/>
         <source>Bob (Bottom Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1162"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1185"/>
         <source>Blend (Top Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1163"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1186"/>
         <source>Blend (Bottom Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1164"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1187"/>
         <source>Adaptive (Top Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1165"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1188"/>
         <source>Adaptive (Bottom Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1172"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1195"/>
         <source>Deinterlace mode set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1178"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1201"/>
         <source>Toggle Texture Dumping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1184"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1207"/>
         <source>Texture dumping is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1185"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1208"/>
         <source>Texture dumping is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1191"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1214"/>
         <source>Toggle Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1198"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1221"/>
         <source>Texture replacements are now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1199"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1222"/>
         <source>Texture replacements are now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1205"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1228"/>
         <source>Reload Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1212"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1235"/>
         <source>Texture replacements are not enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1217"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1240"/>
         <source>Reloading texture replacements...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14593,7 +14593,7 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../MainWindow.ui" line="58"/>
-        <location filename="../MainWindow.cpp" line="2790"/>
+        <location filename="../MainWindow.cpp" line="2791"/>
         <source>Load State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15208,10 +15208,10 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../MainWindow.cpp" line="1313"/>
         <location filename="../MainWindow.cpp" line="1708"/>
-        <location filename="../MainWindow.cpp" line="2199"/>
-        <location filename="../MainWindow.cpp" line="2334"/>
-        <location filename="../MainWindow.cpp" line="2695"/>
-        <location filename="../MainWindow.cpp" line="2809"/>
+        <location filename="../MainWindow.cpp" line="2200"/>
+        <location filename="../MainWindow.cpp" line="2335"/>
+        <location filename="../MainWindow.cpp" line="2696"/>
+        <location filename="../MainWindow.cpp" line="2810"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15356,27 +15356,27 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2156"/>
+        <location filename="../MainWindow.cpp" line="2157"/>
         <source>Load State Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2156"/>
+        <location filename="../MainWindow.cpp" line="2157"/>
         <source>Cannot load a save state without a running VM.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2184"/>
+        <location filename="../MainWindow.cpp" line="2185"/>
         <source>The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2199"/>
+        <location filename="../MainWindow.cpp" line="2200"/>
         <source>Cannot change from game to GS dump without shutting down first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2334"/>
+        <location filename="../MainWindow.cpp" line="2335"/>
         <source>Failed to get window info from widget</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15402,88 +15402,88 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2653"/>
+        <location filename="../MainWindow.cpp" line="2654"/>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2671"/>
+        <location filename="../MainWindow.cpp" line="2672"/>
         <source>Select disc drive:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2695"/>
+        <location filename="../MainWindow.cpp" line="2696"/>
         <source>This save state does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2708"/>
+        <location filename="../MainWindow.cpp" line="2709"/>
         <source>Select Cover Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2725"/>
+        <location filename="../MainWindow.cpp" line="2726"/>
         <source>Cover Already Exists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2726"/>
+        <location filename="../MainWindow.cpp" line="2727"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2721"/>
-        <location filename="../MainWindow.cpp" line="2735"/>
-        <location filename="../MainWindow.cpp" line="2741"/>
-        <location filename="../MainWindow.cpp" line="2747"/>
+        <location filename="../MainWindow.cpp" line="2722"/>
+        <location filename="../MainWindow.cpp" line="2736"/>
+        <location filename="../MainWindow.cpp" line="2742"/>
+        <location filename="../MainWindow.cpp" line="2748"/>
         <source>Copy Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2735"/>
+        <location filename="../MainWindow.cpp" line="2736"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2741"/>
+        <location filename="../MainWindow.cpp" line="2742"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2747"/>
+        <location filename="../MainWindow.cpp" line="2748"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2183"/>
-        <location filename="../MainWindow.cpp" line="2756"/>
+        <location filename="../MainWindow.cpp" line="2184"/>
+        <location filename="../MainWindow.cpp" line="2757"/>
         <source>Confirm Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2708"/>
+        <location filename="../MainWindow.cpp" line="2709"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2721"/>
+        <location filename="../MainWindow.cpp" line="2722"/>
         <source>You must select a different file to the current cover image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2757"/>
+        <location filename="../MainWindow.cpp" line="2758"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2784"/>
+        <location filename="../MainWindow.cpp" line="2785"/>
         <source>Load Resume State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2787"/>
+        <location filename="../MainWindow.cpp" line="2788"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -15492,43 +15492,43 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2791"/>
+        <location filename="../MainWindow.cpp" line="2792"/>
         <source>Fresh Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2792"/>
+        <location filename="../MainWindow.cpp" line="2793"/>
         <source>Delete And Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2809"/>
+        <location filename="../MainWindow.cpp" line="2810"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2867"/>
+        <location filename="../MainWindow.cpp" line="2868"/>
         <source>Load State File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2867"/>
+        <location filename="../MainWindow.cpp" line="2868"/>
         <source>Load From File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2870"/>
-        <location filename="../MainWindow.cpp" line="2941"/>
+        <location filename="../MainWindow.cpp" line="2871"/>
+        <location filename="../MainWindow.cpp" line="2942"/>
         <source>Select Save State File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2941"/>
+        <location filename="../MainWindow.cpp" line="2942"/>
         <source>Save States (*.p2s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2877"/>
+        <location filename="../MainWindow.cpp" line="2878"/>
         <source>Delete Save States...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15548,75 +15548,75 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2870"/>
+        <location filename="../MainWindow.cpp" line="2871"/>
         <source>Save States (*.p2s *.p2s.backup)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2882"/>
+        <location filename="../MainWindow.cpp" line="2883"/>
         <source>Undo Load State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2896"/>
+        <location filename="../MainWindow.cpp" line="2897"/>
         <source>Resume (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2912"/>
+        <location filename="../MainWindow.cpp" line="2913"/>
         <source>Load Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2921"/>
-        <location filename="../MainWindow.cpp" line="2929"/>
+        <location filename="../MainWindow.cpp" line="2922"/>
+        <location filename="../MainWindow.cpp" line="2930"/>
         <source>Delete Save States</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2922"/>
+        <location filename="../MainWindow.cpp" line="2923"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2929"/>
+        <location filename="../MainWindow.cpp" line="2930"/>
         <source>%1 save states deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2939"/>
+        <location filename="../MainWindow.cpp" line="2940"/>
         <source>Save To File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2959"/>
+        <location filename="../MainWindow.cpp" line="2960"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2961"/>
+        <location filename="../MainWindow.cpp" line="2962"/>
         <source>Save Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3012"/>
+        <location filename="../MainWindow.cpp" line="3013"/>
         <source>Confirm Disc Change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3013"/>
+        <location filename="../MainWindow.cpp" line="3014"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3014"/>
+        <location filename="../MainWindow.cpp" line="3015"/>
         <source>Swap Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3015"/>
+        <location filename="../MainWindow.cpp" line="3016"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18376,7 +18376,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="378"/>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="521"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="523"/>
         <source>Rename Symbol</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18426,38 +18426,38 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="475"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="477"/>
         <source>Confirm Deletion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="475"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="477"/>
         <source>Delete &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="522"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="524"/>
         <source>Name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="582"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="584"/>
         <source>Change Type To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="583"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="585"/>
         <source>Type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="587"/>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="598"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="589"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="600"/>
         <source>Cannot Change Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="587"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="589"/>
         <source>That node cannot have a type.</source>
         <translation type="unfinished"></translation>
     </message>
