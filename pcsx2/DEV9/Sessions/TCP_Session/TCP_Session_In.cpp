@@ -22,9 +22,9 @@ namespace Sessions
 {
 	std::optional<ReceivedPayload> TCP_Session::Recv()
 	{
-		std::unique_ptr<TCP_Packet> ret = PopRecvBuff();
-		if (ret != nullptr)
-			return ReceivedPayload{destIP, std::move(ret)};
+		std::optional<ReceivedPayload> ret = PopRecvBuff();
+		if (ret.has_value())
+			return ret;
 
 		switch (state)
 		{
@@ -43,9 +43,9 @@ namespace Sessions
 				select(client + 1, nullptr, &writeSet, &exceptSet, &nowait);
 
 				if (FD_ISSET(client, &writeSet))
-					return ReceivedPayload{destIP, ConnectTCPComplete(true)};
+					return ConnectTCPComplete(true);
 				if (FD_ISSET(client, &exceptSet))
-					return ReceivedPayload{destIP, ConnectTCPComplete(false)};
+					return ConnectTCPComplete(false);
 
 				return std::nullopt;
 			}
@@ -153,9 +153,9 @@ namespace Sessions
 					switch (state)
 					{
 						case TCP_State::Connected:
-							return ReceivedPayload{destIP, CloseByRemoteStage1()};
+							return CloseByRemoteStage1();
 						case TCP_State::Closing_ClosedByPS2:
-							return ReceivedPayload{destIP, CloseByPS2Stage3()};
+							return CloseByPS2Stage3();
 						default:
 							CloseByRemoteRST();
 							Console.Error("DEV9: TCP: Remote close occured with invalid TCP state");
@@ -183,7 +183,7 @@ namespace Sessions
 		return std::nullopt;
 	}
 
-	std::unique_ptr<TCP_Packet> TCP_Session::ConnectTCPComplete(bool success)
+	std::optional<ReceivedPayload> TCP_Session::ConnectTCPComplete(bool success)
 	{
 		if (success)
 		{
@@ -217,7 +217,7 @@ namespace Sessions
 
 				ret->options.push_back(new TCPopTS(timestampSeconds, lastRecivedTimeStamp));
 			}
-			return ret;
+			return ReceivedPayload{destIP, std::move(ret)};
 		}
 		else
 		{
@@ -232,15 +232,15 @@ namespace Sessions
 				Console.Error("DEV9: TCP: Unkown TCP connection error (getsockopt error: %d)", errno);
 #endif
 			else
-				Console.Error("DEV9: TCP: Send error: %d", error);
+				Console.Error("DEV9: TCP: Connect error: %d", error);
 
 			state = TCP_State::CloseCompleted;
 			RaiseEventConnectionClosed();
-			return nullptr;
+			return std::nullopt;
 		}
 	}
 
-	std::unique_ptr<TCP_Packet> TCP_Session::CloseByPS2Stage3()
+	ReceivedPayload TCP_Session::CloseByPS2Stage3()
 	{
 		//Console.WriteLn("DEV9: TCP: Remote has closed connection after PS2");
 
@@ -254,10 +254,10 @@ namespace Sessions
 		//DevCon.WriteLn("myNumberACKed reset");
 
 		state = TCP_State::Closing_ClosedByPS2ThenRemote_WaitingForAck;
-		return ret;
+		return ReceivedPayload{destIP, std::move(ret)};
 	}
 
-	std::unique_ptr<TCP_Packet> TCP_Session::CloseByRemoteStage1()
+	ReceivedPayload TCP_Session::CloseByRemoteStage1()
 	{
 		//Console.WriteLn("DEV9: TCP: Remote has closed connection");
 
@@ -271,6 +271,6 @@ namespace Sessions
 		//DevCon.WriteLn("myNumberACKed reset");
 
 		state = TCP_State::Closing_ClosedByRemote;
-		return ret;
+		return ReceivedPayload{destIP, std::move(ret)};
 	}
 } // namespace Sessions
