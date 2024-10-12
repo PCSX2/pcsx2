@@ -187,13 +187,13 @@ namespace usb_pad
 				Console.Warning("SDL_HapticUpdateEffect() for constant failed: %s", SDL_GetError());
 		}
 
-		if (!m_constant_effect_running)
-		{
-			if (SDL_HapticRunEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
-				m_constant_effect_running = true;
-			else
-				Console.Error("SDL_HapticRunEffect() for constant failed: %s", SDL_GetError());
-		}
+		// Always 'run' the constant force effect, even when already running. This
+		// mitigates FFB timeout issues experienced by some modern direct-drive
+		// wheels, such as Moza R5, R9, etc...
+		if (SDL_HapticRunEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
+			m_constant_effect_running = true;
+		else
+			Console.Error("SDL_HapticRunEffect() for constant failed: %s", SDL_GetError());
 	}
 
 	template <typename T>
