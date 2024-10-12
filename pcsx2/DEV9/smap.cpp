@@ -287,6 +287,10 @@ void emac3_write(u32 addr)
 					switch (reg)
 					{
 						case SMAP_DsPHYTER_BMCR:
+							if (val & SMAP_PHY_BMCR_RST)
+							{
+								ad_reset();
+							}
 							val &= ~SMAP_PHY_BMCR_RST;
 							val |= 0x1;
 							break;
