@@ -936,7 +936,7 @@ namespace R3000A
 			// printf-style formatting processing.  This part can be skipped if the user has the
 			// console disabled.
 
-			if (!SysConsole.iopConsole.IsActive())
+			if (!ConsoleLogging.iopConsole.IsActive())
 				return 1;
 
 			char tmp[1024], tmp2[1024];
