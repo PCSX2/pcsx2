@@ -234,8 +234,8 @@ private:
 	void HDD_WriteDMA(bool isLBA48);
 
 	void PreCmdExecuteDeviceDiag();
-	void PostCmdExecuteDeviceDiag();
-	void HDD_ExecuteDeviceDiag();
+	void PostCmdExecuteDeviceDiag(bool sendIRQ);
+	void HDD_ExecuteDeviceDiag(bool sendIRQ);
 
 	void PostCmdNoData();
 	void CmdNoDataAbort();

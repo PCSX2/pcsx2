@@ -317,8 +317,7 @@ void ATA::ResetEnd(bool hard)
 			mdmaMode = 2;
 	}
 
-	regControlEnableIRQ = false;
-	HDD_ExecuteDeviceDiag();
+	HDD_ExecuteDeviceDiag(false);
 	regControlEnableIRQ = true;
 }
 

@@ -39,7 +39,7 @@ void ATA::IDE_ExecCmd(u16 value)
 			HDD_SeekCmd();
 			break;
 		case 0x90:
-			HDD_ExecuteDeviceDiag();
+			HDD_ExecuteDeviceDiag(true);
 			break;
 		case 0x91:
 			HDD_InitDevParameters();
