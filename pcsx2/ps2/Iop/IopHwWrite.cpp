@@ -286,6 +286,13 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 	{
 		switch( masked_addr )
 		{
+			case 0x450:
+				psxHu(addr) = val;
+				if (val & (1 << 1))
+				{
+					hwIntcIrq(INTC_SBUS);
+				}
+				break;
 			// ------------------------------------------------------------------------
 			case (HW_SIO_DATA & 0x0fff):
 				Console.Error("%s(%08X, %08X) Unexpected 16 or 32 bit write to SIO0 DATA!", __FUNCTION__, addr, val);
