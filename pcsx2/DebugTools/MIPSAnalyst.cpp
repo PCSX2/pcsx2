@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "MIPSAnalyst.h"
+#include "common/StringUtil.h"
 #include "Debug.h"
 #include "DebugInterface.h"
 #include "DebugInterface.h"
