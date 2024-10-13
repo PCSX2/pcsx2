@@ -318,7 +318,7 @@ void ATA::ResetEnd(bool hard)
 	}
 
 	HDD_ExecuteDeviceDiag(false);
-	regControlEnableIRQ = true;
+	regControlEnableIRQ = false;
 }
 
 void ATA::ATA_HardReset()
