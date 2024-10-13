@@ -96,6 +96,8 @@ private:
 
 	u8 regStatus; //ReadOnly. When read via AlternateStatus pending interrupts are not cleared
 
+	bool pendingInterrupt = false;
+
 	//Transfer
 	//Write Buffer(s)
 	bool awaitFlush = false;

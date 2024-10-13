@@ -23,6 +23,7 @@ void ATA::PostCmdDMADataToHost()
 	dmaReady = false;
 
 	dev9.irqcause &= ~SPD_INTR_ATA_FIFO_DATA;
+	pendingInterrupt = true;
 	if (regControlEnableIRQ)
 		_DEV9irq(ATA_INTR_INTRQ, 1);
 	//PCSX2 Will Start DMA
@@ -66,8 +67,9 @@ void ATA::PostCmdDMADataFromHost()
 	if (fetWriteCacheEnabled)
 	{
 		regStatus &= ~ATA_STAT_BUSY;
+		pendingInterrupt = true;
 		if (regControlEnableIRQ)
-			_DEV9irq(ATA_INTR_INTRQ, 1); //0x6C
+			_DEV9irq(ATA_INTR_INTRQ, 1);
 	}
 	else
 		awaitFlush = true;
