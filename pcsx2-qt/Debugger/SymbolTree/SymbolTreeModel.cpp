@@ -106,8 +106,8 @@ QVariant SymbolTreeModel::data(const QModelIndex& index, int role) const
 		bool active = true;
 
 		// Gray out the names of symbols that have been overwritten in memory.
-		if (index.column() == NAME && node->symbol.valid())
-			active = symbolMatchesMemory(node->symbol);
+		if (index.column() == NAME)
+			active = node->matchesMemory();
 
 		// Gray out the values of variables that are dead.
 		if (index.column() == VALUE && node->liveness().has_value())
@@ -520,81 +520,4 @@ bool SymbolTreeModel::nodeHasChildren(const ccc::ast::Node& logical_type, const 
 	}
 
 	return result;
-}
-
-bool SymbolTreeModel::symbolMatchesMemory(ccc::MultiSymbolHandle& symbol) const
-{
-	bool matching = true;
-	switch (symbol.descriptor())
-	{
-		case ccc::SymbolDescriptor::FUNCTION:
-		{
-			m_cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) -> void {
-				const ccc::Function* function = database.functions.symbol_from_handle(symbol.handle());
-				if (!function || function->original_hash() == 0)
-					return;
-
-				matching = function->current_hash() == function->original_hash();
-			});
-			break;
-		}
-		case ccc::SymbolDescriptor::GLOBAL_VARIABLE:
-		{
-			m_cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) -> void {
-				const ccc::GlobalVariable* global_variable = database.global_variables.symbol_from_handle(symbol.handle());
-				if (!global_variable)
-					return;
-
-				const ccc::SourceFile* source_file = database.source_files.symbol_from_handle(global_variable->source_file());
-				if (!source_file)
-					return;
-
-				matching = source_file->functions_match();
-			});
-			break;
-		}
-		case ccc::SymbolDescriptor::LOCAL_VARIABLE:
-		{
-			m_cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) -> void {
-				const ccc::LocalVariable* local_variable = database.local_variables.symbol_from_handle(symbol.handle());
-				if (!local_variable)
-					return;
-
-				const ccc::Function* function = database.functions.symbol_from_handle(local_variable->function());
-				if (!function)
-					return;
-
-				const ccc::SourceFile* source_file = database.source_files.symbol_from_handle(function->source_file());
-				if (!source_file)
-					return;
-
-				matching = source_file->functions_match();
-			});
-			break;
-		}
-		case ccc::SymbolDescriptor::PARAMETER_VARIABLE:
-		{
-			m_cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) -> void {
-				const ccc::ParameterVariable* parameter_variable = database.parameter_variables.symbol_from_handle(symbol.handle());
-				if (!parameter_variable)
-					return;
-
-				const ccc::Function* function = database.functions.symbol_from_handle(parameter_variable->function());
-				if (!function)
-					return;
-
-				const ccc::SourceFile* source_file = database.source_files.symbol_from_handle(function->source_file());
-				if (!source_file)
-					return;
-
-				matching = source_file->functions_match();
-			});
-			break;
-		}
-		default:
-		{
-		}
-	}
-
-	return matching;
 }
