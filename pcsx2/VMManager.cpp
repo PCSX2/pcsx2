@@ -453,7 +453,6 @@ void VMManager::Internal::CPUThreadShutdown()
 void VMManager::Internal::SetFileLogPath(std::string path)
 {
 	s_log_force_file_log = Log::SetFileOutputLevel(LOGLEVEL_DEBUG, std::move(path));
-	emuLog = Log::GetFileLogHandle();
 }
 
 void VMManager::Internal::SetBlockSystemConsole(bool block)
@@ -476,12 +475,6 @@ void VMManager::UpdateLoggingSettings(SettingsInterface& si)
 	if (system_console_enabled != Log::IsConsoleOutputEnabled())
 		Log::SetConsoleOutputLevel(system_console_enabled ? level : LOGLEVEL_NONE);
 
-	if (file_logging_enabled != Log::IsFileOutputEnabled())
-	{
-		std::string path = Path::Combine(EmuFolders::Logs, "emulog.txt");
-		Log::SetFileOutputLevel(file_logging_enabled ? level : LOGLEVEL_NONE, std::move(path));
-	}
-
 	// Debug console only exists on Windows.
 #ifdef _WIN32
 	const bool debug_console_enabled = IsDebuggerPresent() && si.GetBoolValue("Logging", "EnableDebugConsole", false);
@@ -496,17 +489,26 @@ void VMManager::UpdateLoggingSettings(SettingsInterface& si)
 	const bool any_logging_sinks = system_console_enabled || log_window_enabled || file_logging_enabled || debug_console_enabled;
 
 	const bool ee_console_enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableEEConsole", false);
-	SysConsole.eeConsole.Enabled = ee_console_enabled;
+	ConsoleLogging.eeConsole.Enabled = ee_console_enabled;
 
-	SysConsole.iopConsole.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableIOPConsole", false);
-	SysTrace.IOP.R3000A.Enabled = true;
-	SysTrace.IOP.COP2.Enabled = true;
-	SysTrace.IOP.Memory.Enabled = true;
-	SysTrace.SIF.Enabled = true;
+	ConsoleLogging.iopConsole.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableIOPConsole", false);
+	TraceLogging.IOP.R3000A.Enabled = true;
+	TraceLogging.IOP.COP2.Enabled = true;
+	TraceLogging.IOP.Memory.Enabled = true;
+	TraceLogging.SIF.Enabled = true;
 
 	// Input Recording Logs
-	SysConsole.recordingConsole.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableInputRecordingLogs", true);
-	SysConsole.controlInfo.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableControllerLogs", false);
+	ConsoleLogging.recordingConsole.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableInputRecordingLogs", true);
+	ConsoleLogging.controlInfo.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableControllerLogs", false);
+
+	// Sync the trace settings with the config.
+	EmuConfig.Trace.SyncToConfig();
+	// Set the output level if file logging or trace logs have changed.
+	if (file_logging_enabled != Log::IsFileOutputEnabled() || (EmuConfig.Trace.Enabled && Log::GetMaxLevel() < LOGLEVEL_TRACE))
+	{
+		std::string path = Path::Combine(EmuFolders::Logs, "emulog.txt");
+		Log::SetFileOutputLevel(file_logging_enabled ? EmuConfig.Trace.Enabled ? LOGLEVEL_TRACE : level : LOGLEVEL_NONE, std::move(path));
+	}
 }
 
 void VMManager::SetDefaultLoggingSettings(SettingsInterface& si)
@@ -519,6 +521,11 @@ void VMManager::SetDefaultLoggingSettings(SettingsInterface& si)
 	si.SetBoolValue("Logging", "EnableIOPConsole", false);
 	si.SetBoolValue("Logging", "EnableInputRecordingLogs", true);
 	si.SetBoolValue("Logging", "EnableControllerLogs", false);
+
+	EmuConfig.Trace.Enabled = false;
+	EmuConfig.Trace.EE.bitset = 0;
+	EmuConfig.Trace.IOP.bitset = 0;
+	EmuConfig.Trace.MISC.bitset = 0;
 }
 
 bool VMManager::Internal::CheckSettingsVersion()

@@ -364,6 +364,7 @@ bool Log::SetFileOutputLevel(LOGLEVEL level, std::string path)
 	}
 
 	s_file_level = s_file_handle ? level : LOGLEVEL_NONE;
+	UpdateMaxLevel();
 	return IsFileOutputEnabled();
 }
 

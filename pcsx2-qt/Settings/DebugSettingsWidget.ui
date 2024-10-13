@@ -24,7 +24,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QTabWidget" name="tabs">
+    <widget class="QTabWidget" name="debugTabs">
      <property name="currentIndex">
       <number>0</number>
      </property>
@@ -35,7 +35,7 @@
       <attribute name="title">
        <string>Analysis</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <layout class="QVBoxLayout" name="verticalLayout_6">
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -286,6 +286,300 @@
           </item>
          </layout>
         </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="traceLogTabWidget">
+      <attribute name="title">
+       <string>Trace Logging</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <widget class="QCheckBox" name="chkEnable">
+         <property name="text">
+          <string>Enable</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="traceLogHorizontalLayout">
+         <item>
+          <widget class="QGroupBox" name="grpEELogging">
+           <property name="title">
+            <string>EE</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <layout class="QGridLayout" name="grpEELoggingGrid">
+              <item row="4" column="1">
+               <widget class="QCheckBox" name="chkEEDMACTRL">
+                <property name="text">
+                 <string>DMA Control</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QCheckBox" name="chkEEMFIFO">
+                <property name="text">
+                 <string>SPR / MFIFO</string>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="0">
+               <widget class="QCheckBox" name="chkEEVIF">
+                <property name="text">
+                 <string>VIF</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QCheckBox" name="chkEECOP1">
+                <property name="text">
+                 <string>COP1 (FPU)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QCheckBox" name="chkEEMSKPATH3">
+                <property name="text">
+                 <string>MSKPATH3</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QCheckBox" name="chkEECache">
+                <property name="text">
+                 <string>Cache</string>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="1">
+               <widget class="QCheckBox" name="chkEEGIF">
+                <property name="text">
+                 <string>GIF</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QCheckBox" name="chkEER5900">
+                <property name="text">
+                 <string>R5900</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QCheckBox" name="chkEECOP0">
+                <property name="text">
+                 <string>COP0</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QCheckBox" name="chkEEMMIO">
+                <property name="text">
+                 <string>HW Regs (MMIO)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QCheckBox" name="chkEECounters">
+                <property name="text">
+                 <string>Counters</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="1">
+               <widget class="QCheckBox" name="chkEESIF">
+                <property name="text">
+                 <string>SIF</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QCheckBox" name="chkEECOP2">
+                <property name="text">
+                 <string>COP2 (VU0 Macro)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="0">
+               <widget class="QCheckBox" name="chkEEVIFCodes">
+                <property name="text">
+                 <string>VIFCodes</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QCheckBox" name="chkEEMemory">
+                <property name="text">
+                 <string>Memory</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QCheckBox" name="chkEEUNKNWNMMIO">
+                <property name="text">
+                 <string>Unknown MMIO</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="0">
+               <widget class="QCheckBox" name="chkEEIPU">
+                <property name="text">
+                 <string>IPU</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="0">
+               <widget class="QCheckBox" name="chkEEBIOS">
+                <property name="text">
+                 <string>BIOS</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QCheckBox" name="chkEEDMARegs">
+                <property name="text">
+                 <string>DMA Registers</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="1">
+               <widget class="QCheckBox" name="chkEEGIFTags">
+                <property name="text">
+                 <string>GIFTags</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <spacer name="eeLoggingSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>0</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="grpIOPLogging">
+           <property name="title">
+            <string>IOP</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item>
+             <layout class="QGridLayout" name="grpIOPLoggingGrid">
+              <item row="4" column="0">
+               <widget class="QCheckBox" name="chkIOPCounters">
+                <property name="text">
+                 <string>Counters</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QCheckBox" name="chkIOPUNKNWNMMIO">
+                <property name="text">
+                 <string>Unknown MMIO</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QCheckBox" name="chkIOPMMIO">
+                <property name="text">
+                 <string>HW Regs (MMIO)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QCheckBox" name="chkIOPCDVD">
+                <property name="text">
+                 <string>CDVD</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QCheckBox" name="chkIOPR3000A">
+                <property name="text">
+                 <string>R3000A</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QCheckBox" name="chkIOPMemcards">
+                <property name="text">
+                 <string>Memcards</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QCheckBox" name="chkIOPDMARegs">
+                <property name="text">
+                 <string>DMA Registers</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QCheckBox" name="chkIOPPad">
+                <property name="text">
+                 <string>Pad</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QCheckBox" name="chkIOPBIOS">
+                <property name="text">
+                 <string>BIOS</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QCheckBox" name="chkIOPMDEC">
+                <property name="text">
+                 <string>MDEC</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QCheckBox" name="chkIOPDMACTRL">
+                <property name="text">
+                 <string>DMA Control</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QCheckBox" name="chkIOPCOP2">
+                <property name="text">
+                 <string>COP2 (GPU)</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <spacer name="iopLoggingSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

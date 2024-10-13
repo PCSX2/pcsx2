@@ -24,226 +24,217 @@
 
 using namespace R5900;
 
-FILE* emuLog;
+TraceLogPack TraceLogging;
+ConsoleLogPack ConsoleLogging;
 
-SysTraceLogPack SysTrace;
-SysConsoleLogPack SysConsole;
-
-// writes text directly to the logfile, no newlines appended.
-void __Log(const char* fmt, ...)
+bool TraceLog::Write(const char* fmt, ...) const
 {
-	va_list list;
-	va_start(list, fmt);
+	auto prefixed_str = fmt::format("{:<8}: {}", Descriptor.Prefix, fmt);
+	va_list args;
+	va_start(args, fmt);
+	Log::Writev(LOGLEVEL_TRACE, Color, prefixed_str.c_str(), args);
+	va_end(args);
 
-	if (emuLog != NULL)
-	{
-		std::vfprintf(emuLog, fmt, list);
-		fputs("\n", emuLog);
-		fflush(emuLog);
-	}
-
-	va_end(list);
+	return false;
 }
 
-void SysTraceLog::DoWrite(const char* msg) const
+bool TraceLog::Write(ConsoleColors color, const char* fmt, ...) const
 {
-	if (emuLog == NULL)
-		return;
+	auto prefixed_str = fmt::format("{:<8}: {}", Descriptor.Prefix, fmt);
+	va_list args;
+	va_start(args, fmt);
+	Log::Writev(LOGLEVEL_TRACE, color, prefixed_str.c_str(), args);
+	va_end(args);
 
-	fputs(msg, emuLog);
-	fputs("\n", emuLog);
-	fflush(emuLog);
+	return false;
 }
 
-void SysTraceLog_EE::ApplyPrefix(std::string& ascii) const
+bool ConsoleLog::Write(const char* fmt, ...) const
 {
-	fmt::format_to(std::back_inserter(ascii), "{:<4}({:08x} {:08x}): ", ((SysTraceLogDescriptor*)m_Descriptor)->Prefix, cpuRegs.pc, cpuRegs.cycle);
+	auto prefixed_str = fmt::format("{:<8}: {}", Descriptor.Prefix, fmt);
+	va_list args;
+	va_start(args, fmt);
+	Console.WriteLn(Color, prefixed_str.c_str(), args);
+	va_end(args);
+
+	return false;
 }
 
-void SysTraceLog_IOP::ApplyPrefix(std::string& ascii) const
+bool ConsoleLog::Write(ConsoleColors color, const char* fmt, ...) const
 {
-	fmt::format_to(std::back_inserter(ascii), "{:<4}({:08x} {:08x}): ", ((SysTraceLogDescriptor*)m_Descriptor)->Prefix, psxRegs.pc, psxRegs.cycle);
-}
+	auto prefixed_str = fmt::format("{:<8}: {}", Descriptor.Prefix, fmt);
 
-void SysTraceLog_VIFcode::ApplyPrefix(std::string& ascii) const
-{
-	_parent::ApplyPrefix(ascii);
-	ascii.append("vifCode_");
+	va_list args;
+	va_start(args, fmt);
+	Console.WriteLn(color, prefixed_str.c_str(), args);
+	va_end(args);
+
+	return false;
 }
 
 // --------------------------------------------------------------------------------------
-//  SysConsoleLogPack  (descriptions)
+//  ConsoleLogPack  (descriptions)
 // --------------------------------------------------------------------------------------
-static const TraceLogDescriptor
+static const LogDescriptor
 
-	TLD_ELF = {
+	LD_ELF = {
 		"ELF", "E&LF",
 		"Dumps detailed information for PS2 executables (ELFs)."},
 
-	TLD_eeRecPerf = {"EErecPerf", "EErec &Performance", "Logs manual protection, split blocks, and other things that might impact performance."},
+	LD_eeRecPerf = {"EErecPerf", "EErec &Performance", "Logs manual protection, split blocks, and other things that might impact performance."},
 
-	TLD_eeConsole = {"EEout", "EE C&onsole", "Shows the game developer's logging text (EE processor)."},
+	LD_eeConsole = {"EEout", "EE C&onsole", "Shows the game developer's logging text (EE processor)."},
 
-	TLD_iopConsole = {"IOPout", "&IOP Console", "Shows the game developer's logging text (IOP processor)."},
+	LD_iopConsole = {"IOPout", "&IOP Console", "Shows the game developer's logging text (IOP processor)."},
 
-	TLD_deci2 = {"DECI2", "DECI&2 Console", "Shows DECI2 debugging logs (EE processor)."},
+	LD_deci2 = {"DECI2", "DECI&2 Console", "Shows DECI2 debugging logs (EE processor)."},
 
-	TLD_Pgif = {"PGIFout", "&PGIF Console", "Shows output from pgif the emulated ps1 gpu"},
+	LD_Pgif = {"PGIFout", "&PGIF Console", "Shows output from pgif the emulated ps1 gpu"},
 
-	TLD_recordingConsole = {"Input Recording", "Input Recording Console", "Shows recording related logs and information."},
+	LD_recordingConsole = {"Input Recording", "Input Recording Console", "Shows recording related logs and information."},
 
-	TLD_controlInfo = {"Controller Info", "Controller Info", "Shows detailed controller input values for port 1, every frame."}
-; // End init of TraceLogDescriptors
+	LD_controlInfo = {"Controller Info", "Controller Info", "Shows detailed controller input values for port 1, every frame."};
 
-SysConsoleLogPack::SysConsoleLogPack()
-	: ELF(&TLD_ELF, Color_Gray)
-	, eeRecPerf(&TLD_eeRecPerf, Color_Gray)
-	, pgifLog(&TLD_Pgif)
-	, eeConsole(&TLD_eeConsole)
-	, iopConsole(&TLD_iopConsole)
-	, deci2(&TLD_deci2)
-	, recordingConsole(&TLD_recordingConsole)
-	, controlInfo(&TLD_controlInfo)
+ConsoleLogPack::ConsoleLogPack()
+	: ELF(LD_ELF, Color_Gray)
+	, eeRecPerf(LD_eeRecPerf, Color_Gray)
+	, pgifLog(LD_Pgif)
+	, eeConsole(LD_eeConsole)
+	, iopConsole(LD_iopConsole)
+	, deci2(LD_deci2)
+	, recordingConsole(LD_recordingConsole)
+	, controlInfo(LD_controlInfo)
 {
 }
 
 // --------------------------------------------------------------------------------------
-//  SysTraceLogPack  (descriptions)
+//  TraceLogPack  (descriptions)
 // --------------------------------------------------------------------------------------
-static const SysTraceLogDescriptor
-	TLD_SIF = {
-		{"SIF", "SIF (EE <-> IOP)",
-		""},
-		"SIF"};
+static const LogDescriptor
+	LD_SIF = {"SIF", "SIF (EE <-> IOP)", ""};
 
 // ----------------------------
 //   EmotionEngine (EE/R5900)
 // ----------------------------
 
-static const SysTraceLogDescriptor
-	TLD_EE_Bios = {
-		{"Bios", "Bios",
-		"SYSCALL and DECI2 activity."},
-		"EE"},
+static const LogDescriptor
+	LD_EE_Bios = {"Bios", "Bios", "SYSCALL and DECI2 activity."},
 
-	TLD_EE_Memory = {{"Memory", "Memory", "Direct memory accesses to unknown or unmapped EE memory space."}, "eMem"},
+	LD_EE_Memory = {"Memory", "Memory", "Direct memory accesses to unknown or unmapped EE memory space."},
 
-	TLD_EE_R5900 = {{"R5900", "R5900 Core", "Disasm of executing core instructions (excluding COPs and CACHE)."}, "eDis"},
+	LD_EE_R5900 = {"R5900", "R5900 Core", "Disasm of executing core instructions (excluding COPs and CACHE)."},
 
-	TLD_EE_COP0 = {{"COP0", "COP0", "Disasm of COP0 instructions (MMU, cpu and dma status, etc)."}, "eDis"},
+	LD_EE_COP0 = {"COP0", "COP0", "Disasm of COP0 instructions (MMU, cpu and dma status, etc)."},
 
-	TLD_EE_COP1 = {{"FPU", "COP1/FPU", "Disasm of the EE's floating point unit (FPU) only."}, "eDis"},
+	LD_EE_COP1 = {"FPU", "COP1/FPU", "Disasm of the EE's floating point unit (FPU) only."},
 
-	TLD_EE_COP2 = {{"VUmacro", "COP2/VUmacro", "Disasm of the EE's VU0macro co-processor instructions."}, "eDis"},
+	LD_EE_COP2 = {"VUmacro", "COP2/VUmacro", "Disasm of the EE's VU0macro co-processor instructions."},
 
-	TLD_EE_Cache = {{"Cache", "Cache", "Execution of EE cache instructions."}, "eDis"},
+	LD_EE_Cache = {"Cache", "Cache", "Execution of EE cache instructions."},
 
-	TLD_EE_KnownHw = {{"HwRegs", "Hardware Regs", "All known hardware register accesses (very slow!); not including sub filter options below."}, "eReg"},
+	LD_EE_KnownHw = {"HwRegs", "Hardware Regs", "All known hardware register accesses (very slow!); not including sub filter options below."},
 
-	TLD_EE_UnknownHw = {{"UnknownRegs", "Unknown Regs", "Logs only unknown, unmapped, or unimplemented register accesses."}, "eReg"},
+	LD_EE_UnknownHw = {"UnknownRegs", "Unknown Regs", "Logs only unknown, unmapped, or unimplemented register accesses."},
 
-	TLD_EE_DMAhw = {{"DmaRegs", "DMA Regs", "Logs only DMA-related registers."}, "eReg"},
+	LD_EE_DMAhw = {"DmaRegs", "DMA Regs", "Logs only DMA-related registers."},
 
-	TLD_EE_IPU = {{"IPU", "IPU", "IPU activity: hardware registers, decoding operations, DMA status, etc."}, "IPU"},
+	LD_EE_IPU = {"IPU", "IPU", "IPU activity: hardware registers, decoding operations, DMA status, etc."},
 
-	TLD_EE_GIFtag = {{"GIFtags", "GIFtags", "All GIFtag parse activity; path index, tag type, etc."}, "GIF"},
+	LD_EE_GIFtag = {"GIFtags", "GIFtags", "All GIFtag parse activity; path index, tag type, etc."},
 
-	TLD_EE_VIFcode = {{"VIFcodes", "VIFcodes", "All VIFcode processing; command, tag style, interrupts."}, "VIF"},
+	LD_EE_VIFcode = {"VIFcodes", "VIFcodes", "All VIFcode processing; command, tag style, interrupts."},
 
-	TLD_EE_MSKPATH3 = {{"MSKPATH3", "MSKPATH3", "All processing involved in Path3 Masking."}, "MSKPATH3"},
+	LD_EE_MSKPATH3 = {"MSKPATH3", "MSKPATH3", "All processing involved in Path3 Masking."},
 
-	TLD_EE_SPR = {{"MFIFO", "Scratchpad MFIFO", "Scratchpad's MFIFO activity."}, "SPR"},
+	LD_EE_SPR = {"MFIFO", "Scratchpad MFIFO", "Scratchpad's MFIFO activity."},
 
-	TLD_EE_DMAC = {{"DmaCtrl", "DMA Controller", "Actual data transfer logs, bus right arbitration, stalls, etc."}, "eDmaC"},
+	LD_EE_DMAC = {"DmaCtrl", "DMA Controller", "Actual data transfer logs, bus right arbitration, stalls, etc."},
 
-	TLD_EE_Counters = {{"Counters", "Counters", "Tracks all EE counters events and some counter register activity."}, "eCnt"},
+	LD_EE_Counters = {"Counters", "Counters", "Tracks all EE counters events and some counter register activity."},
 
-	TLD_EE_VIF = {{"VIF", "VIF", "Dumps various VIF and VIFcode processing data."}, "VIF"},
+	LD_EE_VIF = {"VIF", "VIF", "Dumps various VIF and VIFcode processing data."},
 
-	TLD_EE_GIF = {{"GIF", "GIF", "Dumps various GIF and GIFtag parsing data."}, "GIF"};
+	LD_EE_GIF = {"GIF", "GIF", "Dumps various GIF and GIFtag parsing data."};
 
 // ----------------------------------
 //   IOP - Input / Output Processor
 // ----------------------------------
 
-static const SysTraceLogDescriptor
-	TLD_IOP_Bios = {
-		{"Bios", "Bios",
-		"SYSCALL and IRX activity."},
-		"IOP"},
+static const LogDescriptor
+	LD_IOP_Bios = {"Bios", "Bios", "SYSCALL and IRX activity."},
 
-	TLD_IOP_Memory = {{"Memory", "Memory", "Direct memory accesses to unknown or unmapped IOP memory space."}, "iMem"},
+	LD_IOP_Memory = {"Memory", "Memory", "Direct memory accesses to unknown or unmapped IOP memory space."},
 
-	TLD_IOP_R3000A = {{"R3000A", "R3000A Core", "Disasm of executing core instructions (excluding COPs and CACHE)."}, "iDis"},
+	LD_IOP_R3000A = {"R3000A", "R3000A Core", "Disasm of executing core instructions (excluding COPs and CACHE)."},
 
-	TLD_IOP_COP2 = {{"COP2/GPU", "COP2", "Disasm of the IOP's GPU co-processor instructions."}, "iDis"},
+	LD_IOP_COP2 = {"COP2/GPU", "COP2", "Disasm of the IOP's GPU co-processor instructions."},
 
-	TLD_IOP_KnownHw = {{"HwRegs", "Hardware Regs", "All known hardware register accesses, not including the sub-filters below."}, "iReg"},
+	LD_IOP_KnownHw = {"HwRegs", "Hardware Regs", "All known hardware register accesses, not including the sub-filters below."},
 
-	TLD_IOP_UnknownHw = {{"UnknownRegs", "Unknown Regs", "Logs only unknown, unmapped, or unimplemented register accesses."}, "iReg"},
+	LD_IOP_UnknownHw = {"UnknownRegs", "Unknown Regs", "Logs only unknown, unmapped, or unimplemented register accesses."},
 
-	TLD_IOP_DMAhw = {{"DmaRegs", "DMA Regs", "Logs only DMA-related registers."}, "iReg"},
+	LD_IOP_DMAhw = {"DmaRegs", "DMA Regs", "Logs only DMA-related registers."},
 
-	TLD_IOP_Memcards = {{"Memorycards", "Memorycards", "Memorycard reads, writes, erases, terminators, and other processing."}, "Mcd"},
+	LD_IOP_Memcards = {"Memorycards", "Memorycards", "Memorycard reads, writes, erases, terminators, and other processing."},
 
-	TLD_IOP_PAD = {{"Pad", "Pad", "Gamepad activity on the SIO."}, "Pad"},
+	LD_IOP_PAD = {"Pad", "Pad", "Gamepad activity on the SIO."},
 
-	TLD_IOP_DMAC = {{"DmaCrl", "DMA Controller", "Actual DMA event processing and data transfer logs."}, "iDmaC"},
+	LD_IOP_DMAC = {"DmaCtrl", "DMA Controller", "Actual DMA event processing and data transfer logs."},
 
-	TLD_IOP_Counters = {{"Counters", "Counters", "Tracks all IOP counters events and some counter register activity."}, "iCnt"},
+	LD_IOP_Counters = {"Counters", "Counters", "Tracks all IOP counters events and some counter register activity."},
 
-	TLD_IOP_CDVD = {{"CDVD", "CDVD", "Detailed logging of CDVD hardware."}, "CDVD"},
+	LD_IOP_CDVD = {"CDVD", "CDVD", "Detailed logging of CDVD hardware."},
 
-	TLD_IOP_MDEC = {{"MDEC", "MDEC", "Detailed logging of the Motion (FMV) Decoder hardware unit."}, "MDEC"};
+	LD_IOP_MDEC = {"MDEC", "MDEC", "Detailed logging of the Motion (FMV) Decoder hardware unit."};
 
-SysTraceLogPack::SysTraceLogPack()
-	: SIF(&TLD_SIF)
+TraceLogPack::TraceLogPack()
+	: SIF(LD_SIF)
 {
 }
 
-SysTraceLogPack::EE_PACK::EE_PACK()
-	: Bios(&TLD_EE_Bios)
-	, Memory(&TLD_EE_Memory)
-	, GIFtag(&TLD_EE_GIFtag)
-	, VIFcode(&TLD_EE_VIFcode)
-	, MSKPATH3(&TLD_EE_MSKPATH3)
+TraceLogPack::EE_PACK::EE_PACK()
+	: Bios(LD_EE_Bios)
+	, Memory(LD_EE_Memory)
+	, GIFtag(LD_EE_GIFtag)
+	, VIFcode(LD_EE_VIFcode)
+	, MSKPATH3(LD_EE_MSKPATH3)
 
-	, R5900(&TLD_EE_R5900)
-	, COP0(&TLD_EE_COP0)
-	, COP1(&TLD_EE_COP1)
-	, COP2(&TLD_EE_COP2)
-	, Cache(&TLD_EE_Cache)
+	, R5900(LD_EE_R5900)
+	, COP0(LD_EE_COP0)
+	, COP1(LD_EE_COP1)
+	, COP2(LD_EE_COP2)
+	, Cache(LD_EE_Cache)
 
-	, KnownHw(&TLD_EE_KnownHw)
-	, UnknownHw(&TLD_EE_UnknownHw)
-	, DMAhw(&TLD_EE_DMAhw)
-	, IPU(&TLD_EE_IPU)
+	, KnownHw(LD_EE_KnownHw)
+	, UnknownHw(LD_EE_UnknownHw)
+	, DMAhw(LD_EE_DMAhw)
+	, IPU(LD_EE_IPU)
 
-	, DMAC(&TLD_EE_DMAC)
-	, Counters(&TLD_EE_Counters)
-	, SPR(&TLD_EE_SPR)
+	, DMAC(LD_EE_DMAC)
+	, Counters(LD_EE_Counters)
+	, SPR(LD_EE_SPR)
 
-	, VIF(&TLD_EE_VIF)
-	, GIF(&TLD_EE_GIF)
+	, VIF(LD_EE_VIF)
+	, GIF(LD_EE_GIF)
 {
 }
 
-SysTraceLogPack::IOP_PACK::IOP_PACK()
-	: Bios(&TLD_IOP_Bios)
-	, Memcards(&TLD_IOP_Memcards)
-	, PAD(&TLD_IOP_PAD)
+TraceLogPack::IOP_PACK::IOP_PACK()
+	: Bios(LD_IOP_Bios)
+	, Memcards(LD_IOP_Memcards)
+	, PAD(LD_IOP_PAD)
 
-	, R3000A(&TLD_IOP_R3000A)
-	, COP2(&TLD_IOP_COP2)
-	, Memory(&TLD_IOP_Memory)
+	, R3000A(LD_IOP_R3000A)
+	, COP2(LD_IOP_COP2)
+	, Memory(LD_IOP_Memory)
 
-	, KnownHw(&TLD_IOP_KnownHw)
-	, UnknownHw(&TLD_IOP_UnknownHw)
-	, DMAhw(&TLD_IOP_DMAhw)
+	, KnownHw(LD_IOP_KnownHw)
+	, UnknownHw(LD_IOP_UnknownHw)
+	, DMAhw(LD_IOP_DMAhw)
 
-	, DMAC(&TLD_IOP_DMAC)
-	, Counters(&TLD_IOP_Counters)
-	, CDVD(&TLD_IOP_CDVD)
-	, MDEC(&TLD_IOP_MDEC)
+	, DMAC(LD_IOP_DMAC)
+	, Counters(LD_IOP_Counters)
+	, CDVD(LD_IOP_CDVD)
+	, MDEC(LD_IOP_MDEC)
 {
 }

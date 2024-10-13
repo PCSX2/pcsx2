@@ -450,41 +450,82 @@ enum class GSNativeScaling : u8
 };
 
 // --------------------------------------------------------------------------------------
-//  TraceFiltersEE
+//  TraceLogsEE
 // --------------------------------------------------------------------------------------
-struct TraceFiltersEE
+struct TraceLogsEE
 {
+	// EE
 	BITFIELD32()
 	bool
-		m_EnableAll : 1, // Master Enable switch (if false, no logs at all)
-		m_EnableDisasm : 1,
-		m_EnableRegisters : 1,
-		m_EnableEvents : 1; // Enables logging of event-driven activity -- counters, DMAs, etc.
+		bios : 1,
+		memory : 1,
+		giftag : 1,
+		vifcode : 1,
+		mskpath3 : 1,
+		r5900 : 1,
+		cop0 : 1,
+		cop1 : 1,
+		cop2 : 1,
+		cache : 1,
+		knownhw : 1,
+		unknownhw : 1,
+		dmahw : 1,
+		ipu : 1,
+		dmac : 1,
+		counters : 1,
+		spr : 1,
+		vif : 1,
+		gif : 1;
 	BITFIELD_END
 
-	TraceFiltersEE();
+	TraceLogsEE();
 
-	bool operator==(const TraceFiltersEE& right) const;
-	bool operator!=(const TraceFiltersEE& right) const;
+	bool operator==(const TraceLogsEE& right) const;
+	bool operator!=(const TraceLogsEE& right) const;
 };
 
 // --------------------------------------------------------------------------------------
-//  TraceFiltersIOP
+//  TraceLogsIOP
 // --------------------------------------------------------------------------------------
-struct TraceFiltersIOP
+struct TraceLogsIOP
 {
 	BITFIELD32()
 	bool
-		m_EnableAll : 1, // Master Enable switch (if false, no logs at all)
-		m_EnableDisasm : 1,
-		m_EnableRegisters : 1,
-		m_EnableEvents : 1; // Enables logging of event-driven activity -- counters, DMAs, etc.
+		bios : 1,
+		memcards : 1,
+		pad : 1,
+		r3000a : 1,
+		cop2 : 1,
+		memory : 1,
+		knownhw : 1,
+		unknownhw : 1,
+		dmahw : 1,
+		dmac : 1,
+		counters : 1,
+		cdvd : 1,
+		mdec : 1;
 	BITFIELD_END
 
-	TraceFiltersIOP();
+	TraceLogsIOP();
 
-	bool operator==(const TraceFiltersIOP& right) const;
-	bool operator!=(const TraceFiltersIOP& right) const;
+	bool operator==(const TraceLogsIOP& right) const;
+	bool operator!=(const TraceLogsIOP& right) const;
+};
+
+// --------------------------------------------------------------------------------------
+//  TraceLogsMISC
+// --------------------------------------------------------------------------------------
+struct TraceLogsMISC
+{
+	BITFIELD32()
+	bool
+		sif : 1;
+	BITFIELD_END
+
+	TraceLogsMISC();
+
+	bool operator==(const TraceLogsMISC& right) const;
+	bool operator!=(const TraceLogsMISC& right) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -492,21 +533,18 @@ struct TraceFiltersIOP
 // --------------------------------------------------------------------------------------
 struct TraceLogFilters
 {
-	// Enabled - global toggle for high volume logging.  This is effectively the equivalent to
-	// (EE.Enabled() || IOP.Enabled() || SIF) -- it's cached so that we can use the macros
-	// below to inline the conditional check.  This is desirable because these logs are
-	// *very* high volume, and debug builds get noticably slower if they have to invoke
-	// methods/accessors to test the log enable bits.  Debug builds are slow enough already,
-	// so I prefer this to help keep them usable.
 	bool Enabled;
 
-	TraceFiltersEE EE;
-	TraceFiltersIOP IOP;
+	TraceLogsEE EE;
+	TraceLogsIOP IOP;
+	TraceLogsMISC MISC;
 
 	TraceLogFilters();
 
 	void LoadSave(SettingsWrapper& ini);
-
+	// When logging, the tracelogpack is checked, not was in the config.
+	// Call this to sync the tracelogpack values with the config values.
+	void SyncToConfig() const;
 	bool operator==(const TraceLogFilters& right) const;
 	bool operator!=(const TraceLogFilters& right) const;
 };

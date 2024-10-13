@@ -20,6 +20,9 @@ public:
 
 private Q_SLOTS:
 	void onDrawDumpingChanged();
+#ifdef PCSX2_DEVBUILD
+	void onLoggingEnableChanged();
+#endif
 
 private:
 	SettingsWindow* m_dialog;
