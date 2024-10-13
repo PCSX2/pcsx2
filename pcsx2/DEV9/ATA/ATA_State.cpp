@@ -400,7 +400,7 @@ u16 ATA::Read(u32 addr, int width)
 
 void ATA::Write(u32 addr, u16 value, int width)
 {
-	if (addr != ATA_R_CMD && (regStatus & (ATA_STAT_BUSY | ATA_STAT_DRQ)) != 0)
+	if ((addr != ATA_R_CMD && addr != ATA_R_CONTROL) && (regStatus & (ATA_STAT_BUSY | ATA_STAT_DRQ)) != 0)
 	{
 		Console.Error("DEV9: ATA: DEVICE BUSY, DROPPING WRITE");
 		return;
