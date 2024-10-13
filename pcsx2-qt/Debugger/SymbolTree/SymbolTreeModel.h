@@ -76,8 +76,6 @@ protected:
 
 	static bool nodeHasChildren(const ccc::ast::Node& logical_type, const ccc::SymbolDatabase& database);
 
-	bool symbolMatchesMemory(ccc::MultiSymbolHandle& symbol) const;
-
 	std::unique_ptr<SymbolTreeNode> m_root;
 	QString m_filter;
 	DebugInterface& m_cpu;

@@ -41,6 +41,7 @@ bool SymbolTreeNode::readFromVM(DebugInterface& cpu, const ccc::SymbolDatabase& 
 
 	data_changed |= updateDisplayString(cpu, database);
 	data_changed |= updateLiveness(cpu);
+	data_changed |= updateHash(cpu);
 
 	return data_changed;
 }
@@ -476,6 +477,94 @@ bool SymbolTreeNode::updateLiveness(DebugInterface& cpu)
 	m_liveness = new_liveness;
 
 	return true;
+}
+
+bool SymbolTreeNode::updateHash(DebugInterface& cpu)
+{
+	bool matching = true;
+
+	switch (symbol.descriptor())
+	{
+		case ccc::SymbolDescriptor::FUNCTION:
+		{
+			cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) -> void {
+				const ccc::Function* function = database.functions.symbol_from_handle(symbol.handle());
+				if (!function || function->original_hash() == 0)
+					return;
+
+				matching = function->current_hash() == function->original_hash();
+			});
+			break;
+		}
+		case ccc::SymbolDescriptor::GLOBAL_VARIABLE:
+		{
+			cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) -> void {
+				const ccc::GlobalVariable* global_variable = database.global_variables.symbol_from_handle(symbol.handle());
+				if (!global_variable)
+					return;
+
+				const ccc::SourceFile* source_file = database.source_files.symbol_from_handle(global_variable->source_file());
+				if (!source_file)
+					return;
+
+				matching = source_file->functions_match();
+			});
+			break;
+		}
+		case ccc::SymbolDescriptor::LOCAL_VARIABLE:
+		{
+			cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) -> void {
+				const ccc::LocalVariable* local_variable = database.local_variables.symbol_from_handle(symbol.handle());
+				if (!local_variable)
+					return;
+
+				const ccc::Function* function = database.functions.symbol_from_handle(local_variable->function());
+				if (!function)
+					return;
+
+				const ccc::SourceFile* source_file = database.source_files.symbol_from_handle(function->source_file());
+				if (!source_file)
+					return;
+
+				matching = source_file->functions_match();
+			});
+			break;
+		}
+		case ccc::SymbolDescriptor::PARAMETER_VARIABLE:
+		{
+			cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) -> void {
+				const ccc::ParameterVariable* parameter_variable = database.parameter_variables.symbol_from_handle(symbol.handle());
+				if (!parameter_variable)
+					return;
+
+				const ccc::Function* function = database.functions.symbol_from_handle(parameter_variable->function());
+				if (!function)
+					return;
+
+				const ccc::SourceFile* source_file = database.source_files.symbol_from_handle(function->source_file());
+				if (!source_file)
+					return;
+
+				matching = source_file->functions_match();
+			});
+			break;
+		}
+		default:
+		{
+		}
+	}
+
+	if (matching == m_matches_memory)
+		return false;
+
+	m_matches_memory = matching;
+
+	return true;
+}
+
+bool SymbolTreeNode::matchesMemory() const
+{
+	return m_matches_memory;
 }
 
 bool SymbolTreeNode::anySymbolsValid(const ccc::SymbolDatabase& database) const
