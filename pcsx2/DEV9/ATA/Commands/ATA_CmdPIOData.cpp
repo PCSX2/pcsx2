@@ -15,8 +15,12 @@ void ATA::DRQCmdPIODataToHost(u8* buff, int buffLen, int buffIndex, int size, bo
 	regStatus &= ~ATA_STAT_BUSY;
 	regStatus |= ATA_STAT_DRQ;
 
+	// Only set pendingInterrupt if nIEN is cleared
 	if (regControlEnableIRQ && sendIRQ)
-		_DEV9irq(ATA_INTR_INTRQ, 1); //0x6c cycles before
+	{
+		pendingInterrupt = true;
+		_DEV9irq(ATA_INTR_INTRQ, 1);
+	}
 }
 void ATA::PostCmdPIODataToHost()
 {
