@@ -16,6 +16,8 @@
 #include "CDVD/Ps1CD.h"
 #include "CDVD/CDVD.h"
 
+#include "IopDma.h" // for iopIntcIrq
+
 using namespace R5900;
 
 // Shift the middle 8 bits (bits 4-12) into the lower 8 bits.
@@ -165,7 +167,11 @@ void _hwWrite32( u32 mem, u32 value )
 					psHu32(mem) &= ~value;
 				return;
 
-				mcase(SBUS_F240) :
+				mcase(SBUS_F240):
+					if (value & (1 << 18))
+					{
+						iopIntcIrq(1);
+					}
 					if (value & (1 << 19))
 					{
 						u32 cycle = psxRegs.cycle;
