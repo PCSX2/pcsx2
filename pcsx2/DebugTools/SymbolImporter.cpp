@@ -204,7 +204,10 @@ void SymbolImporter::AnalyseElf(
 			return;
 
 		if (options.GenerateFunctionHashes)
-			ComputeOriginalFunctionHashes(temp_database, worker_symbol_file.elf());
+		{
+			ElfMemoryReader reader(worker_symbol_file.elf());
+			SymbolGuardian::GenerateFunctionHashes(temp_database, reader);
+		}
 
 		if (m_interrupt_import_thread)
 			return;
@@ -506,12 +509,12 @@ void SymbolImporter::ScanForFunctions(
 		case DebugFunctionScanMode::SCAN_ELF:
 		{
 			ElfMemoryReader reader(elf.elf());
-			MIPSAnalyst::ScanForFunctions(database, reader, start_address, end_address);
+			MIPSAnalyst::ScanForFunctions(database, reader, start_address, end_address, options.GenerateFunctionHashes);
 			break;
 		}
 		case DebugFunctionScanMode::SCAN_MEMORY:
 		{
-			MIPSAnalyst::ScanForFunctions(database, r5900Debug, start_address, end_address);
+			MIPSAnalyst::ScanForFunctions(database, r5900Debug, start_address, end_address, options.GenerateFunctionHashes);
 			break;
 		}
 		case DebugFunctionScanMode::SKIP:
@@ -519,56 +522,4 @@ void SymbolImporter::ScanForFunctions(
 			break;
 		}
 	}
-}
-
-void SymbolImporter::ComputeOriginalFunctionHashes(ccc::SymbolDatabase& database, const ccc::ElfFile& elf)
-{
-	for (ccc::Function& function : database.functions)
-	{
-		if (!function.address().valid())
-			continue;
-
-		if (function.size() == 0)
-			continue;
-
-		ccc::Result<std::span<const u32>> text = elf.get_array_virtual<u32>(
-			function.address().value, function.size() / 4);
-		if (!text.success())
-		{
-			ccc::report_warning(text.error());
-			break;
-		}
-
-		ccc::FunctionHash hash;
-		for (u32 instruction : *text)
-			hash.update(instruction);
-
-		function.set_original_hash(hash.get());
-	}
-}
-
-void SymbolImporter::UpdateFunctionHashes(DebugInterface& cpu)
-{
-	m_guardian.ReadWrite([&](ccc::SymbolDatabase& database) {
-		for (ccc::Function& function : database.functions)
-		{
-			if (!function.address().valid())
-				continue;
-
-			if (function.size() == 0)
-				continue;
-
-			if (function.original_hash() == 0)
-				continue;
-
-			ccc::FunctionHash hash;
-			for (u32 i = 0; i < function.size() / 4; i++)
-				hash.update(cpu.read32(function.address().value + i * 4));
-
-			function.set_current_hash(hash);
-		}
-
-		for (ccc::SourceFile& source_file : database.source_files)
-			source_file.check_functions_match(database);
-	});
 }

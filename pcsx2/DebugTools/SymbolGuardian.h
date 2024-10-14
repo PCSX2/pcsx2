@@ -14,6 +14,8 @@
 
 #include "common/Pcsx2Types.h"
 
+class MemoryReader;
+
 struct SymbolInfo
 {
 	std::optional<ccc::SymbolDescriptor> descriptor;
@@ -70,6 +72,17 @@ public:
 	// calling thread without needing to keep the lock held.
 	FunctionInfo FunctionStartingAtAddress(u32 address) const;
 	FunctionInfo FunctionOverlappingAddress(u32 address) const;
+
+	// Hash all the functions in the database and store the hashes in the
+	// original hash field of said objects.
+	static void GenerateFunctionHashes(ccc::SymbolDatabase& database, MemoryReader& reader);
+
+	// Hash all the functions in the database that have original hashes and
+	// store the results in the current hash fields of said objects.
+	static void UpdateFunctionHashes(ccc::SymbolDatabase& database, MemoryReader& reader);
+
+	// Hash a function and return the result.
+	static std::optional<ccc::FunctionHash> HashFunction(const ccc::Function& function, MemoryReader& reader);
 
 	// Delete all symbols from modules that have the "is_irx" flag set.
 	void ClearIrxModules();

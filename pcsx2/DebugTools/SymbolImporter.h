@@ -49,14 +49,6 @@ public:
 	static void ScanForFunctions(
 		ccc::SymbolDatabase& database, const ccc::ElfSymbolFile& elf, const Pcsx2Config::DebugAnalysisOptions& options);
 
-	// Compute original hashes for all the functions based on the code stored in
-	// the ELF file.
-	static void ComputeOriginalFunctionHashes(ccc::SymbolDatabase& database, const ccc::ElfFile& elf);
-
-	// Compute new hashes for all the functions to check if any of them have
-	// been overwritten.
-	void UpdateFunctionHashes(DebugInterface& cpu);
-
 protected:
 	SymbolGuardian& m_guardian;
 
