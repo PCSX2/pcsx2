@@ -287,6 +287,8 @@ namespace usb_pad
 		virtual void SetAutoCenter(int value) = 0;
 		//virtual void SetGain(int gain) = 0;
 		virtual void DisableForce(EffectID force) = 0;
+
+		bool use_ffb_dropout_workaround = false;
 	};
 
 	struct PadState
