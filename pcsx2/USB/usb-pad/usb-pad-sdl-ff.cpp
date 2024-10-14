@@ -59,7 +59,19 @@ namespace usb_pad
 
 	void SDLFFDevice::CreateEffects(const std::string_view device)
 	{
-		constexpr u32 length = 10000; // 10 seconds since NFS games seem to not issue new commands while rotating.
+		// Most games appear to assume that requested forces will be applied indefinitely.
+		// Gran Turismo 4 uses a single indefinite constant force to center the wheel in menus, 
+		// and both GT4 and the NFS games have been observed using a single constant force 
+		// command over long, consistent turns.
+		// Not all wheels appear to honor SDL's "iteration count", meaning the effect will abruptly
+		// stop after the duration elapses even if it's still being actively updated. An infinite
+		// duration resolves this.
+		// 
+		// Known "Problem" wheels which require an infinite duration to avoid FFB cutouts:
+		//   - Moza series (R9 and R21 have been specifically observed)
+		//   - Simagic Alpha Mini
+		//   - Accuforce v2
+		constexpr u32 length = SDL_HAPTIC_INFINITY;
 
 		const unsigned int supported = SDL_HapticQuery(m_haptic);
 		if (supported & SDL_HAPTIC_CONSTANT)
@@ -187,13 +199,18 @@ namespace usb_pad
 				Console.Warning("SDL_HapticUpdateEffect() for constant failed: %s", SDL_GetError());
 		}
 
-		// Always 'run' the constant force effect, even when already running. This
-		// mitigates FFB timeout issues experienced by some modern direct-drive
-		// wheels, such as Moza R5, R9, etc...
-		if (SDL_HapticRunEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
-			m_constant_effect_running = true;
-		else
-			Console.Error("SDL_HapticRunEffect() for constant failed: %s", SDL_GetError());
+		// Avoid re-running already-running effects. Some (not all) wheels will briefly drop the
+		// force if it is re-run, resulting in a "jackhammering" or "cobblestone" feeling.
+		// 
+		// Known problem wheels:
+		// Accuforce V2
+		if (!m_constant_effect_running)
+		{
+			if (SDL_HapticRunEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
+				m_constant_effect_running = true;
+			else
+				Console.Error("SDL_HapticRunEffect() for constant failed: %s", SDL_GetError());
+		}
 	}
 
 	template <typename T>
