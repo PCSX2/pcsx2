@@ -148,8 +148,8 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	wil::com_ptr_nothrow<IDXGIDevice> dxgi_device;
 	if (m_dev.try_query_to(&dxgi_device) && SUCCEEDED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.put()))))
 	{
-		Console.WriteLn(fmt::format("D3D Adapter: {}", D3D::GetAdapterName(dxgi_adapter.get())));
 		m_name = D3D::GetAdapterName(dxgi_adapter.get());
+		Console.WriteLn(fmt::format("D3D Adapter: {}", m_name));
 	}
 	else
 		Console.Error("Failed to obtain D3D adapter name.");
