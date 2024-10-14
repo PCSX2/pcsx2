@@ -3,6 +3,8 @@
 
 #include "SymbolGuardian.h"
 
+#include "DebugInterface.h"
+
 SymbolGuardian R5900SymbolGuardian;
 SymbolGuardian R3000SymbolGuardian;
 
@@ -147,6 +149,52 @@ FunctionInfo SymbolGuardian::FunctionOverlappingAddress(u32 address) const
 		info.is_no_return = function->is_no_return;
 	});
 	return info;
+}
+
+void SymbolGuardian::GenerateFunctionHashes(ccc::SymbolDatabase& database, MemoryReader& reader)
+{
+	for (ccc::Function& function : database.functions)
+	{
+		std::optional<ccc::FunctionHash> hash = HashFunction(function, reader);
+		if (!hash.has_value())
+			continue;
+
+		function.set_original_hash(hash->get());
+	}
+}
+
+void SymbolGuardian::UpdateFunctionHashes(ccc::SymbolDatabase& database, MemoryReader& reader)
+{
+	for (ccc::Function& function : database.functions)
+	{
+		if (function.original_hash() == 0)
+			continue;
+
+		std::optional<ccc::FunctionHash> hash = HashFunction(function, reader);
+		if (!hash.has_value())
+			continue;
+
+		function.set_current_hash(*hash);
+	}
+
+	for (ccc::SourceFile& source_file : database.source_files)
+		source_file.check_functions_match(database);
+}
+
+std::optional<ccc::FunctionHash> SymbolGuardian::HashFunction(const ccc::Function& function, MemoryReader& reader)
+{
+	if (!function.address().valid())
+		return std::nullopt;
+
+	if (function.size() == 0 || function.size() > _1mb)
+		return std::nullopt;
+
+	ccc::FunctionHash hash;
+
+	for (u32 i = 0; i < function.size() / 4; i++)
+		hash.update(reader.read32(function.address().value + i * 4));
+
+	return hash;
 }
 
 void SymbolGuardian::ClearIrxModules()
