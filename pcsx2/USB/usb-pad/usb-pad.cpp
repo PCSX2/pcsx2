@@ -163,7 +163,10 @@ namespace usb_pad
 					"0", "0", "100", "1", TRANSLATE_NOOP("USB", "%d%%"), nullptr, nullptr, 1.0f},
 				{SettingInfo::Type::StringList, "SteeringCurveExponent", TRANSLATE_NOOP("USB", "Steering Damping"),
 					TRANSLATE_NOOP("USB", "Applies power curve filter to steering axis values. Dampens small inputs."),
-					"Off", nullptr, nullptr, nullptr, nullptr, SteeringCurveExponentOptions}
+					"Off", nullptr, nullptr, nullptr, nullptr, SteeringCurveExponentOptions},
+				{SettingInfo::Type::Boolean, "FfbDropoutWorkaround", TRANSLATE_NOOP("USB", "Workaround for Intermittent FFB Loss"),
+					TRANSLATE_NOOP("USB", "Works around bugs in some wheels' firmware that result in brief interruptions in force. Leave this disabled unless you need it, as it has negative side effects on many wheels."),
+					"false"}
 			};
 
 			return info;
@@ -225,6 +228,11 @@ namespace usb_pad
 				mFFdev.reset();
 				mFFdevName = std::move(ffdevname);
 				OpenFFDevice();
+			}
+			if (mFFdev != NULL)
+			{
+				const bool use_ffb_dropout_workaround = USB::GetConfigBool(si, port, devname, "FfbDropoutWorkaround", false);
+				mFFdev->use_ffb_dropout_workaround = use_ffb_dropout_workaround;
 			}
 		}
 	}
