@@ -18,6 +18,7 @@ extern void psxDma12(u32 madr, u32 bcr, u32 chcr);
 
 extern int  psxDma4Interrupt();
 extern int  psxDma7Interrupt();
+extern void psxDMA8Interrupt();
 extern void psxDMA11Interrupt();
 extern void psxDMA12Interrupt();
 extern void dev9Interrupt();

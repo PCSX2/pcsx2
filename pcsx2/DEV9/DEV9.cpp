@@ -5,6 +5,8 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
+#include "IopDma.h"
+
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
 #include <winioctl.h>
@@ -916,7 +918,10 @@ void DEV9readDMA8Mem(u32* pMem, int size)
 	DevCon.WriteLn("DEV9: *DEV9readDMA8Mem: size %x", size);
 
 	if (dev9.dma_ctrl & SPD_DMA_TO_SMAP)
+	{
 		smap_readDMA8Mem(pMem, size);
+		psxDMA8Interrupt();
+	}
 	else
 	{
 		if (dev9.xfr_ctrl & SPD_XFR_DMAEN &&
@@ -926,6 +931,7 @@ void DEV9readDMA8Mem(u32* pMem, int size)
 			IOPReadFIFO(size);
 			dev9.ata->ATAreadDMA8Mem((u8*)pMem, size);
 			FIFOIntr();
+			psxDMA8Interrupt();
 		}
 	}
 
@@ -942,7 +948,10 @@ void DEV9writeDMA8Mem(u32* pMem, int size)
 	DevCon.WriteLn("DEV9: *DEV9writeDMA8Mem: size %x", size);
 
 	if (dev9.dma_ctrl & SPD_DMA_TO_SMAP)
+	{
 		smap_writeDMA8Mem(pMem, size);
+		psxDMA8Interrupt();
+	}
 	else
 	{
 		if (dev9.xfr_ctrl & SPD_XFR_DMAEN &&
@@ -952,6 +961,7 @@ void DEV9writeDMA8Mem(u32* pMem, int size)
 			HDDReadFIFO();
 			dev9.ata->ATAwriteDMA8Mem((u8*)pMem, size);
 			FIFOIntr();
+			psxDMA8Interrupt();
 		}
 	}
 
