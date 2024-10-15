@@ -167,8 +167,8 @@ public:
 
 	void Async(u32 cycles);
 
-	void ATAreadDMA8Mem(u8* pMem, int size);
-	void ATAwriteDMA8Mem(u8* pMem, int size);
+	int ReadDMAToFIFO(u8* buffer, int space);
+	int WriteDMAFromFIFO(u8* buffer, int available);
 
 	u16 ATAreadPIO();
 	//ATAwritePIO;

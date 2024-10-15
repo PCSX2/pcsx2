@@ -69,9 +69,15 @@ typedef struct
 	u16 mdma_mode;
 	u16 udma_mode;
 
-	//Non-Regs
+	// FIFO
 	int fifo_bytes_read;
 	int fifo_bytes_write;
+	u8 fifo[16 * 512];
+
+	// DMA
+	u8* dma_iop_ptr;
+	int dma_iop_transfered;
+	int dma_iop_size;
 } dev9Struct;
 
 //EEPROM states
@@ -672,6 +678,7 @@ void FLASHwrite32(u32 addr, u32 value, int size);
 void _DEV9irq(int cause, int cycles);
 int DEV9irqHandler(void);
 void DEV9async(u32 cycles);
+void DEV9runFIFO();
 void DEV9writeDMA8Mem(u32* pMem, int size);
 void DEV9readDMA8Mem(u32* pMem, int size);
 u8 DEV9read8(u32 addr);
