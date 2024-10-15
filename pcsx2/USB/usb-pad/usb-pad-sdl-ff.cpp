@@ -194,18 +194,27 @@ namespace usb_pad
 		const s16 new_level = static_cast<s16>(std::clamp(level, -32768, 32767));
 		if (m_constant_effect.constant.level != new_level)
 		{
+			// TEMP LOGGING, REMOVE BEFORE MERGE
+			Console.WriteLn("FFB Constant Force: Updated: %d", new_level);
 			m_constant_effect.constant.level = new_level;
 			if (SDL_HapticUpdateEffect(m_haptic, m_constant_effect_id, &m_constant_effect) != 0)
 				Console.Warning("SDL_HapticUpdateEffect() for constant failed: %s", SDL_GetError());
 		}
+		else
+		{
+			// TEMP LOGGING, REMOVE BEFORE MERGE
+			Console.WriteLn("FFB Constant Force: Update Skipped (Same Force): %d", new_level);
+		}
 
-		// Avoid re-running already-running effects. Some (not all) wheels will briefly drop the
-		// force if it is re-run, resulting in a "jackhammering" or "cobblestone" feeling.
+		// Avoid re-running already-running effects. Re-running an existing effect can change the feel
+		// or introduce inaccuracies to the feedback.
 		// 
 		// Known problem wheels:
-		// Accuforce V2
+		// Accuforce V2 (Cobblestone-like effect caused by micro-dropouts)
+		// Moza R21 (Subjective loss of detail, hard to quantify)
 		if (!m_constant_effect_running)
 		{
+			Console.WriteLn("FFB Constant Force STARTED");
 			if (SDL_HapticRunEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
 				m_constant_effect_running = true;
 			else
@@ -311,6 +320,8 @@ namespace usb_pad
 			{
 				if (m_constant_effect_running)
 				{
+					// TEMP LOGGING, REMOVE BEFORE MERGE
+					Console.WriteLn("FFB Constant Force: STOPPED");
 					SDL_HapticStopEffect(m_haptic, m_constant_effect_id);
 					m_constant_effect_running = false;
 				}
