@@ -168,7 +168,8 @@ extern int ThreadRun;
 #define		SPD_DBUF_STAT_FULL	(1 << 7)
 //HDD->SPEED: both SPD_DBUF_STAT_2 and SPD_DBUF_STAT_FULL set to 1 indicates overflow
 //Write
-#define		SPD_DBUF_RESET_FIFO	(1 << 1) //Set SPD_DBUF_STAT_1 & SPD_DBUF_STAT_2, SPD_DBUF_AVAIL set to 0
+#define		SPD_DBUF_RESET_READ_CNT		(1 << 0)
+#define		SPD_DBUF_RESET_WRITE_CNT	(1 << 1)
 
 #define SPD_R_IF_CTRL			(SPD_REGBASE + 0x64)
 #define		SPD_IF_UDMA			(1 << 0)
