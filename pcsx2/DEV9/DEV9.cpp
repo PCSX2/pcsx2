@@ -688,16 +688,19 @@ void SpeedWrite(u32 addr, u16 value, int width)
 		case SPD_R_DBUF_STAT:
 			//DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT %dbit write %x", width, value);
 
-			if ((value & SPD_DBUF_RESET_FIFO) != 0)
+			if ((value & SPD_DBUF_RESET_READ_CNT) != 0)
 			{
-				//DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT Reset FIFO");
-				dev9.fifo_bytes_write = 0;
+				//DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT Reset read counter");
 				dev9.fifo_bytes_read = 0;
-				dev9.xfr_ctrl &= ~SPD_XFR_WRITE; //?
-				dev9.if_ctrl |= SPD_IF_READ; //?
-
-				FIFOIntr();
 			}
+			if ((value & SPD_DBUF_RESET_WRITE_CNT) != 0)
+			{
+				//DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT Reset write counter");
+				dev9.fifo_bytes_write = 0;
+			}
+
+			if (value != 0)
+				FIFOIntr();
 
 			if (value != 3)
 				Console.Error("DEV9: SPD_R_DBUF_STAT 16bit write %x Which != 3!!!", value);
