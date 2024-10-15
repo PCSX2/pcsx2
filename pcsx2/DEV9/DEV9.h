@@ -158,7 +158,7 @@ extern int ThreadRun;
 
 #define SPD_R_XFR_CTRL			(SPD_REGBASE + 0x32)
 #define		SPD_XFR_WRITE		(1 << 0)
-#define		SPD_XFR_DMAEN		(1 << 1)
+#define		SPD_XFR_DMAEN		(1 << 7)
 #define SPD_R_DBUF_STAT			(SPD_REGBASE + 0x38)
 //Read
 #define		SPD_DBUF_AVAIL_MAX	0x10
