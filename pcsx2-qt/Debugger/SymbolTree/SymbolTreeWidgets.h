@@ -21,7 +21,7 @@ public:
 
 	void updateModel();
 	void reset();
-	void updateVisibleNodes();
+	void updateVisibleNodes(bool update_hashes);
 	void expandGroups(QModelIndex index);
 
 signals:
@@ -41,7 +41,7 @@ protected:
 		const ccc::SourceFile* source_file = nullptr;
 	};
 
-	explicit SymbolTreeWidget(u32 flags, s32 symbol_address_alignment, DebugInterface& cpu, QWidget* parent = nullptr);
+	SymbolTreeWidget(u32 flags, s32 symbol_address_alignment, DebugInterface& cpu, QWidget* parent = nullptr);
 
 	void resizeEvent(QResizeEvent* event) override;
 
