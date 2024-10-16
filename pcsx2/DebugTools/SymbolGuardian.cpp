@@ -192,7 +192,14 @@ std::optional<ccc::FunctionHash> SymbolGuardian::HashFunction(const ccc::Functio
 	ccc::FunctionHash hash;
 
 	for (u32 i = 0; i < function.size() / 4; i++)
-		hash.update(reader.read32(function.address().value + i * 4));
+	{
+		bool valid;
+		u32 value = reader.read32(function.address().value + i * 4, valid);
+		if (!valid)
+			return std::nullopt;
+
+		hash.update(value);
+	}
 
 	return hash;
 }

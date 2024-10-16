@@ -62,8 +62,10 @@ public:
 
 	bool updateLiveness(DebugInterface& cpu);
 
-	bool updateHash(DebugInterface& cpu);
+	bool updateMatchesMemory(DebugInterface& cpu, const ccc::SymbolDatabase& database);
 	bool matchesMemory() const;
+
+	static void updateSymbolHashes(std::span<const SymbolTreeNode*> nodes, DebugInterface& cpu, ccc::SymbolDatabase& database);
 
 	bool anySymbolsValid(const ccc::SymbolDatabase& database) const;
 
