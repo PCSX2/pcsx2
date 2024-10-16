@@ -733,8 +733,17 @@ void SpeedWrite(u32 addr, u16 value, int width)
 			//else
 			//	DevCon.WriteLn("DEV9: IF_CTRL ATA DMA Disabled");
 
-			if (value & (1 << 3))
-				DevCon.WriteLn("DEV9: IF_CTRL Unknown Bit 3 Set");
+			/* During a HDD DMA transfer, the ATA regs are inacessable.
+			 * The SPEED will cache register writes and wait until the end of the DMA block to write them.
+			 * Bit 3 controls what happens when a read is performed while the ATA regs are inacessable.
+			 * When set, the SPEED will asserts /WAIT to the IOP and wait for the HDD to end the DMA block, before reading the reg.
+			 * When cleared, the read will fail if mid DMA. bit 1 in reg 0x62 indicates if the last read failed.
+			 * Our DMA transfers are instant, so we can ignore this bit.
+			 */
+			//if (value & (1 << 3))
+			//	DevCon.WriteLn("DEV9: IF_CTRL Wait for ATA register read Enabled");
+			//else
+			//	DevCon.WriteLn("DEV9: IF_CTRL Wait for ATA register read Disabled");
 
 			if (value & (1 << 4))
 				Console.Error("DEV9: IF_CTRL Unknown Bit 4 Set");
