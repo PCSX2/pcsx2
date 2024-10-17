@@ -41,6 +41,7 @@ bool SymbolTreeNode::readFromVM(DebugInterface& cpu, const ccc::SymbolDatabase& 
 
 	data_changed |= updateDisplayString(cpu, database);
 	data_changed |= updateLiveness(cpu);
+	data_changed |= updateMatchesMemory(cpu, database);
 
 	return data_changed;
 }
@@ -476,6 +477,161 @@ bool SymbolTreeNode::updateLiveness(DebugInterface& cpu)
 	m_liveness = new_liveness;
 
 	return true;
+}
+
+bool SymbolTreeNode::updateMatchesMemory(DebugInterface& cpu, const ccc::SymbolDatabase& database)
+{
+	bool matching = true;
+
+	switch (symbol.descriptor())
+	{
+		case ccc::SymbolDescriptor::FUNCTION:
+		{
+			const ccc::Function* function = database.functions.symbol_from_handle(symbol.handle());
+			if (!function || function->current_hash() == 0 || function->original_hash() == 0)
+				return false;
+
+			matching = function->current_hash() == function->original_hash();
+
+			break;
+		}
+		case ccc::SymbolDescriptor::GLOBAL_VARIABLE:
+		{
+			const ccc::GlobalVariable* global_variable = database.global_variables.symbol_from_handle(symbol.handle());
+			if (!global_variable)
+				return false;
+
+			const ccc::SourceFile* source_file = database.source_files.symbol_from_handle(global_variable->source_file());
+			if (!source_file)
+				return false;
+
+			matching = source_file->functions_match();
+
+			break;
+		}
+		case ccc::SymbolDescriptor::LOCAL_VARIABLE:
+		{
+			const ccc::LocalVariable* local_variable = database.local_variables.symbol_from_handle(symbol.handle());
+			if (!local_variable)
+				return false;
+
+			const ccc::Function* function = database.functions.symbol_from_handle(local_variable->function());
+			if (!function || function->current_hash() == 0 || function->original_hash() == 0)
+				return false;
+
+			matching = function->current_hash() == function->original_hash();
+
+			break;
+		}
+		case ccc::SymbolDescriptor::PARAMETER_VARIABLE:
+		{
+			const ccc::ParameterVariable* parameter_variable = database.parameter_variables.symbol_from_handle(symbol.handle());
+			if (!parameter_variable)
+				return false;
+
+			const ccc::Function* function = database.functions.symbol_from_handle(parameter_variable->function());
+			if (!function || function->current_hash() == 0 || function->original_hash() == 0)
+				return false;
+
+			matching = function->current_hash() == function->original_hash();
+
+			break;
+		}
+		default:
+		{
+		}
+	}
+
+	if (matching == m_matches_memory)
+		return false;
+
+	m_matches_memory = matching;
+
+	return true;
+}
+
+bool SymbolTreeNode::matchesMemory() const
+{
+	return m_matches_memory;
+}
+
+void SymbolTreeNode::updateSymbolHashes(std::span<const SymbolTreeNode*> nodes, DebugInterface& cpu, ccc::SymbolDatabase& database)
+{
+	std::set<ccc::FunctionHandle> functions;
+	std::set<ccc::SourceFile*> source_files;
+
+	// Determine which functions we need to hash again, and in the case of
+	// global variables, which source files are associated with those functions
+	// so that we can check if they still match.
+	for (const SymbolTreeNode* node : nodes)
+	{
+		switch (node->symbol.descriptor())
+		{
+			case ccc::SymbolDescriptor::FUNCTION:
+			{
+				functions.emplace(node->symbol.handle());
+				break;
+			}
+			case ccc::SymbolDescriptor::GLOBAL_VARIABLE:
+			{
+				const ccc::GlobalVariable* global_variable = database.global_variables.symbol_from_handle(node->symbol.handle());
+				if (!global_variable)
+					continue;
+
+				ccc::SourceFile* source_file = database.source_files.symbol_from_handle(global_variable->source_file());
+				if (!source_file)
+					continue;
+
+				for (ccc::FunctionHandle function : source_file->functions())
+					functions.emplace(function);
+
+				source_files.emplace(source_file);
+
+				break;
+			}
+			case ccc::SymbolDescriptor::LOCAL_VARIABLE:
+			{
+				const ccc::LocalVariable* local_variable = database.local_variables.symbol_from_handle(node->symbol.handle());
+				if (!local_variable)
+					continue;
+
+				functions.emplace(local_variable->function());
+
+				break;
+			}
+			case ccc::SymbolDescriptor::PARAMETER_VARIABLE:
+			{
+				const ccc::ParameterVariable* parameter_variable = database.parameter_variables.symbol_from_handle(node->symbol.handle());
+				if (!parameter_variable)
+					continue;
+
+				functions.emplace(parameter_variable->function());
+
+				break;
+			}
+			default:
+			{
+			}
+		}
+	}
+
+	// Update the hashes for the enumerated functions.
+	for (ccc::FunctionHandle function_handle : functions)
+	{
+		ccc::Function* function = database.functions.symbol_from_handle(function_handle);
+		if (!function || function->original_hash() == 0)
+			continue;
+
+		std::optional<ccc::FunctionHash> hash = SymbolGuardian::HashFunction(*function, cpu);
+		if (!hash.has_value())
+			continue;
+
+		function->set_current_hash(*hash);
+	}
+
+	// Check that the enumerated source files still have matching functions.
+	for (ccc::SourceFile* source_file : source_files)
+		source_file->check_functions_match(database);
 }
 
 bool SymbolTreeNode::anySymbolsValid(const ccc::SymbolDatabase& database) const

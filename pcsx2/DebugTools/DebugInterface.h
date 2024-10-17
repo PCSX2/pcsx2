@@ -6,6 +6,7 @@
 #include "MemoryTypes.h"
 #include "ExpressionParser.h"
 #include "SymbolGuardian.h"
+#include "SymbolImporter.h"
 
 #include <string>
 
@@ -81,8 +82,9 @@ public:
 	virtual bool isValidAddress(u32 address) = 0;
 	virtual u32 getCycles() = 0;
 	virtual BreakPointCpu getCpuType() = 0;
-	[[nodiscard]] virtual SymbolGuardian& GetSymbolGuardian() const = 0;
-	[[nodiscard]] virtual std::vector<std::unique_ptr<BiosThread>> GetThreadList() const = 0;
+	virtual SymbolGuardian& GetSymbolGuardian() const = 0;
+	virtual SymbolImporter* GetSymbolImporter() const = 0;
+	virtual std::vector<std::unique_ptr<BiosThread>> GetThreadList() const = 0;
 
 	bool evaluateExpression(const char* expression, u64& dest);
 	bool initExpression(const char* exp, PostfixExpression& dest);
@@ -136,8 +138,9 @@ public:
 	bool getCPCOND0() override;
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
-	[[nodiscard]] SymbolGuardian& GetSymbolGuardian() const override;
-	[[nodiscard]] std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
+	SymbolGuardian& GetSymbolGuardian() const override;
+	SymbolImporter* GetSymbolImporter() const override;
+	std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
 	bool isValidAddress(u32 address) override;
@@ -178,8 +181,9 @@ public:
 	bool getCPCOND0() override;
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
-	[[nodiscard]] SymbolGuardian& GetSymbolGuardian() const override;
-	[[nodiscard]] std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
+	SymbolGuardian& GetSymbolGuardian() const override;
+	SymbolImporter* GetSymbolImporter() const override;
+	std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
 	bool isValidAddress(u32 address) override;

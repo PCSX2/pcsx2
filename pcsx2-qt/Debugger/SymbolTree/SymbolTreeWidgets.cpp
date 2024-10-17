@@ -24,17 +24,29 @@ SymbolTreeWidget::SymbolTreeWidget(u32 flags, s32 symbol_address_alignment, Debu
 
 	setupMenu();
 
-	connect(m_ui.refreshButton, &QPushButton::clicked, this, &SymbolTreeWidget::reset);
+	connect(m_ui.refreshButton, &QPushButton::clicked, this, [&]() {
+		m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+			m_cpu.GetSymbolGuardian().UpdateFunctionHashes(database, m_cpu);
+		});
+
+		reset();
+	});
+
 	connect(m_ui.filterBox, &QLineEdit::textEdited, this, &SymbolTreeWidget::reset);
 
 	connect(m_ui.newButton, &QPushButton::clicked, this, &SymbolTreeWidget::onNewButtonPressed);
 	connect(m_ui.deleteButton, &QPushButton::clicked, this, &SymbolTreeWidget::onDeleteButtonPressed);
 
-	connect(m_ui.treeView->verticalScrollBar(), &QScrollBar::valueChanged, this, &SymbolTreeWidget::updateVisibleNodes);
+	connect(m_ui.treeView->verticalScrollBar(), &QScrollBar::valueChanged, this, [&]() {
+		updateVisibleNodes(false);
+	});
 
 	m_ui.treeView->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.treeView, &QTreeView::customContextMenuRequested, this, &SymbolTreeWidget::openMenu);
-	connect(m_ui.treeView, &QTreeView::expanded, this, &SymbolTreeWidget::updateVisibleNodes);
+
+	connect(m_ui.treeView, &QTreeView::expanded, this, [&]() {
+		updateVisibleNodes(true);
+	});
 }
 
 SymbolTreeWidget::~SymbolTreeWidget() = default;
@@ -43,15 +55,15 @@ void SymbolTreeWidget::resizeEvent(QResizeEvent* event)
 {
 	QWidget::resizeEvent(event);
 
-	updateVisibleNodes();
+	updateVisibleNodes(false);
 }
 
 void SymbolTreeWidget::updateModel()
 {
 	if (!m_model || m_model->needsReset())
 		reset();
-
-	updateVisibleNodes();
+	else
+		updateVisibleNodes(true);
 }
 
 void SymbolTreeWidget::reset()
@@ -60,8 +72,6 @@ void SymbolTreeWidget::reset()
 		setupTree();
 
 	m_ui.treeView->setColumnHidden(SymbolTreeModel::SIZE, !m_show_size_column || !m_show_size_column->isChecked());
-
-	m_cpu.GetSymbolGuardian().UpdateFunctionHashes(m_cpu);
 
 	SymbolFilters filters;
 	std::unique_ptr<SymbolTreeNode> root;
@@ -80,24 +90,38 @@ void SymbolTreeWidget::reset()
 		m_model->reset(std::move(root));
 
 		// Read the initial values for visible nodes.
-		updateVisibleNodes();
+		updateVisibleNodes(true);
 
 		if (!filters.string.isEmpty())
 			expandGroups(QModelIndex());
 	}
 }
 
-void SymbolTreeWidget::updateVisibleNodes()
+void SymbolTreeWidget::updateVisibleNodes(bool update_hashes)
 {
 	if (!m_model)
 		return;
 
+	// Enumerate visible symbol nodes.
+	std::vector<const SymbolTreeNode*> nodes;
 	QModelIndex index = m_ui.treeView->indexAt(m_ui.treeView->rect().topLeft());
 	while (m_ui.treeView->visualRect(index).intersects(m_ui.treeView->viewport()->rect()))
 	{
-		m_model->setData(index, QVariant(), SymbolTreeModel::UPDATE_FROM_MEMORY_ROLE);
+		nodes.emplace_back(m_model->nodeFromIndex(index));
 		index = m_ui.treeView->indexBelow(index);
 	}
+
+	// Hash functions for symbols with visible nodes.
+	if (update_hashes)
+	{
+		m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+			SymbolTreeNode::updateSymbolHashes(nodes, m_cpu, database);
+		});
+	}
+
+	// Update the values of visible nodes from memory.
+	for (const SymbolTreeNode* node : nodes)
+		m_model->setData(m_model->indexFromNode(*node), QVariant(), SymbolTreeModel::UPDATE_FROM_MEMORY_ROLE);
 
 	m_ui.treeView->update();
 }

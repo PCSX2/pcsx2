@@ -789,6 +789,7 @@ set(pcsx2DebugToolsSources
 	DebugTools/MipsStackWalk.cpp
 	DebugTools/Breakpoints.cpp
 	DebugTools/SymbolGuardian.cpp
+	DebugTools/SymbolImporter.cpp
 	DebugTools/DisR3000A.cpp
 	DebugTools/DisR5900asm.cpp
 	DebugTools/DisVU0Micro.cpp
@@ -806,6 +807,7 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/MipsStackWalk.h
 	DebugTools/Breakpoints.h
 	DebugTools/SymbolGuardian.h
+	DebugTools/SymbolImporter.h
 	DebugTools/Debug.h
 	DebugTools/DisASM.h
 	DebugTools/DisVUmicro.h

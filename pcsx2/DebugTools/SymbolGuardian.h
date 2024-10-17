@@ -8,12 +8,13 @@
 #include <functional>
 #include <shared_mutex>
 
+#include <ccc/ast.h>
 #include <ccc/symbol_database.h>
 #include <ccc/symbol_file.h>
 
 #include "common/Pcsx2Types.h"
 
-class DebugInterface;
+class MemoryReader;
 
 struct SymbolInfo
 {
@@ -33,13 +34,15 @@ struct FunctionInfo
 	bool is_no_return = false;
 };
 
-struct SymbolGuardian
+// Guardian of the ancient symbols. This class provides a thread safe API for
+// accessing the symbol database.
+class SymbolGuardian
 {
 public:
-	SymbolGuardian();
+	SymbolGuardian() = default;
 	SymbolGuardian(const SymbolGuardian& rhs) = delete;
 	SymbolGuardian(SymbolGuardian&& rhs) = delete;
-	~SymbolGuardian();
+	~SymbolGuardian() = default;
 	SymbolGuardian& operator=(const SymbolGuardian& rhs) = delete;
 	SymbolGuardian& operator=(SymbolGuardian&& rhs) = delete;
 
@@ -51,32 +54,6 @@ public:
 
 	// Take an exclusive lock on the symbol database and run the callback.
 	void ReadWrite(ReadWriteCallback callback) noexcept;
-
-	// Delete all stored symbols and create some default built-ins. Should be
-	// called from the CPU thread.
-	void Reset();
-
-	// Import symbols from the ELF file, nocash symbols, and scan for functions.
-	// Should be called from the CPU thread.
-	void ImportElf(std::vector<u8> elf, std::string elf_file_name, const std::string& nocash_path);
-
-	// Interrupt the import thread. Should be called from the CPU thread.
-	void ShutdownWorkerThread();
-
-	static ccc::ModuleHandle ImportSymbolTables(
-		ccc::SymbolDatabase& database, const ccc::SymbolFile& symbol_file, const std::atomic_bool* interrupt);
-	static bool ImportNocashSymbols(ccc::SymbolDatabase& database, const std::string& file_name);
-
-	// Compute original hashes for all the functions based on the code stored in
-	// the ELF file.
-	static void ComputeOriginalFunctionHashes(ccc::SymbolDatabase& database, const ccc::ElfFile& elf);
-
-	// Compute new hashes for all the functions to check if any of them have
-	// been overwritten.
-	void UpdateFunctionHashes(DebugInterface& cpu);
-
-	// Delete all symbols from modules that have the "is_irx" flag set.
-	void ClearIrxModules();
 
 	// Copy commonly used attributes of a symbol into a temporary object.
 	SymbolInfo SymbolStartingAtAddress(
@@ -96,12 +73,23 @@ public:
 	FunctionInfo FunctionStartingAtAddress(u32 address) const;
 	FunctionInfo FunctionOverlappingAddress(u32 address) const;
 
+	// Hash all the functions in the database and store the hashes in the
+	// original hash field of said objects.
+	static void GenerateFunctionHashes(ccc::SymbolDatabase& database, MemoryReader& reader);
+
+	// Hash all the functions in the database that have original hashes and
+	// store the results in the current hash fields of said objects.
+	static void UpdateFunctionHashes(ccc::SymbolDatabase& database, MemoryReader& reader);
+
+	// Hash a function and return the result.
+	static std::optional<ccc::FunctionHash> HashFunction(const ccc::Function& function, MemoryReader& reader);
+
+	// Delete all symbols from modules that have the "is_irx" flag set.
+	void ClearIrxModules();
+
 protected:
 	ccc::SymbolDatabase m_database;
 	mutable std::shared_mutex m_big_symbol_lock;
-
-	std::thread m_import_thread;
-	std::atomic_bool m_interrupt_import_thread = false;
 };
 
 extern SymbolGuardian R5900SymbolGuardian;

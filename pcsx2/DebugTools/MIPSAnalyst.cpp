@@ -174,7 +174,7 @@ namespace MIPSAnalyst
 		return furthestJumpbackAddr;
 	}
 
-	void ScanForFunctions(ccc::SymbolDatabase& database, MemoryReader& reader, u32 startAddr, u32 endAddr) {
+	void ScanForFunctions(ccc::SymbolDatabase& database, MemoryReader& reader, u32 startAddr, u32 endAddr, bool generateHashes) {
 		std::vector<MIPSAnalyst::AnalyzedFunction> functions;
 		AnalyzedFunction currentFunction = {startAddr};
 
@@ -308,7 +308,7 @@ namespace MIPSAnalyst
 		currentFunction.end = addr + 4;
 		functions.push_back(currentFunction);
 		
-		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("Analysis");
+		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("Function Scanner");
 		if (!source.success()) {
 			Console.Error("MIPSAnalyst: %s", source.error().message.c_str());
 			return;
@@ -317,10 +317,11 @@ namespace MIPSAnalyst
 		for (const AnalyzedFunction& function : functions) {
 			ccc::FunctionHandle handle = database.functions.first_handle_from_starting_address(function.start);
 			ccc::Function* symbol = database.functions.symbol_from_handle(handle);
+			bool generateHash = false;
 			
 			if (!symbol) {
 				std::string name;
-				
+
 				// The SNDLL importer may create label symbols for functions if
 				// they're not in a section named ".text" since it can't
 				// otherwise distinguish between functions and globals.
@@ -331,7 +332,7 @@ namespace MIPSAnalyst
 						break;
 					}
 				}
-				
+
 				if (name.empty()) {
 					name = StringUtil::StdStringFromFormat("z_un_%08x", function.start);
 				}
@@ -342,13 +343,22 @@ namespace MIPSAnalyst
 					Console.Error("MIPSAnalyst: %s", symbol_result.error().message.c_str());
 					return;
 				}
+
 				symbol = *symbol_result;
+				generateHash = generateHashes;
 			}
 
 			if (symbol->size() == 0) {
 				symbol->set_size(function.end - function.start + 4);
 			}
-			
+
+			if (generateHash) {
+				std::optional<ccc::FunctionHash> hash = SymbolGuardian::HashFunction(*symbol, reader);
+				if (hash.has_value()) {
+					symbol->set_original_hash(hash->get());
+				}
+			}
+
 			symbol->is_no_return = function.suspectedNoReturn;
 		}
 	}

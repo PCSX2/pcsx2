@@ -35,13 +35,13 @@ enum class CDVD_SourceType : uint8_t;
 
 namespace Pad
 {
-enum class ControllerType : u8;
+	enum class ControllerType : u8;
 }
 
 /// Generic setting information which can be reused in multiple components.
 struct SettingInfo
 {
-	using GetOptionsCallback = std::vector<std::pair<std::string, std::string>>(*)();
+	using GetOptionsCallback = std::vector<std::pair<std::string, std::string>> (*)();
 
 	enum class Type
 	{
@@ -188,6 +188,35 @@ enum class SpeedHack
 	MTVU,
 	EECycleRate,
 	MaxCount,
+};
+
+enum class DebugAnalysisCondition
+{
+	ALWAYS,
+	IF_DEBUGGER_IS_OPEN,
+	NEVER
+};
+
+struct DebugSymbolSource
+{
+	std::string Name;
+	bool ClearDuringAnalysis = false;
+
+	friend auto operator<=>(const DebugSymbolSource& lhs, const DebugSymbolSource& rhs) = default;
+};
+
+struct DebugExtraSymbolFile
+{
+	std::string Path;
+
+	friend auto operator<=>(const DebugExtraSymbolFile& lhs, const DebugExtraSymbolFile& rhs) = default;
+};
+
+enum class DebugFunctionScanMode
+{
+	SCAN_ELF,
+	SCAN_MEMORY,
+	SKIP
 };
 
 enum class AspectRatioType : u8
@@ -647,7 +676,7 @@ struct Pcsx2Config
 					OsdShowInputs : 1,
 					OsdShowFrameTimes : 1,
 					OsdShowVersion : 1,
-					OsdShowVideoCapture: 1,
+					OsdShowVideoCapture : 1,
 					OsdShowInputRec : 1,
 					OsdShowHardwareInfo : 1,
 					HWSpinGPUForReadbacks : 1,
@@ -1007,11 +1036,43 @@ struct Pcsx2Config
 		u32 WindowHeight;
 		u32 MemoryViewBytesPerRow;
 
+
 		DebugOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
 		bool operator==(const DebugOptions& right) const;
 		bool operator!=(const DebugOptions& right) const;
+	};
+
+	// ------------------------------------------------------------------------
+	struct DebugAnalysisOptions
+	{
+
+		static const char* RunConditionNames[];
+		static const char* FunctionScanModeNames[];
+
+		DebugAnalysisCondition RunCondition = DebugAnalysisCondition::IF_DEBUGGER_IS_OPEN;
+		bool GenerateSymbolsForIRXExports = true;
+
+		bool AutomaticallySelectSymbolsToClear = true;
+		std::vector<DebugSymbolSource> SymbolSources;
+
+		bool ImportSymbolsFromELF = true;
+		bool ImportSymFileFromDefaultLocation = true;
+		bool DemangleSymbols = true;
+		bool DemangleParameters = true;
+		std::vector<DebugExtraSymbolFile> ExtraSymbolFiles;
+
+		DebugFunctionScanMode FunctionScanMode = DebugFunctionScanMode::SCAN_ELF;
+		bool CustomFunctionScanRange = false;
+		std::string FunctionScanStartAddress = "0";
+		std::string FunctionScanEndAddress = "0";
+
+		bool GenerateFunctionHashes = true;
+
+		void LoadSave(SettingsWrapper& wrap);
+
+		friend auto operator<=>(const DebugAnalysisOptions& lhs, const DebugAnalysisOptions& rhs) = default;
 	};
 
 	// ------------------------------------------------------------------------
@@ -1149,10 +1210,10 @@ struct Pcsx2Config
 	{
 		SavestateOptions();
 		void LoadSave(SettingsWrapper& wrap);
-	
+
 		SavestateCompressionMethod CompressionType = SavestateCompressionMethod::Zstandard;
 		SavestateCompressionLevel CompressionRatio = SavestateCompressionLevel::Medium;
-		
+
 		bool operator==(const SavestateOptions& right) const;
 		bool operator!=(const SavestateOptions& right) const;
 	};
@@ -1192,6 +1253,7 @@ struct Pcsx2Config
 	GamefixOptions Gamefixes;
 	ProfilerOptions Profiler;
 	DebugOptions Debugger;
+	DebugAnalysisOptions DebuggerAnalysis;
 	EmulationSpeedOptions EmulationSpeed;
 	SavestateOptions Savestate;
 	SPU2Options SPU2;

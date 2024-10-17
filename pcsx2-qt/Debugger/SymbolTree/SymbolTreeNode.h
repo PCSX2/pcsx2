@@ -62,6 +62,11 @@ public:
 
 	bool updateLiveness(DebugInterface& cpu);
 
+	bool updateMatchesMemory(DebugInterface& cpu, const ccc::SymbolDatabase& database);
+	bool matchesMemory() const;
+
+	static void updateSymbolHashes(std::span<const SymbolTreeNode*> nodes, DebugInterface& cpu, ccc::SymbolDatabase& database);
+
 	bool anySymbolsValid(const ccc::SymbolDatabase& database) const;
 
 	const SymbolTreeNode* parent() const;
@@ -79,6 +84,7 @@ protected:
 	QVariant m_value;
 	QString m_display_value;
 	std::optional<bool> m_liveness;
+	bool m_matches_memory = true;
 
 	SymbolTreeNode* m_parent = nullptr;
 	std::vector<std::unique_ptr<SymbolTreeNode>> m_children;

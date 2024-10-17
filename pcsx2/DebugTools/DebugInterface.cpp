@@ -894,6 +894,11 @@ SymbolGuardian& R5900DebugInterface::GetSymbolGuardian() const
 	return R5900SymbolGuardian;
 }
 
+SymbolImporter* R5900DebugInterface::GetSymbolImporter() const
+{
+	return &R5900SymbolImporter;
+}
+
 std::vector<std::unique_ptr<BiosThread>> R5900DebugInterface::GetThreadList() const
 {
 	return getEEThreads();
@@ -1211,6 +1216,11 @@ u32 R3000DebugInterface::getCycles()
 SymbolGuardian& R3000DebugInterface::GetSymbolGuardian() const
 {
 	return R3000SymbolGuardian;
+}
+
+SymbolImporter* R3000DebugInterface::GetSymbolImporter() const
+{
+	return nullptr;
 }
 
 std::vector<std::unique_ptr<BiosThread>> R3000DebugInterface::GetThreadList() const
