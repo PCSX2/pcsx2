@@ -77,7 +77,6 @@ target_sources(common PRIVATE
 	Timer.h
 	TextureDecompress.h
 	Threading.h
-	TraceLog.h
 	VectorIntrin.h
 	WAVWriter.h
 	WindowInfo.h

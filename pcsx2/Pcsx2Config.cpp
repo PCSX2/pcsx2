@@ -173,32 +173,47 @@ namespace EmuFolders
 	static std::string GetPortableModePath();
 } // namespace EmuFolders
 
-TraceFiltersEE::TraceFiltersEE()
+TraceLogsEE::TraceLogsEE()
 {
 	bitset = 0;
 }
 
-bool TraceFiltersEE::operator==(const TraceFiltersEE& right) const
+bool TraceLogsEE::operator==(const TraceLogsEE& right) const
 {
 	return OpEqu(bitset);
 }
 
-bool TraceFiltersEE::operator!=(const TraceFiltersEE& right) const
+bool TraceLogsEE::operator!=(const TraceLogsEE& right) const
 {
 	return !this->operator==(right);
 }
 
-TraceFiltersIOP::TraceFiltersIOP()
+TraceLogsIOP::TraceLogsIOP()
 {
 	bitset = 0;
 }
 
-bool TraceFiltersIOP::operator==(const TraceFiltersIOP& right) const
+bool TraceLogsIOP::operator==(const TraceLogsIOP& right) const
 {
 	return OpEqu(bitset);
 }
 
-bool TraceFiltersIOP::operator!=(const TraceFiltersIOP& right) const
+bool TraceLogsIOP::operator!=(const TraceLogsIOP& right) const
+{
+	return !this->operator==(right);
+}
+
+TraceLogsMISC::TraceLogsMISC()
+{
+	bitset = 0;
+}
+
+bool TraceLogsMISC::operator==(const TraceLogsMISC& right) const
+{
+	return OpEqu(bitset);
+}
+
+bool TraceLogsMISC::operator!=(const TraceLogsMISC& right) const
 {
 	return !this->operator==(right);
 }
@@ -214,16 +229,88 @@ void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
 
 	SettingsWrapEntry(Enabled);
 
-	// Retaining backwards compat of the trace log enablers isn't really important, and
-	// doing each one by hand would be murder.  So let's cheat and just save it as an int:
+	SettingsWrapBitBool(EE.bios);
+	SettingsWrapBitBool(EE.memory);
+	SettingsWrapBitBool(EE.giftag);
+	SettingsWrapBitBool(EE.vifcode);
+	SettingsWrapBitBool(EE.mskpath3);
+	SettingsWrapBitBool(EE.r5900);
+	SettingsWrapBitBool(EE.cop0);
+	SettingsWrapBitBool(EE.cop1);
+	SettingsWrapBitBool(EE.cop2);
+	SettingsWrapBitBool(EE.cache);
+	SettingsWrapBitBool(EE.knownhw);
+	SettingsWrapBitBool(EE.unknownhw);
+	SettingsWrapBitBool(EE.dmahw);
+	SettingsWrapBitBool(EE.ipu);
+	SettingsWrapBitBool(EE.dmac);
+	SettingsWrapBitBool(EE.counters);
+	SettingsWrapBitBool(EE.spr);
+	SettingsWrapBitBool(EE.vif);
+	SettingsWrapBitBool(EE.gif);
 
-	SettingsWrapEntry(EE.bitset);
-	SettingsWrapEntry(IOP.bitset);
+	SettingsWrapBitBool(IOP.bios);
+	SettingsWrapBitBool(IOP.memcards);
+	SettingsWrapBitBool(IOP.pad);
+	SettingsWrapBitBool(IOP.r3000a);
+	SettingsWrapBitBool(IOP.cop2);
+	SettingsWrapBitBool(IOP.memory);
+	SettingsWrapBitBool(IOP.knownhw);
+	SettingsWrapBitBool(IOP.unknownhw);
+	SettingsWrapBitBool(IOP.dmahw);
+	SettingsWrapBitBool(IOP.dmac);
+	SettingsWrapBitBool(IOP.counters);
+	SettingsWrapBitBool(IOP.cdvd);
+	SettingsWrapBitBool(IOP.mdec);
+
+	SettingsWrapBitBool(MISC.sif);
+}
+
+void TraceLogFilters::SyncToConfig() const
+{
+	auto& ee = TraceLogging.EE;
+	ee.Bios.Enabled = EE.bios;
+	ee.Memory.Enabled = EE.memory;
+	ee.GIFtag.Enabled = EE.giftag;
+	ee.VIFcode.Enabled = EE.vifcode;
+	ee.MSKPATH3.Enabled = EE.mskpath3;
+	ee.R5900.Enabled = EE.r5900;
+	ee.COP0.Enabled = EE.cop0;
+	ee.COP1.Enabled = EE.cop1;
+	ee.COP2.Enabled = EE.cop2;
+	ee.KnownHw.Enabled = EE.knownhw;
+	ee.UnknownHw.Enabled = EE.unknownhw;
+	ee.DMAhw.Enabled = EE.dmahw;
+	ee.IPU.Enabled = EE.ipu;
+	ee.DMAC.Enabled = EE.dmac;
+	ee.Counters.Enabled = EE.counters;
+	ee.SPR.Enabled = EE.spr;
+	ee.VIF.Enabled = EE.vif;
+	ee.GIF.Enabled = EE.gif;
+
+	auto& iop = TraceLogging.IOP;
+	iop.Bios.Enabled = IOP.bios;
+	iop.Memcards.Enabled = IOP.memcards;
+	iop.PAD.Enabled = IOP.pad;
+	iop.R3000A.Enabled = IOP.r3000a;
+	iop.COP2.Enabled = IOP.cop2;
+	iop.Memory.Enabled = IOP.memory;
+	iop.KnownHw.Enabled = IOP.knownhw;
+	iop.UnknownHw.Enabled = IOP.unknownhw;
+	iop.DMAhw.Enabled = IOP.dmahw;
+	iop.DMAC.Enabled = IOP.dmac;
+	iop.Counters.Enabled = IOP.counters;
+	iop.CDVD.Enabled = IOP.cdvd;
+	iop.MDEC.Enabled = IOP.mdec;
+
+	TraceLogging.SIF.Enabled = MISC.sif;
+
+	EmuConfig.Trace.Enabled = Enabled;
 }
 
 bool TraceLogFilters::operator==(const TraceLogFilters& right) const
 {
-	return OpEqu(Enabled) && OpEqu(EE) && OpEqu(IOP);
+	return OpEqu(Enabled) && OpEqu(EE) && OpEqu(IOP) && OpEqu(MISC);
 }
 
 bool TraceLogFilters::operator!=(const TraceLogFilters& right) const

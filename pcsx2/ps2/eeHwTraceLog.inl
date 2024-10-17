@@ -256,7 +256,7 @@ template< typename T>
 static __ri void eeHwTraceLog( u32 addr, T val, bool mode )
 {
 	if (!IsDevBuild) return;
-	if (!EmuConfig.Trace.Enabled || !EmuConfig.Trace.EE.m_EnableAll || !EmuConfig.Trace.EE.m_EnableRegisters) return;
+	if (!EmuConfig.Trace.Enabled) return;
 	if (!_eelog_enabled(addr)) return;
 
 	std::string labelStr(fmt::format("Hw{}{}", mode ? "Read" : "Write", sizeof(T) * 8));

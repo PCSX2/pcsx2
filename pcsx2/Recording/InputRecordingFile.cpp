@@ -6,6 +6,7 @@
 #include "Utilities/InputRecordingLogger.h"
 
 #include "common/FileSystem.h"
+#include "common/StringUtil.h"
 #include "DebugTools/Debug.h"
 #include "MemoryTypes.h"
 #include "svnrev.h"

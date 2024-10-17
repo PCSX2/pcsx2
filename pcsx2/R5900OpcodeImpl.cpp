@@ -1066,7 +1066,7 @@ void SYSCALL()
 		break;
 		case Syscall::sceSifSetDma:
 			// The only thing this code is used for is the one log message, so don't execute it if we aren't logging bios messages.
-			if (SysTraceActive(EE.Bios))
+			if (TraceActive(EE.Bios))
 			{
 				//struct t_sif_cmd_header	*hdr;
 				//struct t_sif_rpc_bind *bind;
