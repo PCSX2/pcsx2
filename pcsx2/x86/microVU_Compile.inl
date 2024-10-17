@@ -742,12 +742,27 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 			{
 				mVUsetupRange(mVU, xPC, false);
 				if (branch < 2)
-					mVUsetupRange(mVU, xPC + 8, true); // Ideally we'd do +4 but the mmx compare only works in 64bits, this should be fine
+					mVUsetupRange(mVU, xPC + 4, true);
 			}
 		}
 		else
 		{
 			incPC(-1);
+			if (EmuConfig.Gamefixes.IbitHack)
+			{
+				// Ignore IADDI, IADDIU and ISUBU, ILW, ISW, LQ, SQ.
+				// Be warned, this is a little risky as we could be ignoring subtle differences in the operations.
+				// 2 is too much, 1 is too little, so it gets 2. It's a hack anyways...
+				const u32 upper = (mVU.code >> 25);
+				if (upper == 0x1 || upper == 0x0 || upper == 0x4 || upper == 0x5 || upper == 0x8 || upper == 0x9 || (upper == 0x40 && (mVU.code & 0x3F) == 0x32))
+				{
+					incPC(1);
+					mVUsetupRange(mVU, xPC, false);
+					if (branch < 2)
+						mVUsetupRange(mVU, xPC + 2, true);
+					incPC(-1);
+				}
+			}
 			mVUopL(mVU, 0);
 			incPC(1);
 		}
