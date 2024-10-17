@@ -190,26 +190,46 @@ namespace usb_pad
 	{
 		if (m_constant_effect_id < 0)
 			return;
-
-		const s16 new_level = static_cast<s16>(std::clamp(level, -32768, 32767));
+		#ifdef __WIN32__
+		level /= 4;
+		#endif
+		const s16 new_level = static_cast<s16>(std::clamp(level, -10000, 10000));
 		if (m_constant_effect.constant.level != new_level)
 		{
 			// TEMP LOGGING, REMOVE BEFORE MERGE
 			Console.WriteLn("FFB Constant Force: Updated: %d", new_level);
 			m_constant_effect.constant.level = new_level;
+			#ifdef __WIN32__
+			// DANGER! Reading this code may give you radiation poisoning.
+			// It's here to make initial troubleshooting/debugging easier, but
+			// it's a total hack that should probably be refactored (aka hidden beneath a rug)
+			// if it ends up working.
+
+			// Steal the raw DirectInput references from SDL and update them directly.
+			// Allows us to set our own flags for SetParameters, which lets us pass DIEP_START,
+			// which may aid compatibility with certain wheels.
+			_SDL_Haptic* real = (_SDL_Haptic*)(m_haptic);
+			auto ref = real->effects[m_constant_effect_id].hweffect->ref;
+			auto k = (DICONSTANTFORCE*)real->effects[m_constant_effect_id].hweffect->effect.lpvTypeSpecificParams;
+			k->lMagnitude = new_level;
+			ref->SetParameters(&real->effects[m_constant_effect_id].hweffect->effect, DIEP_TYPESPECIFICPARAMS | DIEP_START);
+			#else
 			if (SDL_HapticUpdateEffect(m_haptic, m_constant_effect_id, &m_constant_effect) != 0)
 				Console.Warning("SDL_HapticUpdateEffect() for constant failed: %s", SDL_GetError());
+			#endif
 		}
 		else
 		{
 			// TEMP LOGGING, REMOVE BEFORE MERGE
+			if (SDL_HapticUpdateEffect(m_haptic, m_constant_effect_id, &m_constant_effect) != 0)
+				Console.Warning("SDL_HapticUpdateEffect() for constant failed: %s", SDL_GetError());
 			Console.WriteLn("FFB Constant Force: Update Skipped (Same Force): %d", new_level);
 		}
 
 		// Avoid re-running already-running effects. Re-running an existing effect can change the feel
 		// or introduce inaccuracies to the feedback.
 		// 
-		// Known problem wheels:
+		// Known problem wheels:&real->effects[m_constant_effect_id].hweffect->effect
 		// Accuforce V2 (Cobblestone-like effect caused by micro-dropouts)
 		// Moza R21 (Subjective loss of detail, hard to quantify)
 		if (!m_constant_effect_running)
