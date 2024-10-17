@@ -295,7 +295,7 @@ static void mVUwaitMTVU()
 }
 
 // Transforms the Address in gprReg to valid VU0/VU1 Address
-__fi void mVUaddrFix(mV, const xAddressReg& gprReg)
+__fi void mVUaddrFix(mV, const xAddressReg& gprReg, const xAddressReg& tmpReg)
 {
 	if (isVU1)
 	{
@@ -324,7 +324,16 @@ __fi void mVUaddrFix(mV, const xAddressReg& gprReg)
 				xFastCall((void*)mVU.waitMTVU);
 			}
 			xAND(xRegister32(gprReg.Id), 0x3f); // ToDo: theres a potential problem if VU0 overrides VU1's VF0/VI0 regs!
-			xADD(gprReg, (u128*)VU1.VF - (u128*)VU0.Mem);
+			sptr offset = (u128*)VU1.VF - (u128*)VU0.Mem;
+			if (offset == (s32)offset)
+			{
+				xADD(gprReg, offset);
+			}
+			else
+			{
+				xMOV64(tmpReg, offset);
+				xADD(gprReg, tmpReg);
+			}
 		jmpB.SetTarget();
 		xSHL(gprReg, 4); // multiply by 16 (shift left by 4)
 	}
