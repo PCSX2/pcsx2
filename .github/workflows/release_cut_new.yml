@@ -114,7 +114,6 @@ jobs:
       artifactPrefixName: "PCSX2-linux-Qt-x64-flatpak"
       compiler: clang
       cmakeflags: ""
-      branch: "stable"
       publish: false
       fetchTags: true
       stableBuild: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prelease == 'false' }}
