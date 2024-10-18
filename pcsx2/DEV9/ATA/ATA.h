@@ -244,6 +244,7 @@ private:
 	void HDD_FlushCache();
 	void HDD_InitDevParameters();
 	void HDD_ReadVerifySectors(bool isLBA48);
+	void HDD_Recalibrate();
 	void HDD_SeekCmd();
 	void HDD_SetFeatures();
 	void HDD_SetMultipleMode();
@@ -264,6 +265,7 @@ private:
 
 	void HDD_Smart();
 	void SMART_SetAutoSaveAttribute();
+	void SMART_SaveAttribute();
 	void SMART_ExecuteOfflineImmediate();
 	void SMART_EnableOps(bool enable);
 	void SMART_ReturnStatus();
