@@ -35,6 +35,7 @@ void ATA::HDD_Smart()
 			SMART_SetAutoSaveAttribute();
 			return;
 		case 0xD3: //SMART_ATTR_SAVE
+			SMART_SaveAttribute();
 			return;
 		case 0xDA: //SMART_STATUS (is fault in disk?)
 			SMART_ReturnStatus();
@@ -77,6 +78,13 @@ void ATA::SMART_SetAutoSaveAttribute()
 			CmdNoDataAbort();
 			return;
 	}
+	PostCmdNoData();
+}
+
+void ATA::SMART_SaveAttribute()
+{
+	PreCmd();
+	// Stub
 	PostCmdNoData();
 }
 
