@@ -11,6 +11,9 @@ void ATA::IDE_ExecCmd(u16 value)
 		case 0x00:
 			HDD_Nop();
 			break;
+		case 0x10:
+			HDD_Recalibrate();
+			break;
 		case 0x20:
 			HDD_ReadSectors(false);
 			break;
