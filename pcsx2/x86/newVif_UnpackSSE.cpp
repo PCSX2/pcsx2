@@ -329,9 +329,11 @@ void VifUnpackSSE_Simple::doMaskWrite(const xRegisterSSE& regX) const
 {
 	xMOVAPS(xmm7, ptr[dstIndirect]);
 	int offX = std::min(curCycle, 3);
-	xPAND(regX, ptr32[nVifMask[0][offX]]);
-	xPAND(xmm7, ptr32[nVifMask[1][offX]]);
-	xPOR (regX, ptr32[nVifMask[2][offX]]);
+	sptr base = reinterpret_cast<sptr>(nVifMask[2]);
+	xLoadFarAddr(rax, nVifMask);
+	xPAND(regX, ptr128[rax + (reinterpret_cast<sptr>(nVifMask[0][offX]) - base)]);
+	xPAND(xmm7, ptr128[rax + (reinterpret_cast<sptr>(nVifMask[1][offX]) - base)]);
+	xPOR (regX, ptr128[rax + (reinterpret_cast<sptr>(nVifMask[2][offX]) - base)]);
 	xPOR (regX, xmm7);
 	xMOVAPS(ptr[dstIndirect], regX);
 }
@@ -362,6 +364,7 @@ void VifUnpackSSE_Init()
 {
 	DevCon.WriteLn("Generating SSE-optimized unpacking functions for VIF interpreters...");
 
+	xSetTextPtr(nullptr);
 	xSetPtr(SysMemory::GetVIFUnpackRec());
 
 	for (int a = 0; a < 2; a++)
