@@ -53,6 +53,9 @@ void ATA::IDE_ExecCmd(u16 value)
 		case 0xC4:
 			HDD_ReadMultiple(false);
 			break;
+		case 0xC6:
+			HDD_SetMultipleMode();
+			break;
 		case 0xC8:
 			HDD_ReadDMA(false);
 			break;
