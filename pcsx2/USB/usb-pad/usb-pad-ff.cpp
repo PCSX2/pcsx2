@@ -85,7 +85,7 @@ namespace usb_pad
 	// Unless passing ff packets straight to a device, parse it here
 	void PadState::ParseFFData(const ff_data* ffdata, bool isDFP)
 	{
-		if (!mFFdev)
+		if (!mFFdev)  
 			return;
 #if defined(PCSX2_DEVBUILD) || defined(_DEBUG)
 		DevCon.WriteLn("FFB %02X, %02X, %02X, %02X : %02X, %02X, %02X, %02X",
