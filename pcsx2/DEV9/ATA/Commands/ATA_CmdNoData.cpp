@@ -65,6 +65,7 @@ void ATA::HDD_SeekCmd()
 
 	regStatus &= ~ATA_STAT_SEEK;
 
+	lba48 = false;
 	if (HDD_CanSeek())
 	{
 		regStatus |= ATA_STAT_ERR;
