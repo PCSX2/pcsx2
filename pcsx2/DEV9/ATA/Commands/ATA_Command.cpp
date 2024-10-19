@@ -142,8 +142,6 @@ bool ATA::PreCmd()
 	regStatus &= ~ATA_STAT_DRQ;
 	regStatus &= ~ATA_STAT_ERR;
 
-	regStatus &= ~ATA_STAT_SEEK;
-
 	regError = 0;
 
 	return true;

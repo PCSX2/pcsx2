@@ -97,6 +97,7 @@ void ATA::HDD_ReadPIO(bool isLBA48)
 
 	IDE_CmdLBA48Transform(isLBA48);
 
+	regStatus &= ~ATA_STAT_SEEK;
 	if (!HDD_CanSeek())
 	{
 		regStatus |= ATA_STAT_ERR;
@@ -104,6 +105,8 @@ void ATA::HDD_ReadPIO(bool isLBA48)
 		PostCmdNoData();
 		return;
 	}
+	else
+		regStatus |= ATA_STAT_SEEK;
 
 	HDD_ReadSync(&ATA::HDD_ReadPIOS2);
 }
