@@ -19,6 +19,7 @@ void ATA::CmdNoDataAbort()
 
 	regError |= ATA_ERR_ABORT;
 	regStatus |= ATA_STAT_ERR;
+	regStatusSeekLock = (regStatus & ATA_STAT_SEEK) ? 1 : -1;
 	PostCmdNoData();
 }
 
@@ -62,6 +63,7 @@ void ATA::HDD_ReadVerifySectors(bool isLBA48)
 	if (!HDD_CanSeek())
 	{
 		regStatus |= ATA_STAT_ERR;
+		regStatusSeekLock = -1;
 		regError |= ATA_ERR_TRACK0;
 	}
 	else
@@ -104,6 +106,7 @@ void ATA::HDD_SeekCmd()
 	if (HDD_CanSeek())
 	{
 		regStatus |= ATA_STAT_ERR;
+		regStatusSeekLock = -1;
 		regError |= ATA_ERR_ID;
 	}
 	else
@@ -198,6 +201,7 @@ void ATA::HDD_Nop()
 	//Always ends in error
 	regError |= ATA_ERR_ABORT;
 	regStatus |= ATA_STAT_ERR;
+	regStatusSeekLock = (regStatus & ATA_STAT_SEEK) ? 1 : -1;
 	PostCmdNoData();
 }
 

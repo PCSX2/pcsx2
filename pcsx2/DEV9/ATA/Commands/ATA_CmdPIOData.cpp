@@ -101,6 +101,7 @@ void ATA::HDD_ReadPIO(bool isLBA48)
 	if (!HDD_CanSeek())
 	{
 		regStatus |= ATA_STAT_ERR;
+		regStatusSeekLock = -1;
 		regError |= ATA_ERR_ID;
 		PostCmdNoData();
 		return;

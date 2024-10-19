@@ -143,6 +143,7 @@ void ATA::HDD_ReadDMA(bool isLBA48)
 		Console.Error("DEV9: ATA: Transfer from invalid LBA %lu", HDD_GetLBA());
 		nsector = -1;
 		regStatus |= ATA_STAT_ERR;
+		regStatusSeekLock = -1;
 		regError |= ATA_ERR_ID;
 		PostCmdNoData();
 		return;
@@ -168,6 +169,7 @@ void ATA::HDD_WriteDMA(bool isLBA48)
 		Console.Error("DEV9: ATA: Transfer from invalid LBA %lu", HDD_GetLBA());
 		nsector = -1;
 		regStatus |= ATA_STAT_ERR;
+		regStatusSeekLock = -1;
 		regError |= ATA_ERR_ID;
 		PostCmdNoData();
 		return;
