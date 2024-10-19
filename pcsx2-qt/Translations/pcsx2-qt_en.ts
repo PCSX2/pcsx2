@@ -1339,6 +1339,34 @@ Leaderboard Position: {1} of {2}</source>
     </message>
 </context>
 <context>
+    <name>AnalysisOptionsDialog</name>
+    <message>
+        <location filename="../Debugger/AnalysisOptionsDialog.ui" line="20"/>
+        <source>Analysis Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/AnalysisOptionsDialog.ui" line="32"/>
+        <source>Changes made here won&apos;t be saved. Edit these settings from the global or per-game settings dialogs to have your changes take effect for future analysis runs.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/AnalysisOptionsDialog.ui" line="73"/>
+        <source>Close dialog after analysis has started</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/AnalysisOptionsDialog.ui" line="96"/>
+        <source>Analyze</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/AnalysisOptionsDialog.ui" line="103"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AudioExpansionSettingsDialog</name>
     <message>
         <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="14"/>
@@ -3892,72 +3920,329 @@ Do you want to overwrite?</source>
     </message>
 </context>
 <context>
+    <name>DebugAnalysisSettingsWidget</name>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="38"/>
+        <source>Clear Existing Symbols</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="44"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="69"/>
+        <source>Automatically Select Symbols To Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="86"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="105"/>
+        <source>Import Symbols</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="132"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="88"/>
+        <source>Import From ELF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="139"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="92"/>
+        <source>Demangle Symbols</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="146"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="95"/>
+        <source>Demangle Parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="153"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="90"/>
+        <source>Import Default .sym File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="169"/>
+        <source>Import from file (.elf, .sym, etc):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="229"/>
+        <source>Add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="236"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="255"/>
+        <source>Scan For Functions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="263"/>
+        <source>Scan Mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="271"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="115"/>
+        <source>Scan ELF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="276"/>
+        <source>Scan Memory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="281"/>
+        <source>Skip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="291"/>
+        <source>Custom Address Range:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="329"/>
+        <source>Start:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="339"/>
+        <source>End:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="377"/>
+        <source>Hash Functions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="383"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="141"/>
+        <source>Gray Out Symbols For Overwritten Functions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="69"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="88"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="90"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="92"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="95"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="141"/>
+        <source>Checked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="70"/>
+        <source>Automatically delete symbols that were generated by any previous analysis runs.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="89"/>
+        <source>Import symbol tables stored in the game&apos;s boot ELF.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="91"/>
+        <source>Import symbols from a .sym file with the same name as the loaded ISO file on disk if such a file exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="93"/>
+        <source>Demangle C++ symbols during the import process so that the function and global variable names shown in the debugger are more readable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="96"/>
+        <source>Include parameter lists in demangled function names.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="115"/>
+        <source>Scan Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="116"/>
+        <source>Choose where the function scanner looks to find functions. This option can be useful if the application loads additional code at runtime.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="128"/>
+        <source>Custom Address Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="128"/>
+        <source>Unchecked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="129"/>
+        <source>Whether to look for functions from the address range specified (Checked), or from the ELF segment containing the entry point (Unchecked).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="142"/>
+        <source>Generate hashes for all the detected functions, and gray out the symbols displayed in the debugger for functions that no longer match.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="234"/>
+        <source>&lt;i&gt;No symbol sources in database.&lt;/i&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="254"/>
+        <source>&lt;i&gt;Start this game to modify the symbol sources list.&lt;/i&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="346"/>
+        <source>Add Symbol File</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DebugSettingsWidget</name>
     <message>
         <location filename="../Settings/DebugSettingsWidget.ui" line="36"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="91"/>
+        <source>Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="75"/>
+        <source>These settings control what and when analysis passes should be performed on the program running in the virtual machine so that the resultant information can be shown in the debugger.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="99"/>
+        <source>Automatically Analyze Program:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="107"/>
+        <source>Always</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="112"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="32"/>
+        <source>If Debugger Is Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="117"/>
+        <source>Never</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="127"/>
+        <source>Generate Symbols For IRX Exports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="152"/>
         <source>GS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="42"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="158"/>
         <source>Draw Dumping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="50"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="166"/>
         <source>Dump GS Draws</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="57"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="173"/>
         <source>Save RT</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="64"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="180"/>
         <source>Save Frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="71"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="187"/>
         <source>Save Texture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="78"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="194"/>
         <source>Save Depth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="87"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="203"/>
         <source>Start Draw Number:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="101"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="217"/>
         <source>Draw Dump Count:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="118"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="234"/>
         <source>Hardware Dump Directory:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="125"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="241"/>
         <source>Software Dump Directory:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="137"/>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="158"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="253"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="274"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="144"/>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="165"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="260"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="281"/>
         <source>Open...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="32"/>
+        <source>Analyze Program</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="33"/>
+        <source>Choose when the analysis passes should be run: Always (to save time when opening the debugger), If Debugger Is Open (to save memory if you never open the debugger), or Never.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="35"/>
+        <source>Generate Symbols for IRX Export Tables</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="35"/>
+        <source>Checked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="36"/>
+        <source>Hook IRX module loading/unloading and generate symbols for exported functions on the fly.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3969,53 +4254,58 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="64"/>
-        <location filename="../Debugger/DebuggerWindow.cpp" line="73"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="66"/>
+        <location filename="../Debugger/DebuggerWindow.cpp" line="76"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="72"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="75"/>
         <source>Step Into</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="75"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="78"/>
         <source>F11</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="83"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="87"/>
         <source>Step Over</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="86"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="90"/>
         <source>F10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="94"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="99"/>
         <source>Step Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="97"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="102"/>
         <source>Shift+F11</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="108"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="114"/>
         <source>Always On Top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="111"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="117"/>
         <source>Show this window on top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.cpp" line="64"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="126"/>
+        <source>Analyze</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/DebuggerWindow.cpp" line="67"/>
         <source>Pause</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10639,7 +10929,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>GlobalVariableTreeWidget</name>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="767"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="791"/>
         <source>unknown function</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18345,119 +18635,119 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="259"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="283"/>
         <source>(unknown source file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="299"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="323"/>
         <source>(unknown section)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="345"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="369"/>
         <source>(unknown module)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="361"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="385"/>
         <source>Copy Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="367"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="391"/>
         <source>Copy Mangled Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="372"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="396"/>
         <source>Copy Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="378"/>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="523"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="402"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="547"/>
         <source>Rename Symbol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="384"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="408"/>
         <source>Go to in Disassembly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="388"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="412"/>
         <source>Go to in Memory View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="392"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="416"/>
         <source>Show Size Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="401"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="425"/>
         <source>Group by Module</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="408"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="432"/>
         <source>Group by Section</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="413"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="437"/>
         <source>Group by Source File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="423"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="447"/>
         <source>Sort by if type is known</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="434"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="458"/>
         <source>Reset children</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="437"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="461"/>
         <source>Change type temporarily</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="477"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="501"/>
         <source>Confirm Deletion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="477"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="501"/>
         <source>Delete &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="524"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="548"/>
         <source>Name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="584"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="608"/>
         <source>Change Type To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="585"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="609"/>
         <source>Type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="589"/>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="600"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="613"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="624"/>
         <source>Cannot Change Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="589"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="613"/>
         <source>That node cannot have a type.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20799,42 +21089,42 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>VMManager</name>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1862"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1844"/>
         <source>Failed to back up old save state {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1847"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1829"/>
         <source>Failed to save save state: {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1016"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1015"/>
         <source>PS2 BIOS ({})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1077"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1076"/>
         <source>Unknown Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1257"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1239"/>
         <source>CDVD precaching was cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1263"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1245"/>
         <source>CDVD precaching failed: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1356"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1338"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1357"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1339"/>
         <source>PCSX2 requires a PS2 BIOS in order to run.
 
 For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn&apos;t count).
@@ -20845,265 +21135,265 @@ Please consult the FAQs and Guides for further instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1448"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1430"/>
         <source>Resuming state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1453"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1435"/>
         <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1821"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1803"/>
         <source>Failed to load save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1894"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1876"/>
         <source>State saved to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1901"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1883"/>
         <source>Failed to save save state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1969"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2006"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1951"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1988"/>
         <source>Loading state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1980"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1962"/>
         <source>Failed to load state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1999"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1981"/>
         <source>There is no save state in slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2017"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1999"/>
         <source>Failed to load state from slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2023"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2005"/>
         <source>Loading state from slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2032"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2014"/>
         <source>Failed to save state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2049"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2031"/>
         <source>Failed to save state to slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2056"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2038"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2222"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2204"/>
         <source>Frame advancing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2250"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2232"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2256"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2238"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2265"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2247"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2274"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2256"/>
         <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3059"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3041"/>
         <source>Cheats have been disabled due to achievements hardcore mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3112"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3094"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3116"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3098"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3126"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3108"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3166"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3148"/>
         <source>Mipmapping is disabled. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3172"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3154"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3635"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3617"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3131"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3113"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3136"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3118"/>
         <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3141"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3123"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3178"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3160"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3184"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3166"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3189"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3171"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3194"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3176"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3201"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3183"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3206"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3188"/>
         <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3211"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3193"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3216"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3198"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3220"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3202"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3222"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3204"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3241"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3223"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3246"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3228"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3251"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3233"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3256"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3238"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3261"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3243"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3266"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3248"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3271"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3253"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3274"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3256"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3278"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3260"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3283"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3265"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3146"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3128"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3151"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3133"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3156"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3138"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3161"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3143"/>
         <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
         <translation type="unfinished"></translation>
     </message>
