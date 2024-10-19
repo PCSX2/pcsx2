@@ -30,8 +30,14 @@ void ATA::HDD_FlushCache() //Can't when DRQ set
 		return;
 	DevCon.WriteLn("DEV9: HDD_FlushCache");
 
-	awaitFlush = true;
-	Async(-1);
+	if (!writeQueue.IsQueueEmpty())
+	{
+		regStatus |= ATA_STAT_SEEK;
+		awaitFlush = true;
+		Async(-1);
+	}
+	else
+		PostCmdNoData();
 }
 
 void ATA::HDD_InitDevParameters()
