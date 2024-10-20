@@ -57,6 +57,27 @@ void ATA::HDD_ReadVerifySectors(bool isLBA48)
 	PostCmdNoData();
 }
 
+void ATA::HDD_Recalibrate()
+{
+	if (!PreCmd())
+		return;
+	DevCon.WriteLn("DEV9: HDD_Recalibrate");
+
+	lba48 = false;
+	// Report minimum address (LBA 0 or CHS 0/0/1).
+	// SetLBA currently only supports LBA, so set the regs directly.
+	regSelect = regSelect & 0xf0;
+	regHcyl = 0;
+	regLcyl = 0;
+	regSector = (regSelect & 0x40) ? 0 : 1;
+
+	// If recalibrate fails, we would set ATA_STAT_ERR in regStatus and ATA_ERR_TRACK0 in regError.
+	// we will never fail, so set ATA_STAT_SEEK in regStatus to indicate we finished seeking.
+	regStatus |= ATA_STAT_SEEK;
+
+	PostCmdNoData();
+}
+
 void ATA::HDD_SeekCmd()
 {
 	if (!PreCmd())
@@ -65,6 +86,7 @@ void ATA::HDD_SeekCmd()
 
 	regStatus &= ~ATA_STAT_SEEK;
 
+	lba48 = false;
 	if (HDD_CanSeek())
 	{
 		regStatus |= ATA_STAT_ERR;
