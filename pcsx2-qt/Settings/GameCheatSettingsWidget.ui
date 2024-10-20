@@ -34,11 +34,22 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="enableCheats">
-     <property name="text">
-      <string>Enable Cheats</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QCheckBox" name="enableCheats">
+       <property name="text">
+        <string>Enable Cheats</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="searchText">
+       <property name="placeholderText">
+        <string>Search...</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QTreeView" name="cheatList">

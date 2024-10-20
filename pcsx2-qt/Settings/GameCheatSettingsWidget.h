@@ -4,6 +4,7 @@
 #pragma once
 
 #include <QtGui/QStandardItemModel>
+#include <QtCore/QSortFilterProxyModel>
 
 #include "ui_GameCheatSettingsWidget.h"
 
@@ -52,6 +53,7 @@ private:
 	Ui::GameCheatSettingsWidget m_ui;
 	SettingsWindow* m_dialog;
 	QStandardItemModel* m_model = nullptr;
+	QSortFilterProxyModel* m_model_proxy = nullptr;
 
 	UnorderedStringMap<QStandardItem*> m_parent_map;
 	std::vector<Patch::PatchInfo> m_patches;
