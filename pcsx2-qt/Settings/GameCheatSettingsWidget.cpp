@@ -13,6 +13,7 @@
 
 #include "common/HeterogeneousContainers.h"
 
+#include <QtCore/QSortFilterProxyModel>
 #include <QtGui/QStandardItemModel>
 
 GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget* parent)
@@ -28,8 +29,16 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
 	headers.push_back(tr("Description"));
 	m_model->setHorizontalHeaderLabels(headers);
 
-	m_ui.cheatList->setModel(m_model);
+	m_model_proxy = new QSortFilterProxyModel(this);
+	m_model_proxy->setSourceModel(m_model);
+	m_model_proxy->setRecursiveFilteringEnabled(true);
+	m_model_proxy->setAutoAcceptChildRows(true);
+	m_model_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
+	m_ui.cheatList->setModel(m_model_proxy);
 	reloadList();
+
+	m_ui.cheatList->expandAll();
 
 	SettingsInterface* sif = m_dialog->getSettingsInterface();
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableCheats, "EmuCore", "EnableCheats", false);
@@ -43,6 +52,10 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
 	connect(m_ui.enableAll, &QPushButton::clicked, this, [this]() { setStateForAll(true); });
 	connect(m_ui.disableAll, &QPushButton::clicked, this, [this]() { setStateForAll(false); });
 	connect(m_ui.allCRCsCheckbox, &QCheckBox::checkStateChanged, this, &GameCheatSettingsWidget::onReloadClicked);
+	connect(m_ui.searchText, &QLineEdit::textChanged, this, [this](const QString& text) {
+		m_model_proxy->setFilterFixedString(text);
+		m_ui.cheatList->expandAll();
+	});
 
 	dialog->registerWidgetHelp(m_ui.allCRCsCheckbox, tr("Show Cheats For All CRCs"), tr("Checked"),
 		tr("Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded."));
@@ -52,18 +65,20 @@ GameCheatSettingsWidget::~GameCheatSettingsWidget() = default;
 
 void GameCheatSettingsWidget::onCheatListItemDoubleClicked(const QModelIndex& index)
 {
-	QModelIndex sibling_index = index.sibling(index.row(), 0);
+	const QModelIndex source_index = m_model_proxy->mapToSource(index);
+	const QModelIndex sibling_index = source_index.sibling(source_index.row(), 0);
 	QStandardItem* item = m_model->itemFromIndex(sibling_index);
 	if (!item)
 		return;
 
 	if (item->hasChildren() && index.column() != 0)
 	{
-		bool isExpanded = m_ui.cheatList->isExpanded(sibling_index);
+		const QModelIndex view_sibling_index = index.sibling(index.row(), 0);
+		const bool isExpanded = m_ui.cheatList->isExpanded(view_sibling_index);
 		if (isExpanded)
-			m_ui.cheatList->collapse(sibling_index);
+			m_ui.cheatList->collapse(view_sibling_index);
 		else
-			m_ui.cheatList->expand(sibling_index);
+			m_ui.cheatList->expand(view_sibling_index);
 		return;
 	}
 
@@ -96,6 +111,7 @@ void GameCheatSettingsWidget::onCheatListItemChanged(QStandardItem* item)
 void GameCheatSettingsWidget::onReloadClicked()
 {
 	reloadList();
+	m_ui.cheatList->expandAll();
 
 	// reload it on the emu thread too, so it picks up any changes
 	g_emu_thread->reloadPatches();
@@ -109,6 +125,7 @@ void GameCheatSettingsWidget::updateListEnabled()
 	m_ui.disableAll->setEnabled(cheats_enabled);
 	m_ui.reloadCheats->setEnabled(cheats_enabled);
 	m_ui.allCRCsCheckbox->setEnabled(cheats_enabled);
+	m_ui.searchText->setEnabled(cheats_enabled);
 }
 
 void GameCheatSettingsWidget::disableAllCheats()
@@ -246,7 +263,6 @@ QStandardItem* GameCheatSettingsWidget::getTreeViewParent(const std::string_view
 	else
 		m_model->appendRow(item);
 
-	m_ui.cheatList->expand(item->index());
 	m_parent_map.emplace(parent, item);
 	return item;
 }
