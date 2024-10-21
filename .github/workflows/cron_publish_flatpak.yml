@@ -43,7 +43,7 @@ jobs:
       compiler: clang
       cmakeflags: ""
       publish: true
-      branch: stable
       fetchTags: true
+      stableBuild: false
     secrets: inherit
 
