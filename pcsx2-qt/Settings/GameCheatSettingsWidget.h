@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include <QtWidgets/QWidget>
+#include <QtGui/QStandardItemModel>
+#include <QtCore/QSortFilterProxyModel>
 
 #include "ui_GameCheatSettingsWidget.h"
 
@@ -36,23 +37,25 @@ protected:
 	void resizeEvent(QResizeEvent* event) override;
 
 private Q_SLOTS:
-	void onCheatListItemDoubleClicked(QTreeWidgetItem* item, int column);
-	void onCheatListItemChanged(QTreeWidgetItem* item, int column);
+	void onCheatListItemDoubleClicked(const QModelIndex& index);
+	void onCheatListItemChanged(QStandardItem* item);
 	void onReloadClicked();
 	void updateListEnabled();
 	void reloadList();
 
 private:
-	QTreeWidgetItem* getTreeWidgetParent(const std::string_view parent);
-	void populateTreeWidgetItem(QTreeWidgetItem* item, const Patch::PatchInfo& pi, bool enabled);
+	QStandardItem* getTreeViewParent(const std::string_view parent);
+	QList<QStandardItem*> populateTreeViewRow(const Patch::PatchInfo& pi, bool enabled);
 	void setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings);
 	void setStateForAll(bool enabled);
-	void setStateRecursively(QTreeWidgetItem* parent, bool enabled);
+	void setStateRecursively(QStandardItem* parent, bool enabled);
 
 	Ui::GameCheatSettingsWidget m_ui;
 	SettingsWindow* m_dialog;
+	QStandardItemModel* m_model = nullptr;
+	QSortFilterProxyModel* m_model_proxy = nullptr;
 
-	UnorderedStringMap<QTreeWidgetItem*> m_parent_map;
+	UnorderedStringMap<QStandardItem*> m_parent_map;
 	std::vector<Patch::PatchInfo> m_patches;
 	std::vector<std::string> m_enabled_patches;
 };
