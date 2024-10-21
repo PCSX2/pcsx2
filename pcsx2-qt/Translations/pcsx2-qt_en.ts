@@ -4221,6 +4221,162 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="294"/>
+        <source>Trace Logging</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="300"/>
+        <source>Enable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="309"/>
+        <source>EE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="317"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="553"/>
+        <source>DMA Control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="324"/>
+        <source>SPR / MFIFO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="331"/>
+        <source>VIF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="338"/>
+        <source>COP1 (FPU)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="345"/>
+        <source>MSKPATH3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="352"/>
+        <source>Cache</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="359"/>
+        <source>GIF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="366"/>
+        <source>R5900</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="373"/>
+        <source>COP0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="380"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="497"/>
+        <source>HW Regs (MMIO)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="387"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="483"/>
+        <source>Counters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="394"/>
+        <source>SIF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="401"/>
+        <source>COP2 (VU0 Macro)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="408"/>
+        <source>VIFCodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="415"/>
+        <source>Memory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="422"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="490"/>
+        <source>Unknown MMIO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="429"/>
+        <source>IPU</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="436"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="539"/>
+        <source>BIOS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="443"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="525"/>
+        <source>DMA Registers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="450"/>
+        <source>GIFTags</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="475"/>
+        <source>IOP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="504"/>
+        <source>CDVD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="511"/>
+        <source>R3000A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="518"/>
+        <source>Memcards</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="532"/>
+        <source>Pad</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="546"/>
+        <source>MDEC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="560"/>
+        <source>COP2 (GPU)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../Settings/DebugSettingsWidget.cpp" line="32"/>
         <source>Analyze Program</source>
         <translation type="unfinished"></translation>
@@ -4243,6 +4399,357 @@ Do you want to overwrite?</source>
     <message>
         <location filename="../Settings/DebugSettingsWidget.cpp" line="36"/>
         <source>Hook IRX module loading/unloading and generate symbols for exported functions on the fly.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="68"/>
+        <source>Enable Trace Logging</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="68"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="71"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="73"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="75"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="77"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="79"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="81"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="83"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="85"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="87"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="89"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="91"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="93"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="95"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="97"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="99"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="101"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="103"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="105"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="107"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="110"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="112"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="114"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="116"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="118"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="120"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="122"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="124"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="126"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="128"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="130"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="132"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="135"/>
+        <source>Unchecked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="68"/>
+        <source>Globally enable / disable trace logging.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="71"/>
+        <source>EE BIOS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="71"/>
+        <source>Log SYSCALL and DECI2 activity.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="73"/>
+        <source>EE Memory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="73"/>
+        <source>Log memory access to unknown or unmapped EE memory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="75"/>
+        <source>EE R5900</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="75"/>
+        <source>Log R5900 core instructions (excluding COPs). Requires modifying the PCSX2 source and enabling the interpreter.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="77"/>
+        <source>EE COP0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="77"/>
+        <source>Log COP0 (MMU, CPU status, etc) instructions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="79"/>
+        <source>EE COP1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="79"/>
+        <source>Log COP1 (FPU) instructions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="81"/>
+        <source>EE COP2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="81"/>
+        <source>Log COP2 (VU0 Macro mode) instructions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="83"/>
+        <source>EE Cache</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="83"/>
+        <source>Log EE cache activity.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="85"/>
+        <source>EE Known MMIO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="85"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="118"/>
+        <source>Log known MMIO accesses.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="87"/>
+        <source>EE Unknown MMIO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="87"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="120"/>
+        <source>Log unknown or unimplemented MMIO accesses.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="89"/>
+        <source>EE DMA Registers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="89"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="122"/>
+        <source>Log DMA-related MMIO accesses.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="91"/>
+        <source>EE IPU</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="91"/>
+        <source>Log IPU activity; MMIO, decoding operations, DMA status, etc.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="93"/>
+        <source>EE GIF Tags</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="93"/>
+        <source>Log GIFtag parsing activity.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="95"/>
+        <source>EE VIF Codes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="95"/>
+        <source>Log VIFcode processing; command, tag style, interrupts.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="97"/>
+        <source>EE MSKPATH3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="97"/>
+        <source>Log Path3 Masking processing.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="99"/>
+        <source>EE MFIFO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="99"/>
+        <source>Log Scratchpad MFIFO activity.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="101"/>
+        <source>EE DMA Controller</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="101"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="126"/>
+        <source>Log DMA transfer activity. Stalls, bus right arbitration, etc.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="103"/>
+        <source>EE Counters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="103"/>
+        <source>Log all EE counters events and some counter register activity.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="105"/>
+        <source>EE VIF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="105"/>
+        <source>Log various VIF and VIFcode processing data.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="107"/>
+        <source>EE GIF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="107"/>
+        <source>Log various GIF and GIFtag parsing data.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="110"/>
+        <source>IOP BIOS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="110"/>
+        <source>Log SYSCALL and IRX activity.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="112"/>
+        <source>IOP Memcards</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="112"/>
+        <source>Log memory card activity. Reads, Writes, erases, etc.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="114"/>
+        <source>IOP R3000A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="114"/>
+        <source>Log R3000A core instructions (excluding COPs).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="116"/>
+        <source>IOP COP2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="116"/>
+        <source>Log IOP GPU co-processor instructions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="118"/>
+        <source>IOP Known MMIO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="120"/>
+        <source>IOP Unknown MMIO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="122"/>
+        <source>IOP DMA Registers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="124"/>
+        <source>IOP PAD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="124"/>
+        <source>Log PAD activity.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="126"/>
+        <source>IOP DMA Controller</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="128"/>
+        <source>IOP Counters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="128"/>
+        <source>Log all IOP counters events and some counter register activity.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="130"/>
+        <source>IOP CDVD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="130"/>
+        <source>Log CDVD hardware activity.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="132"/>
+        <source>IOP MDEC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="132"/>
+        <source>Log Motion (FMV) Decoder hardware unit activity.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="135"/>
+        <source>EE SIF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="135"/>
+        <source>Log SIF (EE &lt;-&gt; IOP) activity.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -17646,12 +18153,12 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>Pcsx2Config</name>
     <message>
-        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1031"/>
+        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1118"/>
         <source>Disabled (Noisy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1032"/>
+        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1119"/>
         <source>TimeStretch (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21089,42 +21596,42 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>VMManager</name>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1844"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1851"/>
         <source>Failed to back up old save state {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1829"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1836"/>
         <source>Failed to save save state: {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1015"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1022"/>
         <source>PS2 BIOS ({})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1076"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1083"/>
         <source>Unknown Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1239"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1246"/>
         <source>CDVD precaching was cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1245"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1252"/>
         <source>CDVD precaching failed: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1338"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1345"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1339"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1346"/>
         <source>PCSX2 requires a PS2 BIOS in order to run.
 
 For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn&apos;t count).
@@ -21135,265 +21642,265 @@ Please consult the FAQs and Guides for further instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1430"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1437"/>
         <source>Resuming state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1435"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1442"/>
         <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1803"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1810"/>
         <source>Failed to load save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1876"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1883"/>
         <source>State saved to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1883"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1890"/>
         <source>Failed to save save state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1951"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="1988"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1958"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1995"/>
         <source>Loading state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1962"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1969"/>
         <source>Failed to load state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1981"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1988"/>
         <source>There is no save state in slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1999"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2006"/>
         <source>Failed to load state from slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2005"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2012"/>
         <source>Loading state from slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2014"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2021"/>
         <source>Failed to save state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2031"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2038"/>
         <source>Failed to save state to slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2038"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2045"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2204"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2211"/>
         <source>Frame advancing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2232"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2239"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2238"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2245"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2247"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2254"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2256"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2263"/>
         <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3041"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3048"/>
         <source>Cheats have been disabled due to achievements hardcore mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3094"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3101"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3098"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3105"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3108"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3115"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3148"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3155"/>
         <source>Mipmapping is disabled. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3154"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3161"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3617"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3624"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3113"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3120"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3118"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3125"/>
         <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3123"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3130"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3160"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3167"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3166"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3173"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3171"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3178"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3176"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3183"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3183"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3190"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3188"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3195"/>
         <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3193"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3200"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3198"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3205"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3202"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3209"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3204"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3211"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3223"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3230"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3228"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3235"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3233"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3240"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3238"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3245"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3243"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3250"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3248"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3255"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3253"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3260"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3256"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3263"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3260"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3267"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3265"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3272"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3128"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3135"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3133"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3140"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3138"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3145"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3143"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3150"/>
         <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
         <translation type="unfinished"></translation>
     </message>
