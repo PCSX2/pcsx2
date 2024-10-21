@@ -72,6 +72,8 @@ protected:
 	void setupMenu();
 	void openMenu(QPoint pos);
 
+	virtual bool needsReset() const;
+
 	virtual std::vector<SymbolWork> getSymbols(
 		const QString& filter, const ccc::SymbolDatabase& database) = 0;
 
@@ -172,6 +174,8 @@ public:
 	virtual ~LocalVariableTreeWidget();
 
 protected:
+	bool needsReset() const override;
+
 	std::vector<SymbolWork> getSymbols(
 		const QString& filter, const ccc::SymbolDatabase& database) override;
 
@@ -182,6 +186,7 @@ protected:
 
 	void onNewButtonPressed() override;
 
+	ccc::FunctionHandle m_function;
 	std::optional<u32> m_caller_stack_pointer;
 };
 
@@ -193,6 +198,8 @@ public:
 	virtual ~ParameterVariableTreeWidget();
 
 protected:
+	bool needsReset() const override;
+
 	std::vector<SymbolWork> getSymbols(
 		const QString& filter, const ccc::SymbolDatabase& database) override;
 
@@ -203,6 +210,7 @@ protected:
 
 	void onNewButtonPressed() override;
 
+	ccc::FunctionHandle m_function;
 	std::optional<u32> m_caller_stack_pointer;
 };
 
