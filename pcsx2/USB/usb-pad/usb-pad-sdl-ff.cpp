@@ -59,7 +59,23 @@ namespace usb_pad
 
 	void SDLFFDevice::CreateEffects(const std::string_view device)
 	{
-		constexpr u32 length = 10000; // 10 seconds since NFS games seem to not issue new commands while rotating.
+		// Most games appear to assume that requested forces will be applied indefinitely.
+		// Gran Turismo 4 uses a single indefinite spring(?) force to center the wheel in menus, 
+		// and both GT4 and the NFS games have been observed using only a single constant force 
+		// command over long, consistent turns on smooth roads.
+		// 
+		// An infinite force is necessary as the normal mechanism for looping FFB effects,
+		// the iteration count, isn't implemented by a large number of new wheels. This deficiency
+		// exists at a firmware level and can only be dealt with by manually restarting forces.
+		// 
+		// Manually restarting forces causes problems on some wheels, however, so infinite forces
+		// are preferred for the vast majority of wheels which do correctly handle them.
+		// 
+		// Known "Problem" wheels which don't implement effect iterations
+		//   - Moza series: DOES implement infinite durations
+		//   - Accuforce v2: DOES implement infinite durations (deduced from anecdote, not confirmed manually)
+		//   - Simagic Alpha Mini: Does NOT implement infinite durations (stops after some time, seeking hard numbers)
+		constexpr u32 length = SDL_HAPTIC_INFINITY;
 
 		const unsigned int supported = SDL_HapticQuery(m_haptic);
 		if (supported & SDL_HAPTIC_CONSTANT)
@@ -187,13 +203,25 @@ namespace usb_pad
 				Console.Warning("SDL_HapticUpdateEffect() for constant failed: %s", SDL_GetError());
 		}
 
-		// Always 'run' the constant force effect, even when already running. This
-		// mitigates FFB timeout issues experienced by some modern direct-drive
-		// wheels, such as Moza R5, R9, etc...
-		if (SDL_HapticRunEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
-			m_constant_effect_running = true;
-		else
-			Console.Error("SDL_HapticRunEffect() for constant failed: %s", SDL_GetError());
+		// Avoid re-running already-running effects by default. Re-running a running effect
+		// causes a variety of issues on different wheels, ranging from quality/detail loss,
+		// to abrupt judders of the wheel's FFB rapidly cutting out and back in.
+		// 
+		// Known problem wheels:
+		// Most common (Moza, Simagic, likely others): Loss of definition or quality
+		// Accuforce v2: Split-second FFB drop with each update
+		//
+		// Wheels that need it anyway:
+		// Simagic Alpha Mini: It doesn't properly handle infinite durations, leaving you to choose
+		//                     between fuzzy/vague FFB, or FFB that may cut out occasionally.
+		//                     This is the reason for use_ffb_dropout_workaround.
+		if (!m_constant_effect_running || use_ffb_dropout_workaround)
+		{
+			if (SDL_HapticRunEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
+				m_constant_effect_running = true;
+			else
+				Console.Error("SDL_HapticRunEffect() for constant failed: %s", SDL_GetError());
+		}
 	}
 
 	template <typename T>
