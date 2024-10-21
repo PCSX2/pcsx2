@@ -436,7 +436,8 @@ static vtlbHandler
 
 	iopHw_by_page_01,
 	iopHw_by_page_03,
-	iopHw_by_page_08;
+	iopHw_by_page_08,
+	iop_memory;
 
 
 void memMapVUmicro()
@@ -480,7 +481,7 @@ void memMapPhy()
 	// IOP memory
 	// (used by the EE Bios Kernel during initial hardware initialization, Apps/Games
 	//  are "supposed" to use the thread-safe SIF instead.)
-	vtlb_MapBlock(iopMem->Main,0x1c000000,0x00800000);
+	vtlb_MapHandler(iop_memory,0x1c000000,0x00800000);
 
 	// Generic Handlers; These fallback to mem* stuff...
 	vtlb_MapHandler(tlb_fallback_7,0x14000000, _64kb);
@@ -586,6 +587,8 @@ static mem8_t _ext_memRead8 (u32 mem)
 			Console.WriteLn("DEV9 read8 %8.8lx: %2.2lx", mem & ~0xa4000000, retval);
 			return retval;
 		}
+		case 9:
+			return iopMemRead8(mem & ~0x1c000000);
 		default: break;
 	}
 
@@ -617,6 +620,8 @@ static mem16_t _ext_memRead16(u32 mem)
 
 		case 8: // spu2
 			return SPU2read(mem);
+		case 9:
+			return iopMemRead16(mem & ~0x1c000000);
 
 		default: break;
 	}
@@ -638,6 +643,8 @@ static mem32_t _ext_memRead32(u32 mem)
 			Console.WriteLn("DEV9 read32 %8.8lx: %8.8lx", mem & ~0xa4000000, retval);
 			return retval;
 		}
+		case 9:
+			return iopMemRead32(mem & ~0x1c000000);
 		default: break;
 	}
 
@@ -653,6 +660,13 @@ static u64 _ext_memRead64(u32 mem)
 	{
 		case 6: // gsm
 			return gsRead64(mem);
+		case 9:
+		{
+			u64 ret = 0;
+			ret |= ((u64)(iopMemRead32((mem + 0) & ~0x1c000000)) << 0);
+			ret |= ((u64)(iopMemRead32((mem + 4) & ~0x1c000000)) << 32);
+			return ret;
+		}
 		default: break;
 	}
 
@@ -670,6 +684,15 @@ static RETURNS_R128 _ext_memRead128(u32 mem)
 		//	return hwRead128(mem & ~0xa0000000);
 		case 6: // gsm
 			return r128_load(PS2GS_BASE(mem));
+		case 9:
+		{
+			u128 ret = {};
+			ret._u32[0] = iopMemRead32((mem + 0) & ~0x1c000000);
+			ret._u32[1] = iopMemRead32((mem + 4) & ~0x1c000000);
+			ret._u32[2] = iopMemRead32((mem + 8) & ~0x1c000000);
+			ret._u32[3] = iopMemRead32((mem + 12) & ~0x1c000000);
+			return r128_from_u128(ret);
+		}
 		default: break;
 	}
 
@@ -689,6 +712,9 @@ static void _ext_memWrite8 (u32 mem, mem8_t  value)
 		case 7: // dev9
 			DEV9write8(mem & ~0xa4000000, value);
 			Console.WriteLn("DEV9 write8 %8.8lx: %2.2lx", mem & ~0xa4000000, value);
+			return;
+		case 9:
+			iopMemWrite8(mem & ~0x1c000000, value);
 			return;
 		default: break;
 	}
@@ -713,6 +739,9 @@ static void _ext_memWrite16(u32 mem, mem16_t value)
 			return;
 		case 8: // spu2
 			SPU2write(mem, value); return;
+		case 9:
+			iopMemWrite16(mem & ~0x1c000000, value);
+			return;
 		default: break;
 	}
 	MEM_LOG("Unknown Memory write16  to  address %x with data %4.4x", mem, value);
@@ -729,6 +758,9 @@ static void _ext_memWrite32(u32 mem, mem32_t value)
 			DEV9write32(mem & ~0xa4000000, value);
 			Console.WriteLn("DEV9 write32 %8.8lx: %8.8lx", mem & ~0xa4000000, value);
 			return;
+		case 9:
+			iopMemWrite32(mem & ~0x1c000000, value);
+			return;
 		default: break;
 	}
 	MEM_LOG("Unknown Memory write32  to  address %x with data %8.8x", mem, value);
@@ -738,7 +770,15 @@ static void _ext_memWrite32(u32 mem, mem32_t value)
 template<int p>
 static void _ext_memWrite64(u32 mem, mem64_t value)
 {
-
+	switch (p)
+	{
+		case 9:
+			iopMemWrite32((mem + 0) & ~0x1c000000, (value >>  0) & 0xffffffff);
+			iopMemWrite32((mem + 4) & ~0x1c000000, (value >> 32) & 0xffffffff);
+			return;
+		default:
+			break;
+	}
 	/*switch (p) {
 		//case 1: // hwm
 		//	hwWrite64(mem & ~0xa0000000, *value);
@@ -754,6 +794,21 @@ static void _ext_memWrite64(u32 mem, mem64_t value)
 template<int p>
 static void TAKES_R128 _ext_memWrite128(u32 mem, r128 value)
 {
+	switch (p)
+	{
+		case 9:
+		{
+			u128 val = r128_to_u128(value);
+			iopMemWrite32((mem + 0) & ~0x1c000000, val._u32[0] & 0xffffffff);
+			iopMemWrite32((mem + 4) & ~0x1c000000, val._u32[1] & 0xffffffff);
+			iopMemWrite32((mem + 8) & ~0x1c000000, val._u32[2] & 0xffffffff);
+			iopMemWrite32((mem + 12) & ~0x1c000000, val._u32[3] & 0xffffffff);
+
+			return;
+		}
+		default:
+			break;
+	}
 	/*switch (p) {
 		//case 1: // hwm
 		//	hwWrite128(mem & ~0xa0000000, value);
@@ -1056,6 +1111,7 @@ void memReset()
 	tlb_fallback_5 = vtlb_RegisterHandlerTempl1(_ext_mem,5);
 	tlb_fallback_7 = vtlb_RegisterHandlerTempl1(_ext_mem,7);
 	tlb_fallback_8 = vtlb_RegisterHandlerTempl1(_ext_mem,8);
+	iop_memory = vtlb_RegisterHandlerTempl1(_ext_mem,9);
 
 	// Dynarec versions of VUs
 	vu0_micro_mem = vtlb_RegisterHandlerTempl1(vuMicro,0);
@@ -1089,7 +1145,6 @@ void memReset()
 		iopHwRead8_Page8, iopHwRead16_Page8, iopHwRead32_Page8, _ext_memRead64<2>, _ext_memRead128<2>,
 		iopHwWrite8_Page8, iopHwWrite16_Page8, iopHwWrite32_Page8, _ext_memWrite64<2>, _ext_memWrite128<2>
 	);
-
 
 	// psHw Optimized Mappings
 	// The HW Registers have been split into pages to improve optimization.
