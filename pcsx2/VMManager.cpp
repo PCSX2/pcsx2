@@ -3154,6 +3154,15 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_IMAGES,
 				TRANSLATE_SV("VMManager", "Mipmapping is disabled. This may break rendering in some games."));
 		}
+		static bool render_change_warn = false;
+		if (EmuConfig.GS.Renderer != GSRendererType::Auto && EmuConfig.GS.Renderer != GSRendererType::SW && !render_change_warn)
+		{
+			// show messagesbox
+			render_change_warn = true;
+
+			append(ICON_FA_EXCLAMATION_CIRCLE,
+				TRANSLATE_SV("VMManager", "Renderer is not set to Automatic. This may cause performance problems and graphical issues."));
+		}
 	}
 	if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
 	{
