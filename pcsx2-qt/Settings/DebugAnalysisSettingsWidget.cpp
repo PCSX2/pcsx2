@@ -261,11 +261,11 @@ void DebugAnalysisSettingsWidget::setupSymbolSourceGrid()
 
 void DebugAnalysisSettingsWidget::symbolSourceCheckStateChanged()
 {
-	QComboBox* combo_box = qobject_cast<QComboBox*>(sender());
-	if (!combo_box)
+	QCheckBox* check_box = qobject_cast<QCheckBox*>(sender());
+	if (!check_box)
 		return;
 
-	auto temp = m_symbol_sources.find(combo_box->currentText().toStdString());
+	auto temp = m_symbol_sources.find(check_box->text().toStdString());
 	if (temp == m_symbol_sources.end())
 		return;
 
@@ -311,6 +311,7 @@ void DebugAnalysisSettingsWidget::saveSymbolSources()
 			continue;
 
 		std::string section = "Debugger/Analysis/SymbolSources/" + std::to_string(i);
+		sif->SetStringValue(section.c_str(), "Name", name.c_str());
 		sif->SetBoolValue(section.c_str(), "ClearDuringAnalysis", temp.check_box->isChecked());
 
 		i++;
