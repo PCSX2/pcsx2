@@ -660,7 +660,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 			extensions.append(ext);
 		}
 	}
-	Console.WriteLn(std::move(extensions));
+	DevCon.WriteLn(std::move(extensions));
 
 	if (!GLAD_GL_ARB_shading_language_420pack)
 	{
