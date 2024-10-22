@@ -851,7 +851,9 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	}
 	if (!m_dev.dev)
 	{
-		if (!GSConfig.Adapter.empty())
+		if (GSConfig.Adapter == GetDefaultAdapter())
+			Console.WriteLn("Metal: Using default adapter");
+		else if (!GSConfig.Adapter.empty())
 			Console.Warning("Metal: Couldn't find adapter %s, using default", GSConfig.Adapter.c_str());
 		m_dev = GSMTLDevice(MRCTransfer(MTLCreateSystemDefaultDevice()));
 		if (!m_dev.dev)

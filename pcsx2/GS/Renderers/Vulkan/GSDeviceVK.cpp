@@ -2511,7 +2511,8 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 		return false;
 	}
 
-	if (!GSConfig.Adapter.empty())
+	const bool is_default_gpu = GSConfig.Adapter == GetDefaultAdapter();
+	if (!(GSConfig.Adapter.empty() || is_default_gpu))
 	{
 		u32 gpu_index = 0;
 		for (; gpu_index < static_cast<u32>(gpus.size()); gpu_index++)
@@ -2532,7 +2533,7 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	}
 	else
 	{
-		INFO_LOG("No GPU requested, using first ({})", gpus[0].second.name);
+		INFO_LOG("{} GPU requested, using first ({})", is_default_gpu ? "Default" : "No", gpus[0].second.name);
 		m_physical_device = gpus[0].first;
 	}
 
