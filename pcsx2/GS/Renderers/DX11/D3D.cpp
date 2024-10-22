@@ -375,7 +375,7 @@ GSRendererType D3D::GetPreferredRenderer()
 	};
 	const auto get_d3d12_device = [&adapter]() {
 		wil::com_ptr_nothrow<ID3D12Device> device;
-		const HRESULT hr = D3D12CreateDevice(adapter.get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(device.put()));
+		const HRESULT hr = D3D12CreateDevice(adapter.get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(device.put()));
 		if (FAILED(hr))
 			Console.Error("D3D12CreateDevice() for automatic renderer failed: %08X", hr);
 		return device;
