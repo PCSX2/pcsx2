@@ -149,7 +149,7 @@ u32 GSDevice12::GetAdapterVendorID() const
 	return desc.VendorId;
 }
 
-bool GSDevice12::CreateDevice()
+bool GSDevice12::CreateDevice(u32& vendor_id)
 {
 	bool enable_debug_layer = GSConfig.UseDebugDevice;
 
@@ -158,6 +158,7 @@ bool GSDevice12::CreateDevice()
 		return false;
 
 	m_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), GSConfig.Adapter);
+	vendor_id = GetAdapterVendorID();
 
 	HRESULT hr;
 
@@ -177,8 +178,11 @@ bool GSDevice12::CreateDevice()
 		}
 	}
 
+	// Intel Haswell doesn't actually support DX12 even tho the device is created which results in a crash,
+	// to get around this check if device can be created using feature level 12 (skylake+).
+	const bool isIntel = (vendor_id == 0x163C || vendor_id == 0x8086 || vendor_id == 0x8087);
 	// Create the actual device.
-	hr = D3D12CreateDevice(m_adapter.get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
+	hr = D3D12CreateDevice(m_adapter.get(), isIntel ? D3D_FEATURE_LEVEL_12_0 : D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
 	if (FAILED(hr))
 	{
 		Console.Error("Failed to create D3D12 device: %08X", hr);
@@ -681,10 +685,11 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
 		return false;
 
-	if (!CreateDevice())
+	u32 vendor_id = 0;
+	if (!CreateDevice(vendor_id))
 		return false;
 
-	if (!CheckFeatures())
+	if (!CheckFeatures(vendor_id))
 	{
 		Console.Error("Your GPU does not support the required D3D12 features.");
 		return false;
@@ -1010,7 +1015,7 @@ std::string GSDevice12::GetDriverInfo() const
 {
 	std::string ret = "Unknown Feature Level";
 
-	static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 4> feature_level_names = {{
+	static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 2> feature_level_names = {{
 		{D3D_FEATURE_LEVEL_11_0, "D3D_FEATURE_LEVEL_11_0"},
 		{D3D_FEATURE_LEVEL_11_1, "D3D_FEATURE_LEVEL_11_1"},
 	}};
@@ -1206,10 +1211,9 @@ void GSDevice12::InsertDebugMessage(DebugMessageCategory category, const char* f
 #endif
 }
 
-bool GSDevice12::CheckFeatures()
+bool GSDevice12::CheckFeatures(const u32& vendor_id)
 {
-	const u32 vendorID = GetAdapterVendorID();
-	const bool isAMD = (vendorID == 0x1002 || vendorID == 0x1022);
+	const bool isAMD = (vendor_id == 0x1002 || vendor_id == 0x1022);
 
 	m_features.texture_barrier = false;
 	m_features.broken_point_sampler = isAMD;
@@ -1232,7 +1236,7 @@ bool GSDevice12::CheckFeatures()
 	m_max_texture_size = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 
 	BOOL allow_tearing_supported = false;
-	HRESULT hr = m_dxgi_factory->CheckFeatureSupport(
+	const HRESULT hr = m_dxgi_factory->CheckFeatureSupport(
 		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
 	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
 
