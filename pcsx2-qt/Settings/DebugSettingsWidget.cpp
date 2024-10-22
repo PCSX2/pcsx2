@@ -131,7 +131,7 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* dialog, QWidget* parent
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.chkIOPMDEC, "EmuCore/TraceLog", "IOP.mdec", false);
 	dialog->registerWidgetHelp(m_ui.chkIOPMDEC, tr("IOP MDEC"), tr("Unchecked"), tr("Log Motion (FMV) Decoder hardware unit activity."));
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.chkEESIF, "EmuCore/TraceLog", "MDEC.sif", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.chkEESIF, "EmuCore/TraceLog", "MISC.sif", false);
 	dialog->registerWidgetHelp(m_ui.chkEESIF, tr("EE SIF"), tr("Unchecked"), tr("Log SIF (EE <-> IOP) activity."));
 
 	connect(m_ui.chkEnable, &QCheckBox::checkStateChanged, this, &DebugSettingsWidget::onLoggingEnableChanged);
