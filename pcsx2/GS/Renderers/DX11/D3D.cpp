@@ -197,7 +197,7 @@ bool D3D::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const 
 
 wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetAdapterByName(IDXGIFactory5* factory, const std::string_view name)
 {
-	if (name.empty())
+	if (name.empty() || name == GetDefaultAdapter())
 		return {};
 
 	// This might seem a bit odd to cache the names.. but there's a method to the madness.
