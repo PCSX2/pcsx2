@@ -482,9 +482,12 @@ bool ATA::HDD_CanAssessOrSetError()
 		regError |= static_cast<u8>(ATA_ERR_ID);
 		if (nsector == -1)
 		{
+			regStatus &= ~ATA_STAT_SEEK;
+			regStatusSeekLock = -1;
 			PostCmdNoData();
 			return false;
 		}
+		regStatusSeekLock = 1;
 	}
 	return true;
 }

@@ -94,7 +94,11 @@ private:
 	u8 regNsector;
 	u8 regNsectorHOB;
 
-	u8 regStatus; //ReadOnly. When read via AlternateStatus pending interrupts are not cleared
+	u8 regStatus; // ReadOnly. When read via AlternateStatus, pending interrupts are not cleared.
+	// When an error occurs, the SEEK bit shall not be changed until the Status Register is read,
+	// after which this bit again indicates Seek completed.
+	// A value of -1 is locked clear, a value of 1 is locked set, 0 is unlocked.
+	s8 regStatusSeekLock; 
 
 	bool pendingInterrupt = false;
 

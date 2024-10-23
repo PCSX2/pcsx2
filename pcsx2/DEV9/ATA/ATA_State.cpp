@@ -317,6 +317,9 @@ void ATA::ResetEnd(bool hard)
 			mdmaMode = 2;
 	}
 
+	regStatus |= ATA_STAT_SEEK;
+	regStatusSeekLock = 0;
+
 	HDD_ExecuteDeviceDiag(false);
 	regControlEnableIRQ = false;
 }
@@ -391,6 +394,19 @@ u16 ATA::Read(u32 addr, int width)
 
 			if (GetSelectedDevice() != 0)
 				return 0;
+
+			// When an error occurs, the seek bit shall not be changed until the Status Register is read, after which the bit then indicates the current Seek status.
+			// This handles reporting the locked value, and then unlocking if read form STATUS rather then ALT_STATUS.
+			// locking is performed where the errror occurs, by setting regStatusSeekLock to either 1 or -1 based on the locked SEEK value.
+			if (regStatusSeekLock != 0)
+			{
+				u8 hard = (regStatus & ~ATA_STAT_SEEK);
+				hard |= (regStatusSeekLock > 0) ? ATA_STAT_SEEK : static_cast<u8>(0);
+				if (addr == ATA_R_STATUS)
+					regStatusSeekLock = 0;
+				return hard;
+			}
+
 			return regStatus;
 		default:
 			Console.Error("DEV9: ATA: Unknown %dbit read at address %x", width, addr);
