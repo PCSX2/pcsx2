@@ -23,10 +23,6 @@ on:
       cmakeflags:
         required: true
         type: string
-      branch:
-        required: false
-        type: string
-        default: "stable"
       publish:
         required: false
         type: boolean
@@ -98,7 +94,8 @@ jobs:
         run: |
           flatpak-builder-lint manifest .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
 
-      - name: Build Flatpak
+      - name: Build Flatpak (beta)
+        if: ${{ inputs.stableBuild == false || inputs.stableBuild == 'false' }}
         uses: flathub-infra/flatpak-github-actions/flatpak-builder@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
         with:
           bundle: ${{ steps.artifact-metadata.outputs.artifact-name }}.flatpak
@@ -108,17 +105,33 @@ jobs:
           build-bundle: true
           verbose: true
           mirror-screenshots-url: https://dl.flathub.org/media
-          branch: ${{ inputs.branch }}
+          branch: beta
           cache: true
           restore-cache: true
           cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
 
+      - name: Build Flatpak (stable)
+        if: ${{ inputs.stableBuild == true || inputs.stableBuild == 'true' }}
+        uses: flathub-infra/flatpak-github-actions/flatpak-builder@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
+        with:
+          bundle: ${{ steps.artifact-metadata.outputs.artifact-name }}.flatpak
+          upload-artifact: false
+          manifest-path: .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
+          arch: x86_64
+          build-bundle: true
+          verbose: true
+          mirror-screenshots-url: https://dl.flathub.org/media
+          branch: stable
+          cache: true
+          restore-cache: true
+          cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
+  
       #- name: Validate build
       #  run: |
       #    flatpak-builder-lint repo repo
 
-      - name: Push to Flathub beta
-        if: inputs.publish == true && inputs.branch == 'beta'
+      - name: Push to Flathub (beta)
+        if: ${{ inputs.publish == true && (inputs.stableBuild == false || inputs.stableBuild == 'false') }}
         uses: flathub-infra/flatpak-github-actions/flat-manager@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
         with:
           flat-manager-url: https://hub.flathub.org/
@@ -126,8 +139,8 @@ jobs:
           token: ${{ secrets.FLATHUB_BETA_TOKEN }}
           build-log-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-      - name: Push to Flathub stable
-        if: inputs.publish == true && inputs.branch == 'stable'
+      - name: Push to Flathub (stable)
+        if: ${{ inputs.publish == true && (inputs.stableBuild == true || inputs.stableBuild == 'true') }}
         uses: flathub-infra/flatpak-github-actions/flat-manager@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
         with:
           flat-manager-url: https://hub.flathub.org/
