@@ -3467,87 +3467,87 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="366"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="364"/>
         <source>Breakpoint List Context Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="370"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="511"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="368"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="509"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="378"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="376"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="384"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="638"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="686"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="382"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="636"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="684"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="389"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="574"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="387"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="572"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="398"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="547"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="651"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="699"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="396"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="545"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="649"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="697"/>
         <source>Copy all as CSV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="408"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="554"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="406"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="552"/>
         <source>Paste from CSV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="636"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="634"/>
         <source>Thread List Context Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="530"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="528"/>
         <source>Go to in Disassembly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="412"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="560"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="410"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="558"/>
         <source>Load from Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="419"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="567"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="417"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="565"/>
         <source>Save to Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="522"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="520"/>
         <source>Go to in Memory View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="538"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="536"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="538"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="536"/>
         <source>Copy Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="684"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="682"/>
         <source>Stack List Context Menu</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4109,7 +4109,7 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="346"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="347"/>
         <source>Add Symbol File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10045,27 +10045,27 @@ Do you want to load this save and continue?</source>
 <context>
     <name>GS</name>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="188"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="194"/>
         <source>Configured upscale multiplier {}x is above your GPU&apos;s supported multiplier of {}x.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="296"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="302"/>
         <source>Failed to reopen, restoring old configuration.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="353"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="359"/>
         <source>Failed to create render device. This may be due to your GPU not supporting the chosen renderer ({}), or because your graphics drivers need to be updated.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="531"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="537"/>
         <source>Failed to change window after update. The log may contain more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1059"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1065"/>
         <source>Upscale multiplier set to {}x.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10145,12 +10145,12 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2685"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2686"/>
         <source>Stencil buffers and texture barriers are both unavailable, this will break some graphical effects.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5063"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5064"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10265,62 +10265,67 @@ Please see our official documentation for more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.ui" line="39"/>
+        <location filename="../Settings/GameCheatSettingsWidget.ui" line="41"/>
         <source>Enable Cheats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.ui" line="56"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="27"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.ui" line="61"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="28"/>
         <source>Author</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.ui" line="66"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="29"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.ui" line="76"/>
+        <location filename="../Settings/GameCheatSettingsWidget.ui" line="48"/>
+        <source>Search...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GameCheatSettingsWidget.ui" line="72"/>
         <source>Enable All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.ui" line="83"/>
+        <location filename="../Settings/GameCheatSettingsWidget.ui" line="79"/>
         <source>Disable All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.ui" line="90"/>
+        <location filename="../Settings/GameCheatSettingsWidget.ui" line="86"/>
         <source>All CRCs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.ui" line="113"/>
+        <location filename="../Settings/GameCheatSettingsWidget.ui" line="109"/>
         <source>Reload Cheats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="36"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="60"/>
         <source>Show Cheats For All CRCs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="36"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="60"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="37"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="61"/>
         <source>Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="190"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="234"/>
         <source>%1 unlabelled patch codes will automatically activate.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11436,7 +11441,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>GlobalVariableTreeWidget</name>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="791"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="796"/>
         <source>unknown function</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14035,12 +14040,6 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1140"/>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1146"/>
-        <source>(Default)</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>GraphicsSettingsWidget::GraphicsSettingsWidget</name>
@@ -14054,190 +14053,190 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1080"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1088"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1108"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1115"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1124"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1086"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1094"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1114"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1121"/>
         <location filename="../../pcsx2/GS/GS.cpp" line="1130"/>
         <location filename="../../pcsx2/GS/GS.cpp" line="1136"/>
         <location filename="../../pcsx2/GS/GS.cpp" line="1142"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1160"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1173"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1201"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1213"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1227"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1148"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1166"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1179"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1207"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1219"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1233"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1081"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1087"/>
         <source>Save Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1088"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1094"/>
         <source>Toggle Video Capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1108"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1114"/>
         <source>Save Single Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1115"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1121"/>
         <source>Save Multi Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1125"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1131"/>
         <source>Toggle Software Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1131"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1137"/>
         <source>Increase Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1137"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1143"/>
         <source>Decrease Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1142"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1148"/>
         <source>Toggle On-Screen Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
         <source>Cycle Aspect Ratio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1156"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1162"/>
         <source>Aspect ratio set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1160"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1166"/>
         <source>Toggle Hardware Mipmapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1167"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1173"/>
         <source>Hardware mipmapping is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1168"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1174"/>
         <source>Hardware mipmapping is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1173"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1179"/>
         <source>Cycle Deinterlace Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1179"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1185"/>
         <source>Automatic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1180"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1186"/>
         <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1181"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1187"/>
         <source>Weave (Top Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1182"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1188"/>
         <source>Weave (Bottom Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1183"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1189"/>
         <source>Bob (Top Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1184"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1190"/>
         <source>Bob (Bottom Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1185"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1191"/>
         <source>Blend (Top Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1186"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1192"/>
         <source>Blend (Bottom Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1187"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1193"/>
         <source>Adaptive (Top Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1188"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1194"/>
         <source>Adaptive (Bottom Field First)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1195"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1201"/>
         <source>Deinterlace mode set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1201"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1207"/>
         <source>Toggle Texture Dumping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1207"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1213"/>
         <source>Texture dumping is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1208"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1214"/>
         <source>Texture dumping is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1214"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1220"/>
         <source>Toggle Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1221"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1227"/>
         <source>Texture replacements are now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1222"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1228"/>
         <source>Texture replacements are now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1228"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1234"/>
         <source>Reload Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1235"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1241"/>
         <source>Texture replacements are not enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1240"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1246"/>
         <source>Reloading texture replacements...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19173,7 +19172,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="402"/>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="547"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="552"/>
         <source>Rename Symbol</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19223,38 +19222,38 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="501"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="506"/>
         <source>Confirm Deletion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="501"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="506"/>
         <source>Delete &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="548"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="553"/>
         <source>Name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="608"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="613"/>
         <source>Change Type To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="609"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="614"/>
         <source>Type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="613"/>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="624"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="618"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="629"/>
         <source>Cannot Change Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="613"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="618"/>
         <source>That node cannot have a type.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19483,7 +19482,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="576"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="76"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="104"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="917"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="925"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="442"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="367"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="74"/>
@@ -19496,7 +19495,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="577"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="77"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="105"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="919"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="927"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="443"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="368"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="75"/>
@@ -19509,7 +19508,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="578"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="78"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="106"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="920"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="928"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="444"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="369"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="76"/>
@@ -19522,7 +19521,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="579"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="79"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="107"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="918"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="926"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="445"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="370"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="77"/>
@@ -19570,8 +19569,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="589"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="88"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="114"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="915"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="977"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="923"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="985"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="365"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="82"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="102"/>
@@ -19583,8 +19582,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="590"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="89"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="115"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="916"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="976"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="924"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="984"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="366"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="83"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="103"/>
@@ -20069,61 +20068,71 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="800"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="167"/>
+        <source>Workaround for Intermittent FFB Loss</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="168"/>
+        <source>Works around bugs in some wheels&apos; firmware that result in brief interruptions in force. Leave this disabled unless you need it, as it has negative side effects on many wheels.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="808"/>
         <source>Wheel Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="839"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="847"/>
         <source>Driving Force</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="840"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="848"/>
         <source>Driving Force Pro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="840"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="848"/>
         <source>Driving Force Pro (rev11.02)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="841"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="849"/>
         <source>GT Force</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="873"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="881"/>
         <source>Rock Band Drum Kit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="910"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="918"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="449"/>
         <source>Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="911"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="919"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="447"/>
         <source>Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="912"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="920"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="446"/>
         <source>Red</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="913"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="921"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="448"/>
         <source>Yellow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="914"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="922"/>
         <source>Orange</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20233,137 +20242,137 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="935"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="943"/>
         <source>KeyboardMania</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="951"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="959"/>
         <source>C 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="952"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="960"/>
         <source>C# 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="953"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="961"/>
         <source>D 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="954"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="962"/>
         <source>D# 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="955"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="963"/>
         <source>E 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="956"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="964"/>
         <source>F 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="957"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="965"/>
         <source>F# 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="958"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="966"/>
         <source>G 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="959"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="967"/>
         <source>G# 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="960"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="968"/>
         <source>A 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="961"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="969"/>
         <source>A# 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="962"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="970"/>
         <source>B 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="963"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="971"/>
         <source>C 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="964"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="972"/>
         <source>C# 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="965"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="973"/>
         <source>D 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="966"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="974"/>
         <source>D# 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="967"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="975"/>
         <source>E 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="968"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="976"/>
         <source>F 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="969"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="977"/>
         <source>F# 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="970"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="978"/>
         <source>G 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="971"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="979"/>
         <source>G# 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="972"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="980"/>
         <source>A 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="973"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="981"/>
         <source>A# 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="974"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="982"/>
         <source>B 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="978"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="986"/>
         <source>Wheel Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="979"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="987"/>
         <source>Wheel Down</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21760,12 +21769,17 @@ Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3161"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3164"/>
+        <source>Renderer is not set to Automatic. This may cause performance problems and graphical issues.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/VMManager.cpp" line="3170"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3624"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3633"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21785,102 +21799,102 @@ Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3167"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3176"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3173"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3182"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3178"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3187"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3183"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3192"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3190"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3199"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3195"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3204"/>
         <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3200"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3209"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3205"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3214"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3209"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3218"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3211"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3220"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3230"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3239"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3235"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3244"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3240"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3249"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3245"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3254"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3250"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3259"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3255"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3264"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3260"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3269"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3263"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3272"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3267"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3276"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3272"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3281"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
