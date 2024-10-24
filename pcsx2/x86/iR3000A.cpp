@@ -175,10 +175,10 @@ static const void* _DynGen_JITCompile()
 	xFastCall((void*)iopRecRecompile, ptr32[&psxRegs.pc]);
 
 	xMOV(eax, ptr[&psxRegs.pc]);
-	xMOV(ebx, eax);
+	xMOV(edx, eax);
 	xSHR(eax, 16);
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax * wordsize)]);
-	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
+	xJMP(ptrNative[rdx * (wordsize / 4) + rcx]);
 
 	return retval;
 }
@@ -196,10 +196,10 @@ static const void* _DynGen_DispatcherReg()
 	u8* retval = xGetPtr();
 
 	xMOV(eax, ptr[&psxRegs.pc]);
-	xMOV(ebx, eax);
+	xMOV(edx, eax);
 	xSHR(eax, 16);
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax * wordsize)]);
-	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
+	xJMP(ptrNative[rdx * (wordsize / 4) + rcx]);
 
 	return retval;
 }
@@ -890,10 +890,13 @@ static void recReserve()
 		pxFailRel("Failed to allocate R3000 InstCache array.");
 }
 
+#define R3000A_TEXTPTR (&psxRegs.GPR.r[33])
+
 void recResetIOP()
 {
 	DevCon.WriteLn("iR3000A Recompiler reset.");
 
+	xSetTextPtr(R3000A_TEXTPTR);
 	xSetPtr(SysMemory::GetIOPRec());
 	_DynGen_Dispatchers();
 	recPtr = xGetPtr();
@@ -1181,16 +1184,16 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	}
 	else
 	{
-		xMOV(ebx, ptr32[&psxRegs.cycle]);
-		xADD(ebx, blockCycles);
-		xMOV(ptr32[&psxRegs.cycle], ebx); // update cycles
+		xMOV(r12d, ptr32[&psxRegs.cycle]);
+		xADD(r12d, blockCycles);
+		xMOV(ptr32[&psxRegs.cycle], r12d); // update cycles
 
 		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
 		iPsxAddEECycles(blockCycles);
 		xJLE(iopExitRecompiledCode);
 
 		// check if an event is pending
-		xSUB(ebx, ptr32[&psxRegs.iopNextEventCycle]);
+		xSUB(r12d, ptr32[&psxRegs.iopNextEventCycle]);
 		xForwardJS<u8> nointerruptpending;
 
 		xFastCall((void*)iopEventTest);
@@ -1565,6 +1568,7 @@ static void iopRecRecompile(const u32 startpc)
 		recResetIOP();
 	}
 
+	xSetTextPtr(R3000A_TEXTPTR);
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
 
