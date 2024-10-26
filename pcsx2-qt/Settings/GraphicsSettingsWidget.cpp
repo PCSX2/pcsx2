@@ -931,12 +931,14 @@ void GraphicsSettingsWidget::onPerformancePosChanged()
 {
 	const bool enabled = m_ui.osdPerformancePos->currentIndex() != (m_dialog->isPerGameSettings() ? 1 : 0);
 
+	m_ui.osdShowVPS->setEnabled(enabled);
 	m_ui.osdShowSpeed->setEnabled(enabled);
 	m_ui.osdShowFPS->setEnabled(enabled);
 	m_ui.osdShowCPU->setEnabled(enabled);
 	m_ui.osdShowGPU->setEnabled(enabled);
 	m_ui.osdShowResolution->setEnabled(enabled);
 	m_ui.osdShowGSStats->setEnabled(enabled);
+	m_ui.osdShowHardwareInfo->setEnabled(enabled);
 	m_ui.osdShowIndicators->setEnabled(enabled);
 	m_ui.osdShowFrameTimes->setEnabled(enabled);
 	m_ui.osdShowVersion->setEnabled(enabled);
