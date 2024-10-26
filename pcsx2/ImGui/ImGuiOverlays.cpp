@@ -532,10 +532,9 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 			num_ports++;
 	}
 
-	float current_x = margin;
-	float current_y = display_size.y - margin - ((static_cast<float>(num_ports) * (font->FontSize + spacing)) - spacing);
-
-	const ImVec4 clip_rect(current_x, current_y, display_size.x - margin, display_size.y - margin);
+	float current_x = ImFloor(margin);
+	float current_y = ImFloor(display_size.y - margin - ((static_cast<float>(num_ports) * (font->FontSize + spacing)) - spacing));
+	const ImVec4 clip_rect(current_x, current_y, display_size.x - margin, display_size.y);
 
 	SmallString text;
 
