@@ -70233,4 +70233,3 @@ TLES-82043:
     halfPixelOffset: 4 # Aligns depth of field effect.
     nativeScaling: 2 # Fixes post lighting.
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
-    
