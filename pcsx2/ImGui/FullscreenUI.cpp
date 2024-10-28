@@ -3168,6 +3168,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ARCHIVE, "Create Save State Backups"),
 		FSUI_CSTR("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix"),
 		"EmuCore", "BackupSavestate", true);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_INFO_CIRCLE, "Use Save State Selector"),
+		FSUI_CSTR("Show a save state selector UI when switching slots instead of showing a notification bubble."),
+		"EmuCore", "UseSavestateSelector", true);
 	if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Use Light Theme"),
 			FSUI_CSTR("Uses a light coloured theme instead of the default dark theme."), "UI", "UseLightFullscreenUITheme", false))
 	{
