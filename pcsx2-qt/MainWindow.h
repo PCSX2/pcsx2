@@ -179,7 +179,6 @@ private Q_SLOTS:
 	void onInputRecNewActionTriggered();
 	void onInputRecPlayActionTriggered();
 	void onInputRecStopActionTriggered();
-	void onInputRecOpenSettingsTriggered();
 	void onInputRecOpenViewer();
 
 	void onVMStarting();

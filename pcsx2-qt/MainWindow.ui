@@ -196,7 +196,6 @@
      <addaction name="actionInputRecStop"/>
      <addaction name="separator"/>
      <addaction name="actionInputRecOpenViewer"/>
-     <addaction name="actionInputRecOpenSettings"/>
      <addaction name="separator"/>
      <addaction name="actionInputRecConsoleLogs"/>
      <addaction name="actionInputRecControllerLogs"/>
@@ -979,14 +978,6 @@
    </property>
    <property name="text">
     <string extracomment="This section refers to the Input Recording submenu.">Stop</string>
-   </property>
-  </action>
-  <action name="actionInputRecOpenSettings">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string extracomment="This section refers to the Input Recording submenu.">Settings</string>
    </property>
   </action>
   <action name="actionRecording_Console_Logs">
