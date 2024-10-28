@@ -2615,7 +2615,7 @@ SCED-50642:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
   gsHWFixes:
@@ -2742,7 +2742,7 @@ SCED-50907:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
   gsHWFixes:
@@ -4451,7 +4451,7 @@ SCES-50490:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
   gsHWFixes:
@@ -4463,7 +4463,7 @@ SCES-50491:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
   gsHWFixes:
@@ -4476,7 +4476,7 @@ SCES-50492:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
   gsHWFixes:
@@ -4488,7 +4488,7 @@ SCES-50493:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
   gsHWFixes:
@@ -4500,7 +4500,7 @@ SCES-50494:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
   gsHWFixes:
@@ -29780,12 +29780,12 @@ SLKA-25214:
   name: "Final Fantasy X - International [PlayStation 2 - Big Hit Series]"
   region: "NTSC-K"
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 3 # Fixes character flickering caused by EE clamp full.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    autoFlush: 1 # Fixes blur effect on attacks.
 SLKA-25215:
   name: "Shining Wind"
   region: "NTSC-K"
@@ -37641,12 +37641,12 @@ SLPM-65115:
   name-en: "Final Fantasy X International"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 3 # Fixes character flickering caused by EE clamp full.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    autoFlush: 1 # Fixes blur effect on attacks.
 SLPM-65116:
   name: "リリーのアトリエ プラス 〜ザールブルグの錬金術士3〜"
   name-sort: "りりーのあとりえ ぷらす 〜ざーるぶるぐのれんきんじゅつし3〜"
@@ -43332,7 +43332,7 @@ SLPM-66124:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
   gsHWFixes:
@@ -46745,12 +46745,12 @@ SLPM-66677:
   name-en: "Final Fantasy X - International [Ultimate Hits]"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 3 # Fixes character flickering caused by EE clamp full.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    autoFlush: 1 # Fixes blur effect on attacks.
 SLPM-66678:
   name: "ファイナルファンタジーX-2 インターナショナル+ラストミッション [アルティメットヒッツ]"
   name-sort: "ふぁいなるふぁんたじー10-2 いんたーなしょなる+らすとみっしょん [あるてぃめっとひっつ]"
@@ -48710,12 +48710,12 @@ SLPM-67513:
   name: "Final Fantasy X International"
   region: "NTSC-K"
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 3 # Fixes character flickering caused by EE clamp full.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    autoFlush: 1 # Fixes blur effect on attacks.
 SLPM-67514:
   name: "Kessen"
   region: "NTSC-K"
@@ -52241,7 +52241,7 @@ SLPS-25050:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
   gsHWFixes:
@@ -52448,12 +52448,12 @@ SLPS-25088:
   region: "NTSC-J"
   compat: 5
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 3 # Fixes character flickering caused by EE clamp full.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    autoFlush: 1 # Fixes blur effect on attacks.
 SLPS-25089:
   name: "Salt Lake 2002"
   region: "NTSC-J"
@@ -57535,7 +57535,7 @@ SLPS-72501:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
   gsHWFixes:
@@ -59686,7 +59686,7 @@ SLUS-20312:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 1 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
   gsHWFixes:
