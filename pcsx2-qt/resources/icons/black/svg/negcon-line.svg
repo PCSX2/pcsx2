@@ -1,30 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 26.5.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="Duckstation_-_Negcon_00000104687465272175918400000016919813319004934028_"
-	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 150 150"
-	 style="enable-background:new 0 0 150 150;" xml:space="preserve">
-<style type="text/css">
-	.st0{fill:none;}
-	.st1{fill:none;stroke:#000000;stroke-width:12;stroke-miterlimit:10;}
-	.st2{fill:none;stroke:#000000;stroke-width:12;stroke-linecap:round;stroke-miterlimit:10;}
-</style>
-<g id="tela">
-	<rect id="tela_00000129895939108887223950000017508827257489233583_" class="st0" width="150" height="150"/>
-</g>
-<g id="By_Maxihplay_00000152974811067316581070000007946929605663458202_">
-	<g id="control">
-		<g id="B">
-			<path class="st1" d="M91.9,87.8h14l20.2,21.1c3.6,2.5,8.5-0.2,8.4-4.6l-3.9-35.4c0-10.3-8.3-18.6-18.6-18.6H91.9V87.8L91.9,87.8z
-				"/>
-			<line class="st1" x1="83.7" y1="40.1" x2="83.5" y2="99.1"/>
-			<polyline class="st2" points="101.6,46.2 116.7,46.2 126.1,52 			"/>
-		</g>
-		<g id="A">
-			<path class="st1" d="M58.1,87.8h-14l-20.2,21.1c-3.6,2.5-8.5-0.2-8.4-4.6l3.9-35.4c0-10.3,8.3-18.6,18.6-18.6h20.1V87.8
-				L58.1,87.8z"/>
-			<line class="st1" x1="66.3" y1="40.1" x2="66.5" y2="99.1"/>
-			<polyline class="st2" points="48.1,46.2 33,46.2 23.6,52 			"/>
-		</g>
-	</g>
-</g>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Negcon_-_PCSX2" data-name="Negcon - PCSX2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-miterlimit: 10;
+        stroke-width: 12px;
+      }
+    </style>
+  </defs>
+  <g id="By_maxihplay" data-name="By @maxihplay">
+    <path d="m130.96,116.52c-2.29,0-4.57-.69-6.54-2.06l-.5-.34-19.54-20.41h-17.92v-50.78h26.79c13.8,0,25.04,11.13,25.23,24.88l4.03,36.82c.1,4.4-2.24,8.42-6.11,10.5-1.72.92-3.59,1.38-5.46,1.38Zm-32.49-34.81h11.04l20.83,21.76-3.85-34.98v-.33c0-7.3-5.94-13.23-13.23-13.23h-14.79v26.78Z"/>
+    <line class="cls-1" x1="84" y1="39.48" x2="83.79" y2="97.31"/>
+    <path d="m19.04,116.52c-1.86,0-3.74-.46-5.46-1.38-3.87-2.08-6.21-6.1-6.11-10.5l.03-.52,4-36.3c.19-13.75,11.44-24.88,25.23-24.88h26.79v50.78h-17.92l-19.53,20.41-.5.34c-1.97,1.37-4.25,2.06-6.54,2.06Zm17.7-61.59c-7.3,0-13.23,5.94-13.23,13.23l-.04.66-3.82,34.65,20.83-21.76h11.04v-26.78h-14.79Z"/>
+    <line class="cls-1" x1="66" y1="39.48" x2="66.21" y2="97.31"/>
+  </g>
 </svg>
