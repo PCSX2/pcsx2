@@ -32,9 +32,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-447</y>
         <width>790</width>
-        <height>1023</height>
+        <height>1049</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -422,10 +422,10 @@
           <string>Savestate Settings</string>
          </property>
          <layout class="QGridLayout" name="savestateSettingsLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="savestateCompressionLabel">
+          <item row="3" column="1">
+           <widget class="QCheckBox" name="saveStateOnShutdown">
             <property name="text">
-             <string>Compression Method:</string>
+             <string>Save State On Shutdown</string>
             </property>
            </widget>
           </item>
@@ -491,10 +491,17 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <widget class="QCheckBox" name="saveStateOnShutdown">
+          <item row="0" column="0">
+           <widget class="QLabel" name="savestateCompressionLabel">
             <property name="text">
-             <string>Save State On Shutdown</string>
+             <string>Compression Method:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="savestateSelector">
+            <property name="text">
+             <string>Use Save State Selector</string>
             </property>
            </widget>
           </item>

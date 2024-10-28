@@ -106,6 +106,11 @@ static bool CanPause()
 	return true;
 }
 
+static bool UseSavestateSelector()
+{
+	return EmuConfig.UseSavestateSelector;
+}
+
 BEGIN_HOTKEY_LIST(g_common_hotkeys)
 DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),
 	[](s32 pressed) {
@@ -222,12 +227,12 @@ DEFINE_HOTKEY("InputRecToggleMode", TRANSLATE_NOOP("Hotkeys", "System"),
 DEFINE_HOTKEY("PreviousSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Select Previous Save Slot"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			SaveStateSelectorUI::SelectPreviousSlot(true);
+			SaveStateSelectorUI::SelectPreviousSlot(UseSavestateSelector());
 	})
 DEFINE_HOTKEY("NextSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Select Next Save Slot"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			SaveStateSelectorUI::SelectNextSlot(true);
+			SaveStateSelectorUI::SelectNextSlot(UseSavestateSelector());
 	})
 DEFINE_HOTKEY("SaveStateToSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Save State To Selected Slot"), [](s32 pressed) {
