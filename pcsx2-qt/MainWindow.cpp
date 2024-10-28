@@ -1911,11 +1911,6 @@ void MainWindow::onInputRecStopActionTriggered()
 	}
 }
 
-void MainWindow::onInputRecOpenSettingsTriggered()
-{
-	// TODO - Vaser - Implement
-}
-
 InputRecordingViewer* MainWindow::getInputRecordingViewer()
 {
 	if (!m_input_recording_viewer)
