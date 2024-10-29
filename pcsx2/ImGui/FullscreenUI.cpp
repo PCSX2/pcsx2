@@ -4391,7 +4391,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 			StartAutomaticBinding(global_slot);
 
 		for (const InputBindingInfo& bi : ci->bindings)
-			DrawInputBindingButton(bsi, bi.bind_type, section, bi.name, Host::TranslateToCString("Pad", bi.display_name), bi.icon_name, true);
+			if (bi.name) [[likely]]
+				DrawInputBindingButton(bsi, bi.bind_type, section, bi.name, Host::TranslateToCString("Pad", bi.display_name), bi.icon_name, true);
 
 		if (mtap_enabled[mtap_port])
 		{
