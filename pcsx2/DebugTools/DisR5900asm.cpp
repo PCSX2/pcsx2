@@ -1071,7 +1071,7 @@ void MTSAH( std::string& output )   { _sap("mtsah\t%s, 0x%04X") GPR_REG[DECODE_R
 
 
 //***************************SPECIAL 2 CPU OPCODES*******************
-const char* pmfhl_sub[] = {"lw", "uw", "slw", "lh", "sh", "??", "??"};
+const char* pmfhl_sub[] = {"lw", "uw", "slw", "lh", "sh", "??", "??", "??"};
 
 void MADD( std::string& output )    { _sap("madd\t%s, %s %s")        GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void MADDU( std::string& output )   { _sap("maddu\t%s, %s %s")       GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);}
