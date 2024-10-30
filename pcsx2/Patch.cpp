@@ -178,7 +178,8 @@ namespace Patch
 	static PatchList s_cheat_patches;
 
 	static ActivePatchList s_active_patches;
-	static std::vector<DynamicPatch> s_active_dynamic_patches;
+	static std::vector<DynamicPatch> s_active_gamedb_dynamic_patches;
+	static std::vector<DynamicPatch> s_active_pnach_dynamic_patches;
 	static EnablePatchList s_enabled_cheats;
 	static EnablePatchList s_enabled_patches;
 	static u32 s_patches_crc;
@@ -631,7 +632,7 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 
 		for (const DynamicPatch& dp : p.dpatches)
 		{
-			s_active_dynamic_patches.push_back(dp);
+			s_active_pnach_dynamic_patches.push_back(dp);
 		}
 
 		if (p.override_aspect_ratio.has_value())
@@ -699,7 +700,7 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	s_active_patches.clear();
 	s_override_aspect_ratio.reset();
 	s_override_interlace_mode.reset();
-	s_active_dynamic_patches.clear();
+	s_active_pnach_dynamic_patches.clear();
 
 	SmallString message;
 	u32 gp_count = 0;
@@ -801,7 +802,8 @@ void Patch::UnloadPatches()
 	s_override_aspect_ratio = {};
 	s_patches_crc = 0;
 	s_active_patches = {};
-	s_active_dynamic_patches = {};
+	s_active_pnach_dynamic_patches = {};
+	s_active_gamedb_dynamic_patches = {};
 	s_enabled_patches = {};
 	s_enabled_cheats = {};
 	decltype(s_cheat_patches)().swap(s_cheat_patches);
@@ -1027,14 +1029,16 @@ void Patch::ApplyLoadedPatches(patch_place_type place)
 
 void Patch::ApplyDynamicPatches(u32 pc)
 {
-	for (const auto& dynpatch : s_active_dynamic_patches)
+	for (const auto& dynpatch : s_active_pnach_dynamic_patches)
+		ApplyDynaPatch(dynpatch, pc);
+	for (const auto& dynpatch : s_active_gamedb_dynamic_patches)
 		ApplyDynaPatch(dynpatch, pc);
 }
 
 void Patch::LoadDynamicPatches(const std::vector<DynamicPatch>& patches)
 {
 	for (const DynamicPatch& it : patches)
-		s_active_dynamic_patches.push_back(it);
+		s_active_gamedb_dynamic_patches.push_back(it);
 }
 
 static u32 SkipCount = 0, IterationCount = 0;
