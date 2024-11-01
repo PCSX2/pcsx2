@@ -547,6 +547,7 @@ public:
 	XBYAK_DEFINE_TYPE(87, tKEYLOCKER_WIDE);
 	XBYAK_DEFINE_TYPE(88, tSSE4a);
 	XBYAK_DEFINE_TYPE(89, tCLWB);
+	XBYAK_DEFINE_TYPE(90, tTSXLDTRK);
 
 #undef XBYAK_SPLIT_ID
 #undef XBYAK_DEFINE_TYPE
@@ -684,6 +685,7 @@ public:
 			if (ECX & (1U << 28)) type_ |= tMOVDIR64B;
 			if (EDX & (1U << 5)) type_ |= tUINTR;
 			if (EDX & (1U << 14)) type_ |= tSERIALIZE;
+			if (EDX & (1U << 16)) type_ |= tTSXLDTRK;
 			if (EDX & (1U << 22)) type_ |= tAMX_BF16;
 			if (EDX & (1U << 24)) type_ |= tAMX_TILE;
 			if (EDX & (1U << 25)) type_ |= tAMX_INT8;
