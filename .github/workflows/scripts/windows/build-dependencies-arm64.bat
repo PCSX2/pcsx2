@@ -45,7 +45,7 @@ cd "%BUILDDIR%"
 set FREETYPE=2.13.3
 set HARFBUZZ=10.0.1
 set LIBJPEG=9f
-set LIBPNG=1644
+set LIBPNG=1643
 set LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
 set QT=6.8.0
 set QTMINOR=6.8
@@ -60,7 +60,7 @@ set SHADERC_GLSLANG=142052fa30f9eca191aa9dcf65359fcaed09eeec
 set SHADERC_SPIRVHEADERS=5e3ad389ee56fca27c9705d093ae5387ce404df4
 set SHADERC_SPIRVTOOLS=dd4b663e13c07fea4fbb3f70c1c91c86731099f7
 
-call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download 8c25a7792099a0089fa1cc76c94260d0bb3f1ec52b93671b572f8bb61577b732 || goto error
+call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download 5c3a8e78f7b24c20b25b54ee575d6daa40007a5f4eea2845861c3409b3021747 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip 8adf9f5a4b6022aa2744f45c89ce347df46fea8403e99f01d650b11c417d0aa8 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1643.zip fc466a1e638e635d6c66363bdf3f38555b81b0141d0b06ba45b49ccca327436d || goto error
 call :downloadfile "jpegsr%LIBJPEG%.zip" https://ijg.org/files/jpegsr%LIBJPEG%.zip 6255da8c89e09d694e6800688c76145eb6870a76ac0d36c74fccd61b3940aafa || goto error
