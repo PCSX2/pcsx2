@@ -1,5 +1,5 @@
 /* SwapBytes.c -- Byte Swap conversion filter
-2023-04-07 : Igor Pavlov : Public domain */
+2024-03-01 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -305,11 +305,12 @@ ShufBytes_256(void *items8, const void *lim8, const void *mask128_ptr)
      msvc 19.30+ (VS2022): replaces _mm256_set_m128i(m,m) to vbroadcastf128(m) as we want
   */
   // _mm256_broadcastsi128_si256(*mask128_ptr);
-  /*
+#if defined(Z7_GCC_VERSION) && (Z7_GCC_VERSION < 80000)
   #define MY_mm256_set_m128i(hi, lo)  _mm256_insertf128_si256(_mm256_castsi128_si256(lo), (hi), 1)
-  MY_mm256_set_m128i
-  */
-      _mm256_set_m128i(
+#else
+  #define MY_mm256_set_m128i  _mm256_set_m128i
+#endif
+      MY_mm256_set_m128i(
         *(const __m128i *)mask128_ptr,
         *(const __m128i *)mask128_ptr);
  #endif
@@ -330,31 +331,58 @@ ShufBytes_256(void *items8, const void *lim8, const void *mask128_ptr)
 
 
 // compile message "NEON intrinsics not available with the soft-float ABI"
-#elif defined(MY_CPU_ARM_OR_ARM64) || \
-    (defined(__ARM_ARCH) && (__ARM_ARCH >= 7))
-// #elif defined(MY_CPU_ARM64)
+#elif defined(MY_CPU_ARM_OR_ARM64) \
+    && defined(MY_CPU_LE) \
+    && !defined(Z7_DISABLE_ARM_NEON)
 
   #if defined(__clang__) && (__clang_major__ >= 8) \
-    || defined(__GNUC__) && (__GNUC__ >= 8)
-    #if (defined(__ARM_ARCH) && (__ARM_ARCH >= 7)) \
+    || defined(__GNUC__) && (__GNUC__ >= 6)
+    #if defined(__ARM_FP)
+    #if (defined(__ARM_ARCH) && (__ARM_ARCH >= 4)) \
         || defined(MY_CPU_ARM64)
+    #if  defined(MY_CPU_ARM64) \
+      || !defined(Z7_CLANG_VERSION) \
+      || defined(__ARM_NEON)
       #define USE_SWAP_128
-    #endif
     #ifdef MY_CPU_ARM64
       // #define SWAP_ATTRIB_NEON __attribute__((__target__("")))
     #else
-      // #define SWAP_ATTRIB_NEON __attribute__((__target__("fpu=crypto-neon-fp-armv8")))
-    #endif
+#if defined(Z7_CLANG_VERSION)
+      // #define SWAP_ATTRIB_NEON __attribute__((__target__("neon")))
+#else
+      // #pragma message("SWAP_ATTRIB_NEON __attribute__((__target__(fpu=neon))")
+      #define SWAP_ATTRIB_NEON __attribute__((__target__("fpu=neon")))
+#endif
+    #endif // MY_CPU_ARM64
+    #endif // __ARM_NEON
+    #endif // __ARM_ARCH
+    #endif // __ARM_FP
+
   #elif defined(_MSC_VER)
     #if (_MSC_VER >= 1910)
       #define USE_SWAP_128
     #endif
   #endif
 
-  #if defined(_MSC_VER) && defined(MY_CPU_ARM64)
+  #ifdef USE_SWAP_128
+  #if defined(Z7_MSC_VER_ORIGINAL) && defined(MY_CPU_ARM64)
     #include <arm64_neon.h>
   #else
+
+/*
+#if !defined(__ARM_NEON)
+#if defined(Z7_GCC_VERSION) && (__GNUC__  <   5) \
+ || defined(Z7_GCC_VERSION) && (__GNUC__ ==   5) && (Z7_GCC_VERSION <  90201) \
+ || defined(Z7_GCC_VERSION) && (__GNUC__ ==   5) && (Z7_GCC_VERSION < 100100)
+Z7_DIAGNOSTIC_IGNORE_BEGIN_RESERVED_MACRO_IDENTIFIER
+#pragma message("#define __ARM_NEON 1")
+// #define __ARM_NEON 1
+Z7_DIAGNOSTIC_IGNORE_END_RESERVED_MACRO_IDENTIFIER
+#endif
+#endif
+*/
     #include <arm_neon.h>
+  #endif
   #endif
 
 #ifndef USE_SWAP_128
@@ -462,6 +490,13 @@ Z7_FORCE_INLINE  \
 static \
 Z7_ATTRIB_NO_VECTOR  \
 void Z7_FASTCALL
+
+
+#if defined(MY_CPU_ARM_OR_ARM64)
+#if defined(__clang__)
+#pragma GCC diagnostic ignored "-Wlanguage-extension-token"
+#endif
+#endif
 
 
 #ifdef MY_CPU_64BIT

@@ -1,5 +1,5 @@
 /* Aes.c -- AES encryption / decryption
-2023-04-02 : Igor Pavlov : Public domain */
+2024-03-01 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -13,7 +13,9 @@ AES_CODE_FUNC g_AesCtr_Code;
 UInt32 g_Aes_SupportedFunctions_Flags;
 #endif
 
+MY_ALIGN(64)
 static UInt32 T[256 * 4];
+MY_ALIGN(64)
 static const Byte Sbox[256] = {
   0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
   0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
@@ -33,7 +35,9 @@ static const Byte Sbox[256] = {
   0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16};
 
 
+MY_ALIGN(64)
 static UInt32 D[256 * 4];
+MY_ALIGN(64)
 static Byte InvS[256];
 
 #define xtime(x) ((((x) << 1) ^ (((x) & 0x80) != 0 ? 0x1B : 0)) & 0xFF)
@@ -54,24 +58,54 @@ static Byte InvS[256];
 // #define Z7_SHOW_AES_STATUS
 
 #ifdef MY_CPU_X86_OR_AMD64
-  #define USE_HW_AES
-#elif defined(MY_CPU_ARM_OR_ARM64) && defined(MY_CPU_LE)
-  #if defined(__clang__)
-    #if (__clang_major__ >= 8) // fix that check
+
+  #if defined(__INTEL_COMPILER)
+    #if (__INTEL_COMPILER >= 1110)
       #define USE_HW_AES
+      #if (__INTEL_COMPILER >= 1900)
+        #define USE_HW_VAES
+      #endif
     #endif
-  #elif defined(__GNUC__)
-    #if (__GNUC__ >= 6) // fix that check
-      #define USE_HW_AES
-    #endif
+  #elif defined(Z7_CLANG_VERSION) && (Z7_CLANG_VERSION >= 30800) \
+     || defined(Z7_GCC_VERSION)   && (Z7_GCC_VERSION   >= 40400)
+    #define USE_HW_AES
+      #if defined(__clang__) && (__clang_major__ >= 8) \
+          || defined(__GNUC__) && (__GNUC__ >= 8)
+        #define USE_HW_VAES
+      #endif
   #elif defined(_MSC_VER)
-    #if _MSC_VER >= 1910
+    #define USE_HW_AES
+    #define USE_HW_VAES
+  #endif
+
+#elif defined(MY_CPU_ARM_OR_ARM64) && defined(MY_CPU_LE)
+  
+  #if   defined(__ARM_FEATURE_AES) \
+     || defined(__ARM_FEATURE_CRYPTO)
+    #define USE_HW_AES
+  #else
+    #if  defined(MY_CPU_ARM64) \
+      || defined(__ARM_ARCH) && (__ARM_ARCH >= 4) \
+      || defined(Z7_MSC_VER_ORIGINAL)
+    #if  defined(__ARM_FP) && \
+          (   defined(Z7_CLANG_VERSION) && (Z7_CLANG_VERSION >= 30800) \
+           || defined(__GNUC__) && (__GNUC__ >= 6) \
+          ) \
+      || defined(Z7_MSC_VER_ORIGINAL) && (_MSC_VER >= 1910)
+    #if  defined(MY_CPU_ARM64) \
+      || !defined(Z7_CLANG_VERSION) \
+      || defined(__ARM_NEON) && \
+          (Z7_CLANG_VERSION < 170000 || \
+           Z7_CLANG_VERSION > 170001)
       #define USE_HW_AES
+    #endif
+    #endif
     #endif
   #endif
 #endif
 
 #ifdef USE_HW_AES
+// #pragma message("=== Aes.c USE_HW_AES === ")
 #ifdef Z7_SHOW_AES_STATUS
 #include <stdio.h>
 #define PRF(x) x
@@ -136,6 +170,7 @@ void AesGenTables(void)
     #endif
 
     #ifdef MY_CPU_X86_OR_AMD64
+    #ifdef USE_HW_VAES
     if (CPU_IsSupported_VAES_AVX2())
     {
       PRF(printf("\n===vaes avx2\n"));
@@ -145,6 +180,7 @@ void AesGenTables(void)
       flags |= k_Aes_SupportedFunctions_HW_256;
       #endif
     }
+    #endif
     #endif
   }
   #endif

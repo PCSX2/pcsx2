@@ -1,5 +1,5 @@
 /* Ppmd7.c -- PPMdH codec
-2023-04-02 : Igor Pavlov : Public domain
+2023-09-07 : Igor Pavlov : Public domain
 This code is based on PPMd var.H (2001): Dmitry Shkarin : Public domain */
 
 #include "Precomp.h"
@@ -302,8 +302,17 @@ static void *Ppmd7_AllocUnits(CPpmd7 *p, unsigned indx)
 
 
 #define MEM_12_CPY(dest, src, num) \
-  { UInt32 *d = (UInt32 *)dest; const UInt32 *z = (const UInt32 *)src; UInt32 n = num; \
-    do { d[0] = z[0]; d[1] = z[1]; d[2] = z[2]; z += 3; d += 3; } while (--n); }
+  { UInt32 *d = (UInt32 *)(dest); \
+    const UInt32 *z = (const UInt32 *)(src); \
+    unsigned n = (num); \
+    do { \
+      d[0] = z[0]; \
+      d[1] = z[1]; \
+      d[2] = z[2]; \
+      z += 3; \
+      d += 3; \
+    } while (--n); \
+  }
 
 
 /*
@@ -711,8 +720,8 @@ void Ppmd7_UpdateModel(CPpmd7 *p)
       if ((ns1 & 1) == 0)
       {
         /* Expand for one UNIT */
-        unsigned oldNU = ns1 >> 1;
-        unsigned i = U2I(oldNU);
+        const unsigned oldNU = ns1 >> 1;
+        const unsigned i = U2I(oldNU);
         if (i != U2I((size_t)oldNU + 1))
         {
           void *ptr = Ppmd7_AllocUnits(p, i + 1);
@@ -731,7 +740,7 @@ void Ppmd7_UpdateModel(CPpmd7 *p)
       sum = c->Union2.SummFreq;
       /* max increase of Escape_Freq is 3 here.
          total increase of Union2.SummFreq for all symbols is less than 256 here */
-      sum += (UInt32)(2 * ns1 < ns) + 2 * ((unsigned)(4 * ns1 <= ns) & (sum <= 8 * ns1));
+      sum += (UInt32)(unsigned)((2 * ns1 < ns) + 2 * ((unsigned)(4 * ns1 <= ns) & (sum <= 8 * ns1)));
       /* original PPMdH uses 16-bit variable for (sum) here.
          But (sum < 0x9000). So we don't truncate (sum) to 16-bit */
       // sum = (UInt16)sum;
@@ -761,7 +770,7 @@ void Ppmd7_UpdateModel(CPpmd7 *p)
         // (max(s->freq) == 120), when we convert from 1-symbol into 2-symbol context
         s->Freq = (Byte)freq;
         // max(InitEsc = PPMD7_kExpEscape[*]) is 25. So the max(escapeFreq) is 26 here
-        sum = freq + p->InitEsc + (ns > 3);
+        sum = (UInt32)(freq + p->InitEsc + (ns > 3));
       }
     }
     
@@ -933,10 +942,10 @@ CPpmd_See *Ppmd7_MakeEscFreq(CPpmd7 *p, unsigned numMasked, UInt32 *escFreq)
         p->HiBitsFlag;
     {
       // if (see->Summ) field is larger than 16-bit, we need only low 16 bits of Summ
-      unsigned summ = (UInt16)see->Summ; // & 0xFFFF
-      unsigned r = (summ >> see->Shift);
+      const unsigned summ = (UInt16)see->Summ; // & 0xFFFF
+      const unsigned r = (summ >> see->Shift);
       see->Summ = (UInt16)(summ - r);
-      *escFreq = r + (r == 0);
+      *escFreq = (UInt32)(r + (r == 0));
     }
   }
   else
@@ -981,9 +990,9 @@ void Ppmd7_Update1_0(CPpmd7 *p)
   CPpmd_State *s = p->FoundState;
   CPpmd7_Context *mc = p->MinContext;
   unsigned freq = s->Freq;
-  unsigned summFreq = mc->Union2.SummFreq;
+  const unsigned summFreq = mc->Union2.SummFreq;
   p->PrevSuccess = (2 * freq > summFreq);
-  p->RunLength += (int)p->PrevSuccess;
+  p->RunLength += (Int32)p->PrevSuccess;
   mc->Union2.SummFreq = (UInt16)(summFreq + 4);
   freq += 4;
   s->Freq = (Byte)freq;
