@@ -155,7 +155,7 @@ namespace Xbyak {
 
 enum {
 	DEFAULT_MAX_CODE_SIZE = 4096,
-	VERSION = 0x7060 /* 0xABCD = A.BC(.D) */
+	VERSION = 0x7210 /* 0xABCD = A.BC(.D) */
 };
 
 #ifndef MIE_INTEGER_TYPE_DEFINED
@@ -232,6 +232,7 @@ enum {
 	ERR_CANT_USE_REX2,
 	ERR_INVALID_DFV,
 	ERR_INVALID_REG_IDX,
+	ERR_BAD_ENCODING_MODE,
 	ERR_INTERNAL // Put it at last.
 };
 
@@ -290,6 +291,7 @@ inline const char *ConvertErrorToString(int err)
 		"can't use rex2",
 		"invalid dfv",
 		"invalid reg index",
+		"bad encoding mode",
 		"internal error"
 	};
 	assert(ERR_INTERNAL + 1 == sizeof(errTbl) / sizeof(*errTbl));
@@ -1673,7 +1675,9 @@ inline const uint8_t* Label::getAddress() const
 typedef enum {
 	DefaultEncoding,
 	VexEncoding,
-	EvexEncoding
+	EvexEncoding,
+	PreAVX10v2Encoding,
+	AVX10v2Encoding
 } PreferredEncoding;
 
 class CodeGenerator : public CodeArray {
@@ -1730,10 +1734,10 @@ private:
 	{
 		return op1.isREG(i32e) && ((op2.isREG(i32e) && op1.getBit() == op2.getBit()) || op2.isMEM());
 	}
-	static inline bool isValidSSE(const Operand& op1)
+	static inline bool isValidSSE(const Operand& op)
 	{
 		// SSE instructions do not support XMM16 - XMM31
-		return !(op1.isXMM() && op1.getIdx() >= 16);
+		return !(op.isXMM() && op.getIdx() >= 16);
 	}
 	static inline uint8_t rexRXB(int bit, int bit3, const Reg& r, const Reg& b, const Reg& x = Reg())
 	{
@@ -1867,16 +1871,19 @@ private:
 		}
 		db(code);
 	}
-	void verifySAE(const Reg& r, uint64_t type) const
+	// Allow YMM embedded rounding for AVX10.2 to minimize flag modifications
+	bool verifySAE(const Reg& r, const Reg& b, uint64_t type) const
 	{
-		if (((type & T_SAE_X) && r.isXMM()) || ((type & T_SAE_Y) && r.isYMM()) || ((type & T_SAE_Z) && r.isZMM())) return;
-		XBYAK_THROW(ERR_SAE_IS_INVALID)
+		if (((type & T_SAE_X) && (r.isYMM() && b.isXMM())) || ((type & T_SAE_Y) && b.isXMM()) || ((type & T_SAE_Z) && b.isYMM())) return true;
+		if (((type & T_SAE_X) && b.isXMM()) || ((type & T_SAE_Y) && b.isYMM()) || ((type & T_SAE_Z) && b.isZMM())) return false;
+		XBYAK_THROW_RET(ERR_SAE_IS_INVALID, false)
 	}
-	void verifyER(const Reg& r, uint64_t type) const
+	bool verifyER(const Reg& r, const Reg& b, uint64_t type) const
 	{
-		if ((type & T_ER_R) && r.isREG(32|64)) return;
-		if (((type & T_ER_X) && r.isXMM()) || ((type & T_ER_Y) && r.isYMM()) || ((type & T_ER_Z) && r.isZMM())) return;
-		XBYAK_THROW(ERR_ER_IS_INVALID)
+		if ((type & T_ER_R) && b.isREG(32|64)) return false;
+		if (((type & T_ER_X) && (r.isYMM() && b.isXMM())) || ((type & T_ER_Y) && b.isXMM()) || ((type & T_ER_Z) && b.isYMM())) return true;
+		if (((type & T_ER_X) && b.isXMM()) || ((type & T_ER_Y) && b.isYMM()) || ((type & T_ER_Z) && b.isZMM())) return false;
+		XBYAK_THROW_RET(ERR_SAE_IS_INVALID, false)
 	}
 	// (a, b, c) contains non zero two or three values then err
 	int verifyDuplicate(int a, int b, int c, int err)
@@ -1897,19 +1904,21 @@ private:
 
 		bool R = reg.isExtIdx();
 		bool X3 = (x && x->isExtIdx()) || (base.isSIMD() && base.isExtIdx2());
-		bool B4 = base.isREG() && base.isExtIdx2();
-		bool X4 = x && (x->isREG() && x->isExtIdx2());
+		uint8_t B4 = (base.isREG() && base.isExtIdx2()) ? 8 : 0;
+		uint8_t U = (x && (x->isREG() && x->isExtIdx2())) ? 0 : 4;
 		bool B = base.isExtIdx();
 		bool Rp = reg.isExtIdx2();
 		int LL;
 		int rounding = verifyDuplicate(reg.getRounding(), base.getRounding(), v ? v->getRounding() : 0, ERR_ROUNDING_IS_ALREADY_SET);
 		int disp8N = 1;
 		if (rounding) {
+			bool isUzero = false;
 			if (rounding == EvexModifierRounding::T_SAE) {
-				verifySAE(base, type); LL = 0;
+				isUzero = verifySAE(reg, base, type); LL = 0;
 			} else {
-				verifyER(base, type); LL = rounding - 1;
+				isUzero = verifyER(reg, base, type); LL = rounding - 1;
 			}
+			if (isUzero) U = 0; // avx10.2 Evex.U
 			b = true;
 		} else {
 			if (v) VL = (std::max)(VL, v->getBit());
@@ -1935,8 +1944,8 @@ private:
 		if (aaa == 0) aaa = verifyDuplicate(base.getOpmaskIdx(), reg.getOpmaskIdx(), (v ? v->getOpmaskIdx() : 0), ERR_OPMASK_IS_ALREADY_SET);
 		if (aaa == 0) z = 0; // clear T_z if mask is not set
 		db(0x62);
-		db((R ? 0 : 0x80) | (X3 ? 0 : 0x40) | (B ? 0 : 0x20) | (Rp ? 0 : 0x10) | (B4 ? 8 : 0) | mmm);
-		db((w == 1 ? 0x80 : 0) | ((vvvv & 15) << 3) | (X4 ? 0 : 4) | (pp & 3));
+		db((R ? 0 : 0x80) | (X3 ? 0 : 0x40) | (B ? 0 : 0x20) | (Rp ? 0 : 0x10) | B4 | mmm);
+		db((w == 1 ? 0x80 : 0) | ((vvvv & 15) << 3) | U | (pp & 3));
 		db((z ? 0x80 : 0) | ((LL & 3) << 5) | (b ? 0x10 : 0) | (V4 ? 0 : 8) | (aaa & 7));
 		db(code);
 		return disp8N;
@@ -2163,7 +2172,7 @@ private:
 			}
 		}
 	}
-	void opSSE(const Reg& r, const Operand& op, uint64_t type, int code, bool isValid(const Operand&, const Operand&), int imm8 = NONE)
+	void opSSE(const Reg& r, const Operand& op, uint64_t type, int code, bool isValid(const Operand&, const Operand&) = 0, int imm8 = NONE)
 	{
 		if (isValid && !isValid(r, op)) XBYAK_THROW(ERR_BAD_COMBINATION)
 		if (!isValidSSE(r) || !isValidSSE(op)) XBYAK_THROW(ERR_NOT_SUPPORTED)
@@ -2554,6 +2563,18 @@ private:
 		Operand::Kind kind = op.isBit(128) ? Operand::XMM : op.isBit(256) ? Operand::YMM : Operand::ZMM;
 		opVex(x.copyAndSetKind(kind), &xm0, op, type, code);
 	}
+	// (x, x, x/m), (x, y, y/m), (y, z, z/m)
+	void opCvt6(const Xmm& x1, const Xmm& x2, const Operand& op, uint64_t type, int code)
+	{
+		int b1 = x1.getBit();
+		int b2 = x2.getBit();
+		int b3 = op.getBit();
+		if ((b1 == 128 && (b2 == 128 || b2 == 256) && (b2 == b3 || op.isMEM())) || (b1 == 256 && b2 == 512 && (b3 == b2 || op.isMEM()))) {
+			opVex(x1, &x2, op, type, code);
+			return;
+		}
+		XBYAK_THROW(ERR_BAD_COMBINATION);
+	}
 	const Xmm& cvtIdx0(const Operand& x) const
 	{
 		return x.isZMM() ? zm0 : x.isYMM() ? ym0 : xm0;
@@ -2644,21 +2665,24 @@ private:
 		if (addr.getRegExp().getIndex().getKind() != kind) XBYAK_THROW(ERR_BAD_VSIB_ADDRESSING)
 		opVex(x, 0, addr, type, code);
 	}
-	void opEncoding(const Xmm& x1, const Xmm& x2, const Operand& op, uint64_t type, int code, PreferredEncoding encoding)
+	void opEncoding(const Xmm& x1, const Xmm& x2, const Operand& op, uint64_t type, int code, PreferredEncoding enc, int imm = NONE, uint64_t typeVex = 0, uint64_t typeEvex = 0, int sel = 0)
 	{
-		opAVX_X_X_XM(x1, x2, op, type | orEvexIf(encoding), code);
+		opAVX_X_X_XM(x1, x2, op, type | orEvexIf(enc, typeVex, typeEvex, sel), code, imm);
 	}
-	int orEvexIf(PreferredEncoding encoding) {
-		if (encoding == DefaultEncoding) {
-			encoding = defaultEncoding_;
+	PreferredEncoding getEncoding(PreferredEncoding enc, int sel) const
+	{
+		if (enc == DefaultEncoding) {
+			enc = defaultEncoding_[sel];
 		}
-		if (encoding == EvexEncoding) {
+		if ((sel == 0 && enc != VexEncoding && enc != EvexEncoding) || (sel == 1 && enc != PreAVX10v2Encoding && enc != AVX10v2Encoding)) XBYAK_THROW_RET(ERR_BAD_ENCODING_MODE, VexEncoding)
 #ifdef XBYAK_DISABLE_AVX512
-			XBYAK_THROW(ERR_EVEX_IS_INVALID)
+		if (enc == EvexEncoding || enc == AVX10v2Encoding) XBYAK_THROW(ERR_EVEX_IS_INVALID)
 #endif
-			return T_MUST_EVEX;
-		}
-		return 0;
+		return enc;
+	}
+	uint64_t orEvexIf(PreferredEncoding enc, uint64_t typeVex, uint64_t typeEvex, int sel) {
+		enc = getEncoding(enc, sel);
+		return ((sel == 0 && enc == VexEncoding) || (sel == 1 && enc != AVX10v2Encoding)) ? typeVex : (T_MUST_EVEX | typeEvex);
 	}
 	void opInOut(const Reg& a, const Reg& d, uint8_t code)
 	{
@@ -2770,6 +2794,31 @@ private:
 		}
 		opSSE(x, op, type1, code1, isXMM_XMMorMEM, imm);
 	}
+	// AVX10 zero-extending for vmovd, vmovw
+	void opAVX10ZeroExt(const Operand& op1, const Operand& op2, const uint64_t typeTbl[4], const int codeTbl[4], PreferredEncoding enc, int bit)
+	{
+		const Operand *p1 = &op1;
+		const Operand *p2 = &op2;
+		bool rev = false;
+		if (p1->isMEM()) {
+			std::swap(p1, p2);
+			rev = true;
+		}
+		if (p1->isMEM()) XBYAK_THROW(ERR_BAD_COMBINATION)
+		if (p1->isXMM()) {
+			std::swap(p1, p2);
+			rev = !rev;
+		}
+		enc = getEncoding(enc, 1);
+		int sel = -1;
+		if (p1->isXMM() || (p1->isMEM() && enc == AVX10v2Encoding)) {
+			sel = 2 + int(rev);
+		} else if (p1->isREG(bit) || p1->isMEM()) {
+			sel = int(rev);
+		}
+		if (sel == -1) XBYAK_THROW(ERR_BAD_COMBINATION)
+		opAVX_X_X_XM(*static_cast<const Xmm*>(p2), xm0, *p1, typeTbl[sel], codeTbl[sel]);
+	}
 public:
 	unsigned int getVersion() const { return VERSION; }
 	using CodeArray::db;
@@ -2828,7 +2877,7 @@ public:
 #endif
 private:
 	bool isDefaultJmpNEAR_;
-	PreferredEncoding defaultEncoding_;
+	PreferredEncoding defaultEncoding_[2]; // 0:vnni, 1:vmpsadbw
 public:
 	void L(const std::string& label) { labelMgr_.defineSlabel(label); }
 	void L(Label& label) { labelMgr_.defineClabel(label); }
@@ -2999,6 +3048,7 @@ public:
 			rex(*p2, *p1); db(0x90 | (p2->getIdx() & 7));
 			return;
 		}
+		if (p1->isREG() && p2->isREG()) std::swap(p1, p2); // adapt to NASM 2.16.03 behavior to pass tests
 		opRO(static_cast<const Reg&>(*p1), *p2, 0, 0x86 | (p1->isBit(8) ? 0 : 1), (p1->isREG() && (p1->getBit() == p2->getBit())));
 	}
 
@@ -3113,8 +3163,9 @@ public:
 		, es(Segment::es), cs(Segment::cs), ss(Segment::ss), ds(Segment::ds), fs(Segment::fs), gs(Segment::gs)
 #endif
 		, isDefaultJmpNEAR_(false)
-		, defaultEncoding_(EvexEncoding)
 	{
+		setDefaultEncoding();
+		setDefaultEncodingAVX10();
 		labelMgr_.set(this);
 	}
 	void reset()
@@ -3151,13 +3202,20 @@ public:
 	#undef jnl
 #endif
 
-	// set default encoding to select Vex or Evex
-	void setDefaultEncoding(PreferredEncoding encoding) { defaultEncoding_ = encoding; }
-
-	void sha1msg12(const Xmm& x, const Operand& op)
+	// set default encoding of VNNI
+	// EvexEncoding : AVX512_VNNI, VexEncoding : AVX-VNNI
+	void setDefaultEncoding(PreferredEncoding enc = EvexEncoding)
 	{
-		opROO(Reg(), op, x, T_MUST_EVEX, 0xD9);
+		if (enc != VexEncoding && enc != EvexEncoding) XBYAK_THROW(ERR_BAD_ENCODING_MODE)
+		defaultEncoding_[0] = enc;
 	}
+	// default : PreferredEncoding : AVX-VNNI-INT8/AVX512-FP16
+	void setDefaultEncodingAVX10(PreferredEncoding enc = PreAVX10v2Encoding)
+	{
+		if (enc != PreAVX10v2Encoding && enc != AVX10v2Encoding) XBYAK_THROW(ERR_BAD_ENCODING_MODE)
+		defaultEncoding_[1] = enc;
+	}
+
 	void bswap(const Reg32e& r)
 	{
 		int idx = r.getIdx();
@@ -3169,6 +3227,24 @@ public:
 			db(0x0F);
 		}
 		db(0xC8 + (idx & 7));
+	}
+	void vmovd(const Operand& op1, const Operand& op2, PreferredEncoding enc = DefaultEncoding)
+	{
+		const uint64_t typeTbl[] = {
+			T_EVEX|T_66|T_0F|T_W0|T_N4, T_EVEX|T_66|T_0F|T_W0|T_N4, // legacy, avx, avx512
+			T_MUST_EVEX|T_66|T_0F|T_EW0|T_N4, T_MUST_EVEX|T_F3|T_0F|T_EW0|T_N4, // avx10.2
+		};
+		const int codeTbl[] = { 0x7E, 0x6E, 0xD6, 0x7E };
+		opAVX10ZeroExt(op1, op2, typeTbl, codeTbl, enc, 32);
+	}
+	void vmovw(const Operand& op1, const Operand& op2, PreferredEncoding enc = DefaultEncoding)
+	{
+		const uint64_t typeTbl[] = {
+			T_MUST_EVEX|T_66|T_MAP5|T_N2, T_MUST_EVEX|T_66|T_MAP5|T_N2, // avx512-fp16
+			T_MUST_EVEX|T_F3|T_MAP5|T_EW0|T_N2, T_MUST_EVEX|T_F3|T_MAP5|T_EW0|T_N2, // avx10.2
+		};
+		const int codeTbl[] = { 0x7E, 0x6E, 0x7E, 0x6E };
+		opAVX10ZeroExt(op1, op2, typeTbl, codeTbl, enc, 16|32|64);
 	}
 	/*
 		use single byte nop if useMultiByteNop = false
