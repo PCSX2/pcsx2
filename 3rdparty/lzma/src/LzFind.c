@@ -1,5 +1,5 @@
 /* LzFind.c -- Match finder for LZ algorithms
-2023-03-14 : Igor Pavlov : Public domain */
+2024-03-01 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -108,9 +108,15 @@ static int LzInWindow_Create2(CMatchFinder *p, UInt32 blockSize, ISzAllocPtr all
   return (p->bufBase != NULL);
 }
 
-static const Byte *MatchFinder_GetPointerToCurrentPos(CMatchFinder *p) { return p->buffer; }
+static const Byte *MatchFinder_GetPointerToCurrentPos(void *p)
+{
+  return ((CMatchFinder *)p)->buffer;
+}
 
-static UInt32 MatchFinder_GetNumAvailableBytes(CMatchFinder *p) { return GET_AVAIL_BYTES(p); }
+static UInt32 MatchFinder_GetNumAvailableBytes(void *p)
+{
+  return GET_AVAIL_BYTES((CMatchFinder *)p);
+}
 
 
 Z7_NO_INLINE
@@ -571,8 +577,9 @@ void MatchFinder_Init_4(CMatchFinder *p)
 #define CYC_TO_POS_OFFSET 0
 // #define CYC_TO_POS_OFFSET 1 // for debug
 
-void MatchFinder_Init(CMatchFinder *p)
+void MatchFinder_Init(void *_p)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   MatchFinder_Init_HighHash(p);
   MatchFinder_Init_LowHash(p);
   MatchFinder_Init_4(p);
@@ -607,16 +614,16 @@ void MatchFinder_Init(CMatchFinder *p)
     #endif
   #endif
 
-// #elif defined(MY_CPU_ARM_OR_ARM64)
-#elif defined(MY_CPU_ARM64)
+#elif defined(MY_CPU_ARM64) \
+  /* || (defined(__ARM_ARCH) && (__ARM_ARCH >= 7)) */
 
-  #if defined(__clang__) && (__clang_major__ >= 8) \
-    || defined(__GNUC__) && (__GNUC__ >= 8)
+  #if  defined(Z7_CLANG_VERSION) && (Z7_CLANG_VERSION >= 30800) \
+    || defined(__GNUC__) && (__GNUC__ >= 6)
       #define USE_LZFIND_SATUR_SUB_128
     #ifdef MY_CPU_ARM64
       // #define LZFIND_ATTRIB_SSE41 __attribute__((__target__("")))
     #else
-      // #define LZFIND_ATTRIB_SSE41 __attribute__((__target__("fpu=crypto-neon-fp-armv8")))
+      #define LZFIND_ATTRIB_SSE41 __attribute__((__target__("fpu=neon")))
     #endif
 
   #elif defined(_MSC_VER)
@@ -625,7 +632,7 @@ void MatchFinder_Init(CMatchFinder *p)
     #endif
   #endif
 
-  #if defined(_MSC_VER) && !defined(__clang__) && defined(MY_CPU_ARM64)
+  #if defined(Z7_MSC_VER_ORIGINAL) && defined(MY_CPU_ARM64)
     #include <arm64_neon.h>
   #else
     #include <arm_neon.h>
@@ -1082,9 +1089,11 @@ static void SkipMatchesSpec(UInt32 lenLimit, UInt32 curMatch, UInt32 pos, const 
 
 
 #define MOVE_POS \
-  ++p->cyclicBufferPos; \
+  p->cyclicBufferPos++; \
   p->buffer++; \
-  { const UInt32 pos1 = p->pos + 1; p->pos = pos1; if (pos1 == p->posLimit) MatchFinder_CheckLimits(p); }
+  { const UInt32 pos1 = p->pos + 1; \
+    p->pos = pos1; \
+    if (pos1 == p->posLimit) MatchFinder_CheckLimits(p); }
 
 #define MOVE_POS_RET MOVE_POS return distances;
 
@@ -1103,20 +1112,26 @@ static void MatchFinder_MovePos(CMatchFinder *p)
 }
 
 #define GET_MATCHES_HEADER2(minLen, ret_op) \
-  unsigned lenLimit; UInt32 hv; const Byte *cur; UInt32 curMatch; \
-  lenLimit = (unsigned)p->lenLimit; { if (lenLimit < minLen) { MatchFinder_MovePos(p); ret_op; }} \
+  UInt32 hv; const Byte *cur; UInt32 curMatch; \
+  UInt32 lenLimit = p->lenLimit; \
+  if (lenLimit < minLen) { MatchFinder_MovePos(p);  ret_op; } \
   cur = p->buffer;
 
 #define GET_MATCHES_HEADER(minLen) GET_MATCHES_HEADER2(minLen, return distances)
-#define SKIP_HEADER(minLen)   do { GET_MATCHES_HEADER2(minLen, continue)
+#define SKIP_HEADER(minLen)  \
+  do { GET_MATCHES_HEADER2(minLen, continue)
 
-#define MF_PARAMS(p)  lenLimit, curMatch, p->pos, p->buffer, p->son, p->cyclicBufferPos, p->cyclicBufferSize, p->cutValue
+#define MF_PARAMS(p)  lenLimit, curMatch, p->pos, p->buffer, p->son, \
+    p->cyclicBufferPos, p->cyclicBufferSize, p->cutValue
 
-#define SKIP_FOOTER  SkipMatchesSpec(MF_PARAMS(p)); MOVE_POS } while (--num);
+#define SKIP_FOOTER  \
+    SkipMatchesSpec(MF_PARAMS(p)); \
+    MOVE_POS \
+  } while (--num);
 
 #define GET_MATCHES_FOOTER_BASE(_maxLen_, func) \
-  distances = func(MF_PARAMS(p), \
-  distances, (UInt32)_maxLen_); MOVE_POS_RET
+  distances = func(MF_PARAMS(p), distances, (UInt32)_maxLen_); \
+  MOVE_POS_RET
 
 #define GET_MATCHES_FOOTER_BT(_maxLen_) \
   GET_MATCHES_FOOTER_BASE(_maxLen_, GetMatchesSpec1)
@@ -1133,8 +1148,9 @@ static void MatchFinder_MovePos(CMatchFinder *p)
     for (; c != lim; c++) if (*(c + diff) != *c) break; \
     maxLen = (unsigned)(c - cur); }
 
-static UInt32* Bt2_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
+static UInt32* Bt2_MatchFinder_GetMatches(void *_p, UInt32 *distances)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   GET_MATCHES_HEADER(2)
   HASH2_CALC
   curMatch = p->hash[hv];
@@ -1158,8 +1174,9 @@ UInt32* Bt3Zip_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
     mmm = pos;
 
 
-static UInt32* Bt3_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
+static UInt32* Bt3_MatchFinder_GetMatches(void *_p, UInt32 *distances)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   UInt32 mmm;
   UInt32 h2, d2, pos;
   unsigned maxLen;
@@ -1199,8 +1216,9 @@ static UInt32* Bt3_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
 }
 
 
-static UInt32* Bt4_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
+static UInt32* Bt4_MatchFinder_GetMatches(void *_p, UInt32 *distances)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   UInt32 mmm;
   UInt32 h2, h3, d2, d3, pos;
   unsigned maxLen;
@@ -1267,10 +1285,12 @@ static UInt32* Bt4_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
 }
 
 
-static UInt32* Bt5_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
+static UInt32* Bt5_MatchFinder_GetMatches(void *_p, UInt32 *distances)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   UInt32 mmm;
-  UInt32 h2, h3, d2, d3, maxLen, pos;
+  UInt32 h2, h3, d2, d3, pos;
+  unsigned maxLen;
   UInt32 *hash;
   GET_MATCHES_HEADER(5)
 
@@ -1339,8 +1359,9 @@ static UInt32* Bt5_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
 }
 
 
-static UInt32* Hc4_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
+static UInt32* Hc4_MatchFinder_GetMatches(void *_p, UInt32 *distances)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   UInt32 mmm;
   UInt32 h2, h3, d2, d3, pos;
   unsigned maxLen;
@@ -1407,10 +1428,12 @@ static UInt32* Hc4_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
 }
 
 
-static UInt32 * Hc5_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
+static UInt32 * Hc5_MatchFinder_GetMatches(void *_p, UInt32 *distances)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   UInt32 mmm;
-  UInt32 h2, h3, d2, d3, maxLen, pos;
+  UInt32 h2, h3, d2, d3, pos;
+  unsigned maxLen;
   UInt32 *hash;
   GET_MATCHES_HEADER(5)
 
@@ -1466,7 +1489,7 @@ static UInt32 * Hc5_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
     if (*(cur - d2 + 3) != cur[3])
       break;
     UPDATE_maxLen
-    distances[-2] = maxLen;
+    distances[-2] = (UInt32)maxLen;
     if (maxLen == lenLimit)
     {
       p->son[p->cyclicBufferPos] = curMatch;
@@ -1489,8 +1512,9 @@ UInt32* Hc3Zip_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
 }
 
 
-static void Bt2_MatchFinder_Skip(CMatchFinder *p, UInt32 num)
+static void Bt2_MatchFinder_Skip(void *_p, UInt32 num)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   SKIP_HEADER(2)
   {
     HASH2_CALC
@@ -1511,8 +1535,9 @@ void Bt3Zip_MatchFinder_Skip(CMatchFinder *p, UInt32 num)
   SKIP_FOOTER
 }
 
-static void Bt3_MatchFinder_Skip(CMatchFinder *p, UInt32 num)
+static void Bt3_MatchFinder_Skip(void *_p, UInt32 num)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   SKIP_HEADER(3)
   {
     UInt32 h2;
@@ -1526,8 +1551,9 @@ static void Bt3_MatchFinder_Skip(CMatchFinder *p, UInt32 num)
   SKIP_FOOTER
 }
 
-static void Bt4_MatchFinder_Skip(CMatchFinder *p, UInt32 num)
+static void Bt4_MatchFinder_Skip(void *_p, UInt32 num)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   SKIP_HEADER(4)
   {
     UInt32 h2, h3;
@@ -1542,8 +1568,9 @@ static void Bt4_MatchFinder_Skip(CMatchFinder *p, UInt32 num)
   SKIP_FOOTER
 }
 
-static void Bt5_MatchFinder_Skip(CMatchFinder *p, UInt32 num)
+static void Bt5_MatchFinder_Skip(void *_p, UInt32 num)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   SKIP_HEADER(5)
   {
     UInt32 h2, h3;
@@ -1589,8 +1616,9 @@ static void Bt5_MatchFinder_Skip(CMatchFinder *p, UInt32 num)
     }} while(num); \
 
 
-static void Hc4_MatchFinder_Skip(CMatchFinder *p, UInt32 num)
+static void Hc4_MatchFinder_Skip(void *_p, UInt32 num)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   HC_SKIP_HEADER(4)
 
     UInt32 h2, h3;
@@ -1604,8 +1632,9 @@ static void Hc4_MatchFinder_Skip(CMatchFinder *p, UInt32 num)
 }
 
 
-static void Hc5_MatchFinder_Skip(CMatchFinder *p, UInt32 num)
+static void Hc5_MatchFinder_Skip(void *_p, UInt32 num)
 {
+  CMatchFinder *p = (CMatchFinder *)_p;
   HC_SKIP_HEADER(5)
   
     UInt32 h2, h3;
@@ -1634,41 +1663,41 @@ void Hc3Zip_MatchFinder_Skip(CMatchFinder *p, UInt32 num)
 
 void MatchFinder_CreateVTable(CMatchFinder *p, IMatchFinder2 *vTable)
 {
-  vTable->Init = (Mf_Init_Func)MatchFinder_Init;
-  vTable->GetNumAvailableBytes = (Mf_GetNumAvailableBytes_Func)MatchFinder_GetNumAvailableBytes;
-  vTable->GetPointerToCurrentPos = (Mf_GetPointerToCurrentPos_Func)MatchFinder_GetPointerToCurrentPos;
+  vTable->Init = MatchFinder_Init;
+  vTable->GetNumAvailableBytes = MatchFinder_GetNumAvailableBytes;
+  vTable->GetPointerToCurrentPos = MatchFinder_GetPointerToCurrentPos;
   if (!p->btMode)
   {
     if (p->numHashBytes <= 4)
     {
-      vTable->GetMatches = (Mf_GetMatches_Func)Hc4_MatchFinder_GetMatches;
-      vTable->Skip = (Mf_Skip_Func)Hc4_MatchFinder_Skip;
+      vTable->GetMatches = Hc4_MatchFinder_GetMatches;
+      vTable->Skip = Hc4_MatchFinder_Skip;
     }
     else
     {
-      vTable->GetMatches = (Mf_GetMatches_Func)Hc5_MatchFinder_GetMatches;
-      vTable->Skip = (Mf_Skip_Func)Hc5_MatchFinder_Skip;
+      vTable->GetMatches = Hc5_MatchFinder_GetMatches;
+      vTable->Skip = Hc5_MatchFinder_Skip;
     }
   }
   else if (p->numHashBytes == 2)
   {
-    vTable->GetMatches = (Mf_GetMatches_Func)Bt2_MatchFinder_GetMatches;
-    vTable->Skip = (Mf_Skip_Func)Bt2_MatchFinder_Skip;
+    vTable->GetMatches = Bt2_MatchFinder_GetMatches;
+    vTable->Skip = Bt2_MatchFinder_Skip;
   }
   else if (p->numHashBytes == 3)
   {
-    vTable->GetMatches = (Mf_GetMatches_Func)Bt3_MatchFinder_GetMatches;
-    vTable->Skip = (Mf_Skip_Func)Bt3_MatchFinder_Skip;
+    vTable->GetMatches = Bt3_MatchFinder_GetMatches;
+    vTable->Skip = Bt3_MatchFinder_Skip;
   }
   else if (p->numHashBytes == 4)
   {
-    vTable->GetMatches = (Mf_GetMatches_Func)Bt4_MatchFinder_GetMatches;
-    vTable->Skip = (Mf_Skip_Func)Bt4_MatchFinder_Skip;
+    vTable->GetMatches = Bt4_MatchFinder_GetMatches;
+    vTable->Skip = Bt4_MatchFinder_Skip;
   }
   else
   {
-    vTable->GetMatches = (Mf_GetMatches_Func)Bt5_MatchFinder_GetMatches;
-    vTable->Skip = (Mf_Skip_Func)Bt5_MatchFinder_Skip;
+    vTable->GetMatches = Bt5_MatchFinder_GetMatches;
+    vTable->Skip = Bt5_MatchFinder_Skip;
   }
 }
 

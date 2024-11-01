@@ -1,5 +1,5 @@
 /* XzIn.c - Xz input
-2023-04-02 : Igor Pavlov : Public domain */
+2023-09-07 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -27,7 +27,7 @@ SRes Xz_ReadHeader(CXzStreamFlags *p, ISeqInStreamPtr inStream)
 }
 
 #define READ_VARINT_AND_CHECK(buf, pos, size, res) \
-  { unsigned s = Xz_ReadVarInt(buf + pos, size - pos, res); \
+  { const unsigned s = Xz_ReadVarInt(buf + pos, size - pos, res); \
   if (s == 0) return SZ_ERROR_ARCHIVE; \
   pos += s; }
 
@@ -37,7 +37,7 @@ SRes XzBlock_ReadHeader(CXzBlock *p, ISeqInStreamPtr inStream, BoolInt *isIndex,
   unsigned headerSize;
   *headerSizeRes = 0;
   RINOK(SeqInStream_ReadByte(inStream, &header[0]))
-  headerSize = (unsigned)header[0];
+  headerSize = header[0];
   if (headerSize == 0)
   {
     *headerSizeRes = 1;
@@ -47,7 +47,7 @@ SRes XzBlock_ReadHeader(CXzBlock *p, ISeqInStreamPtr inStream, BoolInt *isIndex,
 
   *isIndex = False;
   headerSize = (headerSize << 2) + 4;
-  *headerSizeRes = headerSize;
+  *headerSizeRes = (UInt32)headerSize;
   {
     size_t processedSize = headerSize - 1;
     RINOK(SeqInStream_ReadMax(inStream, header + 1, &processedSize))
@@ -58,7 +58,7 @@ SRes XzBlock_ReadHeader(CXzBlock *p, ISeqInStreamPtr inStream, BoolInt *isIndex,
 }
 
 #define ADD_SIZE_CHECK(size, val) \
-  { UInt64 newSize = size + (val); if (newSize < size) return XZ_SIZE_OVERFLOW; size = newSize; }
+  { const UInt64 newSize = size + (val); if (newSize < size) return XZ_SIZE_OVERFLOW; size = newSize; }
 
 UInt64 Xz_GetUnpackSize(const CXzStream *p)
 {

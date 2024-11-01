@@ -1,5 +1,5 @@
 /* LzFind.h -- Match finder for LZ algorithms
-2023-03-04 : Igor Pavlov : Public domain */
+2024-01-22 : Igor Pavlov : Public domain */
 
 #ifndef ZIP7_INC_LZ_FIND_H
 #define ZIP7_INC_LZ_FIND_H
@@ -144,7 +144,8 @@ void MatchFinder_CreateVTable(CMatchFinder *p, IMatchFinder2 *vTable);
 void MatchFinder_Init_LowHash(CMatchFinder *p);
 void MatchFinder_Init_HighHash(CMatchFinder *p);
 void MatchFinder_Init_4(CMatchFinder *p);
-void MatchFinder_Init(CMatchFinder *p);
+// void MatchFinder_Init(CMatchFinder *p);
+void MatchFinder_Init(void *p);
 
 UInt32* Bt3Zip_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances);
 UInt32* Hc3Zip_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances);

@@ -1,5 +1,5 @@
 /* MtCoder.c -- Multi-thread Coder
-2023-04-13 : Igor Pavlov : Public domain */
+2023-09-07 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -430,7 +430,7 @@ SRes MtCoder_Code(CMtCoder *p)
   SRes res = SZ_OK;
 
   if (numThreads > MTCODER_THREADS_MAX)
-    numThreads = MTCODER_THREADS_MAX;
+      numThreads = MTCODER_THREADS_MAX;
   numBlocksMax = MTCODER_GET_NUM_BLOCKS_FROM_THREADS(numThreads);
   
   if (p->blockSize < ((UInt32)1 << 26)) numBlocksMax++;
@@ -438,7 +438,7 @@ SRes MtCoder_Code(CMtCoder *p)
   if (p->blockSize < ((UInt32)1 << 22)) numBlocksMax++;
 
   if (numBlocksMax > MTCODER_BLOCKS_MAX)
-    numBlocksMax = MTCODER_BLOCKS_MAX;
+      numBlocksMax = MTCODER_BLOCKS_MAX;
 
   if (p->blockSize != p->allocatedBufsSize)
   {
@@ -469,7 +469,7 @@ SRes MtCoder_Code(CMtCoder *p)
 
   {
     RINOK_THREAD(AutoResetEvent_OptCreate_And_Reset(&p->readEvent))
-    RINOK_THREAD(Semaphore_OptCreateInit(&p->blocksSemaphore, numBlocksMax, numBlocksMax))
+    RINOK_THREAD(Semaphore_OptCreateInit(&p->blocksSemaphore, (UInt32)numBlocksMax, (UInt32)numBlocksMax))
   }
 
   for (i = 0; i < MTCODER_BLOCKS_MAX - 1; i++)
