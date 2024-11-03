@@ -60,7 +60,7 @@ ssize_t CPUINFO_ABI cpuinfo_mock_read(int fd, void* buffer, size_t capacity);
 void CPUINFO_ABI cpuinfo_set_hwcap(uint32_t hwcap);
 #endif
 #if CPUINFO_ARCH_ARM
-void CPUINFO_ABI cpuinfo_set_hwcap2(uint32_t hwcap2);
+void CPUINFO_ABI cpuinfo_set_hwcap2(uint64_t hwcap2);
 #endif
 #endif
 

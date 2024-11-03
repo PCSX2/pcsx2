@@ -85,6 +85,7 @@ static enum cpuinfo_arm_chipset_vendor chipset_series_vendor[cpuinfo_arm_chipset
 	[cpuinfo_arm_chipset_series_telechips_tcc] = cpuinfo_arm_chipset_vendor_telechips,
 	[cpuinfo_arm_chipset_series_texas_instruments_omap] = cpuinfo_arm_chipset_vendor_texas_instruments,
 	[cpuinfo_arm_chipset_series_unisoc_t] = cpuinfo_arm_chipset_vendor_unisoc,
+	[cpuinfo_arm_chipset_series_unisoc_ums] = cpuinfo_arm_chipset_vendor_unisoc,
 	[cpuinfo_arm_chipset_series_wondermedia_wm] = cpuinfo_arm_chipset_vendor_wondermedia,
 };
 
@@ -954,6 +955,70 @@ static bool match_t(const char* start, const char* end, struct cpuinfo_arm_chips
 	*chipset = (struct cpuinfo_arm_chipset){
 		.vendor = cpuinfo_arm_chipset_vendor_unisoc,
 		.series = cpuinfo_arm_chipset_series_unisoc_t,
+		.model = model,
+	};
+	return true;
+}
+
+/**
+ * Tries to match, case-sentitively, /Unisoc UMS\d{3,4}/ signature for Unisoc UMS
+ * chipset. If match successful, extracts model information into \p chipset
+ * argument.
+ *
+ * @param start - start of the platform identifier (/proc/cpuinfo Hardware
+ * string, ro.product.board, ro.board.platform, or ro.chipname) to match.
+ * @param end - end of the platform identifier (/proc/cpuinfo Hardware string,
+ * ro.product.board, ro.board.platform, or ro.chipname) to match.
+ * @param[out] chipset - location where chipset information will be stored upon
+ * a successful match.
+ *
+ * @returns true if signature matched, false otherwise.
+ */
+static bool match_ums(const char* start, const char* end, struct cpuinfo_arm_chipset chipset[restrict static 1]) {
+	/* Expect 13-14 symbols: "Unisoc UMS" (10 symbols) + 3-4-digit model number
+	 */
+	const size_t length = end - start;
+	switch (length) {
+		case 13:
+		case 14:
+			break;
+		default:
+			return false;
+	}
+
+	/* Check that string starts with "Unisoc UMS". The first four characters
+	 * are loaded as 32-bit little endian word */
+	const uint32_t expected_unis = load_u32le(start);
+	if (expected_unis != UINT32_C(0x73696E55) /* "sinU" = reverse("Unis") */) {
+		return false;
+	}
+
+	/* The next four characters are loaded as 32-bit little endian word */
+	const uint32_t expected_oc_u = load_u32le(start + 4);
+	if (expected_oc_u != UINT32_C(0x5520636F) /* "U co" = reverse("oc U") */) {
+		return false;
+	}
+
+	/* The next four characters are loaded as 16-bit little endian word */
+	const uint16_t expected_ms = load_u16le(start + 8);
+	if (expected_ms != UINT16_C(0x534D) /* "SM" = reverse("MS") */) {
+		return false;
+	}
+
+	/* Validate and parse 3-4 digit model number */
+	uint32_t model = 0;
+	for (uint32_t i = 10; i < length; i++) {
+		const uint32_t digit = (uint32_t)(uint8_t)start[i] - '0';
+		if (digit >= 10) {
+			/* Not really a digit */
+			return false;
+		}
+		model = model * 10 + digit;
+	}
+
+	*chipset = (struct cpuinfo_arm_chipset){
+		.vendor = cpuinfo_arm_chipset_vendor_unisoc,
+		.series = cpuinfo_arm_chipset_series_unisoc_ums,
 		.model = model,
 	};
 	return true;
@@ -2508,6 +2573,16 @@ struct cpuinfo_arm_chipset cpuinfo_arm_linux_decode_chipset_from_proc_cpuinfo_ha
 			return chipset;
 		}
 
+		/* Check Unisoc UMS signature */
+		if (match_ums(hardware, hardware_end, &chipset)) {
+			cpuinfo_log_debug(
+				"matched Unisoc UMS signature in /proc/cpuinfo Hardware string \"%.*s\"",
+				(int)hardware_length,
+				hardware);
+
+			return chipset;
+		}
+
 #if CPUINFO_ARCH_ARM
 		/* Check Marvell PXA signature */
 		if (match_pxa(hardware, hardware_end, &chipset)) {
@@ -3726,6 +3801,7 @@ static const char* chipset_series_string[cpuinfo_arm_chipset_series_max] = {
 	[cpuinfo_arm_chipset_series_telechips_tcc] = "TCC",
 	[cpuinfo_arm_chipset_series_texas_instruments_omap] = "OMAP",
 	[cpuinfo_arm_chipset_series_unisoc_t] = "T",
+	[cpuinfo_arm_chipset_series_unisoc_ums] = "UMS",
 	[cpuinfo_arm_chipset_series_wondermedia_wm] = "WM",
 };
 

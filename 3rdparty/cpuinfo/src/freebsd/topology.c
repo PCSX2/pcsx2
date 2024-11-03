@@ -24,8 +24,10 @@ static char* sysctl_str(const char* name) {
 	size_t value_size = 0;
 	if (sysctlbyname(name, NULL, &value_size, NULL, 0) != 0) {
 		cpuinfo_log_error("sysctlbyname(\"%s\") failed: %s", name, strerror(errno));
+		return NULL;
 	} else if (value_size <= 0) {
 		cpuinfo_log_error("sysctlbyname(\"%s\") returned invalid value size %zu", name, value_size);
+		return NULL;
 	}
 	value_size += 1;
 	char* value = calloc(value_size, 1);
@@ -52,29 +54,22 @@ struct cpuinfo_freebsd_topology cpuinfo_freebsd_detect_topology(void) {
 	if (!topology_spec) {
 		return topology;
 	}
-	const char* group_tag = "<group level=\"1\" cache-level=\"0\">";
-	char* p = strstr(topology_spec, group_tag);
-	while (p) {
-		const char* cpu_tag = "cpu count=\"";
-		char* q = strstr(p, cpu_tag);
-		if (q) {
-			p = q + strlen(cpu_tag);
-			topology.packages += atoi(p);
-		} else {
-			break;
-		}
-	}
-	if (topology.packages == 0) {
-		const char* group_tag = "<group level=\"1\"";
+	const char* group_tags[] = {"<group level=\"2\" cache-level=\"0\">", "<group level=\"1\" "};
+	for (size_t i = 0; i < sizeof(group_tags) / sizeof(group_tags[0]); i++) {
+		const char* group_tag = group_tags[i];
 		char* p = strstr(topology_spec, group_tag);
 		while (p) {
 			topology.packages += 1;
 			p++;
 			p = strstr(p, group_tag);
 		}
+		if (topology.packages > 0) {
+			break;
+		}
 	}
+
 	if (topology.packages == 0) {
-		cpuinfo_log_error("failed to parse topology_spec:%s", topology_spec);
+		cpuinfo_log_error("failed to parse topology_spec: %s", topology_spec);
 		free(topology_spec);
 		goto fail;
 	}
@@ -84,6 +79,7 @@ struct cpuinfo_freebsd_topology cpuinfo_freebsd_detect_topology(void) {
 		goto fail;
 	}
 	if (topology.cores < topology.packages) {
+		cpuinfo_log_error("invalid numbers of package and core: %d %d", topology.packages, topology.cores);
 		goto fail;
 	}
 	topology.threads_per_core = sysctl_int("kern.smp.threads_per_core");
