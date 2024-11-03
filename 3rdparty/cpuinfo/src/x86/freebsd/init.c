@@ -135,6 +135,10 @@ void cpuinfo_x86_freebsd_init(void) {
 	if (x86_processor.cache.l1i.size != 0 || x86_processor.cache.l1d.size != 0) {
 		/* Assume that threads on the same core share L1 */
 		threads_per_l1 = freebsd_topology.threads / freebsd_topology.cores;
+		if (threads_per_l1 == 0) {
+			cpuinfo_log_error("failed to detect threads_per_l1");
+			goto cleanup;
+		}
 		cpuinfo_log_warning(
 			"freebsd kernel did not report number of "
 			"threads sharing L1 cache; assume %" PRIu32,
@@ -154,6 +158,10 @@ void cpuinfo_x86_freebsd_init(void) {
 			 * the same package share L2 */
 			threads_per_l2 = freebsd_topology.threads / freebsd_topology.packages;
 		}
+		if (threads_per_l2 == 0) {
+			cpuinfo_log_error("failed to detect threads_per_l1");
+			goto cleanup;
+		}
 		cpuinfo_log_warning(
 			"freebsd kernel did not report number of "
 			"threads sharing L2 cache; assume %" PRIu32,
@@ -170,6 +178,10 @@ void cpuinfo_x86_freebsd_init(void) {
 		 * may be L4 cache as well)
 		 */
 		threads_per_l3 = freebsd_topology.threads / freebsd_topology.packages;
+		if (threads_per_l3 == 0) {
+			cpuinfo_log_error("failed to detect threads_per_l3");
+			goto cleanup;
+		}
 		cpuinfo_log_warning(
 			"freebsd kernel did not report number of "
 			"threads sharing L3 cache; assume %" PRIu32,
@@ -187,6 +199,10 @@ void cpuinfo_x86_freebsd_init(void) {
 		 * shared L4 (like on IBM POWER8).
 		 */
 		threads_per_l4 = freebsd_topology.threads;
+		if (threads_per_l4 == 0) {
+			cpuinfo_log_error("failed to detect threads_per_l4");
+			goto cleanup;
+		}
 		cpuinfo_log_warning(
 			"freebsd kernel did not report number of "
 			"threads sharing L4 cache; assume %" PRIu32,
@@ -203,7 +219,7 @@ void cpuinfo_x86_freebsd_init(void) {
 				"%" PRIu32 " L1I caches",
 				l1_count * sizeof(struct cpuinfo_cache),
 				l1_count);
-			return;
+			goto cleanup;
 		}
 		for (uint32_t c = 0; c < l1_count; c++) {
 			l1i[c] = (struct cpuinfo_cache){
@@ -230,7 +246,7 @@ void cpuinfo_x86_freebsd_init(void) {
 				"%" PRIu32 " L1D caches",
 				l1_count * sizeof(struct cpuinfo_cache),
 				l1_count);
-			return;
+			goto cleanup;
 		}
 		for (uint32_t c = 0; c < l1_count; c++) {
 			l1d[c] = (struct cpuinfo_cache){
@@ -257,7 +273,7 @@ void cpuinfo_x86_freebsd_init(void) {
 				"%" PRIu32 " L2 caches",
 				l2_count * sizeof(struct cpuinfo_cache),
 				l2_count);
-			return;
+			goto cleanup;
 		}
 		for (uint32_t c = 0; c < l2_count; c++) {
 			l2[c] = (struct cpuinfo_cache){
@@ -284,7 +300,7 @@ void cpuinfo_x86_freebsd_init(void) {
 				"%" PRIu32 " L3 caches",
 				l3_count * sizeof(struct cpuinfo_cache),
 				l3_count);
-			return;
+			goto cleanup;
 		}
 		for (uint32_t c = 0; c < l3_count; c++) {
 			l3[c] = (struct cpuinfo_cache){
@@ -311,7 +327,7 @@ void cpuinfo_x86_freebsd_init(void) {
 				"%" PRIu32 " L4 caches",
 				l4_count * sizeof(struct cpuinfo_cache),
 				l4_count);
-			return;
+			goto cleanup;
 		}
 		for (uint32_t c = 0; c < l4_count; c++) {
 			l4[c] = (struct cpuinfo_cache){
