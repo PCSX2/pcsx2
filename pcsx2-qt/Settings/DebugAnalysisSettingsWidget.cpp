@@ -344,7 +344,7 @@ void DebugAnalysisSettingsWidget::setupSymbolFileList()
 
 void DebugAnalysisSettingsWidget::addSymbolFile()
 {
-	QString path = QFileDialog::getOpenFileName(this, tr("Add Symbol File"));
+	QString path = QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Add Symbol File")));
 	if (path.isEmpty())
 		return;
 
