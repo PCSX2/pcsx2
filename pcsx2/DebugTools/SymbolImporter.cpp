@@ -356,7 +356,7 @@ void SymbolImporter::ImportSymbols(
 			continue;
 		}
 
-		ccc::Result<std::vector<std::unique_ptr<ccc::SymbolTable>>> symbol_tables = elf.get_all_symbol_tables();
+		ccc::Result<std::vector<std::unique_ptr<ccc::SymbolTable>>> symbol_tables = (*symbol_file)->get_all_symbol_tables();
 		if (!symbol_tables.success())
 		{
 			ccc::report_error(symbol_tables.error());
