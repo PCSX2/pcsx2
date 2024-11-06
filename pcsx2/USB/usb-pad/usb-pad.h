@@ -289,6 +289,7 @@ namespace usb_pad
 		virtual void DisableForce(EffectID force) = 0;
 
 		bool use_ffb_dropout_workaround = false;
+		bool bypass_sdl_when_updating = false;
 	};
 
 	struct PadState

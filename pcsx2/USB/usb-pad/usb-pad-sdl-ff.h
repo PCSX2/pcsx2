@@ -5,6 +5,51 @@
 
 #include "USB/usb-pad/usb-pad.h"
 #include "Input/SDLInputSource.h"
+#ifdef __WIN32__
+#include <sdl_haptic.h>
+#include <dinput.h>
+#endif
+
+#ifdef __WIN32__
+// Copied some internal structure definitions from SDL's source
+// in order to scoop out their inner bits that are excluded from
+// public-facing headers.
+
+// It's ugly, but it works for the purposes of this hack/PoC
+
+struct haptic_hweffect
+{
+	DIEFFECT effect;
+	LPDIRECTINPUTEFFECT ref;
+};
+
+struct haptic_effect
+{
+	SDL_HapticEffect effect; // The current event
+	struct haptic_hweffect* hweffect; // The hardware behind the event
+};
+
+struct _SDL_Haptic
+{
+	Uint8 index; /* Stores index it is attached to */
+
+	struct haptic_effect* effects; /* Allocated effects */
+	int neffects; /* Maximum amount of effects */
+	int nplaying; /* Maximum amount of effects to play at the same time */
+	unsigned int supported; /* Supported effects */
+	int naxes; /* Number of axes on the device. */
+
+	struct haptic_hwdata* hwdata; /* Driver dependent */
+	int ref_count; /* Count for multiple opens */
+
+	int rumble_id; /* ID of rumble effect for simple rumble API. */
+	SDL_HapticEffect rumble_effect; /* Rumble effect. */
+	struct _SDL_Haptic* next; /* pointer to next haptic we have allocated */
+};
+
+#endif
+
+
 
 namespace usb_pad
 {

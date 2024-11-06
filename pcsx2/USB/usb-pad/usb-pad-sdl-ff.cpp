@@ -60,17 +60,17 @@ namespace usb_pad
 	void SDLFFDevice::CreateEffects(const std::string_view device)
 	{
 		// Most games appear to assume that requested forces will be applied indefinitely.
-		// Gran Turismo 4 uses a single indefinite spring(?) force to center the wheel in menus, 
-		// and both GT4 and the NFS games have been observed using only a single constant force 
+		// Gran Turismo 4 uses a single indefinite spring(?) force to center the wheel in menus,
+		// and both GT4 and the NFS games have been observed using only a single constant force
 		// command over long, consistent turns on smooth roads.
-		// 
+		//
 		// An infinite force is necessary as the normal mechanism for looping FFB effects,
 		// the iteration count, isn't implemented by a large number of new wheels. This deficiency
 		// exists at a firmware level and can only be dealt with by manually restarting forces.
-		// 
+		//
 		// Manually restarting forces causes problems on some wheels, however, so infinite forces
 		// are preferred for the vast majority of wheels which do correctly handle them.
-		// 
+		//
 		// Known "Problem" wheels which don't implement effect iterations
 		//   - Moza series: DOES implement infinite durations
 		//   - Accuforce v2: DOES implement infinite durations (deduced from anecdote, not confirmed manually)
@@ -195,18 +195,57 @@ namespace usb_pad
 		if (m_constant_effect_id < 0)
 			return;
 
-		const s16 new_level = static_cast<s16>(std::clamp(level, -32768, 32767));
+		s16 new_level = static_cast<s16>(std::clamp(level, -32768, 32767));
 		if (m_constant_effect.constant.level != new_level)
 		{
+#ifdef __WIN32__
+			if (bypass_sdl_when_updating)
+			{
+				new_level = new_level * 10000 / 32767;
+				// TODO: Other force types probably need the same type of attention, but constant forces are
+				// the most sensitive to this issue as they're generally going to be updated the most frequently.
+
+				// DANGER! Reading this code may give you radiation poisoning.
+				// It's ugly, but it works. Ideally SDL would be patched to make this unnecessary,
+				// but if patching SDL proves to be too unwieldy, a cleaned-up version of this
+				// might be appropriate.
+
+				// It's not easy to identify by hand if you're not highly experienced, so I'd recommend
+				// average joes use USBPcap via Wireshark in order to verify whether your approach works.
+				// Try this filter:
+				// usb.src=="host" && usb.data_len!=0 && usbhid.data
+
+				// Steal the raw DirectInput references from SDL and update them directly.
+				// Allows us to set our own flags for SetParameters. This is important because
+				// SDL sends unnecessary flags with its updates, which causes unnecessary HID reports,
+				// which may be causing a loss in detail due to wheels unnecessarily reinitializing 
+				// the force.
+
+				// Yeah there's raw C casts, I couldn't figure out how to appease the C++ compiler 
+				// when using stl casts before I had to stop working on this
+				_SDL_Haptic* real = (_SDL_Haptic*)(m_haptic);
+				auto ref = real->effects[m_constant_effect_id].hweffect->ref;
+				auto k = (DICONSTANTFORCE*)real->effects[m_constant_effect_id].hweffect->effect.lpvTypeSpecificParams;
+				k->lMagnitude = new_level;
+				ref->SetParameters(&real->effects[m_constant_effect_id].hweffect->effect, DIEP_TYPESPECIFICPARAMS);
+			}
+			else
+			{
+				m_constant_effect.constant.level = new_level;
+				if (SDL_HapticUpdateEffect(m_haptic, m_constant_effect_id, &m_constant_effect) != 0)
+					Console.Warning("SDL_HapticUpdateEffect() for constant failed: %s", SDL_GetError());
+			}
+#else
 			m_constant_effect.constant.level = new_level;
 			if (SDL_HapticUpdateEffect(m_haptic, m_constant_effect_id, &m_constant_effect) != 0)
 				Console.Warning("SDL_HapticUpdateEffect() for constant failed: %s", SDL_GetError());
+#endif
 		}
 
 		// Avoid re-running already-running effects by default. Re-running a running effect
 		// causes a variety of issues on different wheels, ranging from quality/detail loss,
 		// to abrupt judders of the wheel's FFB rapidly cutting out and back in.
-		// 
+		//
 		// Known problem wheels:
 		// Most common (Moza, Simagic, likely others): Loss of definition or quality
 		// Accuforce v2: Split-second FFB drop with each update
