@@ -54,6 +54,7 @@ endif(WIN32)
 # Main pcsx2 source
 set(pcsx2Sources
 	Achievements.cpp
+	BuildVersion.cpp
 	Cache.cpp
 	COP0.cpp
 	COP2.cpp
@@ -140,6 +141,7 @@ set(pcsx2Sources
 # Main pcsx2 header
 set(pcsx2Headers
 	Achievements.h
+	BuildVersion.h
 	Cache.h
 	Common.h
 	Config.h

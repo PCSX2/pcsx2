@@ -419,6 +419,7 @@
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="ps2\BiosTools.cpp" />
+    <ClCompile Include="BuildVersion.cpp" />
     <ClCompile Include="Counters.cpp" />
     <ClCompile Include="FiFo.cpp" />
     <ClCompile Include="Hw.cpp" />
@@ -865,6 +866,7 @@
     <ClInclude Include="Elfheader.h" />
     <ClInclude Include="CDVD\IsoFileFormats.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="BuildVersion.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="SaveState.h" />

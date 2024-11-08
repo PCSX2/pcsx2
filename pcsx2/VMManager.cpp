@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Achievements.h"
+#include "BuildVersion.h"
 #include "CDVD/CDVD.h"
 #include "CDVD/IsoReader.h"
 #include "Counters.h"
@@ -40,7 +41,6 @@
 #include "Vif_Dynarec.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
-#include "svnrev.h"
 
 #include "common/Console.h"
 #include "common/Error.h"
@@ -2490,7 +2490,7 @@ void LogGPUCapabilities()
 
 void VMManager::LogCPUCapabilities()
 {
-	Console.WriteLn(Color_StrongGreen, "PCSX2 " GIT_REV);
+	Console.WriteLn(Color_StrongGreen, "PCSX2 %s", BuildVersion::GitRev);
 	Console.WriteLnFmt("Savestate version: 0x{:x}\n", g_SaveVersion);
 	Console.WriteLn();
 

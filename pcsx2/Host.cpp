@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "BuildVersion.h"
 #include "GS.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "Host.h"
 #include "LayeredSettingsInterface.h"
 #include "VMManager.h"
-#include "svnrev.h"
 
 #include "common/Assertions.h"
 #include "common/CrashHandler.h"
@@ -159,7 +159,7 @@ bool Host::ConfirmFormattedMessage(const std::string_view title, const char* for
 
 std::string Host::GetHTTPUserAgent()
 {
-	return fmt::format("PCSX2 " GIT_REV " ({})", GetOSVersionString());
+	return fmt::format("PCSX2 {} ({})", BuildVersion::GitRev, GetOSVersionString());
 }
 
 std::unique_lock<std::mutex> Host::GetSettingsLock()
