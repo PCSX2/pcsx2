@@ -21,8 +21,6 @@
 #include "ryml_std.hpp"
 #include "ryml.hpp"
 
-#include "svnrev.h"
-
 #include <sstream>
 #include <mutex>
 #include <optional>

@@ -7,8 +7,8 @@
 #include "QtProgressCallback.h"
 #include "QtUtils.h"
 
+#include "pcsx2/BuildVersion.h"
 #include "pcsx2/Host.h"
-#include "svnrev.h"
 
 #include "updater/UpdaterExtractor.h"
 
@@ -47,12 +47,6 @@
 // Interval at which HTTP requests are polled.
 static constexpr u32 HTTP_POLL_INTERVAL = 10;
 
-// Logic to detect whether we can use the auto updater.
-// We use tagged commit, because this gets set on nightly builds.
-#if (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && GIT_TAGGED_COMMIT
-
-#define AUTO_UPDATER_SUPPORTED 1
-
 #if defined(_WIN32)
 #define UPDATE_PLATFORM_STR "Windows"
 #elif defined(__linux__)
@@ -69,10 +63,6 @@ static constexpr u32 HTTP_POLL_INTERVAL = 10;
 #define UPDATE_ADDITIONAL_TAGS "SSE4"
 #endif
 
-#endif
-
-#ifdef AUTO_UPDATER_SUPPORTED
-
 #define LATEST_RELEASE_URL "https://api.pcsx2.net/v1/%1Releases?pageSize=1"
 #define CHANGES_URL "https://api.github.com/repos/PCSX2/pcsx2/compare/%1...%2"
 
@@ -85,8 +75,6 @@ static const char* UPDATE_TAGS[] = {"stable", "nightly"};
 #endif
 #ifndef DEFAULT_UPDATER_CHANNEL
 #define DEFAULT_UPDATER_CHANNEL "nightly"
-#endif
-
 #endif
 
 AutoUpdaterDialog::AutoUpdaterDialog(QWidget* parent /* = nullptr */)
@@ -109,7 +97,11 @@ AutoUpdaterDialog::~AutoUpdaterDialog() = default;
 
 bool AutoUpdaterDialog::isSupported()
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+	// Logic to detect whether we can use the auto updater.
+	// We use tagged commit, because this gets set on nightly builds.
+	if (!BuildVersion::GitTaggedCommit)
+		return false;
+
 #ifdef __linux__
 	// For Linux, we need to check whether we're running from the appimage.
 	if (!std::getenv("APPIMAGE"))
@@ -119,10 +111,9 @@ bool AutoUpdaterDialog::isSupported()
 	}
 
 	return true;
-#else
+#elif defined(_WIN32) || defined(__APPLE__)
 	// Windows, MacOS - always supported.
 	return true;
-#endif
 #else
 	return false;
 #endif
@@ -130,39 +121,36 @@ bool AutoUpdaterDialog::isSupported()
 
 QStringList AutoUpdaterDialog::getTagList()
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+	if (!isSupported())
+		return QStringList();
+
 	return QStringList(std::begin(UPDATE_TAGS), std::end(UPDATE_TAGS));
-#else
-	return QStringList();
-#endif
 }
 
 std::string AutoUpdaterDialog::getDefaultTag()
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+	if (!isSupported())
+		return {};
+
 	return DEFAULT_UPDATER_CHANNEL;
-#else
-	return {};
-#endif
 }
 
 QString AutoUpdaterDialog::getCurrentVersion()
 {
-	return QStringLiteral(GIT_TAG);
+	return QString(BuildVersion::GitTag);
 }
 
 QString AutoUpdaterDialog::getCurrentVersionDate()
 {
-	return QStringLiteral(GIT_DATE);
+	return QString(BuildVersion::GitDate);
 }
 
 QString AutoUpdaterDialog::getCurrentUpdateTag() const
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+	if (!isSupported())
+		return QString();
+
 	return QString::fromStdString(Host::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", DEFAULT_UPDATER_CHANNEL));
-#else
-	return QString();
-#endif
 }
 
 void AutoUpdaterDialog::reportError(const char* msg, ...)
@@ -215,18 +203,21 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
 {
 	m_display_messages = display_message;
 
-#ifdef AUTO_UPDATER_SUPPORTED
-	if (!ensureHttpReady())
+	if (isSupported())
+	{
+		if (!ensureHttpReady())
+		{
+			emit updateCheckCompleted();
+			return;
+		}
+
+		m_http->CreateRequest(QStringLiteral(LATEST_RELEASE_URL).arg(getCurrentUpdateTag()).toStdString(),
+			std::bind(&AutoUpdaterDialog::getLatestReleaseComplete, this, std::placeholders::_1, std::placeholders::_3));
+	}
+	else
 	{
 		emit updateCheckCompleted();
-		return;
 	}
-
-	m_http->CreateRequest(QStringLiteral(LATEST_RELEASE_URL).arg(getCurrentUpdateTag()).toStdString(),
-		std::bind(&AutoUpdaterDialog::getLatestReleaseComplete, this, std::placeholders::_1, std::placeholders::_3));
-#else
-	emit updateCheckCompleted();
-#endif
 }
 
 void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8> data)
@@ -236,7 +227,9 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
 	cpuinfo_initialize();
 #endif
 
-#ifdef AUTO_UPDATER_SUPPORTED
+	if (!isSupported())
+		return;
+
 	bool found_update_info = false;
 
 	if (status_code == HTTPDownloader::HTTP_STATUS_OK)
@@ -373,23 +366,25 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
 		checkIfUpdateNeeded();
 
 	emit updateCheckCompleted();
-#endif
 }
 
 void AutoUpdaterDialog::queueGetChanges()
 {
-#ifdef AUTO_UPDATER_SUPPORTED
-	if (!ensureHttpReady())
+	if (!isSupported() || !ensureHttpReady())
 		return;
 
-	m_http->CreateRequest(QStringLiteral(CHANGES_URL).arg(GIT_HASH).arg(m_latest_version).toStdString(),
+	m_http->CreateRequest(QStringLiteral(CHANGES_URL).arg(BuildVersion::GitHash).arg(m_latest_version).toStdString(),
 		std::bind(&AutoUpdaterDialog::getChangesComplete, this, std::placeholders::_1, std::placeholders::_3));
-#endif
 }
 
 void AutoUpdaterDialog::getChangesComplete(s32 status_code, std::vector<u8> data)
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+	if (!isSupported())
+	{
+		m_ui.downloadAndInstall->setEnabled(true);
+		return;
+	}
+
 	if (status_code == HTTPDownloader::HTTP_STATUS_OK)
 	{
 		QJsonParseError parse_error;
@@ -456,7 +451,6 @@ void AutoUpdaterDialog::getChangesComplete(s32 status_code, std::vector<u8> data
 	{
 		reportError("Failed to download change list: %d", status_code);
 	}
-#endif
 
 	m_ui.downloadAndInstall->setEnabled(true);
 }
@@ -542,10 +536,10 @@ void AutoUpdaterDialog::checkIfUpdateNeeded()
 	const QString last_checked_version(
 		QString::fromStdString(Host::GetBaseStringSettingValue("AutoUpdater", "LastVersion")));
 
-	Console.WriteLn(Color_StrongGreen, "Current version: %s", GIT_TAG);
+	Console.WriteLn(Color_StrongGreen, "Current version: %s", BuildVersion::GitTag);
 	Console.WriteLn(Color_StrongYellow, "Latest version: %s", m_latest_version.toUtf8().constData());
 	Console.WriteLn(Color_StrongOrange, "Last checked version: %s", last_checked_version.toUtf8().constData());
-	if (m_latest_version == GIT_TAG || m_latest_version == last_checked_version)
+	if (m_latest_version == BuildVersion::GitTag || m_latest_version == last_checked_version)
 	{
 		Console.WriteLn(Color_StrongGreen, "No update needed.");
 
@@ -787,7 +781,7 @@ void AutoUpdaterDialog::cleanupAfterUpdate()
 
 static QString UpdateVersionNumberInName(QString name, QStringView new_version)
 {
-	QString current_version_string = QStringLiteral(GIT_TAG);
+	QString current_version_string(BuildVersion::GitTag);
 	QStringView current_version = current_version_string;
 	if (!current_version.empty() && !new_version.empty() && current_version[0] == 'v' && new_version[0] == 'v')
 	{

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Achievements.h"
+#include "BuildVersion.h"
 #include "CDVD/CDVD.h"
 #include "COP0.h"
 #include "Cache.h"
@@ -27,7 +28,6 @@
 #include "VMManager.h"
 #include "VUmicro.h"
 #include "ps2/BiosTools.h"
-#include "svnrev.h"
 
 #include "common/Error.h"
 #include "common/FileSystem.h"
@@ -972,11 +972,14 @@ static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateSc
 
 		VersionIndicator* vi = static_cast<VersionIndicator*>(std::malloc(sizeof(VersionIndicator)));
 		vi->save_version = g_SaveVersion;
-#if GIT_TAGGED_COMMIT
-		StringUtil::Strlcpy(vi->version, GIT_TAG, std::size(vi->version));
-#else
-		StringUtil::Strlcpy(vi->version, "Unknown", std::size(vi->version));
-#endif
+		if (BuildVersion::GitTaggedCommit)
+		{
+			StringUtil::Strlcpy(vi->version, BuildVersion::GitTag, std::size(vi->version));
+		}
+		else
+		{
+			StringUtil::Strlcpy(vi->version, "Unknown", std::size(vi->version));
+		}
 
 		zip_source_t* const zs = zip_source_buffer(zf, vi, sizeof(*vi), 1);
 		if (!zs)

@@ -4,6 +4,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 #include "Achievements.h"
+#include "BuildVersion.h"
 #include "CDVD/CDVD.h"
 #include "Elfheader.h"
 #include "Host.h"
@@ -16,7 +17,6 @@
 #include "Memory.h"
 #include "SaveState.h"
 #include "VMManager.h"
-#include "svnrev.h"
 #include "vtlb.h"
 
 #include "common/Assertions.h"
@@ -3039,7 +3039,7 @@ void Achievements::SwitchToRAIntegration()
 
 void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_handle)
 {
-	RA_InitClient((HWND)main_window_handle, "PCSX2", GIT_TAG);
+	RA_InitClient((HWND)main_window_handle, "PCSX2", BuildVersion::GitTag);
 	RA_SetUserAgentDetail(Host::GetHTTPUserAgent().c_str());
 
 	RA_InstallSharedFunctions(RACallbackIsActive, RACallbackCauseUnpause, RACallbackCausePause, RACallbackRebuildMenu,

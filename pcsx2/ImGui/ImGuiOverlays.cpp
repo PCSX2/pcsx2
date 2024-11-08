@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "BuildVersion.h"
 #include "Config.h"
 #include "Counters.h"
 #include "GS.h"
@@ -24,7 +25,6 @@
 #include "SIO/Pad/PadBase.h"
 #include "USB/USB.h"
 #include "VMManager.h"
-#include "svnrev.h"
 #include "cpuinfo.h"
 
 #include "common/BitUtils.h"
@@ -170,7 +170,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 
 		if (GSConfig.OsdShowVersion)
 		{
-			text.append_format("{}PCSX2 {}", first ? "" : " | ", GIT_REV);
+			text.append_format("{}PCSX2 {}", first ? "" : " | ", BuildVersion::GitRev);
 		}
 
 		if (!text.empty())

@@ -20,8 +20,6 @@
 #include "Host.h"
 #include "IconsPromptFont.h"
 
-#include "svnrev.h"
-
 #include "fmt/core.h"
 
 #include <map>
