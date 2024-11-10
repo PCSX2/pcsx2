@@ -22781,11 +22781,27 @@ SLES-53687:
   name: "NBA 2K6"
   region: "PAL-M5"
   patches:
-    04808D11:
+    4047DB34: # English
       content: |-
         author=Prafull
         comment=fixes hang at start
         patch=1,EE,00441ff8,word,00000000
+    B91D81A3: # French
+      content: |-
+        comment=fixes hang at start
+        patch=1,EE,00441fa0,word,00000000
+    C96E2007: # German
+      content: |-
+        comment=fixes hang at start
+        patch=1,EE,00441e48,word,00000000
+    79A6C879: # Italian
+      content: |-
+        comment=fixes hang at start
+        patch=1,EE,00441de8,word,00000000
+    08349AAF: # Spanish
+      content: |-
+        comment=fixes hang at start
+        patch=1,EE,00441ec8,word,00000000
 SLES-53689:
   name: "World Poker Tour 2K6"
   region: "PAL-M3"
