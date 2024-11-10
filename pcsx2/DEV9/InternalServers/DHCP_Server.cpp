@@ -137,6 +137,18 @@ namespace InternalServers
 
 		if (gateways.size() > 0)
 			gateway = gateways[0];
+		/*
+		 * Some VPN adapters will present a subnet mask of 255.255.255.255 and omit setting a gateway.
+		 * This is used for point-point links where the destination device handles routing out of the network.
+		 * PS2 software, howver, expects a valid gateway for packets leaving the network.
+		 * As a hackfix, we set the gateway to the PS2 IP, which is enough to allow such software to pregress.
+		 * A side effect of this is that outbound packets will have the src and dst mac be identical.
+		 * This is a mostly PCAP exclusive issue, I've only seen such networks with VPN devices,
+		 * which don't like being bridged, preventing TAP from being used with them.
+		 * Sockets (currently) uses its own internal network, and thus would be unaffected.
+		 */
+		else if (netmask == IP_Address{{{255, 255, 255, 255}}})
+			gateway = ps2IP;
 	}
 
 #ifdef _WIN32
@@ -180,7 +192,7 @@ namespace InternalServers
 
 	void DHCP_Server::AutoBroadcast(IP_Address parPS2IP, IP_Address parNetmask)
 	{
-		if (parNetmask.integer != 0)
+		if (parNetmask.integer != 0 && parNetmask != IP_Address{{{255, 255, 255, 255}}})
 		{
 			for (int i = 0; i < 4; i++)
 				broadcastIP.bytes[i] = ((parPS2IP.bytes[i]) | (~parNetmask.bytes[i]));
@@ -325,7 +337,10 @@ namespace InternalServers
 						retPay->options.push_back(new DHCPopDnsName("PCSX2"));
 						break;
 					case 28:
-						retPay->options.push_back(new DHCPopBCIP(broadcastIP));
+						if (broadcastIP.integer != 0)
+						{
+							retPay->options.push_back(new DHCPopBCIP(broadcastIP));
+						}
 						break;
 					case 50:
 						retPay->options.push_back(new DHCPopREQIP(ps2IP));
