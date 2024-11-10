@@ -5,6 +5,7 @@
 #include "pcap.h"
 #include "net.h"
 #include "PacketReader/MAC_Address.h"
+#include "PacketReader/EthernetFrame.h"
 
 #ifdef _WIN32
 bool load_pcap();
@@ -18,6 +19,9 @@ private:
 
 	bool switched;
 	bool blocking;
+	bool ipOnly;
+
+	SimpleQueue<PacketReader::EthernetFrame*> vRecBuffer;
 
 	PacketReader::IP::IP_Address ps2IP{};
 	PacketReader::MAC_Address hostMAC;

@@ -17,8 +17,8 @@
 #include "DEV9.h"
 #include "AdapterUtils.h"
 #include "net.h"
-#include "PacketReader/EthernetFrame.h"
 #include "PacketReader/EthernetFrameEditor.h"
+#include "PacketReader/ARP/ARP_Packet.h"
 #include "PacketReader/ARP/ARP_PacketEditor.h"
 #ifndef PCAP_NETMASK_UNKNOWN
 #define PCAP_NETMASK_UNKNOWN 0xffffffff
@@ -65,31 +65,37 @@ PCAPAdapter::PCAPAdapter()
 	else
 		Console.Error("DEV9: PCAP: Failed to get adapter information");
 
-	if (adMAC.has_value())
+	// DLT_RAW adapters may not have a MAC address
+	// Just use the default MAC in such case
+	// SetMACSwitchedFilter will also fail on such adapters
+	if (!ipOnly)
 	{
-		hostMAC = adMAC.value();
-		MAC_Address newMAC = ps2MAC;
+		if (adMAC.has_value())
+		{
+			hostMAC = adMAC.value();
+			MAC_Address newMAC = ps2MAC;
 
-		//Lets take the hosts last 2 bytes to make it unique on Xlink
-		newMAC.bytes[5] = hostMAC.bytes[4];
-		newMAC.bytes[4] = hostMAC.bytes[5];
+			//Lets take the hosts last 2 bytes to make it unique on Xlink
+			newMAC.bytes[5] = hostMAC.bytes[4];
+			newMAC.bytes[4] = hostMAC.bytes[5];
 
-		SetMACAddress(&newMAC);
-	}
-	else
-	{
-		Console.Error("DEV9: PCAP: Failed to get MAC address for adapter");
-		pcap_close(hpcap);
-		hpcap = nullptr;
-		return;
-	}
+			SetMACAddress(&newMAC);
+		}
+		else
+		{
+			Console.Error("DEV9: PCAP: Failed to get MAC address for adapter");
+			pcap_close(hpcap);
+			hpcap = nullptr;
+			return;
+		}
 
-	if (switched && !SetMACSwitchedFilter(ps2MAC))
-	{
-		pcap_close(hpcap);
-		hpcap = nullptr;
-		Console.Error("DEV9: PCAP: Can't open Device '%s'", EmuConfig.DEV9.EthDevice.c_str());
-		return;
+		if (switched && !SetMACSwitchedFilter(ps2MAC))
+		{
+			pcap_close(hpcap);
+			hpcap = nullptr;
+			Console.Error("DEV9: PCAP: Can't open Device '%s'", EmuConfig.DEV9.EthDevice.c_str());
+			return;
+		}
 	}
 
 	if (foundAdapter)
@@ -118,6 +124,16 @@ bool PCAPAdapter::recv(NetPacket* pkt)
 	if (!blocking && NetAdapter::recv(pkt))
 		return true;
 
+	EthernetFrame* bFrame;
+	if (vRecBuffer.Dequeue(&bFrame))
+	{
+		bFrame->WritePacket(pkt);
+		InspectRecv(pkt);
+
+		delete bFrame;
+		return true;
+	}
+
 	pcap_pkthdr* header;
 	const u_char* pkt_data;
 
@@ -125,32 +141,72 @@ bool PCAPAdapter::recv(NetPacket* pkt)
 	// This delays getting packets we need, so instead loop untill a valid packet, or no packet, is returned from pcap_next_ex.
 	while (pcap_next_ex(hpcap, &header, &pkt_data) > 0)
 	{
-		// 1518 is the largest Ethernet frame we can get using an MTU of 1500 (assuming no VLAN tagging).
-		// This includes the FCS, which should be trimmed (PS2 SDK dosn't allow extra space for this).
-		if (header->len > 1518)
+		if (!ipOnly)
 		{
-			Console.Error("DEV9: PCAP: Dropped jumbo frame of size: %u", header->len);
-			continue;
-		}
-
-		pxAssert(header->len == header->caplen);
-
-		memcpy(pkt->buffer, pkt_data, header->len);
-		pkt->size = static_cast<int>(header->len);
-
-		if (!switched)
-			SetMACBridgedRecv(pkt);
-
-		if (VerifyPkt(pkt, header->len))
-		{
-			HandleFrameCheckSequence(pkt);
-
-			// FCS (if present) has been removed, apply correct limit
-			if (pkt->size > 1514)
+			// 1518 is the largest Ethernet frame we can get using an MTU of 1500 (assuming no VLAN tagging).
+			// This includes the FCS, which should be trimmed (PS2 SDK dosn't allow extra space for this).
+			if (header->len > 1518)
 			{
-				Console.Error("DEV9: PCAP: Dropped jumbo frame of size: %u", pkt->size);
+				Console.Error("DEV9: PCAP: Dropped jumbo frame of size: %u", header->len);
 				continue;
 			}
+
+			pxAssert(header->len == header->caplen);
+
+			memcpy(pkt->buffer, pkt_data, header->len);
+			pkt->size = static_cast<int>(header->len);
+
+			if (!switched)
+				SetMACBridgedRecv(pkt);
+
+			if (VerifyPkt(pkt, header->len))
+			{
+				HandleFrameCheckSequence(pkt);
+
+				// FCS (if present) has been removed, apply correct limit
+				if (pkt->size > 1514)
+				{
+					Console.Error("DEV9: PCAP: Dropped jumbo frame of size: %u", pkt->size);
+					continue;
+				}
+
+				InspectRecv(pkt);
+				return true;
+			}
+		}
+		else
+		{
+			// MTU of 1500
+			if (header->len > 1500)
+			{
+				Console.Error("DEV9: PCAP: Dropped jumbo IP packet of size: %u", header->len);
+				continue;
+			}
+
+			// Ensure IPv4
+			u8 ver = (pkt_data[0] & 0xF0) >> 4;
+			if (ver != 4)
+			{
+				Console.Error("DEV9: PCAP: Dropped non IPv4 packet");
+				continue;
+			}
+
+			// Avoid pcap looping packets by checking IP
+			IP_Packet ipPkt(const_cast<u_char*>(pkt_data), header->len);
+			if (ipPkt.sourceIP == ps2IP)
+			{
+				continue;
+			}
+
+			pxAssert(header->len == header->caplen);
+
+			// Build EtherFrame using captured packet
+			PayloadPtr* pl = new PayloadPtr(const_cast<u_char*>(pkt_data), header->len);
+			EthernetFrame frame(pl);
+			frame.sourceMAC = internalMAC;
+			frame.destinationMAC = ps2MAC;
+			frame.protocol = static_cast<u16>(EtherType::IPv4);
+			frame.WritePacket(pkt);
 
 			InspectRecv(pkt);
 			return true;
@@ -170,13 +226,71 @@ bool PCAPAdapter::send(NetPacket* pkt)
 		return true;
 
 	// TODO: loopback broadcast packets to host pc in switched mode.
-	if (!switched)
-		SetMACBridgedSend(pkt);
+	if (!ipOnly)
+	{
+		if (!switched)
+			SetMACBridgedSend(pkt);
 
-	if (pcap_sendpacket(hpcap, (u_char*)pkt->buffer, pkt->size))
-		return false;
+		if (pcap_sendpacket(hpcap, (u_char*)pkt->buffer, pkt->size))
+			return false;
+		else
+			return true;
+	}
 	else
-		return true;
+	{
+		EthernetFrameEditor frame(pkt);
+		if (frame.GetProtocol() == static_cast<u16>(EtherType::IPv4))
+		{
+			PayloadPtr* payload = frame.GetPayload();
+			IP_Packet pkt(payload->data, payload->GetLength());
+
+			if (pkt.sourceIP != IP_Address{{{0, 0, 0, 0}}})
+			{
+				ps2IP = pkt.sourceIP;
+			}
+
+			if (pcap_sendpacket(hpcap, payload->data, pkt.GetLength()))
+				return false;
+			else
+				return true;
+		}
+		if (frame.GetProtocol() == static_cast<u16>(EtherType::ARP))
+		{
+			// We will need to respond to ARP requests for all except the PS2 ip
+			// However, we won't know the PS2 ip yet unless our dhcpServer is used
+			PayloadPtr* payload = frame.GetPayload();
+			ARP_Packet arpPkt(payload->data, payload->GetLength());
+			if (arpPkt.protocol == static_cast<u16>(EtherType::IPv4))
+			{
+				/* This is untested */
+				if (arpPkt.op == 1) //ARP request
+				{
+					if (*(IP_Address*)arpPkt.targetProtocolAddress.get() != dhcpServer.ps2IP)
+					// it's trying to resolve the gateway's mac addr
+					{
+						Console.Error("DEV9: PCAP: ARP Request on DLT_RAW adapter, providing assumed response");
+						ARP_Packet* arpRet = new ARP_Packet(6, 4);
+						std::memcpy(arpRet->targetHardwareAddress.get(), arpPkt.senderHardwareAddress.get(), sizeof(MAC_Address));
+						std::memcpy(arpRet->senderHardwareAddress.get(), &internalMAC, sizeof(MAC_Address));
+						std::memcpy(arpRet->targetProtocolAddress.get(), arpPkt.senderProtocolAddress.get(), sizeof(IP_Address));
+						std::memcpy(arpRet->senderProtocolAddress.get(), arpPkt.targetProtocolAddress.get(), sizeof(IP_Address));
+						arpRet->op = 2,
+						arpRet->protocol = arpPkt.protocol;
+						arpRet->hardwareType = arpPkt.hardwareType;
+
+						EthernetFrame* retARP = new EthernetFrame(arpRet);
+						retARP->destinationMAC = ps2MAC;
+						retARP->sourceMAC = internalMAC;
+						retARP->protocol = static_cast<u16>(EtherType::ARP);
+
+						vRecBuffer.Enqueue(retARP);
+					}
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 }
 
 void PCAPAdapter::reloadSettings()
@@ -195,6 +309,20 @@ PCAPAdapter::~PCAPAdapter()
 	{
 		pcap_close(hpcap);
 		hpcap = nullptr;
+	}
+
+	//Clear out vRecBuffer
+	while (!vRecBuffer.IsQueueEmpty())
+	{
+		EthernetFrame* retPay;
+		if (!vRecBuffer.Dequeue(&retPay))
+		{
+			using namespace std::chrono_literals;
+			std::this_thread::sleep_for(1ms);
+			continue;
+		}
+
+		delete retPay;
 	}
 }
 
@@ -302,6 +430,10 @@ bool PCAPAdapter::InitPCAP(const std::string& adapter, bool promiscuous)
 	{
 		case DLT_EN10MB:
 			//case DLT_IEEE802_11:
+			ipOnly = false;
+			break;
+		case DLT_RAW:
+			ipOnly = true;
 			break;
 		default:
 			Console.Error("DEV9: PCAP: Error, unsupported data link type (%d): %s", dlt, dlt_name);
