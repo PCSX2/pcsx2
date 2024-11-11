@@ -1588,6 +1588,14 @@ SCAJ-20105:
     recommendedBlendingLevel: 3 # Fixes level brightness.
     cpuSpriteRenderBW: 2 # Fixes broken water on "Upper Sea" level.
     cpuSpriteRenderLevel: 2 # Needed for above.
+  dynaPatches:
+    - pattern:
+        - { offset: 0x0, value: 0x3C023E4C }
+        - { offset: 0x4, value: 0x3442CCCD }
+        - { offset: 0x8, value: 0xE7A300D0 }
+        - { offset: 0xC, value: 0xE7A200D4 }
+      replacement:
+        - { offset: 0x4, value: 0x3442CCE0 }
 SCAJ-20107:
   name: "Bakufuu Slash! Kizna Arashi"
   region: "NTSC-Unk"
@@ -6914,6 +6922,14 @@ SCKA-20047:
     - "SCKA-20047"
     - "SLKA-25201"
     - "SLKA-25202"
+  dynaPatches:
+    - pattern:
+        - { offset: 0x0, value: 0x3C023E4C }
+        - { offset: 0x4, value: 0x3442CCCD }
+        - { offset: 0x8, value: 0xE7A300D0 }
+        - { offset: 0xC, value: 0xE7A200D4 }
+      replacement:
+        - { offset: 0x4, value: 0x3442CCE0 }
 SCKA-20048:
   name: "Killzone"
   region: "NTSC-K"
@@ -23245,6 +23261,14 @@ SLES-53819:
     - "SLES-53819"
     - "SLES-82036"
     - "SLES-82037"
+  dynaPatches:
+    - pattern:
+        - { offset: 0x0, value: 0x3C023E4C }
+        - { offset: 0x4, value: 0x3442CCCD }
+        - { offset: 0x8, value: 0xE7A300D0 }
+        - { offset: 0xC, value: 0xE7A200D4 }
+      replacement:
+        - { offset: 0x4, value: 0x3442CCE0 }
 SLES-53820:
   name: "Armored Core - Last Raven"
   region: "PAL-E"
@@ -54273,6 +54297,14 @@ SLPS-25408:
     - "SLPS-25339"
     - "SLPS-73202"
     - "SLPS-73203"
+  dynaPatches:
+    - pattern:
+        - { offset: 0x0, value: 0x3C023E4C }
+        - { offset: 0x4, value: 0x3442CCCD }
+        - { offset: 0x8, value: 0xE7A300D0 }
+        - { offset: 0xC, value: 0xE7A200D4 }
+      replacement:
+        - { offset: 0x4, value: 0x3442CCE0 }
 SLPS-25409:
   name: "双恋—フタコイ— 初回限定版"
   name-sort: "ふたこい しょかいげんていばん"
@@ -64590,6 +64622,14 @@ SLUS-21200:
     - "SLUS-21200"
     - "SLUS-20986"
     - "SLUS-21079"
+  dynaPatches:
+    - pattern:
+        - { offset: 0x0, value: 0x3C023E4C }
+        - { offset: 0x4, value: 0x3442CCCD }
+        - { offset: 0x8, value: 0xE7A300D0 }
+        - { offset: 0xC, value: 0xE7A200D4 }
+      replacement:
+        - { offset: 0x4, value: 0x3442CCE0 }
 SLUS-21201:
   name: "Tales of Legendia"
   region: "NTSC-U"
