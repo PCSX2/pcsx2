@@ -599,9 +599,10 @@ void MemoryViewWidget::contextGoToAddress()
 		return;
 
 	u64 address = 0;
-	if (!m_cpu->evaluateExpression(targetString.toStdString().c_str(), address))
+	std::string error;
+	if (!m_cpu->evaluateExpression(targetString.toStdString().c_str(), address, error))
 	{
-		QMessageBox::warning(this, tr("Cannot Go To"), getExpressionError());
+		QMessageBox::warning(this, tr("Cannot Go To"), QString::fromStdString(error));
 		return;
 	}
 
