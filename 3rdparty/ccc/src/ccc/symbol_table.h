@@ -71,8 +71,9 @@ Result<std::unique_ptr<SymbolTable>> create_elf_symbol_table(
 // and to generate a module handle.
 Result<ModuleHandle> import_symbol_tables(
 	SymbolDatabase& database,
-	std::string module_name,
 	const std::vector<std::unique_ptr<SymbolTable>>& symbol_tables,
+	std::string module_name,
+	Address base_address,
 	u32 importer_flags,
 	DemanglerFunctions demangler,
 	const std::atomic_bool* interrupt);
