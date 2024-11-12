@@ -241,6 +241,7 @@ void tx_process()
 	// if we actualy send something set TXEND
 	if (cnt != 0)
 	{
+		Console.WriteLn("DEV9: SMAP: Sent %d packets", cnt);
 		_DEV9irq(SMAP_INTR_TXEND, 100); //now ? or when the fifo is empty ? i guess now atm
 	}
 	else
