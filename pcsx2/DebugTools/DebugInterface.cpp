@@ -340,7 +340,7 @@ std::optional<u32> DebugInterface::getStackFrameSize(const ccc::Function& functi
 		// The stack frame size isn't stored in the symbol table, so we try
 		// to extract it from the code by checking for an instruction at the
 		// start of the current function that is in the form of
-		// "addui $sp, $sp, frame_size" instead.
+		// "addiu $sp, $sp, frame_size" instead.
 
 		u32 instruction = read32(function.address().value);
 
@@ -354,29 +354,29 @@ std::optional<u32> DebugInterface::getStackFrameSize(const ccc::Function& functi
 	return static_cast<u32>(stack_frame_size);
 }
 
-bool DebugInterface::evaluateExpression(const char* expression, u64& dest)
+bool DebugInterface::evaluateExpression(const char* expression, u64& dest, std::string& error)
 {
 	PostfixExpression postfix;
 
-	if (!initExpression(expression, postfix))
+	if (!initExpression(expression, postfix, error))
 		return false;
 
-	if (!parseExpression(postfix, dest))
+	if (!parseExpression(postfix, dest, error))
 		return false;
 
 	return true;
 }
 
-bool DebugInterface::initExpression(const char* exp, PostfixExpression& dest)
+bool DebugInterface::initExpression(const char* exp, PostfixExpression& dest, std::string& error)
 {
 	MipsExpressionFunctions funcs(this, true);
-	return initPostfixExpression(exp, &funcs, dest);
+	return initPostfixExpression(exp, &funcs, dest, error);
 }
 
-bool DebugInterface::parseExpression(PostfixExpression& exp, u64& dest)
+bool DebugInterface::parseExpression(PostfixExpression& exp, u64& dest, std::string& error)
 {
 	MipsExpressionFunctions funcs(this, false);
-	return parsePostfixExpression(exp, &funcs, dest);
+	return parsePostfixExpression(exp, &funcs, dest, error);
 }
 
 //
@@ -904,11 +904,9 @@ std::vector<std::unique_ptr<BiosThread>> R5900DebugInterface::GetThreadList() co
 	return getEEThreads();
 }
 
-
 //
 // R3000DebugInterface
 //
-
 
 BreakPointCpu R3000DebugInterface::getCpuType()
 {
