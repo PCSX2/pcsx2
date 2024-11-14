@@ -351,7 +351,7 @@ void SymbolImporter::ImportExtraSymbols(
 			std::string error;
 			if (!parseExpression(extra_symbol_file.Condition.c_str(), &expression_functions, expression_result, error))
 			{
-				Console.Error("Failed to parse condition expression '%s' while importing extra symbol file '%s': %s.",
+				Console.Error("Failed to evaluate condition expression '%s' while importing extra symbol file '%s': %s",
 					extra_symbol_file.Condition.c_str(), path.c_str(), error.c_str());
 			}
 
@@ -366,7 +366,7 @@ void SymbolImporter::ImportExtraSymbols(
 			std::string error;
 			if (!parseExpression(extra_symbol_file.BaseAddress.c_str(), &expression_functions, expression_result, error))
 			{
-				Console.Error("Failed to parse base address expression '%s' while importing extra symbol file '%s': %s.",
+				Console.Error("Failed to evaluate base address expression '%s' while importing extra symbol file '%s': %s",
 					extra_symbol_file.BaseAddress.c_str(), path.c_str(), error.c_str());
 			}
 
@@ -548,12 +548,32 @@ std::unique_ptr<ccc::ast::Node> SymbolImporter::GetBuiltInType(
 void SymbolImporter::ScanForFunctions(
 	ccc::SymbolDatabase& database, const ccc::ElfSymbolFile& elf, const Pcsx2Config::DebugAnalysisOptions& options)
 {
+	MipsExpressionFunctions expression_functions(&r5900Debug, &database, true);
+
 	u32 start_address = 0;
 	u32 end_address = 0;
 	if (options.CustomFunctionScanRange)
 	{
-		start_address = static_cast<u32>(std::stoull(options.FunctionScanStartAddress.c_str(), nullptr, 16));
-		end_address = static_cast<u32>(std::stoull(options.FunctionScanEndAddress.c_str(), nullptr, 16));
+		u64 expression_result = 0;
+		std::string error;
+
+		if (!parseExpression(options.FunctionScanStartAddress.c_str(), &expression_functions, expression_result, error))
+		{
+			Console.Error("Failed to evaluate start address expression '%s' while scanning for functions: %s",
+				options.FunctionScanStartAddress.c_str(), error.c_str());
+			return;
+		}
+
+		start_address = static_cast<u32>(expression_result);
+
+		if (!parseExpression(options.FunctionScanEndAddress.c_str(), &expression_functions, expression_result, error))
+		{
+			Console.Error("Failed to evaluate end address expression '%s' while scanning for functions: %s",
+				options.FunctionScanEndAddress.c_str(), error.c_str());
+			return;
+		}
+
+		end_address = static_cast<u32>(expression_result);
 	}
 	else
 	{
