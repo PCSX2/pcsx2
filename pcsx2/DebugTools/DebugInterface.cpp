@@ -1012,8 +1012,8 @@ ElfMemoryReader::ElfMemoryReader(const ccc::ElfFile& elf)
 
 u32 ElfMemoryReader::read8(u32 address)
 {
-	ccc::Result<u8> result = m_elf.get_object_virtual<u8>(address);
-	if (!result.success())
+	std::optional<u8> result = m_elf.get_object_virtual<u8>(address);
+	if (!result.has_value())
 		return 0;
 
 	return *result;
@@ -1021,8 +1021,8 @@ u32 ElfMemoryReader::read8(u32 address)
 
 u32 ElfMemoryReader::read8(u32 address, bool& valid)
 {
-	ccc::Result<u8> result = m_elf.get_object_virtual<u8>(address);
-	valid = result.success();
+	std::optional<u8> result = m_elf.get_object_virtual<u8>(address);
+	valid = result.has_value();
 	if (!valid)
 		return 0;
 
@@ -1031,8 +1031,8 @@ u32 ElfMemoryReader::read8(u32 address, bool& valid)
 
 u32 ElfMemoryReader::read16(u32 address)
 {
-	ccc::Result<u16> result = m_elf.get_object_virtual<u16>(address);
-	if (!result.success())
+	std::optional<u16> result = m_elf.get_object_virtual<u16>(address);
+	if (!result.has_value())
 		return 0;
 
 	return *result;
@@ -1040,8 +1040,8 @@ u32 ElfMemoryReader::read16(u32 address)
 
 u32 ElfMemoryReader::read16(u32 address, bool& valid)
 {
-	ccc::Result<u16> result = m_elf.get_object_virtual<u16>(address);
-	valid = result.success();
+	std::optional<u16> result = m_elf.get_object_virtual<u16>(address);
+	valid = result.has_value();
 	if (!valid)
 		return 0;
 
@@ -1050,8 +1050,8 @@ u32 ElfMemoryReader::read16(u32 address, bool& valid)
 
 u32 ElfMemoryReader::read32(u32 address)
 {
-	ccc::Result<u32> result = m_elf.get_object_virtual<u32>(address);
-	if (!result.success())
+	std::optional<u32> result = m_elf.get_object_virtual<u32>(address);
+	if (!result.has_value())
 		return 0;
 
 	return *result;
@@ -1059,8 +1059,8 @@ u32 ElfMemoryReader::read32(u32 address)
 
 u32 ElfMemoryReader::read32(u32 address, bool& valid)
 {
-	ccc::Result<u32> result = m_elf.get_object_virtual<u32>(address);
-	valid = result.success();
+	std::optional<u32> result = m_elf.get_object_virtual<u32>(address);
+	valid = result.has_value();
 	if (!valid)
 		return 0;
 
@@ -1069,8 +1069,8 @@ u32 ElfMemoryReader::read32(u32 address, bool& valid)
 
 u64 ElfMemoryReader::read64(u32 address)
 {
-	ccc::Result<u64> result = m_elf.get_object_virtual<u64>(address);
-	if (!result.success())
+	std::optional<u64> result = m_elf.get_object_virtual<u64>(address);
+	if (!result.has_value())
 		return 0;
 
 	return *result;
@@ -1078,8 +1078,8 @@ u64 ElfMemoryReader::read64(u32 address)
 
 u64 ElfMemoryReader::read64(u32 address, bool& valid)
 {
-	ccc::Result<u64> result = m_elf.get_object_virtual<u64>(address);
-	valid = result.success();
+	std::optional<u64> result = m_elf.get_object_virtual<u64>(address);
+	valid = result.has_value();
 	if (!valid)
 		return 0;
 

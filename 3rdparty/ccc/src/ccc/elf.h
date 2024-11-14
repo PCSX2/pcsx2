@@ -125,18 +125,20 @@ struct ElfFile {
 	const ElfProgramHeader* entry_point_segment() const;
 	
 	// Retrieve a block of data in an ELF file given its address and size.
-	Result<std::span<const u8>> get_virtual(u32 address, u32 size) const;
+	std::optional<std::span<const u8>> get_virtual(u32 address, u32 size) const;
 	
 	// Copy a block of data in an ELF file to the destination buffer given its
 	// address and size.
-	Result<void> copy_virtual(u8* dest, u32 address, u32 size) const;
+	bool copy_virtual(u8* dest, u32 address, u32 size) const;
 	
 	// Retrieve an object of type T from an ELF file given its address.
 	template <typename T>
-	Result<T> get_object_virtual(u32 address) const
+	std::optional<T> get_object_virtual(u32 address) const
 	{
-		Result<std::span<const u8>> result = get_virtual(address, sizeof(T));
-		CCC_RETURN_IF_ERROR(result);
+		std::optional<std::span<const u8>> result = get_virtual(address, sizeof(T));
+		if(!result.has_value()) {
+			return std::nullopt;
+		}
 		
 		return *(T*) result->data();
 	}
@@ -144,10 +146,12 @@ struct ElfFile {
 	// Retrieve an array of objects of type T from an ELF file given its
 	// address and element count.
 	template <typename T>
-	Result<std::span<const T>> get_array_virtual(u32 address, u32 element_count) const
+	std::optional<std::span<const T>> get_array_virtual(u32 address, u32 element_count) const
 	{
-		Result<std::span<const u8>> result = get_virtual(address, element_count * sizeof(T));
-		CCC_RETURN_IF_ERROR(result);
+		std::optional<std::span<const u8>> result = get_virtual(address, element_count * sizeof(T));
+		if(!result.has_value()) {
+			return std::nullopt;
+		}
 		
 		return std::span<const T>((T*) result->data(), (T*) (result->data() + result->size()));
 	}
