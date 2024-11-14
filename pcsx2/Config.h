@@ -1105,8 +1105,8 @@ struct Pcsx2Config
 
 		DebugFunctionScanMode FunctionScanMode = DebugFunctionScanMode::SCAN_ELF;
 		bool CustomFunctionScanRange = false;
-		std::string FunctionScanStartAddress = "0";
-		std::string FunctionScanEndAddress = "0";
+		std::string FunctionScanStartAddress;
+		std::string FunctionScanEndAddress;
 
 		bool GenerateFunctionHashes = true;
 

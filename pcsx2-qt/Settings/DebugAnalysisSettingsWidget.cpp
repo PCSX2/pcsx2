@@ -37,8 +37,8 @@ DebugAnalysisSettingsWidget::DebugAnalysisSettingsWidget(QWidget* parent)
 	}
 
 	m_ui.customAddressRange->setChecked(Host::GetBoolSettingValue("Debugger/Analysis", "CustomFunctionScanRange", false));
-	m_ui.addressRangeStart->setText(QString::fromStdString(Host::GetStringSettingValue("Debugger/Analysis", "FunctionScanStartAddress", "0")));
-	m_ui.addressRangeEnd->setText(QString::fromStdString(Host::GetStringSettingValue("Debugger/Analysis", "FunctionScanEndAddress", "0")));
+	m_ui.addressRangeStart->setText(QString::fromStdString(Host::GetStringSettingValue("Debugger/Analysis", "FunctionScanStartAddress", "")));
+	m_ui.addressRangeEnd->setText(QString::fromStdString(Host::GetStringSettingValue("Debugger/Analysis", "FunctionScanEndAddress", "")));
 
 	m_ui.grayOutOverwrittenFunctions->setChecked(Host::GetBoolSettingValue("Debugger/Analysis", "GenerateFunctionHashes", true));
 
