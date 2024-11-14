@@ -215,11 +215,6 @@ void SymbolImporter::AnalyseElf(
 		if (m_interrupt_import_thread)
 			return;
 
-		ScanForFunctions(temp_database, worker_symbol_file, options);
-
-		if (m_interrupt_import_thread)
-			return;
-
 		m_guardian.ReadWrite([&](ccc::SymbolDatabase& database) {
 			ClearExistingSymbols(database, options);
 
@@ -227,6 +222,14 @@ void SymbolImporter::AnalyseElf(
 				return;
 
 			database.merge_from(temp_database);
+
+			if (m_interrupt_import_thread)
+				return;
+
+			// The function scanner has to be run on the main database so that
+			// functions created before the importer was run are still
+			// considered. Otherwise, duplicate functions will be created.
+			ScanForFunctions(database, worker_symbol_file, options);
 		});
 	});
 }
