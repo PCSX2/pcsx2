@@ -35422,6 +35422,8 @@ SLPM-62482:
   name-sort: "ぱちすろとうこんでんしょう いのきまつり あんとにおいのきというなのぱちすろき あんとにおいのきじしんがぱちすろき"
   name-en: "Pachinko Slot Tokodensho - Inoki Festival"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes on screen garbage.
 SLPM-62483:
   name: "SIMPLE2000シリーズ Vol.48 THE タクシー 〜運転手は君だ〜"
   name-sort: "しんぷる2000しりーず Vol.48 THE たくしー うんてんしゅはきみだ"
