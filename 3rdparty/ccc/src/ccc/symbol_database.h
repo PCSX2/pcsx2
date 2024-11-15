@@ -435,7 +435,7 @@ class Label : public Symbol {
 public:
 	static constexpr const SymbolDescriptor DESCRIPTOR = LABEL;
 	static constexpr const char* NAME = "Label";
-	static constexpr u32 FLAGS = WITH_ADDRESS_MAP;
+	static constexpr u32 FLAGS = WITH_ADDRESS_MAP | WITH_NAME_MAP;
 	
 	LabelHandle handle() const { return m_handle; }
 	
