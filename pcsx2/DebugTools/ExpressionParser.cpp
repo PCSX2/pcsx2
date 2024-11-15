@@ -254,7 +254,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 
 			dest.push_back(ExpressionPair(isFloat?EXCOMM_CONST_FLOAT:EXCOMM_CONST,value));
 			lastOpcode = EXOP_NUMBER;
-		} else if ((first >= 'a' && first <= 'z') || first == '@')
+		} else if ((first >= 'a' && first <= 'z') || first == '@' || first == '_')
 		{
 			while (isAlphaNum(infix[infixPos]) && subPos < static_cast<int>(sizeof(subStr)) - 1)
 			{
