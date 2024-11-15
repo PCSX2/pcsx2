@@ -26,8 +26,8 @@ namespace usb_eyetoy
 
 		std::unique_ptr<VideoDevice> videodev;
 		USBDevice* mic;
-		uint8_t regs[0xFF]; //OV519
-		uint8_t i2c_regs[0xFF]; //OV764x
+		u8 regs[0xFF]; //OV519
+		u8 i2c_regs[0xFF]; //OV764x
 
 		int hw_camera_running;
 		int frame_step;
@@ -81,10 +81,10 @@ namespace usb_eyetoy
 		}
 		else if (s->hw_camera_running && s->subtype == TYPE_OV511P)
 		{
-			const int width = 320;
-			const int height = 240;
+			constexpr int width = 320;
+			constexpr int height = 240;
 			const FrameFormat format = format_yuv400;
-			const int mirror = 0;
+			constexpr int mirror = 0;
 			Console.WriteLn(
 				"EyeToy : eyetoy_open(); hw=%d, w=%d, h=%d, fmt=%d, mirr=%d", s->hw_camera_running, width, height, format, mirror);
 			if (s->videodev->Open(width, height, format, mirror) != 0)
@@ -111,7 +111,7 @@ namespace usb_eyetoy
 			s->mic->klass.handle_reset(s->mic);
 	}
 
-	static void webcam_handle_control_eyetoy(USBDevice* dev, USBPacket* p, int request, int value, int index, int length, uint8_t* data)
+	static void webcam_handle_control_eyetoy(USBDevice* dev, USBPacket* p, int request, int value, int index, int length, u8* data)
 	{
 		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
 		int ret = 0;
@@ -172,9 +172,9 @@ namespace usb_eyetoy
 					case R518_I2C_CTL:
 						if (data[0] == 1) // Commit I2C write
 						{
-							//uint8_t reg = s->regs[s->regs[R51x_I2C_W_SID]];
-							uint8_t reg = s->regs[R51x_I2C_SADDR_3];
-							uint8_t val = s->regs[R51x_I2C_DATA];
+							//u8 reg = s->regs[s->regs[R51x_I2C_W_SID]];
+							const u8 reg = s->regs[R51x_I2C_SADDR_3];
+							const u8 val = s->regs[R51x_I2C_DATA];
 							if ((reg == 0x12) && (val & 0x80))
 							{
 								s->i2c_regs[0x12] = val & ~0x80; //or skip?
@@ -194,7 +194,7 @@ namespace usb_eyetoy
 						else if (s->regs[R518_I2C_CTL] == 0x03 && data[0] == 0x05)
 						{
 							//s->regs[s->regs[R51x_I2C_R_SID]] but seems to default to 0x43 (R51x_I2C_SADDR_2)
-							uint8_t i2c_reg = s->regs[R51x_I2C_SADDR_2];
+							const u8 i2c_reg = s->regs[R51x_I2C_SADDR_2];
 							s->regs[R51x_I2C_DATA] = 0;
 
 							if (i2c_reg < sizeof(s->i2c_regs))
@@ -218,7 +218,7 @@ namespace usb_eyetoy
 		}
 	}
 
-	static void webcam_handle_control_ov511p(USBDevice* dev, USBPacket* p, int request, int value, int index, int length, uint8_t* data)
+	static void webcam_handle_control_ov511p(USBDevice* dev, USBPacket* p, int request, int value, int index, int length, u8* data)
 	{
 		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
 		int ret = 0;
@@ -242,8 +242,8 @@ namespace usb_eyetoy
 					case R511_I2C_CTL:
 						if (data[0] == 1)
 						{
-							uint8_t reg = s->regs[R51x_I2C_SADDR_3];
-							uint8_t val = s->regs[R51x_I2C_DATA];
+							u8 reg = s->regs[R51x_I2C_SADDR_3];
+							const u8 val = s->regs[R51x_I2C_DATA];
 							if (reg < sizeof(s->i2c_regs))
 							{
 								s->i2c_regs[reg] = val;
@@ -251,7 +251,7 @@ namespace usb_eyetoy
 						}
 						else if (s->regs[R511_I2C_CTL] == 0x03 && data[0] == 0x05)
 						{
-							uint8_t i2c_reg = s->regs[R51x_I2C_SADDR_2];
+							const u8 i2c_reg = s->regs[R51x_I2C_SADDR_2];
 							s->regs[R51x_I2C_DATA] = 0;
 
 							if (i2c_reg < sizeof(s->i2c_regs))
@@ -277,8 +277,8 @@ namespace usb_eyetoy
 	static void webcam_handle_data_eyetoy(USBDevice* dev, USBPacket* p)
 	{
 		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
-		static const unsigned int max_ep_size = 896;
-		uint8_t devep = p->ep->nr;
+		static constexpr unsigned int max_ep_size = 896;
+		const u8 devep = p->ep->nr;
 
 		if (!s->hw_camera_running)
 		{
@@ -346,7 +346,7 @@ namespace usb_eyetoy
 	static void webcam_handle_data_ov511p(USBDevice* dev, USBPacket* p)
 	{
 		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
-		uint8_t devep = p->ep->nr;
+		const u8 devep = p->ep->nr;
 
 		if (!s->hw_camera_running)
 		{
