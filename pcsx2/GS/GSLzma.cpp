@@ -128,6 +128,7 @@ bool GSDumpFile::ReadFile(Error* error)
 
 	// Get remaining file size for packet data preallocation
 	const s64 current_pos = FileSystem::FTell64(m_fp.get());
+
 	if (current_pos < 0)
 	{
 		Error::SetString(error, "Failed to get current file position");
@@ -158,7 +159,6 @@ bool GSDumpFile::ReadFile(Error* error)
 	{
 		GSData packet = {};
 		packet.path = GSTransferPath::Dummy;
-
 		if (remaining < sizeof(u8))
 		{
 			Error::SetString(error, "Failed to read packet ID");
