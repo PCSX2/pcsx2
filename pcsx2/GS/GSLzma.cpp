@@ -142,7 +142,7 @@ bool GSDumpFile::ReadFile(Error* error)
     }
 
 	const size_t remaining_size = static_cast<size_t>(file_size - current_pos);
-	
+
 	// read all the packet data in
 	m_packet_data.resize(remaining_size);
 	if (Read(m_packet_data.data(), remaining_size) != remaining_size)
