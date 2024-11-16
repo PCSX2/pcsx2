@@ -126,107 +126,95 @@ bool GSDumpFile::ReadFile(Error* error)
 		return false;
 	}
 
+	// Get remaining file size for packet data preallocation
+    const s64 current_pos = FileSystem::FTell64(m_fp.get());
+    if (current_pos < 0)
+    {
+        Error::SetString(error, "Failed to get current file position");
+        return false;
+    }
+
+    const s64 file_size = FileSystem::FSize64(m_fp.get());
+    if (file_size < 0)
+    {
+        Error::SetString(error, "Failed to get file size");
+        return false;
+    }
+
+	const size_t remaining_size = static_cast<size_t>(file_size - current_pos);
+	
 	// read all the packet data in
-	// TODO: make this suck less by getting the full/extracted size and preallocating
-	for (;;)
+	m_packet_data.resize(remaining_size);
+	if (Read(m_packet_data.data(), remaining_size) != remaining_size)
 	{
-		const size_t packet_data_size = m_packet_data.size();
-		m_packet_data.resize(std::max<size_t>(packet_data_size * 2, 8 * _1mb));
-
-		const size_t read_size = m_packet_data.size() - packet_data_size;
-		const size_t read = Read(m_packet_data.data() + packet_data_size, read_size);
-		if (read != read_size)
-		{
-			if (!IsEof())
-			{
-				Error::SetString(error, "Failed to read packet");
-				return false;
-			}
-
-			m_packet_data.resize(packet_data_size + read);
-			m_packet_data.shrink_to_fit();
-			break;
-		}
+		Error::SetString(error, "Failed to read real state data");
+		return false;
 	}
 
 	u8* data = m_packet_data.data();
 	size_t remaining = m_packet_data.size();
 
-#define GET_BYTE(dst) \
-	do \
-	{ \
-		if (remaining < sizeof(u8)) \
-		{ \
-			Error::SetString(error, "Failed to read byte"); \
-			return false; \
-		} \
-		std::memcpy(dst, data, sizeof(u8)); \
-		data++; \
-		remaining--; \
-	} while (0)
-#define GET_WORD(dst) \
-	do \
-	{ \
-		if (remaining < sizeof(u32)) \
-		{ \
-			Error::SetString(error, "Failed to read word"); \
-			return false; \
-		} \
-		std::memcpy(dst, data, sizeof(u32)); \
-		data += sizeof(u32); \
-		remaining -= sizeof(u32); \
-	} while (0)
-
 	while (remaining > 0)
-	{
-		GSData packet = {};
-		packet.path = GSTransferPath::Dummy;
-		GET_BYTE(&packet.id);
+    {
+        GSData packet = {};
+        packet.path = GSTransferPath::Dummy;
+        
+        if (remaining < sizeof(u8))
+        {
+            Error::SetString(error, "Failed to read packet ID");
+            return false;
+        }
+        packet.id = static_cast<GSType>(*data++);
+        remaining--;
 
-		switch (packet.id)
-		{
-			case GSType::Transfer:
-				GET_BYTE(&packet.path);
-				GET_WORD(&packet.length);
-				break;
-			case GSType::VSync:
-				packet.length = 1;
-				break;
-			case GSType::ReadFIFO2:
-				packet.length = 4;
-				break;
-			case GSType::Registers:
-				packet.length = 8192;
-				break;
-			default:
-				Error::SetString(error, fmt::format("Unknown packet type {}", static_cast<u32>(packet.id)));
-				return false;
-		}
+        switch (packet.id)
+        {
+            case GSType::Transfer:
+                if (remaining < (sizeof(u8) + sizeof(u32)))
+                {
+                    Error::SetString(error, "Failed to read transfer packet header");
+                    return false;
+                }
+                packet.path = static_cast<GSTransferPath>(*data++);
+                std::memcpy(&packet.length, data, sizeof(u32));
+                data += sizeof(u32);
+                remaining -= (sizeof(u8) + sizeof(u32));
+                break;
+            case GSType::VSync:
+                packet.length = 1;
+                break;
+            case GSType::ReadFIFO2:
+                packet.length = 4;
+                break;
+            case GSType::Registers:
+                packet.length = 8192;
+                break;
+            default:
+                Error::SetString(error, fmt::format("Unknown packet type {}", static_cast<u32>(packet.id)));
+                return false;
+        }
 
-		if (packet.length > 0)
-		{
-			if (remaining < packet.length)
-			{
+        if (packet.length > 0)
+        {
+            if (remaining < packet.length)
+            {
 				// There's apparently some "bad" dumps out there that are missing bytes on the end..
 				// The "safest" option here is to discard the last packet, since that has less risk
 				// of leaving the GS in the middle of a command.
-				Console.Error("(GSDump) Dropping last packet of %u bytes (we only have %u bytes)",
-					static_cast<u32>(packet.length), static_cast<u32>(remaining));
-				break;
-			}
+                Console.Error("(GSDump) Dropping last packet of %u bytes (we only have %u bytes)",
+                    static_cast<u32>(packet.length), static_cast<u32>(remaining));
+                break;
+            }
 
-			packet.data = data;
-			data += packet.length;
-			remaining -= packet.length;
-		}
+            packet.data = data;
+            data += packet.length;
+            remaining -= packet.length;
+        }
 
-		m_dump_packets.push_back(std::move(packet));
-	}
+        m_dump_packets.push_back(std::move(packet));
+    }
 
-#undef GET_WORD
-#undef GET_BYTE
-
-	return true;
+    return true;
 }
 
 /******************************************************************/
