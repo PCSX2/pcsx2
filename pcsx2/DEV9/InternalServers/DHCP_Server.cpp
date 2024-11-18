@@ -141,14 +141,34 @@ namespace InternalServers
 		 * Some VPN adapters will present a subnet mask of 255.255.255.255 and omit setting a gateway.
 		 * This is used for point-point links where the destination device handles routing out of the network.
 		 * PS2 software, howver, expects a valid gateway for packets leaving the network.
-		 * As a hackfix, we set the gateway to the PS2 IP, which is enough to allow such software to pregress.
-		 * A side effect of this is that outbound packets will have the src and dst mac be identical.
+		 * A possible hackfix was to set the gateway to the PS2 IP, however, some software rejects this.
+		 * Thus the only solution is to expand the netmask and add a fake gateway using the other IP.
 		 * This is a mostly PCAP exclusive issue, I've only seen such networks with VPN devices,
 		 * which don't like being bridged, preventing TAP from being used with them.
 		 * Sockets (currently) uses its own internal network, and thus would be unaffected.
 		 */
 		else if (netmask == IP_Address{{{255, 255, 255, 255}}})
-			gateway = ps2IP;
+		{
+			// Expand the netmask to allow for a gateway
+			netmask = {{{255, 255, 255, 252}}};
+
+			// Need to ensure our IP isn't the broadcast IP
+			while (true)
+			{
+				// Shift is busted
+				const IP_Address bc = ps2IP | ~netmask;
+				if (ps2IP == bc)
+					netmask.integer = htonl(ntohl(netmask.integer) << 1);
+				else
+					break;
+			}
+
+			// Pick a free IP for our gateway
+			gateway = (ps2IP & netmask);
+			gateway.integer = htonl(ntohl(gateway.integer) + 1);
+			while (gateway == ps2IP)
+				gateway.integer = htonl(ntohl(gateway.integer) + 1);
+		}
 	}
 
 #ifdef _WIN32
@@ -192,7 +212,7 @@ namespace InternalServers
 
 	void DHCP_Server::AutoBroadcast(IP_Address parPS2IP, IP_Address parNetmask)
 	{
-		if (parNetmask.integer != 0 && parNetmask != IP_Address{{{255, 255, 255, 255}}})
+		if (parNetmask.integer != 0)
 		{
 			for (int i = 0; i < 4; i++)
 				broadcastIP.bytes[i] = ((parPS2IP.bytes[i]) | (~parNetmask.bytes[i]));
