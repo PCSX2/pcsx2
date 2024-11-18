@@ -998,8 +998,9 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		QString gs_stat;
 		if (THREAD_VU1)
 		{
-			gs_stat = tr("Slot: %1 | %2 | EE: %3% | VU: %4% | GS: %5%")
+			gs_stat = tr("Slot: %1 | Volume: %2% | %3 |EE: %4% | VU: %5% | GS: %6%")
 						  .arg(SaveStateSelectorUI::GetCurrentSlot())
+						  .arg(SPU2::GetOutputVolume())
 						  .arg(gs_stat_str.c_str())
 						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 						  .arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
@@ -1007,8 +1008,9 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		}
 		else
 		{
-			gs_stat = tr("Slot: %1 | %2 | EE: %3% | GS: %4%")
+			gs_stat = tr("Slot: %1 | Volume: %2% | 3% | EE: %4% | GS: %5%")
 						  .arg(SaveStateSelectorUI::GetCurrentSlot())
+						  .arg(SPU2::GetOutputVolume())
 						  .arg(gs_stat_str.c_str())
 						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 						  .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
