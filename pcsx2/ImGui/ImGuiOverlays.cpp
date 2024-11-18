@@ -246,19 +246,19 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 			FormatProcessorStat(text, PerformanceMetrics::GetGSThreadUsage(), PerformanceMetrics::GetGSThreadAverageTime());
 			DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 
+			if (THREAD_VU1)
+			{
+				text = "VU: ";
+				FormatProcessorStat(text, PerformanceMetrics::GetVUThreadUsage(), PerformanceMetrics::GetVUThreadAverageTime());
+				DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
+			}
+
 			const u32 gs_sw_threads = PerformanceMetrics::GetGSSWThreadCount();
 			for (u32 i = 0; i < gs_sw_threads; i++)
 			{
 				text.clear();
 				text.append_format("SW-{}: ", i);
 				FormatProcessorStat(text, PerformanceMetrics::GetGSSWThreadUsage(i), PerformanceMetrics::GetGSSWThreadAverageTime(i));
-				DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
-			}
-
-			if (THREAD_VU1)
-			{
-				text = "VU: ";
-				FormatProcessorStat(text, PerformanceMetrics::GetVUThreadUsage(), PerformanceMetrics::GetVUThreadAverageTime());
 				DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 			}
 
