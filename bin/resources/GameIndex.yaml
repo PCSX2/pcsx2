@@ -64137,10 +64137,10 @@ SLUS-21113:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - SoftwareRendererFMVHack # Fixes horizontal lines in FMV and prevents hash cache from disabling itself
+    - SoftwareRendererFMVHack # Fixes horizontal lines in FMV and prevents hash cache from disabling itself.
   gsHWFixes:
-    roundSprite: 2 # Fixes character portraits when upscaling and reduces lines in FMVs when using HW renderer
-    texturePreloading: 2 # Fixes flickering black lines around sprites when upscaling.
+    roundSprite: 2 # Fixes character portraits when upscaling and reduces lines in FMVs when using HW renderer.
+    texturePreloading: 1 # Fixes flickering black lines around sprites when upscaling.
 SLUS-21114:
   name: "NHRA Championship Drag Racing"
   region: "NTSC-U"
