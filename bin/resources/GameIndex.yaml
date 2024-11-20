@@ -64136,6 +64136,10 @@ SLUS-21113:
   name: "Atelier Iris - Eternal Mana"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes horizontal lines in FMV and prevents hash cache from disabling itself.
+  gsHWFixes:
+    roundSprite: 2 # Fixes character portraits when upscaling and reduces lines in FMVs when using HW renderer.
 SLUS-21114:
   name: "NHRA Championship Drag Racing"
   region: "NTSC-U"
