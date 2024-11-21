@@ -5036,85 +5036,85 @@ Do you want to overwrite?</source>
     <name>EmuThread</name>
     <message>
         <location filename="../QtHost.cpp" line="1001"/>
-        <source>Slot: %1 | %2 | EE: %3% | VU: %4% | GS: %5%</source>
+        <source>Slot: %1 | Volume: %2% | %3 |EE: %4% | VU: %5% | GS: %6%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1010"/>
-        <source>Slot: %1 | %2 | EE: %3% | GS: %4%</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../QtHost.cpp" line="1041"/>
-        <source>No Image</source>
+        <location filename="../QtHost.cpp" line="1011"/>
+        <source>Slot: %1 | Volume: %2% | 3% | EE: %4% | GS: %5%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../QtHost.cpp" line="1043"/>
+        <source>No Image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../QtHost.cpp" line="1045"/>
         <source>%1x%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1055"/>
+        <location filename="../QtHost.cpp" line="1057"/>
         <source>FPS: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1062"/>
+        <location filename="../QtHost.cpp" line="1064"/>
         <source>VPS: %1 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1068"/>
+        <location filename="../QtHost.cpp" line="1070"/>
         <source>Speed: %1% </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1123"/>
+        <location filename="../QtHost.cpp" line="1125"/>
         <source>Game: %1 (%2)
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1131"/>
+        <location filename="../QtHost.cpp" line="1133"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1135"/>
+        <location filename="../QtHost.cpp" line="1137"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1543"/>
-        <location filename="../QtHost.cpp" line="1563"/>
-        <location filename="../QtHost.cpp" line="1571"/>
-        <location filename="../QtHost.cpp" line="1605"/>
+        <location filename="../QtHost.cpp" line="1545"/>
+        <location filename="../QtHost.cpp" line="1565"/>
+        <location filename="../QtHost.cpp" line="1573"/>
+        <location filename="../QtHost.cpp" line="1607"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1543"/>
+        <location filename="../QtHost.cpp" line="1545"/>
         <source>Failed to create HTTPDownloader.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1551"/>
+        <location filename="../QtHost.cpp" line="1553"/>
         <source>Downloading %1...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1564"/>
+        <location filename="../QtHost.cpp" line="1566"/>
         <source>Download failed with HTTP status code %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1572"/>
+        <location filename="../QtHost.cpp" line="1574"/>
         <source>Download failed: Data is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1606"/>
+        <location filename="../QtHost.cpp" line="1608"/>
         <source>Failed to write &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18279,45 +18279,45 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../QtHost.cpp" line="1103"/>
+        <location filename="../QtHost.cpp" line="1105"/>
         <source>RA: Logged in as %1 (%2 pts, softcore: %3 pts). %4 unread messages.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1513"/>
-        <location filename="../QtHost.cpp" line="1528"/>
+        <location filename="../QtHost.cpp" line="1515"/>
+        <location filename="../QtHost.cpp" line="1530"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1514"/>
+        <location filename="../QtHost.cpp" line="1516"/>
         <source>An error occurred while deleting empty game settings:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1529"/>
+        <location filename="../QtHost.cpp" line="1531"/>
         <source>An error occurred while saving game settings:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1677"/>
+        <location filename="../QtHost.cpp" line="1679"/>
         <source>Controller {} connected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1690"/>
+        <location filename="../QtHost.cpp" line="1692"/>
         <source>System paused because controller {} was disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1703"/>
+        <location filename="../QtHost.cpp" line="1705"/>
         <source>Controller {} disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1930"/>
+        <location filename="../QtHost.cpp" line="1932"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
