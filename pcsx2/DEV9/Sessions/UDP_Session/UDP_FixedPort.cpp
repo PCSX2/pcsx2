@@ -65,7 +65,7 @@ namespace Sessions
 			return;
 		}
 
-		const int reuseAddress = true; // BOOL on Windows
+		constexpr int reuseAddress = true; // BOOL on Windows
 		ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuseAddress), sizeof(reuseAddress));
 
 		if (ret == SOCKET_ERROR)
@@ -76,7 +76,7 @@ namespace Sessions
 				errno);
 #endif
 
-		const int broadcastEnable = true; // BOOL on Windows
+		constexpr int broadcastEnable = true; // BOOL on Windows
 		ret = setsockopt(client, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char*>(&broadcastEnable), sizeof(broadcastEnable));
 
 		if (ret == SOCKET_ERROR)

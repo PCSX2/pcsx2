@@ -225,7 +225,7 @@ namespace Sessions
 				return false;
 			}
 
-			const int reuseAddress = true; // BOOL on Windows
+			constexpr int reuseAddress = true; // BOOL on Windows
 			ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuseAddress), sizeof(reuseAddress));
 
 			if (ret == SOCKET_ERROR)

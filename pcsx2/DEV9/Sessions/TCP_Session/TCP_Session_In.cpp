@@ -169,7 +169,7 @@ namespace Sessions
 				memcpy(recivedData->data.get(), buffer.get(), recived);
 
 				std::unique_ptr<TCP_Packet> iRet = CreateBasePacket(recivedData);
-				IncrementMyNumber((u32)recived);
+				IncrementMyNumber(static_cast<u32>(recived));
 
 				iRet->SetACK(true);
 				iRet->SetPSH(true);

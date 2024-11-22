@@ -302,16 +302,14 @@ void emac3_write(u32 addr)
 					value |= SMAP_E3_PHY_OP_COMP;
 					int reg = value & (SMAP_E3_PHY_REG_ADDR_MSK);
 					u16 val = value >> 16;
-					switch (reg)
+					if (reg == SMAP_DsPHYTER_BMCR)
 					{
-						case SMAP_DsPHYTER_BMCR:
-							if (val & SMAP_PHY_BMCR_RST)
-							{
-								ad_reset();
-							}
-							val &= ~SMAP_PHY_BMCR_RST;
-							val |= 0x1;
-							break;
+						if (val & SMAP_PHY_BMCR_RST)
+						{
+							ad_reset();
+						}
+						val &= ~SMAP_PHY_BMCR_RST;
+						val |= 0x1;
 					}
 					//DevCon.WriteLn("DEV9: phy_write %d: %x", reg, val);
 					dev9.phyregs[reg] = val;
