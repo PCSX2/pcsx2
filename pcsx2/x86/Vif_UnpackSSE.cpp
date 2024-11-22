@@ -308,7 +308,9 @@ void VifUnpackSSE_Base::xUnpack(int upknum) const
 		case 3:
 		case 7:
 		case 11:
-			pxFailRel(fmt::format("Vpu/Vif - Invalid Unpack! [{}]", upknum).c_str());
+			// TODO: Needs hardware testing.
+			// Dynasty Warriors 5: Empire  - Player 2 chose a character menu.
+			Console.Warning("Vpu/Vif: Invalid Unpack %d", upknum);
 			break;
 	}
 }
