@@ -521,10 +521,10 @@
     <ClCompile Include="Vif_Unpack.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack</Filter>
     </ClCompile>
-    <ClCompile Include="x86\newVif_Dynarec.cpp">
+    <ClCompile Include="x86\Vif_Dynarec.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
     </ClCompile>
-    <ClCompile Include="x86\newVif_UnpackSSE.cpp">
+    <ClCompile Include="x86\Vif_UnpackSSE.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
     </ClCompile>
     <ClCompile Include="SPR.cpp">
@@ -1425,10 +1425,10 @@
     <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.arm64.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
-    <ClCompile Include="arm64\newVif_Dynarec.cpp">
+    <ClCompile Include="arm64\Vif_Dynarec.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec\arm64</Filter>
     </ClCompile>
-    <ClCompile Include="arm64\newVif_UnpackNEON.cpp">
+    <ClCompile Include="arm64\Vif_UnpackNEON.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec\arm64</Filter>
     </ClCompile>
     <ClCompile Include="arm64\AsmHelpers.cpp">
@@ -1532,7 +1532,7 @@
     <ClInclude Include="x86\newVif.h">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif</Filter>
     </ClInclude>
-    <ClInclude Include="x86\newVif_UnpackSSE.h">
+    <ClInclude Include="x86\Vif_UnpackSSE.h">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
     </ClInclude>
     <ClInclude Include="SPR.h">
@@ -2387,7 +2387,7 @@
     <ClInclude Include="GS\GSVector4i_arm64.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="arm64\newVif_UnpackNEON.h">
+    <ClInclude Include="arm64\Vif_UnpackNEON.h">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec\arm64</Filter>
     </ClInclude>
     <ClInclude Include="arm64\AsmHelpers.h">

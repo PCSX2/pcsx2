@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0
 
-#include "arm64/newVif_UnpackNEON.h"
+#include "arm64/Vif_UnpackNEON.h"
 #include "arm64/AsmHelpers.h"
 #include "MTVU.h"
 
