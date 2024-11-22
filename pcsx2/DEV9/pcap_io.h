@@ -37,7 +37,6 @@ public:
 
 private:
 	bool InitPCAP(const std::string& adapter, bool promiscuous);
-	void InitPCAPDumper();
 	bool SetMACSwitchedFilter(PacketReader::MAC_Address mac);
 
 	void SetMACBridgedRecv(NetPacket* pkt);

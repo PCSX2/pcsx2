@@ -268,24 +268,24 @@ bool SocketAdapter::send(NetPacket* pkt)
 
 	switch (frame.protocol)
 	{
-		case (u16)EtherType::null:
+		case static_cast<u16>(EtherType::null):
 		case 0x0C00:
 			//Packets with the above ethertypes get sent when the adapter is reset
 			//Catch them here instead of printing an error
 			return true;
-		case (int)EtherType::IPv4:
+		case static_cast<int>(EtherType::IPv4):
 		{
 			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
 			IP_Packet ippkt(payload->data, payload->GetLength());
 
 			return SendIP(&ippkt);
 		}
-		case (u16)EtherType::ARP:
+		case static_cast<u16>(EtherType::ARP):
 		{
 			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
 			ARP_Packet arpPkt(payload->data, payload->GetLength());
 
-			if (arpPkt.protocol == (u16)EtherType::IPv4)
+			if (arpPkt.protocol == static_cast<u16>(EtherType::IPv4))
 			{
 				if (arpPkt.op == 1) //ARP request
 				{
@@ -304,7 +304,7 @@ bool SocketAdapter::send(NetPacket* pkt)
 						EthernetFrame* retARP = new EthernetFrame(arpRet);
 						retARP->destinationMAC = ps2MAC;
 						retARP->sourceMAC = internalMAC;
-						retARP->protocol = (u16)EtherType::ARP;
+						retARP->protocol = static_cast<u16>(EtherType::ARP);
 
 						vRecBuffer.Enqueue(retARP);
 					}
@@ -567,7 +567,7 @@ void SocketAdapter::HandleConnectionClosed(BaseSession* sender)
 
 void SocketAdapter::HandleFixedPortClosed(BaseSession* sender)
 {
-	ConnectionKey key = sender->key;
+	const ConnectionKey key = sender->key;
 	connections.Remove(key);
 	fixedUDPPorts.Remove(key.ps2Port);
 

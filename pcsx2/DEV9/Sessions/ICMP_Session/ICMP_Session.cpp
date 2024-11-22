@@ -91,8 +91,8 @@ namespace Sessions
 			return;
 		}
 
-		icmpEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		if (icmpEvent == NULL)
+		icmpEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+		if (icmpEvent == nullptr)
 		{
 			Console.Error("DEV9: ICMP: Failed to Create Event");
 			IcmpCloseHandle(icmpFile);
