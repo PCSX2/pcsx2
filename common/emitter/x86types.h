@@ -149,11 +149,13 @@ namespace x86Emitter
 	static const int Sib_UseDisp32 = 5; // same index value as EBP (used in Base field)
 
 	extern void xSetPtr(void* ptr);
+	extern void xSetTextPtr(void* ptr);
 	extern void xAlignPtr(uint bytes);
 	extern void xAdvancePtr(uint bytes);
 	extern void xAlignCallTarget();
 
 	extern u8* xGetPtr();
+	extern u8* xGetTextPtr();
 	extern u8* xGetAlignedCallTarget();
 
 	extern JccComparisonType xInvertCond(JccComparisonType src);
@@ -646,6 +648,8 @@ extern const xRegister32
     calleeSavedReg1d,
     calleeSavedReg2d;
 
+/// Holds a pointer to program text at all times so we don't need to be within 2GB of text
+static constexpr const xAddressReg& RTEXTPTR = rbx;
 
 	// clang-format on
 

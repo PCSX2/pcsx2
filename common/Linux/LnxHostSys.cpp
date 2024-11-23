@@ -14,19 +14,15 @@
 #include <fcntl.h>
 #include <mutex>
 #include <sys/mman.h>
-#include <ucontext.h>
 #include <unistd.h>
+#ifndef __APPLE__
+#include <ucontext.h>
+#endif
 
 #include "fmt/core.h"
 
 #if defined(__FreeBSD__)
 #include "cpuinfo.h"
-#endif
-
-// FreeBSD does not have MAP_FIXED_NOREPLACE, but does have MAP_EXCL.
-// MAP_FIXED combined with MAP_EXCL behaves like MAP_FIXED_NOREPLACE.
-#if defined(__FreeBSD__) && !defined(MAP_FIXED_NOREPLACE)
-#define MAP_FIXED_NOREPLACE (MAP_FIXED | MAP_EXCL)
 #endif
 
 static __ri uint LinuxProt(const PageProtectionMode& mode)
@@ -41,34 +37,6 @@ static __ri uint LinuxProt(const PageProtectionMode& mode)
 		lnxmode |= PROT_EXEC | PROT_READ;
 
 	return lnxmode;
-}
-
-void* HostSys::Mmap(void* base, size_t size, const PageProtectionMode& mode)
-{
-	pxAssertMsg((size & (__pagesize - 1)) == 0, "Size is page aligned");
-
-	if (mode.IsNone())
-		return nullptr;
-
-	const u32 prot = LinuxProt(mode);
-
-	u32 flags = MAP_PRIVATE | MAP_ANONYMOUS;
-	if (base)
-		flags |= MAP_FIXED_NOREPLACE;
-
-	void* res = mmap(base, size, prot, flags, -1, 0);
-	if (res == MAP_FAILED)
-		return nullptr;
-
-	return res;
-}
-
-void HostSys::Munmap(void* base, size_t size)
-{
-	if (!base)
-		return;
-
-	munmap((void*)base, size);
 }
 
 void HostSys::MemProtect(void* baseaddr, size_t size, const PageProtectionMode& mode)
@@ -120,23 +88,7 @@ void HostSys::DestroySharedMemory(void* ptr)
 	close(static_cast<int>(reinterpret_cast<intptr_t>(ptr)));
 }
 
-void* HostSys::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, const PageProtectionMode& mode)
-{
-	const uint lnxmode = LinuxProt(mode);
-
-	const int flags = (baseaddr != nullptr) ? (MAP_SHARED | MAP_FIXED_NOREPLACE) : MAP_SHARED;
-	void* ptr = mmap(baseaddr, size, lnxmode, flags, static_cast<int>(reinterpret_cast<intptr_t>(handle)), static_cast<off_t>(offset));
-	if (ptr == MAP_FAILED)
-		return nullptr;
-
-	return ptr;
-}
-
-void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
-{
-	if (munmap(baseaddr, size) != 0)
-		pxFailRel("Failed to unmap shared memory");
-}
+#ifndef __APPLE__
 
 size_t HostSys::GetRuntimePageSize()
 {
@@ -183,6 +135,8 @@ size_t HostSys::GetRuntimeCacheLineSize()
 #endif
 }
 
+#endif
+
 SharedMemoryMappingArea::SharedMemoryMappingArea(u8* base_ptr, size_t size, size_t num_pages)
 	: m_base_ptr(base_ptr)
 	, m_size(size)
@@ -199,11 +153,16 @@ SharedMemoryMappingArea::~SharedMemoryMappingArea()
 }
 
 
-std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t size)
+std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t size, bool jit)
 {
 	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Size is page aligned");
 
-	void* alloc = mmap(nullptr, size, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+	uint flags = MAP_ANONYMOUS | MAP_PRIVATE;
+#ifdef __APPLE__
+	if (jit)
+		flags |= MAP_JIT;
+#endif
+	void* alloc = mmap(nullptr, size, PROT_NONE, flags, -1, 0);
 	if (alloc == MAP_FAILED)
 		return nullptr;
 
@@ -214,15 +173,26 @@ u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* ma
 {
 	pxAssert(static_cast<u8*>(map_base) >= m_base_ptr && static_cast<u8*>(map_base) < (m_base_ptr + m_size));
 
-	// MAP_FIXED is okay here, since we've reserved the entire region, and *want* to overwrite the mapping.
 	const uint lnxmode = LinuxProt(mode);
-	void* const ptr = mmap(map_base, map_size, lnxmode, MAP_SHARED | MAP_FIXED,
-		static_cast<int>(reinterpret_cast<intptr_t>(file_handle)), static_cast<off_t>(file_offset));
-	if (ptr == MAP_FAILED)
-		return nullptr;
+	if (file_handle)
+	{
+		const int fd = static_cast<int>(reinterpret_cast<intptr_t>(file_handle));
+		// MAP_FIXED is okay here, since we've reserved the entire region, and *want* to overwrite the mapping.
+		void* const ptr = mmap(map_base, map_size, lnxmode, MAP_SHARED | MAP_FIXED, fd, static_cast<off_t>(file_offset));
+		if (ptr == MAP_FAILED)
+			return nullptr;
+	}
+	else
+	{
+		// macOS doesn't seem to allow MAP_JIT with MAP_FIXED
+		// So we do the MAP_JIT in the allocation, and just mprotect here
+		// Note that this will only work the first time for a given region
+		if (mprotect(map_base, map_size, lnxmode) < 0)
+			return nullptr;
+	}
 
 	m_num_mappings++;
-	return static_cast<u8*>(ptr);
+	return static_cast<u8*>(map_base);
 }
 
 bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
@@ -235,6 +205,8 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 	m_num_mappings--;
 	return true;
 }
+
+#ifndef __APPLE__ // These are done in DarwinMisc
 
 namespace PageFaultHandler
 {
@@ -370,3 +342,4 @@ bool PageFaultHandler::Install(Error* error)
 	s_installed = true;
 	return true;
 }
+#endif // __APPLE__

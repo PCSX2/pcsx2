@@ -98,6 +98,7 @@ public:
 	bool inputMasked;
 
 protected:
+	xAddressReg vifPtr;
 	const nVifStruct& v;   // vif0 or vif1
 	const nVifBlock&  vB;  // some pre-collected data from VifStruct
 	int               vCL; // internal copy of vif->cl

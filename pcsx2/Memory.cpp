@@ -49,9 +49,6 @@ namespace Ps2MemSize
 
 namespace SysMemory
 {
-	static u8* TryAllocateVirtualMemory(const char* name, void* file_handle, uptr base, size_t size);
-	static u8* AllocateVirtualMemory(const char* name, void* file_handle, size_t size, size_t offset_from_base);
-
 	static bool AllocateMemoryMap();
 	static void DumpMemoryMap();
 	static void ReleaseMemoryMap();
@@ -59,6 +56,7 @@ namespace SysMemory
 	static u8* s_data_memory;
 	static void* s_data_memory_file_handle;
 	static u8* s_code_memory;
+	static std::unique_ptr<SharedMemoryMappingArea> s_memory_mapping_area;
 } // namespace SysMemory
 
 static void memAllocate();
@@ -86,77 +84,6 @@ namespace HostMemoryMap
 	}
 } // namespace HostMemoryMap
 
-u8* SysMemory::TryAllocateVirtualMemory(const char* name, void* file_handle, uptr base, size_t size)
-{
-	u8* baseptr;
-
-	if (file_handle)
-		baseptr = static_cast<u8*>(HostSys::MapSharedMemory(file_handle, 0, (void*)base, size, PageAccess_ReadWrite()));
-	else
-		baseptr = static_cast<u8*>(HostSys::Mmap((void*)base, size, PageAccess_Any()));
-
-	if (!baseptr)
-		return nullptr;
-
-	if (base != 0 && (uptr)baseptr != base)
-	{
-		if (file_handle)
-		{
-			if (baseptr)
-				HostSys::UnmapSharedMemory(baseptr, size);
-		}
-		else
-		{
-			if (baseptr)
-				HostSys::Munmap(baseptr, size);
-		}
-
-		return nullptr;
-	}
-
-	DevCon.WriteLn(Color_Gray, "%-32s @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " %s", name,
-		baseptr, (uptr)baseptr + size, fmt::format("[{}mb]", size / _1mb).c_str());
-
-	return baseptr;
-}
-
-u8* SysMemory::AllocateVirtualMemory(const char* name, void* file_handle, size_t size, size_t offset_from_base)
-{
-	// ARM64 does not need the rec areas to be in +/- 2GB.
-#ifdef _M_X86
-	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Virtual memory size is page aligned");
-
-	// Everything looks nicer when the start of all the sections is a nice round looking number.
-	// Also reduces the variation in the address due to small changes in code.
-	// Breaks ASLR but so does anything else that tries to make addresses constant for our debugging pleasure
-	uptr codeBase = (uptr)(void*)AllocateVirtualMemory / (1 << 28) * (1 << 28);
-
-	// The allocation is ~640mb in size, slighly under 3*2^28.
-	// We'll hope that the code generated for the PCSX2 executable stays under 512mb (which is likely)
-	// On x86-64, code can reach 8*2^28 from its address [-6*2^28, 4*2^28] is the region that allows for code in the 640mb allocation to reach 512mb of code that either starts at codeBase or 256mb before it.
-	// We start high and count down because on macOS code starts at the beginning of useable address space, so starting as far ahead as possible reduces address variations due to code size.  Not sure about other platforms.  Obviously this only actually affects what shows up in a debugger and won't affect performance or correctness of anything.
-	for (int offset = 4; offset >= -6; offset--)
-	{
-		uptr base = codeBase + (offset << 28) + offset_from_base;
-		if ((sptr)base < 0 || (sptr)(base + size - 1) < 0)
-		{
-			// VTLB will throw a fit if we try to put EE main memory here
-			continue;
-		}
-
-		if (u8* ret = TryAllocateVirtualMemory(name, file_handle, base, size))
-			return ret;
-
-		DevCon.Warning("%s: host memory @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " is unavailable; attempting to map elsewhere...", name,
-			base, base + size);
-	}
-#else
-	return TryAllocateVirtualMemory(name, file_handle, 0, size);
-#endif
-
-	return nullptr;
-}
-
 bool SysMemory::AllocateMemoryMap()
 {
 	s_data_memory_file_handle = HostSys::CreateSharedMemory(HostSys::GetFileMappingName("pcsx2").c_str(), HostMemoryMap::MainSize);
@@ -167,16 +94,23 @@ bool SysMemory::AllocateMemoryMap()
 		return false;
 	}
 
-	if ((s_data_memory = AllocateVirtualMemory("Data Memory", s_data_memory_file_handle, HostMemoryMap::MainSize, 0)) == nullptr)
+	if (!(s_memory_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::MainSize + HostMemoryMap::CodeSize, true)))
 	{
-		Host::ReportErrorAsync("Error", "Failed to map data memory at an acceptable location.");
+		Host::ReportErrorAsync("Error", "Failed to map main memory.");
 		ReleaseMemoryMap();
 		return false;
 	}
 
-	if ((s_code_memory = AllocateVirtualMemory("Code Memory", nullptr, HostMemoryMap::CodeSize, HostMemoryMap::MainSize)) == nullptr)
+	if ((s_data_memory = s_memory_mapping_area->Map(s_data_memory_file_handle, 0, s_memory_mapping_area->BasePointer(), HostMemoryMap::MainSize, PageAccess_ReadWrite())) == nullptr)
 	{
-		Host::ReportErrorAsync("Error", "Failed to allocate code memory at an acceptable location.");
+		Host::ReportErrorAsync("Error", "Failed to map data memory.");
+		ReleaseMemoryMap();
+		return false;
+	}
+
+	if ((s_code_memory = s_memory_mapping_area->Map(nullptr, 0, s_memory_mapping_area->OffsetPointer(HostMemoryMap::MainSize), HostMemoryMap::CodeSize, PageAccess_Any())) == nullptr)
+	{
+		Host::ReportErrorAsync("Error", "Failed to allocate code memory.");
 		ReleaseMemoryMap();
 		return false;
 	}
@@ -218,15 +152,17 @@ void SysMemory::ReleaseMemoryMap()
 {
 	if (s_code_memory)
 	{
-		HostSys::Munmap(s_code_memory, HostMemoryMap::CodeSize);
+		s_memory_mapping_area->Unmap(s_code_memory, HostMemoryMap::CodeSize);
 		s_code_memory = nullptr;
 	}
 
 	if (s_data_memory)
 	{
-		HostSys::UnmapSharedMemory(s_data_memory, HostMemoryMap::MainSize);
+		s_memory_mapping_area->Unmap(s_data_memory, HostMemoryMap::MainSize);
 		s_data_memory = nullptr;
 	}
+
+	s_memory_mapping_area.reset();
 
 	if (s_data_memory_file_handle)
 	{

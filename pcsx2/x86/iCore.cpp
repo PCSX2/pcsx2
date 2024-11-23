@@ -52,6 +52,10 @@ bool _isAllocatableX86reg(int x86reg)
 	if (CHECK_FASTMEM && x86reg == 5)
 		return false;
 
+	// rbx is used to reference PCSX2 program text
+	if (xGetTextPtr() && x86reg == RTEXTPTR.GetId())
+		return false;
+
 #ifdef ENABLE_VTUNE
 	// vtune needs ebp...
 	if (!CHECK_FASTMEM && x86reg == 5)

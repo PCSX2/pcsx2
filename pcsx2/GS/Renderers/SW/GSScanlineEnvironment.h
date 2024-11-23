@@ -243,41 +243,45 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 	const GSScanlineGlobalData* gd;
 };
 
-// Constant shared by all threads (to reduce cache miss)
-struct GSScanlineConstantData : public GSAlignedClass<32>
+namespace GSScanlineConstantData
 {
-	alignas(32) u8 m_test_256b[16][8] = {
-		{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-		{0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-		{0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-		{0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00},
-		{0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00},
-		{0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00},
-		{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00},
-		{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00},
-		{0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
-		{0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
-		{0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff},
-		{0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff},
-		{0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff},
-		{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff},
-		{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff},
-		{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+	static constexpr float log2_coef[] = {
+		0.204446009836232697516f,
+		-1.04913055217340124191f,
+		2.28330284476918490682f,
+		1.0f
 	};
-	alignas(32) float m_shift_256b[9][8] = {
-		{ 8.0f  , 8.0f  , 8.0f  , 8.0f  , 8.0f  , 8.0f  , 8.0f  , 8.0f},
-		{ 0.0f  , 1.0f  , 2.0f  , 3.0f  , 4.0f  , 5.0f  , 6.0f  , 7.0f},
-		{ -1.0f , 0.0f  , 1.0f  , 2.0f  , 3.0f  , 4.0f  , 5.0f  , 6.0f},
-		{ -2.0f , -1.0f , 0.0f  , 1.0f  , 2.0f  , 3.0f  , 4.0f  , 5.0f},
-		{ -3.0f , -2.0f , -1.0f , 0.0f  , 1.0f  , 2.0f  , 3.0f  , 4.0f},
-		{ -4.0f , -3.0f , -2.0f , -1.0f , 0.0f  , 1.0f  , 2.0f  , 3.0f},
-		{ -5.0f , -4.0f , -3.0f , -2.0f , -1.0f , 0.0f  , 1.0f  , 2.0f},
-		{ -6.0f , -5.0f , -4.0f , -3.0f , -2.0f , -1.0f , 0.0f  , 1.0f},
-		{ -7.0f , -6.0f , -5.0f , -4.0f , -3.0f , -2.0f , -1.0f , 0.0f},
-	};
-	alignas(32) float m_log2_coef_256b[4][8] = {};
+};
 
-	alignas(16) u32 m_test_128b[8][4] = {
+// Constant shared by all threads (to reduce cache miss)
+struct alignas(64) GSScanlineConstantData256B
+{
+	// All AVX processors support unaligned access with little to no penalty as long as you don't cross a cache line.
+	// Take advantage of that to store single vectors that we index with single-element alignment
+	alignas(32) u8 m_test[24] = {
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	};
+	float m_log2_coef[4] = {};
+	alignas(64) float m_shift[16] = {
+		8.0f, -7.0f, -6.0f, -5.0f, -4.0f, -3.0f, -2.0f, -1.0f,
+		0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,  6.0f,  7.0f,
+	};
+
+	constexpr GSScanlineConstantData256B()
+	{
+		using namespace GSScanlineConstantData;
+		for (size_t n = 0; n < std::size(log2_coef); ++n)
+		{
+			m_log2_coef[n] = log2_coef[n];
+		}
+	}
+};
+
+struct alignas(64) GSScanlineConstantData128B
+{
+	alignas(16) u32 m_test[8][4] = {
 		{0x00000000, 0x00000000, 0x00000000, 0x00000000},
 		{0xffffffff, 0x00000000, 0x00000000, 0x00000000},
 		{0xffffffff, 0xffffffff, 0x00000000, 0x00000000},
@@ -287,34 +291,25 @@ struct GSScanlineConstantData : public GSAlignedClass<32>
 		{0x00000000, 0x00000000, 0x00000000, 0xffffffff},
 		{0x00000000, 0x00000000, 0x00000000, 0x00000000},
 	};
-	alignas(16) float m_shift_128b[5][4] = {
+	alignas(16) float m_shift[5][4] = {
 		{ 4.0f  , 4.0f  , 4.0f  , 4.0f},
 		{ 0.0f  , 1.0f  , 2.0f  , 3.0f},
 		{ -1.0f , 0.0f  , 1.0f  , 2.0f},
 		{ -2.0f , -1.0f , 0.0f  , 1.0f},
 		{ -3.0f , -2.0f , -1.0f , 0.0f},
 	};
-	alignas(16) float m_log2_coef_128b[4][4] = {};
+	alignas(16) float m_log2_coef[4][4] = {};
 
-	constexpr GSScanlineConstantData()
+	constexpr GSScanlineConstantData128B()
 	{
-		constexpr float log2_coef[] = {
-			0.204446009836232697516f,
-			-1.04913055217340124191f,
-			2.28330284476918490682f,
-			1.0f
-		};
-
+		using namespace GSScanlineConstantData;
 		for (size_t n = 0; n < std::size(log2_coef); ++n)
 		{
 			for (size_t i = 0; i < 4; ++i)
-			{
-				m_log2_coef_128b[n][i] = log2_coef[n];
-				m_log2_coef_256b[n][i] = log2_coef[n];
-				m_log2_coef_256b[n][i + 4] = log2_coef[n];
-			}
+				m_log2_coef[n][i] = log2_coef[n];
 		}
 	}
 };
 
-extern const GSScanlineConstantData g_const;
+extern const GSScanlineConstantData256B g_const_256b;
+extern const GSScanlineConstantData128B g_const_128b;

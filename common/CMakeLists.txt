@@ -148,6 +148,7 @@ elseif(APPLE)
 		Darwin/DarwinThreads.cpp
 		Darwin/DarwinMisc.cpp
 		Darwin/DarwinMisc.h
+		Linux/LnxHostSys.cpp
 	)
 	target_compile_options(common PRIVATE -fobjc-arc)
 	target_link_options(common PRIVATE -fobjc-link-runtime)
