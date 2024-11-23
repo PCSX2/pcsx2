@@ -205,6 +205,25 @@ static void DumpBadShader(std::string_view code, std::string_view errors)
 	}
 }
 
+static const char* compilation_status_to_string(shaderc_compilation_status status)
+{
+	switch (status)
+	{
+#define CASE(x) case shaderc_compilation_status_##x: return #x
+		CASE(success);
+		CASE(invalid_stage);
+		CASE(compilation_error);
+		CASE(internal_error);
+		CASE(null_result_object);
+		CASE(invalid_assembly);
+		CASE(validation_error);
+		CASE(transformation_error);
+		CASE(configuration_error);
+#undef CASE
+	}
+	return "unknown_error";
+}
+
 std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileShaderToSPV(u32 stage, std::string_view source, bool debug)
 {
 	std::optional<VKShaderCache::SPIRVCodeVector> ret;
@@ -230,11 +249,12 @@ std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileShaderToSPV(
 		dyn_shaderc::s_compiler, source.data(), source.length(), static_cast<shaderc_shader_kind>(stage), "source",
 		"main", options);
 
-	if (!result || dyn_shaderc::shaderc_result_get_compilation_status(result) != shaderc_compilation_status_success)
+	shaderc_compilation_status status = shaderc_compilation_status_null_result_object;
+	if (!result || (status = dyn_shaderc::shaderc_result_get_compilation_status(result)) != shaderc_compilation_status_success)
 	{
-		const std::string_view errors(result ? dyn_shaderc::shaderc_result_get_error_message(result) :
-											   "null result object");
-		ERROR_LOG("Failed to compile shader to SPIR-V: {}", errors);
+		const std::string_view errors(result ? dyn_shaderc::shaderc_result_get_error_message(result)
+		                                     : "null result object");
+		ERROR_LOG("Failed to compile shader to SPIR-V: {}\n{}", compilation_status_to_string(status), errors);
 		DumpBadShader(source, errors);
 	}
 	else
