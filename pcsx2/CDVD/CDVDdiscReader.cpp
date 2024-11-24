@@ -76,35 +76,37 @@ void cdvdParseTOC()
 	strack = 0xFF;
 	etrack = 0;
 
-	int i = 0;
-
 	for (auto& entry : src->ReadTOC())
 	{
-		if (entry.track < 1 || entry.track > 99)
+		const u8 track = entry.track;
+		if (track < 1 || track > 99)
+		{
+			Console.Warning("CDVD: Invalid track index %u, ignoring\n", track);
 			continue;
-		strack = std::min(strack, entry.track);
-		etrack = std::max(etrack, entry.track);
-		tracks[i].start_lba = entry.lba;
+		}
+		strack = std::min(strack, track);
+		etrack = std::max(etrack, track);
+		tracks[track].start_lba = entry.lba;
 		if ((entry.control & 0x0C) == 0x04)
 		{
 			std::array<u8, 2352> buffer;
 			// Byte 15 of a raw CD data sector determines the track mode
 			if (src->ReadSectors2352(entry.lba, 1, buffer.data()) && (buffer[15] & 3) == 2)
 			{
-				tracks[i].type = CDVD_MODE2_TRACK;
+				tracks[track].type = CDVD_MODE2_TRACK;
 			}
 			else
 			{
-				tracks[i].type = CDVD_MODE1_TRACK;
+				tracks[track].type = CDVD_MODE1_TRACK;
 			}
 		}
 		else
 		{
-			tracks[i].type = CDVD_AUDIO_TRACK;
+			tracks[track].type = CDVD_AUDIO_TRACK;
 		}
-		fprintf(stderr, "Track %u start sector: %u\n", entry.track, entry.lba);
-
-		i += 1;
+#ifdef PCSX2_DEBUG
+	DevCon.Write("cdvdParseTOC: Track %u: LBA %u, Type %u\n", track, tracks[track].start_lba, tracks[track].type);
+#endif
 	}
 }
 
