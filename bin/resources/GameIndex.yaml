@@ -18509,6 +18509,8 @@ SLES-52256:
 SLES-52257:
   name: "P.T.O. IV - Pacific Theater of Operations IV"
   region: "PAL-E"
+  gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes graphical flickering.
 SLES-52258:
   name: "Romance of the Three Kingdoms VIII"
   region: "PAL-E"
@@ -21503,47 +21505,42 @@ SLES-53332:
   region: "PAL-M4"
   compat: 5
   gsHWFixes:
-    recommendedBlendingLevel: 2
+    recommendedBlendingLevel: 3 # Fixes banding and level lighting.
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    nativeScaling: 2 # Fixes bloom misaligment.
 SLES-53333:
   name: "Medal of Honor - Les Faucons de Guerre"
   region: "PAL-F"
   gsHWFixes:
-    recommendedBlendingLevel: 2
+    recommendedBlendingLevel: 3 # Fixes banding and level lighting.
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    nativeScaling: 2 # Fixes bloom misaligment.
 SLES-53334:
   name: "Medal of Honor - European Assault"
   region: "PAL-G"
   gsHWFixes:
-    recommendedBlendingLevel: 2
+    recommendedBlendingLevel: 3 # Fixes banding and level lighting.
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    nativeScaling: 2 # Fixes bloom misaligment.
 SLES-53335:
   name: "Medal of Honor - European Assault"
   region: "PAL-I"
   gsHWFixes:
-    recommendedBlendingLevel: 2
+    recommendedBlendingLevel: 3 # Fixes banding and level lighting.
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    nativeScaling: 2 # Fixes bloom misaligment.
 SLES-53336:
   name: "Medal of Honor - European Assault"
   region: "PAL-S"
   gsHWFixes:
-    recommendedBlendingLevel: 2
+    recommendedBlendingLevel: 3 # Fixes banding and level lighting.
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    nativeScaling: 2 # Fixes bloom misaligment.
 SLES-53338:
   name: "Victorious Boxers 2 - Fighting Spirit"
   region: "PAL-M3"
@@ -29948,11 +29945,10 @@ SLKA-25243:
   name: "Medal of Honor - European Assault"
   region: "NTSC-K"
   gsHWFixes:
-    recommendedBlendingLevel: 2
+    recommendedBlendingLevel: 3 # Fixes banding and level lighting.
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    nativeScaling: 2 # Fixes bloom misaligment.
 SLKA-25244:
   name: "WWE SmackDown! vs. Raw"
   region: "NTSC-K"
@@ -31187,11 +31183,10 @@ SLPM-55037:
   name: "Medal of Honor - European Assault [EASY 1980]"
   region: "NTSC-J"
   gsHWFixes:
-    recommendedBlendingLevel: 2
+    recommendedBlendingLevel: 3 # Fixes banding and level lighting.
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    nativeScaling: 2 # Fixes bloom misaligment.
 SLPM-55038:
   name: "Grand Theft Auto - Liberty City Stories [Best Price]"
   region: "NTSC-J"
@@ -33919,6 +33914,8 @@ SLPM-62144:
 SLPM-62145:
   name: "Teitoku no Ketsudan IV"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes graphical flickering.
 SLPM-62146:
   name: "Chou Kousoku Mahjong Plus"
   region: "NTSC-J"
@@ -35381,6 +35378,8 @@ SLPM-62469:
 SLPM-62470:
   name: "Teitoku no Ketsudan IV with Power Up Kit"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes graphical flickering.
   memcardFilters:
     - "SLPM-62145"
     - "SLPM-62470"
@@ -35652,6 +35651,8 @@ SLPM-62518:
   name-sort: "ていとくのけつだん4 [KOEI The Best]"
   name-en: "Teitoku no Ketsudan IV [Koei the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes graphical flickering.
 SLPM-62519:
   name: "三國志VIII [KOEI The Best]"
   name-sort: "さんごくし8 [KOEI The Best]"
@@ -43063,11 +43064,10 @@ SLPM-66079:
   name: "Medal of Honor - Europe Kyoushuu"
   region: "NTSC-J"
   gsHWFixes:
-    recommendedBlendingLevel: 2
+    recommendedBlendingLevel: 3 # Fixes banding and level lighting.
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    nativeScaling: 2 # Fixes bloom misaligment.
 SLPM-66080:
   name: "GENERATION OF CHAOSIII 〜時の封印〜 [IFコレクション]"
   name-sort: "じぇねれーしょんおぶかおす 3 ときのふういん [あいであふぁくとりーこれくしょん]"
@@ -45807,11 +45807,10 @@ SLPM-66514:
   name-en: "Medal of Honor - European Assault [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
-    recommendedBlendingLevel: 2
+    recommendedBlendingLevel: 3 # Fixes banding and level lighting.
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    nativeScaling: 2 # Fixes bloom misaligment.
 SLPM-66515:
   name: "EA BEST HITS スター・ウォーズ エピソード3 シスの復讐"
   name-sort: "すたーうぉーず えぴそーど3 しすのふくしゅう [EA BEST HITS]"
@@ -61062,6 +61061,8 @@ SLUS-20567:
   name: "P.T.O. IV - Pacific Theater of Operations"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes graphical flickering.
 SLUS-20568:
   name: "Hard Hitter Tennis"
   region: "NTSC-U"
@@ -64610,11 +64611,10 @@ SLUS-21199:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    recommendedBlendingLevel: 2
+    recommendedBlendingLevel: 3 # Fixes banding and level lighting.
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    nativeScaling: 2 # Fixes bloom misaligment.
 SLUS-21200:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-U"
