@@ -105,7 +105,7 @@ void cdvdParseTOC()
 			tracks[track].type = CDVD_AUDIO_TRACK;
 		}
 #ifdef PCSX2_DEBUG
-	DevCon.Write("cdvdParseTOC: Track %u: LBA %u, Type %u\n", track, tracks[track].start_lba, tracks[track].type);
+		DevCon.Write("cdvdParseTOC: Track %u: LBA %u, Type %u\n", track, tracks[track].start_lba, tracks[track].type);
 #endif
 	}
 }
@@ -133,7 +133,7 @@ static void keepAliveThread()
 	std::unique_lock<std::mutex> guard(s_keepalive_lock);
 
 	while (!s_keepalive_cv.wait_for(guard, std::chrono::seconds(30),
-									[]() { return !s_keepalive_is_open; }))
+		[]() { return !s_keepalive_is_open; }))
 	{
 
 		//printf(" * keepAliveThread: polling drive.\n");
@@ -273,20 +273,28 @@ static s32 DISCreadSubQ(u32 lsn, cdvdSubQ* subq)
 
 	memset(subq, 0, sizeof(cdvdSubQ));
 
+	lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
+
+	u8 i = strack;
+	while (i < etrack && lsn >= tracks[i + 1].start_lba)
+		++i;
+
+	lsn -= tracks[i].start_lba;
+
+	lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
+
+	subq->ctrl = tracks[i].type;
+
+	// It's important to note that we do _not_ use the current MSF values
+	// from the host's device. We use the MSF values from the lsn.
+	// An easy way to test an implementation is to see if the OSDSYS
+	// CD player can display the correct minute and second values.
+	// From my testing, the IOCTL returns 0 for ctrl. This also breaks
+	// the OSDSYS player. The only "safe" values to receive from the IOCTL
+	// are ADR, trackNum and trackIndex.
 	if (!src->ReadTrackSubQ(subq))
 	{
-		lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
-
-		u8 i = strack;
-		while (i < etrack && lsn >= tracks[i + 1].start_lba)
-			++i;
-
-		lsn -= tracks[i].start_lba;
-
-		lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
-
 		subq->adr = 1;
-		subq->ctrl = tracks[i].type;
 		subq->trackNum = i;
 		subq->trackIndex = 1;
 	}
