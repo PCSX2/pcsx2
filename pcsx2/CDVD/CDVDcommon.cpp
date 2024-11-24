@@ -17,6 +17,7 @@
 #include "common/ProgressCallback.h"
 #include "common/StringUtil.h"
 
+#include <array>
 #include <ctype.h>
 #include <exception>
 #include <memory>
@@ -55,7 +56,7 @@ static OutputIsoFile blockDumpFile;
 // Information about tracks on disc
 u8 strack;
 u8 etrack;
-cdvdTrack tracks[100];
+std::array<cdvdTrack, 100> tracks;
 
 // Assertion check for CDVD != NULL (in devel and debug builds), because its handier than
 // relying on DEP exceptions -- and a little more reliable too.
