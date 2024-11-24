@@ -3013,6 +3013,20 @@ void cdvdWrite(u8 key, u8 rt)
 		case 0x08:
 			cdvdWrite08(rt);
 			break;
+		case 0x09:
+			/*
+				The register 0xC, 0xD, 0xE give back MSF of the current sector being read/played from the actual DSP hardware. They are named "where" registers : where0, where1, where2.
+				They can be read anytime on hw as long as there is a valid disc and mode configured properly. Register 0x9 is where_select register which determines the mode for this registers. The mode must be set according to the used disc. 
+				0 = CDDA
+				1 = CDROM
+				2 = DVD
+
+				If no disc or invalid mode for disc type then those registers return 0. Only official usage so far is cdvdman reading those registers and waiting to sync while doing SubQ.
+				Only logging writes different than 0 is enough.
+			*/
+			if (rt != 0)
+				Console.Warning("8bit write to addr 0x1f402009 = 0x%x", rt);
+			break;
 		case 0x0A:
 			cdvdWrite0A(rt);
 			break;
@@ -3035,7 +3049,7 @@ void cdvdWrite(u8 key, u8 rt)
 			cdvdWrite3A(rt);
 			break;
 		default:
-			Console.Warning("IOP Unknown 8bit write to addr 0x1f4020%x = 0x%x", key, rt);
+			Console.Warning("IOP Unknown 8bit write to addr 0x1f4020%02x = 0x%x", key, rt);
 			break;
 	}
 }
