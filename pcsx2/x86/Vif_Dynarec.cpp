@@ -46,9 +46,9 @@ __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const
 	const vifStruct& vif = MTVU_VifX;
 
 	//This could have ended up copying the row when there was no row to write.1810080
-	u32 m0 = vB.mask; //The actual mask example 0x03020100
-	u32 m3 = ((m0 & 0xaaaaaaaa) >> 1) & ~m0; //all the upper bits, so our example 0x01010000 & 0xFCFDFEFF = 0x00010000 just the cols (shifted right for maskmerge)
-	u32 m2 = (m0 & 0x55555555) & (~m0 >> 1); // 0x1000100 & 0xFE7EFF7F = 0x00000100 Just the row
+	const u32 m0 = vB.mask; //The actual mask example 0x03020100
+	const u32 m3 = ((m0 & 0xaaaaaaaa) >> 1) & ~m0; //all the upper bits, so our example 0x01010000 & 0xFCFDFEFF = 0x00010000 just the cols (shifted right for maskmerge)
+	const u32 m2 = (m0 & 0x55555555) & (~m0 >> 1); // 0x1000100 & 0xFE7EFF7F = 0x00000100 Just the row
 
 	if ((doMask && m2) || doMode)
 	{
@@ -73,7 +73,7 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 	pxAssertMsg(regX.Id <= 1, "Reg Overflow! XMM2 thru XMM6 are reserved for masking.");
 
 	const int cc = std::min(vCL, 3);
-	u32 m0 = (vB.mask >> (cc * 8)) & 0xff; //The actual mask example 0xE4 (protect, col, row, clear)
+	const u32 m0 = (vB.mask >> (cc * 8)) & 0xff; //The actual mask example 0xE4 (protect, col, row, clear)
 	u32 m3 = ((m0 & 0xaa) >> 1) & ~m0; //all the upper bits (cols shifted right) cancelling out any write protects 0x10
 	u32 m2 = (m0 & 0x55) & (~m0 >> 1); // all the lower bits (rows)cancelling out any write protects 0x04
 	u32 m4 = (m0 & ~((m3 << 1) | m2)) & 0x55; //  = 0xC0 & 0x55 = 0x40 (for merge mask)
@@ -317,8 +317,8 @@ static u16 dVifComputeLength(uint cl, uint wl, u8 num, bool isFill)
 
 	if (!isFill)
 	{
-		uint skipSize = (cl - wl) * 16;
-		uint blocks   = (num + (wl - 1)) / wl; //Need to round up num's to calculate skip size correctly.
+		const uint skipSize = (cl - wl) * 16;
+		const uint blocks   = (num + (wl - 1)) / wl; //Need to round up num's to calculate skip size correctly.
 		length += (blocks - 1) * skipSize;
 	}
 
@@ -370,15 +370,15 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill)
 	// in u32 (aka x86 register).
 	//
 	// Warning the order of data in hash_key/key0/key1 depends on the nVifBlock struct
-	u32 hash_key = (u32)(upkType & 0xFF) << 8 | (vifRegs.num & 0xFF);
+	const u32 hash_key = static_cast<u32>(upkType & 0xFF) << 8 | (vifRegs.num & 0xFF);
 
-	u32 key1 = ((u32)vifRegs.cycle.wl << 24) | ((u32)vifRegs.cycle.cl << 16) | ((u32)(vif.start_aligned & 0xFF) << 8) | ((u32)vifRegs.mode & 0xFF);
+	u32 key1 = (static_cast<u32>(vifRegs.cycle.wl) << 24) | (static_cast<u32>(vifRegs.cycle.cl) << 16) | (static_cast<u32>(vif.start_aligned & 0xFF) << 8) | (static_cast<u32>(vifRegs.mode) & 0xFF);
 	if ((upkType & 0xf) != 9)
 		key1 &= 0xFFFF01FF;
 
 	// Zero out the mask parameter if it's unused -- games leave random junk
 	// values here which cause false recblock cache misses.
-	u32 key0 = doMask ? vifRegs.mask : 0;
+	const u32 key0 = doMask ? vifRegs.mask : 0;
 
 	block.hash_key = hash_key;
 	block.key0 = key0;
@@ -397,7 +397,7 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill)
 
 	{ // Execute the block
 		const VURegs& VU = vuRegs[idx];
-		const uint vuMemLimit = idx ? 0x4000 : 0x1000;
+		constexpr uint vuMemLimit = idx ? 0x4000 : 0x1000;
 
 		u8* startmem = VU.Mem + (vif.tag.addr & (vuMemLimit - 0x10));
 		u8* endmem   = VU.Mem + vuMemLimit;

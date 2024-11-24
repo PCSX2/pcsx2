@@ -33,7 +33,7 @@ bool _VIF0chain()
 	}
 
 	pMem = (u32*)dmaGetAddr(vif0ch.madr, false);
-	if (pMem == NULL)
+	if (pMem == nullptr)
 	{
 		vif0.cmd = 0;
 		vif0.tag.size = 0;

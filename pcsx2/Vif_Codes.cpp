@@ -109,7 +109,7 @@ static __fi void vuExecMicro(int idx, u32 addr, bool requires_wait)
 	}
 
 	GetVifX.queued_program = true;
-	if ((s32)addr == -1)
+	if (static_cast<s32>(addr) == -1)
 		GetVifX.queued_pc = addr;
 	else
 		GetVifX.queued_pc = addr & (idx ? 0x7ffu : 0x1ffu);
@@ -144,7 +144,7 @@ __fi int _vifCode_Direct(int pass, const u8* data, bool isDirectHL)
 	vif1Only();
 	pass1
 	{
-		int vifImm = (u16)vif1Regs.code;
+		const int vifImm = static_cast<u16>(vif1Regs.code);
 		vif1.tag.size = vifImm ? (vifImm * 4) : (65536 * 4);
 		vif1.pass = 1;
 		return 1;
@@ -152,9 +152,9 @@ __fi int _vifCode_Direct(int pass, const u8* data, bool isDirectHL)
 	pass2
 	{
 		const char* name = isDirectHL ? "DirectHL" : "Direct";
-		GIF_TRANSFER_TYPE tranType = isDirectHL ? GIF_TRANS_DIRECTHL : GIF_TRANS_DIRECT;
-		uint size = std::min(vif1.vifpacketsize, vif1.tag.size) * 4; // Get size in bytes
-		uint ret = gifUnit.TransferGSPacketData(tranType, (u8*)data, size);
+		const GIF_TRANSFER_TYPE tranType = isDirectHL ? GIF_TRANS_DIRECTHL : GIF_TRANS_DIRECT;
+		const uint size = std::min(vif1.vifpacketsize, vif1.tag.size) * 4; // Get size in bytes
+		const uint ret = gifUnit.TransferGSPacketData(tranType, (u8*)data, size);
 
 		vif1.tag.size -= ret / 4; // Convert to u32's
 		vif1Regs.stat.VGW = false;
@@ -202,7 +202,7 @@ vifOp(vifCode_Flush)
 	//vifStruct& vifX = GetVifX;
 	pass1or2
 	{
-		bool p1or2 = (gifRegs.stat.APATH != 0 && gifRegs.stat.APATH != 3);
+		const bool p1or2 = (gifRegs.stat.APATH != 0 && gifRegs.stat.APATH != 3);
 		vif1Regs.stat.VGW = false;
 		vifFlush(idx);
 		if (gifUnit.checkPaths(1, 1, 0) || p1or2)
@@ -234,7 +234,7 @@ vifOp(vifCode_FlushA)
 	pass1or2
 	{
 		//Gif_Path& p3      = gifUnit.gifPath[GIF_PATH_3];
-		u32 gifBusy = gifUnit.checkPaths(1, 1, 1) || (gifRegs.stat.APATH != 0);
+		const u32 gifBusy = gifUnit.checkPaths(1, 1, 1) || (gifRegs.stat.APATH != 0);
 		//bool      doStall = false;
 		vif1Regs.stat.VGW = false;
 		vifFlush(idx);
@@ -298,7 +298,7 @@ vifOp(vifCode_Mark)
 	vifStruct& vifX = GetVifX;
 	pass1
 	{
-		vifXRegs.mark = (u16)vifXRegs.code;
+		vifXRegs.mark = static_cast<u16>(vifXRegs.code);
 		vifXRegs.stat.MRK = true;
 		vifX.cmd = 0;
 		vifX.pass = 0;
@@ -311,7 +311,7 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32* data, int size)
 {
 	VURegs& VUx = idx ? VU1 : VU0;
 	vifStruct& vifX = GetVifX;
-	u16 vuMemSize = idx ? 0x4000 : 0x1000;
+	const u16 vuMemSize = idx ? 0x4000 : 0x1000;
 	pxAssert(VUx.Micro);
 
 	vifExecQueue(idx);
@@ -371,8 +371,8 @@ vifOp(vifCode_MPG)
 	vifStruct& vifX = GetVifX;
 	pass1
 	{
-		int vifNum = (u8)(vifXRegs.code >> 16);
-		vifX.tag.addr = (u16)(vifXRegs.code << 3) & (idx ? 0x3fff : 0xfff);
+		const int vifNum = static_cast<u8>(vifXRegs.code >> 16);
+		vifX.tag.addr = static_cast<u16>(vifXRegs.code << 3) & (idx ? 0x3fff : 0xfff);
 		vifX.tag.size = vifNum ? (vifNum * 2) : 512;
 		vifFlush(idx);
 
@@ -406,7 +406,7 @@ vifOp(vifCode_MPG)
 				//DevCon.Warning("Vif%d MPG Split Overflow full %x", idx, vifX.tag.addr + vifX.tag.size*4);
 			}
 			_vifCode_MPG(idx, vifX.tag.addr, data, vifX.tag.size);
-			int ret = vifX.tag.size;
+			const int ret = vifX.tag.size;
 			vifX.tag.size = 0;
 			vifX.cmd = 0;
 			vifX.pass = 0;
@@ -430,7 +430,7 @@ vifOp(vifCode_MSCAL)
 			return 0;
 		}
 
-		vuExecMicro(idx, (u16)(vifXRegs.code), false);
+		vuExecMicro(idx, static_cast<u16>(vifXRegs.code), false);
 		vifX.cmd = 0;
 		vifX.pass = 0;
 
@@ -455,7 +455,7 @@ vifOp(vifCode_MSCALF)
 	{
 		vifXRegs.stat.VGW = false;
 		vifFlush(idx);
-		if (u32 a = gifUnit.checkPaths(1, 1, 0))
+		if (const u32 a = gifUnit.checkPaths(1, 1, 0))
 		{
 			GUNIT_WARN("Vif MSCALF: Stall! [%d,%d]", !!(a & 1), !!(a & 2));
 			vif1Regs.stat.VGW = true;
@@ -469,7 +469,7 @@ vifOp(vifCode_MSCALF)
 			return 0;
 		}
 
-		vuExecMicro(idx, (u16)(vifXRegs.code), true);
+		vuExecMicro(idx, static_cast<u16>(vifXRegs.code), true);
 		vifX.cmd = 0;
 		vifX.pass = 0;
 		vifExecQueue(idx);
@@ -595,7 +595,7 @@ static __fi int _vifCode_STColRow(const u32* data, u32* pmem2)
 {
 	vifStruct& vifX = GetVifX;
 
-	int ret = std::min(4 - vifX.tag.addr, vifX.vifpacketsize);
+	const int ret = std::min(4 - vifX.tag.addr, vifX.vifpacketsize);
 	pxAssume(vifX.tag.addr < 4);
 	pxAssume(ret > 0);
 
@@ -641,7 +641,7 @@ vifOp(vifCode_STCol)
 	}
 	pass2
 	{
-		u32 ret = _vifCode_STColRow<idx>(data, &vifX.MaskCol._u32[vifX.tag.addr]);
+		const u32 ret = _vifCode_STColRow<idx>(data, &vifX.MaskCol._u32[vifX.tag.addr]);
 		if (idx && vifX.tag.size == 0)
 			vu1Thread.WriteCol(vifX);
 		return ret;
@@ -662,7 +662,7 @@ vifOp(vifCode_STRow)
 	}
 	pass2
 	{
-		u32 ret = _vifCode_STColRow<idx>(data, &vifX.MaskRow._u32[vifX.tag.addr]);
+		const u32 ret = _vifCode_STColRow<idx>(data, &vifX.MaskRow._u32[vifX.tag.addr]);
 		if (idx && vifX.tag.size == 0)
 			vu1Thread.WriteRow(vifX);
 		return ret;
@@ -676,8 +676,8 @@ vifOp(vifCode_STCycl)
 	vifStruct& vifX = GetVifX;
 	pass1
 	{
-		vifXRegs.cycle.cl = (u8)(vifXRegs.code);
-		vifXRegs.cycle.wl = (u8)(vifXRegs.code >> 8);
+		vifXRegs.cycle.cl = static_cast<u8>(vifXRegs.code);
+		vifXRegs.cycle.wl = static_cast<u8>(vifXRegs.code >> 8);
 		vifX.cmd = 0;
 		vifX.pass = 0;
 	}
@@ -744,9 +744,9 @@ vifOp(vifCode_Unpack)
 	{
 		vifStruct& vifX = GetVifX;
 		VIFregisters& vifRegs = vifXRegs;
-		uint vl = vifX.cmd & 0x03;
-		uint vn = (vifX.cmd >> 2) & 0x3;
-		bool flg = (vifRegs.code >> 15) & 1;
+		const uint vl = vifX.cmd & 0x03;
+		const uint vn = (vifX.cmd >> 2) & 0x3;
+		const bool flg = (vifRegs.code >> 15) & 1;
 		static const char* const vntbl[] = {"S", "V2", "V3", "V4"};
 		static const uint vltbl[] = {32, 16, 8, 5};
 

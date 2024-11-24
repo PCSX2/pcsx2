@@ -27,7 +27,7 @@ void vif1TransferToMemory()
 	u128* pMem = (u128*)dmaGetAddr(vif1ch.madr, false);
 
 	// VIF from gsMemory
-	if (pMem == NULL)
+	if (pMem == nullptr)
 	{ // Is vif0ptag empty?
 		Console.WriteLn("Vif1 Tag BUSERR");
 		dmacRegs.stat.BEIS = true; // Bus Error
@@ -117,7 +117,7 @@ bool _VIF1chain()
 	}
 
 	pMem = (u32*)dmaGetAddr(vif1ch.madr, !vif1ch.chcr.DIR);
-	if (pMem == NULL)
+	if (pMem == nullptr)
 	{
 		vif1.cmd = 0;
 		vif1.tag.size = 0;
@@ -305,8 +305,8 @@ __fi void vif1Interrupt()
 	// from the GS then we handle that separately (KH2 for testing)
 	if (vif1ch.chcr.DIR)
 	{
-		bool isDirect = (vif1.cmd & 0x7f) == 0x50;
-		bool isDirectHL = (vif1.cmd & 0x7f) == 0x51;
+		const bool isDirect = (vif1.cmd & 0x7f) == 0x50;
+		const bool isDirectHL = (vif1.cmd & 0x7f) == 0x51;
 		if ((isDirect && !gifUnit.CanDoPath2()) || (isDirectHL && !gifUnit.CanDoPath2HL()))
 		{
 			GUNIT_WARN("vif1Interrupt() - Waiting for Path 2 to be ready");
