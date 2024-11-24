@@ -222,7 +222,7 @@ void VifUnpackSSE_Base::xUPK_V3_16() const
 	//However - IF the end of this iteration of the unpack falls on a quadword boundary, W becomes 0
 	//IsAligned is the position through the current QW in the vif packet
 	//Iteration counts where we are in the packet.
-	int result = (((UnpkLoopIteration / 4) + 1 + (4 - IsAligned)) & 0x3);
+	const int result = (((UnpkLoopIteration / 4) + 1 + (4 - IsAligned)) & 0x3);
 
 	if ((UnpkLoopIteration & 0x1) == 0 && result == 0)
 		xBLEND.PS(destReg, zeroReg, 0x8); //zero last word - tested on ps2
@@ -330,7 +330,7 @@ VifUnpackSSE_Simple::VifUnpackSSE_Simple(bool usn_, bool domask_, int curCycle_)
 void VifUnpackSSE_Simple::doMaskWrite(const xRegisterSSE& regX) const
 {
 	xMOVAPS(xmm7, ptr[dstIndirect]);
-	int offX = std::min(curCycle, 3);
+	const int offX = std::min(curCycle, 3);
 	xPAND(regX, ptr32[nVifMask[0][offX]]);
 	xPAND(xmm7, ptr32[nVifMask[1][offX]]);
 	xPOR (regX, ptr32[nVifMask[2][offX]]);
@@ -349,7 +349,7 @@ static void nVifGen(int usn, int mask, int curCycle)
 	for (int i = 0; i < 16; ++i)
 	{
 		nVifCall& ucall(nVifUpk[((usnpart + maskpart + i) * 4) + curCycle]);
-		ucall = NULL;
+		ucall = nullptr;
 		if (nVifT[i] == 0)
 			continue;
 
