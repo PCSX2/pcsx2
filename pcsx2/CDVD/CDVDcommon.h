@@ -10,7 +10,7 @@
 class Error;
 class ProgressCallback;
 
-typedef struct _cdvdTrackIndex
+struct cdvdTrackIndex
 {
 	bool isPregap;
 	u8 trackM; // current minute offset from first track (BCD encoded)
@@ -20,9 +20,9 @@ typedef struct _cdvdTrackIndex
 	u8 discS; // current sector location on the disc (BCD encoded)
 	u8 discF; // current frame location on the disc (BCD encoded)
 
-} cdvdTrackIndex;
+};
 
-typedef struct _cdvdTrack
+struct cdvdTrack
 {
 	u32 start_lba; // Starting lba of track, note that some formats will be missing 2 seconds, cue, bin
 	u8 type; // Track Type
@@ -36,10 +36,10 @@ typedef struct _cdvdTrack
 	u8 discF; // current frame location on the disc (BCD encoded)
 
 	// 0 is pregap, 1 is data
-	_cdvdTrackIndex index[2];
-} cdvdTrack;
+	cdvdTrackIndex index[2];
+};
 
-typedef struct _cdvdSubQ
+struct cdvdSubQ
 {
 	u8 ctrl : 4; // control and adr bits
 	u8 adr : 4; // control and adr bits, note that adr determines what SubQ info we're recieving.
@@ -52,19 +52,19 @@ typedef struct _cdvdSubQ
 	u8 discM; // current minute location on the disc (BCD encoded)
 	u8 discS; // current sector location on the disc (BCD encoded)
 	u8 discF; // current frame location on the disc (BCD encoded)
-} cdvdSubQ;
+};
 
-typedef struct _cdvdTD
+struct cdvdTD
 { // NOT bcd coded
 	u32 lsn;
 	u8 type;
-} cdvdTD;
+};
 
-typedef struct _cdvdTN
+struct cdvdTN
 {
 	u8 strack; //number of the first track (usually 1)
 	u8 etrack; //number of the last track
-} cdvdTN;
+};
 
 // SpindleCtrl Masks
 #define CDVD_SPINDLE_SPEED 0x7 // Speed ranges from 0-3 (1, 2, 3, 4x for DVD) and 0-5 (1, 2, 4, 12, 24x for CD)
@@ -185,7 +185,7 @@ extern const CDVD_API CDVDapi_NoDisc;
 
 extern u8 strack;
 extern u8 etrack;
-extern cdvdTrack tracks[100];
+extern std::array<cdvdTrack, 100> tracks;
 
 extern void CDVDsys_ChangeSource(CDVD_SourceType type);
 extern void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile);

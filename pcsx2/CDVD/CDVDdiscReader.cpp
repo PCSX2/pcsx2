@@ -54,7 +54,7 @@ static void lsn_to_msf(u8* minute, u8* second, u8* frame, u32 lsn)
 // TocStuff
 void cdvdParseTOC()
 {
-	tracks[1].start_lba = 0;
+	tracks.fill(cdvdTrack{});
 
 	if (!src->GetSectorCount())
 	{
@@ -79,7 +79,7 @@ void cdvdParseTOC()
 	for (auto& entry : src->ReadTOC())
 	{
 		const u8 track = entry.track;
-		if (track < 1 || track > 99)
+		if (track < 1 || track >= tracks.size())
 		{
 			Console.Warning("CDVD: Invalid track index %u, ignoring\n", track);
 			continue;
@@ -472,11 +472,13 @@ static s32 DISCgetTOC(void* toc)
 		{
 			err = DISCgetTD(i, &trackInfo);
 			lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
-			tocBuff[i * 10 + 30] = trackInfo.type;
-			tocBuff[i * 10 + 32] = err == -1 ? 0 : dec_to_bcd(i); //number
-			tocBuff[i * 10 + 37] = dec_to_bcd(min);
-			tocBuff[i * 10 + 38] = dec_to_bcd(sec);
-			tocBuff[i * 10 + 39] = dec_to_bcd(frm);
+
+			const u8 tocIndex = i - diskInfo.strack;
+			tocBuff[tocIndex * 10 + 30] = trackInfo.type;
+			tocBuff[tocIndex * 10 + 32] = err == -1 ? 0 : dec_to_bcd(i); //number
+			tocBuff[tocIndex * 10 + 37] = dec_to_bcd(min);
+			tocBuff[tocIndex * 10 + 38] = dec_to_bcd(sec);
+			tocBuff[tocIndex * 10 + 39] = dec_to_bcd(frm);
 			fprintf(stderr, "Track %u: %u mins %u secs %u frames\n", i, min, sec, frm);
 		}
 	}
