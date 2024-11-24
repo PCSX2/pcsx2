@@ -420,10 +420,11 @@ __forceinline void UpdateSpdifMode()
 {
 	const int OPM = PlayMode;
 
-	if (Spdif.Out & 0x4 && SPU2::MsgToConsole()) // use 24/32bit PCM data streaming
+	if (Spdif.Out & 0x4) // use 24/32bit PCM data streaming
 	{
 		PlayMode = 8;
-		SPU2::ConLog("* SPU2: WARNING: Possibly CDDA mode set!\n");
+		if (SPU2::MsgToConsole())
+			SPU2::ConLog("* SPU2: WARNING: Possibly CDDA mode set!\n");
 		return;
 	}
 
