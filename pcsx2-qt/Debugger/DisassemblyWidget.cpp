@@ -780,11 +780,16 @@ QColor DisassemblyWidget::GetAddressFunctionColor(u32 address)
 		};
 	}
 
-	ccc::FunctionHandle handle = m_cpu->GetSymbolGuardian().FunctionOverlappingAddress(address).handle;
-	if (!handle.valid())
+	// Use the address to pick the colour since the value of the handle may
+	// change from run to run.
+	ccc::Address function_address =
+		m_cpu->GetSymbolGuardian().FunctionOverlappingAddress(address).address;
+	if (!function_address.valid())
 		return palette().text().color();
 
-	return colors[handle.value % colors.size()];
+	// Chop off the first few bits of the address since functions will be
+	// aligned in memory.
+	return colors[(function_address.value >> 4) % colors.size()];
 }
 
 QString DisassemblyWidget::FetchSelectionInfo(SelectionInfo selInfo)
