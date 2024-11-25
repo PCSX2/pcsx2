@@ -163,6 +163,17 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 	return 0;
 }
 
+std::vector<toc_entry> InputIsoFile::ReadTOC() const
+{
+	std::vector<toc_entry> toc;
+
+	if (m_type == ISOTYPE_ILLEGAL)
+		return toc;
+
+	toc = m_reader->ReadTOC();
+	return toc;
+}
+
 InputIsoFile::InputIsoFile()
 {
 	_init();
@@ -271,7 +282,7 @@ bool InputIsoFile::tryIsoType(u32 size, u32 offset, u32 blockofs)
 // Returns true if the image is valid/known/supported, or false if not (type == ISOTYPE_ILLEGAL).
 bool InputIsoFile::Detect(bool readType)
 {
-	m_type = ISOTYPE_ILLEGAL;
+ 	m_type = ISOTYPE_ILLEGAL;
 
 	// First sanity check: no sane CD image has less than 16 sectors, since that's what
 	// we need simply to contain a TOC.  So if the file size is not large enough to
