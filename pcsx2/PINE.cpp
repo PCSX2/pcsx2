@@ -306,7 +306,7 @@ bool PINEServer::Initialize(int slot)
 		return false;
 	}
 	server.sun_family = AF_UNIX;
-	strcpy(server.sun_path, m_socket_name.c_str());
+	StringUtil::Strlcpy(server.sun_path, m_socket_name, sizeof(server.sun_path));
 
 	// we unlink the socket so that when releasing this thread the socket gets
 	// freed even if we didn't close correctly the loop

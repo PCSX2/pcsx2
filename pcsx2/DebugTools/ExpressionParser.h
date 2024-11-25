@@ -26,7 +26,6 @@ public:
 	virtual bool getMemoryValue(u32 address, int size, u64& dest, std::string& error) = 0;
 };
 
-bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, PostfixExpression& dest);
-bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs, u64& dest);
-bool parseExpression(const char* exp, IExpressionFunctions* funcs, u64& dest);
-const char* getExpressionError();
+bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, PostfixExpression& dest, std::string& error);
+bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs, u64& dest, std::string& error);
+bool parseExpression(const char* exp, IExpressionFunctions* funcs, u64& dest, std::string& error);

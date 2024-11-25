@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0
 
-#include "arm64/newVif_UnpackNEON.h"
+#include "arm64/Vif_UnpackNEON.h"
 #include "arm64/AsmHelpers.h"
 #include "MTVU.h"
 
@@ -367,7 +367,9 @@ void VifUnpackNEON_Dynarec::ModUnpack(int upknum, bool PostOp)
 		case 3:
 		case 7:
 		case 11:
-			pxFailRel(fmt::format("Vpu/Vif - Invalid Unpack! [{}]", upknum).c_str());
+			// TODO: Needs hardware testing.
+			// Dynasty Warriors 5: Empire  - Player 2 chose a character menu.
+			Console.Warning("Vpu/Vif: Invalid Unpack %d", upknum);
 			break;
 	}
 }

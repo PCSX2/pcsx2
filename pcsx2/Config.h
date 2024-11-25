@@ -208,6 +208,8 @@ struct DebugSymbolSource
 struct DebugExtraSymbolFile
 {
 	std::string Path;
+	std::string BaseAddress;
+	std::string Condition;
 
 	friend auto operator<=>(const DebugExtraSymbolFile& lhs, const DebugExtraSymbolFile& rhs) = default;
 };
@@ -1103,8 +1105,8 @@ struct Pcsx2Config
 
 		DebugFunctionScanMode FunctionScanMode = DebugFunctionScanMode::SCAN_ELF;
 		bool CustomFunctionScanRange = false;
-		std::string FunctionScanStartAddress = "0";
-		std::string FunctionScanEndAddress = "0";
+		std::string FunctionScanStartAddress;
+		std::string FunctionScanEndAddress;
 
 		bool GenerateFunctionHashes = true;
 
@@ -1276,7 +1278,7 @@ struct Pcsx2Config
 		EnableGameFixes : 1, // enables automatic game fixes
 		SaveStateOnShutdown : 1, // default value for saving state on shutdown
 		EnableDiscordPresence : 1, // enables discord rich presence integration
-		UseSavestateSelector: 1,
+		UseSavestateSelector : 1,
 		InhibitScreensaver : 1,
 		BackupSavestate : 1,
 		McdFolderAutoManage : 1,

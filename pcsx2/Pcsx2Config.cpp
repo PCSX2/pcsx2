@@ -1625,6 +1625,8 @@ void Pcsx2Config::DebugAnalysisOptions::LoadSave(SettingsWrapper& wrap)
 			file = ExtraSymbolFiles[i];
 
 		SettingsWrapEntryEx(file.Path, "Path");
+		SettingsWrapEntryEx(file.BaseAddress, "BaseAddress");
+		SettingsWrapEntryEx(file.Condition, "Condition");
 
 		if (wrap.IsLoading())
 			ExtraSymbolFiles.emplace_back(std::move(file));

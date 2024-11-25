@@ -37,8 +37,8 @@ DebugAnalysisSettingsWidget::DebugAnalysisSettingsWidget(QWidget* parent)
 	}
 
 	m_ui.customAddressRange->setChecked(Host::GetBoolSettingValue("Debugger/Analysis", "CustomFunctionScanRange", false));
-	m_ui.addressRangeStart->setText(QString::fromStdString(Host::GetStringSettingValue("Debugger/Analysis", "FunctionScanStartAddress", "0")));
-	m_ui.addressRangeEnd->setText(QString::fromStdString(Host::GetStringSettingValue("Debugger/Analysis", "FunctionScanEndAddress", "0")));
+	m_ui.addressRangeStart->setText(QString::fromStdString(Host::GetStringSettingValue("Debugger/Analysis", "FunctionScanStartAddress", "")));
+	m_ui.addressRangeEnd->setText(QString::fromStdString(Host::GetStringSettingValue("Debugger/Analysis", "FunctionScanEndAddress", "")));
 
 	m_ui.grayOutOverwrittenFunctions->setChecked(Host::GetBoolSettingValue("Debugger/Analysis", "GenerateFunctionHashes", true));
 
@@ -104,7 +104,7 @@ DebugAnalysisSettingsWidget::DebugAnalysisSettingsWidget(SettingsWindow* dialog,
 	else
 	{
 		m_ui.symbolFileLabel->hide();
-		m_ui.symbolFileList->hide();
+		m_ui.symbolFileTable->hide();
 		m_ui.importSymbolFileButtons->hide();
 	}
 
@@ -165,18 +165,19 @@ void DebugAnalysisSettingsWidget::parseSettingsFromWidgets(Pcsx2Config::DebugAna
 	output.DemangleSymbols = m_ui.demangleSymbols->isChecked();
 	output.DemangleParameters = m_ui.demangleParameters->isChecked();
 
-	for (int i = 0; i < m_ui.symbolFileList->count(); i++)
+	for (int i = 0; i < m_symbol_file_model->rowCount(); i++)
 	{
 		DebugExtraSymbolFile& file = output.ExtraSymbolFiles.emplace_back();
-		file.Path = m_ui.symbolFileList->item(i)->text().toStdString();
+
+		file.Path = m_symbol_file_model->item(i, PATH_COLUMN)->text().toStdString();
+		file.BaseAddress = m_symbol_file_model->item(i, BASE_ADDRESS_COLUMN)->text().toStdString();
+		file.Condition = m_symbol_file_model->item(i, CONDITION_COLUMN)->text().toStdString();
 	}
 
 	output.FunctionScanMode = static_cast<DebugFunctionScanMode>(m_ui.functionScanMode->currentIndex());
 	output.CustomFunctionScanRange = m_ui.customAddressRange->isChecked();
 	output.FunctionScanStartAddress = m_ui.addressRangeStart->text().toStdString();
 	output.FunctionScanEndAddress = m_ui.addressRangeEnd->text().toStdString();
-
-	output.GenerateFunctionHashes = m_ui.grayOutOverwrittenFunctions->isChecked();
 }
 
 void DebugAnalysisSettingsWidget::setupSymbolSourceGrid()
@@ -187,27 +188,12 @@ void DebugAnalysisSettingsWidget::setupSymbolSourceGrid()
 	{
 		// Add symbol sources for which the user has already selected whether or
 		// not they should be cleared.
-		int existing_symbol_source_count;
-		if (m_dialog)
-			existing_symbol_source_count = m_dialog->getEffectiveIntValue("Debugger/Analysis/SymbolSources", "Count", 0);
-		else
-			existing_symbol_source_count = Host::GetIntSettingValue("Debugger/Analysis/SymbolSources", "Count", 0);
-
+		int existing_symbol_source_count = getIntSettingValue("Debugger/Analysis/SymbolSources", "Count", 0);
 		for (int i = 0; i < existing_symbol_source_count; i++)
 		{
 			std::string section = "Debugger/Analysis/SymbolSources/" + std::to_string(i);
-
-			std::string name;
-			if (m_dialog)
-				name = m_dialog->getEffectiveStringValue(section.c_str(), "Name", "");
-			else
-				name = Host::GetStringSettingValue(section.c_str(), "Name", "");
-
-			bool value;
-			if (m_dialog)
-				value = m_dialog->getEffectiveBoolValue(section.c_str(), "ClearDuringAnalysis", false);
-			else
-				value = Host::GetBoolSettingValue(section.c_str(), "ClearDuringAnalysis", false);
+			std::string name = getStringSettingValue(section.c_str(), "Name", "");
+			bool value = getBoolSettingValue(section.c_str(), "ClearDuringAnalysis", false);
 
 			SymbolSourceTemp& source = m_symbol_sources[name];
 			source.previous_value = value;
@@ -320,45 +306,100 @@ void DebugAnalysisSettingsWidget::saveSymbolSources()
 
 void DebugAnalysisSettingsWidget::setupSymbolFileList()
 {
-	int extra_symbol_file_count;
-	if (m_dialog)
-		extra_symbol_file_count = m_dialog->getEffectiveIntValue("Debugger/Analysis/ExtraSymbolFiles", "Count", 0);
-	else
-		extra_symbol_file_count = Host::GetIntSettingValue("Debugger/Analysis/ExtraSymbolFiles", "Count", 0);
+	m_symbol_file_model = new QStandardItemModel(0, SYMBOL_FILE_COLUMN_COUNT, m_ui.symbolFileTable);
 
+	QStringList headers;
+	headers.emplace_back(tr("Path"));
+	headers.emplace_back(tr("Base Address"));
+	headers.emplace_back(tr("Condition"));
+	m_symbol_file_model->setHorizontalHeaderLabels(headers);
+
+	m_ui.symbolFileTable->setModel(m_symbol_file_model);
+
+	m_ui.symbolFileTable->horizontalHeader()->setSectionResizeMode(PATH_COLUMN, QHeaderView::Stretch);
+	m_ui.symbolFileTable->horizontalHeader()->setSectionResizeMode(BASE_ADDRESS_COLUMN, QHeaderView::Fixed);
+	m_ui.symbolFileTable->horizontalHeader()->setSectionResizeMode(CONDITION_COLUMN, QHeaderView::Fixed);
+
+	m_ui.symbolFileTable->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+	int extra_symbol_file_count = getIntSettingValue("Debugger/Analysis/ExtraSymbolFiles", "Count", 0);
 	for (int i = 0; i < extra_symbol_file_count; i++)
 	{
 		std::string section = "Debugger/Analysis/ExtraSymbolFiles/" + std::to_string(i);
-		std::string path;
-		if (m_dialog)
-			path = m_dialog->getEffectiveStringValue(section.c_str(), "Path", "");
-		else
-			path = Host::GetStringSettingValue(section.c_str(), "Path", "");
 
-		m_ui.symbolFileList->addItem(QString::fromStdString(path));
+		int row = m_symbol_file_model->rowCount();
+		if (!m_symbol_file_model->insertRow(row))
+			continue;
+
+		QStandardItem* path_item = new QStandardItem();
+		path_item->setText(QString::fromStdString(getStringSettingValue(section.c_str(), "Path", "")));
+		m_symbol_file_model->setItem(row, PATH_COLUMN, path_item);
+
+		QStandardItem* base_address_item = new QStandardItem();
+		base_address_item->setText(QString::fromStdString(getStringSettingValue(section.c_str(), "BaseAddress")));
+		m_symbol_file_model->setItem(row, BASE_ADDRESS_COLUMN, base_address_item);
+
+		QStandardItem* condition_item = new QStandardItem();
+		condition_item->setText(QString::fromStdString(getStringSettingValue(section.c_str(), "Condition")));
+		m_symbol_file_model->setItem(row, CONDITION_COLUMN, condition_item);
 	}
 
 	connect(m_ui.addSymbolFile, &QPushButton::clicked, this, &DebugAnalysisSettingsWidget::addSymbolFile);
 	connect(m_ui.removeSymbolFile, &QPushButton::clicked, this, &DebugAnalysisSettingsWidget::removeSymbolFile);
+
+	connect(m_ui.symbolFileTable->selectionModel(), &QItemSelectionModel::selectionChanged,
+		this, &DebugAnalysisSettingsWidget::updateEnabledStates);
+
+	connect(m_symbol_file_model, &QStandardItemModel::dataChanged,
+		this, &DebugAnalysisSettingsWidget::saveSymbolFiles);
+	connect(m_symbol_file_model, &QStandardItemModel::dataChanged,
+		this, &DebugAnalysisSettingsWidget::updateEnabledStates);
 }
 
 void DebugAnalysisSettingsWidget::addSymbolFile()
 {
-	QString path = QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Add Symbol File")));
-	if (path.isEmpty())
+	std::string path = Path::ToNativePath(QFileDialog::getOpenFileName(this, tr("Add Symbol File")).toStdString());
+	if (path.empty())
 		return;
 
-	m_ui.symbolFileList->addItem(path);
+	std::string relative_path = Path::MakeRelative(path, EmuFolders::GameSettings);
+	if (!relative_path.starts_with(".."))
+		path = std::move(relative_path);
+
+	int row = m_symbol_file_model->rowCount();
+	if (!m_symbol_file_model->insertRow(row))
+		return;
+
+	QStandardItem* path_item = new QStandardItem();
+	path_item->setText(QString::fromStdString(path));
+	m_symbol_file_model->setItem(row, PATH_COLUMN, path_item);
+
+	QStandardItem* base_address_item = new QStandardItem();
+	base_address_item->setText("");
+	m_symbol_file_model->setItem(row, BASE_ADDRESS_COLUMN, base_address_item);
+
+	QStandardItem* condition_item = new QStandardItem();
+	condition_item->setText("");
+	m_symbol_file_model->setItem(row, CONDITION_COLUMN, condition_item);
 
 	saveSymbolFiles();
+	updateEnabledStates();
 }
 
 void DebugAnalysisSettingsWidget::removeSymbolFile()
 {
-	for (QListWidgetItem* item : m_ui.symbolFileList->selectedItems())
-		delete item;
+	QItemSelectionModel* selection_model = m_ui.symbolFileTable->selectionModel();
+	if (!selection_model)
+		return;
+
+	while (!selection_model->selectedIndexes().isEmpty())
+	{
+		QModelIndex index = selection_model->selectedIndexes().first();
+		m_symbol_file_model->removeRow(index.row(), index.parent());
+	}
 
 	saveSymbolFiles();
+	updateEnabledStates();
 }
 
 void DebugAnalysisSettingsWidget::saveSymbolFiles()
@@ -380,17 +421,24 @@ void DebugAnalysisSettingsWidget::saveSymbolFiles()
 
 	sif->RemoveSection("Debugger/Analysis/ExtraSymbolFiles");
 
-	if (m_ui.symbolFileList->count() == 0)
+	if (m_symbol_file_model->rowCount() == 0)
 		return;
 
 	// Make new configuration entries.
-	sif->SetIntValue("Debugger/Analysis/ExtraSymbolFiles", "Count", m_ui.symbolFileList->count());
+	sif->SetIntValue("Debugger/Analysis/ExtraSymbolFiles", "Count", m_symbol_file_model->rowCount());
 
-	for (int i = 0; i < m_ui.symbolFileList->count(); i++)
+	for (int i = 0; i < m_symbol_file_model->rowCount(); i++)
 	{
 		std::string section = "Debugger/Analysis/ExtraSymbolFiles/" + std::to_string(i);
-		std::string path = m_ui.symbolFileList->item(i)->text().toStdString();
-		sif->SetStringValue(section.c_str(), "Path", path.c_str());
+
+		if (QStandardItem* path_item = m_symbol_file_model->item(i, PATH_COLUMN))
+			sif->SetStringValue(section.c_str(), "Path", path_item->text().toStdString().c_str());
+
+		if (QStandardItem* base_address_item = m_symbol_file_model->item(i, BASE_ADDRESS_COLUMN))
+			sif->SetStringValue(section.c_str(), "BaseAddress", base_address_item->text().toStdString().c_str());
+
+		if (QStandardItem* condition_item = m_symbol_file_model->item(i, CONDITION_COLUMN))
+			sif->SetStringValue(section.c_str(), "Condition", condition_item->text().toStdString().c_str());
 	}
 
 	QtHost::SaveGameSettings(sif, true);
@@ -423,5 +471,34 @@ void DebugAnalysisSettingsWidget::updateEnabledStates()
 	m_ui.symbolSourceScrollArea->setEnabled(!m_ui.automaticallyClearSymbols->isChecked());
 	m_ui.symbolSourceErrorMessage->setEnabled(!m_ui.automaticallyClearSymbols->isChecked());
 	m_ui.demangleParameters->setEnabled(m_ui.demangleSymbols->isChecked());
+	m_ui.removeSymbolFile->setEnabled(
+		m_ui.symbolFileTable->selectionModel() && m_ui.symbolFileTable->selectionModel()->hasSelection());
 	m_ui.customAddressRangeLineEdits->setEnabled(m_ui.customAddressRange->isChecked());
+}
+
+std::string DebugAnalysisSettingsWidget::getStringSettingValue(
+	const char* section, const char* key, const char* default_value)
+{
+	if (m_dialog)
+		return m_dialog->getEffectiveStringValue(section, key, default_value);
+
+	return Host::GetStringSettingValue(section, key, default_value);
+}
+
+bool DebugAnalysisSettingsWidget::getBoolSettingValue(
+	const char* section, const char* key, bool default_value)
+{
+	if (m_dialog)
+		return m_dialog->getEffectiveBoolValue(section, key, default_value);
+
+	return Host::GetBoolSettingValue(section, key, default_value);
+}
+
+int DebugAnalysisSettingsWidget::getIntSettingValue(
+	const char* section, const char* key, int default_value)
+{
+	if (m_dialog)
+		return m_dialog->getEffectiveIntValue(section, key, default_value);
+
+	return Host::GetIntSettingValue(section, key, default_value);
 }

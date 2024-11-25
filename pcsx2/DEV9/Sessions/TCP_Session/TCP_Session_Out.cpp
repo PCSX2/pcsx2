@@ -193,7 +193,7 @@ namespace Sessions
 #endif
 
 
-		const int noDelay = true; // BOOL on Windows
+		constexpr int noDelay = true; // BOOL on Windows
 		ret = setsockopt(client, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&noDelay), sizeof(noDelay));
 
 		if (ret != 0)

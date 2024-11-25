@@ -54,7 +54,7 @@ static void lsn_to_msf(u8* minute, u8* second, u8* frame, u32 lsn)
 // TocStuff
 void cdvdParseTOC()
 {
-	tracks[1].start_lba = 0;
+	tracks.fill(cdvdTrack{});
 
 	if (!src->GetSectorCount())
 	{
@@ -76,35 +76,37 @@ void cdvdParseTOC()
 	strack = 0xFF;
 	etrack = 0;
 
-	int i = 0;
-
 	for (auto& entry : src->ReadTOC())
 	{
-		if (entry.track < 1 || entry.track > 99)
+		const u8 track = entry.track;
+		if (track < 1 || track >= tracks.size())
+		{
+			Console.Warning("CDVD: Invalid track index %u, ignoring\n", track);
 			continue;
-		strack = std::min(strack, entry.track);
-		etrack = std::max(etrack, entry.track);
-		tracks[i].start_lba = entry.lba;
+		}
+		strack = std::min(strack, track);
+		etrack = std::max(etrack, track);
+		tracks[track].start_lba = entry.lba;
 		if ((entry.control & 0x0C) == 0x04)
 		{
 			std::array<u8, 2352> buffer;
 			// Byte 15 of a raw CD data sector determines the track mode
 			if (src->ReadSectors2352(entry.lba, 1, buffer.data()) && (buffer[15] & 3) == 2)
 			{
-				tracks[i].type = CDVD_MODE2_TRACK;
+				tracks[track].type = CDVD_MODE2_TRACK;
 			}
 			else
 			{
-				tracks[i].type = CDVD_MODE1_TRACK;
+				tracks[track].type = CDVD_MODE1_TRACK;
 			}
 		}
 		else
 		{
-			tracks[i].type = CDVD_AUDIO_TRACK;
+			tracks[track].type = CDVD_AUDIO_TRACK;
 		}
-		fprintf(stderr, "Track %u start sector: %u\n", entry.track, entry.lba);
-
-		i += 1;
+#ifdef PCSX2_DEBUG
+		DevCon.Write("cdvdParseTOC: Track %u: LBA %u, Type %u\n", track, tracks[track].start_lba, tracks[track].type);
+#endif
 	}
 }
 
@@ -131,7 +133,7 @@ static void keepAliveThread()
 	std::unique_lock<std::mutex> guard(s_keepalive_lock);
 
 	while (!s_keepalive_cv.wait_for(guard, std::chrono::seconds(30),
-									[]() { return !s_keepalive_is_open; }))
+		[]() { return !s_keepalive_is_open; }))
 	{
 
 		//printf(" * keepAliveThread: polling drive.\n");
@@ -271,20 +273,28 @@ static s32 DISCreadSubQ(u32 lsn, cdvdSubQ* subq)
 
 	memset(subq, 0, sizeof(cdvdSubQ));
 
+	lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
+
+	u8 i = strack;
+	while (i < etrack && lsn >= tracks[i + 1].start_lba)
+		++i;
+
+	lsn -= tracks[i].start_lba;
+
+	lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
+
+	subq->ctrl = tracks[i].type;
+
+	// It's important to note that we do _not_ use the current MSF values
+	// from the host's device. We use the MSF values from the lsn.
+	// An easy way to test an implementation is to see if the OSDSYS
+	// CD player can display the correct minute and second values.
+	// From my testing, the IOCTL returns 0 for ctrl. This also breaks
+	// the OSDSYS player. The only "safe" values to receive from the IOCTL
+	// are ADR, trackNum and trackIndex.
 	if (!src->ReadTrackSubQ(subq))
 	{
-		lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
-
-		u8 i = strack;
-		while (i < etrack && lsn >= tracks[i + 1].start_lba)
-			++i;
-
-		lsn -= tracks[i].start_lba;
-
-		lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
-
 		subq->adr = 1;
-		subq->ctrl = tracks[i].type;
 		subq->trackNum = i;
 		subq->trackIndex = 1;
 	}
@@ -470,11 +480,13 @@ static s32 DISCgetTOC(void* toc)
 		{
 			err = DISCgetTD(i, &trackInfo);
 			lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
-			tocBuff[i * 10 + 30] = trackInfo.type;
-			tocBuff[i * 10 + 32] = err == -1 ? 0 : dec_to_bcd(i); //number
-			tocBuff[i * 10 + 37] = dec_to_bcd(min);
-			tocBuff[i * 10 + 38] = dec_to_bcd(sec);
-			tocBuff[i * 10 + 39] = dec_to_bcd(frm);
+
+			const u8 tocIndex = i - diskInfo.strack;
+			tocBuff[tocIndex * 10 + 30] = trackInfo.type;
+			tocBuff[tocIndex * 10 + 32] = err == -1 ? 0 : dec_to_bcd(i); //number
+			tocBuff[tocIndex * 10 + 37] = dec_to_bcd(min);
+			tocBuff[tocIndex * 10 + 38] = dec_to_bcd(sec);
+			tocBuff[tocIndex * 10 + 39] = dec_to_bcd(frm);
 			fprintf(stderr, "Track %u: %u mins %u secs %u frames\n", i, min, sec, frm);
 		}
 	}

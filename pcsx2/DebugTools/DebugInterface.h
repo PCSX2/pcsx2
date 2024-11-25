@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
-#include "DebugTools/BiosDebugData.h"
-#include "MemoryTypes.h"
+
+#include "BiosDebugData.h"
 #include "ExpressionParser.h"
 #include "SymbolGuardian.h"
 #include "SymbolImporter.h"
@@ -86,9 +86,9 @@ public:
 	virtual SymbolImporter* GetSymbolImporter() const = 0;
 	virtual std::vector<std::unique_ptr<BiosThread>> GetThreadList() const = 0;
 
-	bool evaluateExpression(const char* expression, u64& dest);
-	bool initExpression(const char* exp, PostfixExpression& dest);
-	bool parseExpression(PostfixExpression& exp, u64& dest);
+	bool evaluateExpression(const char* expression, u64& dest, std::string& error);
+	bool initExpression(const char* exp, PostfixExpression& dest, std::string& error);
+	bool parseExpression(PostfixExpression& exp, u64& dest, std::string& error);
 	bool isAlive();
 	bool isCpuPaused();
 	void pauseCpu();
@@ -208,6 +208,27 @@ public:
 
 protected:
 	const ccc::ElfFile& m_elf;
+};
+
+class MipsExpressionFunctions : public IExpressionFunctions
+{
+public:
+	MipsExpressionFunctions(
+		DebugInterface* cpu, const ccc::SymbolDatabase* symbolDatabase, bool shouldEnumerateSymbols);
+
+	bool parseReference(char* str, u64& referenceIndex) override;
+	bool parseSymbol(char* str, u64& symbolValue) override;
+	u64 getReferenceValue(u64 referenceIndex) override;
+	ExpressionType getReferenceType(u64 referenceIndex) override;
+	bool getMemoryValue(u32 address, int size, u64& dest, std::string& error) override;
+
+protected:
+	void enumerateSymbols(const ccc::SymbolDatabase& database);
+	bool parseSymbol(char* str, u64& symbolValue, const ccc::SymbolDatabase& database);
+	DebugInterface* m_cpu;
+	const ccc::SymbolDatabase* m_database;
+	std::map<std::string, ccc::FunctionHandle> m_mangled_function_names_to_handles;
+	std::map<std::string, ccc::GlobalVariableHandle> m_mangled_global_names_to_handles;
 };
 
 extern R5900DebugInterface r5900Debug;

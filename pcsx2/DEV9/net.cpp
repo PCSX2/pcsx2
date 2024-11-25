@@ -208,12 +208,12 @@ void NetAdapter::InspectSend(NetPacket* pkt)
 	if (EmuConfig.DEV9.EthLogDNS || EmuConfig.DEV9.EthLogDHCP)
 	{
 		EthernetFrame frame(pkt);
-		if (frame.protocol == (u16)EtherType::IPv4)
+		if (frame.protocol == static_cast<u16>(EtherType::IPv4))
 		{
 			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
 			IP_Packet ippkt(payload->data, payload->GetLength());
 
-			if (ippkt.protocol == (u16)IP_Type::UDP)
+			if (ippkt.protocol == static_cast<u16>(IP_Type::UDP))
 			{
 				IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
 				UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
@@ -240,12 +240,12 @@ void NetAdapter::InspectRecv(NetPacket* pkt)
 	if (EmuConfig.DEV9.EthLogDNS || EmuConfig.DEV9.EthLogDHCP)
 	{
 		EthernetFrame frame(pkt);
-		if (frame.protocol == (u16)EtherType::IPv4)
+		if (frame.protocol == static_cast<u16>(EtherType::IPv4))
 		{
 			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
 			IP_Packet ippkt(payload->data, payload->GetLength());
 
-			if (ippkt.protocol == (u16)IP_Type::UDP)
+			if (ippkt.protocol == static_cast<u16>(IP_Type::UDP))
 			{
 				IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
 				UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
@@ -350,7 +350,7 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 		EthernetFrame frame(ippkt);
 		frame.sourceMAC = internalMAC;
 		frame.destinationMAC = ps2MAC;
-		frame.protocol = (u16)EtherType::IPv4;
+		frame.protocol = static_cast<u16>(EtherType::IPv4);
 		frame.WritePacket(pkt);
 		InspectRecv(pkt);
 		return true;
@@ -365,7 +365,7 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 		EthernetFrame frame(ippkt);
 		frame.sourceMAC = internalMAC;
 		frame.destinationMAC = ps2MAC;
-		frame.protocol = (u16)EtherType::IPv4;
+		frame.protocol = static_cast<u16>(EtherType::IPv4);
 		frame.WritePacket(pkt);
 		InspectRecv(pkt);
 		return true;
@@ -377,12 +377,12 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 bool NetAdapter::InternalServerSend(NetPacket* pkt)
 {
 	EthernetFrame frame(pkt);
-	if (frame.protocol == (u16)EtherType::IPv4)
+	if (frame.protocol == static_cast<u16>(EtherType::IPv4))
 	{
 		PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
 		IP_Packet ippkt(payload->data, payload->GetLength());
 
-		if (ippkt.protocol == (u16)IP_Type::UDP)
+		if (ippkt.protocol == static_cast<u16>(IP_Type::UDP))
 		{
 			IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
 			UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
@@ -397,7 +397,7 @@ bool NetAdapter::InternalServerSend(NetPacket* pkt)
 
 		if (ippkt.destinationIP == internalIP)
 		{
-			if (ippkt.protocol == (u16)IP_Type::UDP)
+			if (ippkt.protocol == static_cast<u16>(IP_Type::UDP))
 			{
 				ps2IP = ippkt.sourceIP;
 

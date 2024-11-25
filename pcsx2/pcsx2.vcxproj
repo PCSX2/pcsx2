@@ -117,10 +117,10 @@
     <ClCompile Include="arm64\AsmHelpers.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="arm64\newVif_Dynarec.cpp">
+    <ClCompile Include="arm64\Vif_Dynarec.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="arm64\newVif_UnpackNEON.cpp">
+    <ClCompile Include="arm64\Vif_UnpackNEON.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="arm64\RecStubs.cpp">
@@ -457,10 +457,10 @@
     <ClCompile Include="Vif_Codes.cpp" />
     <ClCompile Include="Vif_Transfer.cpp" />
     <ClCompile Include="Vif_Unpack.cpp" />
-    <ClCompile Include="x86\newVif_Dynarec.cpp">
+    <ClCompile Include="x86\Vif_Dynarec.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="x86\newVif_UnpackSSE.cpp">
+    <ClCompile Include="x86\Vif_UnpackSSE.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="SPR.cpp" />
@@ -579,7 +579,7 @@
     <ClInclude Include="arm64\AsmHelpers.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="arm64\newVif_UnpackNEON.h">
+    <ClInclude Include="arm64\Vif_UnpackNEON.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="CDVD\BlockdumpFileReader.h" />
@@ -898,7 +898,7 @@
     <ClInclude Include="Vif_Dma.h" />
     <ClInclude Include="Vif_Unpack.h" />
     <ClInclude Include="x86\newVif.h" />
-    <ClInclude Include="x86\newVif_UnpackSSE.h" />
+    <ClInclude Include="x86\Vif_UnpackSSE.h" />
     <ClInclude Include="SPR.h" />
     <ClInclude Include="Gif.h" />
     <ClInclude Include="R5900.h" />

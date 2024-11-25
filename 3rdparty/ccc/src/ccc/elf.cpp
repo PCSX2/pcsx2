@@ -93,7 +93,7 @@ const ElfProgramHeader* ElfFile::entry_point_segment() const
 	return entry_segment;
 }
 
-Result<std::span<const u8>> ElfFile::get_virtual(u32 address, u32 size) const
+std::optional<std::span<const u8>> ElfFile::get_virtual(u32 address, u32 size) const
 {
 	u32 end_address = address + size;
 	
@@ -109,17 +109,19 @@ Result<std::span<const u8>> ElfFile::get_virtual(u32 address, u32 size) const
 		}
 	}
 	
-	return CCC_FAILURE("No ELF segment for address range 0x%x to 0x%x.", address, end_address);
+	return std::nullopt;
 }
 
-Result<void> ElfFile::copy_virtual(u8* dest, u32 address, u32 size) const
+bool ElfFile::copy_virtual(u8* dest, u32 address, u32 size) const
 {
-	Result<std::span<const u8>> block = get_virtual(address, size);
-	CCC_RETURN_IF_ERROR(block);
+	std::optional<std::span<const u8>> block = get_virtual(address, size);
+	if(!block.has_value()) {
+		return false;
+	}
 	
 	memcpy(dest, block->data(), size);
 	
-	return Result<void>();
+	return true;
 }
 
 }

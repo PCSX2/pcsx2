@@ -320,17 +320,8 @@ bool IOCtlSrc::ReadTrackSubQ(cdvdSubQ* subQ) const
 	else
 	{
 		subQ->adr = osSubQ.CurrentPosition.ADR;
-		subQ->ctrl = osSubQ.CurrentPosition.Control;
 		subQ->trackNum = osSubQ.CurrentPosition.TrackNumber;
 		subQ->trackIndex = osSubQ.CurrentPosition.IndexNumber;
-
-		subQ->trackM = osSubQ.CurrentPosition.TrackRelativeAddress[0];
-		subQ->trackS = osSubQ.CurrentPosition.TrackRelativeAddress[1];
-		subQ->trackF = osSubQ.CurrentPosition.TrackRelativeAddress[2];
-
-		subQ->discM = osSubQ.CurrentPosition.AbsoluteAddress[0];
-		subQ->discS = osSubQ.CurrentPosition.AbsoluteAddress[1];
-		subQ->discF = osSubQ.CurrentPosition.AbsoluteAddress[2];
 	}
 
 	return true;

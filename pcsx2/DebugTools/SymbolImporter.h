@@ -46,9 +46,18 @@ public:
 		const std::map<std::string, ccc::DataTypeHandle>& builtin_types,
 		const std::atomic_bool* interrupt);
 
+	static void ImportExtraSymbols(
+		ccc::SymbolDatabase& database,
+		const Pcsx2Config::DebugAnalysisOptions& options,
+		const std::map<std::string, ccc::DataTypeHandle>& builtin_types,
+		u32 importer_flags,
+		const ccc::DemanglerFunctions& demangler,
+		const std::atomic_bool* interrupt);
+
 	static ccc::Result<bool> ImportNocashSymbols(
 		ccc::SymbolDatabase& database,
 		const std::string& file_path,
+		u32 base_address,
 		const std::map<std::string, ccc::DataTypeHandle>& builtin_types);
 
 	static std::unique_ptr<ccc::ast::Node> GetBuiltInType(

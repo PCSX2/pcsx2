@@ -355,11 +355,12 @@ bool MipsCheckImmediate(const char* Source, DebugInterface* cpu, int& dest, int&
 	RetLen = SourceLen;
 
 	PostfixExpression postfix;
-	if (!cpu->initExpression(Buffer,postfix))
+	std::string error;
+	if (!cpu->initExpression(Buffer,postfix,error))
 		return false;
 
 	u64 value;
-	if (!cpu->parseExpression(postfix,value))
+	if (!cpu->parseExpression(postfix,value,error))
 		return false;
 
 	dest = (int) value;
