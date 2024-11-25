@@ -87,8 +87,7 @@ struct ConsoleLog : public LogBase
 //  ConsoleLogFromVM
 // --------------------------------------------------------------------------------------
 // Special console logger for Virtual Machine log sources, such as the EE and IOP console
-// writes (actual game developer messages and such).  These logs do *not* automatically
-// append newlines, since the VM generates them manually; and they do *not* support printf
+// writes (actual game developer messages and such).  These logs do *not* support printf
 // formatting, since anything coming over the EE/IOP consoles should be considered raw
 // string data.  (otherwise %'s would get mis-interpreted).
 //
@@ -102,22 +101,18 @@ public:
 	{
 		for (const char ch : msg)
 		{
-			if (ch == '\n')
-			{
-				if (!m_buffer.empty())
-				{
-					Console.WriteLn(conColor, m_buffer);
-					m_buffer.clear();
-				}
-			}
-			else if (ch < 0x20)
-			{
-				// Ignore control characters.
-				// Otherwise you get fun bells going off.
-			}
-			else
-			{
+			// Ignore control characters.
+			// Otherwise you get fun bells going off.
+			if (ch < 0x20)
+				continue;
+
+			if (ch != '\n')
 				m_buffer.push_back(ch);
+
+			if (ch == '\n' || m_buffer.size() >= 4096)
+			{
+				Console.WriteLn(conColor, m_buffer);
+				m_buffer.clear();
 			}
 		}
 
