@@ -72,7 +72,7 @@ void set_custom_error_callback(CustomErrorCallback callback);
 	}
 
 #define CCC_ABORT_IF_FALSE(condition, ...) \
-	if (!(condition)) { \
+	if(!(condition)) { \
 		ccc::Error error = ccc::format_error(__FILE__, __LINE__, __VA_ARGS__); \
 		ccc::report_error(error); \
 		abort(); \
@@ -208,16 +208,38 @@ void warn_impl(const char* source_file, int source_line, const char* format, Arg
 #endif
 
 template <typename T>
-const T* get_packed(std::span<const u8> bytes, u64 offset)
+const T* get_aligned(std::span<const u8> bytes, u64 offset)
 {
-	if(offset + sizeof(T) <= bytes.size()) {
-		return reinterpret_cast<const T*>(&bytes[offset]);
-	} else {
+	if(offset > bytes.size() || bytes.size() - offset < sizeof(T) || offset % alignof(T) != 0) {
 		return nullptr;
 	}
+	
+	return reinterpret_cast<const T*>(&bytes[offset]);
 }
 
-const char* get_string(std::span<const u8> bytes, u64 offset);
+template <typename T>
+const T* get_unaligned(std::span<const u8> bytes, u64 offset)
+{
+	if(offset > bytes.size() || bytes.size() - offset < sizeof(T)) {
+		return nullptr;
+	}
+	
+	return reinterpret_cast<const T*>(&bytes[offset]);
+}
+
+template <typename T>
+std::optional<T> copy_unaligned(std::span<const u8> bytes, u64 offset)
+{
+	if(offset > bytes.size() || bytes.size() - offset < sizeof(T)) {
+		return std::nullopt;
+	}
+	
+	T value;
+	memcpy(&value, &bytes[offset], sizeof(T));
+	return value;
+}
+
+std::optional<std::string_view> get_string(std::span<const u8> bytes, u64 offset);
 
 #define CCC_BEGIN_END(x) (x).begin(), (x).end()
 #define CCC_ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
