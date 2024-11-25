@@ -71,8 +71,15 @@ void set_custom_error_callback(CustomErrorCallback callback);
 		exit(1); \
 	}
 
+#define CCC_ABORT_IF_FALSE(condition, ...) \
+	if (!(condition)) { \
+		ccc::Error error = ccc::format_error(__FILE__, __LINE__, __VA_ARGS__); \
+		ccc::report_error(error); \
+		abort(); \
+	}
+
 #define CCC_ASSERT(condition) \
-	CCC_CHECK_FATAL(condition, #condition)
+	CCC_ABORT_IF_FALSE(condition, #condition)
 
 // The main error handling construct in CCC. This class is used to bundle
 // together a return value and a pointer to error information, so that errors
