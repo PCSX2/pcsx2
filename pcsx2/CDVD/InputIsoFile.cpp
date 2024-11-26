@@ -160,6 +160,17 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 		dst[diff - 9] = 2;
 	}
 
+	// Seems like CHD data ends up being the wrong endianess for audio
+	// Confidence is about 50% on this one, but it seems to work
+	// (CHD is the only file with a TOC anyways, so who cares about the other formats)
+	if (m_type == ISOTYPE_AUDIO && mode == CDVD_MODE_2352)
+	{
+		for (int i = 0; i < 2352; i += 2)
+		{
+			std::swap(dst[diff + i], dst[diff + i + 1]);
+		}
+	}
+
 	return 0;
 }
 
