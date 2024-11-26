@@ -464,55 +464,45 @@ bool SocketAdapter::SendUDP(ConnectionKey Key, IP_Packet* ipPkt)
 		return false;
 	else
 	{
-		UDP_Session* s = nullptr;
-
-		if (abs(udp.sourcePort - udp.destinationPort) <= 10 || //Used for games that assume the destination/source port
-			ipPkt->destinationIP == dhcpServer.broadcastIP || //Broadcast packets
-			ipPkt->destinationIP == IP_Address{{{255, 255, 255, 255}}} || //Limited Broadcast packets
-			(ipPkt->destinationIP.bytes[0] & 0xF0) == 0xE0) //Multicast address start with 0b1110
+		// Always bind the UDP source port
+		// PS2 software can run into issues if the source port is not preserved
+		UDP_FixedPort* fPort = nullptr;
+		BaseSession* fSession;
+		if (fixedUDPPorts.TryGetValue(udp.sourcePort, &fSession))
 		{
-			UDP_FixedPort* fPort = nullptr;
-			BaseSession* fSession;
-			if (fixedUDPPorts.TryGetValue(udp.sourcePort, &fSession))
-			{
-				//DevCon.WriteLn("DEV9: Socket: Using Existing UDPFixedPort");
-				fPort = static_cast<UDP_FixedPort*>(fSession);
-			}
-			else
-			{
-				ConnectionKey fKey{};
-				fKey.protocol = (u8)IP_Type::UDP;
-				fKey.ps2Port = udp.sourcePort;
-				fKey.srvPort = 0;
-
-				Console.WriteLn("DEV9: Socket: Creating New UDPFixedPort with port %d", udp.sourcePort);
-
-				fPort = new UDP_FixedPort(fKey, adapterIP, udp.sourcePort);
-				fPort->AddConnectionClosedHandler([&](BaseSession* session) { HandleFixedPortClosed(session); });
-
-				fPort->destIP = {};
-				fPort->sourceIP = dhcpServer.ps2IP;
-
-				connections.Add(fKey, fPort);
-				fixedUDPPorts.Add(udp.sourcePort, fPort);
-
-				fPort->Init();
-			}
-
-			Console.WriteLn("DEV9: Socket: Creating New UDP Connection from FixedPort %d to %d", udp.sourcePort, udp.destinationPort);
-			s = fPort->NewClientSession(Key,
-				ipPkt->destinationIP == dhcpServer.broadcastIP || ipPkt->destinationIP == IP_Address{{{255, 255, 255, 255}}},
-				(ipPkt->destinationIP.bytes[0] & 0xF0) == 0xE0);
-
-			if (s == nullptr)
-			{
-				Console.Error("DEV9: Socket: Failed to Create New UDP Connection from FixedPort");
-				return false;
-			}
+			fPort = static_cast<UDP_FixedPort*>(fSession);
 		}
 		else
 		{
-			Console.WriteLn("DEV9: Socket: Creating New UDP Connection to %d", udp.destinationPort);
+			ConnectionKey fKey{};
+			fKey.protocol = static_cast<u8>(IP_Type::UDP);
+			fKey.ps2Port = udp.sourcePort;
+			fKey.srvPort = 0;
+
+			Console.WriteLn("DEV9: Socket: Binding UDP fixed port %d", udp.sourcePort);
+
+			fPort = new UDP_FixedPort(fKey, adapterIP, udp.sourcePort);
+			fPort->AddConnectionClosedHandler([&](BaseSession* session) { HandleFixedPortClosed(session); });
+
+			fPort->destIP = {};
+			fPort->sourceIP = dhcpServer.ps2IP;
+
+			connections.Add(fKey, fPort);
+			fixedUDPPorts.Add(udp.sourcePort, fPort);
+
+			fPort->Init();
+		}
+
+		Console.WriteLn("DEV9: Socket: Creating New UDP Connection from fixed port %d to %d", udp.sourcePort, udp.destinationPort);
+		UDP_Session* s = fPort->NewClientSession(Key,
+			ipPkt->destinationIP == dhcpServer.broadcastIP || ipPkt->destinationIP == IP_Address{{{255, 255, 255, 255}}},
+			(ipPkt->destinationIP.bytes[0] & 0xF0) == 0xE0);
+
+		// If we are unable to bind to the port, fall back to a dynamic port
+		if (s == nullptr)
+		{
+			Console.Error("DEV9: Socket: Failed to Create New UDP Connection from fixed port");
+			Console.WriteLn("DEV9: Socket: Retrying with dynamic port to %d", udp.destinationPort);
 			s = new UDP_Session(Key, adapterIP);
 		}
 
@@ -577,7 +567,7 @@ void SocketAdapter::HandleFixedPortClosed(BaseSession* sender)
 	else
 		deleteQueueRecvThread.push_back(sender);
 
-	Console.WriteLn("DEV9: Socket: Closed Dead UDP Fixed Port to %d", key.ps2Port);
+	Console.WriteLn("DEV9: Socket: Unbound fixed port %d", key.ps2Port);
 }
 
 void SocketAdapter::close()
