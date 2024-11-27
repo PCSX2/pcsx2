@@ -1423,18 +1423,18 @@ namespace R3000A
 
 bool SaveStateBase::handleFreeze()
 {
-	if (!EmuConfig.HostFs) //if hostfs isn't enabled, skip loading/saving file handles
-		return IsOkay();
-
-	if (IsLoading())
-		R3000A::ioman::reset();
-
 	if (!FreezeTag("hostHandles"))
 		return false;
 
+	if (EmuConfig.HostFs && IsLoading())
+		R3000A::ioman::reset();
+
 	const int firstfd = R3000A::ioman::firstfd;
-	size_t handleCount = R3000A::handles.size();
+	size_t handleCount = EmuConfig.HostFs ? R3000A::handles.size() : 0;
 	Freeze(handleCount);
+
+	if (!EmuConfig.HostFs) //if hostfs isn't enabled, skip loading/saving file handles
+		return IsOkay();
 
 	for (size_t i = 0; i < handleCount; i++)
 	{
