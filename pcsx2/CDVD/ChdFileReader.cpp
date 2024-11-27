@@ -281,7 +281,7 @@ bool ChdFileReader::ParseTOC(u64* out_frame_count, std::vector<toc_entry>& entri
 {
 	u64 total_frames = 0;
 	int max_found_track = -1;
-
+	u64 total_gap_frames = 0;
 	for (int search_index = 0;; search_index++)
 	{
 		char metadata_str[256];
@@ -327,7 +327,7 @@ bool ChdFileReader::ParseTOC(u64* out_frame_count, std::vector<toc_entry>& entri
 		if (track_num != 0)
 		{
 			toc_entry entry{};
-			entry.lba = static_cast<u32>(total_frames);
+			entry.lba = static_cast<u32>(total_frames) - total_gap_frames;
 			entry.track = static_cast<u8>(track_num);
 			entry.adr = 1;
 			entry.control = 0;
@@ -338,14 +338,11 @@ bool ChdFileReader::ParseTOC(u64* out_frame_count, std::vector<toc_entry>& entri
 
 			entries.push_back(entry);
 		}
-		// PCSX2 doesn't currently support multiple tracks for CDs. 
-		/* if (track_num != 1)
-		{
-			Console.Warning(fmt::format("  Ignoring track {} in CHD.", track_num, frames));
-			continue;
-		}*/
 
-		total_frames += static_cast<u64>(pregap_frames) + static_cast<u64>(frames) + static_cast<u64>(postgap_frames);
+		// I have not found a CHD with an audio track with a postgap, consider that untested
+		total_gap_frames += static_cast<u64>(pregap_frames) + static_cast<u64>(postgap_frames);
+		total_frames += total_gap_frames + static_cast<u64>(frames);
+
 		max_found_track = std::max(max_found_track, track_num);
 	}
 
