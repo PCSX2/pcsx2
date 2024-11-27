@@ -315,6 +315,9 @@ memLoadingState::memLoadingState(const VmStateBuffer& load_from)
 // Loading of state data from a memory buffer...
 void memLoadingState::FreezeMem( void* data, int size )
 {
+	if (m_idx + size > m_memory.size())
+		m_error = true;
+
 	if (m_error)
 	{
 		std::memset(data, 0, size);
