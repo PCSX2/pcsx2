@@ -72,7 +72,7 @@ call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/off
 call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 91c33d9946279c9c613b02e52a33df610cc01d13ea6e321b4c4d8ee708b9a03e || goto error
 call :downloadfile "zlib%ZLIBSHORT%.zip" "https://zlib.net/zlib%ZLIBSHORT%.zip" 72af66d44fcc14c22013b46b814d5d2514673dda3d115e64b690c1ad636e7b17 || goto error
 call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" 3b1c3b46e416d36931efd34663122d7f51b550c87f74de2d38249516fe7d8be5 || goto error
-call :downloadfile "zstd-fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch" https://github.com/facebook/zstd/commit/fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch 675f144b11f8ab2424b64bed8ccdca5d3f35b9326046fa7a883925dd180f0651 || goto error
+call :downloadfile "zstd-fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch" https://github.com/facebook/zstd/commit/fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch 8df152f4969b308546306c074628de761f0b80265de7de534e3822fab22d7535 || goto error
 
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" 6c9f42ed6bf42750f5369b089909abfdcf0101488b4a1f41116d5159d00af8e7 || goto error
 call :downloadfile "shaderc-glslang-%SHADERC_GLSLANG%.zip" "https://github.com/KhronosGroup/glslang/archive/%SHADERC_GLSLANG%.zip" 03ad8a6fa987af4653d0cfe6bdaed41bcf617f1366a151fb1574da75950cd3e8 || goto error
