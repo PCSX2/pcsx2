@@ -2651,11 +2651,6 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 
 								GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, copy_width, copy_height, 0, dst_offset_scaled_height);
 
-								pxAssert(copy_width <= dst->GetTexture()->GetWidth() && copy_height <= dst->GetTexture()->GetHeight() &&
-										 copy_width <= t->GetTexture()->GetWidth() && copy_height <= t->GetTexture()->GetHeight());
-
-								pxAssert(dst_offset_scaled_height > 0);
-
 								// Clear the dirty first
 								t->Update();
 								dst->Update();
