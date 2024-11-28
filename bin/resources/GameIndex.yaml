@@ -18706,6 +18706,9 @@ SLES-52325:
     - BlitInternalFPSHack # Fixes internal fps detection in some areas.
   gsHWFixes:
     estimateTextureRegion: 1 # Improves performance.
+    roundSprite: 1 # Fixes lines in menus HUD and in game.
+    halfPixelOffset: 2 # Fixes edge garbage.
+    PCRTCOverscan: 1 # Fixes offscreen image.
 SLES-52326:
   name: "Spawn - Armageddon"
   region: "PAL-M5"
@@ -18806,6 +18809,9 @@ SLES-52373:
     - BlitInternalFPSHack # Fixes internal fps detection in some areas.
   gsHWFixes:
     estimateTextureRegion: 1 # Improves performance.
+    roundSprite: 1 # Fixes lines in menus HUD and in game.
+    halfPixelOffset: 2 # Fixes edge garbage.
+    PCRTCOverscan: 1 # Fixes offscreen image.
 SLES-52374:
   name: "Fight Night 2004"
   region: "PAL-M3"
@@ -20873,6 +20879,7 @@ SLES-53039:
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus HUD and in game.
     halfPixelOffset: 2 # Fixes erroneous line in menus.
+    PCRTCOverscan: 1 # Fixes offscreen image.
   memcardFilters: # Allows import of characters from first game.
     - "SLES-53039"
     - "SLES-52325"

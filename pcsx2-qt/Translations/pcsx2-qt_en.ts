@@ -2238,17 +2238,17 @@ Leaderboard Position: {1} of {2}</source>
 <context>
     <name>CDVD</name>
     <message>
-        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="286"/>
+        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="287"/>
         <source>Game disc location is on a removable drive, performance issues such as jittering and freezing may occur.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="381"/>
+        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="382"/>
         <source>Saving CDVD block dump to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="411"/>
+        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="412"/>
         <source>Precaching CDVD</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2273,7 +2273,7 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/CDVDdiscReader.cpp" line="199"/>
+        <location filename="../../pcsx2/CDVD/CDVDdiscReader.cpp" line="201"/>
         <source>Precaching is not supported for discs.</source>
         <translation type="unfinished"></translation>
     </message>

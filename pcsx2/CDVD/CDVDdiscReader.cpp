@@ -105,7 +105,7 @@ void cdvdParseTOC()
 			tracks[track].type = CDVD_AUDIO_TRACK;
 		}
 #ifdef PCSX2_DEBUG
-		DevCon.Write("cdvdParseTOC: Track %u: LBA %u, Type %u\n", track, tracks[track].start_lba, tracks[track].type);
+		DevCon.WriteLn("cdvdParseTOC: Track %u: LBA %u, Type %u\n", track, tracks[track].start_lba, tracks[track].type);
 #endif
 	}
 }

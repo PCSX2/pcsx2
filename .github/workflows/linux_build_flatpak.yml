@@ -108,7 +108,7 @@ jobs:
           branch: beta
           cache: true
           restore-cache: true
-          cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
+          cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json', '.github/workflows/scripts/common/*.patch') }}
 
       - name: Build Flatpak (stable)
         if: ${{ inputs.stableBuild == true || inputs.stableBuild == 'true' }}
