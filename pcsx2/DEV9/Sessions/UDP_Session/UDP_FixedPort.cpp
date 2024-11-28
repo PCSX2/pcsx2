@@ -225,10 +225,18 @@ namespace Sessions
 
 	void UDP_FixedPort::Reset()
 	{
-		std::lock_guard numberlock(connectionSentry);
+		// Reseting a session may cause that session to close itself,
+		// when that happens, the connections vector gets modified via our close handler.
+		// Duplicate the vector to avoid iterating over a modified collection,
+		// this also avoids the issue of recursive locking when our close handler takes a lock.
+		std::vector<UDP_BaseSession*> connectionsCopy;
+		{
+			std::lock_guard numberlock(connectionSentry);
+			connectionsCopy = connections;
+		}
 
-		for (size_t i = 0; i < connections.size(); i++)
-			connections[i]->Reset();
+		for (size_t i = 0; i < connectionsCopy.size(); i++)
+			connectionsCopy[i]->Reset();
 	}
 
 	UDP_Session* UDP_FixedPort::NewClientSession(ConnectionKey parNewKey, bool parIsBrodcast, bool parIsMulticast)
