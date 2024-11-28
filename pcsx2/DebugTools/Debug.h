@@ -103,10 +103,7 @@ public:
 		{
 			// Ignore control characters.
 			// Otherwise you get fun bells going off.
-			if (ch < 0x20)
-				continue;
-
-			if (ch != '\n')
+			if (ch >= 0x20)
 				m_buffer.push_back(ch);
 
 			if (ch == '\n' || m_buffer.size() >= 4096)
