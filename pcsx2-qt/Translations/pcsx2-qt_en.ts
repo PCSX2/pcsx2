@@ -18450,7 +18450,7 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>SaveState</name>
     <message>
-        <location filename="../../pcsx2/SaveState.cpp" line="1095"/>
+        <location filename="../../pcsx2/SaveState.cpp" line="1098"/>
         <source>This save state is outdated and is no longer compatible with the current version of PCSX2.
 
 If you have any unsaved progress on this save state, you can download the compatible version (PCSX2 {}) from pcsx2.net, load the save state, and save your progress to the memory card.</source>
