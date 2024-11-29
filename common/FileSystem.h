@@ -106,7 +106,16 @@ namespace FileSystem
 	/// open files
 	using ManagedCFilePtr = std::unique_ptr<std::FILE, FileDeleter>;
 	ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode, Error* error = nullptr);
+	// Tries to open a file using the given filename, but if that fails searches
+	// the directory for a file with a case-insensitive match.
+	// This is the same as OpenManagedCFile on Windows and MacOS
+	ManagedCFilePtr OpenManagedCFileTryIgnoreCase(const char* filename, const char* mode, Error* error = nullptr);
 	std::FILE* OpenCFile(const char* filename, const char* mode, Error* error = nullptr);
+	// Tries to open a file using the given filename, but if that fails searches
+	// the directory for a file with a case-insensitive match.
+	// This is the same as OpenCFile on Windows and MacOS
+	std::FILE* OpenCFileTryIgnoreCase(const char* filename, const char* mode, Error* error = nullptr);
+
 	int FSeek64(std::FILE* fp, s64 offset, int whence);
 	s64 FTell64(std::FILE* fp);
 	s64 FSize64(std::FILE* fp);

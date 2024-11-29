@@ -994,6 +994,37 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* 
 #endif
 }
 
+std::FILE* FileSystem::OpenCFileTryIgnoreCase(const char* filename, const char* mode, Error* error)
+{
+#if defined(_WIN32) || defined(__APPLE__)
+	return OpenCFile(filename, mode, error);
+#else
+	std::FILE* fp = std::fopen(filename, mode);
+	const auto cur_errno = errno;
+
+	if (!fp)
+	{
+		const auto dir = std::string(Path::GetDirectory(filename));
+		FindResultsArray files;
+		if (FindFiles(dir.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files))
+		{
+			for (auto& file : files)
+			{
+				if (StringUtil::compareNoCase(file.FileName, filename))
+				{
+					fp = std::fopen(file.FileName.c_str(), mode);
+					break;
+				}
+			}
+		}
+	}
+	if (!fp)
+		Error::SetErrno(error, cur_errno);
+	return fp;
+#endif
+}
+
+
 int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* error)
 {
 #ifdef _WIN32
@@ -1013,6 +1044,11 @@ int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* err
 FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode, Error* error)
 {
 	return ManagedCFilePtr(OpenCFile(filename, mode, error));
+}
+
+FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFileTryIgnoreCase(const char* filename, const char* mode, Error* error)
+{
+	return ManagedCFilePtr(OpenCFileTryIgnoreCase(filename, mode, error));
 }
 
 std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error)

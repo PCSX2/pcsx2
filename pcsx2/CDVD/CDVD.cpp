@@ -155,7 +155,7 @@ void cdvdLoadNVRAM()
 {
 	Error error;
 	const std::string nvmfile = cdvdGetNVRAMPath();
-	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "rb", &error);
+	auto fp = FileSystem::OpenManagedCFileTryIgnoreCase(nvmfile.c_str(), "rb", &error);
 	if (!fp || std::fread(s_nvram, sizeof(s_nvram), 1, fp.get()) != 1)
 	{
 		ERROR_LOG("Failed to open or read NVRAM at {}: {}", Path::GetFileName(nvmfile), error.GetDescription());
@@ -178,7 +178,7 @@ void cdvdLoadNVRAM()
 
 	// Also load the mechacon version while we're here.
 	const std::string mecfile = Path::ReplaceExtension(BiosPath, "mec");
-	fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "rb", &error);
+	fp = FileSystem::OpenManagedCFileTryIgnoreCase(mecfile.c_str(), "rb", &error);
 	if (!fp || std::fread(&s_mecha_version, sizeof(s_mecha_version), 1, fp.get()) != 1)
 	{
 		s_mecha_version = DEFAULT_MECHA_VERSION;
@@ -186,7 +186,7 @@ void cdvdLoadNVRAM()
 		ERROR_LOG("Failed to open or read MEC file at {}: {}, creating default.", Path::GetFileName(nvmfile),
 			error.GetDescription());
 		fp.reset();
-		fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "wb");
+		fp = FileSystem::OpenManagedCFileTryIgnoreCase(mecfile.c_str(), "wb");
 		if (!fp || std::fwrite(&s_mecha_version, sizeof(s_mecha_version), 1, fp.get()) != 1)
 			Host::ReportErrorAsync("Error", "Failed to write MEC file. Check your BIOS setup/permission settings.");
 	}
@@ -197,10 +197,10 @@ void cdvdSaveNVRAM()
 {
 	Error error;
 	const std::string nvmfile = cdvdGetNVRAMPath();
-	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b", &error);
+	auto fp = FileSystem::OpenManagedCFileTryIgnoreCase(nvmfile.c_str(), "r+b", &error);
 	if (!fp)
 	{
-		fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "w+b", &error);
+		fp = FileSystem::OpenManagedCFileTryIgnoreCase(nvmfile.c_str(), "w+b", &error);
 		if (!fp) [[unlikely]]
 		{
 			ERROR_LOG("Failed to open NVRAM at {} for updating: {}", Path::GetFileName(nvmfile), error.GetDescription());
