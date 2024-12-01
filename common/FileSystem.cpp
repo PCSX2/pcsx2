@@ -1225,7 +1225,12 @@ bool FileSystem::RecursiveDeleteDirectory(const char* path)
 	{
 		for (const FILESYSTEM_FIND_DATA& fd : results)
 		{
-			if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
+			if (IsSymbolicLink(fd.FileName.c_str()))
+			{
+				if (!DeleteSymbolicLink(fd.FileName.c_str()))
+					return false;
+			}
+			else if ((fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
 			{
 				if (!RecursiveDeleteDirectory(fd.FileName.c_str()))
 					return false;
@@ -1650,21 +1655,6 @@ bool FileSystem::DirectoryExists(const char* path)
 		return false;
 }
 
-bool FileSystem::IsRealDirectory(const char* path)
-{
-	// convert to wide string
-	const std::wstring wpath = GetWin32Path(path);
-	if (wpath.empty())
-		return false;
-
-	// determine attributes for the path. if it's a directory, things have to be handled differently..
-	const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
-	if (fileAttributes == INVALID_FILE_ATTRIBUTES)
-		return false;
-
-	return ((fileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT)) != FILE_ATTRIBUTE_DIRECTORY);
-}
-
 bool FileSystem::DirectoryIsEmpty(const char* path)
 {
 	std::wstring wpath = GetWin32Path(path);
@@ -1933,6 +1923,52 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
 
 	CloseHandle(handle);
 	return result;
+}
+
+bool FileSystem::IsSymbolicLink(const char* path)
+{
+	// convert to wide string
+	const std::wstring wpath = GetWin32Path(path);
+	if (wpath.empty())
+		return false;
+
+	// determine attributes for the path
+	const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
+	if (fileAttributes == INVALID_FILE_ATTRIBUTES)
+		return false;
+
+	return fileAttributes & FILE_ATTRIBUTE_REPARSE_POINT;
+}
+
+bool FileSystem::DeleteSymbolicLink(const char* path, Error* error)
+{
+	// convert to wide string
+	const std::wstring wpath = GetWin32Path(path);
+	if (wpath.empty())
+	{
+		Error::SetStringView(error, "Invalid path.");
+		return false;
+	}
+
+	// delete the symbolic link
+	if (DirectoryExists(path))
+	{
+		if (!RemoveDirectoryW(wpath.c_str()))
+		{
+			Error::SetWin32(error, "RemoveDirectoryW() failed: ", GetLastError());
+			return false;
+		}
+	}
+	else
+	{
+		if (!DeleteFileW(wpath.c_str()))
+		{
+			Error::SetWin32(error, "DeleteFileW() failed: ", GetLastError());
+			return false;
+		}
+	}
+
+	return true;
 }
 
 #else
@@ -2216,15 +2252,6 @@ bool FileSystem::DirectoryExists(const char* path)
 		return false;
 }
 
-bool FileSystem::IsRealDirectory(const char* path)
-{
-	struct stat sysStatData;
-	if (lstat(path, &sysStatData) < 0)
-		return false;
-
-	return (S_ISDIR(sysStatData.st_mode) && !S_ISLNK(sysStatData.st_mode));
-}
-
 bool FileSystem::DirectoryIsEmpty(const char* path)
 {
 	DIR* pDir = opendir(path);
@@ -2476,6 +2503,26 @@ bool FileSystem::SetWorkingDirectory(const char* path)
 bool FileSystem::SetPathCompression(const char* path, bool enable)
 {
 	return false;
+}
+
+bool FileSystem::IsSymbolicLink(const char* path)
+{
+	struct stat sysStatData;
+	if (lstat(path, &sysStatData) < 0)
+		return false;
+
+	return S_ISLNK(sysStatData.st_mode);
+}
+
+bool FileSystem::DeleteSymbolicLink(const char* path, Error* error)
+{
+	if (unlink(path) != 0)
+	{
+		Error::SetErrno(error, "unlink() failed: ", errno);
+		return false;
+	}
+
+	return true;
 }
 
 FileSystem::POSIXLock::POSIXLock(int fd)

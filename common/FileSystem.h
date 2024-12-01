@@ -84,7 +84,6 @@ namespace FileSystem
 
 	/// Directory exists?
 	bool DirectoryExists(const char* path);
-	bool IsRealDirectory(const char* path);
 
 	/// Directory does not contain any files?
 	bool DirectoryIsEmpty(const char* path);
@@ -169,6 +168,12 @@ namespace FileSystem
 	/// Does not apply the compression flag recursively if called for a directory.
 	/// Does nothing and returns false on non-Windows platforms.
 	bool SetPathCompression(const char* path, bool enable);
+
+	/// Checks if a file or directory is a symbolic link.
+	bool IsSymbolicLink(const char* path);
+
+	/// Deletes a symbolic link (either a file or directory).
+	bool DeleteSymbolicLink(const char* path, Error* error = nullptr);
 
 #ifdef _WIN32
 	// Path limit remover, but also converts to a wide string at the same time.
