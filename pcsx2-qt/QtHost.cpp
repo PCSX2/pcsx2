@@ -998,7 +998,7 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		QString gs_stat;
 		if (THREAD_VU1)
 		{
-			gs_stat = tr("Slot: %1 | Volume: %2% | %3 |EE: %4% | VU: %5% | GS: %6%")
+			gs_stat = tr("Slot: %1 | Volume: %2% | %3 | EE: %4% | VU: %5% | GS: %6%")
 						  .arg(SaveStateSelectorUI::GetCurrentSlot())
 						  .arg(SPU2::GetOutputVolume())
 						  .arg(gs_stat_str.c_str())
