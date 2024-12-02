@@ -27,7 +27,7 @@
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="contextMenuPolicy">
-    <enum>Qt::PreventContextMenu</enum>
+    <enum>Qt::ContextMenuPolicy::PreventContextMenu</enum>
    </property>
    <property name="movable">
     <bool>false</bool>
@@ -39,7 +39,7 @@
     </size>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextBesideIcon</enum>
+    <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
    </property>
    <property name="floatable">
     <bool>false</bool>
@@ -59,8 +59,7 @@
   </widget>
   <action name="actionRun">
    <property name="icon">
-    <iconset theme="play-line">
-     <normaloff>.</normaloff>.</iconset>
+    <iconset theme="play-line"/>
    </property>
    <property name="text">
     <string>Run</string>
@@ -68,8 +67,7 @@
   </action>
   <action name="actionStepInto">
    <property name="icon">
-    <iconset theme="debug-step-into-line">
-     <normaloff>.</normaloff>.</iconset>
+    <iconset theme="debug-step-into-line"/>
    </property>
    <property name="text">
     <string>Step Into</string>
@@ -80,8 +78,7 @@
   </action>
   <action name="actionStepOver">
    <property name="icon">
-    <iconset theme="debug-step-over-line">
-     <normaloff>.</normaloff>.</iconset>
+    <iconset theme="debug-step-over-line"/>
    </property>
    <property name="text">
     <string>Step Over</string>
@@ -92,8 +89,7 @@
   </action>
   <action name="actionStepOut">
    <property name="icon">
-    <iconset theme="debug-step-out-line">
-     <normaloff>.</normaloff>.</iconset>
+    <iconset theme="debug-step-out-line"/>
    </property>
    <property name="text">
     <string>Step Out</string>
@@ -107,8 +103,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="pin-filled">
-     <normaloff>.</normaloff>.</iconset>
+    <iconset theme="pin-filled"/>
    </property>
    <property name="text">
     <string>Always On Top</string>
@@ -119,8 +114,7 @@
   </action>
   <action name="actionAnalyse">
    <property name="icon">
-    <iconset theme="restart-line">
-     <normaloff>.</normaloff>.</iconset>
+    <iconset theme="magnifier-line"/>
    </property>
    <property name="text">
     <string>Analyze</string>
