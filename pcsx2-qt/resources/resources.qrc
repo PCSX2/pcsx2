@@ -63,6 +63,7 @@
 		<file>icons/black/svg/lightbulb-line.svg</file>
 		<file>icons/black/svg/list-check.svg</file>
 		<file>icons/black/svg/login-box-line.svg</file>
+		<file>icons/black/svg/magnifier-line.svg</file>
 		<file>icons/black/svg/memcard-line.svg</file>
 		<file>icons/black/svg/mic-line.svg</file>
 		<file>icons/black/svg/minus-line.svg</file>
@@ -166,6 +167,7 @@
 		<file>icons/white/svg/lightbulb-line.svg</file>
 		<file>icons/white/svg/list-check.svg</file>
 		<file>icons/white/svg/login-box-line.svg</file>
+		<file>icons/white/svg/magnifier-line.svg</file>
 		<file>icons/white/svg/memcard-line.svg</file>
 		<file>icons/white/svg/mic-line.svg</file>
 		<file>icons/white/svg/minus-line.svg</file>
