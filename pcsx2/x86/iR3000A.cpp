@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "iR3000A.h"
@@ -155,7 +155,6 @@ static void iopRecRecompile(u32 startpc);
 static const void* iopDispatcherEvent = nullptr;
 static const void* iopDispatcherReg = nullptr;
 static const void* iopJITCompile = nullptr;
-static const void* iopJITCompileInBlock = nullptr;
 static const void* iopEnterRecompiledCode = nullptr;
 static const void* iopExitRecompiledCode = nullptr;
 
@@ -180,13 +179,6 @@ static const void* _DynGen_JITCompile()
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax * wordsize)]);
 	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
 
-	return retval;
-}
-
-static const void* _DynGen_JITCompileInBlock()
-{
-	u8* retval = xGetPtr();
-	xJMP((void*)iopJITCompile);
 	return retval;
 }
 
@@ -244,7 +236,6 @@ static void _DynGen_Dispatchers()
 	iopDispatcherReg = _DynGen_DispatcherReg();
 
 	iopJITCompile = _DynGen_JITCompile();
-	iopJITCompileInBlock = _DynGen_JITCompileInBlock();
 	iopEnterRecompiledCode = _DynGen_EnterRecompiledCode();
 
 	recBlocks.SetJITCompile(iopJITCompile);
@@ -1606,14 +1597,6 @@ static void iopRecRecompile(const u32 startpc)
 
 	while (1)
 	{
-		BASEBLOCK* pblock = PSX_GETBLOCK(i);
-		if (i != startpc && pblock->GetFnptr() != (uptr)iopJITCompile && pblock->GetFnptr() != (uptr)iopJITCompileInBlock)
-		{
-			// branch = 3
-			willbranch3 = 1;
-			s_nEndBlock = i;
-			break;
-		}
 
 		psxRegs.code = iopMemRead32(i);
 
@@ -1715,12 +1698,6 @@ StartRecomp:
 
 	pxAssert((psxpc - startpc) >> 2 <= 0xffff);
 	s_pCurBlockEx->size = (psxpc - startpc) >> 2;
-
-	for (i = 1; i < (u32)s_pCurBlockEx->size; ++i)
-	{
-		if (s_pCurBlock[i].GetFnptr() == (uptr)iopJITCompile)
-			s_pCurBlock[i].SetFnptr((uptr)iopJITCompileInBlock);
-	}
 
 	if (!(psxpc & 0x10000000))
 		g_psxMaxRecMem = std::max((psxpc & ~0xa0000000), g_psxMaxRecMem);
