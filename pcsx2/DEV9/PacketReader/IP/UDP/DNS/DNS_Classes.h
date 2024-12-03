@@ -43,9 +43,5 @@ namespace PacketReader::IP::UDP::DNS
 		virtual void WriteBytes(u8* buffer, int* offset);
 
 		virtual ~DNS_ResponseEntry(){};
-
-	private:
-		void ReadDNSString(u8* buffer, int* offset, std::string* value);
-		void WriteDNSString(u8* buffer, int* offset, std::string value);
 	};
 } // namespace PacketReader::IP::UDP::DNS

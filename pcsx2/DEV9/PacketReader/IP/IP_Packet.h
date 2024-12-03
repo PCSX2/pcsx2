@@ -86,7 +86,7 @@ namespace PacketReader::IP
 		 * bit0: Set to zero
 		 */
 		u8 GetDscpValue();
-		void GetDscpValue(u8 value);
+		void SetDscpValue(u8 value);
 
 		/* 2 bits
 		 * In TOS, defined as follows
