@@ -4,6 +4,7 @@
 #include "TCP_Packet.h"
 #include "DEV9/PacketReader/NetLib.h"
 
+#include "common/BitUtils.h"
 #include "common/Console.h"
 
 namespace PacketReader::IP::TCP
@@ -232,8 +233,8 @@ namespace PacketReader::IP::TCP
 		for (size_t i = 0; i < options.size(); i++)
 			opOffset += options[i]->GetLength();
 
-		opOffset += opOffset % 4; //needs to be a whole number of 32bits
-		headerLength = opOffset;
+		//needs to be a whole number of 32bits
+		headerLength = Common::AlignUpPow2(opOffset, 4);
 
 		//Also write into dataOffsetAndNS_Flag
 		u8 ns = dataOffsetAndNS_Flag & 1;
