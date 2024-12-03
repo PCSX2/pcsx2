@@ -785,11 +785,28 @@ namespace Sessions
 							Console.Error("DEV9: ICMP: Malformed ICMP Packet");
 							int off = 1;
 							while ((icmpPayload->data[off] & 0xF0) != (4 << 4))
+							{
 								off += 1;
+
+								// Require space for the IP Header and source/dest port of a UDP/TCP packet
+								// We don't generate packets with IP options, so IP header is always 20 bytes
+								if (icmpPayload->GetLength() - off - 24 < 0)
+								{
+									off = -1;
+									break;
+								}
+							}
+
+							if (off == -1)
+							{
+								Console.Error("DEV9: ICMP: Unable To Recover Data");
+								Console.Error("DEV9: ICMP: Failed To Reset Rejected Connection");
+								break;
+							}
 
 							Console.Error("DEV9: ICMP: Payload delayed %d bytes", off);
 
-							retPkt = std::make_unique<IP_Packet>(&icmpPayload->data[off], icmpPayload->GetLength(), true);
+							retPkt = std::make_unique<IP_Packet>(&icmpPayload->data[off], icmpPayload->GetLength() - off, true);
 						}
 
 						const IP_Address srvIP = retPkt->sourceIP;
