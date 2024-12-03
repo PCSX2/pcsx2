@@ -17,7 +17,7 @@ namespace PacketReader::IP
 	{
 		return (dscp >> 2) & 0x3F;
 	}
-	void IP_Packet::GetDscpValue(u8 value)
+	void IP_Packet::SetDscpValue(u8 value)
 	{
 		dscp = (dscp & ~(0x3F << 2)) | ((value & 0x3F) << 2);
 	}
