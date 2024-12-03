@@ -146,15 +146,11 @@ if(MSVC AND NOT USE_CLANG_CL)
 endif()
 
 if(MSVC)
-	# Disable RTTI
-	string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-
 	# Disable Exceptions
 	string(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 else()
 	add_compile_options(-pipe -fvisibility=hidden -pthread)
 	add_compile_options(
-		"$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>"
 		"$<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>"
 	)
 endif()
