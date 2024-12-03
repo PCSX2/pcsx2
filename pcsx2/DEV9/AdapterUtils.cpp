@@ -384,7 +384,8 @@ std::vector<IP_Address> AdapterUtils::GetGateways(const Adapter* adapter)
 		if (ReadAddressFamily(address->Address.lpSockaddr) == AF_INET)
 		{
 			const sockaddr_in* sockaddr = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
-			collection.push_back(std::bit_cast<IP_Address>(sockaddr->sin_addr));
+			if (sockaddr->sin_addr.S_un.S_addr != 0)
+				collection.push_back(std::bit_cast<IP_Address>(sockaddr->sin_addr));
 		}
 		address = address->Next;
 	}
