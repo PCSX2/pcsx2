@@ -37,10 +37,10 @@ public:
 		map[key] = value;
 	}
 
-	void Remove(Key key)
+	bool Remove(Key key)
 	{
 		std::unique_lock modifyLock(accessMutex);
-		map.erase(key);
+		return map.erase(key) == 1;
 	}
 
 	void Clear()

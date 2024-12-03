@@ -527,7 +527,8 @@ int SocketAdapter::SendFromConnection(ConnectionKey Key, IP_Packet* ipPkt)
 void SocketAdapter::HandleConnectionClosed(BaseSession* sender)
 {
 	const ConnectionKey key = sender->key;
-	connections.Remove(key);
+	if (!connections.Remove(key))
+		return;
 
 	// Defer deleting the connection untill we have left the calling session's callstack
 	if (std::this_thread::get_id() == sendThreadId)
@@ -558,7 +559,8 @@ void SocketAdapter::HandleConnectionClosed(BaseSession* sender)
 void SocketAdapter::HandleFixedPortClosed(BaseSession* sender)
 {
 	const ConnectionKey key = sender->key;
-	connections.Remove(key);
+	if (!connections.Remove(key))
+		return;
 	fixedUDPPorts.Remove(key.ps2Port);
 
 	// Defer deleting the connection untill we have left the calling session's callstack
