@@ -4,7 +4,7 @@
   <ItemDefinitionGroup>
     <Link>
       <AdditionalLibraryDirectories>$(DepsLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;libjpeg.lib;libpng16.lib;libwebp.lib;lz4.lib;SDL3.lib;zlib.lib;zstd.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;libjpeg.lib;libpng16.lib;libwebp.lib;lz4.lib;SDL3.lib;zlib.lib;zstd.lib;kddockwidgets-qt62.lib</AdditionalDependencies>
    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -19,6 +19,7 @@
     <DepsDLLs Include="$(DepsBinDir)shaderc_shared.dll" />
     <DepsDLLs Include="$(DepsBinDir)zlib1.dll" />
     <DepsDLLs Include="$(DepsBinDir)zstd.dll" />
+    <DepsDLLs Include="$(DepsBinDir)kddockwidgets-qt62.dll" />
   </ItemGroup>
   <Target Name="DepsCopyDLLs"
     AfterTargets="Build"
