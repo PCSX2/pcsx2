@@ -93,7 +93,7 @@ typedef _Return_type_success_(return >= 0) LONG NTSTATUS;
 #endif
 #ifndef __NTSTATUS_FROM_WIN32
 #define __NTSTATUS_FROM_WIN32(x) \
-    ((NTSTATUS)(x) <= 0 ? ((NTSTATUS)(x)) : ((NTSTATUS)(((x)&0x0000FFFF) | (FACILITY_WIN32 << 16) | ERROR_SEVERITY_ERROR)))
+    ((NTSTATUS)(x) <= 0 ? ((NTSTATUS)(x)) : ((NTSTATUS)(((x) & 0x0000FFFF) | (FACILITY_WIN32 << 16) | ERROR_SEVERITY_ERROR)))
 #endif
 
 #ifndef WIL_AllocateMemory
@@ -757,6 +757,14 @@ WI_ODR_PRAGMA("WIL_FreeMemory", "0")
         return __hr; \
     } \
     __WI_SUPPRESS_4127_E while ((void)0, 0)
+#define __RETURN_HR_FAIL_SUPPRESS_TELEMETRY(hr, str) \
+    __WI_SUPPRESS_4127_S do \
+    { \
+        const HRESULT __hr = (hr); \
+        __R_FN(Return_HrSuppressTelemetry)(__R_INFO(str) __hr); \
+        return __hr; \
+    } \
+    __WI_SUPPRESS_4127_E while ((void)0, 0)
 #define __RETURN_HR_FAIL_NOFILE(hr, str) \
     __WI_SUPPRESS_4127_S do \
     { \
@@ -1097,6 +1105,21 @@ WI_ODR_PRAGMA("WIL_FreeMemory", "0")
         } \
     } while ((void)0, 0)
 
+// Always logs failed HR, if expected, telemetry will be called with 'alreadyReported'
+#define RETURN_IF_FAILED_SUPPRESS_TELEMETRY_IF_EXPECTED(hr, hrExpected, ...) \
+    do \
+    { \
+        const auto __hrRet = wil::verify_hresult(hr); \
+        if (FAILED(__hrRet)) \
+        { \
+            if ((__hrRet == wil::verify_hresult(hrExpected)) WI_FOREACH(__WI_OR_IS_EXPECTED_HRESULT, ##__VA_ARGS__)) \
+            { \
+                __RETURN_HR_FAIL_SUPPRESS_TELEMETRY(__hrRet, #hr); \
+            } \
+            __RETURN_HR_FAIL(__hrRet, #hr); \
+        } \
+    } while ((void)0, 0)
+
 //*****************************************************************************
 // Macros for logging failures (ignore or pass-through)
 //*****************************************************************************
@@ -1267,7 +1290,7 @@ WI_ODR_PRAGMA("WIL_FreeMemory", "0")
         if (!wil::verify_bool(condition)) \
         { \
             WI_ASSERT_FAIL(#condition); \
-            __RFF_FN(FailFast_Unexpected)(__RFF_INFO_ONLY(#condition)) \
+            __RFF_FN(FailFast_Unexpected)(__RFF_INFO_ONLY(#condition)); \
         } \
     } while (0, 0)
 #define WI_FAIL_FAST_ASSERT_MSG(condition, msg) \
@@ -1738,7 +1761,7 @@ inline HRESULT GetFailureLogString(
     _Pre_satisfies_(cchDest > 0) _In_ size_t cchDest,
     _In_ FailureInfo const& failure) WI_NOEXCEPT
 {
-    // This function was lenient to empty strings at one point and some callers became dependent on this beahvior
+    // This function was lenient to empty strings at one point and some callers became dependent on this behavior
     if ((cchDest == 0) || (pszDest == nullptr))
     {
         return S_OK;
@@ -2155,6 +2178,7 @@ namespace details
         _Pre_satisfies_(debugStringSizeChars > 0) size_t debugStringSizeChars,
         _Out_writes_(callContextStringSizeChars) _Post_z_ PSTR callContextString,
         _Pre_satisfies_(callContextStringSizeChars > 0) size_t callContextStringSizeChars,
+        FailureFlags flags,
         _Out_ FailureInfo* failure) WI_NOEXCEPT;
 
     __declspec(noinline) inline void ReportFailure(
@@ -2168,12 +2192,13 @@ namespace details
         __R_FN_PARAMS_FULL,
         const ResultStatus& resultPair,
         _In_opt_ PCWSTR message = nullptr,
-        ReportFailureOptions options = ReportFailureOptions::None);
+        ReportFailureOptions options = ReportFailureOptions::None,
+        FailureFlags flags = FailureFlags::None);
     template <FailureType>
     inline void ReportFailure_ReplaceMsg(__R_FN_PARAMS_FULL, HRESULT hr, _Printf_format_string_ PCSTR formatString, ...);
     __declspec(noinline) inline void ReportFailure_Hr(__R_FN_PARAMS_FULL, FailureType type, HRESULT hr);
     template <FailureType>
-    __declspec(noinline) inline void ReportFailure_Hr(__R_FN_PARAMS_FULL, HRESULT hr);
+    __declspec(noinline) inline void ReportFailure_Hr(__R_FN_PARAMS_FULL, HRESULT hr, FailureFlags flags = FailureFlags::None);
     template <FailureType>
     __declspec(noinline) inline HRESULT
         ReportFailure_CaughtException(__R_FN_PARAMS_FULL, SupportedExceptions supported = SupportedExceptions::Default);
@@ -2745,7 +2770,7 @@ namespace details
             {
                 status =
                     ((NTSTATUS)(hr) <= 0 ? ((NTSTATUS)(hr))
-                                         : ((NTSTATUS)(((hr)&0x0000FFFF) | (FACILITY_SSPI << 16) | ERROR_SEVERITY_ERROR)));
+                                         : ((NTSTATUS)(((hr) & 0x0000FFFF) | (FACILITY_SSPI << 16) | ERROR_SEVERITY_ERROR)));
             }
             else
             {
@@ -2826,8 +2851,8 @@ namespace details
     // NOTE: The following two functions are unfortunate copies of strsafe.h functions that have been copied to reduce the friction associated with using
     // Result.h and ResultException.h in a build that does not have WINAPI_PARTITION_DESKTOP defined (where these are conditionally enabled).
 
-    static STRSAFEAPI WilStringLengthWorkerA(
-        _In_reads_or_z_(cchMax) STRSAFE_PCNZCH psz,
+    inline HRESULT WilStringLengthWorkerA(
+        _In_reads_or_z_(cchMax) PCNZCH psz,
         _In_ _In_range_(<=, STRSAFE_MAX_CCH) size_t cchMax,
         _Out_opt_ _Deref_out_range_(<, cchMax) _Deref_out_range_(<=, _String_length_(psz)) size_t* pcchLength)
     {
@@ -2858,8 +2883,8 @@ namespace details
     }
 
     _Must_inspect_result_
-    STRSAFEAPI StringCchLengthA(
-        _In_reads_or_z_(cchMax) STRSAFE_PCNZCH psz,
+    inline HRESULT StringCchLengthA(
+        _In_reads_or_z_(cchMax) PCNZCH psz,
         _In_ _In_range_(1, STRSAFE_MAX_CCH) size_t cchMax,
         _Out_opt_ _Deref_out_range_(<, cchMax) _Deref_out_range_(<=, _String_length_(psz)) size_t* pcchLength)
     {
@@ -2880,8 +2905,8 @@ namespace details
     }
 #pragma warning(pop)
 
-    _Post_satisfies_(cchDest > 0 && cchDest <= cchMax) static STRSAFEAPI
-        WilStringValidateDestA(_In_reads_opt_(cchDest) STRSAFE_PCNZCH /*pszDest*/, _In_ size_t cchDest, _In_ const size_t cchMax)
+    _Post_satisfies_(cchDest > 0 && cchDest <= cchMax) inline HRESULT
+        WilStringValidateDestA(_In_reads_opt_(cchDest) PCNZCH /*pszDest*/, _In_ size_t cchDest, _In_ const size_t cchMax)
     {
         HRESULT hr = S_OK;
         if ((cchDest == 0) || (cchDest > cchMax))
@@ -2891,7 +2916,7 @@ namespace details
         return hr;
     }
 
-    static STRSAFEAPI WilStringVPrintfWorkerA(
+    inline HRESULT WilStringVPrintfWorkerA(
         _Out_writes_(cchDest) _Always_(_Post_z_) STRSAFE_LPSTR pszDest,
         _In_ _In_range_(1, STRSAFE_MAX_CCH) size_t cchDest,
         _Always_(_Out_opt_ _Deref_out_range_(<=, cchDest - 1)) size_t* pcchNewDestLength,
@@ -2948,7 +2973,7 @@ namespace details
         return hr;
     }
 
-    __inline HRESULT StringCchPrintfA(
+    inline HRESULT StringCchPrintfA(
         _Out_writes_(cchDest) _Always_(_Post_z_) STRSAFE_LPSTR pszDest,
         _In_ size_t cchDest,
         _In_ _Printf_format_string_ STRSAFE_LPCSTR pszFormat,
@@ -3080,7 +3105,7 @@ namespace details
 {
 #ifndef RESULT_SUPPRESS_STATIC_INITIALIZERS
 #if !defined(BUILD_WINDOWS) || defined(WIL_SUPPRESS_PRIVATE_API_USE)
-    WI_HEADER_INITITALIZATION_FUNCTION(WilInitialize_ResultMacros_DesktopOrSystem_SuppressPrivateApiUse, [] {
+    WI_HEADER_INITIALIZATION_FUNCTION(WilInitialize_ResultMacros_DesktopOrSystem_SuppressPrivateApiUse, [] {
         ::wil::WilInitialize_ResultMacros_DesktopOrSystem_SuppressPrivateApiUse();
         return 1;
     });
@@ -3091,7 +3116,7 @@ namespace details
 #else  // !WINAPI_PARTITION_DESKTOP, !WINAPI_PARTITION_SYSTEM, explicitly assume these modules can direct link
 namespace details
 {
-    WI_HEADER_INITITALIZATION_FUNCTION(WilInitialize_ResultMacros_AppOnly, [] {
+    WI_HEADER_INITIALIZATION_FUNCTION(WilInitialize_ResultMacros_AppOnly, [] {
         g_pfnRaiseFailFastException = ::RaiseFailFastException;
         return 1;
     });
@@ -3869,7 +3894,7 @@ namespace details
     }
 
 #if !defined(RESULT_SUPPRESS_STATIC_INITIALIZERS)
-    WI_HEADER_INITITALIZATION_FUNCTION(InitializeWinRt, [] {
+    WI_HEADER_INITIALIZATION_FUNCTION(InitializeWinRt, [] {
         g_pfnResultFromCaughtException_WinRt = ResultFromCaughtException_WinRt;
         g_pfnResultFromKnownExceptions_WinRt = ResultFromKnownExceptions_WinRt;
         g_pfnThrowPlatformException = ThrowPlatformException;
@@ -4124,7 +4149,7 @@ namespace details
         }
     }
 
-    WI_HEADER_INITITALIZATION_FUNCTION(InitializeResultExceptions, [] {
+    WI_HEADER_INITIALIZATION_FUNCTION(InitializeResultExceptions, [] {
         g_pfnRunFunctorWithExceptionFilter = RunFunctorWithExceptionFilter;
         g_pfnRethrow = Rethrow;
         g_pfnThrowResultException = ThrowResultExceptionInternal;
@@ -4320,6 +4345,7 @@ namespace details
         _Pre_satisfies_(debugStringSizeChars > 0) size_t debugStringSizeChars,
         _Out_writes_(callContextStringSizeChars) _Post_z_ PSTR callContextString,
         _Pre_satisfies_(callContextStringSizeChars > 0) size_t callContextStringSizeChars,
+        FailureFlags flags,
         _Out_ FailureInfo* failure) WI_NOEXCEPT
     {
         debugString[0] = L'\0';
@@ -4360,7 +4386,7 @@ namespace details
         };
 
         failure->type = type;
-        failure->flags = FailureFlags::None;
+        failure->flags = flags;
         WI_SetFlagIf(failure->flags, FailureFlags::NtStatus, resultPair.kind == ResultStatus::Kind::NtStatus);
         failure->failureId = ::InterlockedIncrementNoFence(&s_failureId);
         failure->pszMessage = ((message != nullptr) && (message[0] != L'\0')) ? message : nullptr;
@@ -4501,7 +4527,8 @@ namespace details
     }
 
     template <FailureType T>
-    inline __declspec(noinline) void ReportFailure_Return(__R_FN_PARAMS_FULL, const ResultStatus& resultPair, PCWSTR message, ReportFailureOptions options)
+    inline __declspec(noinline) void ReportFailure_Return(
+        __R_FN_PARAMS_FULL, const ResultStatus& resultPair, PCWSTR message, ReportFailureOptions options, FailureFlags flags)
     {
         bool needPlatformException =
             ((T == FailureType::Exception) && WI_IsFlagClear(options, ReportFailureOptions::MayRethrow) &&
@@ -4522,6 +4549,7 @@ namespace details
             ARRAYSIZE(debugString),
             callContextString,
             ARRAYSIZE(callContextString),
+            flags,
             &failure);
 
         if (WI_IsFlagSet(failure.flags, FailureFlags::RequestFailFast))
@@ -4531,9 +4559,10 @@ namespace details
     }
 
     template <FailureType T, bool SuppressAction>
-    inline __declspec(noinline) void ReportFailure_Base(__R_FN_PARAMS_FULL, const ResultStatus& resultPair, PCWSTR message, ReportFailureOptions options)
+    inline __declspec(noinline) void ReportFailure_Base(
+        __R_FN_PARAMS_FULL, const ResultStatus& resultPair, PCWSTR message, ReportFailureOptions options, FailureFlags flags)
     {
-        ReportFailure_Return<T>(__R_FN_CALL_FULL, resultPair, message, options);
+        ReportFailure_Return<T>(__R_FN_CALL_FULL, resultPair, message, options, flags);
     }
 
     template <FailureType T>
@@ -4559,6 +4588,7 @@ namespace details
             ARRAYSIZE(debugString),
             callContextString,
             ARRAYSIZE(callContextString),
+            FailureFlags::None,
             &failure);
         __WI_SUPPRESS_4127_S
         if ((T == FailureType::FailFast) || WI_IsFlagSet(failure.flags, FailureFlags::RequestFailFast))
@@ -4587,14 +4617,14 @@ namespace details
 
     template <>
     inline __declspec(noinline) RESULT_NORETURN void ReportFailure_Base<FailureType::FailFast, false>(
-        __R_FN_PARAMS_FULL, const ResultStatus& resultPair, PCWSTR message, ReportFailureOptions options)
+        __R_FN_PARAMS_FULL, const ResultStatus& resultPair, PCWSTR message, ReportFailureOptions options, FailureFlags)
     {
         ReportFailure_NoReturn<FailureType::FailFast>(__R_FN_CALL_FULL, resultPair, message, options);
     }
 
     template <>
     inline __declspec(noinline) RESULT_NORETURN void ReportFailure_Base<FailureType::Exception, false>(
-        __R_FN_PARAMS_FULL, const ResultStatus& resultPair, PCWSTR message, ReportFailureOptions options)
+        __R_FN_PARAMS_FULL, const ResultStatus& resultPair, PCWSTR message, ReportFailureOptions options, FailureFlags)
     {
         ReportFailure_NoReturn<FailureType::Exception>(__R_FN_CALL_FULL, resultPair, message, options);
     }
@@ -4764,19 +4794,22 @@ namespace details
     }
 
     template <FailureType T>
-    __declspec(noinline) inline void ReportFailure_Hr(__R_FN_PARAMS_FULL, HRESULT hr)
+    __declspec(noinline) inline void ReportFailure_Hr(__R_FN_PARAMS_FULL, HRESULT hr, FailureFlags flags)
     {
-        ReportFailure_Base<T>(__R_FN_CALL_FULL, ResultStatus::FromResult(hr));
+        ReportFailure_Base<T>(
+            __R_FN_CALL_FULL, ResultStatus::FromResult(hr), nullptr /*message*/, ReportFailureOptions::None /*options*/, flags);
     }
 
     template <>
-    __declspec(noinline) inline RESULT_NORETURN void ReportFailure_Hr<FailureType::FailFast>(__R_FN_PARAMS_FULL, HRESULT hr)
+    __declspec(noinline) inline RESULT_NORETURN
+        void ReportFailure_Hr<FailureType::FailFast>(__R_FN_PARAMS_FULL, HRESULT hr, FailureFlags)
     {
         ReportFailure_Base<FailureType::FailFast>(__R_FN_CALL_FULL, ResultStatus::FromResult(hr));
     }
 
     template <>
-    __declspec(noinline) inline RESULT_NORETURN void ReportFailure_Hr<FailureType::Exception>(__R_FN_PARAMS_FULL, HRESULT hr)
+    __declspec(noinline) inline RESULT_NORETURN
+        void ReportFailure_Hr<FailureType::Exception>(__R_FN_PARAMS_FULL, HRESULT hr, FailureFlags)
     {
         ReportFailure_Base<FailureType::Exception>(__R_FN_CALL_FULL, ResultStatus::FromResult(hr));
     }
@@ -5182,6 +5215,7 @@ namespace details
             ARRAYSIZE(debugString),
             callContextString,
             ARRAYSIZE(callContextString),
+            FailureFlags::None,
             &failure);
 
         if (WI_IsFlagSet(failure.flags, FailureFlags::RequestFailFast))
@@ -5226,6 +5260,13 @@ namespace details
         {
             __R_FN_LOCALS;
             wil::details::ReportFailure_Hr<FailureType::Return>(__R_DIRECT_FN_CALL hr);
+        }
+
+        __R_DIRECT_METHOD(void, Return_HrSuppressTelemetry)(__R_DIRECT_FN_PARAMS HRESULT hr) WI_NOEXCEPT
+        {
+            __R_FN_LOCALS;
+            const FailureFlags flags = FailureFlags::RequestSuppressTelemetry;
+            wil::details::ReportFailure_Hr<FailureType::Return>(__R_DIRECT_FN_CALL hr, flags);
         }
 
         _Success_(true)

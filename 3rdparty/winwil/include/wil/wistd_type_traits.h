@@ -1946,7 +1946,7 @@ struct __numeric_type<void>
 
 // __promote
 
-template <class _A1, class _A2 = void, class _A3 = void, bool = __numeric_type<_A1>::value&& __numeric_type<_A2>::value&& __numeric_type<_A3>::value>
+template <class _A1, class _A2 = void, class _A3 = void, bool = __numeric_type<_A1>::value && __numeric_type<_A2>::value && __numeric_type<_A3>::value>
 class __promote_imp
 {
 public:
@@ -4775,7 +4775,7 @@ struct underlying_type
 {
     static_assert(
         _Support,
-        "The underyling_type trait requires compiler "
+        "The underlying_type trait requires compiler "
         "support. Either no such support exists or "
         "libc++ does not know how to use it.");
 };
