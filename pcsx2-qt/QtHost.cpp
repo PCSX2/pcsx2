@@ -1008,7 +1008,7 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		}
 		else
 		{
-			gs_stat = tr("Slot: %1 | Volume: %2% | 3% | EE: %4% | GS: %5%")
+			gs_stat = tr("Slot: %1 | Volume: %2% | %3 | EE: %4% | GS: %5%")
 						  .arg(SaveStateSelectorUI::GetCurrentSlot())
 						  .arg(SPU2::GetOutputVolume())
 						  .arg(gs_stat_str.c_str())
