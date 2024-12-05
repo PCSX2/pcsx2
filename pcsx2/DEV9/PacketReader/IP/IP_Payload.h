@@ -25,23 +25,21 @@ namespace PacketReader::IP
 		std::unique_ptr<u8[]> data;
 
 	private:
-		int length;
-		u8 protocol;
+		const int length;
+		const u8 protocol;
 
 	public:
 		IP_PayloadData(int len, u8 prot)
+			: length{len}
+			, protocol{prot}
 		{
-			protocol = prot;
-			length = len;
-
 			if (len != 0)
 				data = std::make_unique<u8[]>(len);
 		}
 		IP_PayloadData(const IP_PayloadData& original)
+			: length{original.length}
+			, protocol{original.protocol}
 		{
-			protocol = original.protocol;
-			length = original.length;
-
 			if (length != 0)
 			{
 				data = std::make_unique<u8[]>(length);
@@ -74,18 +72,18 @@ namespace PacketReader::IP
 	class IP_PayloadPtr : public IP_Payload
 	{
 	public:
-		u8* data;
+		const u8* data;
 
 	private:
-		int length;
-		u8 protocol;
+		const int length;
+		const u8 protocol;
 
 	public:
-		IP_PayloadPtr(u8* ptr, int len, u8 prot)
+		IP_PayloadPtr(const u8* ptr, int len, u8 prot)
+			: data{ptr}
+			, length{len}
+			, protocol{prot}
 		{
-			data = ptr;
-			length = len;
-			protocol = prot;
 		}
 		IP_PayloadPtr(const IP_PayloadPtr&) = delete;
 		virtual int GetLength()

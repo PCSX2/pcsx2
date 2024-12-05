@@ -12,7 +12,7 @@ namespace PacketReader::IP::UDP
 		: payload{data}
 	{
 	}
-	UDP_Packet::UDP_Packet(u8* buffer, int bufferSize)
+	UDP_Packet::UDP_Packet(const u8* buffer, int bufferSize)
 	{
 		int offset = 0;
 		//Bits 0-31

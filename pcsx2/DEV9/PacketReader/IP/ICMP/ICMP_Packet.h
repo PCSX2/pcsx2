@@ -27,7 +27,7 @@ namespace PacketReader::IP::ICMP
 	public:
 		//Takes ownership of payload
 		ICMP_Packet(Payload* data);
-		ICMP_Packet(u8* buffer, int bufferSize);
+		ICMP_Packet(const u8* buffer, int bufferSize);
 		ICMP_Packet(const ICMP_Packet&);
 
 		Payload* GetPayload();

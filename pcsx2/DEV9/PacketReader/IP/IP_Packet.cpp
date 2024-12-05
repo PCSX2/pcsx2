@@ -66,7 +66,7 @@ namespace PacketReader::IP
 	{
 	}
 
-	IP_Packet::IP_Packet(u8* buffer, int bufferSize, bool fromICMP)
+	IP_Packet::IP_Packet(const u8* buffer, int bufferSize, bool fromICMP)
 	{
 		int offset = 0;
 

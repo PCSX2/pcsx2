@@ -19,7 +19,7 @@ namespace PacketReader
 		//Note: we don't have to worry about the Ethernet Frame CRC as it is not included in the packet
 		//Note: We don't support tagged frames
 
-		payload = std::make_unique<PayloadPtr>((u8*)&basePkt->buffer[14], pkt->size - headerLength);
+		payload = std::make_unique<PayloadPtrEditor>((u8*)&basePkt->buffer[14], pkt->size - headerLength);
 	}
 
 	MAC_Address EthernetFrameEditor::GetDestinationMAC()
@@ -45,7 +45,7 @@ namespace PacketReader
 		return ntohs(*(u16*)&basePkt->buffer[12]);
 	}
 
-	PayloadPtr* EthernetFrameEditor::GetPayload()
+	PayloadPtrEditor* EthernetFrameEditor::GetPayload()
 	{
 		return payload.get();
 	}

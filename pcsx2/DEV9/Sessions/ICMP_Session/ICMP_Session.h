@@ -23,7 +23,7 @@ namespace Sessions
 			int type;
 			int code;
 			int dataLength;
-			u8* data;
+			const u8* data;
 		};
 
 		class Ping

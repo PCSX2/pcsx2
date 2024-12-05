@@ -6,6 +6,7 @@
 #include <cstring>
 #include <memory>
 
+#include "common/Assertions.h"
 #include "common/Pcsx2Defs.h"
 
 namespace PacketReader
@@ -30,16 +31,14 @@ namespace PacketReader
 
 	public:
 		PayloadData(int len)
+			: length{len}
 		{
-			length = len;
-
 			if (len != 0)
 				data = std::make_unique<u8[]>(len);
 		}
 		PayloadData(const PayloadData& original)
+			: length{original.length}
 		{
-			length = original.length;
-
 			if (length != 0)
 			{
 				data = std::make_unique<u8[]>(length);
@@ -68,16 +67,16 @@ namespace PacketReader
 	class PayloadPtr : public Payload
 	{
 	public:
-		u8* data;
+		const u8* data;
 
 	private:
-		int length;
+		const int length;
 
 	public:
-		PayloadPtr(u8* ptr, int len)
+		PayloadPtr(const u8* ptr, int len)
+			: data{ptr}
+			, length{len}
 		{
-			data = ptr;
-			length = len;
 		}
 		PayloadPtr(const PayloadPtr&) = delete;
 		virtual int GetLength()
@@ -93,6 +92,38 @@ namespace PacketReader
 
 			memcpy(&buffer[*offset], data, length);
 			*offset += length;
+		}
+		virtual Payload* Clone() const
+		{
+			PayloadData* ret = new PayloadData(length);
+			memcpy(ret->data.get(), data, length);
+			return ret;
+		}
+	};
+
+	//Pointer to bytes not owned by class, used by *Editor classes only
+	class PayloadPtrEditor : public Payload
+	{
+	public:
+		u8* data;
+
+	private:
+		const int length;
+
+	public:
+		PayloadPtrEditor(u8* ptr, int len)
+			: data{ptr}
+			, length{len}
+		{
+		}
+		PayloadPtrEditor(const PayloadPtrEditor&) = delete;
+		virtual int GetLength()
+		{
+			return length;
+		}
+		virtual void WriteBytes(u8* buffer, int* offset)
+		{
+			pxAssert(false);
 		}
 		virtual Payload* Clone() const
 		{
