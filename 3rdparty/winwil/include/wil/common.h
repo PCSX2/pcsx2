@@ -526,7 +526,7 @@ to be able to layer additional functionality into other libraries by their mere 
 of initialization should be used whenever they are available.
 ~~~~
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-WI_HEADER_INITITALIZATION_FUNCTION(InitializeDesktopFamilyApis, []
+WI_HEADER_INITIALIZATION_FUNCTION(InitializeDesktopFamilyApis, []
 {
     g_pfnGetModuleName              = GetCurrentModuleName;
     g_pfnFailFastInLoaderCallout    = FailFastInLoaderCallout;
@@ -537,16 +537,16 @@ WI_HEADER_INITITALIZATION_FUNCTION(InitializeDesktopFamilyApis, []
 The above example is used within WIL to decide whether or not the library containing WIL is allowed to use
 desktop APIs.  Building this functionality as `#IFDEF`s within functions would create ODR violations, whereas
 doing it with global function pointers and header initialization allows a runtime determination. */
-#define WI_HEADER_INITITALIZATION_FUNCTION(name, fn)
+#define WI_HEADER_INITIALIZATION_FUNCTION(name, fn)
 #elif defined(_M_IX86)
-#define WI_HEADER_INITITALIZATION_FUNCTION(name, fn) \
+#define WI_HEADER_INITIALIZATION_FUNCTION(name, fn) \
     extern "C" \
     { \
         __declspec(selectany) unsigned char g_header_init_##name = static_cast<unsigned char>(fn()); \
     } \
     __pragma(comment(linker, "/INCLUDE:_g_header_init_" #name))
 #elif defined(_M_IA64) || defined(_M_AMD64) || defined(_M_ARM) || defined(_M_ARM64)
-#define WI_HEADER_INITITALIZATION_FUNCTION(name, fn) \
+#define WI_HEADER_INITIALIZATION_FUNCTION(name, fn) \
     extern "C" \
     { \
         __declspec(selectany) unsigned char g_header_init_##name = static_cast<unsigned char>(fn()); \
@@ -555,6 +555,9 @@ doing it with global function pointers and header initialization allows a runtim
 #else
 #error linker pragma must include g_header_init variation
 #endif
+
+// Keep the misspelled name for backward compatibility.
+#define WI_HEADER_INITITALIZATION_FUNCTION(name, fn) WI_HEADER_INITIALIZATION_FUNCTION(name, fn)
 
 /** All Windows Implementation Library classes and functions are located within the "wil" namespace.
 The 'wil' namespace is an intentionally short name as the intent is for code to be able to reference
@@ -687,32 +690,32 @@ boolean, BOOLEAN, and classes with an explicit bool cast.
 @param val The logical bool expression
 @return A C++ bool representing the evaluation of `val`. */
 template <typename T, __R_ENABLE_IF_IS_CLASS(T)>
-_Post_satisfies_(return == static_cast<bool>(val)) __forceinline constexpr bool verify_bool(const T& val)
+_Post_satisfies_(return == static_cast<bool>(val)) __forceinline constexpr bool verify_bool(const T& val) WI_NOEXCEPT
 {
     return static_cast<bool>(val);
 }
 
 template <typename T, __R_ENABLE_IF_IS_NOT_CLASS(T)>
-__forceinline constexpr bool verify_bool(T /*val*/)
+__forceinline constexpr bool verify_bool(T /*val*/) WI_NOEXCEPT
 {
     static_assert(!wistd::is_same<T, T>::value, "Wrong Type: bool/BOOL/BOOLEAN/boolean expected");
     return false;
 }
 
 template <>
-_Post_satisfies_(return == val) __forceinline constexpr bool verify_bool<bool>(bool val)
+_Post_satisfies_(return == val) __forceinline constexpr bool verify_bool<bool>(bool val) WI_NOEXCEPT
 {
     return val;
 }
 
 template <>
-_Post_satisfies_(return == (val != 0)) __forceinline constexpr bool verify_bool<int>(int val)
+_Post_satisfies_(return == (val != 0)) __forceinline constexpr bool verify_bool<int>(int val) WI_NOEXCEPT
 {
     return (val != 0);
 }
 
 template <>
-_Post_satisfies_(return == (val != 0)) __forceinline constexpr bool verify_bool<unsigned char>(unsigned char val)
+_Post_satisfies_(return == (val != 0)) __forceinline constexpr bool verify_bool<unsigned char>(unsigned char val) WI_NOEXCEPT
 {
     return (val != 0);
 }
@@ -723,7 +726,7 @@ accept any `int` value as long as that is the underlying typedef behind `BOOL`.
 @param val The Win32 BOOL returning expression
 @return A Win32 BOOL representing the evaluation of `val`. */
 template <typename T>
-_Post_satisfies_(return == val) __forceinline constexpr int verify_BOOL(T val)
+_Post_satisfies_(return == val) __forceinline constexpr int verify_BOOL(T val) WI_NOEXCEPT
 {
     // Note: Written in terms of 'int' as BOOL is actually:  typedef int BOOL;
     static_assert((wistd::is_same<T, int>::value), "Wrong Type: BOOL expected");
@@ -752,7 +755,7 @@ RETURN_HR_IF(static_cast<HRESULT>(UIA_E_NOTSUPPORTED), (patternId != UIA_DragPat
 @param hr The HRESULT returning expression
 @return An HRESULT representing the evaluation of `val`. */
 template <typename T>
-_Post_satisfies_(return == hr) inline constexpr long verify_hresult(T hr)
+_Post_satisfies_(return == hr) inline constexpr long verify_hresult(T hr) WI_NOEXCEPT
 {
     // Note: Written in terms of 'long' as HRESULT is actually:  typedef _Return_type_success_(return >= 0) long HRESULT
     static_assert(wistd::is_same<T, long>::value, "Wrong Type: HRESULT expected");
@@ -781,7 +784,7 @@ NT_RETURN_IF_FALSE(static_cast<NTSTATUS>(STATUS_NOT_SUPPORTED), (dispatch->Versi
 @param status The NTSTATUS returning expression
 @return An NTSTATUS representing the evaluation of `val`. */
 template <typename T>
-_Post_satisfies_(return == status) inline long verify_ntstatus(T status)
+_Post_satisfies_(return == status) inline long verify_ntstatus(T status) WI_NOEXCEPT
 {
     // Note: Written in terms of 'long' as NTSTATUS is actually:  typedef _Return_type_success_(return >= 0) long NTSTATUS
     static_assert(wistd::is_same<T, long>::value, "Wrong Type: NTSTATUS expected");
@@ -795,7 +798,7 @@ commonly used when manipulating Win32 error codes.
 @param error The Win32 error code returning expression
 @return An Win32 error code representing the evaluation of `error`. */
 template <typename T>
-_Post_satisfies_(return == error) inline T verify_win32(T error)
+_Post_satisfies_(return == error) inline T verify_win32(T error) WI_NOEXCEPT
 {
     // Note: Win32 error code are defined as 'long' (#define ERROR_SUCCESS 0L), but are more frequently used as DWORD (unsigned
     // long). This accept both types.
@@ -810,7 +813,7 @@ _Post_satisfies_(return == error) inline T verify_win32(T error)
 // Implementation details for macros and helper functions... do not use directly.
 namespace details
 {
-// Use size-specific casts to avoid sign extending numbers -- avoid warning C4310: cast truncates constant value
+    // Use size-specific casts to avoid sign extending numbers -- avoid warning C4310: cast truncates constant value
 #define __WI_MAKE_UNSIGNED(val) \
     (__pragma(warning(push)) __pragma(warning(disable : 4310 4309))( \
         sizeof(val) == 1   ? static_cast<unsigned char>(val) \

@@ -24,19 +24,64 @@ namespace details
     {
     };
 
+    template <typename TCallback>
+    BOOL __stdcall EnumWindowsCallbackNoThrow(HWND hwnd, LPARAM lParam)
+    {
+        auto pCallback = reinterpret_cast<TCallback*>(lParam);
+#ifdef __cpp_if_constexpr
+        using result_t = decltype((*pCallback)(hwnd));
+        if constexpr (wistd::is_void_v<result_t>)
+        {
+            (*pCallback)(hwnd);
+            return TRUE;
+        }
+        else if constexpr (wistd::is_same_v<result_t, HRESULT>)
+        {
+            // NB: this works for both HRESULT and NTSTATUS as both S_OK and ERROR_SUCCESS are 0
+            return (S_OK == (*pCallback)(hwnd)) ? TRUE : FALSE;
+        }
+        else if constexpr (std::is_same_v<result_t, bool>)
+        {
+            return (*pCallback)(hwnd) ? TRUE : FALSE;
+        }
+        else
+        {
+            static_assert(details::always_false<TCallback>::value, "Callback must return void, bool, or HRESULT");
+        }
+#else
+        return (*pCallback)(hwnd);
+#endif
+    }
+
     template <typename TEnumApi, typename TCallback>
     void DoEnumWindowsNoThrow(TEnumApi&& enumApi, TCallback&& callback) noexcept
     {
-        auto enumproc = [](HWND hwnd, LPARAM lParam) -> BOOL {
-            auto pCallback = reinterpret_cast<TCallback*>(lParam);
+        enumApi(EnumWindowsCallbackNoThrow<TCallback>, reinterpret_cast<LPARAM>(&callback));
+    }
+
+#ifdef WIL_ENABLE_EXCEPTIONS
+    template <typename TCallback>
+    struct EnumWindowsCallbackData
+    {
+        std::exception_ptr exception;
+        TCallback* pCallback;
+    };
+
+    template <typename TCallback>
+    BOOL __stdcall EnumWindowsCallback(HWND hwnd, LPARAM lParam)
+    {
+        auto pCallbackData = reinterpret_cast<EnumWindowsCallbackData<TCallback>*>(lParam);
+        try
+        {
+            auto pCallback = pCallbackData->pCallback;
 #ifdef __cpp_if_constexpr
             using result_t = decltype((*pCallback)(hwnd));
-            if constexpr (wistd::is_void_v<result_t>)
+            if constexpr (std::is_void_v<result_t>)
             {
                 (*pCallback)(hwnd);
                 return TRUE;
             }
-            else if constexpr (wistd::is_same_v<result_t, HRESULT>)
+            else if constexpr (std::is_same_v<result_t, HRESULT>)
             {
                 // NB: this works for both HRESULT and NTSTATUS as both S_OK and ERROR_SUCCESS are 0
                 return (S_OK == (*pCallback)(hwnd)) ? TRUE : FALSE;
@@ -52,55 +97,19 @@ namespace details
 #else
             return (*pCallback)(hwnd);
 #endif
-        };
-        enumApi(enumproc, reinterpret_cast<LPARAM>(&callback));
-    }
+        }
+        catch (...)
+        {
+            pCallbackData->exception = std::current_exception();
+            return FALSE;
+        }
+    };
 
-#ifdef WIL_ENABLE_EXCEPTIONS
     template <typename TEnumApi, typename TCallback>
     void DoEnumWindows(TEnumApi&& enumApi, TCallback&& callback)
     {
-        struct
-        {
-            std::exception_ptr exception;
-            TCallback* pCallback;
-        } callbackData = {nullptr, &callback};
-        auto enumproc = [](HWND hwnd, LPARAM lParam) -> BOOL {
-            auto pCallbackData = reinterpret_cast<decltype(&callbackData)>(lParam);
-            try
-            {
-                auto pCallback = pCallbackData->pCallback;
-#ifdef __cpp_if_constexpr
-                using result_t = decltype((*pCallback)(hwnd));
-                if constexpr (std::is_void_v<result_t>)
-                {
-                    (*pCallback)(hwnd);
-                    return TRUE;
-                }
-                else if constexpr (std::is_same_v<result_t, HRESULT>)
-                {
-                    // NB: this works for both HRESULT and NTSTATUS as both S_OK and ERROR_SUCCESS are 0
-                    return (S_OK == (*pCallback)(hwnd)) ? TRUE : FALSE;
-                }
-                else if constexpr (std::is_same_v<result_t, bool>)
-                {
-                    return (*pCallback)(hwnd) ? TRUE : FALSE;
-                }
-                else
-                {
-                    static_assert(details::always_false<TCallback>::value, "Callback must return void, bool, or HRESULT");
-                }
-#else
-                return (*pCallback)(hwnd);
-#endif
-            }
-            catch (...)
-            {
-                pCallbackData->exception = std::current_exception();
-                return FALSE;
-            }
-        };
-        enumApi(enumproc, reinterpret_cast<LPARAM>(&callbackData));
+        EnumWindowsCallbackData<TCallback> callbackData = {nullptr, &callback};
+        enumApi(EnumWindowsCallback<TCallback>, reinterpret_cast<LPARAM>(&callbackData));
         if (callbackData.exception)
         {
             std::rethrow_exception(callbackData.exception);
