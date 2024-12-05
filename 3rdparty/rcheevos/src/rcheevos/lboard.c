@@ -199,19 +199,19 @@ int rc_evaluate_lboard(rc_lboard_t* self, int32_t* value, rc_peek_t peek, void* 
           /* start and submit are both true in the same frame, just submit without announcing the leaderboard is available */
           self->state = RC_LBOARD_STATE_TRIGGERED;
         }
-        else if (self->start.requirement == 0 && self->start.alternative == 0) {
-          /* start condition is empty - this leaderboard is submit-only with no measured progress */
+        else if (!self->start.requirement && !self->start.alternative) {
+          /* start trigger is empty. assume the leaderboard is in development and ignore */
         }
         else {
           /* start the leaderboard attempt */
           self->state = RC_LBOARD_STATE_STARTED;
-
-          /* reset any hit counts in the value */
-          if (self->progress)
-            rc_reset_value(self->progress);
-
-          rc_reset_value(&self->value);
         }
+
+        /* reset any hit counts in the value */
+        if (self->progress)
+          rc_reset_value(self->progress);
+
+        rc_reset_value(&self->value);
       }
       break;
 

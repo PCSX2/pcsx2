@@ -220,6 +220,8 @@ typedef struct rc_api_award_achievement_request_t {
   uint32_t hardcore;
   /* The hash associated to the game being played */
   const char* game_hash;
+  /* The number of seconds since the achievement was unlocked */
+  uint32_t seconds_since_unlock;
 }
 rc_api_award_achievement_request_t;
 
@@ -263,6 +265,8 @@ typedef struct rc_api_submit_lboard_entry_request_t {
   int32_t score;
   /* The hash associated to the game being played */
   const char* game_hash;
+  /* The number of seconds since the leaderboard attempt was completed */
+  uint32_t seconds_since_completion;
 }
 rc_api_submit_lboard_entry_request_t;
 

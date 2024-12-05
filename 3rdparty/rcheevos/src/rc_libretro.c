@@ -36,6 +36,17 @@ typedef struct rc_disallowed_core_settings_t
   const rc_disallowed_setting_t* disallowed_settings;
 } rc_disallowed_core_settings_t;
 
+
+static const rc_disallowed_setting_t _rc_disallowed_beetle_psx_settings[] = {
+  { "beetle_psx_cpu_freq_scale", "<100" },
+  { NULL, NULL }
+};
+
+static const rc_disallowed_setting_t _rc_disallowed_beetle_psx_hw_settings[] = {
+  { "beetle_psx_hw_cpu_freq_scale", "<100" },
+  { NULL, NULL }
+};
+
 static const rc_disallowed_setting_t _rc_disallowed_bsnes_settings[] = {
   { "bsnes_region", "pal" },
   { NULL, NULL }
@@ -80,6 +91,11 @@ static const rc_disallowed_setting_t _rc_disallowed_fceumm_settings[] = {
   { NULL, NULL }
 };
 
+static const rc_disallowed_setting_t _rc_disallowed_flycast_settings[] = {
+  { "reicast_sh4clock", "<200" },
+  { NULL, NULL }
+};
+
 static const rc_disallowed_setting_t _rc_disallowed_gpgx_settings[] = {
   { "genesis_plus_gx_lock_on", ",action replay (pro),game genie" },
   { "genesis_plus_gx_region_detect", "pal" },
@@ -108,6 +124,7 @@ static const rc_disallowed_setting_t _rc_disallowed_neocd_settings[] = {
 };
 
 static const rc_disallowed_setting_t _rc_disallowed_pcsx_rearmed_settings[] = {
+  { "pcsx_rearmed_psxclock", "<55" },
   { "pcsx_rearmed_region", "pal" },
   { NULL, NULL }
 };
@@ -140,6 +157,11 @@ static const rc_disallowed_setting_t _rc_disallowed_snes9x_settings[] = {
   { NULL, NULL }
 };
 
+static const rc_disallowed_setting_t _rc_disallowed_swanstation_settings[] = {
+  { "swanstation_CPU_Overclock", "<100" },
+  { NULL, NULL }
+};
+
 static const rc_disallowed_setting_t _rc_disallowed_vice_settings[] = {
   { "vice_autostart", "disabled" }, /* autostart dictates initial load and reset from menu */
   { "vice_reset", "!autostart" }, /* reset dictates behavior when pressing reset button (END) */
@@ -152,6 +174,8 @@ static const rc_disallowed_setting_t _rc_disallowed_virtual_jaguar_settings[] = 
 };
 
 static const rc_disallowed_core_settings_t rc_disallowed_core_settings[] = {
+  { "Beetle PSX", _rc_disallowed_beetle_psx_settings },
+  { "Beetle PSX HW", _rc_disallowed_beetle_psx_hw_settings },
   { "bsnes-mercury", _rc_disallowed_bsnes_settings },
   { "cap32", _rc_disallowed_cap32_settings },
   { "dolphin-emu", _rc_disallowed_dolphin_settings },
@@ -160,6 +184,7 @@ static const rc_disallowed_core_settings_t rc_disallowed_core_settings[] = {
   { "ecwolf", _rc_disallowed_ecwolf_settings },
   { "FCEUmm", _rc_disallowed_fceumm_settings },
   { "FinalBurn Neo", _rc_disallowed_fbneo_settings },
+  { "Flycast", _rc_disallowed_flycast_settings },
   { "Genesis Plus GX", _rc_disallowed_gpgx_settings },
   { "Genesis Plus GX Wide", _rc_disallowed_gpgx_wide_settings },
   { "Mesen", _rc_disallowed_mesen_settings },
@@ -171,6 +196,7 @@ static const rc_disallowed_core_settings_t rc_disallowed_core_settings[] = {
   { "QUASI88", _rc_disallowed_quasi88_settings },
   { "SMS Plus GX", _rc_disallowed_smsplus_settings },
   { "Snes9x", _rc_disallowed_snes9x_settings },
+  { "SwanStation", _rc_disallowed_swanstation_settings },
   { "VICE x64", _rc_disallowed_vice_settings },
   { "Virtual Jaguar", _rc_disallowed_virtual_jaguar_settings },
   { NULL, NULL }
@@ -184,6 +210,12 @@ static int rc_libretro_string_equal_nocase_wildcard(const char* test, const char
   }
 
   return (*value == '\0');
+}
+
+static int rc_libretro_numeric_less_than(const char* test, const char* value) {
+  int test_num = atoi(test);
+  int value_num = atoi(value);
+  return (test_num < value_num);
 }
 
 static int rc_libretro_match_value(const char* val, const char* match) {
@@ -217,6 +249,10 @@ static int rc_libretro_match_value(const char* val, const char* match) {
   /* a leading exclamation point means the provided value(s) are not forbidden (are allowed) */
   if (*match == '!')
     return !rc_libretro_match_value(val, &match[1]);
+
+  /* a leading less tahn means the provided value is the minimum allowed */
+  if (*match == '<')
+    return rc_libretro_numeric_less_than(val, &match[1]);
 
   /* just a single value, attempt to match it */
   return rc_libretro_string_equal_nocase_wildcard(val, match);

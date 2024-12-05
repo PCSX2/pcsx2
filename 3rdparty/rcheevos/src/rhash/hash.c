@@ -3113,6 +3113,7 @@ int rc_hash_generate_from_buffer(char hash[33], uint32_t console_id, const uint8
     case RC_CONSOLE_VIRTUAL_BOY:
     case RC_CONSOLE_WASM4:
     case RC_CONSOLE_WONDERSWAN:
+    case RC_CONSOLE_ZX_SPECTRUM:
       return rc_hash_buffer(hash, buffer, buffer_size);
 
     case RC_CONSOLE_ARDUBOY:
@@ -3411,6 +3412,7 @@ int rc_hash_generate_from_file(char hash[33], uint32_t console_id, const char* p
     case RC_CONSOLE_VIRTUAL_BOY:
     case RC_CONSOLE_WASM4:
     case RC_CONSOLE_WONDERSWAN:
+    case RC_CONSOLE_ZX_SPECTRUM:
       /* generic whole-file hash - don't buffer */
       return rc_hash_whole_file(hash, path);
 
@@ -3465,6 +3467,9 @@ int rc_hash_generate_from_file(char hash[33], uint32_t console_id, const char* p
 
     case RC_CONSOLE_NINTENDO_64:
       return rc_hash_n64(hash, path);
+
+    case RC_CONSOLE_NINTENDO_3DS:
+      return rc_hash_nintendo_3ds(hash, path);
 
     case RC_CONSOLE_NINTENDO_DS:
     case RC_CONSOLE_NINTENDO_DSI:
@@ -3573,6 +3578,7 @@ static void rc_hash_initialize_dsk_iterator(struct rc_hash_iterator* iterator, c
   /* check MSX first, as Apple II isn't supported by RetroArch, and RAppleWin won't use the iterator */
   rc_hash_iterator_append_console(iterator, RC_CONSOLE_MSX);
   rc_hash_iterator_append_console(iterator, RC_CONSOLE_AMSTRAD_PC);
+  rc_hash_iterator_append_console(iterator, RC_CONSOLE_ZX_SPECTRUM);
   rc_hash_iterator_append_console(iterator, RC_CONSOLE_APPLE_II);
 }
 
@@ -3725,6 +3731,10 @@ void rc_hash_initialize_iterator(struct rc_hash_iterator* iterator, const char* 
         {
           iterator->consoles[0] = RC_CONSOLE_NINTENDO_3DS;
         }
+        else if (rc_path_compare_extension(ext, "csw"))
+        {
+          iterator->consoles[0] = RC_CONSOLE_ZX_SPECTRUM;
+        }
         break;
 
       case 'd':
@@ -3808,6 +3818,7 @@ void rc_hash_initialize_iterator(struct rc_hash_iterator* iterator, const char* 
           iterator->consoles[1] = RC_CONSOLE_PSP;
           iterator->consoles[2] = RC_CONSOLE_3DO;
           iterator->consoles[3] = RC_CONSOLE_SEGA_CD; /* ASSERT: handles both Sega CD and Saturn */
+          iterator->consoles[4] = RC_CONSOLE_GAMECUBE;
           need_path = 1;
         }
         break;
@@ -3909,6 +3920,10 @@ void rc_hash_initialize_iterator(struct rc_hash_iterator* iterator, const char* 
         {
           iterator->consoles[0] = RC_CONSOLE_ELEKTOR_TV_GAMES_COMPUTER;
         }
+        else if (rc_path_compare_extension(ext, "pzx"))
+        {
+          iterator->consoles[0] = RC_CONSOLE_ZX_SPECTRUM;
+        }
         break;
 
       case 'r':
@@ -3947,11 +3962,16 @@ void rc_hash_initialize_iterator(struct rc_hash_iterator* iterator, const char* 
         {
           iterator->consoles[0] = RC_CONSOLE_THOMSONTO8; /* disk */
         }
+        else if (rc_path_compare_extension(ext, "scl"))
+        {
+          iterator->consoles[0] = RC_CONSOLE_ZX_SPECTRUM;
+        }
         break;
 
       case 't':
         if (rc_path_compare_extension(ext, "tap"))
         {
+          /* also Commodore 64 and ZX Spectrum, but all are full file hashes */
           iterator->consoles[0] = RC_CONSOLE_ORIC;
         }
         else if (rc_path_compare_extension(ext, "tic"))
@@ -3961,6 +3981,11 @@ void rc_hash_initialize_iterator(struct rc_hash_iterator* iterator, const char* 
         else if (rc_path_compare_extension(ext, "tvc"))
         {
           iterator->consoles[0] = RC_CONSOLE_ELEKTOR_TV_GAMES_COMPUTER;
+        }
+        else if (rc_path_compare_extension(ext, "trd") ||
+                 rc_path_compare_extension(ext, "tzx"))
+        {
+          iterator->consoles[0] = RC_CONSOLE_ZX_SPECTRUM;
         }
         break;
 
