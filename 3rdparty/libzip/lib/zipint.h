@@ -314,6 +314,7 @@ struct zip {
     zip_progress_t *progress; /* progress callback for zip_close() */
 
     zip_uint32_t* write_crc; /* have _zip_write() compute CRC */
+    time_t torrent_mtime;
 };
 
 /* file in zip archive, part of API */
@@ -346,6 +347,7 @@ struct zip_dirent {
     bool cloned;                  /*      whether this instance is cloned, and thus shares non-changed strings */
 
     bool crc_valid; /*      if CRC is valid (sometimes not for encrypted archives) */
+    bool last_mod_mtime_valid;
 
     zip_uint16_t version_madeby;     /* (c)  version of creator */
     zip_uint16_t version_needed;     /* (cl) version needed to extract */
@@ -366,6 +368,8 @@ struct zip_dirent {
     zip_uint32_t compression_level; /*      level of compression to use (never valid in orig) */
     zip_uint16_t encryption_method; /*      encryption method, computed from other fields */
     char *password;                 /*      file specific encryption password */
+
+    time_t last_mod_mtime;          /*      cached last_mod in Unix time format */
 };
 
 /* zip archive central directory */
@@ -553,6 +557,7 @@ int zip_dirent_check_consistency(zip_dirent_t *dirent);
 zip_dirent_t *_zip_dirent_clone(const zip_dirent_t *);
 void _zip_dirent_free(zip_dirent_t *);
 void _zip_dirent_finalize(zip_dirent_t *);
+time_t zip_dirent_get_last_mod_mtime(zip_dirent_t *de);
 void _zip_dirent_init(zip_dirent_t *);
 bool _zip_dirent_needs_zip64(const zip_dirent_t *, zip_flags_t);
 zip_dirent_t *_zip_dirent_new(void);
