@@ -360,6 +360,9 @@ static const char* rc_parse_richpresence_lookup(rc_richpresence_lookup_t* lookup
   do
   {
     line = nextline;
+    if (line == NULL)
+      break;
+
     nextline = rc_parse_line(line, &endline, parse);
 
     if (endline - line < 2) {
@@ -438,6 +441,9 @@ static const char* rc_parse_richpresence_lookup(rc_richpresence_lookup_t* lookup
 
       /* insert the current item and continue scanning the next one */
       rc_insert_richpresence_lookup_item(lookup, first, last, label, (int)(endline - label), parse);
+      if (parse->offset < 0)
+        break;
+
       line = endptr + 1;
     } while (line < endline);
 

@@ -721,16 +721,29 @@ static const rc_memory_regions_t rc_memory_regions_n64 = { _rc_memory_regions_n6
 /* ===== Nintendo DS ===== */
 /* https://www.akkit.org/info/gbatek.htm#dsmemorymaps */
 static const rc_memory_region_t _rc_memory_regions_nintendo_ds[] = {
-    { 0x000000U, 0x3FFFFFU, 0x02000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
+    { 0x0000000U, 0x03FFFFFU, 0x02000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" },
+    /* To keep DS/DSi memory maps aligned, padding is set here for the DSi's extra RAM */
+    { 0x0400000U, 0x0FFFFFFU, 0x02400000U, RC_MEMORY_TYPE_UNUSED, "Unused (DSi exclusive)" },
+    /* The DS/DSi have "tightly coupled memory": very fast memory directly connected to the CPU.
+     * This memory has an instruction variant (ITCM) and a data variant (DTCM).
+     * For achievement purposes it is useful to be able to access the data variant.
+     * This memory does not have a fixed address on console, being able to be moved to any $0xxxx000 region.
+     * While normally this kind of memory is addressed outside of the possible native addressing space, this is simply not possible,
+     * as the DS/DSi's address space covers all possible uint32_t values.
+     * $0E000000 is used here as a "pseudo-end," as this is nearly the end of all the memory actually mapped to addresses
+     * This means that (with the exception of $FFFF0000 onwards, which has the ARM9 BIOS mapped) $0E000000 onwards has nothing mapped to it
+     */
+    { 0x1000000U, 0x1003FFFU, 0x0E000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Data TCM" }
 };
-static const rc_memory_regions_t rc_memory_regions_nintendo_ds = { _rc_memory_regions_nintendo_ds, 1 };
+static const rc_memory_regions_t rc_memory_regions_nintendo_ds = { _rc_memory_regions_nintendo_ds, 3 };
 
 /* ===== Nintendo DSi ===== */
 /* https://problemkaputt.de/gbatek.htm#dsiiomap */
 static const rc_memory_region_t _rc_memory_regions_nintendo_dsi[] = {
-    { 0x000000U, 0xFFFFFFU, 0x02000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
+    { 0x0000000U, 0x0FFFFFFU, 0x02000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" },
+    { 0x1000000U, 0x1003FFFU, 0x0E000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Data TCM" }
 };
-static const rc_memory_regions_t rc_memory_regions_nintendo_dsi = { _rc_memory_regions_nintendo_dsi, 1 };
+static const rc_memory_regions_t rc_memory_regions_nintendo_dsi = { _rc_memory_regions_nintendo_dsi, 2 };
 
 /* ===== Oric ===== */
 static const rc_memory_region_t _rc_memory_regions_oric[] = {
@@ -956,6 +969,31 @@ static const rc_memory_region_t _rc_memory_regions_wonderswan[] = {
 };
 static const rc_memory_regions_t rc_memory_regions_wonderswan = { _rc_memory_regions_wonderswan, 2 };
 
+/* ===== ZX Spectrum ===== */
+/* https://github.com/TASEmulators/BizHawk/blob/3a3b22c/src/BizHawk.Emulation.Cores/Computers/SinclairSpectrum/Machine/ZXSpectrum16K/ZX16.cs
+ * https://github.com/TASEmulators/BizHawk/blob/3a3b22c/src/BizHawk.Emulation.Cores/Computers/SinclairSpectrum/Machine/ZXSpectrum48K/ZX48.Memory.cs
+ * https://worldofspectrum.org/faq/reference/128kreference.htm */
+static const rc_memory_region_t _rc_memory_regions_zx_spectrum[] = {
+    /* ZX Spectrum is complicated as multiple models exist with varying amounts of memory.
+     * In practice, this can be reduced to two categories: 16K/48K units, and 128K units.
+     * 16K/48K units have RAM starting at $4000 onwards, 16K ending at $7FFF, 48K ending at $FFFF.
+     * 128K units have banked memory, with $4000-$7FFF normally having RAM bank 5, and $8000-$BFFF normally having RAM bank 2.
+     * $C000-$FFFF is normally reserved for banked RAM, having any of banks 0-7.
+     * For the purposes of the RAM map, $C000-$FFFF is assumed to be bank 0, and $10000 onwards has the other banks in order (1, 3, 4, 6, 7)
+     * Doing it this way always for 16K/48K games to have the same memory map on the 128K, and thus avoid issues due to the model selected.
+     * Later 128K units also have a special banking mode that changes up banking completely, but for 16K/48K compatibility purposes this doesn't matter, and so is irrelevant.
+     */
+    { 0x00000U, 0x03FFFU, 0x04000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Screen RAM" }, /* RAM bank 5 on 128K units */
+    { 0x04000U, 0x07FFFU, 0x08000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* RAM bank 2 on 128K units */
+    { 0x08000U, 0x0BFFFU, 0x0C000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* RAM bank 0-7 on 128K units, assumed to be bank 0 here */
+    { 0x0C000U, 0x0FFFFU, 0x10000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* RAM bank 1 on 128K units */
+    { 0x10000U, 0x13FFFU, 0x14000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* RAM bank 3 on 128K units */
+    { 0x14000U, 0x17FFFU, 0x18000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* RAM bank 4 on 128K units */
+    { 0x18000U, 0x1BFFFU, 0x1C000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* RAM bank 6 on 128K units */
+    { 0x1C000U, 0x1FFFFU, 0x20000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Screen RAM" } /* RAM bank 7 on 128K units */
+};
+static const rc_memory_regions_t rc_memory_regions_zx_spectrum = { _rc_memory_regions_zx_spectrum, 8 };
+
 /* ===== default ===== */
 static const rc_memory_regions_t rc_memory_regions_none = { 0, 0 };
 
@@ -1140,6 +1178,9 @@ const rc_memory_regions_t* rc_console_memory_regions(uint32_t console_id)
 
     case RC_CONSOLE_WONDERSWAN:
       return &rc_memory_regions_wonderswan;
+
+    case RC_CONSOLE_ZX_SPECTRUM:
+      return &rc_memory_regions_zx_spectrum;
 
     default:
       return &rc_memory_regions_none;
