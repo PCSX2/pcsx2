@@ -33,8 +33,7 @@
 
 #include "zipint.h"
 
-ZIP_EXTERN int
-zip_file_set_dostime(zip_t *za, zip_uint64_t idx, zip_uint16_t dtime, zip_uint16_t ddate, zip_flags_t flags) {
+static int zip_file_set_time(zip_t *za, zip_uint64_t idx, zip_uint16_t dtime, zip_uint16_t ddate, zip_flags_t flags, time_t *mtime) {
     zip_entry_t *e;
 
     if (_zip_get_dirent(za, idx, 0, NULL) == NULL) {
@@ -66,18 +65,29 @@ zip_file_set_dostime(zip_t *za, zip_uint64_t idx, zip_uint16_t dtime, zip_uint16
 
     e->changes->last_mod.time = dtime;
     e->changes->last_mod.date = ddate;
+    if (mtime != NULL) {
+        e->changes->last_mod_mtime = *mtime;
+        e->changes->last_mod_mtime_valid = true;
+    }
+    else {
+        e->changes->last_mod_mtime_valid = false;
+    }
     e->changes->changed |= ZIP_DIRENT_LAST_MOD;
 
     return 0;
 }
 
-ZIP_EXTERN int
-zip_file_set_mtime(zip_t *za, zip_uint64_t idx, time_t mtime, zip_flags_t flags) {
+ZIP_EXTERN int zip_file_set_dostime(zip_t *za, zip_uint64_t idx, zip_uint16_t dtime, zip_uint16_t ddate, zip_flags_t flags) {
+    return zip_file_set_time(za, idx, dtime, ddate, flags, NULL);
+}
+
+
+ZIP_EXTERN int zip_file_set_mtime(zip_t *za, zip_uint64_t idx, time_t mtime, zip_flags_t flags) {
     zip_dostime_t dostime;
 
     if (_zip_u2d_time(mtime, &dostime, &za->error) < 0) {
         return -1;
     }
 
-    return zip_file_set_dostime(za, idx, dostime.time, dostime.date, flags);
+    return zip_file_set_time(za, idx, dostime.time, dostime.date, flags, &mtime);
 }

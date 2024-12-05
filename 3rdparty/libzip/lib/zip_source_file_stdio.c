@@ -39,7 +39,6 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 
 #ifdef _WIN32
 #ifndef S_IWUSR
@@ -120,7 +119,7 @@ _zip_stdio_op_seek(zip_source_file_context_t *ctx, void *f, zip_int64_t offset, 
     }
 #endif
 
-    if (fseeko((FILE *)f, (off_t)offset, whence) < 0) {
+    if (zip_os_fseek((FILE *)f, (zip_off_t)offset, whence) < 0) {
         zip_error_set(&ctx->error, ZIP_ER_SEEK, errno);
         return false;
     }
@@ -130,15 +129,15 @@ _zip_stdio_op_seek(zip_source_file_context_t *ctx, void *f, zip_int64_t offset, 
 
 bool
 _zip_stdio_op_stat(zip_source_file_context_t *ctx, zip_source_file_stat_t *st) {
-    struct stat sb;
+    zip_os_stat_t sb;
 
     int ret;
 
     if (ctx->fname) {
-        ret = stat(ctx->fname, &sb);
+        ret = zip_os_stat(ctx->fname, &sb);
     }
     else {
-        ret = fstat(fileno((FILE *)ctx->f), &sb);
+        ret = zip_os_fstat(fileno((FILE *)ctx->f), &sb);
     }
 
     if (ret < 0) {
@@ -168,7 +167,7 @@ _zip_stdio_op_stat(zip_source_file_context_t *ctx, zip_source_file_stat_t *st) {
 
 zip_int64_t
 _zip_stdio_op_tell(zip_source_file_context_t *ctx, void *f) {
-    off_t offset = ftello((FILE *)f);
+    zip_off_t offset = zip_os_ftell((FILE *)f);
 
     if (offset < 0) {
         zip_error_set(&ctx->error, ZIP_ER_SEEK, errno);
