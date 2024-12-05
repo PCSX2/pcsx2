@@ -10,12 +10,12 @@ namespace PacketReader::IP::TCP
 		: maxSegmentSize{mss}
 	{
 	}
-	TCPopMSS::TCPopMSS(u8* data, int offset)
+	TCPopMSS::TCPopMSS(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadUInt16(data, &offset, &maxSegmentSize);
 	}
-	void TCPopMSS::WriteBytes(u8* buffer, int* offset)
+	void TCPopMSS::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength());
@@ -27,12 +27,12 @@ namespace PacketReader::IP::TCP
 		: windowScale{ws}
 	{
 	}
-	TCPopWS::TCPopWS(u8* data, int offset)
+	TCPopWS::TCPopWS(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadByte08(data, &offset, &windowScale);
 	}
-	void TCPopWS::WriteBytes(u8* buffer, int* offset)
+	void TCPopWS::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength());
@@ -45,13 +45,13 @@ namespace PacketReader::IP::TCP
 		, echoTimeStamp{echoTS}
 	{
 	}
-	TCPopTS::TCPopTS(u8* data, int offset)
+	TCPopTS::TCPopTS(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadUInt32(data, &offset, &senderTimeStamp);
 		NetLib::ReadUInt32(data, &offset, &echoTimeStamp);
 	}
-	void TCPopTS::WriteBytes(u8* buffer, int* offset)
+	void TCPopTS::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength());

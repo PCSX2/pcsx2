@@ -33,7 +33,7 @@ namespace PacketReader::IP::UDP::DHCP
 		int maxLength = 576;
 
 		DHCP_Packet() {}
-		DHCP_Packet(u8* buffer, int bufferSize);
+		DHCP_Packet(const u8* buffer, int bufferSize);
 		DHCP_Packet(const DHCP_Packet&);
 
 		virtual int GetLength();

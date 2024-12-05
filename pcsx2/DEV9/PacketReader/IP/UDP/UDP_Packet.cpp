@@ -42,7 +42,7 @@ namespace PacketReader::IP::UDP
 	{
 	}
 
-	Payload* UDP_Packet::GetPayload()
+	Payload* UDP_Packet::GetPayload() const
 	{
 		return payload.get();
 	}
@@ -67,7 +67,7 @@ namespace PacketReader::IP::UDP
 		return new UDP_Packet(*this);
 	}
 
-	u8 UDP_Packet::GetProtocol()
+	u8 UDP_Packet::GetProtocol() const
 	{
 		return (u8)protocol;
 	}

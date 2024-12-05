@@ -6,20 +6,20 @@
 
 namespace PacketReader::IP
 {
-	bool IPOption::IsCopyOnFragment()
+	bool IPOption::IsCopyOnFragment() const
 	{
 		return ((GetCode() & (1 << 0x7)) != 0);
 	}
-	u8 IPOption::GetClass()
+	u8 IPOption::GetClass() const
 	{
 		return (GetCode() >> 5) & 0x3;
 	}
-	u8 IPOption::GetNumber()
+	u8 IPOption::GetNumber() const
 	{
 		return GetCode() & 0x1F;
 	}
 
-	IPopUnk::IPopUnk(u8* data, int offset)
+	IPopUnk::IPopUnk(const u8* data, int offset)
 	{
 		NetLib::ReadByte08(data, &offset, &code);
 		NetLib::ReadByte08(data, &offset, &length);
@@ -27,7 +27,7 @@ namespace PacketReader::IP
 		value.resize(length - 2);
 		NetLib::ReadByteArray(data, &offset, length - 2, &value[0]);
 	}
-	void IPopUnk::WriteBytes(u8* buffer, int* offset)
+	void IPopUnk::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, code);
 		NetLib::WriteByte08(buffer, offset, length);
@@ -38,12 +38,12 @@ namespace PacketReader::IP
 		: value{parValue}
 	{
 	}
-	IPopRouterAlert::IPopRouterAlert(u8* data, int offset)
+	IPopRouterAlert::IPopRouterAlert(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadUInt16(data, &offset, &value);
 	}
-	void IPopRouterAlert::WriteBytes(u8* buffer, int* offset)
+	void IPopRouterAlert::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength());

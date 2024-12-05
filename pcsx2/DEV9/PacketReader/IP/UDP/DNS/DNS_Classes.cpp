@@ -12,20 +12,20 @@ namespace PacketReader::IP::UDP::DNS
 		, entryClass{qClass}
 	{
 	}
-	DNS_QuestionEntry::DNS_QuestionEntry(u8* buffer, int* offset)
+	DNS_QuestionEntry::DNS_QuestionEntry(const u8* buffer, int* offset)
 	{
 		ReadDNS_String(buffer, offset, &name);
 		NetLib::ReadUInt16(buffer, offset, &entryType);
 		NetLib::ReadUInt16(buffer, offset, &entryClass);
 	}
 
-	void DNS_QuestionEntry::ReadDNS_String(u8* buffer, int* offset, std::string* value)
+	void DNS_QuestionEntry::ReadDNS_String(const u8* buffer, int* offset, std::string* value) const
 	{
 		*value = "";
 
 		while (buffer[*offset] != 0)
 		{
-			int len = buffer[*offset];
+			const int len = buffer[*offset];
 
 			if (len >= 192)
 			{
@@ -57,7 +57,7 @@ namespace PacketReader::IP::UDP::DNS
 		//null char
 		*offset += 1;
 	}
-	void DNS_QuestionEntry::WriteDNS_String(u8* buffer, int* offset, const std::string& value)
+	void DNS_QuestionEntry::WriteDNS_String(u8* buffer, int* offset, const std::string& value) const
 	{
 		int segmentLength = 0;
 		int segmentStart = 0;
@@ -86,12 +86,12 @@ namespace PacketReader::IP::UDP::DNS
 		NetLib::WriteByte08(buffer, offset, 0);
 	}
 
-	int DNS_QuestionEntry::GetLength()
+	int DNS_QuestionEntry::GetLength() const
 	{
 		return 1 + name.size() + 1 + 4;
 	}
 
-	void DNS_QuestionEntry::WriteBytes(u8* buffer, int* offset)
+	void DNS_QuestionEntry::WriteBytes(u8* buffer, int* offset) const
 	{
 		WriteDNS_String(buffer, offset, name);
 		NetLib::WriteUInt16(buffer, offset, entryType);
@@ -105,7 +105,7 @@ namespace PacketReader::IP::UDP::DNS
 	{
 	}
 
-	DNS_ResponseEntry::DNS_ResponseEntry(u8* buffer, int* offset)
+	DNS_ResponseEntry::DNS_ResponseEntry(const u8* buffer, int* offset)
 		: DNS_QuestionEntry(buffer, offset)
 	{
 		u16 dataLen;
@@ -116,12 +116,12 @@ namespace PacketReader::IP::UDP::DNS
 		*offset += dataLen;
 	}
 
-	int DNS_ResponseEntry::GetLength()
+	int DNS_ResponseEntry::GetLength() const
 	{
 		return DNS_QuestionEntry::GetLength() + 4 + 2 + data.size();
 	}
 
-	void DNS_ResponseEntry::WriteBytes(u8* buffer, int* offset)
+	void DNS_ResponseEntry::WriteBytes(u8* buffer, int* offset) const
 	{
 		DNS_QuestionEntry::WriteBytes(buffer, offset);
 		NetLib::WriteUInt32(buffer, offset, timeToLive);

@@ -33,38 +33,38 @@ namespace PacketReader::IP::UDP::DNS
 		std::vector<DNS_ResponseEntry> authorities;
 		std::vector<DNS_ResponseEntry> additional;
 
-		bool GetQR();
+		bool GetQR() const;
 		void SetQR(bool value);
 
-		u8 GetOpCode();
+		u8 GetOpCode() const;
 		void SetOpCode(u8 value);
 
-		bool GetAA();
+		bool GetAA() const;
 		void SetAA(bool value);
 
-		bool GetTC();
+		bool GetTC() const;
 		void SetTC(bool value);
 
-		bool GetRD();
+		bool GetRD() const;
 		void SetRD(bool value);
 
-		bool GetRA();
+		bool GetRA() const;
 		void SetRA(bool value);
 
-		u8 GetZ0();
+		u8 GetZ0() const;
 		void SetZ0(u8 value);
 
-		bool GetAD();
+		bool GetAD() const;
 		void SetAD(bool value);
 
-		bool GetCD();
+		bool GetCD() const;
 		void SetCD(bool value);
 
-		u8 GetRCode();
+		u8 GetRCode() const;
 		void SetRCode(u8 value);
 
 		DNS_Packet() {}
-		DNS_Packet(u8* buffer, int bufferSize);
+		DNS_Packet(const u8* buffer, int bufferSize);
 
 		virtual int GetLength();
 		virtual void WriteBytes(u8* buffer, int* offset);

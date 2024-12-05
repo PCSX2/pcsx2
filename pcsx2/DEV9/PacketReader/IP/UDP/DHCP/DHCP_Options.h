@@ -14,10 +14,10 @@ namespace PacketReader::IP::UDP::DHCP
 	//GetLength(), howver, includes the option header
 	class DHCPopNOP : public BaseOption
 	{
-		virtual u8 GetLength() { return 1; }
-		virtual u8 GetCode() { return 0; }
+		virtual u8 GetLength() const { return 1; }
+		virtual u8 GetCode() const { return 0; }
 
-		virtual void WriteBytes(u8* buffer, int* offset)
+		virtual void WriteBytes(u8* buffer, int* offset) const
 		{
 			buffer[*offset] = GetCode();
 			(*offset)++;
@@ -35,12 +35,12 @@ namespace PacketReader::IP::UDP::DHCP
 		IP_Address subnetMask{};
 
 		DHCPopSubnet(IP_Address mask);
-		DHCPopSubnet(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopSubnet(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 6; }
-		virtual u8 GetCode() { return 1; }
+		virtual u8 GetLength() const { return 6; }
+		virtual u8 GetCode() const { return 1; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopSubnet* Clone() const
 		{
@@ -53,12 +53,12 @@ namespace PacketReader::IP::UDP::DHCP
 	public:
 		std::vector<IP_Address> routers;
 		DHCPopRouter(const std::vector<IP_Address>& routerIPs);
-		DHCPopRouter(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopRouter(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 2 + 4 * routers.size(); }
-		virtual u8 GetCode() { return 3; }
+		virtual u8 GetLength() const { return 2 + 4 * routers.size(); }
+		virtual u8 GetCode() const { return 3; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopRouter* Clone() const
 		{
@@ -71,12 +71,12 @@ namespace PacketReader::IP::UDP::DHCP
 	public:
 		std::vector<IP_Address> dnsServers;
 		DHCPopDNS(const std::vector<IP_Address>& dnsIPs);
-		DHCPopDNS(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopDNS(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 2 + 4 * dnsServers.size(); }
-		virtual u8 GetCode() { return 6; }
+		virtual u8 GetLength() const { return 2 + 4 * dnsServers.size(); }
+		virtual u8 GetCode() const { return 6; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopDNS* Clone() const
 		{
@@ -91,12 +91,12 @@ namespace PacketReader::IP::UDP::DHCP
 		std::string hostName;
 
 		DHCPopHostName(const std::string& name);
-		DHCPopHostName(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopHostName(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 2 + hostName.size(); }
-		virtual u8 GetCode() { return 12; }
+		virtual u8 GetLength() const { return 2 + hostName.size(); }
+		virtual u8 GetCode() const { return 12; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopHostName* Clone() const
 		{
@@ -110,13 +110,13 @@ namespace PacketReader::IP::UDP::DHCP
 		//ASCII encoding
 		std::string domainName;
 
-		DHCPopDnsName(std::string name);
-		DHCPopDnsName(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopDnsName(const std::string& name);
+		DHCPopDnsName(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 2 + domainName.size(); }
-		virtual u8 GetCode() { return 15; }
+		virtual u8 GetLength() const { return 2 + domainName.size(); }
+		virtual u8 GetCode() const { return 15; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopDnsName* Clone() const
 		{
@@ -130,12 +130,12 @@ namespace PacketReader::IP::UDP::DHCP
 		IP_Address broadcastIP{};
 
 		DHCPopBCIP(IP_Address data);
-		DHCPopBCIP(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopBCIP(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 6; }
-		virtual u8 GetCode() { return 28; }
+		virtual u8 GetLength() const { return 6; }
+		virtual u8 GetCode() const { return 28; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopBCIP* Clone() const
 		{
@@ -151,24 +151,24 @@ namespace PacketReader::IP::UDP::DHCP
 
 	public:
 		//Getters/Setters
-		bool GetHNode();
+		bool GetHNode() const;
 		void SetHNode(bool value);
 
-		bool GetMNode();
+		bool GetMNode() const;
 		void SetMNode(bool value);
 
-		bool GetPNode();
+		bool GetPNode() const;
 		void SetPNode(bool value);
 
-		bool GetBNode();
+		bool GetBNode() const;
 		void SetBNode(bool value);
 
-		DHCPopNBIOSType(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopNBIOSType(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 3; }
-		virtual u8 GetCode() { return 46; }
+		virtual u8 GetLength() const { return 3; }
+		virtual u8 GetCode() const { return 46; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopNBIOSType* Clone() const
 		{
@@ -182,12 +182,12 @@ namespace PacketReader::IP::UDP::DHCP
 		IP_Address requestedIP{};
 
 		DHCPopREQIP(IP_Address data);
-		DHCPopREQIP(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopREQIP(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 6; }
-		virtual u8 GetCode() { return 50; }
+		virtual u8 GetLength() const { return 6; }
+		virtual u8 GetCode() const { return 50; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopREQIP* Clone() const
 		{
@@ -201,12 +201,12 @@ namespace PacketReader::IP::UDP::DHCP
 		u32 ipLeaseTime;
 
 		DHCPopIPLT(u32 LeaseTime);
-		DHCPopIPLT(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopIPLT(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 6; }
-		virtual u8 GetCode() { return 51; }
+		virtual u8 GetLength() const { return 6; }
+		virtual u8 GetCode() const { return 51; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopIPLT* Clone() const
 		{
@@ -219,12 +219,12 @@ namespace PacketReader::IP::UDP::DHCP
 	public:
 		u8 message;
 		DHCPopMSG(u8 msg);
-		DHCPopMSG(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopMSG(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 3; }
-		virtual u8 GetCode() { return 53; }
+		virtual u8 GetLength() const { return 3; }
+		virtual u8 GetCode() const { return 53; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopMSG* Clone() const
 		{
@@ -238,12 +238,12 @@ namespace PacketReader::IP::UDP::DHCP
 		IP_Address serverIP{};
 
 		DHCPopSERVIP(IP_Address data);
-		DHCPopSERVIP(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopSERVIP(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 6; }
-		virtual u8 GetCode() { return 54; }
+		virtual u8 GetLength() const { return 6; }
+		virtual u8 GetCode() const { return 54; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopSERVIP* Clone() const
 		{
@@ -257,12 +257,12 @@ namespace PacketReader::IP::UDP::DHCP
 		std::vector<u8> requests;
 
 		DHCPopREQLIST(const std::vector<u8>& requestList);
-		DHCPopREQLIST(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopREQLIST(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 2 + requests.size(); }
-		virtual u8 GetCode() { return 55; }
+		virtual u8 GetLength() const { return 2 + requests.size(); }
+		virtual u8 GetCode() const { return 55; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopREQLIST* Clone() const
 		{
@@ -277,12 +277,12 @@ namespace PacketReader::IP::UDP::DHCP
 		std::string message;
 
 		DHCPopMSGStr(const std::string& msg);
-		DHCPopMSGStr(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopMSGStr(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 2 + message.size(); }
-		virtual u8 GetCode() { return 56; }
+		virtual u8 GetLength() const { return 2 + message.size(); }
+		virtual u8 GetCode() const { return 56; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopMSGStr* Clone() const
 		{
@@ -296,12 +296,12 @@ namespace PacketReader::IP::UDP::DHCP
 		u16 maxMessageSize;
 
 		DHCPopMMSGS(u16 mms);
-		DHCPopMMSGS(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopMMSGS(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 4; }
-		virtual u8 GetCode() { return 57; }
+		virtual u8 GetLength() const { return 4; }
+		virtual u8 GetCode() const { return 57; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopMMSGS* Clone() const
 		{
@@ -315,12 +315,12 @@ namespace PacketReader::IP::UDP::DHCP
 		u32 ipRenewalTimeT1;
 
 		DHCPopT1(u32 t1);
-		DHCPopT1(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopT1(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 6; }
-		virtual u8 GetCode() { return 58; }
+		virtual u8 GetLength() const { return 6; }
+		virtual u8 GetCode() const { return 58; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopT1* Clone() const
 		{
@@ -334,12 +334,12 @@ namespace PacketReader::IP::UDP::DHCP
 		u32 ipRebindingTimeT2;
 
 		DHCPopT2(u32 t2);
-		DHCPopT2(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopT2(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 6; }
-		virtual u8 GetCode() { return 59; }
+		virtual u8 GetLength() const { return 6; }
+		virtual u8 GetCode() const { return 59; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopT2* Clone() const
 		{
@@ -354,12 +354,12 @@ namespace PacketReader::IP::UDP::DHCP
 		std::string classID;
 
 		DHCPopClassID(const std::string& id);
-		DHCPopClassID(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopClassID(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 2 + classID.size(); }
-		virtual u8 GetCode() { return 60; }
+		virtual u8 GetLength() const { return 2 + classID.size(); }
+		virtual u8 GetCode() const { return 60; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopClassID* Clone() const
 		{
@@ -373,12 +373,12 @@ namespace PacketReader::IP::UDP::DHCP
 		std::vector<u8> clientID;
 
 		DHCPopClientID(const std::vector<u8>& value);
-		DHCPopClientID(u8* data, int offset); //Offset will include Kind and Len
+		DHCPopClientID(const u8* data, int offset); //Offset will include Kind and Len
 
-		virtual u8 GetLength() { return 2 + clientID.size(); }
-		virtual u8 GetCode() { return 61; }
+		virtual u8 GetLength() const { return 2 + clientID.size(); }
+		virtual u8 GetCode() const { return 61; }
 
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual DHCPopClientID* Clone() const
 		{
@@ -391,10 +391,10 @@ namespace PacketReader::IP::UDP::DHCP
 	public:
 		DHCPopEND() {}
 
-		virtual u8 GetLength() { return 1; }
-		virtual u8 GetCode() { return 255; }
+		virtual u8 GetLength() const { return 1; }
+		virtual u8 GetCode() const { return 255; }
 
-		virtual void WriteBytes(u8* buffer, int* offset)
+		virtual void WriteBytes(u8* buffer, int* offset) const
 		{
 			buffer[*offset] = GetCode();
 			(*offset)++;

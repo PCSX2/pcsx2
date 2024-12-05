@@ -16,7 +16,7 @@ namespace PacketReader::ARP
 	{
 	}
 
-	ARP_Packet::ARP_Packet(u8* buffer, int bufferSize)
+	ARP_Packet::ARP_Packet(const u8* buffer, int bufferSize)
 	{
 		int offset = 0;
 

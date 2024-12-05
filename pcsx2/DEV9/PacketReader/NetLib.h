@@ -45,41 +45,41 @@ namespace PacketReader::NetLib
 		*(PacketReader::IP::IP_Address*)&data[*index] = value;
 		*index += sizeof(PacketReader::IP::IP_Address);
 	}
-	inline void WriteByteArray(u8* data, int* index, int length, u8* value)
+	inline void WriteByteArray(u8* data, int* index, int length, const u8* value)
 	{
 		memcpy(&data[*index], value, length);
 		*index += length;
 	}
 
 	// Read.
-	inline void ReadByte08(u8* data, int* index, u8* value)
+	inline void ReadByte08(const u8* data, int* index, u8* value)
 	{
 		*value = data[*index];
 		*index += sizeof(u8);
 	}
-	inline void ReadUInt16(u8* data, int* index, u16* value)
+	inline void ReadUInt16(const u8* data, int* index, u16* value)
 	{
 		*value = ntohs(*(u16*)&data[*index]);
 		*index += sizeof(u16);
 	}
-	inline void ReadUInt32(u8* data, int* index, u32* value)
+	inline void ReadUInt32(const u8* data, int* index, u32* value)
 	{
 		*value = ntohl(*(u32*)&data[*index]);
 		*index += sizeof(u32);
 	}
 
 	// Special read.
-	inline void ReadMACAddress(u8* data, int* index, PacketReader::MAC_Address* value)
+	inline void ReadMACAddress(const u8* data, int* index, PacketReader::MAC_Address* value)
 	{
 		*value = *(PacketReader::MAC_Address*)&data[*index];
 		*index += sizeof(PacketReader::MAC_Address);
 	}
-	inline void ReadIPAddress(u8* data, int* index, PacketReader::IP::IP_Address* value)
+	inline void ReadIPAddress(const u8* data, int* index, PacketReader::IP::IP_Address* value)
 	{
 		*value = *(PacketReader::IP::IP_Address*)&data[*index];
 		*index += sizeof(PacketReader::IP::IP_Address);
 	}
-	inline void ReadByteArray(u8* data, int* index, int length, u8* value)
+	inline void ReadByteArray(const u8* data, int* index, int length, u8* value)
 	{
 		memcpy(value, &data[*index], length);
 		*index += length;

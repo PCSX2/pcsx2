@@ -22,7 +22,7 @@ namespace PacketReader::ARP
 		std::unique_ptr<u8[]> targetProtocolAddress;
 
 		ARP_Packet(u8 hwAddrLen, u8 procAddrLen);
-		ARP_Packet(u8* buffer, int bufferSize);
+		ARP_Packet(const u8* buffer, int bufferSize);
 		ARP_Packet(const ARP_Packet&);
 
 		virtual int GetLength();
