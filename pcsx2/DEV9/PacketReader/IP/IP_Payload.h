@@ -12,7 +12,7 @@ namespace PacketReader::IP
 	public: //Nedd GetProtocol
 		virtual int GetLength() = 0;
 		virtual void WriteBytes(u8* buffer, int* offset) = 0;
-		virtual u8 GetProtocol() = 0;
+		virtual u8 GetProtocol() const = 0;
 		virtual bool VerifyChecksum(IP_Address srcIP, IP_Address dstIP) { return false; }
 		virtual void CalculateChecksum(IP_Address srcIP, IP_Address dstIP) {}
 		virtual IP_Payload* Clone() const = 0;
@@ -58,7 +58,7 @@ namespace PacketReader::IP
 			memcpy(&buffer[*offset], data.get(), length);
 			*offset += length;
 		}
-		virtual u8 GetProtocol()
+		virtual u8 GetProtocol() const
 		{
 			return protocol;
 		}
@@ -106,7 +106,7 @@ namespace PacketReader::IP
 			memcpy(ret->data.get(), data, length);
 			return ret;
 		}
-		virtual u8 GetProtocol()
+		virtual u8 GetProtocol() const
 		{
 			return protocol;
 		}

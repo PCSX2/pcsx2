@@ -15,17 +15,17 @@ namespace PacketReader::ARP
 	public:
 		ARP_PacketEditor(PayloadPtrEditor* pkt);
 
-		u16 GetHardwareType();
-		u16 GetProtocol();
-		u8 GetHardwareAddressLength();
-		u8 GetProtocolAddressLength();
-		u16 GetOp();
+		u16 GetHardwareType() const;
+		u16 GetProtocol() const;
+		u8 GetHardwareAddressLength() const;
+		u8 GetProtocolAddressLength() const;
+		u16 GetOp() const;
 
-		u8* SenderHardwareAddress();
-		u8* SenderProtocolAddress();
-		u8* TargetHardwareAddress();
-		u8* TargetProtocolAddress();
+		u8* SenderHardwareAddress() const;
+		u8* SenderProtocolAddress() const;
+		u8* TargetHardwareAddress() const;
+		u8* TargetProtocolAddress() const;
 
-		int GetLength();
+		int GetLength() const;
 	};
 } // namespace PacketReader::ARP

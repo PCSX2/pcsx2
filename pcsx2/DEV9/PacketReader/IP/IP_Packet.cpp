@@ -9,12 +9,12 @@
 
 namespace PacketReader::IP
 {
-	int IP_Packet::GetHeaderLength()
+	int IP_Packet::GetHeaderLength() const
 	{
 		return headerLength;
 	}
 
-	u8 IP_Packet::GetDscpValue()
+	u8 IP_Packet::GetDscpValue() const
 	{
 		return (dscp >> 2) & 0x3F;
 	}
@@ -23,7 +23,7 @@ namespace PacketReader::IP
 		dscp = (dscp & ~(0x3F << 2)) | ((value & 0x3F) << 2);
 	}
 
-	u8 IP_Packet::GetDscpECN()
+	u8 IP_Packet::GetDscpECN() const
 	{
 		return dscp & 0x3;
 	}
@@ -32,7 +32,7 @@ namespace PacketReader::IP
 		dscp = (dscp & ~0x3) | (value & 0x3);
 	}
 
-	bool IP_Packet::GetDoNotFragment()
+	bool IP_Packet::GetDoNotFragment() const
 	{
 		return (fragmentFlags1 & (1 << 6)) != 0;
 	}
@@ -41,7 +41,7 @@ namespace PacketReader::IP
 		fragmentFlags1 = (fragmentFlags1 & ~(0x1 << 6)) | ((value & 0x1) << 6);
 	}
 
-	bool IP_Packet::GetMoreFragments()
+	bool IP_Packet::GetMoreFragments() const
 	{
 		return (fragmentFlags1 & (1 << 5)) != 0;
 	}
@@ -50,11 +50,11 @@ namespace PacketReader::IP
 		fragmentFlags1 = (fragmentFlags1 & ~(0x1 << 5)) | ((value & 0x1) << 5);
 	}
 
-	u16 IP_Packet::GetFragmentOffset()
+	u16 IP_Packet::GetFragmentOffset() const
 	{
 		int x = 0;
-		u8 fF1masked = fragmentFlags1 & 0x1F;
-		u8 data[2] = {fF1masked, fragmentFlags2};
+		const u8 fF1masked = fragmentFlags1 & 0x1F;
+		const u8 data[2] = {fF1masked, fragmentFlags2};
 		u16 offset;
 		NetLib::ReadUInt16(data, &x, &offset);
 		return offset;
@@ -106,8 +106,8 @@ namespace PacketReader::IP
 			bool opReadFin = false;
 			do
 			{
-				u8 opKind = buffer[offset];
-				u8 opLen = buffer[offset + 1];
+				const u8 opKind = buffer[offset];
+				const u8 opLen = buffer[offset + 1];
 				switch (opKind)
 				{
 					case 0:
@@ -154,7 +154,7 @@ namespace PacketReader::IP
 			options.push_back(original.options[i]->Clone());
 	}
 
-	IP_Payload* IP_Packet::GetPayload()
+	IP_Payload* IP_Packet::GetPayload() const
 	{
 		return payload.get();
 	}
@@ -167,7 +167,7 @@ namespace PacketReader::IP
 
 	void IP_Packet::WriteBytes(u8* buffer, int* offset)
 	{
-		int startOff = *offset;
+		const int startOff = *offset;
 		CalculateChecksum(); //ReComputeHeaderLen called in CalculateChecksum
 		payload->CalculateChecksum(sourceIP, destinationIP);
 
@@ -290,7 +290,7 @@ namespace PacketReader::IP
 			delete options[i];
 	}
 
-	u16 IP_Packet::InternetChecksum(u8* buffer, int length)
+	u16 IP_Packet::InternetChecksum(const u8* buffer, int length)
 	{
 		//source http://stackoverflow.com/a/2201090
 

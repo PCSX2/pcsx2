@@ -10,7 +10,7 @@
 namespace PacketReader::IP::TCP
 {
 	//Need flags
-	bool TCP_Packet::GetNS()
+	bool TCP_Packet::GetNS() const
 	{
 		return (dataOffsetAndNS_Flag & 1);
 	}
@@ -19,7 +19,7 @@ namespace PacketReader::IP::TCP
 		dataOffsetAndNS_Flag = (dataOffsetAndNS_Flag & ~0x1) | (value & 0x1);
 	}
 
-	bool TCP_Packet::GetCWR()
+	bool TCP_Packet::GetCWR() const
 	{
 		return (flags & (1 << 7));
 	}
@@ -28,7 +28,7 @@ namespace PacketReader::IP::TCP
 		flags = (flags & ~(0x1 << 7)) | ((value & 0x1) << 7);
 	}
 
-	bool TCP_Packet::GetECE()
+	bool TCP_Packet::GetECE() const
 	{
 		return (flags & (1 << 6));
 	}
@@ -37,7 +37,7 @@ namespace PacketReader::IP::TCP
 		flags = (flags & ~(0x1 << 6)) | ((value & 0x1) << 6);
 	}
 
-	bool TCP_Packet::GetURG()
+	bool TCP_Packet::GetURG() const
 	{
 		return (flags & (1 << 5));
 	}
@@ -46,7 +46,7 @@ namespace PacketReader::IP::TCP
 		flags = (flags & ~(0x1 << 5)) | ((value & 0x1) << 5);
 	}
 
-	bool TCP_Packet::GetACK()
+	bool TCP_Packet::GetACK() const
 	{
 		return (flags & (1 << 4));
 	}
@@ -55,7 +55,7 @@ namespace PacketReader::IP::TCP
 		flags = (flags & ~(0x1 << 4)) | ((value & 0x1) << 4);
 	}
 
-	bool TCP_Packet::GetPSH()
+	bool TCP_Packet::GetPSH() const
 	{
 		return (flags & (1 << 3));
 	}
@@ -64,7 +64,7 @@ namespace PacketReader::IP::TCP
 		flags = (flags & ~(0x1 << 3)) | ((value & 0x1) << 3);
 	}
 
-	bool TCP_Packet::GetRST()
+	bool TCP_Packet::GetRST() const
 	{
 		return (flags & (1 << 2));
 	}
@@ -73,7 +73,7 @@ namespace PacketReader::IP::TCP
 		flags = (flags & ~(0x1 << 2)) | ((value & 0x1) << 2);
 	}
 
-	bool TCP_Packet::GetSYN()
+	bool TCP_Packet::GetSYN() const
 	{
 		return (flags & (1 << 1));
 	}
@@ -82,7 +82,7 @@ namespace PacketReader::IP::TCP
 		flags = (flags & ~(0x1 << 1)) | ((value & 0x1) << 1);
 	}
 
-	bool TCP_Packet::GetFIN()
+	bool TCP_Packet::GetFIN() const
 	{
 		return (flags & 1);
 	}
@@ -125,8 +125,8 @@ namespace PacketReader::IP::TCP
 			bool opReadFin = false;
 			do
 			{
-				u8 opKind = buffer[offset];
-				u8 opLen = buffer[offset + 1];
+				const u8 opKind = buffer[offset];
+				const u8 opLen = buffer[offset + 1];
 				switch (opKind)
 				{
 					case 0:
@@ -180,7 +180,7 @@ namespace PacketReader::IP::TCP
 			options.push_back(original.options[i]->Clone());
 	}
 
-	Payload* TCP_Packet::GetPayload()
+	Payload* TCP_Packet::GetPayload() const
 	{
 		return payload.get();
 	}
@@ -193,7 +193,7 @@ namespace PacketReader::IP::TCP
 
 	void TCP_Packet::WriteBytes(u8* buffer, int* offset)
 	{
-		int startOff = *offset;
+		const int startOff = *offset;
 		NetLib::WriteUInt16(buffer, offset, sourcePort);
 		NetLib::WriteUInt16(buffer, offset, destinationPort);
 		NetLib::WriteUInt32(buffer, offset, sequenceNumber);
@@ -222,7 +222,7 @@ namespace PacketReader::IP::TCP
 		return new TCP_Packet(*this);
 	}
 
-	u8 TCP_Packet::GetProtocol()
+	u8 TCP_Packet::GetProtocol() const
 	{
 		return (u8)protocol;
 	}
@@ -237,7 +237,7 @@ namespace PacketReader::IP::TCP
 		headerLength = Common::AlignUpPow2(opOffset, 4);
 
 		//Also write into dataOffsetAndNS_Flag
-		u8 ns = dataOffsetAndNS_Flag & 1;
+		const u8 ns = dataOffsetAndNS_Flag & 1;
 		dataOffsetAndNS_Flag = (headerLength >> 2) << 4;
 		dataOffsetAndNS_Flag |= ns;
 	}
@@ -294,7 +294,7 @@ namespace PacketReader::IP::TCP
 		if (counter != pHeaderLen)
 			NetLib::WriteByte08(headerSegment, &counter, 0);
 
-		u16 csumCal = IP_Packet::InternetChecksum(headerSegment, pHeaderLen);
+		const u16 csumCal = IP_Packet::InternetChecksum(headerSegment, pHeaderLen);
 		delete[] headerSegment;
 
 		return (csumCal == 0);

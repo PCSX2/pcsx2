@@ -30,13 +30,13 @@ namespace PacketReader::IP::ICMP
 		ICMP_Packet(const u8* buffer, int bufferSize);
 		ICMP_Packet(const ICMP_Packet&);
 
-		Payload* GetPayload();
+		Payload* GetPayload() const;
 
 		virtual int GetLength();
 		virtual void WriteBytes(u8* buffer, int* offset);
 		virtual ICMP_Packet* Clone() const;
 
-		virtual u8 GetProtocol();
+		virtual u8 GetProtocol() const;
 
 		virtual bool VerifyChecksum(IP_Address srcIP, IP_Address dstIP);
 		virtual void CalculateChecksum(IP_Address srcIP, IP_Address dstIP);
