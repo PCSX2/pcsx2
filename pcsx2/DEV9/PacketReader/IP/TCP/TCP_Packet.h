@@ -67,7 +67,7 @@ namespace PacketReader::IP::TCP
 
 		//Takes ownership of payload
 		TCP_Packet(Payload* data);
-		TCP_Packet(u8* buffer, int bufferSize);
+		TCP_Packet(const u8* buffer, int bufferSize);
 		TCP_Packet(const TCP_Packet&);
 
 		Payload* GetPayload();

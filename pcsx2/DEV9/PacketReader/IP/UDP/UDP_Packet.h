@@ -24,7 +24,7 @@ namespace PacketReader::IP::UDP
 	public:
 		//Takes ownership of payload
 		UDP_Packet(Payload* data);
-		UDP_Packet(u8* buffer, int bufferSize);
+		UDP_Packet(const u8* buffer, int bufferSize);
 		UDP_Packet(const UDP_Packet&);
 
 		Payload* GetPayload();

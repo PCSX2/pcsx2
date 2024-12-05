@@ -96,7 +96,7 @@ namespace PacketReader::IP::TCP
 		, payload{data}
 	{
 	}
-	TCP_Packet::TCP_Packet(u8* buffer, int bufferSize)
+	TCP_Packet::TCP_Packet(const u8* buffer, int bufferSize)
 	{
 		int offset = 0;
 		//Bits 0-31

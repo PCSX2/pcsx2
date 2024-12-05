@@ -114,7 +114,7 @@ namespace PacketReader::IP
 
 		//Takes ownership of payload
 		IP_Packet(IP_Payload* data);
-		IP_Packet(u8* buffer, int bufferSize, bool fromICMP = false);
+		IP_Packet(const u8* buffer, int bufferSize, bool fromICMP = false);
 		IP_Packet(const IP_Packet&);
 
 		IP_Payload* GetPayload();

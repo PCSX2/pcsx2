@@ -11,7 +11,7 @@
 
 namespace PacketReader::ARP
 {
-	ARP_PacketEditor::ARP_PacketEditor(PayloadPtr* pkt)
+	ARP_PacketEditor::ARP_PacketEditor(PayloadPtrEditor* pkt)
 		: basePkt{pkt}
 	{
 	}

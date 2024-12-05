@@ -342,7 +342,7 @@ void PCAPAdapter::SetMACBridgedRecv(NetPacket* pkt)
 	if (frame.GetProtocol() == static_cast<u16>(EtherType::IPv4)) // IP
 	{
 		// Compare DEST IP in IP with the PS2's IP, if they match, change DEST MAC to ps2MAC.
-		PayloadPtr* payload = frame.GetPayload();
+		PayloadPtrEditor* payload = frame.GetPayload();
 		IP_Packet ippkt(payload->data, payload->GetLength());
 		if (ippkt.destinationIP == ps2IP)
 			frame.SetDestinationMAC(ps2MAC);
@@ -364,7 +364,7 @@ void PCAPAdapter::SetMACBridgedSend(NetPacket* pkt)
 	EthernetFrameEditor frame(pkt);
 	if (frame.GetProtocol() == static_cast<u16>(EtherType::IPv4)) // IP
 	{
-		PayloadPtr* payload = frame.GetPayload();
+		PayloadPtrEditor* payload = frame.GetPayload();
 		IP_Packet ippkt(payload->data, payload->GetLength());
 		ps2IP = ippkt.sourceIP;
 	}
@@ -403,7 +403,7 @@ void PCAPAdapter::HandleFrameCheckSequence(NetPacket* pkt)
 	int payloadSize = -1;
 	if (frame.GetProtocol() == static_cast<u16>(EtherType::IPv4)) // IP
 	{
-		PayloadPtr* payload = frame.GetPayload();
+		PayloadPtrEditor* payload = frame.GetPayload();
 		IP_Packet ippkt(payload->data, payload->GetLength());
 		payloadSize = ippkt.GetLength();
 	}

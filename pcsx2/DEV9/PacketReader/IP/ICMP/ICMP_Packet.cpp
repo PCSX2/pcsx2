@@ -10,7 +10,7 @@ namespace PacketReader::IP::ICMP
 		: payload{data}
 	{
 	}
-	ICMP_Packet::ICMP_Packet(u8* buffer, int bufferSize)
+	ICMP_Packet::ICMP_Packet(const u8* buffer, int bufferSize)
 	{
 		int offset = 0;
 		//Bits 0-31
