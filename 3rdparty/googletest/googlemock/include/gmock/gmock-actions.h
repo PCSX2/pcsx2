@@ -135,6 +135,7 @@
 #endif
 
 #include <algorithm>
+#include <exception>
 #include <functional>
 #include <memory>
 #include <string>
@@ -175,9 +176,15 @@ struct BuiltInDefaultValueGetter<T, false> {
   static T Get() {
     Assert(false, __FILE__, __LINE__,
            "Default action undefined for the function return type.");
-    return internal::Invalid<T>();
+#if defined(__GNUC__) || defined(__clang__)
+    __builtin_unreachable();
+#elif defined(_MSC_VER)
+    __assume(0);
+#else
+    return Invalid<T>();
     // The above statement will never be reached, but is required in
     // order for this function to compile.
+#endif
   }
 };
 
@@ -1740,6 +1747,13 @@ struct ThrowAction {
     return [copy](Args...) -> R { throw copy; };
   }
 };
+struct RethrowAction {
+  std::exception_ptr exception;
+  template <typename R, typename... Args>
+  operator Action<R(Args...)>() const {  // NOLINT
+    return [ex = exception](Args...) -> R { std::rethrow_exception(ex); };
+  }
+};
 #endif  // GTEST_HAS_EXCEPTIONS
 
 }  // namespace internal
@@ -2056,12 +2070,22 @@ internal::ReturnPointeeAction<Ptr> ReturnPointee(Ptr pointer) {
   return {pointer};
 }
 
-// Action Throw(exception) can be used in a mock function of any type
-// to throw the given exception.  Any copyable value can be thrown.
 #if GTEST_HAS_EXCEPTIONS
+// Action Throw(exception) can be used in a mock function of any type
+// to throw the given exception.  Any copyable value can be thrown,
+// except for std::exception_ptr, which is likely a mistake if
+// thrown directly.
 template <typename T>
-internal::ThrowAction<typename std::decay<T>::type> Throw(T&& exception) {
+typename std::enable_if<
+    !std::is_base_of<std::exception_ptr, typename std::decay<T>::type>::value,
+    internal::ThrowAction<typename std::decay<T>::type>>::type
+Throw(T&& exception) {
   return {std::forward<T>(exception)};
+}
+// Action Rethrow(exception_ptr) can be used in a mock function of any type
+// to rethrow any exception_ptr. Note that the same object is thrown each time.
+inline internal::RethrowAction Rethrow(std::exception_ptr exception) {
+  return {std::move(exception)};
 }
 #endif  // GTEST_HAS_EXCEPTIONS
 
@@ -2111,13 +2135,13 @@ struct ActionImpl<R(Args...), Impl> : ImplBase<Impl>::type {
   R operator()(Args&&... arg) const {
     static constexpr size_t kMaxArgs =
         sizeof...(Args) <= 10 ? sizeof...(Args) : 10;
-    return Apply(MakeIndexSequence<kMaxArgs>{},
-                 MakeIndexSequence<10 - kMaxArgs>{},
+    return Apply(std::make_index_sequence<kMaxArgs>{},
+                 std::make_index_sequence<10 - kMaxArgs>{},
                  args_type{std::forward<Args>(arg)...});
   }
 
   template <std::size_t... arg_id, std::size_t... excess_id>
-  R Apply(IndexSequence<arg_id...>, IndexSequence<excess_id...>,
+  R Apply(std::index_sequence<arg_id...>, std::index_sequence<excess_id...>,
           const args_type& args) const {
     // Impl need not be specific to the signature of action being implemented;
     // only the implementing function body needs to have all of the specific
@@ -2150,9 +2174,9 @@ template <typename F, typename Impl>
 }
 
 #define GMOCK_INTERNAL_ARG_UNUSED(i, data, el) \
-  , const arg##i##_type& arg##i GTEST_ATTRIBUTE_UNUSED_
-#define GMOCK_ACTION_ARG_TYPES_AND_NAMES_UNUSED_                 \
-  const args_type& args GTEST_ATTRIBUTE_UNUSED_ GMOCK_PP_REPEAT( \
+  , GTEST_INTERNAL_ATTRIBUTE_MAYBE_UNUSED const arg##i##_type& arg##i
+#define GMOCK_ACTION_ARG_TYPES_AND_NAMES_UNUSED_                               \
+  GTEST_INTERNAL_ATTRIBUTE_MAYBE_UNUSED const args_type& args GMOCK_PP_REPEAT( \
       GMOCK_INTERNAL_ARG_UNUSED, , 10)
 
 #define GMOCK_INTERNAL_ARG(i, data, el) , const arg##i##_type& arg##i

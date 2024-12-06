@@ -12,7 +12,7 @@ GoogleTest comes with a CMake build script
 ([CMakeLists.txt](https://github.com/google/googletest/blob/main/CMakeLists.txt))
 that can be used on a wide range of platforms ("C" stands for cross-platform.).
 If you don't have CMake installed already, you can download it for free from
-<http://www.cmake.org/>.
+<https://cmake.org/>.
 
 CMake works by generating native makefiles or build projects that can be used in
 the compiler environment of your choice. You can either build GoogleTest as a
@@ -25,7 +25,7 @@ When building GoogleTest as a standalone project, the typical workflow starts
 with
 
 ```
-git clone https://github.com/google/googletest.git -b v1.13.0
+git clone https://github.com/google/googletest.git -b v1.15.0
 cd googletest        # Main directory of the cloned repository.
 mkdir build          # Create a directory to hold the build output.
 cd build

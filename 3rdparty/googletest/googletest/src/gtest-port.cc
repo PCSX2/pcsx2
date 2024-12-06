@@ -158,13 +158,13 @@ size_t GetThreadCount() {
 // we cannot detect it.
 size_t GetThreadCount() {
   int mib[] = {
-    CTL_KERN,
-    KERN_PROC,
-    KERN_PROC_PID,
-    getpid(),
+      CTL_KERN,
+      KERN_PROC,
+      KERN_PROC_PID,
+      getpid(),
 #ifdef GTEST_OS_NETBSD
-    sizeof(struct kinfo_proc),
-    1,
+      sizeof(struct kinfo_proc),
+      1,
 #endif
   };
   u_int miblen = sizeof(mib) / sizeof(mib[0]);
@@ -587,9 +587,11 @@ class ThreadLocalRegistryImpl {
   // thread's ID.
   typedef std::map<DWORD, ThreadLocalValues> ThreadIdToThreadLocals;
 
-  // Holds the thread id and thread handle that we pass from
-  // StartWatcherThreadFor to WatcherThreadFunc.
-  typedef std::pair<DWORD, HANDLE> ThreadIdAndHandle;
+  struct WatcherThreadParams {
+    DWORD thread_id;
+    HANDLE handle;
+    Notification has_initialized;
+  };
 
   static void StartWatcherThreadFor(DWORD thread_id) {
     // The returned handle will be kept in thread_map and closed by
@@ -597,15 +599,20 @@ class ThreadLocalRegistryImpl {
     HANDLE thread =
         ::OpenThread(SYNCHRONIZE | THREAD_QUERY_INFORMATION, FALSE, thread_id);
     GTEST_CHECK_(thread != nullptr);
+
+    WatcherThreadParams* watcher_thread_params = new WatcherThreadParams;
+    watcher_thread_params->thread_id = thread_id;
+    watcher_thread_params->handle = thread;
+
     // We need to pass a valid thread ID pointer into CreateThread for it
     // to work correctly under Win98.
     DWORD watcher_thread_id;
-    HANDLE watcher_thread = ::CreateThread(
-        nullptr,  // Default security.
-        0,        // Default stack size
-        &ThreadLocalRegistryImpl::WatcherThreadFunc,
-        reinterpret_cast<LPVOID>(new ThreadIdAndHandle(thread_id, thread)),
-        CREATE_SUSPENDED, &watcher_thread_id);
+    HANDLE watcher_thread =
+        ::CreateThread(nullptr,  // Default security.
+                       0,        // Default stack size
+                       &ThreadLocalRegistryImpl::WatcherThreadFunc,
+                       reinterpret_cast<LPVOID>(watcher_thread_params),
+                       CREATE_SUSPENDED, &watcher_thread_id);
     GTEST_CHECK_(watcher_thread != nullptr)
         << "CreateThread failed with error " << ::GetLastError() << ".";
     // Give the watcher thread the same priority as ours to avoid being
@@ -614,17 +621,25 @@ class ThreadLocalRegistryImpl {
                         ::GetThreadPriority(::GetCurrentThread()));
     ::ResumeThread(watcher_thread);
     ::CloseHandle(watcher_thread);
+
+    // Wait for the watcher thread to start to avoid race conditions.
+    // One specific race condition that can happen is that we have returned
+    // from main and have started to tear down, the newly spawned watcher
+    // thread may access already-freed variables, like global shared_ptrs.
+    watcher_thread_params->has_initialized.WaitForNotification();
   }
 
   // Monitors exit from a given thread and notifies those
   // ThreadIdToThreadLocals about thread termination.
   static DWORD WINAPI WatcherThreadFunc(LPVOID param) {
-    const ThreadIdAndHandle* tah =
-        reinterpret_cast<const ThreadIdAndHandle*>(param);
-    GTEST_CHECK_(::WaitForSingleObject(tah->second, INFINITE) == WAIT_OBJECT_0);
-    OnThreadExit(tah->first);
-    ::CloseHandle(tah->second);
-    delete tah;
+    WatcherThreadParams* watcher_thread_params =
+        reinterpret_cast<WatcherThreadParams*>(param);
+    watcher_thread_params->has_initialized.Notify();
+    GTEST_CHECK_(::WaitForSingleObject(watcher_thread_params->handle,
+                                       INFINITE) == WAIT_OBJECT_0);
+    OnThreadExit(watcher_thread_params->thread_id);
+    ::CloseHandle(watcher_thread_params->handle);
+    delete watcher_thread_params;
     return 0;
   }
 
@@ -697,13 +712,24 @@ bool RE::PartialMatch(const char* str, const RE& re) {
 void RE::Init(const char* regex) {
   pattern_ = regex;
 
+  // NetBSD (and Android, which takes its regex implemntation from NetBSD) does
+  // not include the GNU regex extensions (such as Perl style character classes
+  // like \w) in REG_EXTENDED. REG_EXTENDED is only specified to include the
+  // [[:alpha:]] style character classes. Enable REG_GNU wherever it is defined
+  // so users can use those extensions.
+#if defined(REG_GNU)
+  constexpr int reg_flags = REG_EXTENDED | REG_GNU;
+#else
+  constexpr int reg_flags = REG_EXTENDED;
+#endif
+
   // Reserves enough bytes to hold the regular expression used for a
   // full match.
   const size_t full_regex_len = strlen(regex) + 10;
   char* const full_pattern = new char[full_regex_len];
 
   snprintf(full_pattern, full_regex_len, "^(%s)$", regex);
-  is_valid_ = regcomp(&full_regex_, full_pattern, REG_EXTENDED) == 0;
+  is_valid_ = regcomp(&full_regex_, full_pattern, reg_flags) == 0;
   // We want to call regcomp(&partial_regex_, ...) even if the
   // previous expression returns false.  Otherwise partial_regex_ may
   // not be properly initialized can may cause trouble when it's
@@ -714,7 +740,7 @@ void RE::Init(const char* regex) {
   // regex.  We change it to an equivalent form "()" to be safe.
   if (is_valid_) {
     const char* const partial_regex = (*regex == '\0') ? "()" : regex;
-    is_valid_ = regcomp(&partial_regex_, partial_regex, REG_EXTENDED) == 0;
+    is_valid_ = regcomp(&partial_regex_, partial_regex, reg_flags) == 0;
   }
   EXPECT_TRUE(is_valid_)
       << "Regular expression \"" << regex
@@ -1022,11 +1048,21 @@ GTestLog::~GTestLog() {
   }
 }
 
+#if GTEST_HAS_STREAM_REDIRECTION
+
 // Disable Microsoft deprecation warnings for POSIX functions called from
 // this class (creat, dup, dup2, and close)
 GTEST_DISABLE_MSC_DEPRECATED_PUSH_()
 
-#if GTEST_HAS_STREAM_REDIRECTION
+namespace {
+
+#if defined(GTEST_OS_LINUX_ANDROID) || defined(GTEST_OS_IOS)
+bool EndsWithPathSeparator(const std::string& path) {
+  return !path.empty() && path.back() == GTEST_PATH_SEP_[0];
+}
+#endif
+
+}  // namespace
 
 // Object that captures an output stream (stdout/stderr).
 class CapturedStream {
@@ -1064,7 +1100,13 @@ class CapturedStream {
     // The location /data/local/tmp is directly accessible from native code.
     // '/sdcard' and other variants cannot be relied on, as they are not
     // guaranteed to be mounted, or may have a delay in mounting.
-    name_template = "/data/local/tmp/";
+    //
+    // However, prefer using the TMPDIR environment variable if set, as newer
+    // devices may have /data/local/tmp read-only.
+    name_template = TempDir();
+    if (!EndsWithPathSeparator(name_template))
+      name_template.push_back(GTEST_PATH_SEP_[0]);
+
 #elif defined(GTEST_OS_IOS)
     char user_temp_dir[PATH_MAX + 1];
 
@@ -1084,7 +1126,7 @@ class CapturedStream {
     ::confstr(_CS_DARWIN_USER_TEMP_DIR, user_temp_dir, sizeof(user_temp_dir));
 
     name_template = user_temp_dir;
-    if (name_template.back() != GTEST_PATH_SEP_[0])
+    if (!EndsWithPathSeparator(name_template))
       name_template.push_back(GTEST_PATH_SEP_[0]);
 #else
     name_template = "/tmp/";
@@ -1306,8 +1348,8 @@ bool ParseInt32(const Message& src_text, const char* str, int32_t* value) {
   ) {
     Message msg;
     msg << "WARNING: " << src_text
-        << " is expected to be a 32-bit integer, but actually"
-        << " has value " << str << ", which overflows.\n";
+        << " is expected to be a 32-bit integer, but actually" << " has value "
+        << str << ", which overflows.\n";
     printf("%s", msg.GetString().c_str());
     fflush(stdout);
     return false;
