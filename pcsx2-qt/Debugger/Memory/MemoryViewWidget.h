@@ -3,7 +3,9 @@
 
 #pragma once
 
-#include "ui_RegisterWidget.h"
+#include "ui_MemoryViewWidget.h"
+
+#include "Debugger/DebuggerWidget.h"
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
@@ -105,15 +107,13 @@ public:
 };
 
 
-class MemoryViewWidget final : public QWidget
+class MemoryViewWidget final : public DebuggerWidget
 {
 	Q_OBJECT
 
 public:
-	MemoryViewWidget(QWidget* parent);
+	MemoryViewWidget(DebugInterface& cpu, QWidget* parent = nullptr);
 	~MemoryViewWidget();
-
-	void SetCpu(DebugInterface* cpu);
 
 protected:
 	void paintEvent(QPaintEvent* event);
@@ -138,7 +138,7 @@ signals:
 	void VMUpdate();
 
 private:
-	Ui::RegisterWidget ui;
+	Ui::MemoryViewWidget ui;
 
 	QMenu* m_contextMenu = 0x0;
 	QAction* m_actionLittleEndian;
@@ -147,6 +147,5 @@ private:
 	QAction* m_actionWORD;
 	QAction* m_actionDWORD;
 
-	DebugInterface* m_cpu;
 	MemoryViewTable m_table;
 };

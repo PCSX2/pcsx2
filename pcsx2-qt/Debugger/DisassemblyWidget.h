@@ -5,23 +5,21 @@
 
 #include "ui_DisassemblyWidget.h"
 
+#include "DebuggerWidget.h"
+
 #include "pcsx2/DebugTools/DebugInterface.h"
 #include "pcsx2/DebugTools/DisassemblyManager.h"
 
-#include <QtWidgets/QWidget>
 #include <QtWidgets/QMenu>
 #include <QtGui/QPainter>
 
-class DisassemblyWidget final : public QWidget
+class DisassemblyWidget final : public DebuggerWidget
 {
 	Q_OBJECT
 
 public:
-	DisassemblyWidget(QWidget* parent);
+	DisassemblyWidget(DebugInterface& cpu, QWidget* parent = nullptr);
 	~DisassemblyWidget();
-
-	// Required because our constructor needs to take no extra arguments.
-	void SetCpu(DebugInterface* cpu);
 
 	// Required for the breakpoint list (ugh wtf)
 	QString GetLineDisasm(u32 address);
@@ -69,9 +67,8 @@ signals:
 	void VMUpdate();
 
 private:
-	Ui::DisassemblyWidget ui;
+	Ui::DisassemblyWidget m_ui;
 
-	DebugInterface* m_cpu;
 	u32 m_visibleStart = 0x00336318; // The address of the first opcode shown(row 0)
 	u32 m_visibleRows;
 	u32 m_selectedAddressStart = 0;

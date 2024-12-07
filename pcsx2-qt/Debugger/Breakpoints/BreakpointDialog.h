@@ -5,9 +5,9 @@
 
 #include "ui_BreakpointDialog.h"
 
-#include "DebugTools/Breakpoints.h"
+#include "BreakpointModel.h"
 
-#include "Models/BreakpointModel.h"
+#include "DebugTools/Breakpoints.h"
 
 #include <QtWidgets/QDialog>
 

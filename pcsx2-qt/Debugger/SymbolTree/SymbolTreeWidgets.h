@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <QtWidgets/QWidget>
+#include "Debugger/DebuggerWidget.h"
 #include "SymbolTreeModel.h"
 
 #include "ui_SymbolTreeWidget.h"
@@ -12,7 +12,7 @@ struct SymbolFilters;
 
 // A symbol tree widget with its associated refresh button, filter box and
 // right-click menu. Supports grouping, sorting and various other settings.
-class SymbolTreeWidget : public QWidget
+class SymbolTreeWidget : public DebuggerWidget
 {
 	Q_OBJECT
 
@@ -41,7 +41,11 @@ protected:
 		const ccc::SourceFile* source_file = nullptr;
 	};
 
-	SymbolTreeWidget(u32 flags, s32 symbol_address_alignment, DebugInterface& cpu, QWidget* parent = nullptr);
+	SymbolTreeWidget(
+		u32 flags,
+		s32 symbol_address_alignment,
+		DebugInterface& cpu,
+		QWidget* parent = nullptr);
 
 	void resizeEvent(QResizeEvent* event) override;
 
