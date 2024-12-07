@@ -5041,7 +5041,7 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../QtHost.cpp" line="1011"/>
-        <source>Slot: %1 | Volume: %2% | 3% | EE: %4% | GS: %5%</source>
+        <source>Slot: %1 | Volume: %2% | %3 | EE: %4% | GS: %5%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
