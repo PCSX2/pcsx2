@@ -49,7 +49,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\ccc\src</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)pcsx2</AdditionalIncludeDirectories>
       <!-- Needed for moc pch -->
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\Tools\InputRecording;$(ProjectDir)\Debugger;$(ProjectDir)\Debugger\Models;$(ProjectDir)\Debugger\SymbolTree</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\Tools\InputRecording;$(ProjectDir)\Debugger;$(ProjectDir)\Debugger\Breakpoints;$(ProjectDir)\Debugger\Memory;$(ProjectDir)\Debugger\SymbolTree</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
@@ -110,18 +110,23 @@
     <ClCompile Include="Tools\InputRecording\InputRecordingViewer.cpp" />
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp" />
     <ClCompile Include="Debugger\AnalysisOptionsDialog.cpp" />
-    <ClCompile Include="Debugger\CpuWidget.cpp" />
+    <ClCompile Include="Debugger\DebuggerWidget.cpp" />
     <ClCompile Include="Debugger\DebuggerWindow.cpp" />
     <ClCompile Include="Debugger\DisassemblyWidget.cpp" />
-    <ClCompile Include="Debugger\MemorySearchWidget.cpp" />
-    <ClCompile Include="Debugger\MemoryViewWidget.cpp" />
+    <ClCompile Include="Debugger\DockManager.cpp" />
     <ClCompile Include="Debugger\RegisterWidget.cpp" />
-    <ClCompile Include="Debugger\BreakpointDialog.cpp" />
     <ClCompile Include="Debugger\DebuggerSettingsManager.cpp" />
-    <ClCompile Include="Debugger\Models\BreakpointModel.cpp" />
-    <ClCompile Include="Debugger\Models\ThreadModel.cpp" />
-    <ClCompile Include="Debugger\Models\StackModel.cpp" />
-    <ClCompile Include="Debugger\Models\SavedAddressesModel.cpp" />
+    <ClCompile Include="Debugger\StackModel.cpp" />
+    <ClCompile Include="Debugger\StackWidget.cpp" />
+    <ClCompile Include="Debugger\ThreadModel.cpp" />
+    <ClCompile Include="Debugger\ThreadWidget.cpp" />
+    <ClCompile Include="Debugger\Breakpoints\BreakpointDialog.cpp" />
+    <ClCompile Include="Debugger\Breakpoints\BreakpointModel.cpp" />
+    <ClCompile Include="Debugger\Breakpoints\BreakpointWidget.cpp" />
+    <ClCompile Include="Debugger\Memory\MemorySearchWidget.cpp" />
+    <ClCompile Include="Debugger\Memory\MemoryViewWidget.cpp" />
+    <ClCompile Include="Debugger\Memory\SavedAddressesModel.cpp" />
+    <ClCompile Include="Debugger\Memory\SavedAddressesWidget.cpp" />
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp" />
     <ClCompile Include="Settings\ControllerBindingWidget.cpp" />
     <ClCompile Include="Settings\ControllerGlobalSettingsWidget.cpp" />
@@ -212,18 +217,23 @@
     <QtMoc Include="Tools\InputRecording\InputRecordingViewer.h" />
     <ClInclude Include="QtUtils.h" />
     <QtMoc Include="Debugger\AnalysisOptionsDialog.h" />
-    <QtMoc Include="Debugger\CpuWidget.h" />
+    <QtMoc Include="Debugger\DebuggerWidget.h" />
     <QtMoc Include="Debugger\DebuggerWindow.h" />
     <QtMoc Include="Debugger\DisassemblyWidget.h" />
-    <QtMoc Include="Debugger\MemorySearchWidget.h" />
-    <QtMoc Include="Debugger\MemoryViewWidget.h" />
+    <QtMoc Include="Debugger\DockManager.h" />
     <QtMoc Include="Debugger\RegisterWidget.h" />
-    <QtMoc Include="Debugger\BreakpointDialog.h" />
+    <QtMoc Include="Debugger\StackModel.h" />
+    <QtMoc Include="Debugger\StackWidget.h" />
+    <QtMoc Include="Debugger\ThreadModel.h" />
+    <QtMoc Include="Debugger\ThreadWidget.h" />
     <ClInclude Include="Debugger\DebuggerSettingsManager.h" />
-    <QtMoc Include="Debugger\Models\BreakpointModel.h" />
-    <QtMoc Include="Debugger\Models\ThreadModel.h" />
-    <QtMoc Include="Debugger\Models\StackModel.h" />
-    <QtMoc Include="Debugger\Models\SavedAddressesModel.h" />
+    <QtMoc Include="Debugger\Breakpoints\BreakpointDialog.h" />
+    <QtMoc Include="Debugger\Breakpoints\BreakpointModel.h" />
+    <QtMoc Include="Debugger\Breakpoints\BreakpointWidget.h" />
+    <QtMoc Include="Debugger\Memory\MemorySearchWidget.h" />
+    <QtMoc Include="Debugger\Memory\MemoryViewWidget.h" />
+    <QtMoc Include="Debugger\Memory\SavedAddressesModel.h" />
+    <QtMoc Include="Debugger\Memory\SavedAddressesWidget.h" />
     <QtMoc Include="Settings\ControllerBindingWidget.h" />
     <QtMoc Include="Settings\ControllerGlobalSettingsWidget.h" />
     <ClInclude Include="Settings\MemoryCardConvertWorker.h" />
@@ -272,17 +282,22 @@
     <ClCompile Include="$(IntDir)Settings\moc_DebugAnalysisSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_DebugSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_AnalysisOptionsDialog.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWindow.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_CpuWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_DisassemblyWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_DockManager.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_RegisterWidget.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_MemorySearchWidget.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_MemoryViewWidget.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_BreakpointDialog.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Models\moc_BreakpointModel.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Models\moc_ThreadModel.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Models\moc_StackModel.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Models\moc_SavedAddressesModel.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_StackModel.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_StackWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_ThreadModel.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_ThreadWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointDialog.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointModel.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Memory\moc_MemorySearchWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Memory\moc_MemoryViewWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Memory\moc_SavedAddressesModel.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Memory\moc_SavedAddressesWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_NewSymbolDialogs.cpp" />
     <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeDelegates.cpp" />
     <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeLocation.cpp" />
@@ -409,19 +424,22 @@
     <QtUi Include="Debugger\DisassemblyWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="Debugger\CpuWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
     <QtUi Include="Debugger\RegisterWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="Debugger\MemorySearchWidget.ui">
+    <QtUi Include="Debugger\Breakpoints\BreakpointDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="Debugger\MemoryViewWidget.ui">
+    <QtUi Include="Debugger\Breakpoints\BreakpointWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="Debugger\BreakpointDialog.ui">
+    <QtUi Include="Debugger\Memory\MemorySearchWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Debugger\Memory\MemoryViewWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Debugger\Memory\SavedAddressesWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
   </ItemGroup>

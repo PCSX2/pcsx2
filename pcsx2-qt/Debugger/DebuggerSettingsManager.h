@@ -6,8 +6,8 @@
 
 #include <mutex>
 
-#include "Models/BreakpointModel.h"
-#include "Models/SavedAddressesModel.h"
+#include "Breakpoints/BreakpointModel.h"
+#include "Memory/SavedAddressesModel.h"
 
 class DebuggerSettingsManager final
 {

@@ -14,8 +14,12 @@
 
 static bool testName(const QString& name, const QString& filter);
 
-SymbolTreeWidget::SymbolTreeWidget(u32 flags, s32 symbol_address_alignment, DebugInterface& cpu, QWidget* parent)
-	: QWidget(parent)
+SymbolTreeWidget::SymbolTreeWidget(
+	u32 flags,
+	s32 symbol_address_alignment,
+	DebugInterface& cpu,
+	QWidget* parent)
+	: DebuggerWidget(&cpu, parent)
 	, m_cpu(cpu)
 	, m_flags(flags)
 	, m_symbol_address_alignment(symbol_address_alignment)
@@ -661,7 +665,11 @@ SymbolTreeNode* SymbolTreeWidget::currentNode()
 // *****************************************************************************
 
 FunctionTreeWidget::FunctionTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_GROUPING | ALLOW_MANGLED_NAME_ACTIONS, 4, cpu, parent)
+	: SymbolTreeWidget(
+		  ALLOW_GROUPING | ALLOW_MANGLED_NAME_ACTIONS,
+		  4,
+		  cpu,
+		  parent)
 {
 }
 
@@ -745,7 +753,11 @@ void FunctionTreeWidget::onNewButtonPressed()
 // *****************************************************************************
 
 GlobalVariableTreeWidget::GlobalVariableTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_GROUPING | ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN | ALLOW_TYPE_ACTIONS | ALLOW_MANGLED_NAME_ACTIONS, 1, cpu, parent)
+	: SymbolTreeWidget(
+		  ALLOW_GROUPING | ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN | ALLOW_TYPE_ACTIONS | ALLOW_MANGLED_NAME_ACTIONS,
+		  1,
+		  cpu,
+		  parent)
 {
 }
 
@@ -884,7 +896,11 @@ void GlobalVariableTreeWidget::onNewButtonPressed()
 // *****************************************************************************
 
 LocalVariableTreeWidget::LocalVariableTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_TYPE_ACTIONS, 1, cpu, parent)
+	: SymbolTreeWidget(
+		  ALLOW_TYPE_ACTIONS,
+		  1,
+		  cpu,
+		  parent)
 {
 }
 
@@ -1009,7 +1025,11 @@ void LocalVariableTreeWidget::onNewButtonPressed()
 // *****************************************************************************
 
 ParameterVariableTreeWidget::ParameterVariableTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_TYPE_ACTIONS, 1, cpu, parent)
+	: SymbolTreeWidget(
+		  ALLOW_TYPE_ACTIONS,
+		  1,
+		  cpu,
+		  parent)
 {
 }
 

@@ -12,19 +12,10 @@
 #include "AnalysisOptionsDialog.h"
 
 DebuggerWindow::DebuggerWindow(QWidget* parent)
-	: QMainWindow(parent)
+	: KDDockWidgets::QtWidgets::MainWindow(QStringLiteral("DebuggerWindow"), {}, parent)
+	, m_dock_manager(this)
 {
 	m_ui.setupUi(this);
-
-// Easiest way to handle cross platform monospace fonts
-// There are issues related to TabWidget -> Children font inheritance otherwise
-#if defined(WIN32)
-	m_ui.cpuTabs->setStyleSheet(QStringLiteral("font: 8pt 'Lucida Console'"));
-#elif defined(__APPLE__)
-	m_ui.cpuTabs->setStyleSheet(QStringLiteral("font: 10pt 'Monaco'"));
-#else
-	m_ui.cpuTabs->setStyleSheet(QStringLiteral("font: 8pt 'Monospace'"));
-#endif
 
 	connect(m_ui.actionRun, &QAction::triggered, this, &DebuggerWindow::onRunPause);
 	connect(m_ui.actionStepInto, &QAction::triggered, this, &DebuggerWindow::onStepInto);
@@ -39,15 +30,18 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	onVMStateChanged(); // If we missed a state change while we weren't loaded
 
 	// We can't do this in the designer, but we want to right align the actionOnTop action in the toolbar
-	QWidget* spacer = new QWidget(this);
-	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	m_ui.toolBar->insertWidget(m_ui.actionAnalyse, spacer);
+	//QWidget* spacer = new QWidget(this);
+	//spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	//m_ui.toolBar->insertWidget(m_ui.actionAnalyse, spacer);
 
-	m_cpuWidget_r5900 = new CpuWidget(this, r5900Debug);
-	m_cpuWidget_r3000 = new CpuWidget(this, r3000Debug);
+	//m_ui.cpuTabs->addTab(m_cpuWidget_r5900, "R5900");
+	//m_ui.cpuTabs->addTab(m_cpuWidget_r3000, "R3000");
 
-	m_ui.cpuTabs->addTab(m_cpuWidget_r5900, "R5900");
-	m_ui.cpuTabs->addTab(m_cpuWidget_r3000, "R3000");
+	m_dock_manager.switchToLayout(0);
+
+	//QTabBar* tabs = new QTabBar();
+	//tabs->addTab("Test");
+	//m_ui.menuBar->layout()->addWidget(tabs);
 }
 
 DebuggerWindow::~DebuggerWindow() = default;
@@ -56,8 +50,8 @@ DebuggerWindow::~DebuggerWindow() = default;
 // Sorry colour blind people, but this is the best we can do for now
 void DebuggerWindow::setTabActiveStyle(BreakPointCpu enabledCpu)
 {
-	m_ui.cpuTabs->tabBar()->setTabTextColor(m_ui.cpuTabs->indexOf(m_cpuWidget_r5900), (enabledCpu == BREAKPOINT_EE) ? Qt::red : this->palette().text().color());
-	m_ui.cpuTabs->tabBar()->setTabTextColor(m_ui.cpuTabs->indexOf(m_cpuWidget_r3000), (enabledCpu == BREAKPOINT_IOP) ? Qt::red : this->palette().text().color());
+	//m_ui.cpuTabs->tabBar()->setTabTextColor(m_ui.cpuTabs->indexOf(m_cpuWidget_r5900), (enabledCpu == BREAKPOINT_EE) ? Qt::red : this->palette().text().color());
+	//m_ui.cpuTabs->tabBar()->setTabTextColor(m_ui.cpuTabs->indexOf(m_cpuWidget_r3000), (enabledCpu == BREAKPOINT_IOP) ? Qt::red : this->palette().text().color());
 }
 
 void DebuggerWindow::onVMStateChanged()
@@ -87,10 +81,10 @@ void DebuggerWindow::onVMStateChanged()
 			switch (triggeredCpu)
 			{
 				case BREAKPOINT_EE:
-					m_ui.cpuTabs->setCurrentWidget(m_cpuWidget_r5900);
+					//m_ui.cpuTabs->setCurrentWidget(m_cpuWidget_r5900);
 					break;
 				case BREAKPOINT_IOP:
-					m_ui.cpuTabs->setCurrentWidget(m_cpuWidget_r3000);
+					//m_ui.cpuTabs->setCurrentWidget(m_cpuWidget_r3000);
 					break;
 				default:
 					break;
@@ -115,20 +109,20 @@ void DebuggerWindow::onRunPause()
 
 void DebuggerWindow::onStepInto()
 {
-	CpuWidget* currentCpu = static_cast<CpuWidget*>(m_ui.cpuTabs->currentWidget());
-	currentCpu->onStepInto();
+	//CpuWidget* currentCpu = static_cast<CpuWidget*>(m_ui.cpuTabs->currentWidget());
+	//currentCpu->onStepInto();
 }
 
 void DebuggerWindow::onStepOver()
 {
-	CpuWidget* currentCpu = static_cast<CpuWidget*>(m_ui.cpuTabs->currentWidget());
-	currentCpu->onStepOver();
+	//CpuWidget* currentCpu = static_cast<CpuWidget*>(m_ui.cpuTabs->currentWidget());
+	//currentCpu->onStepOver();
 }
 
 void DebuggerWindow::onStepOut()
 {
-	CpuWidget* currentCpu = static_cast<CpuWidget*>(m_ui.cpuTabs->currentWidget());
-	currentCpu->onStepOut();
+	//CpuWidget* currentCpu = static_cast<CpuWidget*>(m_ui.cpuTabs->currentWidget());
+	//currentCpu->onStepOut();
 }
 
 void DebuggerWindow::onAnalyse()

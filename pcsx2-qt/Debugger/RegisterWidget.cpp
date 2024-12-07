@@ -20,8 +20,8 @@
 
 using namespace QtUtils;
 
-RegisterWidget::RegisterWidget(QWidget* parent)
-	: QWidget(parent)
+RegisterWidget::RegisterWidget(DebugInterface& cpu, QWidget* parent)
+	: DebuggerWidget(&cpu)
 {
 	this->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 
@@ -30,21 +30,19 @@ RegisterWidget::RegisterWidget(QWidget* parent)
 
 	connect(this, &RegisterWidget::customContextMenuRequested, this, &RegisterWidget::customMenuRequested);
 	connect(ui.registerTabs, &QTabBar::currentChanged, this, &RegisterWidget::tabCurrentChanged);
-};
 
-RegisterWidget::~RegisterWidget()
-{
-}
-
-void RegisterWidget::SetCpu(DebugInterface* cpu)
-{
-	m_cpu = cpu;
-	for (int i = 0; i < m_cpu->getRegisterCategoryCount(); i++)
+	for (int i = 0; i < cpu.getRegisterCategoryCount(); i++)
 	{
-		ui.registerTabs->addTab(m_cpu->getRegisterCategoryName(i));
+		ui.registerTabs->addTab(cpu.getRegisterCategoryName(i));
 	}
 
 	connect(ui.registerTabs, &QTabBar::currentChanged, [this]() { this->repaint(); });
+
+	applyMonospaceFont();
+}
+
+RegisterWidget::~RegisterWidget()
+{
 }
 
 void RegisterWidget::tabCurrentChanged(int cur)
@@ -54,9 +52,6 @@ void RegisterWidget::tabCurrentChanged(int cur)
 
 void RegisterWidget::paintEvent(QPaintEvent* event)
 {
-	if (!m_cpu)
-		return;
-
 	QPainter painter(this);
 	painter.setPen(this->palette().text().color());
 	m_renderStart = QPoint(0, ui.registerTabs->pos().y() + ui.registerTabs->size().height());
@@ -94,9 +89,9 @@ void RegisterWidget::paintEvent(QPaintEvent* event)
 	// off of that.
 	// Can probably constexpr the loop out as register names are known during runtime
 	int safeValueStartX = 0;
-	for (int i = 0; i < m_cpu->getRegisterCount(categoryIndex); i++)
+	for (int i = 0; i < cpu().getRegisterCount(categoryIndex); i++)
 	{
-		const int registerNameWidth = strlen(m_cpu->getRegisterName(categoryIndex, i));
+		const int registerNameWidth = strlen(cpu().getRegisterName(categoryIndex, i));
 		if (safeValueStartX < registerNameWidth)
 		{
 			safeValueStartX = registerNameWidth;
@@ -110,7 +105,7 @@ void RegisterWidget::paintEvent(QPaintEvent* event)
 	// Make it relative to where we start rendering
 	safeValueStartX += m_renderStart.x();
 
-	for (s32 i = 0; i < m_cpu->getRegisterCount(categoryIndex) - m_rowStart; i++)
+	for (s32 i = 0; i < cpu().getRegisterCount(categoryIndex) - m_rowStart; i++)
 	{
 		const s32 registerIndex = i + m_rowStart;
 		const int yStart = (i * m_rowHeight) + m_renderStart.y();
@@ -120,11 +115,11 @@ void RegisterWidget::paintEvent(QPaintEvent* event)
 
 		// Draw register name
 		painter.setPen(this->palette().text().color());
-		painter.drawText(m_renderStart.x() + painter.fontMetrics().averageCharWidth(), yStart, renderSize.width(), m_rowHeight, Qt::AlignLeft, m_cpu->getRegisterName(categoryIndex, registerIndex));
+		painter.drawText(m_renderStart.x() + painter.fontMetrics().averageCharWidth(), yStart, renderSize.width(), m_rowHeight, Qt::AlignLeft, cpu().getRegisterName(categoryIndex, registerIndex));
 
-		if (m_cpu->getRegisterSize(categoryIndex) == 128)
+		if (cpu().getRegisterSize(categoryIndex) == 128)
 		{
-			const u128 curRegister = m_cpu->getRegister(categoryIndex, registerIndex);
+			const u128 curRegister = cpu().getRegister(categoryIndex, registerIndex);
 
 			int regIndex = 3;
 			for (int j = 0; j < 4; j++)
@@ -136,7 +131,7 @@ void RegisterWidget::paintEvent(QPaintEvent* event)
 
 				if (categoryIndex == EECAT_VU0F && m_showVU0FFloat)
 					painter.drawText(m_fieldStartX[j], yStart, m_fieldWidth, m_rowHeight, Qt::AlignLeft,
-						painter.fontMetrics().elidedText(QString::number(std::bit_cast<float>(m_cpu->getRegister(categoryIndex, registerIndex)._u32[regIndex])), Qt::ElideRight, m_fieldWidth - painter.fontMetrics().averageCharWidth()));
+						painter.fontMetrics().elidedText(QString::number(std::bit_cast<float>(cpu().getRegister(categoryIndex, registerIndex)._u32[regIndex])), Qt::ElideRight, m_fieldWidth - painter.fontMetrics().averageCharWidth()));
 				else
 					painter.drawText(m_fieldStartX[j], yStart, m_fieldWidth, m_rowHeight,
 						Qt::AlignLeft, FilledQStringFromValue(curRegister._u32[regIndex], 16));
@@ -153,13 +148,13 @@ void RegisterWidget::paintEvent(QPaintEvent* event)
 
 			if (categoryIndex == EECAT_FPR && m_showFPRFloat)
 				painter.drawText(safeValueStartX, yStart, renderSize.width(), m_rowHeight, Qt::AlignLeft,
-					QString("%1").arg(QString::number(std::bit_cast<float>(m_cpu->getRegister(categoryIndex, registerIndex)._u32[0]))).toUpper());
-			else if (m_cpu->getRegisterSize(categoryIndex) == 64)
+					QString("%1").arg(QString::number(std::bit_cast<float>(cpu().getRegister(categoryIndex, registerIndex)._u32[0]))).toUpper());
+			else if (cpu().getRegisterSize(categoryIndex) == 64)
 				painter.drawText(safeValueStartX, yStart, renderSize.width(), m_rowHeight, Qt::AlignLeft,
-					FilledQStringFromValue(m_cpu->getRegister(categoryIndex, registerIndex).lo, 16));
+					FilledQStringFromValue(cpu().getRegister(categoryIndex, registerIndex).lo, 16));
 			else
 				painter.drawText(safeValueStartX, yStart, renderSize.width(), m_rowHeight, Qt::AlignLeft,
-					FilledQStringFromValue(m_cpu->getRegister(categoryIndex, registerIndex)._u32[0], 16));
+					FilledQStringFromValue(cpu().getRegister(categoryIndex, registerIndex)._u32[0], 16));
 		}
 	}
 	painter.end();
@@ -171,7 +166,7 @@ void RegisterWidget::mousePressEvent(QMouseEvent* event)
 	m_selectedRow = static_cast<int>(((event->position().y() - m_renderStart.y()) / m_rowHeight)) + m_rowStart;
 
 	// For 128 bit types, support selecting segments
-	if (m_cpu->getRegisterSize(categoryIndex) == 128)
+	if (cpu().getRegisterSize(categoryIndex) == 128)
 	{
 		constexpr auto inRange = [](u32 low, u32 high, u32 val) {
 			return (low <= val && val <= high);
@@ -190,7 +185,7 @@ void RegisterWidget::mousePressEvent(QMouseEvent* event)
 
 void RegisterWidget::wheelEvent(QWheelEvent* event)
 {
-	if (event->angleDelta().y() < 0 && m_rowEnd < m_cpu->getRegisterCount(ui.registerTabs->currentIndex()))
+	if (event->angleDelta().y() < 0 && m_rowEnd < cpu().getRegisterCount(ui.registerTabs->currentIndex()))
 	{
 		m_rowStart += 1;
 	}
@@ -204,12 +199,12 @@ void RegisterWidget::wheelEvent(QWheelEvent* event)
 
 void RegisterWidget::mouseDoubleClickEvent(QMouseEvent* event)
 {
-	if (!m_cpu->isAlive())
+	if (!cpu().isAlive())
 		return;
 	if (m_selectedRow > m_rowEnd) // Unsigned underflow; selectedRow will be > m_rowEnd (technically negative)
 		return;
 	const int categoryIndex = ui.registerTabs->currentIndex();
-	if (m_cpu->getRegisterSize(categoryIndex) == 128)
+	if (cpu().getRegisterSize(categoryIndex) == 128)
 		contextChangeSegment();
 	else
 		contextChangeValue();
@@ -217,7 +212,7 @@ void RegisterWidget::mouseDoubleClickEvent(QMouseEvent* event)
 
 void RegisterWidget::customMenuRequested(QPoint pos)
 {
-	if (!m_cpu->isAlive())
+	if (!cpu().isAlive())
 		return;
 
 	if (m_selectedRow > m_rowEnd) // Unsigned underflow; selectedRow will be > m_rowEnd (technically negative)
@@ -248,7 +243,7 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 		m_contextMenu->addSeparator();
 	}
 
-	if (m_cpu->getRegisterSize(categoryIndex) == 128)
+	if (cpu().getRegisterSize(categoryIndex) == 128)
 	{
 		m_contextMenu->addAction(action = new QAction(tr("Copy Top Half"), this));
 		connect(action, &QAction::triggered, this, &RegisterWidget::contextCopyTop);
@@ -265,7 +260,7 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 
 	m_contextMenu->addSeparator();
 
-	if (m_cpu->getRegisterSize(categoryIndex) == 128)
+	if (cpu().getRegisterSize(categoryIndex) == 128)
 	{
 		m_contextMenu->addAction(action = new QAction(tr("Change Top Half"), this));
 		connect(action, &QAction::triggered, this, &RegisterWidget::contextChangeTop);
@@ -295,7 +290,7 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 void RegisterWidget::contextCopyValue()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
-	const u128 val = m_cpu->getRegister(categoryIndex, m_selectedRow);
+	const u128 val = cpu().getRegister(categoryIndex, m_selectedRow);
 	if (CAT_SHOW_FLOAT)
 		QApplication::clipboard()->setText(QString("%1").arg(QString::number(std::bit_cast<float>(val._u32[0])).toUpper(), 16));
 	else
@@ -305,21 +300,21 @@ void RegisterWidget::contextCopyValue()
 void RegisterWidget::contextCopyTop()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
-	const u128 val = m_cpu->getRegister(categoryIndex, m_selectedRow);
+	const u128 val = cpu().getRegister(categoryIndex, m_selectedRow);
 	QApplication::clipboard()->setText(FilledQStringFromValue(val.hi, 16));
 }
 
 void RegisterWidget::contextCopyBottom()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
-	const u128 val = m_cpu->getRegister(categoryIndex, m_selectedRow);
+	const u128 val = cpu().getRegister(categoryIndex, m_selectedRow);
 	QApplication::clipboard()->setText(FilledQStringFromValue(val.lo, 16));
 }
 
 void RegisterWidget::contextCopySegment()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
-	const u128 val = m_cpu->getRegister(categoryIndex, m_selectedRow);
+	const u128 val = cpu().getRegister(categoryIndex, m_selectedRow);
 	if (CAT_SHOW_FLOAT)
 		QApplication::clipboard()->setText(FilledQStringFromValue(std::bit_cast<float>(val._u32[3 - m_selected128Field]), 10));
 	else
@@ -330,7 +325,7 @@ bool RegisterWidget::contextFetchNewValue(u64& out, u64 currentValue, bool segme
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	const bool floatingPoint = CAT_SHOW_FLOAT && segment;
-	const int regSize = m_cpu->getRegisterSize(categoryIndex);
+	const int regSize = cpu().getRegisterSize(categoryIndex);
 	bool ok = false;
 
 	QString existingValue("%1");
@@ -341,7 +336,7 @@ bool RegisterWidget::contextFetchNewValue(u64& out, u64 currentValue, bool segme
 		existingValue = existingValue.arg(std::bit_cast<float>((u32)currentValue));
 
 	//: Changing the value in a CPU register (e.g. "Change t0")
-	QString input = QInputDialog::getText(this, tr("Change %1").arg(m_cpu->getRegisterName(categoryIndex, m_selectedRow)), "",
+	QString input = QInputDialog::getText(this, tr("Change %1").arg(cpu().getRegisterName(categoryIndex, m_selectedRow)), "",
 		QLineEdit::Normal, existingValue, &ok);
 
 	if (!ok)
@@ -373,9 +368,9 @@ void RegisterWidget::contextChangeValue()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	u64 newVal;
-	if (contextFetchNewValue(newVal, m_cpu->getRegister(categoryIndex, m_selectedRow).lo))
+	if (contextFetchNewValue(newVal, cpu().getRegister(categoryIndex, m_selectedRow).lo))
 	{
-		m_cpu->setRegister(categoryIndex, m_selectedRow, u128::From64(newVal));
+		cpu().setRegister(categoryIndex, m_selectedRow, u128::From64(newVal));
 		VMUpdate();
 	}
 }
@@ -383,11 +378,11 @@ void RegisterWidget::contextChangeValue()
 void RegisterWidget::contextChangeTop()
 {
 	u64 newVal;
-	u128 oldVal = m_cpu->getRegister(ui.registerTabs->currentIndex(), m_selectedRow);
+	u128 oldVal = cpu().getRegister(ui.registerTabs->currentIndex(), m_selectedRow);
 	if (contextFetchNewValue(newVal, oldVal.hi))
 	{
 		oldVal.hi = newVal;
-		m_cpu->setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
+		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
 		VMUpdate();
 	}
 }
@@ -395,11 +390,11 @@ void RegisterWidget::contextChangeTop()
 void RegisterWidget::contextChangeBottom()
 {
 	u64 newVal;
-	u128 oldVal = m_cpu->getRegister(ui.registerTabs->currentIndex(), m_selectedRow);
+	u128 oldVal = cpu().getRegister(ui.registerTabs->currentIndex(), m_selectedRow);
 	if (contextFetchNewValue(newVal, oldVal.lo))
 	{
 		oldVal.lo = newVal;
-		m_cpu->setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
+		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
 		VMUpdate();
 	}
 }
@@ -407,11 +402,11 @@ void RegisterWidget::contextChangeBottom()
 void RegisterWidget::contextChangeSegment()
 {
 	u64 newVal;
-	u128 oldVal = m_cpu->getRegister(ui.registerTabs->currentIndex(), m_selectedRow);
+	u128 oldVal = cpu().getRegister(ui.registerTabs->currentIndex(), m_selectedRow);
 	if (contextFetchNewValue(newVal, oldVal._u32[3 - m_selected128Field], true))
 	{
 		oldVal._u32[3 - m_selected128Field] = (u32)newVal;
-		m_cpu->setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
+		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
 		VMUpdate();
 	}
 }
@@ -419,15 +414,15 @@ void RegisterWidget::contextChangeSegment()
 void RegisterWidget::contextGotoDisasm()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
-	u128 regVal = m_cpu->getRegister(categoryIndex, m_selectedRow);
+	u128 regVal = cpu().getRegister(categoryIndex, m_selectedRow);
 	u32 addr = 0;
 
-	if (m_cpu->getRegisterSize(categoryIndex) == 128)
+	if (cpu().getRegisterSize(categoryIndex) == 128)
 		addr = regVal._u32[3 - m_selected128Field];
 	else
 		addr = regVal._u32[0];
 
-	if (m_cpu->isValidAddress(addr))
+	if (cpu().isValidAddress(addr))
 		gotoInDisasm(addr);
 	else
 		QMessageBox::warning(this, tr("Invalid target address"), ("This register holds an invalid address."));
@@ -436,10 +431,10 @@ void RegisterWidget::contextGotoDisasm()
 void RegisterWidget::contextGotoMemory()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
-	u128 regVal = m_cpu->getRegister(categoryIndex, m_selectedRow);
+	u128 regVal = cpu().getRegister(categoryIndex, m_selectedRow);
 	u32 addr = 0;
 
-	if (m_cpu->getRegisterSize(categoryIndex) == 128)
+	if (cpu().getRegisterSize(categoryIndex) == 128)
 		addr = regVal._u32[3 - m_selected128Field];
 	else
 		addr = regVal._u32[0];

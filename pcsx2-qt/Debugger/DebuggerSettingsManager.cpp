@@ -10,12 +10,12 @@
 
 #include "common/Console.h"
 #include "VMManager.h"
-#include "Models/BreakpointModel.h"
 
 std::mutex DebuggerSettingsManager::writeLock;
 const QString DebuggerSettingsManager::settingsFileVersion = "0.00";
 
-QJsonObject DebuggerSettingsManager::loadGameSettingsJSON() {
+QJsonObject DebuggerSettingsManager::loadGameSettingsJSON()
+{
 	std::string path = VMManager::GetDebuggerSettingsFilePathForCurrentGame();
 	QFile file(QString::fromStdString(path));
 	if (!file.open(QIODevice::ReadOnly))
@@ -134,7 +134,7 @@ void DebuggerSettingsManager::saveGameSettings(QAbstractTableModel* abstractTabl
 {
 	const std::string path = VMManager::GetDebuggerSettingsFilePathForCurrentGame();
 	if (path.empty())
-		return; 
+		return;
 
 	const std::lock_guard<std::mutex> lock(writeLock);
 	QJsonObject loadedSettings = loadGameSettingsJSON();
