@@ -3,11 +3,13 @@
 
 #pragma once
 
-#include "CpuWidget.h"
-
 #include "ui_DebuggerWindow.h"
 
-class DebuggerWindow : public QMainWindow
+#include "DockManager.h"
+
+#include <kddockwidgets/MainWindow.h>
+
+class DebuggerWindow : public KDDockWidgets::QtWidgets::MainWindow
 {
 	Q_OBJECT
 
@@ -25,7 +27,7 @@ public slots:
 
 protected:
 	void showEvent(QShowEvent* event);
-	void hideEvent(QHideEvent *event);
+	void hideEvent(QHideEvent* event);
 
 private:
 	Ui::DebuggerWindow m_ui;
@@ -34,8 +36,7 @@ private:
 	QAction* m_actionStepOver;
 	QAction* m_actionStepOut;
 
-	CpuWidget* m_cpuWidget_r5900;
-	CpuWidget* m_cpuWidget_r3000;
+	DockManager m_dock_manager;
 
 	void setTabActiveStyle(BreakPointCpu toggledCPU);
 };
