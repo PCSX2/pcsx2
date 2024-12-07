@@ -19,7 +19,7 @@ LIBJPEG=9f
 LIBPNG=1.6.44
 LIBWEBP=1.4.0
 LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
-SDL=SDL2-2.30.9
+SDL=SDL2-2.30.10
 QT=6.8.1
 ZSTD=1.5.6
 
@@ -37,7 +37,7 @@ fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.
 60c4da1d5b7f0aa8d158da48e8f8afa9773c1c8baa5d21974df61f1886b8ce8e  libpng-$LIBPNG.tar.xz
 61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5  libwebp-$LIBWEBP.tar.gz
 0728800155f3ed0a0c87e03addbd30ecbe374f7b080678bbca1506051d50dec3  $LZ4.tar.gz
-24b574f71c87a763f50704bbb630cbe38298d544a1f890f099a4696b1d6beba4  $SDL.tar.gz
+f59adf36a0fcf4c94198e7d3d776c1b3824211ab7aeebeb31fe19836661196aa  $SDL.tar.gz
 8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1  zstd-$ZSTD.tar.gz
 40b14562ef3bd779bc0e0418ea2ae08fa28235f8ea6e8c0cb3bce1d6ad58dcaf  qtbase-everywhere-src-$QT.tar.xz
 138cc2909aa98f5ff7283e36eb3936eb5e625d3ca3b4febae2ca21d8903dd237  qtimageformats-everywhere-src-$QT.tar.xz
