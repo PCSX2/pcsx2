@@ -5,23 +5,22 @@
 
 #include "ui_RegisterWidget.h"
 
+#include "DebuggerWidget.h"
+
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
 
-#include <QtWidgets/QWidget>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QTabBar>
 #include <QtGui/QPainter>
 
-class RegisterWidget final : public QWidget
+class RegisterWidget final : public DebuggerWidget
 {
 	Q_OBJECT
 
 public:
-	RegisterWidget(QWidget* parent);
+	RegisterWidget(DebugInterface& cpu, QWidget* parent = nullptr);
 	~RegisterWidget();
-
-	void SetCpu(DebugInterface* cpu);
 
 protected:
 	void paintEvent(QPaintEvent* event);
@@ -57,8 +56,6 @@ private:
 
 	// Returns true on success
 	bool contextFetchNewValue(u64& out, u64 currentValue, bool segment = false);
-
-	DebugInterface* m_cpu;
 
 	// Used for the height offset the tab bar creates
 	// because we share a widget
