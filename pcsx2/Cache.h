@@ -8,6 +8,9 @@
 #include "common/SingleRegisterTypes.h"
 
 void resetCache();
+// Dumps all dirty cache entries to memory
+// This is necessary to fix a bug when enabled the recompiler while the cache was enabled.
+void writebackCache();
 void writeCache8(u32 mem, u8 value, bool validPFN = true);
 void writeCache16(u32 mem, u16 value, bool validPFN = true);
 void writeCache32(u32 mem, u32 value, bool validPFN = true);
