@@ -5,6 +5,7 @@
 #include "R5900OpcodeTables.h"
 #include "VMManager.h"
 #include "Elfheader.h"
+#include "Cache.h"
 
 #include "DebugTools/Breakpoints.h"
 
@@ -555,6 +556,8 @@ static void intEventTest()
 	if (intExitExecution)
 	{
 		intExitExecution = false;
+		if (CHECK_EEREC)
+			writebackCache();
 		fastjmp_jmp(&intJmpBuf, 1);
 	}
 }
@@ -566,7 +569,11 @@ static void intSafeExitExecution()
 	if (eeEventTestIsActive)
 		intExitExecution = true;
 	else
+	{
+		if (CHECK_EEREC)
+			writebackCache();
 		fastjmp_jmp(&intJmpBuf, 1);
+	}
 }
 
 static void intCancelInstruction()

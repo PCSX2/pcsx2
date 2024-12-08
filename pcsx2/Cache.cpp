@@ -163,6 +163,17 @@ void resetCache()
 	std::memset(&cache, 0, sizeof(cache));
 }
 
+void writebackCache()
+{
+	for (int i = 0; i < 64; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			cache.lineAt(i, j).writeBackIfNeeded();
+		}
+	}
+}
+
 static bool findInCache(const CacheSet& set, uptr ppf, int* way)
 {
 	auto check = [&](int checkWay) -> bool {
