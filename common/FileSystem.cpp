@@ -453,6 +453,11 @@ std::string Path::RealPath(const std::string_view path)
 			}
 		}
 	}
+
+	// If any relative symlinks were resolved, there may be '.' and '..'
+	// components in the resultant path, which must be removed.
+	realpath = Path::Canonicalize(realpath);
+
 #endif
 
 	return realpath;
