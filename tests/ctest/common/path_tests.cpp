@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "common/FileSystem.h"
 #include "common/Pcsx2Defs.h"
 #include "common/Path.h"
 #include <gtest/gtest.h>
@@ -238,16 +239,129 @@ TEST(Path, CreateFileURL)
 #endif
 }
 
-#if 0
+#if __linux__
 
-// Relies on presence of files.
-TEST(Path, RealPath)
+static std::optional<std::string> create_test_directory()
 {
-#ifdef _WIN32
-	ASSERT_EQ(Path::RealPath("C:\\Users\\Me\\Desktop\\foo\\baz"), "C:\\Users\\Me\\Desktop\\foo\\bar\\baz");
-#else
-	ASSERT_EQ(Path::RealPath("/lib/foo/bar"), "/usr/lib/foo/bar");
-#endif
+	for (u16 i = 0; i < UINT16_MAX; i++)
+	{
+		std::string path = std::string("/tmp/pcsx2_path_test_") + std::to_string(i);
+		if (!FileSystem::DirectoryExists(path.c_str()))
+		{
+			if (!FileSystem::CreateDirectoryPath(path.c_str(), false))
+				break;
+
+			return path;
+		}
+	}
+
+	return std::nullopt;
+}
+
+TEST(Path, RealPathAbsoluteSymbolicLink)
+{
+	std::optional<std::string> test_dir = create_test_directory();
+	ASSERT_TRUE(test_dir.has_value());
+
+	// Create a file to point at.
+	std::string file_path = Path::Combine(*test_dir, "file");
+	ASSERT_TRUE(FileSystem::WriteStringToFile(file_path.c_str(), "Hello, world!"));
+
+	// Create a symbolic link that points to said file.
+	std::string link_path = Path::Combine(*test_dir, "link");
+	ASSERT_TRUE(FileSystem::CreateSymLink(link_path.c_str(), file_path.c_str()));
+
+	// Make sure the symbolic link is resolved correctly.
+	ASSERT_EQ(Path::RealPath(link_path), file_path);
+
+	// Clean up.
+	ASSERT_TRUE(FileSystem::DeleteSymbolicLink(link_path.c_str()));
+	ASSERT_TRUE(FileSystem::DeleteFilePath(file_path.c_str()));
+	ASSERT_TRUE(FileSystem::DeleteDirectory(test_dir->c_str()));
+}
+
+TEST(Path, RealPathRelativeSymbolicLink)
+{
+	std::optional<std::string> test_dir = create_test_directory();
+	ASSERT_TRUE(test_dir.has_value());
+
+	// Create a file to point at.
+	std::string file_path = Path::Combine(*test_dir, "file");
+	ASSERT_TRUE(FileSystem::WriteStringToFile(file_path.c_str(), "Hello, world!"));
+
+	// Create a symbolic link that points to said file.
+	std::string link_path = Path::Combine(*test_dir, "link");
+	ASSERT_TRUE(FileSystem::CreateSymLink(link_path.c_str(), "file"));
+
+	// Make sure the symbolic link is resolved correctly.
+	ASSERT_EQ(Path::RealPath(link_path), file_path);
+
+	// Clean up.
+	ASSERT_TRUE(FileSystem::DeleteSymbolicLink(link_path.c_str()));
+	ASSERT_TRUE(FileSystem::DeleteFilePath(file_path.c_str()));
+	ASSERT_TRUE(FileSystem::DeleteDirectory(test_dir->c_str()));
+}
+
+TEST(Path, RealPathDotDotSymbolicLink)
+{
+	std::optional<std::string> test_dir = create_test_directory();
+	ASSERT_TRUE(test_dir.has_value());
+
+	// Create a file to point at.
+	std::string file_path = Path::Combine(*test_dir, "file");
+	ASSERT_TRUE(FileSystem::WriteStringToFile(file_path.c_str(), "Hello, world!"));
+
+	// Create a directory to put the link in.
+	std::string link_dir = Path::Combine(*test_dir, "dir");
+	ASSERT_TRUE(FileSystem::CreateDirectoryPath(link_dir.c_str(), false));
+
+	// Create a symbolic link that points to said file.
+	std::string link_path = Path::Combine(link_dir, "link");
+	ASSERT_TRUE(FileSystem::CreateSymLink(link_path.c_str(), "../file"));
+
+	// Make sure the symbolic link is resolved correctly.
+	ASSERT_EQ(Path::RealPath(link_path), file_path);
+
+	// Clean up.
+	ASSERT_TRUE(FileSystem::DeleteSymbolicLink(link_path.c_str()));
+	ASSERT_TRUE(FileSystem::DeleteDirectory(link_dir.c_str()));
+	ASSERT_TRUE(FileSystem::DeleteFilePath(file_path.c_str()));
+	ASSERT_TRUE(FileSystem::DeleteDirectory(test_dir->c_str()));
+}
+
+TEST(Path, RealPathCircularSymbolicLink)
+{
+	std::optional<std::string> test_dir = create_test_directory();
+	ASSERT_TRUE(test_dir.has_value());
+
+	// Create a circular symbolic link.
+	std::string link_path = Path::Combine(*test_dir, "link");
+	ASSERT_TRUE(FileSystem::CreateSymLink(link_path.c_str(), "."));
+
+	// Make sure the link gets resolved correctly.
+	ASSERT_EQ(Path::RealPath(link_path), *test_dir);
+	ASSERT_EQ(Path::RealPath(Path::Combine(link_path, "link")), *test_dir);
+
+	// Clean up.
+	ASSERT_TRUE(FileSystem::DeleteSymbolicLink(link_path.c_str()));
+	ASSERT_TRUE(FileSystem::DeleteDirectory(test_dir->c_str()));
+}
+
+TEST(Path, RealPathLoopingSymbolicLink)
+{
+	std::optional<std::string> test_dir = create_test_directory();
+	ASSERT_TRUE(test_dir.has_value());
+
+	// Create a symbolic link that points to itself.
+	std::string link_path = Path::Combine(*test_dir, "link");
+	ASSERT_TRUE(FileSystem::CreateSymLink(link_path.c_str(), "link"));
+
+	// Make sure this doesn't cause problems.
+	ASSERT_EQ(Path::RealPath(link_path), link_path);
+
+	// Clean up.
+	ASSERT_TRUE(FileSystem::DeleteSymbolicLink(link_path.c_str()));
+	ASSERT_TRUE(FileSystem::DeleteDirectory(test_dir->c_str()));
 }
 
 #endif
