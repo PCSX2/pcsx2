@@ -259,7 +259,6 @@ extern "C" {
 /* CHD open values */
 #define CHD_OPEN_READ				1
 #define CHD_OPEN_READWRITE			2
-#define CHD_OPEN_TRANSFER_FILE 4 /* Freeing of the FILE* is now libchdr's responsibility if open was successful */
 
 /* error types */
 enum _chd_error

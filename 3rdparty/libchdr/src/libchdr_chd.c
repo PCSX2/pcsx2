@@ -1737,13 +1737,7 @@ CHD_EXPORT chd_error chd_open_file(FILE *file, int mode, chd_file *parent, chd_f
 	stream->fclose = core_stdio_fclose_nonowner;
 	stream->fseek = core_stdio_fseek;
 
-	chd_error err = chd_open_core_file(stream, mode, parent, chd);
-	if (err != CHDERR_NONE)
-		return err;
-
-	// swap out the fclose so that we close it on chd clost
-	stream->fclose = core_stdio_fclose;
-	return CHDERR_NONE;
+	return chd_open_core_file(stream, mode, parent, chd);
 }
 
 /*-------------------------------------------------
