@@ -105,7 +105,7 @@ static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePt
 			parent_dir.c_str(), "*.*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_KEEP_ARRAY, &parent_files);
 		for (FILESYSTEM_FIND_DATA& fd : parent_files)
 		{
-			if (StringUtil::EndsWithNoCase(Path::GetExtension(fd.FileName), ".chd"))
+			if (!StringUtil::EndsWithNoCase(Path::GetExtension(fd.FileName), "chd"))
 				continue;
 
 			// Re-check the header, it might have changed since we last opened.
