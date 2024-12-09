@@ -100,6 +100,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.screenshotFormat, "EmuCore/GS", "ScreenshotFormat", static_cast<int>(GSScreenshotFormat::PNG));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.screenshotQuality, "EmuCore/GS", "ScreenshotQuality", 50);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.PreRoundSprites, "EmuCore/GS", "preround_sprites", false);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.stretchY, "EmuCore/GS", "StretchY", 100.0f);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cropLeft, "EmuCore/GS", "CropLeft", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cropTop, "EmuCore/GS", "CropTop", 0);
