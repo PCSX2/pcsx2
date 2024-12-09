@@ -45,10 +45,10 @@ TEST(FileSystem, RecursiveDeleteDirectoryDontFollowSymbolicLinks)
 	ASSERT_EQ(symlink(target_dir.c_str(), symlink_path.c_str()), 0);
 
 	// Delete the directory containing the symlink.
-	ASSERT_TRUE(dir_to_delete.starts_with("/tmp/"));
+	ASSERT_TRUE(dir_to_delete.starts_with("/tmp/pcsx2_filesystem_test_"));
 	ASSERT_TRUE(FileSystem::RecursiveDeleteDirectory(dir_to_delete.c_str()));
 
-	// Make sure the target file didn't get deleted.
+	// Make sure the file in the target directory didn't get deleted.
 	ASSERT_TRUE(FileSystem::FileExists(file_path.c_str()));
 
 	// Clean up.
