@@ -1925,6 +1925,26 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
 	return result;
 }
 
+bool FileSystem::CreateSymLink(const char* link, const char* target)
+{
+	// convert to wide string
+	const std::wstring wlink = GetWin32Path(link);
+	if (wlink.empty())
+		return false;
+
+	const std::wstring wtarget = GetWin32Path(target);
+	if (wtarget.empty())
+		return false;
+
+	// check if it's a directory
+	DWORD flags = 0;
+	if (DirectoryExists(target))
+		flags |= SYMBOLIC_LINK_FLAG_DIRECTORY;
+
+	// create the symbolic link
+	return CreateSymbolicLinkW(wlink.c_str(), wtarget.c_str(), flags) != 0;
+}
+
 bool FileSystem::IsSymbolicLink(const char* path)
 {
 	// convert to wide string
@@ -2503,6 +2523,11 @@ bool FileSystem::SetWorkingDirectory(const char* path)
 bool FileSystem::SetPathCompression(const char* path, bool enable)
 {
 	return false;
+}
+
+bool FileSystem::CreateSymLink(const char* link, const char* target)
+{
+	return symlink(target, link) == 0;
 }
 
 bool FileSystem::IsSymbolicLink(const char* path)
