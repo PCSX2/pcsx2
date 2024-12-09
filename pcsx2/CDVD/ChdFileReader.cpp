@@ -20,6 +20,74 @@ static constexpr u32 MAX_PARENTS = 32; // Surely someone wouldn't be insane enou
 static std::vector<std::pair<std::string, chd_header>> s_chd_hash_cache; // <filename, header>
 static std::recursive_mutex s_chd_hash_cache_mutex;
 
+// Provides an implementation of core_file which allows us to control if the underlying FILE handle is freed.
+// The lifetime of ChdCoreFileWrapper will be equal to that of the relevant chd_file,
+// ChdCoreFileWrapper will also get destroyed if chd_open_core_file fails.
+class ChdCoreFileWrapper
+{
+	DeclareNoncopyableObject(ChdCoreFileWrapper);
+
+private:
+	core_file m_core;
+	std::FILE* m_file;
+	bool m_free_file = false;
+
+public:
+	ChdCoreFileWrapper(std::FILE* file)
+		: m_file{file}
+	{
+		m_core.argp = this;
+		m_core.fsize = FSize;
+		m_core.fread = FRead;
+		m_core.fclose = FClose;
+		m_core.fseek = FSeek;
+	}
+
+	~ChdCoreFileWrapper()
+	{
+		if (m_free_file)
+			std::fclose(m_file);
+	}
+
+	core_file* GetCoreFile()
+	{
+		return &m_core;
+	}
+
+	static ChdCoreFileWrapper* FromCoreFile(core_file* file)
+	{
+		return reinterpret_cast<ChdCoreFileWrapper*>(file->argp);
+	}
+
+	void SetFileOwner(bool isOwner)
+	{
+		m_free_file = isOwner;
+	}
+
+private:
+	static u64 FSize(core_file* file)
+	{
+		return static_cast<u64>(FileSystem::FSize64(FromCoreFile(file)->m_file));
+	}
+
+	static size_t FRead(void* buffer, size_t elmSize, size_t elmCount, core_file* file)
+	{
+		return std::fread(buffer, elmSize, elmCount, FromCoreFile(file)->m_file);
+	}
+
+	static int FClose(core_file* file)
+	{
+		// Destructor handles freeing the FILE handle.
+		delete FromCoreFile(file);
+		return 0;
+	}
+
+	static int FSeek(core_file* file, int64_t offset, int whence)
+	{
+		return FileSystem::FSeek64(FromCoreFile(file)->m_file, offset, whence);
+	}
+};
+
 ChdFileReader::ChdFileReader() = default;
 
 ChdFileReader::~ChdFileReader()
@@ -30,10 +98,13 @@ ChdFileReader::~ChdFileReader()
 static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level)
 {
 	chd_file* chd;
-	chd_error err = chd_open_file(fp.get(), CHD_OPEN_READ | CHD_OPEN_TRANSFER_FILE, nullptr, &chd);
+	ChdCoreFileWrapper* core_wrapper = new ChdCoreFileWrapper(fp.get());
+	// libchdr will take ownership of core_wrapper, and will close/free it on failure.
+	chd_error err = chd_open_core_file(core_wrapper->GetCoreFile(), CHD_OPEN_READ, nullptr, &chd);
 	if (err == CHDERR_NONE)
 	{
-		// fp is now managed by libchdr
+		// core_wrapper should manage fp.
+		core_wrapper->SetFileOwner(true);
 		fp.release();
 		return chd;
 	}
@@ -140,8 +211,10 @@ static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePt
 		return nullptr;
 	}
 
+	// Our last core file wrapper got freed, so make a new one.
+	core_wrapper = new ChdCoreFileWrapper(fp.get());
 	// Now try re-opening with the parent.
-	err = chd_open_file(fp.get(), CHD_OPEN_READ | CHD_OPEN_TRANSFER_FILE, parent_chd, &chd);
+	err = chd_open_core_file(core_wrapper->GetCoreFile(), CHD_OPEN_READ, parent_chd, &chd);
 	if (err != CHDERR_NONE)
 	{
 		Console.Error(fmt::format("Failed to open CHD '{}': {}", filename, chd_error_string(err)));
@@ -149,7 +222,8 @@ static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePt
 		return nullptr;
 	}
 
-	// fp now owned by libchdr
+	// core_wrapper should manage fp.
+	core_wrapper->SetFileOwner(true);
 	fp.release();
 	return chd;
 }
