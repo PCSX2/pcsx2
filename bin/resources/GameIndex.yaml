@@ -13205,8 +13205,8 @@ SLED-54315:
   name: "LEGO Star Wars II - The Original Trilogy [Demo]"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 4 # Mostly aligns post processing.
-    nativeScaling: 1 # Fixes post processing smoothness and position.
+    halfPixelOffset: 1 # Aligns post processing.
+    nativeScaling: 2 # Fixes post processing smoothness and position.
 SLED-54327:
   name: "FIFA 07"
   region: "PAL-M7"
@@ -24396,8 +24396,8 @@ SLES-54221:
   name: "LEGO Star Wars II - The Original Trilogy"
   region: "PAL-M6"
   gsHWFixes:
-    halfPixelOffset: 4 # Mostly aligns post processing.
-    nativeScaling: 1 # Fixes post processing smoothness and position.
+    halfPixelOffset: 1 # Aligns post processing.
+    nativeScaling: 2 # Fixes post processing smoothness and position.
   memcardFilters: # Allows import of characters from Lego Star Wars 1.
     - "SLES-54221"
     - "SLES-53194"
@@ -46148,8 +46148,8 @@ SLPM-66572:
   name-en: "LEGO Star Wars II - The Original Trilogy"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Mostly aligns post processing.
-    nativeScaling: 1 # Fixes post processing smoothness and position.
+    halfPixelOffset: 1 # Aligns post processing.
+    nativeScaling: 2 # Fixes post processing smoothness and position.
   memcardFilters:
     - "SLPM-66572"
     - "SLPS-20423"
@@ -66094,8 +66094,8 @@ SLUS-21409:
   name: "LEGO Star Wars II - The Original Trilogy"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 4 # Mostly aligns post processing.
-    nativeScaling: 1 # Fixes post processing smoothness and position.
+    halfPixelOffset: 1 # Aligns post processing.
+    nativeScaling: 2 # Fixes post processing smoothness and position.
   memcardFilters:
     - "SLUS-21409"
     - "SLUS-21083"
