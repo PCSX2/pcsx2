@@ -598,17 +598,32 @@ struct Pcsx2Config
 			vu0ExtraOverflow : 1,
 			vu0SignOverflow : 1,
 			vu0Underflow : 1;
+			
+		bool
+			vu0SoftAddSub : 1,
+			vu0SoftMulDiv : 1,
+			vu0SoftSqrt : 1;
 
 		bool
 			vu1Overflow : 1,
 			vu1ExtraOverflow : 1,
 			vu1SignOverflow : 1,
 			vu1Underflow : 1;
+			
+		bool
+			vu1SoftAddSub : 1,
+			vu1SoftMulDiv : 1,
+			vu1SoftSqrt : 1;
 
 		bool
 			fpuOverflow : 1,
 			fpuExtraOverflow : 1,
 			fpuFullMode : 1;
+			
+		bool
+			fpuSoftAddSub : 1,
+			fpuSoftMulDiv : 1,
+			fpuSoftSqrt : 1;
 
 		bool
 			EnableEECache : 1;
@@ -1428,10 +1443,18 @@ namespace EmuFolders
 #define CHECK_VU_SIGN_OVERFLOW(vunum) (((vunum) == 0) ? EmuConfig.Cpu.Recompiler.vu0SignOverflow : EmuConfig.Cpu.Recompiler.vu1SignOverflow)
 #define CHECK_VU_UNDERFLOW(vunum) (((vunum) == 0) ? EmuConfig.Cpu.Recompiler.vu0Underflow : EmuConfig.Cpu.Recompiler.vu1Underflow)
 
+#define CHECK_VU_SOFT_ADDSUB(vunum) (((vunum) == 0) ? EmuConfig.Cpu.Recompiler.vu0SoftAddSub : EmuConfig.Cpu.Recompiler.vu1SoftAddSub)
+#define CHECK_VU_SOFT_MULDIV(vunum) (((vunum) == 0) ? EmuConfig.Cpu.Recompiler.vu0SoftMulDiv : EmuConfig.Cpu.Recompiler.vu1SoftMulDiv)
+#define CHECK_VU_SOFT_SQRT(vunum) (((vunum) == 0) ? EmuConfig.Cpu.Recompiler.vu0SoftSqrt : EmuConfig.Cpu.Recompiler.vu1SoftSqrt)
+
 #define CHECK_FPU_OVERFLOW (EmuConfig.Cpu.Recompiler.fpuOverflow)
 #define CHECK_FPU_EXTRA_OVERFLOW (EmuConfig.Cpu.Recompiler.fpuExtraOverflow) // If enabled, Operands are checked for infinities before being used in the FPU recs
 #define CHECK_FPU_EXTRA_FLAGS 1 // Always enabled now // Sets D/I flags on FPU instructions
 #define CHECK_FPU_FULL (EmuConfig.Cpu.Recompiler.fpuFullMode)
+
+#define CHECK_FPU_SOFT_ADDSUB (EmuConfig.Cpu.Recompiler.fpuSoftAddSub)
+#define CHECK_FPU_SOFT_MULDIV (EmuConfig.Cpu.Recompiler.fpuSoftMulDiv)
+#define CHECK_FPU_SOFT_SQRT (EmuConfig.Cpu.Recompiler.fpuSoftSqrt)
 
 //------------ EE Recompiler defines - Comment to disable a recompiler ---------------
 

@@ -281,6 +281,7 @@
     <ClCompile Include="PINE.cpp" />
     <ClCompile Include="FW.cpp" />
     <ClCompile Include="PerformanceMetrics.cpp" />
+    <ClCompile Include="PS2Float.cpp" />
     <ClCompile Include="Recording\InputRecording.cpp" />
     <ClCompile Include="Recording\InputRecordingControls.cpp" />
     <ClCompile Include="Recording\InputRecordingFile.cpp" />
@@ -726,6 +727,7 @@
     <ClInclude Include="PINE.h" />
     <ClInclude Include="FW.h" />
     <ClInclude Include="PerformanceMetrics.h" />
+    <ClInclude Include="PS2Float.h" />
     <ClInclude Include="Recording\InputRecording.h" />
     <ClInclude Include="Recording\InputRecordingControls.h" />
     <ClInclude Include="Recording\InputRecordingFile.h" />
