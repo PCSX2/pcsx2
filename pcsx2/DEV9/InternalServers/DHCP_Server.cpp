@@ -137,6 +137,38 @@ namespace InternalServers
 
 		if (gateways.size() > 0)
 			gateway = gateways[0];
+		/*
+		 * Some VPN adapters will present a subnet mask of 255.255.255.255 and omit setting a gateway.
+		 * This is used for point-point links where the destination device handles routing out of the network.
+		 * PS2 software, howver, expects a valid gateway for packets leaving the network.
+		 * A possible hackfix was to set the gateway to the PS2 IP, however, some software rejects this.
+		 * Thus the only solution is to expand the netmask and add a fake gateway using the other IP.
+		 * This is a mostly PCAP exclusive issue, I've only seen such networks with VPN devices,
+		 * which don't like being bridged, preventing TAP from being used with them.
+		 * Sockets (currently) uses its own internal network, and thus would be unaffected.
+		 */
+		else if (netmask == IP_Address{{{255, 255, 255, 255}}})
+		{
+			// Expand the netmask to allow for a gateway
+			netmask = {{{255, 255, 255, 252}}};
+
+			// Need to ensure our IP isn't the broadcast IP
+			while (true)
+			{
+				// Shift is busted
+				const IP_Address bc = ps2IP | ~netmask;
+				if (ps2IP == bc)
+					netmask.integer = htonl(ntohl(netmask.integer) << 1);
+				else
+					break;
+			}
+
+			// Pick a free IP for our gateway
+			gateway = (ps2IP & netmask);
+			gateway.integer = htonl(ntohl(gateway.integer) + 1);
+			while (gateway == ps2IP)
+				gateway.integer = htonl(ntohl(gateway.integer) + 1);
+		}
 	}
 
 #ifdef _WIN32
@@ -325,7 +357,10 @@ namespace InternalServers
 						retPay->options.push_back(new DHCPopDnsName("PCSX2"));
 						break;
 					case 28:
-						retPay->options.push_back(new DHCPopBCIP(broadcastIP));
+						if (broadcastIP.integer != 0)
+						{
+							retPay->options.push_back(new DHCPopBCIP(broadcastIP));
+						}
 						break;
 					case 50:
 						retPay->options.push_back(new DHCPopREQIP(ps2IP));

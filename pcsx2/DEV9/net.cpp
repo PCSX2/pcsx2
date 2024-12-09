@@ -17,6 +17,7 @@
 #include "sockets.h"
 
 #include "PacketReader/EthernetFrame.h"
+#include "PacketReader/ARP/ARP_Packet.h"
 #include "PacketReader/IP/IP_Packet.h"
 #include "PacketReader/IP/UDP/UDP_Packet.h"
 
@@ -160,6 +161,7 @@ void TermNet()
 }
 
 using namespace PacketReader;
+using namespace PacketReader::ARP;
 using namespace PacketReader::IP;
 using namespace PacketReader::IP::UDP;
 
@@ -233,6 +235,13 @@ void NetAdapter::InspectSend(NetPacket* pkt)
 				}
 			}
 		}
+		if (frame.protocol == static_cast<u16>(EtherType::ARP))
+		{
+			Console.WriteLn("DEV9: ARP: Packet Sent");
+			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
+			ARP_Packet arppkt(payload->data, payload->GetLength());
+			arpLogger.InspectSend(&arppkt);
+		}
 	}
 }
 void NetAdapter::InspectRecv(NetPacket* pkt)
@@ -264,6 +273,13 @@ void NetAdapter::InspectRecv(NetPacket* pkt)
 					dhcpLogger.InspectRecv(&udppkt);
 				}
 			}
+		}
+		if (frame.protocol == static_cast<u16>(EtherType::ARP))
+		{
+			Console.WriteLn("DEV9: ARP: Packet Received");
+			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
+			ARP_Packet arppkt(payload->data, payload->GetLength());
+			arpLogger.InspectRecv(&arppkt);
 		}
 	}
 }
