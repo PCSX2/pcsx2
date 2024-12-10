@@ -163,9 +163,6 @@ namespace Patch
 	static void writeCheat();
 	static void handle_extended_t(const PatchCommand* p);
 
-	// Name of patches which will be auto-enabled based on global options.
-	static constexpr std::string_view WS_PATCH_NAME = "Widescreen 16:9";
-	static constexpr std::string_view NI_PATCH_NAME = "No-Interlacing";
 	static constexpr std::string_view PATCHES_ZIP_NAME = "patches.zip";
 
 	const char* PATCHES_CONFIG_SECTION = "Patches";
@@ -588,24 +585,6 @@ void Patch::ReloadEnabledLists()
 		s_enabled_cheats = {};
 
 	s_enabled_patches = Host::GetStringListSetting(PATCHES_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY);
-
-	// Name based matching for widescreen/NI settings.
-	if (EmuConfig.EnableWideScreenPatches)
-	{
-		if (std::none_of(s_enabled_patches.begin(), s_enabled_patches.end(),
-				[](const std::string& it) { return (it == WS_PATCH_NAME); }))
-		{
-			s_enabled_patches.emplace_back(WS_PATCH_NAME);
-		}
-	}
-	if (EmuConfig.EnableNoInterlacingPatches)
-	{
-		if (std::none_of(s_enabled_patches.begin(), s_enabled_patches.end(),
-				[](const std::string& it) { return (it == NI_PATCH_NAME); }))
-		{
-			s_enabled_patches.emplace_back(NI_PATCH_NAME);
-		}
-	}
 }
 
 u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable_list)
