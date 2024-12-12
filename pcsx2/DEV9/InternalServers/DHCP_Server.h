@@ -24,8 +24,8 @@ namespace InternalServers
 	{
 	public:
 		PacketReader::IP::IP_Address ps2IP;
-		PacketReader::IP::IP_Address gateway;
-		PacketReader::IP::IP_Address broadcastIP;
+		PacketReader::IP::IP_Address gateway{};
+		PacketReader::IP::IP_Address broadcastIP{};
 
 	private:
 		std::function<void()> callback;
