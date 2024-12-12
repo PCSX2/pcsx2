@@ -4553,7 +4553,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			// Disable dithering on blend mix if needed.
 			if (m_conf.ps.dither)
 			{
-				const bool can_dither = (m_conf.ps.blend_a == 0 && m_conf.ps.blend_b == 1 && alpha_eq_less_one);
+				// TODO: Either exclude BMIX1_ALPHA_HIGH_ONE case or allow alpha > 1.0 on dither adjust, case is currently disabled.
+				const bool can_dither = (m_conf.ps.blend_a == 0 && m_conf.ps.blend_b == 1) || (m_conf.ps.blend_a == 1 && m_conf.ps.blend_b == 0);
 				m_conf.ps.dither = can_dither;
 				m_conf.ps.dither_adjust = can_dither;
 			}
