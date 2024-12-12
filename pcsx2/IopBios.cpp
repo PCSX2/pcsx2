@@ -907,8 +907,12 @@ namespace R3000A
 			{
 				auto buf = std::make_unique<char[]>(count);
 
-				for (u32 i = 0; i < count; i++)
-					buf[i] = iopMemRead8(data + i);
+				[[unlikely]]
+				if (!iopMemSafeReadBytes(data, buf.get(), count))
+				{
+					for (u32 i = 0; i < count; i++)
+						buf[i] = iopMemRead8(data + i);
+				}
 
 				v0 = file->write(buf.get(), count);
 
