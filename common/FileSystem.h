@@ -178,6 +178,10 @@ namespace FileSystem
 	/// Does nothing and returns false on non-Windows platforms.
 	bool SetPathCompression(const char* path, bool enable);
 
+	// Creates a symbolic link. Note that on Windows this requires elevated
+	// privileges so this is mostly useful for testing purposes.
+	bool CreateSymLink(const char* link, const char* target);
+
 	/// Checks if a file or directory is a symbolic link.
 	bool IsSymbolicLink(const char* path);
 
