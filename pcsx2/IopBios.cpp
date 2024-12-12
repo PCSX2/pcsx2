@@ -852,8 +852,16 @@ namespace R3000A
 
 				v0 = file->read(buf.get(), count);
 
-				for (s32 i = 0; i < (s32)v0; i++)
-					iopMemWrite8(data + i, buf[i]);
+				[[likely]]
+				if (v0 >= 0 && iopMemSafeWriteBytes(data, buf.get(), v0))
+				{
+					psxCpu->Clear(data, (v0 + 3) / 4);
+				}
+				else
+				{
+					for (s32 i = 0; i < static_cast<s32>(v0); i++)
+						iopMemWrite8(data + i, buf[i]);
+				}
 
 				pc = ra;
 				return 1;
