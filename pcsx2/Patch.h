@@ -4,18 +4,16 @@
 #pragma once
 
 // Note about terminology:
-// "patch" in pcsx2 terminology is a single pnach style patch line, e.g. patch=1,EE,001110e0,word,00000000
+// "Patch" in PCSX2 terminology refers to a single pnach style patch line, e.g. `patch=1,EE,001110e0,word,00000000`
 // Such patches can appear in several places:
-// - At <CRC>.pnach files where each file could have several such patches:
-//   - At the "cheats" folder
-//     - UI name: "Cheats", controlled via system -> enable cheats
-//   - At the "cheats_ws" folder or inside "cheats_ws.zip" (the zip also called "widescreen cheats DB")
-//     - the latter is searched if the former is not found for a CRC
-//     - UI name: "Widescreen hacks/patches", controlled via system -> enable widescreen patches
-// - At GameIndex.yaml inside a [patches] section
-//   - UI name: "Patches", controlled via system -> enable automatic game fixes
-//   - note that automatic game fixes also controls automatic config changes from GameIndex.dbf (UI name: "fixes")
-//
+//  - At the "patches" folder or on the "patches.zip file inside the 'resources' folder
+//    - UI name: "Patch", Controlled via Per-Game Settings -> Patches
+//  - At the "cheats" folder
+//    - UI name: "Cheats", Controlled via Per-Game Settings -> Cheats -> Enable Cheat
+//  - At GameIndex.yaml inside a [patches] section
+//    - UI name: "Enable Compatibility Patches", controlled via Advanced section -> Enable compatability settings
+// Note: The file name has to be exactly "<Serial>_<CRC>.pnach" (For example "SLPS-25399_CD62245A.pnach")
+// Note #2: the old sytle of cheats are also supported but arent supported by the UI
 
 #include "Config.h"
 
