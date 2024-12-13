@@ -18,6 +18,7 @@ public:
 public slots:
 	void onVMStateChanged();
 	void onRunPause();
+	void onReset();
 	void onStepInto();
 	void onStepOver();
 	void onStepOut();
@@ -30,6 +31,7 @@ protected:
 private:
 	Ui::DebuggerWindow m_ui;
 	QAction* m_actionRunPause;
+	QAction* m_actionReset;
 	QAction* m_actionStepInto;
 	QAction* m_actionStepOver;
 	QAction* m_actionStepOut;
