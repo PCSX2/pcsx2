@@ -1230,6 +1230,14 @@ size_t FileSystem::ReadFileWithProgress(std::FILE* fp, void* dst, size_t length,
 {
 	progress->SetProgressRange(100);
 
+	return FileSystem::ReadFileWithPartialProgress(fp, dst, length, progress, 0, 100, error, chunk_size);
+}
+
+size_t FileSystem::ReadFileWithPartialProgress(std::FILE* fp, void* dst, size_t length,
+	ProgressCallback* progress, int startPercent, int endPercent, Error* error, size_t chunk_size)
+{
+	const int deltaPercent = endPercent - startPercent;
+
 	size_t done = 0;
 	while (done < length)
 	{
@@ -1243,7 +1251,7 @@ size_t FileSystem::ReadFileWithProgress(std::FILE* fp, void* dst, size_t length,
 			break;
 		}
 
-		progress->SetProgressValue((done * 100) / length);
+		progress->SetProgressValue(startPercent + (done * deltaPercent) / length);
 		done += read_size;
 	}
 

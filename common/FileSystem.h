@@ -144,6 +144,8 @@ namespace FileSystem
 	bool WriteStringToFile(const char* filename, const std::string_view sv);
 	size_t ReadFileWithProgress(std::FILE* fp, void* dst, size_t length, ProgressCallback* progress,
 		Error* error = nullptr, size_t chunk_size = 16 * 1024 * 1024);
+	size_t ReadFileWithPartialProgress(std::FILE* fp, void* dst, size_t length, ProgressCallback* progress,
+		int startPercent, int endPercent, Error* error = nullptr, size_t chunk_size = 16 * 1024 * 1024);
 
 	/// creates a directory in the local filesystem
 	/// if the directory already exists, the return value will be true.
