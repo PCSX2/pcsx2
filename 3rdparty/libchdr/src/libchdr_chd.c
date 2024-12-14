@@ -1953,56 +1953,28 @@ cleanup:
 
 CHD_EXPORT chd_error chd_precache(chd_file* chd)
 {
-  return chd_precache_progress(chd, NULL, NULL);
-}
+	INT64 count;
+	UINT64 size;
 
-CHD_EXPORT chd_error chd_precache_progress(chd_file* chd, bool(*progress)(size_t pos, size_t total, void* param), void* param)
-{
-#define PRECACHE_CHUNK_SIZE 16 * 1024 * 1024
-
-  if (chd->file_cache == NULL)
-  {
-    const UINT64 size = core_fsize(chd->file);
-    if ((INT64)size <= 0)
-      return CHDERR_INVALID_DATA;
-
-		if (size > SIZE_MAX)
+	if (chd->file_cache == NULL)
+	{
+		size = core_fsize(chd->file);
+		if ((INT64)size <= 0)
+			return CHDERR_INVALID_DATA;
+		chd->file_cache = malloc(size);
+		if (chd->file_cache == NULL)
 			return CHDERR_OUT_OF_MEMORY;
-
-    chd->file_cache = malloc(size);
-    if (chd->file_cache == NULL)
-      return CHDERR_OUT_OF_MEMORY;
-    core_fseek(chd->file, 0, SEEK_SET);
-
-		UINT64 done = 0;
-		while (done < size)
+		core_fseek(chd->file, 0, SEEK_SET);
+		count = core_fread(chd->file, chd->file_cache, size);
+		if (count != size)
 		{
-			UINT64 req_count = size - done;
-			if (req_count > PRECACHE_CHUNK_SIZE)
-				req_count = PRECACHE_CHUNK_SIZE;
-
-			size_t count = core_fread(chd->file, chd->file_cache + (size_t)done, (size_t)req_count);
-			if (count != (size_t)req_count)
-			{
-				free(chd->file_cache);
-				chd->file_cache = NULL;
-				return CHDERR_READ_ERROR;
-			}
-
-			done += req_count;
-			if (progress != NULL)
-			{
-				if (!progress(done, size, param))
-				{
-					free(chd->file_cache);
-					chd->file_cache = NULL;
-					return CHDERR_CANCELLED;
-				}
-			}
+			free(chd->file_cache);
+			chd->file_cache = NULL;
+			return CHDERR_READ_ERROR;
 		}
-  }
+	}
 
-  return CHDERR_NONE;
+	return CHDERR_NONE;
 }
 
 /*-------------------------------------------------
@@ -2167,14 +2139,6 @@ CHD_EXPORT void chd_close(chd_file *chd)
 CHD_EXPORT core_file *chd_core_file(chd_file *chd)
 {
 	return chd->file;
-}
-
-CHD_EXPORT UINT64 chd_get_compressed_size(chd_file *chd)
-{
-	UINT64 size = chd->file->fsize(chd->file);
-	if (chd->parent)
-		size += chd_get_compressed_size(chd->parent);
-	return size;
 }
 
 /*-------------------------------------------------

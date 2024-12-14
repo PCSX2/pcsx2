@@ -290,8 +290,7 @@ enum _chd_error
 	CHDERR_INVALID_STATE,
 	CHDERR_OPERATION_PENDING,
 	CHDERR_NO_ASYNC_OPERATION,
-	CHDERR_UNSUPPORTED_FORMAT,
-	CHDERR_CANCELLED,
+	CHDERR_UNSUPPORTED_FORMAT
 };
 typedef enum _chd_error chd_error;
 
@@ -383,16 +382,12 @@ CHD_EXPORT chd_error chd_open(const char *filename, int mode, chd_file *parent, 
 
 /* precache underlying file */
 CHD_EXPORT chd_error chd_precache(chd_file *chd);
-CHD_EXPORT chd_error chd_precache_progress(chd_file* chd, bool(*progress)(size_t pos, size_t total, void* param), void* param);
 
 /* close a CHD file */
 CHD_EXPORT void chd_close(chd_file *chd);
 
 /* return the associated core_file */
 CHD_EXPORT core_file *chd_core_file(chd_file *chd);
-
-/* return the overall size of a CHD, and any of its parents */
-CHD_EXPORT UINT64 chd_get_compressed_size(chd_file* chd);
 
 /* return an error string for the given CHD error */
 CHD_EXPORT const char *chd_error_string(chd_error err);
