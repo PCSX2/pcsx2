@@ -21,6 +21,7 @@ static std::vector<std::pair<std::string, chd_header>> s_chd_hash_cache; // <fil
 static std::recursive_mutex s_chd_hash_cache_mutex;
 
 // Provides an implementation of core_file which allows us to control if the underlying FILE handle is freed.
+// Additionally, this class allows greater control and feedback while precaching CHD files.
 // The lifetime of ChdCoreFileWrapper will be equal to that of the relevant chd_file,
 // ChdCoreFileWrapper will also get destroyed if chd_open_core_file fails.
 class ChdCoreFileWrapper
@@ -31,10 +32,15 @@ private:
 	core_file m_core;
 	std::FILE* m_file;
 	bool m_free_file = false;
+	ChdCoreFileWrapper* m_parent = nullptr;
+	std::unique_ptr<u8[]> m_file_cache;
+	s64 m_file_cache_size;
+	s64 m_file_cache_pos;
 
 public:
-	ChdCoreFileWrapper(std::FILE* file)
+	ChdCoreFileWrapper(std::FILE* file, ChdCoreFileWrapper* parent)
 		: m_file{file}
+		, m_parent{parent}
 	{
 		m_core.argp = this;
 		m_core.fsize = FSize;
@@ -45,7 +51,7 @@ public:
 
 	~ChdCoreFileWrapper()
 	{
-		if (m_free_file)
+		if (m_free_file && m_file)
 			std::fclose(m_file);
 	}
 
@@ -64,15 +70,100 @@ public:
 		m_free_file = isOwner;
 	}
 
+	s64 GetPrecacheSize()
+	{
+		const s64 size = static_cast<size_t>(FileSystem::FSize64(m_file));
+		if (m_parent != nullptr)
+			return m_parent->GetPrecacheSize() + size;
+		else
+			return size;
+	}
+
+	bool Precache(ProgressCallback* progress, Error* error)
+	{
+		progress->SetProgressRange(100);
+
+		const s64 size = GetPrecacheSize();
+		return PrecacheInternal(progress, error, 0, size);
+	}
+
 private:
+	bool PrecacheInternal(ProgressCallback* progress, Error* error, s64 startSize, s64 finalSize)
+	{
+		m_file_cache_size = FileSystem::FSize64(m_file);
+		if (m_file_cache_size <= 0)
+		{
+			Error::SetStringView(error, "Failed to determine file size.");
+			return false;
+		}
+
+		// Copy the current file position.
+		m_file_cache_pos = FileSystem::FTell64(m_file);
+		if (m_file_cache_pos <= 0)
+		{
+			Error::SetStringView(error, "Failed to determine file position.");
+			return false;
+		}
+
+		m_file_cache = std::make_unique_for_overwrite<u8[]>(m_file_cache_size);
+		if (FileSystem::FSeek64(m_file, 0, SEEK_SET) != 0 ||
+			FileSystem::ReadFileWithPartialProgress(
+				m_file, m_file_cache.get(), m_file_cache_size, progress,
+				(startSize * 100) / finalSize,
+				((startSize + m_file_cache_size) * 100) / finalSize,
+				error) != static_cast<size_t>(m_file_cache_size))
+		{
+			m_file_cache.reset();
+			// Precache failed, continue using file
+			// Restore file position incase it's used for subsequent reads
+			FileSystem::FSeek64(m_file, m_file_cache_pos, SEEK_SET);
+			Error::SetStringView(error, "Failed to read part of the file.");
+			return false;
+		}
+
+		startSize += m_file_cache_size;
+
+		if (m_parent)
+		{
+			if (!m_parent->PrecacheInternal(progress, error, startSize, finalSize))
+			{
+				// Precache failed, continue using file
+				// Restore file position incase it's used for subsequent reads
+				FileSystem::FSeek64(m_file, m_file_cache_pos, SEEK_SET);
+				m_file_cache.reset();
+				return false;
+			}
+		}
+
+		if (m_free_file)
+			std::fclose(m_file);
+		m_file = nullptr;
+
+		return true;
+	}
+
 	static u64 FSize(core_file* file)
 	{
-		return static_cast<u64>(FileSystem::FSize64(FromCoreFile(file)->m_file));
+		ChdCoreFileWrapper* fileWrapper = FromCoreFile(file);
+		if (fileWrapper->m_file_cache)
+			return fileWrapper->m_file_cache_size;
+		else
+			return static_cast<u64>(FileSystem::FSize64(fileWrapper->m_file));
 	}
 
 	static size_t FRead(void* buffer, size_t elmSize, size_t elmCount, core_file* file)
 	{
-		return std::fread(buffer, elmSize, elmCount, FromCoreFile(file)->m_file);
+		ChdCoreFileWrapper* fileWrapper = FromCoreFile(file);
+		if (fileWrapper->m_file_cache)
+		{
+			// While currently libchdr only uses an elmCount of 1, we can't guarantee that will always be the case.
+			elmCount = std::min<size_t>(elmCount, std::max<s64>(fileWrapper->m_file_cache_size - fileWrapper->m_file_cache_pos, 0) / elmSize);
+			const size_t size = elmSize * elmCount;
+			std::memcpy(buffer, &fileWrapper->m_file_cache[fileWrapper->m_file_cache_pos], size);
+			return elmCount;
+		}
+		else
+			return std::fread(buffer, elmSize, elmCount, fileWrapper->m_file);
 	}
 
 	static int FClose(core_file* file)
@@ -84,7 +175,28 @@ private:
 
 	static int FSeek(core_file* file, int64_t offset, int whence)
 	{
-		return FileSystem::FSeek64(FromCoreFile(file)->m_file, offset, whence);
+		ChdCoreFileWrapper* fileWrapper = FromCoreFile(file);
+		if (fileWrapper->m_file_cache)
+		{
+			switch (whence)
+			{
+				case SEEK_SET:
+					fileWrapper->m_file_cache_pos = offset;
+					break;
+				case SEEK_CUR:
+					fileWrapper->m_file_cache_pos += offset;
+					break;
+				case SEEK_END:
+					fileWrapper->m_file_cache_pos = fileWrapper->m_file_cache_size + offset;
+					break;
+				default:
+					return -1;
+			}
+
+			return 0;
+		}
+		else
+			return FileSystem::FSeek64(fileWrapper->m_file, offset, whence);
 	}
 };
 
@@ -122,7 +234,7 @@ static bool IsHeaderParentCHD(const chd_header& header, const chd_header& parent
 static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level)
 {
 	chd_file* chd;
-	ChdCoreFileWrapper* core_wrapper = new ChdCoreFileWrapper(fp.get());
+	ChdCoreFileWrapper* core_wrapper = new ChdCoreFileWrapper(fp.get(), nullptr);
 	// libchdr will take ownership of core_wrapper, and will close/free it on failure.
 	chd_error err = chd_open_core_file(core_wrapper->GetCoreFile(), CHD_OPEN_READ, nullptr, &chd);
 	if (err == CHDERR_NONE)
@@ -236,7 +348,7 @@ static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePt
 	}
 
 	// Our last core file wrapper got freed, so make a new one.
-	core_wrapper = new ChdCoreFileWrapper(fp.get());
+	core_wrapper = new ChdCoreFileWrapper(fp.get(), ChdCoreFileWrapper::FromCoreFile(chd_core_file(parent_chd)));
 	// Now try re-opening with the parent.
 	err = chd_open_core_file(core_wrapper->GetCoreFile(), CHD_OPEN_READ, parent_chd, &chd);
 	if (err != CHDERR_NONE)
@@ -290,28 +402,11 @@ bool ChdFileReader::Open2(std::string filename, Error* error)
 
 bool ChdFileReader::Precache2(ProgressCallback* progress, Error* error)
 {
-	if (!CheckAvailableMemoryForPrecaching(chd_get_compressed_size(ChdFile), error))
+	ChdCoreFileWrapper* fileWrapper = ChdCoreFileWrapper::FromCoreFile(chd_core_file(ChdFile));
+	if (!CheckAvailableMemoryForPrecaching(fileWrapper->GetPrecacheSize(), error))
 		return false;
 
-	progress->SetProgressRange(100);
-
-	const auto callback = [](size_t pos, size_t total, void* param) -> bool {
-		ProgressCallback* progress = static_cast<ProgressCallback*>(param);
-		const u32 percent = static_cast<u32>((pos * 100) / total);
-		progress->SetProgressValue(std::min<u32>(percent, 100));
-		return !progress->IsCancelled();
-	};
-
-	const chd_error cerror = chd_precache_progress(ChdFile, callback, progress);
-	if (cerror != CHDERR_NONE)
-	{
-		if (cerror != CHDERR_CANCELLED)
-			Error::SetStringView(error, "Failed to read part of the file.");
-
-		return false;
-	}
-
-	return true;
+	return fileWrapper->Precache(progress, error);
 }
 
 ThreadedFileReader::Chunk ChdFileReader::ChunkForOffset(u64 offset)
