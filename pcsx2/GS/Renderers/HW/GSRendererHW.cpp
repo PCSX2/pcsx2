@@ -1012,7 +1012,8 @@ bool GSRendererHW::NextDrawMatchesShuffle() const
 {
 	// Make sure nothing unexpected has changed.
 	// Twinsanity seems to screw with ZBUF here despite it being irrelevant.
-	const GSDrawingContext& next_ctx = m_env.CTXT[m_backed_up_ctx];
+	const int get_next_ctx = (m_state_flush_reason == CONTEXTCHANGE) ? m_env.PRIM.CTXT : m_backed_up_ctx;
+	const GSDrawingContext& next_ctx = m_env.CTXT[get_next_ctx];
 	if (((m_context->TEX0.U64 ^ next_ctx.TEX0.U64) & (~0x3FFF)) != 0 ||
 		m_context->TEX1.U64 != next_ctx.TEX1.U64 ||
 		m_context->CLAMP.U64 != next_ctx.CLAMP.U64 ||
