@@ -95,6 +95,30 @@ ChdFileReader::~ChdFileReader()
 	pxAssert(!ChdFile);
 }
 
+static bool IsHeaderParentCHD(const chd_header& header, const chd_header& parent_header)
+{
+	static const u8 nullmd5[CHD_MD5_BYTES]{};
+	static const u8 nullsha1[CHD_SHA1_BYTES]{};
+
+	// Check MD5 if it isn't empty.
+	if (std::memcmp(nullmd5, header.parentmd5, CHD_MD5_BYTES) != 0 &&
+		std::memcmp(nullmd5, parent_header.md5, CHD_MD5_BYTES) != 0 &&
+		std::memcmp(parent_header.md5, header.parentmd5, CHD_MD5_BYTES) != 0)
+	{
+		return false;
+	}
+
+	// Check SHA1 if it isn't empty.
+	if (std::memcmp(nullsha1, header.parentsha1, CHD_SHA1_BYTES) != 0 &&
+		std::memcmp(nullsha1, parent_header.sha1, CHD_SHA1_BYTES) != 0 &&
+		std::memcmp(parent_header.sha1, header.parentsha1, CHD_SHA1_BYTES) != 0)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level)
 {
 	chd_file* chd;
@@ -144,14 +168,14 @@ static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePt
 		if (!StringUtil::compareNoCase(parent_dir, Path::GetDirectory(it->first)))
 			continue;
 
-		if (!chd_is_matching_parent(&header, &it->second))
+		if (!IsHeaderParentCHD(header, it->second))
 			continue;
 
 		// Re-check the header, it might have changed since we last opened.
 		chd_header parent_header;
 		auto parent_fp = FileSystem::OpenManagedSharedCFile(it->first.c_str(), "rb", FileSystem::FileShareMode::DenyWrite);
 		if (parent_fp && chd_read_header_file(parent_fp.get(), &parent_header) == CHDERR_NONE &&
-			chd_is_matching_parent(&header, &parent_header))
+			IsHeaderParentCHD(header, parent_header))
 		{
 			// Need to take a copy of the string, because the parent might add to the list and invalidate the iterator.
 			const std::string filename_to_open = it->first;
@@ -192,7 +216,7 @@ static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePt
 			else
 				s_chd_hash_cache.emplace_back(fd.FileName, parent_header);
 
-			if (!chd_is_matching_parent(&header, &parent_header))
+			if (!IsHeaderParentCHD(header, parent_header))
 				continue;
 
 			// Match! Open this one.
