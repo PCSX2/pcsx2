@@ -407,7 +407,6 @@ CHD_EXPORT const chd_header *chd_get_header(chd_file *chd);
 CHD_EXPORT chd_error chd_read_header_core_file(core_file *file, chd_header *header);
 CHD_EXPORT chd_error chd_read_header_file(FILE *file, chd_header *header);
 CHD_EXPORT chd_error chd_read_header(const char *filename, chd_header *header);
-CHD_EXPORT bool chd_is_matching_parent(const chd_header* header, const chd_header* parent_header);
 
 
 

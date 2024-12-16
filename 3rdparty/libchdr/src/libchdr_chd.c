@@ -2281,27 +2281,6 @@ CHD_EXPORT chd_error chd_read_header(const char *filename, chd_header *header)
 	return err;
 }
 
-CHD_EXPORT bool chd_is_matching_parent(const chd_header* header, const chd_header* parent_header)
-{
-  /* check MD5 if it isn't empty */
-  if (memcmp(nullmd5, header->parentmd5, sizeof(header->parentmd5)) != 0 &&
-      memcmp(nullmd5, parent_header->md5, sizeof(parent_header->md5)) != 0 &&
-      memcmp(parent_header->md5, header->parentmd5, sizeof(header->parentmd5)) != 0)
-	{
-		return false;
-	}
-
-  /* check SHA1 if it isn't empty */
-  if (memcmp(nullsha1, header->parentsha1, sizeof(header->parentsha1)) != 0 &&
-      memcmp(nullsha1, parent_header->sha1, sizeof(parent_header->sha1)) != 0 &&
-      memcmp(parent_header->sha1, header->parentsha1, sizeof(header->parentsha1)) != 0)
-	{
-		return false;
-	}
-
-	return true;
-}
-
 /***************************************************************************
     CORE DATA READ/WRITE
 ***************************************************************************/
