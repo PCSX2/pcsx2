@@ -118,10 +118,19 @@ namespace AutoEject
 	extern void ClearAll();
 } // namespace AutoEject
 
+// ~1 hour of memory card inactivity.
+constexpr u32 NUM_FRAMES_BEFORE_SAVESTATE_DEPENDENCY_WARNING = 60 * 60 * 60;
+
+// Set to the current frame count when there is memory card activity.
+// Used to detect the last frame when memory card activity was detected,
+// and if it exceeds a certain threshold, warns on savestate save/load.
+extern uint32_t sioLastFrameMcdBusy;
+
 namespace MemcardBusy
 {
 	extern void Decrement();
 	extern void SetBusy();
 	extern bool IsBusy();
 	extern void ClearBusy();
+	extern void CheckSaveStateDependency();
 }

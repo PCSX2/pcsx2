@@ -1818,6 +1818,7 @@ bool VMManager::DoLoadState(const char* filename)
 		MTGS::PresentCurrentFrame();
 	}
 
+	MemcardBusy::CheckSaveStateDependency();
 	return true;
 }
 
@@ -1866,6 +1867,7 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 	}
 
 	Host::OnSaveStateSaved(filename);
+	MemcardBusy::CheckSaveStateDependency();
 	return true;
 }
 
