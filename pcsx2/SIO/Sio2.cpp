@@ -541,5 +541,6 @@ bool Sio2::DoState(StateWrapper& sw)
 		}
 	}
 
+	sw.Do(&sioLastFrameMcdBusy);
 	return sw.IsGood();
 }
