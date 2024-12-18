@@ -48,7 +48,6 @@ extern "C" {
 
 #include <libchdr/coretypes.h>
 #include <libchdr/chdconfig.h>
-#include <stdbool.h>
 
 /***************************************************************************
 
@@ -391,6 +390,7 @@ CHD_EXPORT core_file *chd_core_file(chd_file *chd);
 
 /* return an error string for the given CHD error */
 CHD_EXPORT const char *chd_error_string(chd_error err);
+
 
 
 /* ----- CHD header management ----- */

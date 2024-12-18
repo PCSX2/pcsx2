@@ -42,7 +42,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <limits.h>
 
 #include <libchdr/chd.h>
 #include <libchdr/cdrom.h>
@@ -1951,7 +1950,7 @@ cleanup:
     memory
 -------------------------------------------------*/
 
-CHD_EXPORT chd_error chd_precache(chd_file* chd)
+CHD_EXPORT chd_error chd_precache(chd_file *chd)
 {
 	INT64 count;
 	UINT64 size;
