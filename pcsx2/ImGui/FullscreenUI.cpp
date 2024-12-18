@@ -7050,10 +7050,6 @@ TRANSLATE_NOOP("FullscreenUI", "Increases or decreases the virtual picture size 
 TRANSLATE_NOOP("FullscreenUI", "Crop");
 TRANSLATE_NOOP("FullscreenUI", "Crops the image, while respecting aspect ratio.");
 TRANSLATE_NOOP("FullscreenUI", "%dpx");
-TRANSLATE_NOOP("FullscreenUI", "Enable Widescreen Patches");
-TRANSLATE_NOOP("FullscreenUI", "Enables loading widescreen patches from pnach files.");
-TRANSLATE_NOOP("FullscreenUI", "Enable No-Interlacing Patches");
-TRANSLATE_NOOP("FullscreenUI", "Enables loading no-interlacing patches from pnach files.");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear Upscaling");
 TRANSLATE_NOOP("FullscreenUI", "Smooths out the image when upscaling the console to the screen.");
 TRANSLATE_NOOP("FullscreenUI", "Integer Upscaling");
