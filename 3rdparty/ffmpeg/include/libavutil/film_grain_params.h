@@ -136,20 +136,42 @@ typedef struct AVFilmGrainH274Params {
      */
     int model_id;
 
-    /**
-     * Specifies the bit depth used for the luma component.
-     */
+#if FF_API_H274_FILM_GRAIN_VCS
+  /**
+   * TODO: On this ABI bump, please also re-order the fields in
+   * AVFilmGrainParams (see below)
+   */
+
+  /**
+   * Specifies the bit depth used for the luma component.
+   *
+   * @deprecated use AVFilmGrainParams.bit_depth_luma.
+   */
+    attribute_deprecated
     int bit_depth_luma;
 
     /**
      * Specifies the bit depth used for the chroma components.
+     *
+     * @deprecated use AVFilmGrainParams.bit_depth_chroma.
      */
+    attribute_deprecated
     int bit_depth_chroma;
 
+    /**
+     * Specifies the video signal characteristics.
+     *
+     * @deprecated use AVFilmGrainParams.color_{range,primaries,trc,space}.
+     */
+    attribute_deprecated
     enum AVColorRange                  color_range;
+    attribute_deprecated
     enum AVColorPrimaries              color_primaries;
+    attribute_deprecated
     enum AVColorTransferCharacteristic color_trc;
+    attribute_deprecated
     enum AVColorSpace                  color_space;
+#endif
 
     /**
      * Specifies the blending mode used to blend the simulated film grain
@@ -231,11 +253,40 @@ typedef struct AVFilmGrainParams {
      * Additional fields may be added both here and in any structure included.
      * If a codec's film grain structure differs slightly over another
      * codec's, fields within may change meaning depending on the type.
+     *
+     * TODO: Move this to the end of the structure, at the next ABI bump.
      */
     union {
         AVFilmGrainAOMParams aom;
         AVFilmGrainH274Params h274;
     } codec;
+
+    /**
+     * Intended display resolution. May be 0 if the codec does not specify
+     * any restrictions.
+     */
+
+    int width, height;
+
+    /**
+     * Intended subsampling ratio, or 0 for luma-only streams.
+     */
+    int subsampling_x, subsampling_y;
+
+    /**
+     * Intended video signal characteristics.
+     */
+    enum AVColorRange                  color_range;
+    enum AVColorPrimaries              color_primaries;
+    enum AVColorTransferCharacteristic color_trc;
+    enum AVColorSpace                  color_space;
+
+    /**
+     * Intended bit depth, or 0 for unknown/unspecified.
+     */
+    int bit_depth_luma;
+    int bit_depth_chroma;
+
 } AVFilmGrainParams;
 
 /**
@@ -256,5 +307,16 @@ AVFilmGrainParams *av_film_grain_params_alloc(size_t *size);
  * @return The AVFilmGrainParams structure to be filled by caller.
  */
 AVFilmGrainParams *av_film_grain_params_create_side_data(AVFrame *frame);
+
+/**
+ * Select the most appropriate film grain parameters set for the frame,
+ * taking into account the frame's format, resolution and video signal
+ * characteristics.
+ *
+ * @note, for H.274, this may select a film grain parameter set with
+ * greater chroma resolution than the frame. Users should take care to
+ * correctly adjust the chroma grain frequency to the frame.
+ */
+const AVFilmGrainParams *av_film_grain_params_select(const AVFrame *frame);
 
 #endif /* AVUTIL_FILM_GRAIN_PARAMS_H */

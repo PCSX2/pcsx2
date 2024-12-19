@@ -33,10 +33,14 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <PreprocessorDefinitions>USE_WASAPI;USE_WINMM;OUTSIDE_SPEEX;FLOATING_POINT;RANDOM_PREFIX=speex;EXPORT=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_WASAPI;OUTSIDE_SPEEX;FLOATING_POINT;RANDOM_PREFIX=speex;EXPORT=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'!='ARM64'">USE_WINMM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(ProjectDir)subprojects;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
+    <Lib>
+      <AdditionalDependencies Condition="'$(Platform)'!='ARM64'">ksuser.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\cubeb\cubeb.h" />
@@ -49,7 +53,6 @@
     <ClInclude Include="subprojects\speex\stack_alloc.h" />
     <ClInclude Include="src\cubeb-internal.h" />
     <ClInclude Include="src\cubeb-speex-resampler.h" />
-    <ClInclude Include="src\cubeb_array_queue.h" />
     <ClInclude Include="src\cubeb_assert.h" />
     <ClInclude Include="src\cubeb_log.h" />
     <ClInclude Include="src\cubeb_mixer.h" />
@@ -70,9 +73,16 @@
     <ClCompile Include="src\cubeb_strings.c" />
     <ClCompile Include="src\cubeb_utils.cpp" />
     <ClCompile Include="src\cubeb_wasapi.cpp" />
-    <ClCompile Include="src\cubeb_winmm.c" />
+    <ClCompile Include="src\cubeb_winmm.c">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="subprojects\speex\resample.c" />
   </ItemGroup>
+  <ItemDefinitionGroup>
+    <Lib>
+      <AdditionalDependencies Condition="'$(Platform)'!='ARM64'">ksuser.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include <atomic>
 #include <chrono>
@@ -29,9 +17,11 @@
 
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/CrashHandler.h"
 #include "common/FileSystem.h"
 #include "common/MemorySettingsInterface.h"
 #include "common/Path.h"
+#include "common/ProgressCallback.h"
 #include "common/SettingsWrapper.h"
 #include "common/StringUtil.h"
 
@@ -42,11 +32,13 @@
 #include "pcsx2/GS.h"
 #include "pcsx2/GS/GSPerfMon.h"
 #include "pcsx2/GSDumpReplayer.h"
+#include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
+#include "pcsx2/ImGui/FullscreenUI.h"
+#include "pcsx2/ImGui/ImGuiFullscreen.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
-#include "pcsx2/LogSink.h"
 #include "pcsx2/MTGS.h"
 #include "pcsx2/SIO/Pad/Pad.h"
 #include "pcsx2/PerformanceMetrics.h"
@@ -80,12 +72,14 @@ static bool s_no_console = false;
 // Owned by the GS thread.
 static u32 s_dump_frame_number = 0;
 static u32 s_loop_number = s_loop_count;
+static double s_last_internal_draws = 0;
 static double s_last_draws = 0;
 static double s_last_render_passes = 0;
 static double s_last_barriers = 0;
 static double s_last_copies = 0;
 static double s_last_uploads = 0;
 static double s_last_readbacks = 0;
+static u64 s_total_internal_draws = 0;
 static u64 s_total_draws = 0;
 static u64 s_total_render_passes = 0;
 static u64 s_total_barriers = 0;
@@ -93,11 +87,21 @@ static u64 s_total_copies = 0;
 static u64 s_total_uploads = 0;
 static u64 s_total_readbacks = 0;
 static u32 s_total_frames = 0;
+static u32 s_total_drawn_frames = 0;
 
 bool GSRunner::InitializeConfig()
 {
-	if (!EmuFolders::InitializeCriticalFolders())
+	EmuFolders::SetAppRoot();
+	if (!EmuFolders::SetResourcesDirectory() || !EmuFolders::SetDataDirectory(nullptr))
 		return false;
+
+	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
+
+	const char* error;
+	if (!VMManager::PerformEarlyHardwareChecks(&error))
+		return false;
+
+	ImGuiManager::SetFontPathAndRange(Path::Combine(EmuFolders::Resources, "fonts" FS_OSPATH_SEPARATOR_STR "Roboto-Regular.ttf"), {});
 
 	// don't provide an ini path, or bother loading. we'll store everything in memory.
 	MemorySettingsInterface& si = s_settings_interface;
@@ -107,7 +111,7 @@ bool GSRunner::InitializeConfig()
 
 	// complete as quickly as possible
 	si.SetBoolValue("EmuCore/GS", "FrameLimitEnable", false);
-	si.SetIntValue("EmuCore/GS", "VsyncEnable", static_cast<int>(VsyncMode::Off));
+	si.SetIntValue("EmuCore/GS", "VsyncEnable", false);
 
 	// ensure all input sources are disabled, we're not using them
 	si.SetBoolValue("InputSources", "SDL", false);
@@ -119,9 +123,6 @@ bool GSRunner::InitializeConfig()
 	// none of the bindings are going to resolve to anything
 	Pad::ClearPortBindings(si, 0);
 	si.ClearSection("Hotkeys");
-
-	// make sure any gamesettings inis in your tree don't get loaded
-	si.SetBoolValue("EmuCore", "EnablePerGameSettings", false);
 
 	// force logging
 	si.SetBoolValue("Logging", "EnableSystemConsole", !s_no_console);
@@ -168,68 +169,35 @@ void Host::SetDefaultUISettings(SettingsInterface& si)
 	// nothing
 }
 
-std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
+std::unique_ptr<ProgressCallback> Host::CreateHostProgressCallback()
 {
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	std::optional<std::vector<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
-	if (!ret.has_value())
-		Console.Error("Failed to read resource file '%s'", filename);
-	return ret;
+	return ProgressCallback::CreateNullProgressCallback();
 }
 
-std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	std::optional<std::string> ret(FileSystem::ReadFileToString(path.c_str()));
-	if (!ret.has_value())
-		Console.Error("Failed to read resource file to string '%s'", filename);
-	return ret;
-}
-
-std::optional<std::time_t> Host::GetResourceFileTimestamp(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	FILESYSTEM_STAT_DATA sd;
-	if (!FileSystem::StatFile(filename, &sd))
-		return std::nullopt;
-
-	return sd.ModificationTime;
-}
-
-void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
+void Host::ReportErrorAsync(const std::string_view title, const std::string_view message)
 {
 	if (!title.empty() && !message.empty())
-	{
-		Console.Error(
-			"ReportErrorAsync: %.*s: %.*s", static_cast<int>(title.size()), title.data(), static_cast<int>(message.size()), message.data());
-	}
+		ERROR_LOG("ReportErrorAsync: {}: {}", title, message);
 	else if (!message.empty())
-	{
-		Console.Error("ReportErrorAsync: %.*s", static_cast<int>(message.size()), message.data());
-	}
+		ERROR_LOG("ReportErrorAsync: {}", message);
 }
 
-bool Host::ConfirmMessage(const std::string_view& title, const std::string_view& message)
+bool Host::ConfirmMessage(const std::string_view title, const std::string_view message)
 {
 	if (!title.empty() && !message.empty())
-	{
-		Console.Error(
-			"ConfirmMessage: %.*s: %.*s", static_cast<int>(title.size()), title.data(), static_cast<int>(message.size()), message.data());
-	}
+		ERROR_LOG("ConfirmMessage: {}: {}", title, message);
 	else if (!message.empty())
-	{
-		Console.Error("ConfirmMessage: %.*s", static_cast<int>(message.size()), message.data());
-	}
+		ERROR_LOG("ConfirmMessage: {}", message);
 
 	return true;
 }
 
-void Host::OpenURL(const std::string_view& url)
+void Host::OpenURL(const std::string_view url)
 {
 	// noop
 }
 
-bool Host::CopyTextToClipboard(const std::string_view& text)
+bool Host::CopyTextToClipboard(const std::string_view text)
 {
 	return false;
 }
@@ -249,11 +217,11 @@ std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
 	return GSRunner::GetPlatformWindowInfo();
 }
 
-void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
+void Host::OnInputDeviceConnected(const std::string_view identifier, const std::string_view device_name)
 {
 }
 
-void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
+void Host::OnInputDeviceDisconnected(const InputBindingKey key, const std::string_view identifier)
 {
 }
 
@@ -282,21 +250,33 @@ void Host::BeginPresentFrame()
 		GSQueueSnapshot(dump_path);
 	}
 
-	if (GSConfig.UseHardwareRenderer())
+	if (GSIsHardwareRenderer())
 	{
+		const u32 last_draws = s_total_internal_draws;
+		const u32 last_uploads = s_total_uploads;
+
 		static constexpr auto update_stat = [](GSPerfMon::counter_t counter, u64& dst, double& last) {
 			// perfmon resets every 30 frames to zero
 			const double val = g_perfmon.GetCounter(counter);
 			dst += static_cast<u64>((val < last) ? val : (val - last));
 			last = val;
 		};
+
+		update_stat(GSPerfMon::Draw, s_total_internal_draws, s_last_internal_draws);
 		update_stat(GSPerfMon::DrawCalls, s_total_draws, s_last_draws);
 		update_stat(GSPerfMon::RenderPasses, s_total_render_passes, s_last_render_passes);
 		update_stat(GSPerfMon::Barriers, s_total_barriers, s_last_barriers);
 		update_stat(GSPerfMon::TextureCopies, s_total_copies, s_last_copies);
 		update_stat(GSPerfMon::TextureUploads, s_total_uploads, s_last_uploads);
 		update_stat(GSPerfMon::Readbacks, s_total_readbacks, s_last_readbacks);
+
+		const bool idle_frame = s_total_frames && (last_draws == s_total_internal_draws && last_uploads == s_total_uploads);
+
+		if (!idle_frame)
+			s_total_drawn_frames++;
+
 		s_total_frames++;
+
 		std::atomic_thread_fence(std::memory_order_release);
 	}
 }
@@ -334,15 +314,15 @@ void Host::OnPerformanceMetricsUpdated()
 {
 }
 
-void Host::OnSaveStateLoading(const std::string_view& filename)
+void Host::OnSaveStateLoading(const std::string_view filename)
 {
 }
 
-void Host::OnSaveStateLoaded(const std::string_view& filename, bool was_successful)
+void Host::OnSaveStateLoaded(const std::string_view filename, bool was_successful)
 {
 }
 
-void Host::OnSaveStateSaved(const std::string_view& filename)
+void Host::OnSaveStateSaved(const std::string_view filename)
 {
 }
 
@@ -376,7 +356,11 @@ void Host::OnCaptureStopped()
 {
 }
 
-void Host::RequestExit(bool allow_confirm)
+void Host::RequestExitApplication(bool allow_confirm)
+{
+}
+
+void Host::RequestExitBigPicture()
 {
 }
 
@@ -385,7 +369,17 @@ void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool def
 	VMManager::SetState(VMState::Stopping);
 }
 
+void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
+{
+	// noop
+}
+
 void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
+{
+	// noop
+}
+
+void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 {
 	// noop
 }
@@ -395,7 +389,28 @@ void Host::OnAchievementsRefreshed()
 	// noop
 }
 
-std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
+void Host::OnCoverDownloaderOpenRequested()
+{
+	// noop
+}
+
+void Host::OnCreateMemoryCardOpenRequested()
+{
+	// noop
+}
+
+bool Host::ShouldPreferHostFileSelector()
+{
+	return false;
+}
+
+void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directory, FileSelectorCallback callback,
+	FileSelectorFilters filters, std::string_view initial_directory)
+{
+	callback(std::string());
+}
+
+std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view str)
 {
 	return std::nullopt;
 }
@@ -403,6 +418,11 @@ std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::stri
 std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 code)
 {
 	return std::nullopt;
+}
+
+const char* InputManager::ConvertHostKeyboardCodeToIcon(u32 code)
+{
+	return nullptr;
 }
 
 BEGIN_HOTKEY_LIST(g_host_hotkeys)
@@ -440,7 +460,7 @@ void GSRunner::InitializeConsole()
 	const char* var = std::getenv("PCSX2_NOCONSOLE");
 	s_no_console = (var && StringUtil::FromChars<bool>(var).value_or(false));
 	if (!s_no_console)
-		LogSink::InitializeEarlyConsole();
+		Log::SetConsoleOutputLevel(LOGLEVEL_DEBUG);
 }
 
 bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& params)
@@ -529,7 +549,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 
 				s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks", true);
 
-				if(str.find("af") != std::string::npos)
+				if (str.find("af") != std::string::npos)
 					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_AutoFlush", true);
 				if (str.find("cpufb") != std::string::npos)
 					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_CPU_FB_Conversion", true);
@@ -566,7 +586,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 				{
 					// disable timestamps, since we want to be able to diff the logs
 					Console.WriteLn("Logging to %s...", logfile);
-					LogSink::SetFileLogPath(logfile);
+					VMManager::Internal::SetFileLogPath(logfile);
 					s_settings_interface.SetBoolValue("Logging", "EnableFileLogging", true);
 					s_settings_interface.SetBoolValue("Logging", "EnableTimestamps", false);
 				}
@@ -641,13 +661,13 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 void GSRunner::DumpStats()
 {
 	std::atomic_thread_fence(std::memory_order_acquire);
-	Console.WriteLn(fmt::format("======= HW STATISTICS FOR {} FRAMES ========", s_total_frames));
-	Console.WriteLn(fmt::format("@HWSTAT@ Draw Calls: {} (avg {})", s_total_draws, static_cast<u64>(std::ceil(s_total_draws / static_cast<double>(s_total_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Render Passes: {} (avg {})", s_total_render_passes, static_cast<u64>(std::ceil(s_total_render_passes / static_cast<double>(s_total_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Barriers: {} (avg {})", s_total_barriers, static_cast<u64>(std::ceil(s_total_barriers / static_cast<double>(s_total_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Copies: {} (avg {})", s_total_copies, static_cast<u64>(std::ceil(s_total_copies / static_cast<double>(s_total_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Uploads: {} (avg {})", s_total_uploads, static_cast<u64>(std::ceil(s_total_uploads / static_cast<double>(s_total_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Readbacks: {} (avg {})", s_total_readbacks, static_cast<u64>(std::ceil(s_total_readbacks / static_cast<double>(s_total_frames)))));
+	Console.WriteLn(fmt::format("======= HW STATISTICS FOR {} ({}) FRAMES ========", s_total_frames, s_total_drawn_frames));
+	Console.WriteLn(fmt::format("@HWSTAT@ Draw Calls: {} (avg {})", s_total_draws, static_cast<u64>(std::ceil(s_total_draws / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Render Passes: {} (avg {})", s_total_render_passes, static_cast<u64>(std::ceil(s_total_render_passes / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Barriers: {} (avg {})", s_total_barriers, static_cast<u64>(std::ceil(s_total_barriers / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Copies: {} (avg {})", s_total_copies, static_cast<u64>(std::ceil(s_total_copies / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Uploads: {} (avg {})", s_total_uploads, static_cast<u64>(std::ceil(s_total_uploads / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Readbacks: {} (avg {})", s_total_readbacks, static_cast<u64>(std::ceil(s_total_readbacks / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn("============================================");
 }
 
@@ -658,6 +678,7 @@ void GSRunner::DumpStats()
 
 int main(int argc, char* argv[])
 {
+	CrashHandler::Install();
 	GSRunner::InitializeConsole();
 
 	if (!GSRunner::InitializeConfig())
@@ -696,12 +717,11 @@ int main(int argc, char* argv[])
 
 	VMManager::Internal::CPUThreadShutdown();
 	GSRunner::DestroyPlatformWindow();
-	LogSink::CloseFileLog();
 
 	return EXIT_SUCCESS;
 }
 
-void Host::VSyncOnCPUThread()
+void Host::PumpMessagesOnCPUThread()
 {
 	// update GS thread copy of frame number
 	MTGS::RunOnGSThread([frame_number = GSDumpReplayer::GetFrameNumber()]() { s_dump_frame_number = frame_number; });
@@ -712,7 +732,7 @@ void Host::VSyncOnCPUThread()
 }
 
 s32 Host::Internal::GetTranslatedStringImpl(
-	const std::string_view& context, const std::string_view& msg, char* tbuf, size_t tbuf_space)
+	const std::string_view context, const std::string_view msg, char* tbuf, size_t tbuf_space)
 {
 	if (msg.size() > tbuf_space)
 		return -1;
@@ -721,6 +741,23 @@ s32 Host::Internal::GetTranslatedStringImpl(
 
 	std::memcpy(tbuf, msg.data(), msg.size());
 	return static_cast<s32>(msg.size());
+}
+
+std::string Host::TranslatePluralToString(const char* context, const char* msg, const char* disambiguation, int count)
+{
+	TinyString count_str = TinyString::from_format("{}", count);
+
+	std::string ret(msg);
+	for (;;)
+	{
+		std::string::size_type pos = ret.find("%n");
+		if (pos == std::string::npos)
+			break;
+
+		ret.replace(pos, pos + 2, count_str.view());
+	}
+
+	return ret;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -826,7 +863,7 @@ int wmain(int argc, wchar_t** argv)
 	u8_args.reserve(static_cast<size_t>(argc));
 	for (int i = 0; i < argc; i++)
 		u8_args.push_back(StringUtil::WideStringToUTF8String(argv[i]));
-	
+
 	std::vector<char*> u8_argptrs;
 	u8_argptrs.reserve(u8_args.size());
 	for (int i = 0; i < argc; i++)

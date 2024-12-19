@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
-    <QtBinaryOutputDir>$(SolutionDir)bin\</QtBinaryOutputDir>
+    <QtBinaryOutputDir Condition="'$(Platform)'!='ARM64'">$(SolutionDir)bin\</QtBinaryOutputDir>
+    <QtBinaryOutputDir Condition="'$(Platform)'=='ARM64'">$(SolutionDir)bin-arm64\</QtBinaryOutputDir>
     <PCSX2QTDIRDefault Condition="'$(Platform)'=='x64'">$(SolutionDir)deps\</PCSX2QTDIRDefault>
     <PCSX2QTDIRDefault Condition="'$(Platform)'=='ARM64'">$(SolutionDir)deps-arm64\</PCSX2QTDIRDefault>
     <PCSX2QTDIR Condition="Exists('$(PCSX2QTDIRDefault)') And ('$(PCSX2QTDIR)'=='' Or !Exists('$(PCSX2QTDIR)'))">$(PCSX2QTDIRDefault)</PCSX2QTDIR>
@@ -32,7 +33,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(QtLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Qt6Core$(QtLibSuffix).lib;Qt6Gui$(QtLibSuffix).lib;Qt6Widgets$(QtLibSuffix).lib;Qt6Network$(QtLibSuffix).lib;Qt6Concurrent$(QtLibSuffix).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt6Core$(QtLibSuffix).lib;Qt6Gui$(QtLibSuffix).lib;Qt6Widgets$(QtLibSuffix).lib;Qt6Concurrent$(QtLibSuffix).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 
@@ -89,7 +90,7 @@
     <Message Text="moc %(QtMoc.Filename) $(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp" Importance="High" />
     <Error Condition="!$(QtDirValid)" Text="Qt directory non-existent (download/extract the zip)" />
     <MakeDir Directories="$(QtToolOutDir)%(QtMoc.RelativeDir)" />
-    <Exec Command="&quot;$(QtHostBinDir)moc.exe&quot; &quot;%(QtMoc.FullPath)&quot; -b &quot;PrecompiledHeader.h&quot; -o &quot;$(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp&quot; -f%(QtMoc.Filename)%(QtMoc.Extension) $(MocDefines) $(MocIncludes)" />
+    <Exec Command="&quot;$(QtHostBinDir)moc.exe&quot; &quot;%(QtMoc.FullPath)&quot; -o &quot;$(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp&quot; -f%(QtMoc.Filename)%(QtMoc.Extension) $(MocDefines) $(MocIncludes)" />
   </Target>
 
   <ItemGroup>
@@ -118,24 +119,21 @@
 
   <!--Copy the needed dlls-->
   <ItemGroup>
-    <QtLibNames Include="Qt6Core$(QtLibSuffix);Qt6Gui$(QtLibSuffix);Qt6Widgets$(QtLibSuffix);Qt6Network$(QtLibSuffix);Qt6Svg$(QtLibSuffix);Qt6Concurrent$(QtLibSuffix)" />
+    <QtLibNames Include="Qt6Core$(QtLibSuffix);Qt6Gui$(QtLibSuffix);Qt6Widgets$(QtLibSuffix);Qt6Svg$(QtLibSuffix);Qt6Concurrent$(QtLibSuffix)" />
     <QtDlls Include="@(QtLibNames -> '$(QtBinDir)%(Identity).dll')" />
     <!--Filter plugins to copy based on the observation that all debug versions end in "d"-->
     <QtAllPlugins Include="$(QtPluginsDir)**\*$(QtLibSuffix).dll" />
     <QtPlugins Condition="$(Configuration.Contains(Debug))" Include="@(QtAllPlugins)" />
     <QtPlugins Condition="!$(Configuration.Contains(Debug))" Exclude="$(QtPluginsDir)**\*$(QtDebugSuffix).dll" Include="@(QtAllPlugins)" />
     <QtPluginsDest Include="@(QtPlugins -> '$(QtBinaryOutputDir)$(QtPluginFolder)\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <!--Our normal *d filter fails for the TLS DLLs, because backend ends in d. -->
-    <QtTLSDlls Include="$(QtPluginsDir)tls\qcertonlybackend$(QtLibSuffix).dll;$(QtPluginsDir)tls\qschannelbackend$(QtLibSuffix).dll" />
-    <QtTLSDllsDest Include="@(QtTLSDlls -> '$(QtBinaryOutputDir)$(QtPluginFolder)\tls\%(Filename)%(Extension)')" />
   </ItemGroup>
   <PropertyGroup>
     <QtConfFile>$(QtBinaryOutputDir)qt.conf</QtConfFile>
   </PropertyGroup>
   <Target Name="QtCopyBinaries"
     AfterTargets="Build"
-    Inputs="@(QtDlls);@(QtPlugins);@(QtTLSDlls)"
-    Outputs="@(QtDlls -> '$(QtBinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)');@(QtPluginsDest);@(QtTLSDllsDest)">
+    Inputs="@(QtDlls);@(QtPlugins)"
+    Outputs="@(QtDlls -> '$(QtBinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)');@(QtPluginsDest)">
     <Message Text="Copying Qt .dlls" Importance="High" />
     <Copy
       SourceFiles="@(QtDlls)"
@@ -145,11 +143,6 @@
     <Copy
       SourceFiles="@(QtPlugins)"
       DestinationFiles="@(QtPluginsDest)"
-      SkipUnchangedFiles="true"
-    />
-    <Copy
-      SourceFiles="@(QtTLSDlls)"
-      DestinationFiles="@(QtTLSDllsDest)"
       SkipUnchangedFiles="true"
     />
   </Target>
@@ -167,25 +160,38 @@
     />
   </Target>
   
-  <!--Copies base translation files, need to rename them from qtbase_ to qt_ -->
+  <!--Copies base translation files, and combines split into one -->
   <ItemGroup>
-    <BaseTsFiles Include="$(QtTranslationsDir)\*.qm" />
+    <AllQmFiles Include="$(QtTranslationsDir)qt*.qm">
+    <Language>$([System.String]::Copy('%(Filename)').Substring($([MSBuild]::Add($([System.String]::Copy('%(Filename)').IndexOf('_')), 1))))</Language>
+    </AllQmFiles>
+    <BaseQmFiles Include="$(QtTranslationsDir)qtbase_*.qm" />
+    <SourceMergeQmFileNames Include="@(BaseQmFiles -> '%(Filename)%(Extension)'->Replace('qtbase_', 'qt_'))" />
+    <SourceMergeQmFiles Include="@(SourceMergeQmFileNames -> '$(QtTranslationsDir)%(Filename)%(Extension)')" />
+    <MergedQmFiles Include="@(SourceMergeQmFileNames -> '$(QtTsOutDir)%(Filename)%(Extension)')">
+    <Language>$([System.String]::Copy('%(Filename)').Replace('qt_', ''))</Language>
+    </MergedQmFiles>
+    <CopyTsFilesSource Include="$(QtTranslationsDir)qt_*.qm" Exclude="@(SourceMergeQmFiles);$(QtTranslationsDir)\qt_help_*.qm" />
+    <CopyTsFilesDest Include="@(CopyTsFilesSource -> '$(QtTsOutDir)%(Filename)%(Extension)')" />
   </ItemGroup>
+  <Target Name="QtGenerateBaseTranslations" AfterTargets="Build" Inputs="@(SourceMergeQmFiles)" Outputs="%(MergedQmFiles.FullPath)">
+    <PropertyGroup>
+      <Language>%(MergedQmFiles.Language)</Language>
+    </PropertyGroup>
+    <Message Text="Generate Base Translation qt_$(Language).qm" Importance="High" />
+    <ItemGroup>
+      <SourceQmFiles Include="%(AllQmFiles.FullPath)" Condition="'%(AllQmFiles.Language)' == '$(Language)'" />
+    </ItemGroup>
+    <Error Condition="!$(QtDirValid)" Text="Qt directory non-existent (download/extract the zip)" />
+    <MakeDir Directories="$(QtTsOutDir)" />
+    <Exec Command="&quot;$(QtHostBinDir)lconvert.exe&quot; -verbose -of qm -o &quot;$(QtTsOutDir)qt_$(Language).qm&quot; @(SourceQmFiles -> '&quot;%(FullPath)&quot;', ' ')" />
+  </Target>
   <Target Name="QtCopyBaseTranslations"
     AfterTargets="Build"
-    Inputs="@(BaseTsFiles)"
-    Outputs="@(BaseTsFiles -> '$(QtTsOutDir)%(RecursiveDir)%(Filename.Replace('qtbase_', 'qt_'))%(Extension)')">
-	<!-- https://stackoverflow.com/a/15379344 -->
-	<ItemGroup>
-	  <TempItems Include="@(BaseTsFiles->'%(Filename)%(Extension)'->Replace('qtbase_', 'qt_'))">
-	    <OriginalPath>%(Identity)</OriginalPath>
-	    <SavedRecursiveDir>%(RecursiveDir)</SavedRecursiveDir>
-	  </TempItems>
-	</ItemGroup>
-    <Message Text="Copying base translation files" Importance="High" />
-	<Copy SourceFiles="@(TempItems->'%(OriginalPath)')"
-		  DestinationFiles="@(TempItems->'$(QtTsOutDir)%(SavedRecursiveDir)%(Identity)')"
-	      SkipUnchangedFiles="true" />
+    Inputs="@(CopyTsFilesSource)"
+    Outputs="@(CopyTsFilesDest.FullPath)">
+      <Message Text="Copy Base Translation %(CopyTsFilesSource.Filename)%(CopyTsFilesSource.Extension)" />
+      <Copy SourceFiles="@(CopyTsFilesSource)" DestinationFiles="@(CopyTsFilesDest)" SkipUnchangedFiles="true" />
   </Target>
 
   <!--Compiles all translation files-->

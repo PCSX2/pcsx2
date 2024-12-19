@@ -1,24 +1,9 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 // This module contains code shared by both the dynarec and interpreter versions
 // of the VU0 micro.
 
-
-#include "PrecompiledHeader.h"
 #include "Common.h"
 #include "VUmicro.h"
 
@@ -44,6 +29,8 @@ static __fi void vu0SetMicroFlags(u32* flags, u32 value)
 {
 #ifdef _M_X86
 	_mm_store_si128(reinterpret_cast<__m128i*>(flags), _mm_set1_epi32(value));
+#elif defined(_M_ARM64)
+	vst1q_u32(flags, vdupq_n_u32(value));
 #else
 	flags[0] = flags[1] = flags[2] = flags[3] = value;
 #endif

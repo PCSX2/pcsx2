@@ -1,23 +1,14 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GS/Renderers/SW/GSDrawScanline.h"
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
 #include "GS/Renderers/SW/GSRasterizer.h"
+
+#include "common/Console.h"
+
+#include <fstream>
 
 // Comment to disable all dynamic code generation.
 #define ENABLE_JIT_RASTERIZER
@@ -38,16 +29,71 @@ GSDrawScanline::GSDrawScanline()
 	: m_sp_map("GSSetupPrim")
 	, m_ds_map("GSDrawScanline")
 {
-	GSCodeReserve::GetInstance().AllowModification();
-	GSCodeReserve::GetInstance().Reset();
+	GSCodeReserve::ResetMemory();
 }
 
 GSDrawScanline::~GSDrawScanline()
 {
-	if (const size_t used = GSCodeReserve::GetInstance().GetMemoryUsed(); used > 0)
+	if (const size_t used = GSCodeReserve::GetMemoryUsed(); used > 0)
 		DevCon.WriteLn("SW JIT generated %zu bytes of code", used);
+}
 
-	GSCodeReserve::GetInstance().ForbidModification();
+bool GSDrawScanline::ShouldUseCDrawScanline(u64 key)
+{
+	static std::map<u64, bool> s_use_c_draw_scanline;
+	static std::mutex s_use_c_draw_scanline_mutex;
+
+	static const char* const fname = getenv("USE_C_DRAW_SCANLINE");
+	if (!fname)
+		return false;
+
+	std::lock_guard<std::mutex> l(s_use_c_draw_scanline_mutex);
+
+	if (s_use_c_draw_scanline.empty())
+	{
+		std::ifstream file(fname);
+		if (file)
+		{
+			for (std::string str; std::getline(file, str);)
+			{
+				u64 key;
+				char yn;
+				if (sscanf(str.c_str(), "%" PRIx64 " %c", &key, &yn) == 2)
+				{
+					if (yn != 'Y' && yn != 'N' && yn != 'y' && yn != 'n')
+						Console.Warning("Failed to parse %s: Not y/n", str.c_str());
+					s_use_c_draw_scanline[key] = (yn == 'Y' || yn == 'y') ? true : false;
+				}
+				else
+				{
+					Console.Warning("Failed to process line %s", str.c_str());
+				}
+			}
+		}
+	}
+
+	auto idx = s_use_c_draw_scanline.find(key);
+	if (idx == s_use_c_draw_scanline.end())
+	{
+		s_use_c_draw_scanline[key] = false;
+		// Rewrite file
+		FILE* file = fopen(fname, "w");
+		if (file)
+		{
+			for (const auto& pair : s_use_c_draw_scanline)
+			{
+				fprintf(file, "%016" PRIX64 " %c %s\n", pair.first, pair.second ? 'Y' : 'N', GSScanlineSelector(pair.first).to_string().c_str());
+			}
+			fclose(file);
+		}
+		else
+		{
+			Console.Warning("Failed to write C draw scanline usage config: %s", strerror(errno));
+		}
+		return false;
+	}
+
+	return idx->second;
 }
 
 void GSDrawScanline::BeginDraw(const GSRasterizerData& data, GSScanlineLocalData& local)
@@ -57,21 +103,7 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData& data, GSScanlineLocalData
 
 	if (global.sel.mmin && global.sel.lcm)
 	{
-#if defined(__GNUC__) && _M_SSE >= 0x501
-		// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80286
-		//
-		// GCC 4.9/5/6 doesn't generate correct AVX2 code for extract32<0>. It is fixed in GCC7
-		// Intrinsic code is _mm_cvtsi128_si32(_mm256_castsi256_si128(m))
-		// It seems recent Clang got _mm256_cvtsi256_si32(m) instead. I don't know about GCC.
-		//
-		// Generated code keep the integer in an XMM register but bit [64:32] aren't cleared.
-		// So the srl16 shift will be huge and v will be 0.
-		//
-		int lod_x = global.lod.i.x0;
-		GSVector4i v = global.t.minmax.srl16(lod_x);
-#else
 		GSVector4i v = global.t.minmax.srl16(global.lod.i.extract32<0>()); //.x);
-#endif
 
 		v = v.upl16(v);
 
@@ -85,7 +117,7 @@ void GSDrawScanline::ResetCodeCache()
 	Console.Warning("GS Software JIT cache overflow, resetting.");
 	m_sp_map.Clear();
 	m_ds_map.Clear();
-	GSCodeReserve::GetInstance().Reset();
+	GSCodeReserve::ResetMemory();
 }
 
 bool GSDrawScanline::SetupDraw(GSRasterizerData& data)
@@ -94,7 +126,7 @@ bool GSDrawScanline::SetupDraw(GSRasterizerData& data)
 
 #ifdef ENABLE_JIT_RASTERIZER
 	data.draw_scanline = m_ds_map[global.sel];
-	if (!unlikely(data.draw_scanline))
+	if (!data.draw_scanline) [[unlikely]]
 		return false;
 
 	if (global.sel.aa1)
@@ -106,7 +138,7 @@ bool GSDrawScanline::SetupDraw(GSRasterizerData& data)
 		sel.edge = 1;
 
 		data.draw_edge = m_ds_map[sel];
-		if (unlikely(!data.draw_edge))
+		if (!data.draw_edge) [[unlikely]]
 			return false;
 	}
 	else
@@ -337,7 +369,7 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, cons
 			c = c.upl16(c.zwxy());
 
 			if (sel.tfx == TFX_NONE)
-				c = c.srl16(7);
+				c = c.srl16<7>();
 
 			local.c.rb = c.xxxx();
 			local.c.ga = c.zzzz();
@@ -398,7 +430,7 @@ __ri static bool TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineG
 			break;
 
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	switch (sel.afail)
@@ -423,7 +455,7 @@ __ri static bool TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineG
 			break;
 
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	return true;
@@ -493,7 +525,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 		steps = pixels - vlen;
 	}
 
-	ASSERT((left & (vlen - 1)) == 0);
+	pxAssert((left & (vlen - 1)) == 0);
 
 	const GSVector2i* fza_base = &global.fzbr[top];
 	const GSVector2i* fza_offset = &global.fzbc[left >> 2];
@@ -530,9 +562,9 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 		if (sel.edge)
 		{
 #if _M_SSE >= 0x501
-			cov = GSVector8i::broadcast16(GSVector4i::cast(scan.p)).srl16(9);
+			cov = GSVector8i::broadcast16(GSVector4i::cast(scan.p)).srl16<9>();
 #else
-			cov = GSVector4i::cast(scan.p).xxxxl().xxxx().srl16(9);
+			cov = GSVector4i::cast(scan.p).xxxxl().xxxx().srl16<9>();
 #endif
 		}
 
@@ -551,7 +583,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 				}
 				else if (sel.ltf)
 				{
-					vf = v.xxzzlh().srl16(12);
+					vf = v.xxzzlh().srl16<12>();
 				}
 
 				s = VectorF::cast(u);
@@ -641,7 +673,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 					}
 
 					if (sel.zclamp)
-						zs = zs.min_u32(VectorI::xffffffff().srl32(sel.zpsm * 8));
+						zs = zs.min_u32(VectorI(static_cast<int>(0xFFFFFFFFu >> (sel.zpsm * 8))));
 				}
 				else
 				{
@@ -663,8 +695,8 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 
 					switch (sel.zpsm)
 					{
-						case 1: zdo = zdo.sll32( 8).srl32( 8); break;
-						case 2: zdo = zdo.sll32(16).srl32(16); break;
+						case 1: zdo = zdo.sll32< 8>().srl32<8>(); break;
+						case 2: zdo = zdo.sll32<16>().srl32<16>(); break;
 						default: break;
 					}
 
@@ -719,7 +751,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 							lod += 0x8000;
 						}
 
-						lodi = lod.srl32(16);
+						lodi = lod.srl32<16>();
 
 						if (sel.mmin == 2) // trilinear mode
 						{
@@ -801,11 +833,11 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 						u -= 0x8000;
 						v -= 0x8000;
 
-						uf = u.xxzzlh().srl16(12);
-						vf = v.xxzzlh().srl16(12);
+						uf = u.xxzzlh().srl16<12>();
+						vf = v.xxzzlh().srl16<12>();
 					}
 
-					VectorI uv0 = u.sra32(16).ps32(v.sra32(16));
+					VectorI uv0 = u.sra32<16>().ps32(v.sra32<16>());
 					VectorI uv1 = uv0;
 
 					{
@@ -863,18 +895,18 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 							}
 						}
 
-						VectorI rb00 = c00.sll16(8).srl16(8);
-						VectorI ga00 = c00.srl16(8);
-						VectorI rb01 = c01.sll16(8).srl16(8);
-						VectorI ga01 = c01.srl16(8);
+						VectorI rb00 = c00.sll16<8>().srl16<8>();
+						VectorI ga00 = c00.srl16<8>();
+						VectorI rb01 = c01.sll16<8>().srl16<8>();
+						VectorI ga01 = c01.srl16<8>();
 
 						rb00 = rb00.lerp16_4(rb01, uf);
 						ga00 = ga00.lerp16_4(ga01, uf);
 
-						VectorI rb10 = c10.sll16(8).srl16(8);
-						VectorI ga10 = c10.srl16(8);
-						VectorI rb11 = c11.sll16(8).srl16(8);
-						VectorI ga11 = c11.srl16(8);
+						VectorI rb10 = c10.sll16<8>().srl16<8>();
+						VectorI ga10 = c10.srl16<8>();
+						VectorI rb11 = c11.sll16<8>().srl16<8>();
+						VectorI ga11 = c11.srl16<8>();
 
 						rb10 = rb10.lerp16_4(rb11, uf);
 						ga10 = ga10.lerp16_4(ga11, uf);
@@ -901,8 +933,8 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 							}
 						}
 
-						rb = c00.sll16(8).srl16(8);
-						ga = c00.srl16(8);
+						rb = c00.sll16<8>().srl16<8>();
+						ga = c00.srl16<8>();
 					}
 
 					if (sel.mmin != 1) // !round-off mode
@@ -911,22 +943,22 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 
 						lodi += VectorI::x00000001();
 
-						u = uv[0].sra32(1);
-						v = uv[1].sra32(1);
+						u = uv[0].sra32<1>();
+						v = uv[1].sra32<1>();
 
-						minuv = minuv.srl16(1);
-						maxuv = maxuv.srl16(1);
+						minuv = minuv.srl16<1>();
+						maxuv = maxuv.srl16<1>();
 
 						if (sel.ltf)
 						{
 							u -= 0x8000;
 							v -= 0x8000;
 
-							uf = u.xxzzlh().srl16(12);
-							vf = v.xxzzlh().srl16(12);
+							uf = u.xxzzlh().srl16<12>();
+							vf = v.xxzzlh().srl16<12>();
 						}
 
-						VectorI uv0 = u.sra32(16).ps32(v.sra32(16));
+						VectorI uv0 = u.sra32<16>().ps32(v.sra32<16>());
 						VectorI uv1 = uv0;
 
 						{
@@ -984,18 +1016,18 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 								}
 							}
 
-							VectorI rb00 = c00.sll16(8).srl16(8);
-							VectorI ga00 = c00.srl16(8);
-							VectorI rb01 = c01.sll16(8).srl16(8);
-							VectorI ga01 = c01.srl16(8);
+							VectorI rb00 = c00.sll16<8>().srl16<8>();
+							VectorI ga00 = c00.srl16<8>();
+							VectorI rb01 = c01.sll16<8>().srl16<8>();
+							VectorI ga01 = c01.srl16<8>();
 
 							rb00 = rb00.lerp16_4(rb01, uf);
 							ga00 = ga00.lerp16_4(ga01, uf);
 
-							VectorI rb10 = c10.sll16(8).srl16(8);
-							VectorI ga10 = c10.srl16(8);
-							VectorI rb11 = c11.sll16(8).srl16(8);
-							VectorI ga11 = c11.srl16(8);
+							VectorI rb10 = c10.sll16<8>().srl16<8>();
+							VectorI ga10 = c10.srl16<8>();
+							VectorI rb11 = c11.sll16<8>().srl16<8>();
+							VectorI ga11 = c11.srl16<8>();
 
 							rb10 = rb10.lerp16_4(rb11, uf);
 							ga10 = ga10.lerp16_4(ga11, uf);
@@ -1022,14 +1054,14 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 								}
 							}
 
-							rb2 = c00.sll16(8).srl16(8);
-							ga2 = c00.srl16(8);
+							rb2 = c00.sll16<8>().srl16<8>();
+							ga2 = c00.srl16<8>();
 						}
 
 						if (sel.lcm)
 							lodf = global.lod.f;
 
-						lodf = lodf.srl16(1);
+						lodf = lodf.srl16<1>();
 
 						rb = rb.lerp16<0>(rb2, lodf);
 						ga = ga.lerp16<0>(ga2, lodf);
@@ -1056,15 +1088,15 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 
 					if (sel.ltf)
 					{
-						uf = u.xxzzlh().srl16(12);
+						uf = u.xxzzlh().srl16<12>();
 
 						if (sel.prim != GS_SPRITE_CLASS)
 						{
-							vf = v.xxzzlh().srl16(12);
+							vf = v.xxzzlh().srl16<12>();
 						}
 					}
 
-					VectorI uv0 = u.sra32(16).ps32(v.sra32(16));
+					VectorI uv0 = u.sra32<16>().ps32(v.sra32<16>());
 					VectorI uv1 = uv0;
 
 					VectorI tmin = VectorI::broadcast128(global.t.min);
@@ -1119,18 +1151,18 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 							c11 = addr11.gather32_32(tex);
 						}
 
-						VectorI rb00 = c00.sll16(8).srl16(8);
-						VectorI ga00 = c00.srl16(8);
-						VectorI rb01 = c01.sll16(8).srl16(8);
-						VectorI ga01 = c01.srl16(8);
+						VectorI rb00 = c00.sll16<8>().srl16<8>();
+						VectorI ga00 = c00.srl16<8>();
+						VectorI rb01 = c01.sll16<8>().srl16<8>();
+						VectorI ga01 = c01.srl16<8>();
 
 						rb00 = rb00.lerp16_4(rb01, uf);
 						ga00 = ga00.lerp16_4(ga01, uf);
 
-						VectorI rb10 = c10.sll16(8).srl16(8);
-						VectorI ga10 = c10.srl16(8);
-						VectorI rb11 = c11.sll16(8).srl16(8);
-						VectorI ga11 = c11.srl16(8);
+						VectorI rb10 = c10.sll16<8>().srl16<8>();
+						VectorI ga10 = c10.srl16<8>();
+						VectorI rb11 = c11.sll16<8>().srl16<8>();
+						VectorI ga11 = c11.srl16<8>();
 
 						rb10 = rb10.lerp16_4(rb11, uf);
 						ga10 = ga10.lerp16_4(ga11, uf);
@@ -1151,8 +1183,8 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 							c00 = addr00.gather32_32((const u32*)global.tex[0]);
 						}
 
-						rb = c00.sll16(8).srl16(8);
-						ga = c00.srl16(8);
+						rb = c00.sll16<8>().srl16<8>();
+						ga = c00.srl16<8>();
 					}
 				}
 			}
@@ -1166,21 +1198,21 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 					case TFX_MODULATE:
 						ga = ga.modulate16<1>(gaf).clamp8();
 						if (!sel.tcc)
-							ga = ga.mix16(gaf.srl16(7));
+							ga = ga.mix16(gaf.srl16<7>());
 						break;
 					case TFX_DECAL:
 						if (!sel.tcc)
-							ga = ga.mix16(gaf.srl16(7));
+							ga = ga.mix16(gaf.srl16<7>());
 						break;
 					case TFX_HIGHLIGHT:
-						ga = ga.mix16(!sel.tcc ? gaf.srl16(7) : ga.addus8(gaf.srl16(7)));
+						ga = ga.mix16(!sel.tcc ? gaf.srl16<7>() : ga.addus8(gaf.srl16<7>()));
 						break;
 					case TFX_HIGHLIGHT2:
 						if (!sel.tcc)
-							ga = ga.mix16(gaf.srl16(7));
+							ga = ga.mix16(gaf.srl16<7>());
 						break;
 					case TFX_NONE:
-						ga = sel.iip ? gaf.srl16(7) : gaf;
+						ga = sel.iip ? gaf.srl16<7>() : gaf;
 						break;
 				}
 
@@ -1196,7 +1228,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 					}
 					else
 					{
-						ga = ga.blend8(a, ga.eq16(x00800080).srl32(16).sll32(16));
+						ga = ga.blend8(a, ga.eq16(x00800080).srl32<16>().sll32<16>());
 					}
 				}
 			}
@@ -1233,12 +1265,12 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 						break;
 					case TFX_HIGHLIGHT:
 					case TFX_HIGHLIGHT2:
-						af = gaf.yywwlh().srl16(7);
+						af = gaf.yywwlh().srl16<7>();
 						rb = rb.modulate16<1>(rbf).add16(af).clamp8();
 						ga = ga.modulate16<1>(gaf).add16(af).clamp8().mix16(ga);
 						break;
 					case TFX_NONE:
-						rb = sel.iip ? rbf.srl16(7) : rbf;
+						rb = sel.iip ? rbf.srl16<7>() : rbf;
 						break;
 				}
 			}
@@ -1263,12 +1295,12 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 				ga = fga.lerp16<0>(ga, fog).mix16(ga);
 
 				/*
-				fog = fog.srl16(7);
+				fog = fog.srl16<7>();
 
 				VectorI ifog = VectorI::x00ff().sub16(fog);
 
-				rb = rb.mul16l(fog).add16(frb.mul16l(ifog)).srl16(8);
-				ga = ga.mul16l(fog).add16(fga.mul16l(ifog)).srl16(8).mix16(ga);
+				rb = rb.mul16l(fog).add16(frb.mul16l(ifog)).srl16<8>();
+				ga = ga.mul16l(fog).add16(fga.mul16l(ifog)).srl16<8>().mix16(ga);
 				*/
 			}
 
@@ -1299,22 +1331,22 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 					if (sel.fpsm == 2)
 					{
 						// test |= fd.srl32(15) == VectorI::zero();
-						test |= fd.sll32(16).sra32(31) == VectorI::zero();
+						test |= fd.sll32<16>().sra32<31>() == VectorI::zero();
 					}
 					else
 					{
-						test |= (~fd).sra32(31);
+						test |= (~fd).sra32<31>();
 					}
 				}
 				else
 				{
 					if (sel.fpsm == 2)
 					{
-						test |= fd.sll32(16).sra32(31); // == VectorI::xffffffff();
+						test |= fd.sll32<16>().sra32<31>(); // == VectorI::xffffffff();
 					}
 					else
 					{
-						test |= fd.sra32(31);
+						test |= fd.sra32<31>();
 					}
 				}
 
@@ -1433,8 +1465,8 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 					{
 						case 0:
 						case 1:
-							rbd = fd.sll16(8).srl16(8);
-							gad = fd.srl16(8);
+							rbd = fd.sll16<8>().srl16<8>();
+							gad = fd.srl16<8>();
 							break;
 						case 2:
 							rbd = ((fd & 0x7c00) << 9) | ((fd & 0x001f) << 3);
@@ -1463,8 +1495,8 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 					{
 						switch(sel.abc)
 						{
-							case 0: a = gas.yywwlh().sll16(7); break;
-							case 1: a = gad.yywwlh().sll16(7); break;
+							case 0: a = gas.yywwlh().sll16<7>(); break;
+							case 1: a = gad.yywwlh().sll16<7>(); break;
 							case 2: a = global.afix; break;
 						}
 
@@ -1490,7 +1522,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 
 				if (sel.pabe)
 				{
-					mask = (gas << 8).sra32(31);
+					mask = (gas << 8).sra32<31>();
 
 					rb = rbs.blend8(rb, mask);
 				}
@@ -1848,7 +1880,7 @@ __ri static void DrawRectT(const GSOffset& off, const GSVector4i& r, u32 c, u32 
 	c = c & (~m);
 
 	if (masked)
-		ASSERT(mask.U32[0] != 0);
+		pxAssert(mask.U32[0] != 0);
 
 	GSVector4i br = r.ralign<Align_Inside>(GSVector2i(8 * 4 / sizeof(T), 8));
 
@@ -1874,8 +1906,8 @@ __ri static void DrawRectT(const GSOffset& off, const GSVector4i& r, u32 c, u32 
 void GSDrawScanline::DrawRect(const GSVector4i& r, const GSVertexSW& v, GSScanlineLocalData& local)
 {
 	const GSScanlineGlobalData& global = GlobalFromLocal(local);
-	ASSERT(r.y >= 0);
-	ASSERT(r.w >= 0);
+	pxAssert(r.y >= 0);
+	pxAssert(r.w >= 0);
 
 	// FIXME: sometimes the frame and z buffer may overlap, the outcome is undefined
 

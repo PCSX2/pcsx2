@@ -1,24 +1,12 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#if defined(_WIN32)
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Threading.h"
 #include "common/Assertions.h"
-#include "common/emitter/tools.h"
 #include "common/RedtapeWindows.h"
+
+#include <memory>
+
 #include <mmsystem.h>
 #include <process.h>
 #include <timeapi.h>
@@ -32,7 +20,11 @@ __fi void Threading::Timeslice()
 // improve performance and reduce cpu power consumption.
 __fi void Threading::SpinWait()
 {
+#ifdef _M_X86
 	_mm_pause();
+#else
+	YieldProcessor();
+#endif
 }
 
 __fi void Threading::EnableHiresScheduler()
@@ -115,10 +107,20 @@ Threading::ThreadHandle& Threading::ThreadHandle::operator=(const ThreadHandle& 
 
 u64 Threading::ThreadHandle::GetCPUTime() const
 {
+#ifndef _M_ARM64
 	u64 ret = 0;
 	if (m_native_handle)
 		QueryThreadCycleTime((HANDLE)m_native_handle, &ret);
 	return ret;
+#else
+	FILETIME user, kernel, unused;
+	if (!GetThreadTimes((HANDLE)m_native_handle, &unused, &unused, &kernel, &user))
+		return 0;
+
+	const u64 user_time = (static_cast<u64>(user.dwHighDateTime) << 32) | static_cast<u64>(user.dwLowDateTime);
+	const u64 kernel_time = (static_cast<u64>(kernel.dwHighDateTime) << 32) | static_cast<u64>(kernel.dwLowDateTime);
+	return user_time + kernel_time;
+#endif
 }
 
 bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
@@ -206,17 +208,28 @@ Threading::ThreadHandle& Threading::Thread::operator=(Thread&& thread)
 
 u64 Threading::GetThreadCpuTime()
 {
+#ifndef _M_ARM64
 	u64 ret = 0;
 	QueryThreadCycleTime(GetCurrentThread(), &ret);
 	return ret;
+#else
+	FILETIME user, kernel, unused;
+	if (!GetThreadTimes(GetCurrentThread(), &unused, &unused, &kernel, &user))
+		return 0;
+
+	const u64 user_time = (static_cast<u64>(user.dwHighDateTime) << 32) | static_cast<u64>(user.dwLowDateTime);
+	const u64 kernel_time = (static_cast<u64>(kernel.dwHighDateTime) << 32) | static_cast<u64>(kernel.dwLowDateTime);
+	return user_time + kernel_time;
+#endif
 }
 
 u64 Threading::GetThreadTicksPerSecond()
 {
+#ifndef _M_ARM64
 	// On x86, despite what the MS documentation says, this basically appears to be rdtsc.
 	// So, the frequency is our base clock speed (and stable regardless of power management).
 	static u64 frequency = 0;
-	if (unlikely(frequency == 0))
+	if (frequency == 0) [[unlikely]]
 	{
 		HKEY key;
 		LSTATUS res =
@@ -232,6 +245,9 @@ u64 Threading::GetThreadTicksPerSecond()
 		}
 	}
 	return frequency;
+#else
+	return 10000000;
+#endif
 }
 
 void Threading::SetNameOfCurrentThread(const char* name)
@@ -271,5 +287,3 @@ void Threading::SetNameOfCurrentThread(const char* name)
 	}
 #endif
 }
-
-#endif

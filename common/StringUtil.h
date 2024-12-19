@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include "Pcsx2Types.h"
@@ -26,7 +14,16 @@
 #include <string_view>
 #include <vector>
 
+// Work around us defining _M_ARM64 but fast_float thinking that it means MSVC.
+#if defined(_M_ARM64) && !defined(_WIN32)
+#define HAD_M_ARM64 _M_ARM64
+#undef _M_ARM64
+#endif
 #include "fast_float/fast_float.h"
+#if defined(HAD_M_ARM64) && !defined(_WIN32)
+#define _M_ARM64 HAD_M_ARM64
+#undef HAD_M_ARM64
+#endif
 
 // Older versions of libstdc++ are missing support for from_chars() with floats, and was only recently
 // merged in libc++. So, just fall back to stringstream (yuck!) on everywhere except MSVC.
@@ -55,7 +52,7 @@ namespace StringUtil
 	std::size_t Strlcpy(char* dst, const char* src, std::size_t size);
 
 	/// Strlcpy from string_view.
-	std::size_t Strlcpy(char* dst, const std::string_view& src, std::size_t size);
+	std::size_t Strlcpy(char* dst, const std::string_view src, std::size_t size);
 
 	/// Platform-independent strcasecmp
 	static inline int Strcasecmp(const char* s1, const char* s2)
@@ -79,7 +76,7 @@ namespace StringUtil
 
 	/// Wrapper around std::from_chars
 	template <typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
-	inline std::optional<T> FromChars(const std::string_view& str, int base = 10)
+	inline std::optional<T> FromChars(const std::string_view str, int base = 10)
 	{
 		T value;
 
@@ -90,7 +87,7 @@ namespace StringUtil
 		return value;
 	}
 	template <typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
-	inline std::optional<T> FromChars(const std::string_view& str, int base, std::string_view* endptr)
+	inline std::optional<T> FromChars(const std::string_view str, int base, std::string_view* endptr)
 	{
 		T value;
 
@@ -107,7 +104,7 @@ namespace StringUtil
 	}
 
 	template <typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-	inline std::optional<T> FromChars(const std::string_view& str)
+	inline std::optional<T> FromChars(const std::string_view str)
 	{
 		T value;
 
@@ -118,7 +115,7 @@ namespace StringUtil
 		return value;
 	}
 	template <typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-	inline std::optional<T> FromChars(const std::string_view& str, std::string_view* endptr)
+	inline std::optional<T> FromChars(const std::string_view str, std::string_view* endptr)
 	{
 		T value;
 
@@ -180,7 +177,7 @@ namespace StringUtil
 
 	/// Explicit override for booleans
 	template <>
-	inline std::optional<bool> FromChars(const std::string_view& str, int base)
+	inline std::optional<bool> FromChars(const std::string_view str, int base)
 	{
 		if (Strncasecmp("true", str.data(), str.length()) == 0 || Strncasecmp("yes", str.data(), str.length()) == 0 ||
 			Strncasecmp("on", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0 ||
@@ -206,37 +203,26 @@ namespace StringUtil
 	}
 
 	/// Encode/decode hexadecimal byte buffers
-	std::optional<std::vector<u8>> DecodeHex(const std::string_view& str);
+	std::optional<std::vector<u8>> DecodeHex(const std::string_view str);
 	std::string EncodeHex(const u8* data, int length);
 
-	/// starts_with from C++20
-	static inline bool StartsWith(const std::string_view& str, const std::string_view& prefix)
-	{
-		return (str.compare(0, prefix.length(), prefix) == 0);
-	}
-	static inline bool EndsWith(const std::string_view& str, const std::string_view& suffix)
-	{
-		const std::size_t suffix_length = suffix.length();
-		return (str.length() >= suffix_length && str.compare(str.length() - suffix_length, suffix_length, suffix) == 0);
-	}
-
 	/// StartsWith/EndsWith variants which aren't case sensitive.
-	static inline bool StartsWithNoCase(const std::string_view& str, const std::string_view& prefix)
+	static inline bool StartsWithNoCase(const std::string_view str, const std::string_view prefix)
 	{
 		return (!str.empty() && Strncasecmp(str.data(), prefix.data(), prefix.length()) == 0);
 	}
-	static inline bool EndsWithNoCase(const std::string_view& str, const std::string_view& suffix)
+	static inline bool EndsWithNoCase(const std::string_view str, const std::string_view suffix)
 	{
 		const std::size_t suffix_length = suffix.length();
 		return (str.length() >= suffix_length && Strncasecmp(str.data() + (str.length() - suffix_length), suffix.data(), suffix_length) == 0);
 	}
 
 	/// Strip whitespace from the start/end of the string.
-	std::string_view StripWhitespace(const std::string_view& str);
+	std::string_view StripWhitespace(const std::string_view str);
 	void StripWhitespace(std::string* str);
 
 	/// Splits a string based on a single character delimiter.
-	std::vector<std::string_view> SplitString(const std::string_view& str, char delimiter, bool skip_empty = true);
+	std::vector<std::string_view> SplitString(const std::string_view str, char delimiter, bool skip_empty = true);
 
 	/// Joins a string together using the specified delimiter.
 	template <typename T>
@@ -252,7 +238,7 @@ namespace StringUtil
 		return ret;
 	}
 	template <typename T>
-	static inline std::string JoinString(const T& start, const T& end, const std::string_view& delimiter)
+	static inline std::string JoinString(const T& start, const T& end, const std::string_view delimiter)
 	{
 		std::string ret;
 		for (auto it = start; it != end; ++it)
@@ -265,11 +251,11 @@ namespace StringUtil
 	}
 
 	/// Replaces all instances of search in subject with replacement.
-	std::string ReplaceAll(const std::string_view& subject, const std::string_view& search, const std::string_view& replacement);
-	void ReplaceAll(std::string* subject, const std::string_view& search, const std::string_view& replacement);
+	std::string ReplaceAll(const std::string_view subject, const std::string_view search, const std::string_view replacement);
+	void ReplaceAll(std::string* subject, const std::string_view search, const std::string_view replacement);
 
 	/// Parses an assignment string (Key = Value) into its two components.
-	bool ParseAssignmentString(const std::string_view& str, std::string_view* key, std::string_view* value);
+	bool ParseAssignmentString(const std::string_view str, std::string_view* key, std::string_view* value);
 
 	/// Appends a UTF-16/UTF-32 codepoint to a UTF-8 string.
 	void AppendUTF16CharacterToUTF8(std::string& s, u16 ch);
@@ -280,8 +266,12 @@ namespace StringUtil
 	/// Decodes UTF-8 to a single codepoint, updating the position parameter.
 	/// Returns the number of bytes the codepoint took in the original string.
 	size_t DecodeUTF8(const void* bytes, size_t length, char32_t* ch);
-	size_t DecodeUTF8(const std::string_view& str, size_t offset, char32_t* ch);
+	size_t DecodeUTF8(const std::string_view str, size_t offset, char32_t* ch);
 	size_t DecodeUTF8(const std::string& str, size_t offset, char32_t* ch);
+
+	// Replaces the end of a string with ellipsis if it exceeds the specified length.
+	std::string Ellipsise(const std::string_view str, u32 max_length, const char* ellipsis = "...");
+	void EllipsiseInPlace(std::string& str, u32 max_length, const char* ellipsis = "...");
 
 	/// Strided memcpy/memcmp.
 	static inline void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
@@ -323,15 +313,15 @@ namespace StringUtil
 		return 0;
 	}
 
-	std::string toLower(const std::string_view& str);
-	std::string toUpper(const std::string_view& str);
-	bool compareNoCase(const std::string_view& str1, const std::string_view& str2);
+	std::string toLower(const std::string_view str);
+	std::string toUpper(const std::string_view str);
+	bool compareNoCase(const std::string_view str1, const std::string_view str2);
 	std::vector<std::string> splitOnNewLine(const std::string& str);
 
 #ifdef _WIN32
 	/// Converts the specified UTF-8 string to a wide string.
-	std::wstring UTF8StringToWideString(const std::string_view& str);
-	bool UTF8StringToWideString(std::wstring& dest, const std::string_view& str);
+	std::wstring UTF8StringToWideString(const std::string_view str);
+	bool UTF8StringToWideString(std::wstring& dest, const std::string_view str);
 
 	/// Converts the specified wide string to a UTF-8 string.
 	std::string WideStringToUTF8String(const std::wstring_view& str);
@@ -343,7 +333,7 @@ namespace StringUtil
 	std::string& AppendU128ToString(const u128& u, std::string& s);
 
 	template <typename ContainerType>
-	static inline bool ContainsSubString(const ContainerType& haystack, const std::string_view& needle)
+	static inline bool ContainsSubString(const ContainerType& haystack, const std::string_view needle)
 	{
 		using ValueType = typename ContainerType::value_type;
 		if (needle.empty())

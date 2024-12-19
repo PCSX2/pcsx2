@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -19,18 +7,16 @@
 #include "common/RedtapeWindows.h"
 #endif
 
-#include <mutex>
+#include "CDVDcommon.h"
+#include "common/Pcsx2Defs.h"
+
 #include <array>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
 
-struct track
-{
-	u32 start_lba;
-	u8 type;
-};
-
-extern u8 strack;
-extern u8 etrack;
-extern track tracks[100];
+class Error;
 
 extern int curDiskType;
 extern int curTrayStatus;
@@ -69,12 +55,13 @@ public:
 	IOCtlSrc(std::string filename);
 	~IOCtlSrc();
 
-	bool Reopen();
+	bool Reopen(Error* error);
 
 	u32 GetSectorCount() const;
 	const std::vector<toc_entry>& ReadTOC() const;
 	bool ReadSectors2048(u32 sector, u32 count, u8* buffer) const;
 	bool ReadSectors2352(u32 sector, u32 count, u8* buffer) const;
+	bool ReadTrackSubQ(cdvdSubQ* subq) const;
 	u32 GetLayerBreakAddress() const;
 	s32 GetMediaType() const;
 	void SetSpindleSpeed(bool restore_defaults) const;
@@ -96,6 +83,5 @@ void cdvdStopThread();
 void cdvdRequestSector(u32 sector, s32 mode);
 u8* cdvdGetSector(u32 sector, s32 mode);
 s32 cdvdDirectReadSector(u32 sector, s32 mode, u8* buffer);
-s32 cdvdGetMediaType();
-s32 cdvdRefreshData();
+void cdvdRefreshData();
 void cdvdParseTOC();

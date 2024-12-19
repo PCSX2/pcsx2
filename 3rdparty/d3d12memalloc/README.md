@@ -2,7 +2,7 @@
 
 Easy to integrate memory allocation library for Direct3D 12.
 
-**Documentation:** Browse online: [D3D12 Memory Allocator](https://gpuopen-librariesandsdks.github.io/D3D12MemoryAllocator/html/) (generated from Doxygen-style comments in [src/D3D12MemAlloc.h](src/D3D12MemAlloc.h))
+**Documentation:** Browse online: [D3D12 Memory Allocator](https://gpuopen-librariesandsdks.github.io/D3D12MemoryAllocator/html/) (generated from Doxygen-style comments in [include/D3D12MemAlloc.h](include/D3D12MemAlloc.h))
 
 **License:** MIT. See [LICENSE.txt](LICENSE.txt)
 
@@ -36,12 +36,13 @@ Additional features:
 - Customization and integration with custom engines: Predefine appropriate macros to provide your own implementation of external facilities used by the library, like assert, mutex, and atomic.
 - Support for resource aliasing (overlap).
 - Custom memory pools: Create a pool with desired parameters (e.g. fixed or limited maximum size, custom `D3D12_HEAP_PROPERTIES` and `D3D12_HEAP_FLAGS`) and allocate memory out of it.
+- Support for GPU Upload Heaps from preview Agility SDK (needs compilation with `D3D12MA_OPTIONS16_SUPPORTED` macro).
 - Linear allocator: Create a pool with linear algorithm and use it for much faster allocations and deallocations in free-at-once, stack, double stack, or ring buffer fashion.
 - Defragmentation: Let the library move data around to free some memory blocks and make your allocations better compacted.
 - Statistics: Obtain brief or detailed statistics about the amount of memory used, unused, number of allocated heaps, number of allocations etc. - globally and per memory heap type. Current memory usage and budget as reported by the system can also be queried.
 - Debug annotations: Associate custom `void* pPrivateData` and debug `LPCWSTR pName` with each allocation.
 - JSON dump: Obtain a string in JSON format with detailed map of internal state, including list of allocations, their string names, and gaps between them.
-- Convert this JSON dump into a picture to visualize your memory using attached Python script.
+- Convert this JSON dump into a picture to visualize your memory. See [tools/GpuMemDumpVis](tools/GpuMemDumpVis/README.md).
 - Virtual allocator - an API that exposes the core allocation algorithm to be used without allocating real GPU memory, to allocate your own stuff, e.g. sub-allocate pieces of one large buffer.
 
 # Prerequisites
@@ -101,13 +102,18 @@ This software package uses third party software:
 
 For more information see [NOTICES.txt](NOTICES.txt).
 
-# Software using this library
-
-- **[The Forge](https://github.com/ConfettiFX/The-Forge)** - cross-platform rendering framework. Apache License 2.0.
-
-[Some other projects on GitHub](https://github.com/search?q=D3D12MemAlloc.h&type=Code) and some game development studios that use DX12 in their games.
-
 # See also
 
-- **[Vulkan Memory Allocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/)** - equivalent library for Vulkan. License: MIT.
+- **[Vcpkg](https://github.com/Microsoft/vcpkg)** dependency manager from Microsoft offers a port of this library that is easy to install.
+- **[d3d12ma.c](https://github.com/milliewalky/d3d12ma.c)** - C bindings for this library. Author: Mateusz Maciejewski (Matt Walky). License: MIT.
 - **[TerraFX.Interop.D3D12MemoryAllocator](https://github.com/terrafx/terrafx.interop.d3d12memoryallocator)** - interop bindings for this library for C#, as used by [TerraFX](https://github.com/terrafx/terrafx). License: MIT.
+- **[Vulkan Memory Allocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/)** - equivalent library for Vulkan. License: MIT.
+
+# Software using this library
+
+- **[Qt Project](https://github.com/qt)**
+- **[Ghost of Tsushima: Director's Cut PC](https://www.youtube.com/watch?v=cPKBDbCYctc&t=698s)** - Information avaliable in 11:38 of credits
+- **[The Forge](https://github.com/ConfettiFX/The-Forge)** - cross-platform rendering framework. Apache License 2.0.
+- **[Wicked Engine<img src="https://github.com/turanszkij/WickedEngine/blob/master/Content/logo_small.png" width="28px" align="center"/>](https://github.com/turanszkij/WickedEngine)** - 3D engine with modern graphics
+
+[Some other projects on GitHub](https://github.com/search?q=D3D12MemAlloc.h&type=Code) and some game development studios that use DX12 in their games.

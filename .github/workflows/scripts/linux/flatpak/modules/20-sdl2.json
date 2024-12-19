@@ -1,26 +1,12 @@
 {
   "name": "sdl2",
-  "buildsystem": "autotools",
-  "no-autogen": true,
+  "buildsystem": "cmake-ninja",
+  "builddir": true,
   "config-opts": [
-    "--disable-dbus",
-    "--without-x",
-    "--disable-video-opengl",
-    "--disable-video-opengles",
-    "--disable-video-vulkan",
-    "--disable-wayland-shared",
-    "--disable-ime",
-    "--disable-oss",
-    "--disable-alsa",
-    "--disable-jack",
-    "--disable-esd",
-    "--disable-pipewire",
-    "--disable-pulseaudio",
-    "--disable-arts",
-    "--disable-nas",
-    "--disable-sndio",
-    "--disable-fusionsound",
-    "--disable-diskaudio"
+    "-DBUILD_SHARED_LIBS=ON",
+    "-DSDL_SHARED=ON",
+    "-DSDL_STATIC=OFF",
+    "-DSDL_TESTS=OFF"
   ],
   "build-options": {
     "strip": true
@@ -28,8 +14,8 @@
   "sources": [
     {
       "type": "archive",
-      "url": "https://libsdl.org/release/SDL2-2.28.2.tar.gz",
-      "sha256": "64b1102fa22093515b02ef33dd8739dee1ba57e9dbba6a092942b8bbed1a1c5e"
+      "url": "https://libsdl.org/release/SDL2-2.30.10.tar.gz",
+      "sha256": "f59adf36a0fcf4c94198e7d3d776c1b3824211ab7aeebeb31fe19836661196aa"
     }
   ],
   "cleanup": [
@@ -42,4 +28,3 @@
     "/share/aclocal"
   ]
 }
-

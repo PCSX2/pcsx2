@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
@@ -133,19 +119,18 @@ u32 wswap(u32 d)
 
 void tx_process()
 {
-	//we loop based on count ? or just *use* it ?
-	const u32 cnt = dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT);
-	//spams// printf("tx_process : %u cnt frames !\n",cnt);
-
 	NetPacket pk;
-	u32 fc = 0;
-	for (fc = 0; fc < cnt; fc++)
+	// We will loop though TX_BD, sending any that are ready
+	// stopping once we reach one that isn't ready
+	// SMAP_R_TXFIFO_FRAME_CNT is decremented, but otherwise isn't used
+	// This seems to match HW behaviour
+	u32 cnt = 0;
+	while (true)
 	{
 		smap_bd_t* pbd = ((smap_bd_t*)&dev9.dev9R[SMAP_BD_TX_BASE & 0xffff]) + dev9.txbdi;
 
 		if (!(pbd->ctrl_stat & SMAP_BD_TX_READY))
 		{
-			Console.Error("DEV9: SMAP: ERROR : !pbd->ctrl_stat&SMAP_BD_TX_READY");
 			break;
 		}
 		if (pbd->length & 3)
@@ -168,6 +153,30 @@ void tx_process()
 			{
 				Console.Error("DEV9: SMAP: ERROR: odd , !pbd->pointer>0x1000 | 0x%X %u", pbd->pointer, pbd->length);
 			}
+
+			// SMAP drivers send a very specfic frame during init, then check SPD_R_INTR_STAT for SMAP_INTR_RXEND | SMAP_INTR_TXEND | SMAP_INTR_TXDNV.
+			// SMAP_INTR_TXEND is set normally, SMAP_INTR_RXEND is supposed to be set here, but we currently don't emulate that.
+			// SMAP_INTR_TXDNV is set somewhere, unsure where, we only set it in failure (instead of SMAP_INTR_TXEND), but is included in the hack here.
+			if (pbd->length == 0x5EA && pbd->pointer == 0x1000)
+			{
+				u32* ptr = (u32*)&dev9.txfifo[base];
+
+				bool test = true;
+				for (u32 i = 0; i < 0x5EA; i += 4)
+				{
+					if (*ptr++ != i)
+					{
+						test = false;
+						break;
+					}
+				}
+				if (test)
+				{
+					Console.WriteLn("DEV9: Adapter Detection Hack - Resetting RX/TX");
+					_DEV9irq(SMAP_INTR_RXEND | SMAP_INTR_TXDNV, 100);
+				}
+			}
+
 			//increase fifo pointer(s)
 			//uh does that even exist on real h/w ?
 			/*
@@ -226,18 +235,19 @@ void tx_process()
 
 		//decrease frame count -- this is not thread safe
 		dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT)--;
+		cnt++;
 	}
 
-	//spams// emu_printf("processed %u frames, %u count, cnt = %u\n",fc,dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT),cnt);
-	//if some error/early exit signal TXDNV
-	if (fc != cnt || cnt == 0)
+	// if we actualy send something set TXEND
+	if (cnt != 0)
 	{
-		Console.Error("DEV9: SMAP: WARN : (fc!=cnt || cnt==0) but packet send request was made oO..");
+		_DEV9irq(SMAP_INTR_TXEND, 100); //now ? or when the fifo is empty ? i guess now atm
+	}
+	else
+	{
+		Console.Error("DEV9: SMAP: WARN : Current BD_TX was not ready, but packet send request was made");
 		_DEV9irq(SMAP_INTR_TXDNV, 0);
 	}
-	//if we actualy send something send TXEND
-	if (fc != 0)
-		_DEV9irq(SMAP_INTR_TXEND, 100); //now ? or when the fifo is empty ? i guess now atm
 }
 
 
@@ -264,12 +274,6 @@ void emac3_write(u32 addr)
 			break;
 		case SMAP_R_EMAC3_TxMODE1_L:
 			//DevCon.WriteLn("DEV9: SMAP_R_EMAC3_TxMODE1_L 32bit write %x", value);
-			if (value == 0x380f0000)
-			{
-				Console.WriteLn("DEV9: Adapter Detection Hack - Resetting RX/TX");
-				ad_reset();
-				_DEV9irq(SMAP_INTR_RXEND | SMAP_INTR_TXEND | SMAP_INTR_TXDNV, 5);
-			}
 			break;
 		case SMAP_R_EMAC3_STA_CTRL_L:
 			//DevCon.WriteLn("DEV9: SMAP: SMAP_R_EMAC3_STA_CTRL write %x", value);
@@ -298,12 +302,14 @@ void emac3_write(u32 addr)
 					value |= SMAP_E3_PHY_OP_COMP;
 					int reg = value & (SMAP_E3_PHY_REG_ADDR_MSK);
 					u16 val = value >> 16;
-					switch (reg)
+					if (reg == SMAP_DsPHYTER_BMCR)
 					{
-						case SMAP_DsPHYTER_BMCR:
-							val &= ~SMAP_PHY_BMCR_RST;
-							val |= 0x1;
-							break;
+						if (val & SMAP_PHY_BMCR_RST)
+						{
+							ad_reset();
+						}
+						val &= ~SMAP_PHY_BMCR_RST;
+						val |= 0x1;
 					}
 					//DevCon.WriteLn("DEV9: phy_write %d: %x", reg, val);
 					dev9.phyregs[reg] = val;

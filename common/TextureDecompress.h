@@ -59,10 +59,7 @@ public:
 		};
 	};
 
-	inline color_rgba()
-	{
-		static_assert(sizeof(*this) == 4, "sizeof(*this) != 4");
-	}
+	inline color_rgba() = default;
 
 	inline color_rgba(int y)
 	{
@@ -189,6 +186,8 @@ public:
 	static color_rgba comp_min(const color_rgba& a, const color_rgba& b) { return color_rgba(std::min(a[0], b[0]), std::min(a[1], b[1]), std::min(a[2], b[2]), std::min(a[3], b[3])); }
 	static color_rgba comp_max(const color_rgba& a, const color_rgba& b) { return color_rgba(std::max(a[0], b[0]), std::max(a[1], b[1]), std::max(a[2], b[2]), std::max(a[3], b[3])); }
 };
+
+static_assert(sizeof(color_rgba) == 4);
 
 bool unpack_bc7(const void *pBlock, color_rgba *pPixels);
 

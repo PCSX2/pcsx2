@@ -1,22 +1,10 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
-#include "GSDrawingContext.h"
-#include "GSGL.h"
-#include "GS.h"
+#include "GS/GSDrawingContext.h"
+#include "GS/GSGL.h"
+#include "GS/GS.h"
+#include "GS/GSUtil.h"
 
 static int findmax(int tl, int br, int limit, int wm, int minuv, int maxuv)
 {
@@ -79,13 +67,6 @@ static int extend(int uv, int size)
 	return size;
 }
 
-GSDrawingContext::GSDrawingContext()
-{
-	std::memset(&offset, 0, sizeof(offset));
-
-	Reset();
-}
-
 void GSDrawingContext::Reset()
 {
 	std::memset(&XYOFFSET, 0, sizeof(XYOFFSET));
@@ -110,7 +91,7 @@ void GSDrawingContext::UpdateScissor()
 	scissor.in = rscissor + GSVector4i::cxpr(0, 0, 1, 1);
 
 	// Fixed-point scissor min/max, used for rejecting primitives which are entirely outside.
-	scissor.cull = rscissor.sll32(4);
+	scissor.cull = rscissor.sll32<4>();
 
 	// Offset applied to vertices for culling, zw is for native resolution culling
 	// We want to round subpixels down, because at least one pixel gets filled per scanline.
@@ -278,14 +259,14 @@ void GSDrawingContext::Dump(const std::string& filename)
 	fprintf(fp,
 		"TEST\n"
 		"\tATE:%u\n"
-		"\tATST:%u\n"
+		"\tATST:%s\n"
 		"\tAREF:%u\n"
-		"\tAFAIL:%u\n"
+		"\tAFAIL:%s\n"
 		"\tDATE:%u\n"
 		"\tDATM:%u\n"
 		"\tZTE:%u\n"
 		"\tZTST:%u\n\n",
-		TEST.ATE, TEST.ATST, TEST.AREF, TEST.AFAIL, TEST.DATE, TEST.DATM, TEST.ZTE, TEST.ZTST);
+		TEST.ATE, GSUtil::GetATSTName(TEST.ATST), TEST.AREF, GSUtil::GetAFAILName(TEST.AFAIL), TEST.DATE, TEST.DATM, TEST.ZTE, TEST.ZTST);
 
 	fprintf(fp,
 		"FBA\n"

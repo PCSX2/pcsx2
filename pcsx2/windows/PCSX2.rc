@@ -1,7 +1,23 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "../SysForwardDefs.h"
 #include "svnrev.h"
+
+#define STRINGIZE2(s) #s
+#define STRINGIZE(s) STRINGIZE2(s)
+
+#define VER_FILE_DESCRIPTION_STR    "PCSX2 PS2 Emulator"
+#define VER_FILE_VERSION            GIT_TAG_HI, GIT_TAG_MID, GIT_TAG_LO, 0
+#define VER_FILE_VERSION_STR        STRINGIZE(GIT_TAG_HI)      \
+                                    "." STRINGIZE(GIT_TAG_MID) \
+                                    "." STRINGIZE(GIT_TAG_LO)  \
+                                    "." STRINGIZE(0)
+
+#define VER_PRODUCTNAME_STR         "PCSX2"
+#define VER_PRODUCT_VERSION         VER_FILE_VERSION
+#define VER_PRODUCT_VERSION_STR     VER_FILE_VERSION_STR
+#define VER_ORIGINAL_FILENAME_STR   VER_PRODUCTNAME_STR ".exe"
+#define VER_INTERNAL_NAME_STR       VER_ORIGINAL_FILENAME_STR
+#define VER_COPYRIGHT_STR           "Copyright (C) 2024"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -52,13 +68,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
-#if PCSX2_isReleaseVersion == false && GIT_TAGGED_COMMIT && defined(GIT_TAG_HI)
- FILEVERSION        GIT_TAG_HI, GIT_TAG_MID, GIT_TAG_LO, 0
- PRODUCTVERSION     GIT_TAG_HI, GIT_TAG_MID, GIT_TAG_LO, 0
-#else
  FILEVERSION        VER_FILE_VERSION
  PRODUCTVERSION     VER_PRODUCT_VERSION
-#endif
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L

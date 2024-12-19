@@ -1,29 +1,17 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 // TODO: JIT Draw* (flags: depth, texture, color (+iip), scissor)
 
-#include "PrecompiledHeader.h"
 #include "GS/Renderers/SW/GSRasterizer.h"
 #include "GS/Renderers/SW/GSDrawScanline.h"
 #include "GS/GSExtra.h"
 #include "PerformanceMetrics.h"
-#include "common/AlignedMalloc.h"
-#include "common/General.h"
-#include "common/StringUtil.h"
 #include "VMManager.h"
+
+#include "common/AlignedMalloc.h"
+#include "common/Console.h"
+#include "common/StringUtil.h"
 
 #define ENABLE_DRAW_STATS 0
 
@@ -85,14 +73,14 @@ static void __fi AddScanlineInfo(GSVertexSW* e, int pixels, int left, int top)
 
 bool GSRasterizer::IsOneOfMyScanlines(int top) const
 {
-	ASSERT(top >= 0 && top < 2048);
+	pxAssert(top >= 0 && top < 2048);
 
 	return m_scanline[top >> m_thread_height] != 0;
 }
 
 bool GSRasterizer::IsOneOfMyScanlines(int top, int bottom) const
 {
-	ASSERT(top >= 0 && top < 2048 && bottom >= 0 && bottom < 2048);
+	pxAssert(top >= 0 && top < 2048 && bottom >= 0 && bottom < 2048);
 
 	top = top >> m_thread_height;
 	bottom = (bottom + (1 << m_thread_height) - 1) >> m_thread_height;
@@ -246,7 +234,7 @@ void GSRasterizer::Draw(GSRasterizerData& data)
 			break;
 
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 #if _M_SSE >= 0x501
@@ -557,8 +545,8 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 
 void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW2& RESTRICT edge, const GSVertexSW2& RESTRICT dedge, const GSVertexSW2& RESTRICT dscan, const GSVector4& RESTRICT p0)
 {
-	ASSERT(top < bottom);
-	ASSERT(edge.p.x <= edge.p.y);
+	pxAssert(top < bottom);
+	pxAssert(edge.p.x <= edge.p.y);
 
 	GSVertexSW* RESTRICT e = &m_edge.buff[m_edge.count];
 
@@ -736,8 +724,8 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 
 void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW& RESTRICT edge, const GSVertexSW& RESTRICT dedge, const GSVertexSW& RESTRICT dscan, const GSVector4& RESTRICT p0)
 {
-	ASSERT(top < bottom);
-	ASSERT(edge.p.x <= edge.p.y);
+	pxAssert(top < bottom);
+	pxAssert(edge.p.x <= edge.p.y);
 
 	GSVertexSW* RESTRICT e = &m_edge.buff[m_edge.count];
 
@@ -1136,7 +1124,7 @@ void GSRasterizer::DrawScanline(int pixels, int left, int top, const GSVertexSW&
 	m_pixels.total += ((left + pixels + (PIXELS_PER_LOOP - 1)) & ~(PIXELS_PER_LOOP - 1)) - (left & ~(PIXELS_PER_LOOP - 1));
 	//m_pixels.total += ((left + pixels + (PIXELS_PER_LOOP - 1)) & ~(PIXELS_PER_LOOP - 1)) - left;
 
-	ASSERT(m_pixels.actual <= m_pixels.total);
+	pxAssert(m_pixels.actual <= m_pixels.total);
 
 	m_draw_scanline(pixels, left, top, scan, m_local);
 }
@@ -1147,7 +1135,7 @@ void GSRasterizer::DrawEdge(int pixels, int left, int top, const GSVertexSW& sca
 	m_pixels.actual += 1;
 	m_pixels.total += PIXELS_PER_LOOP - 1;
 
-	ASSERT(m_pixels.actual <= m_pixels.total);
+	pxAssert(m_pixels.actual <= m_pixels.total);
 
 	m_draw_edge(pixels, left, top, scan, m_local);
 }
@@ -1168,7 +1156,7 @@ void GSSingleRasterizer::Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& da
 
 void GSSingleRasterizer::Draw(GSRasterizerData& data)
 {
-	if (!unlikely(m_ds.SetupDraw(data)))
+	if (!m_ds.SetupDraw(data)) [[unlikely]]
 	{
 		m_ds.ResetCodeCache();
 		m_ds.SetupDraw(data);
@@ -1221,23 +1209,15 @@ GSRasterizerList::~GSRasterizerList()
 	_aligned_free(m_scanline);
 }
 
-void GSRasterizerList::OnWorkerStartup(int i)
+void GSRasterizerList::OnWorkerStartup(int i, u64 affinity)
 {
 	Threading::SetNameOfCurrentThread(StringUtil::StdStringFromFormat("GS-SW-%d", i).c_str());
 
 	Threading::ThreadHandle handle(Threading::ThreadHandle::GetForCallingThread());
-
-	if (EmuConfig.Cpu.AffinityControlMode != 0)
+	if (affinity != 0)
 	{
-		const std::vector<u32>& procs = VMManager::GetSortedProcessorList();
-		const u32 processor_index = (THREAD_VU1 ? 3 : 2) + i;
-		if (processor_index < procs.size())
-		{
-			const u32 procid = procs[processor_index];
-			const u64 affinity = static_cast<u64>(1) << procid;
-			Console.WriteLn("Pinning GS thread %d to CPU %u (0x%llx)", i, procid, affinity);
-			handle.SetAffinity(affinity);
-		}
+		INFO_LOG("Pinning GS thread {} to CPU {} (0x{:x})", i, std::countr_zero(affinity), affinity);
+		handle.SetAffinity(affinity);
 	}
 
 	PerformanceMetrics::SetGSSWThread(i, std::move(handle));
@@ -1251,14 +1231,14 @@ void GSRasterizerList::Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data
 {
 	GSVector4i r = data->bbox.rintersect(data->scissor);
 
-	if (unlikely(!m_ds.SetupDraw(*data.get())))
+	if (!m_ds.SetupDraw(*data.get())) [[unlikely]]
 	{
 		Sync();
 		m_ds.ResetCodeCache();
 		m_ds.SetupDraw(*data.get());
 	}
 
-	ASSERT(r.top >= 0 && r.top < 2048 && r.bottom >= 0 && r.bottom < 2048);
+	pxAssert(r.top >= 0 && r.top < 2048 && r.bottom >= 0 && r.bottom < 2048);
 
 	int top = r.top >> m_thread_height;
 	int bottom = std::min<int>((r.bottom + (1 << m_thread_height) - 1) >> m_thread_height, top + m_workers.size());
@@ -1318,11 +1298,18 @@ std::unique_ptr<IRasterizer> GSRasterizerList::Create(int threads)
 
 	std::unique_ptr<GSRasterizerList> rl(new GSRasterizerList(threads));
 
+	const std::vector<u32>& procs = VMManager::Internal::GetSoftwareRendererProcessorList();
+	const bool pin = (EmuConfig.EnableThreadPinning && static_cast<size_t>(threads) <= procs.size());
+	if (EmuConfig.EnableThreadPinning && !pin)
+		WARNING_LOG("Not pinning SW threads, we need {} processors, but only have {}", threads, procs.size());
+
 	for (int i = 0; i < threads; i++)
 	{
+		const u64 affinity = pin ? (static_cast<u64>(1u) << procs[i]) : 0;
 		rl->m_r.push_back(std::unique_ptr<GSRasterizer>(new GSRasterizer(&rl->m_ds, i, threads)));
 		auto& r = *rl->m_r[i];
-		rl->m_workers.push_back(std::unique_ptr<GSWorker>(new GSWorker([i]() { GSRasterizerList::OnWorkerStartup(i); },
+		rl->m_workers.push_back(std::unique_ptr<GSWorker>(new GSWorker(
+			[i, affinity]() { GSRasterizerList::OnWorkerStartup(i, affinity); },
 			[&r](GSRingHeap::SharedPtr<GSRasterizerData>& item) { r.Draw(*item.get()); },
 			[i]() { GSRasterizerList::OnWorkerShutdown(i); })));
 	}

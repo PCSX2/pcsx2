@@ -1,31 +1,22 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Host.h"
 #include "Input/InputManager.h"
 #include "SIO/Pad/Pad.h"
 #include "SIO/Pad/PadDualshock2.h"
 #include "SIO/Pad/PadGuitar.h"
+#include "SIO/Pad/PadJogcon.h"
+#include "SIO/Pad/PadNegcon.h"
+#include "SIO/Pad/PadPopn.h"
 #include "SIO/Pad/PadNotConnected.h"
 #include "SIO/Sio.h"
 
 #include "IconsFontAwesome5.h"
 
+#include "VMManager.h"
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/SettingsInterface.h"
@@ -41,16 +32,16 @@ namespace Pad
 	{
 		std::vector<u32> buttons; ///< Buttons to activate.
 		float pressure; ///< Pressure to apply when macro is active.
-		u32 toggle_frequency; ///< Interval at which the buttons will be toggled, if not 0.
-		u32 toggle_counter; ///< When this counter reaches zero, buttons will be toggled.
+		u16 toggle_frequency; ///< Interval at which the buttons will be toggled, if not 0.
+		u16 toggle_counter; ///< When this counter reaches zero, buttons will be toggled.
 		bool toggle_state; ///< Current state for turbo.
 		bool trigger_state; ///< Whether the macro button is active.
+		bool trigger_toggle; ///< Whether the macro is trigged by holding or press.
 	};
 
 	static const char* GetControllerTypeName(Pad::ControllerType type);
 
-	static std::unique_ptr<PadBase> CreatePad(u8 unifiedSlot, Pad::ControllerType controllerType);
-	static PadBase* ChangePadType(u8 unifiedSlot, Pad::ControllerType controllerType);
+	static PadBase* CreatePad(u8 unifiedSlot, Pad::ControllerType controllerType, size_t ejectTicks = 0);
 
 	static void LoadMacroButtonConfig(
 		const SettingsInterface& si, u32 pad, const ControllerInfo* ci, const std::string& section);
@@ -58,7 +49,10 @@ namespace Pad
 
 	static std::array<std::array<MacroButton, NUM_MACRO_BUTTONS_PER_CONTROLLER>, NUM_CONTROLLER_PORTS> s_macro_buttons;
 	static std::array<std::unique_ptr<PadBase>, NUM_CONTROLLER_PORTS> s_controllers;
-}
+
+	bool mtapPort0LastState;
+	bool mtapPort1LastState;
+} // namespace Pad
 
 bool Pad::Initialize()
 {
@@ -76,7 +70,7 @@ const char* Pad::ControllerInfo::GetLocalizedName() const
 	return Host::TranslateToCString("Pad", display_name);
 }
 
-std::optional<u32> Pad::ControllerInfo::GetBindIndex(const std::string_view& name) const
+std::optional<u32> Pad::ControllerInfo::GetBindIndex(const std::string_view name) const
 {
 	for (u32 i = 0; i < static_cast<u32>(bindings.size()); i++)
 	{
@@ -91,19 +85,33 @@ void Pad::LoadConfig(const SettingsInterface& si)
 {
 	s_macro_buttons = {};
 
-	// This is where we would load controller types, if onepad supported them.
+	const bool mtapPort0Changed = EmuConfig.Pad.MultitapPort0_Enabled != Pad::mtapPort0LastState;
+	const bool mtapPort1Changed = EmuConfig.Pad.MultitapPort1_Enabled != Pad::mtapPort1LastState;
+
 	for (u32 i = 0; i < Pad::NUM_CONTROLLER_PORTS; i++)
 	{
 		const std::string section = GetConfigSection(i);
 		const ControllerInfo* ci = GetControllerInfo(EmuConfig.Pad.Ports[i].Type);
 		pxAssert(ci);
 
-		// If a pad is not yet constructed, at minimum place a NotConnected pad in the slot.
-		// Do not abort the for loop - If there pad settings, we want those to be applied to the slot.
 		PadBase* pad = Pad::GetPad(i);
-		if (!pad || pad->GetType() != ci->type)
+
+		// If pad pointer is not occupied yet, type in settings no longer matches the current type, or a multitap was slotted in/out,
+		// then reconstruct a new pad.
+		if (!pad || pad->GetType() != ci->type || (mtapPort0Changed && (i <= 4 && i != 1)) || (mtapPort1Changed && (i >= 5 || i == 1)))
 		{
-			pad = Pad::ChangePadType(i, ci->type);
+			// If the slot is a multitap slot, and the multitap is not plugged in, then the pad should be forced to Not Connected.
+			if (i > 1 && ((i <= 4 && !EmuConfig.Pad.MultitapPort0_Enabled) || (i > 4 && !EmuConfig.Pad.MultitapPort1_Enabled)))
+			{
+				pad = Pad::CreatePad(i, Pad::ControllerType::NotConnected, (VMManager::GetState() != VMState::Shutdown ? Pad::DEFAULT_EJECT_TICKS : 0));
+			}
+			else
+			{
+				// Create the new pad. If the VM is in any kind of running state at all, set eject ticks so the PS2 will think
+				// there was some kind of pad ejection event and properly detect the new one, and properly initiate its config sequence.
+				pad = Pad::CreatePad(i, ci->type, (VMManager::GetState() != VMState::Shutdown ? Pad::DEFAULT_EJECT_TICKS : 0));
+			}
+
 			pxAssert(pad);
 		}
 
@@ -130,11 +138,14 @@ void Pad::LoadConfig(const SettingsInterface& si)
 		pad->SetAnalogInvertR((invert_r & 1) != 0, (invert_r & 2) != 0);
 		LoadMacroButtonConfig(si, i, ci, section);
 	}
+
+	Pad::mtapPort0LastState = EmuConfig.Pad.MultitapPort0_Enabled;
+	Pad::mtapPort1LastState = EmuConfig.Pad.MultitapPort1_Enabled;
 }
 
 Pad::ControllerType Pad::GetDefaultPadType(u32 pad)
 {
-	return (pad == 0) ? ControllerType::DualShock2 :  ControllerType::NotConnected;
+	return (pad == 0) ? ControllerType::DualShock2 : ControllerType::NotConnected;
 }
 
 void Pad::SetDefaultControllerConfig(SettingsInterface& si)
@@ -151,6 +162,7 @@ void Pad::SetDefaultControllerConfig(SettingsInterface& si)
 			InputManager::GetInputSourceDefaultEnabled(static_cast<InputSourceType>(i)));
 	}
 	si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
+	si.SetBoolValue("InputSources", "SDLPS5PlayerLED", false);
 	si.SetBoolValue("Pad", "MultitapPort1", false);
 	si.SetBoolValue("Pad", "MultitapPort2", false);
 	si.SetFloatValue("Pad", "PointerXScale", 8.0f);
@@ -204,7 +216,7 @@ void Pad::SetDefaultHotkeyConfig(SettingsInterface& si)
 	// PCSX2 Controller Settings - Hotkeys - Graphics
 	si.SetStringValue("Hotkeys", "CycleAspectRatio", "Keyboard/F6");
 	si.SetStringValue("Hotkeys", "CycleInterlaceMode", "Keyboard/F5");
-	si.SetStringValue("Hotkeys", "CycleMipmapMode", "Keyboard/Insert");
+	si.SetStringValue("Hotkeys", "ToggleMipmapMode", "Keyboard/Insert");
 	//	si.SetStringValue("Hotkeys", "DecreaseUpscaleMultiplier", "Keyboard"); TBD
 	//	si.SetStringValue("Hotkeys", "IncreaseUpscaleMultiplier", "Keyboard"); TBD
 	//  si.SetStringValue("Hotkeys", "ReloadTextureReplacements", "Keyboard"); TBD
@@ -245,6 +257,9 @@ static const Pad::ControllerInfo* s_controller_info[] = {
 	&PadNotConnected::ControllerInfo,
 	&PadDualshock2::ControllerInfo,
 	&PadGuitar::ControllerInfo,
+	&PadJogcon::ControllerInfo,
+	&PadNegcon::ControllerInfo,
+	&PadPopn::ControllerInfo,
 };
 
 const Pad::ControllerInfo* Pad::GetControllerInfo(Pad::ControllerType type)
@@ -258,7 +273,7 @@ const Pad::ControllerInfo* Pad::GetControllerInfo(Pad::ControllerType type)
 	return nullptr;
 }
 
-const Pad::ControllerInfo* Pad::GetControllerInfoByName(const std::string_view& name)
+const Pad::ControllerInfo* Pad::GetControllerInfoByName(const std::string_view name)
 {
 	for (const ControllerInfo* info : s_controller_info)
 	{
@@ -320,6 +335,7 @@ void Pad::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 				InputManager::InputSourceToString(static_cast<InputSourceType>(i)));
 		}
 		dest_si->CopyBoolValue(src_si, "InputSources", "SDLControllerEnhancedMode");
+		dest_si->CopyBoolValue(src_si, "InputSources", "SDLPS5PlayerLED");
 	}
 
 	for (u32 port = 0; port < Pad::NUM_CONTROLLER_PORTS; port++)
@@ -339,11 +355,12 @@ void Pad::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 
 			for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
 			{
-				dest_si->CopyStringListValue(src_si, section.c_str(), fmt::format("Macro{}", i + 1).c_str());
-				dest_si->CopyFloatValue(src_si, section.c_str(), fmt::format("Macro{}Pressure", i + 1).c_str());
-				dest_si->CopyFloatValue(src_si, section.c_str(), fmt::format("Macro{}Deadzone", i + 1).c_str());
-				dest_si->CopyStringValue(src_si, section.c_str(), fmt::format("Macro{}Binds", i + 1).c_str());
-				dest_si->CopyUIntValue(src_si, section.c_str(), fmt::format("Macro{}Frequency", i + 1).c_str());
+				dest_si->CopyStringListValue(src_si, section.c_str(), TinyString::from_format("Macro{}", i + 1));
+				dest_si->CopyFloatValue(src_si, section.c_str(), TinyString::from_format("Macro{}Pressure", i + 1));
+				dest_si->CopyFloatValue(src_si, section.c_str(), TinyString::from_format("Macro{}Deadzone", i + 1));
+				dest_si->CopyStringValue(src_si, section.c_str(), TinyString::from_format("Macro{}Binds", i + 1));
+				dest_si->CopyUIntValue(src_si, section.c_str(), TinyString::from_format("Macro{}Frequency", i + 1));
+				dest_si->CopyBoolValue(src_si, section.c_str(), TinyString::from_format("Macro{}Toggle", i + 1));
 			}
 		}
 
@@ -456,7 +473,8 @@ std::vector<std::string> Pad::GetInputProfileNames()
 {
 	FileSystem::FindResultsArray results;
 	FileSystem::FindFiles(EmuFolders::InputProfiles.c_str(), "*.ini",
-		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS,
+		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS |
+			FILESYSTEM_FIND_SORT_BY_NAME,
 		&results);
 
 	std::vector<std::string> ret;
@@ -471,22 +489,31 @@ std::string Pad::GetConfigSection(u32 pad_index)
 	return fmt::format("Pad{}", pad_index + 1);
 }
 
-std::unique_ptr<PadBase> Pad::CreatePad(u8 unifiedSlot, ControllerType controllerType)
+// Create a new pad instance, update the smart pointer for this pad slot, and return a dumb pointer to the new pad.
+PadBase* Pad::CreatePad(u8 unifiedSlot, ControllerType controllerType, size_t ejectTicks)
 {
 	switch (controllerType)
 	{
 		case ControllerType::DualShock2:
-			return std::make_unique<PadDualshock2>(unifiedSlot);
+			s_controllers[unifiedSlot] = std::make_unique<PadDualshock2>(unifiedSlot, ejectTicks);
+			break;
 		case ControllerType::Guitar:
-			return std::make_unique<PadGuitar>(unifiedSlot);
+			s_controllers[unifiedSlot] = std::make_unique<PadGuitar>(unifiedSlot, ejectTicks);
+			break;
+		case ControllerType::Jogcon:
+			s_controllers[unifiedSlot] = std::make_unique<PadJogcon>(unifiedSlot, ejectTicks);
+			break;
+		case ControllerType::Negcon:
+			s_controllers[unifiedSlot] = std::make_unique<PadNegcon>(unifiedSlot, ejectTicks);
+			break;
+		case ControllerType::Popn:
+			s_controllers[unifiedSlot] = std::make_unique<PadPopn>(unifiedSlot, ejectTicks);
+			break;
 		default:
-			return std::make_unique<PadNotConnected>(unifiedSlot);
+			s_controllers[unifiedSlot] = std::make_unique<PadNotConnected>(unifiedSlot, ejectTicks);
+			break;
 	}
-}
 
-PadBase* Pad::ChangePadType(u8 unifiedSlot, ControllerType controllerType)
-{
-	s_controllers[unifiedSlot] = CreatePad(unifiedSlot, controllerType);
 	return s_controllers[unifiedSlot].get();
 }
 
@@ -527,35 +554,57 @@ bool Pad::Freeze(StateWrapper& sw)
 
 		for (u32 unifiedSlot = 0; unifiedSlot < NUM_CONTROLLER_PORTS; unifiedSlot++)
 		{
-			ControllerType type;
-			sw.Do(&type);
+			PadBase* currentPad = GetPad(unifiedSlot);
+			ControllerType statePadType;
+
+			sw.Do(&statePadType);
+
 			if (sw.HasError())
 				return false;
 
-			std::unique_ptr<PadBase> tempPad;
-			PadBase* pad = GetPad(unifiedSlot);
-			if (!pad || pad->GetType() != type)
+			if (!currentPad)
 			{
+				pxAssertMsg(false, fmt::format("Pad::Freeze (on read) Existing Pad {0} was nullptr", unifiedSlot).c_str());
+			}
+			// If the currently configured pad is of a different type than the pad which was used during the savestate...
+			else if (currentPad->GetType() != statePadType)
+			{
+				const ControllerType currentPadType = currentPad->GetType();
+
 				const auto& [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
 				Host::AddIconOSDMessage(fmt::format("UnfreezePad{}Changed", unifiedSlot), ICON_FA_GAMEPAD,
 					fmt::format(TRANSLATE_FS("Pad",
-									"Controller port {}, slot {} has a {} connected, but the save state has a "
-									"{}.\nLeaving the original controller type connected, but this may cause issues."),
+									"Controller port {0}, slot {1} has a {2} connected, but the save state has a "
+									"{3}.\nEjecting {3} and replacing it with {2}."),
 						port, slot,
-						GetControllerTypeName(pad ? pad->GetType() : Pad::ControllerType::NotConnected),
-						GetControllerTypeName(type)));
+						GetControllerTypeName(currentPad ? currentPad->GetType() : Pad::ControllerType::NotConnected),
+						GetControllerTypeName(statePadType)));
 
-				// Reset the transfer etc state of the pad, at least it has a better chance of surviving.
-				if (pad)
-					pad->SoftReset();
+				// Run the freeze, using a new pad instance of the old type just so we make sure all those attributes
+				// from the state are read out and we aren't going to run into some sort of consistency problem.
+				currentPad = CreatePad(unifiedSlot, statePadType);
 
-				// But we still need to pull the data from the state..
-				tempPad = CreatePad(unifiedSlot, type);
-				pad = tempPad.get();
+				if (currentPad)
+				{
+					currentPad->Freeze(sw);
+
+					// Now immediately discard whatever malformed pad state we just created, and replace it with a fresh pad loaded
+					// using whatever the current user settings are. Savestates are, by definition, never going to occur in the middle
+					// of a transfer between SIO2 and the peripheral, since they aren't captured until the VM is at a point where everything
+					// is "stoppable". For all intents and purposes, by the time a savestate is captured, the IOP is "done" and there is no
+					// "pending work" left hanging in SIO2 or the pads. So there is nothing actually lost from just throwing the pad away and making a new one here.
+					currentPad = CreatePad(unifiedSlot, currentPadType, Pad::DEFAULT_EJECT_TICKS);
+				}
+				else
+				{
+					pxAssertMsg(false, fmt::format("Pad::Freeze (on read) State Pad {0} was nullptr", unifiedSlot).c_str());
+				}
 			}
-
-			if (!pad->Freeze(sw))
+			// ... else, just run the freeze normally.
+			else if (currentPad && !currentPad->Freeze(sw))
+			{
 				return false;
+			}
 		}
 	}
 	else
@@ -582,11 +631,14 @@ void Pad::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const Cont
 	for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
 	{
 		std::string binds_string;
-		if (!si.GetStringValue(section.c_str(), StringUtil::StdStringFromFormat("Macro%uBinds", i + 1).c_str(), &binds_string))
+		if (!si.GetStringValue(section.c_str(), TinyString::from_format("Macro{}Binds", i + 1), &binds_string))
 			continue;
 
-		const u32 frequency = si.GetUIntValue(section.c_str(), StringUtil::StdStringFromFormat("Macro%uFrequency", i + 1).c_str(), 0u);
-		const float pressure = si.GetFloatValue(section.c_str(), fmt::format("Macro{}Pressure", i + 1).c_str(), 1.0f);
+		const u32 frequency = std::min<u32>(si.GetUIntValue(section.c_str(),
+												TinyString::from_format("Macro{}Frequency", i + 1), 0u),
+			std::numeric_limits<u16>::max());
+		const float pressure = si.GetFloatValue(section.c_str(), TinyString::from_format("Macro{}Pressure", i + 1), 1.0f);
+		const bool toggle = si.GetBoolValue(section.c_str(), TinyString::from_format("Macro{}Toggle", i + 1), false);
 
 		// convert binds
 		std::vector<u32> bind_indices;
@@ -609,8 +661,9 @@ void Pad::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const Cont
 
 		MacroButton& macro = s_macro_buttons[pad][i];
 		macro.buttons = std::move(bind_indices);
-		macro.toggle_frequency = frequency;
+		macro.toggle_frequency = static_cast<u16>(frequency);
 		macro.pressure = pressure;
+		macro.trigger_toggle = toggle;
 	}
 }
 
@@ -620,14 +673,18 @@ void Pad::SetMacroButtonState(u32 pad, u32 index, bool state)
 		return;
 
 	MacroButton& mb = s_macro_buttons[pad][index];
-	if (mb.buttons.empty() || mb.trigger_state == state)
+	if (mb.buttons.empty())
+		return;
+
+	const bool trigger_state = (mb.trigger_toggle ? (state ? !mb.trigger_state : mb.trigger_state) : state);
+	if (mb.trigger_state == trigger_state)
 		return;
 
 	mb.toggle_counter = mb.toggle_frequency;
-	mb.trigger_state = state;
-	if (mb.toggle_state != state)
+	mb.trigger_state = trigger_state;
+	if (mb.toggle_state != trigger_state)
 	{
-		mb.toggle_state = state;
+		mb.toggle_state = trigger_state;
 		ApplyMacroButton(pad, mb);
 	}
 }

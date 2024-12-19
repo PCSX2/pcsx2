@@ -1,19 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GSPng.h"
 #include "GSExtra.h"
 #include "common/FileSystem.h"
@@ -51,8 +38,8 @@ namespace GSPng
 		const int offset = first_image ? 0 : pixel[fmt].bytes_per_pixel_out;
 		const int bytes_per_pixel_out = first_image ? pixel[fmt].bytes_per_pixel_out : bytes_per_pixel_in - offset;
 
-		FILE* fp = FileSystem::OpenCFile(file.c_str(), "wb");
-		if (fp == nullptr)
+		auto fp = FileSystem::OpenManagedCFile(file.c_str(), "wb");
+		if (!fp)
 			return false;
 
 		png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
@@ -68,7 +55,14 @@ namespace GSPng
 		if (setjmp(png_jmpbuf(png_ptr)))
 			return false;
 
-		png_init_io(png_ptr, fp);
+		png_set_write_fn(
+			png_ptr, fp.get(),
+			[](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
+				if (std::fwrite(data_ptr, size, 1, static_cast<std::FILE*>(png_get_io_ptr(png_ptr))) != 1)
+					png_error(png_ptr, "file write error");
+			},
+			[](png_structp png_ptr) {});
+
 		png_set_compression_level(png_ptr, compression);
 		png_set_IHDR(png_ptr, info_ptr, width, height, channel_bit_depth, type,
 			PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
@@ -90,7 +84,6 @@ namespace GSPng
 
 		if (png_ptr)
 			png_destroy_write_struct(&png_ptr, info_ptr ? &info_ptr : nullptr);
-		std::fclose(fp);
 
 		return true;
 	}
@@ -100,7 +93,7 @@ namespace GSPng
 		std::string root = file;
 		root.replace(file.length() - 4, 4, "");
 
-		ASSERT(fmt >= Format::START && fmt < Format::COUNT);
+		pxAssert(fmt >= Format::START && fmt < Format::COUNT);
 
 		if (compression < 0 || compression > Z_BEST_COMPRESSION)
 			compression = Z_BEST_SPEED;

@@ -377,6 +377,15 @@ cubeb_channel_to_channel_label(cubeb_channel channel)
   }
 }
 
+bool
+is_common_sample_rate(Float64 sample_rate)
+{
+  /* Some commonly used sample rates and their multiples and divisors. */
+  return sample_rate == 8000 || sample_rate == 16000 || sample_rate == 22050 ||
+         sample_rate == 32000 || sample_rate == 44100 || sample_rate == 48000 ||
+         sample_rate == 88200 || sample_rate == 96000;
+}
+
 #if TARGET_OS_IPHONE
 typedef UInt32 AudioDeviceID;
 typedef UInt32 AudioObjectID;
@@ -2502,6 +2511,12 @@ audiounit_configure_output(cubeb_stream * stm)
     return CUBEB_ERROR;
   }
   stm->output_hw_rate = output_hw_desc.mSampleRate;
+  if (!is_common_sample_rate(stm->output_desc.mSampleRate)) {
+    /* For uncommon sample rates, we may run into issues with the OS
+       resampler if we don't do the resampling ourselves, so set the
+       AudioUnit sample rate to the hardware rate and resample. */
+    stm->output_desc.mSampleRate = stm->output_hw_rate;
+  }
   LOG("(%p) Output device sampling rate: %.2f", stm,
       output_hw_desc.mSampleRate);
   stm->context->channels = output_hw_desc.mChannelsPerFrame;
@@ -2709,11 +2724,16 @@ audiounit_setup_stream(cubeb_stream * stm)
     input_unconverted_params.rate = stm->input_hw_rate;
   }
 
-  /* Create resampler. Output params are unchanged
-   * because we do not need conversion on the output. */
+  cubeb_stream_params output_unconverted_params;
+  if (has_output(stm)) {
+    output_unconverted_params = stm->output_stream_params;
+    output_unconverted_params.rate = stm->output_desc.mSampleRate;
+  }
+
+  /* Create resampler. */
   stm->resampler.reset(cubeb_resampler_create(
       stm, has_input(stm) ? &input_unconverted_params : NULL,
-      has_output(stm) ? &stm->output_stream_params : NULL, target_sample_rate,
+      has_output(stm) ? &output_unconverted_params : NULL, target_sample_rate,
       stm->data_callback, stm->user_ptr, CUBEB_RESAMPLER_QUALITY_DESKTOP,
       CUBEB_RESAMPLER_RECLOCK_NONE));
   if (!stm->resampler) {
@@ -3665,6 +3685,7 @@ cubeb_ops const audiounit_ops = {
     /*.get_max_channel_count =*/audiounit_get_max_channel_count,
     /*.get_min_latency =*/audiounit_get_min_latency,
     /*.get_preferred_sample_rate =*/audiounit_get_preferred_sample_rate,
+    /*.get_supported_input_processing_params =*/NULL,
     /*.enumerate_devices =*/audiounit_enumerate_devices,
     /*.device_collection_destroy =*/audiounit_device_collection_destroy,
     /*.destroy =*/audiounit_destroy,
@@ -3678,6 +3699,8 @@ cubeb_ops const audiounit_ops = {
     /*.stream_set_volume =*/audiounit_stream_set_volume,
     /*.stream_set_name =*/NULL,
     /*.stream_get_current_device =*/audiounit_stream_get_current_device,
+    /*.stream_set_input_mute =*/NULL,
+    /*.stream_set_input_processing_params =*/NULL,
     /*.stream_device_destroy =*/audiounit_stream_device_destroy,
     /*.stream_register_device_changed_callback =*/
     audiounit_stream_register_device_changed_callback,

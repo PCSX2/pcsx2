@@ -1,20 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-
-#include "PrecompiledHeader.h"
 #include "IopHw_Internal.h"
 #include "Sif.h"
 #include "SIO/Sio2.h"
@@ -175,13 +161,9 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			break;
 
 			case 0x4:
-				ret = psxCounters[cntidx].mode;
+				ret = psxCounters[cntidx].mode.modeval;
 
-				// hmm!  The old code only did this bitwise math for 16 bit reads.
-				// Logic indicates it should do the math consistently.  Question is,
-				// should it do the logic for both 16 and 32, or not do logic at all?
-
-				psxCounters[cntidx].mode &= ~0x1800;
+				psxRcntSetNewIntrMode(cntidx);
 			break;
 
 			case 0x8:
@@ -211,13 +193,10 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			break;
 
 			case 0x4:
-				ret = psxCounters[cntidx].mode;
+				ret = psxCounters[cntidx].mode.modeval;
 				PSXCNT_LOG("IOP Counter[%d] modeRead%d = %lx", cntidx, sizeof(T) * 8, ret);
-				// hmm!  The old code only did the following bitwise math for 16 bit reads.
-				// Logic indicates it should do the math consistently.  Question is,
-				// should it do the logic for both 16 and 32, or not do logic at all?
 
-				psxCounters[cntidx].mode &= ~0x1800;
+				psxRcntSetNewIntrMode(cntidx);
 			break;
 
 			case 0x8:

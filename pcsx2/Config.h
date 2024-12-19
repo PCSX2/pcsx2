@@ -1,27 +1,33 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
-#include "common/emitter/tools.h"
-#include "common/General.h"
+#include "Host/AudioStreamTypes.h"
+
+#include "common/Pcsx2Defs.h"
+#include "common/FPControl.h"
+
 #include <array>
 #include <string>
 #include <optional>
 #include <vector>
 
+// Macro used for removing some of the redtape involved in defining bitfield/union helpers.
+//
+#define BITFIELD32() \
+	union \
+	{ \
+		u32 bitset; \
+		struct \
+		{
+#define BITFIELD_END \
+	} \
+	; \
+	} \
+	;
+
+class Error;
 class SettingsInterface;
 class SettingsWrapper;
 
@@ -29,13 +35,13 @@ enum class CDVD_SourceType : uint8_t;
 
 namespace Pad
 {
-enum class ControllerType : u8;
+	enum class ControllerType : u8;
 }
 
 /// Generic setting information which can be reused in multiple components.
 struct SettingInfo
 {
-	using GetOptionsCallback = std::vector<std::pair<std::string, std::string>>(*)();
+	using GetOptionsCallback = std::vector<std::pair<std::string, std::string>> (*)();
 
 	enum class Type
 	{
@@ -97,6 +103,7 @@ struct InputBindingInfo
 
 	const char* name;
 	const char* display_name;
+	const char* icon_name;
 	Type bind_type;
 	u16 bind_index;
 	GenericInputBinding generic_mapping;
@@ -150,7 +157,6 @@ enum GamefixId
 	GamefixId_FIRST = 0,
 
 	Fix_FpuMultiply = GamefixId_FIRST,
-	Fix_FpuNegDiv,
 	Fix_GoemonTlbMiss,
 	Fix_SoftwareRendererFMV,
 	Fix_SkipMpeg,
@@ -184,11 +190,35 @@ enum class SpeedHack
 	MaxCount,
 };
 
-enum class VsyncMode
+enum class DebugAnalysisCondition
 {
-	Off,
-	On,
-	Adaptive,
+	ALWAYS,
+	IF_DEBUGGER_IS_OPEN,
+	NEVER
+};
+
+struct DebugSymbolSource
+{
+	std::string Name;
+	bool ClearDuringAnalysis = false;
+
+	friend auto operator<=>(const DebugSymbolSource& lhs, const DebugSymbolSource& rhs) = default;
+};
+
+struct DebugExtraSymbolFile
+{
+	std::string Path;
+	std::string BaseAddress;
+	std::string Condition;
+
+	friend auto operator<=>(const DebugExtraSymbolFile& lhs, const DebugExtraSymbolFile& rhs) = default;
+};
+
+enum class DebugFunctionScanMode
+{
+	SCAN_ELF,
+	SCAN_MEMORY,
+	SKIP
 };
 
 enum class AspectRatioType : u8
@@ -197,6 +227,7 @@ enum class AspectRatioType : u8
 	RAuto4_3_3_2,
 	R4_3,
 	R16_9,
+	R10_7,
 	MaxCount
 };
 
@@ -206,6 +237,7 @@ enum class FMVAspectRatioSwitchType : u8
 	RAuto4_3_3_2,
 	R4_3,
 	R16_9,
+	R10_7,
 	MaxCount
 };
 
@@ -248,6 +280,14 @@ enum class GSRendererType : s8
 	DX12 = 15,
 };
 
+enum class GSVSyncMode : u8
+{
+	Disabled,
+	FIFO,
+	Mailbox,
+	Count
+};
+
 enum class GSInterlaceMode : u8
 {
 	Automatic,
@@ -287,14 +327,6 @@ enum class TriFiltering : s8
 	Forced,
 };
 
-enum class HWMipmapLevel : s8
-{
-	Automatic = -1,
-	Off,
-	Basic,
-	Full
-};
-
 enum class AccBlendLevel : u8
 {
 	Minimum,
@@ -303,6 +335,13 @@ enum class AccBlendLevel : u8
 	High,
 	Full,
 	Maximum,
+};
+
+enum class OsdOverlayPos : u8
+{
+	None,
+	TopLeft,
+	TopRight,
 };
 
 enum class TexturePreloadingLevel : u8
@@ -323,6 +362,7 @@ enum class GSScreenshotFormat : u8
 {
 	PNG,
 	JPEG,
+	WebP,
 	Count,
 };
 
@@ -331,6 +371,22 @@ enum class GSDumpCompressionMethod : u8
 	Uncompressed,
 	LZMA,
 	Zstandard,
+};
+
+enum class SavestateCompressionMethod : u8
+{
+	Uncompressed = 0,
+	Deflate64 = 1,
+	Zstandard = 2,
+	LZMA2 = 3
+};
+
+enum class SavestateCompressionLevel : u8
+{
+	Low = 0,
+	Medium = 1,
+	High = 2,
+	VeryHigh = 3,
 };
 
 enum class GSHardwareDownloadMode : u8
@@ -377,76 +433,101 @@ enum class GSBilinearDirtyMode : u8
 	MaxCount
 };
 
-// Template function for casting enumerations to their underlying type
-template <typename Enumeration>
-typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
+enum class GSHalfPixelOffset : u8
 {
-	return static_cast<typename std::underlying_type<Enumeration>::type>(E);
-}
+	Off,
+	Normal,
+	Special,
+	SpecialAggressive,
+	Native,
+	MaxCount
+};
 
-ImplementEnumOperators(GamefixId);
-
-//------------ DEFAULT sseMXCSR VALUES ---------------
-#define DEFAULT_sseMXCSR 0xffc0 //FPU rounding > DaZ, FtZ, "chop"
-#define DEFAULT_sseVUMXCSR 0xffc0 //VU  rounding > DaZ, FtZ, "chop"
-#define SYSTEM_sseMXCSR 0x1f80
-
-// --------------------------------------------------------------------------------------
-//  TraceFiltersEE
-// --------------------------------------------------------------------------------------
-struct TraceFiltersEE
+enum class GSNativeScaling : u8
 {
-	BITFIELD32()
-	bool
-		m_EnableAll : 1, // Master Enable switch (if false, no logs at all)
-		m_EnableDisasm : 1,
-		m_EnableRegisters : 1,
-		m_EnableEvents : 1; // Enables logging of event-driven activity -- counters, DMAs, etc.
-	BITFIELD_END
-
-	TraceFiltersEE()
-	{
-		bitset = 0;
-	}
-
-	bool operator==(const TraceFiltersEE& right) const
-	{
-		return OpEqu(bitset);
-	}
-
-	bool operator!=(const TraceFiltersEE& right) const
-	{
-		return !this->operator==(right);
-	}
+	Off,
+	Normal,
+	Aggressive,
+	MaxCount
 };
 
 // --------------------------------------------------------------------------------------
-//  TraceFiltersIOP
+//  TraceLogsEE
 // --------------------------------------------------------------------------------------
-struct TraceFiltersIOP
+struct TraceLogsEE
+{
+	// EE
+	BITFIELD32()
+	bool
+		bios : 1,
+		memory : 1,
+		giftag : 1,
+		vifcode : 1,
+		mskpath3 : 1,
+		r5900 : 1,
+		cop0 : 1,
+		cop1 : 1,
+		cop2 : 1,
+		cache : 1,
+		knownhw : 1,
+		unknownhw : 1,
+		dmahw : 1,
+		ipu : 1,
+		dmac : 1,
+		counters : 1,
+		spr : 1,
+		vif : 1,
+		gif : 1;
+	BITFIELD_END
+
+	TraceLogsEE();
+
+	bool operator==(const TraceLogsEE& right) const;
+	bool operator!=(const TraceLogsEE& right) const;
+};
+
+// --------------------------------------------------------------------------------------
+//  TraceLogsIOP
+// --------------------------------------------------------------------------------------
+struct TraceLogsIOP
 {
 	BITFIELD32()
 	bool
-		m_EnableAll : 1, // Master Enable switch (if false, no logs at all)
-		m_EnableDisasm : 1,
-		m_EnableRegisters : 1,
-		m_EnableEvents : 1; // Enables logging of event-driven activity -- counters, DMAs, etc.
+		bios : 1,
+		memcards : 1,
+		pad : 1,
+		r3000a : 1,
+		cop2 : 1,
+		memory : 1,
+		knownhw : 1,
+		unknownhw : 1,
+		dmahw : 1,
+		dmac : 1,
+		counters : 1,
+		cdvd : 1,
+		mdec : 1;
 	BITFIELD_END
 
-	TraceFiltersIOP()
-	{
-		bitset = 0;
-	}
+	TraceLogsIOP();
 
-	bool operator==(const TraceFiltersIOP& right) const
-	{
-		return OpEqu(bitset);
-	}
+	bool operator==(const TraceLogsIOP& right) const;
+	bool operator!=(const TraceLogsIOP& right) const;
+};
 
-	bool operator!=(const TraceFiltersIOP& right) const
-	{
-		return !this->operator==(right);
-	}
+// --------------------------------------------------------------------------------------
+//  TraceLogsMISC
+// --------------------------------------------------------------------------------------
+struct TraceLogsMISC
+{
+	BITFIELD32()
+	bool
+		sif : 1;
+	BITFIELD_END
+
+	TraceLogsMISC();
+
+	bool operator==(const TraceLogsMISC& right) const;
+	bool operator!=(const TraceLogsMISC& right) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -454,33 +535,20 @@ struct TraceFiltersIOP
 // --------------------------------------------------------------------------------------
 struct TraceLogFilters
 {
-	// Enabled - global toggle for high volume logging.  This is effectively the equivalent to
-	// (EE.Enabled() || IOP.Enabled() || SIF) -- it's cached so that we can use the macros
-	// below to inline the conditional check.  This is desirable because these logs are
-	// *very* high volume, and debug builds get noticably slower if they have to invoke
-	// methods/accessors to test the log enable bits.  Debug builds are slow enough already,
-	// so I prefer this to help keep them usable.
 	bool Enabled;
 
-	TraceFiltersEE EE;
-	TraceFiltersIOP IOP;
+	TraceLogsEE EE;
+	TraceLogsIOP IOP;
+	TraceLogsMISC MISC;
 
-	TraceLogFilters()
-	{
-		Enabled = false;
-	}
+	TraceLogFilters();
 
 	void LoadSave(SettingsWrapper& ini);
-
-	bool operator==(const TraceLogFilters& right) const
-	{
-		return OpEqu(Enabled) && OpEqu(EE) && OpEqu(IOP);
-	}
-
-	bool operator!=(const TraceLogFilters& right) const
-	{
-		return !this->operator==(right);
-	}
+	// When logging, the tracelogpack is checked, not was in the config.
+	// Call this to sync the tracelogpack values with the config values.
+	void SyncToConfig() const;
+	bool operator==(const TraceLogFilters& right) const;
+	bool operator!=(const TraceLogFilters& right) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -508,21 +576,11 @@ struct Pcsx2Config
 		BITFIELD_END
 
 		// Default is Disabled, with all recs enabled underneath.
-		ProfilerOptions()
-			: bitset(0xfffffffe)
-		{
-		}
+		ProfilerOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const ProfilerOptions& right) const
-		{
-			return OpEqu(bitset);
-		}
-
-		bool operator!=(const ProfilerOptions& right) const
-		{
-			return !OpEqu(bitset);
-		}
+		bool operator==(const ProfilerOptions& right) const;
+		bool operator!=(const ProfilerOptions& right) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -565,44 +623,29 @@ struct Pcsx2Config
 
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const RecompilerOptions& right) const
-		{
-			return OpEqu(bitset);
-		}
+		bool operator==(const RecompilerOptions& right) const;
+		bool operator!=(const RecompilerOptions& right) const;
 
-		bool operator!=(const RecompilerOptions& right) const
-		{
-			return !OpEqu(bitset);
-		}
+		u32 GetEEClampMode() const;
+		void SetEEClampMode(u32 value);
 
-		u32 GetEEClampMode() const
-		{
-			return fpuFullMode ? 3 : (fpuExtraOverflow ? 2 : (fpuOverflow ? 1 : 0));
-		}
-
-		void SetEEClampMode(u32 value)
-		{
-			fpuOverflow = (value >= 1);
-			fpuExtraOverflow = (value >= 2);
-			fpuFullMode = (value >= 3);
-		}
-
-		u32 GetVUClampMode() const
-		{
-			return vu0SignOverflow ? 3 : (vu0ExtraOverflow ? 2 : (vu0Overflow ? 1 : 0));
-		}
+		u32 GetVUClampMode() const;
 	};
 
 	// ------------------------------------------------------------------------
 	struct CpuOptions
 	{
+		BITFIELD32()
+		bool
+			ExtraMemory : 1;
+		BITFIELD_END
+
 		RecompilerOptions Recompiler;
 
-		SSE_MXCSR sseMXCSR;
-		SSE_MXCSR sseVU0MXCSR;
-		SSE_MXCSR sseVU1MXCSR;
-
-		u32 AffinityControlMode;
+		FPControlRegister FPUFPCR;
+		FPControlRegister FPUDivFPCR;
+		FPControlRegister VU0FPCR;
+		FPControlRegister VU1FPCR;
 
 		CpuOptions();
 		void LoadSave(SettingsWrapper& wrap);
@@ -610,15 +653,8 @@ struct Pcsx2Config
 
 		bool CpusChanged(const CpuOptions& right) const;
 
-		bool operator==(const CpuOptions& right) const
-		{
-			return OpEqu(sseMXCSR) && OpEqu(sseVU0MXCSR) && OpEqu(sseVU1MXCSR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
-		}
-
-		bool operator!=(const CpuOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const CpuOptions& right) const;
+		bool operator!=(const CpuOptions& right) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -643,7 +679,7 @@ struct Pcsx2Config
 		static constexpr int DEFAULT_VIDEO_CAPTURE_BITRATE = 6000;
 		static constexpr int DEFAULT_VIDEO_CAPTURE_WIDTH = 640;
 		static constexpr int DEFAULT_VIDEO_CAPTURE_HEIGHT = 480;
-		static constexpr int DEFAULT_AUDIO_CAPTURE_BITRATE = 160;
+		static constexpr int DEFAULT_AUDIO_CAPTURE_BITRATE = 192;
 		static const char* DEFAULT_CAPTURE_CONTAINER;
 
 		union
@@ -653,6 +689,10 @@ struct Pcsx2Config
 			struct
 			{
 				bool
+					SynchronousMTGS : 1,
+					VsyncEnable : 1,
+					DisableMailboxPresentation : 1,
+					ExtendedUpscalingMultipliers : 1,
 					PCRTCAntiBlur : 1,
 					DisableInterlaceOffset : 1,
 					PCRTCOffsets : 1,
@@ -661,14 +701,12 @@ struct Pcsx2Config
 					UseDebugDevice : 1,
 					UseBlitSwapChain : 1,
 					DisableShaderCache : 1,
-					DisableDualSourceBlend : 1,
 					DisableFramebufferFetch : 1,
 					DisableVertexShaderExpand : 1,
-					DisableThreadedPresentation : 1,
 					SkipDuplicateFrames : 1,
-					OsdShowMessages : 1,
 					OsdShowSpeed : 1,
 					OsdShowFPS : 1,
+					OsdShowVPS : 1,
 					OsdShowCPU : 1,
 					OsdShowGPU : 1,
 					OsdShowResolution : 1,
@@ -676,15 +714,18 @@ struct Pcsx2Config
 					OsdShowIndicators : 1,
 					OsdShowSettings : 1,
 					OsdShowInputs : 1,
-					OsdShowFrameTimes : 1;
-
-				bool
+					OsdShowFrameTimes : 1,
+					OsdShowVersion : 1,
+					OsdShowVideoCapture : 1,
+					OsdShowInputRec : 1,
+					OsdShowHardwareInfo : 1,
 					HWSpinGPUForReadbacks : 1,
 					HWSpinCPUForReadbacks : 1,
 					GPUPaletteConversion : 1,
 					AutoFlushSW : 1,
 					PreloadFrameWithGSData : 1,
 					Mipmap : 1,
+					HWMipmap : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,
@@ -694,7 +735,7 @@ struct Pcsx2Config
 					UserHacks_DisableSafeFeatures : 1,
 					UserHacks_DisableRenderFixes : 1,
 					UserHacks_MergePPSprite : 1,
-					UserHacks_WildHack : 1,
+					UserHacks_ForceEvenSpritePosition : 1,
 					UserHacks_NativePaletteDraw : 1,
 					UserHacks_EstimateTextureRegion : 1,
 					FXAA : 1,
@@ -722,12 +763,6 @@ struct Pcsx2Config
 
 		int VsyncQueueSize = 2;
 
-		// forces the MTGS to execute tags/tasks in fully blocking/synchronous
-		// style. Useful for debugging potential bugs in the MTGS pipeline.
-		bool SynchronousMTGS = false;
-
-		VsyncMode VsyncEnable = VsyncMode::Off;
-
 		float FramerateNTSC = DEFAULT_FRAME_RATE_NTSC;
 		float FrameratePAL = DEFAULT_FRAME_RATE_PAL;
 
@@ -739,12 +774,13 @@ struct Pcsx2Config
 		float StretchY = 100.0f;
 		int Crop[4] = {};
 
-		float OsdScale = 100.0;
+		float OsdScale = 100.0f;
+		OsdOverlayPos OsdMessagesPos = OsdOverlayPos::TopLeft;
+		OsdOverlayPos OsdPerformancePos = OsdOverlayPos::TopRight;
 
 		GSRendererType Renderer = GSRendererType::Auto;
 		float UpscaleMultiplier = 1.0f;
 
-		HWMipmapLevel HWMipmap = HWMipmapLevel::Automatic;
 		AccBlendLevel AccurateBlendingUnit = AccBlendLevel::Basic;
 		BiFiltering TextureFiltering = BiFiltering::PS2;
 		TexturePreloadingLevel TexturePreloading = TexturePreloadingLevel::Full;
@@ -761,8 +797,9 @@ struct Pcsx2Config
 		int SkipDrawEnd = 0;
 
 		GSHWAutoFlushLevel UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
-		s8 UserHacks_HalfPixelOffset = 0;
+		GSHalfPixelOffset UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
 		s8 UserHacks_RoundSprite = 0;
+		GSNativeScaling UserHacks_NativeScaling = GSNativeScaling::Off;
 		s32 UserHacks_TCOffsetX = 0;
 		s32 UserHacks_TCOffsetY = 0;
 		u8 UserHacks_CPUSpriteRenderBW = 0;
@@ -793,6 +830,7 @@ struct Pcsx2Config
 
 		std::string CaptureContainer = DEFAULT_CAPTURE_CONTAINER;
 		std::string VideoCaptureCodec;
+		std::string VideoCaptureFormat;
 		std::string VideoCaptureParameters;
 		std::string AudioCaptureCodec;
 		std::string AudioCaptureParameters;
@@ -831,28 +869,22 @@ struct Pcsx2Config
 
 	struct SPU2Options
 	{
-		enum class SynchronizationMode
+		enum class SPU2SyncMode : u8
 		{
+			Disabled,
 			TimeStretch,
-			ASync,
-			NoSync,
+			Count
 		};
 
 		static constexpr s32 MAX_VOLUME = 200;
-		
-		static constexpr s32 MIN_LATENCY = 3;
-		static constexpr s32 MIN_LATENCY_TIMESTRETCH = 15;
-		static constexpr s32 MAX_LATENCY = 750;
+		static constexpr AudioBackend DEFAULT_BACKEND = AudioBackend::Cubeb;
+		static constexpr SPU2SyncMode DEFAULT_SYNC_MODE = SPU2SyncMode::TimeStretch;
 
-		static constexpr s32 MIN_SEQUENCE_LEN = 20;
-		static constexpr s32 MAX_SEQUENCE_LEN = 100;
-		static constexpr s32 MIN_SEEKWINDOW = 10;
-		static constexpr s32 MAX_SEEKWINDOW = 30;
-		static constexpr s32 MIN_OVERLAP = 5;
-		static constexpr s32 MAX_OVERLAP = 15;
+		static std::optional<SPU2SyncMode> ParseSyncMode(const char* str);
+		static const char* GetSyncModeName(SPU2SyncMode backend);
+		static const char* GetSyncModeDisplayName(SPU2SyncMode backend);
 
 		BITFIELD32()
-		bool OutputLatencyMinimal : 1;
 		bool
 			DebugEnabled : 1,
 			MsgToConsole : 1,
@@ -860,7 +892,6 @@ struct Pcsx2Config
 			MsgVoiceOff : 1,
 			MsgDMA : 1,
 			MsgAutoDMA : 1,
-			MsgOverruns : 1,
 			MsgCache : 1,
 			AccessLog : 1,
 			DMALog : 1,
@@ -871,51 +902,25 @@ struct Pcsx2Config
 			VisualDebugEnabled : 1;
 		BITFIELD_END
 
-		SynchronizationMode SynchMode = SynchronizationMode::TimeStretch;
+		u32 OutputVolume = 100;
+		u32 FastForwardVolume = 100;
+		bool OutputMuted = false;
 
-		s32 FinalVolume = 100;
-		s32 Latency = 60;
-		s32 OutputLatency = 20;
-		s32 SpeakerConfiguration = 0;
-		s32 DplDecodingLevel = 0;
+		AudioBackend Backend = DEFAULT_BACKEND;
+		SPU2SyncMode SyncMode = DEFAULT_SYNC_MODE;
+		AudioStreamParameters StreamParameters;
 
-		s32 SequenceLenMS = 30;
-		s32 SeekWindowMS = 20;
-		s32 OverlapMS = 10;
-
-		std::string OutputModule;
-		std::string BackendName;
+		std::string DriverName;
 		std::string DeviceName;
 
 		SPU2Options();
 
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const SPU2Options& right) const
-		{
-			return OpEqu(bitset) &&
+		bool IsTimeStretchEnabled() const { return (SyncMode == SPU2SyncMode::TimeStretch); }
 
-				OpEqu(SynchMode) &&
-
-				OpEqu(FinalVolume) &&
-				OpEqu(Latency) &&
-				OpEqu(OutputLatency) &&
-				OpEqu(SpeakerConfiguration) &&
-				OpEqu(DplDecodingLevel) &&
-
-				OpEqu(SequenceLenMS) &&
-				OpEqu(SeekWindowMS) &&
-				OpEqu(OverlapMS) &&
-
-				OpEqu(OutputModule) &&
-				OpEqu(BackendName) &&
-				OpEqu(DeviceName);
-		}
-
-		bool operator!=(const SPU2Options& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const SPU2Options& right) const;
+		bool operator!=(const SPU2Options& right) const;
 	};
 
 	struct DEV9Options
@@ -945,23 +950,14 @@ struct Pcsx2Config
 			u8 Address[4]{};
 			bool Enabled;
 
-			bool operator==(const HostEntry& right) const
-			{
-				return OpEqu(Url) &&
-					   OpEqu(Desc) &&
-					   (*(int*)Address == *(int*)right.Address) &&
-					   OpEqu(Enabled);
-			}
-
-			bool operator!=(const HostEntry& right) const
-			{
-				return !this->operator==(right);
-			}
+			bool operator==(const HostEntry& right) const;
+			bool operator!=(const HostEntry& right) const;
 		};
 
 		bool EthEnable{false};
 		NetApi EthApi{NetApi::Unset};
 		std::string EthDevice;
+		bool EthLogDHCP{false};
 		bool EthLogDNS{false};
 
 		bool InterceptDHCP{false};
@@ -980,45 +976,12 @@ struct Pcsx2Config
 		bool HddEnable{false};
 		std::string HddFile;
 
-		/* The PS2's HDD max size is 2TB
-		 * which is 2^32 * 512 byte sectors
-		 * Note that we don't yet support
-		 * 48bit LBA, so our limit is lower */
-		uint HddSizeSectors{40 * (1024 * 1024 * 1024 / 512)};
-
 		DEV9Options();
 
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const DEV9Options& right) const
-		{
-			return OpEqu(EthEnable) &&
-				   OpEqu(EthApi) &&
-				   OpEqu(EthDevice) &&
-				   OpEqu(EthLogDNS) &&
-
-				   OpEqu(InterceptDHCP) &&
-				   (*(int*)PS2IP == *(int*)right.PS2IP) &&
-				   (*(int*)Gateway == *(int*)right.Gateway) &&
-				   (*(int*)DNS1 == *(int*)right.DNS1) &&
-				   (*(int*)DNS2 == *(int*)right.DNS2) &&
-
-				   OpEqu(AutoMask) &&
-				   OpEqu(AutoGateway) &&
-				   OpEqu(ModeDNS1) &&
-				   OpEqu(ModeDNS2) &&
-
-				   OpEqu(EthHosts) &&
-
-				   OpEqu(HddEnable) &&
-				   OpEqu(HddFile) &&
-				   OpEqu(HddSizeSectors);
-		}
-
-		bool operator!=(const DEV9Options& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const DEV9Options& right) const;
+		bool operator!=(const DEV9Options& right) const;
 
 	protected:
 		static void LoadIPHelper(u8* field, const std::string& setting);
@@ -1032,7 +995,6 @@ struct Pcsx2Config
 		BITFIELD32()
 		bool
 			FpuMulHack : 1, // Tales of Destiny hangs.
-			FpuNegDivHack : 1, // Gundam games messed up camera-view.
 			GoemonTlbHack : 1, // Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
 			SoftwareRendererFMVHack : 1, // Switches to software renderer for FMVs
 			SkipMPEGHack : 1, // Skips MPEG videos (Katamari and other games need this)
@@ -1056,19 +1018,14 @@ struct Pcsx2Config
 		void LoadSave(SettingsWrapper& wrap);
 		GamefixOptions& DisableAll();
 
+		static const char* GetGameFixName(GamefixId id);
+
 		bool Get(GamefixId id) const;
 		void Set(GamefixId id, bool enabled = true);
 		void Clear(GamefixId id) { Set(id, false); }
 
-		bool operator==(const GamefixOptions& right) const
-		{
-			return OpEqu(bitset);
-		}
-
-		bool operator!=(const GamefixOptions& right) const
-		{
-			return !OpEqu(bitset);
-		}
+		bool operator==(const GamefixOptions& right) const;
+		bool operator!=(const GamefixOptions& right) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -1101,7 +1058,7 @@ struct Pcsx2Config
 		bool operator!=(const SpeedhackOptions& right) const;
 
 		static const char* GetSpeedHackName(SpeedHack id);
-		static std::optional<SpeedHack> ParseSpeedHackName(const std::string_view& name);
+		static std::optional<SpeedHack> ParseSpeedHackName(const std::string_view name);
 	};
 
 	struct DebugOptions
@@ -1119,26 +1076,51 @@ struct Pcsx2Config
 		u32 WindowHeight;
 		u32 MemoryViewBytesPerRow;
 
+
 		DebugOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const DebugOptions& right) const
-		{
-			return OpEqu(bitset) && OpEqu(FontWidth) && OpEqu(FontHeight) && OpEqu(WindowWidth) && OpEqu(WindowHeight) && OpEqu(MemoryViewBytesPerRow);
-		}
+		bool operator==(const DebugOptions& right) const;
+		bool operator!=(const DebugOptions& right) const;
+	};
 
-		bool operator!=(const DebugOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+	// ------------------------------------------------------------------------
+	struct DebugAnalysisOptions
+	{
+
+		static const char* RunConditionNames[];
+		static const char* FunctionScanModeNames[];
+
+		DebugAnalysisCondition RunCondition = DebugAnalysisCondition::IF_DEBUGGER_IS_OPEN;
+		bool GenerateSymbolsForIRXExports = true;
+
+		bool AutomaticallySelectSymbolsToClear = true;
+		std::vector<DebugSymbolSource> SymbolSources;
+
+		bool ImportSymbolsFromELF = true;
+		bool ImportSymFileFromDefaultLocation = true;
+		bool DemangleSymbols = true;
+		bool DemangleParameters = true;
+		std::vector<DebugExtraSymbolFile> ExtraSymbolFiles;
+
+		DebugFunctionScanMode FunctionScanMode = DebugFunctionScanMode::SCAN_ELF;
+		bool CustomFunctionScanRange = false;
+		std::string FunctionScanStartAddress;
+		std::string FunctionScanEndAddress;
+
+		bool GenerateFunctionHashes = true;
+
+		void LoadSave(SettingsWrapper& wrap);
+
+		friend auto operator<=>(const DebugAnalysisOptions& lhs, const DebugAnalysisOptions& rhs) = default;
 	};
 
 	// ------------------------------------------------------------------------
 	struct EmulationSpeedOptions
 	{
 		BITFIELD32()
-		bool FrameLimitEnable : 1;
 		bool SyncToHostRefreshRate : 1;
+		bool UseVSyncForTiming : 1;
 		BITFIELD_END
 
 		float NominalScalar{1.0f};
@@ -1162,15 +1144,8 @@ struct Pcsx2Config
 		FilenameOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const FilenameOptions& right) const
-		{
-			return OpEqu(Bios);
-		}
-
-		bool operator!=(const FilenameOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const FilenameOptions& right) const;
+		bool operator!=(const FilenameOptions& right) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -1241,38 +1216,47 @@ struct Pcsx2Config
 
 	// ------------------------------------------------------------------------
 
-#ifdef ENABLE_ACHIEVEMENTS
 	struct AchievementsOptions
 	{
+		static constexpr u32 MINIMUM_NOTIFICATION_DURATION = 3;
+		static constexpr u32 MAXIMUM_NOTIFICATION_DURATION = 30;
+		static constexpr u32 DEFAULT_NOTIFICATION_DURATION = 5;
+		static constexpr u32 DEFAULT_LEADERBOARD_DURATION = 10;
+
 		BITFIELD32()
 		bool
 			Enabled : 1,
-			TestMode : 1,
+			HardcoreMode : 1,
+			EncoreMode : 1,
+			SpectatorMode : 1,
 			UnofficialTestMode : 1,
-			RichPresence : 1,
-			ChallengeMode : 1,
-			Leaderboards : 1,
 			Notifications : 1,
+			LeaderboardNotifications : 1,
 			SoundEffects : 1,
-			PrimedIndicators : 1;
+			Overlays : 1;
 		BITFIELD_END
 
-		s32 NotificationsDuration = 5;
+		u32 NotificationsDuration = DEFAULT_NOTIFICATION_DURATION;
+		u32 LeaderboardsDuration = DEFAULT_LEADERBOARD_DURATION;
 
 		AchievementsOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const AchievementsOptions& right) const
-		{
-			return OpEqu(bitset) && OpEqu(NotificationsDuration);
-		}
-
-		bool operator!=(const AchievementsOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const AchievementsOptions& right) const;
+		bool operator!=(const AchievementsOptions& right) const;
 	};
-#endif
+
+	struct SavestateOptions
+	{
+		SavestateOptions();
+		void LoadSave(SettingsWrapper& wrap);
+
+		SavestateCompressionMethod CompressionType = SavestateCompressionMethod::Zstandard;
+		SavestateCompressionLevel CompressionRatio = SavestateCompressionLevel::Medium;
+
+		bool operator==(const SavestateOptions& right) const;
+		bool operator!=(const SavestateOptions& right) const;
+	};
 
 	// ------------------------------------------------------------------------
 
@@ -1280,35 +1264,26 @@ struct Pcsx2Config
 	bool
 		CdvdVerboseReads : 1, // enables cdvd read activity verbosely dumped to the console
 		CdvdDumpBlocks : 1, // enables cdvd block dumping
-		CdvdShareWrite : 1, // allows the iso to be modified while it's loaded
+		CdvdPrecache : 1, // enables cdvd precaching of compressed images
 		EnablePatches : 1, // enables patch detection and application
 		EnableCheats : 1, // enables cheat detection and application
 		EnablePINE : 1, // enables inter-process communication
-		EnableWideScreenPatches : 1,
-		EnableNoInterlacingPatches : 1,
 		EnableFastBoot : 1,
 		EnableFastBootFastForward : 1,
-		EnablePerGameSettings : 1,
+		EnableThreadPinning : 1,
 		// TODO - Vaser - where are these settings exposed in the Qt UI?
 		EnableRecordingTools : 1,
 		EnableGameFixes : 1, // enables automatic game fixes
 		SaveStateOnShutdown : 1, // default value for saving state on shutdown
 		EnableDiscordPresence : 1, // enables discord rich presence integration
+		UseSavestateSelector : 1,
 		InhibitScreensaver : 1,
 		BackupSavestate : 1,
-		SavestateZstdCompression : 1,
-		// enables simulated ejection of memory cards when loading savestates
-		McdEnableEjection : 1,
 		McdFolderAutoManage : 1,
 
 		HostFs : 1,
 
 		WarnAboutUnsafeSettings : 1;
-
-	// uses automatic ntfs compression when creating new memory cards (Win32 only)
-#ifdef _WIN32
-	bool McdCompressNTFS;
-#endif
 	BITFIELD_END
 
 	CpuOptions Cpu;
@@ -1317,7 +1292,9 @@ struct Pcsx2Config
 	GamefixOptions Gamefixes;
 	ProfilerOptions Profiler;
 	DebugOptions Debugger;
+	DebugAnalysisOptions DebuggerAnalysis;
 	EmulationSpeedOptions EmulationSpeed;
+	SavestateOptions Savestate;
 	SPU2Options SPU2;
 	DEV9Options DEV9;
 	USBOptions USB;
@@ -1327,9 +1304,7 @@ struct Pcsx2Config
 
 	FilenameOptions BaseFilenames;
 
-#ifdef ENABLE_ACHIEVEMENTS
 	AchievementsOptions Achievements;
-#endif
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)
@@ -1366,6 +1341,9 @@ struct Pcsx2Config
 
 	/// Clears all core keys from the specified interface.
 	static void ClearConfiguration(SettingsInterface* dest_si);
+
+	/// Removes keys that are not valid for per-game settings.
+	static void ClearInvalidPerGameConfiguration(SettingsInterface* si);
 };
 
 extern Pcsx2Config EmuConfig;
@@ -1375,15 +1353,16 @@ namespace EmuFolders
 	extern std::string AppRoot;
 	extern std::string DataRoot;
 	extern std::string Settings;
+	extern std::string DebuggerSettings;
 	extern std::string Bios;
 	extern std::string Snapshots;
 	extern std::string Savestates;
 	extern std::string MemoryCards;
-	extern std::string Langs;
 	extern std::string Logs;
 	extern std::string Cheats;
 	extern std::string Patches;
 	extern std::string Resources;
+	extern std::string UserResources;
 	extern std::string Cache;
 	extern std::string Covers;
 	extern std::string GameSettings;
@@ -1392,7 +1371,9 @@ namespace EmuFolders
 	extern std::string Videos;
 
 	/// Initializes critical folders (AppRoot, DataRoot, Settings). Call once on startup.
-	bool InitializeCriticalFolders();
+	void SetAppRoot();
+	bool SetResourcesDirectory();
+	bool SetDataDirectory(Error* error);
 
 	// Assumes that AppRoot and DataRoot have been initialized.
 	void SetDefaults(SettingsInterface& si);
@@ -1400,7 +1381,10 @@ namespace EmuFolders
 	bool EnsureFoldersExist();
 
 	/// Opens the specified log file for writing.
-	std::FILE* OpenLogFile(const std::string_view& name, const char* mode);
+	std::FILE* OpenLogFile(std::string_view name, const char* mode);
+
+	/// Returns the path to a resource file, allowing the user to override it.
+	std::string GetOverridableResourcePath(std::string_view name);
 } // namespace EmuFolders
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1409,17 +1393,21 @@ namespace EmuFolders
 
 // ------------ CPU / Recompiler Options ---------------
 
+#ifdef _M_X86 // TODO(Stenzek): Remove me once EE/VU/IOP recs are added.
 #define THREAD_VU1 (EmuConfig.Cpu.Recompiler.EnableVU1 && EmuConfig.Speedhacks.vuThread)
+#else
+#define THREAD_VU1 false
+#endif
 #define INSTANT_VU1 (EmuConfig.Speedhacks.vu1Instant)
 #define CHECK_EEREC (EmuConfig.Cpu.Recompiler.EnableEE)
 #define CHECK_CACHE (EmuConfig.Cpu.Recompiler.EnableEECache)
 #define CHECK_IOPREC (EmuConfig.Cpu.Recompiler.EnableIOP)
 #define CHECK_FASTMEM (EmuConfig.Cpu.Recompiler.EnableEE && EmuConfig.Cpu.Recompiler.EnableFastmem)
+#define CHECK_EXTRAMEM (memGetExtraMemMode())
 
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK (EmuConfig.Gamefixes.VuAddSubHack) // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.
 #define CHECK_FPUMULHACK (EmuConfig.Gamefixes.FpuMulHack) // Special Fix for Tales of Destiny hangs.
-#define CHECK_FPUNEGDIVHACK (EmuConfig.Gamefixes.FpuNegDivHack) // Special Fix for Gundam games messed up camera-view.
 #define CHECK_XGKICKHACK (EmuConfig.Gamefixes.XgKickHack) // Special Fix for Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics.
 #define CHECK_EETIMINGHACK (EmuConfig.Gamefixes.EETimingHack) // Fix all scheduled events to happen in 1 cycle.
 #define CHECK_INSTANTDMAHACK (EmuConfig.Gamefixes.InstantDMAHack) // Attempt to finish DMA's instantly, useful for games which rely on cache emulation.
@@ -1475,3 +1463,6 @@ namespace EmuFolders
 // Change to 1 for console logs of SIF, GPU (PS1 mode) and MDEC (PS1 mode).
 // These do spam a lot though!
 #define PSX_EXTRALOGS 0
+
+#undef BITFIELD32
+#undef BITFIELD_END

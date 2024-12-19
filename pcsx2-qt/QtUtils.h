@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -20,6 +8,7 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QMetaType>
 #include <QtCore/QString>
+#include <QtCore/QAbstractItemModel>
 #include <functional>
 #include <initializer_list>
 #include <string_view>
@@ -29,8 +18,11 @@ class ByteStream;
 
 class QAction;
 class QComboBox;
+class QFileInfo;
 class QFrame;
+class QLabel;
 class QKeyEvent;
+class QSlider;
 class QTableView;
 class QTreeView;
 class QVariant;
@@ -60,6 +52,12 @@ namespace QtUtils
 	/// NOTE: Defined in QtKeyCodes.cpp, not QtUtils.cpp.
 	u32 KeyEventToCode(const QKeyEvent* ev);
 
+	/// Shows a file, or the containing folder if unsupported, with the system file explorer
+	void ShowInFileExplorer(QWidget* parent, const QFileInfo& file);
+
+	/// Get the context menu name for the action performed by ShowInFileExplorer
+	QString GetShowInFileExplorerMessage();
+
 	/// Opens a URL with the default handler.
 	void OpenURL(QWidget* parent, const QUrl& qurl);
 
@@ -70,10 +68,13 @@ namespace QtUtils
 	void OpenURL(QWidget* parent, const QString& url);
 
 	/// Converts a std::string_view to a QString safely.
-	QString StringViewToQString(const std::string_view& str);
+	QString StringViewToQString(const std::string_view str);
 
 	/// Sets a widget to italics if the setting value is inherited.
 	void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited);
+
+	/// Binds a label to a slider's value.
+	void BindLabelToSlider(QSlider* slider, QLabel* label, float range = 1.0f);
 
 	/// Changes whether a window is resizable.
 	void SetWindowResizeable(QWidget* widget, bool resizeable);
@@ -93,4 +94,7 @@ namespace QtUtils
 	{
 		return QString("%1").arg(QString::number(val, base), sizeof(val) * 2, '0').toUpper();
 	};
+
+	/// Converts an abstract item model to a CSV string.
+	QString AbstractItemModelToCSV(QAbstractItemModel* model, int role = Qt::DisplayRole, bool useQuotes = false);
 } // namespace QtUtils

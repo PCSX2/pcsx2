@@ -1,20 +1,8 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#ifndef FXAA_HLSL_5
-    #define FXAA_HLSL_5 0
+#ifndef FXAA_HLSL
+    #define FXAA_HLSL 0
 #endif
 #ifndef FXAA_GLSL_130
     #define FXAA_GLSL_130 0
@@ -43,7 +31,7 @@ layout(location = 0) in vec2 PSin_t;
 layout(location = 0) out vec4 SV_Target0;
 layout(set = 0, binding = 0) uniform sampler2D TextureSampler;
 
-#elif (FXAA_HLSL_5 == 1)
+#elif (FXAA_HLSL == 1)
 Texture2D Texture : register(t0);
 SamplerState TextureSampler : register(s0);
 
@@ -72,12 +60,10 @@ static constexpr sampler MAIN_SAMPLER(coord::normalized, address::clamp_to_edge,
                              [FXAA CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-#if (FXAA_HLSL_5 == 1)
+#if (FXAA_HLSL == 1)
 struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaTexTop(t, p) t.tex.SampleLevel(t.smpl, p, 0.0)
 #define FxaaTexOff(t, p, o, r) t.tex.SampleLevel(t.smpl, p, 0.0, o)
-#define FxaaTexAlpha4(t, p) t.tex.GatherAlpha(t.smpl, p)
-#define FxaaTexOffAlpha4(t, p, o) t.tex.GatherAlpha(t.smpl, p, o)
 #define FxaaDiscard clip(-1)
 #define FxaaSat(x) saturate(x)
 
@@ -96,8 +82,6 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaTex texture2d<float>
 #define FxaaTexTop(t, p) t.sample(MAIN_SAMPLER, p)
 #define FxaaTexOff(t, p, o, r) t.sample(MAIN_SAMPLER, p, o)
-#define FxaaTexAlpha4(t, p) t.gather(MAIN_SAMPLER, p, 0, component::w)
-#define FxaaTexOffAlpha4(t, p, o) t.gather(MAIN_SAMPLER, p, o, component::w)
 #define FxaaDiscard discard_fragment()
 #define FxaaSat(x) saturate(x)
 #endif
@@ -456,14 +440,14 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 
 #if (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
 float4 FxaaPass(float4 FxaaColor, float2 uv0)
-#elif (FXAA_HLSL_5 == 1)
+#elif (FXAA_HLSL == 1)
 float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 #elif defined(__METAL_VERSION__)
 float4 FxaaPass(float4 FxaaColor, float2 uv0, texture2d<float> tex)
 #endif
 {
 
-	#if (FXAA_HLSL_5 == 1)
+	#if (FXAA_HLSL == 1)
 	FxaaTex tex;
 	tex.tex = Texture;
 	tex.smpl = TextureSampler;
@@ -497,7 +481,7 @@ void main()
 	SV_Target0 = float4(color.rgb, 1.0);
 }
 
-#elif (FXAA_HLSL_5 == 1)
+#elif (FXAA_HLSL == 1)
 PS_OUTPUT main(VS_OUTPUT input)
 {
 	PS_OUTPUT output;

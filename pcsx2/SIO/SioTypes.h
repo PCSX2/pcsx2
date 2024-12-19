@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -130,10 +118,21 @@ namespace Sio2Ctrl
 	static constexpr u32 SIO2MAN_RESET = 0x000003bc;
 } // namespace Sio2Ctrl
 
+// TODO: Remove deprecated options once memcards are no longer using them.
 namespace Recv1
 {
+	// Deprecated
 	static constexpr u32 DISCONNECTED = 0x1d100;
+	// Deprecated
 	static constexpr u32 CONNECTED = 0x1100;
+
+	static constexpr u32 NO_DEVICES_MISSING = 0x1000;
+	static constexpr u32 PORT_1_MISSING = 0x1D000;
+	static constexpr u32 PORT_2_MISSING = 0x2D000;
+	static constexpr u32 BOTH_PORTS_MISSING = 0x3D000;
+	static constexpr u32 ONE_PORT_OPEN = 0x100;
+	static constexpr u32 TWO_PORTS_OPEN = 0x200;
+
 } // namespace Recv1
 
 namespace Recv2
@@ -159,5 +158,6 @@ namespace Recv3
 
 namespace Terminator
 {
-	static constexpr u32 DEFAULT = 0x55;
+	static constexpr u32 NOT_READY = 0x66;
+	static constexpr u32 READY = 0x55;
 } // namespace Terminator

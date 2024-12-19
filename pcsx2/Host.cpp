@@ -1,20 +1,7 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
-
+#include "BuildVersion.h"
 #include "GS.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "Host.h"
@@ -28,13 +15,15 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
+#include "fmt/format.h"
+
 #include <cstdarg>
 #include <shared_mutex>
 
 namespace Host
 {
 	static std::pair<const char*, u32> LookupTranslationString(
-		const std::string_view& context, const std::string_view& msg);
+		const std::string_view context, const std::string_view msg);
 
 	static std::mutex s_settings_mutex;
 	static LayeredSettingsInterface s_layered_settings_interface;
@@ -48,7 +37,7 @@ namespace Host
 	static u32 s_translation_string_cache_pos;
 } // namespace Host
 
-std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view& context, const std::string_view& msg)
+std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view context, const std::string_view msg)
 {
 	// TODO: TranslatableString, compile-time hashing.
 
@@ -58,7 +47,7 @@ std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view
 	s32 len;
 
 	// Shouldn't happen, but just in case someone tries to translate an empty string.
-	if (unlikely(msg.empty()))
+	if (msg.empty()) [[unlikely]]
 	{
 		ret.first = &s_translation_string_cache[0];
 		ret.second = 0;
@@ -68,11 +57,11 @@ std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view
 	s_translation_string_mutex.lock_shared();
 	ctx_it = s_translation_string_map.find(context);
 
-	if (unlikely(ctx_it == s_translation_string_map.end()))
+	if (ctx_it == s_translation_string_map.end()) [[unlikely]]
 		goto add_string;
 
 	msg_it = ctx_it->second.find(msg);
-	if (unlikely(msg_it == ctx_it->second.end()))
+	if (msg_it == ctx_it->second.end()) [[unlikely]]
 		goto add_string;
 
 	ret.first = &s_translation_string_cache[msg_it->second.first];
@@ -84,7 +73,7 @@ add_string:
 	s_translation_string_mutex.unlock_shared();
 	s_translation_string_mutex.lock();
 
-	if (unlikely(s_translation_string_cache.empty()))
+	if (s_translation_string_cache.empty()) [[unlikely]]
 	{
 		// First element is always an empty string.
 		s_translation_string_cache.resize(TRANSLATION_STRING_CACHE_SIZE);
@@ -125,18 +114,18 @@ add_string:
 	return ret;
 }
 
-const char* Host::TranslateToCString(const std::string_view& context, const std::string_view& msg)
+const char* Host::TranslateToCString(const std::string_view context, const std::string_view msg)
 {
 	return LookupTranslationString(context, msg).first;
 }
 
-std::string_view Host::TranslateToStringView(const std::string_view& context, const std::string_view& msg)
+std::string_view Host::TranslateToStringView(const std::string_view context, const std::string_view msg)
 {
 	const auto mp = LookupTranslationString(context, msg);
 	return std::string_view(mp.first, mp.second);
 }
 
-std::string Host::TranslateToString(const std::string_view& context, const std::string_view& msg)
+std::string Host::TranslateToString(const std::string_view context, const std::string_view msg)
 {
 	return std::string(TranslateToStringView(context, msg));
 }
@@ -149,7 +138,7 @@ void Host::ClearTranslationCache()
 	s_translation_string_mutex.unlock();
 }
 
-void Host::ReportFormattedErrorAsync(const std::string_view& title, const char* format, ...)
+void Host::ReportFormattedErrorAsync(const std::string_view title, const char* format, ...)
 {
 	std::va_list ap;
 	va_start(ap, format);
@@ -158,7 +147,7 @@ void Host::ReportFormattedErrorAsync(const std::string_view& title, const char* 
 	ReportErrorAsync(title, message);
 }
 
-bool Host::ConfirmFormattedMessage(const std::string_view& title, const char* format, ...)
+bool Host::ConfirmFormattedMessage(const std::string_view title, const char* format, ...)
 {
 	std::va_list ap;
 	va_start(ap, format);
@@ -166,6 +155,11 @@ bool Host::ConfirmFormattedMessage(const std::string_view& title, const char* fo
 	va_end(ap);
 
 	return ConfirmMessage(title, message);
+}
+
+std::string Host::GetHTTPUserAgent()
+{
+	return fmt::format("PCSX2 {} ({})", BuildVersion::GitRev, GetOSVersionString());
 }
 
 std::unique_lock<std::mutex> Host::GetSettingsLock()
@@ -178,17 +172,25 @@ SettingsInterface* Host::GetSettingsInterface()
 	return &s_layered_settings_interface;
 }
 
-SettingsInterface* Host::GetSettingsInterfaceForBindings()
-{
-	SettingsInterface* input_layer = s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_INPUT);
-	return input_layer ? input_layer : &s_layered_settings_interface;
-}
-
 std::string Host::GetBaseStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
 {
 	std::unique_lock lock(s_settings_mutex);
 	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
 		->GetStringValue(section, key, default_value);
+}
+
+SmallString Host::GetBaseSmallStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+{
+	std::unique_lock lock(s_settings_mutex);
+	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
+		->GetSmallStringValue(section, key, default_value);
+}
+
+TinyString Host::GetBaseTinyStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+{
+	std::unique_lock lock(s_settings_mutex);
+	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
+		->GetTinyStringValue(section, key, default_value);
 }
 
 bool Host::GetBaseBoolSettingValue(const char* section, const char* key, bool default_value /*= false*/)
@@ -294,6 +296,18 @@ void Host::RemoveBaseSettingValue(const char* section, const char* key)
 	s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->DeleteValue(section, key);
 }
 
+SmallString Host::GetSmallStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+{
+	std::unique_lock lock(s_settings_mutex);
+	return s_layered_settings_interface.GetSmallStringValue(section, key, default_value);
+}
+
+TinyString Host::GetTinyStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+{
+	std::unique_lock lock(s_settings_mutex);
+	return s_layered_settings_interface.GetTinyStringValue(section, key, default_value);
+}
+
 std::string Host::GetStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
 {
 	std::unique_lock lock(s_settings_mutex);
@@ -358,14 +372,12 @@ void Host::Internal::SetBaseSettingsLayer(SettingsInterface* sif)
 	s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_BASE, sif);
 }
 
-void Host::Internal::SetGameSettingsLayer(SettingsInterface* sif)
+void Host::Internal::SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& settings_lock)
 {
-	std::unique_lock lock(s_settings_mutex);
 	s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_GAME, sif);
 }
 
-void Host::Internal::SetInputSettingsLayer(SettingsInterface* sif)
+void Host::Internal::SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& settings_lock)
 {
-	std::unique_lock lock(s_settings_mutex);
 	s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_INPUT, sif);
 }

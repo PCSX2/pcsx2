@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "DEV9/ATA/ATA.h"
 #include "DEV9/DEV9.h"
@@ -29,8 +15,12 @@ void ATA::DRQCmdPIODataToHost(u8* buff, int buffLen, int buffIndex, int size, bo
 	regStatus &= ~ATA_STAT_BUSY;
 	regStatus |= ATA_STAT_DRQ;
 
+	// Only set pendingInterrupt if nIEN is cleared
 	if (regControlEnableIRQ && sendIRQ)
-		_DEV9irq(ATA_INTR_INTRQ, 1); //0x6c cycles before
+	{
+		pendingInterrupt = true;
+		_DEV9irq(ATA_INTR_INTRQ, 1);
+	}
 }
 void ATA::PostCmdPIODataToHost()
 {
@@ -73,7 +63,7 @@ void ATA::HDD_IdentifyDevice()
 	DevCon.WriteLn("DEV9: HddidentifyDevice");
 
 	//IDE transfer start
-	CreateHDDinfo(EmuConfig.DEV9.HddSizeSectors);
+	CreateHDDinfo(hddImageSize / 512);
 
 	pioDRQEndTransferFunc = nullptr;
 	DRQCmdPIODataToHost(identifyData, 256 * 2, 0, 256 * 2, true);
@@ -107,13 +97,17 @@ void ATA::HDD_ReadPIO(bool isLBA48)
 
 	IDE_CmdLBA48Transform(isLBA48);
 
+	regStatus &= ~ATA_STAT_SEEK;
 	if (!HDD_CanSeek())
 	{
 		regStatus |= ATA_STAT_ERR;
+		regStatusSeekLock = -1;
 		regError |= ATA_ERR_ID;
 		PostCmdNoData();
 		return;
 	}
+	else
+		regStatus |= ATA_STAT_SEEK;
 
 	HDD_ReadSync(&ATA::HDD_ReadPIOS2);
 }

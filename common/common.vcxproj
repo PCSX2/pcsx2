@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(SolutionDir)common\vsprops\BaseProjectConfig.props" />
-  <Import Project="$(SolutionDir)common\vsprops\ProjectConfigAVX2.props" />
   <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4639972E-424E-4E13-8B07-CA403C481346}</ProjectGuid>
@@ -33,10 +32,9 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidyaml\rapidyaml\ext\c4core\src\c4\ext\fast_float\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\libpng</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\fast_float\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\fmt\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\jpgd</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\fmt\fmt\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ForcedIncludeFiles>PrecompiledHeader.h</ForcedIncludeFiles>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -51,10 +49,9 @@
     <ClCompile Include="DynamicLibrary.cpp" />
     <ClCompile Include="Error.cpp" />
     <ClCompile Include="FastJmp.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="FileSystem.cpp" />
-    <ClCompile Include="General.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="HTTPDownloader.cpp" />
     <ClCompile Include="HTTPDownloaderCurl.cpp">
@@ -77,30 +74,46 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Linux\LnxHostSys.cpp" />
-    <ClCompile Include="Linux\LnxMisc.cpp" />
-    <ClCompile Include="Linux\LnxThreads.cpp" />
     <ClCompile Include="Windows\WinHostSys.cpp" />
     <ClCompile Include="Windows\WinMisc.cpp" />
     <ClCompile Include="Windows\WinThreads.cpp" />
-    <ClCompile Include="Misc.cpp" />
+    <ClCompile Include="HostSys.cpp" />
     <ClCompile Include="Semaphore.cpp" />
-    <ClCompile Include="emitter\avx.cpp" />
-    <ClCompile Include="emitter\bmi.cpp" />
-    <ClCompile Include="emitter\cpudetect.cpp" />
-    <ClCompile Include="emitter\fpu.cpp" />
-    <ClCompile Include="emitter\groups.cpp" />
-    <ClCompile Include="emitter\jmp.cpp" />
-    <ClCompile Include="emitter\legacy.cpp" />
-    <ClCompile Include="emitter\legacy_sse.cpp" />
-    <ClCompile Include="emitter\movs.cpp" />
-    <ClCompile Include="emitter\simd.cpp" />
-    <ClCompile Include="emitter\x86emitter.cpp" />
-    <ClCompile Include="emitter\LnxCpuDetect.cpp" />
-    <ClCompile Include="emitter\WinCpuDetect.cpp" />
+    <ClCompile Include="emitter\avx.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="emitter\bmi.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="emitter\fpu.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="emitter\groups.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="emitter\jmp.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="emitter\legacy.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="emitter\legacy_sse.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="emitter\movs.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="emitter\simd.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="emitter\x86emitter.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="FastJmp.asm" />
+    <MASM Include="FastJmp.asm">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </MASM>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BitUtils.h" />
@@ -113,10 +126,13 @@
     <ClInclude Include="Error.h" />
     <ClInclude Include="FastJmp.h" />
     <ClInclude Include="FileSystem.h" />
+    <ClInclude Include="FPControl.h" />
     <ClInclude Include="HashCombine.h" />
     <ClInclude Include="HeapArray.h" />
     <ClInclude Include="HeterogeneousContainers.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="SingleRegisterTypes.h" />
+    <ClInclude Include="VectorIntrin.h" />
     <ClInclude Include="LRUCache.h" />
     <ClInclude Include="HTTPDownloader.h" />
     <ClInclude Include="HTTPDownloaderCurl.h">
@@ -134,13 +150,11 @@
     <ClInclude Include="SettingsWrapper.h" />
     <ClInclude Include="Assertions.h" />
     <ClInclude Include="Console.h" />
-    <ClInclude Include="General.h" />
+    <ClInclude Include="HostSys.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="ReadbackSpinManager.h" />
     <ClInclude Include="RedtapeWindows.h" />
-    <ClInclude Include="SafeArray.h" />
-    <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="TextureDecompress.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="WAVWriter.h" />
@@ -153,7 +167,6 @@
     <ClInclude Include="emitter\legacy_instructions.h" />
     <ClInclude Include="emitter\legacy_internal.h" />
     <ClInclude Include="emitter\legacy_types.h" />
-    <ClInclude Include="emitter\tools.h" />
     <ClInclude Include="emitter\x86emitter.h" />
     <ClInclude Include="emitter\x86types.h" />
     <ClInclude Include="emitter\implement\dwshift.h" />
@@ -173,11 +186,6 @@
     <ClInclude Include="emitter\implement\simd_shufflepack.h" />
     <ClInclude Include="WrappedMemCopy.h" />
     <ClInclude Include="ZipHelpers.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\3rdparty\jpgd\jpgd.vcxproj">
-      <Project>{ed2f21fd-0a36-4a8f-9b90-e7d92a2acb63}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

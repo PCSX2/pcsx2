@@ -1,21 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-// Micro VU recompiler! - author: cottonvibes(@gmail.com)
-
-#include "PrecompiledHeader.h"
 #include "microVU.h"
 
 #include "common/AlignedMalloc.h"
@@ -25,17 +10,6 @@
 //------------------------------------------------------------------
 // Micro VU - Main Functions
 //------------------------------------------------------------------
-alignas(__pagesize) static u8 vu0_RecDispatchers[mVUdispCacheSize];
-alignas(__pagesize) static u8 vu1_RecDispatchers[mVUdispCacheSize];
-
-void mVUreserveCache(microVU& mVU)
-{
-	mVU.cache_reserve = new RecompiledCodeReserve(StringUtil::StdStringFromFormat("Micro VU%u Recompiler Cache", mVU.index));
-
-	const size_t alloc_offset = mVU.index ? HostMemoryMap::mVU0recOffset : HostMemoryMap::mVU1recOffset;
-	mVU.cache_reserve->Assign(GetVmMemory().CodeMemory(), alloc_offset, mVU.cacheSize * _1mb);
-	mVU.cache = mVU.cache_reserve->GetPtr();
-}
 
 // Only run this once per VU! ;)
 void mVUinit(microVU& mVU, uint vuIndex)
@@ -48,18 +22,8 @@ void mVUinit(microVU& mVU, uint vuIndex)
 	mVU.microMemSize = (mVU.index ? 0x4000 : 0x1000);
 	mVU.progSize     = (mVU.index ? 0x4000 : 0x1000) / 4;
 	mVU.progMemMask  =  mVU.progSize-1;
-	mVU.cacheSize    =  mVUcacheReserve;
-	mVU.cache        = NULL;
-	mVU.dispCache    = NULL;
-	mVU.startFunct   = NULL;
-	mVU.exitFunct    = NULL;
-
-	mVUreserveCache(mVU);
-
-	if (vuIndex)
-		mVU.dispCache = vu1_RecDispatchers;
-	else
-		mVU.dispCache = vu0_RecDispatchers;
+	mVU.cache        = vuIndex ? SysMemory::GetVU1Rec() : SysMemory::GetVU0Rec();
+	mVU.prog.x86end  = (vuIndex ? SysMemory::GetVU1RecEnd() : SysMemory::GetVU0RecEnd()) - (mVUcacheSafeZone * _1mb);
 
 	mVU.regAlloc.reset(new microRegAlloc(mVU.index));
 }
@@ -67,7 +31,6 @@ void mVUinit(microVU& mVU, uint vuIndex)
 // Resets Rec Data
 void mVUreset(microVU& mVU, bool resetReserve)
 {
-
 	if (THREAD_VU1)
 	{
 		DevCon.Warning("mVU Reset");
@@ -78,19 +41,13 @@ void mVUreset(microVU& mVU, bool resetReserve)
 		}
 		VU0.VI[REG_VPU_STAT].UL &= ~0x100;
 	}
-	// Restore reserve to uncommitted state
-	if (resetReserve)
-		mVU.cache_reserve->Reset();
 
-	HostSys::MemProtect(mVU.dispCache, mVUdispCacheSize, PageAccess_ReadWrite());
-	memset(mVU.dispCache, 0xcc, mVUdispCacheSize);
-
-	x86SetPtr(mVU.dispCache);
+	xSetPtr(mVU.cache);
 	mVUdispatcherAB(mVU);
 	mVUdispatcherCD(mVU);
-	mvuGenerateWaitMTVU(mVU);
-	mvuGenerateCopyPipelineState(mVU);
-	mVUemitSearch();
+	mVUGenerateWaitMTVU(mVU);
+	mVUGenerateCopyPipelineState(mVU);
+	mVUGenerateCompareState(mVU);
 
 	mVU.regs().nextBlockCycles = 0;
 	memset(&mVU.prog.lpState, 0, sizeof(mVU.prog.lpState));
@@ -104,10 +61,8 @@ void mVUreset(microVU& mVU, bool resetReserve)
 	mVU.prog.curFrame =  0;
 
 	// Setup Dynarec Cache Limits for Each Program
-	u8* z = mVU.cache;
-	mVU.prog.x86start = z;
-	mVU.prog.x86ptr   = z;
-	mVU.prog.x86end   = z + ((mVU.cacheSize - mVUcacheSafeZone) * _1mb);
+	mVU.prog.x86start = xGetAlignedCallTarget();
+	mVU.prog.x86ptr   = mVU.prog.x86start;
 
 	for (u32 i = 0; i < (mVU.progSize / 2); i++)
 	{
@@ -125,16 +80,11 @@ void mVUreset(microVU& mVU, bool resetReserve)
 		mVU.prog.quick[i].block = NULL;
 		mVU.prog.quick[i].prog = NULL;
 	}
-
-	HostSys::MemProtect(mVU.dispCache, mVUdispCacheSize, PageAccess_ExecOnly());
 }
 
 // Free Allocated Resources
 void mVUclose(microVU& mVU)
 {
-
-	safe_delete(mVU.cache_reserve);
-
 	// Delete Programs and Block Managers
 	for (u32 i = 0; i < (mVU.progSize / 2); i++)
 	{

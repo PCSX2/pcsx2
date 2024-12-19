@@ -1,40 +1,29 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/OpenGL/GLContextEGLX11.h"
 
-#include <X11/Xlib.h>
+#include "common/Console.h"
+#include "common/Error.h"
 
 GLContextEGLX11::GLContextEGLX11(const WindowInfo& wi)
 	: GLContextEGL(wi)
 {
 }
+
 GLContextEGLX11::~GLContextEGLX11() = default;
 
-std::unique_ptr<GLContext> GLContextEGLX11::Create(const WindowInfo& wi, std::span<const Version> versions_to_try)
+std::unique_ptr<GLContext> GLContextEGLX11::Create(const WindowInfo& wi,
+	std::span<const Version> versions_to_try, Error* error)
 {
 	std::unique_ptr<GLContextEGLX11> context = std::make_unique<GLContextEGLX11>(wi);
-	if (!context->Initialize(versions_to_try))
+	if (!context->Initialize(versions_to_try, error))
 		return nullptr;
 
 	return context;
 }
 
-std::unique_ptr<GLContext> GLContextEGLX11::CreateSharedContext(const WindowInfo& wi)
+std::unique_ptr<GLContext> GLContextEGLX11::CreateSharedContext(const WindowInfo& wi, Error* error)
 {
 	std::unique_ptr<GLContextEGLX11> context = std::make_unique<GLContextEGLX11>(wi);
 	context->m_display = m_display;
@@ -45,12 +34,22 @@ std::unique_ptr<GLContext> GLContextEGLX11::CreateSharedContext(const WindowInfo
 	return context;
 }
 
-void GLContextEGLX11::ResizeSurface(u32 new_surface_width, u32 new_surface_height)
+EGLDisplay GLContextEGLX11::GetPlatformDisplay(Error* error)
 {
-	GLContextEGL::ResizeSurface(new_surface_width, new_surface_height);
+	EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_X11_KHR, "EGL_EXT_platform_x11");
+	if (dpy == EGL_NO_DISPLAY)
+		dpy = GetFallbackDisplay(error);
+
+	return dpy;
 }
 
-EGLNativeWindowType GLContextEGLX11::GetNativeWindow(EGLConfig config)
+EGLSurface GLContextEGLX11::CreatePlatformSurface(EGLConfig config, void* win, Error* error)
 {
-	return (EGLNativeWindowType) reinterpret_cast<Window>(m_wi.window_handle);
+	// This is hideous.. the EXT version requires a pointer to the window, whereas the base
+	// version requires the window itself, casted to void*...
+	EGLSurface surface = TryCreatePlatformSurface(config, &win, error);
+	if (surface == EGL_NO_SURFACE)
+		surface = CreateFallbackSurface(config, win, error);
+
+	return surface;
 }

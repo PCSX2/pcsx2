@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Input/InputManager.h"
 #include "USB/usb-pad/usb-pad-sdl-ff.h"
@@ -46,7 +32,7 @@ namespace usb_pad
 		}
 	}
 
-	std::unique_ptr<SDLFFDevice> SDLFFDevice::Create(const std::string_view& device)
+	std::unique_ptr<SDLFFDevice> SDLFFDevice::Create(const std::string_view device)
 	{
 		SDLInputSource* source = static_cast<SDLInputSource*>(InputManager::GetInputSourceInterface(InputSourceType::SDL));
 		if (!source)
@@ -71,9 +57,25 @@ namespace usb_pad
 		return ret;
 	}
 
-	void SDLFFDevice::CreateEffects(const std::string_view& device)
+	void SDLFFDevice::CreateEffects(const std::string_view device)
 	{
-		constexpr u32 length = 10000; // 10 seconds since NFS games seem to not issue new commands while rotating.
+		// Most games appear to assume that requested forces will be applied indefinitely.
+		// Gran Turismo 4 uses a single indefinite spring(?) force to center the wheel in menus, 
+		// and both GT4 and the NFS games have been observed using only a single constant force 
+		// command over long, consistent turns on smooth roads.
+		// 
+		// An infinite force is necessary as the normal mechanism for looping FFB effects,
+		// the iteration count, isn't implemented by a large number of new wheels. This deficiency
+		// exists at a firmware level and can only be dealt with by manually restarting forces.
+		// 
+		// Manually restarting forces causes problems on some wheels, however, so infinite forces
+		// are preferred for the vast majority of wheels which do correctly handle them.
+		// 
+		// Known "Problem" wheels which don't implement effect iterations
+		//   - Moza series: DOES implement infinite durations
+		//   - Accuforce v2: DOES implement infinite durations (deduced from anecdote, not confirmed manually)
+		//   - Simagic Alpha Mini: Does NOT implement infinite durations (stops after some time, seeking hard numbers)
+		constexpr u32 length = SDL_HAPTIC_INFINITY;
 
 		const unsigned int supported = SDL_HapticQuery(m_haptic);
 		if (supported & SDL_HAPTIC_CONSTANT)
@@ -201,7 +203,19 @@ namespace usb_pad
 				Console.Warning("SDL_HapticUpdateEffect() for constant failed: %s", SDL_GetError());
 		}
 
-		if (!m_constant_effect_running)
+		// Avoid re-running already-running effects by default. Re-running a running effect
+		// causes a variety of issues on different wheels, ranging from quality/detail loss,
+		// to abrupt judders of the wheel's FFB rapidly cutting out and back in.
+		// 
+		// Known problem wheels:
+		// Most common (Moza, Simagic, likely others): Loss of definition or quality
+		// Accuforce v2: Split-second FFB drop with each update
+		//
+		// Wheels that need it anyway:
+		// Simagic Alpha Mini: It doesn't properly handle infinite durations, leaving you to choose
+		//                     between fuzzy/vague FFB, or FFB that may cut out occasionally.
+		//                     This is the reason for use_ffb_dropout_workaround.
+		if (!m_constant_effect_running || use_ffb_dropout_workaround)
 		{
 			if (SDL_HapticRunEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
 				m_constant_effect_running = true;

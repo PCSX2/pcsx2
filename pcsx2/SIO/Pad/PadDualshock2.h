@@ -1,17 +1,5 @@
-﻿/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+﻿// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -97,6 +85,31 @@ private:
 	// Used to store the last vibration mapping request the PS2 made for the large motor.
 	u8 largeMotorLastConfig = 0xff;
 
+	// Since we reordered the buttons for better UI, we need to remap them here.
+	static constexpr std::array<u8, Inputs::LENGTH> bitmaskMapping = {{
+		12, // PAD_UP
+		13, // PAD_RIGHT
+		14, // PAD_DOWN
+		15, // PAD_LEFT
+		4, // PAD_TRIANGLE
+		5, // PAD_CIRCLE
+		6, // PAD_CROSS
+		7, // PAD_SQUARE
+		8, // PAD_SELECT
+		11, // PAD_START
+		2, // PAD_L1
+		0, // PAD_L2
+		3, // PAD_R1
+		1, // PAD_R2
+		9, // PAD_L3
+		10, // PAD_R3
+		16, // PAD_ANALOG
+		17, // PAD_PRESSURE
+		// remainder are analogs and not used here
+	}};
+
+	void ConfigLog();
+
 	u8 Mystery(u8 commandByte);
 	u8 ButtonQuery(u8 commandByte);
 	u8 Poll(u8 commandByte);
@@ -110,7 +123,7 @@ private:
 	u8 ResponseBytes(u8 commandByte);
 
 public:
-	PadDualshock2(u8 unifiedSlot);
+	PadDualshock2(u8 unifiedSlot, size_t ejectTicks);
 	~PadDualshock2() override;
 
 	static inline bool IsAnalogKey(int index)
@@ -127,6 +140,7 @@ public:
 	const Pad::ControllerInfo& GetInfo() const override;
 	void Set(u32 index, float value) override;
 	void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right) override;
+	void SetRawPressureButton(u32 index, const std::tuple<bool, u8> value) override;
 	void SetAxisScale(float deadzone, float scale) override;
 	float GetVibrationScale(u32 motor) const override;
 	void SetVibrationScale(u32 motor, float scale) override;
@@ -135,6 +149,7 @@ public:
 	void SetButtonDeadzone(float deadzone) override;
 	void SetAnalogInvertL(bool x, bool y) override;
 	void SetAnalogInvertR(bool x, bool y) override;
+	float GetEffectiveInput(u32 index) const override;
 	u8 GetRawInput(u32 index) const override;
 	std::tuple<u8, u8> GetRawLeftAnalog() const override;
 	std::tuple<u8, u8> GetRawRightAnalog() const override;

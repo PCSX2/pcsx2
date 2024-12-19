@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Updater.h"
 
@@ -30,6 +18,8 @@
 #include <vector>
 
 #ifdef _WIN32
+#include "common/RedtapeWilCom.h"
+#include <Shobjidl.h>
 #include <shellapi.h>
 #endif
 
@@ -42,36 +32,6 @@
 static constexpr size_t kInputBufSize = ((size_t)1 << 18);
 static constexpr ISzAlloc g_Alloc = {SzAlloc, SzFree};
 #endif
-
-static std::FILE* s_file_console_stream;
-static constexpr IConsoleWriter s_file_console_writer = {
-	[](const char* fmt) { // WriteRaw
-		std::fputs(fmt, s_file_console_stream);
-		std::fflush(s_file_console_stream);
-	},
-	[](const char* fmt) { // DoWriteLn
-		std::fputs(fmt, s_file_console_stream);
-		std::fputc('\n', s_file_console_stream);
-		std::fflush(s_file_console_stream);
-	},
-	[](ConsoleColors) { // DoSetColor
-	},
-	[](const char* fmt) { // DoWriteFromStdout
-		std::fputs(fmt, s_file_console_stream);
-		std::fflush(s_file_console_stream);
-	},
-	[]() { // Newline
-		std::fputc('\n', s_file_console_stream);
-		std::fflush(s_file_console_stream);
-	},
-	[](const char*) { // SetTitle
-	}};
-
-static void CloseConsoleFile()
-{
-	if (s_file_console_stream)
-		std::fclose(s_file_console_stream);
-}
 
 Updater::Updater(ProgressCallback* progress)
 	: m_progress(progress)
@@ -86,16 +46,11 @@ Updater::~Updater()
 
 void Updater::SetupLogging(ProgressCallback* progress, const std::string& destination_directory)
 {
-	const std::string log_path(Path::Combine(destination_directory, "updater.log"));
-	s_file_console_stream = FileSystem::OpenCFile(log_path.c_str(), "w");
-	if (!s_file_console_stream)
-	{
-		progress->DisplayFormattedModalError("Failed to open log file '%s'", log_path.c_str());
-		return;
-	}
+	Log::SetDebugOutputLevel(LOGLEVEL_DEBUG);
 
-	Console_SetActiveHandler(s_file_console_writer);
-	std::atexit(CloseConsoleFile);
+	std::string log_path = Path::Combine(destination_directory, "updater.log");
+	if (!Log::SetFileOutputLevel(LOGLEVEL_DEBUG, std::move(log_path)))
+		progress->DisplayFormattedModalError("Failed to open log file '%s'", log_path.c_str());
 }
 
 bool Updater::Initialize(std::string destination_directory)
@@ -126,10 +81,10 @@ bool Updater::OpenUpdateZip(const char* path)
 
 	m_look_stream.bufSize = kInputBufSize;
 	m_look_stream.realStream = &m_archive_stream.vt;
-	LookToRead2_Init(&m_look_stream);
+	LookToRead2_INIT(&m_look_stream);
 
 #ifdef _WIN32
-	WRes wres = InFile_OpenW(&m_archive_stream.file, StringUtil::UTF8StringToWideString(path).c_str());
+	WRes wres = InFile_OpenW(&m_archive_stream.file, FileSystem::GetWin32Path(path).c_str());
 #else
 	WRes wres = InFile_Open(&m_archive_stream.file, path);
 #endif
@@ -183,16 +138,42 @@ void Updater::CloseUpdateZip()
 bool Updater::RecursiveDeleteDirectory(const char* path)
 {
 #ifdef _WIN32
-	// making this safer on Win32...
-	std::wstring wpath(StringUtil::UTF8StringToWideString(path));
-	wpath += L'\0';
+	wil::com_ptr_nothrow<IFileOperation> fo;
+	HRESULT hr = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(fo.put()));
+	if (FAILED(hr))
+	{
+		m_progress->DisplayFormattedError("CoCreateInstance() for IFileOperation failed: %08X", hr);
+		return false;
+	}
 
-	SHFILEOPSTRUCTW op = {};
-	op.wFunc = FO_DELETE;
-	op.pFrom = wpath.c_str();
-	op.fFlags = FOF_NOCONFIRMATION;
+	wil::com_ptr_nothrow<IShellItem> item;
+	hr = SHCreateItemFromParsingName(StringUtil::UTF8StringToWideString(path).c_str(), NULL, IID_PPV_ARGS(item.put()));
+	if (FAILED(hr))
+	{
+		m_progress->DisplayFormattedError("SHCreateItemFromParsingName() for delete failed: %08X", hr);
+		return false;
+	}
 
-	return (SHFileOperationW(&op) == 0 && !op.fAnyOperationsAborted);
+	hr = fo->SetOperationFlags(FOF_NOCONFIRMATION | FOF_SILENT);
+	if (FAILED(hr))
+		m_progress->DisplayFormattedWarning("IFileOperation::SetOperationFlags() failed: %08X", hr);
+
+	hr = fo->DeleteItem(item.get(), nullptr);
+	if (FAILED(hr))
+	{
+		m_progress->DisplayFormattedError("IFileOperation::DeleteItem() failed: %08X", hr);
+		return false;
+	}
+
+	item.reset();
+	hr = fo->PerformOperations();
+	if (FAILED(hr))
+	{
+		m_progress->DisplayFormattedError("IFileOperation::PerformOperations() failed: %08X", hr);
+		return false;
+	}
+
+	return true;
 #else
 	return FileSystem::RecursiveDeleteDirectory(path);
 #endif
@@ -239,8 +220,7 @@ bool Updater::ParseZip()
 		{
 			// skip updater itself, since it was already pre-extracted.
 			// also skips portable.ini to not mess with future non-portable installs.
-			if (StringUtil::Strcasecmp(entry.destination_filename.c_str(), "updater.exe") != 0 &&
-				StringUtil::Strcasecmp(entry.destination_filename.c_str(), "portable.ini") != 0)
+			if (StringUtil::Strcasecmp(entry.destination_filename.c_str(), "updater.exe") != 0)
 			{
 				m_progress->DisplayFormattedInformation("Found file in zip: '%s'", entry.destination_filename.c_str());
 				m_update_paths.push_back(std::move(entry));
@@ -401,8 +381,8 @@ bool Updater::CommitUpdate()
 		m_progress->DisplayFormattedInformation("Moving '%s' to '%s'", staging_file_name.c_str(), dest_file_name.c_str());
 #ifdef _WIN32
 		const bool result =
-			MoveFileExW(StringUtil::UTF8StringToWideString(staging_file_name).c_str(),
-				StringUtil::UTF8StringToWideString(dest_file_name).c_str(), MOVEFILE_REPLACE_EXISTING);
+			MoveFileExW(FileSystem::GetWin32Path(staging_file_name).c_str(),
+				FileSystem::GetWin32Path(dest_file_name).c_str(), MOVEFILE_REPLACE_EXISTING);
 #else
 		const bool result = (rename(staging_file_name.c_str(), dest_file_name.c_str()) == 0);
 #endif

@@ -1,32 +1,24 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include "GS/GSState.h"
-#include "GS/Renderers/SW/GSSetupPrimCodeGenerator.h"
-#include "GS/Renderers/SW/GSDrawScanlineCodeGenerator.h"
+
+#ifdef _M_X86
+#include "GS/Renderers/SW/GSSetupPrimCodeGenerator.all.h"
+#include "GS/Renderers/SW/GSDrawScanlineCodeGenerator.all.h"
+#endif
+#ifdef _M_ARM64
+#include "GS/Renderers/SW/GSSetupPrimCodeGenerator.arm64.h"
+#include "GS/Renderers/SW/GSDrawScanlineCodeGenerator.arm64.h"
+#endif
 
 struct GSScanlineLocalData;
 
 MULTI_ISA_UNSHARED_START
 
 class GSRasterizerData;
-
-class GSSetupPrimCodeGenerator;
-class GSDrawScanlineCodeGenerator;
 
 class GSDrawScanline : public GSVirtualAlignedClass<32>
 {
@@ -36,6 +28,9 @@ class GSDrawScanline : public GSVirtualAlignedClass<32>
 public:
 	GSDrawScanline();
 	~GSDrawScanline() override;
+
+	/// Debug override for disabling scanline JIT on a key basis.
+	static bool ShouldUseCDrawScanline(u64 key);
 
 	/// Function pointer types which we call back into.
 	using SetupPrimPtr = void(*)(const GSVertexSW* vertex, const u16* index, const GSVertexSW& dscan, GSScanlineLocalData& local);

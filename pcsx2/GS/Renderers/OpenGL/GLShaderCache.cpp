@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/OpenGL/GLShaderCache.h"
 #include "GS/GS.h"
@@ -238,7 +224,7 @@ bool GLShaderCache::Recreate()
 }
 
 GLShaderCache::CacheIndexKey GLShaderCache::GetCacheKey(
-	const std::string_view& vertex_shader, const std::string_view& fragment_shader)
+	const std::string_view vertex_shader, const std::string_view fragment_shader)
 {
 	union ShaderHash
 	{
@@ -377,8 +363,8 @@ bool GLShaderCache::WriteToBlobFile(const CacheIndexKey& key, const std::vector<
 	return true;
 }
 
-std::optional<GLProgram> GLShaderCache::CompileProgram(const std::string_view& vertex_shader,
-	const std::string_view& fragment_shader, const PreLinkCallback& callback, bool set_retrievable)
+std::optional<GLProgram> GLShaderCache::CompileProgram(const std::string_view vertex_shader,
+	const std::string_view fragment_shader, const PreLinkCallback& callback, bool set_retrievable)
 {
 	GLProgram prog;
 	if (!prog.Compile(vertex_shader, fragment_shader))
@@ -397,7 +383,7 @@ std::optional<GLProgram> GLShaderCache::CompileProgram(const std::string_view& v
 }
 
 std::optional<GLProgram> GLShaderCache::CompileComputeProgram(
-	const std::string_view& glsl, const PreLinkCallback& callback, bool set_retrievable)
+	const std::string_view glsl, const PreLinkCallback& callback, bool set_retrievable)
 {
 	GLProgram prog;
 	if (!prog.CompileCompute(glsl))
@@ -416,7 +402,7 @@ std::optional<GLProgram> GLShaderCache::CompileComputeProgram(
 }
 
 std::optional<GLProgram> GLShaderCache::CompileAndAddProgram(const CacheIndexKey& key,
-	const std::string_view& vertex_shader, const std::string_view& fragment_shader, const PreLinkCallback& callback)
+	const std::string_view vertex_shader, const std::string_view fragment_shader, const PreLinkCallback& callback)
 {
 #ifdef PCSX2_DEVBUILD
 	Common::Timer timer;
@@ -515,7 +501,7 @@ bool GLShaderCache::GetComputeProgram(
 }
 
 std::optional<GLProgram> GLShaderCache::CompileAndAddComputeProgram(
-	const CacheIndexKey& key, const std::string_view& glsl, const PreLinkCallback& callback)
+	const CacheIndexKey& key, const std::string_view glsl, const PreLinkCallback& callback)
 {
 #ifdef PCSX2_DEVBUILD
 	Common::Timer timer;

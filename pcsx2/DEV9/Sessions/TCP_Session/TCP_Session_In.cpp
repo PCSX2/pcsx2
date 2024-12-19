@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include <algorithm>
 
@@ -34,10 +20,10 @@ using namespace PacketReader::IP::TCP;
 
 namespace Sessions
 {
-	PacketReader::IP::IP_Payload* TCP_Session::Recv()
+	std::optional<ReceivedPayload> TCP_Session::Recv()
 	{
-		TCP_Packet* ret = PopRecvBuff();
-		if (ret != nullptr)
+		std::optional<ReceivedPayload> ret = PopRecvBuff();
+		if (ret.has_value())
 			return ret;
 
 		switch (state)
@@ -61,40 +47,50 @@ namespace Sessions
 				if (FD_ISSET(client, &exceptSet))
 					return ConnectTCPComplete(false);
 
-				return nullptr;
+				return std::nullopt;
 			}
 			case TCP_State::SentSYN_ACK:
-				//Don't read data untill PS2 ACKs connection
-				return nullptr;
+				// Don't read data untill PS2 ACKs connection
+				return std::nullopt;
 			case TCP_State::CloseCompletedFlushBuffer:
-				//When TCP connection is closed by the server
-				//the server is the last to send a packet
-				//so the event must be raised here
+				/*
+				 * When TCP connection is closed by the server
+				 * the server is the last to send a packet
+				 * so the event must be raised here
+				 */
 				state = TCP_State::CloseCompleted;
 				RaiseEventConnectionClosed();
-				return nullptr;
+				return std::nullopt;
 			case TCP_State::Connected:
 			case TCP_State::Closing_ClosedByPS2:
-				//Only accept data in above two states
+				// Only accept data in above two states
 				break;
 			default:
-				return nullptr;
+				return std::nullopt;
 		}
 
-		uint maxSize = 0;
-		if (sendTimeStamps)
-			maxSize = std::min<uint>(maxSegmentSize - 12, windowSize.load());
-		else
-			maxSize = std::min<uint>(maxSegmentSize, windowSize.load());
+		if (ShouldWaitForAck())
+			return std::nullopt;
 
-		if (maxSize != 0 &&
-			myNumberACKed.load())
+		// Note, windowSize will be updated before _ReceivedAckNumber, potential race condition
+		// in practice, we just get a smaller or -ve maxSize
+		const u32 outstanding = GetOutstandingSequenceLength();
+
+		int maxSize = 0;
+		if (sendTimeStamps)
+			maxSize = std::min<int>(maxSegmentSize - 12, windowSize.load() - outstanding);
+		else
+			maxSize = std::min<int>(maxSegmentSize, windowSize.load() - outstanding);
+
+		if (maxSize > 0)
 		{
 			std::unique_ptr<u8[]> buffer;
 			int err = 0;
 			int recived;
 
-			u_long available;
+			// FIONREAD uses unsigned long on windows and int on linux
+			// Zero init so we don't have bad data on any unused bytes
+			unsigned long available = 0;
 #ifdef _WIN32
 			err = ioctlsocket(client, FIONREAD, &available);
 #elif defined(__POSIX__)
@@ -102,11 +98,11 @@ namespace Sessions
 #endif
 			if (err != SOCKET_ERROR)
 			{
-				if (available > maxSize)
-					Console.WriteLn("DEV9: TCP: Got a lot of data: %d Using: %d", available, maxSize);
+				if (available > static_cast<uint>(maxSize))
+					Console.WriteLn("DEV9: TCP: Got a lot of data: %lu using: %d", available, maxSize);
 
 				buffer = std::make_unique<u8[]>(maxSize);
-				recived = recv(client, (char*)buffer.get(), maxSize, 0);
+				recived = recv(client, reinterpret_cast<char*>(buffer.get()), maxSize, 0);
 				if (recived == -1)
 #ifdef _WIN32
 					err = WSAGetLastError();
@@ -119,36 +115,35 @@ namespace Sessions
 #ifdef _WIN32
 					case WSAEINVAL:
 					case WSAESHUTDOWN:
-						//In theory, this should only occur when the PS2 has RST the connection
-						//and the call to TCPSession.Recv() occurs at just the right time.
-
+						// In theory, this should only occur when the PS2 has RST the connection
+						// and the call to TCPSession.Recv() occurs at just the right time.
 						//Console.WriteLn("DEV9: TCP: Recv() on shutdown socket");
-						return nullptr;
+						return std::nullopt;
 					case WSAEWOULDBLOCK:
-						return nullptr;
+						return std::nullopt;
 #elif defined(__POSIX__)
 					case EINVAL:
 					case ESHUTDOWN:
-						//See WSAESHUTDOWN
+						// See WSAESHUTDOWN
 						//Console.WriteLn("DEV9: TCP: Recv() on shutdown socket");
-						return nullptr;
+						return std::nullopt;
 					case EWOULDBLOCK:
-						return nullptr;
+						return std::nullopt;
 #endif
 					case 0:
 						break;
 					default:
 						CloseByRemoteRST();
-						Console.Error("DEV9: TCP: Recv Error: %d", err);
-						return nullptr;
+						Console.Error("DEV9: TCP: Recv error: %d", err);
+						return std::nullopt;
 				}
 
-				//Server Closed Socket
+				// Server closed the Socket
 				if (recived == 0)
 				{
-					int result = shutdown(client, SD_RECEIVE);
+					const int result = shutdown(client, SD_RECEIVE);
 					if (result == SOCKET_ERROR)
-						Console.Error("DEV9: TCP: Shutdown SD_RECEIVE Error: %d",
+						Console.Error("DEV9: TCP: Shutdown SD_RECEIVE error: %d",
 #ifdef _WIN32
 							WSAGetLastError());
 #elif defined(__POSIX__)
@@ -163,39 +158,39 @@ namespace Sessions
 							return CloseByPS2Stage3();
 						default:
 							CloseByRemoteRST();
-							Console.Error("DEV9: TCP: Remote Close In Invalid State");
+							Console.Error("DEV9: TCP: Remote close occured with invalid TCP state");
 							break;
 					}
-					return nullptr;
+					return std::nullopt;
 				}
 				DevCon.WriteLn("DEV9: TCP: [SRV] Sending %d bytes", recived);
 
 				PayloadData* recivedData = new PayloadData(recived);
 				memcpy(recivedData->data.get(), buffer.get(), recived);
 
-				TCP_Packet* iRet = CreateBasePacket(recivedData);
-				IncrementMyNumber((u32)recived);
+				std::unique_ptr<TCP_Packet> iRet = CreateBasePacket(recivedData);
+				IncrementMyNumber(static_cast<u32>(recived));
 
 				iRet->SetACK(true);
 				iRet->SetPSH(true);
 
 				myNumberACKed.store(false);
-				//DevCon.WriteLn("DEV9: TCP: myNumberACKed Reset");
-				return iRet;
+				//DevCon.WriteLn("DEV9: TCP: myNumberACKed reset");
+				return ReceivedPayload{destIP, std::move(iRet)};
 			}
 		}
 
-		return nullptr;
+		return std::nullopt;
 	}
 
-	TCP_Packet* TCP_Session::ConnectTCPComplete(bool success)
+	std::optional<ReceivedPayload> TCP_Session::ConnectTCPComplete(bool success)
 	{
 		if (success)
 		{
 			state = TCP_State::SentSYN_ACK;
 
-			TCP_Packet* ret = new TCP_Packet(new PayloadData(0));
-			//Return the fact we connected
+			std::unique_ptr<TCP_Packet> ret = std::make_unique<TCP_Packet>(new PayloadData(0));
+			// Send packet to say we connected
 			ret->sourcePort = destPort;
 			ret->destinationPort = srcPort;
 
@@ -222,60 +217,60 @@ namespace Sessions
 
 				ret->options.push_back(new TCPopTS(timestampSeconds, lastRecivedTimeStamp));
 			}
-			return ret;
+			return ReceivedPayload{destIP, std::move(ret)};
 		}
 		else
 		{
 			int error = 0;
 #ifdef _WIN32
 			int len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0)
-				Console.Error("DEV9: TCP: Unkown TCP Connection Error (getsockopt Error: %d)", WSAGetLastError());
+			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
+				Console.Error("DEV9: TCP: Unkown TCP connection error (getsockopt error: %d)", WSAGetLastError());
 #elif defined(__POSIX__)
 			socklen_t len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0)
-				Console.Error("DEV9: TCP: Unkown TCP Connection Error (getsockopt Error: %d)", errno);
+			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
+				Console.Error("DEV9: TCP: Unkown TCP connection error (getsockopt error: %d)", errno);
 #endif
 			else
-				Console.Error("DEV9: TCP: Send Error: %d", error);
+				Console.Error("DEV9: TCP: Connect error: %d", error);
 
 			state = TCP_State::CloseCompleted;
 			RaiseEventConnectionClosed();
-			return nullptr;
+			return std::nullopt;
 		}
 	}
 
-	PacketReader::IP::TCP::TCP_Packet* TCP_Session::CloseByPS2Stage3()
+	ReceivedPayload TCP_Session::CloseByPS2Stage3()
 	{
 		//Console.WriteLn("DEV9: TCP: Remote has closed connection after PS2");
 
-		TCP_Packet* ret = CreateBasePacket();
+		std::unique_ptr ret = CreateBasePacket();
 		IncrementMyNumber(1);
 
 		ret->SetACK(true);
 		ret->SetFIN(true);
 
 		myNumberACKed.store(false);
-		//DevCon.WriteLn("myNumberACKed Reset");
+		//DevCon.WriteLn("myNumberACKed reset");
 
 		state = TCP_State::Closing_ClosedByPS2ThenRemote_WaitingForAck;
-		return ret;
+		return ReceivedPayload{destIP, std::move(ret)};
 	}
 
-	PacketReader::IP::TCP::TCP_Packet* TCP_Session::CloseByRemoteStage1()
+	ReceivedPayload TCP_Session::CloseByRemoteStage1()
 	{
 		//Console.WriteLn("DEV9: TCP: Remote has closed connection");
 
-		TCP_Packet* ret = CreateBasePacket();
+		std::unique_ptr<TCP_Packet> ret = CreateBasePacket();
 		IncrementMyNumber(1);
 
 		ret->SetACK(true);
 		ret->SetFIN(true);
 
 		myNumberACKed.store(false);
-		//DevCon.WriteLn("myNumberACKed Reset");
+		//DevCon.WriteLn("myNumberACKed reset");
 
 		state = TCP_State::Closing_ClosedByRemote;
-		return ret;
+		return ReceivedPayload{destIP, std::move(ret)};
 	}
 } // namespace Sessions

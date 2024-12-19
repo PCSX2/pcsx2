@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -34,34 +22,34 @@ namespace USB
 		NUM_PORTS = 2,
 	};
 
-	s32 DeviceTypeNameToIndex(const std::string_view& device);
+	s32 DeviceTypeNameToIndex(const std::string_view device);
 	const char* DeviceTypeIndexToName(s32 device);
 
 	std::vector<std::pair<const char*, const char*>> GetDeviceTypes();
-	const char* GetDeviceName(const std::string_view& device);
-	const char* GetDeviceSubtypeName(const std::string_view& device, u32 subtype);
-	std::span<const char*> GetDeviceSubtypes(const std::string_view& device);
-	std::span<const InputBindingInfo> GetDeviceBindings(const std::string_view& device, u32 subtype);
-	std::span<const SettingInfo> GetDeviceSettings(const std::string_view& device, u32 subtype);
+	const char* GetDeviceName(const std::string_view device);
+	const char* GetDeviceSubtypeName(const std::string_view device, u32 subtype);
+	std::span<const char*> GetDeviceSubtypes(const std::string_view device);
+	std::span<const InputBindingInfo> GetDeviceBindings(const std::string_view device, u32 subtype);
+	std::span<const SettingInfo> GetDeviceSettings(const std::string_view device, u32 subtype);
 
 	std::span<const InputBindingInfo> GetDeviceBindings(u32 port);
 	float GetDeviceBindValue(u32 port, u32 bind_index);
 	void SetDeviceBindValue(u32 port, u32 bind_index, float value);
 
 	/// Called when a new input device is connected.
-	void InputDeviceConnected(const std::string_view& identifier);
+	void InputDeviceConnected(const std::string_view identifier);
 
 	/// Called when an input device is disconnected.
-	void InputDeviceDisconnected(const std::string_view& identifier);
+	void InputDeviceDisconnected(const std::string_view identifier);
 
 	std::string GetConfigSection(int port);
 	std::string GetConfigDevice(const SettingsInterface& si, u32 port);
 	void SetConfigDevice(SettingsInterface& si, u32 port, const char* devname);
-	u32 GetConfigSubType(const SettingsInterface& si, u32 port, const std::string_view& devname);
-	void SetConfigSubType(SettingsInterface& si, u32 port, const std::string_view& devname, u32 subtype);
+	u32 GetConfigSubType(const SettingsInterface& si, u32 port, const std::string_view devname);
+	void SetConfigSubType(SettingsInterface& si, u32 port, const std::string_view devname, u32 subtype);
 
 	/// Returns the configuration key for the specified bind and device type.
-	std::string GetConfigSubKey(const std::string_view& device, const std::string_view& bind_name);
+	std::string GetConfigSubKey(const std::string_view device, const std::string_view bind_name);
 
 	/// Performs automatic controller mapping with the provided list of generic mappings.
 	bool MapDevice(SettingsInterface& si, u32 port, const std::vector<std::pair<GenericInputBinding, std::string>>& mapping);

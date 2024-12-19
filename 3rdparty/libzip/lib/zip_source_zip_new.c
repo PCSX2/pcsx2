@@ -1,6 +1,6 @@
 /*
   zip_source_zip_new.c -- prepare data structures for zip_fopen/zip_source_zip
-  Copyright (C) 2012-2021 Dieter Baron and Thomas Klausner
+  Copyright (C) 2012-2024 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -200,7 +200,7 @@ ZIP_EXTERN zip_source_t *zip_source_zip_file_create(zip_t *srcza, zip_uint64_t s
             st2.valid |= ZIP_STAT_MTIME;
         }
 
-        if ((src = _zip_source_window_new(src, start, data_len, &st2, ZIP_STAT_NAME, &attributes, source_archive, source_index, take_ownership, error)) == NULL) {
+        if ((src = _zip_source_window_new(src, start, data_len, &st2, ZIP_STAT_NAME, &attributes, &de->last_mod, source_archive, source_index, take_ownership, error)) == NULL) {
             return NULL;
         }
     }
@@ -219,7 +219,7 @@ ZIP_EXTERN zip_source_t *zip_source_zip_file_create(zip_t *srcza, zip_uint64_t s
            attributes and to have a source that positions the read
            offset properly before each read for multiple zip_file_t
            referring to the same underlying source */
-        if ((src =  _zip_source_window_new(srcza->src, 0, (zip_int64_t)st.comp_size, &st, ZIP_STAT_NAME, &attributes, srcza, srcidx, take_ownership, error)) == NULL) {
+        if ((src =  _zip_source_window_new(srcza->src, 0, (zip_int64_t)st.comp_size, &st, ZIP_STAT_NAME, &attributes, &de->last_mod, srcza, srcidx, take_ownership, error)) == NULL) {
             return NULL;
         }
     }
@@ -235,7 +235,7 @@ ZIP_EXTERN zip_source_t *zip_source_zip_file_create(zip_t *srcza, zip_uint64_t s
            attributes and to have a source that positions the read
            offset properly before each read for multiple zip_file_t
            referring to the same underlying source */
-        if ((src = _zip_source_window_new(src, 0, data_len, &st, ZIP_STAT_NAME, &attributes, NULL, 0, take_ownership, error)) == NULL) {
+        if ((src = _zip_source_window_new(src, 0, data_len, &st, ZIP_STAT_NAME, &attributes, &de->last_mod, NULL, 0, take_ownership, error)) == NULL) {
             return NULL;
         }
     }
@@ -253,6 +253,7 @@ ZIP_EXTERN zip_source_t *zip_source_zip_file_create(zip_t *srcza, zip_uint64_t s
         zip_encryption_implementation enc_impl;
 
         if ((enc_impl = _zip_get_encryption_implementation(st.encryption_method, ZIP_CODEC_DECODE)) == NULL) {
+            zip_source_free(src);
             zip_error_set(error, ZIP_ER_ENCRNOTSUPP, 0);
             return NULL;
         }
@@ -289,7 +290,7 @@ ZIP_EXTERN zip_source_t *zip_source_zip_file_create(zip_t *srcza, zip_uint64_t s
             st2.valid = ZIP_STAT_SIZE;
             st2.size = (zip_uint64_t)data_len;
         }
-        s2 = _zip_source_window_new(src, start, data_len, &st2, ZIP_STAT_NAME, NULL, NULL, 0, true, error);
+        s2 = _zip_source_window_new(src, start, data_len, &st2, ZIP_STAT_NAME, NULL, NULL, NULL, 0, true, error);
         if (s2 == NULL) {
             zip_source_free(src);
             return NULL;

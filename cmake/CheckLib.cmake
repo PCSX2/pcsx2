@@ -7,7 +7,7 @@ endmacro()
 macro(check_lib var lib)
 	set(_arg_list ${ARGN})
 
-	if(PKG_CONFIG_FOUND AND NOT CMAKE_CROSSCOMPILING AND NOT DEFINED pcsx2_manually_found_${var})
+	if(PKG_CONFIG_FOUND AND NOT DEFINED pcsx2_manually_found_${var})
 		string(TOLOWER ${lib} lower_lib)
 		pkg_search_module(${var} QUIET IMPORTED_TARGET ${lower_lib})
 	endif()

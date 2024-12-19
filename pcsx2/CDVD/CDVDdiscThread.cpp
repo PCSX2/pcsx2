@@ -1,24 +1,12 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "CDVDdiscReader.h"
 #include "CDVD/CDVD.h"
 
 #include <atomic>
 #include <condition_variable>
+#include <cstring>
 #include <limits>
 #include <queue>
 #include <thread>
@@ -50,10 +38,10 @@ static std::atomic<bool> cdvd_is_open;
 //bits: 12 would use 1<<12 entries, or 4096*16 sectors ~ 128MB
 #define CACHE_SIZE 12
 
-const u32 CacheSize = 1U << CACHE_SIZE;
-SectorInfo Cache[CacheSize];
+static constexpr u32 CacheSize = 1U << CACHE_SIZE;
+static SectorInfo Cache[CacheSize];
 
-u32 cdvdSectorHash(u32 lsn)
+static u32 cdvdSectorHash(u32 lsn)
 {
 	u32 t = 0;
 
@@ -70,7 +58,7 @@ u32 cdvdSectorHash(u32 lsn)
 	return t & m;
 }
 
-void cdvdCacheUpdate(u32 lsn, u8* data)
+static void cdvdCacheUpdate(u32 lsn, u8* data)
 {
 	std::lock_guard<std::mutex> guard(s_cache_lock);
 	u32 entry = cdvdSectorHash(lsn);
@@ -79,7 +67,7 @@ void cdvdCacheUpdate(u32 lsn, u8* data)
 	Cache[entry].lsn = lsn;
 }
 
-bool cdvdCacheCheck(u32 lsn)
+static bool cdvdCacheCheck(u32 lsn)
 {
 	std::lock_guard<std::mutex> guard(s_cache_lock);
 	u32 entry = cdvdSectorHash(lsn);
@@ -87,7 +75,7 @@ bool cdvdCacheCheck(u32 lsn)
 	return Cache[entry].lsn == lsn;
 }
 
-bool cdvdCacheFetch(u32 lsn, u8* data)
+static bool cdvdCacheFetch(u32 lsn, u8* data)
 {
 	std::lock_guard<std::mutex> guard(s_cache_lock);
 	u32 entry = cdvdSectorHash(lsn);
@@ -101,7 +89,7 @@ bool cdvdCacheFetch(u32 lsn, u8* data)
 	return false;
 }
 
-void cdvdCacheReset()
+static void cdvdCacheReset()
 {
 	std::lock_guard<std::mutex> guard(s_cache_lock);
 	for (u32 i = 0; i < CacheSize; i++)
@@ -110,7 +98,7 @@ void cdvdCacheReset()
 	}
 }
 
-bool cdvdReadBlockOfSectors(u32 sector, u8* data)
+static bool cdvdReadBlockOfSectors(u32 sector, u8* data)
 {
 	u32 count = std::min(sectors_per_read, src->GetSectorCount() - sector);
 	const s32 media = src->GetMediaType();
@@ -133,14 +121,14 @@ bool cdvdReadBlockOfSectors(u32 sector, u8* data)
 	return false;
 }
 
-void cdvdCallNewDiscCB()
+static void cdvdCallNewDiscCB()
 {
 	weAreInNewDiskCB = true;
 	newDiscCB();
 	weAreInNewDiskCB = false;
 }
 
-bool cdvdUpdateDiscStatus()
+static bool cdvdUpdateDiscStatus()
 {
 	bool ready = src->DiscReady();
 
@@ -175,7 +163,7 @@ bool cdvdUpdateDiscStatus()
 	return !ready;
 }
 
-void cdvdThread()
+static void cdvdThread()
 {
 	u8 buffer[2352 * sectors_per_read];
 	u32 prefetches_left = 0;
@@ -379,12 +367,12 @@ s32 cdvdDirectReadSector(u32 sector, s32 mode, u8* buffer)
 	}
 }
 
-s32 cdvdGetMediaType()
+static s32 cdvdGetMediaType()
 {
 	return src->GetMediaType();
 }
 
-s32 cdvdRefreshData()
+void cdvdRefreshData()
 {
 	const char* diskTypeName = "Unknown";
 
@@ -428,6 +416,4 @@ s32 cdvdRefreshData()
 	printf(" * CDVD: Disk Type: %s\n", diskTypeName);
 
 	cdvdCacheReset();
-
-	return 0;
 }

@@ -2,127 +2,187 @@
 
 # General Labels
 'Build | Project System':
-  - '.github/*'
-  - '.github/**/*'
-  - '*.sln'
-  - '**/*.sln'
-  - '*.vcxproj*'
-  - '**/*.vcxproj*'
-  - 'cmake/*'
-  - 'cmake/**/*'
-  - 'CMakeLists.txt'
-  - '**/CMakeLists.txt'
-  - 'build.sh'
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/*'
+      - '.github/**/*'
+      - '*.sln'
+      - '**/*.sln'
+      - '*.vcxproj*'
+      - '**/*.vcxproj*'
+      - 'cmake/*'
+      - 'cmake/**/*'
+      - 'CMakeLists.txt'
+      - '**/CMakeLists.txt'
+      - 'build.sh'
 'Dependencies':
-  - '3rdparty/*'
-  - '3rdparty/**/*'
-  - '**/3rdpartyDeps.props'
-  - '.gitmodules'
+  - changed-files:
+    - any-glob-to-any-file:
+      - '3rdparty/*'
+      - '3rdparty/**/*'
+      - '**/3rdpartyDeps.props'
+      - '.gitmodules'
 'Documentation':
-  - '*.md'
-  - '**/*.md'
-  - '*.pdf'
-  - '**/*.pdf'
+  - changed-files:
+    - any-glob-to-any-file:
+      - '*.md'
+      - '**/*.md'
+      - '*.pdf'
+      - '**/*.pdf'
 'GUI/Qt':
-  - 'pcsx2-qt/*'
-  - 'pcsx2-qt/**/*'
-  - '3rdparty/Qt/*'
-  - '3rdparty/Qt/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2-qt/*'
+      - 'pcsx2-qt/**/*'
+      - '3rdparty/Qt/*'
+      - '3rdparty/Qt/**/*'
 'GameDB':
-  - '**/GameIndex.*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/GameIndex.*'
 'Installer | Package':
-  - 'build.sh'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'build.sh'
 'Translations':
-  - 'pcsx2-qt/Translations/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2-qt/Translations/*'
 
 # Tools / Features
 'Debugger':
-  - 'pcsx2/DebugTools/*'
-  - 'pcsx2/DebugTools/**/*'
-  - 'pcsx2-qt/Debugger/*'
-  - 'pcsx2-qt/Debugger/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/DebugTools/*'
+      - 'pcsx2/DebugTools/**/*'
+      - 'pcsx2-qt/Debugger/*'
+      - 'pcsx2-qt/Debugger/**/*'
 'IPC':
-  - 'pcsx2/IPC*'
-  - 'pcsx2/**/IPC*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/IPC*'
+      - 'pcsx2/**/IPC*'
 'TAS Functionality':
-  - 'pcsx2/Recording/*'
-  - 'pcsx2/Recording/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/Recording/*'
+      - 'pcsx2/Recording/**/*'
 'RetroAchievements':
-  - 'pcsx2/Frontend/Achievements.*'
-  - 'pcsx2/Achievements.*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/Frontend/Achievements.*'
+      - 'pcsx2/Achievements.*'
 
 # Emulation Components
 'Counters':
-  - 'pcsx2/Counters.*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/Counters.*'
 'Vector Units':
-  - 'pcsx2/VU*'
-  - 'pcsx2/**/VU*'
-  - 'pcsx2/*VU*'
-  - 'pcsx2/**/*VU*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/VU*'
+      - 'pcsx2/**/VU*'
+      - 'pcsx2/*VU*'
+      - 'pcsx2/**/*VU*'
 'VIF':
-  - 'pcsx2/Vif*'
-  - 'pcsx2/**/Vif*'
-  - 'pcsx2/VIF*'
-  - 'pcsx2/**/VIF*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/Vif*'
+      - 'pcsx2/**/Vif*'
+      - 'pcsx2/VIF*'
+      - 'pcsx2/**/VIF*'
 
 # GS Related Labels
 'GS':
-  - 'pcsx2/GS/*'
-  - 'pcsx2/GS/**/*'
-  - 'bin/resources/shaders/*'
-  - 'bin/resources/shaders/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/GS/*'
+      - 'pcsx2/GS/**/*'
+      - 'bin/resources/shaders/*'
+      - 'bin/resources/shaders/**/*'
 'GS: Direct3D 11':
-  - 'pcsx2/GS/Renderers/DX11/*'
-  - 'pcsx2/GS/Renderers/DX11/**/*'
-  - 'bin/resources/shaders/dx11/*'
-  - 'bin/resources/shaders/dx11/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/GS/Renderers/DX11/*'
+      - 'pcsx2/GS/Renderers/DX11/**/*'
+      - 'bin/resources/shaders/dx11/*'
+      - 'bin/resources/shaders/dx11/**/*'
 'GS: Direct3D 12':
-  - 'pcsx2/GS/Renderers/DX12/*'
-  - 'pcsx2/GS/Renderers/DX12/**/*'
-  - 'bin/resources/shaders/dx11/*'
-  - 'bin/resources/shaders/dx11/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/GS/Renderers/DX12/*'
+      - 'pcsx2/GS/Renderers/DX12/**/*'
+      - 'bin/resources/shaders/dx11/*'
+      - 'bin/resources/shaders/dx11/**/*'
 'GS: Hardware':
-  - 'pcsx2/GS/Renderers/HW/*'
-  - 'pcsx2/GS/Renderers/HW/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/GS/Renderers/HW/*'
+      - 'pcsx2/GS/Renderers/HW/**/*'
 'GS: OpenGL':
-  - 'pcsx2/GS/Renderers/OpenGL/*'
-  - 'pcsx2/GS/Renderers/OpenGL/**/*'
-  - 'bin/resources/shaders/opengl/*'
-  - 'bin/resources/shaders/opengl/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/GS/Renderers/OpenGL/*'
+      - 'pcsx2/GS/Renderers/OpenGL/**/*'
+      - 'bin/resources/shaders/opengl/*'
+      - 'bin/resources/shaders/opengl/**/*'
 'GS: Vulkan':
-  - 'pcsx2/GS/Renderers/Vulkan/*'
-  - 'pcsx2/GS/Renderers/Vulkan/**/*'
-  - 'bin/resources/shaders/vulkan/*'
-  - 'bin/resources/shaders/vulkan/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/GS/Renderers/Vulkan/*'
+      - 'pcsx2/GS/Renderers/Vulkan/**/*'
+      - 'bin/resources/shaders/vulkan/*'
+      - 'bin/resources/shaders/vulkan/**/*'
 'GS: Metal':
-  - 'pcsx2/GS/Renderers/Metal/*'
-  - 'pcsx2/GS/Renderers/Metal/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/GS/Renderers/Metal/*'
+      - 'pcsx2/GS/Renderers/Metal/**/*'
 'GS: Texture Cache':
-  - 'pcsx2/GS/Renderers/*TextureCache*.*'
-  - 'pcsx2/GS/Renderers/**/*TextureCache*.*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/GS/Renderers/*TextureCache*.*'
+      - 'pcsx2/GS/Renderers/**/*TextureCache*.*'
 'GS: Software':
-  - 'pcsx2/GS/Renderers/SW/*'
-  - 'pcsx2/GS/Renderers/SW/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/GS/Renderers/SW/*'
+      - 'pcsx2/GS/Renderers/SW/**/*'
 
 # Other Core Components
 'CDVD':
-  - 'pcsx2/CDVD/*'
-  - 'pcsx2/CDVD/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/CDVD/*'
+      - 'pcsx2/CDVD/**/*'
 'DEV9':
-  - 'pcsx2/DEV9/*'
-  - 'pcsx2/DEV9/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/DEV9/*'
+      - 'pcsx2/DEV9/**/*'
 'IPU':
-  - 'pcsx2/IPU/*'
-  - 'pcsx2/IPU/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/IPU/*'
+      - 'pcsx2/IPU/**/*'
 'Memory Card':
-  - 'pcsx2/SIO/Memcard/*'
-  - 'pcsx2/SIO/Memcard/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/SIO/Memcard/*'
+      - 'pcsx2/SIO/Memcard/**/*'
 'PAD':
-  - 'pcsx2/SIO/Pad/*'
-  - 'pcsx2/SIO/Pad/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/SIO/Pad/*'
+      - 'pcsx2/SIO/Pad/**/*'
 'SPU2':
-  - 'pcsx2/SPU2/*'
-  - 'pcsx2/SPU2/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/SPU2/*'
+      - 'pcsx2/SPU2/**/*'
 'USB':
-  - 'pcsx2/USB/*'
-  - 'pcsx2/USB/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/USB/*'
+      - 'pcsx2/USB/**/*'

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
-/// 
-/// Sample interpolation routine using 8-tap band-limited Shannon interpolation 
+///
+/// Sample interpolation routine using 8-tap band-limited Shannon interpolation
 /// with kaiser window.
 ///
 /// Notice. This algorithm is remarkably much heavier than linear or cubic
@@ -43,7 +43,7 @@ using namespace soundtouch;
 
 /// Kaiser window with beta = 2.0
 /// Values scaled down by 5% to avoid overflows
-static const double _kaiser8[8] = 
+static const double _kaiser8[8] =
 {
    0.41778693317814,
    0.64888025049173,
@@ -71,10 +71,10 @@ void InterpolateShannon::resetRegisters()
 #define PI 3.1415926536
 #define sinc(x) (sin(PI * (x)) / (PI * (x)))
 
-/// Transpose mono audio. Returns number of produced output samples, and 
+/// Transpose mono audio. Returns number of produced output samples, and
 /// updates "srcSamples" to amount of consumed source samples
-int InterpolateShannon::transposeMono(SAMPLETYPE *pdest, 
-                    const SAMPLETYPE *psrc, 
+int InterpolateShannon::transposeMono(SAMPLETYPE *pdest,
+                    const SAMPLETYPE *psrc,
                     int &srcSamples)
 {
     int i;
@@ -119,10 +119,10 @@ int InterpolateShannon::transposeMono(SAMPLETYPE *pdest,
 }
 
 
-/// Transpose stereo audio. Returns number of produced output samples, and 
+/// Transpose stereo audio. Returns number of produced output samples, and
 /// updates "srcSamples" to amount of consumed source samples
-int InterpolateShannon::transposeStereo(SAMPLETYPE *pdest, 
-                    const SAMPLETYPE *psrc, 
+int InterpolateShannon::transposeStereo(SAMPLETYPE *pdest,
+                    const SAMPLETYPE *psrc,
                     int &srcSamples)
 {
     int i;
@@ -169,11 +169,11 @@ int InterpolateShannon::transposeStereo(SAMPLETYPE *pdest,
 }
 
 
-/// Transpose stereo audio. Returns number of produced output samples, and 
+/// Transpose stereo audio. Returns number of produced output samples, and
 /// updates "srcSamples" to amount of consumed source samples
-int InterpolateShannon::transposeMulti(SAMPLETYPE *pdest, 
-                    const SAMPLETYPE *psrc, 
-                    int &srcSamples)
+int InterpolateShannon::transposeMulti(SAMPLETYPE *,
+                    const SAMPLETYPE *,
+                    int &)
 {
     // not implemented
     assert(false);

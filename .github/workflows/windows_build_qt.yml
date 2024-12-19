@@ -6,6 +6,9 @@ on:
       jobName:
         required: true
         type: string
+      artifactPrefixName:
+        required: true
+        type: string
       os:
         required: false
         type: string
@@ -37,6 +40,10 @@ on:
         required: false
         type: boolean
         default: false
+      stableBuild:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build_windows_qt:
@@ -48,24 +55,30 @@ jobs:
       POWERSHELL_TELEMETRY_OPTOUT: 1
 
     steps:
+      - name: Tempfix Clang
+        if: inputs.configuration == 'CMake'
+        run: choco uninstall llvm
+        
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       # actions/checkout elides tags, fetch them primarily for releases
       - name: Fetch Tags
         if: ${{ inputs.fetchTags }}
         run: git fetch --tags --no-recurse-submodules
 
+      - name: Add stable release identifier file
+        if: ${{ inputs.stableBuild == true || inputs.stableBuild == 'true' }}
+        shell: bash
+        run: |
+          echo "#define DEFAULT_UPDATER_CHANNEL \"stable\"" > ./pcsx2-qt/DefaultUpdaterChannel.h
+          cat ./pcsx2-qt/DefaultUpdaterChannel.h
+
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash
         env:
-          OS: windows
-          BUILD_SYSTEM: ${{ inputs.buildSystem }}
-          ARCH: ${{ inputs.platform }}
-          SIMD: ${{ inputs.simd }}
+          PREFIX: ${{ inputs.artifactPrefixName }}
           EVENT_NAME: ${{ github.event_name }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_NUM: ${{ github.event.pull_request.number }}
@@ -74,7 +87,7 @@ jobs:
 
       - name: Setup msbuild
         if: inputs.configuration != 'CMake'
-        uses: microsoft/setup-msbuild@v1
+        uses: microsoft/setup-msbuild@v2
 
       - name: Download patches
         shell: cmd
@@ -84,10 +97,10 @@ jobs:
 
       - name: Cache Dependencies
         id: cache-deps
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: deps
-          key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/windows/build-dependencies.bat') }}
+          key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/windows/build-dependencies.bat', '.github/workflows/scripts/common/*.patch') }}
 
       - name: Build Dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
@@ -119,10 +132,11 @@ jobs:
         shell: cmd
         run: |
           call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          set PATH=%PATH%;%GITHUB_WORKSPACE%\bin
           cmake --build build --config Release --target unittests
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
           path: |
@@ -136,7 +150,7 @@ jobs:
             !./bin/**/*.lib
 
       - name: Upload artifact - with symbols
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}-symbols
           path: ./bin/**/*.pdb

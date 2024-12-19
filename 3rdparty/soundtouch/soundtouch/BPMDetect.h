@@ -14,10 +14,10 @@
 ///   taking absolute value that's smoothed by sliding average. Signal levels that
 ///   are below a couple of times the general RMS amplitude level are cut away to
 ///   leave only notable peaks there.
-/// - Repeating sound patterns (e.g. beats) are detected by calculating short-term 
+/// - Repeating sound patterns (e.g. beats) are detected by calculating short-term
 ///   autocorrelation function of the enveloped signal.
-/// - After whole sound data file has been analyzed as above, the bpm level is 
-///   detected by function 'getBpm' that finds the highest peak of the autocorrelation 
+/// - After whole sound data file has been analyzed as above, the bpm level is
+///   detected by function 'getBpm' that finds the highest peak of the autocorrelation
 ///   function, calculates it's precise location and converts this reading to bpm's.
 ///
 /// Author        : Copyright (c) Olli Parviainen
@@ -137,8 +137,8 @@ namespace soundtouch
         // 2nd order low-pass-filter
         IIR2_filter beat_lpf;
 
-        /// Updates auto-correlation function for given number of decimated samples that 
-        /// are read from the internal 'buffer' pipe (samples aren't removed from the pipe 
+        /// Updates auto-correlation function for given number of decimated samples that
+        /// are read from the internal 'buffer' pipe (samples aren't removed from the pipe
         /// though).
         void updateXCorr(int process_samples      /// How many samples are processed.
         );
@@ -175,9 +175,9 @@ namespace soundtouch
 
         /// Inputs a block of samples for analyzing: Envelopes the samples and then
         /// updates the autocorrelation estimation. When whole song data has been input
-        /// in smaller blocks using this function, read the resulting bpm with 'getBpm' 
-        /// function. 
-        /// 
+        /// in smaller blocks using this function, read the resulting bpm with 'getBpm'
+        /// function.
+        ///
         /// Notice that data in 'samples' array can be disrupted in processing.
         void inputSamples(const soundtouch::SAMPLETYPE *samples,    ///< Pointer to input/working data buffer
             int numSamples                            ///< Number of samples in buffer
@@ -190,13 +190,13 @@ namespace soundtouch
         /// \return Beats-per-minute rate, or zero if detection failed.
         float getBpm();
 
-        /// Get beat position arrays. Note: The array includes also really low beat detection values 
+        /// Get beat position arrays. Note: The array includes also really low beat detection values
         /// in absence of clear strong beats. Consumer may wish to filter low values away.
         /// - "pos" receive array of beat positions
         /// - "values" receive array of beat detection strengths
-        /// - max_num indicates max.size of "pos" and "values" array.  
+        /// - max_num indicates max.size of "pos" and "values" array.
         ///
-        /// You can query a suitable array sized by calling this with NULL in "pos" & "values".
+        /// You can query a suitable array sized by calling this with nullptr in "pos" & "values".
         ///
         /// \return number of beats in the arrays.
         int getBeats(float *pos, float *strength, int max_num);

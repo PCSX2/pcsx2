@@ -1,25 +1,13 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "InputRecordingViewer.h"
 
 #include "QtUtils.h"
+#include <QtCore/QDir>
 #include <QtCore/QString>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QMessageBox>
 #include <QtWidgets/qfiledialog.h>
 
 // TODO - for now this uses a very naive implementation that fills the entire table
@@ -57,7 +45,7 @@ QTableWidgetItem* InputRecordingViewer::createRowItem(std::tuple<bool, u8> butto
 
 void InputRecordingViewer::loadTable()
 {
-	static const auto headers = QStringList({"Left Analog", "Right Analog", "Cross", "Square", "Triangle", "Circle", "L1", "R1", "L2", "R2", "⬇️", "➡️", "⬆️", "⬅️", "L3", "R3", "Select", "Start"});
+	static const auto headers = QStringList({tr("Left Analog"), tr("Right Analog"), tr("Cross"), tr("Square"), tr("Triangle"), tr("Circle"), tr("L1"), tr("R1"), tr("L2"), tr("R2"), tr("D-Pad Down"), tr("D-Pad Right"), tr("D-Pad Up"), tr("D-Pad Left"), tr("L3"), tr("R3"), tr("Select"), tr("Start")});
 	m_ui.tableWidget->setColumnCount(headers.length());
 	m_ui.tableWidget->setHorizontalHeaderLabels(headers);
 
@@ -103,13 +91,17 @@ void InputRecordingViewer::openFile()
 	}
 	if (!fileNames.isEmpty())
 	{
-		const std::string fileName = fileNames.first().toStdString();
+		const std::string fileName = QDir::toNativeSeparators(fileNames.first()).toStdString();
 		m_file_open = m_file.openExisting(fileName);
 		m_ui.actionClose->setEnabled(m_file_open);
 		if (m_file_open)
 		{
 			loadTable();
-		} // TODO else error
+		}
+		else
+		{
+			QMessageBox::critical(this, tr("Opening Recording Failed"), tr("Failed to open file: %1").arg(QString::fromUtf8(fileName.c_str())));
+		}
 	}
 }
 

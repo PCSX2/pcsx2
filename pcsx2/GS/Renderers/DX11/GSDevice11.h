@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -19,7 +7,10 @@
 #include "GS/GSVector.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/DX11/D3D11ShaderCache.h"
+
+#include <string_view>
 #include <unordered_map>
+
 #include <wil/com.h>
 #include <dxgi1_5.h>
 #include <d3d11_1.h>
@@ -38,43 +29,25 @@ public:
 	using PSSamplerSelector = GSHWDrawConfig::SamplerSelector;
 	using OMDepthStencilSelector = GSHWDrawConfig::DepthStencilSelector;
 
-#pragma pack(push, 1)
-	struct OMBlendSelector
+	union OMBlendSelector
 	{
-		union
+		struct
 		{
-			struct
-			{
-				// Color mask
-				u32 wr : 1;
-				u32 wg : 1;
-				u32 wb : 1;
-				u32 wa : 1;
-				// Alpha blending
-				u32 blend_enable : 1;
-				u32 blend_op : 2;
-				u32 blend_src_factor : 4;
-				u32 blend_dst_factor : 4;
-			};
-
-			struct
-			{
-				// Color mask
-				u32 wrgba : 4;
-			};
-
-			u32 key;
+			GSHWDrawConfig::ColorMaskSelector colormask;
+			u8 pad[3];
+			GSHWDrawConfig::BlendState blend;
 		};
+		u64 key;
 
-		operator u32() { return key & 0x7fff; }
-
-		OMBlendSelector()
-			: key(0)
+		constexpr OMBlendSelector() : key(0) {}
+		constexpr OMBlendSelector(GSHWDrawConfig::ColorMaskSelector colormask_, GSHWDrawConfig::BlendState blend_)
 		{
+			key = 0;
+			colormask = colormask_;
+			blend = blend_;
 		}
 	};
-
-#pragma pack(pop)
+	static_assert(sizeof(OMBlendSelector) == sizeof(u64));
 
 	class ShaderMacro
 	{
@@ -119,6 +92,7 @@ private:
 
 	void SetFeatures(IDXGIAdapter1* adapter);
 
+	u32 GetSwapChainBufferCount() const;
 	bool CreateSwapChain();
 	bool CreateSwapChainRTV();
 	void DestroySwapChain();
@@ -152,6 +126,8 @@ private:
 	wil::com_ptr_nothrow<ID3D11Buffer> m_expand_vb;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_expand_ib;
 	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_expand_vb_srv;
+
+	D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_10_0;
 	u32 m_vb_pos = 0; // bytes
 	u32 m_ib_pos = 0; // indices/sizeof(u32)
 	u32 m_structured_vb_pos = 0; // bytes
@@ -163,8 +139,8 @@ private:
 
 	struct
 	{
-		ID3D11InputLayout* layout;
 		D3D11_PRIMITIVE_TOPOLOGY topology;
+		ID3D11InputLayout* layout;
 		ID3D11Buffer* index_buffer;
 		ID3D11VertexShader* vs;
 		ID3D11Buffer* vs_cb;
@@ -178,7 +154,7 @@ private:
 		ID3D11DepthStencilState* dss;
 		u8 sref;
 		ID3D11BlendState* bs;
-		float bf;
+		u8 bf;
 		ID3D11RenderTargetView* rt_view;
 		ID3D11DepthStencilView* dsv;
 	} m_state;
@@ -236,7 +212,7 @@ private:
 	{
 		wil::com_ptr_nothrow<ID3D11DepthStencilState> dss;
 		wil::com_ptr_nothrow<ID3D11BlendState> bs;
-		wil::com_ptr_nothrow<ID3D11PixelShader> primid_init_ps[2];
+		wil::com_ptr_nothrow<ID3D11PixelShader> primid_init_ps[4];
 	} m_date;
 
 	struct
@@ -264,7 +240,7 @@ private:
 	wil::com_ptr_nothrow<ID3D11Buffer> m_ps_cb;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11SamplerState>> m_ps_ss;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11DepthStencilState>> m_om_dss;
-	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11BlendState>> m_om_bs;
+	std::unordered_map<u64, wil::com_ptr_nothrow<ID3D11BlendState>> m_om_bs;
 	wil::com_ptr_nothrow<ID3D11RasterizerState> m_rs;
 
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
@@ -277,11 +253,13 @@ public:
 	GSDevice11();
 	~GSDevice11() override;
 
+	static void SetD3DDebugObjectName(ID3D11DeviceChild* obj, std::string_view name);
+
 	__fi static GSDevice11* GetInstance() { return static_cast<GSDevice11*>(g_gs_device.get()); }
 	__fi ID3D11Device1* GetD3DDevice() const { return m_dev.get(); }
 	__fi ID3D11DeviceContext1* GetD3DContext() const { return m_ctx.get(); }
 
-	bool Create() override;
+	bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle) override;
 	void Destroy() override;
 
 	RenderAPI GetRenderAPI() const override;
@@ -293,9 +271,7 @@ public:
 	void DestroySurface() override;
 	std::string GetDriverInfo() const override;
 
-	bool GetHostRefreshRate(float* refresh_rate) override;
-
-	void SetVSync(VsyncMode mode) override;
+	void SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle) override;
 
 	PresentResult BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
@@ -321,15 +297,16 @@ public:
 
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) override;
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, bool linear = true);
-	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) override;
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, ShaderConvert shader = ShaderConvert::COPY) override;
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear = true);
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) override;
 	void UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
 	void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) override;
+	void FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect) override;
 	void DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader) override;
 	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds);
 
-	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
+	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, SetDATM datm);
 
 	void* IAMapVertexBuffer(u32 stride, u32 count);
 	void IAUnmapVertexBuffer(u32 stride, u32 count);
@@ -352,12 +329,11 @@ public:
 	void PSSetSamplerState(ID3D11SamplerState* ss0);
 
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, u8 sref);
-	void OMSetBlendState(ID3D11BlendState* bs, float bf);
+	void OMSetBlendState(ID3D11BlendState* bs, u8 bf);
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = nullptr);
 	void SetViewport(const GSVector2i& viewport);
 	void SetScissor(const GSVector4i& scissor);
 
-	bool CreateTextureFX();
 	void SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer* cb);
 	void SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix);

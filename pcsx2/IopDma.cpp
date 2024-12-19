@@ -1,19 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "R3000A.h"
 #include "Common.h"
 #include "SPU2/spu2.h"
@@ -44,21 +31,21 @@ static void psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore)
 
 	// Update the spu2 to the current cycle before initiating the DMA
 
-	SPU2async(psxRegs.cycle - psxCounters[6].sCycleT);
-	//Console.Status("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].sCycleT);
+	SPU2async();
+	//Console.Status("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].startCycle);
 
-	psxCounters[6].sCycleT = psxRegs.cycle;
-	psxCounters[6].CycleT = size * 4;
+	psxCounters[6].startCycle = psxRegs.cycle;
+	psxCounters[6].deltaCycles = size * 4;
 
-	psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-	psxNextsCounter = psxRegs.cycle;
-	if (psxCounters[6].CycleT < psxNextCounter)
-		psxNextCounter = psxCounters[6].CycleT;
+	psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
+	psxNextStartCounter = psxRegs.cycle;
+	if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
+		psxNextDeltaCounter = psxCounters[6].deltaCycles;
 
-	if ((psxRegs.iopNextEventCycle - psxNextsCounter) > (u32)psxNextCounter)
+	if ((psxRegs.iopNextEventCycle - psxNextStartCounter) > (u32)psxNextDeltaCounter)
 	{
-		//DevCon.Warning("SPU2async Setting new counter branch, old %x new %x ((%x - %x = %x) > %x delta)", g_iopNextEventCycle, psxNextsCounter + psxNextCounter, g_iopNextEventCycle, psxNextsCounter, (g_iopNextEventCycle - psxNextsCounter), psxNextCounter);
-		psxRegs.iopNextEventCycle = psxNextsCounter + psxNextCounter;
+		//DevCon.Warning("SPU2async Setting new counter branch, old %x new %x ((%x - %x = %x) > %x delta)", g_iopNextEventCycle, psxNextStartCounter + psxNextCounter, g_iopNextEventCycle, psxNextStartCounter, (g_iopNextEventCycle - psxNextStartCounter), psxNextCounter);
+		psxRegs.iopNextEventCycle = psxNextStartCounter + psxNextDeltaCounter;
 	}
 
 	switch (chcr)
@@ -201,8 +188,15 @@ void psxDma8(u32 madr, u32 bcr, u32 chcr)
 			PSXDMA_LOG("*** DMA 8 - DEV9 unknown *** %lx addr = %lx size = %lx", chcr, madr, bcr);
 			break;
 	}
-	HW_DMA8_CHCR &= ~0x01000000;
-	psxDmaInterrupt2(1);
+}
+
+void psxDMA8Interrupt()
+{
+	if (HW_DMA8_CHCR & 0x01000000)
+	{
+		HW_DMA8_CHCR &= ~0x01000000;
+		psxDmaInterrupt2(1);
+	}
 }
 
 void psxDma9(u32 madr, u32 bcr, u32 chcr)

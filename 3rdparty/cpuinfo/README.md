@@ -48,7 +48,7 @@ Detect if target is a 32-bit or 64-bit ARM system:
 #endif
 ```
 
-Check if the host CPU support ARM NEON
+Check if the host CPU supports ARM NEON
 
 ```c
 cpuinfo_initialize();
@@ -151,6 +151,36 @@ executable(
 )
 ```
 
+### Bazel
+
+This project can be built using [Bazel](https://bazel.build/install). 
+
+You can also use this library as a dependency to your Bazel project. Add to the `WORKSPACE` file:
+
+```python
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "org_pytorch_cpuinfo",
+    branch = "master",
+    remote = "https://github.com/Vertexwahn/cpuinfo.git",
+)
+```
+
+And to your `BUILD` file:
+
+```python
+cc_binary(
+    name = "cpuinfo_test",
+    srcs = [
+        # ...
+    ],
+    deps = [
+        "@org_pytorch_cpuinfo//:cpuinfo",
+    ],
+)
+```
+
 ### CMake
 
 To use with CMake use the [FindPkgConfig](https://cmake.org/cmake/help/latest/module/FindPkgConfig.html) module. Here is an example:
@@ -220,12 +250,14 @@ LDFLAGS+= $(pkg-config --libs libcpuinfo)
   - [x] x86-64 (iPhone simulator)
   - [x] ARMv7
   - [x] ARM64
-- [x] OS X
+- [x] macOS
   - [x] x86
   - [x] x86-64
+  - [x] ARM64 (Apple silicon)
 - [x] Windows
   - [x] x86
   - [x] x86-64
+  - [x] arm64
 
 ## Methods
 
@@ -234,12 +266,13 @@ LDFLAGS+= $(pkg-config --libs libcpuinfo)
   - [x] Using `/proc/cpuinfo` on ARM
   - [x] Using `ro.chipname`, `ro.board.platform`, `ro.product.board`, `ro.mediatek.platform`, `ro.arch` properties (Android)
   - [ ] Using kernel log (`dmesg`) on ARM Linux
+  - [x] Using Windows registry on ARM64 Windows
 - Vendor and microarchitecture detection
   - [x] Intel-designed x86/x86-64 cores (up to Sunny Cove, Goldmont Plus, and Knights Mill)
   - [x] AMD-designed x86/x86-64 cores (up to Puma/Jaguar and Zen 2)
   - [ ] VIA-designed x86/x86-64 cores
   - [ ] Other x86 cores (DM&P, RDC, Transmeta, Cyrix, Rise)
-  - [x] ARM-designed ARM cores (up to Cortex-A55, Cortex-A77, and Neoverse E1/N1)
+  - [x] ARM-designed ARM cores (up to Cortex-A55, Cortex-A77, and Neoverse E1/V1/N2/V2)
   - [x] Qualcomm-designed ARM cores (Scorpion, Krait, and Kryo)
   - [x] Nvidia-designed ARM cores (Denver and Carmel)
   - [x] Samsung-designed ARM cores (Exynos)
@@ -256,6 +289,7 @@ LDFLAGS+= $(pkg-config --libs libcpuinfo)
   - [x] Using `/proc/self/auxv` (Android/ARM)
   - [ ] Using instruction probing on ARM (Linux)
   - [ ] Using CPUID registers on ARM64 (Linux)
+  - [x] Using IsProcessorFeaturePresent on ARM64 Windows
 - Cache detection
   - [x] Using CPUID leaf 0x00000002 (x86/x86-64)
   - [x] Using CPUID leaf 0x00000004 (non-AMD x86/x86-64)
@@ -267,6 +301,7 @@ LDFLAGS+= $(pkg-config --libs libcpuinfo)
   - [x] Using `sysctlbyname` (Mach)
   - [x] Using sysfs `typology` directories (ARM/Linux)
   - [ ] Using sysfs `cache` directories (Linux)
+  - [x] Using `GetLogicalProcessorInformationEx` on ARM64 Windows
 - TLB detection
   - [x] Using CPUID leaf 0x00000002 (x86/x86-64)
   - [ ] Using CPUID leaves 0x80000005-0x80000006 and 0x80000019 (AMD x86/x86-64)

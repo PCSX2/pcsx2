@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "DNS_Classes.h"
 #include "DEV9/PacketReader/NetLib.h"
@@ -26,20 +12,20 @@ namespace PacketReader::IP::UDP::DNS
 		, entryClass{qClass}
 	{
 	}
-	DNS_QuestionEntry::DNS_QuestionEntry(u8* buffer, int* offset)
+	DNS_QuestionEntry::DNS_QuestionEntry(const u8* buffer, int* offset)
 	{
 		ReadDNS_String(buffer, offset, &name);
 		NetLib::ReadUInt16(buffer, offset, &entryType);
 		NetLib::ReadUInt16(buffer, offset, &entryClass);
 	}
 
-	void DNS_QuestionEntry::ReadDNS_String(u8* buffer, int* offset, std::string* value)
+	void DNS_QuestionEntry::ReadDNS_String(const u8* buffer, int* offset, std::string* value) const
 	{
 		*value = "";
 
 		while (buffer[*offset] != 0)
 		{
-			int len = buffer[*offset];
+			const int len = buffer[*offset];
 
 			if (len >= 192)
 			{
@@ -71,7 +57,7 @@ namespace PacketReader::IP::UDP::DNS
 		//null char
 		*offset += 1;
 	}
-	void DNS_QuestionEntry::WriteDNS_String(u8* buffer, int* offset, std::string value)
+	void DNS_QuestionEntry::WriteDNS_String(u8* buffer, int* offset, const std::string& value) const
 	{
 		int segmentLength = 0;
 		int segmentStart = 0;
@@ -100,12 +86,12 @@ namespace PacketReader::IP::UDP::DNS
 		NetLib::WriteByte08(buffer, offset, 0);
 	}
 
-	int DNS_QuestionEntry::GetLength()
+	int DNS_QuestionEntry::GetLength() const
 	{
 		return 1 + name.size() + 1 + 4;
 	}
 
-	void DNS_QuestionEntry::WriteBytes(u8* buffer, int* offset)
+	void DNS_QuestionEntry::WriteBytes(u8* buffer, int* offset) const
 	{
 		WriteDNS_String(buffer, offset, name);
 		NetLib::WriteUInt16(buffer, offset, entryType);
@@ -119,7 +105,7 @@ namespace PacketReader::IP::UDP::DNS
 	{
 	}
 
-	DNS_ResponseEntry::DNS_ResponseEntry(u8* buffer, int* offset)
+	DNS_ResponseEntry::DNS_ResponseEntry(const u8* buffer, int* offset)
 		: DNS_QuestionEntry(buffer, offset)
 	{
 		u16 dataLen;
@@ -130,12 +116,12 @@ namespace PacketReader::IP::UDP::DNS
 		*offset += dataLen;
 	}
 
-	int DNS_ResponseEntry::GetLength()
+	int DNS_ResponseEntry::GetLength() const
 	{
 		return DNS_QuestionEntry::GetLength() + 4 + 2 + data.size();
 	}
 
-	void DNS_ResponseEntry::WriteBytes(u8* buffer, int* offset)
+	void DNS_ResponseEntry::WriteBytes(u8* buffer, int* offset) const
 	{
 		DNS_QuestionEntry::WriteBytes(buffer, offset);
 		NetLib::WriteUInt32(buffer, offset, timeToLive);

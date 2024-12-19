@@ -1,31 +1,16 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "common/PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/HTTPDownloaderWinHTTP.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
+
 #include <VersionHelpers.h>
 #include <algorithm>
 
 #pragma comment(lib, "winhttp.lib")
-
-using namespace Common;
 
 HTTPDownloaderWinHttp::HTTPDownloaderWinHttp()
 	: HTTPDownloader()
@@ -41,16 +26,16 @@ HTTPDownloaderWinHttp::~HTTPDownloaderWinHttp()
 	}
 }
 
-std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(const char* user_agent)
+std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(std::string user_agent)
 {
 	std::unique_ptr<HTTPDownloaderWinHttp> instance(std::make_unique<HTTPDownloaderWinHttp>());
-	if (!instance->Initialize(user_agent))
+	if (!instance->Initialize(std::move(user_agent)))
 		return {};
 
 	return instance;
 }
 
-bool HTTPDownloaderWinHttp::Initialize(const char* user_agent)
+bool HTTPDownloaderWinHttp::Initialize(std::string user_agent)
 {
 	const DWORD dwAccessType = WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY;
 
@@ -107,7 +92,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
 		{
 			const WINHTTP_ASYNC_RESULT* res = reinterpret_cast<const WINHTTP_ASYNC_RESULT*>(lpvStatusInformation);
 			Console.Error("WinHttp async function %p returned error %u", res->dwResult, res->dwError);
-			req->status_code = -1;
+			req->status_code = HTTP_STATUS_ERROR;
 			req->state.store(Request::State::Complete);
 			return;
 		}
@@ -117,7 +102,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
 			if (!WinHttpReceiveResponse(hRequest, nullptr))
 			{
 				Console.Error("WinHttpReceiveResponse() failed: %u", GetLastError());
-				req->status_code = -1;
+				req->status_code = HTTP_STATUS_ERROR;
 				req->state.store(Request::State::Complete);
 			}
 
@@ -132,7 +117,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
 					WINHTTP_HEADER_NAME_BY_INDEX, &req->status_code, &buffer_size, WINHTTP_NO_HEADER_INDEX))
 			{
 				Console.Error("WinHttpQueryHeaders() for status code failed: %u", GetLastError());
-				req->status_code = -1;
+				req->status_code = HTTP_STATUS_ERROR;
 				req->state.store(Request::State::Complete);
 				return;
 			}
@@ -171,7 +156,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
 			if (!WinHttpQueryDataAvailable(hRequest, nullptr) && GetLastError() != ERROR_IO_PENDING)
 			{
 				Console.Error("WinHttpQueryDataAvailable() failed: %u", GetLastError());
-				req->status_code = -1;
+				req->status_code = HTTP_STATUS_ERROR;
 				req->state.store(Request::State::Complete);
 			}
 
@@ -197,7 +182,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
 				GetLastError() != ERROR_IO_PENDING)
 			{
 				Console.Error("WinHttpReadData() failed: %u", GetLastError());
-				req->status_code = -1;
+				req->status_code = HTTP_STATUS_ERROR;
 				req->state.store(Request::State::Complete);
 			}
 
@@ -215,7 +200,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
 			if (!WinHttpQueryDataAvailable(hRequest, nullptr) && GetLastError() != ERROR_IO_PENDING)
 			{
 				Console.Error("WinHttpQueryDataAvailable() failed: %u", GetLastError());
-				req->status_code = -1;
+				req->status_code = HTTP_STATUS_ERROR;
 				req->state.store(Request::State::Complete);
 			}
 
@@ -257,7 +242,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
 	if (!WinHttpCrackUrl(url_wide.c_str(), static_cast<DWORD>(url_wide.size()), 0, &uc))
 	{
 		Console.Error("WinHttpCrackUrl() failed: %u", GetLastError());
-		req->callback(-1, req->content_type, Request::Data());
+		req->callback(HTTP_STATUS_ERROR, req->content_type, Request::Data());
 		delete req;
 		return false;
 	}
@@ -269,7 +254,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
 	if (!req->hConnection)
 	{
 		Console.Error("Failed to start HTTP request for '%s': %u", req->url.c_str(), GetLastError());
-		req->callback(-1, req->content_type, Request::Data());
+		req->callback(HTTP_STATUS_ERROR, req->content_type, Request::Data());
 		delete req;
 		return false;
 	}
@@ -302,7 +287,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
 	if (!result && GetLastError() != ERROR_IO_PENDING)
 	{
 		Console.Error("WinHttpSendRequest() failed: %u", GetLastError());
-		req->status_code = -1;
+		req->status_code = HTTP_STATUS_ERROR;
 		req->state.store(Request::State::Complete);
 	}
 

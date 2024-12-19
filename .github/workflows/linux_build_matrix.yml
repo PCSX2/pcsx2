@@ -15,6 +15,7 @@ jobs:
     uses: ./.github/workflows/linux_build_qt.yml
     with:
       jobName: "AppImage Build"
+      artifactPrefixName: "PCSX2-linux-Qt-x64-appimage-sse4"
       compiler: clang
       cmakeflags: ""
       buildAppImage: true
@@ -25,6 +26,7 @@ jobs:
     uses: ./.github/workflows/linux_build_flatpak.yml
     with:
       jobName: "Flatpak Build"
+      artifactPrefixName: "PCSX2-linux-Qt-x64-flatpak-sse4"
       compiler: clang
       cmakeflags: ""
       publish: false

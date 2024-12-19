@@ -1,19 +1,8 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
+#include "HeterogeneousContainers.h"
 #include <cstdint>
 #include <map>
 
@@ -28,7 +17,7 @@ class LRUCache
 		CounterType last_access;
 	};
 
-	using MapType = std::map<K, Item>;
+	using MapType = std::conditional_t<std::is_same_v<K, std::string>, StringMap<Item>, std::map<K, Item>>;
 
 public:
 	LRUCache(std::size_t max_capacity = 16, bool manual_evict = false)
@@ -50,7 +39,7 @@ public:
 			Evict(m_items.size() - m_max_capacity);
 	}
 
-	template<typename KeyT>
+	template <typename KeyT>
 	V* Lookup(const KeyT& key)
 	{
 		auto iter = m_items.find(key);
@@ -97,24 +86,21 @@ public:
 		}
 	}
 
-	template<typename KeyT>
+	template <typename KeyT>
 	bool Remove(const KeyT& key)
 	{
 		auto iter = m_items.find(key);
 		if (iter == m_items.end())
 			return false;
-
 		m_items.erase(iter);
 		return true;
 	}
-
 	void SetManualEvict(bool block)
 	{
 		m_manual_evict = block;
 		if (!m_manual_evict)
 			ManualEvict();
 	}
-
 	void ManualEvict()
 	{
 		// evict if we went over

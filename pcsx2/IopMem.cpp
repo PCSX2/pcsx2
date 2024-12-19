@@ -1,20 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-
-#include "PrecompiledHeader.h"
 #include "common/AlignedMalloc.h"
 #include "R3000A.h"
 #include "Common.h"
@@ -23,42 +9,27 @@
 #include "DEV9/DEV9.h"
 #include "IopHw.h"
 
-uptr *psxMemWLUT = NULL;
-const uptr *psxMemRLUT = NULL;
+uptr *psxMemWLUT = nullptr;
+const uptr *psxMemRLUT = nullptr;
 
-IopVM_MemoryAllocMess* iopMem = NULL;
+IopVM_MemoryAllocMess* iopMem = nullptr;
 
-alignas(__pagesize) u8 iopHw[Ps2MemSize::IopHardware];
+alignas(__pagealignsize) u8 iopHw[Ps2MemSize::IopHardware];
 
-// --------------------------------------------------------------------------------------
-//  iopMemoryReserve
-// --------------------------------------------------------------------------------------
-iopMemoryReserve::iopMemoryReserve()
-	: _parent("IOP Main Memory (2mb)")
+void iopMemAlloc()
 {
-}
-
-iopMemoryReserve::~iopMemoryReserve()
-{
-	Release();
-}
-
-void iopMemoryReserve::Assign(VirtualMemoryManagerPtr allocator)
-{
+	// TODO: Move to memmap
 	psxMemWLUT = (uptr*)_aligned_malloc(0x2000 * sizeof(uptr) * 2, 16);
 	if (!psxMemWLUT)
 		pxFailRel("Failed to allocate IOP memory lookup table");
 
 	psxMemRLUT = psxMemWLUT + 0x2000; //(uptr*)_aligned_malloc(0x10000 * sizeof(uptr),16);
 
-	VtlbMemoryReserve::Assign(std::move(allocator), HostMemoryMap::IOPmemOffset, sizeof(*iopMem));
-	iopMem = reinterpret_cast<IopVM_MemoryAllocMess*>(GetPtr());
+	iopMem = reinterpret_cast<IopVM_MemoryAllocMess*>(SysMemory::GetIOPMem());
 }
 
-void iopMemoryReserve::Release()
+void iopMemRelease()
 {
-	_parent::Release();
-
 	safe_aligned_free(psxMemWLUT);
 	psxMemRLUT = nullptr;
 	iopMem = nullptr;
@@ -66,22 +37,20 @@ void iopMemoryReserve::Release()
 
 // Note!  Resetting the IOP's memory state is dependent on having *all* psx memory allocated,
 // which is performed by MemInit and PsxMemInit()
-void iopMemoryReserve::Reset()
+void iopMemReset()
 {
-	_parent::Reset();
-
-	pxAssert( iopMem );
+	pxAssert(iopMem);
 
 	DbgCon.WriteLn("IOP resetting main memory...");
 
-	memset(psxMemWLUT, 0, 0x2000 * sizeof(uptr) * 2);	// clears both allocations, RLUT and WLUT
+	memset(psxMemWLUT, 0, 0x2000 * sizeof(uptr) * 2); // clears both allocations, RLUT and WLUT
 
 	// Trick!  We're accessing RLUT here through WLUT, since it's the non-const pointer.
 	// So the ones with a 0x2000 prefixed are RLUT tables.
 
 	// Map IOP main memory, which is Read/Write, and mirrored three times
 	// at 0x0, 0x8000, and 0xa000:
-	for (int i=0; i<0x0080; i++)
+	for (int i = 0; i < 0x0080; i++)
 	{
 		psxMemWLUT[i + 0x0000] = (uptr)&iopMem->Main[(i & 0x1f) << 16];
 
@@ -109,7 +78,7 @@ void iopMemoryReserve::Reset()
 		psxMemWLUT[i + 0x2000 + 0x1e00] = (uptr)&eeMem->ROM1[i << 16];
 	}
 
-	for (int i = 0; i < 0x0008; i++)
+	for (int i = 0; i < 0x0040; i++)
 	{
 		psxMemWLUT[i + 0x2000 + 0x1e40] = (uptr)&eeMem->ROM2[i << 16];
 	}
@@ -121,6 +90,8 @@ void iopMemoryReserve::Reset()
 	// this one looks like an old hack for some special write-only memory area,
 	// but leaving it in for reference (air)
 	//for (i=0; i<0x0008; i++) psxMemWLUT[i + 0xbfc0] = (uptr)&psR[i << 16];
+
+	std::memset(iopMem, 0, sizeof(*iopMem));
 }
 
 u8 iopMemRead8(u32 mem)
@@ -347,7 +318,7 @@ void iopMemWrite16(u32 mem, u16 value)
 
 			default:
 				psxHu16(mem) = value;
-			break;
+				break;
 		}
 	} else
 	{
@@ -472,7 +443,7 @@ void iopMemWrite32(u32 mem, u32 value)
 
 					case 0x60:
 						psHu32(SBUS_F260) = 0;
-					return;
+						return;
 
 				}
 #if PSX_EXTRALOGS
@@ -558,11 +529,11 @@ bool iopMemSafeWriteBytes(u32 mem, const void* src, u32 size)
 
 std::string iopMemReadString(u32 mem, int maxlen)
 {
-    std::string ret;
-    char c;
+	std::string ret;
+	char c;
 
-    while ((c = iopMemRead8(mem++)) && maxlen--)
-        ret.push_back(c);
+	while ((c = iopMemRead8(mem++)) && maxlen--)
+		ret.push_back(c);
 
-    return ret;
+	return ret;
 }

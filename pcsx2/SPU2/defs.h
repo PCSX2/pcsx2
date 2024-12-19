@@ -1,23 +1,12 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
-#include "SPU2/Mixer.h"
-#include "SPU2/SndOut.h"
-#include "SPU2/Global.h"
+#include "GS/MultiISA.h"
+
+#include <algorithm>
+#include <array>
 
 // --------------------------------------------------------------------------------------
 //  SPU2 Register Table LUT
@@ -31,11 +20,69 @@ extern const std::array<u16*, 0x401> regtable;
 #define spu2Rs16(mmem) (*(s16*)((s8*)spu2regs + ((mmem)&0x1fff)))
 #define spu2Ru16(mmem) (*(u16*)((s8*)spu2regs + ((mmem)&0x1fff)))
 
+struct StereoOut32
+{
+	static const StereoOut32 Empty;
+
+	s32 Left;
+	s32 Right;
+
+	StereoOut32() = default;
+
+	StereoOut32(s32 left, s32 right)
+		: Left(left)
+		, Right(right)
+	{
+	}
+
+	StereoOut32 operator*(const int& factor) const
+	{
+		return StereoOut32(
+			Left * factor,
+			Right * factor);
+	}
+
+	StereoOut32& operator*=(const int& factor)
+	{
+		Left *= factor;
+		Right *= factor;
+		return *this;
+	}
+
+	StereoOut32 operator+(const StereoOut32& right) const
+	{
+		return StereoOut32(
+			Left + right.Left,
+			Right + right.Right);
+	}
+
+	StereoOut32 operator/(int src) const
+	{
+		return StereoOut32(Left / src, Right / src);
+	}
+};
+
 extern s16* GetMemPtr(u32 addr);
 extern s16 spu2M_Read(u32 addr);
 extern void spu2M_Write(u32 addr, s16 value);
 extern void spu2M_Write(u32 addr, u16 value);
+extern void spu2Mix();
+extern void spu2Output(StereoOut32 out);
 
+static __forceinline s16 SignExtend16(u16 v)
+{
+	return (s16)v;
+}
+
+static __forceinline s32 clamp_mix(s32 x)
+{
+	return std::clamp(x, -0x8000, 0x7fff);
+}
+
+static __forceinline StereoOut32 clamp_mix(StereoOut32 sample)
+{
+	return StereoOut32(clamp_mix(sample.Left), clamp_mix(sample.Right));
+}
 
 struct V_VolumeLR
 {
@@ -59,23 +106,34 @@ struct V_VolumeSlide
 	// Holds the "original" value of the volume for this voice, prior to slides.
 	// (ie, the volume as written to the register)
 
-	s16 Reg_VOL;
+	union
+	{
+		u16 Reg_VOL;
+		struct
+		{
+			u16 Step : 2;
+			u16 Shift : 5;
+			u16 : 5;
+			u16 Phase : 1;
+			u16 Decr : 1;
+			u16 Exp : 1;
+			u16 Enable : 1;
+		};
+	};
+
+	u32 Counter;
 	s32 Value;
-	s8 Increment;
-	s8 Mode;
 
 public:
 	V_VolumeSlide() = default;
 	V_VolumeSlide(s16 regval, s32 fullvol)
 		: Reg_VOL(regval)
 		, Value(fullvol)
-		, Increment(0)
-		, Mode(0)
 	{
 	}
 
 	void Update();
-	void RegSet(u16 src); // used to set the volume from a register source (16 bit signed)
+	void RegSet(u16 src); // used to set the volume from a register source
 
 #ifdef PCSX2_DEVBUILD
 	void DebugDump(FILE* dump, const char* title, const char* nameLR);
@@ -122,24 +180,49 @@ struct V_ADSR
 
 		struct
 		{
-			u32 SustainLevel : 4,
-				DecayRate : 4,
-				AttackRate : 7,
-				AttackMode : 1, // 0 for linear (+lin), 1 for pseudo exponential (+exp)
-
-				ReleaseRate : 5,
-				ReleaseMode : 1, // 0 for linear (-lin), 1 for exponential (-exp)
-				SustainRate : 7,
-				SustainMode : 3; // 0 = +lin, 1 = -lin, 2 = +exp, 3 = -exp
+			u32 SustainLevel : 4;
+			u32 DecayShift : 4;
+			u32 AttackStep : 2;
+			u32 AttackShift : 5;
+			u32 AttackMode : 1;
+			u32 ReleaseShift : 5;
+			u32 ReleaseMode : 1;
+			u32 SustainStep : 2;
+			u32 SustainShift : 5;
+			u32 : 1;
+			u32 SustainDir : 1;
+			u32 SustainMode : 1;
 		};
 	};
 
-	s32 Value;      // Ranges from 0 to 0x7fffffff (signed values are clamped to 0) [Reg_ENVX]
-	u8 Phase;       // monitors current phase of ADSR envelope
-	bool Releasing; // Ready To Release, triggered by Voice.Stop();
+	static constexpr int ADSR_PHASES = 5;
+
+	static constexpr int PHASE_STOPPED = 0;
+	static constexpr int PHASE_ATTACK = 1;
+	static constexpr int PHASE_DECAY = 2;
+	static constexpr int PHASE_SUSTAIN = 3;
+	static constexpr int PHASE_RELEASE = 4;
+
+	struct CachedADSR
+	{
+		bool Decr;
+		bool Exp;
+		u8 Shift;
+		s8 Step;
+		s32 Target;
+	};
+
+	std::array<CachedADSR, ADSR_PHASES> CachedPhases;
+
+	u32 Counter;
+	s32 Value; // Ranges from 0 to 0x7fff (signed values are clamped to 0) [Reg_ENVX]
+	u8 Phase; // monitors current phase of ADSR envelope
 
 public:
-	bool Calculate();
+	void UpdateCache();
+	bool Calculate(int voiceidx);
+	void Attack();
+	void Release();
 };
 
 
@@ -279,44 +362,6 @@ struct V_Reverb
 	u32 APF2_R_DST;
 };
 
-struct V_ReverbBuffers
-{
-	s32 SAME_L_SRC;
-	s32 SAME_R_SRC;
-	s32 DIFF_R_SRC;
-	s32 DIFF_L_SRC;
-	s32 SAME_L_DST;
-	s32 SAME_R_DST;
-	s32 DIFF_L_DST;
-	s32 DIFF_R_DST;
-
-	s32 COMB1_L_SRC;
-	s32 COMB1_R_SRC;
-	s32 COMB2_L_SRC;
-	s32 COMB2_R_SRC;
-	s32 COMB3_L_SRC;
-	s32 COMB3_R_SRC;
-	s32 COMB4_L_SRC;
-	s32 COMB4_R_SRC;
-
-	s32 APF1_L_DST;
-	s32 APF1_R_DST;
-	s32 APF2_L_DST;
-	s32 APF2_R_DST;
-
-	s32 SAME_L_PRV;
-	s32 SAME_R_PRV;
-	s32 DIFF_L_PRV;
-	s32 DIFF_R_PRV;
-
-	s32 APF1_L_SRC;
-	s32 APF1_R_SRC;
-	s32 APF2_L_SRC;
-	s32 APF2_R_SRC;
-
-	bool NeedsUpdated;
-};
-
 struct V_SPDIF
 {
 	u16 Out;
@@ -346,28 +391,20 @@ struct V_CoreRegs
 
 struct V_VoiceGates
 {
-	s16 DryL; // 'AND Gate' for Direct Output to Left Channel
-	s16 DryR; // 'AND Gate' for Direct Output for Right Channel
-	s16 WetL; // 'AND Gate' for Effect Output for Left Channel
-	s16 WetR; // 'AND Gate' for Effect Output for Right Channel
+	s32 DryL; // 'AND Gate' for Direct Output to Left Channel
+	s32 DryR; // 'AND Gate' for Direct Output for Right Channel
+	s32 WetL; // 'AND Gate' for Effect Output for Left Channel
+	s32 WetR; // 'AND Gate' for Effect Output for Right Channel
 };
 
 struct V_CoreGates
 {
-	union
-	{
-		u128 v128;
-
-		struct
-		{
-			s16 InpL; // Sound Data Input to Direct Output (Left)
-			s16 InpR; // Sound Data Input to Direct Output (Right)
-			s16 SndL; // Voice Data to Direct Output (Left)
-			s16 SndR; // Voice Data to Direct Output (Right)
-			s16 ExtL; // External Input to Direct Output (Left)
-			s16 ExtR; // External Input to Direct Output (Right)
-		};
-	};
+	s32 InpL; // Sound Data Input to Direct Output (Left)
+	s32 InpR; // Sound Data Input to Direct Output (Right)
+	s32 SndL; // Voice Data to Direct Output (Left)
+	s32 SndR; // Voice Data to Direct Output (Right)
+	s32 ExtL; // External Input to Direct Output (Left)
+	s32 ExtR; // External Input to Direct Output (Right)
 };
 
 struct VoiceMixSet
@@ -397,50 +434,40 @@ struct V_Core
 	V_CoreGates WetGate;
 
 	V_VolumeSlideLR MasterVol; // Master Volume
-	V_VolumeLR ExtVol;         // Volume for External Data Input
-	V_VolumeLR InpVol;         // Volume for Sound Data Input
-	V_VolumeLR FxVol;          // Volume for Output from Effects
+	V_VolumeLR ExtVol; // Volume for External Data Input
+	V_VolumeLR InpVol; // Volume for Sound Data Input
+	V_VolumeLR FxVol; // Volume for Output from Effects
 
 	V_Voice Voices[NumVoices];
 
 	u32 IRQA; // Interrupt Address
-	u32 TSA;  // DMA Transfer Start Address
+	u32 TSA; // DMA Transfer Start Address
 	u32 ActiveTSA; // Active DMA TSA - Required for NFL 2k5 which overwrites it mid transfer
 
 	bool IRQEnable; // Interrupt Enable
-	bool FxEnable;  // Effect Enable
-	bool Mute;      // Mute
+	bool FxEnable; // Effect Enable
+	bool Mute; // Mute
 	bool AdmaInProgress;
 
-	s8 DMABits;        // DMA related?
-	u8 NoiseClk;       // Noise Clock
-	u32 NoiseCnt;      // Noise Counter
-	u32 NoiseOut;      // Noise Output
-	u16 AutoDMACtrl;   // AutoDMA Status
-	s32 DMAICounter;   // DMA Interrupt Counter
-	u32 LastClock;     // DMA Interrupt Clock Cycle Counter
+	s8 DMABits; // DMA related?
+	u8 NoiseClk; // Noise Clock
+	u32 NoiseCnt; // Noise Counter
+	u32 NoiseOut; // Noise Output
+	u16 AutoDMACtrl; // AutoDMA Status
+	s32 DMAICounter; // DMA Interrupt Counter
+	u32 LastClock; // DMA Interrupt Clock Cycle Counter
 	u32 InputDataLeft; // Input Buffer
 	u32 InputDataTransferred; // Used for simulating MADR increase (GTA VC)
 	u32 InputPosWrite;
 	u32 InputDataProgress;
 
-	V_Reverb Revb;              // Reverb Registers
-	V_ReverbBuffers RevBuffers; // buffer pointers for reverb, pre-calculated and pre-clipped.
+	V_Reverb Revb; // Reverb Registers
 
-	s32 RevbDownBuf[2][64]; // Downsample buffer for reverb, one for each channel
-	s32 RevbUpBuf[2][64]; // Upsample buffer for reverb, one for each channel
+	s16 RevbDownBuf[2][64 * 2]; // Downsample buffer for reverb, one for each channel
+	s16 RevbUpBuf[2][64 * 2]; // Upsample buffer for reverb, one for each channel
 	u32 RevbSampleBufPos;
 	u32 EffectsStartA;
 	u32 EffectsEndA;
-	u32 ExtEffectsStartA;
-	u32 ExtEffectsEndA;
-	u32 ReverbX;
-
-	// Current size of and position of the effects buffer.  Pre-caculated when the effects start
-	// or end position registers are written.  CAN BE NEGATIVE OR ZERO, in which
-	// case reverb should be disabled.
-	s32 EffectsBufferSize;
-	u32 EffectsBufferStart;
 
 	V_CoreRegs Regs; // Registers
 
@@ -483,14 +510,11 @@ struct V_Core
 		, DMAPtr(nullptr)
 	{
 	}
-	V_Core(int idx); // our badass constructor
-	~V_Core() throw();
+	V_Core(int idx) : Index(idx) {};
 
 	void Init(int index);
 	void UpdateEffectsBufferSize();
 	void AnalyzeReverbPreset();
-
-	s32 EffectsBufferIndexer(s32 offset) const;
 
 	void WriteRegPS1(u32 mem, u16 value);
 	u16 ReadRegPS1(u32 mem);
@@ -500,12 +524,8 @@ struct V_Core
 	// --------------------------------------------------------------------------------------
 
 	StereoOut32 Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, const StereoOut32& Ext);
-	void Reverb_AdvanceBuffer();
-	StereoOut32 DoReverb(const StereoOut32& Input);
+	StereoOut32 DoReverb(StereoOut32 Input);
 	s32 RevbGetIndexer(s32 offset);
-
-	s32 ReverbDownsample(bool right);
-	StereoOut32 ReverbUpsample(bool phase);
 
 	StereoOut32 ReadInput();
 	StereoOut32 ReadInput_HiFi();
@@ -555,6 +575,14 @@ struct V_Core
 	void FinishDMAwrite();
 };
 
+MULTI_ISA_DEF(
+	StereoOut32 ReverbUpsample(V_Core& core);
+	s32 ReverbDownsample(V_Core& core, bool right);
+)
+
+extern StereoOut32 (*ReverbUpsample)(V_Core& core);
+extern s32 (*ReverbDownsample)(V_Core& core, bool right);
+
 extern V_Core Cores[2];
 extern V_SPDIF Spdif;
 
@@ -564,6 +592,8 @@ extern u16 OutPos;
 extern u16 InputPos;
 // SPU Mixing Cycles ("Ticks mixed" counter)
 extern u32 Cycles;
+// DC Filter state
+extern StereoOut32 DCFilterIn, DCFilterOut;
 
 extern s16 spu2regs[0x010000 / sizeof(s16)];
 extern s16 _spu2mem[0x200000 / sizeof(s16)];

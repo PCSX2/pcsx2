@@ -182,7 +182,9 @@ public:
     if (length_ + length > capacity_) {
       reserve(length_ + length);
     }
-    PodCopy(data_ + length_, elements, length);
+    if (data_) {
+      PodCopy(data_ + length_, elements, length);
+    }
     length_ += length;
   }
 
@@ -195,12 +197,14 @@ public:
     if (length_ + length > capacity_) {
       reserve(length + length_);
     }
-    PodZero(data_ + length_, length);
+    if (data_) {
+      PodZero(data_ + length_, length);
+    }
     length_ += length;
   }
 
-  /** Prepend `length` zero-ed elements to the end of the array, resizing the
-   * array if needed.
+  /** Prepend `length` zero-ed elements to the front of the array, resizing and
+   * shifting the array if needed.
    * @parameter length the number of elements to prepend to the array.
    */
   void push_front_silence(size_t length)
@@ -208,8 +212,10 @@ public:
     if (length_ + length > capacity_) {
       reserve(length + length_);
     }
-    PodMove(data_ + length, data_, length_);
-    PodZero(data_, length);
+    if (data_) {
+      PodMove(data_ + length, data_, length_);
+      PodZero(data_, length);
+    }
     length_ += length;
   }
 
@@ -226,6 +232,9 @@ public:
   {
     if (length > length_) {
       return false;
+    }
+    if (!data_) {
+      return true;
     }
     if (elements) {
       PodCopy(elements, data_, length);

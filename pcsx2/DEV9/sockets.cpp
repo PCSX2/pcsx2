@@ -1,21 +1,9 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "common/Assertions.h"
 #include "common/StringUtil.h"
+#include "common/ScopedGuard.h"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -62,73 +50,39 @@ std::vector<AdapterEntry> SocketAdapter::GetAdapters()
 	nic.push_back(autoEntry);
 
 #ifdef _WIN32
-	int neededSize = 128;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-
-	PIP_ADAPTER_ADDRESSES pAdapterInfo;
-
-	DWORD dwStatus = GetAdaptersAddresses(
-		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-		NULL,
-		AdapterInfo.get(),
-		&dwBufLen);
-
-	if (dwStatus == ERROR_BUFFER_OVERFLOW)
-	{
-		DevCon.WriteLn("DEV9: PCAPGetWin32Adapter() buffer too small, resizing");
-		//
-		neededSize = dwBufLen / sizeof(IP_ADAPTER_ADDRESSES) + 1;
-		AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-		DevCon.WriteLn("DEV9: New size %i", neededSize);
-
-		dwStatus = GetAdaptersAddresses(
-			AF_UNSPEC,
-			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-			NULL,
-			AdapterInfo.get(),
-			&dwBufLen);
-	}
-
-	if (dwStatus != ERROR_SUCCESS)
+	AdapterUtils::AdapterBuffer adapterInfo;
+	PIP_ADAPTER_ADDRESSES pAdapter = AdapterUtils::GetAllAdapters(&adapterInfo);
+	if (pAdapter == nullptr)
 		return nic;
-
-	pAdapterInfo = AdapterInfo.get();
 
 	do
 	{
-		if (pAdapterInfo->IfType != IF_TYPE_SOFTWARE_LOOPBACK &&
-			pAdapterInfo->OperStatus == IfOperStatusUp)
+		if (pAdapter->IfType != IF_TYPE_SOFTWARE_LOOPBACK &&
+			pAdapter->OperStatus == IfOperStatusUp)
 		{
 			AdapterEntry entry;
 			entry.type = Pcsx2Config::DEV9Options::NetApi::Sockets;
-			entry.name = StringUtil::WideStringToUTF8String(pAdapterInfo->FriendlyName);
-			entry.guid = pAdapterInfo->AdapterName;
+			entry.name = StringUtil::WideStringToUTF8String(pAdapter->FriendlyName);
+			entry.guid = pAdapter->AdapterName;
 
 			nic.push_back(entry);
 		}
 
-		pAdapterInfo = pAdapterInfo->Next;
-	} while (pAdapterInfo);
+		pAdapter = pAdapter->Next;
+	} while (pAdapter);
 
 #elif defined(__POSIX__)
-	ifaddrs* adapterInfo;
-	ifaddrs* pAdapter;
-
-	int error = getifaddrs(&adapterInfo);
-	if (error)
+	AdapterUtils::AdapterBuffer adapterInfo;
+	ifaddrs* pAdapter = GetAllAdapters(&adapterInfo);
+	if (pAdapter == nullptr)
 		return nic;
-
-	pAdapter = adapterInfo;
 
 	do
 	{
 		if ((pAdapter->ifa_flags & IFF_LOOPBACK) == 0 &&
 			(pAdapter->ifa_flags & IFF_UP) != 0 &&
 			pAdapter->ifa_addr != nullptr &&
-			pAdapter->ifa_addr->sa_family == AF_INET)
+			AdapterUtils::ReadAddressFamily(pAdapter->ifa_addr) == AF_INET)
 		{
 			AdapterEntry entry;
 			entry.type = Pcsx2Config::DEV9Options::NetApi::Sockets;
@@ -140,8 +94,6 @@ std::vector<AdapterEntry> SocketAdapter::GetAdapters()
 
 		pAdapter = pAdapter->ifa_next;
 	} while (pAdapter);
-
-	freeifaddrs(adapterInfo);
 #endif
 
 	return nic;
@@ -229,6 +181,8 @@ SocketAdapter::SocketAdapter()
 		wsa_init = true;
 #endif
 
+	sendThreadId = std::this_thread::get_id();
+
 	initialized = true;
 }
 
@@ -247,6 +201,13 @@ bool SocketAdapter::recv(NetPacket* pkt)
 	if (NetAdapter::recv(pkt))
 		return true;
 
+	ScopedGuard cleanup([&]() {
+		// Garbage collect closed connections
+		for (BaseSession* s : deleteQueueRecvThread)
+			delete s;
+		deleteQueueRecvThread.clear();
+	});
+
 	EthernetFrame* bFrame;
 	if (!vRecBuffer.Dequeue(&bFrame))
 	{
@@ -259,13 +220,13 @@ bool SocketAdapter::recv(NetPacket* pkt)
 			if (!connections.TryGetValue(key, &session))
 				continue;
 
-			IP_Payload* pl = session->Recv();
+			std::optional<ReceivedPayload> pl = session->Recv();
 
-			if (pl != nullptr)
+			if (pl.has_value())
 			{
-				IP_Packet* ipPkt = new IP_Packet(pl);
+				IP_Packet* ipPkt = new IP_Packet(pl->payload.release());
 				ipPkt->destinationIP = session->sourceIP;
-				ipPkt->sourceIP = session->destIP;
+				ipPkt->sourceIP = pl->sourceIP;
 
 				EthernetFrame frame(ipPkt);
 				frame.sourceMAC = internalMAC;
@@ -295,28 +256,36 @@ bool SocketAdapter::send(NetPacket* pkt)
 	if (NetAdapter::send(pkt))
 		return true;
 
+	pxAssert(std::this_thread::get_id() == sendThreadId);
+	ScopedGuard cleanup([&]() {
+		// Garbage collect closed connections
+		for (BaseSession* s : deleteQueueSendThread)
+			delete s;
+		deleteQueueSendThread.clear();
+	});
+
 	EthernetFrame frame(pkt);
 
 	switch (frame.protocol)
 	{
-		case (u16)EtherType::null:
+		case static_cast<u16>(EtherType::null):
 		case 0x0C00:
 			//Packets with the above ethertypes get sent when the adapter is reset
 			//Catch them here instead of printing an error
 			return true;
-		case (int)EtherType::IPv4:
+		case static_cast<int>(EtherType::IPv4):
 		{
 			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
 			IP_Packet ippkt(payload->data, payload->GetLength());
 
 			return SendIP(&ippkt);
 		}
-		case (u16)EtherType::ARP:
+		case static_cast<u16>(EtherType::ARP):
 		{
 			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
 			ARP_Packet arpPkt(payload->data, payload->GetLength());
 
-			if (arpPkt.protocol == (u16)EtherType::IPv4)
+			if (arpPkt.protocol == static_cast<u16>(EtherType::IPv4))
 			{
 				if (arpPkt.op == 1) //ARP request
 				{
@@ -335,7 +304,7 @@ bool SocketAdapter::send(NetPacket* pkt)
 						EthernetFrame* retARP = new EthernetFrame(arpRet);
 						retARP->destinationMAC = ps2MAC;
 						retARP->sourceMAC = internalMAC;
-						retARP->protocol = (u16)EtherType::ARP;
+						retARP->protocol = static_cast<u16>(EtherType::ARP);
 
 						vRecBuffer.Enqueue(retARP);
 					}
@@ -495,47 +464,45 @@ bool SocketAdapter::SendUDP(ConnectionKey Key, IP_Packet* ipPkt)
 		return false;
 	else
 	{
-		UDP_Session* s = nullptr;
-
-		if (abs(udp.sourcePort - udp.destinationPort) <= 10 || //Used for games that assume the destination/source port
-			ipPkt->destinationIP == dhcpServer.broadcastIP || //Broadcast packets
-			ipPkt->destinationIP == IP_Address{{{255, 255, 255, 255}}} || //Limited Broadcast packets
-			(ipPkt->destinationIP.bytes[0] & 0xF0) == 0xE0) //Multicast address start with 0b1110
+		// Always bind the UDP source port
+		// PS2 software can run into issues if the source port is not preserved
+		UDP_FixedPort* fPort = nullptr;
+		BaseSession* fSession;
+		if (fixedUDPPorts.TryGetValue(udp.sourcePort, &fSession))
 		{
-			UDP_FixedPort* fPort = nullptr;
-			BaseSession* fSession;
-			if (fixedUDPPorts.TryGetValue(udp.sourcePort, &fSession))
-			{
-				//DevCon.WriteLn("DEV9: Socket: Using Existing UDPFixedPort");
-				fPort = static_cast<UDP_FixedPort*>(fSession);
-			}
-			else
-			{
-				ConnectionKey fKey{};
-				fKey.protocol = (u8)IP_Type::UDP;
-				fKey.ps2Port = udp.sourcePort;
-				fKey.srvPort = 0;
-
-				Console.WriteLn("DEV9: Socket: Creating New UDPFixedPort with port %d", udp.sourcePort);
-
-				fPort = new UDP_FixedPort(fKey, adapterIP, udp.sourcePort);
-				fPort->AddConnectionClosedHandler([&](BaseSession* session) { HandleFixedPortClosed(session); });
-
-				fPort->destIP = {};
-				fPort->sourceIP = dhcpServer.ps2IP;
-
-				connections.Add(fKey, fPort);
-				fixedUDPPorts.Add(udp.sourcePort, fPort);
-			}
-
-			Console.WriteLn("DEV9: Socket: Creating New UDP Connection from FixedPort %d to %d", udp.sourcePort, udp.destinationPort);
-			s = fPort->NewClientSession(Key,
-				ipPkt->destinationIP == dhcpServer.broadcastIP || ipPkt->destinationIP == IP_Address{{{255, 255, 255, 255}}},
-				(ipPkt->destinationIP.bytes[0] & 0xF0) == 0xE0);
+			fPort = static_cast<UDP_FixedPort*>(fSession);
 		}
 		else
 		{
-			Console.WriteLn("DEV9: Socket: Creating New UDP Connection to %d", udp.destinationPort);
+			ConnectionKey fKey{};
+			fKey.protocol = static_cast<u8>(IP_Type::UDP);
+			fKey.ps2Port = udp.sourcePort;
+			fKey.srvPort = 0;
+
+			Console.WriteLn("DEV9: Socket: Binding UDP fixed port %d", udp.sourcePort);
+
+			fPort = new UDP_FixedPort(fKey, adapterIP, udp.sourcePort);
+			fPort->AddConnectionClosedHandler([&](BaseSession* session) { HandleFixedPortClosed(session); });
+
+			fPort->destIP = {};
+			fPort->sourceIP = dhcpServer.ps2IP;
+
+			connections.Add(fKey, fPort);
+			fixedUDPPorts.Add(udp.sourcePort, fPort);
+
+			fPort->Init();
+		}
+
+		Console.WriteLn("DEV9: Socket: Creating New UDP Connection from fixed port %d to %d", udp.sourcePort, udp.destinationPort);
+		UDP_Session* s = fPort->NewClientSession(Key,
+			ipPkt->destinationIP == dhcpServer.broadcastIP || ipPkt->destinationIP == IP_Address{{{255, 255, 255, 255}}},
+			(ipPkt->destinationIP.bytes[0] & 0xF0) == 0xE0);
+
+		// If we are unable to bind to the port, fall back to a dynamic port
+		if (s == nullptr)
+		{
+			Console.Error("DEV9: Socket: Failed to Create New UDP Connection from fixed port");
+			Console.WriteLn("DEV9: Socket: Retrying with dynamic port to %d", udp.destinationPort);
 			s = new UDP_Session(Key, adapterIP);
 		}
 
@@ -560,10 +527,14 @@ int SocketAdapter::SendFromConnection(ConnectionKey Key, IP_Packet* ipPkt)
 void SocketAdapter::HandleConnectionClosed(BaseSession* sender)
 {
 	const ConnectionKey key = sender->key;
-	connections.Remove(key);
-	//Note, we delete something that is calling us
-	//this is probably going to cause issues
-	delete sender;
+	if (!connections.Remove(key))
+		return;
+
+	// Defer deleting the connection untill we have left the calling session's callstack
+	if (std::this_thread::get_id() == sendThreadId)
+		deleteQueueSendThread.push_back(sender);
+	else
+		deleteQueueRecvThread.push_back(sender);
 
 	switch (key.protocol)
 	{
@@ -587,14 +558,18 @@ void SocketAdapter::HandleConnectionClosed(BaseSession* sender)
 
 void SocketAdapter::HandleFixedPortClosed(BaseSession* sender)
 {
-	ConnectionKey key = sender->key;
-	connections.Remove(key);
+	const ConnectionKey key = sender->key;
+	if (!connections.Remove(key))
+		return;
 	fixedUDPPorts.Remove(key.ps2Port);
-	//Note, we delete something that is calling us
-	//this is probably going to cause issues
-	delete sender;
 
-	Console.WriteLn("DEV9: Socket: Closed Dead UDP Fixed Port to %d", key.ps2Port);
+	// Defer deleting the connection untill we have left the calling session's callstack
+	if (std::this_thread::get_id() == sendThreadId)
+		deleteQueueSendThread.push_back(sender);
+	else
+		deleteQueueRecvThread.push_back(sender);
+
+	Console.WriteLn("DEV9: Socket: Unbound fixed port %d", key.ps2Port);
 }
 
 void SocketAdapter::close()
@@ -616,6 +591,16 @@ SocketAdapter::~SocketAdapter()
 	}
 	connections.Clear();
 	fixedUDPPorts.Clear(); //fixedUDP sessions already deleted via connections
+
+	//Clear out any delete queues
+	DevCon.WriteLn("DEV9: Socket: Found %d Connections in send delete queue", deleteQueueSendThread.size());
+	DevCon.WriteLn("DEV9: Socket: Found %d Connections in recv delete queue", deleteQueueRecvThread.size());
+	for (BaseSession* s : deleteQueueSendThread)
+		delete s;
+	for (BaseSession* s : deleteQueueRecvThread)
+		delete s;
+	deleteQueueSendThread.clear();
+	deleteQueueRecvThread.clear();
 
 	//Clear out vRecBuffer
 	while (!vRecBuffer.IsQueueEmpty())

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 
 START_IDENT = "// TRANSLATION-STRING-AREA-BEGIN"
@@ -9,7 +11,7 @@ with open(src_file, "r") as f:
     full_source = f.read()
 
 strings = []
-for token in ["FSUI_STR", "FSUI_CSTR", "FSUI_FSTR", "FSUI_NSTR", "FSUI_ICONSTR", "FSUI_ICONSTR_S"]:
+for token in ["FSUI_STR", "FSUI_CSTR", "FSUI_FSTR", "FSUI_NSTR", "FSUI_VSTR", "FSUI_ICONSTR", "FSUI_ICONSTR_S"]:
     token_len = len(token)
     last_pos = 0
     while True:

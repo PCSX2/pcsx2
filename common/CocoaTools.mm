@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #if ! __has_feature(objc_arc)
 	#error "Compile this with -fobjc-arc"
@@ -19,7 +7,7 @@
 
 #include "CocoaTools.h"
 #include "Console.h"
-#include "General.h"
+#include "HostSys.h"
 #include "WindowInfo.h"
 #include <dlfcn.h>
 #include <mutex>
@@ -28,6 +16,11 @@
 #include <QuartzCore/QuartzCore.h>
 
 // MARK: - Metal Layers
+
+static NSString*_Nonnull NSStringFromStringView(std::string_view sv)
+{
+	return [[NSString alloc] initWithBytes:sv.data() length:sv.size() encoding:NSUTF8StringEncoding];
+}
 
 bool CocoaTools::CreateMetalLayer(WindowInfo* wi)
 {
@@ -69,6 +62,27 @@ void CocoaTools::DestroyMetalLayer(WindowInfo* wi)
 	wi->surface_handle = nullptr;
 	[view setLayer:nil];
 	[view setWantsLayer:NO];
+}
+
+std::optional<float> CocoaTools::GetViewRefreshRate(const WindowInfo& wi)
+{
+	if (![NSThread isMainThread])
+	{
+		std::optional<float> ret;
+		dispatch_sync(dispatch_get_main_queue(), [&ret, wi]{ ret = GetViewRefreshRate(wi); });
+		return ret;
+	}
+
+	std::optional<float> ret;
+	NSView* const view = (__bridge NSView*)wi.window_handle;
+	const u32 did = [[[[[view window] screen] deviceDescription] valueForKey:@"NSScreenNumber"] unsignedIntValue];
+	if (CGDisplayModeRef mode = CGDisplayCopyDisplayMode(did))
+	{
+		ret = CGDisplayModeGetRefreshRate(mode);
+		CGDisplayModeRelease(mode);
+	}
+	
+	return ret;
 }
 
 // MARK: - Theme Change Handlers
@@ -140,6 +154,17 @@ bool Common::PlaySoundAsync(const char* path)
 
 // MARK: - Updater
 
+std::optional<std::string> CocoaTools::GetBundlePath()
+{
+  std::optional<std::string> ret;
+  @autoreleasepool {
+    NSURL* url = [NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]];
+    if (url)
+      ret = std::string([url fileSystemRepresentation]);
+  }
+  return ret;
+}
+
 std::optional<std::string> CocoaTools::GetNonTranslocatedBundlePath()
 {
 	// See https://objective-see.com/blog/blog_0x15.html
@@ -168,7 +193,7 @@ std::optional<std::string> CocoaTools::GetNonTranslocatedBundlePath()
 
 std::optional<std::string> CocoaTools::MoveToTrash(std::string_view file)
 {
-	NSURL* url = [NSURL fileURLWithPath:[[NSString alloc] initWithBytes:file.data() length:file.size() encoding:NSUTF8StringEncoding]];
+	NSURL* url = [NSURL fileURLWithPath:NSStringFromStringView(file)];
 	NSURL* new_url;
 	if (![[NSFileManager defaultManager] trashItemAtURL:url resultingItemURL:&new_url error:nil])
 		return std::nullopt;
@@ -182,9 +207,17 @@ bool CocoaTools::DelayedLaunch(std::string_view file)
 		[task setExecutableURL:[NSURL fileURLWithPath:@"/bin/sh"]];
 		[task setEnvironment:@{
 			@"WAITPID": [NSString stringWithFormat:@"%d", [[NSProcessInfo processInfo] processIdentifier]],
-			@"LAUNCHAPP": [[NSString alloc] initWithBytes:file.data() length:file.size() encoding:NSUTF8StringEncoding],
+			@"LAUNCHAPP": NSStringFromStringView(file),
 		}];
 		[task setArguments:@[@"-c", @"while /bin/ps -p $WAITPID > /dev/null; do /bin/sleep 0.1; done; exec /usr/bin/open \"$LAUNCHAPP\";"]];
 		return [task launchAndReturnError:nil];
 	}
+}
+
+// MARK: - Directory Services
+
+bool CocoaTools::ShowInFinder(std::string_view file)
+{
+	return [[NSWorkspace sharedWorkspace] selectFile:NSStringFromStringView(file)
+	                        inFileViewerRootedAtPath:nil];
 }

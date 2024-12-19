@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include <bitset>
@@ -295,7 +283,7 @@ static void mVUEBit()
 
 static inline u32 branchAddr(const mV)
 {
-	pxAssumeDev(islowerOP, "MicroVU: Expected Lower OP code for valid branch addr.");
+	pxAssumeMsg(islowerOP, "MicroVU: Expected Lower OP code for valid branch addr.");
 	return ((((iPC + 2) + (_Imm11_ * 2)) & mVU.progMemMask) * 4);
 }
 
@@ -605,74 +593,4 @@ void SSE_DIVPS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, co
 void SSE_DIVSS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
 	clampOp(xDIV.SS, false);
-}
-
-//------------------------------------------------------------------
-// Micro VU - Custom Quick Search
-//------------------------------------------------------------------
-
-alignas(__pagesize) u8 mVUsearchXMM[__pagesize];
-
-// Generates a custom optimized block-search function
-// Note: Structs must be 16-byte aligned! (GCC doesn't guarantee this)
-void mVUcustomSearch()
-{
-	HostSys::MemProtectStatic(mVUsearchXMM, PageAccess_ReadWrite());
-	memset(mVUsearchXMM, 0xcc, __pagesize);
-	xSetPtr(mVUsearchXMM);
-
-	if (!x86caps.hasAVX2)
-	{
-		xMOVAPS  (xmm0, ptr32[arg1reg]);
-		xPCMP.EQD(xmm0, ptr32[arg2reg]);
-		xMOVAPS  (xmm1, ptr32[arg1reg + 0x10]);
-		xPCMP.EQD(xmm1, ptr32[arg2reg + 0x10]);
-		xPAND    (xmm0, xmm1);
-
-		xMOVMSKPS(eax, xmm0);
-		xXOR     (eax, 0xf);
-		xForwardJNZ8 exitPoint;
-
-		xMOVAPS  (xmm0, ptr32[arg1reg + 0x20]);
-		xPCMP.EQD(xmm0, ptr32[arg2reg + 0x20]);
-		xMOVAPS  (xmm1, ptr32[arg1reg + 0x30]);
-		xPCMP.EQD(xmm1, ptr32[arg2reg + 0x30]);
-		xPAND    (xmm0, xmm1);
-
-		xMOVAPS  (xmm1, ptr32[arg1reg + 0x40]);
-		xPCMP.EQD(xmm1, ptr32[arg2reg + 0x40]);
-		xMOVAPS  (xmm2, ptr32[arg1reg + 0x50]);
-		xPCMP.EQD(xmm2, ptr32[arg2reg + 0x50]);
-		xPAND    (xmm1, xmm2);
-		xPAND    (xmm0, xmm1);
-
-		xMOVMSKPS(eax, xmm0);
-		xXOR(eax, 0xf);
-
-		exitPoint.SetTarget();
-	}
-	else
-	{
-		// We have to use unaligned loads here, because the blocks are only 16 byte aligned.
-		xVMOVUPS(ymm0, ptr[arg1reg]);
-		xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg]);
-		xVPMOVMSKB(eax, ymm0);
-		xXOR(eax, 0xffffffff);
-		xForwardJNZ8 exitPoint;
-
-		xVMOVUPS(ymm0, ptr[arg1reg + 0x20]);
-		xVMOVUPS(ymm1, ptr[arg1reg + 0x40]);
-		xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg + 0x20]);
-		xVPCMP.EQD(ymm1, ymm1, ptr[arg2reg + 0x40]);
-		xVPAND(ymm0, ymm0, ymm1);
-
-		xVPMOVMSKB(eax, ymm0);
-		xNOT(eax);
-
-		exitPoint.SetTarget();
-		xVZEROUPPER();
-	}
-
-	xRET();
-	HostSys::MemProtectStatic(mVUsearchXMM, PageAccess_ExecOnly());
 }

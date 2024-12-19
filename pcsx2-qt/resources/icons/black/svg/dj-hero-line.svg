@@ -1,1 +1,36 @@
-<?xml version="1.0" encoding="UTF-8"?><svg id="DJ_Hero_-_Pcsx2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><defs><style>.cls-1,.cls-2,.cls-3{fill:none;}.cls-2{stroke-width:12px;}.cls-2,.cls-3{stroke:#000;stroke-miterlimit:10;}.cls-3{stroke-width:9px;}</style></defs><g id="tela"><rect class="cls-1" width="150" height="150"/></g><g id="By_Maxihplay"><rect id="mesa" class="cls-2" x="12.77" y="38.27" width="124.46" height="73.47" rx="5.5" ry="5.5"/><g id="Disco"><path d="M99.8,81.63c-3.66,0-6.63-2.97-6.63-6.63s2.97-6.63,6.63-6.63,6.63,2.97,6.63,6.63-2.97,6.63-6.63,6.63Z"/><circle class="cls-3" cx="99.8" cy="75" r="23.7"/></g><g id="botoes"><path d="M58.86,87.54h-26.82c-2.49,0-4.5-2.01-4.5-4.5s2.01-4.5,4.5-4.5h26.82c2.49,0,4.5,2.01,4.5,4.5s-2.01,4.5-4.5,4.5Z"/><path d="M50.85,92.31c-2.49,0-4.5-2.01-4.5-4.5v-9.53c0-2.49,2.01-4.5,4.5-4.5s4.5,2.01,4.5,4.5v9.53c0,2.49-2.01,4.5-4.5,4.5Z"/><path d="M58.14,68.07c-2.86,0-5.19-2.33-5.19-5.19s2.33-5.19,5.19-5.19,5.19,2.33,5.19,5.19-2.33,5.19-5.19,5.19Z"/><path d="M32.59,68.07c-2.86,0-5.19-2.33-5.19-5.19s2.33-5.19,5.19-5.19,5.19,2.33,5.19,5.19-2.33,5.19-5.19,5.19Z"/></g></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="DJ_Hero" data-name="DJ Hero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke-linecap: round;
+        stroke-linejoin: bevel;
+      }
+
+      .cls-1, .cls-2 {
+        fill: none;
+        stroke: #000;
+        stroke-width: 12px;
+      }
+
+      .cls-2 {
+        stroke-miterlimit: 10;
+      }
+    </style>
+  </defs>
+  <g id="By_Maxihplay" data-name="By Maxihplay">
+    <path id="corpo" class="cls-2" d="m122.71,16.1c8.94,0,16.18,7.13,16.18,15.91v85.98c0,8.78-7.25,15.91-16.18,15.91H27.29c-8.94,0-16.18-7.13-16.18-15.91V32.02c0-8.78,7.25-15.91,16.18-15.91h95.43Z"/>
+    <g id="botoes">
+      <ellipse id="b" cx="48.19" cy="115.43" rx="6.64" ry="6.52"/>
+      <ellipse id="a" cx="31.22" cy="115.43" rx="6.64" ry="6.52"/>
+    </g>
+    <g>
+      <polyline class="cls-1" points="116.73 40.14 116.73 99.54 100.73 113.74"/>
+      <ellipse cx="116.73" cy="43.21" rx="11.42" ry="11.22"/>
+    </g>
+    <g id="disco">
+      <path d="m63.43,78.59c-6.02,0-10.91-4.86-10.91-10.83s4.9-10.83,10.91-10.83,10.91,4.86,10.91,10.83-4.9,10.83-10.91,10.83Z"/>
+      <ellipse class="cls-2" cx="63.43" cy="67.77" rx="32.22" ry="31.67"/>
+    </g>
+  </g>
+</svg>

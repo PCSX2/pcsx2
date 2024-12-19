@@ -1,34 +1,17 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "Common.h"
 #include "IPU/IPU.h"
 #include "IPU/IPUdma.h"
 #include "IPU/IPU_MultiISA.h"
 
-IPUStatus IPU1Status;
-bool CommandExecuteQueued;
-u32 ProcessedData;
+IPUDMAStatus IPU1Status;
 
 void ipuDmaReset()
 {
 	IPU1Status.InProgress	= false;
 	IPU1Status.DMAFinished	= true;
-	CommandExecuteQueued	= false;
-	ProcessedData			= 0;
 }
 
 bool SaveStateBase::ipuDmaFreeze()
@@ -37,7 +20,6 @@ bool SaveStateBase::ipuDmaFreeze()
 		return false;
 
 	Freeze(IPU1Status);
-	Freeze(CommandExecuteQueued);
 	return IsOkay();
 }
 
@@ -83,11 +65,18 @@ void IPU1dma()
 		return;
 	}
 
-	if (IPU1Status.DataRequested == false)
+	if (IPUCoreStatus.DataRequested == false)
 	{
 		// IPU isn't expecting any data, so put it in to wait mode.
 		cpuRegs.eCycle[4] = 0x9999;
 		CPU_SET_DMASTALL(DMAC_TO_IPU, true);
+
+		// Shouldn't Happen.
+		if (IPUCoreStatus.WaitingOnIPUTo)
+		{
+			IPUCoreStatus.WaitingOnIPUTo = false;
+			IPU_INT_PROCESS(4 * BIAS);
+		}
 		return;
 	}
 
@@ -127,26 +116,22 @@ void IPU1dma()
 	if (IPU1Status.InProgress)
 		totalqwc += IPU1chain();
 
-	//Do this here to prevent double settings on Chain DMA's
-	if((totalqwc == 0 && g_BP.IFC < 8) || (IPU1Status.DMAFinished && !IPU1Status.InProgress))
+	// Nothing has been processed except maybe a tag, or the DMA is ending
+	if(totalqwc == 0 || (IPU1Status.DMAFinished && !IPU1Status.InProgress))
 	{
 		totalqwc = std::max(4, totalqwc) + tagcycles;
 		IPU_INT_TO(totalqwc * BIAS);
 	}
 	else
 	{
-		IPU1Status.DataRequested = false;
-
-		if (!(IPU1Status.DMAFinished && !IPU1Status.InProgress))
-		{
-			cpuRegs.eCycle[4] = 0x9999;//IPU_INT_TO(2048);
+			cpuRegs.eCycle[4] = 0x9999;
 			CPU_SET_DMASTALL(DMAC_TO_IPU, true);
-		}
-		else
-		{
-			totalqwc = std::max(4, totalqwc) + tagcycles;
-			IPU_INT_TO(totalqwc * BIAS);
-		}
+	}
+
+	if (IPUCoreStatus.WaitingOnIPUTo && g_BP.IFC >= 1)
+	{
+		IPUCoreStatus.WaitingOnIPUTo = false;
+		IPU_INT_PROCESS(totalqwc * BIAS);
 	}
 
 	IPU_LOG("Completed Call IPU1 DMA QWC Remaining %x Finished %d In Progress %d tadr %x", ipu1ch.qwc, IPU1Status.DMAFinished, IPU1Status.InProgress, ipu1ch.tadr);
@@ -156,8 +141,12 @@ void IPU0dma()
 {
 	if(!ipuRegs.ctrl.OFC)
 	{
-		if(!CommandExecuteQueued)
+		// This shouldn't happen.
+		if (IPUCoreStatus.WaitingOnIPUFrom)
+		{
+			IPUCoreStatus.WaitingOnIPUFrom = false;
 			IPUProcessInterrupt();
+		}
 		CPU_SET_DMASTALL(DMAC_FROM_IPU, true);
 		return;
 	}
@@ -168,6 +157,12 @@ void IPU0dma()
 	if ((!(ipu0ch.chcr.STR) || (cpuRegs.interrupt & (1 << DMAC_FROM_IPU))) || (ipu0ch.qwc == 0))
 	{
 		DevCon.Warning("How??");
+		// This shouldn't happen.
+		if (IPUCoreStatus.WaitingOnIPUFrom)
+		{
+			IPUCoreStatus.WaitingOnIPUFrom = false;
+			IPU_INT_PROCESS(ipuRegs.ctrl.OFC * BIAS);
+		}
 		return;
 	}
 
@@ -195,11 +190,12 @@ void IPU0dma()
 	if (!ipu0ch.qwc)
 		IPU_INT_FROM(readsize * BIAS);
 
-	if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued)
+	CPU_SET_DMASTALL(DMAC_FROM_IPU, true);
+
+	if (ipuRegs.ctrl.BUSY && IPUCoreStatus.WaitingOnIPUFrom)
 	{
-		CommandExecuteQueued = false;
-		CPU_SET_DMASTALL(DMAC_FROM_IPU, true);
-		IPUProcessInterrupt();
+		IPUCoreStatus.WaitingOnIPUFrom = false;
+		IPU_INT_PROCESS(readsize * BIAS);
 	}
 }
 
@@ -259,29 +255,19 @@ __fi void dmaIPU1() // toIPU
 				IPU1Status.DMAFinished = false;
 			}
 		}
-
-		if(IPU1Status.DataRequested)
-			IPU1dma();
-		else
-			cpuRegs.eCycle[4] = 0x9999;
 	}
 	else // Normal Mode
 	{
 			IPU_LOG("Setting up IPU1 Normal mode");
 			IPU1Status.InProgress = true;
 			IPU1Status.DMAFinished = true;
-
-			if (IPU1Status.DataRequested)
-				IPU1dma();
-			else
-				cpuRegs.eCycle[4] = 0x9999;
 	}
+
+	IPU1dma();
 }
 
 void ipuCMDProcess()
 {
-	CommandExecuteQueued = false;
-	ProcessedData = 0;
 	IPUProcessInterrupt();
 }
 

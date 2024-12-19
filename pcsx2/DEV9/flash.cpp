@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 // The code has been designed for 64Mb flash and uses as file support the second memory card
 #include <stdio.h>
@@ -30,7 +16,7 @@
 #define CARD_SIZE_ECC (1024 * BLOCK_SIZE_ECC)
 
 
-static u32 ctrl, cmd = (u32)-1, address, id, counter, addrbyte;
+static u32 ctrl, cmd = static_cast<u32>(-1), address, id, counter, addrbyte;
 static u8 data[PAGE_SIZE_ECC], file[CARD_SIZE_ECC];
 
 static void xfromman_call20_calculateXors(unsigned char buffer[128], unsigned char blah[4]);

@@ -1,31 +1,12 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-
-/*
- *  Original code from libcdvd by Hiryu & Sjeep (C) 2002
- *  Modified by Florin for PCSX2 emu
- *  Fixed CdRead by linuzappz
- */
-
-#include "PrecompiledHeader.h"
 #include "IsoFileFormats.h"
-#include "AsyncFileReader.h"
 #include "CDVD/CDVD.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
+#include "common/Error.h"
 
 #include <cstring>
 #include <array>
@@ -37,23 +18,23 @@ static int pmode, cdtype;
 static s32 layer1start = -1;
 static bool layer1searched = false;
 
-void CALLBACK ISOclose()
+static void ISOclose()
 {
 	iso.Close();
 }
 
-s32 CALLBACK ISOopen(const char* pTitle)
+static bool ISOopen(std::string filename, Error* error)
 {
 	ISOclose(); // just in case
 
-	if ((pTitle == NULL) || (pTitle[0] == 0))
+	if (filename.empty())
 	{
-		Console.Error("CDVDiso Error: No filename specified.");
-		return -1;
+		Error::SetString(error, "No filename specified.");
+		return false;
 	}
 
-	if (!iso.Open(pTitle))
-		return -1;
+	if (!iso.Open(std::move(filename), error))
+		return false;
 
 	switch (iso.GetType())
 	{
@@ -71,15 +52,20 @@ s32 CALLBACK ISOopen(const char* pTitle)
 	layer1start = -1;
 	layer1searched = false;
 
-	return 0;
+	return true;
 }
 
-s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
+static bool ISOprecache(ProgressCallback* progress, Error* error)
+{
+	return iso.Precache(progress, error);
+}
+
+static s32 ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 {
 	// fake it
 	u8 min, sec, frm;
 	subq->ctrl = 4;
-	subq->mode = 1;
+	subq->adr = 1;
 	subq->trackNum = itob(1);
 	subq->trackIndex = itob(1);
 
@@ -98,7 +84,7 @@ s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 	return 0;
 }
 
-s32 CALLBACK ISOgetTN(cdvdTN* Buffer)
+static s32 ISOgetTN(cdvdTN* Buffer)
 {
 	Buffer->strack = 1;
 	Buffer->etrack = 1;
@@ -106,7 +92,7 @@ s32 CALLBACK ISOgetTN(cdvdTN* Buffer)
 	return 0;
 }
 
-s32 CALLBACK ISOgetTD(u8 Track, cdvdTD* Buffer)
+static s32 ISOgetTD(u8 Track, cdvdTD* Buffer)
 {
 	if (Track == 0)
 	{
@@ -170,7 +156,7 @@ static void FindLayer1Start()
 }
 
 // Should return 0 if no error occurred, or -1 if layer detection FAILED.
-s32 CALLBACK ISOgetDualInfo(s32* dualType, u32* _layer1start)
+static s32 ISOgetDualInfo(s32* dualType, u32* _layer1start)
 {
 	FindLayer1Start();
 
@@ -187,12 +173,12 @@ s32 CALLBACK ISOgetDualInfo(s32* dualType, u32* _layer1start)
 	return 0;
 }
 
-s32 CALLBACK ISOgetDiskType()
+static s32 ISOgetDiskType()
 {
 	return cdtype;
 }
 
-s32 CALLBACK ISOgetTOC(void* toc)
+static s32 ISOgetTOC(void* toc)
 {
 	u8 type = ISOgetDiskType();
 	u8* tocBuff = (u8*)toc;
@@ -326,7 +312,7 @@ s32 CALLBACK ISOgetTOC(void* toc)
 	return 0;
 }
 
-s32 CALLBACK ISOreadSector(u8* tempbuffer, u32 lsn, int mode)
+static s32 ISOreadSector(u8* tempbuffer, u32 lsn, int mode)
 {
 	static u8 cdbuffer[CD_FRAMESIZE_RAW] = {0};
 
@@ -377,7 +363,7 @@ s32 CALLBACK ISOreadSector(u8* tempbuffer, u32 lsn, int mode)
 	return 0;
 }
 
-s32 CALLBACK ISOreadTrack(u32 lsn, int mode)
+static s32 ISOreadTrack(u32 lsn, int mode)
 {
 	int _lsn = lsn;
 
@@ -391,45 +377,35 @@ s32 CALLBACK ISOreadTrack(u32 lsn, int mode)
 	return 0;
 }
 
-s32 CALLBACK ISOgetBuffer(u8* buffer)
+static s32 ISOgetBuffer(u8* buffer)
 {
 	return iso.FinishRead3(buffer, pmode);
 }
 
-//u8* CALLBACK ISOgetBuffer()
-//{
-//	iso.FinishRead();
-//	return pbuffer;
-//}
-
-s32 CALLBACK ISOgetTrayStatus()
+static s32 ISOgetTrayStatus()
 {
 	return CDVD_TRAY_CLOSE;
 }
 
-s32 CALLBACK ISOctrlTrayOpen()
+static s32 ISOctrlTrayOpen()
 {
 	return 0;
 }
-s32 CALLBACK ISOctrlTrayClose()
-{
-	return 0;
-}
-
-s32 CALLBACK ISOdummyS32()
+static s32 ISOctrlTrayClose()
 {
 	return 0;
 }
 
-void CALLBACK ISOnewDiskCB(void (*/* callback */)())
+static void ISOnewDiskCB(void (* /* callback */)())
 {
 }
 
-CDVD_API CDVDapi_Iso =
+const CDVD_API CDVDapi_Iso =
 	{
 		ISOclose,
 
 		ISOopen,
+		ISOprecache,
 		ISOreadTrack,
 		ISOgetBuffer,
 		ISOreadSubQ,
@@ -437,10 +413,9 @@ CDVD_API CDVDapi_Iso =
 		ISOgetTD,
 		ISOgetTOC,
 		ISOgetDiskType,
-		ISOdummyS32, // trayStatus
-		ISOdummyS32, // trayOpen
-		ISOdummyS32, // trayClose
-
+		ISOgetTrayStatus,
+		ISOctrlTrayOpen,
+		ISOctrlTrayClose,
 		ISOnewDiskCB,
 
 		ISOreadSector,

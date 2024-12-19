@@ -1,21 +1,8 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Achievements.h"
+#include "BuildVersion.h"
 #include "CDVD/CDVD.h"
 #include "COP0.h"
 #include "Cache.h"
@@ -28,9 +15,11 @@
 #include "Host.h"
 #include "MTGS.h"
 #include "MTVU.h"
-#include "SIO/Pad/Pad.h"
 #include "Patch.h"
 #include "R3000A.h"
+#include "SIO/Multitap/MultitapProtocol.h"
+#include "SIO/Pad/Pad.h"
+#include "SIO/Sio.h"
 #include "SIO/Sio0.h"
 #include "SIO/Sio2.h"
 #include "SPU2/spu2.h"
@@ -40,7 +29,6 @@
 #include "VMManager.h"
 #include "VUmicro.h"
 #include "ps2/BiosTools.h"
-#include "svnrev.h"
 
 #include "common/Error.h"
 #include "common/FileSystem.h"
@@ -71,7 +59,7 @@ static void PreLoadPrep()
 	// clear protected pages, since we don't want to fault loading EE memory
 	mmap_ResetBlockTracking();
 
-	SysClearExecutionCache();
+	VMManager::Internal::ClearCPUExecutionCaches();
 }
 
 static void PostLoadPrep()
@@ -130,7 +118,7 @@ bool SaveStateBase::FreezeTag(const char* src)
 		return false;
 
 	char tagspace[32];
-	pxAssertDev(std::strlen(src) < (sizeof(tagspace) - 1), "Tag name exceeds the allowed length");
+	pxAssertMsg(std::strlen(src) < (sizeof(tagspace) - 1), "Tag name exceeds the allowed length");
 
 	std::memset(tagspace, 0, sizeof(tagspace));
 	StringUtil::Strlcpy(tagspace, src, sizeof(tagspace));
@@ -165,11 +153,10 @@ bool SaveStateBase::FreezeBios()
 
 	if (bioscheck != BiosChecksum)
 	{
-		Console.Newline();
-		Console.Indent(1).Error( "Warning: BIOS Version Mismatch, savestate may be unstable!" );
-		Console.Indent(2).Error(
-			"Current BIOS:   %s (crc=0x%08x)\n"
-			"Savestate BIOS: %s (crc=0x%08x)\n",
+		Console.Error("\n  Warning: BIOS Version Mismatch, savestate may be unstable!");
+		Console.Error(
+			"    Current BIOS:   %s (crc=0x%08x)\n"
+			"    Savestate BIOS: %s (crc=0x%08x)\n",
 			BiosDescription.c_str(), BiosChecksum,
 			biosdesc, bioscheck
 		);
@@ -178,7 +165,7 @@ bool SaveStateBase::FreezeBios()
 	return IsOkay();
 }
 
-bool SaveStateBase::FreezeInternals()
+bool SaveStateBase::FreezeInternals(Error* error)
 {
 	// Print this until the MTVU problem in gifPathFreeze is taken care of (rama)
 	if (THREAD_VU1)
@@ -206,10 +193,10 @@ bool SaveStateBase::FreezeInternals()
 
 	Freeze(EEsCycle);
 	Freeze(EEoCycle);
-	Freeze(nextCounter);
-	Freeze(nextsCounter);
-	Freeze(psxNextsCounter);
-	Freeze(psxNextCounter);
+	Freeze(nextDeltaCounter);
+	Freeze(nextStartCounter);
+	Freeze(psxNextStartCounter);
+	Freeze(psxNextDeltaCounter);
 
 	// Fourth Block - EE-related systems
 	// ---------------------------------
@@ -217,6 +204,7 @@ bool SaveStateBase::FreezeInternals()
 		return false;
 
 	bool okay = rcntFreeze();
+	okay = okay && memFreeze(error);
 	okay = okay && gsFreeze();
 	okay = okay && vuMicroFreeze();
 	okay = okay && vuJITFreeze();
@@ -259,6 +247,9 @@ bool SaveStateBase::FreezeInternals()
 
 		okay = okay && g_Sio0.DoState(sw);
 		okay = okay && g_Sio2.DoState(sw);
+		okay = okay && g_MultitapArr.at(0).DoState(sw);
+		okay = okay && g_MultitapArr.at(1).DoState(sw);
+
 		if (!okay || !sw.IsGood())
 			return false;
 
@@ -284,6 +275,8 @@ bool SaveStateBase::FreezeInternals()
 	okay = okay && deci2Freeze();
 
 	okay = okay && InputRecordingFreeze();
+
+	okay = okay && handleFreeze(); //file handles
 
 	return okay;
 }
@@ -323,6 +316,9 @@ memLoadingState::memLoadingState(const VmStateBuffer& load_from)
 // Loading of state data from a memory buffer...
 void memLoadingState::FreezeMem( void* data, int size )
 {
+	if (static_cast<u32>(m_idx + size) > m_memory.size())
+		m_error = true;
+
 	if (m_error)
 	{
 		std::memset(data, 0, size);
@@ -364,7 +360,7 @@ static bool SysState_ComponentFreezeIn(zip_file_t* zf, SysState_Component comp)
 	if (comp.freeze(FreezeAction::Size, &fP) != 0)
 		fP.size = 0;
 
-	Console.Indent().WriteLn("Loading %s", comp.name);
+	Console.WriteLn("  Loading %s", comp.name);
 
 	std::unique_ptr<u8[]> data;
 	if (fP.size > 0)
@@ -403,7 +399,7 @@ static bool SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Componen
 	const int size = fP.size;
 	writer.PrepBlock(size);
 
-	Console.Indent().WriteLn("Saving %s", comp.name);
+	Console.WriteLn("  Saving %s", comp.name);
 
 	fP.data = writer.GetBlockPtr();
 	if (comp.freeze(FreezeAction::Save, &fP) != 0)
@@ -520,11 +516,10 @@ public:
 
 	const char* GetFilename() const override { return "eeMemory.bin"; }
 	u8* GetDataPtr() const override { return eeMem->Main; }
-	uint GetDataSize() const override { return sizeof(eeMem->Main); }
+	uint GetDataSize() const override { return Ps2MemSize::ExposedRam; }
 
 	virtual bool FreezeIn(zip_file_t* zf) const override
 	{
-		SysClearExecutionCache();
 		return MemorySavestateEntry::FreezeIn(zf);
 	}
 };
@@ -653,7 +648,6 @@ public:
 	bool IsRequired() const { return true; }
 };
 
-#ifdef ENABLE_ACHIEVEMENTS
 class SaveStateEntry_Achievements final : public BaseSavestateEntry
 {
 	~SaveStateEntry_Achievements() override = default;
@@ -668,10 +662,10 @@ class SaveStateEntry_Achievements final : public BaseSavestateEntry
 		if (zf)
 			data = ReadBinaryFileInZip(zf);
 
-		if (data.has_value() && !data->empty())
-			Achievements::LoadState(data->data(), data->size());
+		if (data.has_value())
+			Achievements::LoadState(data.value());
 		else
-			Achievements::LoadState(nullptr, 0);
+			Achievements::LoadState(std::span<const u8>());
 
 		return true;
 	}
@@ -681,20 +675,12 @@ class SaveStateEntry_Achievements final : public BaseSavestateEntry
 		if (!Achievements::IsActive())
 			return true;
 
-		std::vector<u8> data(Achievements::SaveState());
-		if (!data.empty())
-		{
-			writer.PrepBlock(static_cast<int>(data.size()));
-			std::memcpy(writer.GetBlockPtr(), data.data(), data.size());
-			writer.CommitBlock(static_cast<int>(data.size()));
-		}
-
+		Achievements::SaveState(writer);
 		return writer.IsOkay();
 	}
 
 	bool IsRequired() const override { return false; }
 };
-#endif
 
 // (cpuRegs, iopRegs, VPU/GIF/DMAC structures should all remain as part of a larger unified
 //  block, since they're all PCSX2-dependent and having separate files in the archie for them
@@ -715,9 +701,7 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_USB),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_PAD),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_GS),
-#ifdef ENABLE_ACHIEVEMENTS
 	std::unique_ptr<BaseSavestateEntry>(new SaveStateEntry_Achievements),
-#endif
 };
 
 std::unique_ptr<ArchiveEntryList> SaveState_DownloadState(Error* error)
@@ -735,9 +719,11 @@ std::unique_ptr<ArchiveEntryList> SaveState_DownloadState(Error* error)
 		return nullptr;
 	}
 
-	if (!saveme.FreezeInternals())
+	if (!saveme.FreezeInternals(error))
 	{
-		Error::SetString(error, "FreezeInternals() failed");
+		if (!error->IsValid())
+			Error::SetString(error, "FreezeInternals() failed");
+
 		return nullptr;
 	}
 
@@ -934,9 +920,51 @@ static bool SaveState_ReadScreenshot(zip_t* zf, u32* out_width, u32* out_height,
 // --------------------------------------------------------------------------------------
 static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateScreenshotData* screenshot)
 {
-	// use zstd compression, it can be 10x+ faster for saving.
-	const u32 compression = EmuConfig.SavestateZstdCompression ? ZIP_CM_ZSTD : ZIP_CM_DEFLATE;
-	const u32 compression_level = 0;
+	u32 compression;
+	u32 compression_level;
+
+	if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::Zstandard)
+	{
+		compression = ZIP_CM_ZSTD;
+
+		if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Low)
+			compression_level = 1;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Medium)
+			compression_level = 3;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::High)
+			compression_level = 10;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::VeryHigh)
+			compression_level = 22;
+	}
+	else if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::Deflate64)
+	{
+		compression = ZIP_CM_DEFLATE64;
+		if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Low)
+			compression_level = 1;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Medium)
+			compression_level = 3;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::High)
+			compression_level = 7;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::VeryHigh)
+			compression_level = 9;
+	}
+	else if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::LZMA2)
+	{
+		compression = ZIP_CM_LZMA2;
+		if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Low)
+			compression_level = 1;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Medium)
+			compression_level = 3;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::High)
+			compression_level = 7;
+		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::VeryHigh)
+			compression_level = 9;
+	}
+	else if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::Uncompressed)
+	{
+		compression = ZIP_CM_STORE;
+		compression_level = 0;
+	}
 
 	// version indicator
 	{
@@ -948,11 +976,14 @@ static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateSc
 
 		VersionIndicator* vi = static_cast<VersionIndicator*>(std::malloc(sizeof(VersionIndicator)));
 		vi->save_version = g_SaveVersion;
-#if GIT_TAGGED_COMMIT
-		StringUtil::Strlcpy(vi->version, GIT_TAG, std::size(vi->version));
-#else
-		StringUtil::Strlcpy(vi->version, "Unknown", std::size(vi->version));
-#endif
+		if (BuildVersion::GitTaggedCommit)
+		{
+			StringUtil::Strlcpy(vi->version, BuildVersion::GitTag, std::size(vi->version));
+		}
+		else
+		{
+			StringUtil::Strlcpy(vi->version, "Unknown", std::size(vi->version));
+		}
 
 		zip_source_t* const zs = zip_source_buffer(zf, vi, sizeof(*vi), 1);
 		if (!zs)
@@ -969,7 +1000,7 @@ static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateSc
 			return false;
 		}
 
-		zip_set_file_compression(zf, fi, ZIP_CM_STORE, 0);
+		zip_set_file_compression(zf, fi, compression, compression_level);
 	}
 
 	const uint listlen = srclist->GetLength();
@@ -1065,9 +1096,10 @@ static bool CheckVersion(const std::string& filename, zip_t* zf, Error* error)
 	// than the emulator recognizes.  99% chance that trying to load it will just corrupt emulation or crash.
 	if (savever > g_SaveVersion || (savever >> 16) != (g_SaveVersion >> 16))
 	{
-		Error::SetString(error, fmt::format(TRANSLATE_FS("SaveState","This savestate is an unsupported version and cannot be used.\n\n"
-											"You can download PCSX2 {} from pcsx2.net and make a normal memory card save.\n"
-											"Otherwise delete the savestate and do a fresh boot."),
+		Error::SetString(error, fmt::format(TRANSLATE_FS("SaveState","This save state is outdated and is no longer compatible "
+											"with the current version of PCSX2.\n\n"
+											"If you have any unsaved progress on this save state, you can download the compatible version (PCSX2 {}) "
+											"from pcsx2.net, load the save state, and save your progress to the memory card."),
 											version_string));
 		return false;
 	}
@@ -1092,7 +1124,7 @@ static zip_int64_t CheckFileExistsInState(zip_t* zf, const char* name, bool requ
 	return index;
 }
 
-static bool LoadInternalStructuresState(zip_t* zf, s64 index)
+static bool LoadInternalStructuresState(zip_t* zf, s64 index, Error* error)
 {
 	zip_stat_t zst;
 	if (zip_stat_index(zf, index, 0, &zst) != 0 || zst.size > std::numeric_limits<int>::max())
@@ -1111,7 +1143,7 @@ static bool LoadInternalStructuresState(zip_t* zf, s64 index)
 	if (!state.FreezeBios())
 		return false;
 	
-	if (!state.FreezeInternals())
+	if (!state.FreezeInternals(error))
 		return false;
 
 	return true;
@@ -1160,9 +1192,12 @@ bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 
 	PreLoadPrep();
 
-	if (!LoadInternalStructuresState(zf.get(), internal_index))
+	if (!LoadInternalStructuresState(zf.get(), internal_index, error))
 	{
-		Error::SetString(error, "Save state corruption in internal structures.");
+		if (!error->IsValid())
+			Error::SetString(error, "Save state corruption in internal structures.");
+
+		VMManager::Reset();
 		return false;
 	}
 
@@ -1178,6 +1213,7 @@ bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 		if (!zff || !SavestateEntries[i]->FreezeIn(zff.get()))
 		{
 			Error::SetString(error, fmt::format("Save state corruption in {}.", SavestateEntries[i]->GetFilename()));
+			VMManager::Reset();
 			return false;
 		}
 	}

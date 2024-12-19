@@ -1,20 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-
-#include "PrecompiledHeader.h"
 #include "Common.h"
 #include "Hardware.h"
 #include "MTVU.h"
@@ -72,12 +58,12 @@ tDMA_TAG DMACh::dma_tag()
 
 std::string DMACh::cmq_to_str() const
 {
-	return StringUtil::StdStringFromFormat("chcr = %lx, madr = %lx, qwc  = %lx", chcr._u32, madr, qwc);
+	return StringUtil::StdStringFromFormat("chcr = %x, madr = %x, qwc  = %x", chcr._u32, madr, qwc);
 }
 
 std::string DMACh::cmqt_to_str() const
 {
-	return StringUtil::StdStringFromFormat("chcr = %lx, madr = %lx, qwc  = %lx, tadr = %1x", chcr._u32, madr, qwc, tadr);
+	return StringUtil::StdStringFromFormat("chcr = %x, madr = %x, qwc  = %x, tadr = %1x", chcr._u32, madr, qwc, tadr);
 }
 
 __fi void throwBusError(const char *s)
@@ -105,7 +91,7 @@ __fi tDMA_TAG* SPRdmaGetAddr(u32 addr, bool write)
 	// FIXME: Why??? DMA uses physical addresses
 	addr &= 0x1ffffff0;
 
-	if (addr < Ps2MemSize::MainRam)
+	if (addr < Ps2MemSize::ExposedRam)
 	{
 		return (tDMA_TAG*)&eeMem->Main[addr];
 	}
@@ -168,7 +154,7 @@ __ri tDMA_TAG *dmaGetAddr(u32 addr, bool write)
 	// FIXME: Why??? DMA uses physical addresses
 	addr &= 0x1ffffff0;
 
-	if (addr < Ps2MemSize::MainRam)
+	if (addr < Ps2MemSize::ExposedRam)
 	{
 		return (tDMA_TAG*)&eeMem->Main[addr];
 	}

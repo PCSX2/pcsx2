@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "DEV9/ATA/ATA.h"
 #include "DEV9/DEV9.h"
@@ -24,6 +10,16 @@ void ATA::HDD_SCE()
 
 	switch (regFeature)
 	{
+		case 0xF1: // ATA_SCE_SECURITY_SET_PASSWORD
+		case 0xF2: // ATA_SCE_SECURITY_UNLOCK
+		case 0xF3: // ATA_SCE_SECURITY_ERASE_PREPARE
+		case 0xF4: // ATA_SCE_SECURITY_ERASE_UNIT
+		case 0xF5: // ATA_SCE_SECURITY_FREEZE_LOCK
+		case 0x20: // ATA_SCE_SECURITY_READ_ID
+		case 0x30: // ATA_SCE_SECURITY_WRITE_ID
+			Console.Error("DEV9: ATA: SCE command %x not implemented", regFeature);
+			CmdNoDataAbort();
+			break;
 		case 0xEC:
 			SCE_IDENTIFY_DRIVE();
 			break;
@@ -33,23 +29,16 @@ void ATA::HDD_SCE()
 			return;
 	}
 }
-//Has
-//ATA_SCE_IDENTIFY_DRIVE @ 0xEC
+// All games that have ability to install data into HDD will verify HDD by checking that this command completes successfully. Resident Evil: Outbreak for example
+// Only a few games/apps make use of the returned data, see Final Fantasy XI or the HDD Utility disks, neither of which work yet
+// Also PSX DESR bioses use this response for HDD encryption and decryption.
+// Use of external HDD ID (not implemented) file may be necessary for users with protected titles installed to the SCE HDD and then dumped.
+// For example: PS2 BB Navigator, PlayOnline Viewer, Bomberman Online, Nobunaga No Yabou Online, Pop'n Taisen Puzzle-Dama Online
 
-//ATA_SCE_SECURITY_ERASE_PREPARE @ 0xF1
-//ATA_SCE_SECURITY_ERASE_UNIT
-//ATA_SCE_SECURITY_FREEZE_LOCK
-//ATA_SCE_SECURITY_SET_PASSWORD
-//ATA_SCE_SECURITY_UNLOCK
-
-//ATA_SCE_SECURITY_WRITE_ID @ 0x20
-//ATA_SCE_SECURITY_READ_ID @ 0x30
-
+// PS2 ID Dumper can be used as test case
 void ATA::SCE_IDENTIFY_DRIVE()
 {
 	PreCmd();
-
-	//HDD_IdentifyDevice(); //Maybe?
 
 	pioDRQEndTransferFunc = nullptr;
 	DRQCmdPIODataToHost(sceSec, 256 * 2, 0, 256 * 2, true);

@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "DebugTools/Debug.h"
 #include "Recording/PadData.h"
@@ -111,24 +97,24 @@ void PadData::OverrideActualController() const
 	PadBase* pad = Pad::GetPad(m_ext_port);
 	pad->SetRawAnalogs(m_leftAnalog, m_rightAnalog);
 
-	pad->Set(PadDualshock2::Inputs::PAD_RIGHT, std::get<1>(m_right));
-	pad->Set(PadDualshock2::Inputs::PAD_LEFT, std::get<1>(m_left));
-	pad->Set(PadDualshock2::Inputs::PAD_UP, std::get<1>(m_up));
-	pad->Set(PadDualshock2::Inputs::PAD_DOWN, std::get<1>(m_down));
+	pad->SetRawPressureButton(PadDualshock2::Inputs::PAD_RIGHT, m_right);
+	pad->SetRawPressureButton(PadDualshock2::Inputs::PAD_LEFT, m_left);
+	pad->SetRawPressureButton(PadDualshock2::Inputs::PAD_UP, m_up);
+	pad->SetRawPressureButton(PadDualshock2::Inputs::PAD_DOWN, m_down);
 	pad->Set(PadDualshock2::Inputs::PAD_START, m_start);
 	pad->Set(PadDualshock2::Inputs::PAD_SELECT, m_select);
 	pad->Set(PadDualshock2::Inputs::PAD_R3, m_r3);
 	pad->Set(PadDualshock2::Inputs::PAD_L3, m_l3);
 
-	pad->Set(PadDualshock2::Inputs::PAD_SQUARE, std::get<1>(m_square));
-	pad->Set(PadDualshock2::Inputs::PAD_CROSS, std::get<1>(m_cross));
-	pad->Set(PadDualshock2::Inputs::PAD_CIRCLE, std::get<1>(m_circle));
-	pad->Set(PadDualshock2::Inputs::PAD_TRIANGLE, std::get<1>(m_triangle));
+	pad->SetRawPressureButton(PadDualshock2::Inputs::PAD_SQUARE, m_square);
+	pad->SetRawPressureButton(PadDualshock2::Inputs::PAD_CROSS, m_cross);
+	pad->SetRawPressureButton(PadDualshock2::Inputs::PAD_CIRCLE, m_circle);
+	pad->SetRawPressureButton(PadDualshock2::Inputs::PAD_TRIANGLE, m_triangle);
 
-	pad->Set(PadDualshock2::Inputs::PAD_R1, std::get<1>(m_r1));
-	pad->Set(PadDualshock2::Inputs::PAD_L1, std::get<1>(m_l1));
-	pad->Set(PadDualshock2::Inputs::PAD_R2, std::get<1>(m_r2));
-	pad->Set(PadDualshock2::Inputs::PAD_L2, std::get<1>(m_l2));
+	pad->SetRawPressureButton(PadDualshock2::Inputs::PAD_R1, m_r1);
+	pad->SetRawPressureButton(PadDualshock2::Inputs::PAD_L1, m_l1);
+	pad->SetRawPressureButton(PadDualshock2::Inputs::PAD_R2, m_r2);
+	pad->SetRawPressureButton(PadDualshock2::Inputs::PAD_L2, m_l2);
 }
 
 void addButtonInfoToString(std::string label, std::string& str, std::tuple<bool, u8> buttonInfo)

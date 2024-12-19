@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -19,8 +7,7 @@
 
 #include "common/RedtapeWindows.h"
 
-#include "glad_wgl.h"
-#include "glad.h"
+#include "glad/wgl.h"
 
 #include <optional>
 #include <span>
@@ -31,28 +18,30 @@ public:
 	GLContextWGL(const WindowInfo& wi);
 	~GLContextWGL() override;
 
-	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try);
+	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error);
 
 	void* GetProcAddress(const char* name) override;
 	bool ChangeSurface(const WindowInfo& new_wi) override;
 	void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
 	bool SwapBuffers() override;
+	bool IsCurrent() override;
 	bool MakeCurrent() override;
 	bool DoneCurrent() override;
+	bool SupportsNegativeSwapInterval() const override;
 	bool SetSwapInterval(s32 interval) override;
-	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi) override;
+	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 
 private:
 	__fi HWND GetHWND() const { return static_cast<HWND>(m_wi.window_handle); }
 
-	HDC GetDCAndSetPixelFormat(HWND hwnd);
+	HDC GetDCAndSetPixelFormat(HWND hwnd, Error* error);
 
-	bool Initialize(std::span<const Version> versions_to_try);
-	bool InitializeDC();
+	bool Initialize(std::span<const Version> versions_to_try, Error* error);
+	bool InitializeDC(Error* error);
 	void ReleaseDC();
-	bool CreatePBuffer();
-	bool CreateAnyContext(HGLRC share_context, bool make_current);
-	bool CreateVersionContext(const Version& version, HGLRC share_context, bool make_current);
+	bool CreatePBuffer(Error* error);
+	bool CreateAnyContext(HGLRC share_context, bool make_current, Error* error);
+	bool CreateVersionContext(const Version& version, HGLRC share_context, bool make_current, Error* error);
 
 	HDC m_dc = {};
 	HGLRC m_rc = {};

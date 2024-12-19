@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 //#version 420 // Keep it for editor detection
 
@@ -78,6 +66,24 @@ void ps_depth_copy()
 }
 #endif
 
+#ifdef ps_downsample_copy
+uniform ivec2 ClampMin;
+uniform int DownsampleFactor;
+uniform float Weight;
+
+void ps_downsample_copy()
+{
+	ivec2 coord = max(ivec2(gl_FragCoord.xy) * DownsampleFactor, ClampMin);
+	vec4 result = vec4(0);
+	for (int yoff = 0; yoff < DownsampleFactor; yoff++)
+	{
+		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
+			result += texelFetch(TextureSampler, coord + ivec2(xoff, yoff), 0);
+	}
+	SV_Target0 = result / Weight;
+}
+#endif
+
 #ifdef ps_convert_rgba8_16bits
 // Need to be careful with precision here, it can break games like Spider-Man 3 and Dogs Life
 void ps_convert_rgba8_16bits()
@@ -92,11 +98,7 @@ void ps_convert_rgba8_16bits()
 void ps_convert_float32_32bits()
 {
 	// Convert a GL_FLOAT32 depth texture into a 32 bits UINT texture
-#if HAS_CLIP_CONTROL
 	SV_Target1 = uint(exp2(32.0f) * sample_c().r);
-#else
-	SV_Target1 = uint(exp2(24.0f) * sample_c().r);
-#endif
 }
 #endif
 
@@ -104,11 +106,7 @@ void ps_convert_float32_32bits()
 void ps_convert_float32_rgba8()
 {
 	// Convert a GL_FLOAT32 depth texture into a RGBA color texture
-#if HAS_CLIP_CONTROL
 	uint d = uint(sample_c().r * exp2(32.0f));
-#else
-	uint d = uint(sample_c().r * exp2(24.0f));
-#endif
 	SV_Target0 = vec4(uvec4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24))) / vec4(255.0);
 }
 #endif
@@ -117,54 +115,43 @@ void ps_convert_float32_rgba8()
 void ps_convert_float16_rgb5a1()
 {
 	// Convert a GL_FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
-#if HAS_CLIP_CONTROL
 	uint d = uint(sample_c().r * exp2(32.0f));
-#else
-	uint d = uint(sample_c().r * exp2(24.0f));
-#endif
-	SV_Target0 = vec4(uvec4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) / vec4(32.0f, 32.0f, 32.0f, 1.0f);
+	SV_Target0 = vec4(uvec4(d << 3, d >> 2, d >> 7, d >> 8) & uvec4(0xf8, 0xf8, 0xf8, 0x80)) / 255.0f;
 }
 #endif
 
 float rgba8_to_depth32(vec4 unorm)
 {
 	uvec4 c = uvec4(unorm * vec4(255.5f));
-#if HAS_CLIP_CONTROL
 	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
-#else
-	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-24.0f);
-#endif
 }
 
 float rgba8_to_depth24(vec4 unorm)
 {
 	uvec3 c = uvec3(unorm.rgb * vec3(255.5f));
-#if HAS_CLIP_CONTROL
 	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
-#else
-	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-24.0f);
-#endif
 }
 
 float rgba8_to_depth16(vec4 unorm)
 {
 	uvec2 c = uvec2(unorm.rg * vec2(255.5f));
-#if HAS_CLIP_CONTROL
 	return float(c.r | (c.g << 8)) * exp2(-32.0f);
-#else
-	return float(c.r | (c.g << 8)) * exp2(-24.0f);
-#endif
 }
 
 float rgb5a1_to_depth16(vec4 unorm)
 {
 	uvec4 c = uvec4(unorm * vec4(255.5f));
-#if HAS_CLIP_CONTROL
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
-#else
-	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-24.0f);
-#endif
 }
+
+#ifdef ps_convert_float32_float24
+void ps_convert_float32_float24()
+{
+	// Truncates depth value to 24bits
+	uint d = uint(sample_c().r * exp2(32.0f)) & 0xFFFFFFu;
+	gl_FragDepth = float(d) * exp2(-32.0f);
+}
+#endif
 
 #ifdef ps_convert_rgba8_float32
 void ps_convert_rgba8_float32()
@@ -325,6 +312,42 @@ void ps_datm0()
 }
 #endif
 
+// Used for DATE (stencil)
+// DATM == 1
+#ifdef ps_datm1_rta_correction
+void ps_datm1_rta_correction()
+{
+	if(sample_c().a < (254.5f / 255.0f)) // >= 0x80 pass
+		discard;
+}
+#endif
+
+// Used for DATE (stencil)
+// DATM == 0
+#ifdef ps_datm0_rta_correction
+void ps_datm0_rta_correction()
+{
+	if((254.5f / 255.0f) < sample_c().a) // < 0x80 pass (== 0x80 should not pass)
+		discard;
+}
+#endif
+
+#ifdef ps_rta_correction
+void ps_rta_correction()
+{
+	vec4 value = sample_c();
+	SV_Target0 = vec4(value.rgb, value.a / (128.25f / 255.0f));
+}
+#endif
+
+#ifdef ps_rta_decorrection
+void ps_rta_decorrection()
+{
+	vec4 value = sample_c();
+	SV_Target0 = vec4(value.rgb, value.a * (128.25f / 255.0f));
+}
+#endif
+
 #ifdef ps_hdr_init
 void ps_hdr_init()
 {
@@ -431,7 +454,7 @@ void ps_yuv()
 }
 #endif
 
-#if defined(ps_stencil_image_init_0) || defined(ps_stencil_image_init_1)
+#if defined(ps_stencil_image_init_0) || defined(ps_stencil_image_init_1) || defined(ps_stencil_image_init_2) || defined(ps_stencil_image_init_3)
 
 void main()
 {
@@ -443,6 +466,14 @@ void main()
 	#endif
 	#ifdef ps_stencil_image_init_1
 		if(sample_c().a < (127.5f / 255.0f)) // >= 0x80 pass
+			SV_Target0 = vec4(-1);
+	#endif
+	#ifdef ps_stencil_image_init_2
+		if((254.5f / 255.0f) < sample_c().a) // < 0x80 pass (== 0x80 should not pass)
+			SV_Target0 = vec4(-1);
+	#endif
+	#ifdef ps_stencil_image_init_3
+		if(sample_c().a < (254.5f / 255.0f)) // >= 0x80 pass
 			SV_Target0 = vec4(-1);
 	#endif
 }

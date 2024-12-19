@@ -8,33 +8,32 @@
 
 #pragma once
 
-
-#define CPUINFO_COUNT_OF(array) (sizeof(array) / sizeof(0[array]))
+#define CPUINFO_COUNT_OF(array) (sizeof(array) / sizeof(0 [array]))
 
 #if defined(__GNUC__)
-	#define CPUINFO_LIKELY(condition) (__builtin_expect(!!(condition), 1))
-	#define CPUINFO_UNLIKELY(condition) (__builtin_expect(!!(condition), 0))
+#define CPUINFO_LIKELY(condition) (__builtin_expect(!!(condition), 1))
+#define CPUINFO_UNLIKELY(condition) (__builtin_expect(!!(condition), 0))
 #else
-	#define CPUINFO_LIKELY(condition) (!!(condition))
-	#define CPUINFO_UNLIKELY(condition) (!!(condition))
+#define CPUINFO_LIKELY(condition) (!!(condition))
+#define CPUINFO_UNLIKELY(condition) (!!(condition))
 #endif
 
 #ifndef CPUINFO_INTERNAL
-	#if defined(__ELF__)
-		#define CPUINFO_INTERNAL __attribute__((__visibility__("internal")))
-	#elif defined(__MACH__)
-		#define CPUINFO_INTERNAL __attribute__((__visibility__("hidden")))
-	#else
-		#define CPUINFO_INTERNAL
-	#endif
+#if defined(__ELF__)
+#define CPUINFO_INTERNAL __attribute__((__visibility__("internal")))
+#elif defined(__MACH__)
+#define CPUINFO_INTERNAL __attribute__((__visibility__("hidden")))
+#else
+#define CPUINFO_INTERNAL
+#endif
 #endif
 
 #ifndef CPUINFO_PRIVATE
-	#if defined(__ELF__)
-		#define CPUINFO_PRIVATE __attribute__((__visibility__("hidden")))
-	#elif defined(__MACH__)
-		#define CPUINFO_PRIVATE __attribute__((__visibility__("hidden")))
-	#else
-		#define CPUINFO_PRIVATE
-	#endif
+#if defined(__ELF__)
+#define CPUINFO_PRIVATE __attribute__((__visibility__("hidden")))
+#elif defined(__MACH__)
+#define CPUINFO_PRIVATE __attribute__((__visibility__("hidden")))
+#else
+#define CPUINFO_PRIVATE
+#endif
 #endif

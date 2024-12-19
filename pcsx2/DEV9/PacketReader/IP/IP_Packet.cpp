@@ -1,40 +1,29 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "IP_Packet.h"
 #include "DEV9/PacketReader/NetLib.h"
 
+#include "common/BitUtils.h"
+#include "common/Console.h"
+
 namespace PacketReader::IP
 {
-	int IP_Packet::GetHeaderLength()
+	int IP_Packet::GetHeaderLength() const
 	{
 		return headerLength;
 	}
 
-	u8 IP_Packet::GetDscpValue()
+	u8 IP_Packet::GetDscpValue() const
 	{
 		return (dscp >> 2) & 0x3F;
 	}
-	void IP_Packet::GetDscpValue(u8 value)
+	void IP_Packet::SetDscpValue(u8 value)
 	{
 		dscp = (dscp & ~(0x3F << 2)) | ((value & 0x3F) << 2);
 	}
 
-	u8 IP_Packet::GetDscpECN()
+	u8 IP_Packet::GetDscpECN() const
 	{
 		return dscp & 0x3;
 	}
@@ -43,7 +32,7 @@ namespace PacketReader::IP
 		dscp = (dscp & ~0x3) | (value & 0x3);
 	}
 
-	bool IP_Packet::GetDoNotFragment()
+	bool IP_Packet::GetDoNotFragment() const
 	{
 		return (fragmentFlags1 & (1 << 6)) != 0;
 	}
@@ -52,7 +41,7 @@ namespace PacketReader::IP
 		fragmentFlags1 = (fragmentFlags1 & ~(0x1 << 6)) | ((value & 0x1) << 6);
 	}
 
-	bool IP_Packet::GetMoreFragments()
+	bool IP_Packet::GetMoreFragments() const
 	{
 		return (fragmentFlags1 & (1 << 5)) != 0;
 	}
@@ -61,11 +50,11 @@ namespace PacketReader::IP
 		fragmentFlags1 = (fragmentFlags1 & ~(0x1 << 5)) | ((value & 0x1) << 5);
 	}
 
-	u16 IP_Packet::GetFragmentOffset()
+	u16 IP_Packet::GetFragmentOffset() const
 	{
 		int x = 0;
-		u8 fF1masked = fragmentFlags1 & 0x1F;
-		u8 data[2] = {fF1masked, fragmentFlags2};
+		const u8 fF1masked = fragmentFlags1 & 0x1F;
+		const u8 data[2] = {fF1masked, fragmentFlags2};
 		u16 offset;
 		NetLib::ReadUInt16(data, &x, &offset);
 		return offset;
@@ -77,7 +66,7 @@ namespace PacketReader::IP
 	{
 	}
 
-	IP_Packet::IP_Packet(u8* buffer, int bufferSize, bool fromICMP)
+	IP_Packet::IP_Packet(const u8* buffer, int bufferSize, bool fromICMP)
 	{
 		int offset = 0;
 
@@ -117,8 +106,8 @@ namespace PacketReader::IP
 			bool opReadFin = false;
 			do
 			{
-				u8 opKind = buffer[offset];
-				u8 opLen = buffer[offset + 1];
+				const u8 opKind = buffer[offset];
+				const u8 opLen = buffer[offset + 1];
 				switch (opKind)
 				{
 					case 0:
@@ -165,7 +154,7 @@ namespace PacketReader::IP
 			options.push_back(original.options[i]->Clone());
 	}
 
-	IP_Payload* IP_Packet::GetPayload()
+	IP_Payload* IP_Packet::GetPayload() const
 	{
 		return payload.get();
 	}
@@ -178,7 +167,7 @@ namespace PacketReader::IP
 
 	void IP_Packet::WriteBytes(u8* buffer, int* offset)
 	{
-		int startOff = *offset;
+		const int startOff = *offset;
 		CalculateChecksum(); //ReComputeHeaderLen called in CalculateChecksum
 		payload->CalculateChecksum(sourceIP, destinationIP);
 
@@ -221,8 +210,8 @@ namespace PacketReader::IP
 		for (size_t i = 0; i < options.size(); i++)
 			opOffset += options[i]->GetLength();
 
-		opOffset += opOffset % 4; //needs to be a whole number of 32bits
-		headerLength = opOffset;
+		//needs to be a whole number of 32bits
+		headerLength = Common::AlignUpPow2(opOffset, 4);
 	}
 
 	void IP_Packet::CalculateChecksum()
@@ -301,7 +290,7 @@ namespace PacketReader::IP
 			delete options[i];
 	}
 
-	u16 IP_Packet::InternetChecksum(u8* buffer, int length)
+	u16 IP_Packet::InternetChecksum(const u8* buffer, int length)
 	{
 		//source http://stackoverflow.com/a/2201090
 

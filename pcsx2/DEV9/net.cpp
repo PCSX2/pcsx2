@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include <chrono>
 #include <thread>
@@ -219,24 +205,31 @@ NetAdapter::~NetAdapter()
 
 void NetAdapter::InspectSend(NetPacket* pkt)
 {
-	if (EmuConfig.DEV9.EthLogDNS)
+	if (EmuConfig.DEV9.EthLogDNS || EmuConfig.DEV9.EthLogDHCP)
 	{
 		EthernetFrame frame(pkt);
-		if (frame.protocol == (u16)EtherType::IPv4)
+		if (frame.protocol == static_cast<u16>(EtherType::IPv4))
 		{
 			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
 			IP_Packet ippkt(payload->data, payload->GetLength());
 
-			if (ippkt.protocol == (u16)IP_Type::UDP)
+			if (ippkt.protocol == static_cast<u16>(IP_Type::UDP))
 			{
 				IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
 				UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
 
-				if (udppkt.destinationPort == 53)
+				if (EmuConfig.DEV9.EthLogDNS && udppkt.destinationPort == 53)
 				{
 					Console.WriteLn("DEV9: DNS: Packet Sent To %i.%i.%i.%i",
 						ippkt.destinationIP.bytes[0], ippkt.destinationIP.bytes[1], ippkt.destinationIP.bytes[2], ippkt.destinationIP.bytes[3]);
 					dnsLogger.InspectSend(&udppkt);
+				}
+
+				if (EmuConfig.DEV9.EthLogDHCP && udppkt.destinationPort == 67)
+				{
+					Console.WriteLn("DEV9: DHCP: Packet Sent To %i.%i.%i.%i",
+						ippkt.destinationIP.bytes[0], ippkt.destinationIP.bytes[1], ippkt.destinationIP.bytes[2], ippkt.destinationIP.bytes[3]);
+					dhcpLogger.InspectSend(&udppkt);
 				}
 			}
 		}
@@ -244,24 +237,31 @@ void NetAdapter::InspectSend(NetPacket* pkt)
 }
 void NetAdapter::InspectRecv(NetPacket* pkt)
 {
-	if (EmuConfig.DEV9.EthLogDNS)
+	if (EmuConfig.DEV9.EthLogDNS || EmuConfig.DEV9.EthLogDHCP)
 	{
 		EthernetFrame frame(pkt);
-		if (frame.protocol == (u16)EtherType::IPv4)
+		if (frame.protocol == static_cast<u16>(EtherType::IPv4))
 		{
 			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
 			IP_Packet ippkt(payload->data, payload->GetLength());
 
-			if (ippkt.protocol == (u16)IP_Type::UDP)
+			if (ippkt.protocol == static_cast<u16>(IP_Type::UDP))
 			{
 				IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
 				UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
 
-				if (udppkt.sourcePort == 53)
+				if (EmuConfig.DEV9.EthLogDNS && udppkt.sourcePort == 53)
 				{
 					Console.WriteLn("DEV9: DNS: Packet Sent From %i.%i.%i.%i",
 						ippkt.sourceIP.bytes[0], ippkt.sourceIP.bytes[1], ippkt.sourceIP.bytes[2], ippkt.sourceIP.bytes[3]);
 					dnsLogger.InspectRecv(&udppkt);
+				}
+
+				if (EmuConfig.DEV9.EthLogDHCP && udppkt.sourcePort == 67)
+				{
+					Console.WriteLn("DEV9: DHCP: Packet Sent From %i.%i.%i.%i",
+						ippkt.sourceIP.bytes[0], ippkt.sourceIP.bytes[1], ippkt.sourceIP.bytes[2], ippkt.sourceIP.bytes[3]);
+					dhcpLogger.InspectRecv(&udppkt);
 				}
 			}
 		}
@@ -307,6 +307,8 @@ void NetAdapter::InitInternalServer(ifaddrs* adapter, bool dhcpForceEnable, IP_A
 	if (adapter == nullptr)
 		Console.Error("DEV9: InitInternalServer() got nullptr for adapter");
 
+	dhcpLogger.Init(adapter);
+
 	dhcpOn = EmuConfig.DEV9.InterceptDHCP || dhcpForceEnable;
 	if (dhcpOn)
 		dhcpServer.Init(adapter, ipOverride, subnetOverride, gatewayOvveride);
@@ -348,8 +350,9 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 		EthernetFrame frame(ippkt);
 		frame.sourceMAC = internalMAC;
 		frame.destinationMAC = ps2MAC;
-		frame.protocol = (u16)EtherType::IPv4;
+		frame.protocol = static_cast<u16>(EtherType::IPv4);
 		frame.WritePacket(pkt);
+		InspectRecv(pkt);
 		return true;
 	}
 
@@ -362,7 +365,7 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 		EthernetFrame frame(ippkt);
 		frame.sourceMAC = internalMAC;
 		frame.destinationMAC = ps2MAC;
-		frame.protocol = (u16)EtherType::IPv4;
+		frame.protocol = static_cast<u16>(EtherType::IPv4);
 		frame.WritePacket(pkt);
 		InspectRecv(pkt);
 		return true;
@@ -374,12 +377,12 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 bool NetAdapter::InternalServerSend(NetPacket* pkt)
 {
 	EthernetFrame frame(pkt);
-	if (frame.protocol == (u16)EtherType::IPv4)
+	if (frame.protocol == static_cast<u16>(EtherType::IPv4))
 	{
 		PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
 		IP_Packet ippkt(payload->data, payload->GetLength());
 
-		if (ippkt.protocol == (u16)IP_Type::UDP)
+		if (ippkt.protocol == static_cast<u16>(IP_Type::UDP))
 		{
 			IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
 			UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
@@ -394,7 +397,7 @@ bool NetAdapter::InternalServerSend(NetPacket* pkt)
 
 		if (ippkt.destinationIP == internalIP)
 		{
-			if (ippkt.protocol == (u16)IP_Type::UDP)
+			if (ippkt.protocol == static_cast<u16>(IP_Type::UDP))
 			{
 				ps2IP = ippkt.sourceIP;
 

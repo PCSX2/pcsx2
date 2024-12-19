@@ -46,11 +46,12 @@
 
 #include <atomic>
 #include "AlignedMalloc.h"
+#include "Pcsx2Defs.h"
 
 template <typename T, size_t max_size>
 class ringbuffer_base
 {
-    static const int padding_size = 64 - sizeof(size_t);
+    static const int padding_size = __cachelinesize - sizeof(size_t);
 
     std::atomic<size_t> write_index_;
     char padding1[padding_size]; /* force read_index and write_index to different cache lines */

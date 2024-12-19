@@ -1,33 +1,19 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 // Note about terminology:
-// "patch" in pcsx2 terminology is a single pnach style patch line, e.g. patch=1,EE,001110e0,word,00000000
+// "Patch" in PCSX2 terminology refers to a single pnach style patch line, e.g. `patch=1,EE,001110e0,word,00000000`
 // Such patches can appear in several places:
-// - At <CRC>.pnach files where each file could have several such patches:
-//   - At the "cheats" folder
-//     - UI name: "Cheats", controlled via system -> enable cheats
-//   - At the "cheats_ws" folder or inside "cheats_ws.zip" (the zip also called "widescreen cheats DB")
-//     - the latter is searched if the former is not found for a CRC
-//     - UI name: "Widescreen hacks/patches", controlled via system -> enable widescreen patches
-// - At GameIndex.yaml inside a [patches] section
-//   - UI name: "Patches", controlled via system -> enable automatic game fixes
-//   - note that automatic game fixes also controls automatic config changes from GameIndex.dbf (UI name: "fixes")
-//
+//  - At the "patches" folder or on the "patches.zip file inside the 'resources' folder
+//    - UI name: "Patch", Controlled via Per-Game Settings -> Patches
+//  - At the "cheats" folder
+//    - UI name: "Cheats", Controlled via Per-Game Settings -> Cheats -> Enable Cheat
+//  - At GameIndex.yaml inside a [patches] section
+//    - UI name: "Enable Compatibility Patches", controlled via Advanced section -> Enable compatability settings
+// Note: The file name has to be exactly "<Serial>_<CRC>.pnach" (For example "SLPS-25399_CD62245A.pnach")
+// Note #2: the old sytle of cheats are also supported but arent supported by the UI
 
 #include "Config.h"
 
@@ -93,10 +79,10 @@ namespace Patch
 	extern const char* CHEATS_CONFIG_SECTION;
 	extern const char* PATCH_ENABLE_CONFIG_KEY;
 
-	extern PatchInfoList GetPatchInfo(const std::string_view& serial, u32 crc, bool cheats, u32* num_unlabelled_patches);
+	extern PatchInfoList GetPatchInfo(const std::string_view serial, u32 crc, bool cheats, bool showAllCRCS, u32* num_unlabelled_patches);
 
 	/// Returns the path to a new cheat/patch pnach for the specified serial and CRC.
-	extern std::string GetPnachFilename(const std::string_view& serial, u32 crc, bool cheats);
+	extern std::string GetPnachFilename(const std::string_view serial, u32 crc, bool cheats);
 
 	/// Reloads cheats/patches. If verbose is set, the number of patches loaded will be shown in the OSD.
 	extern void ReloadPatches(const std::string& serial, u32 crc, bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);

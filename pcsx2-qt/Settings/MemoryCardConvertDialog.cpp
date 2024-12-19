@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "MemoryCardConvertDialog.h"
 
@@ -21,10 +7,10 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QProgressDialog>
 
+#include "common/Console.h"
+#include "common/Error.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
-
-#include "pcsx2/System.h"
 
 MemoryCardConvertDialog::MemoryCardConvertDialog(QWidget* parent, QString selectedCard)
 	: QDialog(parent)
@@ -51,7 +37,7 @@ MemoryCardConvertDialog::MemoryCardConvertDialog(QWidget* parent, QString select
 	m_ui.progressBar->setRange(0, 100);
 	m_ui.progressBar->setValue(0);
 
-	connect(m_ui.conversionTypeSelect, &QComboBox::currentIndexChanged, this, [this]() 
+	connect(m_ui.conversionTypeSelect, &QComboBox::currentIndexChanged, this, [this]()
 		{
 			switch (m_srcCardInfo.type)
 			{
@@ -86,7 +72,7 @@ MemoryCardConvertDialog::MemoryCardConvertDialog(QWidget* parent, QString select
 			}
 		}
 	);
-	
+
 	disconnect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, nullptr);
 
 	connect(m_ui.buttonBox->button(QDialogButtonBox::Ok), &QPushButton::clicked, this, &MemoryCardConvertDialog::ConvertCard);
@@ -169,7 +155,7 @@ bool MemoryCardConvertDialog::SetupPicklist()
 			for (auto dirEntry : rootDir)
 			{
 				const std::string_view fileName = Path::GetFileName(dirEntry.FileName);
-				
+
 				if (fileName.size() >= 7 && fileName.substr(0, 7).compare("_pcsx2_") == 0)
 				{
 					continue;
@@ -191,7 +177,7 @@ bool MemoryCardConvertDialog::SetupPicklist()
 			if (sizeBytes < CardCapacity::_8_MB)
 			{
 				m_ui.conversionTypeSelect->addItem(tr("8 MB File"), 8);
-				
+
 				if (!typeSet)
 				{
 					SetType_8();
@@ -202,7 +188,7 @@ bool MemoryCardConvertDialog::SetupPicklist()
 			if (sizeBytes < CardCapacity::_16_MB)
 			{
 				m_ui.conversionTypeSelect->addItem(tr("16 MB File"), 16);
-				
+
 				if (!typeSet)
 				{
 					SetType_16();
@@ -213,7 +199,7 @@ bool MemoryCardConvertDialog::SetupPicklist()
 			if (sizeBytes < CardCapacity::_32_MB)
 			{
 				m_ui.conversionTypeSelect->addItem(tr("32 MB File"), 32);
-				
+
 				if (!typeSet)
 				{
 					SetType_32();
@@ -224,7 +210,7 @@ bool MemoryCardConvertDialog::SetupPicklist()
 			if (sizeBytes < CardCapacity::_64_MB)
 			{
 				m_ui.conversionTypeSelect->addItem(tr("64 MB File"), 64);
-				
+
 				if (!typeSet)
 				{
 					SetType_64();
@@ -257,7 +243,7 @@ void MemoryCardConvertDialog::ConvertCard()
 	else
 	{
 		QString baseName = m_selectedCard;
-		
+
 		// Get our destination file name
 		size_t extensionPos = baseName.lastIndexOf(".ps2", -1);
 		// Strip the extension off of it
@@ -268,15 +254,30 @@ void MemoryCardConvertDialog::ConvertCard()
 		size_t num = 0;
 		QString destName = baseName;
 		destName.append(".ps2");
-		
+
 		// If a match is found, revert back to the base name, add a number and the extension, and try again.
 		// Keep incrementing the number until we get a unique result.
 		while (m_srcCardInfo.type == MemoryCardType::File ? FileSystem::DirectoryExists(Path::Combine(EmuFolders::MemoryCards, destName.toStdString()).c_str()) : FileSystem::FileExists(Path::Combine(EmuFolders::MemoryCards, destName.toStdString()).c_str()))
 		{
 			destName = baseName;
-			destName.append(StringUtil::StdStringFromFormat("_%02d.ps2", ++num).c_str());
+			destName.append(StringUtil::StdStringFromFormat("_%02zd.ps2", ++num).c_str());
 		}
-		
+
+		// Check if we have write permission in the memory card directory
+		const std::string destPath = Path::Combine(EmuFolders::MemoryCards, destName.toStdString());
+		Error error;
+		FILE* tmpFile = FileSystem::OpenCFile(destPath.c_str(), "w", &error);
+		if (tmpFile == nullptr)
+		{
+			FileOpenError(error.GetDescription().c_str());
+			return;
+		}
+		else
+		{
+			fclose(tmpFile);
+			FileSystem::DeleteFilePath(destPath.c_str());
+		}
+
 		m_destCardName = destName;
 		StartThread();
 	}
@@ -301,7 +302,7 @@ void MemoryCardConvertDialog::SetType_8()
 
 void MemoryCardConvertDialog::SetType_16()
 {
-	SetType(MemoryCardType::File, MemoryCardFileType::PS2_16MB, tr("2x larger as a standard Memory Card. May have some compatibility issues."));
+	SetType(MemoryCardType::File, MemoryCardFileType::PS2_16MB, tr("2x larger than a standard Memory Card. May have some compatibility issues."));
 }
 
 void MemoryCardConvertDialog::SetType_32()
@@ -317,4 +318,9 @@ void MemoryCardConvertDialog::SetType_64()
 void MemoryCardConvertDialog::SetType_Folder()
 {
 	SetType(MemoryCardType::Folder, MemoryCardFileType::Unknown, tr("Uses a folder on your PC filesystem, instead of a file. Infinite capacity, while keeping the same compatibility as an 8 MB Memory Card."));
+}
+
+void MemoryCardConvertDialog::FileOpenError(const QString errmsg)
+{
+	QMessageBox::critical(this, tr("Cannot Convert Memory Card"),tr("There was an error when accessing the memory card directory. Error message: %0").arg(errmsg));
 }

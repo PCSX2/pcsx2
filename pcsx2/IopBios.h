@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -71,6 +59,7 @@ typedef void (*irxDEBUG)();
 
 namespace R3000A
 {
+	u32 irxFindLoadcore(u32 entrypc);
 	u32 irxImportTableAddr(u32 entrypc);
 	const char* irxImportFuncname(const std::string& libname, u16 index);
 	irxHLE irxImportHLE(const std::string& libnam, u16 index);
@@ -82,9 +71,11 @@ namespace R3000A
 	namespace ioman
 	{
 		void reset();
+		bool is_host(const std::string_view path);
+		std::string host_path(const std::string_view path, bool allow_open_host_root);
 	}
 } // namespace R3000A
 
-extern void Hle_SetElfPath(const char* elfFileName);
-extern void Hle_ClearElfPath();
+extern void Hle_SetHostRoot(const char* bootFilename);
+extern void Hle_ClearHostRoot();
 

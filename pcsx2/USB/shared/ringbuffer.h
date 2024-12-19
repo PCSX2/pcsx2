@@ -1,101 +1,33 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
-#include <algorithm> // for std::min
 #include <cstdint>
+#include <memory>
 
 class RingBuffer
 {
-	RingBuffer(RingBuffer&) = delete;
+	RingBuffer(const RingBuffer&) = delete;
+	RingBuffer& operator=(const RingBuffer&) = delete;
 
 public:
 	RingBuffer();
 	RingBuffer(size_t capacity);
 	~RingBuffer();
 
-	//size_t write(const char *data, size_t bytes);
-	//size_t read(char *data, size_t bytes);
+	void reset(size_t size);
+	size_t capacity() const;
+	size_t size() const;
 
 	// Overwrites old data if nbytes > size()
-	void write(uint8_t* src, size_t nbytes);
-	size_t read(uint8_t* dst, size_t nbytes);
-
-	// just move pointers around
-	void write(size_t bytes);
-	void read(size_t bytes);
-
-	template <typename T>
-	void write(size_t samples)
-	{
-		write(samples * sizeof(T));
-	}
-
-	template <typename T>
-	void read(size_t samples)
-	{
-		read(samples * sizeof(T));
-	}
-
-	void reserve(size_t size);
-	// if you care about old data, check how much can be written
-	// may need to call available/write twice in case write pointer wraps
-	size_t peek_write(bool overwrite = false) const;
-	size_t peek_read() const;
-
-	template <typename T>
-	size_t peek_write(bool overwrite = false) const
-	{
-		return peek_write(overwrite) / sizeof(T);
-	}
-
-	template <typename T>
-	size_t peek_read() const
-	{
-		return peek_read() / sizeof(T);
-	}
-
-	// amount of valid data, may need to read twice
-	size_t size() const;
-	template <typename T>
-	size_t size() const
-	{
-		return size() / sizeof(T);
-	}
-	size_t capacity() const { return m_capacity; }
-	char* front() { return m_data + m_begin; }
-	char* back() { return m_data + m_end; }
-
-	template <typename T>
-	T* front()
-	{
-		return (T*)(m_data + m_begin);
-	}
-
-	template <typename T>
-	T* back()
-	{
-		return (T*)(m_data + m_end);
-	}
+	void write(const void* src, size_t nbytes);
+	size_t read(void* dst, size_t nbytes);
 
 private:
-	size_t m_begin;
-	size_t m_end;
-	size_t m_capacity;
-	char* m_data;
-	bool m_overrun;
+	std::unique_ptr<uint8_t[]> m_data;
+	size_t m_capacity = 0;
+	size_t m_rpos = 0;
+	size_t m_wpos = 0;
+	bool m_full = false;
 };
-

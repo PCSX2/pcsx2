@@ -1,25 +1,21 @@
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <stddef.h>
 #include <string.h>
 
+#include <cpuinfo/log.h>
 #include <linux/api.h>
 #include <x86/linux/api.h>
-#include <cpuinfo/log.h>
 
 /*
- * Size, in chars, of the on-stack buffer used for parsing lines of /proc/cpuinfo.
- * This is also the limit on the length of a single line.
+ * Size, in chars, of the on-stack buffer used for parsing lines of
+ * /proc/cpuinfo. This is also the limit on the length of a single line.
  */
 #define BUFFER_SIZE 2048
 
-
-static uint32_t parse_processor_number(
-	const char* processor_start,
-	const char* processor_end)
-{
-	const size_t processor_length = (size_t) (processor_end - processor_start);
+static uint32_t parse_processor_number(const char* processor_start, const char* processor_end) {
+	const size_t processor_length = (size_t)(processor_end - processor_start);
 
 	if (processor_length == 0) {
 		cpuinfo_log_warning("Processor number in /proc/cpuinfo is ignored: string is empty");
@@ -28,10 +24,12 @@ static uint32_t parse_processor_number(
 
 	uint32_t processor_number = 0;
 	for (const char* digit_ptr = processor_start; digit_ptr != processor_end; digit_ptr++) {
-		const uint32_t digit = (uint32_t) (*digit_ptr - '0');
+		const uint32_t digit = (uint32_t)(*digit_ptr - '0');
 		if (digit > 10) {
-			cpuinfo_log_warning("non-decimal suffix %.*s in /proc/cpuinfo processor number is ignored",
-				(int) (processor_end - digit_ptr), digit_ptr);
+			cpuinfo_log_warning(
+				"non-decimal suffix %.*s in /proc/cpuinfo processor number is ignored",
+				(int)(processor_end - digit_ptr),
+				digit_ptr);
 			break;
 		}
 
@@ -50,15 +48,17 @@ static uint32_t parse_processor_number(
 static void parse_apic_id(
 	const char* apic_start,
 	const char* apic_end,
-	struct cpuinfo_x86_linux_processor processor[restrict static 1])
-{
+	struct cpuinfo_x86_linux_processor processor[restrict static 1]) {
 	uint32_t apic_id = 0;
 	for (const char* digit_ptr = apic_start; digit_ptr != apic_end; digit_ptr++) {
 		const uint32_t digit = *digit_ptr - '0';
 		if (digit >= 10) {
-			cpuinfo_log_warning("APIC ID %.*s in /proc/cpuinfo is ignored due to unexpected non-digit character '%c' at offset %zu",
-				(int) (apic_end - apic_start), apic_start,
-				*digit_ptr, (size_t) (digit_ptr - apic_start));
+			cpuinfo_log_warning(
+				"APIC ID %.*s in /proc/cpuinfo is ignored due to unexpected non-digit character '%c' at offset %zu",
+				(int)(apic_end - apic_start),
+				apic_start,
+				*digit_ptr,
+				(size_t)(digit_ptr - apic_start));
 			return;
 		}
 
@@ -84,8 +84,7 @@ static bool parse_line(
 	const char* line_start,
 	const char* line_end,
 	struct proc_cpuinfo_parser_state state[restrict static 1],
-	uint64_t line_number)
-{
+	uint64_t line_number) {
 	/* Empty line. Skip. */
 	if (line_start == line_end) {
 		return true;
@@ -100,8 +99,10 @@ static bool parse_line(
 	}
 	/* Skip line if no ':' separator was found. */
 	if (separator == line_end) {
-		cpuinfo_log_info("Line %.*s in /proc/cpuinfo is ignored: key/value separator ':' not found",
-			(int) (line_end - line_start), line_start);
+		cpuinfo_log_debug(
+			"Line %.*s in /proc/cpuinfo is ignored: key/value separator ':' not found",
+			(int)(line_end - line_start),
+			line_start);
 		return true;
 	}
 
@@ -114,8 +115,10 @@ static bool parse_line(
 	}
 	/* Skip line if key contains nothing but spaces. */
 	if (key_end == line_start) {
-		cpuinfo_log_info("Line %.*s in /proc/cpuinfo is ignored: key contains only spaces",
-			(int) (line_end - line_start), line_start);
+		cpuinfo_log_debug(
+			"Line %.*s in /proc/cpuinfo is ignored: key contains only spaces",
+			(int)(line_end - line_start),
+			line_start);
 		return true;
 	}
 
@@ -128,8 +131,10 @@ static bool parse_line(
 	}
 	/* Value part contains nothing but spaces. Skip line. */
 	if (value_start == line_end) {
-		cpuinfo_log_info("Line %.*s in /proc/cpuinfo is ignored: value contains only spaces",
-			(int) (line_end - line_start), line_start);
+		cpuinfo_log_debug(
+			"Line %.*s in /proc/cpuinfo is ignored: value contains only spaces",
+			(int)(line_end - line_start),
+			line_start);
 		return true;
 	}
 
@@ -141,10 +146,10 @@ static bool parse_line(
 		}
 	}
 
-	const uint32_t processor_index      = state->processor_index;
+	const uint32_t processor_index = state->processor_index;
 	const uint32_t max_processors_count = state->max_processors_count;
 	struct cpuinfo_x86_linux_processor* processors = state->processors;
-	struct cpuinfo_x86_linux_processor* processor  = &state->dummy_processor;
+	struct cpuinfo_x86_linux_processor* processor = &state->dummy_processor;
 	if (processor_index < max_processors_count) {
 		processor = &processors[processor_index];
 	}
@@ -162,20 +167,29 @@ static bool parse_line(
 			if (memcmp(line_start, "processor", key_length) == 0) {
 				const uint32_t new_processor_index = parse_processor_number(value_start, value_end);
 				if (new_processor_index < processor_index) {
-					/* Strange: decreasing processor number */
+					/* Strange: decreasing processor number
+					 */
 					cpuinfo_log_warning(
-						"unexpectedly low processor number %"PRIu32" following processor %"PRIu32" in /proc/cpuinfo",
-						new_processor_index, processor_index);
+						"unexpectedly low processor number %" PRIu32
+						" following processor %" PRIu32 " in /proc/cpuinfo",
+						new_processor_index,
+						processor_index);
 				} else if (new_processor_index > processor_index + 1) {
-					/* Strange, but common: skipped processor $(processor_index + 1) */
-					cpuinfo_log_info(
-						"unexpectedly high processor number %"PRIu32" following processor %"PRIu32" in /proc/cpuinfo",
-						new_processor_index, processor_index);
+					/* Strange, but common: skipped
+					 * processor $(processor_index + 1) */
+					cpuinfo_log_warning(
+						"unexpectedly high processor number %" PRIu32
+						" following processor %" PRIu32 " in /proc/cpuinfo",
+						new_processor_index,
+						processor_index);
 				}
 				if (new_processor_index >= max_processors_count) {
 					/* Log and ignore processor */
-					cpuinfo_log_warning("processor %"PRIu32" in /proc/cpuinfo is ignored: index exceeds system limit %"PRIu32,
-						new_processor_index, max_processors_count - 1);
+					cpuinfo_log_warning(
+						"processor %" PRIu32
+						" in /proc/cpuinfo is ignored: index exceeds system limit %" PRIu32,
+						new_processor_index,
+						max_processors_count - 1);
 				} else {
 					processors[new_processor_index].flags |= CPUINFO_LINUX_FLAG_PROC_CPUINFO;
 				}
@@ -187,21 +201,19 @@ static bool parse_line(
 			break;
 		default:
 		unknown:
-			cpuinfo_log_debug("unknown /proc/cpuinfo key: %.*s", (int) key_length, line_start);
-
+			cpuinfo_log_debug("unknown /proc/cpuinfo key: %.*s", (int)key_length, line_start);
 	}
 	return true;
 }
 
 bool cpuinfo_x86_linux_parse_proc_cpuinfo(
 	uint32_t max_processors_count,
-	struct cpuinfo_x86_linux_processor processors[restrict static max_processors_count])
-{
+	struct cpuinfo_x86_linux_processor processors[restrict static max_processors_count]) {
 	struct proc_cpuinfo_parser_state state = {
 		.processor_index = 0,
 		.max_processors_count = max_processors_count,
 		.processors = processors,
 	};
-	return cpuinfo_linux_parse_multiline_file("/proc/cpuinfo", BUFFER_SIZE,
-		(cpuinfo_line_callback) parse_line, &state);
+	return cpuinfo_linux_parse_multiline_file(
+		"/proc/cpuinfo", BUFFER_SIZE, (cpuinfo_line_callback)parse_line, &state);
 }

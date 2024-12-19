@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -81,9 +69,15 @@ typedef struct
 	u16 mdma_mode;
 	u16 udma_mode;
 
-	//Non-Regs
+	// FIFO
 	int fifo_bytes_read;
 	int fifo_bytes_write;
+	u8 fifo[16 * 512];
+
+	// DMA
+	u8* dma_iop_ptr;
+	int dma_iop_transfered;
+	int dma_iop_size;
 } dev9Struct;
 
 //EEPROM states
@@ -164,7 +158,7 @@ extern int ThreadRun;
 
 #define SPD_R_XFR_CTRL			(SPD_REGBASE + 0x32)
 #define		SPD_XFR_WRITE		(1 << 0)
-#define		SPD_XFR_DMAEN		(1 << 1)
+#define		SPD_XFR_DMAEN		(1 << 7)
 #define SPD_R_DBUF_STAT			(SPD_REGBASE + 0x38)
 //Read
 #define		SPD_DBUF_AVAIL_MAX	0x10
@@ -174,7 +168,8 @@ extern int ThreadRun;
 #define		SPD_DBUF_STAT_FULL	(1 << 7)
 //HDD->SPEED: both SPD_DBUF_STAT_2 and SPD_DBUF_STAT_FULL set to 1 indicates overflow
 //Write
-#define		SPD_DBUF_RESET_FIFO	(1 << 1) //Set SPD_DBUF_STAT_1 & SPD_DBUF_STAT_2, SPD_DBUF_AVAIL set to 0
+#define		SPD_DBUF_RESET_READ_CNT		(1 << 0)
+#define		SPD_DBUF_RESET_WRITE_CNT	(1 << 1)
 
 #define SPD_R_IF_CTRL			(SPD_REGBASE + 0x64)
 #define		SPD_IF_UDMA			(1 << 0)
@@ -684,6 +679,7 @@ void FLASHwrite32(u32 addr, u32 value, int size);
 void _DEV9irq(int cause, int cycles);
 int DEV9irqHandler(void);
 void DEV9async(u32 cycles);
+void DEV9runFIFO();
 void DEV9writeDMA8Mem(u32* pMem, int size);
 void DEV9readDMA8Mem(u32* pMem, int size);
 u8 DEV9read8(u32 addr);

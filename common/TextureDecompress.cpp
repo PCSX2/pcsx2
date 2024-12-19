@@ -470,7 +470,7 @@ void DecompressBlockBC5 (uint32_t x, uint32_t y, uint32_t stride, enum BC5Mode m
 // File: bc7decomp.c - Richard Geldreich, Jr. 3/31/2020 - MIT license or public domain (see end of file)
 #include <string.h>
 
-#if (defined(_M_AMD64) || defined(_M_X64) || defined(__SSE2__))
+#if (defined(_M_AMD64) || defined(__x86_64__) || defined(__SSE2__))
 #  define BC7DECOMP_USE_SSE2
 #endif
 

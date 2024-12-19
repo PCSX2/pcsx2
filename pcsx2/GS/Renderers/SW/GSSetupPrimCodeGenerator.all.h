@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -31,9 +19,8 @@
 
 MULTI_ISA_UNSHARED_START
 
-class GSSetupPrimCodeGenerator2 : public GSNewCodeGenerator
+class GSSetupPrimCodeGenerator : public GSNewCodeGenerator
 {
-	using _parent = GSNewCodeGenerator;
 	using XYm = SETUP_PRIM_VECTOR_REGISTER;
 
 	using Xmm = Xbyak::Xmm;
@@ -54,7 +41,7 @@ class GSSetupPrimCodeGenerator2 : public GSNewCodeGenerator
 	const AddressReg _64_vertex, _index, _dscan, _m_local, t1;
 
 public:
-	GSSetupPrimCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, u64 key);
+	GSSetupPrimCodeGenerator(u64 key, void* code, size_t maxsize);
 	void Generate();
 
 private:

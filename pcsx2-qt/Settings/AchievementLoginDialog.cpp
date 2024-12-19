@@ -1,29 +1,18 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "AchievementLoginDialog.h"
 #include "QtHost.h"
 
 #include "pcsx2/Achievements.h"
 
+#include "common/Error.h"
+
 #include <QtWidgets/QMessageBox>
 
 AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason)
 	: QDialog(parent)
+	, m_reason(reason)
 {
 	m_ui.setupUi(this);
 	m_ui.loginIcon->setPixmap(QIcon::fromTheme("login-box-line").pixmap(32));
@@ -55,25 +44,79 @@ void AchievementLoginDialog::loginClicked()
 	enableUI(false);
 
 	Host::RunOnCPUThread([this, username = std::move(username), password = std::move(password)]() {
-		const bool result = Achievements::Login(username.c_str(), password.c_str());
-		QMetaObject::invokeMethod(this, "processLoginResult", Qt::QueuedConnection, Q_ARG(bool, result));
+		Error error;
+		const bool result = Achievements::Login(username.c_str(), password.c_str(), &error);
+		const QString message = QString::fromStdString(error.GetDescription());
+		QMetaObject::invokeMethod(this, "processLoginResult", Qt::QueuedConnection, Q_ARG(bool, result), Q_ARG(const QString&, message));
 	});
 }
 
 void AchievementLoginDialog::cancelClicked()
 {
+	// Disable hardcore mode if we cancelled reauthentication.
+	if (m_reason == Achievements::LoginRequestReason::TokenInvalid && QtHost::IsVMValid())
+	{
+		Host::RunOnCPUThread([]() {
+			if (VMManager::HasValidVM() && !Achievements::HasActiveGame())
+				Achievements::DisableHardcoreMode();
+		});
+	}
+
 	done(1);
 }
 
-void AchievementLoginDialog::processLoginResult(bool result)
+void AchievementLoginDialog::processLoginResult(bool result, const QString& message)
 {
 	if (!result)
 	{
-		QMessageBox::critical(this, tr("Login Error"),
-			tr("Login failed. Please check your username and password, and try again."));
+		QMessageBox::critical(
+			this, tr("Login Error"),
+			tr("Login failed.\nError: %1\n\nPlease check your username and password, and try again.").arg(message));
 		m_ui.status->setText(tr("Login failed."));
 		enableUI(true);
 		return;
+	}
+
+	if (m_reason == Achievements::LoginRequestReason::UserInitiated)
+	{
+		if (!Host::GetBaseBoolSettingValue("Achievements", "Enabled", false) &&
+			QMessageBox::question(this, tr("Enable Achievements"),
+				tr("Achievement tracking is not currently enabled. Your login will have no effect until "
+				   "after tracking is enabled.\n\nDo you want to enable tracking now?"),
+				QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+		{
+			Host::SetBaseBoolSettingValue("Achievements", "Enabled", true);
+			Host::CommitBaseSettingChanges();
+			g_emu_thread->applySettings();
+		}
+
+		if (!Host::GetBaseBoolSettingValue("Achievements", "ChallengeMode", false) &&
+			QMessageBox::question(
+				this, tr("Enable Hardcore Mode"),
+				tr("Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and "
+				   "participate in game-specific leaderboards.\n\nHowever, hardcore mode also prevents the usage of save "
+				   "states, cheats and slowdown functionality.\n\nDo you want to enable hardcore mode?"),
+				QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+		{
+			Host::SetBaseBoolSettingValue("Achievements", "ChallengeMode", true);
+			Host::CommitBaseSettingChanges();
+			g_emu_thread->applySettings();
+
+			bool has_active_game;
+			{
+				auto lock = Achievements::GetLock();
+				has_active_game = Achievements::HasActiveGame();
+			}
+
+			if (has_active_game &&
+				QMessageBox::question(this, tr("Reset System"),
+					tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?")) ==
+					QMessageBox::Yes)
+			{
+				g_emu_thread->resetVM();
+			}
+		}
+
 	}
 
 	done(0);

@@ -1,25 +1,13 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include <deque>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include "System.h"
 #include "common/Assertions.h"
 
 class Error;
@@ -37,7 +25,7 @@ enum class FreezeAction
 // [SAVEVERSION+]
 // This informs the auto updater that the users savestates will be invalidated.
 
-static const u32 g_SaveVersion = (0x9A3F << 16) | 0x0000;
+static const u32 g_SaveVersion = (0x9A52 << 16) | 0x0000;
 
 
 // the freezing data between submodules and core
@@ -104,7 +92,7 @@ public:
 	}
 
 	bool FreezeBios();
-	bool FreezeInternals();
+	bool FreezeInternals(Error* error);
 
 	// Loads or saves an arbitrary data type.  Usable on atomic types, structs, and arrays.
 	// For dynamically allocated pointers use FreezeMem instead.
@@ -204,6 +192,7 @@ protected:
 	bool vmFreeze();
 	bool mtvuFreeze();
 	bool rcntFreeze();
+	bool memFreeze(Error* error);
 	bool vuMicroFreeze();
 	bool vuJITFreeze();
 	bool vif0Freeze();
@@ -222,6 +211,7 @@ protected:
 	bool cdvdFreeze();
 	bool psxRcntFreeze();
 	bool deci2Freeze();
+	bool handleFreeze();
 
 	// Save or load PCSX2's global frame counter (g_FrameCount) along with each savestate
 	//

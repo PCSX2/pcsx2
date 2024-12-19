@@ -1,86 +1,19 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   width="512"
-   height="512"
-   viewBox="0 0 512 512"
-   version="1.1"
-   id="svg5"
-   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
-   sodipodi:docname="warning-line-black.svg"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <sodipodi:namedview
-     id="namedview7"
-     pagecolor="#505050"
-     bordercolor="#ffffff"
-     borderopacity="1"
-     inkscape:showpageshadow="0"
-     inkscape:pageopacity="0"
-     inkscape:pagecheckerboard="1"
-     inkscape:deskcolor="#505050"
-     inkscape:document-units="px"
-     showgrid="false"
-     inkscape:zoom="0.921875"
-     inkscape:cx="138.30508"
-     inkscape:cy="262.50847"
-     inkscape:window-width="1920"
-     inkscape:window-height="956"
-     inkscape:window-x="0"
-     inkscape:window-y="42"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
-  <defs
-     id="defs2" />
-  <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
-     id="layer1">
-    <path
-       sodipodi:type="star"
-       style="fill:none;stroke:#000000;stroke-width:48.2877;stroke-linecap:square;stroke-dasharray:none"
-       id="path234"
-       inkscape:flatsided="true"
-       sodipodi:sides="3"
-       sodipodi:cx="256"
-       sodipodi:cy="256"
-       sodipodi:r1="257.13016"
-       sodipodi:r2="128.56506"
-       sodipodi:arg1="-1.5707963"
-       sodipodi:arg2="-0.52359878"
-       inkscape:rounded="0"
-       inkscape:randomized="0"
-       d="M 256.00001,-1.1301575 478.68125,384.56508 33.318748,384.56507 Z"
-       inkscape:transform-center-y="-58.775808"
-       transform="matrix(0.9143354,0,0,0.9143354,21.93014,85.039564)"
-       inkscape:transform-center-x="8.0278851e-06" />
-    <text
-       xml:space="preserve"
-       style="font-size:304.777px;fill:#000000;stroke:#000000;stroke-width:29.2588;stroke-linecap:square"
-       x="256.00006"
-       y="300.50647"
-       id="text1769"><tspan
-         sodipodi:role="line"
-         id="tspan1767"
-         style="fill:#ffffff;stroke:#ffffff;stroke-width:29.2588"
-         x="256.00006"
-         y="300.50647" /></text>
-    <rect
-       style="fill:#000000;stroke:#000000;stroke-width:11.0378;stroke-linecap:square;stroke-dasharray:none"
-       id="rect1913"
-       width="30.832071"
-       height="126.2189"
-       x="240.58397"
-       y="192.89055" />
-    <ellipse
-       style="fill:#000000;stroke:#000000;stroke-width:11.0378;stroke-linecap:square;stroke-dasharray:none"
-       id="path1969"
-       cx="256.00003"
-       cy="361.47668"
-       rx="17.34306"
-       ry="17.583942" />
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Alerta_-_PCSX2" data-name="Alerta - PCSX2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-miterlimit: 10;
+        stroke-width: 12px;
+      }
+    </style>
+  </defs>
+  <g id="Alerta">
+    <path id="tri" class="cls-1" d="m72.16,20.41L14.16,120.87c-1.26,2.19.32,4.92,2.84,4.92h115.99c2.52,0,4.1-2.73,2.84-4.92L77.84,20.41c-1.26-2.19-4.42-2.19-5.68,0Z"/>
+    <path id="bol" d="m75,114.39c-3.89,0-8.07-3.56-8.07-7.93s4.18-7.93,8.07-7.93,8.07,3.56,8.07,7.93-4.18,7.93-8.07,7.93Z"/>
+    <path id="up" d="m75,93.73c-3.64,0-7.61-2.95-7.61-6.6v-29.25c0-3.64,3.97-6.6,7.61-6.6s7.61,2.95,7.61,6.6v29.25c0,3.64-3.97,6.6-7.61,6.6Z"/>
   </g>
 </svg>

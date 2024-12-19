@@ -1,27 +1,13 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "common/PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/HTTPDownloader.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/ProgressCallback.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
-
-using namespace Common;
+#include "common/Threading.h"
 
 static constexpr float DEFAULT_TIMEOUT_IN_SECONDS = 30;
 static constexpr u32 DEFAULT_MAX_ACTIVE_REQUESTS = 4;
@@ -48,14 +34,15 @@ void HTTPDownloader::SetMaxActiveRequests(u32 max_active_requests)
 	m_max_active_requests = max_active_requests;
 }
 
-void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback)
+void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback, ProgressCallback* progress)
 {
 	Request* req = InternalCreateRequest();
 	req->parent = this;
 	req->type = Request::Type::Get;
 	req->url = std::move(url);
 	req->callback = std::move(callback);
-	req->start_time = Timer::GetCurrentValue();
+	req->progress = progress;
+	req->start_time = Common::Timer::GetCurrentValue();
 
 	std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
 	if (LockedGetActiveRequestCount() < m_max_active_requests)
@@ -67,7 +54,7 @@ void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback)
 	LockedAddRequest(req);
 }
 
-void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, Request::Callback callback)
+void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, Request::Callback callback, ProgressCallback* progress)
 {
 	Request* req = InternalCreateRequest();
 	req->parent = this;
@@ -75,7 +62,8 @@ void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, R
 	req->url = std::move(url);
 	req->post_data = std::move(post_data);
 	req->callback = std::move(callback);
-	req->start_time = Timer::GetCurrentValue();
+	req->progress = progress;
+	req->start_time = Common::Timer::GetCurrentValue();
 
 	std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
 	if (LockedGetActiveRequestCount() < m_max_active_requests)
@@ -94,7 +82,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 
 	InternalPollRequests();
 
-	const Common::Timer::Value current_time = Timer::GetCurrentValue();
+	const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
 	u32 active_requests = 0;
 	u32 unstarted_requests = 0;
 
@@ -108,8 +96,8 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 			continue;
 		}
 
-		if (req->state == Request::State::Started && current_time >= req->start_time &&
-			Common::Timer::ConvertValueToSeconds(current_time - req->start_time) >= m_timeout)
+		if ((req->state == Request::State::Started || req->state == Request::State::Receiving) &&
+			current_time >= req->start_time && Common::Timer::ConvertValueToSeconds(current_time - req->start_time) >= m_timeout)
 		{
 			// request timed out
 			Console.Error("Request for '%s' timed out", req->url.c_str());
@@ -118,7 +106,24 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 			m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
 			lock.unlock();
 
-			req->callback(-1, req->content_type, Request::Data());
+			req->callback(HTTP_STATUS_TIMEOUT, std::string(), Request::Data());
+
+			CloseRequest(req);
+
+			lock.lock();
+			continue;
+		}
+		else if ((req->state == Request::State::Started || req->state == Request::State::Receiving) && req->progress &&
+			req->progress->IsCancelled())
+		{
+			// request timed out
+			Console.Error("Request for '%s' cancelled", req->url.c_str());
+
+			req->state.store(Request::State::Cancelled);
+			m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
+			lock.unlock();
+
+			req->callback(HTTP_STATUS_CANCELLED, std::string(), Request::Data());
 
 			CloseRequest(req);
 
@@ -128,6 +133,17 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 
 		if (req->state != Request::State::Complete)
 		{
+			if (req->progress)
+			{
+				const u32 size = static_cast<u32>(req->data.size());
+				if (size != req->last_progress_update)
+				{
+					req->last_progress_update = size;
+					req->progress->SetProgressRange(req->content_length);
+					req->progress->SetProgressValue(req->last_progress_update);
+				}
+			}
+
 			active_requests++;
 			index++;
 			continue;
@@ -182,7 +198,11 @@ void HTTPDownloader::WaitForAllRequests()
 {
 	std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
 	while (!m_pending_http_requests.empty())
+	{
+		// Don't burn too much CPU.
+		Threading::Sleep(1);
 		LockedPollRequests(lock);
+	}
 }
 
 void HTTPDownloader::LockedAddRequest(Request* request)
@@ -205,69 +225,6 @@ bool HTTPDownloader::HasAnyRequests()
 {
 	std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
 	return !m_pending_http_requests.empty();
-}
-
-std::string HTTPDownloader::URLEncode(const std::string_view& str)
-{
-	std::string ret;
-	ret.reserve(str.length() + ((str.length() + 3) / 4) * 3);
-
-	for (size_t i = 0, l = str.size(); i < l; i++)
-	{
-		const char c = str[i];
-		if ((c >= '0' && c <= '9') ||
-			(c >= 'a' && c <= 'z') ||
-			(c >= 'A' && c <= 'Z') ||
-			c == '-' || c == '_' || c == '.' || c == '!' || c == '~' ||
-			c == '*' || c == '\'' || c == '(' || c == ')')
-		{
-			ret.push_back(c);
-		}
-		else
-		{
-			ret.push_back('%');
-
-			const unsigned char n1 = static_cast<unsigned char>(c) >> 4;
-			const unsigned char n2 = static_cast<unsigned char>(c) & 0x0F;
-			ret.push_back((n1 >= 10) ? ('a' + (n1 - 10)) : ('0' + n1));
-			ret.push_back((n2 >= 10) ? ('a' + (n2 - 10)) : ('0' + n2));
-		}
-	}
-
-	return ret;
-}
-
-std::string HTTPDownloader::URLDecode(const std::string_view& str)
-{
-	std::string ret;
-	ret.reserve(str.length());
-
-	for (size_t i = 0, l = str.size(); i < l; i++)
-	{
-		const char c = str[i];
-		if (c == '+')
-		{
-			ret.push_back(c);
-		}
-		else if (c == '%')
-		{
-			if ((i + 2) >= str.length())
-				break;
-
-			const char clower = str[i + 1];
-			const char cupper = str[i + 2];
-			const unsigned char lower = (clower >= '0' && clower <= '9') ? static_cast<unsigned char>(clower - '0') : ((clower >= 'a' && clower <= 'f') ? static_cast<unsigned char>(clower - 'a') : ((clower >= 'A' && clower <= 'F') ? static_cast<unsigned char>(clower - 'A') : 0));
-			const unsigned char upper = (cupper >= '0' && cupper <= '9') ? static_cast<unsigned char>(cupper - '0') : ((cupper >= 'a' && cupper <= 'f') ? static_cast<unsigned char>(cupper - 'a') : ((cupper >= 'A' && cupper <= 'F') ? static_cast<unsigned char>(cupper - 'A') : 0));
-			const char dch = static_cast<char>(lower | (upper << 4));
-			ret.push_back(dch);
-		}
-		else
-		{
-			ret.push_back(c);
-		}
-	}
-
-	return std::string(str);
 }
 
 std::string HTTPDownloader::GetExtensionForContentType(const std::string& content_type)

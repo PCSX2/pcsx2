@@ -1,24 +1,14 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include "Common.h"
 #include "Gif.h"
 #include "GS/GS.h"
-#include "SingleRegisterTypes.h"
+#include "GS/GSRegs.h"
+
+#include "common/SingleRegisterTypes.h"
 
 extern double GetVerticalFrequency();
 alignas(16) extern u8 g_RealGSMem[Ps2MemSize::GSregs];
@@ -205,42 +195,6 @@ union tGS_IMR
 };
 
 // --------------------------------------------------------------------------------------
-//  GSRegSMODE1
-// --------------------------------------------------------------------------------------
-// Previously, the union was used to get the CMOD bit of the SMODE1 register
-// Commenting it out as it's unused right now. (Might potentially be useful in the future)
-//union GSRegSMODE1
-//{
-//	struct
-//	{
-//		u32 RC : 3;
-//		u32 LC : 7;
-//		u32 T1248 : 2;
-//		u32 SLCK : 1;
-//		u32 CMOD : 2;
-//		u32 EX : 1;
-//		u32 PRST : 1;
-//		u32 SINT : 1;
-//		u32 XPCK : 1;
-//		u32 PCK2 : 2;
-//		u32 SPML : 4;
-//		u32 GCONT : 1;
-//		u32 PHS : 1;
-//		u32 PVS : 1;
-//		u32 PEHS : 1;
-//		u32 PEVS : 1;
-//		u32 CLKSEL : 2;
-//		u32 NVCK : 1;
-//		u32 SLCK2 : 1;
-//		u32 VCKSEL : 2;
-//		u32 VHP : 1;
-//		u32 _PAD1 : 27;
-//	};
-//
-//	u64 SMODE1;
-//};
-
-// --------------------------------------------------------------------------------------
 //  GSRegSIGBLID
 // --------------------------------------------------------------------------------------
 struct GSRegSIGBLID
@@ -253,7 +207,7 @@ struct GSRegSIGBLID
 #define PS2GS_BASE(mem) (PS2MEM_GS + (mem & 0x13ff))
 
 #define CSRreg ((tGS_CSR&)*(PS2MEM_GS + 0x1000))
-
+#define GSSMODE1reg ((GSRegSMODE1&)*(PS2MEM_GS + 0x0010))
 #define GSCSRr ((u32&)*(PS2MEM_GS + 0x1000))
 #define GSIMR ((tGS_IMR&)*(PS2MEM_GS + 0x1010))
 #define GSSIGLBLID ((GSRegSIGBLID&)*(PS2MEM_GS + 0x1080))
@@ -275,6 +229,7 @@ enum class GS_VideoMode : int
 };
 
 extern GS_VideoMode gsVideoMode;
+extern u32 lastCSRFlag;
 extern bool gsIsInterlaced;
 
 /////////////////////////////////////////////////////////////////////////////

@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "DEV9/ATA/ATA.h"
 #include "DEV9/DEV9.h"
@@ -25,19 +11,38 @@ void ATA::IDE_ExecCmd(u16 value)
 		case 0x00:
 			HDD_Nop();
 			break;
+		case 0x10:
+			HDD_Recalibrate();
+			break;
 		case 0x20:
 			HDD_ReadSectors(false);
 			break;
-			//0x21
+		case 0x24:
+			if (lba48Supported)
+				HDD_ReadSectors(true);
+			else
+				HDD_Unk();
+			break;
+		case 0x29:
+			if (lba48Supported)
+				HDD_ReadMultiple(true);
+			else
+				HDD_Unk();
+			break;
 		case 0x40:
 			HDD_ReadVerifySectors(false);
 			break;
-			//0x41
+		case 0x42:
+			if (lba48Supported)
+				HDD_ReadVerifySectors(true);
+			else
+				HDD_Unk();
+			break;
 		case 0x70:
 			HDD_SeekCmd();
 			break;
 		case 0x90:
-			HDD_ExecuteDeviceDiag();
+			HDD_ExecuteDeviceDiag(true);
 			break;
 		case 0x91:
 			HDD_InitDevParameters();
@@ -48,16 +53,27 @@ void ATA::IDE_ExecCmd(u16 value)
 		case 0xC4:
 			HDD_ReadMultiple(false);
 			break;
+		case 0xC6:
+			HDD_SetMultipleMode();
+			break;
 		case 0xC8:
 			HDD_ReadDMA(false);
 			break;
-			//0xC9
 		case 0xCA:
 			HDD_WriteDMA(false);
 			break;
-			//0xCB
-			//0x25 = HDDreadDMA48;
-			//0x35 = HDDwriteDMA48;*/
+		case 0x25:
+			if (lba48Supported)
+				HDD_ReadDMA(true);
+			else
+				HDD_Unk();
+			break;
+		case 0x35:
+			if (lba48Supported)
+				HDD_WriteDMA(true);
+			else
+				HDD_Unk();
+			break;
 		case 0xE1:
 			HDD_IdleImmediate();
 			break;
@@ -67,7 +83,12 @@ void ATA::IDE_ExecCmd(u16 value)
 		case 0xE7:
 			HDD_FlushCache();
 			break;
-			//0xEA = HDDflushCache48
+		case 0xEA:
+			if (lba48Supported)
+				HDD_FlushCache();
+			else
+				HDD_Unk();
+			break;
 		case 0xEC:
 			HDD_IdentifyDevice();
 			break;
@@ -120,8 +141,6 @@ bool ATA::PreCmd()
 	regStatus &= ~ATA_STAT_WRERR;
 	regStatus &= ~ATA_STAT_DRQ;
 	regStatus &= ~ATA_STAT_ERR;
-
-	regStatus &= ~ATA_STAT_SEEK;
 
 	regError = 0;
 

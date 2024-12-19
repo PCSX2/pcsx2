@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "DEV9/ATA/ATA.h"
 #include "DEV9/DEV9.h"
@@ -22,24 +8,31 @@ void ATA::PreCmdExecuteDeviceDiag()
 {
 	regStatus |= ATA_STAT_BUSY;
 	regStatus &= ~ATA_STAT_READY;
+	pendingInterrupt = false;
 	dev9.irqcause &= ~ATA_INTR_INTRQ;
 	//dev9.spd.regIntStat &= unchecked((UInt16)~DEV9Header.ATA_INTR_DMA_RDY); //Is this correct?
 }
 
-void ATA::PostCmdExecuteDeviceDiag()
+void ATA::PostCmdExecuteDeviceDiag(bool sendIRQ)
 {
 	regStatus &= ~ATA_STAT_BUSY;
 	regStatus |= ATA_STAT_READY;
 
 	SetSelectedDevice(0);
 
-	if (regControlEnableIRQ)
-		_DEV9irq(ATA_INTR_INTRQ, 1);
+	// If Device Diagnostics is performed as part of a reset
+	// then we don't raise an IRQ or set pending interrupt
+	if (sendIRQ)
+	{
+		pendingInterrupt = true;
+		if (regControlEnableIRQ)
+			_DEV9irq(ATA_INTR_INTRQ, 1);
+	}
 }
 
 //GENRAL FEATURE SET
 
-void ATA::HDD_ExecuteDeviceDiag()
+void ATA::HDD_ExecuteDeviceDiag(bool sendIRQ)
 {
 	PreCmdExecuteDeviceDiag();
 	//Perform Self Diag
@@ -58,5 +51,5 @@ void ATA::HDD_ExecuteDeviceDiag()
 	regStatus &= ~ATA_STAT_ECC;
 	regStatus &= ~ATA_STAT_ERR;
 
-	PostCmdExecuteDeviceDiag();
+	PostCmdExecuteDeviceDiag(sendIRQ);
 }

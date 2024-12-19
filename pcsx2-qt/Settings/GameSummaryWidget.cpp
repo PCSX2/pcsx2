@@ -1,23 +1,9 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "pcsx2/SIO/Pad/Pad.h"
 #include "GameSummaryWidget.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtProgressCallback.h"
@@ -38,7 +24,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 
-GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsDialog* dialog, QWidget* parent)
+GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent)
 	: m_dialog(dialog)
 {
 	m_ui.setupUi(this);
@@ -48,10 +34,6 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsDialo
 	{
 		m_ui.region->setItemIcon(i,
 			QIcon(QStringLiteral("%1/icons/flags/%2.png").arg(base_path).arg(GameList::RegionToString(static_cast<GameList::Region>(i)))));
-	}
-	for (int i = 1; i < m_ui.compatibility->count(); i++)
-	{
-		m_ui.compatibility->setItemIcon(i, QIcon(QStringLiteral("%1/icons/star-%2.png").arg(base_path).arg(i)));
 	}
 
 	m_entry_path = entry->path;
@@ -63,11 +45,13 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsDialo
 	connect(m_ui.inputProfile, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onInputProfileChanged);
 	connect(m_ui.verify, &QAbstractButton::clicked, this, &GameSummaryWidget::onVerifyClicked);
 	connect(m_ui.searchHash, &QAbstractButton::clicked, this, &GameSummaryWidget::onSearchHashClicked);
+	connect(m_ui.checkWiki, &QAbstractButton::clicked, this, [this, entry]() { onCheckWikiClicked(entry); });
 
 	bool has_custom_title = false, has_custom_region = false;
 	GameList::CheckCustomAttributesForPath(m_entry_path, has_custom_title, has_custom_region);
 	m_ui.restoreTitle->setEnabled(has_custom_title);
 	m_ui.restoreRegion->setEnabled(has_custom_region);
+	m_ui.checkWiki->setEnabled(!entry->serial.empty());
 }
 
 GameSummaryWidget::~GameSummaryWidget() = default;
@@ -81,12 +65,30 @@ void GameSummaryWidget::populateInputProfiles()
 void GameSummaryWidget::populateDetails(const GameList::Entry* entry)
 {
 	m_ui.title->setText(QString::fromStdString(entry->title));
+	m_ui.titleSort->setText(QString::fromStdString(entry->title_sort));
+	m_ui.titleEN->setText(QString::fromStdString(entry->title_en));
 	m_ui.path->setText(QString::fromStdString(entry->path));
 	m_ui.serial->setText(QString::fromStdString(entry->serial));
 	m_ui.crc->setText(QString::fromStdString(fmt::format("{:08X}", entry->crc)));
 	m_ui.type->setCurrentIndex(static_cast<int>(entry->type));
 	m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
-	m_ui.compatibility->setCurrentIndex(static_cast<int>(entry->compatibility_rating));
+	//: First arg is a GameList compat; second is a string with space followed by star rating OR empty if Unknown compat
+	m_ui.compatibility->setText(tr("%0%1")
+		.arg(GameList::EntryCompatibilityRatingToString(entry->compatibility_rating))
+		.arg([entry]() {
+			if (entry->compatibility_rating == GameList::CompatibilityRating::Unknown)
+				return QStringLiteral("");
+
+			const qsizetype compatibility_value = static_cast<qsizetype>(entry->compatibility_rating);
+			//: First arg is filled-in stars for game compatibility; second is empty stars; should be swapped for RTL languages
+			return tr(" %0%1").arg(QStringLiteral("★").repeated(compatibility_value - 1)).arg(QStringLiteral("☆").repeated(6 - compatibility_value));
+		}()));
+
+	int row = 0;
+	m_ui.detailsFormLayout->getWidgetPosition(m_ui.titleSort, &row, nullptr);
+	m_ui.detailsFormLayout->setRowVisible(row, !entry->title_sort.empty());
+	m_ui.detailsFormLayout->getWidgetPosition(m_ui.titleEN, &row, nullptr);
+	m_ui.detailsFormLayout->setRowVisible(row, !entry->title_en.empty());
 
 	std::optional<std::string> profile(m_dialog->getStringValue("EmuCore", "InputProfileName", std::nullopt));
 	if (profile.has_value())
@@ -128,7 +130,9 @@ void GameSummaryWidget::populateDiscPath(const GameList::Entry* entry)
 	else
 	{
 		// Makes no sense to have disc override for a disc.
-		m_ui.detailsFormLayout->removeRow(8);
+		int row = 0;
+		m_ui.detailsFormLayout->getWidgetPosition(m_ui.label_discPath, &row, nullptr);
+		m_ui.detailsFormLayout->removeRow(row);
 		m_ui.discPath = nullptr;
 		m_ui.discPathBrowse = nullptr;
 		m_ui.discPathClear = nullptr;
@@ -350,6 +354,11 @@ void GameSummaryWidget::onSearchHashClicked()
 		return;
 
 	QtUtils::OpenURL(this, fmt::format("http://redump.org/discs/quicksearch/{}", m_redump_search_keyword).c_str());
+}
+
+void GameSummaryWidget::onCheckWikiClicked(const GameList::Entry* entry)
+{
+	QtUtils::OpenURL(this, fmt::format("https://wiki.pcsx2.net/{}", entry->serial).c_str());
 }
 
 void GameSummaryWidget::setVerifyResult(QString error)

@@ -1,23 +1,10 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "Common.h"
 #include "Vif_Dma.h"
+#include "Vif_Dynarec.h"
 #include "VUmicro.h"
-#include "x86/newVif.h"
 
 u32 g_vif0Cycles = 0;
 
@@ -46,7 +33,7 @@ bool _VIF0chain()
 	}
 
 	pMem = (u32*)dmaGetAddr(vif0ch.madr, false);
-	if (pMem == NULL)
+	if (pMem == nullptr)
 	{
 		vif0.cmd = 0;
 		vif0.tag.size = 0;
@@ -137,8 +124,15 @@ __fi void vif0SetupTransfer()
 __fi void vif0VUFinish()
 {
 	// Sync up VU0 so we don't errantly wait.
-	while (static_cast<int>(cpuRegs.cycle - VU0.cycle) > 0 && (VU0.VI[REG_VPU_STAT].UL & 0x1))
+	while (VU0.VI[REG_VPU_STAT].UL & 0x1)
+	{
+		const int cycle_diff = static_cast<int>(cpuRegs.cycle - VU0.cycle);
+
+		if ((EmuConfig.Gamefixes.VUSyncHack && cycle_diff < VU0.nextBlockCycles) || cycle_diff <= 0)
+			break;
+
 		CpuVU0->ExecuteBlock();
+	}
 
 	if (VU0.VI[REG_VPU_STAT].UL & 0x5)
 	{

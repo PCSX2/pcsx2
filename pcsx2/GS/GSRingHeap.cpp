@@ -1,22 +1,10 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GSRingHeap.h"
 #include "GS.h"
 #include "GSExtra.h"
+
 #include "common/AlignedMalloc.h"
 
 namespace
@@ -73,7 +61,7 @@ struct GSRingHeap::Buffer
 			for (size_t j = 0; j < USAGE_ARR_ELEMS_PER_ENTRY; j++)
 			{
 				[[maybe_unused]] uint16_t section = prev >> (j * 16);
-				assert(section != UINT16_MAX && "Usage count overflow");
+				pxAssert(section != UINT16_MAX && "Usage count overflow");
 			}
 		}
 	}
@@ -118,7 +106,7 @@ struct GSRingHeap::Buffer
 	/// Decrement the main amt_allocated refcount
 	void decref(size_t amt)
 	{
-		if (unlikely(m_amt_allocated.fetch_sub(amt, std::memory_order_release) == amt))
+		if (m_amt_allocated.fetch_sub(amt, std::memory_order_release) == amt) [[unlikely]]
 		{
 			std::atomic_thread_fence(std::memory_order_acquire);
 			_aligned_free(this);
@@ -154,7 +142,7 @@ struct GSRingHeap::Buffer
 			do
 			{
 				usage_mask |= 1ull << (cur_quadrant * 16);
-				if (unlikely(isStillInUse(cur_quadrant)))
+				if (isStillInUse(cur_quadrant)) [[unlikely]]
 					return nullptr;
 			} while (++cur_quadrant <= new_quadrant);
 		}
@@ -202,7 +190,7 @@ void* GSRingHeap::alloc_internal(size_t size, size_t align_mask, size_t prefix_s
 	prefix_size += sizeof(Buffer*); // Add space for a pointer to the buffer
 	size_t total_size = size + prefix_size;
 
-	if (likely(total_size <= (m_current_buffer->m_size / 2)))
+	if (total_size <= (m_current_buffer->m_size / 2)) [[likely]]
 	{
 		if (void* ptr = m_current_buffer->alloc(size, align_mask, prefix_size))
 		{
@@ -219,7 +207,7 @@ void* GSRingHeap::alloc_internal(size_t size, size_t align_mask, size_t prefix_s
 				size_t used = m_current_buffer->m_amt_allocated.load(std::memory_order_relaxed) - 1;
 				if (used * 4 < total)
 				{
-					fprintf(stderr, "GSRingHeap: Orphaning %zdmb buffer with low usage of %d%%, check that allocations are actually being deallocated approximately in order\n", total / mb, static_cast<int>((used * 100) / total));
+					fprintf(stderr, "GSRingHeap: Orphaning %zumb buffer with low usage of %d%%, check that allocations are actually being deallocated approximately in order\n", total / mb, static_cast<int>((used * 100) / total));
 				}
 			}
 		}
@@ -242,7 +230,7 @@ void* GSRingHeap::alloc_internal(size_t size, size_t align_mask, size_t prefix_s
 	orphanBuffer();
 	m_current_buffer = new_buffer;
 	void* ptr = m_current_buffer->alloc(size, align_mask, prefix_size);
-	assert(ptr && "Fresh buffer failed to allocate!");
+	pxAssert(ptr && "Fresh buffer failed to allocate!");
 
 	Buffer** bptr = static_cast<Buffer**>(ptr);
 	*bptr = m_current_buffer;

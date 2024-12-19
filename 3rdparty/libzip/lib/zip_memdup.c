@@ -1,6 +1,6 @@
 /*
   zip_memdup.c -- internal zip function, "strdup" with len
-  Copyright (C) 1999-2021 Dieter Baron and Thomas Klausner
+  Copyright (C) 1999-2024 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -45,7 +45,7 @@ _zip_memdup(const void *mem, size_t len, zip_error_t *error) {
         return NULL;
 
     ret = malloc(len);
-    if (!ret) {
+    if (ret == NULL) {
         zip_error_set(error, ZIP_ER_MEMORY, 0);
         return NULL;
     }

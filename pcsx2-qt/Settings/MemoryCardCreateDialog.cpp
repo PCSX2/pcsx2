@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -25,7 +11,6 @@
 #include "Settings/MemoryCardCreateDialog.h"
 
 #include "pcsx2/SIO/Memcard/MemoryCardFile.h"
-#include "pcsx2/System.h"
 
 MemoryCardCreateDialog::MemoryCardCreateDialog(QWidget* parent /* = nullptr */)
 	: QDialog(parent)
@@ -51,7 +36,13 @@ MemoryCardCreateDialog::MemoryCardCreateDialog(QWidget* parent /* = nullptr */)
 	connect(m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, &MemoryCardCreateDialog::restoreDefaults);
 
 #ifndef _WIN32
-	m_ui.ntfsCompression->setEnabled(false);
+	m_ui.ntfsCompressionLayout->removeWidget(m_ui.ntfsCompression);
+	safe_delete(m_ui.ntfsCompression);
+	m_ui.ntfsCompressionLayout->removeWidget(m_ui.ntfsCompressionLabel);
+	safe_delete(m_ui.ntfsCompressionLabel);
+	m_ui.mainLayout->removeItem(m_ui.ntfsCompressionLayout);
+	safe_delete(m_ui.ntfsCompressionLayout);
+	resize(600, 480);
 #endif
 
 	updateState();
@@ -132,10 +123,10 @@ void MemoryCardCreateDialog::createCard()
 	}
 
 #ifdef  _WIN32
-	if (m_ui.ntfsCompression->isChecked() && m_type == MemoryCardType::File)
+	if (m_type == MemoryCardType::File)
 	{
-		const std::string fullPath(Path::Combine(EmuFolders::MemoryCards, name_str));
-		FileSystem::SetPathCompression(fullPath.c_str(), true);
+		const std::string fullPath = Path::Combine(EmuFolders::MemoryCards, name_str);
+		FileSystem::SetPathCompression(fullPath.c_str(), m_ui.ntfsCompression->isChecked());
 	}
 #endif
 

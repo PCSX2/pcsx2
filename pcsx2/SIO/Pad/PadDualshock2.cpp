@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "SIO/Pad/PadDualshock2.h"
 #include "SIO/Pad/Pad.h"
@@ -24,36 +10,38 @@
 #include "Input/InputManager.h"
 #include "Host.h"
 
+#include "IconsPromptFont.h"
+
 static const InputBindingInfo s_bindings[] = {
 	// clang-format off
-	{"Up", TRANSLATE_NOOP("Pad", "D-Pad Up"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_UP, GenericInputBinding::DPadUp},
-	{"Right", TRANSLATE_NOOP("Pad", "D-Pad Right"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_RIGHT, GenericInputBinding::DPadRight},
-	{"Down", TRANSLATE_NOOP("Pad", "D-Pad Down"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_DOWN, GenericInputBinding::DPadDown},
-	{"Left", TRANSLATE_NOOP("Pad", "D-Pad Left"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_LEFT, GenericInputBinding::DPadLeft},
-	{"Triangle", TRANSLATE_NOOP("Pad", "Triangle"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_TRIANGLE, GenericInputBinding::Triangle},
-	{"Circle", TRANSLATE_NOOP("Pad", "Circle"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_CIRCLE, GenericInputBinding::Circle},
-	{"Cross", TRANSLATE_NOOP("Pad", "Cross"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_CROSS, GenericInputBinding::Cross},
-	{"Square", TRANSLATE_NOOP("Pad", "Square"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_SQUARE, GenericInputBinding::Square},
-	{"Select", TRANSLATE_NOOP("Pad", "Select"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_SELECT, GenericInputBinding::Select},
-	{"Start", TRANSLATE_NOOP("Pad", "Start"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_START, GenericInputBinding::Start},
-	{"L1", TRANSLATE_NOOP("Pad", "L1 (Left Bumper)"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_L1, GenericInputBinding::L1},
-	{"L2", TRANSLATE_NOOP("Pad", "L2 (Left Trigger)"), InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_L2, GenericInputBinding::L2},
-	{"R1", TRANSLATE_NOOP("Pad", "R1 (Right Bumper)"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_R1, GenericInputBinding::R1},
-	{"R2", TRANSLATE_NOOP("Pad", "R2 (Right Trigger)"), InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_R2, GenericInputBinding::R2},
-	{"L3", TRANSLATE_NOOP("Pad", "L3 (Left Stick Button)"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_L3, GenericInputBinding::L3},
-	{"R3", TRANSLATE_NOOP("Pad", "R3 (Right Stick Button)"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_R3, GenericInputBinding::R3},
-	{"Analog", TRANSLATE_NOOP("Pad", "Analog Toggle"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_ANALOG, GenericInputBinding::System},
-	{"Pressure", TRANSLATE_NOOP("Pad", "Apply Pressure"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_PRESSURE, GenericInputBinding::Unknown},
-	{"LUp", TRANSLATE_NOOP("Pad", "Left Stick Up"), InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_L_UP, GenericInputBinding::LeftStickUp},
-	{"LRight", TRANSLATE_NOOP("Pad", "Left Stick Right"), InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_L_RIGHT, GenericInputBinding::LeftStickRight},
-	{"LDown", TRANSLATE_NOOP("Pad", "Left Stick Down"), InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_L_DOWN, GenericInputBinding::LeftStickDown},
-	{"LLeft", TRANSLATE_NOOP("Pad", "Left Stick Left"), InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_L_LEFT, GenericInputBinding::LeftStickLeft},
-	{"RUp", TRANSLATE_NOOP("Pad", "Right Stick Up"), InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_R_UP, GenericInputBinding::RightStickUp},
-	{"RRight", TRANSLATE_NOOP("Pad", "Right Stick Right"), InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_R_RIGHT, GenericInputBinding::RightStickRight},
-	{"RDown", TRANSLATE_NOOP("Pad", "Right Stick Down"), InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_R_DOWN, GenericInputBinding::RightStickDown},
-	{"RLeft", TRANSLATE_NOOP("Pad", "Right Stick Left"), InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_R_LEFT, GenericInputBinding::RightStickLeft},
-	{"LargeMotor", TRANSLATE_NOOP("Pad", "Large (Low Frequency) Motor"), InputBindingInfo::Type::Motor, 0, GenericInputBinding::LargeMotor},
-	{"SmallMotor", TRANSLATE_NOOP("Pad", "Small (High Frequency) Motor"), InputBindingInfo::Type::Motor, 0, GenericInputBinding::SmallMotor},
+	{"Up", TRANSLATE_NOOP("Pad", "D-Pad Up"), ICON_PF_DPAD_UP, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_UP, GenericInputBinding::DPadUp},
+	{"Right", TRANSLATE_NOOP("Pad", "D-Pad Right"), ICON_PF_DPAD_RIGHT, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_RIGHT, GenericInputBinding::DPadRight},
+	{"Down", TRANSLATE_NOOP("Pad", "D-Pad Down"), ICON_PF_DPAD_DOWN, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_DOWN, GenericInputBinding::DPadDown},
+	{"Left", TRANSLATE_NOOP("Pad", "D-Pad Left"), ICON_PF_DPAD_LEFT, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_LEFT, GenericInputBinding::DPadLeft},
+	{"Triangle", TRANSLATE_NOOP("Pad", "Triangle"), ICON_PF_BUTTON_TRIANGLE, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_TRIANGLE, GenericInputBinding::Triangle},
+	{"Circle", TRANSLATE_NOOP("Pad", "Circle"), ICON_PF_BUTTON_CIRCLE, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_CIRCLE, GenericInputBinding::Circle},
+	{"Cross", TRANSLATE_NOOP("Pad", "Cross"), ICON_PF_BUTTON_CROSS, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_CROSS, GenericInputBinding::Cross},
+	{"Square", TRANSLATE_NOOP("Pad", "Square"), ICON_PF_BUTTON_SQUARE, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_SQUARE, GenericInputBinding::Square},
+	{"Select", TRANSLATE_NOOP("Pad", "Select"), ICON_PF_SELECT_SHARE, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_SELECT, GenericInputBinding::Select},
+	{"Start", TRANSLATE_NOOP("Pad", "Start"), ICON_PF_START, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_START, GenericInputBinding::Start},
+	{"L1", TRANSLATE_NOOP("Pad", "L1 (Left Bumper)"), ICON_PF_LEFT_SHOULDER_L1, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_L1, GenericInputBinding::L1},
+	{"L2", TRANSLATE_NOOP("Pad", "L2 (Left Trigger)"), ICON_PF_LEFT_TRIGGER_L2, InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_L2, GenericInputBinding::L2},
+	{"R1", TRANSLATE_NOOP("Pad", "R1 (Right Bumper)"), ICON_PF_RIGHT_SHOULDER_R1, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_R1, GenericInputBinding::R1},
+	{"R2", TRANSLATE_NOOP("Pad", "R2 (Right Trigger)"), ICON_PF_RIGHT_TRIGGER_R2, InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_R2, GenericInputBinding::R2},
+	{"L3", TRANSLATE_NOOP("Pad", "L3 (Left Stick Button)"), ICON_PF_LEFT_ANALOG_CLICK, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_L3, GenericInputBinding::L3},
+	{"R3", TRANSLATE_NOOP("Pad", "R3 (Right Stick Button)"), ICON_PF_RIGHT_ANALOG_CLICK, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_R3, GenericInputBinding::R3},
+	{"Analog", TRANSLATE_NOOP("Pad", "Analog Toggle"), ICON_PF_ANALOG_LEFT_RIGHT, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_ANALOG, GenericInputBinding::System},
+	{"Pressure", TRANSLATE_NOOP("Pad", "Apply Pressure"), ICON_PF_ANALOG_ANY, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_PRESSURE, GenericInputBinding::Unknown},
+	{"LUp", TRANSLATE_NOOP("Pad", "Left Stick Up"), ICON_PF_LEFT_ANALOG_UP, InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_L_UP, GenericInputBinding::LeftStickUp},
+	{"LRight", TRANSLATE_NOOP("Pad", "Left Stick Right"), ICON_PF_LEFT_ANALOG_RIGHT, InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_L_RIGHT, GenericInputBinding::LeftStickRight},
+	{"LDown", TRANSLATE_NOOP("Pad", "Left Stick Down"), ICON_PF_LEFT_ANALOG_DOWN, InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_L_DOWN, GenericInputBinding::LeftStickDown},
+	{"LLeft", TRANSLATE_NOOP("Pad", "Left Stick Left"), ICON_PF_LEFT_ANALOG_LEFT, InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_L_LEFT, GenericInputBinding::LeftStickLeft},
+	{"RUp", TRANSLATE_NOOP("Pad", "Right Stick Up"), ICON_PF_RIGHT_ANALOG_UP, InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_R_UP, GenericInputBinding::RightStickUp},
+	{"RRight", TRANSLATE_NOOP("Pad", "Right Stick Right"), ICON_PF_RIGHT_ANALOG_RIGHT, InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_R_RIGHT, GenericInputBinding::RightStickRight},
+	{"RDown", TRANSLATE_NOOP("Pad", "Right Stick Down"), ICON_PF_RIGHT_ANALOG_DOWN, InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_R_DOWN, GenericInputBinding::RightStickDown},
+	{"RLeft", TRANSLATE_NOOP("Pad", "Right Stick Left"), ICON_PF_RIGHT_ANALOG_LEFT, InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_R_LEFT, GenericInputBinding::RightStickLeft},
+	{"LargeMotor", TRANSLATE_NOOP("Pad", "Large (Low Frequency) Motor"), nullptr, InputBindingInfo::Type::Motor, 0, GenericInputBinding::LargeMotor},
+	{"SmallMotor", TRANSLATE_NOOP("Pad", "Small (High Frequency) Motor"), nullptr, InputBindingInfo::Type::Motor, 0, GenericInputBinding::SmallMotor},
 	// clang-format on
 };
 
@@ -71,29 +59,102 @@ static const SettingInfo s_settings[] = {
 	{SettingInfo::Type::Float, "Deadzone", TRANSLATE_NOOP("Pad", "Analog Deadzone"),
 		TRANSLATE_NOOP(
 			"Pad", "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
-		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "AxisScale", TRANSLATE_NOOP("Pad", "Analog Sensitivity"),
 		TRANSLATE_NOOP("Pad",
-			"Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
+			"Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
 			"controllers, e.g. DualShock 4, Xbox One Controller."),
-		"1.33", "0.01", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+		"1.33", "0.01", "2.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "LargeMotorScale", TRANSLATE_NOOP("Pad", "Large Motor Vibration Scale"),
 		TRANSLATE_NOOP("Pad", "Increases or decreases the intensity of low frequency vibration sent by the game."),
-		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+		"1.00", "0.00", "2.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "SmallMotorScale", TRANSLATE_NOOP("Pad", "Small Motor Vibration Scale"),
 		TRANSLATE_NOOP("Pad", "Increases or decreases the intensity of high frequency vibration sent by the game."),
-		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+		"1.00", "0.00", "2.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "ButtonDeadzone", TRANSLATE_NOOP("Pad", "Button/Trigger Deadzone"),
 		TRANSLATE_NOOP("Pad", "Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger "
 							  "which will be ignored."),
-		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
-	{SettingInfo::Type::Float, "PressureModifier", TRANSLATE_NOOP("Pad", "Modifier Pressure"),
+		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
+	{SettingInfo::Type::Float, "PressureModifier", TRANSLATE_NOOP("Pad", "Pressure Modifier Amount"),
 		TRANSLATE_NOOP("Pad", "Sets the pressure when the modifier button is held."), "0.50", "0.01", "1.00", "0.01",
-		"%.0f%%", nullptr, nullptr, 100.0f},
+		TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 };
 
 const Pad::ControllerInfo PadDualshock2::ControllerInfo = {Pad::ControllerType::DualShock2, "DualShock2",
-	TRANSLATE_NOOP("Pad", "DualShock 2"), s_bindings, s_settings, Pad::VibrationCapabilities::LargeSmallMotors};
+	TRANSLATE_NOOP("Pad", "DualShock 2"), ICON_PF_GAMEPAD_ALT, s_bindings, s_settings, Pad::VibrationCapabilities::LargeSmallMotors};
+
+void PadDualshock2::ConfigLog()
+{
+	const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
+	std::string_view smallMotorStr;
+
+	switch (this->smallMotorLastConfig)
+	{
+		case 0xff:
+			smallMotorStr = "Disabled";
+			break;
+		case 0x00:
+			smallMotorStr = "Normal";
+			break;
+		case 0x01:
+			smallMotorStr = "Inverted";
+			break;
+		default:
+			smallMotorStr = "Undefined";
+			break;
+	}
+
+	std::string_view largeMotorStr;
+
+	switch (this->largeMotorLastConfig)
+	{
+		case 0xff:
+			largeMotorStr = "Disabled";
+			break;
+		case 0x00:
+			largeMotorStr = "Inverted";
+			break;
+		case 0x01:
+			largeMotorStr = "Normal";
+			break;
+		default:
+			largeMotorStr = "Undefined";
+			break;
+	}
+
+	std::string_view pressureStr;
+
+	switch (this->responseBytes)
+	{
+		case static_cast<u32>(Pad::ResponseBytes::DUALSHOCK2):
+			pressureStr = "D+A+P";
+			break;
+		case static_cast<u32>(Pad::ResponseBytes::ANALOG):
+			pressureStr = "D+A";
+			break;
+		case static_cast<u32>(Pad::ResponseBytes::DIGITAL):
+			pressureStr = "D";
+			break;
+		default:
+			pressureStr = "U";
+			break;
+	}
+
+	// AL: Analog Light (is it turned on right now)
+	// AB: Analog Button (is it useable or is it locked in its current state)
+	// VS: Vibration Small (how is the small vibration motor mapped)
+	// VL: Vibration Large (how is the large vibration motor mapped)
+	// RB: Response Bytes (what data is included in the controller's responses - D = Digital, A = Analog, P = Pressure)
+	Console.WriteLn(fmt::format("[Pad] DS2 Config Finished - P{0}/S{1} - AL: {2} - AB: {3} - VS: {4} - VL: {5} - RB: {6} (0x{7:08X})",
+		port + 1,
+		slot + 1,
+		(this->analogLight ? "On" : "Off"),
+		(this->analogLocked ? "Locked" : "Usable"),
+		smallMotorStr,
+		largeMotorStr,
+		pressureStr,
+		this->responseBytes));
+}
 
 u8 PadDualshock2::Mystery(u8 commandByte)
 {
@@ -257,13 +318,7 @@ u8 PadDualshock2::Config(u8 commandByte)
 			if (this->isInConfig)
 			{
 				this->isInConfig = false;
-				const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
-				Console.WriteLn(StringUtil::StdStringFromFormat("[Pad] Game finished pad setup for port %d / slot %d - Analogs: %s - Analog Button: %s - Pressure: %s",
-					port + 1,
-					slot + 1,
-					(this->analogLight ? "On" : "Off"),
-					(this->analogLocked ? "Locked" : "Usable"),
-					(this->responseBytes == static_cast<u32>(Pad::ResponseBytes::DUALSHOCK2) ? "On" : "Off")));
+				this->ConfigLog();
 			}
 			else
 			{
@@ -480,8 +535,8 @@ u8 PadDualshock2::ResponseBytes(u8 commandByte)
 	}
 }
 
-PadDualshock2::PadDualshock2(u8 unifiedSlot)
-	: PadBase(unifiedSlot)
+PadDualshock2::PadDualshock2(u8 unifiedSlot, size_t ejectTicks)
+	: PadBase(unifiedSlot, ejectTicks)
 {
 	currentMode = Pad::Mode::DIGITAL;
 }
@@ -504,29 +559,6 @@ void PadDualshock2::Set(u32 index, float value)
 	{
 		return;
 	}
-
-	// Since we reordered the buttons for better UI, we need to remap them here.
-	static constexpr std::array<u8, Inputs::LENGTH> bitmaskMapping = {{
-		12, // PAD_UP
-		13, // PAD_RIGHT
-		14, // PAD_DOWN
-		15, // PAD_LEFT
-		4, // PAD_TRIANGLE
-		5, // PAD_CIRCLE
-		6, // PAD_CROSS
-		7, // PAD_SQUARE
-		8, // PAD_SELECT
-		11, // PAD_START
-		2, // PAD_L1
-		0, // PAD_L2
-		3, // PAD_R1
-		1, // PAD_R2
-		9, // PAD_L3
-		10, // PAD_R3
-		16, // PAD_ANALOG
-		17, // PAD_PRESSURE
-		// remainder are analogs and not used here
-	}};
 
 	if (IsAnalogKey(index))
 	{
@@ -667,8 +699,8 @@ void PadDualshock2::Set(u32 index, float value)
 				const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
 				
 				Host::AddKeyedOSDMessage(fmt::format("PadAnalogButtonChange{}{}", port, slot),
-					this->analogLight ? fmt::format(TRANSLATE_FS("Pad", "Analog light is now on for port {} / slot {}"), port + 1, slot + 1) :
-										fmt::format(TRANSLATE_FS("Pad", "Analog light is now off for port {} / slot {}"), port + 1, slot + 1),
+					this->analogLight ? fmt::format(TRANSLATE_FS("Pad", "Analog light is now on for port {0} / slot {1}"), port + 1, slot + 1) :
+										fmt::format(TRANSLATE_FS("Pad", "Analog light is now off for port {0} / slot {1}"), port + 1, slot + 1),
 					Host::OSD_INFO_DURATION);
 			}
 		}
@@ -685,6 +717,20 @@ void PadDualshock2::SetRawAnalogs(const std::tuple<u8, u8> left, const std::tupl
 	this->analogs.ly = std::get<1>(left);
 	this->analogs.rx = std::get<0>(right);
 	this->analogs.ry = std::get<1>(right);
+}
+
+void PadDualshock2::SetRawPressureButton(u32 index, const std::tuple<bool, u8> value)
+{
+	this->rawInputs[index] = std::get<1>(value);
+
+	if (std::get<0>(value))
+	{
+		this->buttons &= ~(1u << bitmaskMapping[index]);
+	}
+	else
+	{
+		this->buttons |= (1u << bitmaskMapping[index]);
+	}
 }
 
 void PadDualshock2::SetAxisScale(float deadzone, float scale)
@@ -728,6 +774,42 @@ void PadDualshock2::SetAnalogInvertR(bool x, bool y)
 {
 	this->analogs.rxInvert = x;
 	this->analogs.ryInvert = y;
+}
+
+float PadDualshock2::GetEffectiveInput(u32 index) const
+{
+	if (!IsAnalogKey(index))
+		return GetRawInput(index);
+
+	switch (index)
+	{
+	case Inputs::PAD_L_LEFT:
+		return (analogs.lx < 127) ? -((127 - analogs.lx) / 127.0f) : 0;
+
+	case Inputs::PAD_L_RIGHT:
+		return (analogs.lx > 127) ? ((analogs.lx - 127) / 128.0f) : 0;
+
+	case Inputs::PAD_L_UP:
+		return (analogs.ly < 127) ? -((127 - analogs.ly) / 127.0f) : 0;
+
+	case Inputs::PAD_L_DOWN:
+		return (analogs.ly > 127) ? ((analogs.ly - 127) / 128.0f) : 0;
+
+	case Inputs::PAD_R_LEFT:
+		return (analogs.rx < 127) ? -((127 - analogs.rx) / 127.0f) : 0;
+
+	case Inputs::PAD_R_RIGHT:
+		return (analogs.rx > 127) ? ((analogs.rx - 127) / 128.0f) : 0;
+
+	case Inputs::PAD_R_UP:
+		return (analogs.ry < 127) ? -((127 - analogs.ry) / 127.0f) : 0;
+
+	case Inputs::PAD_R_DOWN:
+		return (analogs.ry > 127) ? ((analogs.ry - 127) / 128.0f) : 0;
+
+	default:
+		return 0;
+	}
 }
 
 u8 PadDualshock2::GetRawInput(u32 index) const

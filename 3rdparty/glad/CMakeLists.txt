@@ -1,22 +1,21 @@
 add_library(glad
-	src/glad.c
+	include/glad/gl.h
+	include/KHR/khrplatform.h
+	src/gl.c
 )
+
+target_include_directories(glad PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_link_libraries(glad PRIVATE Threads::Threads "${CMAKE_DL_LIBS}")
 
 if(WIN32)
 	target_sources(glad PRIVATE
-		src/glad_wgl.c
+		include/glad/wgl.h
+		src/wgl.c
 	)
-elseif(X11_API OR WAYLAND_API)
+else()
 	target_sources(glad PRIVATE
-		src/glad_egl.c
+		include/EGL/eglplatform.h
+		include/glad/egl.h
+		src/egl.c
 	)
 endif()
-
-target_include_directories(glad PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_include_directories(glad INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(glad PRIVATE Threads::Threads "${CMAKE_DL_LIBS}")
-
-if(APPLE)
-	target_compile_options(glad PRIVATE -fno-common)
-endif()
-

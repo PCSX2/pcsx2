@@ -1,26 +1,15 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
+
+#include "common/FileSystem.h"
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include <lzma.h>
-#include <zstd.h>
+class Error;
 
 #define GEN_REG_ENUM_CLASS_CONTENT(ClassName, EntryName, Value) \
 	EntryName = Value,
@@ -303,7 +292,7 @@ public:
 
 	virtual ~GSDumpFile();
 
-	static std::unique_ptr<GSDumpFile> OpenGSDump(const char* filename, const char* repack_filename = nullptr);
+	static std::unique_ptr<GSDumpFile> OpenGSDump(const char* filename, Error* error = nullptr);
 	static bool GetPreviewImageFromDump(const char* filename, u32* width, u32* height, std::vector<u32>* pixels);
 
 	__fi const std::string& GetSerial() const { return m_serial; }
@@ -313,21 +302,19 @@ public:
 	__fi const ByteArray& GetStateData() const { return m_state_data; }
 	__fi const GSDataArray& GetPackets() const { return m_dump_packets; }
 
-	bool ReadFile();
+	bool ReadFile(Error* error);
 
 protected:
-	GSDumpFile(FILE* file, FILE* repack_file);
+	GSDumpFile();
 
+	virtual bool Open(FileSystem::ManagedCFilePtr fp, Error* error) = 0;
 	virtual bool IsEof() = 0;
 	virtual size_t Read(void* ptr, size_t size) = 0;
 
-	void Repack(void* ptr, size_t size);
-
-	FILE* m_fp = nullptr;
+protected:
+	FileSystem::ManagedCFilePtr m_fp;
 
 private:
-	FILE* m_repack_fp = nullptr;
-
 	std::string m_serial;
 	u32 m_crc = 0;
 
@@ -338,58 +325,5 @@ private:
 	GSDataArray m_dump_packets;
 };
 
-class GSDumpLzma : public GSDumpFile
-{
-	lzma_stream m_strm;
-
-	size_t m_buff_size;
-	uint8_t* m_area;
-	uint8_t* m_inbuf;
-
-	size_t m_avail;
-	size_t m_start;
-
-	void Decompress();
-	void Initialize();
-
-public:
-	GSDumpLzma(FILE* file, FILE* repack_file);
-	virtual ~GSDumpLzma();
-
-	bool IsEof() final;
-	size_t Read(void* ptr, size_t size) final;
-};
-
-class GSDumpDecompressZst : public GSDumpFile
-{
-	static constexpr u32 INPUT_BUFFER_SIZE = 512 * _1kb;
-	static constexpr u32 OUTPUT_BUFFER_SIZE = 2 * _1mb;
-
-	ZSTD_DStream* m_strm;
-	ZSTD_inBuffer m_inbuf;
-
-	uint8_t* m_area;
-
-	size_t m_avail;
-	size_t m_start;
-
-	void Decompress();
-	void Initialize();
-
-public:
-	GSDumpDecompressZst(FILE* file, FILE* repack_file);
-	virtual ~GSDumpDecompressZst();
-
-	bool IsEof() final;
-	size_t Read(void* ptr, size_t size) final;
-};
-
-class GSDumpRaw : public GSDumpFile
-{
-public:
-	GSDumpRaw(FILE* file, FILE* repack_file);
-	virtual ~GSDumpRaw() = default;
-
-	bool IsEof() final;
-	size_t Read(void* ptr, size_t size) final;
-};
+// Initializes CRC tables used by LZMA SDK.
+void GSInit7ZCRCTables();

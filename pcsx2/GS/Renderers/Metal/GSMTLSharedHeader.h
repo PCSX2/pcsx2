@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 #include <simd/simd.h>
@@ -78,6 +66,13 @@ struct GSMTLIndexedConvertPSUniform
 	uint dbw;
 };
 
+struct GSMTLDownsamplePSUniform
+{
+	vector_uint2 clamp_min;
+	uint downsample_factor;
+	float weight;
+};
+
 struct GSMTLMainVertex
 {
 	vector_float2 st;
@@ -123,6 +118,7 @@ struct GSMTLMainPSUniform
 		vector_float4 uv_min_max;
 		vector_uint4 uv_msk_fix;
 	};
+	vector_float4 lod_params;
 	vector_float4 st_range;
 	struct
 	{
@@ -167,13 +163,14 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_VS_EXPAND_TYPE,
 	GSMTLConstantIndex_PS_AEM_FMT,
 	GSMTLConstantIndex_PS_PAL_FMT,
-	GSMTLConstantIndex_PS_DFMT,
+	GSMTLConstantIndex_PS_DST_FMT,
 	GSMTLConstantIndex_PS_DEPTH_FMT,
 	GSMTLConstantIndex_PS_AEM,
 	GSMTLConstantIndex_PS_FBA,
 	GSMTLConstantIndex_PS_FOG,
 	GSMTLConstantIndex_PS_DATE,
 	GSMTLConstantIndex_PS_ATST,
+	GSMTLConstantIndex_PS_AFAIL,
 	GSMTLConstantIndex_PS_TFX,
 	GSMTLConstantIndex_PS_TCC,
 	GSMTLConstantIndex_PS_WMS,
@@ -183,7 +180,9 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_LTF,
 	GSMTLConstantIndex_PS_SHUFFLE,
 	GSMTLConstantIndex_PS_SHUFFLE_SAME,
-	GSMTLConstantIndex_PS_READ_BA,
+	GSMTLConstantIndex_PS_PROCESS_BA,
+	GSMTLConstantIndex_PS_PROCESS_RG,
+	GSMTLConstantIndex_PS_SHUFFLE_ACROSS,
 	GSMTLConstantIndex_PS_READ16_SRC,
 	GSMTLConstantIndex_PS_WRITE_RG,
 	GSMTLConstantIndex_PS_FBMASK,
@@ -194,6 +193,8 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_BLEND_HW,
 	GSMTLConstantIndex_PS_A_MASKED,
 	GSMTLConstantIndex_PS_HDR,
+	GSMTLConstantIndex_PS_RTA_CORRECTION,
+	GSMTLConstantIndex_PS_RTA_SRC_CORRECTION,
 	GSMTLConstantIndex_PS_COLCLIP,
 	GSMTLConstantIndex_PS_BLEND_MIX,
 	GSMTLConstantIndex_PS_ROUND_INV,
@@ -201,9 +202,9 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_PABE,
 	GSMTLConstantIndex_PS_NO_COLOR,
 	GSMTLConstantIndex_PS_NO_COLOR1,
-	GSMTLConstantIndex_PS_ONLY_ALPHA,
 	GSMTLConstantIndex_PS_CHANNEL,
 	GSMTLConstantIndex_PS_DITHER,
+	GSMTLConstantIndex_PS_DITHER_ADJUST,
 	GSMTLConstantIndex_PS_ZCLAMP,
 	GSMTLConstantIndex_PS_TCOFFSETHACK,
 	GSMTLConstantIndex_PS_URBAN_CHAOS_HLE,
@@ -211,7 +212,6 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_TEX_IS_FB,
 	GSMTLConstantIndex_PS_AUTOMATIC_LOD,
 	GSMTLConstantIndex_PS_MANUAL_LOD,
-	GSMTLConstantIndex_PS_POINT_SAMPLER,
 	GSMTLConstantIndex_PS_REGION_RECT,
 	GSMTLConstantIndex_PS_SCANMSK,
 };

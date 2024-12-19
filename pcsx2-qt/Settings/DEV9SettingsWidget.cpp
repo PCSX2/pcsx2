@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QFileDialog>
@@ -30,7 +16,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
 #include "HddCreateQt.h"
 
@@ -41,7 +27,7 @@
 #include "DEV9/sockets.h"
 
 static const char* s_api_name[] = {
-	QT_TRANSLATE_NOOP("DEV9SettingsWidget", " "),
+	" ",
 	QT_TRANSLATE_NOOP("DEV9SettingsWidget", "PCAP Bridged"),
 	QT_TRANSLATE_NOOP("DEV9SettingsWidget", "PCAP Switched"),
 	QT_TRANSLATE_NOOP("DEV9SettingsWidget", "TAP"),
@@ -58,7 +44,7 @@ static const char* s_dns_name[] = {
 
 using PacketReader::IP::IP_Address;
 
-DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
+DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog{dialog}
 {
@@ -70,97 +56,23 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	// Eth Enabled
 	//////////////////////////////////////////////////////////////////////////
 	//Connect needs to be after BindWidgetToBoolSetting to ensure correct order of execution for disabling a per game setting
-	//but we then need to manually call onEthAutoChanged to update the UI on fist load
+	//we then need to manually call onEthAutoChanged to update the UI on fist load (done in show)
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ethEnabled, "DEV9/Eth", "EthEnable", false);
-	onEthEnabledChanged(m_ui.ethEnabled->checkState());
-	connect(m_ui.ethEnabled, QOverload<int>::of(&QCheckBox::stateChanged), this, &DEV9SettingsWidget::onEthEnabledChanged);
+	connect(m_ui.ethEnabled, &QCheckBox::checkStateChanged, this, &DEV9SettingsWidget::onEthEnabledChanged);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Eth Device Settings
 	//////////////////////////////////////////////////////////////////////////
 	connect(m_ui.ethDevType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DEV9SettingsWidget::onEthDeviceTypeChanged);
-
-	m_api_list.push_back(Pcsx2Config::DEV9Options::NetApi::Unset);
-
-	for (const AdapterEntry& adapter : PCAPAdapter::GetAdapters())
-		AddAdapter(adapter);
-#ifdef _WIN32
-	for (const AdapterEntry& adapter : TAPAdapter::GetAdapters())
-		AddAdapter(adapter);
-#endif
-	for (const AdapterEntry& adapter : SocketAdapter::GetAdapters())
-		AddAdapter(adapter);
-
-	std::sort(m_api_list.begin(), m_api_list.end());
-	for (auto& list : m_adapter_list)
-		std::sort(list.begin(), list.end(), [](const AdapterEntry& a, AdapterEntry& b) { return a.name < b.name; });
-
-	for (const Pcsx2Config::DEV9Options::NetApi& na : m_api_list)
-	{
-		m_api_namelist.push_back(s_api_name[static_cast<int>(na)]);
-		m_api_valuelist.push_back(Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(na)]);
-	}
-
-	m_api_namelist.push_back(nullptr);
-	m_api_valuelist.push_back(nullptr);
-
-	//We replace the blank entry with one for global settings
-	if (m_dialog->isPerGameSettings())
-	{
-		const std::string valueAPI = Host::GetBaseStringSettingValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]);
-		for (int i = 0; Pcsx2Config::DEV9Options::NetApiNames[i] != nullptr; i++)
-		{
-			if (valueAPI == Pcsx2Config::DEV9Options::NetApiNames[i])
-			{
-				m_global_api = static_cast<Pcsx2Config::DEV9Options::NetApi>(i);
-				break;
-			}
-		}
-
-		std::vector<AdapterEntry> baseList = m_adapter_list[static_cast<u32>(m_global_api)];
-
-		std::string baseAdapter = " ";
-		const std::string valueGUID = Host::GetBaseStringSettingValue("DEV9/Eth", "EthDevice", "");
-		for (size_t i = 0; i < baseList.size(); i++)
-		{
-			if (baseList[i].guid == valueGUID)
-			{
-				baseAdapter = baseList[i].name;
-				break;
-			}
-		}
-
-		m_adapter_list[static_cast<u32>(Pcsx2Config::DEV9Options::NetApi::Unset)][0].name = baseAdapter;
-	}
-
-	if (m_dialog->isPerGameSettings())
-		m_ui.ethDevType->addItem(tr("Use Global Setting [%1]").arg(QString::fromUtf8(Pcsx2Config::DEV9Options::NetApiNames[static_cast<u32>(m_global_api)])));
-	else
-		m_ui.ethDevType->addItem(qApp->translate("DEV9SettingsWidget", m_api_namelist[0]));
-
-	for (int i = 1; m_api_namelist[i] != nullptr; i++)
-		m_ui.ethDevType->addItem(qApp->translate("DEV9SettingsWidget", m_api_namelist[i]));
-
-	const std::string value = m_dialog->getStringValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]).value();
-
-	for (int i = 0; m_api_namelist[i] != nullptr; i++)
-	{
-		if (value == m_api_valuelist[i])
-		{
-			m_ui.ethDevType->setCurrentIndex(i);
-			break;
-		}
-	}
-	//onEthDeviceTypeChanged gets called automatically
-
 	connect(m_ui.ethDev, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DEV9SettingsWidget::onEthDeviceChanged);
+	//Comboboxes populated in show event
 
 	//////////////////////////////////////////////////////////////////////////
 	// DHCP Settings
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ethInterceptDHCP, "DEV9/Eth", "InterceptDHCP", false);
 	onEthDHCPInterceptChanged(m_ui.ethInterceptDHCP->checkState());
-	connect(m_ui.ethInterceptDHCP, QOverload<int>::of(&QCheckBox::stateChanged), this, &DEV9SettingsWidget::onEthDHCPInterceptChanged);
+	connect(m_ui.ethInterceptDHCP, &QCheckBox::checkStateChanged, this, &DEV9SettingsWidget::onEthDHCPInterceptChanged);
 
 	//IP settings
 	const IPValidator* ipValidator = new IPValidator(this, m_dialog->isPerGameSettings());
@@ -205,11 +117,11 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	//Auto
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ethNetMaskAuto, "DEV9/Eth", "AutoMask", true);
 	onEthAutoChanged(m_ui.ethNetMaskAuto, m_ui.ethNetMaskAuto->checkState(), m_ui.ethNetMask, "DEV9/Eth", "AutoMask");
-	connect(m_ui.ethNetMaskAuto, QOverload<int>::of(&QCheckBox::stateChanged), this, [&](int state) { onEthAutoChanged(m_ui.ethNetMaskAuto, state, m_ui.ethNetMask, "DEV9/Eth", "AutoMask"); });
+	connect(m_ui.ethNetMaskAuto, &QCheckBox::checkStateChanged, this, [&](Qt::CheckState state) { onEthAutoChanged(m_ui.ethNetMaskAuto, state, m_ui.ethNetMask, "DEV9/Eth", "AutoMask"); });
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ethGatewayAuto, "DEV9/Eth", "AutoGateway", true);
 	onEthAutoChanged(m_ui.ethGatewayAuto, m_ui.ethGatewayAuto->checkState(), m_ui.ethGatewayAddr, "DEV9/Eth", "AutoGateway");
-	connect(m_ui.ethGatewayAuto, QOverload<int>::of(&QCheckBox::stateChanged), this, [&](int state) { onEthAutoChanged(m_ui.ethGatewayAuto, state, m_ui.ethGatewayAddr, "DEV9/Eth", "AutoGateway"); });
+	connect(m_ui.ethGatewayAuto, &QCheckBox::checkStateChanged, this, [&](Qt::CheckState state) { onEthAutoChanged(m_ui.ethGatewayAuto, state, m_ui.ethGatewayAddr, "DEV9/Eth", "AutoGateway"); });
 
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.ethDNS1Mode, "DEV9/Eth", "ModeDNS1",
 		s_dns_name, Pcsx2Config::DEV9Options::DnsModeNames, Pcsx2Config::DEV9Options::DnsModeNames[static_cast<int>(Pcsx2Config::DEV9Options::DnsMode::Auto)], "DEV9SettingsWidget");
@@ -256,10 +168,9 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	//////////////////////////////////////////////////////////////////////////
 	// HDD Settings
 	//////////////////////////////////////////////////////////////////////////
-	connect(m_ui.hddEnabled, QOverload<int>::of(&QCheckBox::stateChanged), this, &DEV9SettingsWidget::onHddEnabledChanged);
+	connect(m_ui.hddEnabled, &QCheckBox::checkStateChanged, this, &DEV9SettingsWidget::onHddEnabledChanged);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hddEnabled, "DEV9/Hdd", "HddEnable", false);
 
-	connect(m_ui.hddFile, &QLineEdit::editingFinished, this, &DEV9SettingsWidget::onHddFileEdit);
 	if (m_dialog->isPerGameSettings())
 	{
 		m_ui.hddFile->setText(QString::fromUtf8(m_dialog->getStringValue("DEV9/Hdd", "HddFile", "").value().c_str()));
@@ -267,31 +178,14 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	}
 	else
 		m_ui.hddFile->setText(QString::fromUtf8(m_dialog->getStringValue("DEV9/Hdd", "HddFile", "DEV9hdd.raw").value().c_str()));
+
+	connect(m_ui.hddLBA48, &QCheckBox::checkStateChanged, this, &DEV9SettingsWidget::onHddLBA48Changed);
+
+	UpdateHddSizeUIValues();
+
+	connect(m_ui.hddFile, &QLineEdit::textChanged, this, &DEV9SettingsWidget::onHddFileTextChange);
+	connect(m_ui.hddFile, &QLineEdit::editingFinished, this, &DEV9SettingsWidget::onHddFileEdit);
 	connect(m_ui.hddBrowseFile, &QPushButton::clicked, this, &DEV9SettingsWidget::onHddBrowseFileClicked);
-
-	//TODO: need a getUintValue for if 48bit support occurs
-	const int size = (u64)m_dialog->getIntValue("DEV9/Hdd", "HddSizeSectors", 0).value() * 512 / (1024 * 1024 * 1024);
-
-	if (m_dialog->isPerGameSettings())
-	{
-		std::optional<int> sizeOpt = std::nullopt;
-		if (size > 0)
-			sizeOpt = size;
-		const int sizeGlobal = (u64)Host::GetBaseIntSettingValue("DEV9/Hdd", "HddSizeSectors", 0) * 512 / (1024 * 1024 * 1024);
-
-		SettingWidgetBinder::SettingAccessor<QSpinBox>::makeNullableInt(m_ui.hddSizeSpinBox, sizeGlobal);
-		SettingWidgetBinder::SettingAccessor<QSpinBox>::setNullableIntValue(m_ui.hddSizeSpinBox, sizeOpt);
-
-		m_ui.hddSizeSlider->setValue(sizeOpt.value_or(sizeGlobal));
-
-		m_ui.hddSizeSlider->setContextMenuPolicy(Qt::CustomContextMenu);
-		connect(m_ui.hddSizeSlider, &QSlider::customContextMenuRequested, this, &DEV9SettingsWidget::onHddSizeSliderContext);
-	}
-	else
-	{
-		m_ui.hddSizeSlider->setValue(size);
-		SettingWidgetBinder::SettingAccessor<QSpinBox>::setIntValue(m_ui.hddSizeSpinBox, size);
-	}
 
 	connect(m_ui.hddSizeSlider, QOverload<int>::of(&QSlider::valueChanged), this, &DEV9SettingsWidget::onHddSizeSlide);
 	SettingWidgetBinder::SettingAccessor<QSpinBox>::connectValueChanged(m_ui.hddSizeSpinBox, [&]() { onHddSizeAccessorSpin(); });
@@ -299,9 +193,13 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	connect(m_ui.hddCreate, &QPushButton::clicked, this, &DEV9SettingsWidget::onHddCreateClicked);
 }
 
-void DEV9SettingsWidget::onEthEnabledChanged(int state)
+void DEV9SettingsWidget::onEthEnabledChanged(Qt::CheckState state)
 {
 	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Eth", "EthEnable", false) : state;
+
+	//Populate Eth Device Settings
+	if (enabled)
+		LoadAdapters();
 
 	m_ui.ethDevType->setEnabled(enabled);
 	m_ui.ethDevTypeLabel->setEnabled(enabled);
@@ -368,6 +266,7 @@ void DEV9SettingsWidget::onEthDeviceTypeChanged(int index)
 			break;
 	}
 
+	m_ui.ethInterceptDHCPLabel->setEnabled((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::None);
 	m_ui.ethInterceptDHCP->setEnabled((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::None);
 	onEthDHCPInterceptChanged(m_ui.ethInterceptDHCP->checkState());
 }
@@ -388,7 +287,7 @@ void DEV9SettingsWidget::onEthDeviceChanged(int index)
 	}
 }
 
-void DEV9SettingsWidget::onEthDHCPInterceptChanged(int state)
+void DEV9SettingsWidget::onEthDHCPInterceptChanged(Qt::CheckState state)
 {
 	const bool enabled = (state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Eth", "InterceptDHCP", false) : state) ||
 						 ((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::DHCP_ForcedOn);
@@ -443,7 +342,7 @@ void DEV9SettingsWidget::onEthIPChanged(QLineEdit* sender, const char* section, 
 		m_dialog->setStringSettingValue(section, key, neatStr.c_str());
 }
 
-void DEV9SettingsWidget::onEthAutoChanged(QCheckBox* sender, int state, QLineEdit* input, const char* section, const char* key)
+void DEV9SettingsWidget::onEthAutoChanged(QCheckBox* sender, Qt::CheckState state, QLineEdit* input, const char* section, const char* key)
 {
 	if (sender->isEnabled())
 	{
@@ -693,19 +592,16 @@ void DEV9SettingsWidget::onEthHostEdit(QStandardItem* item)
 	}
 }
 
-void DEV9SettingsWidget::onHddEnabledChanged(int state)
+void DEV9SettingsWidget::onHddEnabledChanged(Qt::CheckState state)
 {
 	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Hdd", "HddEnable", false) : state;
 
 	m_ui.hddFile->setEnabled(enabled);
 	m_ui.hddFileLabel->setEnabled(enabled);
 	m_ui.hddBrowseFile->setEnabled(enabled);
-	m_ui.hddSizeLabel->setEnabled(enabled);
-	m_ui.hddSizeSlider->setEnabled(enabled);
-	m_ui.hddSizeMaxLabel->setEnabled(enabled);
-	m_ui.hddSizeMinLabel->setEnabled(enabled);
-	m_ui.hddSizeSpinBox->setEnabled(enabled);
 	m_ui.hddCreate->setEnabled(enabled);
+
+	UpdateHddSizeUIEnabled();
 }
 
 void DEV9SettingsWidget::onHddBrowseFileClicked()
@@ -722,85 +618,52 @@ void DEV9SettingsWidget::onHddBrowseFileClicked()
 	m_ui.hddFile->editingFinished();
 }
 
+void DEV9SettingsWidget::onHddFileTextChange()
+{
+	UpdateHddSizeUIEnabled();
+
+	// Force update so user doesn't have to exit text box
+	std::string hddPath(m_ui.hddFile->text().toStdString());
+	if (hddPath.empty())
+		UpdateHddSizeUIValues();
+}
+
 void DEV9SettingsWidget::onHddFileEdit()
 {
 	// Check if file exists, if so set HddSize to correct value.
 	// Also save the hddPath setting
 	std::string hddPath(m_ui.hddFile->text().toStdString());
 	if (hddPath.empty())
-	{
 		m_dialog->setStringSettingValue("DEV9/Hdd", "HddFile", std::nullopt);
-		return;
-	}
 	else
 		m_dialog->setStringSettingValue("DEV9/Hdd", "HddFile", hddPath.c_str());
 
-	if (!Path::IsAbsolute(hddPath))
-		hddPath = Path::Combine(EmuFolders::Settings, hddPath);
-
-	if (!FileSystem::FileExists(hddPath.c_str()))
-		return;
-
-	const s64 size = FileSystem::GetPathFileSize(hddPath.c_str());
-	if (size < 0)
-		return;
-
-	const u32 sizeSectors = static_cast<u32>(size / 512);
-	const int sizeGB = size / 1024 / 1024 / 1024;
-
-	QSignalBlocker sb1(m_ui.hddSizeSpinBox);
-	QSignalBlocker sb2(m_ui.hddSizeSlider);
-	m_ui.hddSizeSpinBox->setValue(sizeGB);
-	m_ui.hddSizeSlider->setValue(sizeGB);
-
-	m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", (int)sizeSectors);
+	UpdateHddSizeUIValues();
 }
 
 void DEV9SettingsWidget::onHddSizeSlide(int i)
 {
-	// We have to call onHddSizeAccessorSpin() ourself, as the value could still be considered null when the valueChanged signal is fired
 	QSignalBlocker sb(m_ui.hddSizeSpinBox);
-	SettingWidgetBinder::SettingAccessor<QSpinBox>::setNullableIntValue(m_ui.hddSizeSpinBox, i);
-	onHddSizeAccessorSpin();
-}
-
-void DEV9SettingsWidget::onHddSizeSliderContext(const QPoint& pt)
-{
-	QMenu menu(m_ui.hddSizeSlider);
-	connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, this, &DEV9SettingsWidget::onHddSizeSliderReset);
-	menu.exec(m_ui.hddSizeSlider->mapToGlobal(pt));
-}
-
-void DEV9SettingsWidget::onHddSizeSliderReset([[maybe_unused]] bool checked)
-{
-	// We have to call onHddSizeAccessorSpin() ourself, as the value could still be considered non-null when the valueChanged signal is fired
-	QSignalBlocker sb(m_ui.hddSizeSpinBox);
-	SettingWidgetBinder::SettingAccessor<QSpinBox>::setNullableIntValue(m_ui.hddSizeSpinBox, std::nullopt);
-	onHddSizeAccessorSpin();
+	m_ui.hddSizeSpinBox->setValue(i);
 }
 
 void DEV9SettingsWidget::onHddSizeAccessorSpin()
 {
-	//TODO: need a getUintValue for if 48bit support occurs
 	QSignalBlocker sb(m_ui.hddSizeSlider);
-	if (m_dialog->isPerGameSettings())
-	{
-		std::optional<int> new_value = SettingWidgetBinder::SettingAccessor<QSpinBox>::getNullableIntValue(m_ui.hddSizeSpinBox);
+	m_ui.hddSizeSlider->setValue(m_ui.hddSizeSpinBox->value());
+}
 
-		const int sizeGlobal = (u64)Host::GetBaseIntSettingValue("DEV9/Hdd", "HddSizeSectors", 0) * 512 / (1024 * 1024 * 1024);
-		m_ui.hddSizeSlider->setValue(new_value.value_or(sizeGlobal));
+void DEV9SettingsWidget::onHddLBA48Changed(Qt::CheckState state)
+{
+	m_ui.hddSizeSlider->setMaximum((state != Qt::Unchecked) ? 2000 : 120);
+	m_ui.hddSizeSpinBox->setMaximum((state != Qt::Unchecked) ? 2000 : 120);
+	m_ui.hddSizeMaxLabel->setText((state != Qt::Unchecked) ? tr("2000") : tr("120"));
+	// Bump up min size to have ticks align with 100GiB sizes
+	m_ui.hddSizeSlider->setMinimum((state != Qt::Unchecked) ? 100 : 40);
+	m_ui.hddSizeSpinBox->setMinimum((state != Qt::Unchecked) ? 100 : 40);
+	m_ui.hddSizeMinLabel->setText((state != Qt::Unchecked) ? tr("100") : tr("40"));
 
-		if (new_value.has_value())
-			m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", new_value.value() * (1024 * 1024 * 1024 / 512));
-		else
-			m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", std::nullopt);
-	}
-	else
-	{
-		const int new_value = SettingWidgetBinder::SettingAccessor<QSpinBox>::getIntValue(m_ui.hddSizeSpinBox);
-		m_ui.hddSizeSlider->setValue(new_value);
-		m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", new_value * (1024 * 1024 * 1024 / 512));
-	}
+	m_ui.hddSizeSlider->setTickInterval((state != Qt::Unchecked) ? 100 : 5);
 }
 
 void DEV9SettingsWidget::onHddCreateClicked()
@@ -808,7 +671,8 @@ void DEV9SettingsWidget::onHddCreateClicked()
 	//Do the thing
 	std::string hddPath(m_ui.hddFile->text().toStdString());
 
-	u64 sizeBytes = (u64)m_dialog->getEffectiveIntValue("DEV9/Hdd", "HddSizeSectors", 0) * 512;
+	const u64 sizeBytes = (u64)m_ui.hddSizeSpinBox->value() * (u64)(1024 * 1024 * 1024);
+
 	if (sizeBytes == 0 || hddPath.empty())
 	{
 		QMessageBox::warning(this, QObject::tr("HDD Creator"),
@@ -822,10 +686,9 @@ void DEV9SettingsWidget::onHddCreateClicked()
 
 	if (FileSystem::FileExists(hddPath.c_str()))
 	{
-		//GHC uses UTF8 on all platforms
 		QMessageBox::StandardButton selection =
 			QMessageBox::question(this, tr("Overwrite File?"),
-				tr("HDD image \"%1\" already exists?\n\n"
+				tr("HDD image \"%1\" already exists.\n\n"
 				   "Do you want to overwrite?")
 					.arg(QString::fromStdString(hddPath)),
 				QMessageBox::Yes | QMessageBox::No);
@@ -848,25 +711,80 @@ void DEV9SettingsWidget::onHddCreateClicked()
 	}
 }
 
+void DEV9SettingsWidget::UpdateHddSizeUIEnabled()
+{
+	std::string hddPath(m_ui.hddFile->text().toStdString());
+
+	bool enableSizeUI;
+	if (m_dialog->isPerGameSettings() && hddPath.empty())
+		enableSizeUI = false;
+	else
+		enableSizeUI = m_ui.hddFile->isEnabled();
+
+	m_ui.hddLBA48->setEnabled(enableSizeUI);
+	m_ui.hddSizeLabel->setEnabled(enableSizeUI);
+	m_ui.hddSizeSlider->setEnabled(enableSizeUI);
+	m_ui.hddSizeMaxLabel->setEnabled(enableSizeUI);
+	m_ui.hddSizeMinLabel->setEnabled(enableSizeUI);
+	m_ui.hddSizeSpinBox->setEnabled(enableSizeUI);
+}
+
+void DEV9SettingsWidget::UpdateHddSizeUIValues()
+{
+	std::string hddPath(m_ui.hddFile->text().toStdString());
+
+	if (m_dialog->isPerGameSettings() && hddPath.empty())
+		hddPath = m_ui.hddFile->placeholderText().toStdString();
+
+	if (!Path::IsAbsolute(hddPath))
+		hddPath = Path::Combine(EmuFolders::Settings, hddPath);
+
+	if (!FileSystem::FileExists(hddPath.c_str()))
+		return;
+
+	const s64 size = FileSystem::GetPathFileSize(hddPath.c_str());
+	if (size < 0)
+		return;
+
+	if (size > static_cast<s64>(120) * 1024 * 1024 * 1024)
+		m_ui.hddLBA48->setChecked(true);
+	else
+		m_ui.hddLBA48->setChecked(false);
+
+	const int sizeGB = size / 1024 / 1024 / 1024;
+	QSignalBlocker sb1(m_ui.hddSizeSpinBox);
+	QSignalBlocker sb2(m_ui.hddSizeSlider);
+	m_ui.hddSizeSpinBox->setValue(sizeGB);
+	m_ui.hddSizeSlider->setValue(sizeGB);
+}
+
 void DEV9SettingsWidget::showEvent(QShowEvent* event)
 {
 	QWidget::showEvent(event);
 
-	//The API combobox dosn't set the EthApi field, that is performed by the device combobox (in addition to saving the device)
-	//This means that this setting can get out of sync with true value, so revert to that if the ui is closed and opened
-	const std::string value = m_dialog->getStringValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]).value();
+	//Update the ethernet UI, as not done by constructor
+	if (m_firstShow)
+		onEthEnabledChanged(m_ui.ethEnabled->checkState());
 
-	//disconnect temporally to prevent saving a vaule already in the config file
-	disconnect(m_ui.ethDev, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DEV9SettingsWidget::onEthDeviceChanged);
-	for (int i = 0; m_api_namelist[i] != nullptr; i++)
+	if (m_adaptersLoaded)
 	{
-		if (value == m_api_valuelist[i])
+		//The API combobox dosn't set the EthApi field, that is performed by the device combobox (in addition to saving the device)
+		//This means that this setting can get out of sync with true value, so revert to that if the ui is closed and opened
+		const std::string value = m_dialog->getStringValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]).value();
+
+		//SignalBlocker to prevent saving a value already in the config file
+		QSignalBlocker sb(m_ui.ethDev);
+		for (int i = 0; m_api_namelist[i] != nullptr; i++)
 		{
-			m_ui.ethDevType->setCurrentIndex(i);
-			break;
+			if (value == m_api_valuelist[i])
+			{
+				m_ui.ethDevType->setCurrentIndex(i);
+				break;
+			}
 		}
 	}
-	connect(m_ui.ethDev, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DEV9SettingsWidget::onEthDeviceChanged);
+
+	m_firstShow = false;
 }
 
 /*
@@ -912,6 +830,89 @@ void DEV9SettingsWidget::AddAdapter(const AdapterEntry& adapter)
 	}
 
 	m_adapter_list[idx].push_back(adapter);
+}
+
+void DEV9SettingsWidget::LoadAdapters()
+{
+	if (m_adaptersLoaded)
+		return;
+
+	QSignalBlocker sb(m_ui.ethDev);
+
+	m_api_list.push_back(Pcsx2Config::DEV9Options::NetApi::Unset);
+
+	for (const AdapterEntry& adapter : PCAPAdapter::GetAdapters())
+		AddAdapter(adapter);
+#ifdef _WIN32
+	for (const AdapterEntry& adapter : TAPAdapter::GetAdapters())
+		AddAdapter(adapter);
+#endif
+	for (const AdapterEntry& adapter : SocketAdapter::GetAdapters())
+		AddAdapter(adapter);
+
+	std::sort(m_api_list.begin(), m_api_list.end());
+	for (auto& list : m_adapter_list)
+		std::sort(list.begin(), list.end(), [](const AdapterEntry& a, AdapterEntry& b) { return a.name < b.name; });
+
+	for (const Pcsx2Config::DEV9Options::NetApi& na : m_api_list)
+	{
+		m_api_namelist.push_back(s_api_name[static_cast<int>(na)]);
+		m_api_valuelist.push_back(Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(na)]);
+	}
+
+	m_api_namelist.push_back(nullptr);
+	m_api_valuelist.push_back(nullptr);
+
+	//We replace the blank entry with one for global settings
+	if (m_dialog->isPerGameSettings())
+	{
+		const std::string valueAPI = Host::GetBaseStringSettingValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]);
+		for (int i = 0; Pcsx2Config::DEV9Options::NetApiNames[i] != nullptr; i++)
+		{
+			if (valueAPI == Pcsx2Config::DEV9Options::NetApiNames[i])
+			{
+				m_global_api = static_cast<Pcsx2Config::DEV9Options::NetApi>(i);
+				break;
+			}
+		}
+
+		std::vector<AdapterEntry> baseList = m_adapter_list[static_cast<u32>(m_global_api)];
+
+		std::string baseAdapter = " ";
+		const std::string valueGUID = Host::GetBaseStringSettingValue("DEV9/Eth", "EthDevice", "");
+		for (size_t i = 0; i < baseList.size(); i++)
+		{
+			if (baseList[i].guid == valueGUID)
+			{
+				baseAdapter = baseList[i].name;
+				break;
+			}
+		}
+
+		m_adapter_list[static_cast<u32>(Pcsx2Config::DEV9Options::NetApi::Unset)][0].name = baseAdapter;
+	}
+
+	if (m_dialog->isPerGameSettings())
+		m_ui.ethDevType->addItem(tr("Use Global Setting [%1]").arg(QString::fromUtf8(Pcsx2Config::DEV9Options::NetApiNames[static_cast<u32>(m_global_api)])));
+	else
+		m_ui.ethDevType->addItem(qApp->translate("DEV9SettingsWidget", m_api_namelist[0]));
+
+	for (int i = 1; m_api_namelist[i] != nullptr; i++)
+		m_ui.ethDevType->addItem(qApp->translate("DEV9SettingsWidget", m_api_namelist[i]));
+
+	const std::string value = m_dialog->getStringValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]).value();
+
+	for (int i = 0; m_api_namelist[i] != nullptr; i++)
+	{
+		if (value == m_api_valuelist[i])
+		{
+			m_ui.ethDevType->setCurrentIndex(i);
+			break;
+		}
+	}
+	//onEthDeviceTypeChanged gets called automatically
+
+	m_adaptersLoaded = true;
 }
 
 void DEV9SettingsWidget::RefreshHostList()

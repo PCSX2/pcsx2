@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 /*
  * ix86 core v0.9.1
@@ -78,7 +66,7 @@ namespace x86Emitter
 		}
 	}
 
-	void xImpl_FastCall::operator()(void* f, const xRegister32& a1, const xRegister32& a2) const
+	void xImpl_FastCall::operator()(const void* f, const xRegister32& a1, const xRegister32& a2) const
 	{
 		prepareRegsForFastcall(a1, a2);
 		uptr disp = ((uptr)xGetPtr() + 5) - (uptr)f;
@@ -93,7 +81,7 @@ namespace x86Emitter
 		}
 	}
 
-	void xImpl_FastCall::operator()(void* f, const xRegisterLong& a1, const xRegisterLong& a2) const
+	void xImpl_FastCall::operator()(const void* f, const xRegisterLong& a1, const xRegisterLong& a2) const
 	{
 		prepareRegsForFastcall(a1, a2);
 		uptr disp = ((uptr)xGetPtr() + 5) - (uptr)f;
@@ -108,7 +96,7 @@ namespace x86Emitter
 		}
 	}
 
-	void xImpl_FastCall::operator()(void* f, u32 a1, const xRegisterLong& a2) const
+	void xImpl_FastCall::operator()(const void* f, u32 a1, const xRegisterLong& a2) const
 	{
 		if (!a2.IsEmpty())
 		{
@@ -118,13 +106,13 @@ namespace x86Emitter
 		(*this)(f, arg1reg, arg2reg);
 	}
 
-	void xImpl_FastCall::operator()(void* f, void* a1) const
+	void xImpl_FastCall::operator()(const void* f, void* a1) const
 	{
 		xLEA(arg1reg, ptr[a1]);
 		(*this)(f, arg1reg, arg2reg);
 	}
 
-	void xImpl_FastCall::operator()(void* f, u32 a1, const xRegister32& a2) const
+	void xImpl_FastCall::operator()(const void* f, u32 a1, const xRegister32& a2) const
 	{
 		if (!a2.IsEmpty())
 		{
@@ -134,13 +122,13 @@ namespace x86Emitter
 		(*this)(f, arg1regd, arg2regd);
 	}
 
-	void xImpl_FastCall::operator()(void* f, const xIndirect32& a1) const
+	void xImpl_FastCall::operator()(const void* f, const xIndirect32& a1) const
 	{
 		xMOV(arg1regd, a1);
 		(*this)(f, arg1regd);
 	}
 
-	void xImpl_FastCall::operator()(void* f, u32 a1, u32 a2) const
+	void xImpl_FastCall::operator()(const void* f, u32 a1, u32 a2) const
 	{
 		xMOV(arg1regd, a1);
 		xMOV(arg2regd, a2);
@@ -201,7 +189,7 @@ namespace x86Emitter
 
 		if (slideForward)
 		{
-			pxAssertDev(displacement8 >= 0, "Used slideForward on a backward jump; nothing to slide!");
+			pxAssertMsg(displacement8 >= 0, "Used slideForward on a backward jump; nothing to slide!");
 		}
 
 		if (is_s8(displacement8))
@@ -213,7 +201,7 @@ namespace x86Emitter
 			sptr distance = (sptr)target - (sptr)xGetPtr();
 
 			// This assert won't physically happen on x86 targets
-			pxAssertDev(distance >= -0x80000000LL && distance < 0x80000000LL, "Jump target is too far away, needs an indirect register");
+			pxAssertMsg(distance >= -0x80000000LL && distance < 0x80000000LL, "Jump target is too far away, needs an indirect register");
 
 			*bah = (s32)distance;
 		}
@@ -229,7 +217,7 @@ namespace x86Emitter
 	xForwardJumpBase::xForwardJumpBase(uint opsize, JccComparisonType cctype)
 	{
 		pxAssert(opsize == 1 || opsize == 4);
-		pxAssertDev(cctype != Jcc_Unknown, "Invalid ForwardJump conditional type.");
+		pxAssertMsg(cctype != Jcc_Unknown, "Invalid ForwardJump conditional type.");
 
 		BasePtr = (s8*)xGetPtr() +
 				  ((opsize == 1) ? 2 : // j8's are always 2 bytes.
@@ -253,12 +241,12 @@ namespace x86Emitter
 
 	void xForwardJumpBase::_setTarget(uint opsize) const
 	{
-		pxAssertDev(BasePtr != NULL, "");
+		pxAssertMsg(BasePtr != NULL, "");
 
 		sptr displacement = (sptr)xGetPtr() - (sptr)BasePtr;
 		if (opsize == 1)
 		{
-			pxAssertDev(is_s8(displacement), "Emitter Error: Invalid short jump displacement.");
+			pxAssertMsg(is_s8(displacement), "Emitter Error: Invalid short jump displacement.");
 			BasePtr[-1] = (s8)displacement;
 		}
 		else

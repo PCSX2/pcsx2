@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GameListModel.h"
 #include "GameListRefreshThread.h"
@@ -25,23 +11,27 @@
 #include "pcsx2/Host.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/StringUtil.h"
 
 #include "fmt/format.h"
 
 #include <QtCore/QSortFilterProxyModel>
+#include <QtGui/QPainter>
 #include <QtGui/QPixmap>
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
+#include <QtWidgets/QStyledItemDelegate>
 
 static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
 	".bin/.iso (ISO Disc Images)\n"
 	".mdf (Media Descriptor File)\n"
 	".chd (Compressed Hunks of Data)\n"
 	".cso (Compressed ISO)\n"
+	".zso (Compressed ISO)\n"
 	".gz (Gzip Compressed ISO)");
 
 static constexpr float MIN_SCALE = 0.1f;
@@ -87,7 +77,8 @@ public:
 			if (!m_filter_name.isEmpty() &&
 				!QString::fromStdString(entry->path).contains(m_filter_name, Qt::CaseInsensitive) &&
 				!QString::fromStdString(entry->serial).contains(m_filter_name, Qt::CaseInsensitive) &&
-				!QString::fromStdString(entry->title).contains(m_filter_name, Qt::CaseInsensitive))
+				!QString::fromStdString(entry->title).contains(m_filter_name, Qt::CaseInsensitive) &&
+				!QString::fromStdString(entry->title_en).contains(m_filter_name, Qt::CaseInsensitive))
 				return false;
 		}
 
@@ -105,6 +96,40 @@ private:
 	GameList::Region m_filter_region = GameList::Region::Count;
 	QString m_filter_name;
 };
+
+namespace
+{
+	class GameListIconStyleDelegate final : public QStyledItemDelegate
+	{
+	public:
+		GameListIconStyleDelegate(QWidget* parent)
+			: QStyledItemDelegate(parent)
+		{
+		}
+		~GameListIconStyleDelegate() = default;
+
+		void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+		{
+			// https://stackoverflow.com/questions/32216568/how-to-set-icon-center-in-qtableview
+			Q_ASSERT(index.isValid());
+
+			// draw default item
+			QStyleOptionViewItem opt = option;
+			initStyleOption(&opt, index);
+			opt.icon = QIcon();
+			QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter, 0);
+
+			const QRect r = option.rect;
+			const QPixmap pix = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
+			const int pix_width = static_cast<int>(pix.width() / pix.devicePixelRatio());
+			const int pix_height = static_cast<int>(pix.width() / pix.devicePixelRatio());
+
+			// draw pixmap at center of item
+			const QPoint p = QPoint((r.width() - pix_width) / 2, (r.height() - pix_height) / 2);
+			painter->drawPixmap(r.topLeft() + p, pix);
+		}
+	};
+} // namespace
 
 GameListWidget::GameListWidget(QWidget* parent /* = nullptr */)
 	: QWidget(parent)
@@ -163,6 +188,7 @@ void GameListWidget::initialize()
 	m_table_view->verticalHeader()->hide();
 	m_table_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	m_table_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
+	m_table_view->setItemDelegateForColumn(0, new GameListIconStyleDelegate(this));
 
 	loadTableViewColumnVisibilitySettings();
 	loadTableViewColumnSortSettings();
@@ -214,6 +240,8 @@ void GameListWidget::initialize()
 		m_ui.stack->setCurrentIndex(1);
 	else
 		m_ui.stack->setCurrentIndex(0);
+
+	setFocusProxy(m_ui.stack->currentWidget());
 
 	updateToolbar();
 	resizeTableViewColumnsToFit();
@@ -268,7 +296,10 @@ void GameListWidget::onRefreshProgress(const QString& status, int current, int t
 {
 	// switch away from the placeholder while we scan, in case we find anything
 	if (m_ui.stack->currentIndex() == 2)
+	{
 		m_ui.stack->setCurrentIndex(Host::GetBaseBoolSettingValue("UI", "GameListGridView", false) ? 1 : 0);
+		setFocusProxy(m_ui.stack->currentWidget());
+	}
 
 	m_model->refresh();
 	emit refreshProgress(status, current, total);
@@ -286,7 +317,10 @@ void GameListWidget::onRefreshComplete()
 
 	// if we still had no games, switch to the helper widget
 	if (m_model->rowCount() == 0)
+	{
 		m_ui.stack->setCurrentIndex(2);
+		setFocusProxy(nullptr);
+	}
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -360,7 +394,7 @@ void GameListWidget::onCoverScaleChanged()
 	m_list_view->setSpacing(m_model->getCoverArtSpacing());
 
 	QFont font;
-	font.setPointSizeF(16.0f * m_model->getCoverScale());
+	font.setPointSizeF(20.0f * m_model->getCoverScale());
 	m_list_view->setFont(font);
 }
 
@@ -410,6 +444,7 @@ void GameListWidget::showGameList()
 	Host::SetBaseBoolSettingValue("UI", "GameListGridView", false);
 	Host::CommitBaseSettingChanges();
 	m_ui.stack->setCurrentIndex(0);
+	setFocusProxy(m_ui.stack->currentWidget());
 	resizeTableViewColumnsToFit();
 	updateToolbar();
 	emit layoutChange();
@@ -427,6 +462,7 @@ void GameListWidget::showGameGrid()
 	Host::SetBaseBoolSettingValue("UI", "GameListGridView", true);
 	Host::CommitBaseSettingChanges();
 	m_ui.stack->setCurrentIndex(1);
+	setFocusProxy(m_ui.stack->currentWidget());
 	updateToolbar();
 	emit layoutChange();
 }
@@ -548,7 +584,10 @@ void GameListWidget::loadTableViewColumnSortSettings()
 			.value_or(DEFAULT_SORT_COLUMN);
 	const bool sort_descending =
 		Host::GetBaseBoolSettingValue("GameListTableView", "SortDescending", DEFAULT_SORT_DESCENDING);
-	m_table_view->sortByColumn(sort_column, sort_descending ? Qt::DescendingOrder : Qt::AscendingOrder);
+	const Qt::SortOrder sort_order = sort_descending ? Qt::DescendingOrder : Qt::AscendingOrder;
+	m_sort_model->sort(sort_column, sort_order);
+	if (QHeaderView* hv = m_table_view->horizontalHeader())
+		hv->setSortIndicator(sort_column, sort_order);
 }
 
 void GameListWidget::saveTableViewColumnSortSettings()

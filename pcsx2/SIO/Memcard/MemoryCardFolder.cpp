@@ -1,30 +1,17 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "SIO/Memcard/MemoryCardFile.h"
 #include "SIO/Memcard/MemoryCardFolder.h"
 
+#include "common/Assertions.h"
 #include "common/Path.h"
 
-#include "System.h"
 #include "Config.h"
 #include "Host.h"
-#include "IconsFontAwesome5.h"
+#include "IconsPromptFont.h"
 
+#include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
@@ -33,8 +20,6 @@
 #include "fmt/core.h"
 #include "ryml_std.hpp"
 #include "ryml.hpp"
-
-#include "svnrev.h"
 
 #include <sstream>
 #include <mutex>
@@ -77,19 +62,15 @@ static std::optional<ryml::Tree> loadYamlFile(const char* filePath)
 static void SaveYAMLToFile(const char* filename, const ryml::NodeRef& node)
 {
 	auto file = FileSystem::OpenCFile(filename, "w");
-	ryml::emit(node, file);
+	ryml::emit_yaml(node, file);
 	std::fflush(file);
 	std::fclose(file);
 }
 
-static constexpr time_t MEMORY_CARD_FILE_ENTRY_DATE_TIME_OFFSET = 60 * 60 * 9; // 9 hours from UTC
 static auto last = std::chrono::time_point<std::chrono::system_clock>();
 
 MemoryCardFileEntryDateTime MemoryCardFileEntryDateTime::FromTime(time_t time)
 {
-	// TODO: Is this safe with regard to DST?
-	time += MEMORY_CARD_FILE_ENTRY_DATE_TIME_OFFSET;
-
 	struct tm converted = {};
 #ifdef _MSC_VER
 	gmtime_s(&converted, &time);
@@ -117,7 +98,12 @@ time_t MemoryCardFileEntryDateTime::ToTime() const
 	converted.tm_mday = day;
 	converted.tm_mon = std::max(static_cast<int>(month) - 1, 0);
 	converted.tm_year = std::max(static_cast<int>(year) - 1900, 0);
-	return mktime(&converted);
+
+#ifdef _MSC_VER
+	return _mkgmtime(&converted);
+#else
+	return timegm(&converted);
+#endif
 }
 
 FolderMemoryCard::FolderMemoryCard()
@@ -440,7 +426,7 @@ MemoryCardFileEntry* FolderMemoryCard::AppendFileEntryToDir(const MemoryCardFile
 	return newFileEntry;
 }
 
-static bool FilterMatches(const std::string_view& fileName, const std::string_view& filter)
+static bool FilterMatches(const std::string_view fileName, const std::string_view filter)
 {
 	std::string_view::size_type start = 0;
 	std::string_view::size_type len = filter.length();
@@ -464,7 +450,7 @@ static bool FilterMatches(const std::string_view& fileName, const std::string_vi
 	return false;
 }
 
-bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std::string& dirPath, MemoryCardFileMetadataReference* parent /* = nullptr */, const bool enableFiltering /* = false */, const std::string_view& filter /* = "" */)
+bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std::string& dirPath, MemoryCardFileMetadataReference* parent /* = nullptr */, const bool enableFiltering /* = false */, const std::string_view filter /* = "" */)
 {
 	if (FileSystem::DirectoryExists(dirPath.c_str()))
 	{
@@ -523,7 +509,7 @@ bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std:
 				dirEntry->entry.data.length++;
 
 				// set metadata
-				const std::string metaFileName(Path::Combine(Path::Combine(dirPath, "_pcsx2_meta_directory"), file.m_fileName));
+				const std::string metaFileName(Path::Combine(Path::Combine(dirPath, file.m_fileName), "_pcsx2_meta_directory"));
 				if (auto metaFile = FileSystem::OpenManagedCFile(metaFileName.c_str(), "rb"); metaFile)
 				{
 					if (std::fread(&newDirEntry->entry.raw, 1, sizeof(newDirEntry->entry.raw), metaFile.get()) < 0x60)
@@ -574,7 +560,7 @@ bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std:
 bool FolderMemoryCard::AddFile(MemoryCardFileEntry* const dirEntry, const std::string& dirPath, const EnumeratedFileEntry& fileEntry, MemoryCardFileMetadataReference* parent)
 {
 	const std::string filePath(Path::Combine(dirPath, fileEntry.m_fileName));
-	pxAssertMsg(StringUtil::StartsWith(filePath, m_folderName.c_str()), "Full file path starts with MC folder path");
+	pxAssertMsg(filePath.starts_with(m_folderName), "Full file path starts with MC folder path");
 	const std::string relativeFilePath(filePath.substr(m_folderName.length() + 1));
 
 	if (auto file = FileSystem::OpenManagedCFile(filePath.c_str(), "rb"); file)
@@ -666,7 +652,7 @@ u32 FolderMemoryCard::CalculateRequiredClustersOfDirectory(const std::string& di
 	FileSystem::FindFiles(dirPath.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &files);
 	for (const FILESYSTEM_FIND_DATA& fd : files)
 	{
-		if (StringUtil::StartsWith(fd.FileName, "_pcsx2_"))
+		if (fd.FileName.starts_with("_pcsx2_"))
 			continue;
 
 		++requiredFileEntryPages;
@@ -1767,7 +1753,7 @@ void FolderMemoryCard::AttemptToRecreateIndexFile(const std::string& directory) 
 
 	auto file = FileSystem::OpenManagedCFile(Path::Combine(directory, "_pcsx2_index").c_str(), "w");
 	if (file)
-		ryml::emit(tree, file.get());
+		ryml::emit_yaml(tree, file.get());
 }
 
 std::string FolderMemoryCard::GetDisabledMessage(uint slot) const
@@ -1801,7 +1787,7 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 
 		for (FILESYSTEM_FIND_DATA& fd : results)
 		{
-			if (StringUtil::StartsWith(fd.FileName, "_pcsx2_"))
+			if (fd.FileName.starts_with("_pcsx2_"))
 				continue;
 
 			std::string filePath(Path::Combine(dirPath, fd.FileName));
@@ -1907,7 +1893,7 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 	return result;
 }
 
-void FolderMemoryCard::DeleteFromIndex(const std::string& filePath, const std::string_view& entry) const
+void FolderMemoryCard::DeleteFromIndex(const std::string& filePath, const std::string_view entry) const
 {
 	const std::string indexName(Path::Combine(filePath, "_pcsx2_index"));
 
@@ -2000,7 +1986,7 @@ FileAccessHelper::~FileAccessHelper()
 	this->CloseAll();
 }
 
-std::FILE* FileAccessHelper::Open(const std::string_view& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata /* = false */)
+std::FILE* FileAccessHelper::Open(const std::string_view folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata /* = false */)
 {
 	std::string filename(folderName);
 	fileRef->GetPath(&filename);
@@ -2032,7 +2018,7 @@ std::FILE* FileAccessHelper::Open(const std::string_view& folderName, MemoryCard
 	return file;
 }
 
-void FileAccessHelper::WriteMetadata(const std::string_view& folderName, const MemoryCardFileMetadataReference* fileRef)
+void FileAccessHelper::WriteMetadata(const std::string_view folderName, const MemoryCardFileMetadataReference* fileRef)
 {
 	std::string fileName(folderName);
 	const bool cleanedFilename = fileRef->GetPath(&fileName);
@@ -2124,7 +2110,7 @@ void FileAccessHelper::WriteIndex(const std::string& baseFolderName, MemoryCardF
 	}
 }
 
-std::FILE* FileAccessHelper::ReOpen(const std::string_view& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata /* = false */)
+std::FILE* FileAccessHelper::ReOpen(const std::string_view folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata /* = false */)
 {
 	std::string internalPath;
 	fileRef->GetInternalPath(&internalPath);
@@ -2170,11 +2156,11 @@ void FileAccessHelper::CloseFileHandle(std::FILE*& file, const MemoryCardFileEnt
 	}
 }
 
-void FileAccessHelper::CloseMatching(const std::string_view& path)
+void FileAccessHelper::CloseMatching(const std::string_view path)
 {
 	for (auto it = m_files.begin(); it != m_files.end();)
 	{
-		if (StringUtil::StartsWith(it->second.hostFilePath, path))
+		if (it->second.hostFilePath.starts_with(path))
 		{
 			CloseFileHandle(it->second.fileHandle, it->second.fileRef->entry);
 			it = m_files.erase(it);
@@ -2354,7 +2340,7 @@ s32 FolderMemoryCardAggregator::Save(uint slot, const u8* src, u32 adr, int size
 		if (elapsed > std::chrono::seconds(5))
 		{
 			const std::string_view filename = Path::GetFileName(m_cards[slot].GetFolderName());
-			Host::AddIconOSDMessage(fmt::format("MemoryCardSave{}", slot), ICON_FA_SD_CARD,
+			Host::AddIconOSDMessage(fmt::format("MemoryCardSave{}", slot), ICON_PF_MEMORY_CARD,
 				fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card '{}' was saved to storage."), filename),
 				Host::OSD_INFO_DURATION);
 

@@ -1,21 +1,8 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Assertions.h"
+#include <algorithm>
 #include <memory>
 
 #ifdef _WIN32
@@ -89,8 +76,6 @@ PCAPAdapter::PCAPAdapter()
 
 		SetMACAddress(&newMAC);
 	}
-	else if (switched)
-		Console.Error("DEV9: Failed to get MAC address for adapter, proceeding with hardcoded MAC address");
 	else
 	{
 		Console.Error("DEV9: Failed to get MAC address for adapter");
@@ -140,7 +125,9 @@ bool PCAPAdapter::recv(NetPacket* pkt)
 	// This delays getting packets we need, so instead loop untill a valid packet, or no packet, is returned from pcap_next_ex.
 	while (pcap_next_ex(hpcap, &header, &pkt_data) > 0)
 	{
-		if (header->len > sizeof(pkt->buffer))
+		// 1518 is the largest Ethernet frame we can get using an MTU of 1500 (assuming no VLAN tagging).
+		// This includes the FCS, which should be trimmed (PS2 SDK dosn't allow extra space for this).
+		if (header->len > 1518)
 		{
 			Console.Error("DEV9: Dropped jumbo frame of size: %u", header->len);
 			continue;
@@ -149,13 +136,22 @@ bool PCAPAdapter::recv(NetPacket* pkt)
 		pxAssert(header->len == header->caplen);
 
 		memcpy(pkt->buffer, pkt_data, header->len);
-		pkt->size = (int)header->len;
+		pkt->size = static_cast<int>(header->len);
 
 		if (!switched)
 			SetMACBridgedRecv(pkt);
 
 		if (VerifyPkt(pkt, header->len))
 		{
+			HandleFrameCheckSequence(pkt);
+
+			// FCS (if present) has been removed, apply correct limit
+			if (pkt->size > 1514)
+			{
+				Console.Error("DEV9: Dropped jumbo frame of size: %u", pkt->size);
+				continue;
+			}
+
 			InspectRecv(pkt);
 			return true;
 		}
@@ -225,7 +221,7 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		entry.type = Pcsx2Config::DEV9Options::NetApi::PCAP_Switched;
 #ifdef _WIN32
 		//guid
-		if (!StringUtil::StartsWith(d->name, PCAPPREFIX))
+		if (!std::string_view(d->name).starts_with(PCAPPREFIX))
 		{
 			Console.Error("PCAP: Unexpected Device: ", d->name);
 			d = d->next;
@@ -235,14 +231,14 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		entry.guid = std::string(&d->name[strlen(PCAPPREFIX)]);
 
 		IP_ADAPTER_ADDRESSES adapterInfo;
-		std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+		AdapterUtils::AdapterBuffer buffer;
 
 		if (AdapterUtils::GetAdapter(entry.guid, &adapterInfo, &buffer))
 			entry.name = StringUtil::WideStringToUTF8String(std::wstring(adapterInfo.FriendlyName));
 		else
 		{
 			//have to use description
-			//NPCAP 1.10 is using an version of pcap that dosn't
+			//NPCAP 1.10 is using a version of pcap that doesn't
 			//allow us to set it to use UTF8
 			//see https://github.com/nmap/npcap/issues/276
 			//We have to convert from ANSI to wstring, to then convert to UTF8
@@ -301,7 +297,7 @@ bool PCAPAdapter::InitPCAP(const std::string& adapter, bool promiscuous)
 	const int dlt = pcap_datalink(hpcap);
 	const char* dlt_name = pcap_datalink_val_to_name(dlt);
 
-	Console.Error("DEV9: Device uses DLT %d: %s", dlt, dlt_name);
+	Console.WriteLn("DEV9: Device uses DLT %d: %s", dlt, dlt_name);
 	switch (dlt)
 	{
 		case DLT_EN10MB:
@@ -321,11 +317,10 @@ bool PCAPAdapter::InitPCAP(const std::string& adapter, bool promiscuous)
 bool PCAPAdapter::SetMACSwitchedFilter(MAC_Address mac)
 {
 	bpf_program fp;
-	char filter[1024] = "ether broadcast or ether dst ";
 
-	char virtual_mac_str[18];
-	sprintf(virtual_mac_str, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", mac.bytes[0], mac.bytes[1], mac.bytes[2], mac.bytes[3], mac.bytes[4], mac.bytes[5]);
-	strcat(filter, virtual_mac_str);
+	char filter[128];
+	std::snprintf(filter, std::size(filter), "ether broadcast or ether dst %.2x:%.2x:%.2x:%.2x:%.2x:%.2x",
+		mac.bytes[0], mac.bytes[1], mac.bytes[2], mac.bytes[3], mac.bytes[4], mac.bytes[5]);
 
 	if (pcap_compile(hpcap, &fp, filter, 1, PCAP_NETMASK_UNKNOWN) == -1)
 	{
@@ -344,15 +339,15 @@ bool PCAPAdapter::SetMACSwitchedFilter(MAC_Address mac)
 void PCAPAdapter::SetMACBridgedRecv(NetPacket* pkt)
 {
 	EthernetFrameEditor frame(pkt);
-	if (frame.GetProtocol() == (u16)EtherType::IPv4) // IP
+	if (frame.GetProtocol() == static_cast<u16>(EtherType::IPv4)) // IP
 	{
 		// Compare DEST IP in IP with the PS2's IP, if they match, change DEST MAC to ps2MAC.
-		PayloadPtr* payload = frame.GetPayload();
+		PayloadPtrEditor* payload = frame.GetPayload();
 		IP_Packet ippkt(payload->data, payload->GetLength());
 		if (ippkt.destinationIP == ps2IP)
 			frame.SetDestinationMAC(ps2MAC);
 	}
-	if (frame.GetProtocol() == (u16)EtherType::ARP) // ARP
+	if (frame.GetProtocol() == static_cast<u16>(EtherType::ARP)) // ARP
 	{
 		// Compare DEST IP in ARP with the PS2's IP, if they match, DEST MAC to ps2MAC on both ARP and ETH Packet headers.
 		ARP_PacketEditor arpPkt(frame.GetPayload());
@@ -367,17 +362,90 @@ void PCAPAdapter::SetMACBridgedRecv(NetPacket* pkt)
 void PCAPAdapter::SetMACBridgedSend(NetPacket* pkt)
 {
 	EthernetFrameEditor frame(pkt);
-	if (frame.GetProtocol() == (u16)EtherType::IPv4) // IP
+	if (frame.GetProtocol() == static_cast<u16>(EtherType::IPv4)) // IP
 	{
-		PayloadPtr* payload = frame.GetPayload();
+		PayloadPtrEditor* payload = frame.GetPayload();
 		IP_Packet ippkt(payload->data, payload->GetLength());
 		ps2IP = ippkt.sourceIP;
 	}
-	if (frame.GetProtocol() == (u16)EtherType::ARP) // ARP
+	if (frame.GetProtocol() == static_cast<u16>(EtherType::ARP)) // ARP
 	{
 		ARP_PacketEditor arpPkt(frame.GetPayload());
 		ps2IP = *(IP_Address*)arpPkt.SenderProtocolAddress();
 		*(MAC_Address*)arpPkt.SenderHardwareAddress() = hostMAC;
 	}
 	frame.SetSourceMAC(hostMAC);
+}
+
+/*
+ * Strips the Frame Check Sequence if we manage to capture it.
+ * 
+ * On Windows, (some?) Intel NICs can be configured to capture FCS.
+ * 
+ * Linux can be configure to capture FCS, using `ethtool -K <interface> rx-fcs on` on supported devices.
+ * Support for capturing FCS can be checked with `ethtool -k <interface> | grep rx-fcs`.
+ * if it's `off [Fixed]`, then the interface/driver dosn't support capturing FCS.
+ * 
+ * BSD based systems might capture FCS by default.
+ * 
+ * Packets sent by host won't have FCS, We identify these packets by checking the source MAC address.
+ * Packets sent by another application via packet injection also won't have FCS and may not match the adapter MAC.
+ */
+void PCAPAdapter::HandleFrameCheckSequence(NetPacket* pkt)
+{
+	EthernetFrameEditor frame(pkt);
+	if (frame.GetSourceMAC() == hostMAC)
+		return;
+
+	// There is a (very) low chance of the last 4 bytes of payload somehow acting as a valid checksum for the whole Ethernet frame.
+	// For EtherTypes we already can parse, trim the Ethernet frame based on the payload length.
+
+	int payloadSize = -1;
+	if (frame.GetProtocol() == static_cast<u16>(EtherType::IPv4)) // IP
+	{
+		PayloadPtrEditor* payload = frame.GetPayload();
+		IP_Packet ippkt(payload->data, payload->GetLength());
+		payloadSize = ippkt.GetLength();
+	}
+	if (frame.GetProtocol() == static_cast<u16>(EtherType::ARP)) // ARP
+	{
+		ARP_PacketEditor arpPkt(frame.GetPayload());
+		payloadSize = arpPkt.GetLength();
+	}
+
+	if (payloadSize != -1)
+	{
+		// Minumum frame size is 60 + 4 byte FCS.
+		// Virtual NICs may omit this padding, so check we arn't increasing pkt size.
+		payloadSize = std::min(std::max(payloadSize, 60 - frame.headerLength), pkt->size);
+
+		pkt->size = payloadSize + frame.headerLength;
+		return;
+	}
+
+	// Ethertype unknown, rely on checking for a FCS.
+	if (ValidateEtherFrame(pkt))
+		pkt->size -= 4;
+}
+
+bool PCAPAdapter::ValidateEtherFrame(NetPacket* pkt)
+{
+	u32 crc = 0xFFFFFFFF;
+
+	for (int i = 0; i < pkt->size; i++)
+	{
+		// Neads unsigned value
+		crc = crc ^ static_cast<u8>(pkt->buffer[i]);
+		for (int bit = 0; bit < 8; bit++)
+		{
+			if ((crc & 1) != 0)
+				crc = (crc >> 1) ^ 0xEDB88320;
+			else
+				crc = (crc >> 1);
+		}
+	}
+
+	crc = ~crc;
+
+	return crc == 0x2144DF1C;
 }

@@ -1,21 +1,11 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "CDVD/CDVDdiscReader.h"
 #include "CDVD/CDVD.h"
+
+#include "common/Error.h"
+#include "common/Console.h"
 
 #include <linux/cdrom.h>
 #include <fcntl.h>
@@ -40,7 +30,7 @@ IOCtlSrc::~IOCtlSrc()
 	}
 }
 
-bool IOCtlSrc::Reopen()
+bool IOCtlSrc::Reopen(Error* error)
 {
 	if (m_device != -1)
 		close(m_device);
@@ -49,7 +39,10 @@ bool IOCtlSrc::Reopen()
 	// drive is empty. Probably does other things too.
 	m_device = open(m_filename.c_str(), O_RDONLY | O_NONBLOCK);
 	if (m_device == -1)
+	{
+		Error::SetErrno(error, errno);
 		return false;
+	}
 
 	// DVD detection MUST be first on Linux - The TOC ioctls work for both
 	// CDs and DVDs.
@@ -202,6 +195,25 @@ bool IOCtlSrc::ReadCDInfo()
 	return true;
 }
 
+bool IOCtlSrc::ReadTrackSubQ(cdvdSubQ* subQ) const
+{
+	cdrom_subchnl osSubQ;
+
+	osSubQ.cdsc_format = CDROM_MSF;
+
+	if (ioctl(m_device, CDROMSUBCHNL, &osSubQ) == -1)
+	{
+		Console.Error("SUB CHANNEL READ ERROR: %s\n", strerror(errno));
+		return false;
+	}
+
+	subQ->adr = osSubQ.cdsc_adr;
+	subQ->trackNum = osSubQ.cdsc_trk;
+	subQ->trackIndex = osSubQ.cdsc_ind;
+	return true;
+}
+
+
 bool IOCtlSrc::DiscReady()
 {
 	if (m_device == -1)
@@ -211,7 +223,7 @@ bool IOCtlSrc::DiscReady()
 	if (ioctl(m_device, CDROM_DRIVE_STATUS, CDSL_CURRENT) == CDS_DISC_OK)
 	{
 		if (!m_sectors)
-			Reopen();
+			Reopen(nullptr);
 	}
 	else
 	{

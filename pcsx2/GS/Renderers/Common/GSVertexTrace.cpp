@@ -1,22 +1,11 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GSVertexTrace.h"
 #include "GS/GSUtil.h"
 #include "GS/GSState.h"
+
+#include "common/Console.h"
 
 GSVertexTrace::GSVertexTrace(const GSState* state, bool provoking_vertex_first)
 	: m_state(state)
@@ -143,13 +132,15 @@ void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
 
 
 	const GSVertex* RESTRICT v = (GSVertex*)vertex;
-	u32 z = v[0].XYZ.Z;
 
-	// ought to check only 1/2 for sprite
+	const int sprite_step = (m_primclass == GS_SPRITE_CLASS) ? 1 : 0;
+
+	u32 z = v[sprite_step].XYZ.Z;
+
 	if (z & 1)
 	{
 		// Check that first bit is always 1
-		for (int i = 0; i < count; i++)
+		for (int i = sprite_step; i < count; i += (sprite_step + 1))
 		{
 			z &= v[i].XYZ.Z;
 		}
@@ -157,13 +148,13 @@ void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
 	else
 	{
 		// Check that first bit is always 0
-		for (int i = 0; i < count; i++)
+		for (int i = sprite_step; i < count; i += (sprite_step + 1))
 		{
 			z |= v[i].XYZ.Z;
 		}
 	}
 
-	if (z == v[0].XYZ.Z)
+	if (z == v[sprite_step].XYZ.Z)
 	{
 		m_eq.z = 1;
 	}

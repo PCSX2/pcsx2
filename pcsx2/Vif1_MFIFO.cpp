@@ -1,19 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "Common.h"
 #include "Vif.h"
 #include "Gif_Unit.h"
@@ -36,7 +23,7 @@ static u32 QWCinVIFMFIFO(u32 DrainADDR, u32 qwc)
 	}
 	else
 	{
-		u32 limit = dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16;
+		const u32 limit = dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16;
 		//Drain is higher than SPR so it has looped round,
 		//calculate from base to the SPR tag addr and what is left in the top of the ring
 		ret = ((spr0ch.madr - dmacRegs.rbor.ADDR) + (limit - DrainADDR)) >> 4;
@@ -48,8 +35,8 @@ static u32 QWCinVIFMFIFO(u32 DrainADDR, u32 qwc)
 }
 static __fi bool mfifoVIF1rbTransfer()
 {
-	u32 msize = dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16;
-	u32 mfifoqwc = std::min(QWCinVIFMFIFO(vif1ch.madr, vif1ch.qwc), vif1ch.qwc);
+	const u32 msize = dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16;
+	const u32 mfifoqwc = std::min(QWCinVIFMFIFO(vif1ch.madr, vif1ch.qwc), vif1ch.qwc);
 	u32* src;
 	bool ret;
 
@@ -62,7 +49,7 @@ static __fi bool mfifoVIF1rbTransfer()
 	/* Check if the transfer should wrap around the ring buffer */
 	if ((vif1ch.madr + (mfifoqwc << 4)) > (msize))
 	{
-		int s1 = ((msize)-vif1ch.madr) >> 2;
+		const int s1 = ((msize)-vif1ch.madr) >> 2;
 
 		VIF_LOG("Split MFIFO");
 
@@ -70,7 +57,7 @@ static __fi bool mfifoVIF1rbTransfer()
 		vif1ch.madr = qwctag(vif1ch.madr);
 
 		src = (u32*)PSM(vif1ch.madr);
-		if (src == NULL)
+		if (src == nullptr)
 			return false;
 
 		if (vif1.irqoffset.enabled)
@@ -88,7 +75,7 @@ static __fi bool mfifoVIF1rbTransfer()
 			vif1ch.madr = qwctag(vif1ch.madr);
 
 			src = (u32*)PSM(vif1ch.madr);
-			if (src == NULL)
+			if (src == nullptr)
 				return false;
 			VIF1transfer(src, ((mfifoqwc << 2) - s1));
 		}
@@ -99,7 +86,7 @@ static __fi bool mfifoVIF1rbTransfer()
 
 		/* it doesn't, so just transfer 'qwc*4' words */
 		src = (u32*)PSM(vif1ch.madr);
-		if (src == NULL)
+		if (src == nullptr)
 			return false;
 
 		if (vif1.irqoffset.enabled)
@@ -146,7 +133,7 @@ static __fi void mfifo_VIF1chain()
 
 		//No need to exit on non-mfifo as it is indirect anyway, so it can be transferring this while spr refills the mfifo
 
-		if (pMem == NULL)
+		if (pMem == nullptr)
 			return;
 
 		if (vif1.irqoffset.enabled)
@@ -171,7 +158,7 @@ void mfifoVifMaskMem(int id)
 				//DevCon.Warning("VIF MFIFO MADR below bottom of ring buffer, wrapping VIF MADR = %x Ring Bottom %x", vif1ch.madr, dmacRegs.rbor.ADDR);
 				vif1ch.madr = qwctag(vif1ch.madr);
 			}
-			if (vif1ch.madr > (dmacRegs.rbor.ADDR + (u32)dmacRegs.rbsr.RMSK)) //Usual scenario is the tag is near the end (Front Mission 4)
+			if (vif1ch.madr > (dmacRegs.rbor.ADDR + static_cast<u32>(dmacRegs.rbsr.RMSK))) //Usual scenario is the tag is near the end (Front Mission 4)
 			{
 				//DevCon.Warning("VIF MFIFO MADR outside top of ring buffer, wrapping VIF MADR = %x Ring Top %x", vif1ch.madr, (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK)+16);
 				vif1ch.madr = qwctag(vif1ch.madr);
@@ -294,13 +281,13 @@ void vifMFIFOInterrupt()
 
 	if (vif1ch.chcr.DIR)
 	{
-		bool isDirect = (vif1.cmd & 0x7f) == 0x50;
-		bool isDirectHL = (vif1.cmd & 0x7f) == 0x51;
+		const bool isDirect = (vif1.cmd & 0x7f) == 0x50;
+		const bool isDirectHL = (vif1.cmd & 0x7f) == 0x51;
 		if ((isDirect && !gifUnit.CanDoPath2()) || (isDirectHL && !gifUnit.CanDoPath2HL()))
 		{
 			GUNIT_WARN("vifMFIFOInterrupt() - Waiting for Path 2 to be ready");
 			CPU_INT(DMAC_MFIFO_VIF, 128);
-			CPU_SET_DMASTALL(DMAC_VIF1, true);
+			CPU_SET_DMASTALL(DMAC_MFIFO_VIF, true);
 			return;
 		}
 	}
@@ -308,7 +295,7 @@ void vifMFIFOInterrupt()
 	{
 		//DevCon.Warning("Waiting on VU1 MFIFO");
 		CPU_INT(VIF_VU1_FINISH, std::max(16, cpuGetCycles(VU_MTVU_BUSY)));
-		CPU_SET_DMASTALL(DMAC_VIF1, true);
+		CPU_SET_DMASTALL(DMAC_MFIFO_VIF, true);
 		return;
 	}
 
@@ -341,7 +328,7 @@ void vifMFIFOInterrupt()
 			{
 				vif1Regs.stat.VPS = VPS_DECODING; //If there's more data you need to say it's decoding the next VIF CMD (Onimusha - Blade Warriors)
 				VIF_LOG("VIF1 MFIFO Stalled");
-				CPU_SET_DMASTALL(DMAC_VIF1, true);
+				CPU_SET_DMASTALL(DMAC_MFIFO_VIF, true);
 				return;
 			}
 		}
@@ -361,7 +348,7 @@ void vifMFIFOInterrupt()
 	if (vif1.inprogress & 0x10)
 	{
 		FireMFIFOEmpty();
-		CPU_SET_DMASTALL(DMAC_VIF1, true);
+		CPU_SET_DMASTALL(DMAC_MFIFO_VIF, true);
 		return;
 	}
 
@@ -412,6 +399,6 @@ void vifMFIFOInterrupt()
 	vif1ch.chcr.STR = false;
 	hwDmacIrq(DMAC_VIF1);
 	DMA_LOG("VIF1 MFIFO DMA End");
-	CPU_SET_DMASTALL(DMAC_VIF1, false);
+	CPU_SET_DMASTALL(DMAC_MFIFO_VIF, false);
 	vif1Regs.stat.FQC = 0;
 }

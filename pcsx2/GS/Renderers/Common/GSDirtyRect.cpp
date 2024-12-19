@@ -1,19 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GSDirtyRect.h"
 #include <vector>
 
@@ -35,7 +22,7 @@ GSDirtyRect::GSDirtyRect(GSVector4i& r, u32 psm, u32 bw, RGBAMask rgba, bool req
 {
 }
 
-GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0 TEX0) const
+GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0 TEX0, bool align) const
 {
 	GSVector4i _r;
 
@@ -48,14 +35,13 @@ GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0 TEX0) const
 		_r.top = (r.top * dst.y) / src.y;
 		_r.right = (r.right * dst.x) / src.x;
 		_r.bottom = (r.bottom * dst.y) / src.y;
-		_r = _r.ralign<Align_Outside>(src);
 	}
 	else
 	{
-		_r = r.ralign<Align_Outside>(src);
+		_r = r;
 	}
 
-	return _r;
+	return align ? _r.ralign<Align_Outside>(src) : _r;
 }
 
 GSVector4i GSDirtyRectList::GetTotalRect(GIFRegTEX0 TEX0, const GSVector2i& size) const
@@ -66,7 +52,7 @@ GSVector4i GSDirtyRectList::GetTotalRect(GIFRegTEX0 TEX0, const GSVector2i& size
 
 		for (auto& dirty_rect : *this)
 		{
-			r = r.runion(dirty_rect.GetDirtyRect(TEX0));
+			r = r.runion(dirty_rect.GetDirtyRect(TEX0, true));
 		}
 
 		const GSVector2i& bs = GSLocalMemory::m_psm[TEX0.PSM].bs;
@@ -92,12 +78,13 @@ u32 GSDirtyRectList::GetDirtyChannels()
 	return channels;
 }
 
-GSVector4i GSDirtyRectList::GetDirtyRect(size_t index, GIFRegTEX0 TEX0, const GSVector4i& clamp) const
+GSVector4i GSDirtyRectList::GetDirtyRect(size_t index, GIFRegTEX0 TEX0, const GSVector4i& clamp, bool align) const
 {
-	const GSVector4i r = (*this)[index].GetDirtyRect(TEX0);
+	GSVector4i r = (*this)[index].GetDirtyRect(TEX0, align);
+	const GSVector2i& bs = GSLocalMemory::m_psm[TEX0.PSM].bs;
+	if (align)
+		r = r.ralign<Align_Outside>(bs);
 
-	GSVector2i bs = GSLocalMemory::m_psm[TEX0.PSM].bs;
-
-	return r.ralign<Align_Outside>(bs).rintersect(clamp);
+	return r.rintersect(clamp);
 }
 

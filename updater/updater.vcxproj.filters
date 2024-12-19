@@ -3,6 +3,7 @@
   <ItemGroup>
     <ClCompile Include="Updater.cpp" />
     <ClCompile Include="Windows\WindowsUpdater.cpp">
+	<ClCompile Include="$(SolutionDir)pcsx2-qt\VCRuntimeChecker.cpp" />
       <Filter>Windows</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,29 +1,12 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
-#include "PrecompiledHeader.h"
-
-#ifdef __linux__
-#include <cstdarg>
-#endif
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Debug.h"
 #include "R5900.h"
 #include "DisASM.h"
 #include "R5900OpcodeTables.h"
+
+#include <cstdarg>
 
 // Allow to print register content when you print dissassembler info
 // Note only a subset of the opcodes are supported. It is intended as a cheap debugger
@@ -697,7 +680,7 @@ void P_COP2_Unknown( std::string& output )
 void label_decode( std::string& output, u32 addr )
 {
 	char buffer[32];
-	sprintf(buffer, "->$0x%08X", addr);
+	std::snprintf(buffer, std::size(buffer), "->$0x%08X", addr);
 	output += std::string(buffer);
 }
 
@@ -751,9 +734,9 @@ const char* signedImmediate(s32 imm, int len = 0)
 	static char buffer[32];
 
 	if (imm >= 0)
-		sprintf(buffer,"0x%*X",len,imm);
+		std::snprintf(buffer,std::size(buffer),"0x%*X",len,imm);
 	else
-		sprintf(buffer,"-0x%*X",len,-imm);
+		std::snprintf(buffer,std::size(buffer),"-0x%*X",len,-imm);
 
 	return buffer;
 }
@@ -762,12 +745,12 @@ const char* disDestSource(int dest, int source)
 {
 	static char buffer[64];
 #ifdef PRINT_REG_CONTENT
-	sprintf(buffer,"%s,%s(0x%8.8x)",GPR_REG[dest],GPR_REG[source], cpuRegs.GPR.r[source].UL[0]);
+	std::snprintf(buffer,std::size(buffer),"%s,%s(0x%8.8x)",GPR_REG[dest],GPR_REG[source], cpuRegs.GPR.r[source].UL[0]);
 #else
 	if (disSimplify && dest == source)
-		sprintf(buffer,"%s",GPR_REG[dest]);
+		std::snprintf(buffer,std::size(buffer),"%s",GPR_REG[dest]);
 	else
-		sprintf(buffer,"%s,%s",GPR_REG[dest],GPR_REG[source]);
+		std::snprintf(buffer,std::size(buffer),"%s,%s",GPR_REG[dest],GPR_REG[source]);
 
 #endif
 
@@ -1088,7 +1071,7 @@ void MTSAH( std::string& output )   { _sap("mtsah\t%s, 0x%04X") GPR_REG[DECODE_R
 
 
 //***************************SPECIAL 2 CPU OPCODES*******************
-const char* pmfhl_sub[] = {"lw", "uw", "slw", "lh", "sh", "??", "??"};
+const char* pmfhl_sub[] = {"lw", "uw", "slw", "lh", "sh", "??", "??", "??"};
 
 void MADD( std::string& output )    { _sap("madd\t%s, %s %s")        GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void MADDU( std::string& output )   { _sap("maddu\t%s, %s %s")       GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);}

@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -34,7 +22,7 @@ public:
 	int nsector = 0;     //sector count
 	int nsectorLeft = 0; //sectors left to transfer
 private:
-	const bool lba48Supported = false;
+	bool lba48Supported = false;
 
 	std::FILE* hddImage = nullptr;
 	u64 hddImageSize;
@@ -52,7 +40,6 @@ private:
 #endif
 
 	int pioMode;
-	int sdmaMode;
 	int mdmaMode;
 	int udmaMode;
 
@@ -107,7 +94,13 @@ private:
 	u8 regNsector;
 	u8 regNsectorHOB;
 
-	u8 regStatus; //ReadOnly. When read via AlternateStatus pending interrupts are not cleared
+	u8 regStatus; // ReadOnly. When read via AlternateStatus, pending interrupts are not cleared.
+	// When an error occurs, the SEEK bit shall not be changed until the Status Register is read,
+	// after which this bit again indicates Seek completed.
+	// A value of -1 is locked clear, a value of 1 is locked set, 0 is unlocked.
+	s8 regStatusSeekLock; 
+
+	bool pendingInterrupt = false;
 
 	//Transfer
 	//Write Buffer(s)
@@ -173,13 +166,13 @@ public:
 
 	void ATA_HardReset();
 
-	u16 Read16(u32 addr);
-	void Write16(u32 addr, u16 value);
+	u16 Read(u32 addr, int width);
+	void Write(u32 addr, u16 value, int width);
 
 	void Async(u32 cycles);
 
-	void ATAreadDMA8Mem(u8* pMem, int size);
-	void ATAwriteDMA8Mem(u8* pMem, int size);
+	int ReadDMAToFIFO(u8* buffer, int space);
+	int WriteDMAFromFIFO(u8* buffer, int available);
 
 	u16 ATAreadPIO();
 	//ATAwritePIO;
@@ -247,14 +240,15 @@ private:
 	void HDD_WriteDMA(bool isLBA48);
 
 	void PreCmdExecuteDeviceDiag();
-	void PostCmdExecuteDeviceDiag();
-	void HDD_ExecuteDeviceDiag();
+	void PostCmdExecuteDeviceDiag(bool sendIRQ);
+	void HDD_ExecuteDeviceDiag(bool sendIRQ);
 
 	void PostCmdNoData();
 	void CmdNoDataAbort();
 	void HDD_FlushCache();
 	void HDD_InitDevParameters();
 	void HDD_ReadVerifySectors(bool isLBA48);
+	void HDD_Recalibrate();
 	void HDD_SeekCmd();
 	void HDD_SetFeatures();
 	void HDD_SetMultipleMode();
@@ -275,6 +269,7 @@ private:
 
 	void HDD_Smart();
 	void SMART_SetAutoSaveAttribute();
+	void SMART_SaveAttribute();
 	void SMART_ExecuteOfflineImmediate();
 	void SMART_EnableOps(bool enable);
 	void SMART_ReturnStatus();

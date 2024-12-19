@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/RedtapeWindows.h"
 #include "common/RedtapeWilCom.h"
@@ -38,6 +24,7 @@
 #include <wil/resource.h>
 
 #include "DEV9/PacketReader/MAC_Address.h"
+#include "DEV9/AdapterUtils.h"
 
 //=============
 // TAP IOCTLs
@@ -286,80 +273,41 @@ PIP_ADAPTER_ADDRESSES FindAdapterViaIndex(PIP_ADAPTER_ADDRESSES adapterList, int
 //IP_ADAPTER_ADDRESSES is a structure that contains ptrs to data in other regions
 //of the buffer, se we need to return both so the caller can free the buffer
 //after it's finished reading the needed data from IP_ADAPTER_ADDRESSES
-bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer)
+bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, AdapterUtils::AdapterBuffer* buffer)
 {
-	int neededSize = 256;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-
-	PIP_ADAPTER_ADDRESSES pAdapterInfo;
-
 	//GAA_FLAG_INCLUDE_ALL_INTERFACES needed to get Tap when bridged
-	DWORD dwStatus = GetAdaptersAddresses(
-		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS | GAA_FLAG_INCLUDE_ALL_INTERFACES,
-		NULL,
-		AdapterInfo.get(),
-		&dwBufLen);
+	AdapterUtils::AdapterBuffer adapterInfo;
+	PIP_ADAPTER_ADDRESSES pAdapterFirst = AdapterUtils::GetAllAdapters(&adapterInfo, true);
+	if (pAdapterFirst == nullptr)
+		return false;
 
-	if (dwStatus == ERROR_BUFFER_OVERFLOW)
-	{
-		DevCon.WriteLn("DEV9: GetWin32Adapter() buffer too small, resizing");
-		//
-		neededSize = dwBufLen / sizeof(IP_ADAPTER_ADDRESSES) + 1;
-		AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-		DevCon.WriteLn("DEV9: New size %i", neededSize);
-
-		dwStatus = GetAdaptersAddresses(
-			AF_UNSPEC,
-			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS | GAA_FLAG_INCLUDE_ALL_INTERFACES,
-			NULL,
-			AdapterInfo.get(),
-			&dwBufLen);
-	}
-
-	if (dwStatus != ERROR_SUCCESS)
-		return 0;
-
-	pAdapterInfo = AdapterInfo.get();
-
+	PIP_ADAPTER_ADDRESSES pAdapter = pAdapterFirst;
 	do
 	{
-		if (0 == strcmp(pAdapterInfo->AdapterName, name.c_str()))
+		if (0 == strcmp(pAdapter->AdapterName, name.c_str()))
 			break;
 
-		pAdapterInfo = pAdapterInfo->Next;
-	} while (pAdapterInfo);
+		pAdapter = pAdapter->Next;
+	} while (pAdapter);
 
-	if (pAdapterInfo == nullptr)
+	if (pAdapter == nullptr)
 		return false;
 
 	//If we are bridged, then we won't show up without GAA_FLAG_INCLUDE_ALL_INTERFACES
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfoReduced = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-	dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-
-	dwStatus = GetAdaptersAddresses(
-		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-		NULL,
-		AdapterInfoReduced.get(),
-		&dwBufLen);
-
-	if (dwStatus != ERROR_SUCCESS)
-		return 0;
+	AdapterUtils::AdapterBuffer adapterInfoReduced;
+	PIP_ADAPTER_ADDRESSES pAdapterReducedFirst = AdapterUtils::GetAllAdapters(&adapterInfoReduced, false);
 
 	//If we find our adapter in the reduced list, we are not bridged
-	if (FindAdapterViaIndex(AdapterInfoReduced.get(), pAdapterInfo->IfIndex) != nullptr)
+	if (FindAdapterViaIndex(pAdapterReducedFirst, pAdapter->IfIndex) != nullptr)
 	{
-		*adapter = *pAdapterInfo;
-		buffer->swap(AdapterInfo);
+		*adapter = *pAdapter;
+		buffer->swap(adapterInfo);
 		return true;
 	}
 
 	//We must be bridged
 	Console.WriteLn("DEV9: Current adapter is probably bridged");
-	Console.WriteLn(fmt::format("DEV9: Adapter Display name: {}", StringUtil::WideStringToUTF8String(pAdapterInfo->FriendlyName)));
+	Console.WriteLn(fmt::format("DEV9: Adapter Display name: {}", StringUtil::WideStringToUTF8String(pAdapter->FriendlyName)));
 
 	//We will need to find the bridge adapter that out adapter is
 	//as the IP information of the tap adapter is null
@@ -393,7 +341,7 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 	//If multiple rows have our adapter, we check all of them
 	std::vector<NET_IFINDEX> potentialBridges;
 	std::vector<NET_IFINDEX> searchList;
-	searchList.push_back(pAdapterInfo->IfIndex);
+	searchList.push_back(pAdapter->IfIndex);
 
 	PMIB_IFSTACK_TABLE table;
 	GetIfStackTable(&table);
@@ -406,7 +354,7 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 			MIB_IFSTACK_ROW row = table->Table[i];
 			if (row.LowerLayerInterfaceIndex == targetIndex)
 			{
-				const PIP_ADAPTER_ADDRESSES potentialAdapter = FindAdapterViaIndex(AdapterInfoReduced.get(), row.HigherLayerInterfaceIndex);
+				const PIP_ADAPTER_ADDRESSES potentialAdapter = FindAdapterViaIndex(pAdapterReducedFirst, row.HigherLayerInterfaceIndex);
 				if (potentialAdapter != nullptr)
 				{
 					Console.WriteLn(fmt::format("DEV9: {} is possible bridge (Check 1 passed)", StringUtil::WideStringToUTF8String(potentialAdapter->Description)));
@@ -420,7 +368,8 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 	}
 	//Cleanup
 	FreeMibTable(table);
-	AdapterInfoReduced = nullptr;
+	pAdapterReducedFirst = nullptr;
+	adapterInfoReduced.reset();
 
 	//Step 2
 	//Init COM
@@ -456,7 +405,7 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 						//We need to match the adapter index to an INetCfgComponent
 						//We do this by matching IP_ADAPTER_ADDRESSES.AdapterName
 						//with the INetCfgComponent Instance GUID
-						PIP_ADAPTER_ADDRESSES cAdapterInfo = FindAdapterViaIndex(AdapterInfo.get(), index);
+						PIP_ADAPTER_ADDRESSES cAdapterInfo = FindAdapterViaIndex(pAdapterFirst, index);
 
 						if (cAdapterInfo == nullptr || cAdapterInfo->AdapterName == nullptr)
 							continue;
@@ -528,7 +477,7 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 	if (bridgeAdapter != nullptr)
 	{
 		*adapter = *bridgeAdapter;
-		buffer->swap(AdapterInfo);
+		buffer->swap(adapterInfo);
 		return true;
 	}
 
@@ -565,7 +514,7 @@ TAPAdapter::TAPAdapter()
 	SetMACAddress(&newMAC);
 
 	IP_ADAPTER_ADDRESSES adapter;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+	AdapterUtils::AdapterBuffer buffer;
 	if (TAPGetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
 		InitInternalServer(&adapter);
 	else
@@ -660,7 +609,7 @@ bool TAPAdapter::send(NetPacket* pkt)
 void TAPAdapter::reloadSettings()
 {
 	IP_ADAPTER_ADDRESSES adapter;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+	AdapterUtils::AdapterBuffer buffer;
 	if (TAPGetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
 		ReloadInternalServer(&adapter);
 	else

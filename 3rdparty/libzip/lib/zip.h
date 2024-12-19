@@ -3,7 +3,7 @@
 
 /*
   zip.h -- exported declarations.
-  Copyright (C) 1999-2021 Dieter Baron and Thomas Klausner
+  Copyright (C) 1999-2024 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -154,6 +154,7 @@ extern "C" {
 #define ZIP_ER_CANCELLED 32       /* N Operation cancelled */
 #define ZIP_ER_DATA_LENGTH 33     /* N Unexpected length of data */
 #define ZIP_ER_NOT_ALLOWED 34     /* N Not allowed in torrentzip */
+#define ZIP_ER_TRUNCATED_ZIP 35   /* N Possibly truncated or corrupted zip archive */
 
 /* type of system error value */
 
@@ -256,7 +257,8 @@ enum zip_source_cmd {
     ZIP_SOURCE_BEGIN_WRITE_CLONING, /* like ZIP_SOURCE_BEGIN_WRITE, but keep part of original file */
     ZIP_SOURCE_ACCEPT_EMPTY,        /* whether empty files are valid archives */
     ZIP_SOURCE_GET_FILE_ATTRIBUTES, /* get additional file attributes */
-    ZIP_SOURCE_SUPPORTS_REOPEN      /* allow reading from changed entry */
+    ZIP_SOURCE_SUPPORTS_REOPEN,     /* allow reading from changed entry */
+    ZIP_SOURCE_GET_DOS_TIME         /* get last modification time in DOS format */
 };
 typedef enum zip_source_cmd zip_source_cmd_t;
 

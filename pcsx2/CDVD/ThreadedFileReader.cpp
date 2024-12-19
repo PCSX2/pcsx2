@@ -1,22 +1,17 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "ThreadedFileReader.h"
+#include "Host.h"
 
+#include "common/Error.h"
+#include "common/HostSys.h"
+#include "common/Path.h"
+#include "common/ProgressCallback.h"
+#include "common/SmallString.h"
 #include "common/Threading.h"
+
+#include <cstring>
 
 // Make sure buffer size is bigger than the cutoff where PCSX2 emulates a seek
 // If buffers are smaller than that, we can't keep up with linear reads
@@ -256,13 +251,43 @@ bool ThreadedFileReader::TryCachedRead(void*& buffer, u64& offset, u32& size, co
 	return allDone;
 }
 
-bool ThreadedFileReader::Open(std::string fileName)
+bool ThreadedFileReader::Precache(ProgressCallback* progress, Error* error)
 {
 	CancelAndWaitUntilStopped();
-	return Open2(std::move(fileName));
+	progress->SetStatusText(SmallString::from_format(TRANSLATE_FS("CDVD", "Precaching {}..."), Path::GetFileName(m_filename)).c_str());
+	return Precache2(progress, error);
 }
 
-int ThreadedFileReader::ReadSync(void* pBuffer, uint sector, uint count)
+bool ThreadedFileReader::Precache2(ProgressCallback* progress, Error* error)
+{
+	Error::SetStringView(error, TRANSLATE_SV("CDVD","Precaching is not supported for this file format."));
+	return false;
+}
+
+bool ThreadedFileReader::CheckAvailableMemoryForPrecaching(u64 required_size, Error* error)
+{
+	// Don't allow precaching to use more than 50% of system memory.
+	// Hopefully nobody's running 2-4GB potatoes anymore....
+	const u64 memory_size = GetPhysicalMemory();
+	const u64 max_precache_size = memory_size / 2;
+	if (required_size > max_precache_size)
+	{
+		Error::SetStringFmt(error,
+			TRANSLATE_FS("CDVD", "Required memory ({}GB) is the above the maximum allowed ({}GB)."),
+			required_size / _1gb, max_precache_size / _1gb);
+		return false;
+	}
+
+	return true;
+}
+
+bool ThreadedFileReader::Open(std::string filename, Error* error)
+{
+	CancelAndWaitUntilStopped();
+	return Open2(std::move(filename), error);
+}
+
+int ThreadedFileReader::ReadSync(void* pBuffer, u32 sector, u32 count)
 {
 	u32 blocksize = InternalBlockSize();
 	u64 offset = (u64)sector * (u64)blocksize + m_dataoffset;
@@ -316,7 +341,7 @@ void ThreadedFileReader::CancelAndWaitUntilStopped(void)
 		m_condition.wait(lock);
 }
 
-void ThreadedFileReader::BeginRead(void* pBuffer, uint sector, uint count)
+void ThreadedFileReader::BeginRead(void* pBuffer, u32 sector, u32 count)
 {
 	s32 blocksize = InternalBlockSize();
 	u64 offset = (u64)sector * (u64)blocksize + m_dataoffset;
@@ -371,12 +396,12 @@ void ThreadedFileReader::Close(void)
 	Close2();
 }
 
-void ThreadedFileReader::SetBlockSize(uint bytes)
+void ThreadedFileReader::SetBlockSize(u32 bytes)
 {
 	m_blocksize = bytes;
 }
 
-void ThreadedFileReader::SetDataOffset(int bytes)
+void ThreadedFileReader::SetDataOffset(u32 bytes)
 {
 	m_dataoffset = bytes;
 }

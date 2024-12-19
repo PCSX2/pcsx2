@@ -1,22 +1,8 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Settings/ControllerGlobalSettingsWidget.h"
-#include "Settings/ControllerSettingsDialog.h"
+#include "Settings/ControllerSettingsWindow.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -24,7 +10,7 @@
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/Input/SDLInputSource.h"
 
-ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsDialog* dialog)
+ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsWindow* dialog)
 	: QWidget(parent)
 	, m_dialog(dialog)
 {
@@ -32,17 +18,29 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 
 	SettingsInterface* sif = dialog->getProfileSettingsInterface();
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
-	connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
+	connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
 	connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
 
 #ifdef _WIN32
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLRawInput, "InputSources", "SDLRawInput", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLRawInput, "InputSources", "SDLRawInput", false);
 #else
-	m_ui.gridLayout_2->removeWidget(m_ui.enableSDLRawInput);
+	m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLRawInput);
 	m_ui.enableSDLRawInput->deleteLater();
 	m_ui.enableSDLRawInput = nullptr;
+#endif
+
+#ifdef __APPLE__
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLIOKitDriver, "InputSources", "SDLIOKitDriver", true);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLMFIDriver, "InputSources", "SDLMFIDriver", true);
+#else
+	m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLIOKitDriver);
+	m_ui.enableSDLIOKitDriver->deleteLater();
+	m_ui.enableSDLIOKitDriver = nullptr;
+	m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLMFIDriver);
+	m_ui.enableSDLMFIDriver->deleteLater();
+	m_ui.enableSDLMFIDriver = nullptr;
 #endif
 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableMouseMapping, "UI", "EnableMouseMapping", false);
@@ -52,8 +50,8 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort2, "Pad", "MultitapPort2", false);
 
 #ifdef _WIN32
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDInputSource, "InputSources", "DInput", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableDInputSource, "InputSources", "DInput", false);
 #else
 	m_ui.mainLayout->removeWidget(m_ui.xinputGroup);
 	m_ui.xinputGroup->deleteLater();
@@ -66,7 +64,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	if (dialog->isEditingProfile())
 	{
 		m_ui.useProfileHotkeyBindings->setChecked(m_dialog->getBoolValue("Pad", "UseProfileHotkeyBindings", false));
-		connect(m_ui.useProfileHotkeyBindings, &QCheckBox::stateChanged, this, [this](int new_state) {
+		connect(m_ui.useProfileHotkeyBindings, &QCheckBox::checkStateChanged, this, [this](int new_state) {
 			m_dialog->setBoolValue("Pad", "UseProfileHotkeyBindings", (new_state == Qt::Checked));
 			emit bindingSetupChanged();
 		});
@@ -80,7 +78,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	}
 
 	for (QCheckBox* cb : {m_ui.multitapPort1, m_ui.multitapPort2})
-		connect(cb, &QCheckBox::stateChanged, this, [this]() { emit bindingSetupChanged(); });
+		connect(cb, &QCheckBox::checkStateChanged, this, [this]() { emit bindingSetupChanged(); });
 
 	updateSDLOptionsEnabled();
 }
@@ -117,6 +115,10 @@ void ControllerGlobalSettingsWidget::updateSDLOptionsEnabled()
 #ifdef _WIN32
 	m_ui.enableSDLRawInput->setEnabled(enabled);
 #endif
+#ifdef __APPLE__
+	m_ui.enableSDLIOKitDriver->setEnabled(enabled);
+	m_ui.enableSDLMFIDriver->setEnabled(enabled);
+#endif
 }
 
 void ControllerGlobalSettingsWidget::ledSettingsClicked()
@@ -131,7 +133,7 @@ void ControllerGlobalSettingsWidget::mouseSettingsClicked()
 	dialog.exec();
 }
 
-ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsDialog* dialog)
+ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsWindow* dialog)
 	: QDialog(parent)
 	, m_dialog(dialog)
 {
@@ -142,6 +144,9 @@ ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, Contro
 	linkButton(m_ui.SDL2LED, 2);
 	linkButton(m_ui.SDL3LED, 3);
 
+	SettingsInterface* sif = dialog->getProfileSettingsInterface();
+
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5PlayerLED, "InputSources", "SDLPS5PlayerLED", false);
 	connect(m_ui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &QDialog::accept);
 }
 
@@ -158,7 +163,7 @@ void ControllerLEDSettingsDialog::linkButton(ColorPickerButton* button, u32 play
 	});
 }
 
-ControllerMouseSettingsDialog::ControllerMouseSettingsDialog(QWidget* parent, ControllerSettingsDialog* dialog)
+ControllerMouseSettingsDialog::ControllerMouseSettingsDialog(QWidget* parent, ControllerSettingsWindow* dialog)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
@@ -189,3 +194,19 @@ ControllerMouseSettingsDialog::ControllerMouseSettingsDialog(QWidget* parent, Co
 }
 
 ControllerMouseSettingsDialog::~ControllerMouseSettingsDialog() = default;
+
+ControllerMappingSettingsDialog::ControllerMappingSettingsDialog(ControllerSettingsWindow* parent)
+	: QDialog(parent)
+{
+	m_ui.setupUi(this);
+
+	SettingsInterface* sif = parent->getProfileSettingsInterface();
+
+	m_ui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("settings-3-line")).pixmap(32, 32));
+
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.ignoreInversion, "InputSources", "IgnoreInversion", false);
+
+	connect(m_ui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &QDialog::accept);
+}
+
+ControllerMappingSettingsDialog::~ControllerMappingSettingsDialog() = default;

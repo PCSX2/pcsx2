@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 // Huge thanks to PSI for his work reversing the PS2, his documentation on SIO2 pretty much saved
 // this entire implementation. https://psi-rockin.github.io/ps2tek/#sio2registers
@@ -129,3 +117,20 @@ namespace AutoEject
 	extern void SetAll();
 	extern void ClearAll();
 } // namespace AutoEject
+
+// ~1 hour of memory card inactivity.
+constexpr u32 NUM_FRAMES_BEFORE_SAVESTATE_DEPENDENCY_WARNING = 60 * 60 * 60;
+
+// Set to the current frame count when there is memory card activity.
+// Used to detect the last frame when memory card activity was detected,
+// and if it exceeds a certain threshold, warns on savestate save/load.
+extern uint32_t sioLastFrameMcdBusy;
+
+namespace MemcardBusy
+{
+	extern void Decrement();
+	extern void SetBusy();
+	extern bool IsBusy();
+	extern void ClearBusy();
+	extern void CheckSaveStateDependency();
+}

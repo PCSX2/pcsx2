@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "SIO/Pad/PadGuitar.h"
 #include "SIO/Pad/Pad.h"
@@ -21,21 +7,25 @@
 
 #include "Host.h"
 
+#include "IconsPromptFont.h"
+
+#include "common/Console.h"
+
 // The generic input bindings on this might seem bizarre, but they are intended to match what DS2 buttons
 // would do what actions, if you played Guitar Hero on a PS2 with a DS2 instead of a controller.
 static const InputBindingInfo s_bindings[] = {
 	// clang-format off
-	{"Up", TRANSLATE_NOOP("Pad", "Strum Up"), InputBindingInfo::Type::Button, PadGuitar::Inputs::STRUM_UP, GenericInputBinding::DPadUp},
-	{"Down", TRANSLATE_NOOP("Pad", "Strum Down"), InputBindingInfo::Type::Button, PadGuitar::Inputs::STRUM_DOWN, GenericInputBinding::DPadDown},
-	{"Select", TRANSLATE_NOOP("Pad", "Select"), InputBindingInfo::Type::Button, PadGuitar::Inputs::SELECT, GenericInputBinding::Select},
-	{"Start", TRANSLATE_NOOP("Pad", "Start"), InputBindingInfo::Type::Button, PadGuitar::Inputs::START, GenericInputBinding::Start},
-	{"Green", TRANSLATE_NOOP("Pad", "Green Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::GREEN, GenericInputBinding::R2},
-	{"Red", TRANSLATE_NOOP("Pad", "Red Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::RED, GenericInputBinding::Circle},
-	{"Yellow", TRANSLATE_NOOP("Pad", "Yellow Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::YELLOW, GenericInputBinding::Triangle},
-	{"Blue", TRANSLATE_NOOP("Pad", "Blue Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::BLUE, GenericInputBinding::Cross},
-	{"Orange", TRANSLATE_NOOP("Pad", "Orange Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::ORANGE, GenericInputBinding::Square},
-	{"Whammy", TRANSLATE_NOOP("Pad", "Whammy Bar"), InputBindingInfo::Type::HalfAxis, PadGuitar::Inputs::WHAMMY, GenericInputBinding::LeftStickUp},
-	{"Tilt", TRANSLATE_NOOP("Pad", "Tilt Up"), InputBindingInfo::Type::Button, PadGuitar::Inputs::TILT, GenericInputBinding::L2},
+	{"Up", TRANSLATE_NOOP("Pad", "Strum Up"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::STRUM_UP, GenericInputBinding::DPadUp},
+	{"Down", TRANSLATE_NOOP("Pad", "Strum Down"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::STRUM_DOWN, GenericInputBinding::DPadDown},
+	{"Select", TRANSLATE_NOOP("Pad", "Select"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::SELECT, GenericInputBinding::Select},
+	{"Start", TRANSLATE_NOOP("Pad", "Start"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::START, GenericInputBinding::Start},
+	{"Green", TRANSLATE_NOOP("Pad", "Green Fret"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::GREEN, GenericInputBinding::R2},
+	{"Red", TRANSLATE_NOOP("Pad", "Red Fret"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::RED, GenericInputBinding::Circle},
+	{"Yellow", TRANSLATE_NOOP("Pad", "Yellow Fret"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::YELLOW, GenericInputBinding::Triangle},
+	{"Blue", TRANSLATE_NOOP("Pad", "Blue Fret"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::BLUE, GenericInputBinding::Cross},
+	{"Orange", TRANSLATE_NOOP("Pad", "Orange Fret"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::ORANGE, GenericInputBinding::Square},
+	{"Whammy", TRANSLATE_NOOP("Pad", "Whammy Bar"), nullptr, InputBindingInfo::Type::HalfAxis, PadGuitar::Inputs::WHAMMY, GenericInputBinding::LeftStickUp},
+	{"Tilt", TRANSLATE_NOOP("Pad", "Tilt Up"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::TILT, GenericInputBinding::L2},
 	// clang-format on
 };
 
@@ -49,7 +39,20 @@ static const SettingInfo s_settings[] = {
 };
 
 const Pad::ControllerInfo PadGuitar::ControllerInfo = {Pad::ControllerType::Guitar, "Guitar",
-	TRANSLATE_NOOP("Pad", "Guitar"), s_bindings, s_settings, Pad::VibrationCapabilities::NoVibration};
+	TRANSLATE_NOOP("Pad", "Guitar"), ICON_PF_GUITAR, s_bindings, s_settings, Pad::VibrationCapabilities::NoVibration};
+
+void PadGuitar::ConfigLog()
+{
+	const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
+
+	// AL: Analog Light (is it turned on right now)
+	// AB: Analog Button (is it useable or is it locked in its current state)
+	Console.WriteLn(fmt::format("[Pad] Guitar Config Finished - P{0}/S{1} - AL: {2} - AB: {3}",
+		port + 1,
+		slot + 1,
+		(this->analogLight ? "On" : "Off"),
+		(this->analogLocked ? "Locked" : "Usable")));
+}
 
 u8 PadGuitar::Mystery(u8 commandByte)
 {
@@ -124,12 +127,7 @@ u8 PadGuitar::Config(u8 commandByte)
 			if (this->isInConfig)
 			{
 				this->isInConfig = false;
-				const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
-				Console.WriteLn("[Pad] Game finished pad setup for port %d / slot %d - Analogs: %s - Analog Button: %s - Pressure: Not available on guitars",
-					port + 1,
-					slot + 1,
-					(this->analogLight ? "On" : "Off"),
-					(this->analogLocked ? "Locked" : "Usable"));
+				this->ConfigLog();
 			}
 			else
 			{
@@ -240,8 +238,8 @@ u8 PadGuitar::VibrationMap(u8 commandByte)
 	return 0xff;
 }
 
-PadGuitar::PadGuitar(u8 unifiedSlot)
-	: PadBase(unifiedSlot)
+PadGuitar::PadGuitar(u8 unifiedSlot, size_t ejectTicks)
+	: PadBase(unifiedSlot, ejectTicks)
 {
 	currentMode = Pad::Mode::DIGITAL;
 }
@@ -320,6 +318,20 @@ void PadGuitar::SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8
 {
 }
 
+void PadGuitar::SetRawPressureButton(u32 index, const std::tuple<bool, u8> value)
+{
+	this->rawInputs[index] = std::get<1>(value);
+
+	if (std::get<0>(value))
+	{
+		this->buttons &= ~(1u << bitmaskMapping[index]);
+	}
+	else
+	{
+		this->buttons |= (1u << bitmaskMapping[index]);
+	}
+}
+
 void PadGuitar::SetAxisScale(float deadzone, float scale)
 {
 	this->whammyDeadzone = deadzone;
@@ -355,6 +367,11 @@ void PadGuitar::SetAnalogInvertL(bool x, bool y)
 
 void PadGuitar::SetAnalogInvertR(bool x, bool y)
 {
+}
+
+float PadGuitar::GetEffectiveInput(u32 index) const
+{
+	return GetRawInput(index) / 255.0f;
 }
 
 u8 PadGuitar::GetRawInput(u32 index) const

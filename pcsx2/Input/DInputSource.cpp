@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #define INITGUID
 
@@ -103,7 +89,6 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 
 void DInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-	// noop
 }
 
 static BOOL CALLBACK EnumCallback(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
@@ -160,7 +145,9 @@ void DInputSource::Shutdown()
 {
 	while (!m_controllers.empty())
 	{
-		InputManager::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(m_controllers.size() - 1)));
+		const u32 index = static_cast<u32>(m_controllers.size() - 1);
+		InputManager::OnInputDeviceDisconnected({{.source_type = InputSourceType::DInput, .source_index = index}},
+			GetDeviceIdentifier(index));
 		m_controllers.pop_back();
 	}
 }
@@ -203,8 +190,6 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 		return false;
 	}
 
-	cd.num_buttons = caps.dwButtons;
-
 	static constexpr const u32 axis_offsets[] = {offsetof(DIJOYSTATE2, lX), offsetof(DIJOYSTATE2, lY), offsetof(DIJOYSTATE2, lZ),
 		offsetof(DIJOYSTATE2, lRz), offsetof(DIJOYSTATE2, lRx), offsetof(DIJOYSTATE2, lRy), offsetof(DIJOYSTATE2, rglSlider[0]),
 		offsetof(DIJOYSTATE2, rglSlider[1])};
@@ -225,8 +210,6 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 			cd.axis_offsets.push_back(offset);
 	}
 
-	cd.num_hats = caps.dwPOVs;
-
 	hr = cd.device->Poll();
 	if (hr == DI_NOEFFECT)
 		cd.needs_poll = false;
@@ -236,6 +219,9 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 	hr = cd.device->GetDeviceState(sizeof(cd.last_state), &cd.last_state);
 	if (hr != DI_OK)
 		Console.Warning("GetDeviceState() for '%s' failed: %08X", name.c_str(), hr);
+
+	cd.num_buttons = std::min<u32>(caps.dwButtons, std::size(cd.last_state.rgbButtons));
+	cd.num_hats = std::min<u32>(caps.dwPOVs, std::size(cd.last_state.rgdwPOV));
 
 	Console.WriteLn(
 		"%s has %u buttons, %u axes, %u hats", name.c_str(), cd.num_buttons, static_cast<u32>(cd.axis_offsets.size()), cd.num_hats);
@@ -261,7 +247,9 @@ void DInputSource::PollEvents()
 
 			if (hr != DI_OK)
 			{
-				InputManager::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(i)));
+				InputManager::OnInputDeviceDisconnected(
+					{{.source_type = InputSourceType::DInput, .source_index = static_cast<u32>(i)}},
+					GetDeviceIdentifier(static_cast<u32>(i)));
 				m_controllers.erase(m_controllers.begin() + i);
 				continue;
 			}
@@ -302,7 +290,7 @@ std::vector<InputBindingKey> DInputSource::EnumerateMotors()
 	return {};
 }
 
-bool DInputSource::GetGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping)
+bool DInputSource::GetGenericBindingMapping(const std::string_view device, InputManager::GenericInputBindingMapping* mapping)
 {
 	return {};
 }
@@ -317,9 +305,9 @@ void DInputSource::UpdateMotorState(InputBindingKey large_key, InputBindingKey s
 	// not supported
 }
 
-std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_view& device, const std::string_view& binding)
+std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_view device, const std::string_view binding)
 {
-	if (!StringUtil::StartsWith(device, "DInput-") || binding.empty())
+	if (!device.starts_with("DInput-") || binding.empty())
 		return std::nullopt;
 
 	const std::optional<s32> player_id = StringUtil::FromChars<s32>(device.substr(7));
@@ -330,7 +318,7 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 	key.source_type = InputSourceType::DInput;
 	key.source_index = static_cast<u32>(player_id.value());
 
-	if (StringUtil::StartsWith(binding, "+Axis") || StringUtil::StartsWith(binding, "-Axis"))
+	if (binding.starts_with("+Axis") || binding.starts_with("-Axis"))
 	{
 		std::string_view end;
 		const std::optional<u32> axis_index = StringUtil::FromChars<u32>(binding.substr(5), 10, &end);
@@ -343,7 +331,7 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 		key.invert = (end == "~");
 		return key;
 	}
-	else if (StringUtil::StartsWith(binding, "FullAxis"))
+	else if (binding.starts_with("FullAxis"))
 	{
 		std::string_view end;
 		const std::optional<u32> axis_index = StringUtil::FromChars<u32>(binding.substr(8), 10, &end);
@@ -356,7 +344,7 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 		key.invert = (end == "~");
 		return key;
 	}
-	else if (StringUtil::StartsWith(binding, "Hat"))
+	else if (binding.starts_with("Hat"))
 	{
 		if (binding[3] < '0' || binding[3] > '9' || binding.length() < 5)
 			return std::nullopt;
@@ -376,7 +364,7 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 		// bad direction
 		return std::nullopt;
 	}
-	else if (StringUtil::StartsWith(binding, "Button"))
+	else if (binding.starts_with("Button"))
 	{
 		const std::optional<u32> button_index = StringUtil::FromChars<u32>(binding.substr(6));
 		if (!button_index.has_value())
@@ -391,30 +379,36 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 	return std::nullopt;
 }
 
-std::string DInputSource::ConvertKeyToString(InputBindingKey key)
+TinyString DInputSource::ConvertKeyToString(InputBindingKey key)
 {
-	std::string ret;
+	TinyString ret;
 
 	if (key.source_type == InputSourceType::DInput)
 	{
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
 			const char* modifier = (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
-			ret = fmt::format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), key.invert ? "~" : "");
+			ret.format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), (key.invert && !ShouldIgnoreInversion()) ? "~" : "");
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton && key.data >= MAX_NUM_BUTTONS)
 		{
 			const u32 hat_num = (key.data - MAX_NUM_BUTTONS) / NUM_HAT_DIRECTIONS;
 			const u32 hat_dir = (key.data - MAX_NUM_BUTTONS) % NUM_HAT_DIRECTIONS;
-			ret = fmt::format("DInput-{}/Hat{}{}", u32(key.source_index), hat_num, s_hat_directions[hat_dir]);
+			ret.format("DInput-{}/Hat{}{}", u32(key.source_index), hat_num, s_hat_directions[hat_dir]);
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton)
 		{
-			ret = fmt::format("DInput-{}/Button{}", u32(key.source_index), u32(key.data));
+			ret.format("DInput-{}/Button{}", u32(key.source_index), u32(key.data));
 		}
 	}
 
 	return ret;
+}
+
+
+TinyString DInputSource::ConvertKeyToIcon(InputBindingKey key)
+{
+	return {};
 }
 
 void DInputSource::CheckForStateChanges(size_t index, const DIJOYSTATE2& new_state)

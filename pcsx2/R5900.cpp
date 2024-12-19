@@ -1,20 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-
-#include "PrecompiledHeader.h"
 #include "Common.h"
 
 #include "common/StringUtil.h"
@@ -38,16 +24,17 @@
 
 #include "DebugTools/Breakpoints.h"
 #include "DebugTools/MIPSAnalyst.h"
-#include "DebugTools/SymbolMap.h"
+#include "DebugTools/SymbolGuardian.h"
 #include "R5900OpcodeTables.h"
+
+#include "fmt/format.h"
 
 using namespace R5900;	// for R5900 disasm tools
 
 s32 EEsCycle;		// used to sync the IOP to the EE
 u32 EEoCycle;
 
-alignas(16) cpuRegisters cpuRegs;
-alignas(16) fpuRegisters fpuRegs;
+alignas(16) cpuRegistersPack _cpuRegistersPack;
 alignas(16) tlbs tlb[48];
 R5900cpu *Cpu = NULL;
 
@@ -67,12 +54,8 @@ const int kMaxArgs = 16;
 uptr g_argPtrs[kMaxArgs];
 #define DEBUG_LAUNCHARG 0 // show lots of helpful console messages as the launch arguments are passed to the game
 
-extern SysMainMemory& GetVmMemory();
-
 void cpuReset()
 {
-	GetVmMemory().Reset();
-
 	std::memset(&cpuRegs, 0, sizeof(cpuRegs));
 	std::memset(&fpuRegs, 0, sizeof(fpuRegs));
 	std::memset(&tlb, 0, sizeof(tlb));
@@ -91,17 +74,18 @@ void cpuReset()
 	psxReset();
 	pgifInit();
 
-	hwReset();
-
 	extern void Deci2Reset();		// lazy, no good header for it yet.
 	Deci2Reset();
 
 	AllowParams1 = !VMManager::Internal::IsFastBootInProgress();
 	AllowParams2 = !VMManager::Internal::IsFastBootInProgress();
+	ParamsRead = false;
 
 	g_eeloadMain = 0;
 	g_eeloadExec = 0;
 	g_osdsys_str = 0;
+
+	CBreakPoints::ClearSkipFirst();
 }
 
 __ri void cpuException(u32 code, u32 bd)
@@ -385,13 +369,35 @@ __fi void _cpuEventTest_Shared()
 	if (cpuIntsEnabled(mask))
 		cpuException(mask, cpuRegs.branch);
 
+	// ---- IOP -------------
+	// * It's important to run a iopEventTest before calling ExecuteBlock. This
+	//   is because the IOP does not always perform branch tests before returning
+	//   (during the prev branch) and also so it can act on the state the EE has
+	//   given it before executing any code.
+	//
+	// * The IOP cannot always be run.  If we run IOP code every time through the
+	//   cpuEventTest, the IOP generally starts to run way ahead of the EE.
 
-	// ---- Counters -------------
-	// Important: the vsync counter must be the first to be checked.  It includes emulation
-	// escape/suspend hooks, and it's really a good idea to suspend/resume emulation before
-	// doing any actual meaningful branchtest logic.
+	// It's also important to sync up the IOP before updating the timers, since gates will depend on starting/stopping in the right place!
+	EEsCycle += cpuRegs.cycle - EEoCycle;
+	EEoCycle = cpuRegs.cycle;
 
-	if (cpuTestCycle(nextsCounter, nextCounter))
+	if (EEsCycle > 0)
+		iopEventAction = true;
+
+	if (iopEventAction)
+	{
+		//if( EEsCycle < -450 )
+		//	Console.WriteLn( " IOP ahead by: %d cycles", -EEsCycle );
+
+		EEsCycle = psxCpu->ExecuteBlock(EEsCycle);
+
+		iopEventAction = false;
+	}
+
+	iopEventTest();
+
+	if (cpuTestCycle(nextStartCounter, nextDeltaCounter))
 	{
 		rcntUpdate();
 		_cpuTestPERF();
@@ -418,33 +424,6 @@ __fi void _cpuEventTest_Shared()
 			_cpuTestInterrupts();
 	}
 
-	// ---- IOP -------------
-	// * It's important to run a iopEventTest before calling ExecuteBlock. This
-	//   is because the IOP does not always perform branch tests before returning
-	//   (during the prev branch) and also so it can act on the state the EE has
-	//   given it before executing any code.
-	//
-	// * The IOP cannot always be run.  If we run IOP code every time through the
-	//   cpuEventTest, the IOP generally starts to run way ahead of the EE.
-
-	EEsCycle += cpuRegs.cycle - EEoCycle;
-	EEoCycle = cpuRegs.cycle;
-
-	if (EEsCycle > 0)
-		iopEventAction = true;
-
-	if (iopEventAction)
-	{
-		//if( EEsCycle < -450 )
-		//	Console.WriteLn( " IOP ahead by: %d cycles", -EEsCycle );
-
-		EEsCycle = psxCpu->ExecuteBlock(EEsCycle);
-
-		iopEventAction = false;
-	}
-
-	iopEventTest();
-
 	// ---- VU Sync -------------
 	// We're in a EventTest.  All dynarec registers are flushed
 	// so there is no need to freeze registers here.
@@ -452,8 +431,8 @@ __fi void _cpuEventTest_Shared()
 	CpuVU1->ExecuteBlock();
 
 	// ---- Schedule Next Event Test --------------
-
-	const int nextIopEventDeta = ((psxRegs.iopNextEventCycle - psxRegs.cycle) * 8);
+	const float mutiplier = static_cast<float>(PS2CLK) / static_cast<float>(PSXCLK);
+	const int nextIopEventDeta = ((psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier);
 	// 8 or more cycles behind and there's an event scheduled
 	if (EEsCycle >= nextIopEventDeta)
 	{
@@ -466,11 +445,11 @@ __fi void _cpuEventTest_Shared()
 	else
 	{
 		// Otherwise IOP is caught up/not doing anything so we can wait for the next event.
-		cpuSetNextEventDelta(((psxRegs.iopNextEventCycle - psxRegs.cycle) * 8) - EEsCycle);
+		cpuSetNextEventDelta(((psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier) - EEsCycle);
 	}
 
 	// Apply vsync and other counter nextCycles
-	cpuSetNextEvent(nextsCounter, nextCounter);
+	cpuSetNextEvent(nextStartCounter, nextDeltaCounter);
 
 	eeEventTestIsActive = false;
 }
@@ -579,9 +558,8 @@ int ParseArgumentString(u32 arg_block)
 	if (!arg_block)
 		return 0;
 
-	int argc = 1; // one arg is guaranteed at least
-	g_argPtrs[0] = arg_block; // first arg is right here
-	bool wasSpace = false; // status of last char. scanned
+	int argc = 0;
+	bool wasSpace = true; // status of last char. scanned
 	int args_len = strlen((char *)PSM(arg_block));
 	for (int i = 0; i < args_len; i++)
 	{
@@ -732,6 +710,16 @@ void eeloadHook()
 	}
 
 	VMManager::Internal::ELFLoadingOnCPUThread(std::move(elfname));
+
+	if (CHECK_EXTRAMEM)
+	{
+		// Map extra memory.
+		vtlb_VMap(Ps2MemSize::MainRam, Ps2MemSize::MainRam, Ps2MemSize::ExtraRam);
+
+		// Map RAM mirrors for extra memory.
+		vtlb_VMap(0x20000000 | Ps2MemSize::MainRam, Ps2MemSize::MainRam, Ps2MemSize::ExtraRam);
+		vtlb_VMap(0x30000000 | Ps2MemSize::MainRam, Ps2MemSize::MainRam, Ps2MemSize::ExtraRam);
+	}
 }
 
 // Called from recompilers; define is mandatory.

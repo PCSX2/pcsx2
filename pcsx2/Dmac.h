@@ -1,20 +1,9 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
+#include "common/Assertions.h"
 #include "common/StringUtil.h"
 
 // Useful enums for some of the fields.
@@ -94,7 +83,7 @@ union tDMA_TAG {
 	};
 	u32 _u32;
 
-	tDMA_TAG() {}
+	tDMA_TAG() = default;
 
 	tDMA_TAG(u32 val) { _u32 = val; }
 	u16 upper() const { return (_u32 >> 16); }
@@ -132,6 +121,7 @@ union tDMA_CHCR {
 	};
 	u32 _u32;
 
+	tDMA_CHCR() = default;
 	tDMA_CHCR( u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -154,6 +144,7 @@ union tDMA_SADR {
 	};
 	u32 _u32;
 
+	tDMA_SADR() = default;
 	tDMA_SADR(u32 val) { _u32 = val; }
 
 	void reset() { _u32 = 0; }
@@ -167,6 +158,7 @@ union tDMA_QWC {
 	};
 	u32 _u32;
 
+	tDMA_QWC() = default;
 	tDMA_QWC(u32 val) { _u32 = val; }
 
 	void reset() { _u32 = 0; }
@@ -275,6 +267,7 @@ union tDMAC_QUEUE
 	};
 	u16 _u16;
 
+	tDMAC_QUEUE() = default;
 	tDMAC_QUEUE(u16 val) { _u16 = val; }
 	void reset() { _u16 = 0; }
 	bool empty() const { return (_u16 == 0); }
@@ -315,7 +308,7 @@ static __fi int ChannelNumber(u32 addr)
         case D9_CHCR: return 9;
 		default:
 		{
-			pxFailDev("Invalid DMA channel number");
+			pxFail("Invalid DMA channel number");
 			return 51; // some value
 		}
     }
@@ -333,9 +326,11 @@ union tDMAC_CTRL {
 	};
 	u32 _u32;
 
+	tDMAC_CTRL() = default;
 	tDMAC_CTRL(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
+	bool is_mfifo(bool is_vif) const { return (is_vif) ? (MFD == MFD_VIF1) : (MFD == MFD_GIF); }
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset() { _u32 = 0; }
@@ -358,6 +353,7 @@ union tDMAC_STAT {
 	u32 _u32;
 	u16 _u16[2];
 
+	tDMAC_STAT() = default;
 	tDMAC_STAT(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -382,6 +378,7 @@ union tDMAC_PCR {
 	};
 	u32 _u32;
 
+	tDMAC_PCR() = default;
 	tDMAC_PCR(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -400,6 +397,7 @@ union tDMAC_SQWC {
 	};
 	u32 _u32;
 
+	tDMAC_SQWC() = default;
 	tDMAC_SQWC(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -416,6 +414,7 @@ union tDMAC_RBSR {
 	};
 	u32 _u32;
 
+	tDMAC_RBSR() = default;
 	tDMAC_RBSR(u32 val) { _u32 = val; }
 
 	void reset() { _u32 = 0; }
@@ -429,6 +428,7 @@ union tDMAC_RBOR {
 	};
 	u32 _u32;
 
+	tDMAC_RBOR() = default;
 	tDMAC_RBOR(u32 val) { _u32 = val; }
 
 	void reset() { _u32 = 0; }
@@ -450,7 +450,7 @@ union tDMAC_ADDR
 	};
 	u32 _u32;
 
-	tDMAC_ADDR() {}
+	tDMAC_ADDR() = default;
 	tDMAC_ADDR(u32 val) { _u32 = val; }
 
 	void clear() { _u32 = 0; }
@@ -500,6 +500,7 @@ union tINTC_STAT {
 	};
 	u32 _u32;
 
+	tINTC_STAT() = default;
 	tINTC_STAT(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -516,6 +517,7 @@ union tINTC_MASK {
 	};
 	u32 _u32;
 
+	tINTC_MASK() = default;
 	tINTC_MASK(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }

@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
 #include "GS.h"
@@ -21,7 +7,7 @@
 #include "MTVU.h"
 #include "VUmicro.h"
 #include "Vif_Dma.h"
-#include "x86/newVif.h"
+#include "Vif_Dynarec.h"
 
 u32 g_vif1Cycles = 0;
 
@@ -41,7 +27,7 @@ void vif1TransferToMemory()
 	u128* pMem = (u128*)dmaGetAddr(vif1ch.madr, false);
 
 	// VIF from gsMemory
-	if (pMem == NULL)
+	if (pMem == nullptr)
 	{ // Is vif0ptag empty?
 		Console.WriteLn("Vif1 Tag BUSERR");
 		dmacRegs.stat.BEIS = true; // Bus Error
@@ -60,6 +46,7 @@ void vif1TransferToMemory()
 	const u32 size = std::min(vif1.GSLastDownloadSize, (u32)vif1ch.qwc);
 	//const u128* pMemEnd  = vif1.GSLastDownloadSize + pMem;
 
+#ifdef PCSX2_DEVBUILD
 	if (size)
 	{
 		// Checking if any crazy game does a partial
@@ -71,6 +58,7 @@ void vif1TransferToMemory()
 		pxAssert(p2.isDone() || !p2.gifTag.isValid);
 		pxAssert(p3.isDone() || !p3.gifTag.isValid);
 	}
+#endif
 
 	MTGS::InitAndReadFIFO(reinterpret_cast<u8*>(pMem), size);
 	//	pMem += size;
@@ -129,7 +117,7 @@ bool _VIF1chain()
 	}
 
 	pMem = (u32*)dmaGetAddr(vif1ch.madr, !vif1ch.chcr.DIR);
-	if (pMem == NULL)
+	if (pMem == nullptr)
 	{
 		vif1.cmd = 0;
 		vif1.tag.size = 0;
@@ -232,8 +220,15 @@ __fi void vif1SetupTransfer()
 __fi void vif1VUFinish()
 {
 	// Sync up VU1 so we don't errantly wait.
-	while (!THREAD_VU1 && static_cast<int>(cpuRegs.cycle - VU1.cycle) > 0 && (VU0.VI[REG_VPU_STAT].UL & 0x100))
+	while (!THREAD_VU1 && (VU0.VI[REG_VPU_STAT].UL & 0x100))
+	{
+		const int cycle_diff = static_cast<int>(cpuRegs.cycle - VU1.cycle);
+
+		if ((EmuConfig.Gamefixes.VUSyncHack && cycle_diff < VU1.nextBlockCycles) || cycle_diff <= 0)
+			break;
+
 		CpuVU1->ExecuteBlock();
+	}
 
 	if (VU0.VI[REG_VPU_STAT].UL & 0x500)
 	{
@@ -310,8 +305,8 @@ __fi void vif1Interrupt()
 	// from the GS then we handle that separately (KH2 for testing)
 	if (vif1ch.chcr.DIR)
 	{
-		bool isDirect = (vif1.cmd & 0x7f) == 0x50;
-		bool isDirectHL = (vif1.cmd & 0x7f) == 0x51;
+		const bool isDirect = (vif1.cmd & 0x7f) == 0x50;
+		const bool isDirectHL = (vif1.cmd & 0x7f) == 0x51;
 		if ((isDirect && !gifUnit.CanDoPath2()) || (isDirectHL && !gifUnit.CanDoPath2HL()))
 		{
 			GUNIT_WARN("vif1Interrupt() - Waiting for Path 2 to be ready");

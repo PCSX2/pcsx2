@@ -1,6 +1,6 @@
 /*
   zip_source_file_stdio_named.c -- source for stdio file opened by name
-  Copyright (C) 1999-2022 Dieter Baron and Thomas Klausner
+  Copyright (C) 1999-2023 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -178,9 +178,9 @@ _zip_stdio_op_create_temp_output_cloning(zip_source_file_context_t *ctx, zip_uin
     {
         int fd;
         struct file_clone_range range;
-        struct stat st;
+        zip_os_stat_t st;
         
-        if (fstat(fileno(ctx->f), &st) < 0) {
+        if (zip_os_fstat(fileno(ctx->f), &st) < 0) {
             zip_error_set(&ctx->error, ZIP_ER_TMPOPEN, errno);
             return -1;
         }
@@ -223,7 +223,7 @@ _zip_stdio_op_create_temp_output_cloning(zip_source_file_context_t *ctx, zip_uin
         ctx->tmpname = NULL;
         return -1;
     }
-    if (fseeko(tfp, (off_t)offset, SEEK_SET) < 0) {
+    if (zip_os_fseek(tfp, (zip_off_t)offset, SEEK_SET) < 0) {
         zip_error_set(&ctx->error, ZIP_ER_TMPOPEN, errno);
         (void)fclose(tfp);
         (void)remove(ctx->tmpname);
@@ -290,11 +290,11 @@ _zip_stdio_op_write(zip_source_file_context_t *ctx, const void *data, zip_uint64
 static int create_temp_file(zip_source_file_context_t *ctx, bool create_file) {
     char *temp;
     int mode;
-    struct stat st;
+    zip_os_stat_t st;
     int fd = 0;
     char *start, *end;
     
-    if (stat(ctx->fname, &st) == 0) {
+    if (zip_os_stat(ctx->fname, &st) == 0) {
         mode = st.st_mode;
     }
     else {
@@ -344,7 +344,7 @@ static int create_temp_file(zip_source_file_context_t *ctx, bool create_file) {
             }
         }
         else {
-            if (stat(temp, &st) < 0) {
+            if (zip_os_stat(temp, &st) < 0) {
                 if (errno == ENOENT) {
                     break;
                 }

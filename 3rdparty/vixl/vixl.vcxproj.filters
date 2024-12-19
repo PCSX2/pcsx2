@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="aarch64">
+      <UniqueIdentifier>{bad5c611-84e1-42b6-b20b-828618673b31}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\vixl\aarch64\decoder-constants-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\decoder-visitor-map-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\disasm-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\instructions-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\macro-assembler-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\operands-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\registers-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\abi-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\assembler-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\constants-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\cpu-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\cpu-features-auditor-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\decoder-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vixl\assembler-base-vixl.h" />
+    <ClInclude Include="include\vixl\code-buffer-vixl.h" />
+    <ClInclude Include="include\vixl\code-generation-scopes-vixl.h" />
+    <ClInclude Include="include\vixl\compiler-intrinsics-vixl.h" />
+    <ClInclude Include="include\vixl\cpu-features.h" />
+    <ClInclude Include="include\vixl\globals-vixl.h" />
+    <ClInclude Include="include\vixl\invalset-vixl.h" />
+    <ClInclude Include="include\vixl\macro-assembler-interface.h" />
+    <ClInclude Include="include\vixl\platform-vixl.h" />
+    <ClInclude Include="include\vixl\pool-manager.h" />
+    <ClInclude Include="include\vixl\pool-manager-impl.h" />
+    <ClInclude Include="include\vixl\utils-vixl.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\aarch64\decoder-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\disasm-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\instructions-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\logic-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\macro-assembler-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\macro-assembler-sve-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\operands-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\pointer-auth-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\registers-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\assembler-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\assembler-sve-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\cpu-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\cpu-features-auditor-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\code-buffer-vixl.cc" />
+    <ClCompile Include="src\compiler-intrinsics-vixl.cc" />
+    <ClCompile Include="src\cpu-features.cc" />
+    <ClCompile Include="src\utils-vixl.cc" />
+  </ItemGroup>
+</Project>

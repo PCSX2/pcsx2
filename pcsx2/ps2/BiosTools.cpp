@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include <cstdio>
 #include <cstring>
@@ -21,6 +7,7 @@
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+#include "CDVD/CDVD.h"
 
 #include "Common.h"
 #include "BiosTools.h"
@@ -50,6 +37,9 @@ static_assert(sizeof(romdir) == DIRENTRY_SIZE, "romdir struct not packed to 16 b
 u32 BiosVersion;
 u32 BiosChecksum;
 u32 BiosRegion;
+ConfigParam configParams1;
+Config2Param configParams2;
+bool ParamsRead;
 bool NoOSD;
 bool AllowParams1;
 bool AllowParams2;
@@ -59,6 +49,29 @@ std::string BiosSerial;
 std::string BiosPath;
 BiosDebugInformation CurrentBiosInformation;
 std::vector<u8> BiosRom;
+
+void ReadOSDConfigParames()
+{
+	if (ParamsRead)
+		return;
+
+	ParamsRead = true;
+
+	u8 params[16];
+	cdvdReadLanguageParams(params);
+
+	configParams1.UC[0] = params[1] & 0x1F; // SPDIF, Screen mode, RGB/Comp, Jap/Eng Switch (Early bios).
+	configParams1.ps1drvConfig = params[0]; // PS1 Mode Settings.
+	configParams1.version = (params[2] & 0xE0) >> 5; // OSD Ver (Not sure but best guess).
+	configParams1.language = params[2] & 0x1F; // Language.
+	configParams1.timezoneOffset = params[4] | ((u32)(params[3] & 0x7) << 8);  // Timezone offset in minutes.
+
+	// Region settings for time/date and extended language
+	configParams2.UC[1] = ((u32)params[3] & 0x78) << 1; // Daylight Savings, 24hr clock, Date format
+	// FIXME: format, version and language are set manually by the bios. Not sure if any game needs them, but it seems to set version to 2 and duplicate the language value.
+	configParams2.version = 2;
+	configParams2.language = configParams1.language;
+}
 
 static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& description, u32& region, std::string& zone, std::string& serial)
 {
@@ -129,7 +142,7 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 			// case 'E': zone = "Russia"; region = 3;  break; // Not implemented
 			case 'C': zone = "China";  region = 6;  break;
 			// case 'A': zone = "Mexico"; region = 7;  break; // Not implemented
-			case 'T': zone = "T10K";   region = 8;  break;
+			case 'T': zone = (romver[5]=='Z') ? "COH-H" : "T10K";   region = 8;  break;
 			case 'X': zone = "Test";   region = 9;  break;
 			case 'P': zone = "Free";   region = 10; break;
 			// clang-format on
@@ -171,7 +184,7 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 
 	if (fileSize < (int)fileOffset)
 	{
-		description += StringUtil::StdStringFromFormat(" %d%%", ((fileSize * 100) / (int)fileOffset));
+		description += StringUtil::StdStringFromFormat(" %d%%", (((int)fileSize * 100) / (int)fileOffset));
 		// we force users to have correct bioses,
 		// not that lame scph10000 of 513KB ;-)
 	}
@@ -213,7 +226,7 @@ static void LoadExtraRom(const char* ext, u32 offset, u32 size)
 
 	BiosRom.resize(offset + size);
 
-	auto fp = FileSystem::OpenManagedCFile(Bios1.c_str(), "rb");
+	auto fp = FileSystem::OpenManagedCFileTryIgnoreCase(Bios1.c_str(), "rb");
 	if (!fp || std::fread(&BiosRom[offset], static_cast<size_t>(std::min<s64>(size, filesize)), 1, fp.get()) != 1)
 	{
 		Console.Warning("BIOS Warning: %s could not be read (permission denied?)", ext);
@@ -299,7 +312,7 @@ bool IsBIOSAvailable(const std::string& full_path)
 //
 bool LoadBIOS()
 {
-	pxAssertDev(eeMem->ROM != NULL, "PS2 system memory has not been initialized yet.");
+	pxAssertMsg(eeMem->ROM, "PS2 system memory has not been initialized yet.");
 
 	std::string path = EmuConfig.FullpathToBios();
 	if (path.empty() || !FileSystem::FileExists(path.c_str()))

@@ -1,24 +1,11 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "CDVD/CDVDcommon.h"
 #include "CDVD/IsoReader.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/Error.h"
 #include "common/StringUtil.h"
 
@@ -30,7 +17,7 @@ IsoReader::IsoReader() = default;
 
 IsoReader::~IsoReader() = default;
 
-std::string_view IsoReader::RemoveVersionIdentifierFromPath(const std::string_view& path)
+std::string_view IsoReader::RemoveVersionIdentifierFromPath(const std::string_view path)
 {
 	const std::string_view::size_type pos = path.find(';');
 	return (pos != std::string_view::npos) ? path.substr(0, pos) : path;
@@ -84,7 +71,7 @@ bool IsoReader::ReadPVD(Error* error)
 	return false;
 }
 
-std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(const std::string_view& path, Error* error)
+std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(const std::string_view path, Error* error)
 {
 	const ISODirectoryEntry* root_de = reinterpret_cast<const ISODirectoryEntry*>(m_pvd.root_directory_entry);
 	if (path.empty() || path == "/" || path == "\\")
@@ -128,7 +115,7 @@ std::string_view IsoReader::GetDirectoryEntryFileName(const u8* sector, u32 de_s
 }
 
 std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(
-	const std::string_view& path, u8* sector_buffer, u32 directory_record_lba, u32 directory_record_size, Error* error)
+	const std::string_view path, u8* sector_buffer, u32 directory_record_lba, u32 directory_record_size, Error* error)
 {
 	if (directory_record_size == 0)
 	{
@@ -204,7 +191,7 @@ std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(
 	return std::nullopt;
 }
 
-std::vector<std::string> IsoReader::GetFilesInDirectory(const std::string_view& path, Error* error)
+std::vector<std::string> IsoReader::GetFilesInDirectory(const std::string_view path, Error* error)
 {
 	std::string base_path(path);
 	u32 directory_record_lsn;
@@ -265,7 +252,7 @@ std::vector<std::string> IsoReader::GetFilesInDirectory(const std::string_view& 
 	return files;
 }
 
-bool IsoReader::FileExists(const std::string_view& path, Error* error)
+bool IsoReader::FileExists(const std::string_view path, Error* error)
 {
 	auto de = LocateFile(path, error);
 	if (!de)
@@ -274,7 +261,7 @@ bool IsoReader::FileExists(const std::string_view& path, Error* error)
 	return (de->flags & ISODirectoryEntryFlag_Directory) == 0;
 }
 
-bool IsoReader::DirectoryExists(const std::string_view& path, Error* error)
+bool IsoReader::DirectoryExists(const std::string_view path, Error* error)
 {
 	auto de = LocateFile(path, error);
 	if (!de)
@@ -283,7 +270,7 @@ bool IsoReader::DirectoryExists(const std::string_view& path, Error* error)
 	return (de->flags & ISODirectoryEntryFlag_Directory) == ISODirectoryEntryFlag_Directory;
 }
 
-bool IsoReader::ReadFile(const std::string_view& path, std::vector<u8>* data, Error* error)
+bool IsoReader::ReadFile(const std::string_view path, std::vector<u8>* data, Error* error)
 {
 	auto de = LocateFile(path, error);
 	if (!de)

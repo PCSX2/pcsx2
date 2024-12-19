@@ -1,21 +1,9 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
-#include <stdio.h>
+#include "common/Pcsx2Defs.h"
 
 union GPRRegs {
 	struct {
@@ -122,6 +110,7 @@ struct psxRegisters {
 	// Tracks current number of cycles IOP can run in EE cycles. When it dips below zero,
 	// control is returned to the EE.
 	s32 iopCycleEE;
+	u32 iopCycleEECarry;
 
 	u32 sCycle[32];		// start cycle for signaled ints
 	s32 eCycle[32];		// cycle delta for signaled ints (sCycle + eCycle == branch cycle)
@@ -180,8 +169,8 @@ extern u32 EEoCycle;
 
 #endif
 
-extern s32 psxNextCounter;
-extern u32 psxNextsCounter;
+extern s32 psxNextDeltaCounter;
+extern u32 psxNextStartCounter;
 extern bool iopEventAction;
 extern bool iopEventTestIsActive;
 
@@ -207,7 +196,6 @@ extern R3000Acpu psxRec;
 extern void psxReset();
 extern void psxException(u32 code, u32 step);
 extern void iopEventTest();
-extern void psxMemReset();
 
 int psxIsBreakpointNeeded(u32 addr);
 int psxIsMemcheckNeeded(u32 pc);

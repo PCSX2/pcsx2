@@ -1,28 +1,16 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "DisplayWidget.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 
+#include "pcsx2/ImGui/FullscreenUI.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>
@@ -124,7 +112,6 @@ void DisplayWidget::updateRelativeMode(bool enabled)
 		QCursor::setPos(m_relative_mouse_start_pos);
 		releaseMouse();
 	}
-
 }
 
 void DisplayWidget::updateCursor(bool hidden)
@@ -149,7 +136,9 @@ void DisplayWidget::handleCloseEvent(QCloseEvent* event)
 {
 	// Closing the separate widget will either cancel the close, or trigger shutdown.
 	// In the latter case, it's going to destroy us, so don't let Qt do it first.
-	if (QtHost::IsVMValid())
+	// Treat a close event while fullscreen as an exit, that way ALT+F4 closes PCSX2,
+	// rather than just the game.
+	if (QtHost::IsVMValid() && !isActuallyFullscreen())
 	{
 		QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true),
 			Q_ARG(bool, true), Q_ARG(bool, false));
@@ -161,6 +150,27 @@ void DisplayWidget::handleCloseEvent(QCloseEvent* event)
 
 	// Cancel the event from closing the window.
 	event->ignore();
+}
+
+void DisplayWidget::destroy()
+{
+	m_destroying = true;
+
+#ifdef __APPLE__
+	// See Qt documentation, entire application is in full screen state, and the main
+	// window will get reopened fullscreen instead of windowed if we don't close the
+	// fullscreen window first.
+	if (isActuallyFullscreen())
+		close();
+#endif
+	deleteLater();
+}
+
+bool DisplayWidget::isActuallyFullscreen() const
+{
+	// I hate you QtWayland... have to check the parent, not ourselves.
+	QWidget* container = qobject_cast<QWidget*>(parent());
+	return container ? container->isFullScreen() : isFullScreen();
 }
 
 void DisplayWidget::updateCenterPos()
@@ -206,7 +216,7 @@ bool DisplayWidget::event(QEvent* event)
 		case QEvent::KeyRelease:
 		{
 			const QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
-			
+
 			// Forward text input to imgui.
 			if (ImGuiManager::WantsTextInput() && key_event->type() == QEvent::KeyPress)
 			{
@@ -314,8 +324,9 @@ bool DisplayWidget::event(QEvent* event)
 			// don't toggle fullscreen when we're bound.. that wouldn't end well.
 			if (event->type() == QEvent::MouseButtonDblClick &&
 				static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton &&
-				QtHost::IsVMValid() && !QtHost::IsVMPaused() &&
-				!InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0)) &&
+				QtHost::IsVMValid() && !FullscreenUI::HasActiveWindow() &&
+				((!QtHost::IsVMPaused() && !InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0))) ||
+					(QtHost::IsVMPaused() && !ImGuiManager::WantsMouseInput())) &&
 				Host::GetBoolSettingValue("UI", "DoubleClickTogglesFullscreen", true))
 			{
 				g_emu_thread->toggleFullscreen();
@@ -369,6 +380,9 @@ bool DisplayWidget::event(QEvent* event)
 
 		case QEvent::Close:
 		{
+			if (m_destroying)
+				return QWidget::event(event);
+
 			handleCloseEvent(static_cast<QCloseEvent*>(event));
 			return true;
 		}

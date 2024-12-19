@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/DX12/D3D12Builders.h"
 #include "GS/Renderers/DX12/D3D12ShaderCache.h"
@@ -368,20 +354,12 @@ u32 D3D12::RootSignatureBuilder::AddDescriptorTable(
 	return index;
 }
 
-#ifdef _DEBUG
+#ifdef PCSX2_DEVBUILD
 #include "common/StringUtil.h"
 
-void D3D12::SetObjectName(ID3D12Object* object, const char* name)
+void D3D12::SetObjectName(ID3D12Object* object, std::string_view name)
 {
 	object->SetName(StringUtil::UTF8StringToWideString(name).c_str());
-}
-
-void D3D12::SetObjectNameFormatted(ID3D12Object* object, const char* format, ...)
-{
-	std::va_list ap;
-	va_start(ap, format);
-	SetObjectName(object, StringUtil::StdStringFromFormatV(format, ap).c_str());
-	va_end(ap);
 }
 
 #endif

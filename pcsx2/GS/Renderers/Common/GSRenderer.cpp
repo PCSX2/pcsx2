@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiManager.h"
@@ -43,6 +29,8 @@
 #include <deque>
 #include <thread>
 #include <mutex>
+
+static void DumpGSPrivRegs(const GSPrivRegSet& r, const std::string& filename);
 
 static constexpr std::array<PresentShader, 8> s_tv_shader_indices = {
 	PresentShader::COPY, PresentShader::SCANLINE,
@@ -87,11 +75,6 @@ void GSRenderer::Destroy()
 	GSCapture::EndCapture();
 }
 
-void GSRenderer::PurgePool()
-{
-	g_gs_device->PurgePool();
-}
-
 void GSRenderer::UpdateRenderFixes()
 {
 }
@@ -109,7 +92,10 @@ bool GSRenderer::Merge(int field)
 	PCRTCDisplays.CheckSameSource();
 
 	if (!PCRTCDisplays.PCRTCDisplays[0].enabled && !PCRTCDisplays.PCRTCDisplays[1].enabled)
+	{
+		m_real_size = GSVector2i(0, 0);
 		return false;
+	}
 
 	// Need to do this here, if the user has Anti-Blur enabled, these offsets can get wiped out/changed.
 	const bool game_deinterlacing = (m_regs->DISP[0].DISPFB.DBY != PCRTCDisplays.PCRTCDisplays[0].prevFramebufferReg.DBY) !=
@@ -139,7 +125,10 @@ bool GSRenderer::Merge(int field)
 	}
 
 	if (!tex[0] && !tex[1])
+	{
+		m_real_size = GSVector2i(0, 0);
 		return false;
+	}
 
 	s_n++;
 
@@ -268,26 +257,27 @@ GSVector2i GSRenderer::GetInternalResolution()
 
 float GSRenderer::GetModXYOffset()
 {
-	float mod_xy = 0.0f;
-
-	if (GSConfig.UserHacks_HalfPixelOffset == 1)
+	if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::Normal)
 	{
-		mod_xy = GetUpscaleMultiplier();
-		switch (static_cast<int>(std::round(mod_xy)))
+		float mod_xy = GetUpscaleMultiplier();
+		const int rounded_mod_xy = static_cast<int>(std::round(mod_xy));
+		if (rounded_mod_xy > 1)
 		{
-			case 2: case 4: case 6: case 8: mod_xy += 0.2f; break;
-			case 3: case 7:                 mod_xy += 0.1f; break;
-			case 5:                         mod_xy += 0.3f; break;
-			default:                        mod_xy = 0.0f; break;
+			if (!(rounded_mod_xy & 1))
+				return mod_xy += 0.2f;
+			else if (!(rounded_mod_xy & 2))
+				return mod_xy += 0.3f;
+			else
+				return mod_xy += 0.1f;
 		}
 	}
 
-	return mod_xy;
+	return 0.0f;
 }
 
 static float GetCurrentAspectRatioFloat(bool is_progressive)
 {
-	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount) + 1> ars = {{4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 3.0f / 2.0f}};
+	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount) + 1> ars = {{4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 10.0f / 7.0f, 3.0f / 2.0f}};
 	return ars[static_cast<u32>(GSConfig.AspectRatio) + (3u * (is_progressive && GSConfig.AspectRatio == AspectRatioType::RAuto4_3_3_2))];
 }
 
@@ -310,7 +300,13 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 		targetAr = 4.0f / 3.0f;
 	}
 	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R16_9)
+	{
 		targetAr = 16.0f / 9.0f;
+	}
+	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R10_7)
+	{
+		targetAr = 10.0f / 7.0f;
+	}
 
 	const float crop_adjust = (static_cast<float>(src_rect.width()) / static_cast<float>(src_size.x)) /
 		(static_cast<float>(src_rect.height()) / static_cast<float>(src_size.y));
@@ -413,27 +409,28 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 	return ret;
 }
 
-static GSVector4i CalculateDrawSrcRect(const GSTexture* src)
+static GSVector4i CalculateDrawSrcRect(const GSTexture* src, const GSVector2i real_size)
 {
-	const float upscale = GSConfig.UpscaleMultiplier;
 	const GSVector2i size(src->GetSize());
-	const int left = static_cast<int>(static_cast<float>(GSConfig.Crop[0]) * upscale);
-	const int top = static_cast<int>(static_cast<float>(GSConfig.Crop[1]) * upscale);
-	const int right =  size.x - static_cast<int>(static_cast<float>(GSConfig.Crop[2]) * upscale);
-	const int bottom = size.y - static_cast<int>(static_cast<float>(GSConfig.Crop[3]) * upscale);
+	const GSVector2 scale = GSVector2(size.x, size.y) / GSVector2(real_size.x, real_size.y).max(GSVector2(0.1f, 0.1f));
+	const float upscale = GSIsHardwareRenderer() ? GSConfig.UpscaleMultiplier : 1;
+	const int left = static_cast<int>(static_cast<float>(GSConfig.Crop[0] * scale.x) * upscale);
+	const int top = static_cast<int>(static_cast<float>(GSConfig.Crop[1] * scale.y) * upscale);
+	const int right =  size.x - static_cast<int>(static_cast<float>(GSConfig.Crop[2] * scale.x) * upscale);
+	const int bottom = size.y - static_cast<int>(static_cast<float>(GSConfig.Crop[3] * scale.y) * upscale);
 	return GSVector4i(left, top, right, bottom);
 }
 
 static const char* GetScreenshotSuffix()
 {
 	static constexpr const char* suffixes[static_cast<u8>(GSScreenshotFormat::Count)] = {
-		"png", "jpg"};
+		"png", "jpg", "webp"};
 	return suffixes[static_cast<u8>(GSConfig.ScreenshotFormat)];
 }
 
 static void CompressAndWriteScreenshot(std::string filename, u32 width, u32 height, std::vector<u32> pixels)
 {
-	Common::RGBA8Image image;
+	RGBA8Image image;
 	image.SetPixels(width, height, std::move(pixels));
 
 	std::string key(fmt::format("GSScreenshot_{}", filename));
@@ -523,7 +520,7 @@ bool GSRenderer::BeginPresentFrame(bool frame_skip)
 
 	// Device lost, something went really bad.
 	// Let's just toss out everything, and try to hobble on.
-	if (!GSreopen(true, false, GSConfig))
+	if (!GSreopen(true, false, GSGetCurrentRenderer(), std::nullopt))
 	{
 		pxFailRel("Failed to recreate GS device after loss.");
 		return false;
@@ -551,7 +548,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 {
 	if (GSConfig.DumpGSData && s_n >= GSConfig.SaveN)
 	{
-		m_regs->Dump(GetDrawDumpPath("vsync_%05d_f%lld_gs_reg.txt", s_n, g_perfmon.GetFrame()));
+		DumpGSPrivRegs(*m_regs, GetDrawDumpPath("vsync_%05d_f%lld_gs_reg.txt", s_n, g_perfmon.GetFrame()));
 	}
 
 	const int fb_sprite_blits = g_perfmon.GetDisplayFramebufferSpriteBlits();
@@ -590,19 +587,22 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	m_last_draw_n = s_n;
 	m_last_transfer_n = s_transfer_n;
 
-	if (skip_frame)
+	// Skip presentation when running uncapped while vsync is on.
+	if (skip_frame || g_gs_device->ShouldSkipPresentingFrame())
 	{
 		if (BeginPresentFrame(true))
 			EndPresentFrame();
 
-		PerformanceMetrics::Update(registers_written, fb_sprite_frame, true);
+		PerformanceMetrics::Update(registers_written, fb_sprite_frame, skip_frame);
 		return;
 	}
 
 	if (!idle_frame)
 		g_gs_device->AgePool();
 
-	g_perfmon.EndFrame();
+
+	g_perfmon.EndFrame(idle_frame);
+
 	if ((g_perfmon.GetFrame() & 0x1f) == 0)
 		g_perfmon.Update();
 
@@ -612,7 +612,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	GSTexture* current = g_gs_device->GetCurrent();
 	if (current && !blank_frame)
 	{
-		src_rect = CalculateDrawSrcRect(current);
+		src_rect = CalculateDrawSrcRect(current, m_real_size);
 		src_uv = GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy();
 		draw_rect = CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
 			src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
@@ -685,31 +685,31 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			std::string_view compression_str;
 			if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::Uncompressed)
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, VMManager::GetDiscSerial(),
+				m_dump = GSDumpBase::CreateUncompressedDump(m_snapshot, VMManager::GetDiscSerial(),
 					VMManager::GetDiscCRC(), screenshot_width, screenshot_height,
-					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
-				compression_str = "with no compression";
+					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs);
+				compression_str = TRANSLATE_SV("GS", "with no compression");
 			}
 			else if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::LZMA)
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(
-					new GSDumpXz(m_snapshot, VMManager::GetDiscSerial(), VMManager::GetDiscCRC(), screenshot_width,
-						screenshot_height, screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
-				compression_str = "with LZMA compression";
+				m_dump = GSDumpBase::CreateXzDump(m_snapshot, VMManager::GetDiscSerial(),
+					VMManager::GetDiscCRC(), screenshot_width, screenshot_height,
+					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs);
+				compression_str = TRANSLATE_SV("GS", "with LZMA compression");
 			}
 			else
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(
-					new GSDumpZst(m_snapshot, VMManager::GetDiscSerial(), VMManager::GetDiscCRC(), screenshot_width,
-						screenshot_height, screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
-				compression_str = "with Zstandard compression";
+				m_dump = GSDumpBase::CreateZstDump(m_snapshot, VMManager::GetDiscSerial(),
+					VMManager::GetDiscCRC(), screenshot_width, screenshot_height,
+					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs);
+				compression_str = TRANSLATE_SV("GS", "with Zstandard compression");
 			}
 
 			delete[] fd.data;
 
 			Host::AddKeyedOSDMessage("GSDump",
 				fmt::format(TRANSLATE_FS("GS", "Saving {0} GS dump {1} to '{2}'"),
-					(m_dump_frames == 1) ? "single frame" : "multi-frame", compression_str,
+					(m_dump_frames == 1) ? TRANSLATE_SV("GS", "single frame") : TRANSLATE_SV("GS", "multi-frame"), compression_str,
 					Path::GetFileName(m_dump->GetPath())),
 				Host::OSD_INFO_DURATION);
 		}
@@ -810,7 +810,7 @@ static std::string GSGetBaseFilename()
 	std::string filename;
 
 	// append the game serial and title
-	if (std::string name(VMManager::GetTitle()); !name.empty())
+	if (std::string name(VMManager::GetTitle(true)); !name.empty())
 	{
 		Path::SanitizeFileName(&name);
 		if (name.length() > 219)
@@ -876,7 +876,7 @@ void GSRenderer::PresentCurrentFrame()
 		GSTexture* current = g_gs_device->GetCurrent();
 		if (current)
 		{
-			const GSVector4i src_rect(CalculateDrawSrcRect(current));
+			const GSVector4i src_rect(CalculateDrawSrcRect(current, m_real_size));
 			const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
 			const GSVector4 draw_rect(CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
 				src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
@@ -956,7 +956,7 @@ bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool 
 		return false;
 	}
 
-	const GSVector4i src_rect(CalculateDrawSrcRect(current));
+	const GSVector4i src_rect(CalculateDrawSrcRect(current, m_real_size));
 	const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
 
 	const bool is_progressive = (GetVideoMode() == GSVideoMode::SDTV_480P);
@@ -1028,4 +1028,111 @@ bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool 
 	*height = 0;
 	pixels->clear();
 	return false;
+}
+
+void DumpGSPrivRegs(const GSPrivRegSet& r, const std::string& filename)
+{
+	auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wt");
+	if (!fp)
+		return;
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (i == 0 && !r.PMODE.EN1)
+			continue;
+		if (i == 1 && !r.PMODE.EN2)
+			continue;
+
+		std::fprintf(fp.get(), "DISPFB[%d] BP=%05x BW=%u PSM=%u DBX=%u DBY=%u\n",
+			i,
+			r.DISP[i].DISPFB.Block(),
+			r.DISP[i].DISPFB.FBW,
+			r.DISP[i].DISPFB.PSM,
+			r.DISP[i].DISPFB.DBX,
+			r.DISP[i].DISPFB.DBY);
+
+		std::fprintf(fp.get(), "DISPLAY[%d] DX=%u DY=%u DW=%u DH=%u MAGH=%u MAGV=%u\n",
+			i,
+			r.DISP[i].DISPLAY.DX,
+			r.DISP[i].DISPLAY.DY,
+			r.DISP[i].DISPLAY.DW,
+			r.DISP[i].DISPLAY.DH,
+			r.DISP[i].DISPLAY.MAGH,
+			r.DISP[i].DISPLAY.MAGV);
+	}
+
+	std::fprintf(fp.get(), "PMODE EN1=%u EN2=%u CRTMD=%u MMOD=%u AMOD=%u SLBG=%u ALP=%u\n",
+		r.PMODE.EN1,
+		r.PMODE.EN2,
+		r.PMODE.CRTMD,
+		r.PMODE.MMOD,
+		r.PMODE.AMOD,
+		r.PMODE.SLBG,
+		r.PMODE.ALP);
+
+	std::fprintf(fp.get(), "SMODE1 CLKSEL=%u CMOD=%u EX=%u GCONT=%u LC=%u NVCK=%u PCK2=%u PEHS=%u PEVS=%u PHS=%u PRST=%u PVS=%u RC=%u SINT=%u SLCK=%u SLCK2=%u SPML=%u T1248=%u VCKSEL=%u VHP=%u XPCK=%u\n",
+		r.SMODE1.CLKSEL,
+		r.SMODE1.CMOD,
+		r.SMODE1.EX,
+		r.SMODE1.GCONT,
+		r.SMODE1.LC,
+		r.SMODE1.NVCK,
+		r.SMODE1.PCK2,
+		r.SMODE1.PEHS,
+		r.SMODE1.PEVS,
+		r.SMODE1.PHS,
+		r.SMODE1.PRST,
+		r.SMODE1.PVS,
+		r.SMODE1.RC,
+		r.SMODE1.SINT,
+		r.SMODE1.SLCK,
+		r.SMODE1.SLCK2,
+		r.SMODE1.SPML,
+		r.SMODE1.T1248,
+		r.SMODE1.VCKSEL,
+		r.SMODE1.VHP,
+		r.SMODE1.XPCK);
+
+	std::fprintf(fp.get(), "SMODE2 INT=%u FFMD=%u DPMS=%u\n",
+		r.SMODE2.INT,
+		r.SMODE2.FFMD,
+		r.SMODE2.DPMS);
+
+	std::fprintf(fp.get(), "SRFSH %08x_%08x\n",
+		r.SRFSH.U32[0],
+		r.SRFSH.U32[1]);
+
+	std::fprintf(fp.get(), "SYNCH1 %08x_%08x\n",
+		r.SYNCH1.U32[0],
+		r.SYNCH1.U32[1]);
+
+	std::fprintf(fp.get(), "SYNCH2 %08x_%08x\n",
+		r.SYNCH2.U32[0],
+		r.SYNCH2.U32[1]);
+
+	std::fprintf(fp.get(), "SYNCV VBP=%u VBPE=%u VDP=%u VFP=%u VFPE=%u VS=%u\n",
+		r.SYNCV.VBP,
+		r.SYNCV.VBPE,
+		r.SYNCV.VDP,
+		r.SYNCV.VFP,
+		r.SYNCV.VFPE,
+		r.SYNCV.VS);
+
+	std::fprintf(fp.get(), "CSR %08x_%08x\n",
+		r.CSR.U32[0],
+		r.CSR.U32[1]);
+
+	std::fprintf(fp.get(), "BGCOLOR B=%u G=%u R=%u\n",
+		r.BGCOLOR.B,
+		r.BGCOLOR.G,
+		r.BGCOLOR.R);
+
+	std::fprintf(fp.get(), "EXTBUF BP=0x%x BW=%u FBIN=%u WFFMD=%u EMODA=%u EMODC=%u WDX=%u WDY=%u\n",
+		r.EXTBUF.EXBP, r.EXTBUF.EXBW, r.EXTBUF.FBIN, r.EXTBUF.WFFMD,
+		r.EXTBUF.EMODA, r.EXTBUF.EMODC, r.EXTBUF.WDX, r.EXTBUF.WDY);
+
+	std::fprintf(fp.get(), "EXTDATA SX=%u SY=%u SMPH=%u SMPV=%u WW=%u WH=%u\n",
+		r.EXTDATA.SX, r.EXTDATA.SY, r.EXTDATA.SMPH, r.EXTDATA.SMPV, r.EXTDATA.WW, r.EXTDATA.WH);
+
+	std::fprintf(fp.get(), "EXTWRITE EN=%u\n", r.EXTWRITE.WRITE);
 }

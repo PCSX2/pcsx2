@@ -8,6 +8,7 @@
     <ClInclude Include="include\imstb_textedit.h" />
     <ClInclude Include="include\imstb_truetype.h" />
     <ClInclude Include="include\imgui_stdlib.h" />
+    <ClInclude Include="include\imgui_freetype.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\imgui.cpp" />
@@ -16,5 +17,6 @@
     <ClCompile Include="src\imgui_tables.cpp" />
     <ClCompile Include="src\imgui_widgets.cpp" />
     <ClCompile Include="src\imgui_stdlib.cpp" />
+    <ClCompile Include="src\imgui_freetype.cpp" />
   </ItemGroup>
 </Project>

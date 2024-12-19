@@ -1,26 +1,20 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-
-#include "PrecompiledHeader.h"
-
+#include "CDVD/BlockdumpFileReader.h"
+#include "CDVD/ChdFileReader.h"
+#include "CDVD/CsoFileReader.h"
+#include "CDVD/FlatFileReader.h"
+#include "CDVD/GzippedFileReader.h"
 #include "CDVD/IsoFileFormats.h"
 #include "Config.h"
 #include "Host.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
+#include "common/Error.h"
+#include "common/Path.h"
+#include "common/StringUtil.h"
 
 #include "fmt/format.h"
 
@@ -43,13 +37,30 @@ static const char* nameFromType(int type)
 	}
 }
 
+static std::unique_ptr<ThreadedFileReader> GetFileReader(const std::string& path)
+{
+	const std::string_view extension = Path::GetExtension(path);
+
+	if (StringUtil::compareNoCase(extension, "chd"))
+		return std::make_unique<ChdFileReader>();
+
+	if (StringUtil::compareNoCase(extension, "cso") || StringUtil::compareNoCase(extension, "zso"))
+		return std::make_unique<CsoFileReader>();
+
+	if (StringUtil::compareNoCase(extension, "gz"))
+		return std::make_unique<GzippedFileReader>();
+
+	if (StringUtil::compareNoCase(extension, "dump"))
+		return std::make_unique<BlockdumpFileReader>();
+
+	return std::make_unique<FlatFileReader>();
+}
+
 int InputIsoFile::ReadSync(u8* dst, uint lsn)
 {
 	if (lsn >= m_blocks)
 	{
-		std::string msg(fmt::format("isoFile error: Block index is past the end of file! ({} >= {}).", lsn, m_blocks));
-		pxAssertDev(false, msg.c_str());
-		Console.Error(msg.c_str());
+		ERROR_LOG("isoFile error: Block index is past the end of file! ({} >= {}).", lsn, m_blocks);
 		return -1;
 	}
 
@@ -64,27 +75,17 @@ void InputIsoFile::BeginRead2(uint lsn)
 	{
 		// While this usually indicates that the ISO is corrupted, some games do attempt
 		// to read past the end of the disc, so don't error here.
-		Console.WriteLn("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
+		ERROR_LOG("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
 		return;
 	}
 
-	if (lsn >= m_read_lsn && lsn < (m_read_lsn + m_read_count))
-	{
-		// Already buffered
+	// same sector?
+	if (lsn == m_read_lsn)
 		return;
-	}
 
 	m_read_lsn = lsn;
-	m_read_count = 1;
 
-	if (ReadUnit > 1)
-	{
-		//m_read_lsn   = lsn - (lsn % ReadUnit);
-
-		m_read_count = std::min(ReadUnit, m_blocks - m_read_lsn);
-	}
-
-	m_reader->BeginRead(m_readbuffer, m_read_lsn, m_read_count);
+	m_reader->BeginRead(m_readbuffer, m_read_lsn, 1);
 	m_read_inprogress = true;
 }
 
@@ -102,8 +103,11 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 		const int ret = m_reader->FinishRead();
 		m_read_inprogress = false;
 
-		if (ret < 0)
-			return ret;
+		if (ret <= 0)
+		{
+			m_read_lsn = -1;
+			return -1;
+		}
 	}
 
 	int _offset = 0;
@@ -137,7 +141,7 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 	int ndiff = 0;
 	if (diff > 0)
 	{
-		memset(dst, 0, diff);
+		std::memset(dst, 0, diff);
 		_offset = m_blockofs;
 	}
 	else
@@ -148,8 +152,7 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 
 	length = end - _offset;
 
-	uint read_offset = (m_current_lsn - m_read_lsn) * m_blocksize;
-	memcpy(dst + diff, m_readbuffer + ndiff + read_offset, length);
+	std::memcpy(dst + diff, m_readbuffer + ndiff, length);
 
 	if (m_type == ISOTYPE_CD && diff >= 12)
 	{
@@ -181,133 +184,74 @@ void InputIsoFile::_init()
 	m_blocks = 0;
 
 	m_read_inprogress = false;
-	m_read_count = 0;
-	ReadUnit = 0;
 	m_current_lsn = -1;
 	m_read_lsn = -1;
-	m_reader = NULL;
+	m_reader.reset();
 }
 
-// Tests the specified filename to see if it is a supported ISO type.  This function typically
-// executes faster than IsoFile::Open since it does not do the following:
-//  * check for multi-part ISOs.  I tests for header info in the main/root ISO only.
-//  * load blockdump indexes.
-//
-// Note that this is a member method, and that it will clobber any existing ISO state.
-// (assertions are generated in debug mode if the object state is not already closed).
-bool InputIsoFile::Test(std::string srcfile)
-{
-	Close();
-	return Open(std::move(srcfile), true);
-}
-
-bool InputIsoFile::Open(std::string srcfile, bool testOnly)
+bool InputIsoFile::Open(std::string srcfile, Error* error)
 {
 	Close();
 	m_filename = std::move(srcfile);
-
-	bool isBlockdump = false;
-	bool isCompressed = false;
-
-	// First try using a compressed reader.  If it works, go with it.
-	m_reader = CompressedFileReader::GetNewReader(m_filename);
-	isCompressed = m_reader != NULL;
-
-	// If it wasn't compressed, let's open it has a FlatFileReader.
-	if (!isCompressed)
+	m_reader = GetFileReader(m_filename);
+	if (!m_reader->Open(m_filename, error))
 	{
-		// Allow write sharing of the iso based on the ini settings.
-		// Mostly useful for romhacking, where the disc is frequently
-		// changed and the emulator would block modifications
-		m_reader = new FlatFileReader(EmuConfig.CdvdShareWrite);
-	}
-
-	if (!m_reader->Open(m_filename))
-		return false;
-
-	// It might actually be a blockdump file.
-	// Check that before continuing with the FlatFileReader.
-	isBlockdump = BlockdumpFileReader::DetectBlockdump(m_reader);
-	if (isBlockdump)
-	{
-		delete m_reader;
-
-		BlockdumpFileReader* bdr = new BlockdumpFileReader();
-		bdr->Open(m_filename);
-
-		m_blockofs = bdr->GetBlockOffset();
-		m_blocksize = bdr->GetBlockSize();
-
-		m_reader = bdr;
-
-		ReadUnit = 1;
-	}
-
-	bool detected = Detect();
-
-	if (testOnly)
-	{
-		Close();
-		return detected;
-	}
-
-	if (!detected)
-	{
-		Console.Error(fmt::format("Unable to identify the ISO image type for '{}'", m_filename));
-		Close();
+		m_reader.reset();
 		return false;
 	}
 
-	if (!isBlockdump && !isCompressed)
+	if (!Detect())
 	{
-		ReadUnit = MaxReadUnit;
-
-		m_reader->SetDataOffset(m_offset);
-		m_reader->SetBlockSize(m_blocksize);
-
-		// Returns the original reader if single-part or a Multipart reader otherwise
-		m_reader = MultipartFileReader::DetectMultipart(m_reader);
+		Error::SetStringFmt(error, "Unable to identify the ISO image type for '{}'", Path::GetFileName(m_filename));
+		Close();
+		return false;
 	}
 
 	m_blocks = m_reader->GetBlockCount();
 
 	Console.WriteLn(Color_StrongBlue, "isoFile open ok: %s", m_filename.c_str());
 
-	ConsoleIndentScope indent;
-
-	Console.WriteLn("Image type  = %s", nameFromType(m_type));
-	//Console.WriteLn("Fileparts   = %u", m_numparts); // Pointless print, it's 1 unless it says otherwise above
-	DevCon.WriteLn("blocks      = %u", m_blocks);
-	DevCon.WriteLn("offset      = %d", m_offset);
-	DevCon.WriteLn("blocksize   = %u", m_blocksize);
-	DevCon.WriteLn("blockoffset = %d", m_blockofs);
+	Console.WriteLn("  Image type  = %s", nameFromType(m_type));
+	//Console.WriteLn("  Fileparts   = %u", m_numparts); // Pointless print, it's 1 unless it says otherwise above
+	DevCon.WriteLn("  blocks      = %u", m_blocks);
+	DevCon.WriteLn("  offset      = %d", m_offset);
+	DevCon.WriteLn("  blocksize   = %u", m_blocksize);
+	DevCon.WriteLn("  blockoffset = %d", m_blockofs);
 
 	return true;
 }
 
+bool InputIsoFile::Precache(ProgressCallback* progress, Error* error)
+{
+	return m_reader->Precache(progress, error);
+}
+
 void InputIsoFile::Close()
 {
-	delete m_reader;
-	m_reader = NULL;
+	if (m_reader)
+	{
+		m_reader->Close();
+		m_reader.reset();
+	}
 
 	_init();
 }
 
 bool InputIsoFile::IsOpened() const
 {
-	return m_reader != NULL;
+	return m_reader != nullptr;
 }
 
-bool InputIsoFile::tryIsoType(u32 _size, s32 _offset, s32 _blockofs)
+bool InputIsoFile::tryIsoType(u32 size, u32 offset, u32 blockofs)
 {
-	static u8 buf[2456];
+	u8 buf[2456];
 
-	m_blocksize = _size;
-	m_offset = _offset;
-	m_blockofs = _blockofs;
+	m_blocksize = size;
+	m_offset = offset;
+	m_blockofs = blockofs;
 
-	m_reader->SetDataOffset(_offset);
-	m_reader->SetBlockSize(_size);
+	m_reader->SetDataOffset(offset);
+	m_reader->SetBlockSize(size);
 
 	if (ReadSync(buf, 16) < 0)
 		return false;
@@ -329,13 +273,11 @@ bool InputIsoFile::Detect(bool readType)
 {
 	m_type = ISOTYPE_ILLEGAL;
 
-	AsyncFileReader* headpart = m_reader;
-
 	// First sanity check: no sane CD image has less than 16 sectors, since that's what
 	// we need simply to contain a TOC.  So if the file size is not large enough to
 	// accommodate that, it is NOT a CD image --->
 
-	int sectors = headpart->GetBlockCount();
+	int sectors = m_reader->GetBlockCount();
 
 	if (sectors < 17)
 		return false;
@@ -357,13 +299,6 @@ bool InputIsoFile::Detect(bool readType)
 		return true; // NERO RAW 2352
 	if (tryIsoType(2448, 150 * 2048, 0))
 		return true; // NERO RAWQ 2448
-
-	if (tryIsoType(2048, -8, 24))
-		return true; // ISO 2048
-	if (tryIsoType(2352, -8, 0))
-		return true; // RAW 2352
-	if (tryIsoType(2448, -8, 0))
-		return true; // RAWQ 2448
 
 	m_offset = 0;
 	m_blocksize = CD_FRAMESIZE_RAW;

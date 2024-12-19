@@ -1,23 +1,15 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "ExpressionParser.h"
-#include <ctype.h>
-#include <string.h>
-#include <stdio.h>
+
+#include "Host.h"
+#include "common/StringUtil.h"
+
+#include <cctype>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
 
 typedef enum {
 	EXOP_BRACKETL, EXOP_BRACKETR, EXOP_MEML, EXOP_MEMR, EXOP_MEMSIZE, EXOP_SIGNPLUS, EXOP_SIGNMINUS,
@@ -28,8 +20,6 @@ typedef enum {
 } ExpressionOpcodeType;
 
 typedef enum { EXCOMM_CONST, EXCOMM_CONST_FLOAT, EXCOMM_REF, EXCOMM_OP } ExpressionCommand;
-
-static char expressionError[256];
 
 typedef struct {
 	char Name[4];
@@ -96,8 +86,6 @@ bool parseNumber(char* str, int defaultrad, int len, u64& result)
 		str+=2;
 		len-=2;
 	} else {
-		if (!(str[0] >= '0' && str[0] <= '9')) return false;
-
 		if (tolower(str[len-1]) == 'b' && defaultrad != 16)
 		{
 			r = 2;
@@ -219,10 +207,8 @@ bool isAlphaNum(char c)
 		c == '@' || c == '_' || c == '$' || c == '.');
 }
 
-bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, PostfixExpression& dest)
+bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, PostfixExpression& dest, std::string& error)
 {
-	expressionError[0] = 0;
-
 	int infixPos = 0;
 	int infixLen = (int)strlen(infix);
 	ExpressionOpcodeType lastOpcode = EXOP_NONE;
@@ -243,11 +229,17 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 
 		if (first >= '0' && first <= '9')
 		{
-			while (isAlphaNum(infix[infixPos]))
+			while (isAlphaNum(infix[infixPos]) && subPos < static_cast<int>(sizeof(subStr)) - 1)
 			{
 				subStr[subPos++] = infix[infixPos++];
 			}
 			subStr[subPos] = 0;
+
+			if(subPos == sizeof(subStr) - 1)
+			{
+				error = TRANSLATE("ExpressionParser", "Token too long.");
+				return false;
+			}
 
 			u64 value;
 			bool isFloat = false;
@@ -255,19 +247,26 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 				isFloat = true;
 			else if (!parseNumber(subStr,16,subPos,value))
 			{
-				sprintf(expressionError,"Invalid number \"%s\"",subStr);
+				error = StringUtil::StdStringFromFormat(
+					TRANSLATE("ExpressionParser", "Invalid number \"%s\"."), subStr);
 				return false;
 			}
 
 			dest.push_back(ExpressionPair(isFloat?EXCOMM_CONST_FLOAT:EXCOMM_CONST,value));
 			lastOpcode = EXOP_NUMBER;
-		} else if ((first >= 'a' && first <= 'z') || first == '@')
+		} else if ((first >= 'a' && first <= 'z') || first == '@' || first == '_')
 		{
-			while (isAlphaNum(infix[infixPos]))
+			while (isAlphaNum(infix[infixPos]) && subPos < static_cast<int>(sizeof(subStr)) - 1)
 			{
 				subStr[subPos++] = infix[infixPos++];
 			}
 			subStr[subPos] = 0;
+
+			if(subPos == sizeof(subStr) - 1)
+			{
+				error = TRANSLATE("ExpressionParser", "Token too long.");
+				return false;
+			}
 
 			u64 value;
 			if (funcs->parseReference(subStr,value))
@@ -284,14 +283,23 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 				continue;
 			}
 
-			sprintf(expressionError,"Invalid symbol \"%s\"",subStr);
+			if(parseNumber(subStr,16,subPos,value))
+			{
+				dest.push_back(ExpressionPair(EXCOMM_CONST,value));
+				lastOpcode = EXOP_NUMBER;
+				continue;
+			}
+
+			error = StringUtil::StdStringFromFormat(
+				TRANSLATE("ExpressionParser", "Invalid symbol \"%s\"."), subStr);
 			return false;
 		} else {
 			int len;
 			ExpressionOpcodeType type = getExpressionOpcode(&infix[infixPos],len,lastOpcode);
 			if (type == EXOP_NONE)
 			{
-				sprintf(expressionError,"Invalid operator at \"%s\"",&infix[infixPos]);
+				error = StringUtil::StdStringFromFormat(
+					TRANSLATE("ExpressionParser", "Invalid operator at \"%s\"."), &infix[infixPos]);
 				return false;
 			}
 
@@ -306,7 +314,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 				{
 					if (opcodeStack.empty())
 					{
-						sprintf(expressionError,"Closing parenthesis without opening one");
+						error = TRANSLATE("ExpressionParser", "Closing parenthesis without opening one.");
 						return false;
 					}
 					ExpressionOpcodeType t = opcodeStack[opcodeStack.size()-1];
@@ -320,7 +328,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 				{
 					if (opcodeStack.empty())
 					{
-						sprintf(expressionError,"Closing bracket without opening one");
+						error = TRANSLATE("ExpressionParser", "Closing bracket without opening one.");
 						return false;
 					}
 					ExpressionOpcodeType t = opcodeStack[opcodeStack.size()-1];
@@ -373,7 +381,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 
 		if (t == EXOP_BRACKETL)	// opening bracket without closing one
 		{
-			sprintf(expressionError,"Parenthesis not closed");
+			error = TRANSLATE("ExpressionParser", "Parenthesis not closed.");
 			return false;
 		}
 		dest.push_back(ExpressionPair(EXCOMM_OP,t));
@@ -388,13 +396,13 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 		{
 		case EXCOMM_CONST:
 		case EXCOMM_CONST_FLOAT:
-			testPos += sprintf(&test[testPos],"0x%04X ",dest[i].second);
+			testPos += std::snprintf(&test[testPos],std::size(test),"0x%04X ",dest[i].second);
 			break;
 		case EXCOMM_REF:
-			testPos += sprintf(&test[testPos],"r%d ",dest[i].second);
+			testPos += std::snprintf(&test[testPos],std::size(test),"r%d ",dest[i].second);
 			break;
 		case EXCOMM_OP:
-			testPos += sprintf(&test[testPos],"%s ",ExpressionOpcodes[dest[i].second].Name);
+			testPos += std::snprintf(&test[testPos],std::size(test),"%s ",ExpressionOpcodes[dest[i].second].Name);
 			break;
 		};
 	}
@@ -403,7 +411,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 	return true;
 }
 
-bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs, u64& dest)
+bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs, u64& dest, std::string& error)
 {
 	size_t num = 0;
 	u64 opcode;
@@ -432,7 +440,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			opcode = exp[num++].second;
 			if (valueStack.size() < ExpressionOpcodes[opcode].args)
 			{
-				sprintf(expressionError,"Not enough arguments");
+				error = TRANSLATE("ExpressionParser", "Not enough arguments.");
 				return false;
 			}
 			for (int l = 0; l < ExpressionOpcodes[opcode].args; l++)
@@ -447,12 +455,12 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			case EXOP_MEMSIZE:	// must be followed by EXOP_MEM
 				if (exp[num++].second != EXOP_MEM)
 				{
-					sprintf(expressionError,"Invalid memsize operator");
+					error = TRANSLATE("ExpressionParser", "Invalid memsize operator.");
 					return false;
 				}
 
 				u64 val;
-				if(!funcs->getMemoryValue(arg[1],arg[0],val,expressionError))
+				if(!funcs->getMemoryValue(arg[1],arg[0],val,error))
 				{
 					return false;
 				}
@@ -461,7 +469,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			case EXOP_MEM:
 				{
 					u64 val;
-					if (!funcs->getMemoryValue(arg[0],4,val,expressionError))
+					if (!funcs->getMemoryValue(arg[0],4,val,error))
 					{
 						return false;
 					}
@@ -491,7 +499,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			case EXOP_DIV:			// a/b
 				if (arg[0] == 0)
 				{
-					sprintf(expressionError,"Division by zero");
+					error = TRANSLATE("ExpressionParser", "Division by zero.");
 					return false;
 				}
 				if (useFloat)
@@ -502,7 +510,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			case EXOP_MOD:			// a%b
 				if (arg[0] == 0)
 				{
-					sprintf(expressionError,"Modulo by zero");
+					error = TRANSLATE("ExpressionParser", "Modulo by zero.");
 					return false;
 				}
 				valueStack.push_back(arg[1]%arg[0]);
@@ -550,10 +558,16 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 					valueStack.push_back(arg[1]<arg[0]);
 				break;
 			case EXOP_EQUAL:		// a == b
-				valueStack.push_back(arg[1]==arg[0]);
+				if (useFloat)
+					valueStack.push_back(fArg[1] == fArg[0]);
+				else
+					valueStack.push_back(arg[1]==arg[0]);
 				break;
 			case EXOP_NOTEQUAL:			// a != b
-				valueStack.push_back(arg[1]!=arg[0]);
+				if (useFloat)
+					valueStack.push_back(fArg[1] != fArg[0]);
+				else
+					valueStack.push_back(arg[1]!=arg[0]);
 				break;
 			case EXOP_BITAND:			// a&b
 				valueStack.push_back(arg[1]&arg[0]);
@@ -575,7 +589,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			case EXOP_TERTELSE:			// exp ? exp : exp, else muss zuerst kommen!
 				if (exp[num++].second != EXOP_TERTIF)
 				{
-					sprintf(expressionError,"Invalid tertiary operator");
+					error = TRANSLATE("ExpressionParser", "Invalid tertiary operator.");
 					return false;
 				}
 				valueStack.push_back(arg[2]?arg[1]:arg[0]);
@@ -590,15 +604,9 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 	return true;
 }
 
-bool parseExpression(char* exp, IExpressionFunctions* funcs, u64& dest)
+bool parseExpression(const char* exp, IExpressionFunctions* funcs, u64& dest, std::string& error)
 {
 	PostfixExpression postfix;
-	if (!initPostfixExpression(exp,funcs,postfix)) return false;
-	return parsePostfixExpression(postfix,funcs,dest);
-}
-
-const char* getExpressionError()
-{
-	if (expressionError[0] == 0) strcpy(expressionError,"Invalid expression");
-	return expressionError;
+	if (!initPostfixExpression(exp,funcs,postfix,error)) return false;
+	return parsePostfixExpression(postfix,funcs,dest,error);
 }

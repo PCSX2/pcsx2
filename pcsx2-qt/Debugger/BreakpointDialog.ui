@@ -221,9 +221,6 @@
    </layout>
   </widget>
   <widget class="QGroupBox" name="grpExecute">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="geometry">
     <rect>
      <x>110</x>
@@ -233,7 +230,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>Execute</string>
+    <string></string>
    </property>
    <layout class="QFormLayout" name="formLayout_3">
     <item row="0" column="0">

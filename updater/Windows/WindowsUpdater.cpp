@@ -1,26 +1,14 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Updater.h"
 #include "Windows/resource.h"
 
 #include "common/FileSystem.h"
 #include "common/Console.h"
+#include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 #include "common/ProgressCallback.h"
-#include "common/RedtapeWindows.h"
 #include "common/RedtapeWilCom.h"
 
 #include <CommCtrl.h>
@@ -418,7 +406,6 @@ void Win32ProgressCallback::ModalInformation(const char* message)
 	MessageBoxW(m_window_hwnd, StringUtil::UTF8StringToWideString(message).c_str(), L"Information", MB_ICONINFORMATION | MB_OK);
 }
 
-
 static void WaitForProcessToExit(int process_id)
 {
 	HANDLE hProcess = OpenProcess(SYNCHRONIZE, FALSE, process_id);
@@ -429,11 +416,15 @@ static void WaitForProcessToExit(int process_id)
 	CloseHandle(hProcess);
 }
 
-#include "UpdaterExtractor.h"
-
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
 	Win32ProgressCallback progress;
+
+	const bool com_initialized = SUCCEEDED(CoInitializeEx(nullptr, COINIT_MULTITHREADED));
+	const ScopedGuard com_guard = [com_initialized]() {
+		if (com_initialized)
+			CoUninitialize();
+	};
 
 	int argc = 0;
 	wil::unique_hlocal_ptr<LPWSTR[]> argv(CommandLineToArgvW(GetCommandLineW(), &argc));
@@ -496,7 +487,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (!updater.CommitUpdate())
 	{
 		progress.ModalError(
-			"Failed to commit update. Your installation may be corrupted, please re-download a fresh version from GitHub.");
+			"Failed to commit update. Your installation may be corrupted, please re-download a fresh version from pcsx2.net.");
 		return 1;
 	}
 
@@ -508,8 +499,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	{
 		const std::string full_path = destination_directory + FS_OSPATH_SEPARATOR_STR + actual_exe;
 		progress.DisplayFormattedInformation("Moving '%s' to '%S'", full_path.c_str(), program_to_launch.c_str());
-		const bool ok = MoveFileExW(StringUtil::UTF8StringToWideString(full_path).c_str(),
-			program_to_launch.c_str(), MOVEFILE_REPLACE_EXISTING);
+		const bool ok = MoveFileExW(FileSystem::GetWin32Path(full_path).c_str(),
+			FileSystem::GetWin32Path(StringUtil::WideStringToUTF8String(program_to_launch)).c_str(),
+			MOVEFILE_REPLACE_EXISTING);
 		if (!ok)
 		{
 			progress.DisplayFormattedModalError("Failed to rename '%s' to %S", full_path.c_str(), program_to_launch.c_str());
@@ -522,10 +514,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		return 1;
 	}
 
-	progress.ModalInformation("Update complete.");
-
 	progress.DisplayFormattedInformation("Launching '%s'...",
 		StringUtil::WideStringToUTF8String(program_to_launch).c_str());
-	ShellExecuteW(nullptr, L"open", program_to_launch.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+	ShellExecuteW(nullptr, L"open", program_to_launch.c_str(), L"-updatecleanup", nullptr, SW_SHOWNORMAL);
 	return 0;
 }

@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "SmallString.h"
 #include "Assertions.h"
@@ -51,14 +39,14 @@ SmallStringBase::SmallStringBase(SmallStringBase&& move)
 	assign(std::move(move));
 }
 
-SmallStringBase::SmallStringBase(const std::string_view& sv)
+SmallStringBase::SmallStringBase(const std::string_view sv)
 {
 	assign(sv);
 }
 
- SmallStringBase::SmallStringBase(const std::string& str)
+SmallStringBase::SmallStringBase(const std::string& str)
 {
-	 assign(str);
+	assign(str);
 }
 
 SmallStringBase::~SmallStringBase()
@@ -69,56 +57,61 @@ SmallStringBase::~SmallStringBase()
 
 void SmallStringBase::reserve(u32 new_reserve)
 {
-	if (m_buffer_size >= new_reserve)
+	const u32 real_reserve = new_reserve + 1;
+	if (m_buffer_size >= real_reserve)
 		return;
 
 	if (m_on_heap)
 	{
-		char* new_ptr = static_cast<char*>(std::realloc(m_buffer, new_reserve));
+		char* new_ptr = static_cast<char*>(std::realloc(m_buffer, real_reserve));
 		if (!new_ptr)
 			pxFailRel("Memory allocation failed.");
 
 #ifdef _DEBUG
-		std::memset(new_ptr + m_length, 0, new_reserve - m_length);
+		std::memset(new_ptr + m_length, 0, real_reserve - m_length);
 #endif
 		m_buffer = new_ptr;
 	}
 	else
 	{
-		char* new_ptr = static_cast<char*>(std::malloc(new_reserve));
+		char* new_ptr = static_cast<char*>(std::malloc(real_reserve));
 		if (!new_ptr)
 			pxFailRel("Memory allocation failed.");
 
 		if (m_length > 0)
 			std::memcpy(new_ptr, m_buffer, m_length);
 #ifdef _DEBUG
-		std::memset(new_ptr + m_length, 0, new_reserve - m_length);
+		std::memset(new_ptr + m_length, 0, real_reserve - m_length);
 #else
 		new_ptr[m_length] = 0;
 #endif
 		m_buffer = new_ptr;
 		m_on_heap = true;
 	}
+
+	m_buffer_size = new_reserve;
 }
 
 void SmallStringBase::shrink_to_fit()
 {
-	if (!m_on_heap || m_length == m_buffer_size)
+	const u32 buffer_size = (m_length + 1);
+	if (!m_on_heap || buffer_size == m_buffer_size)
 		return;
 
 	if (m_length == 0)
 	{
 		std::free(m_buffer);
+		m_buffer = nullptr;
 		m_buffer_size = 0;
 		return;
 	}
 
-	char* new_ptr = static_cast<char*>(std::realloc(m_buffer, m_length));
+	char* new_ptr = static_cast<char*>(std::realloc(m_buffer, buffer_size));
 	if (!new_ptr)
 		pxFailRel("Memory allocation failed.");
 
 	m_buffer = new_ptr;
-	m_buffer_size = m_length;
+	m_buffer_size = buffer_size;
 }
 
 std::string_view SmallStringBase::view() const
@@ -132,7 +125,7 @@ SmallStringBase& SmallStringBase::operator=(SmallStringBase&& move)
 	return *this;
 }
 
-SmallStringBase& SmallStringBase::operator=(const std::string_view& str)
+SmallStringBase& SmallStringBase::operator=(const std::string_view str)
 {
 	assign(str);
 	return *this;
@@ -179,6 +172,18 @@ void SmallStringBase::append(const char* str, u32 length)
 	m_buffer[m_length] = 0;
 }
 
+void SmallStringBase::append_hex(const void* data, size_t len)
+{
+	if (len == 0)
+		return;
+
+	make_room_for(static_cast<u32>(len) * 4);
+	const u8* bytes = static_cast<const u8*>(data);
+	append_format("{:02X}", bytes[0]);
+	for (size_t i = 1; i < len; i++)
+		append_format(", {:02X}", bytes[i]);
+}
+
 void SmallStringBase::prepend(const char* str, u32 length)
 {
 	if (length == 0)
@@ -214,27 +219,27 @@ void SmallStringBase::append(const std::string& str)
 	append(str.c_str(), static_cast<u32>(str.length()));
 }
 
-void SmallStringBase::append(const std::string_view& str)
+void SmallStringBase::append(const std::string_view str)
 {
 	append(str.data(), static_cast<u32>(str.length()));
 }
 
-void SmallStringBase::append_format(const char* format, ...)
+void SmallStringBase::append_sprintf(const char* format, ...)
 {
 	std::va_list ap;
 	va_start(ap, format);
-	append_format_va(format, ap);
+	append_vsprintf(format, ap);
 	va_end(ap);
 }
 
-void SmallStringBase::append_format_va(const char* format, va_list ap)
+void SmallStringBase::append_vsprintf(const char* format, va_list ap)
 {
 	// We have a 1KB byte buffer on the stack here. If this is too little, we'll grow it via the heap,
 	// but 1KB should be enough for most strings.
 	char stack_buffer[1024];
 	char* heap_buffer = nullptr;
 	char* buffer = stack_buffer;
-	u32 buffer_size = std::size(stack_buffer);
+	u32 buffer_size = static_cast<u32>(std::size(stack_buffer));
 	u32 written;
 
 	for (;;)
@@ -280,27 +285,27 @@ void SmallStringBase::prepend(const std::string& str)
 	prepend(str.c_str(), static_cast<u32>(str.length()));
 }
 
-void SmallStringBase::prepend(const std::string_view& str)
+void SmallStringBase::prepend(const std::string_view str)
 {
 	prepend(str.data(), static_cast<u32>(str.length()));
 }
 
-void SmallStringBase::prepend_format(const char* format, ...)
+void SmallStringBase::prepend_sprintf(const char* format, ...)
 {
 	va_list ap;
 	va_start(ap, format);
-	prepend_format_va(format, ap);
+	prepend_vsprintf(format, ap);
 	va_end(ap);
 }
 
-void SmallStringBase::prepend_format_va(const char* format, va_list ArgPtr)
+void SmallStringBase::prepend_vsprintf(const char* format, va_list ArgPtr)
 {
 	// We have a 1KB byte buffer on the stack here. If this is too little, we'll grow it via the heap,
 	// but 1KB should be enough for most strings.
 	char stack_buffer[1024];
 	char* heap_buffer = NULL;
 	char* buffer = stack_buffer;
-	u32 buffer_size = std::size(stack_buffer);
+	u32 buffer_size = static_cast<u32>(std::size(stack_buffer));
 	u32 written;
 
 	for (;;)
@@ -366,23 +371,23 @@ void SmallStringBase::insert(s32 offset, const std::string& str)
 	insert(offset, str.c_str(), static_cast<u32>(str.size()));
 }
 
-void SmallStringBase::insert(s32 offset, const std::string_view& str)
+void SmallStringBase::insert(s32 offset, const std::string_view str)
 {
 	insert(offset, str.data(), static_cast<u32>(str.size()));
 }
 
-void SmallStringBase::format(const char* format, ...)
+void SmallStringBase::sprintf(const char* format, ...)
 {
 	va_list ap;
 	va_start(ap, format);
-	format_va(format, ap);
+	vsprintf(format, ap);
 	va_end(ap);
 }
 
-void SmallStringBase::format_va(const char* format, va_list ap)
+void SmallStringBase::vsprintf(const char* format, va_list ap)
 {
 	clear();
-	append_format_va(format, ap);
+	append_vsprintf(format, ap);
 }
 
 void SmallStringBase::assign(const SmallStringBase& copy)
@@ -428,10 +433,16 @@ void SmallStringBase::assign(const std::string& str)
 	append(str.data(), static_cast<u32>(str.size()));
 }
 
-void SmallStringBase::assign(const std::string_view& str)
+void SmallStringBase::assign(const std::string_view str)
 {
 	clear();
 	append(str.data(), static_cast<u32>(str.size()));
+}
+
+void SmallStringBase::vformat(fmt::string_view fmt, fmt::format_args args)
+{
+	clear();
+	fmt::vformat_to(std::back_inserter(*this), fmt, args);
 }
 
 bool SmallStringBase::equals(const char* str) const
@@ -447,10 +458,16 @@ bool SmallStringBase::equals(const SmallStringBase& str) const
 	return (m_length == str.m_length && (m_length == 0 || std::strcmp(m_buffer, str.m_buffer) == 0));
 }
 
-bool SmallStringBase::equals(const std::string_view& str) const
+bool SmallStringBase::equals(const std::string_view str) const
 {
 	return (m_length == static_cast<u32>(str.length()) &&
-			(m_length == 0 || CASE_N_COMPARE(m_buffer, str.data(), m_length) == 0));
+			(m_length == 0 || std::memcmp(m_buffer, str.data(), m_length) == 0));
+}
+
+bool SmallStringBase::equals(const std::string& str) const
+{
+	return (m_length == static_cast<u32>(str.length()) &&
+			(m_length == 0 || std::memcmp(m_buffer, str.data(), m_length) == 0));
 }
 
 bool SmallStringBase::iequals(const char* otherText) const
@@ -466,30 +483,114 @@ bool SmallStringBase::iequals(const SmallStringBase& str) const
 	return (m_length == str.m_length && (m_length == 0 || std::strcmp(m_buffer, str.m_buffer) == 0));
 }
 
-bool SmallStringBase::iequals(const std::string_view& str) const
+bool SmallStringBase::iequals(const std::string_view str) const
 {
 	return (m_length == static_cast<u32>(str.length()) &&
 			(m_length == 0 || CASE_N_COMPARE(m_buffer, str.data(), m_length) == 0));
 }
 
-int SmallStringBase::compare(const SmallStringBase& str) const
+bool SmallStringBase::iequals(const std::string& str) const
 {
-	return std::strcmp(m_buffer, str.m_buffer);
+	return (m_length == static_cast<u32>(str.length()) &&
+			(m_length == 0 || CASE_N_COMPARE(m_buffer, str.data(), m_length) == 0));
 }
 
 int SmallStringBase::compare(const char* otherText) const
 {
-	return std::strcmp(m_buffer, otherText);
+	return compare(std::string_view(otherText));
 }
 
-int SmallStringBase::icompare(const SmallStringBase& otherString) const
+int SmallStringBase::compare(const SmallStringBase& str) const
 {
-	return CASE_COMPARE(m_buffer, otherString.m_buffer);
+	if (m_length == 0)
+		return (str.m_length == 0) ? 0 : -1;
+	else if (str.m_length == 0)
+		return 1;
+
+	const int res = std::strncmp(m_buffer, str.m_buffer, std::min(m_length, str.m_length));
+	if (m_length == str.m_length || res != 0)
+		return res;
+	else
+		return (m_length > str.m_length) ? 1 : -1;
+}
+
+int SmallStringBase::compare(const std::string_view str) const
+{
+	const u32 slength = static_cast<u32>(str.length());
+	if (m_length == 0)
+		return (slength == 0) ? 0 : -1;
+	else if (slength == 0)
+		return 1;
+
+	const int res = std::strncmp(m_buffer, str.data(), std::min(m_length, slength));
+	if (m_length == slength || res != 0)
+		return res;
+	else
+		return (m_length > slength) ? 1 : -1;
+}
+
+int SmallStringBase::compare(const std::string& str) const
+{
+	const u32 slength = static_cast<u32>(str.length());
+	if (m_length == 0)
+		return (slength == 0) ? 0 : -1;
+	else if (slength == 0)
+		return 1;
+
+	const int res = std::strncmp(m_buffer, str.data(), std::min(m_length, slength));
+	if (m_length == slength || res != 0)
+		return res;
+	else
+		return (m_length > slength) ? 1 : -1;
 }
 
 int SmallStringBase::icompare(const char* otherText) const
 {
-	return CASE_COMPARE(m_buffer, otherText);
+	return icompare(std::string_view(otherText));
+}
+
+int SmallStringBase::icompare(const SmallStringBase& str) const
+{
+	if (m_length == 0)
+		return (str.m_length == 0) ? 0 : -1;
+	else if (str.m_length == 0)
+		return 1;
+
+	const int res = CASE_N_COMPARE(m_buffer, str.m_buffer, std::min(m_length, str.m_length));
+	if (m_length == str.m_length || res != 0)
+		return res;
+	else
+		return (m_length > str.m_length) ? 1 : -1;
+}
+
+int SmallStringBase::icompare(const std::string_view str) const
+{
+	const u32 slength = static_cast<u32>(str.length());
+	if (m_length == 0)
+		return (slength == 0) ? 0 : -1;
+	else if (slength == 0)
+		return 1;
+
+	const int res = CASE_N_COMPARE(m_buffer, str.data(), std::min(m_length, slength));
+	if (m_length == slength || res != 0)
+		return res;
+	else
+		return (m_length > slength) ? 1 : -1;
+}
+
+int SmallStringBase::icompare(const std::string& str) const
+{
+	const u32 slength = static_cast<u32>(str.length());
+	if (m_length == 0)
+		return (slength == 0) ? 0 : -1;
+	else if (slength == 0)
+		return 1;
+
+	const int res = CASE_N_COMPARE(m_buffer, str.data(), std::min(m_length, slength));
+	if (m_length == slength || res != 0)
+		return res;
+	else
+		return (m_length > slength) ? 1 : -1;
 }
 
 bool SmallStringBase::starts_with(const char* str, bool case_sensitive) const
@@ -512,7 +613,17 @@ bool SmallStringBase::starts_with(const SmallStringBase& str, bool case_sensitiv
 							  (CASE_N_COMPARE(str.m_buffer, m_buffer, other_length) == 0);
 }
 
-bool SmallStringBase::starts_with(const std::string_view& str, bool case_sensitive) const
+bool SmallStringBase::starts_with(const std::string_view str, bool case_sensitive) const
+{
+	const u32 other_length = static_cast<u32>(str.length());
+	if (other_length > m_length)
+		return false;
+
+	return (case_sensitive) ? (std::strncmp(str.data(), m_buffer, other_length) == 0) :
+							  (CASE_N_COMPARE(str.data(), m_buffer, other_length) == 0);
+}
+
+bool SmallStringBase::starts_with(const std::string& str, bool case_sensitive) const
 {
 	const u32 other_length = static_cast<u32>(str.length());
 	if (other_length > m_length)
@@ -544,7 +655,18 @@ bool SmallStringBase::ends_with(const SmallStringBase& str, bool case_sensitive)
 							  (CASE_N_COMPARE(str.m_buffer, m_buffer + start_offset, other_length) == 0);
 }
 
-bool SmallStringBase::ends_with(const std::string_view& str, bool case_sensitive) const
+bool SmallStringBase::ends_with(const std::string_view str, bool case_sensitive) const
+{
+	const u32 other_length = static_cast<u32>(str.length());
+	if (other_length > m_length)
+		return false;
+
+	const u32 start_offset = m_length - other_length;
+	return (case_sensitive) ? (std::strncmp(str.data(), m_buffer + start_offset, other_length) == 0) :
+							  (CASE_N_COMPARE(str.data(), m_buffer + start_offset, other_length) == 0);
+}
+
+bool SmallStringBase::ends_with(const std::string& str, bool case_sensitive) const
 {
 	const u32 other_length = static_cast<u32>(str.length());
 	if (other_length > m_length)
@@ -594,6 +716,16 @@ s32 SmallStringBase::find(const char* str, u32 offset) const
 	pxAssert(offset <= m_length);
 	const char* at = std::strstr(m_buffer + offset, str);
 	return at ? static_cast<s32>(at - m_buffer) : -1;
+}
+
+u32 SmallStringBase::count(char ch) const
+{
+	const char* ptr = m_buffer;
+	const char* end = ptr + m_length;
+	u32 count = 0;
+	while (ptr != end)
+		count += static_cast<u32>(*(ptr++) == ch);
+	return count;
 }
 
 void SmallStringBase::resize(u32 new_size, char fill, bool shrink_if_smaller)

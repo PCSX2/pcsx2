@@ -1,21 +1,10 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
-#include <QtWidgets/QWidget>
+#include <QtGui/QStandardItemModel>
+#include <QtCore/QSortFilterProxyModel>
 
 #include "ui_GameCheatSettingsWidget.h"
 
@@ -32,34 +21,41 @@ namespace GameList
 	struct Entry;
 }
 
-class SettingsDialog;
+class SettingsWindow;
 
 class GameCheatSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	GameCheatSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	GameCheatSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~GameCheatSettingsWidget();
 
+	void disableAllCheats();
+
+protected:
+	void resizeEvent(QResizeEvent* event) override;
+
 private Q_SLOTS:
-	void onCheatListItemDoubleClicked(QTreeWidgetItem* item, int column);
-	void onCheatListItemChanged(QTreeWidgetItem* item, int column);
+	void onCheatListItemDoubleClicked(const QModelIndex& index);
+	void onCheatListItemChanged(QStandardItem* item);
 	void onReloadClicked();
 	void updateListEnabled();
-
-private:
-	QTreeWidgetItem* getTreeWidgetParent(const std::string_view& parent);
-	void populateTreeWidgetItem(QTreeWidgetItem* item, const Patch::PatchInfo& pi, bool enabled);
-	void setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings);
-	void setStateForAll(bool enabled);
-	void setStateRecursively(QTreeWidgetItem* parent, bool enabled);
 	void reloadList();
 
-	Ui::GameCheatSettingsWidget m_ui;
-	SettingsDialog* m_dialog;
+private:
+	QStandardItem* getTreeViewParent(const std::string_view parent);
+	QList<QStandardItem*> populateTreeViewRow(const Patch::PatchInfo& pi, bool enabled);
+	void setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings);
+	void setStateForAll(bool enabled);
+	void setStateRecursively(QStandardItem* parent, bool enabled);
 
-	UnorderedStringMap<QTreeWidgetItem*> m_parent_map;
+	Ui::GameCheatSettingsWidget m_ui;
+	SettingsWindow* m_dialog;
+	QStandardItemModel* m_model = nullptr;
+	QSortFilterProxyModel* m_model_proxy = nullptr;
+
+	UnorderedStringMap<QStandardItem*> m_parent_map;
 	std::vector<Patch::PatchInfo> m_patches;
 	std::vector<std::string> m_enabled_patches;
 };

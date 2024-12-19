@@ -1,36 +1,10 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-2.0+
 
-#include "PrecompiledHeader.h"
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/qemu-usb/qusb.h"
 
 #define USB_DEVICE_GET_CLASS(p) (&p->klass)
-
-#if 0
-// Unused
-static void usb_device_realize(USBDevice* dev /*, Error **errp*/)
-{
-	USBDeviceClass* klass = USB_DEVICE_GET_CLASS(dev);
-
-	if (klass->realize)
-	{
-		klass->realize(dev /*, errp*/);
-	}
-}
-#endif
 
 USBDevice* usb_device_find_device(USBDevice* dev, uint8_t addr)
 {
@@ -39,21 +13,8 @@ USBDevice* usb_device_find_device(USBDevice* dev, uint8_t addr)
 	{
 		return klass->find_device(dev, addr);
 	}
-	return NULL;
+	return nullptr;
 }
-
-#if 0
-// Unused
-static void usb_device_unrealize(USBDevice* dev /*, Error **errp*/)
-{
-	USBDeviceClass* klass = USB_DEVICE_GET_CLASS(dev);
-
-	if (klass->unrealize)
-	{
-		klass->unrealize(dev /*, errp*/);
-	}
-}
-#endif
 
 void usb_device_cancel_packet(USBDevice* dev, USBPacket* p)
 {
@@ -100,12 +61,6 @@ void usb_device_handle_data(USBDevice* dev, USBPacket* p)
 		klass->handle_data(dev, p);
 	}
 }
-
-/*const char *usb_device_get_product_desc(USBDevice *dev)
-{
-    USBDeviceClass *klass = USB_DEVICE_GET_CLASS(dev);
-    return klass->product_desc;
-}*/
 
 const USBDesc* usb_device_get_usb_desc(USBDevice* dev)
 {

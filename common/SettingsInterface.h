@@ -1,32 +1,25 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include "Pcsx2Defs.h"
+#include "SmallString.h"
+
 #include <string>
 #include <optional>
 #include <vector>
+
+class Error;
 
 class SettingsInterface
 {
 public:
 	virtual ~SettingsInterface() = default;
 
-	virtual bool Save() = 0;
+	virtual bool Save(Error* error = nullptr) = 0;
 	virtual void Clear() = 0;
+	virtual bool IsEmpty() = 0;
 
 	virtual bool GetIntValue(const char* section, const char* key, int* value) const = 0;
 	virtual bool GetUIntValue(const char* section, const char* key, uint* value) const = 0;
@@ -34,6 +27,7 @@ public:
 	virtual bool GetDoubleValue(const char* section, const char* key, double* value) const = 0;
 	virtual bool GetBoolValue(const char* section, const char* key, bool* value) const = 0;
 	virtual bool GetStringValue(const char* section, const char* key, std::string* value) const = 0;
+	virtual bool GetStringValue(const char* section, const char* key, SmallStringBase* value) const = 0;
 
 	virtual void SetIntValue(const char* section, const char* key, int value) = 0;
 	virtual void SetUIntValue(const char* section, const char* key, uint value) = 0;
@@ -53,6 +47,8 @@ public:
 	virtual bool ContainsValue(const char* section, const char* key) const = 0;
 	virtual void DeleteValue(const char* section, const char* key) = 0;
 	virtual void ClearSection(const char* section) = 0;
+	virtual void RemoveSection(const char* section) = 0;
+	virtual void RemoveEmptySections() = 0;
 
 	__fi int GetIntValue(const char* section, const char* key, int default_value = 0) const
 	{
@@ -92,6 +88,22 @@ public:
 		return value;
 	}
 
+	__fi SmallString GetSmallStringValue(const char* section, const char* key, const char* default_value = "") const
+	{
+		SmallString value;
+		if (!GetStringValue(section, key, &value))
+			value.assign(default_value);
+		return value;
+	}
+
+	__fi TinyString GetTinyStringValue(const char* section, const char* key, const char* default_value = "") const
+	{
+		TinyString value;
+		if (!GetStringValue(section, key, &value))
+			value.assign(default_value);
+		return value;
+	}
+
 	__fi std::optional<int> GetOptionalIntValue(const char* section, const char* key, std::optional<int> default_value = std::nullopt) const
 	{
 		int ret;
@@ -125,7 +137,29 @@ public:
 	__fi std::optional<std::string> GetOptionalStringValue(const char* section, const char* key, std::optional<const char*> default_value = std::nullopt) const
 	{
 		std::string ret;
-		return GetStringValue(section, key, &ret) ? std::optional<std::string>(ret) : default_value;
+		return GetStringValue(section, key, &ret) ? std::optional<std::string>(ret) :
+													(default_value.has_value() ? std::optional<std::string>(default_value.value()) :
+																				 std::optional<std::string>());
+	}
+
+	__fi std::optional<SmallString> GetOptionalSmallStringValue(const char* section, const char* key,
+		std::optional<const char*> default_value = std::nullopt) const
+	{
+		SmallString ret;
+		return GetStringValue(section, key, &ret) ?
+				   std::optional<SmallString>(ret) :
+				   (default_value.has_value() ? std::optional<SmallString>(default_value.value()) :
+												std::optional<SmallString>());
+	}
+
+	__fi std::optional<TinyString> GetOptionalTinyStringValue(const char* section, const char* key,
+		std::optional<const char*> default_value = std::nullopt) const
+	{
+		TinyString ret;
+		return GetStringValue(section, key, &ret) ?
+				   std::optional<TinyString>(ret) :
+				   (default_value.has_value() ? std::optional<TinyString>(default_value.value()) :
+												std::optional<TinyString>());
 	}
 
 	__fi void SetOptionalIntValue(const char* section, const char* key, const std::optional<int>& value)

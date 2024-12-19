@@ -1,18 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #define _disVUOpcodes(VU) \
  \
@@ -50,17 +37,17 @@ MakeDisF(dis##VU##MI_RGET, 		dNameU("RGET");    dCP232i(REG_R); dCP2128f(_Ft_);)
 MakeDisF(dis##VU##MI_RNEXT, 	dNameU("RNEXT");   dCP232i(REG_R); dCP2128f(_Ft_);) \
 MakeDisF(dis##VU##MI_RXOR, 		dNameU("RXOR");    dCP232i(REG_R); dCP232f(_Fs_, _Fsf_);) \
 MakeDisF(dis##VU##MI_WAITQ, 	dName("WAITQ");  ) \
-MakeDisF(dis##VU##MI_FSAND, 	dName("FSAND");   dCP232i(_It_); dCP232i(REG_STATUS_FLAG); sprintf(ostrA, " %.3x,", code&0xfff); ) \
-MakeDisF(dis##VU##MI_FSEQ, 		dName("FSEQ");    dCP232i(_It_); dCP232i(REG_STATUS_FLAG); sprintf(ostrA, " %.3x,", code&0xfff);) \
-MakeDisF(dis##VU##MI_FSOR, 		dName("FSOR");    dCP232i(_It_); dCP232i(REG_STATUS_FLAG); sprintf(ostrA, " %.3x,", code&0xfff);) \
+MakeDisF(dis##VU##MI_FSAND, 	dName("FSAND");   dCP232i(_It_); dCP232i(REG_STATUS_FLAG); std::snprintf(ostrA, ostrAL, " %.3x,", code&0xfff); ) \
+MakeDisF(dis##VU##MI_FSEQ, 		dName("FSEQ");    dCP232i(_It_); dCP232i(REG_STATUS_FLAG); std::snprintf(ostrA, ostrAL, " %.3x,", code&0xfff);) \
+MakeDisF(dis##VU##MI_FSOR, 		dName("FSOR");    dCP232i(_It_); dCP232i(REG_STATUS_FLAG); std::snprintf(ostrA, ostrAL, " %.3x,", code&0xfff);) \
 MakeDisF(dis##VU##MI_FSSET, 	dName("FSSET");   dCP232i(REG_STATUS_FLAG);) \
 MakeDisF(dis##VU##MI_FMAND, 	dName("FMAND");   dCP232i(_It_); dCP232i(REG_MAC_FLAG); dCP232i(_Is_);) \
 MakeDisF(dis##VU##MI_FMEQ, 		dName("FMEQ");    dCP232i(_It_); dCP232i(REG_MAC_FLAG); dCP232i(_Is_);) \
 MakeDisF(dis##VU##MI_FMOR, 		dName("FMOR");    dCP232i(_It_); dCP232i(REG_MAC_FLAG); dCP232i(_Is_);) \
-MakeDisF(dis##VU##MI_FCAND, 	dName("FCAND");   dCP232i(1);    sprintf(ostrA, " %8.8x,", code&0xffffff); ) \
+MakeDisF(dis##VU##MI_FCAND, 	dName("FCAND");   dCP232i(1);    std::snprintf(ostrA, ostrAL, " %8.8x,", code&0xffffff); ) \
 MakeDisF(dis##VU##MI_FCEQ, 		dName("FCEQ");    dCP232i(1);    dCP232i(REG_CLIP_FLAG);) \
 MakeDisF(dis##VU##MI_FCOR, 		dName("FCOR");    dCP232i(1);    dCP232i(REG_CLIP_FLAG);) \
-MakeDisF(dis##VU##MI_FCSET, 	dName("FCSET");   dCP232i(REG_CLIP_FLAG); sprintf(ostrA, " %.6x,", code&0xffffff); ) \
+MakeDisF(dis##VU##MI_FCSET, 	dName("FCSET");   dCP232i(REG_CLIP_FLAG); std::snprintf(ostrA, ostrAL, " %.6x,", code&0xffffff); ) \
 MakeDisF(dis##VU##MI_FCGET, 	dName("FCGET");   dCP232i(_It_); dCP232i(REG_CLIP_FLAG);) \
 MakeDisF(dis##VU##MI_IBEQ, 		dName("IBEQ");    dImm11(); dCP232i(_It_); dCP232i(_Is_);) \
 MakeDisF(dis##VU##MI_IBGEZ, 	dName("IBEZ");    dImm11(); dCP232i(_It_); dCP232i(_Is_);) \

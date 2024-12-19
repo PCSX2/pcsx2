@@ -1,162 +1,382 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "ChdFileReader.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/ProgressCallback.h"
+#include "common/SmallString.h"
 #include "common/StringUtil.h"
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"
-#endif
 #include "libchdr/chd.h"
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+#include "fmt/format.h"
+#include "xxhash.h"
 
-ChdFileReader::ChdFileReader()
+static constexpr u32 MAX_PARENTS = 32; // Surely someone wouldn't be insane enough to go beyond this...
+static std::vector<std::pair<std::string, chd_header>> s_chd_hash_cache; // <filename, header>
+static std::recursive_mutex s_chd_hash_cache_mutex;
+
+// Provides an implementation of core_file which allows us to control if the underlying FILE handle is freed.
+// Additionally, this class allows greater control and feedback while precaching CHD files.
+// The lifetime of ChdCoreFileWrapper will be equal to that of the relevant chd_file,
+// ChdCoreFileWrapper will also get destroyed if chd_open_core_file fails.
+class ChdCoreFileWrapper
 {
-	m_blocksize = 2048;
-	ChdFile = nullptr;
-}
+	DeclareNoncopyableObject(ChdCoreFileWrapper);
+
+private:
+	core_file m_core;
+	std::FILE* m_file;
+	bool m_free_file = false;
+	ChdCoreFileWrapper* m_parent = nullptr;
+	std::unique_ptr<u8[]> m_file_cache;
+	s64 m_file_cache_size;
+	s64 m_file_cache_pos;
+
+public:
+	ChdCoreFileWrapper(std::FILE* file, ChdCoreFileWrapper* parent)
+		: m_file{file}
+		, m_parent{parent}
+	{
+		m_core.argp = this;
+		m_core.fsize = FSize;
+		m_core.fread = FRead;
+		m_core.fclose = FClose;
+		m_core.fseek = FSeek;
+	}
+
+	~ChdCoreFileWrapper()
+	{
+		if (m_free_file && m_file)
+			std::fclose(m_file);
+	}
+
+	core_file* GetCoreFile()
+	{
+		return &m_core;
+	}
+
+	static ChdCoreFileWrapper* FromCoreFile(core_file* file)
+	{
+		return reinterpret_cast<ChdCoreFileWrapper*>(file->argp);
+	}
+
+	void SetFileOwner(bool isOwner)
+	{
+		m_free_file = isOwner;
+	}
+
+	s64 GetPrecacheSize()
+	{
+		const s64 size = static_cast<size_t>(FileSystem::FSize64(m_file));
+		if (m_parent != nullptr)
+			return m_parent->GetPrecacheSize() + size;
+		else
+			return size;
+	}
+
+	bool Precache(ProgressCallback* progress, Error* error)
+	{
+		progress->SetProgressRange(100);
+
+		const s64 size = GetPrecacheSize();
+		return PrecacheInternal(progress, error, 0, size);
+	}
+
+private:
+	bool PrecacheInternal(ProgressCallback* progress, Error* error, s64 startSize, s64 finalSize)
+	{
+		m_file_cache_size = FileSystem::FSize64(m_file);
+		if (m_file_cache_size <= 0)
+		{
+			Error::SetStringView(error, "Failed to determine file size.");
+			return false;
+		}
+
+		// Copy the current file position.
+		m_file_cache_pos = FileSystem::FTell64(m_file);
+		if (m_file_cache_pos <= 0)
+		{
+			Error::SetStringView(error, "Failed to determine file position.");
+			return false;
+		}
+
+		m_file_cache = std::make_unique_for_overwrite<u8[]>(m_file_cache_size);
+		if (FileSystem::FSeek64(m_file, 0, SEEK_SET) != 0 ||
+			FileSystem::ReadFileWithPartialProgress(
+				m_file, m_file_cache.get(), m_file_cache_size, progress,
+				(startSize * 100) / finalSize,
+				((startSize + m_file_cache_size) * 100) / finalSize,
+				error) != static_cast<size_t>(m_file_cache_size))
+		{
+			m_file_cache.reset();
+			// Precache failed, continue using file
+			// Restore file position incase it's used for subsequent reads
+			FileSystem::FSeek64(m_file, m_file_cache_pos, SEEK_SET);
+			Error::SetStringView(error, "Failed to read part of the file.");
+			return false;
+		}
+
+		startSize += m_file_cache_size;
+
+		if (m_parent)
+		{
+			if (!m_parent->PrecacheInternal(progress, error, startSize, finalSize))
+			{
+				// Precache failed, continue using file
+				// Restore file position incase it's used for subsequent reads
+				FileSystem::FSeek64(m_file, m_file_cache_pos, SEEK_SET);
+				m_file_cache.reset();
+				return false;
+			}
+		}
+
+		if (m_free_file)
+			std::fclose(m_file);
+		m_file = nullptr;
+
+		return true;
+	}
+
+	static u64 FSize(core_file* file)
+	{
+		ChdCoreFileWrapper* fileWrapper = FromCoreFile(file);
+		if (fileWrapper->m_file_cache)
+			return fileWrapper->m_file_cache_size;
+		else
+			return static_cast<u64>(FileSystem::FSize64(fileWrapper->m_file));
+	}
+
+	static size_t FRead(void* buffer, size_t elmSize, size_t elmCount, core_file* file)
+	{
+		ChdCoreFileWrapper* fileWrapper = FromCoreFile(file);
+		if (fileWrapper->m_file_cache)
+		{
+			// While currently libchdr only uses an elmCount of 1, we can't guarantee that will always be the case.
+			elmCount = std::min<size_t>(elmCount, std::max<s64>(fileWrapper->m_file_cache_size - fileWrapper->m_file_cache_pos, 0) / elmSize);
+			const size_t size = elmSize * elmCount;
+			std::memcpy(buffer, &fileWrapper->m_file_cache[fileWrapper->m_file_cache_pos], size);
+			return elmCount;
+		}
+		else
+			return std::fread(buffer, elmSize, elmCount, fileWrapper->m_file);
+	}
+
+	static int FClose(core_file* file)
+	{
+		// Destructor handles freeing the FILE handle.
+		delete FromCoreFile(file);
+		return 0;
+	}
+
+	static int FSeek(core_file* file, int64_t offset, int whence)
+	{
+		ChdCoreFileWrapper* fileWrapper = FromCoreFile(file);
+		if (fileWrapper->m_file_cache)
+		{
+			switch (whence)
+			{
+				case SEEK_SET:
+					fileWrapper->m_file_cache_pos = offset;
+					break;
+				case SEEK_CUR:
+					fileWrapper->m_file_cache_pos += offset;
+					break;
+				case SEEK_END:
+					fileWrapper->m_file_cache_pos = fileWrapper->m_file_cache_size + offset;
+					break;
+				default:
+					return -1;
+			}
+
+			return 0;
+		}
+		else
+			return FileSystem::FSeek64(fileWrapper->m_file, offset, whence);
+	}
+};
+
+ChdFileReader::ChdFileReader() = default;
 
 ChdFileReader::~ChdFileReader()
 {
-	Close();
-
-	for (std::FILE* fp : m_files)
-		std::fclose(fp);
+	pxAssert(!ChdFile);
 }
 
-bool ChdFileReader::CanHandle(const std::string& fileName, const std::string& displayName)
+static bool IsHeaderParentCHD(const chd_header& header, const chd_header& parent_header)
 {
-	if (!StringUtil::EndsWith(displayName, ".chd"))
+	static const u8 nullmd5[CHD_MD5_BYTES]{};
+	static const u8 nullsha1[CHD_SHA1_BYTES]{};
+
+	// Check MD5 if it isn't empty.
+	if (std::memcmp(nullmd5, header.parentmd5, CHD_MD5_BYTES) != 0 &&
+		std::memcmp(nullmd5, parent_header.md5, CHD_MD5_BYTES) != 0 &&
+		std::memcmp(parent_header.md5, header.parentmd5, CHD_MD5_BYTES) != 0)
+	{
 		return false;
+	}
+
+	// Check SHA1 if it isn't empty.
+	if (std::memcmp(nullsha1, header.parentsha1, CHD_SHA1_BYTES) != 0 &&
+		std::memcmp(nullsha1, parent_header.sha1, CHD_SHA1_BYTES) != 0 &&
+		std::memcmp(parent_header.sha1, header.parentsha1, CHD_SHA1_BYTES) != 0)
+	{
+		return false;
+	}
 
 	return true;
 }
 
-static chd_error chd_open_wrapper(const char* filename, std::FILE** fp, int mode, chd_file* parent, chd_file** chd)
+static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level)
 {
-	*fp = FileSystem::OpenCFile(filename, "rb");
-	if (!*fp)
-		return CHDERR_FILE_NOT_FOUND;
-
-	const chd_error err = chd_open_file(*fp, mode, parent, chd);
+	chd_file* chd;
+	ChdCoreFileWrapper* core_wrapper = new ChdCoreFileWrapper(fp.get(), nullptr);
+	// libchdr will take ownership of core_wrapper, and will close/free it on failure.
+	chd_error err = chd_open_core_file(core_wrapper->GetCoreFile(), CHD_OPEN_READ, nullptr, &chd);
 	if (err == CHDERR_NONE)
-		return err;
-
-	std::fclose(*fp);
-	*fp = nullptr;
-	return err;
-}
-
-bool ChdFileReader::Open2(std::string fileName)
-{
-	Close2();
-
-	m_filename = std::move(fileName);
-
-	chd_file* child = nullptr;
-	chd_file* parent = nullptr;
-	std::FILE* fp = nullptr;
-	chd_header header;
-	chd_header parent_header;
-
-	std::string chds[8];
-	chds[0] = m_filename;
-	int chd_depth = 0;
-	chd_error error;
-
-	std::string dirname;
-	FileSystem::FindResultsArray results;
-
-	while (CHDERR_REQUIRES_PARENT == (error = chd_open_wrapper(chds[chd_depth].c_str(), &fp, CHD_OPEN_READ, nullptr, &child)))
 	{
-		if (chd_depth >= static_cast<int>(std::size(chds) - 1))
-		{
-			Console.Error("CDVD: chd_open hit recursion limit searching for parents");
-			return false;
-		}
+		// core_wrapper should manage fp.
+		core_wrapper->SetFileOwner(true);
+		fp.release();
+		return chd;
+	}
+	else if (err != CHDERR_REQUIRES_PARENT)
+	{
+		Console.Error(fmt::format("Failed to open CHD '{}': {}", filename, chd_error_string(err)));
+		Error::SetString(error, chd_error_string(err));
+		return nullptr;
+	}
 
-		// TODO: This is still broken on Windows. Needs to be fixed in libchdr.
-		if (chd_read_header(chds[chd_depth].c_str(), &header) != CHDERR_NONE)
-		{
-			Console.Error("CDVD: chd_open chd_read_header error: %s: %s", chd_error_string(error), chds[chd_depth].c_str());
-			return false;
-		}
+	if (recursion_level >= MAX_PARENTS)
+	{
+		Console.Error(fmt::format("Failed to open CHD '{}': Too many parent files", filename));
+		Error::SetString(error, "Too many parent files");
+		return nullptr;
+	}
 
-		bool found_parent = false;
-		dirname = Path::GetDirectory(chds[chd_depth]);
-		if (FileSystem::FindFiles(dirname.c_str(), "*.*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &results))
+	// Need to get the sha1 to look for.
+	chd_header header;
+	err = chd_read_header_file(fp.get(), &header);
+	if (err != CHDERR_NONE)
+	{
+		Console.Error(fmt::format("Failed to read CHD header '{}': {}", filename, chd_error_string(err)));
+		Error::SetString(error, chd_error_string(err));
+		return nullptr;
+	}
+
+	// Find a chd with a matching sha1 in the same directory.
+	// Have to do *.* and filter on the extension manually because Linux is case sensitive.
+	chd_file* parent_chd = nullptr;
+	const std::string parent_dir(Path::GetDirectory(filename));
+	const std::unique_lock hash_cache_lock(s_chd_hash_cache_mutex);
+
+	// Memoize which hashes came from what files, to avoid reading them repeatedly.
+	for (auto it = s_chd_hash_cache.begin(); it != s_chd_hash_cache.end(); ++it)
+	{
+		if (!StringUtil::compareNoCase(parent_dir, Path::GetDirectory(it->first)))
+			continue;
+
+		if (!IsHeaderParentCHD(header, it->second))
+			continue;
+
+		// Re-check the header, it might have changed since we last opened.
+		chd_header parent_header;
+		auto parent_fp = FileSystem::OpenManagedSharedCFile(it->first.c_str(), "rb", FileSystem::FileShareMode::DenyWrite);
+		if (parent_fp && chd_read_header_file(parent_fp.get(), &parent_header) == CHDERR_NONE &&
+			IsHeaderParentCHD(header, parent_header))
 		{
-			for (const FILESYSTEM_FIND_DATA& fd : results)
+			// Need to take a copy of the string, because the parent might add to the list and invalidate the iterator.
+			const std::string filename_to_open = it->first;
+
+			// Match! Open this one.
+			parent_chd = OpenCHD(filename_to_open, std::move(parent_fp), error, recursion_level + 1);
+			if (parent_chd)
 			{
-				const std::string_view extension(Path::GetExtension(fd.FileName));
-				if (extension.empty() || StringUtil::Strncasecmp(extension.data(), "chd", 3) != 0)
-					continue;
-
-				if (chd_read_header(fd.FileName.c_str(), &parent_header) == CHDERR_NONE &&
-					memcmp(parent_header.sha1, header.parentsha1, sizeof(parent_header.sha1)) == 0)
-				{
-					found_parent = true;
-					chds[++chd_depth] = std::move(fd.FileName);
-					break;
-				}
+				Console.WriteLn(
+					fmt::format("Using parent CHD '{}' from cache for '{}'.", Path::GetFileName(filename_to_open), Path::GetFileName(filename)));
 			}
 		}
 
-		if (!found_parent)
+		// No point checking any others. Since we recursively call OpenCHD(), the iterator is invalidated anyway.
+		break;
+	}
+	if (!parent_chd)
+	{
+		// Look for files in the same directory as the chd.
+		FileSystem::FindResultsArray parent_files;
+		FileSystem::FindFiles(
+			parent_dir.c_str(), "*.*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_KEEP_ARRAY, &parent_files);
+		for (FILESYSTEM_FIND_DATA& fd : parent_files)
 		{
-			Console.Error("CDVD: chd_open no parent for: %s", chds[chd_depth].c_str());
-			break;
+			if (!StringUtil::EndsWithNoCase(Path::GetExtension(fd.FileName), "chd"))
+				continue;
+
+			// Re-check the header, it might have changed since we last opened.
+			chd_header parent_header;
+			auto parent_fp = FileSystem::OpenManagedSharedCFile(fd.FileName.c_str(), "rb", FileSystem::FileShareMode::DenyWrite);
+			if (!parent_fp || chd_read_header_file(parent_fp.get(), &parent_header) != CHDERR_NONE)
+				continue;
+
+			// Don't duplicate in the cache. But update it, in case the file changed.
+			auto cache_it = std::find_if(s_chd_hash_cache.begin(), s_chd_hash_cache.end(), [&fd](const auto& it) { return it.first == fd.FileName; });
+			if (cache_it != s_chd_hash_cache.end())
+				std::memcpy(&cache_it->second, &parent_header, sizeof(parent_header));
+			else
+				s_chd_hash_cache.emplace_back(fd.FileName, parent_header);
+
+			if (!IsHeaderParentCHD(header, parent_header))
+				continue;
+
+			// Match! Open this one.
+			parent_chd = OpenCHD(fd.FileName, std::move(parent_fp), error, recursion_level + 1);
+			if (parent_chd)
+			{
+				Console.WriteLn(fmt::format("Using parent CHD '{}' for '{}'.", Path::GetFileName(fd.FileName), Path::GetFileName(filename)));
+				break;
+			}
 		}
 	}
-
-	if (error != CHDERR_NONE)
+	if (!parent_chd)
 	{
-		Console.Error("CDVD: chd_open return error: %s", chd_error_string(error));
+		Console.Error(fmt::format("Failed to open CHD '{}': Failed to find parent CHD, it must be in the same directory.", filename));
+		Error::SetString(error, "Failed to find parent CHD, it must be in the same directory.");
+		return nullptr;
+	}
+
+	// Our last core file wrapper got freed, so make a new one.
+	core_wrapper = new ChdCoreFileWrapper(fp.get(), ChdCoreFileWrapper::FromCoreFile(chd_core_file(parent_chd)));
+	// Now try re-opening with the parent.
+	err = chd_open_core_file(core_wrapper->GetCoreFile(), CHD_OPEN_READ, parent_chd, &chd);
+	if (err != CHDERR_NONE)
+	{
+		Console.Error(fmt::format("Failed to open CHD '{}': {}", filename, chd_error_string(err)));
+		Error::SetString(error, chd_error_string(err));
+		return nullptr;
+	}
+
+	// core_wrapper should manage fp.
+	core_wrapper->SetFileOwner(true);
+	fp.release();
+	return chd;
+}
+
+bool ChdFileReader::Open2(std::string filename, Error* error)
+{
+	Close2();
+
+	m_filename = std::move(filename);
+
+	auto fp = FileSystem::OpenManagedSharedCFile(m_filename.c_str(), "rb", FileSystem::FileShareMode::DenyWrite, error);
+	if (!fp)
 		return false;
-	}
 
-	if (child)
-	{
-		pxAssert(fp != nullptr);
-		m_files.push_back(fp);
-	}
-
-	for (int d = chd_depth - 1; d >= 0; d--)
-	{
-		parent = child;
-		child = nullptr;
-		error = chd_open_wrapper(chds[d].c_str(), &fp, CHD_OPEN_READ, parent, &child);
-		if (error != CHDERR_NONE)
-		{
-			Console.Error("CDVD: chd_open return error: %s", chd_error_string(error));
-			if (parent)
-				chd_close(parent);
-			return false;
-		}
-
-		m_files.push_back(fp);
-	}
-	ChdFile = child;
+	ChdFile = OpenCHD(m_filename, std::move(fp), error, 0);
+	if (!ChdFile)
+		return false;
 
 	const chd_header* chd_header = chd_get_header(ChdFile);
 	hunk_size = chd_header->hunkbytes;
@@ -178,6 +398,15 @@ bool ChdFileReader::Open2(std::string fileName)
 	}
 
 	return true;
+}
+
+bool ChdFileReader::Precache2(ProgressCallback* progress, Error* error)
+{
+	ChdCoreFileWrapper* fileWrapper = ChdCoreFileWrapper::FromCoreFile(chd_core_file(ChdFile));
+	if (!CheckAvailableMemoryForPrecaching(fileWrapper->GetPrecacheSize(), error))
+		return false;
+
+	return fileWrapper->Precache(progress, error);
 }
 
 ThreadedFileReader::Chunk ChdFileReader::ChunkForOffset(u64 offset)
@@ -245,7 +474,7 @@ bool ChdFileReader::ParseTOC(u64* out_frame_count)
 		if (err == CHDERR_NONE)
 		{
 			if (std::sscanf(metadata_str, CDROM_TRACK_METADATA2_FORMAT, &track_num, type_str, subtype_str, &frames,
-				&pregap_frames, pgtype_str, pgsub_str, &postgap_frames) != 8)
+					&pregap_frames, pgtype_str, pgsub_str, &postgap_frames) != 8)
 			{
 				Console.Error(fmt::format("Invalid track v2 metadata: '{}'", metadata_str));
 				return false;

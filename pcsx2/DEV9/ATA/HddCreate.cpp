@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/FileSystem.h"
 
@@ -22,7 +8,6 @@
 
 #if _WIN32
 #include "common/RedtapeWindows.h"
-#include "common/StringUtil.h"
 #include <winioctl.h>
 #include <io.h>
 #elif defined(__POSIX__)
@@ -31,6 +16,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #endif
+
+#include "common/Console.h"
+#include "common/StringUtil.h"
 
 void HddCreate::Start()
 {
@@ -263,12 +251,12 @@ void HddCreate::WriteImage(const std::string& hddPath, u64 fileBytes, u64 zeroSi
 
 void HddCreate::SetFileProgress(u64 currentSize)
 {
-	Console.WriteLn(fmt::format("{} / {} Bytes", currentSize, neededSize).c_str());
+	Console.WriteLn(fmt::format("DEV9: HddCreate: {} / {} Bytes", currentSize, neededSize).c_str());
 }
 
 void HddCreate::SetError()
 {
-	Console.WriteLn("Failed to create HDD file");
+	Console.WriteLn("DEV9: HddCreate: Failed to create HDD file");
 }
 
 void HddCreate::SetCanceled()

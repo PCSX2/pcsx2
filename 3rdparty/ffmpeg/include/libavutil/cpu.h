@@ -69,6 +69,8 @@
 #define AV_CPU_FLAG_NEON         (1 << 5)
 #define AV_CPU_FLAG_ARMV8        (1 << 6)
 #define AV_CPU_FLAG_VFP_VM       (1 << 7) ///< VFPv2 vector mode, deprecated in ARMv7-A and unavailable in various CPUs implementations
+#define AV_CPU_FLAG_DOTPROD      (1 << 8)
+#define AV_CPU_FLAG_I8MM         (1 << 9)
 #define AV_CPU_FLAG_SETEND       (1 <<16)
 
 #define AV_CPU_FLAG_MMI          (1 << 0)
@@ -87,6 +89,7 @@
 #define AV_CPU_FLAG_RVV_I64      (1 << 5) ///< Vectors of 64-bit int's */
 #define AV_CPU_FLAG_RVV_F64      (1 << 6) ///< Vectors of double's
 #define AV_CPU_FLAG_RVB_BASIC    (1 << 7) ///< Basic bit-manipulations
+#define AV_CPU_FLAG_RVB_ADDR     (1 << 8) ///< Address bit-manipulations
 
 /**
  * Return the flags which specify extensions supported by the CPU.

@@ -1,25 +1,11 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include "SaveState.h"
-#include "GSRegs.h"
-#include "Renderers/SW/GSVertexSW.h"
-#include <lzma.h>
-#include <zstd.h>
+#include "GS/GSRegs.h"
+#include "GS/Renderers/SW/GSVertexSW.h"
 
 /*
 
@@ -80,53 +66,17 @@ public:
 	void ReadFIFO(u32 size);
 	void Transfer(int index, const u8* mem, size_t size);
 	bool VSync(int field, bool last, const GSPrivRegSet* regs);
-};
 
-class GSDumpUncompressed final : public GSDumpBase
-{
-	void AppendRawData(const void* data, size_t size) final;
-	void AppendRawData(u8 c) final;
-
-public:
-	GSDumpUncompressed(const std::string& fn, const std::string& serial, u32 crc,
+	static std::unique_ptr<GSDumpBase> CreateUncompressedDump(
+		const std::string& fn, const std::string& serial, u32 crc,
 		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
 		const freezeData& fd, const GSPrivRegSet* regs);
-	virtual ~GSDumpUncompressed() = default;
-};
-
-class GSDumpXz final : public GSDumpBase
-{
-	lzma_stream m_strm;
-
-	std::vector<u8> m_in_buff;
-
-	void Flush();
-	void Compress(lzma_action action, lzma_ret expected_status);
-	void AppendRawData(const void* data, size_t size);
-	void AppendRawData(u8 c);
-
-public:
-	GSDumpXz(const std::string& fn, const std::string& serial, u32 crc,
+	static std::unique_ptr<GSDumpBase> CreateXzDump(
+		const std::string& fn, const std::string& serial, u32 crc,
 		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
 		const freezeData& fd, const GSPrivRegSet* regs);
-	virtual ~GSDumpXz();
-};
-
-class GSDumpZst final : public GSDumpBase
-{
-	ZSTD_CStream* m_strm;
-
-	std::vector<u8> m_in_buff;
-	std::vector<u8> m_out_buff;
-
-	void MayFlush();
-	void Compress(ZSTD_EndDirective action);
-	void AppendRawData(const void* data, size_t size);
-	void AppendRawData(u8 c);
-
-public:
-	GSDumpZst(const std::string& fn, const std::string& serial, u32 crc,
+	static std::unique_ptr<GSDumpBase> CreateZstDump(
+		const std::string& fn, const std::string& serial, u32 crc,
 		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
 		const freezeData& fd, const GSPrivRegSet* regs);
-	virtual ~GSDumpZst();
 };

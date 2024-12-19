@@ -1,23 +1,11 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include "GS/Renderers/Common/GSTexture.h"
 
-#include "glad.h"
+#include "glad/gl.h"
 
 class GSTextureOGL final : public GSTexture
 {
@@ -48,11 +36,14 @@ public:
 
 	void* GetNativeHandle() const override;
 
-	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) final;
-	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) final;
-	void Unmap() final;
-	void GenerateMipmap() final;
-	void Swap(GSTexture* tex) final;
+	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) override;
+	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) override;
+	void Unmap() override;
+	void GenerateMipmap() override;
+
+#ifdef PCSX2_DEVBUILD
+	void SetDebugName(std::string_view name) override;
+#endif
 
 	bool IsIntegerFormat() const
 	{
@@ -79,6 +70,10 @@ public:
 	void Unmap() override;
 
 	void Flush() override;
+
+#ifdef PCSX2_DEVBUILD
+	void SetDebugName(std::string_view name) override;
+#endif
 
 private:
 	GSDownloadTextureOGL(u32 width, u32 height, GSTexture::Format format);

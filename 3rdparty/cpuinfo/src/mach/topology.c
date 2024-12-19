@@ -1,15 +1,14 @@
-#include <string.h>
 #include <alloca.h>
 #include <errno.h>
+#include <string.h>
 
-#include <sys/types.h>
 #include <sys/sysctl.h>
+#include <sys/types.h>
 
 #include <cpuinfo/log.h>
 #include <mach/api.h>
 
 #include <TargetConditionals.h>
-
 
 struct cpuinfo_mach_topology cpuinfo_mach_detect_topology(void) {
 	int cores = 1;
@@ -41,12 +40,9 @@ struct cpuinfo_mach_topology cpuinfo_mach_detect_topology(void) {
 	}
 #endif
 
-	cpuinfo_log_debug("mach topology: packages = %d, cores = %d, threads = %d", packages, (int) cores, (int) threads);
+	cpuinfo_log_debug("mach topology: packages = %d, cores = %d, threads = %d", packages, (int)cores, (int)threads);
 	struct cpuinfo_mach_topology topology = {
-		.packages = (uint32_t) packages,
-		.cores = (uint32_t) cores,
-		.threads = (uint32_t) threads
-	};
+		.packages = (uint32_t)packages, .cores = (uint32_t)cores, .threads = (uint32_t)threads};
 
 #if !TARGET_OS_IPHONE
 	size_t cacheconfig_size = 0;
@@ -63,7 +59,7 @@ struct cpuinfo_mach_topology cpuinfo_mach_detect_topology(void) {
 				cache_configs = CPUINFO_MACH_MAX_CACHE_LEVELS;
 			}
 			for (size_t i = 0; i < cache_configs; i++) {
-				cpuinfo_log_debug("mach hw.cacheconfig[%zu]: %"PRIu64, i, cacheconfig[i]);
+				cpuinfo_log_debug("mach hw.cacheconfig[%zu]: %" PRIu64, i, cacheconfig[i]);
 				topology.threads_per_cache[i] = cacheconfig[i];
 			}
 		}

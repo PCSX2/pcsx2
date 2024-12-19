@@ -1,33 +1,22 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "Settings/GamePatchSettingsWidget.h"
-#include "Settings/SettingsDialog.h"
+#include "SettingWidgetBinder.h"
+#include "Settings/SettingsWindow.h"
 
 #include "pcsx2/GameList.h"
 #include "pcsx2/Patch.h"
 
+#include "common/Assertions.h"
+
 #include <algorithm>
 
 GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::string& author,
-	const std::string& description, bool enabled, SettingsDialog* dialog, QWidget* parent)
+	const std::string& description, bool enabled, SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
 	, m_name(name)
@@ -42,7 +31,7 @@ GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::stri
 
 	pxAssert(dialog->getSettingsInterface());
 	m_ui.enabled->setChecked(enabled);
-	connect(m_ui.enabled, &QCheckBox::stateChanged, this, &GamePatchDetailsWidget::onEnabledStateChanged);
+	connect(m_ui.enabled, &QCheckBox::checkStateChanged, this, &GamePatchDetailsWidget::onEnabledStateChanged);
 }
 
 GamePatchDetailsWidget::~GamePatchDetailsWidget() = default;
@@ -59,14 +48,23 @@ void GamePatchDetailsWidget::onEnabledStateChanged(int state)
 	g_emu_thread->reloadGameSettings();
 }
 
-GamePatchSettingsWidget::GamePatchSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+GamePatchSettingsWidget::GamePatchSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: m_dialog(dialog)
 {
 	m_ui.setupUi(this);
 	m_ui.scrollArea->setFrameShape(QFrame::WinPanel);
 	m_ui.scrollArea->setFrameShadow(QFrame::Sunken);
 
+	setUnlabeledPatchesWarningVisibility(false);
+
+	SettingsInterface* sif = m_dialog->getSettingsInterface();
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.allCRCsCheckbox, "EmuCore", "ShowPatchesForAllCRCs", false);
+
 	connect(m_ui.reload, &QPushButton::clicked, this, &GamePatchSettingsWidget::onReloadClicked);
+	connect(m_ui.allCRCsCheckbox, &QCheckBox::checkStateChanged, this, &GamePatchSettingsWidget::reloadList);
+
+	dialog->registerWidgetHelp(m_ui.allCRCsCheckbox, tr("Show Patches For All CRCs"), tr("Checked"),
+		tr("Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded."));
 
 	reloadList();
 }
@@ -81,13 +79,23 @@ void GamePatchSettingsWidget::onReloadClicked()
 	g_emu_thread->reloadPatches();
 }
 
+void GamePatchSettingsWidget::disableAllPatches()
+{
+	SettingsInterface* si = m_dialog->getSettingsInterface();
+	si->ClearSection(Patch::PATCHES_CONFIG_SECTION);
+	si->Save();
+}
+
 void GamePatchSettingsWidget::reloadList()
 {
 	// Patches shouldn't have any unlabelled patch groups, because they're new.
-	std::vector<Patch::PatchInfo> patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), false, nullptr);
+	u32 number_of_unlabeled_patches = 0;
+	bool showAllCRCS = m_ui.allCRCsCheckbox->isChecked();
+	std::vector<Patch::PatchInfo> patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), false, showAllCRCS, &number_of_unlabeled_patches);
 	std::vector<std::string> enabled_list =
 		m_dialog->getSettingsInterface()->GetStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
 
+	setUnlabeledPatchesWarningVisibility(number_of_unlabeled_patches > 0);
 	delete m_ui.scrollArea->takeWidget();
 
 	QWidget* container = new QWidget(m_ui.scrollArea);
@@ -127,4 +135,9 @@ void GamePatchSettingsWidget::reloadList()
 	layout->addStretch(1);
 
 	m_ui.scrollArea->setWidget(container);
+}
+
+void GamePatchSettingsWidget::setUnlabeledPatchesWarningVisibility(bool visible)
+{
+	m_ui.unlabeledPatchWarning->setVisible(visible);
 }

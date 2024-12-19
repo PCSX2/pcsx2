@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include <QtGui/QDrag>
 #include <QtWidgets/QFileDialog>
@@ -30,7 +16,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
 #include "pcsx2/SIO/Memcard/MemoryCardFile.h"
 
@@ -41,7 +27,7 @@ static std::string getSlotFilenameKey(u32 slot)
 	return StringUtil::StdStringFromFormat("Slot%u_Filename", slot + 1);
 }
 
-MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
 {
@@ -55,7 +41,6 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsDialog* dialog, QWidg
 
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.directory, m_ui.browse, m_ui.open, m_ui.reset, "Folders",
 		"MemoryCards", Path::Combine(EmuFolders::DataRoot, "memcards"));
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoEject, "EmuCore", "McdEnableEjection", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticManagement, "EmuCore", "McdFolderAutoManage", true);
 
 	setupAdditionalUi();
@@ -69,15 +54,11 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsDialog* dialog, QWidg
 
 	connect(m_ui.refreshCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::refresh);
 	connect(m_ui.createCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::createCard);
-	connect(m_ui.duplicateCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::duplicateCard);
 	connect(m_ui.renameCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::renameCard);
 	connect(m_ui.convertCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::convertCard);
 	connect(m_ui.deleteCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::deleteCard);
 
 	refresh();
-
-	dialog->registerWidgetHelp(m_ui.autoEject, tr("Auto-eject Memory Cards when loading save states"), tr("Checked"),
-		tr("Avoids broken Memory Card saves. May not work with some games such as Guitar Hero."));
 
 	dialog->registerWidgetHelp(m_ui.automaticManagement, tr("Automatically manage saves based on running game"),
 		tr("Checked"),
@@ -107,25 +88,25 @@ void MemoryCardSettingsWidget::setupAdditionalUi()
 		createSlotWidgets(&m_slots[i], i);
 
 	// button to swap Memory Cards
-	QToolButton* swap_button = new QToolButton(m_ui.portGroupBox);
+	QToolButton* swap_button = new QToolButton(m_ui.slotGroupBox);
 	swap_button->setIcon(QIcon::fromTheme("arrow-left-right-line"));
 	swap_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 	swap_button->setToolTip(tr("Swap Memory Cards"));
 	connect(swap_button, &QToolButton::clicked, this, &MemoryCardSettingsWidget::swapCards);
-	static_cast<QGridLayout*>(m_ui.portGroupBox->layout())->addWidget(swap_button, 0, 1);
+	static_cast<QGridLayout*>(m_ui.slotGroupBox->layout())->addWidget(swap_button, 0, 1);
 }
 
 void MemoryCardSettingsWidget::createSlotWidgets(SlotGroup* port, u32 slot)
 {
 	const bool perGame = m_dialog->isPerGameSettings();
 
-	port->root = new QWidget(m_ui.portGroupBox);
+	port->root = new QWidget(m_ui.slotGroupBox);
 
 	SettingsInterface* sif = m_dialog->getSettingsInterface();
-	port->enable = new QCheckBox(tr("Port %1").arg(slot + 1), port->root);
+	port->enable = new QCheckBox(tr("Slot %1").arg(slot + 1), port->root);
 	SettingWidgetBinder::BindWidgetToBoolSetting(
 		sif, port->enable, CONFIG_SECTION, StringUtil::StdStringFromFormat("Slot%u_Enable", slot + 1), true);
-	connect(port->enable, &QCheckBox::stateChanged, this, &MemoryCardSettingsWidget::refresh);
+	connect(port->enable, &QCheckBox::checkStateChanged, this, &MemoryCardSettingsWidget::refresh);
 
 	port->eject = new QToolButton(port->root);
 	port->eject->setIcon(QIcon::fromTheme(perGame ? QStringLiteral("delete-back-2-line") : QStringLiteral("eject-line")));
@@ -147,7 +128,7 @@ void MemoryCardSettingsWidget::createSlotWidgets(SlotGroup* port, u32 slot)
 	vert_layout->addWidget(port->enable, 0);
 	vert_layout->addLayout(bottom_layout, 1);
 
-	static_cast<QGridLayout*>(m_ui.portGroupBox->layout())->addWidget(port->root, 0, (slot != 0) ? 2 : 0);
+	static_cast<QGridLayout*>(m_ui.slotGroupBox->layout())->addWidget(port->root, 0, (slot != 0) ? 2 : 0);
 }
 
 void MemoryCardSettingsWidget::autoSizeUI()
@@ -169,7 +150,7 @@ void MemoryCardSettingsWidget::tryInsertCard(u32 slot, const QString& newCard)
 	if (std::none_of(
 			mcds.begin(), mcds.end(), [&newCardStr](const AvailableMcdInfo& mcd) { return mcd.name == newCardStr; }))
 	{
-		QMessageBox::critical(this, tr("Error"), tr("This Memory Card is unknown."));
+		QMessageBox::critical(this, tr("Error"), tr("This Memory Card cannot be recognized or is not a valid file type."));
 		return;
 	}
 
@@ -211,18 +192,8 @@ void MemoryCardSettingsWidget::updateCardActions()
 	bool isPS1 = (cardInfo.has_value() ? cardInfo.value().file_type == MemoryCardFileType::PS1 : false);
 
 	m_ui.convertCard->setEnabled(hasSelection && !isPS1);
-	m_ui.duplicateCard->setEnabled(hasSelection);
 	m_ui.renameCard->setEnabled(hasSelection);
 	m_ui.deleteCard->setEnabled(hasSelection);
-}
-
-void MemoryCardSettingsWidget::duplicateCard()
-{
-	const QString selectedCard(getSelectedCard());
-	if (selectedCard.isEmpty())
-		return;
-
-	QMessageBox::critical(this, tr("Error"), tr("Not yet implemented."));
 }
 
 void MemoryCardSettingsWidget::deleteCard()
@@ -307,19 +278,18 @@ void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
 	{
 		for (u32 slot = 0; slot < MAX_SLOTS; slot++)
 		{
-			connect(menu.addAction(tr("Use for Port %1").arg(slot + 1)), &QAction::triggered, this,
+			connect(menu.addAction(tr("Use for Slot %1").arg(slot + 1)), &QAction::triggered, this,
 				[this, &selectedCard, slot]() { tryInsertCard(slot, selectedCard); });
 		}
 		menu.addSeparator();
 
-		connect(menu.addAction(tr("Duplicate")), &QAction::triggered, this, &MemoryCardSettingsWidget::duplicateCard);
 		connect(menu.addAction(tr("Rename")), &QAction::triggered, this, &MemoryCardSettingsWidget::renameCard);
 		connect(menu.addAction(tr("Convert")), &QAction::triggered, this, &MemoryCardSettingsWidget::convertCard);
 		connect(menu.addAction(tr("Delete")), &QAction::triggered, this, &MemoryCardSettingsWidget::deleteCard);
 		menu.addSeparator();
 	}
 
-	connect(menu.addAction("Create"), &QAction::triggered, this, &MemoryCardSettingsWidget::createCard);
+	connect(menu.addAction(tr("Create")), &QAction::triggered, this, &MemoryCardSettingsWidget::createCard);
 
 	menu.exec(m_ui.cardList->mapToGlobal(pos));
 }
@@ -354,7 +324,7 @@ void MemoryCardSettingsWidget::swapCards()
 	if (!card1Name.has_value() || card1Name->empty() || !card2Name.has_value() || card2Name->empty())
 	{
 		QMessageBox::critical(
-			QtUtils::GetRootWidget(this), tr("Error"), tr("Both ports must have a card selected to swap."));
+			QtUtils::GetRootWidget(this), tr("Error"), tr("Both slots must have a card selected to swap."));
 		return;
 	}
 
@@ -442,7 +412,7 @@ void MemoryCardListWidget::mouseMoveEvent(QMouseEvent* event)
 	drag->exec(Qt::CopyAction);
 }
 
-void MemoryCardListWidget::refresh(SettingsDialog* dialog)
+void MemoryCardListWidget::refresh(SettingsWindow* dialog)
 {
 	clear();
 

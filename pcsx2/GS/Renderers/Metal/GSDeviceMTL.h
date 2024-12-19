@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -34,7 +22,9 @@
 #include <QuartzCore/QuartzCore.h>
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <unordered_map>
+#include <utility>
 
 struct PipelineSelectorExtrasMTL
 {
@@ -46,18 +36,19 @@ struct PipelineSelectorExtrasMTL
 			u8 writemask : 4;
 			GSDevice::BlendFactor src_factor : 4;
 			GSDevice::BlendFactor dst_factor : 4;
+			GSDevice::BlendFactor src_factor_alpha : 4;
+			GSDevice::BlendFactor dst_factor_alpha : 4;
 			GSDevice::BlendOp     blend_op : 2;
 			bool blend_enable : 1;
 			bool has_depth : 1;
 			bool has_stencil : 1;
 		};
-		u8 _key[3];
+		u32 fullkey;
 	};
-	u32 fullkey() { return _key[0] | (_key[1] << 8) | (_key[2] << 16); }
 
-	PipelineSelectorExtrasMTL(): _key{} {}
+	PipelineSelectorExtrasMTL(): fullkey(0) {}
 	PipelineSelectorExtrasMTL(GSHWDrawConfig::BlendState blend, GSTexture* rt, GSHWDrawConfig::ColorMaskSelector cms, bool has_depth, bool has_stencil)
-		: _key{}
+		: fullkey(0)
 	{
 		this->rt = rt ? rt->GetFormat() : GSTexture::Format::Invalid;
 		MTLColorWriteMask mask = MTLColorWriteMaskNone;
@@ -69,6 +60,8 @@ struct PipelineSelectorExtrasMTL
 		this->src_factor = static_cast<GSDevice::BlendFactor>(blend.src_factor);
 		this->dst_factor = static_cast<GSDevice::BlendFactor>(blend.dst_factor);
 		this->blend_op = static_cast<GSDevice::BlendOp>(blend.op);
+		this->src_factor_alpha = static_cast<GSDevice::BlendFactor>(blend.src_factor_alpha);
+		this->dst_factor_alpha = static_cast<GSDevice::BlendFactor>(blend.dst_factor_alpha);
 		this->blend_enable = blend.enable;
 		this->has_depth   = has_depth;
 		this->has_stencil = has_stencil;
@@ -79,6 +72,7 @@ struct PipelineSelectorMTL
 	GSHWDrawConfig::PSSelector ps;
 	PipelineSelectorExtrasMTL extras;
 	GSHWDrawConfig::VSSelector vs;
+	u8 pad[7];
 	PipelineSelectorMTL()
 	{
 		memset(this, 0, sizeof(*this));
@@ -105,7 +99,7 @@ struct PipelineSelectorMTL
 	}
 };
 
-static_assert(sizeof(PipelineSelectorMTL) == 16);
+static_assert(sizeof(PipelineSelectorMTL) == 24);
 
 template <>
 struct std::hash<PipelineSelectorMTL>
@@ -254,19 +248,21 @@ public:
 	MRCOwned<id<MTLComputePipelineState>> m_cas_pipeline[2];
 	MRCOwned<id<MTLRenderPipelineState>> m_convert_pipeline[static_cast<int>(ShaderConvert::Count)];
 	MRCOwned<id<MTLRenderPipelineState>> m_present_pipeline[static_cast<int>(PresentShader::Count)];
-	MRCOwned<id<MTLRenderPipelineState>> m_convert_pipeline_copy_mask[1 << 4];
+	MRCOwned<id<MTLRenderPipelineState>> m_convert_pipeline_copy_mask[1 << 5];
 	MRCOwned<id<MTLRenderPipelineState>> m_merge_pipeline[4];
 	MRCOwned<id<MTLRenderPipelineState>> m_interlace_pipeline[NUM_INTERLACE_SHADERS];
-	MRCOwned<id<MTLRenderPipelineState>> m_datm_pipeline[2];
+	MRCOwned<id<MTLRenderPipelineState>> m_datm_pipeline[4];
 	MRCOwned<id<MTLRenderPipelineState>> m_clut_pipeline[2];
 	MRCOwned<id<MTLRenderPipelineState>> m_stencil_clear_pipeline;
-	MRCOwned<id<MTLRenderPipelineState>> m_primid_init_pipeline[2][2];
+	MRCOwned<id<MTLRenderPipelineState>> m_primid_init_pipeline[2][4];
 	MRCOwned<id<MTLRenderPipelineState>> m_hdr_init_pipeline;
+	MRCOwned<id<MTLRenderPipelineState>> m_hdr_rta_init_pipeline;
+	MRCOwned<id<MTLRenderPipelineState>> m_hdr_clear_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_hdr_resolve_pipeline;
+	MRCOwned<id<MTLRenderPipelineState>> m_hdr_rta_resolve_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_fxaa_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_shadeboost_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_imgui_pipeline;
-	MRCOwned<id<MTLRenderPipelineState>> m_imgui_pipeline_a8;
 
 	MRCOwned<id<MTLFunction>> m_hw_vs[1 << 5];
 	std::unordered_map<PSSelector, MRCOwned<id<MTLFunction>>> m_hw_ps;
@@ -377,7 +373,7 @@ public:
 	MRCOwned<id<MTLFunction>> LoadShader(NSString* name);
 	MRCOwned<id<MTLRenderPipelineState>> MakePipeline(MTLRenderPipelineDescriptor* desc, id<MTLFunction> vertex, id<MTLFunction> fragment, NSString* name);
 	MRCOwned<id<MTLComputePipelineState>> MakeComputePipeline(id<MTLFunction> compute, NSString* name);
-	bool Create() override;
+	bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle) override;
 	void Destroy() override;
 
 	void AttachSurfaceOnMainThread();
@@ -396,9 +392,7 @@ public:
 
 	PresentResult BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
-	void SetVSync(VsyncMode mode) override;
-
-	bool GetHostRefreshRate(float* refresh_rate) override;
+	void SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle) override;
 
 	bool SetGPUTimingEnabled(bool enabled) override;
 	float GetAndResetAccumulatedGPUTime() override;
@@ -415,11 +409,12 @@ public:
 	/// Copy from a position in sTex to the same position in the currently active render encoder using the given fs pipeline and rect
 	void RenderCopy(GSTexture* sTex, id<MTLRenderPipelineState> pipeline, const GSVector4i& rect);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) override;
-	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) override;
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, ShaderConvert shader = ShaderConvert::COPY) override;
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) override;
 	void DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader) override;
 	void UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
 	void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) override;
+	void FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect) override;
 
 	void FlushClears(GSTexture* tex);
 
@@ -440,7 +435,7 @@ public:
 
 	// MARK: Render HW
 
-	void SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, bool datm);
+	void SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, SetDATM datm);
 	void RenderHW(GSHWDrawConfig& config) override;
 	void SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder> enc, id<MTLBuffer> buffer, size_t off);
 

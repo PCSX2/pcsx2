@@ -1,19 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "Common.h"
 
 #include "IPU.h"
@@ -27,6 +14,7 @@
 alignas(16) tIPU_cmd ipu_cmd;
 alignas(16) tIPU_BP g_BP;
 alignas(16) decoder_t decoder;
+IPUStatus IPUCoreStatus;
 
 static void (*IPUWorker)();
 
@@ -92,15 +80,8 @@ void tIPU_cmd::clear()
 
 __fi void IPUProcessInterrupt()
 {
-	if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued)
+	if (ipuRegs.ctrl.BUSY)
 		IPUWorker();
-
-	if (ipuRegs.ctrl.BUSY && !IPU1Status.DataRequested && !(cpuRegs.interrupt & 1 << IPU_PROCESS))
-	{
-		CPU_INT(IPU_PROCESS, ProcessedData ? ProcessedData : 64);
-	}
-	else
-		ProcessedData = 0;
 }
 
 /////////////////////////////////////////////////////////
@@ -112,6 +93,9 @@ void ipuReset()
 	std::memset(&ipuRegs, 0, sizeof(ipuRegs));
 	std::memset(&g_BP, 0, sizeof(g_BP));
 	std::memset(&decoder, 0, sizeof(decoder));
+	IPUCoreStatus.DataRequested = false;
+	IPUCoreStatus.WaitingOnIPUFrom= false;
+	IPUCoreStatus.WaitingOnIPUTo = false;
 
 	decoder.picture_structure = FRAME_PICTURE;      //default: progressive...my guess:P
 
@@ -131,7 +115,7 @@ void ReportIPU()
 	Console.WriteLn("coded_block_pattern = 0x%x.", coded_block_pattern);
 	Console.WriteLn("g_decoder = 0x%x.", &decoder);
 	Console.WriteLn(ipu_cmd.desc());
-	Console.Newline();
+	Console.WriteLn();
 }
 
 bool SaveStateBase::ipuFreeze()
@@ -149,6 +133,7 @@ bool SaveStateBase::ipuFreeze()
 	Freeze(coded_block_pattern);
 	Freeze(decoder);
 	Freeze(ipu_cmd);
+	Freeze(IPUCoreStatus);
 
 	return IsOkay();
 }
@@ -471,7 +456,6 @@ __fi void IPUCMD_WRITE(u32 val)
 {
 	// don't process anything if currently busy
 	//if (ipuRegs.ctrl.BUSY) Console.WriteLn("IPU BUSY!"); // wait for thread
-	ProcessedData = 0;
 	ipuRegs.ctrl.ECD = 0;
 	ipuRegs.ctrl.SCD = 0;
 	ipu_cmd.clear();
@@ -538,10 +522,11 @@ __fi void IPUCMD_WRITE(u32 val)
 
 	// Have a short delay immitating the time it takes to run IDEC/BDEC, other commands are near instant.
 	// Mana Khemia/Metal Saga start IDEC then change IPU0 expecting there to be a delay before IDEC sends data.
-	if (!CommandExecuteQueued && (ipu_cmd.CMD == SCE_IPU_IDEC || ipu_cmd.CMD == SCE_IPU_BDEC))
+	if (ipu_cmd.CMD == SCE_IPU_IDEC || ipu_cmd.CMD == SCE_IPU_BDEC)
 	{
-		CommandExecuteQueued = true;
-		CPU_INT(IPU_PROCESS, 64);
+		IPUCoreStatus.WaitingOnIPUFrom = false;
+		IPUCoreStatus.WaitingOnIPUTo = false;
+		IPU_INT_PROCESS(64);
 	}
 	else
 		IPUWorker();

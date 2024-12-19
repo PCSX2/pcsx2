@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS.h"
 #include "Gif_Unit.h"
@@ -23,6 +9,7 @@
 #include "IconsFontAwesome5.h"
 #include "VMManager.h"
 
+#include "common/FPControl.h"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 #include "common/WrappedMemCopy.h"
@@ -74,12 +61,12 @@ namespace MTGS
 
 	static void SetEvent();
 
-	alignas(32) BufferedData RingBuffer;
+	alignas(__cachelinesize) BufferedData RingBuffer;
 
 	// note: when m_ReadPos == m_WritePos, the fifo is empty
 	// Threading info: m_ReadPos is updated by the MTGS thread. m_WritePos is updated by the EE thread
-	alignas(64) static std::atomic<unsigned int> s_ReadPos; // cur pos gs is reading from
-	alignas(64) static std::atomic<unsigned int> s_WritePos; // cur pos ee thread is writing to
+	alignas(__cachelinesize) static std::atomic<unsigned int> s_ReadPos; // cur pos gs is reading from
+	alignas(__cachelinesize) static std::atomic<unsigned int> s_WritePos; // cur pos ee thread is writing to
 
 	// These vars maintain instance data for sending Data Packets.
 	// Only one data packet can be constructed and uploaded at a time.
@@ -158,6 +145,10 @@ void MTGS::ThreadEntryPoint()
 {
 	Threading::SetNameOfCurrentThread("GS");
 
+	// Explicitly set rounding mode to default (nearest, FTZ off).
+	// Otherwise it appears to get inherited from the EE thread on Linux.
+	FPControlRegister::SetCurrent(FPControlRegister::GetDefault());
+
 	for (;;)
 	{
 		// wait until we're actually asked to initialize (and config has been loaded, etc)
@@ -174,7 +165,8 @@ void MTGS::ThreadEntryPoint()
 
 		// try initializing.. this could fail
 		std::memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS));
-		const bool opened = GSopen(EmuConfig.GS, EmuConfig.GS.Renderer, RingBuffer.Regs);
+		const bool opened = GSopen(EmuConfig.GS, EmuConfig.GS.Renderer, RingBuffer.Regs,
+			VMManager::GetEffectiveVSyncMode(), VMManager::ShouldAllowPresentThrottle());
 		s_open_flag.store(opened, std::memory_order_release);
 
 		// notify emu thread that we finished opening (or failed)
@@ -199,8 +191,6 @@ void MTGS::ThreadEntryPoint()
 		// we need to reset sem_event here, because MainLoop() kills it.
 		s_sem_event.Reset();
 	}
-
-	GSshutdown();
 }
 
 void MTGS::ResetGS(bool hardware_reset)
@@ -222,6 +212,11 @@ void MTGS::ResetGS(bool hardware_reset)
 
 	if (hardware_reset)
 		SetEvent();
+}
+
+int MTGS::GetCurrentVsyncQueueSize()
+{
+	return s_QueuedFrameCount.load(std::memory_order_acquire);
 }
 
 struct RingCmdPacket_Vsync
@@ -282,7 +277,7 @@ void MTGS::PostVsyncStart(bool registers_written)
 
 void MTGS::InitAndReadFIFO(u8* mem, u32 qwc)
 {
-	if (EmuConfig.GS.HWDownloadMode >= GSHardwareDownloadMode::Unsynchronized && GSConfig.UseHardwareRenderer())
+	if (EmuConfig.GS.HWDownloadMode >= GSHardwareDownloadMode::Unsynchronized && GSIsHardwareRenderer())
 	{
 		if (EmuConfig.GS.HWDownloadMode == GSHardwareDownloadMode::Unsynchronized)
 			GSReadLocalMemoryUnsync(mem, qwc, vif1.BITBLTBUF._u64, vif1.TRXPOS._u64, vif1.TRXREG._u64);
@@ -324,7 +319,7 @@ void MTGS::MainLoop()
 
 	while (true)
 	{
-		if (s_run_idle_flag.load(std::memory_order_acquire) && VMManager::GetState() != VMState::Running)
+		if (s_run_idle_flag.load(std::memory_order_acquire) && VMManager::GetState() != VMState::Running && GSHasDisplayWindow())
 		{
 			if (!s_sem_event.CheckForWork())
 			{
@@ -562,7 +557,7 @@ void MTGS::MainLoop()
 
 			uint newringpos = (s_ReadPos.load(std::memory_order_relaxed) + ringposinc) & RingBufferMask;
 
-			if (EmuConfig.GS.SynchronousMTGS)
+			if (IsDevBuild && EmuConfig.GS.SynchronousMTGS) [[unlikely]]
 			{
 				pxAssert(s_WritePos == newringpos);
 			}
@@ -612,7 +607,8 @@ void MTGS::MainLoop()
 // If isMTVU, then this implies this function is being called from the MTVU thread...
 void MTGS::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 {
-	if (!pxAssertDev(IsOpen(), "MTGS Warning!  WaitGS issued on a closed thread."))
+	pxAssertMsg(IsOpen(), "MTGS Warning!  WaitGS issued on a closed thread.");
+	if (!IsOpen()) [[unlikely]]
 		return;
 
 	Gif_Path& path = gifUnit.gifPath[GIF_PATH_1];
@@ -648,7 +644,7 @@ void MTGS::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 			pxFailRel("MTGS Thread Died");
 	}
 
-	assert(!(weakWait && syncRegs) && "No synchronization for this!");
+	pxAssert(!(weakWait && syncRegs) && "No synchronization for this!");
 
 	if (syncRegs)
 	{
@@ -685,7 +681,7 @@ void MTGS::SendDataPacket()
 
 	s_WritePos.store(s_packet_writepos, std::memory_order_release);
 
-	if (EmuConfig.GS.SynchronousMTGS)
+	if (IsDevBuild && EmuConfig.GS.SynchronousMTGS) [[unlikely]]
 	{
 		WaitGS();
 	}
@@ -745,7 +741,7 @@ void MTGS::GenericStall(uint size)
 
 		if (somedone > 0x80)
 		{
-			pxAssertDev(s_SignalRingEnable == 0, "MTGS Thread Synchronization Error");
+			pxAssertMsg(s_SignalRingEnable == 0, "MTGS Thread Synchronization Error");
 			s_SignalRingPosition.store(somedone, std::memory_order_release);
 
 			//Console.WriteLn( Color_Blue, "(EEcore Sleep) PrepDataPacker \tringpos=0x%06x, writepos=0x%06x, signalpos=0x%06x", readpos, writepos, m_SignalRingPosition );
@@ -767,7 +763,7 @@ void MTGS::GenericStall(uint size)
 					break;
 			}
 
-			pxAssertDev(s_SignalRingPosition <= 0, "MTGS Thread Synchronization Error");
+			pxAssertMsg(s_SignalRingPosition <= 0, "MTGS Thread Synchronization Error");
 		}
 		else
 		{
@@ -825,7 +821,7 @@ __fi void MTGS::_FinishSimplePacket()
 	pxAssert(future_writepos != s_ReadPos.load(std::memory_order_acquire));
 	s_WritePos.store(future_writepos, std::memory_order_release);
 
-	if (EmuConfig.GS.SynchronousMTGS)
+	if (IsDevBuild && EmuConfig.GS.SynchronousMTGS) [[unlikely]]
 		WaitGS();
 	else
 		++s_CopyDataTally;
@@ -850,7 +846,7 @@ void MTGS::SendSimpleGSPacket(Command type, u32 offset, u32 size, GIF_PATH path)
 {
 	SendSimplePacket(type, (int)offset, (int)size, (int)path);
 
-	if (!EmuConfig.GS.SynchronousMTGS)
+	if (!IsDevBuild || !EmuConfig.GS.SynchronousMTGS) [[likely]]
 	{
 		s_CopyDataTally += size / 16;
 		if (s_CopyDataTally > 0x2000)
@@ -941,7 +937,6 @@ void MTGS::ApplySettings()
 
 	RunOnGSThread([opts = EmuConfig.GS]() {
 		GSUpdateConfig(opts);
-		GSSetVSyncMode(Host::GetEffectiveVSyncMode());
 	});
 
 	// We need to synchronize the thread when changing any settings when the download mode
@@ -971,37 +966,40 @@ void MTGS::UpdateDisplayWindow()
 
 		// If we're paused, re-present the current frame at the new window size.
 		if (VMManager::GetState() == VMState::Paused)
+		{
+			// Hackity hack, on some systems, presenting a single frame isn't enough to actually get it
+			// displayed. Two seems to be good enough. Maybe something to do with direct scanout.
 			GSPresentCurrentFrame();
+			GSPresentCurrentFrame();
+		}
 	});
 }
 
-void MTGS::SetVSyncMode(VsyncMode mode)
+void MTGS::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 {
 	pxAssertRel(IsOpen(), "MTGS is running");
 
-	RunOnGSThread([mode]() {
-		Console.WriteLn("Vsync is %s", mode == VsyncMode::Off ? "OFF" : (mode == VsyncMode::Adaptive ? "ADAPTIVE" : "ON"));
-		GSSetVSyncMode(mode);
-	});
+	RunOnGSThread([mode, allow_present_throttle]() { GSSetVSyncMode(mode, allow_present_throttle); });
 }
 
 void MTGS::UpdateVSyncMode()
 {
-	SetVSyncMode(Host::GetEffectiveVSyncMode());
+	SetVSyncMode(VMManager::GetEffectiveVSyncMode(), VMManager::ShouldAllowPresentThrottle());
 }
 
-void MTGS::SwitchRenderer(GSRendererType renderer, bool display_message /* = true */)
+void MTGS::SetSoftwareRendering(bool software, GSInterlaceMode interlace, bool display_message /* = true */)
 {
 	pxAssertRel(IsOpen(), "MTGS is running");
 
 	if (display_message)
 	{
-		Host::AddIconOSDMessage("SwitchRenderer", ICON_FA_MAGIC, fmt::format("Switching to {} renderer...",
-			Pcsx2Config::GSOptions::GetRendererName(renderer)), Host::OSD_INFO_DURATION);
+		Host::AddIconOSDMessage("SwitchRenderer", ICON_FA_MAGIC, software ?
+			TRANSLATE_STR("GS", "Switching to Software Renderer...") : TRANSLATE_STR("GS", "Switching to Hardware Renderer..."),
+			Host::OSD_QUICK_DURATION);
 	}
 
-	RunOnGSThread([renderer]() {
-		GSSwitchRenderer(renderer);
+	RunOnGSThread([software, interlace]() {
+		GSSetSoftwareRendering(software, interlace);
 	});
 
 	// See note in ApplySettings() for reasoning here.
@@ -1009,22 +1007,10 @@ void MTGS::SwitchRenderer(GSRendererType renderer, bool display_message /* = tru
 		WaitGS(false, false, false);
 }
 
-void MTGS::SetSoftwareRendering(bool software, bool display_message /* = true */)
-{
-	// for hardware, use the chosen api in the base config, or auto if base is set to sw
-	GSRendererType new_renderer;
-	if (!software)
-		new_renderer = EmuConfig.GS.UseHardwareRenderer() ? EmuConfig.GS.Renderer : GSRendererType::Auto;
-	else
-		new_renderer = GSRendererType::SW;
-
-	SwitchRenderer(new_renderer, display_message);
-}
-
 void MTGS::ToggleSoftwareRendering()
 {
 	// reading from the GS thread.. but should be okay here
-	SetSoftwareRendering(GSConfig.Renderer != GSRendererType::SW);
+	SetSoftwareRendering(GSIsHardwareRenderer(), EmuConfig.GS.InterlaceMode);
 }
 
 bool MTGS::SaveMemorySnapshot(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
@@ -1075,7 +1061,7 @@ void Gif_AddCompletedGSPacket(GS_Packet& gsPack, GIF_PATH path)
 	}
 	else
 	{
-		pxAssertDev(!gsPack.readAmount, "Gif Unit - gsPack.readAmount only valid for MTVU path 1!");
+		pxAssertMsg(!gsPack.readAmount, "Gif Unit - gsPack.readAmount only valid for MTVU path 1!");
 		gifUnit.gifPath[path].readAmount.fetch_add(gsPack.size);
 		MTGS::SendSimpleGSPacket(MTGS::Command::GSPacket, gsPack.offset, gsPack.size, path);
 	}

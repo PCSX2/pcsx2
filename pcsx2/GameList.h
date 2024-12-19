@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -90,10 +78,24 @@ namespace GameList
 		std::string path;
 		std::string serial;
 		std::string title;
+		std::string title_sort;
+		std::string title_en;
 		u64 total_size = 0;
 		std::time_t last_modified_time = 0;
 		std::time_t last_played_time = 0;
 		std::time_t total_played_time = 0;
+
+		const std::string& GetTitle(bool force_en = false) const
+		{
+			return title_en.empty() || !force_en ? title : title_en;
+		}
+		const std::string& GetTitleSort(bool force_en = false) const
+		{
+			// If there's a separate EN title, then title_sort is in the wrong language and we can't use it
+			if (force_en && !title_en.empty())
+				return title_en;
+			return title_sort.empty() ? title : title_sort;
+		}
 
 		u32 crc = 0;
 
@@ -119,7 +121,7 @@ namespace GameList
 	const Entry* GetEntryByIndex(u32 index);
 	const Entry* GetEntryForPath(const char* path);
 	const Entry* GetEntryByCRC(u32 crc);
-	const Entry* GetEntryBySerialAndCRC(const std::string_view& serial, u32 crc);
+	const Entry* GetEntryBySerialAndCRC(const std::string_view serial, u32 crc);
 	u32 GetEntryCount();
 
 	/// Populates the game list with files in the configured directories.
@@ -147,7 +149,6 @@ namespace GameList
 	std::string FormatTimespan(std::time_t timespan, bool long_format = false);
 
 	std::string GetCoverImagePathForEntry(const Entry* entry);
-	std::string GetCoverImagePath(const std::string& path, const std::string& code, const std::string& title);
 	std::string GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename, bool use_serial = false);
 
 	/// Downloads covers using the specified URL templates. By default, covers are saved by title, but this can be changed with

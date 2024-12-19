@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Counters.h"
 #include "Common.h"
@@ -50,6 +36,7 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		//gifUnit.Reset(true); // Don't think gif should be reset...
 		gifUnit.gsSIGNAL.queued = false;
 		gifUnit.gsFINISH.gsFINISHFired = true;
+		gifUnit.gsFINISH.gsFINISHPending = false;
 		// Privilage registers also reset.
 		std::memset(g_RealGSMem, 0, sizeof(g_RealGSMem));
 		GSIMR.reset();
@@ -65,6 +52,7 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 
 	if(csr.SIGNAL)
 	{
+		const bool resume = CSRreg.SIGNAL;
 		// SIGNAL : What's not known here is whether or not the SIGID register should be updated
 		//  here or when the IMR is cleared (below).
 		GUNIT_LOG("csr.SIGNAL");
@@ -78,12 +66,15 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		}
 		else CSRreg.SIGNAL = false;
 		gifUnit.gsSIGNAL.queued = false;
-		gifUnit.Execute(false, true); // Resume paused transfers
+
+		if (resume)
+			gifUnit.Execute(false, true); // Resume paused transfers
 	}
 
 	if (csr.FINISH)	{
 		CSRreg.FINISH = false;
 		gifUnit.gsFINISH.gsFINISHFired = false; //Clear the previously fired FINISH (YS, Indiecar 2005, MGS3)
+		gifUnit.gsFINISH.gsFINISHPending = false;
 	}
 	if(csr.HSINT)	CSRreg.HSINT	= false;
 	if(csr.VSINT)	CSRreg.VSINT	= false;
@@ -191,14 +182,17 @@ void gsWrite64_generic( u32 mem, u64 value )
 void gsWrite64_page_00( u32 mem, u64 value )
 {
 	s_GSRegistersWritten |= (mem == GS_DISPFB1 || mem == GS_DISPFB2 || mem == GS_PMODE);
-
+	bool reqUpdate = false;
 	if (mem == GS_SMODE1 || mem == GS_SMODE2)
 	{
 		if (value != *(u64*)PS2GS_BASE(mem))
-			UpdateVSyncRate(false);
+			reqUpdate = true;
 	}
 
 	gsWrite64_generic( mem, value );
+
+	if (reqUpdate)
+		UpdateVSyncRate(false);
 }
 
 void gsWrite64_page_01( u32 mem, u64 value )

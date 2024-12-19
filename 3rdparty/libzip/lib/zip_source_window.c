@@ -1,6 +1,6 @@
 /*
   zip_source_window.c -- return part of lower source
-  Copyright (C) 2012-2021 Dieter Baron and Thomas Klausner
+  Copyright (C) 2012-2024 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -51,6 +51,8 @@ struct window {
     zip_stat_t stat;
     zip_uint64_t stat_invalid;
     zip_file_attributes_t attributes;
+    zip_dostime_t dostime;
+    bool dostime_valid;
     zip_error_t error;
     zip_int64_t supports;
     bool needs_seek;
@@ -61,12 +63,12 @@ static zip_int64_t window_read(zip_source_t *, void *, void *, zip_uint64_t, zip
 
 ZIP_EXTERN zip_source_t *
 zip_source_window_create(zip_source_t *src, zip_uint64_t start, zip_int64_t len, zip_error_t *error) {
-    return _zip_source_window_new(src, start, len, NULL, 0, NULL, NULL, 0, false, error);
+    return _zip_source_window_new(src, start, len, NULL, 0, NULL, NULL, NULL, 0, false, error);
 }
 
 
 zip_source_t *
-_zip_source_window_new(zip_source_t *src, zip_uint64_t start, zip_int64_t length, zip_stat_t *st, zip_uint64_t st_invalid, zip_file_attributes_t *attributes, zip_t *source_archive, zip_uint64_t source_index, bool take_ownership, zip_error_t *error) {
+_zip_source_window_new(zip_source_t *src, zip_uint64_t start, zip_int64_t length, zip_stat_t *st, zip_uint64_t st_invalid, zip_file_attributes_t *attributes, zip_dostime_t *dostime, zip_t *source_archive, zip_uint64_t source_index, bool take_ownership, zip_error_t *error) {
     zip_source_t* window_source;
     struct window *ctx;
 
@@ -103,10 +105,17 @@ _zip_source_window_new(zip_source_t *src, zip_uint64_t start, zip_int64_t length
     else {
         zip_file_attributes_init(&ctx->attributes);
     }
+    if (dostime != NULL) {
+        ctx->dostime = *dostime;
+        ctx->dostime_valid = true;
+    }
+    else {
+        ctx->dostime_valid = false;
+    }
     ctx->source_archive = source_archive;
     ctx->source_index = source_index;
     zip_error_init(&ctx->error);
-    ctx->supports = (zip_source_supports(src) & (ZIP_SOURCE_SUPPORTS_SEEKABLE | ZIP_SOURCE_SUPPORTS_REOPEN)) | (zip_source_make_command_bitmap(ZIP_SOURCE_GET_FILE_ATTRIBUTES, ZIP_SOURCE_SUPPORTS, ZIP_SOURCE_TELL, ZIP_SOURCE_FREE, -1));
+    ctx->supports = (zip_source_supports(src) & (ZIP_SOURCE_SUPPORTS_SEEKABLE | ZIP_SOURCE_SUPPORTS_REOPEN)) | (zip_source_make_command_bitmap(ZIP_SOURCE_GET_FILE_ATTRIBUTES, ZIP_SOURCE_GET_DOS_TIME, ZIP_SOURCE_SUPPORTS, ZIP_SOURCE_TELL, ZIP_SOURCE_FREE, -1));
     ctx->needs_seek = (ctx->supports & ZIP_SOURCE_MAKE_COMMAND_BITMASK(ZIP_SOURCE_SEEK)) ? true : false;
 
     if (st) {
@@ -308,6 +317,19 @@ window_read(zip_source_t *src, void *_ctx, void *data, zip_uint64_t len, zip_sou
 
         (void)memcpy_s(data, sizeof(ctx->attributes), &ctx->attributes, sizeof(ctx->attributes));
         return sizeof(ctx->attributes);
+
+    case ZIP_SOURCE_GET_DOS_TIME:
+        if (len < sizeof(ctx->dostime)) {
+            zip_error_set(&ctx->error, ZIP_ER_INVAL, 0);
+            return -1;
+        }
+        if (ctx->dostime_valid) {
+            (void)memcpy_s(data, sizeof(ctx->dostime), &ctx->dostime, sizeof(ctx->dostime));
+            return sizeof(ctx->dostime);
+        }
+        else {
+            return 0;
+        }
 
     case ZIP_SOURCE_SUPPORTS:
         return ctx->supports;

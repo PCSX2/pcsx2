@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Copy resources for ARM -->
+  <ItemGroup>
+    <BinRes Include="$(SolutionDir)bin\resources\**\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <BinDocs Include="$(SolutionDir)bin\docs\**\*" />
+  </ItemGroup>
+  <Target Name="CopyBinResources"
+    AfterTargets="Build"
+    Inputs="@(BinRes)"
+    Outputs="@(BinRes -> '$(OutDir)resources\%(RecursiveDir)%(Filename)%(Extension)')">
+    <Message Text="Copying Resources" Importance="High" />
+    <Copy
+      SourceFiles="@(BinRes)"
+      DestinationFolder="$(OutDir)resources\%(RecursiveDir)"
+      SkipUnchangedFiles="true"
+    />
+  </Target>
+  <Target Name="CopyBinDocs"
+    AfterTargets="Build"
+    Inputs="@(BinDocs)"
+    Outputs="@(BinDocs -> '$(OutDir)docs\%(RecursiveDir)%(Filename)%(Extension)')">
+    <Message Text="Copying Docs" Importance="High" />
+    <Copy
+      SourceFiles="@(BinDocs)"
+      DestinationFolder="$(OutDir)docs\%(RecursiveDir)"
+      SkipUnchangedFiles="true"
+    />
+  </Target>
+</Project>

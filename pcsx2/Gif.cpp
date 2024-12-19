@@ -1,25 +1,10 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
 #include "GS.h"
 #include "Gif_Unit.h"
 #include "Vif_Dma.h"
-#include "x86/iR5900.h"
 
 // A three-way toggle used to determine if the GIF is stalling (transferring) or done (finished).
 // Should be a gifstate_t rather then int, but I don't feel like possibly interfering with savestates right now.
@@ -133,10 +118,7 @@ int GIF_Fifo::read_fifo()
 		return 0;
 	}
 
-	int readpos = 0;
-	int sizeRead = 0;
-
-	sizeRead = gifUnit.TransferGSPacketData(GIF_TRANS_DMA, (u8*)&data, fifoSize * 16) / 16; //returns the size actually read
+	const int sizeRead = gifUnit.TransferGSPacketData(GIF_TRANS_DMA, (u8*)&data, fifoSize * 16) / 16; //returns the size actually read
 
 	GIF_LOG("GIF FIFO Read %d QW from FIFO Current Size %d", sizeRead, fifoSize);
 
@@ -145,7 +127,7 @@ int GIF_Fifo::read_fifo()
 		if (sizeRead > 0)
 		{
 			const int copyAmount = fifoSize - sizeRead;
-			readpos = sizeRead * 4;
+			const int readpos = sizeRead * 4;
 
 			for (int i = 0; i < copyAmount; i++)
 				CopyQWC(&data[i * 4], &data[readpos + (i * 4)]);

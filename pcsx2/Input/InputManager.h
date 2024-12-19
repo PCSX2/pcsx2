@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -27,6 +15,8 @@
 #include "common/WindowInfo.h"
 
 #include "pcsx2/Config.h"
+
+class SmallStringBase;
 
 /// Class, or source of an input event.
 enum class InputSourceType : u32
@@ -182,19 +172,22 @@ namespace InputManager
 	bool GetInputSourceDefaultEnabled(InputSourceType type);
 
 	/// Parses an input class string.
-	std::optional<InputSourceType> ParseInputSourceString(const std::string_view& str);
+	std::optional<InputSourceType> ParseInputSourceString(const std::string_view str);
 
 	/// Parses a pointer device string, i.e. tells you which pointer is specified.
-	std::optional<u32> GetIndexFromPointerBinding(const std::string_view& str);
+	std::optional<u32> GetIndexFromPointerBinding(const std::string_view str);
 
 	/// Returns the device name for a pointer index (e.g. Pointer-0).
 	std::string GetPointerDeviceName(u32 pointer_index);
 
 	/// Converts a key code from a human-readable string to an identifier.
-	std::optional<u32> ConvertHostKeyboardStringToCode(const std::string_view& str);
+	std::optional<u32> ConvertHostKeyboardStringToCode(const std::string_view str);
 
 	/// Converts a key code from an identifier to a human-readable string.
 	std::optional<std::string> ConvertHostKeyboardCodeToString(u32 code);
+
+	/// Converts a key code from an identifier to an icon which can be drawn.
+	const char* ConvertHostKeyboardCodeToIcon(u32 code);
 
 	/// Creates a key for a host-specific key code.
 	InputBindingKey MakeHostKeyboardKey(u32 key_code);
@@ -207,13 +200,16 @@ namespace InputManager
 	InputBindingKey MakePointerAxisKey(u32 index, InputPointerAxis axis);
 
 	/// Parses an input binding key string.
-	std::optional<InputBindingKey> ParseInputBindingKey(const std::string_view& binding);
+	std::optional<InputBindingKey> ParseInputBindingKey(const std::string_view binding);
 
 	/// Converts a input key to a string.
 	std::string ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
 
 	/// Converts a chord of binding keys to a string.
 	std::string ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type, const InputBindingKey* keys, size_t num_keys);
+
+	/// Represents a binding with icon fonts, if available.
+	bool PrettifyInputBinding(SmallStringBase& binding);
 
 	/// Returns a list of all hotkeys.
 	std::vector<const HotkeyInfo*> GetHotkeyList();
@@ -226,13 +222,13 @@ namespace InputManager
 
 	/// Retrieves bindings that match the generic bindings for the specified device.
 	using GenericInputBindingMapping = std::vector<std::pair<GenericInputBinding, std::string>>;
-	GenericInputBindingMapping GetGenericBindingMapping(const std::string_view& device);
+	GenericInputBindingMapping GetGenericBindingMapping(const std::string_view device);
 
 	/// Returns whether a given input source is enabled.
 	bool IsInputSourceEnabled(SettingsInterface& si, InputSourceType type);
 
 	/// Re-parses the config and registers all hotkey and pad bindings.
-	void ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si);
+	void ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si, SettingsInterface& hotkey_binding_si);
 
 	/// Re-parses the sources part of the config and initializes any backends.
 	void ReloadSources(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock);
@@ -274,6 +270,7 @@ namespace InputManager
 
 	/// Internal method used by pads to dispatch vibration updates to input sources.
 	/// Intensity is normalized from 0 to 1.
+	void SetUSBVibrationIntensity(u32 port, float large_or_single_motor_intensity, float small_motor_intensity);
 	void SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensity, float small_motor_intensity);
 
 	/// Zeros all vibration intensities. Call when pausing.
@@ -293,10 +290,10 @@ namespace InputManager
 	void UpdateHostMouseMode();
 
 	/// Called when a new input device is connected.
-	void OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name);
+	void OnInputDeviceConnected(const std::string_view identifier, const std::string_view device_name);
 
 	/// Called when an input device is disconnected.
-	void OnInputDeviceDisconnected(const std::string_view& identifier);
+	void OnInputDeviceDisconnected(const InputBindingKey key, const std::string_view identifier);
 } // namespace InputManager
 
 namespace Host
@@ -305,10 +302,10 @@ namespace Host
 	std::optional<WindowInfo> GetTopLevelWindowInfo();
 
 	/// Called when a new input device is connected.
-	void OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name);
+	void OnInputDeviceConnected(const std::string_view identifier, const std::string_view device_name);
 
 	/// Called when an input device is disconnected.
-	void OnInputDeviceDisconnected(const std::string_view& identifier);
+	void OnInputDeviceDisconnected(const InputBindingKey key, const std::string_view identifier);
 
 	/// Enables relative mouse mode in the host, and/or hides the cursor.
 	void SetMouseMode(bool relative_mode, bool hide_cursor);

@@ -1,20 +1,23 @@
 # Extra preprocessor definitions that will be added to all pcsx2 builds
 set(PCSX2_DEFS "")
 
+include(GNUInstallDirs)
+
 #-------------------------------------------------------------------------------
 # Misc option
 #-------------------------------------------------------------------------------
-option(DISABLE_BUILD_DATE "Disable including the binary compile date")
 option(ENABLE_TESTS "Enables building the unit tests" ON)
+option(ENABLE_GSRUNNER "Enables building the GSRunner" OFF)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
-option(USE_ACHIEVEMENTS "Build with RetroAchievements support" ON)
-option(USE_DISCORD_PRESENCE "Enable support for Discord Rich Presence" ON)
+option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
 
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
-option(USE_OPENGL "Enable OpenGL GS renderer" ON)
+if(NOT APPLE)
+	option(USE_OPENGL "Enable OpenGL GS renderer" ON)
+endif()
 option(USE_VULKAN "Enable Vulkan GS renderer" ON)
 
 #-------------------------------------------------------------------------------
@@ -22,10 +25,9 @@ option(USE_VULKAN "Enable Vulkan GS renderer" ON)
 #-------------------------------------------------------------------------------
 if(UNIX AND NOT APPLE)
 	option(ENABLE_SETCAP "Enable networking capability for DEV9" OFF)
-	option(USE_LEGACY_USER_DIRECTORY "Use legacy home/PCSX2 user directory instead of XDG standard" OFF)
 	option(X11_API "Enable X11 support" ON)
 	option(WAYLAND_API "Enable Wayland support" ON)
-	option(DBUS_API "Enable DBus support for screensaver inhibiting" ON)
+	option(USE_BACKTRACE "Enable libbacktrace support" ON)
 endif()
 
 if(UNIX)
@@ -41,21 +43,6 @@ endif()
 # Compiler extra
 #-------------------------------------------------------------------------------
 option(USE_ASAN "Enable address sanitizer")
-
-if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	set(USE_CLANG_CL TRUE)
-	message(STATUS "Building with Clang-CL.")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-	set(USE_CLANG TRUE)
-	message(STATUS "Building with Clang/LLVM.")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	set(USE_GCC TRUE)
-	message(STATUS "Building with GNU GCC")
-elseif(MSVC)
-	message(STATUS "Building with MSVC")
-else()
-	message(FATAL_ERROR "Unknown compiler: ${CMAKE_CXX_COMPILER_ID}")
-endif()
 
 #-------------------------------------------------------------------------------
 # if no build type is set, use Devel as default
@@ -85,47 +72,63 @@ mark_as_advanced(CMAKE_C_FLAGS_DEVEL CMAKE_CXX_FLAGS_DEVEL CMAKE_LINKER_FLAGS_DE
 #-------------------------------------------------------------------------------
 # Select the architecture
 #-------------------------------------------------------------------------------
-option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" OFF)
+if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "amd64" OR
+   "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "AMD64" OR "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "x86_64")
+	# Multi-ISA only exists on x86.
+	option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" OFF)
 
-# Print if we are cross compiling.
-if(CMAKE_CROSSCOMPILING)
-	message(STATUS "Cross compilation is enabled.")
-else()
-	message(STATUS "Cross compilation is disabled.")
-endif()
-
-# Architecture bitness detection
-include(TargetArch)
-target_architecture(PCSX2_TARGET_ARCHITECTURES)
-if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
-	message(STATUS "Compiling a ${PCSX2_TARGET_ARCHITECTURES} build on a ${CMAKE_HOST_SYSTEM_PROCESSOR} host.")
-
-	# x86_64 requires -fPIC
-	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-	if(NOT DEFINED ARCH_FLAG AND NOT MSVC)
-		if (DISABLE_ADVANCE_SIMD)
-			set(ARCH_FLAG "-msse -msse2 -msse4.1 -mfxsr")
-		else()
-			#set(ARCH_FLAG "-march=native -fabi-version=6")
-			set(ARCH_FLAG "-march=native")
-		endif()
-	elseif(NOT DEFINED ARCH_FLAG AND USE_CLANG_CL)
-		set(ARCH_FLAG "-msse4.1")
-	endif()
 	list(APPEND PCSX2_DEFS _M_X86=1)
-	set(_M_X86 1)
-else()
-	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
-endif()
-string(REPLACE " " ";" ARCH_FLAG_LIST "${ARCH_FLAG}")
-add_compile_options("${ARCH_FLAG_LIST}")
+	set(_M_X86 TRUE)
+	if(DISABLE_ADVANCE_SIMD)
+		message(STATUS "Building for x86-64 (Multi-ISA).")
+	else()
+		message(STATUS "Building for x86-64.")
+	endif()
 
-#-------------------------------------------------------------------------------
-# Set some default compiler flags
-#-------------------------------------------------------------------------------
-option(USE_PGO_GENERATE "Enable PGO optimization (generate profile)")
-option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
+	if(MSVC)
+		# SSE4.1 is not set by MSVC, it uses _M_SSE instead.
+		list(APPEND PCSX2_DEFS __SSE4_1__=1)
+
+		if(USE_CLANG_CL)
+			# clang-cl => need to explicitly enable SSE4.1.
+			add_compile_options("-msse4.1")
+		endif()
+	else()
+		# Multi-ISA => SSE4, otherwise native.
+		if (DISABLE_ADVANCE_SIMD)
+			add_compile_options("-msse" "-msse2" "-msse4.1" "-mfxsr")
+		else()
+			# Can't use march=native on Apple Silicon.
+			if(NOT APPLE OR "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+				add_compile_options("-march=native")
+			endif()
+		endif()
+	endif()
+elseif("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR
+       "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
+	message(STATUS "Building for Apple Silicon (ARM64).")
+	list(APPEND PCSX2_DEFS _M_ARM64=1)
+	set(_M_ARM64 TRUE)
+	add_compile_options("-march=armv8.4-a" "-mcpu=apple-m1")
+
+	# If we're running on Linux, we need to detect the page/cache line size.
+	# It could be a virtual machine with 4K pages, or 16K with Asahi.
+	if(LINUX)
+		detect_page_size()
+		list(APPEND PCSX2_DEFS OVERRIDE_HOST_PAGE_SIZE=${HOST_PAGE_SIZE})
+		detect_cache_line_size()
+		list(APPEND PCSX2_DEFS OVERRIDE_HOST_CACHE_LINE_SIZE=${HOST_CACHE_LINE_SIZE})
+	endif()
+	
+	# Windows page/cache line size seems to match x68-64 
+	if(WIN32)
+		list(APPEND PCSX2_DEFS OVERRIDE_HOST_PAGE_SIZE=0x1000)
+		# Value of std::hardware_destructive_interference_size for ARM64 on MSVC toolset 14.40.33807
+		list(APPEND PCSX2_DEFS OVERRIDE_HOST_CACHE_LINE_SIZE=64)
+	endif()
+else()
+	message(FATAL_ERROR "Unsupported architecture: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+endif()
 
 # Require C++20.
 set(CMAKE_CXX_STANDARD 20)
@@ -136,6 +139,7 @@ if(MSVC AND NOT USE_CLANG_CL)
 		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:externConstexpr>"
 		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>"
 		"$<$<COMPILE_LANGUAGE:CXX>:/permissive->"
+		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>"
 		"/Zo"
 		"/utf-8"
 	)
@@ -165,12 +169,24 @@ if(WIN32)
 		$<${CONFIG_ANY_REL}:_ITERATOR_DEBUG_LEVEL=0>
 		_HAS_EXCEPTIONS=0
 	)
-	list(APPEND PCSX2_DEFS _SCL_SECURE_NO_WARNINGS _UNICODE UNICODE)
+	list(APPEND PCSX2_DEFS
+		_CRT_NONSTDC_NO_WARNINGS
+		_CRT_SECURE_NO_WARNINGS
+		CRT_SECURE_NO_DEPRECATE
+		_SCL_SECURE_NO_WARNINGS
+		_UNICODE
+		UNICODE
+	)
+else()
+	# Assume everything else is POSIX.
+	list(APPEND PCSX2_DEFS
+		__POSIX__
+	)
 endif()
 
 # Enable debug information in release builds for Linux.
 # Makes the backtrace actually meaningful.
-if(UNIX AND NOT APPLE)
+if(LINUX)
 	add_compile_options($<$<CONFIG:Release>:-g1>)
 endif()
 
@@ -185,6 +201,15 @@ if(MSVC)
 		$<${CONFIG_REL_NO_DEB}:/OPT:ICF>
 	)
 endif()
+
+if(PACKAGE_MODE)
+	file(RELATIVE_PATH relative_datadir ${CMAKE_INSTALL_FULL_BINDIR} ${CMAKE_INSTALL_FULL_DATADIR}/PCSX2)
+
+	# Compile all source codes with those defines
+	list(APPEND PCSX2_DEFS
+		PCSX2_APP_DATADIR="${relative_datadir}")
+endif()
+
 
 if(USE_VTUNE)
 	list(APPEND PCSX2_DEFS ENABLE_VTUNE)
@@ -208,22 +233,12 @@ endif()
 
 # -Wno-attributes: "always_inline function might not be inlinable" <= real spam (thousand of warnings!!!)
 # -Wno-missing-field-initializers: standard allow to init only the begin of struct/array in static init. Just a silly warning.
-# Note: future GCC (aka GCC 5.1.1) has less false positive so warning could maybe put back
 # -Wno-unused-function: warn for function not used in release build
-# -Wno-unused-value: lots of warning for this kind of statements "0 && ...". There are used to disable some parts of code in release/dev build.
-# -Wno-format*: Yeah, these need to be taken care of, but...
-# -Wno-stringop-truncation: Who comes up with these compiler warnings, anyways?
-# -Wno-stringop-overflow: Probably the same people as this one...
-# -Wno-maybe-uninitialized: Lots of gcc warnings like "‘test.GSVector8i::<anonymous>.GSVector8i::<unnamed union>::m’ may be used uninitialized" if this is removed.
 
 if (MSVC)
 	set(DEFAULT_WARNINGS)
 else()
-	set(DEFAULT_WARNINGS -Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-format -Wno-format-security -Wno-unused-value)
-endif()
-
-if (USE_GCC)
-	list(APPEND DEFAULT_WARNINGS -Wno-stringop-truncation -Wno-stringop-overflow -Wno-maybe-uninitialized )
+	set(DEFAULT_WARNINGS -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers)
 endif()
 
 if (USE_PGO_GENERATE OR USE_PGO_OPTIMIZE)
@@ -254,11 +269,6 @@ endif()
 
 set(PCSX2_WARNINGS ${DEFAULT_WARNINGS})
 
-if(DISABLE_BUILD_DATE)
-	message(STATUS "Disabling the inclusion of the binary compile date.")
-	list(APPEND PCSX2_DEFS DISABLE_BUILD_DATE)
-endif()
-
 #-------------------------------------------------------------------------------
 # MacOS-specific things
 #-------------------------------------------------------------------------------
@@ -267,7 +277,7 @@ if(NOT CMAKE_GENERATOR MATCHES "Xcode")
 	# Assume Xcode builds aren't being used for distribution
 	# Helpful because Xcode builds don't build multiple metallibs for different macOS versions
 	# Also helpful because Xcode's interactive shader debugger requires apps be built for the latest macOS
-	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
+	set(CMAKE_OSX_DEPLOYMENT_TARGET 11.0)
 endif()
 
 # CMake defaults the suffix for modules to .so on macOS but wx tells us that the

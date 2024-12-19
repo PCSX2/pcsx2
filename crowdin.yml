@@ -1,5 +1,5 @@
-pull_request_title: "translations: Syncing Crowdin translations"
-commit_message: "[ci skip]"
+pull_request_title: 'translations: Syncing Crowdin translations'
+commit_message: '[ci skip]'
 files:
   - source: pcsx2-qt/Translations/pcsx2-qt_en.ts
-    translation: '/pcsx2-qt/Translations/pcsx2-qt_%locale%.ts'
+    translation: /pcsx2-qt/Translations/pcsx2-qt_%locale%.ts

@@ -42,5 +42,9 @@ if(NOT "${CMAKE_BUILD_TYPE}" MATCHES "Debug")
 	endif()
 endif()
 
+if(_M_ARM64)
+	target_compile_definitions(pcsx2-soundtouch PRIVATE SOUNDTOUCH_USE_NEON)
+endif()
+
 add_library(SoundTouch::SoundTouch ALIAS pcsx2-soundtouch)
 

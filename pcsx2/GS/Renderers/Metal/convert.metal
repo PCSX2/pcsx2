@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GSMTLShaderCommon.h"
 
@@ -89,9 +77,26 @@ fragment float4 ps_copy_fs(float4 p [[position]], DirectReadTextureIn<float> tex
 	return tex.read(p);
 }
 
+fragment float4 ps_clear(float4 p [[position]], constant float4& color [[buffer(GSMTLBufferIndexUniforms)]])
+{
+	return color;
+}
+
 fragment void ps_datm1(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
 	if (tex.read(p).a < (127.5f / 255.f))
+		discard_fragment();
+}
+
+fragment void ps_datm0_rta_correction(float4 p [[position]], DirectReadTextureIn<float> tex)
+{
+	if (tex.read(p).a > (254.5f / 255.f))
+		discard_fragment();
+}
+
+fragment void ps_datm1_rta_correction(float4 p [[position]], DirectReadTextureIn<float> tex)
+{
+	if (tex.read(p).a < (254.5f / 255.f))
 		discard_fragment();
 }
 
@@ -101,14 +106,36 @@ fragment void ps_datm0(float4 p [[position]], DirectReadTextureIn<float> tex)
 		discard_fragment();
 }
 
+fragment float4 ps_primid_init_datm1(float4 p [[position]], DirectReadTextureIn<float> tex)
+{
+	return tex.read(p).a < (127.5f / 255.f) ? -1 : FLT_MAX;
+}
+
 fragment float4 ps_primid_init_datm0(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
 	return tex.read(p).a > (127.5f / 255.f) ? -1 : FLT_MAX;
 }
 
-fragment float4 ps_primid_init_datm1(float4 p [[position]], DirectReadTextureIn<float> tex)
+fragment float4 ps_primid_rta_init_datm1(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
-	return tex.read(p).a < (127.5f / 255.f) ? -1 : FLT_MAX;
+	return tex.read(p).a < (254.5f / 255.f) ? -1 : FLT_MAX;
+}
+
+fragment float4 ps_primid_rta_init_datm0(float4 p [[position]], DirectReadTextureIn<float> tex)
+{
+	return tex.read(p).a > (254.5f / 255.f) ? -1 : FLT_MAX;
+}
+
+fragment float4 ps_rta_correction(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+{
+	float4 in = res.sample(data.t);
+	return float4(in.rgb, in.a / (128.25f / 255.0f));
+}
+
+fragment float4 ps_rta_decorrection(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+{
+	float4 in = res.sample(data.t);
+	return float4(in.rgb, in.a * (128.25f / 255.0f));
 }
 
 fragment float4 ps_hdr_init(float4 p [[position]], DirectReadTextureIn<float> tex)
@@ -153,6 +180,22 @@ struct DepthOut
 fragment DepthOut ps_depth_copy(ConvertShaderData data [[stage_in]], ConvertPSDepthRes res)
 {
 	return res.sample(data.t);
+}
+
+fragment float4 ps_downsample_copy(ConvertShaderData data [[stage_in]],
+	texture2d<float> texture [[texture(GSMTLTextureIndexNonHW)]],
+	constant GSMTLDownsamplePSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
+{
+	uint2 coord = max(uint2(data.p.xy) * uniform.downsample_factor, uniform.clamp_min);
+
+	float4 result = float4(0.0, 0.0, 0.0, 0.0);
+	for (uint yoff = 0; yoff < uniform.downsample_factor; yoff++)
+	{
+		for (uint xoff = 0; xoff < uniform.downsample_factor; xoff++)
+			result += texture.read(coord + uint2(xoff, yoff), 0);
+	}
+	result /= uniform.weight;
+	return result;
 }
 
 static float rgba8_to_depth32(half4 unorm)
@@ -205,6 +248,13 @@ struct ConvertToDepthRes
 		return mix(mix(depthTL, depthTR, mix_vals.x), mix(depthBL, depthBR, mix_vals.x), mix_vals.y);
 	}
 };
+
+fragment DepthOut ps_convert_float32_float24(ConvertShaderData data [[stage_in]], ConvertPSDepthRes res)
+{
+	// Truncates depth value to 24bits
+	uint val = uint(res.sample(data.t) * 0x1p32) & 0xFFFFFF;
+	return float(val) * 0x1p-32f;
+}
 
 fragment DepthOut ps_convert_rgba8_float32(ConvertShaderData data [[stage_in]], ConvertToDepthRes res)
 {

@@ -3,7 +3,6 @@
   <ItemGroup>
     <ClInclude Include="src\cubeb-internal.h" />
     <ClInclude Include="src\cubeb-speex-resampler.h" />
-    <ClInclude Include="src\cubeb_array_queue.h" />
     <ClInclude Include="src\cubeb_assert.h" />
     <ClInclude Include="src\cubeb_log.h" />
     <ClInclude Include="src\cubeb_mixer.h" />

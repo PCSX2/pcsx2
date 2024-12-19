@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Counters.h"
 #include "MTGS.h"
@@ -44,6 +30,7 @@ bool SaveStateBase::InputRecordingFreeze()
 #include "GameDatabase.h"
 #include "fmt/format.h"
 #include "GS.h"
+#include "Host.h"
 
 InputRecording g_InputRecording;
 
@@ -82,10 +69,10 @@ bool InputRecording::create(const std::string& fileName, const bool fromSaveStat
 
 	m_file.setEmulatorVersion();
 	m_file.setAuthor(authorName);
-	m_file.setGameName(VMManager::GetTitle());
+	m_file.setGameName(VMManager::GetTitle(false));
 	m_file.writeHeader();
 	initializeState();
-	InputRec::log("Started new input recording");
+	InputRec::log(TRANSLATE_STR("InputRecording", "Started new input recording"), Host::OSD_INFO_DURATION);
 	InputRec::consoleLog(fmt::format("Filename {}", m_file.getFilename()));
 	return true;
 }
@@ -104,7 +91,7 @@ bool InputRecording::play(const std::string& filename)
 		if (!FileSystem::FileExists(savestatePath.c_str()))
 		{
 			InputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}", savestatePath));
-			InputRec::log("Savestate load failed");
+			InputRec::log(TRANSLATE_STR("InputRecording", "Savestate load failed for input recording"), Host::OSD_ERROR_DURATION);
 			m_file.close();
 			return false;
 		}
@@ -114,7 +101,7 @@ bool InputRecording::play(const std::string& filename)
 		const auto loaded = VMManager::LoadState(savestatePath.c_str());
 		if (!loaded)
 		{
-			InputRec::log("Savestate load failed, unsupported version?");
+			InputRec::log(TRANSLATE_STR("InputRecording", "Savestate load failed for input recording, unsupported version?"), Host::OSD_ERROR_DURATION);
 			m_file.close();
 			m_is_active = false;
 			return false;
@@ -131,11 +118,11 @@ bool InputRecording::play(const std::string& filename)
 	}
 	m_controls.setReplayMode();
 	initializeState();
-	InputRec::log("Replaying input recording");
+	InputRec::log(TRANSLATE_STR("InputRecording", "Replaying input recording"), Host::OSD_INFO_DURATION);
 	m_file.logRecordingMetadata();
-	if (VMManager::GetTitle() != m_file.getGameName())
+	if (VMManager::GetTitle(false) != m_file.getGameName())
 	{
-		InputRec::consoleLog(fmt::format("Input recording was possibly constructed for a different game. Expected: {}, Actual: {}", m_file.getGameName(), VMManager::GetTitle()));
+		InputRec::consoleLog(fmt::format("Input recording was possibly constructed for a different game. Expected: {}, Actual: {}", m_file.getGameName(), VMManager::GetTitle(false)));
 	}
 	return true;
 }
@@ -149,12 +136,12 @@ void InputRecording::closeActiveFile()
 	if (m_file.close())
 	{
 		m_is_active = false;
-		InputRec::log("Input recording stopped");
+		InputRec::log(TRANSLATE_STR("InputRecording", "Input recording stopped"), Host::OSD_ERROR_DURATION);
 		MTGS::PresentCurrentFrame();
 	}
 	else
 	{
-		InputRec::log("Unable to stop input recording");
+		InputRec::log(TRANSLATE_STR("InputRecording", "Unable to stop input recording"), Host::OSD_ERROR_DURATION);
 	}
 }
 
@@ -242,7 +229,7 @@ void InputRecording::incFrameCounter()
 
 	if (m_frame_counter == std::numeric_limits<u32>::max())
 	{
-		// TODO - log the incredible achievment of playing for longer than 4 billion years, and end the recording
+		InputRec::log(TRANSLATE_STR("InputRecording", "Congratulations, you've been playing for far too long and thus have reached the limit of input recording! Stopping recording now..."), Host::OSD_CRITICAL_ERROR_DURATION);
 		stop();
 		return;
 	}

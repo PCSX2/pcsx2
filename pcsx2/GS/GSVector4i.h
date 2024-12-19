@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "common/Assertions.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 class alignas(16) GSVector4i
 {
@@ -57,10 +43,7 @@ public:
 		__m128i m;
 	};
 
-	__forceinline constexpr GSVector4i()
-		: x(0), y(0), z(0), w(0)
-	{
-	}
+	GSVector4i() = default;
 
 	constexpr static GSVector4i cxpr(int x, int y, int z, int w)
 	{
@@ -102,11 +85,6 @@ public:
 	{
 	}
 
-	__forceinline GSVector4i(const GSVector4i& v)
-	{
-		m = v.m;
-	}
-
 	__forceinline explicit GSVector4i(const GSVector2i& v)
 	{
 		m = _mm_loadl_epi64((__m128i*)&v);
@@ -138,11 +116,6 @@ public:
 	__forceinline static GSVector4i cast(const GSVector8i& v);
 
 #endif
-
-	__forceinline void operator=(const GSVector4i& v)
-	{
-		m = v.m;
-	}
 
 	__forceinline void operator=(int i)
 	{
@@ -196,34 +169,22 @@ public:
 
 	__forceinline GSVector4i runion(const GSVector4i& a) const
 	{
-		int i = (upl64(a) < uph64(a)).mask();
-
-		if (i == 0xffff)
-		{
-			return runion_ordered(a);
-		}
-
-		if ((i & 0x00ff) == 0x00ff)
-		{
-			return *this;
-		}
-
-		if ((i & 0xff00) == 0xff00)
-		{
-			return a;
-		}
-
-		return GSVector4i::zero();
-	}
-
-	__forceinline GSVector4i runion_ordered(const GSVector4i& a) const
-	{
 		return min_i32(a).upl64(max_i32(a).srl<8>());
 	}
 
 	__forceinline GSVector4i rintersect(const GSVector4i& a) const
 	{
 		return sat_i32(a);
+	}
+
+	__forceinline bool rintersects(const GSVector4i& v) const
+	{
+		return !rintersect(v).rempty();
+	}
+
+	__forceinline bool rcontains(const GSVector4i& v) const
+	{
+		return rintersect(v).eq(v);
 	}
 
 	template <Align_Mode mode>
@@ -720,51 +681,66 @@ public:
 		return GSVector4i(_mm_slli_si128(m, i));
 	}
 
-	__forceinline GSVector4i sra16(int i) const
-	{
-		return GSVector4i(_mm_srai_epi16(m, i));
-	}
-
-	__forceinline GSVector4i sra16(__m128i i) const
-	{
-		return GSVector4i(_mm_sra_epi16(m, i));
-	}
-
-	__forceinline GSVector4i sra32(int i) const
-	{
-		return GSVector4i(_mm_srai_epi32(m, i));
-	}
-
-	__forceinline GSVector4i sra32(__m128i i) const
-	{
-		return GSVector4i(_mm_sra_epi32(m, i));
-	}
-
-#if _M_SSE >= 0x501
-	__forceinline GSVector4i srav32(const GSVector4i& v) const
-	{
-		return GSVector4i(_mm_srav_epi32(m, v.m));
-	}
-#endif
-
-	__forceinline GSVector4i sll16(int i) const
+	template <s32 i>
+	__forceinline GSVector4i sll16() const
 	{
 		return GSVector4i(_mm_slli_epi16(m, i));
 	}
 
-	__forceinline GSVector4i sll16(__m128i i) const
+	__forceinline GSVector4i sll16(s32 i) const
 	{
-		return GSVector4i(_mm_sll_epi16(m, i));
+		return GSVector4i(_mm_sll_epi16(m, _mm_cvtsi32_si128(i)));
 	}
 
-	__forceinline GSVector4i sll32(int i) const
+#if _M_SSE >= 0x501
+	__forceinline GSVector4i sllv16(const GSVector4i& v) const { return GSVector4i(_mm_sllv_epi16(m, v.m)); }
+#endif
+
+	template <s32 i>
+	__forceinline GSVector4i srl16() const
+	{
+		return GSVector4i(_mm_srli_epi16(m, i));
+	}
+
+	__forceinline GSVector4i srl16(s32 i) const
+	{
+		return GSVector4i(_mm_srl_epi16(m, _mm_cvtsi32_si128(i)));
+	}
+
+#if _M_SSE >= 0x501
+	__forceinline GSVector4i srlv16(const GSVector4i& v) const
+	{
+		return GSVector4i(_mm_srlv_epi16(m, v.m));
+	}
+#endif
+
+	template <s32 i>
+	__forceinline GSVector4i sra16() const
+	{
+		return GSVector4i(_mm_srai_epi16(m, i));
+	}
+
+	__forceinline GSVector4i sra16(s32 i) const
+	{
+		return GSVector4i(_mm_sra_epi16(m, _mm_cvtsi32_si128(i)));
+	}
+
+#if _M_SSE >= 0x501
+	__forceinline GSVector4i srav16(const GSVector4i& v) const
+	{
+		return GSVector4i(_mm_srav_epi16(m, v.m));
+	}
+#endif
+
+	template <s32 i>
+	__forceinline GSVector4i sll32() const
 	{
 		return GSVector4i(_mm_slli_epi32(m, i));
 	}
 
-	__forceinline GSVector4i sll32(__m128i i) const
+	__forceinline GSVector4i sll32(s32 i) const
 	{
-		return GSVector4i(_mm_sll_epi32(m, i));
+		return GSVector4i(_mm_sll_epi32(m, _mm_cvtsi32_si128(i)));
 	}
 
 #if _M_SSE >= 0x501
@@ -774,34 +750,15 @@ public:
 	}
 #endif
 
-	__forceinline GSVector4i sll64(int i) const
-	{
-		return GSVector4i(_mm_slli_epi64(m, i));
-	}
-
-	__forceinline GSVector4i sll64(__m128i i) const
-	{
-		return GSVector4i(_mm_sll_epi64(m, i));
-	}
-
-	__forceinline GSVector4i srl16(int i) const
-	{
-		return GSVector4i(_mm_srli_epi16(m, i));
-	}
-
-	__forceinline GSVector4i srl16(__m128i i) const
-	{
-		return GSVector4i(_mm_srl_epi16(m, i));
-	}
-
-	__forceinline GSVector4i srl32(int i) const
+	template <s32 i>
+	__forceinline GSVector4i srl32() const
 	{
 		return GSVector4i(_mm_srli_epi32(m, i));
 	}
 
-	__forceinline GSVector4i srl32(__m128i i) const
+	__forceinline GSVector4i srl32(s32 i) const
 	{
-		return GSVector4i(_mm_srl_epi32(m, i));
+		return GSVector4i(_mm_srl_epi32(m, _mm_cvtsi32_si128(i)));
 	}
 
 #if _M_SSE >= 0x501
@@ -811,14 +768,76 @@ public:
 	}
 #endif
 
-	__forceinline GSVector4i srl64(int i) const
+	template <s32 i>
+	__forceinline GSVector4i sra32() const
+	{
+		return GSVector4i(_mm_srai_epi32(m, i));
+	}
+
+	__forceinline GSVector4i sra32(s32 i) const
+	{
+		return GSVector4i(_mm_sra_epi32(m, _mm_cvtsi32_si128(i)));
+	}
+
+#if _M_SSE >= 0x501
+	__forceinline GSVector4i srav32(const GSVector4i& v) const
+	{
+		return GSVector4i(_mm_srav_epi32(m, v.m));
+	}
+#endif
+
+	template <s64 i>
+	__forceinline GSVector4i sll64() const
+	{
+		return GSVector4i(_mm_slli_epi64(m, i));
+	}
+
+	__forceinline GSVector4i sll64(s32 i) const
+	{
+		return GSVector4i(_mm_sll_epi64(m, _mm_cvtsi32_si128(i)));
+	}
+
+#if _M_SSE >= 0x501
+	__forceinline GSVector4i sllv64(const GSVector4i& v) const
+	{
+		return GSVector4i(_mm_sllv_epi64(m, v.m));
+	}
+#endif
+
+	template <s64 i>
+	__forceinline GSVector4i srl64() const
 	{
 		return GSVector4i(_mm_srli_epi64(m, i));
 	}
 
-	__forceinline GSVector4i srl64(__m128i i) const
+	__forceinline GSVector4i srl64(s32 i) const
 	{
-		return GSVector4i(_mm_srl_epi64(m, i));
+		return GSVector4i(_mm_srl_epi64(m, _mm_cvtsi32_si128(i)));
+	}
+
+#if _M_SSE >= 0x501
+	__forceinline GSVector4i srlv64(const GSVector4i& v) const
+	{
+		return GSVector4i(_mm_srlv_epi64(m, v.m));
+	}
+#endif
+
+	__forceinline GSVector4i sra64(s32 i) const
+	{
+		return GSVector4i(_mm_sra_epi64(m, _mm_cvtsi32_si128(i)));
+	}
+
+#if _M_SSE >= 0x501
+	__forceinline GSVector4i srav64(const GSVector4i& v) const
+	{
+		return GSVector4i(_mm_srav_epi64(m, v.m));
+	}
+#endif
+
+	template <int i>
+	__forceinline GSVector4i srl64() const
+	{
+		return GSVector4i(_mm_srli_epi64(m, i));
 	}
 
 	__forceinline GSVector4i add8(const GSVector4i& v) const
@@ -844,6 +863,11 @@ public:
 	__forceinline GSVector4i adds16(const GSVector4i& v) const
 	{
 		return GSVector4i(_mm_adds_epi16(m, v.m));
+	}
+
+	__forceinline GSVector4i hadds16(const GSVector4i& v) const
+	{
+		return GSVector4i(_mm_hadds_epi16(m, v.m));
 	}
 
 	__forceinline GSVector4i addus8(const GSVector4i& v) const
@@ -954,7 +978,7 @@ public:
 	{
 		// (a - this) * f >> 4 + this (a, this: 8-bit, f: 4-bit)
 
-		return add16(a.sub16(*this).mul16l(f).sra16(4));
+		return add16(a.sub16(*this).mul16l(f).sra16<4>());
 	}
 
 	template <int shift>
@@ -966,7 +990,7 @@ public:
 			return mul16hrs(f);
 		}
 
-		return sll16(shift + 1).mul16hs(f);
+		return sll16<shift + 1>().mul16hs(f);
 	}
 
 	__forceinline bool eq(const GSVector4i& v) const
@@ -1028,6 +1052,21 @@ public:
 		return GSVector4i(_mm_cmpgt_epi32(m, v.m));
 	}
 
+	__forceinline GSVector4i ge8(const GSVector4i& v) const
+	{
+		return ~GSVector4i(_mm_cmplt_epi8(m, v.m));
+	}
+
+	__forceinline GSVector4i ge16(const GSVector4i& v) const
+	{
+		return ~GSVector4i(_mm_cmplt_epi16(m, v.m));
+	}
+
+	__forceinline GSVector4i ge32(const GSVector4i& v) const
+	{
+		return ~GSVector4i(_mm_cmplt_epi32(m, v.m));
+	}
+
 	__forceinline GSVector4i lt8(const GSVector4i& v) const
 	{
 		return GSVector4i(_mm_cmplt_epi8(m, v.m));
@@ -1041,6 +1080,19 @@ public:
 	__forceinline GSVector4i lt32(const GSVector4i& v) const
 	{
 		return GSVector4i(_mm_cmplt_epi32(m, v.m));
+	}
+
+	__forceinline GSVector4i le8(const GSVector4i& v) const
+	{
+		return ~GSVector4i(_mm_cmpgt_epi8(m, v.m));
+	}
+	__forceinline GSVector4i le16(const GSVector4i& v) const
+	{
+		return ~GSVector4i(_mm_cmpgt_epi16(m, v.m));
+	}
+	__forceinline GSVector4i le32(const GSVector4i& v) const
+	{
+		return ~GSVector4i(_mm_cmpgt_epi32(m, v.m));
 	}
 
 	__forceinline GSVector4i andnot(const GSVector4i& v) const
@@ -1102,8 +1154,6 @@ public:
 		return _mm_extract_epi32(m, i);
 	}
 
-#ifdef _M_AMD64
-
 	template <int i>
 	__forceinline GSVector4i insert64(s64 a) const
 	{
@@ -1118,8 +1168,6 @@ public:
 
 		return _mm_extract_epi64(m, i);
 	}
-
-#endif
 
 	template <int src, class T>
 	__forceinline GSVector4i gather8_4(const T* ptr) const
@@ -1346,8 +1394,6 @@ public:
 		return v;
 	}
 
-#if defined(_M_AMD64)
-
 	template <int src, class T>
 	__forceinline GSVector4i gather64_4(const T* ptr) const
 	{
@@ -1402,50 +1448,6 @@ public:
 
 		return v;
 	}
-
-#else
-
-	template <int src, class T>
-	__forceinline GSVector4i gather64_4(const T* ptr) const
-	{
-		GSVector4i v;
-
-		v = loadu(&ptr[extract8<src + 0>() & 0xf], &ptr[extract8<src + 0>() >> 4]);
-
-		return v;
-	}
-
-	template <int src, class T>
-	__forceinline GSVector4i gather64_8(const T* ptr) const
-	{
-		GSVector4i v;
-
-		v = load(&ptr[extract8<src + 0>()], &ptr[extract8<src + 1>()]);
-
-		return v;
-	}
-
-	template <int src, class T>
-	__forceinline GSVector4i gather64_16(const T* ptr) const
-	{
-		GSVector4i v;
-
-		v = load(&ptr[extract16<src + 0>()], &ptr[extract16<src + 1>()]);
-
-		return v;
-	}
-
-	template <int src, class T>
-	__forceinline GSVector4i gather64_32(const T* ptr) const
-	{
-		GSVector4i v;
-
-		v = load(&ptr[extract32<src + 0>()], &ptr[extract32<src + 1>()]);
-
-		return v;
-	}
-
-#endif
 
 	template <class T>
 	__forceinline void gather8_4(const T* RESTRICT ptr, GSVector4i* RESTRICT dst) const
@@ -1566,15 +1568,11 @@ public:
 		dst[1] = gather64_32<2>(ptr);
 	}
 
-#ifdef _M_AMD64
-
 	template <class T>
 	__forceinline void gather64_64(const T* RESTRICT ptr, GSVector4i* RESTRICT dst) const
 	{
 		dst[0] = gather64_64<>(ptr);
 	}
-
-#endif
 
 	__forceinline static GSVector4i loadnt(const void* p)
 	{
@@ -1625,14 +1623,10 @@ public:
 		return GSVector4i(_mm_cvtsi32_si128(i));
 	}
 
-#ifdef _M_AMD64
-
 	__forceinline static GSVector4i loadq(s64 i)
 	{
 		return GSVector4i(_mm_cvtsi64_si128(i));
 	}
-
-#endif
 
 	__forceinline static void storent(void* p, const GSVector4i& v)
 	{
@@ -1669,14 +1663,10 @@ public:
 		return _mm_cvtsi128_si32(v.m);
 	}
 
-#ifdef _M_AMD64
-
 	__forceinline static s64 storeq(const GSVector4i& v)
 	{
 		return _mm_cvtsi128_si64(v.m);
 	}
-
-#endif
 
 	__forceinline static void storent(void* RESTRICT dst, const void* RESTRICT src, size_t size)
 	{
@@ -2059,199 +2049,199 @@ public:
 
 	__forceinline static GSVector4i xffffffff() { return zero() == zero(); }
 
-	__forceinline static GSVector4i x00000001() { return xffffffff().srl32(31); }
-	__forceinline static GSVector4i x00000003() { return xffffffff().srl32(30); }
-	__forceinline static GSVector4i x00000007() { return xffffffff().srl32(29); }
-	__forceinline static GSVector4i x0000000f() { return xffffffff().srl32(28); }
-	__forceinline static GSVector4i x0000001f() { return xffffffff().srl32(27); }
-	__forceinline static GSVector4i x0000003f() { return xffffffff().srl32(26); }
-	__forceinline static GSVector4i x0000007f() { return xffffffff().srl32(25); }
-	__forceinline static GSVector4i x000000ff() { return xffffffff().srl32(24); }
-	__forceinline static GSVector4i x000001ff() { return xffffffff().srl32(23); }
-	__forceinline static GSVector4i x000003ff() { return xffffffff().srl32(22); }
-	__forceinline static GSVector4i x000007ff() { return xffffffff().srl32(21); }
-	__forceinline static GSVector4i x00000fff() { return xffffffff().srl32(20); }
-	__forceinline static GSVector4i x00001fff() { return xffffffff().srl32(19); }
-	__forceinline static GSVector4i x00003fff() { return xffffffff().srl32(18); }
-	__forceinline static GSVector4i x00007fff() { return xffffffff().srl32(17); }
-	__forceinline static GSVector4i x0000ffff() { return xffffffff().srl32(16); }
-	__forceinline static GSVector4i x0001ffff() { return xffffffff().srl32(15); }
-	__forceinline static GSVector4i x0003ffff() { return xffffffff().srl32(14); }
-	__forceinline static GSVector4i x0007ffff() { return xffffffff().srl32(13); }
-	__forceinline static GSVector4i x000fffff() { return xffffffff().srl32(12); }
-	__forceinline static GSVector4i x001fffff() { return xffffffff().srl32(11); }
-	__forceinline static GSVector4i x003fffff() { return xffffffff().srl32(10); }
-	__forceinline static GSVector4i x007fffff() { return xffffffff().srl32( 9); }
-	__forceinline static GSVector4i x00ffffff() { return xffffffff().srl32( 8); }
-	__forceinline static GSVector4i x01ffffff() { return xffffffff().srl32( 7); }
-	__forceinline static GSVector4i x03ffffff() { return xffffffff().srl32( 6); }
-	__forceinline static GSVector4i x07ffffff() { return xffffffff().srl32( 5); }
-	__forceinline static GSVector4i x0fffffff() { return xffffffff().srl32( 4); }
-	__forceinline static GSVector4i x1fffffff() { return xffffffff().srl32( 3); }
-	__forceinline static GSVector4i x3fffffff() { return xffffffff().srl32( 2); }
-	__forceinline static GSVector4i x7fffffff() { return xffffffff().srl32( 1); }
+	__forceinline static GSVector4i x00000001() { return xffffffff().srl32<31>(); }
+	__forceinline static GSVector4i x00000003() { return xffffffff().srl32<30>(); }
+	__forceinline static GSVector4i x00000007() { return xffffffff().srl32<29>(); }
+	__forceinline static GSVector4i x0000000f() { return xffffffff().srl32<28>(); }
+	__forceinline static GSVector4i x0000001f() { return xffffffff().srl32<27>(); }
+	__forceinline static GSVector4i x0000003f() { return xffffffff().srl32<26>(); }
+	__forceinline static GSVector4i x0000007f() { return xffffffff().srl32<25>(); }
+	__forceinline static GSVector4i x000000ff() { return xffffffff().srl32<24>(); }
+	__forceinline static GSVector4i x000001ff() { return xffffffff().srl32<23>(); }
+	__forceinline static GSVector4i x000003ff() { return xffffffff().srl32<22>(); }
+	__forceinline static GSVector4i x000007ff() { return xffffffff().srl32<21>(); }
+	__forceinline static GSVector4i x00000fff() { return xffffffff().srl32<20>(); }
+	__forceinline static GSVector4i x00001fff() { return xffffffff().srl32<19>(); }
+	__forceinline static GSVector4i x00003fff() { return xffffffff().srl32<18>(); }
+	__forceinline static GSVector4i x00007fff() { return xffffffff().srl32<17>(); }
+	__forceinline static GSVector4i x0000ffff() { return xffffffff().srl32<16>(); }
+	__forceinline static GSVector4i x0001ffff() { return xffffffff().srl32<15>(); }
+	__forceinline static GSVector4i x0003ffff() { return xffffffff().srl32<14>(); }
+	__forceinline static GSVector4i x0007ffff() { return xffffffff().srl32<13>(); }
+	__forceinline static GSVector4i x000fffff() { return xffffffff().srl32<12>(); }
+	__forceinline static GSVector4i x001fffff() { return xffffffff().srl32<11>(); }
+	__forceinline static GSVector4i x003fffff() { return xffffffff().srl32<10>(); }
+	__forceinline static GSVector4i x007fffff() { return xffffffff().srl32< 9>(); }
+	__forceinline static GSVector4i x00ffffff() { return xffffffff().srl32< 8>(); }
+	__forceinline static GSVector4i x01ffffff() { return xffffffff().srl32< 7>(); }
+	__forceinline static GSVector4i x03ffffff() { return xffffffff().srl32< 6>(); }
+	__forceinline static GSVector4i x07ffffff() { return xffffffff().srl32< 5>(); }
+	__forceinline static GSVector4i x0fffffff() { return xffffffff().srl32< 4>(); }
+	__forceinline static GSVector4i x1fffffff() { return xffffffff().srl32< 3>(); }
+	__forceinline static GSVector4i x3fffffff() { return xffffffff().srl32< 2>(); }
+	__forceinline static GSVector4i x7fffffff() { return xffffffff().srl32< 1>(); }
 
-	__forceinline static GSVector4i x80000000() { return xffffffff().sll32(31); }
-	__forceinline static GSVector4i xc0000000() { return xffffffff().sll32(30); }
-	__forceinline static GSVector4i xe0000000() { return xffffffff().sll32(29); }
-	__forceinline static GSVector4i xf0000000() { return xffffffff().sll32(28); }
-	__forceinline static GSVector4i xf8000000() { return xffffffff().sll32(27); }
-	__forceinline static GSVector4i xfc000000() { return xffffffff().sll32(26); }
-	__forceinline static GSVector4i xfe000000() { return xffffffff().sll32(25); }
-	__forceinline static GSVector4i xff000000() { return xffffffff().sll32(24); }
-	__forceinline static GSVector4i xff800000() { return xffffffff().sll32(23); }
-	__forceinline static GSVector4i xffc00000() { return xffffffff().sll32(22); }
-	__forceinline static GSVector4i xffe00000() { return xffffffff().sll32(21); }
-	__forceinline static GSVector4i xfff00000() { return xffffffff().sll32(20); }
-	__forceinline static GSVector4i xfff80000() { return xffffffff().sll32(19); }
-	__forceinline static GSVector4i xfffc0000() { return xffffffff().sll32(18); }
-	__forceinline static GSVector4i xfffe0000() { return xffffffff().sll32(17); }
-	__forceinline static GSVector4i xffff0000() { return xffffffff().sll32(16); }
-	__forceinline static GSVector4i xffff8000() { return xffffffff().sll32(15); }
-	__forceinline static GSVector4i xffffc000() { return xffffffff().sll32(14); }
-	__forceinline static GSVector4i xffffe000() { return xffffffff().sll32(13); }
-	__forceinline static GSVector4i xfffff000() { return xffffffff().sll32(12); }
-	__forceinline static GSVector4i xfffff800() { return xffffffff().sll32(11); }
-	__forceinline static GSVector4i xfffffc00() { return xffffffff().sll32(10); }
-	__forceinline static GSVector4i xfffffe00() { return xffffffff().sll32( 9); }
-	__forceinline static GSVector4i xffffff00() { return xffffffff().sll32( 8); }
-	__forceinline static GSVector4i xffffff80() { return xffffffff().sll32( 7); }
-	__forceinline static GSVector4i xffffffc0() { return xffffffff().sll32( 6); }
-	__forceinline static GSVector4i xffffffe0() { return xffffffff().sll32( 5); }
-	__forceinline static GSVector4i xfffffff0() { return xffffffff().sll32( 4); }
-	__forceinline static GSVector4i xfffffff8() { return xffffffff().sll32( 3); }
-	__forceinline static GSVector4i xfffffffc() { return xffffffff().sll32( 2); }
-	__forceinline static GSVector4i xfffffffe() { return xffffffff().sll32( 1); }
+	__forceinline static GSVector4i x80000000() { return xffffffff().sll32<31>(); }
+	__forceinline static GSVector4i xc0000000() { return xffffffff().sll32<30>(); }
+	__forceinline static GSVector4i xe0000000() { return xffffffff().sll32<29>(); }
+	__forceinline static GSVector4i xf0000000() { return xffffffff().sll32<28>(); }
+	__forceinline static GSVector4i xf8000000() { return xffffffff().sll32<27>(); }
+	__forceinline static GSVector4i xfc000000() { return xffffffff().sll32<26>(); }
+	__forceinline static GSVector4i xfe000000() { return xffffffff().sll32<25>(); }
+	__forceinline static GSVector4i xff000000() { return xffffffff().sll32<24>(); }
+	__forceinline static GSVector4i xff800000() { return xffffffff().sll32<23>(); }
+	__forceinline static GSVector4i xffc00000() { return xffffffff().sll32<22>(); }
+	__forceinline static GSVector4i xffe00000() { return xffffffff().sll32<21>(); }
+	__forceinline static GSVector4i xfff00000() { return xffffffff().sll32<20>(); }
+	__forceinline static GSVector4i xfff80000() { return xffffffff().sll32<19>(); }
+	__forceinline static GSVector4i xfffc0000() { return xffffffff().sll32<18>(); }
+	__forceinline static GSVector4i xfffe0000() { return xffffffff().sll32<17>(); }
+	__forceinline static GSVector4i xffff0000() { return xffffffff().sll32<16>(); }
+	__forceinline static GSVector4i xffff8000() { return xffffffff().sll32<15>(); }
+	__forceinline static GSVector4i xffffc000() { return xffffffff().sll32<14>(); }
+	__forceinline static GSVector4i xffffe000() { return xffffffff().sll32<13>(); }
+	__forceinline static GSVector4i xfffff000() { return xffffffff().sll32<12>(); }
+	__forceinline static GSVector4i xfffff800() { return xffffffff().sll32<11>(); }
+	__forceinline static GSVector4i xfffffc00() { return xffffffff().sll32<10>(); }
+	__forceinline static GSVector4i xfffffe00() { return xffffffff().sll32< 9>(); }
+	__forceinline static GSVector4i xffffff00() { return xffffffff().sll32< 8>(); }
+	__forceinline static GSVector4i xffffff80() { return xffffffff().sll32< 7>(); }
+	__forceinline static GSVector4i xffffffc0() { return xffffffff().sll32< 6>(); }
+	__forceinline static GSVector4i xffffffe0() { return xffffffff().sll32< 5>(); }
+	__forceinline static GSVector4i xfffffff0() { return xffffffff().sll32< 4>(); }
+	__forceinline static GSVector4i xfffffff8() { return xffffffff().sll32< 3>(); }
+	__forceinline static GSVector4i xfffffffc() { return xffffffff().sll32< 2>(); }
+	__forceinline static GSVector4i xfffffffe() { return xffffffff().sll32< 1>(); }
 
-	__forceinline static GSVector4i x0001() { return xffffffff().srl16(15); }
-	__forceinline static GSVector4i x0003() { return xffffffff().srl16(14); }
-	__forceinline static GSVector4i x0007() { return xffffffff().srl16(13); }
-	__forceinline static GSVector4i x000f() { return xffffffff().srl16(12); }
-	__forceinline static GSVector4i x001f() { return xffffffff().srl16(11); }
-	__forceinline static GSVector4i x003f() { return xffffffff().srl16(10); }
-	__forceinline static GSVector4i x007f() { return xffffffff().srl16( 9); }
-	__forceinline static GSVector4i x00ff() { return xffffffff().srl16( 8); }
-	__forceinline static GSVector4i x01ff() { return xffffffff().srl16( 7); }
-	__forceinline static GSVector4i x03ff() { return xffffffff().srl16( 6); }
-	__forceinline static GSVector4i x07ff() { return xffffffff().srl16( 5); }
-	__forceinline static GSVector4i x0fff() { return xffffffff().srl16( 4); }
-	__forceinline static GSVector4i x1fff() { return xffffffff().srl16( 3); }
-	__forceinline static GSVector4i x3fff() { return xffffffff().srl16( 2); }
-	__forceinline static GSVector4i x7fff() { return xffffffff().srl16( 1); }
+	__forceinline static GSVector4i x0001() { return xffffffff().srl16<15>(); }
+	__forceinline static GSVector4i x0003() { return xffffffff().srl16<14>(); }
+	__forceinline static GSVector4i x0007() { return xffffffff().srl16<13>(); }
+	__forceinline static GSVector4i x000f() { return xffffffff().srl16<12>(); }
+	__forceinline static GSVector4i x001f() { return xffffffff().srl16<11>(); }
+	__forceinline static GSVector4i x003f() { return xffffffff().srl16<10>(); }
+	__forceinline static GSVector4i x007f() { return xffffffff().srl16< 9>(); }
+	__forceinline static GSVector4i x00ff() { return xffffffff().srl16< 8>(); }
+	__forceinline static GSVector4i x01ff() { return xffffffff().srl16< 7>(); }
+	__forceinline static GSVector4i x03ff() { return xffffffff().srl16< 6>(); }
+	__forceinline static GSVector4i x07ff() { return xffffffff().srl16< 5>(); }
+	__forceinline static GSVector4i x0fff() { return xffffffff().srl16< 4>(); }
+	__forceinline static GSVector4i x1fff() { return xffffffff().srl16< 3>(); }
+	__forceinline static GSVector4i x3fff() { return xffffffff().srl16< 2>(); }
+	__forceinline static GSVector4i x7fff() { return xffffffff().srl16< 1>(); }
 
-	__forceinline static GSVector4i x8000() { return xffffffff().sll16(15); }
-	__forceinline static GSVector4i xc000() { return xffffffff().sll16(14); }
-	__forceinline static GSVector4i xe000() { return xffffffff().sll16(13); }
-	__forceinline static GSVector4i xf000() { return xffffffff().sll16(12); }
-	__forceinline static GSVector4i xf800() { return xffffffff().sll16(11); }
-	__forceinline static GSVector4i xfc00() { return xffffffff().sll16(10); }
-	__forceinline static GSVector4i xfe00() { return xffffffff().sll16( 9); }
-	__forceinline static GSVector4i xff00() { return xffffffff().sll16( 8); }
-	__forceinline static GSVector4i xff80() { return xffffffff().sll16( 7); }
-	__forceinline static GSVector4i xffc0() { return xffffffff().sll16( 6); }
-	__forceinline static GSVector4i xffe0() { return xffffffff().sll16( 5); }
-	__forceinline static GSVector4i xfff0() { return xffffffff().sll16( 4); }
-	__forceinline static GSVector4i xfff8() { return xffffffff().sll16( 3); }
-	__forceinline static GSVector4i xfffc() { return xffffffff().sll16( 2); }
-	__forceinline static GSVector4i xfffe() { return xffffffff().sll16( 1); }
+	__forceinline static GSVector4i x8000() { return xffffffff().sll16<15>(); }
+	__forceinline static GSVector4i xc000() { return xffffffff().sll16<14>(); }
+	__forceinline static GSVector4i xe000() { return xffffffff().sll16<13>(); }
+	__forceinline static GSVector4i xf000() { return xffffffff().sll16<12>(); }
+	__forceinline static GSVector4i xf800() { return xffffffff().sll16<11>(); }
+	__forceinline static GSVector4i xfc00() { return xffffffff().sll16<10>(); }
+	__forceinline static GSVector4i xfe00() { return xffffffff().sll16< 9>(); }
+	__forceinline static GSVector4i xff00() { return xffffffff().sll16< 8>(); }
+	__forceinline static GSVector4i xff80() { return xffffffff().sll16< 7>(); }
+	__forceinline static GSVector4i xffc0() { return xffffffff().sll16< 6>(); }
+	__forceinline static GSVector4i xffe0() { return xffffffff().sll16< 5>(); }
+	__forceinline static GSVector4i xfff0() { return xffffffff().sll16< 4>(); }
+	__forceinline static GSVector4i xfff8() { return xffffffff().sll16< 3>(); }
+	__forceinline static GSVector4i xfffc() { return xffffffff().sll16< 2>(); }
+	__forceinline static GSVector4i xfffe() { return xffffffff().sll16< 1>(); }
 
 	__forceinline static GSVector4i xffffffff(const GSVector4i& v) { return v == v; }
 
-	__forceinline static GSVector4i x00000001(const GSVector4i& v) { return xffffffff(v).srl32(31); }
-	__forceinline static GSVector4i x00000003(const GSVector4i& v) { return xffffffff(v).srl32(30); }
-	__forceinline static GSVector4i x00000007(const GSVector4i& v) { return xffffffff(v).srl32(29); }
-	__forceinline static GSVector4i x0000000f(const GSVector4i& v) { return xffffffff(v).srl32(28); }
-	__forceinline static GSVector4i x0000001f(const GSVector4i& v) { return xffffffff(v).srl32(27); }
-	__forceinline static GSVector4i x0000003f(const GSVector4i& v) { return xffffffff(v).srl32(26); }
-	__forceinline static GSVector4i x0000007f(const GSVector4i& v) { return xffffffff(v).srl32(25); }
-	__forceinline static GSVector4i x000000ff(const GSVector4i& v) { return xffffffff(v).srl32(24); }
-	__forceinline static GSVector4i x000001ff(const GSVector4i& v) { return xffffffff(v).srl32(23); }
-	__forceinline static GSVector4i x000003ff(const GSVector4i& v) { return xffffffff(v).srl32(22); }
-	__forceinline static GSVector4i x000007ff(const GSVector4i& v) { return xffffffff(v).srl32(21); }
-	__forceinline static GSVector4i x00000fff(const GSVector4i& v) { return xffffffff(v).srl32(20); }
-	__forceinline static GSVector4i x00001fff(const GSVector4i& v) { return xffffffff(v).srl32(19); }
-	__forceinline static GSVector4i x00003fff(const GSVector4i& v) { return xffffffff(v).srl32(18); }
-	__forceinline static GSVector4i x00007fff(const GSVector4i& v) { return xffffffff(v).srl32(17); }
-	__forceinline static GSVector4i x0000ffff(const GSVector4i& v) { return xffffffff(v).srl32(16); }
-	__forceinline static GSVector4i x0001ffff(const GSVector4i& v) { return xffffffff(v).srl32(15); }
-	__forceinline static GSVector4i x0003ffff(const GSVector4i& v) { return xffffffff(v).srl32(14); }
-	__forceinline static GSVector4i x0007ffff(const GSVector4i& v) { return xffffffff(v).srl32(13); }
-	__forceinline static GSVector4i x000fffff(const GSVector4i& v) { return xffffffff(v).srl32(12); }
-	__forceinline static GSVector4i x001fffff(const GSVector4i& v) { return xffffffff(v).srl32(11); }
-	__forceinline static GSVector4i x003fffff(const GSVector4i& v) { return xffffffff(v).srl32(10); }
-	__forceinline static GSVector4i x007fffff(const GSVector4i& v) { return xffffffff(v).srl32( 9); }
-	__forceinline static GSVector4i x00ffffff(const GSVector4i& v) { return xffffffff(v).srl32( 8); }
-	__forceinline static GSVector4i x01ffffff(const GSVector4i& v) { return xffffffff(v).srl32( 7); }
-	__forceinline static GSVector4i x03ffffff(const GSVector4i& v) { return xffffffff(v).srl32( 6); }
-	__forceinline static GSVector4i x07ffffff(const GSVector4i& v) { return xffffffff(v).srl32( 5); }
-	__forceinline static GSVector4i x0fffffff(const GSVector4i& v) { return xffffffff(v).srl32( 4); }
-	__forceinline static GSVector4i x1fffffff(const GSVector4i& v) { return xffffffff(v).srl32( 3); }
-	__forceinline static GSVector4i x3fffffff(const GSVector4i& v) { return xffffffff(v).srl32( 2); }
-	__forceinline static GSVector4i x7fffffff(const GSVector4i& v) { return xffffffff(v).srl32( 1); }
+	__forceinline static GSVector4i x00000001(const GSVector4i& v) { return xffffffff(v).srl32<31>(); }
+	__forceinline static GSVector4i x00000003(const GSVector4i& v) { return xffffffff(v).srl32<30>(); }
+	__forceinline static GSVector4i x00000007(const GSVector4i& v) { return xffffffff(v).srl32<29>(); }
+	__forceinline static GSVector4i x0000000f(const GSVector4i& v) { return xffffffff(v).srl32<28>(); }
+	__forceinline static GSVector4i x0000001f(const GSVector4i& v) { return xffffffff(v).srl32<27>(); }
+	__forceinline static GSVector4i x0000003f(const GSVector4i& v) { return xffffffff(v).srl32<26>(); }
+	__forceinline static GSVector4i x0000007f(const GSVector4i& v) { return xffffffff(v).srl32<25>(); }
+	__forceinline static GSVector4i x000000ff(const GSVector4i& v) { return xffffffff(v).srl32<24>(); }
+	__forceinline static GSVector4i x000001ff(const GSVector4i& v) { return xffffffff(v).srl32<23>(); }
+	__forceinline static GSVector4i x000003ff(const GSVector4i& v) { return xffffffff(v).srl32<22>(); }
+	__forceinline static GSVector4i x000007ff(const GSVector4i& v) { return xffffffff(v).srl32<21>(); }
+	__forceinline static GSVector4i x00000fff(const GSVector4i& v) { return xffffffff(v).srl32<20>(); }
+	__forceinline static GSVector4i x00001fff(const GSVector4i& v) { return xffffffff(v).srl32<19>(); }
+	__forceinline static GSVector4i x00003fff(const GSVector4i& v) { return xffffffff(v).srl32<18>(); }
+	__forceinline static GSVector4i x00007fff(const GSVector4i& v) { return xffffffff(v).srl32<17>(); }
+	__forceinline static GSVector4i x0000ffff(const GSVector4i& v) { return xffffffff(v).srl32<16>(); }
+	__forceinline static GSVector4i x0001ffff(const GSVector4i& v) { return xffffffff(v).srl32<15>(); }
+	__forceinline static GSVector4i x0003ffff(const GSVector4i& v) { return xffffffff(v).srl32<14>(); }
+	__forceinline static GSVector4i x0007ffff(const GSVector4i& v) { return xffffffff(v).srl32<13>(); }
+	__forceinline static GSVector4i x000fffff(const GSVector4i& v) { return xffffffff(v).srl32<12>(); }
+	__forceinline static GSVector4i x001fffff(const GSVector4i& v) { return xffffffff(v).srl32<11>(); }
+	__forceinline static GSVector4i x003fffff(const GSVector4i& v) { return xffffffff(v).srl32<10>(); }
+	__forceinline static GSVector4i x007fffff(const GSVector4i& v) { return xffffffff(v).srl32< 9>(); }
+	__forceinline static GSVector4i x00ffffff(const GSVector4i& v) { return xffffffff(v).srl32< 8>(); }
+	__forceinline static GSVector4i x01ffffff(const GSVector4i& v) { return xffffffff(v).srl32< 7>(); }
+	__forceinline static GSVector4i x03ffffff(const GSVector4i& v) { return xffffffff(v).srl32< 6>(); }
+	__forceinline static GSVector4i x07ffffff(const GSVector4i& v) { return xffffffff(v).srl32< 5>(); }
+	__forceinline static GSVector4i x0fffffff(const GSVector4i& v) { return xffffffff(v).srl32< 4>(); }
+	__forceinline static GSVector4i x1fffffff(const GSVector4i& v) { return xffffffff(v).srl32< 3>(); }
+	__forceinline static GSVector4i x3fffffff(const GSVector4i& v) { return xffffffff(v).srl32< 2>(); }
+	__forceinline static GSVector4i x7fffffff(const GSVector4i& v) { return xffffffff(v).srl32< 1>(); }
 
-	__forceinline static GSVector4i x80000000(const GSVector4i& v) { return xffffffff(v).sll32(31); }
-	__forceinline static GSVector4i xc0000000(const GSVector4i& v) { return xffffffff(v).sll32(30); }
-	__forceinline static GSVector4i xe0000000(const GSVector4i& v) { return xffffffff(v).sll32(29); }
-	__forceinline static GSVector4i xf0000000(const GSVector4i& v) { return xffffffff(v).sll32(28); }
-	__forceinline static GSVector4i xf8000000(const GSVector4i& v) { return xffffffff(v).sll32(27); }
-	__forceinline static GSVector4i xfc000000(const GSVector4i& v) { return xffffffff(v).sll32(26); }
-	__forceinline static GSVector4i xfe000000(const GSVector4i& v) { return xffffffff(v).sll32(25); }
-	__forceinline static GSVector4i xff000000(const GSVector4i& v) { return xffffffff(v).sll32(24); }
-	__forceinline static GSVector4i xff800000(const GSVector4i& v) { return xffffffff(v).sll32(23); }
-	__forceinline static GSVector4i xffc00000(const GSVector4i& v) { return xffffffff(v).sll32(22); }
-	__forceinline static GSVector4i xffe00000(const GSVector4i& v) { return xffffffff(v).sll32(21); }
-	__forceinline static GSVector4i xfff00000(const GSVector4i& v) { return xffffffff(v).sll32(20); }
-	__forceinline static GSVector4i xfff80000(const GSVector4i& v) { return xffffffff(v).sll32(19); }
-	__forceinline static GSVector4i xfffc0000(const GSVector4i& v) { return xffffffff(v).sll32(18); }
-	__forceinline static GSVector4i xfffe0000(const GSVector4i& v) { return xffffffff(v).sll32(17); }
-	__forceinline static GSVector4i xffff0000(const GSVector4i& v) { return xffffffff(v).sll32(16); }
-	__forceinline static GSVector4i xffff8000(const GSVector4i& v) { return xffffffff(v).sll32(15); }
-	__forceinline static GSVector4i xffffc000(const GSVector4i& v) { return xffffffff(v).sll32(14); }
-	__forceinline static GSVector4i xffffe000(const GSVector4i& v) { return xffffffff(v).sll32(13); }
-	__forceinline static GSVector4i xfffff000(const GSVector4i& v) { return xffffffff(v).sll32(12); }
-	__forceinline static GSVector4i xfffff800(const GSVector4i& v) { return xffffffff(v).sll32(11); }
-	__forceinline static GSVector4i xfffffc00(const GSVector4i& v) { return xffffffff(v).sll32(10); }
-	__forceinline static GSVector4i xfffffe00(const GSVector4i& v) { return xffffffff(v).sll32( 9); }
-	__forceinline static GSVector4i xffffff00(const GSVector4i& v) { return xffffffff(v).sll32( 8); }
-	__forceinline static GSVector4i xffffff80(const GSVector4i& v) { return xffffffff(v).sll32( 7); }
-	__forceinline static GSVector4i xffffffc0(const GSVector4i& v) { return xffffffff(v).sll32( 6); }
-	__forceinline static GSVector4i xffffffe0(const GSVector4i& v) { return xffffffff(v).sll32( 5); }
-	__forceinline static GSVector4i xfffffff0(const GSVector4i& v) { return xffffffff(v).sll32( 4); }
-	__forceinline static GSVector4i xfffffff8(const GSVector4i& v) { return xffffffff(v).sll32( 3); }
-	__forceinline static GSVector4i xfffffffc(const GSVector4i& v) { return xffffffff(v).sll32( 2); }
-	__forceinline static GSVector4i xfffffffe(const GSVector4i& v) { return xffffffff(v).sll32( 1); }
+	__forceinline static GSVector4i x80000000(const GSVector4i& v) { return xffffffff(v).sll32<31>(); }
+	__forceinline static GSVector4i xc0000000(const GSVector4i& v) { return xffffffff(v).sll32<30>(); }
+	__forceinline static GSVector4i xe0000000(const GSVector4i& v) { return xffffffff(v).sll32<29>(); }
+	__forceinline static GSVector4i xf0000000(const GSVector4i& v) { return xffffffff(v).sll32<28>(); }
+	__forceinline static GSVector4i xf8000000(const GSVector4i& v) { return xffffffff(v).sll32<27>(); }
+	__forceinline static GSVector4i xfc000000(const GSVector4i& v) { return xffffffff(v).sll32<26>(); }
+	__forceinline static GSVector4i xfe000000(const GSVector4i& v) { return xffffffff(v).sll32<25>(); }
+	__forceinline static GSVector4i xff000000(const GSVector4i& v) { return xffffffff(v).sll32<24>(); }
+	__forceinline static GSVector4i xff800000(const GSVector4i& v) { return xffffffff(v).sll32<23>(); }
+	__forceinline static GSVector4i xffc00000(const GSVector4i& v) { return xffffffff(v).sll32<22>(); }
+	__forceinline static GSVector4i xffe00000(const GSVector4i& v) { return xffffffff(v).sll32<21>(); }
+	__forceinline static GSVector4i xfff00000(const GSVector4i& v) { return xffffffff(v).sll32<20>(); }
+	__forceinline static GSVector4i xfff80000(const GSVector4i& v) { return xffffffff(v).sll32<19>(); }
+	__forceinline static GSVector4i xfffc0000(const GSVector4i& v) { return xffffffff(v).sll32<18>(); }
+	__forceinline static GSVector4i xfffe0000(const GSVector4i& v) { return xffffffff(v).sll32<17>(); }
+	__forceinline static GSVector4i xffff0000(const GSVector4i& v) { return xffffffff(v).sll32<16>(); }
+	__forceinline static GSVector4i xffff8000(const GSVector4i& v) { return xffffffff(v).sll32<15>(); }
+	__forceinline static GSVector4i xffffc000(const GSVector4i& v) { return xffffffff(v).sll32<14>(); }
+	__forceinline static GSVector4i xffffe000(const GSVector4i& v) { return xffffffff(v).sll32<13>(); }
+	__forceinline static GSVector4i xfffff000(const GSVector4i& v) { return xffffffff(v).sll32<12>(); }
+	__forceinline static GSVector4i xfffff800(const GSVector4i& v) { return xffffffff(v).sll32<11>(); }
+	__forceinline static GSVector4i xfffffc00(const GSVector4i& v) { return xffffffff(v).sll32<10>(); }
+	__forceinline static GSVector4i xfffffe00(const GSVector4i& v) { return xffffffff(v).sll32< 9>(); }
+	__forceinline static GSVector4i xffffff00(const GSVector4i& v) { return xffffffff(v).sll32< 8>(); }
+	__forceinline static GSVector4i xffffff80(const GSVector4i& v) { return xffffffff(v).sll32< 7>(); }
+	__forceinline static GSVector4i xffffffc0(const GSVector4i& v) { return xffffffff(v).sll32< 6>(); }
+	__forceinline static GSVector4i xffffffe0(const GSVector4i& v) { return xffffffff(v).sll32< 5>(); }
+	__forceinline static GSVector4i xfffffff0(const GSVector4i& v) { return xffffffff(v).sll32< 4>(); }
+	__forceinline static GSVector4i xfffffff8(const GSVector4i& v) { return xffffffff(v).sll32< 3>(); }
+	__forceinline static GSVector4i xfffffffc(const GSVector4i& v) { return xffffffff(v).sll32< 2>(); }
+	__forceinline static GSVector4i xfffffffe(const GSVector4i& v) { return xffffffff(v).sll32< 1>(); }
 
-	__forceinline static GSVector4i x0001(const GSVector4i& v) { return xffffffff(v).srl16(15); }
-	__forceinline static GSVector4i x0003(const GSVector4i& v) { return xffffffff(v).srl16(14); }
-	__forceinline static GSVector4i x0007(const GSVector4i& v) { return xffffffff(v).srl16(13); }
-	__forceinline static GSVector4i x000f(const GSVector4i& v) { return xffffffff(v).srl16(12); }
-	__forceinline static GSVector4i x001f(const GSVector4i& v) { return xffffffff(v).srl16(11); }
-	__forceinline static GSVector4i x003f(const GSVector4i& v) { return xffffffff(v).srl16(10); }
-	__forceinline static GSVector4i x007f(const GSVector4i& v) { return xffffffff(v).srl16( 9); }
-	__forceinline static GSVector4i x00ff(const GSVector4i& v) { return xffffffff(v).srl16( 8); }
-	__forceinline static GSVector4i x01ff(const GSVector4i& v) { return xffffffff(v).srl16( 7); }
-	__forceinline static GSVector4i x03ff(const GSVector4i& v) { return xffffffff(v).srl16( 6); }
-	__forceinline static GSVector4i x07ff(const GSVector4i& v) { return xffffffff(v).srl16( 5); }
-	__forceinline static GSVector4i x0fff(const GSVector4i& v) { return xffffffff(v).srl16( 4); }
-	__forceinline static GSVector4i x1fff(const GSVector4i& v) { return xffffffff(v).srl16( 3); }
-	__forceinline static GSVector4i x3fff(const GSVector4i& v) { return xffffffff(v).srl16( 2); }
-	__forceinline static GSVector4i x7fff(const GSVector4i& v) { return xffffffff(v).srl16( 1); }
+	__forceinline static GSVector4i x0001(const GSVector4i& v) { return xffffffff(v).srl16<15>(); }
+	__forceinline static GSVector4i x0003(const GSVector4i& v) { return xffffffff(v).srl16<14>(); }
+	__forceinline static GSVector4i x0007(const GSVector4i& v) { return xffffffff(v).srl16<13>(); }
+	__forceinline static GSVector4i x000f(const GSVector4i& v) { return xffffffff(v).srl16<12>(); }
+	__forceinline static GSVector4i x001f(const GSVector4i& v) { return xffffffff(v).srl16<11>(); }
+	__forceinline static GSVector4i x003f(const GSVector4i& v) { return xffffffff(v).srl16<10>(); }
+	__forceinline static GSVector4i x007f(const GSVector4i& v) { return xffffffff(v).srl16< 9>(); }
+	__forceinline static GSVector4i x00ff(const GSVector4i& v) { return xffffffff(v).srl16< 8>(); }
+	__forceinline static GSVector4i x01ff(const GSVector4i& v) { return xffffffff(v).srl16< 7>(); }
+	__forceinline static GSVector4i x03ff(const GSVector4i& v) { return xffffffff(v).srl16< 6>(); }
+	__forceinline static GSVector4i x07ff(const GSVector4i& v) { return xffffffff(v).srl16< 5>(); }
+	__forceinline static GSVector4i x0fff(const GSVector4i& v) { return xffffffff(v).srl16< 4>(); }
+	__forceinline static GSVector4i x1fff(const GSVector4i& v) { return xffffffff(v).srl16< 3>(); }
+	__forceinline static GSVector4i x3fff(const GSVector4i& v) { return xffffffff(v).srl16< 2>(); }
+	__forceinline static GSVector4i x7fff(const GSVector4i& v) { return xffffffff(v).srl16< 1>(); }
 
-	__forceinline static GSVector4i x8000(const GSVector4i& v) { return xffffffff(v).sll16(15); }
-	__forceinline static GSVector4i xc000(const GSVector4i& v) { return xffffffff(v).sll16(14); }
-	__forceinline static GSVector4i xe000(const GSVector4i& v) { return xffffffff(v).sll16(13); }
-	__forceinline static GSVector4i xf000(const GSVector4i& v) { return xffffffff(v).sll16(12); }
-	__forceinline static GSVector4i xf800(const GSVector4i& v) { return xffffffff(v).sll16(11); }
-	__forceinline static GSVector4i xfc00(const GSVector4i& v) { return xffffffff(v).sll16(10); }
-	__forceinline static GSVector4i xfe00(const GSVector4i& v) { return xffffffff(v).sll16( 9); }
-	__forceinline static GSVector4i xff00(const GSVector4i& v) { return xffffffff(v).sll16( 8); }
-	__forceinline static GSVector4i xff80(const GSVector4i& v) { return xffffffff(v).sll16( 7); }
-	__forceinline static GSVector4i xffc0(const GSVector4i& v) { return xffffffff(v).sll16( 6); }
-	__forceinline static GSVector4i xffe0(const GSVector4i& v) { return xffffffff(v).sll16( 5); }
-	__forceinline static GSVector4i xfff0(const GSVector4i& v) { return xffffffff(v).sll16( 4); }
-	__forceinline static GSVector4i xfff8(const GSVector4i& v) { return xffffffff(v).sll16( 3); }
-	__forceinline static GSVector4i xfffc(const GSVector4i& v) { return xffffffff(v).sll16( 2); }
-	__forceinline static GSVector4i xfffe(const GSVector4i& v) { return xffffffff(v).sll16( 1); }
+	__forceinline static GSVector4i x8000(const GSVector4i& v) { return xffffffff(v).sll16<15>(); }
+	__forceinline static GSVector4i xc000(const GSVector4i& v) { return xffffffff(v).sll16<14>(); }
+	__forceinline static GSVector4i xe000(const GSVector4i& v) { return xffffffff(v).sll16<13>(); }
+	__forceinline static GSVector4i xf000(const GSVector4i& v) { return xffffffff(v).sll16<12>(); }
+	__forceinline static GSVector4i xf800(const GSVector4i& v) { return xffffffff(v).sll16<11>(); }
+	__forceinline static GSVector4i xfc00(const GSVector4i& v) { return xffffffff(v).sll16<10>(); }
+	__forceinline static GSVector4i xfe00(const GSVector4i& v) { return xffffffff(v).sll16< 9>(); }
+	__forceinline static GSVector4i xff00(const GSVector4i& v) { return xffffffff(v).sll16< 8>(); }
+	__forceinline static GSVector4i xff80(const GSVector4i& v) { return xffffffff(v).sll16< 7>(); }
+	__forceinline static GSVector4i xffc0(const GSVector4i& v) { return xffffffff(v).sll16< 6>(); }
+	__forceinline static GSVector4i xffe0(const GSVector4i& v) { return xffffffff(v).sll16< 5>(); }
+	__forceinline static GSVector4i xfff0(const GSVector4i& v) { return xffffffff(v).sll16< 4>(); }
+	__forceinline static GSVector4i xfff8(const GSVector4i& v) { return xffffffff(v).sll16< 3>(); }
+	__forceinline static GSVector4i xfffc(const GSVector4i& v) { return xffffffff(v).sll16< 2>(); }
+	__forceinline static GSVector4i xfffe(const GSVector4i& v) { return xffffffff(v).sll16< 1>(); }
 
 	__forceinline static GSVector4i xff(int n) { return m_xff[n]; }
 	__forceinline static GSVector4i x0f(int n) { return m_x0f[n]; }

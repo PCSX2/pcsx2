@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -148,7 +136,7 @@ public:
 	IsoReader();
 	~IsoReader();
 
-	static std::string_view RemoveVersionIdentifierFromPath(const std::string_view& path);
+	static std::string_view RemoveVersionIdentifierFromPath(const std::string_view path);
 
 	const ISOPrimaryVolumeDescriptor& GetPVD() const { return m_pvd; }
 
@@ -156,13 +144,13 @@ public:
 	// ... once I have the energy to make CDVD not depend on a global object.
 	bool Open(Error* error = nullptr);
 
-	std::vector<std::string> GetFilesInDirectory(const std::string_view& path, Error* error = nullptr);
+	std::vector<std::string> GetFilesInDirectory(const std::string_view path, Error* error = nullptr);
 
-	std::optional<ISODirectoryEntry> LocateFile(const std::string_view& path, Error* error);
+	std::optional<ISODirectoryEntry> LocateFile(const std::string_view path, Error* error);
 
-	bool FileExists(const std::string_view& path, Error* error = nullptr);
-	bool DirectoryExists(const std::string_view& path, Error* error = nullptr);
-	bool ReadFile(const std::string_view& path, std::vector<u8>* data, Error* error = nullptr);
+	bool FileExists(const std::string_view path, Error* error = nullptr);
+	bool DirectoryExists(const std::string_view path, Error* error = nullptr);
+	bool ReadFile(const std::string_view path, std::vector<u8>* data, Error* error = nullptr);
 	bool ReadFile(const ISODirectoryEntry& de, std::vector<u8>* data, Error* error = nullptr);
 
 private:
@@ -171,7 +159,7 @@ private:
 	bool ReadSector(u8* buf, u32 lsn, Error* error);
 	bool ReadPVD(Error* error);
 
-	std::optional<ISODirectoryEntry> LocateFile(const std::string_view& path, u8* sector_buffer,
+	std::optional<ISODirectoryEntry> LocateFile(const std::string_view path, u8* sector_buffer,
 		u32 directory_record_lba, u32 directory_record_size, Error* error);
 
 	ISOPrimaryVolumeDescriptor m_pvd = {};

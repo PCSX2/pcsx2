@@ -1,22 +1,10 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "DHCP_Options.h"
 #include "DEV9/PacketReader/NetLib.h"
+
+#include "common/Console.h"
 
 namespace PacketReader::IP::UDP::DHCP
 {
@@ -24,12 +12,12 @@ namespace PacketReader::IP::UDP::DHCP
 		: subnetMask{mask}
 	{
 	}
-	DHCPopSubnet::DHCPopSubnet(u8* data, int offset)
+	DHCPopSubnet::DHCPopSubnet(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadIPAddress(data, &offset, &subnetMask);
 	}
-	void DHCPopSubnet::WriteBytes(u8* buffer, int* offset)
+	void DHCPopSubnet::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -40,7 +28,7 @@ namespace PacketReader::IP::UDP::DHCP
 		: routers{routerIPs}
 	{
 	}
-	DHCPopRouter::DHCPopRouter(u8* data, int offset)
+	DHCPopRouter::DHCPopRouter(const u8* data, int offset)
 	{
 		offset += 1;
 		u8 len;
@@ -49,7 +37,7 @@ namespace PacketReader::IP::UDP::DHCP
 		routers = {(IP_Address*)&data[offset], (IP_Address*)&data[offset + len]};
 		//offset += len;
 	}
-	void DHCPopRouter::WriteBytes(u8* buffer, int* offset)
+	void DHCPopRouter::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -61,7 +49,7 @@ namespace PacketReader::IP::UDP::DHCP
 		: dnsServers{dnsIPs}
 	{
 	}
-	DHCPopDNS::DHCPopDNS(u8* data, int offset)
+	DHCPopDNS::DHCPopDNS(const u8* data, int offset)
 	{
 		offset += 1;
 		u8 len;
@@ -70,7 +58,7 @@ namespace PacketReader::IP::UDP::DHCP
 		dnsServers = {(IP_Address*)&data[offset], (IP_Address*)&data[offset + len]};
 		//offset += len;
 	}
-	void DHCPopDNS::WriteBytes(u8* buffer, int* offset)
+	void DHCPopDNS::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -78,7 +66,7 @@ namespace PacketReader::IP::UDP::DHCP
 		NetLib::WriteByteArray(buffer, offset, dnsServers.size() * 4, (u8*)&dnsServers[0]);
 	}
 
-	DHCPopHostName::DHCPopHostName(std::string name)
+	DHCPopHostName::DHCPopHostName(const std::string& name)
 	{
 		if (name.size() > 255)
 		{
@@ -88,7 +76,7 @@ namespace PacketReader::IP::UDP::DHCP
 		else
 			hostName = name;
 	}
-	DHCPopHostName::DHCPopHostName(u8* data, int offset)
+	DHCPopHostName::DHCPopHostName(const u8* data, int offset)
 	{
 		offset += 1;
 		u8 len;
@@ -96,7 +84,7 @@ namespace PacketReader::IP::UDP::DHCP
 		hostName = std::string((char*)&data[offset], len);
 		//offset += len;
 	}
-	void DHCPopHostName::WriteBytes(u8* buffer, int* offset)
+	void DHCPopHostName::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -104,7 +92,7 @@ namespace PacketReader::IP::UDP::DHCP
 		NetLib::WriteByteArray(buffer, offset, hostName.size(), (u8*)hostName.c_str());
 	}
 
-	DHCPopDnsName::DHCPopDnsName(std::string name)
+	DHCPopDnsName::DHCPopDnsName(const std::string& name)
 	{
 		if (name.size() > 255)
 		{
@@ -114,7 +102,7 @@ namespace PacketReader::IP::UDP::DHCP
 		else
 			domainName = name;
 	}
-	DHCPopDnsName::DHCPopDnsName(u8* data, int offset)
+	DHCPopDnsName::DHCPopDnsName(const u8* data, int offset)
 	{
 		offset += 1;
 		u8 len;
@@ -122,7 +110,7 @@ namespace PacketReader::IP::UDP::DHCP
 		domainName = std::string((char*)&data[offset], len);
 		//offset += len;
 	}
-	void DHCPopDnsName::WriteBytes(u8* buffer, int* offset)
+	void DHCPopDnsName::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -134,12 +122,12 @@ namespace PacketReader::IP::UDP::DHCP
 		: broadcastIP{data}
 	{
 	}
-	DHCPopBCIP::DHCPopBCIP(u8* data, int offset)
+	DHCPopBCIP::DHCPopBCIP(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadIPAddress(data, &offset, &broadcastIP);
 	}
-	void DHCPopBCIP::WriteBytes(u8* buffer, int* offset)
+	void DHCPopBCIP::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -147,7 +135,7 @@ namespace PacketReader::IP::UDP::DHCP
 		NetLib::WriteIPAddress(buffer, offset, broadcastIP);
 	}
 
-	bool DHCPopNBIOSType::GetHNode()
+	bool DHCPopNBIOSType::GetHNode() const
 	{
 		return ((type & (1 << 3)) != 0);
 	}
@@ -162,7 +150,7 @@ namespace PacketReader::IP::UDP::DHCP
 			type &= ~(1 << 3);
 		}
 	}
-	bool DHCPopNBIOSType::GetMNode()
+	bool DHCPopNBIOSType::GetMNode() const
 	{
 		return ((type & (1 << 2)) != 0);
 	}
@@ -177,7 +165,7 @@ namespace PacketReader::IP::UDP::DHCP
 			type &= ~(1 << 2);
 		}
 	}
-	bool DHCPopNBIOSType::GetPNode()
+	bool DHCPopNBIOSType::GetPNode() const
 	{
 		return ((type & (1 << 1)) != 0);
 	}
@@ -192,7 +180,7 @@ namespace PacketReader::IP::UDP::DHCP
 			type &= ~(1 << 1);
 		}
 	}
-	bool DHCPopNBIOSType::GetBNode()
+	bool DHCPopNBIOSType::GetBNode() const
 	{
 		return ((type & 1) != 0);
 	}
@@ -208,12 +196,12 @@ namespace PacketReader::IP::UDP::DHCP
 		}
 	}
 	//
-	DHCPopNBIOSType::DHCPopNBIOSType(u8* data, int offset)
+	DHCPopNBIOSType::DHCPopNBIOSType(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadByte08(data, &offset, &type);
 	}
-	void DHCPopNBIOSType::WriteBytes(u8* buffer, int* offset)
+	void DHCPopNBIOSType::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -225,12 +213,12 @@ namespace PacketReader::IP::UDP::DHCP
 		: requestedIP{data}
 	{
 	}
-	DHCPopREQIP::DHCPopREQIP(u8* data, int offset)
+	DHCPopREQIP::DHCPopREQIP(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadIPAddress(data, &offset, &requestedIP);
 	}
-	void DHCPopREQIP::WriteBytes(u8* buffer, int* offset)
+	void DHCPopREQIP::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -242,12 +230,12 @@ namespace PacketReader::IP::UDP::DHCP
 		: ipLeaseTime{LeaseTime}
 	{
 	}
-	DHCPopIPLT::DHCPopIPLT(u8* data, int offset)
+	DHCPopIPLT::DHCPopIPLT(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadUInt32(data, &offset, &ipLeaseTime);
 	}
-	void DHCPopIPLT::WriteBytes(u8* buffer, int* offset)
+	void DHCPopIPLT::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -259,12 +247,12 @@ namespace PacketReader::IP::UDP::DHCP
 		: message{msg}
 	{
 	}
-	DHCPopMSG::DHCPopMSG(u8* data, int offset)
+	DHCPopMSG::DHCPopMSG(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadByte08(data, &offset, &message);
 	}
-	void DHCPopMSG::WriteBytes(u8* buffer, int* offset)
+	void DHCPopMSG::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -276,12 +264,12 @@ namespace PacketReader::IP::UDP::DHCP
 		: serverIP{data}
 	{
 	}
-	DHCPopSERVIP::DHCPopSERVIP(u8* data, int offset)
+	DHCPopSERVIP::DHCPopSERVIP(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadIPAddress(data, &offset, &serverIP);
 	}
-	void DHCPopSERVIP::WriteBytes(u8* buffer, int* offset)
+	void DHCPopSERVIP::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -293,7 +281,7 @@ namespace PacketReader::IP::UDP::DHCP
 		: requests{requestList}
 	{
 	}
-	DHCPopREQLIST::DHCPopREQLIST(u8* data, int offset)
+	DHCPopREQLIST::DHCPopREQLIST(const u8* data, int offset)
 	{
 		offset += 1;
 		u8 len;
@@ -302,7 +290,7 @@ namespace PacketReader::IP::UDP::DHCP
 		requests = {&data[offset], &data[offset + len]};
 		//offset += len;
 	}
-	void DHCPopREQLIST::WriteBytes(u8* buffer, int* offset)
+	void DHCPopREQLIST::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -310,7 +298,7 @@ namespace PacketReader::IP::UDP::DHCP
 		NetLib::WriteByteArray(buffer, offset, requests.size(), &requests[0]);
 	}
 
-	DHCPopMSGStr::DHCPopMSGStr(std::string msg)
+	DHCPopMSGStr::DHCPopMSGStr(const std::string& msg)
 	{
 		if (msg.size() > 255)
 		{
@@ -320,7 +308,7 @@ namespace PacketReader::IP::UDP::DHCP
 		else
 			message = msg;
 	}
-	DHCPopMSGStr::DHCPopMSGStr(u8* data, int offset)
+	DHCPopMSGStr::DHCPopMSGStr(const u8* data, int offset)
 	{
 		offset += 1;
 		u8 len;
@@ -328,7 +316,7 @@ namespace PacketReader::IP::UDP::DHCP
 		message = std::string((char*)&data[offset], len);
 		//offset += len;
 	}
-	void DHCPopMSGStr::WriteBytes(u8* buffer, int* offset)
+	void DHCPopMSGStr::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -340,12 +328,12 @@ namespace PacketReader::IP::UDP::DHCP
 		: maxMessageSize{mms}
 	{
 	}
-	DHCPopMMSGS::DHCPopMMSGS(u8* data, int offset)
+	DHCPopMMSGS::DHCPopMMSGS(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadUInt16(data, &offset, &maxMessageSize);
 	}
-	void DHCPopMMSGS::WriteBytes(u8* buffer, int* offset)
+	void DHCPopMMSGS::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -357,12 +345,12 @@ namespace PacketReader::IP::UDP::DHCP
 		: ipRenewalTimeT1{t1}
 	{
 	}
-	DHCPopT1::DHCPopT1(u8* data, int offset)
+	DHCPopT1::DHCPopT1(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadUInt32(data, &offset, &ipRenewalTimeT1);
 	}
-	void DHCPopT1::WriteBytes(u8* buffer, int* offset)
+	void DHCPopT1::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -374,12 +362,12 @@ namespace PacketReader::IP::UDP::DHCP
 		: ipRebindingTimeT2{t2}
 	{
 	}
-	DHCPopT2::DHCPopT2(u8* data, int offset)
+	DHCPopT2::DHCPopT2(const u8* data, int offset)
 	{
 		offset += 2;
 		NetLib::ReadUInt32(data, &offset, &ipRebindingTimeT2);
 	}
-	void DHCPopT2::WriteBytes(u8* buffer, int* offset)
+	void DHCPopT2::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -387,7 +375,7 @@ namespace PacketReader::IP::UDP::DHCP
 		NetLib::WriteUInt32(buffer, offset, ipRebindingTimeT2);
 	}
 
-	DHCPopClassID::DHCPopClassID(std::string id)
+	DHCPopClassID::DHCPopClassID(const std::string& id)
 	{
 		if (id.size() > 255)
 		{
@@ -397,7 +385,7 @@ namespace PacketReader::IP::UDP::DHCP
 		else
 			classID = id;
 	}
-	DHCPopClassID::DHCPopClassID(u8* data, int offset)
+	DHCPopClassID::DHCPopClassID(const u8* data, int offset)
 	{
 		offset += 1;
 		u8 len;
@@ -405,7 +393,7 @@ namespace PacketReader::IP::UDP::DHCP
 		classID = std::string((char*)&data[offset], len);
 		//offset += len;
 	}
-	void DHCPopClassID::WriteBytes(u8* buffer, int* offset)
+	void DHCPopClassID::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
@@ -417,7 +405,7 @@ namespace PacketReader::IP::UDP::DHCP
 		: clientID{value}
 	{
 	}
-	DHCPopClientID::DHCPopClientID(u8* data, int offset)
+	DHCPopClientID::DHCPopClientID(const u8* data, int offset)
 	{
 		offset += 1;
 		u8 len;
@@ -426,7 +414,7 @@ namespace PacketReader::IP::UDP::DHCP
 		clientID = {&data[offset], &data[offset + len]};
 		//offset += len;
 	}
-	void DHCPopClientID::WriteBytes(u8* buffer, int* offset)
+	void DHCPopClientID::WriteBytes(u8* buffer, int* offset) const
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);

@@ -1,30 +1,20 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GSDevice11.h"
 #include "GSTexture11.h"
 #include "GS/GSPng.h"
 #include "GS/GSPerfMon.h"
+
+#include "common/Console.h"
 #include "common/BitUtils.h"
+
+#include "fmt/format.h"
 
 GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, const D3D11_TEXTURE2D_DESC& desc,
 	GSTexture::Type type, GSTexture::Format format)
 	: m_texture(std::move(texture))
 	, m_desc(desc)
-	, m_mapped_subresource(0)
 {
 	m_size.x = static_cast<int>(desc.Width);
 	m_size.y = static_cast<int>(desc.Height);
@@ -51,7 +41,7 @@ DXGI_FORMAT GSTexture11::GetDXGIFormat(Format format)
 	case GSTexture::Format::BC7:          return DXGI_FORMAT_BC7_UNORM;
 	case GSTexture::Format::Invalid:
 	default:
-		ASSERT(0);
+		pxAssert(0);
 		return DXGI_FORMAT_UNKNOWN;
 	}
 	// clang-format on
@@ -97,15 +87,21 @@ void GSTexture11::GenerateMipmap()
 	GSDevice11::GetInstance()->GetD3DContext()->GenerateMips(operator ID3D11ShaderResourceView*());
 }
 
-void GSTexture11::Swap(GSTexture* tex)
+#ifdef PCSX2_DEVBUILD
+
+void GSTexture11::SetDebugName(std::string_view name)
 {
-	GSTexture::Swap(tex);
-	std::swap(m_texture, static_cast<GSTexture11*>(tex)->m_texture);
-	std::swap(m_srv, static_cast<GSTexture11*>(tex)->m_srv);
-	std::swap(m_rtv, static_cast<GSTexture11*>(tex)->m_rtv);
-	std::swap(m_desc, static_cast<GSTexture11*>(tex)->m_desc);
-	std::swap(m_mapped_subresource, static_cast<GSTexture11*>(tex)->m_mapped_subresource);
+	if (name.empty())
+		return;
+
+	GSDevice11::SetD3DDebugObjectName(m_texture.get(), name);
+	if (m_srv)
+		GSDevice11::SetD3DDebugObjectName(m_srv.get(), fmt::format("{} SRV", name));
+	if (m_rtv)
+		GSDevice11::SetD3DDebugObjectName(m_rtv.get(), fmt::format("{} RTV", name));
 }
+
+#endif
 
 GSTexture11::operator ID3D11Texture2D*()
 {
@@ -173,11 +169,6 @@ GSTexture11::operator ID3D11UnorderedAccessView*()
 		GSDevice11::GetInstance()->GetD3DDevice()->CreateUnorderedAccessView(m_texture.get(), nullptr, m_uav.put());
 
 	return m_uav.get();
-}
-
-bool GSTexture11::Equal(GSTexture11* tex)
-{
-	return tex && m_texture == tex->m_texture;
 }
 
 GSDownloadTexture11::GSDownloadTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> tex, u32 width, u32 height, GSTexture::Format format)
@@ -285,3 +276,15 @@ void GSDownloadTexture11::Flush()
 
 	// Handled when mapped.
 }
+
+#ifdef PCSX2_DEVBUILD
+
+void GSDownloadTexture11::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	GSDevice11::SetD3DDebugObjectName(m_texture.get(), name);
+}
+
+#endif

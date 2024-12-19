@@ -1,21 +1,9 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "TCP_Session.h"
+
+#include <thread>
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
@@ -30,17 +18,17 @@ using namespace PacketReader::IP::TCP;
 
 namespace Sessions
 {
-	void TCP_Session::PushRecvBuff(TCP_Packet* tcp)
+	void TCP_Session::PushRecvBuff(ReceivedPayload tcp)
 	{
-		_recvBuff.Enqueue(tcp);
+		_recvBuff.Enqueue(std::move(tcp));
 	}
-	TCP_Packet* TCP_Session::PopRecvBuff()
+	std::optional<ReceivedPayload> TCP_Session::PopRecvBuff()
 	{
-		TCP_Packet* ret;
+		ReceivedPayload ret;
 		if (_recvBuff.Dequeue(&ret))
 			return ret;
 		else
-			return nullptr;
+			return std::nullopt;
 	}
 
 	void TCP_Session::IncrementMyNumber(u32 amount)
@@ -51,10 +39,26 @@ namespace Sessions
 
 		_MySequenceNumber += amount;
 	}
+	void TCP_Session::UpdateReceivedAckNumber(u32 ack)
+	{
+		std::lock_guard numberlock(myNumberSentry);
+		if (GetDelta(ack, _ReceivedAckNumber) > 0)
+			_ReceivedAckNumber = ack;
+	}
 	u32 TCP_Session::GetMyNumber()
 	{
 		std::lock_guard numberlock(myNumberSentry);
 		return _MySequenceNumber;
+	}
+	u32 TCP_Session::GetOutstandingSequenceLength()
+	{
+		std::lock_guard numberlock(myNumberSentry);
+		return GetDelta(_MySequenceNumber, _ReceivedAckNumber);
+	}
+	bool TCP_Session::ShouldWaitForAck()
+	{
+		std::lock_guard numberlock(myNumberSentry);
+		return _OldMyNumbers[0] == _ReceivedAckNumber;
 	}
 	std::tuple<u32, std::vector<u32>> TCP_Session::GetAllMyNumbers()
 	{
@@ -80,22 +84,40 @@ namespace Sessions
 	{
 	}
 
-	TCP_Packet* TCP_Session::CreateBasePacket(PayloadData* data)
+	s32 TCP_Session::GetDelta(u32 a, u32 b)
 	{
-		//DevCon.WriteLn("Creating Base Packet");
+		s64 delta = static_cast<s64>(a) - static_cast<s64>(b);
+		if (delta > 0.5 * UINT_MAX)
+		{
+			delta = -static_cast<s64>(UINT_MAX) + a - b - 1;
+			Console.Error("DEV9: TCP: [PS2] Sequence number overflow detected");
+			Console.Error("DEV9: TCP: [PS2] New data offset: %d bytes", delta);
+		}
+		if (delta < -0.5 * UINT_MAX)
+		{
+			delta = UINT_MAX - b + a + 1;
+			Console.Error("DEV9: TCP: [PS2] Sequence number overflow detected");
+			Console.Error("DEV9: TCP: [PS2] New data offset: %d bytes", delta);
+		}
+		return delta;
+	}
+
+	std::unique_ptr<TCP_Packet> TCP_Session::CreateBasePacket(PayloadData* data)
+	{
+		//DevCon.WriteLn("Creating base packet");
 		if (data == nullptr)
 			data = new PayloadData(0);
 
-		TCP_Packet* ret = new TCP_Packet(data);
+		std::unique_ptr<TCP_Packet> ret = std::make_unique<TCP_Packet>(data);
 
-		//and now to setup THE ENTIRE THING
+		// Setup common packet infomation
 		ret->sourcePort = destPort;
 		ret->destinationPort = srcPort;
 
 		ret->sequenceNumber = GetMyNumber();
-		//DevCon.WriteLn("With MySeq: %d", ret->sequenceNumber);
+		//DevCon.WriteLn("With MySeq: %u", ret->sequenceNumber);
 		ret->acknowledgementNumber = expectedSeqNumber;
-		//DevCon.WriteLn("With MyAck: %d", ret->acknowledgementNumber);
+		//DevCon.WriteLn("With MyAck: %u", ret->acknowledgementNumber);
 
 		ret->windowSize = 2 * maxSegmentSize;
 
@@ -127,7 +149,6 @@ namespace Sessions
 
 	void TCP_Session::Reset()
 	{
-		//CloseSocket();
 		RaiseEventConnectionClosed();
 	}
 
@@ -135,18 +156,16 @@ namespace Sessions
 	{
 		CloseSocket();
 
-		//Clear out _recvBuff
+		// Clear out _recvBuff
 		while (!_recvBuff.IsQueueEmpty())
 		{
-			TCP_Packet* retPay;
+			ReceivedPayload retPay;
 			if (!_recvBuff.Dequeue(&retPay))
 			{
 				using namespace std::chrono_literals;
 				std::this_thread::sleep_for(1ms);
 				continue;
 			}
-
-			delete retPay;
 		}
 	}
 } // namespace Sessions

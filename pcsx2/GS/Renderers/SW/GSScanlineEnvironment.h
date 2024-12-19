@@ -1,22 +1,13 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include "GS/GSLocalMemory.h"
 #include "GS/GSVector.h"
+
+#include <cstdio>
+#include <string>
 
 union GSScanlineSelector
 {
@@ -104,7 +95,7 @@ union GSScanlineSelector
 	std::string to_string() const
 	{
 		char str[1024];
-		sprintf(str,
+		std::snprintf(str, std::size(str),
 			"fpsm:%d zpsm:%d ztst:%d ztest:%d atst:%d afail:%d iip:%d rfb:%d fb:%d zb:%d zw:%d "
 			"tfx:%d tcc:%d fst:%d ltf:%d tlu:%d wms:%d wmt:%d mmin:%d lcm:%d tw:%d "
 			"fba:%d cclamp:%d date:%d datm:%d "
@@ -164,6 +155,26 @@ struct alignas(32) GSScanlineGlobalData // per batch variables, this is like a p
 	GSVector4 l; // TEX1.L * -0x10000
 	struct { GSVector4i i, f; } lod; // lcm == 1
 
+#endif
+
+#ifdef _M_ARM64
+	// Mini version of constant data for ARM64, we don't need all of it
+	alignas(16) u32 const_test_128b[8][4] = {
+		{0x00000000, 0x00000000, 0x00000000, 0x00000000},
+		{0xffffffff, 0x00000000, 0x00000000, 0x00000000},
+		{0xffffffff, 0xffffffff, 0x00000000, 0x00000000},
+		{0xffffffff, 0xffffffff, 0xffffffff, 0x00000000},
+		{0x00000000, 0xffffffff, 0xffffffff, 0xffffffff},
+		{0x00000000, 0x00000000, 0xffffffff, 0xffffffff},
+		{0x00000000, 0x00000000, 0x00000000, 0xffffffff},
+		{0x00000000, 0x00000000, 0x00000000, 0x00000000},
+	};
+	alignas(16) u16 const_movemaskw_mask[8] = {0x3, 0xc, 0x30, 0xc0, 0x300, 0xc00, 0x3000, 0xc000};
+	alignas(16) float const_log2_coef[4] = {
+		0.204446009836232697516f,
+		-1.04913055217340124191f,
+		2.28330284476918490682f,
+		1.0f};
 #endif
 };
 

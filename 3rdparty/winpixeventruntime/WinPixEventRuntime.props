@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
-    <BinaryOutputDir>$(SolutionDir)bin\</BinaryOutputDir>
+    <BinaryOutputDir Condition="'$(Platform)'=='x64'">$(SolutionDir)bin\</BinaryOutputDir>
+    <BinaryOutputDir Condition="'$(Platform)'=='ARM64'">$(SolutionDir)bin-arm64\</BinaryOutputDir>
     <WinPixEventRuntimeDir>$(SolutionDir)3rdparty\winpixeventruntime\</WinPixEventRuntimeDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(WinPixEventRuntimeDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
-    <Link Condition="'$(Platform)'=='x64'">
-      <AdditionalLibraryDirectories>$(WinPixEventRuntimeDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    <Link>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(WinPixEventRuntimeDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='ARM64'">$(WinPixEventRuntimeDir)libarm64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>WinPixEventRuntime.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <Lib Condition="'$(Platform)'=='x64'">
-      <AdditionalLibraryDirectories>$(WinPixEventRuntimeDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    <Lib>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(WinPixEventRuntimeDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='ARM64'">$(WinPixEventRuntimeDir)libarm64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>WinPixEventRuntime.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
@@ -21,10 +24,10 @@
   <!--Copy the needed dlls-->
   <ItemGroup>
     <WinPixEventRuntimeDlls Condition="'$(Platform)'=='x64'" Include="$(WinPixEventRuntimeDir)bin\WinPixEventRuntime.dll" />
+    <WinPixEventRuntimeDlls Condition="'$(Platform)'=='ARM64'" Include="$(WinPixEventRuntimeDir)binarm64\WinPixEventRuntime.dll" />
   </ItemGroup>
   <Target Name="WinPixEventRuntimeCopyBinaries"
     AfterTargets="Build"
-    Condition="'$(Platform)'=='x64'"
     Inputs="@(WinPixEventRuntimeDlls)"
     Outputs="@(WinPixEventRuntimeDlls -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)')">
     <Message Text="Copying WinPixEventRuntime .dlls" Importance="High" />

@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 struct VS_INPUT
 {
@@ -87,6 +75,25 @@ float ps_depth_copy(PS_INPUT input) : SV_Depth
 	return sample_c(input.t).r;
 }
 
+PS_OUTPUT ps_downsample_copy(PS_INPUT input)
+{
+	int DownsampleFactor = DOFFSET;
+	int2 ClampMin = int2(EMODA, EMODC);
+	float Weight = BGColor.x;
+
+	int2 coord = max(int2(input.p.xy) * DownsampleFactor, ClampMin);
+
+	PS_OUTPUT output;
+	output.c = (float4)0;
+	for (int yoff = 0; yoff < DownsampleFactor; yoff++)
+	{
+		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
+			output.c += Texture.Load(int3(coord + int2(xoff, yoff), 0));
+	}
+	output.c /= Weight;
+	return output;
+}
+
 PS_OUTPUT ps_filter_transparency(PS_INPUT input)
 {
 	PS_OUTPUT output;
@@ -122,6 +129,44 @@ PS_OUTPUT ps_datm0(PS_INPUT input)
 	
 	output.c = 0;
 
+	return output;
+}
+
+PS_OUTPUT ps_datm1_rta_correction(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	clip(sample_c(input.t).a - 254.5f / 255); // >= 0x80 pass
+
+	output.c = 0;
+
+	return output;
+}
+
+PS_OUTPUT ps_datm0_rta_correction(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	clip(254.5f / 255 - sample_c(input.t).a); // < 0x80 pass (== 0x80 should not pass)
+
+	output.c = 0;
+
+	return output;
+}
+
+PS_OUTPUT ps_rta_correction(PS_INPUT input)
+{
+	PS_OUTPUT output;
+	float4 value = sample_c(input.t);
+	output.c = float4(value.rgb, value.a / (128.25f / 255.0f));
+	return output;
+}
+
+PS_OUTPUT ps_rta_decorrection(PS_INPUT input)
+{
+	PS_OUTPUT output;
+	float4 value = sample_c(input.t);
+	output.c = float4(value.rgb, value.a * (128.25f / 255.0f));
 	return output;
 }
 
@@ -164,8 +209,7 @@ PS_OUTPUT ps_convert_float16_rgb5a1(PS_INPUT input)
 
 	// Convert a FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
 	uint d = uint(sample_c(input.t).r * exp2(32.0f));
-	output.c = float4(uint4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) / float4(32.0f, 32.0f, 32.0f, 1.0f);
-
+	output.c = float4(uint4(d << 3, d >> 2, d >> 7, d >> 8) & uint4(0xf8, 0xf8, 0xf8, 0x80)) / 255.0f;
 	return output;
 }
 
@@ -191,6 +235,13 @@ float rgb5a1_to_depth16(float4 val)
 {
 	uint4 c = uint4(val * 255.5f);
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
+}
+
+float ps_convert_float32_float24(PS_INPUT input) : SV_Depth
+{
+	// Truncates depth value to 24bits
+	uint d = uint(sample_c(input.t).r * exp2(32.0f)) & 0xFFFFFFu;
+	return float(d) * exp2(-32.0f);
 }
 
 float ps_convert_rgba8_float32(PS_INPUT input) : SV_Depth
@@ -406,6 +457,28 @@ float ps_stencil_image_init_1(PS_INPUT input) : SV_Target
 {
 	float c;
 	if (sample_c(input.t).a < (127.5f / 255.0f)) // >= 0x80 pass
+		c = float(-1);
+	else
+		c = float(0x7FFFFFFF);
+	return c;
+}
+
+float ps_stencil_image_init_2(PS_INPUT input)
+	: SV_Target
+{
+	float c;
+	if ((254.5f / 255.0f) < sample_c(input.t).a) // < 0x80 pass (== 0x80 should not pass)
+		c = float(-1);
+	else
+		c = float(0x7FFFFFFF);
+	return c;
+}
+
+float ps_stencil_image_init_3(PS_INPUT input)
+	: SV_Target
+{
+	float c;
+	if (sample_c(input.t).a < (254.5f / 255.0f)) // >= 0x80 pass
 		c = float(-1);
 	else
 		c = float(0x7FFFFFFF);

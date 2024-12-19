@@ -1,23 +1,13 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "common/PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/DynamicLibrary.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/Error.h"
+#include "common/FileSystem.h"
+#include "common/SmallString.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
 #include <cstring>
@@ -27,15 +17,18 @@
 #include "common/RedtapeWindows.h"
 #else
 #include <dlfcn.h>
+#ifdef __APPLE__
+#include "common/CocoaTools.h"
 #endif
-
-using namespace Common;
+#endif
 
 DynamicLibrary::DynamicLibrary() = default;
 
 DynamicLibrary::DynamicLibrary(const char* filename)
 {
-	Open(filename);
+	Error error;
+	if (!Open(filename, &error))
+		Console.ErrorFmt("DynamicLibrary open failed: {}", error.GetDescription());
 }
 
 DynamicLibrary::DynamicLibrary(DynamicLibrary&& move)
@@ -88,13 +81,13 @@ std::string DynamicLibrary::GetVersionedFilename(const char* libname, int major,
 #endif
 }
 
-bool DynamicLibrary::Open(const char* filename)
+bool DynamicLibrary::Open(const char* filename, Error* error)
 {
 #ifdef _WIN32
 	m_handle = reinterpret_cast<void*>(LoadLibraryW(StringUtil::UTF8StringToWideString(filename).c_str()));
 	if (!m_handle)
 	{
-		Console.Error(fmt::format("(DynamicLibrary) Loading {} failed: {}", filename, GetLastError()));
+		Error::SetWin32(error, TinyString::from_format("Loading {} failed: ", filename), GetLastError());
 		return false;
 	}
 
@@ -103,13 +96,43 @@ bool DynamicLibrary::Open(const char* filename)
 	m_handle = dlopen(filename, RTLD_NOW);
 	if (!m_handle)
 	{
+#ifdef __APPLE__
+		// On MacOS, try searching in Frameworks.
+		if (!Path::IsAbsolute(filename))
+		{
+			std::optional<std::string> bundle_path = CocoaTools::GetBundlePath();
+			if (bundle_path.has_value())
+			{
+				std::string frameworks_path = fmt::format("{}/Contents/Frameworks/{}", bundle_path.value(), filename);
+				if (FileSystem::FileExists(frameworks_path.c_str()))
+				{
+					m_handle = dlopen(frameworks_path.c_str(), RTLD_NOW);
+					if (m_handle)
+					{
+						Error::Clear(error);
+						return true;
+					}
+				}
+			}
+		}
+#endif
+
 		const char* err = dlerror();
-		Console.Error(fmt::format("(DynamicLibrary) Loading {} failed: {}", filename, err ? err : ""));
+		Error::SetStringFmt(error, "Loading {} failed: {}", filename, err ? err : "<UNKNOWN>");
 		return false;
 	}
 
 	return true;
 #endif
+}
+
+void DynamicLibrary::Adopt(void* handle)
+{
+	pxAssertRel(handle, "Handle is valid");
+
+	Close();
+
+	m_handle = handle;
 }
 
 void DynamicLibrary::Close()

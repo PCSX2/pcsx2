@@ -1,25 +1,12 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Achievements.h"
 #include "GS.h"
 #include "Host.h"
 #include "IconsFontAwesome5.h"
 #include "ImGui/FullscreenUI.h"
+#include "ImGui/ImGuiOverlays.h"
 #include "Input/InputManager.h"
 #include "Recording/InputRecording.h"
 #include "SPU2/spu2.h"
@@ -28,19 +15,18 @@
 #include "common/Assertions.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/Timer.h"
 
-static s32 s_current_save_slot = 1;
 static std::optional<LimiterModeType> s_limiter_mode_prior_to_hold_interaction;
 
 void VMManager::Internal::ResetVMHotkeyState()
 {
-	s_current_save_slot = 1;
 	s_limiter_mode_prior_to_hold_interaction.reset();
 }
 
 static void HotkeyAdjustTargetSpeed(double delta)
 {
-	const double min_speed = Achievements::ChallengeModeActive() ? 1.0 : 0.1;
+	const double min_speed = Achievements::IsHardcoreModeActive() ? 1.0 : 0.1;
 	EmuConfig.EmulationSpeed.NominalScalar = std::max(min_speed, EmuConfig.EmulationSpeed.NominalScalar + delta);
 	if (VMManager::GetLimiterMode() != LimiterModeType::Nominal)
 		VMManager::SetLimiterMode(LimiterModeType::Nominal);
@@ -58,11 +44,11 @@ static void HotkeyAdjustVolume(s32 fixed, s32 delta)
 	if (!VMManager::HasValidVM())
 		return;
 
-	const s32 current_vol = SPU2::GetOutputVolume();
+	const s32 current_vol = static_cast<s32>(SPU2::GetOutputVolume());
 	const s32 new_volume =
-		std::clamp((fixed >= 0) ? fixed : (current_vol + delta), 0, Pcsx2Config::SPU2Options::MAX_VOLUME);
+		std::clamp((fixed >= 0) ? fixed : (current_vol + delta), 0, static_cast<s32>(Pcsx2Config::SPU2Options::MAX_VOLUME));
 	if (current_vol != new_volume)
-		SPU2::SetOutputVolume(new_volume);
+		SPU2::SetOutputVolume(static_cast<u32>(new_volume));
 
 	if (new_volume == 0)
 	{
@@ -72,48 +58,6 @@ static void HotkeyAdjustVolume(s32 fixed, s32 delta)
 	{
 		Host::AddIconOSDMessage("VolumeChanged", (current_vol < new_volume) ? ICON_FA_VOLUME_UP : ICON_FA_VOLUME_DOWN,
 			fmt::format(TRANSLATE_FS("Hotkeys", "Volume: {}%"), new_volume));
-	}
-}
-
-static constexpr s32 CYCLE_SAVE_STATE_SLOTS = 10;
-
-static void HotkeyCycleSaveSlot(s32 delta)
-{
-	// 1..10
-	s_current_save_slot = ((s_current_save_slot - 1) + delta);
-	if (s_current_save_slot < 0)
-		s_current_save_slot = CYCLE_SAVE_STATE_SLOTS;
-	else
-		s_current_save_slot = (s_current_save_slot % CYCLE_SAVE_STATE_SLOTS) + 1;
-
-	const u32 crc = VMManager::GetDiscCRC();
-	const std::string serial = VMManager::GetDiscSerial();
-	const std::string filename = VMManager::GetSaveStateFileName(serial.c_str(), crc, s_current_save_slot);
-	FILESYSTEM_STAT_DATA sd;
-	if (!filename.empty() && FileSystem::StatFile(filename.c_str(), &sd))
-	{
-		char date_buf[128] = {};
-#ifdef _WIN32
-		ctime_s(date_buf, std::size(date_buf), &sd.ModificationTime);
-#else
-		ctime_r(&sd.ModificationTime, date_buf);
-#endif
-
-		// remove terminating \n
-		size_t len = std::strlen(date_buf);
-		if (len > 0 && date_buf[len - 1] == '\n')
-			date_buf[len - 1] = 0;
-
-		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH,
-			fmt::format(
-				TRANSLATE_FS("Hotkeys", "Save slot {} selected (last save: {})."), s_current_save_slot, date_buf),
-			Host::OSD_QUICK_DURATION);
-	}
-	else
-	{
-		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH,
-			fmt::format(TRANSLATE_FS("Hotkeys", "Save slot {} selected (no save yet)."), s_current_save_slot),
-			Host::OSD_QUICK_DURATION);
 	}
 }
 
@@ -137,27 +81,55 @@ static void HotkeySaveStateSlot(s32 slot)
 	VMManager::SaveStateToSlot(slot);
 }
 
+static bool CanPause()
+{
+	static constexpr const float PAUSE_INTERVAL = 3.0f;
+	static Common::Timer::Value s_last_pause_time = 0;
+
+	if (!Achievements::IsHardcoreModeActive() || VMManager::GetState() == VMState::Paused)
+		return true;
+
+	const Common::Timer::Value time = Common::Timer::GetCurrentValue();
+	const float delta = static_cast<float>(Common::Timer::ConvertValueToSeconds(time - s_last_pause_time));
+	if (delta < PAUSE_INTERVAL)
+	{
+		Host::AddIconOSDMessage("PauseCooldown", ICON_FA_CLOCK,
+			TRANSLATE_PLURAL_STR("Hotkeys", "You cannot pause until another %n second(s) have passed.",
+				"", static_cast<int>(std::ceil(PAUSE_INTERVAL - delta))),
+			Host::OSD_QUICK_DURATION);
+		return false;
+	}
+
+	Host::RemoveKeyedOSDMessage("PauseCooldown");
+	s_last_pause_time = time;
+
+	return true;
+}
+
+static bool UseSavestateSelector()
+{
+	return EmuConfig.UseSavestateSelector;
+}
+
 BEGIN_HOTKEY_LIST(g_common_hotkeys)
 DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),
 	[](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
+		if (!pressed && VMManager::HasValidVM() && CanPause())
 			FullscreenUI::OpenPauseMenu();
 	})
-#ifdef ENABLE_ACHIEVEMENTS
 DEFINE_HOTKEY("OpenAchievementsList", TRANSLATE_NOOP("Hotkeys", "System"),
 	TRANSLATE_NOOP("Hotkeys", "Open Achievements List"), [](s32 pressed) {
-		if (!pressed)
+		if (!pressed && CanPause())
 			FullscreenUI::OpenAchievementsWindow();
 	})
 DEFINE_HOTKEY("OpenLeaderboardsList", TRANSLATE_NOOP("Hotkeys", "System"),
 	TRANSLATE_NOOP("Hotkeys", "Open Leaderboards List"), [](s32 pressed) {
-		if (!pressed)
+		if (!pressed && CanPause())
 			FullscreenUI::OpenLeaderboardsWindow();
 	})
-#endif
 DEFINE_HOTKEY(
 	"TogglePause", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Pause"), [](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
+		if (!pressed && VMManager::HasValidVM() && CanPause())
 			VMManager::SetPaused(VMManager::GetState() != VMState::Paused);
 	})
 DEFINE_HOTKEY("ToggleFullscreen", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Fullscreen"),
@@ -229,7 +201,7 @@ DEFINE_HOTKEY("DecreaseVolume", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_N
 	})
 DEFINE_HOTKEY("Mute", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"), [](s32 pressed) {
 	if (!pressed && VMManager::HasValidVM())
-		HotkeyAdjustVolume((SPU2::GetOutputVolume() == 0) ? EmuConfig.SPU2.FinalVolume : 0, 0);
+		HotkeyAdjustVolume((SPU2::GetOutputVolume() == 0) ? SPU2::GetResetVolume() : 0, 0);
 })
 DEFINE_HOTKEY(
 	"FrameAdvance", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Frame Advance"), [](s32 pressed) {
@@ -255,22 +227,38 @@ DEFINE_HOTKEY("InputRecToggleMode", TRANSLATE_NOOP("Hotkeys", "System"),
 DEFINE_HOTKEY("PreviousSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Select Previous Save Slot"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			HotkeyCycleSaveSlot(-1);
+			SaveStateSelectorUI::SelectPreviousSlot(UseSavestateSelector());
 	})
 DEFINE_HOTKEY("NextSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Select Next Save Slot"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			HotkeyCycleSaveSlot(1);
+			SaveStateSelectorUI::SelectNextSlot(UseSavestateSelector());
 	})
 DEFINE_HOTKEY("SaveStateToSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Save State To Selected Slot"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			VMManager::SaveStateToSlot(s_current_save_slot);
+			SaveStateSelectorUI::SaveCurrentSlot();
 	})
 DEFINE_HOTKEY("LoadStateFromSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Load State From Selected Slot"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			HotkeyLoadStateSlot(s_current_save_slot);
+			SaveStateSelectorUI::LoadCurrentSlot();
+	})
+DEFINE_HOTKEY("SaveStateAndSelectNextSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
+	TRANSLATE_NOOP("Hotkeys", "Save State and Select Next Slot"), [](s32 pressed) {
+		if (!pressed && VMManager::HasValidVM())
+		{
+			SaveStateSelectorUI::SaveCurrentSlot();
+			SaveStateSelectorUI::SelectNextSlot(false);
+		}
+	})
+DEFINE_HOTKEY("SelectNextSlotAndSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"),
+	TRANSLATE_NOOP("Hotkeys", "Select Next Slot and Save State"), [](s32 pressed) {
+		if (!pressed && VMManager::HasValidVM())
+		{
+			SaveStateSelectorUI::SelectNextSlot(false);
+			SaveStateSelectorUI::SaveCurrentSlot();
+		}
 	})
 
 #define DEFINE_HOTKEY_SAVESTATE_X(slotnum, title) \

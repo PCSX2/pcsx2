@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 //
 // Types to shared by platforms and config. dialog.
@@ -46,15 +34,13 @@ public:
 	static constexpr s32 DEFAULT_LATENCY = 100;
 	static constexpr const char* DEFAULT_LATENCY_STR = "100";
 
-	AudioDevice(u32 port, AudioDir dir, u32 channels)
-		: mPort(port)
-		, mAudioDir(dir)
+	AudioDevice(AudioDir dir, u32 channels)
+		: mAudioDir(dir)
 		, mChannels(channels)
 	{
 	}
 
 protected:
-	u32 mPort;
 	s32 mSubDevice;
 	AudioDir mAudioDir;
 	u32 mChannels;
@@ -76,8 +62,8 @@ public:
 	virtual bool Start() = 0;
 	virtual void Stop() = 0;
 
-	static std::unique_ptr<AudioDevice> CreateDevice(u32 port, AudioDir dir, u32 channels, std::string devname, s32 latency);
-	static std::unique_ptr<AudioDevice> CreateNoopDevice(u32 port, AudioDir dir, u32 channels);
+	static std::unique_ptr<AudioDevice> CreateDevice(AudioDir dir, u32 channels, std::string devname, s32 latency);
+	static std::unique_ptr<AudioDevice> CreateNoopDevice(AudioDir dir, u32 channels);
 	static std::vector<std::pair<std::string, std::string>> GetInputDeviceList();
 	static std::vector<std::pair<std::string, std::string>> GetOutputDeviceList();
 };

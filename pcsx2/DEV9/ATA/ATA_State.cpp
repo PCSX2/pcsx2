@@ -1,23 +1,8 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Assertions.h"
 #include "common/FileSystem.h"
-#include "common/StringUtil.h"
 
 #include "ATA.h"
 #include "DEV9/DEV9.h"
@@ -53,8 +38,9 @@ int ATA::Open(const std::string& hddPath)
 {
 	readBufferLen = 256 * 512;
 	readBuffer = new u8[readBufferLen];
+	memset(sceSec, 0, sizeof(sceSec));
 
-	CreateHDDinfo(EmuConfig.DEV9.HddSizeSectors);
+	DevCon.WriteLn("DEV9: ATA: HddFile : %s", hddPath.c_str());
 
 	//Open File
 	if (!FileSystem::FileExists(hddPath.c_str()))
@@ -64,12 +50,54 @@ int ATA::Open(const std::string& hddPath)
 	const s64 size = hddImage ? FileSystem::FSize64(hddImage) : -1;
 	if (!hddImage || size < 0)
 	{
-		Console.Error("Failed to open HDD image '%s'", hddPath.c_str());
+		Console.Error("DEV9: ATA: Failed to open HDD image '%s'", hddPath.c_str());
 		return -1;
 	}
 
-	//Store HddImage size for later check
+	// Open and read the content of the hddid file
+	std::string hddidPath = Path::ReplaceExtension(hddPath, "hddid");
+	std::optional<std::vector<u8>> fileContent = FileSystem::ReadBinaryFile(hddidPath.c_str());
+
+	if (fileContent.has_value() && fileContent.value().size() <= sizeof(sceSec))
+	{
+		// Copy the content to sceSec
+		std::copy(fileContent.value().begin(), fileContent.value().end(), sceSec);
+	}
+	else
+	{
+		// fill sceSec with default data if hdd id file is not present
+		memcpy(sceSec, "Sony Computer Entertainment Inc.", 32); // Always this magic header.
+		memcpy(sceSec + 0x20, "SCPH-20401", 10); // sometimes this matches HDD model, the rest 6 bytes filles with zeroes, or sometimes with spaces
+		memcpy(sceSec + 0x30, "  40", 4); // or " 120" for PSX DESR, reference for ps2 area size. The rest bytes filled with zeroes
+
+		sceSec[0x40] = 0; // 0x40 - 0x43 - 4-byte HDD internal SCE serial, does not match real HDD serial, currently hardcoded to 0x1000000
+		sceSec[0x41] = 0;
+		sceSec[0x42] = 0;
+		sceSec[0x43] = 0x01;
+
+		// purpose of next 12 bytes is unknown
+		sceSec[0x44] = 0; // always zero
+		sceSec[0x45] = 0; // always zero
+		sceSec[0x46] = 0x1a;
+		sceSec[0x47] = 0x01;
+		sceSec[0x48] = 0x02;
+		sceSec[0x49] = 0x20;
+		sceSec[0x4a] = 0; // always zero
+		sceSec[0x4b] = 0; // always zero
+		// next 4 bytes always these values
+		sceSec[0x4c] = 0x01;
+		sceSec[0x4d] = 0x03;
+		sceSec[0x4e] = 0x11;
+		sceSec[0x4f] = 0x01;
+		// 0x50 - 0x80 is a random unique block of data
+		// 0x80 and up - zero filled
+	}
+
+	//Store HddImage size for later use
 	hddImageSize = static_cast<u64>(size);
+	lba48Supported = (hddImageSize > ((static_cast<s64>(1) << 28) - 1) * 512);
+
+	CreateHDDinfo(hddImageSize / 512);
 
 	InitSparseSupport(hddPath);
 
@@ -90,7 +118,7 @@ void ATA::InitSparseSupport(const std::string& hddPath)
 #ifdef _WIN32
 	hddSparse = false;
 
-	const std::wstring wHddPath(StringUtil::UTF8StringToWideString(hddPath));
+	const std::wstring wHddPath = FileSystem::GetWin32Path(hddPath);
 	const DWORD fileAttributes = GetFileAttributes(wHddPath.c_str());
 	hddSparse = fileAttributes & FILE_ATTRIBUTE_SPARSE_FILE;
 
@@ -145,7 +173,7 @@ void ATA::InitSparseSupport(const std::string& hddPath)
 
 	/*  https://askbob.tech/the-ntfs-blog-sparse-and-compressed-file/
 	 *  NTFS Sparse Block Size are the same size as a compression unit
-	 *  Cluster Size    Compression Unit    
+	 *  Cluster Size    Compression Unit
 	 *  --------------------------------
 	 *  512bytes         8kb (0x02000)
 	 *    1kb           16kb (0x04000)
@@ -279,7 +307,6 @@ void ATA::ResetEnd(bool hard)
 	if (hard)
 	{
 		pioMode = 4;
-		sdmaMode = -1;
 		mdmaMode = 2;
 		udmaMode = -1;
 	}
@@ -287,15 +314,14 @@ void ATA::ResetEnd(bool hard)
 	{
 		pioMode = 4;
 		if (udmaMode == -1)
-		{
-			sdmaMode = -1;
 			mdmaMode = 2;
-		}
 	}
 
+	regStatus |= ATA_STAT_SEEK;
+	regStatusSeekLock = 0;
+
+	HDD_ExecuteDeviceDiag(false);
 	regControlEnableIRQ = false;
-	HDD_ExecuteDeviceDiag();
-	regControlEnableIRQ = true;
 }
 
 void ATA::ATA_HardReset()
@@ -305,19 +331,23 @@ void ATA::ATA_HardReset()
 	ResetEnd(true);
 }
 
-u16 ATA::Read16(u32 addr)
+u16 ATA::Read(u32 addr, int width)
 {
 	switch (addr)
 	{
 		case ATA_R_DATA:
+			if (width == 8)
+				Console.Error("DEV9:ATA : ATA_R_DATA 8bit read???, Active %s", (GetSelectedDevice() == 0) ? "True" : "False");
+			//else
+			//	DevCon.WriteLn("DEV9: ATA: ATA_R_DATA %dbit read, Active %s", width, hard, (GetSelectedDevice() == 0) ? "True" : "False");
 			return ATAreadPIO();
 		case ATA_R_ERROR:
-			//DevCon.WriteLn("DEV9: *ATA_R_ERROR 16bit read at address %x, value %x, Active %s", addr, regError, (GetSelectedDevice() == 0) ? "True" : "False");
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_ERROR %dbit read %x, Active %s", width, regError, (GetSelectedDevice() == 0) ? "True" : "False");
 			if (GetSelectedDevice() != 0)
 				return 0;
 			return regError;
 		case ATA_R_NSECTOR:
-			//DevCon.WriteLn("DEV9: *ATA_R_NSECTOR 16bit read at address %x, value %x, Active %s", addr, nsector, (GetSelectedDevice() == 0) ? "True" : "False");
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_NSECTOR %dbit read %x, Active %s", width, nsector, (GetSelectedDevice() == 0) ? "True" : "False");
 			if (GetSelectedDevice() != 0)
 				return 0;
 			if (!regControlHOBRead)
@@ -325,7 +355,7 @@ u16 ATA::Read16(u32 addr)
 			else
 				return regNsectorHOB;
 		case ATA_R_SECTOR:
-			//DevCon.WriteLn("DEV9: *ATA_R_NSECTOR 16bit read at address %x, value %x, Active %s", addr, regSector, (GetSelectedDevice() == 0) ? "True" : "False");
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_NSECTOR %dbit read %x, Active %s", width, regSector, (GetSelectedDevice() == 0) ? "True" : "False");
 			if (GetSelectedDevice() != 0)
 				return 0;
 			if (!regControlHOBRead)
@@ -333,7 +363,7 @@ u16 ATA::Read16(u32 addr)
 			else
 				return regSectorHOB;
 		case ATA_R_LCYL:
-			//DevCon.WriteLn("DEV9: *ATA_R_LCYL 16bit read at address %x, value %x, Active %s", addr, regLcyl, (GetSelectedDevice() == 0) ? "True" : "False");
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_LCYL %dbit read %x, Active %s", width, regLcyl, (GetSelectedDevice() == 0) ? "True" : "False");
 			if (GetSelectedDevice() != 0)
 				return 0;
 			if (!regControlHOBRead)
@@ -341,7 +371,7 @@ u16 ATA::Read16(u32 addr)
 			else
 				return regLcylHOB;
 		case ATA_R_HCYL:
-			//DevCon.WriteLn("DEV9: *ATA_R_HCYL 16bit read at address % x, value % x, Active %s", addr, regHcyl, (GetSelectedDevice() == 0) ? " True " : " False ");
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_HCYL %dbit read %x, Active %s", width, regHcyl, (GetSelectedDevice() == 0) ? " True " : " False ");
 			if (GetSelectedDevice() != 0)
 				return 0;
 			if (!regControlHOBRead)
@@ -349,28 +379,44 @@ u16 ATA::Read16(u32 addr)
 			else
 				return regHcylHOB;
 		case ATA_R_SELECT:
-			//DevCon.WriteLn("DEV9: *ATA_R_SELECT 16bit read at address % x, value % x, Active %s", addr, regSelect, (GetSelectedDevice() == 0) ? " True " : " False ");
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_SELECT %dbit read %x, Active %s", width, regSelect, (GetSelectedDevice() == 0) ? " True " : " False ");
 			return regSelect;
 		case ATA_R_STATUS:
-			//DevCon.WriteLn("DEV9: *ATA_R_STATUS (Fallthough to ATA_R_ALT_STATUS)");
-			//Clear irqcause
+			// Clear irqcause
+			pendingInterrupt = false;
 			dev9.irqcause &= ~ATA_INTR_INTRQ;
 			[[fallthrough]];
 		case ATA_R_ALT_STATUS:
-			//DevCon.WriteLn("DEV9: *ATA_R_ALT_STATUS 16bit read at address % x, value % x, Active %s", addr, regStatus, (GetSelectedDevice() == 0) ? " True " : " False ");
-			//raise IRQ?
+			//DevCon.WriteLn("DEV9: ATA: %s %dbit read %x, Active %s", addr == ATA_R_ALT_STATUS ? "ATA_R_ALT_STATUS" : "ATA_R_STATUS", width, regStatus, (GetSelectedDevice() == 0) ? " True " : " False ");
+
+			if (!EmuConfig.DEV9.HddEnable)
+				return 0xff7f; // PS2 confirmed response when no HDD is actually connected. The Expansion bay always says HDD support is connected.
+
 			if (GetSelectedDevice() != 0)
 				return 0;
+
+			// When an error occurs, the seek bit shall not be changed until the Status Register is read, after which the bit then indicates the current Seek status.
+			// This handles reporting the locked value, and then unlocking if read form STATUS rather then ALT_STATUS.
+			// locking is performed where the errror occurs, by setting regStatusSeekLock to either 1 or -1 based on the locked SEEK value.
+			if (regStatusSeekLock != 0)
+			{
+				u8 hard = (regStatus & ~ATA_STAT_SEEK);
+				hard |= (regStatusSeekLock > 0) ? ATA_STAT_SEEK : static_cast<u8>(0);
+				if (addr == ATA_R_STATUS)
+					regStatusSeekLock = 0;
+				return hard;
+			}
+
 			return regStatus;
 		default:
-			Console.Error("DEV9: ATA: Unknown 16bit read at address %x", addr);
+			Console.Error("DEV9: ATA: Unknown %dbit read at address %x", width, addr);
 			return 0xff;
 	}
 }
 
-void ATA::Write16(u32 addr, u16 value)
+void ATA::Write(u32 addr, u16 value, int width)
 {
-	if (addr != ATA_R_CMD && (regStatus & (ATA_STAT_BUSY | ATA_STAT_DRQ)) != 0)
+	if ((addr != ATA_R_CMD && addr != ATA_R_CONTROL) && (regStatus & (ATA_STAT_BUSY | ATA_STAT_DRQ)) != 0)
 	{
 		Console.Error("DEV9: ATA: DEVICE BUSY, DROPPING WRITE");
 		return;
@@ -378,52 +424,68 @@ void ATA::Write16(u32 addr, u16 value)
 	switch (addr)
 	{
 		case ATA_R_FEATURE:
-			//DevCon.WriteLn("DEV9: *ATA_R_FEATURE 16bit write at address %x, value %x", addr, value);
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_FEATURE %dbit write %x", width, value);
 			ClearHOB();
 			regFeatureHOB = regFeature;
 			regFeature = static_cast<u8>(value);
 			break;
 		case ATA_R_NSECTOR:
-			//DevCon.WriteLn("DEV9: *ATA_R_NSECTOR 16bit write at address %x, value %x", addr, value);
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_NSECTOR %dbit write %x", width, value);
 			ClearHOB();
 			regNsectorHOB = regNsector;
 			regNsector = static_cast<u8>(value);
 			break;
 		case ATA_R_SECTOR:
-			//DevCon.WriteLn("DEV9: *ATA_R_SECTOR 16bit write at address %x, value %x", addr, value);
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_SECTOR %dbit write %x", width, value);
 			ClearHOB();
 			regSectorHOB = regSector;
 			regSector = static_cast<u8>(value);
 			break;
 		case ATA_R_LCYL:
-			//DevCon.WriteLn("DEV9: *ATA_R_LCYL 16bit write at address %x, value %x", addr, value);
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_LCYL %dbit write %x", width, value);
 			ClearHOB();
 			regLcylHOB = regLcyl;
 			regLcyl = static_cast<u8>(value);
 			break;
 		case ATA_R_HCYL:
-			//DevCon.WriteLn("DEV9: *ATA_R_HCYL 16bit write at address %x, value %x", addr, value);
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_HCYL %dbit write %x", width, value);
 			ClearHOB();
 			regHcylHOB = regHcyl;
 			regHcyl = static_cast<u8>(value);
 			break;
 		case ATA_R_SELECT:
-			//DevCon.WriteLn("DEV9: *ATA_R_SELECT 16bit write at address %x, value %x", addr, value);
+		{
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_SELECT %dbit write %x", width, value);
+			const int oldDev = GetSelectedDevice();
+			const int newDev = (value >> 4) & 1;
+			// Suppress INTRQ when not selected device
+			if (oldDev == 0 && newDev == 1)
+			{
+				dev9.irqcause &= ~ATA_INTR_INTRQ;
+			}
+			else if (oldDev == 1 && newDev == 0)
+			{
+				if (regControlEnableIRQ && pendingInterrupt)
+					_DEV9irq(ATA_INTR_INTRQ, 1);
+			}
+
 			regSelect = static_cast<u8>(value);
-			//bus->ifs[0].select = (val & ~0x10) | 0xa0;
-			//bus->ifs[1].select = (val | 0x10) | 0xa0;
 			break;
+		}
 		case ATA_R_CONTROL:
-			//DevCon.WriteLn("DEV9: *ATA_R_CONTROL 16bit write at address %x, value %x", addr, value);
-			//dev9Ru16(ATA_R_CONTROL) = value;
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_CONTROL %dbit write %x", width, value);
 			if ((value & 0x2) != 0)
 			{
-				//Supress all IRQ
+				// Suppress INTRQ
 				dev9.irqcause &= ~ATA_INTR_INTRQ;
 				regControlEnableIRQ = false;
 			}
 			else
+			{
+				if (GetSelectedDevice() == 0 && regControlEnableIRQ == false && pendingInterrupt)
+					_DEV9irq(ATA_INTR_INTRQ, 1);
 				regControlEnableIRQ = true;
+			}
 
 			if ((value & 0x4) != 0)
 			{
@@ -436,14 +498,15 @@ void ATA::Write16(u32 addr, u16 value)
 
 			break;
 		case ATA_R_CMD:
-			//DevCon.WriteLn("DEV9: *ATA_R_CMD 16bit write at address %x, value %x", addr, value);
+			//DevCon.WriteLn("DEV9: ATA: ATA_R_CMD %dbit write %x", width, value);
 			regCommand = value;
 			regControlHOBRead = false;
+			pendingInterrupt = false;
 			dev9.irqcause &= ~ATA_INTR_INTRQ;
 			IDE_ExecCmd(value);
 			break;
 		default:
-			Console.Error("DEV9: ATA: UNKNOWN 16bit write at address %x, value %x", addr, value);
+			Console.Error("DEV9: ATA: Unknown %dbit write at address %x, value %x", width, addr, value);
 			break;
 	}
 }
@@ -560,7 +623,7 @@ bool ATA::HDD_CanSeek()
 
 bool ATA::HDD_CanAccess(int* sectors)
 {
-	s64 maxLBA = std::min<s64>(EmuConfig.DEV9.HddSizeSectors, hddImageSize / 512) - 1;
+	s64 maxLBA = hddImageSize / 512 - 1;
 	if ((regSelect & 0x40) == 0) //CHS mode
 		maxLBA = std::min<s64>(maxLBA, curCylinders * curHeads * curSectors);
 

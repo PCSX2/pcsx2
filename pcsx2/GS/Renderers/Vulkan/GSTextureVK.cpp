@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/GSGL.h"
 #include "GS/GSPerfMon.h"
@@ -22,6 +8,7 @@
 #include "GS/Renderers/Vulkan/VKBuilders.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/BitUtils.h"
 
 static constexpr const VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -176,28 +163,6 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 		LOG_VULKAN_ERROR(res, "vkCreateImageView failed: ");
 		vmaDestroyImage(GSDeviceVK::GetInstance()->GetAllocator(), image, allocation);
 		return {};
-	}
-
-	switch (type)
-	{
-		case Type::Texture:
-			Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), image, "%dx%d texture", width, height);
-			break;
-
-		case Type::RenderTarget:
-			Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), image, "%dx%d render target", width, height);
-			break;
-
-		case Type::DepthStencil:
-			Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), image, "%dx%d depth stencil", width, height);
-			break;
-
-		case Type::RWTexture:
-			Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), image, "%dx%d RW texture", width, height);
-			break;
-
-		default:
-			break;
 	}
 
 	return std::unique_ptr<GSTextureVK>(
@@ -530,20 +495,18 @@ void GSTextureVK::GenerateMipmap()
 	}
 }
 
-void GSTextureVK::Swap(GSTexture* tex)
+#ifdef PCSX2_DEVBUILD
+
+void GSTextureVK::SetDebugName(std::string_view name)
 {
-	GSTexture::Swap(tex);
-	std::swap(m_image, static_cast<GSTextureVK*>(tex)->m_image);
-	std::swap(m_allocation, static_cast<GSTextureVK*>(tex)->m_allocation);
-	std::swap(m_view, static_cast<GSTextureVK*>(tex)->m_view);
-	std::swap(m_vk_format, static_cast<GSTextureVK*>(tex)->m_vk_format);
-	std::swap(m_layout, static_cast<GSTextureVK*>(tex)->m_layout);
-	std::swap(m_use_fence_counter, static_cast<GSTextureVK*>(tex)->m_use_fence_counter);
-	std::swap(m_clear_value, static_cast<GSTextureVK*>(tex)->m_clear_value);
-	std::swap(m_map_area, static_cast<GSTextureVK*>(tex)->m_map_area);
-	std::swap(m_map_level, static_cast<GSTextureVK*>(tex)->m_map_level);
-	std::swap(m_framebuffers, static_cast<GSTextureVK*>(tex)->m_framebuffers);
+	if (name.empty())
+		return;
+
+	Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), m_image, "%.*s", static_cast<int>(name.size()), name.data());
+	Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), m_view, "%.*s", static_cast<int>(name.size()), name.data());
 }
+
+#endif
 
 void GSTextureVK::CommitClear()
 {
@@ -961,7 +924,26 @@ void GSDownloadTextureVK::Flush()
 
 	// Need to execute command buffer.
 	if (GSDeviceVK::GetInstance()->GetCurrentFenceCounter() == m_copy_fence_counter)
+	{
+		if (GSDeviceVK::GetInstance()->InRenderPass())
+			GSDeviceVK::GetInstance()->EndRenderPass();
+
 		GSDeviceVK::GetInstance()->ExecuteCommandBufferForReadback();
+	}
 	else
+	{
 		GSDeviceVK::GetInstance()->WaitForFenceCounter(m_copy_fence_counter);
+	}
 }
+
+#ifdef PCSX2_DEVBUILD
+
+void GSDownloadTextureVK::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), m_buffer, "%.*s", static_cast<int>(name.size()), name.data());
+}
+
+#endif

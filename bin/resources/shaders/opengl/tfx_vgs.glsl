@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 //#version 420 // Keep it for text editor detection
 
@@ -82,22 +70,10 @@ void vs_main()
 	// example: ceil(afterseveralvertextransformations(y = 133)) => 134 => line 133 stays empty
 	// input granularity is 1/16 pixel, anything smaller than that won't step drawing up/left by one pixel
 	// example: 133.0625 (133 + 1/16) should start from line 134, ceil(133.0625 - 0.05) still above 133
-	vec4 p;
-
-	p.xy = vec2(i_p) - vec2(0.05f, 0.05f);
-	p.xy = p.xy * VertexScale - VertexOffset;
-	p.w = 1.0f;
-
-#if HAS_CLIP_CONTROL
-	p.z = float(z) * exp_min32;
-#else
-	// GLES doesn't support ARB_clip_control, so remap it to -1..1. We also reduce the range from 32 bits
-	// to 24 bits, which means some games with very large depth ranges will not render correctly. But,
-	// for most, it's okay, and really, the best we can do.
-	p.z = min(float(z) * exp2(-23.0f), 2.0f) - 1.0f;
-#endif
-
-	gl_Position = p;
+	gl_Position.xy = vec2(i_p) - vec2(0.05f, 0.05f);
+	gl_Position.xy = gl_Position.xy * VertexScale - VertexOffset;
+	gl_Position.z = float(z) * exp_min32;
+	gl_Position.w = 1.0f;
 
 	texture_coord();
 
@@ -156,13 +132,8 @@ ProcessedVertex load_vertex(uint index)
 	uint z = min(i_z, MaxDepth);
 	vtx.p.xy = vec2(i_p) - vec2(0.05f, 0.05f);
 	vtx.p.xy = vtx.p.xy * VertexScale - VertexOffset;
-	vtx.p.w = 1.0f;
-
-#if HAS_CLIP_CONTROL
 	vtx.p.z = float(z) * exp_min32;
-#else
-	vtx.p.z = min(float(z) * exp2(-23.0f), 2.0f) - 1.0f;
-#endif
+	vtx.p.w = 1.0f;
 
 	vec2 uv = vec2(i_uv) - TextureOffset;
 	vec2 st = i_st - TextureOffset;

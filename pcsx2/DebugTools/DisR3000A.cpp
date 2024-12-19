@@ -1,20 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "R3000A.h"
 #include "Debug.h"
@@ -45,7 +30,7 @@ typedef char* (*TdisR3000AF)(u32 code, u32 pc);
 #define MakeDisFg(fn, b) char* fn(u32 code, u32 pc) { b; return ostr; }
 #define MakeDisF(fn, b) \
 	static char* fn(u32 code, u32 pc) { \
-		sprintf (ostr, "%8.8x %8.8x:", pc, code); \
+		std::snprintf(ostr, sizeof(ostr), "%8.8x %8.8x:", pc, code); \
 		b; /*ostr[(strlen(ostr) - 1)] = 0;*/ return ostr; \
 	}
 
@@ -69,17 +54,17 @@ typedef char* (*TdisR3000AF)(u32 code, u32 pc);
 #define _Branch_  (pc + 4 + ((short)_Im_ * 4))
 #define _OfB_     _Im_, _nRs_
 
-#define dName(i)	sprintf(ostr + strlen(ostr), " %-7s,", i)
-#define dGPR(i)		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.GPR.r[i], disRNameGPR[i])
-#define dCP0(i)		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.CP0.r[i], disRNameCP0[i])
-#define dHI()		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.GPR.n.hi, "hi")
-#define dLO()		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.GPR.n.lo, "lo")
-#define dImm()		sprintf(ostr + strlen(ostr), " %4.4x (%d),", _Im_, _Im_)
-#define dTarget()	sprintf(ostr + strlen(ostr), " %8.8x,", _InstrucTarget_)
-#define dSa()		sprintf(ostr + strlen(ostr), " %2.2x (%d),", _Sa_, _Sa_)
-#define dOfB()		sprintf(ostr + strlen(ostr), " %4.4x (%8.8x (%s)),", _Im_, psxRegs.GPR.r[_Rs_], disRNameGPR[_Rs_])
-#define dOffset()	sprintf(ostr + strlen(ostr), " %8.8x,", _Branch_)
-#define dCode()		sprintf(ostr + strlen(ostr), " %8.8x,", (code >> 6) & 0xffffff)
+#define dName(i)	std::snprintf(ostr + std::strlen(ostr), std::size(ostr) - std::strlen(ostr), " %-7s,", i)
+#define dGPR(i)		std::snprintf(ostr + std::strlen(ostr), std::size(ostr) - std::strlen(ostr), " %8.8x (%s),", psxRegs.GPR.r[i], disRNameGPR[i])
+#define dCP0(i)		std::snprintf(ostr + std::strlen(ostr), std::size(ostr) - std::strlen(ostr), " %8.8x (%s),", psxRegs.CP0.r[i], disRNameCP0[i])
+#define dHI()		std::snprintf(ostr + std::strlen(ostr), std::size(ostr) - std::strlen(ostr), " %8.8x (%s),", psxRegs.GPR.n.hi, "hi")
+#define dLO()		std::snprintf(ostr + std::strlen(ostr), std::size(ostr) - std::strlen(ostr), " %8.8x (%s),", psxRegs.GPR.n.lo, "lo")
+#define dImm()		std::snprintf(ostr + std::strlen(ostr), std::size(ostr) - std::strlen(ostr), " %4.4x (%d),", _Im_, _Im_)
+#define dTarget()	std::snprintf(ostr + std::strlen(ostr), std::size(ostr) - std::strlen(ostr), " %8.8x,", _InstrucTarget_)
+#define dSa()		std::snprintf(ostr + std::strlen(ostr), std::size(ostr) - std::strlen(ostr), " %2.2x (%d),", _Sa_, _Sa_)
+#define dOfB()		std::snprintf(ostr + std::strlen(ostr), std::size(ostr) - std::strlen(ostr), " %4.4x (%8.8x (%s)),", _Im_, psxRegs.GPR.r[_Rs_], disRNameGPR[_Rs_])
+#define dOffset()	std::snprintf(ostr + std::strlen(ostr), std::size(ostr) - std::strlen(ostr), " %8.8x,", _Branch_)
+#define dCode()		std::snprintf(ostr + std::strlen(ostr), std::size(ostr) - std::strlen(ostr), " %8.8x,", (code >> 6) & 0xffffff)
 
 /*********************************************************
 * Arithmetic with immediate operand                      *

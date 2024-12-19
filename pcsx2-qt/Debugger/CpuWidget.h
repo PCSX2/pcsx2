@@ -1,34 +1,23 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include "ui_CpuWidget.h"
 
 #include "DebugTools/DebugInterface.h"
-#include "DebugTools/Breakpoints.h"
-#include "DebugTools/BiosDebugData.h"
-#include "DebugTools/MipsStackWalk.h"
 
 #include "Models/BreakpointModel.h"
 #include "Models/ThreadModel.h"
 #include "Models/StackModel.h"
+#include "Models/SavedAddressesModel.h"
+#include "Debugger/SymbolTree/SymbolTreeWidgets.h"
 
 #include "QtHost.h"
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QTableWidget>
+#include <QtCore/QSortFilterProxyModel>
+#include <QtCore/QTimer>
 
 #include <vector>
 
@@ -54,11 +43,18 @@ public slots:
 	void updateBreakpoints();
 	void onBPListDoubleClicked(const QModelIndex& index);
 	void onBPListContextMenu(QPoint pos);
+	void onGotoInMemory(u32 address);
 
 	void contextBPListCopy();
 	void contextBPListDelete();
 	void contextBPListNew();
 	void contextBPListEdit();
+	void contextBPListPasteCSV();
+
+	void onSavedAddressesListContextMenu(QPoint pos);
+	void contextSavedAddressesListPasteCSV();
+	void contextSavedAddressesListNew();
+	void addAddressToSavedAddressesList(u32 address);
 
 	void updateThreads();
 	void onThreadListDoubleClick(const QModelIndex& index);
@@ -68,34 +64,21 @@ public slots:
 	void onStackListContextMenu(QPoint pos);
 	void onStackListDoubleClick(const QModelIndex& index);
 
-	void updateFunctionList(bool whenEmpty = false);
-	void onFuncListContextMenu(QPoint pos);
-	void onFuncListDoubleClick(QListWidgetItem* item);
+	void refreshDebugger();
+	void reloadCPUWidgets();
 
-	void reloadCPUWidgets()
-	{
-		if (!QtHost::IsOnUIThread())
-		{
-			QtHost::RunOnUIThread(CBreakPoints::GetUpdateHandler());
-			return;
-		}
-
-		updateBreakpoints();
-		updateThreads();
-		updateStackFrames();
-
-		m_ui.registerWidget->update();
-		m_ui.disassemblyWidget->update();
-		m_ui.memoryviewWidget->update();
-	};
-
-	void onSearchButtonClicked();
+	void saveBreakpointsToDebuggerSettings();
+	void saveSavedAddressesToDebuggerSettings();
 
 private:
+	void setupSymbolTrees();
+
 	std::vector<QTableWidget*> m_registerTableViews;
 
 	QMenu* m_stacklistContextMenu = 0;
 	QMenu* m_funclistContextMenu = 0;
+	QMenu* m_moduleTreeContextMenu = 0;
+	QTimer m_refreshDebuggerTimer;
 
 	Ui::CpuWidget m_ui;
 
@@ -103,7 +86,12 @@ private:
 
 	BreakpointModel m_bpModel;
 	ThreadModel m_threadModel;
+	QSortFilterProxyModel m_threadProxyModel;
 	StackModel m_stackModel;
+	SavedAddressesModel m_savedAddressesModel;
 
-	bool m_demangleFunctions = true;
+	FunctionTreeWidget* m_function_tree = nullptr;
+	GlobalVariableTreeWidget* m_global_variable_tree = nullptr;
+	LocalVariableTreeWidget* m_local_variable_tree = nullptr;
+	ParameterVariableTreeWidget* m_parameter_variable_tree = nullptr;
 };

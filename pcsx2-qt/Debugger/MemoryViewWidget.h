@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -24,6 +12,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QTabBar>
 #include <QtGui/QPainter>
+#include <QtCore/QtEndian>
 
 #include <vector>
 
@@ -40,21 +29,38 @@ class MemoryViewTable
 	QWidget* parent;
 	DebugInterface* m_cpu;
 	MemoryViewType displayType = MemoryViewType::BYTE;
+	bool littleEndian = true;
 	u32 rowCount;
 	u32 rowVisible;
 	s32 rowHeight;
 
 	// Stuff used for selection handling
 	// This gets set every paint and depends on the window size / current display mode (1byte,2byte,etc)
-	s32 valuexAxis;            // Where the hexadecimal view begins
-	s32 textXAxis;             // Where the text view begins
-	s32 row1YAxis;             // Where the first row starts
-	s32 segmentXAxis[16];      // Where the segments begin
+	s32 valuexAxis; // Where the hexadecimal view begins
+	s32 textXAxis; // Where the text view begins
+	s32 row1YAxis; // Where the first row starts
+	s32 segmentXAxis[16]; // Where the segments begin
 	bool selectedText = false; // Whether the user has clicked on text or hex
-	
+
 	bool selectedNibbleHI = false;
 
 	void InsertIntoSelectedHexView(u8 value);
+
+	template <class T>
+	T convertEndian(T in)
+	{
+		if (littleEndian)
+		{
+			return in;
+		}
+		else
+		{
+			return qToBigEndian(in);
+		}
+	}
+
+	u32 nextAddress(u32 addr);
+	u32 prevAddress(u32 addr);
 
 public:
 	MemoryViewTable(QWidget* parent)
@@ -72,7 +78,10 @@ public:
 	void SelectAt(QPoint pos);
 	u128 GetSelectedSegment();
 	void InsertAtCurrentSelection(const QString& text);
-	void KeyPress(int key, QChar keychar);
+	void ForwardSelection();
+	void BackwardSelection();
+	// Returns true if the keypress was handled
+	bool KeyPress(int key, QChar keychar);
 
 	MemoryViewType GetViewType()
 	{
@@ -82,6 +91,16 @@ public:
 	void SetViewType(MemoryViewType viewType)
 	{
 		displayType = viewType;
+	}
+
+	bool GetLittleEndian()
+	{
+		return littleEndian;
+	}
+
+	void SetLittleEndian(bool le)
+	{
+		littleEndian = le;
 	}
 };
 
@@ -114,13 +133,15 @@ public slots:
 	void gotoAddress(u32 address);
 
 signals:
-	void gotoInDisasm(u32 address);
+	void gotoInDisasm(u32 address, bool should_set_focus = true);
+	void addToSavedAddresses(u32 address);
 	void VMUpdate();
 
 private:
 	Ui::RegisterWidget ui;
 
 	QMenu* m_contextMenu = 0x0;
+	QAction* m_actionLittleEndian;
 	QAction* m_actionBYTE;
 	QAction* m_actionBYTEHW;
 	QAction* m_actionWORD;

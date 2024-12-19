@@ -1,55 +1,36 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
-#include "System.h"
+#include "Memory.h"
 
-static GSCodeReserve s_instance;
-
-GSCodeReserve::GSCodeReserve()
-	: RecompiledCodeReserve("GS Software Renderer")
+namespace GSCodeReserve
 {
+	static u8* s_memory_base;
+	static u8* s_memory_end;
+	static u8* s_memory_ptr;
 }
 
-GSCodeReserve::~GSCodeReserve() = default;
-
-GSCodeReserve& GSCodeReserve::GetInstance()
+void GSCodeReserve::ResetMemory()
 {
-	return s_instance;
+	s_memory_base = SysMemory::GetSWRec();
+	s_memory_end = SysMemory::GetSWRecEnd();
+	s_memory_ptr = s_memory_base;
 }
 
-void GSCodeReserve::Assign(VirtualMemoryManagerPtr allocator)
+size_t GSCodeReserve::GetMemoryUsed()
 {
-	RecompiledCodeReserve::Assign(std::move(allocator), HostMemoryMap::SWrecOffset, HostMemoryMap::SWrecSize);
+	return s_memory_ptr - s_memory_base;
 }
 
-void GSCodeReserve::Reset()
+u8* GSCodeReserve::ReserveMemory(size_t size)
 {
-	RecompiledCodeReserve::Reset();
-	m_memory_used = 0;
+	pxAssert((s_memory_ptr + size) <= s_memory_end);
+	return s_memory_ptr;
 }
 
-u8* GSCodeReserve::Reserve(size_t size)
+void GSCodeReserve::CommitMemory(size_t size)
 {
-	pxAssert((m_memory_used + size) <= m_size);
-	return m_baseptr + m_memory_used;
-}
-
-void GSCodeReserve::Commit(size_t size)
-{
-	pxAssert((m_memory_used + size) <= m_size);
-	m_memory_used += size;
+	pxAssert((s_memory_ptr + size) <= s_memory_end);
+	s_memory_ptr += size;
 }

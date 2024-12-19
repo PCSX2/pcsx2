@@ -1,20 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
 #include "R5900OpcodeTables.h"
@@ -357,13 +342,8 @@ static void fpuFreeIfTemp(int xmmreg)
 
 __fi void fpuFloat3(int regd) // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
 {
-	const int t1reg = _allocTempXMMreg(XMMT_FPS);
-	xMOVSS(xRegisterSSE(t1reg), xRegisterSSE(regd));
-	xAND.PS(xRegisterSSE(t1reg), ptr[&s_neg[0]]);
-	xMIN.SS(xRegisterSSE(regd), ptr[&g_maxvals[0]]);
-	xMAX.SS(xRegisterSSE(regd), ptr[&g_minvals[0]]);
-	xOR.PS(xRegisterSSE(regd), xRegisterSSE(t1reg));
-	_freeXMMreg(t1reg);
+	xPMIN.SD(xRegisterSSE(regd), ptr128[&g_maxvals[0]]);
+	xPMIN.UD(xRegisterSSE(regd), ptr128[&g_minvals[0]]);
 }
 
 __fi void fpuFloat(int regd) // +/-NaN -> +fMax, +Inf -> +fMax, -Inf -> -fMax
@@ -1113,41 +1093,16 @@ void recDIVhelper2(int regd, int regt) // Doesn't sets flags
 	ClampValues(regd);
 }
 
-alignas(16) static SSE_MXCSR roundmode_nearest, roundmode_neg;
+alignas(16) static FPControlRegister roundmode_nearest;
 
 void recDIV_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::DIV_F);
-	bool roundmodeFlag = false;
 	int t0reg = _allocTempXMMreg(XMMT_FPS);
 	//Console.WriteLn("DIV");
 
-	if (CHECK_FPUNEGDIVHACK)
-	{
-		if (g_sseMXCSR.GetRoundMode() != SSEround_NegInf)
-		{
-			// Set roundmode to nearest since it isn't already
-			//Console.WriteLn("div to negative inf");
-
-			roundmode_neg = g_sseMXCSR;
-			roundmode_neg.SetRoundMode(SSEround_NegInf);
-			xLDMXCSR(roundmode_neg);
-			roundmodeFlag = true;
-		}
-	}
-	else
-	{
-		if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
-		{
-			// Set roundmode to nearest since it isn't already
-			//Console.WriteLn("div to nearest");
-
-			roundmode_nearest = g_sseMXCSR;
-			roundmode_nearest.SetRoundMode(SSEround_Nearest);
-			xLDMXCSR(roundmode_nearest);
-			roundmodeFlag = true;
-		}
-	}
+	if (EmuConfig.Cpu.FPUFPCR.bitmask != EmuConfig.Cpu.FPUDivFPCR.bitmask)
+		xLDMXCSR(ptr32[&EmuConfig.Cpu.FPUDivFPCR.bitmask]);
 
 	switch (info & (PROCESS_EE_S | PROCESS_EE_T))
 	{
@@ -1210,8 +1165,10 @@ void recDIV_S_xmm(int info)
 				recDIVhelper2(EEREC_D, t0reg);
 			break;
 	}
-	if (roundmodeFlag)
-		xLDMXCSR(g_sseMXCSR);
+
+	if (EmuConfig.Cpu.FPUFPCR.bitmask != EmuConfig.Cpu.FPUDivFPCR.bitmask)
+		xLDMXCSR(ptr32[&EmuConfig.Cpu.FPUFPCR.bitmask]);
+
 	_freeXMMreg(t0reg);
 }
 
@@ -1689,7 +1646,10 @@ void recNEG_S_xmm(int info)
 
 	//xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 	xXOR.PS(xRegisterSSE(EEREC_D), ptr[&s_neg[0]]);
-	ClampValues(EEREC_D);
+
+	// Always preserve sign. Using float clamping here would result in
+	// +inf to become +fMax instead of -fMax, which is definitely wrong.
+	fpuFloat3(EEREC_D);
 }
 
 FPURECOMPILE_CONSTCODE(NEG_S, XMMINFO_WRITED | XMMINFO_READS);
@@ -1788,13 +1748,13 @@ void recSQRT_S_xmm(int info)
 	bool roundmodeFlag = false;
 	//Console.WriteLn("FPU: SQRT");
 
-	if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
+	if (EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::Nearest)
 	{
 		// Set roundmode to nearest if it isn't already
 		//Console.WriteLn("sqrt to nearest");
-		roundmode_nearest = g_sseMXCSR;
-		roundmode_nearest.SetRoundMode(SSEround_Nearest);
-		xLDMXCSR(roundmode_nearest);
+		roundmode_nearest = EmuConfig.Cpu.FPUFPCR;
+		roundmode_nearest.SetRoundMode(FPRoundMode::Nearest);
+		xLDMXCSR(ptr32[&roundmode_nearest.bitmask]);
 		roundmodeFlag = true;
 	}
 
@@ -1825,7 +1785,7 @@ void recSQRT_S_xmm(int info)
 		ClampValues(EEREC_D);
 
 	if (roundmodeFlag)
-		xLDMXCSR(g_sseMXCSR);
+		xLDMXCSR(ptr32[&EmuConfig.Cpu.FPUFPCR.bitmask]);
 }
 
 FPURECOMPILE_CONSTCODE(SQRT_S, XMMINFO_WRITED | XMMINFO_READT);
@@ -1907,10 +1867,9 @@ void recRSQRThelper2(int regd, int t0reg) // Preforms the RSQRT function when re
 void recRSQRT_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::RSQRT_F);
-	// iFPUd (Full mode) sets roundmode to nearest for rSQRT.
-	// Should this do the same, or should Full mode leave roundmode alone? --air
 
-	int t0reg = _allocTempXMMreg(XMMT_FPS);
+	// RSQRT doesn't change the round mode, because RSQRTSS ignores the rounding mode in MXCSR.
+	const int t0reg = _allocTempXMMreg(XMMT_FPS);
 	//Console.WriteLn("FPU: RSQRT");
 
 	switch (info & (PROCESS_EE_S | PROCESS_EE_T))

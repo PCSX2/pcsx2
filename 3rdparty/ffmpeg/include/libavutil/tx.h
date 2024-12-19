@@ -105,6 +105,30 @@ enum AVTXType {
     AV_TX_DOUBLE_DCT = 10,
     AV_TX_INT32_DCT  = 11,
 
+    /**
+     * Discrete Cosine Transform I
+     *
+     * The forward transform is a DCT-I.
+     * The inverse transform is a DCT-I multiplied by 2/(N + 1).
+     *
+     * The input array is always overwritten.
+     */
+    AV_TX_FLOAT_DCT_I  = 12,
+    AV_TX_DOUBLE_DCT_I = 13,
+    AV_TX_INT32_DCT_I  = 14,
+
+    /**
+     * Discrete Sine Transform I
+     *
+     * The forward transform is a DST-I.
+     * The inverse transform is a DST-I multiplied by 2/(N + 1).
+     *
+     * The input array is always overwritten.
+     */
+    AV_TX_FLOAT_DST_I  = 15,
+    AV_TX_DOUBLE_DST_I = 16,
+    AV_TX_INT32_DST_I  = 17,
+
     /* Not part of the API, do not use */
     AV_TX_NB,
 };
@@ -149,6 +173,16 @@ enum AVTXFlags {
      * Ignored for all transforms but inverse MDCTs.
      */
     AV_TX_FULL_IMDCT = 1ULL << 2,
+
+    /**
+     * Perform a real to half-complex RDFT.
+     * Only the real, or imaginary coefficients will
+     * be output, depending on the flag used. Only available for forward RDFTs.
+     * Output array must have enough space to hold N complex values
+     * (regular size for a real to complex transform).
+     */
+    AV_TX_REAL_TO_REAL      = 1ULL << 3,
+    AV_TX_REAL_TO_IMAGINARY = 1ULL << 4,
 };
 
 /**

@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/GS.h"
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
@@ -25,24 +11,23 @@
 
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/DynamicLibrary.h"
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/MD5Digest.h"
 #include "common/Path.h"
 
-// glslang includes
-#include "SPIRV/GlslangToSpv.h"
-#include "StandAlone/ResourceLimits.h"
-#include "glslang/Public/ShaderLang.h"
-
 #include "fmt/format.h"
+#include "shaderc/shaderc.h"
 
 #include <cstring>
-#include <fstream>
 #include <memory>
 
 // TODO: store the driver version and stuff in the shader header
 
 std::unique_ptr<VKShaderCache> g_vulkan_shader_cache;
+
+static u32 s_next_bad_shader_id = 0;
 
 namespace
 {
@@ -114,113 +99,180 @@ static void FillPipelineCacheHeader(VK_PIPELINE_CACHE_HEADER* header)
 	std::memcpy(header->uuid, GSDeviceVK::GetInstance()->GetDeviceProperties().pipelineCacheUUID, VK_UUID_SIZE);
 }
 
-static unsigned s_next_bad_shader_id = 1;
-static bool s_glslang_initialized = false;
+#define SHADERC_FUNCTIONS(X) \
+	X(shaderc_compiler_initialize) \
+	X(shaderc_compiler_release) \
+	X(shaderc_compile_options_initialize) \
+	X(shaderc_compile_options_release) \
+	X(shaderc_compile_options_set_source_language) \
+	X(shaderc_compile_options_set_generate_debug_info) \
+	X(shaderc_compile_options_set_optimization_level) \
+	X(shaderc_compile_options_set_target_env) \
+	X(shaderc_compile_into_spv) \
+	X(shaderc_result_release) \
+	X(shaderc_result_get_length) \
+	X(shaderc_result_get_num_warnings) \
+	X(shaderc_result_get_bytes) \
+	X(shaderc_result_get_error_message) \
+	X(shaderc_result_get_compilation_status)
 
-// Registers itself for cleanup via atexit
-static bool InitializeGlslang()
+// TODO: NOT thread safe, yet.
+namespace dyn_shaderc
 {
-	if (s_glslang_initialized)
+	static bool Open();
+	static void Close();
+
+	static DynamicLibrary s_library;
+	static shaderc_compiler_t s_compiler = nullptr;
+
+#define ADD_FUNC(F) static decltype(&::F) F;
+	SHADERC_FUNCTIONS(ADD_FUNC)
+#undef ADD_FUNC
+
+} // namespace dyn_shaderc
+
+bool dyn_shaderc::Open()
+{
+	if (s_library.IsOpen())
 		return true;
 
-	if (!glslang::InitializeProcess())
+	Error error;
+
+#ifdef _WIN32
+	const std::string libname = DynamicLibrary::GetVersionedFilename("shaderc_shared");
+#else
+	// Use versioned, bundle post-processing adds it..
+	const std::string libname = DynamicLibrary::GetVersionedFilename("shaderc_shared", 1);
+#endif
+	if (!s_library.Open(libname.c_str(), &error))
 	{
-		pxFailRel("Failed to initialize glslang shader compiler");
+		ERROR_LOG("Failed to load shaderc: {}", error.GetDescription());
 		return false;
 	}
 
-	std::atexit(&glslang::FinalizeProcess);
-	s_glslang_initialized = true;
+#define LOAD_FUNC(F) \
+	if (!s_library.GetSymbol(#F, &F)) \
+	{ \
+		ERROR_LOG("Failed to find function {}", #F); \
+		Close(); \
+		return false; \
+	}
+
+	SHADERC_FUNCTIONS(LOAD_FUNC)
+#undef LOAD_FUNC
+
+	s_compiler = shaderc_compiler_initialize();
+	if (!s_compiler)
+	{
+		ERROR_LOG("shaderc_compiler_initialize() failed");
+		Close();
+		return false;
+	}
+
+	std::atexit(&dyn_shaderc::Close);
 	return true;
 }
 
-std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileShaderToSPV(
-	u32 stage, std::string_view source, bool debug)
+void dyn_shaderc::Close()
 {
-	if (!InitializeGlslang())
-		return std::nullopt;
-
-	std::unique_ptr<glslang::TShader> shader = std::make_unique<glslang::TShader>(static_cast<EShLanguage>(stage));
-	std::unique_ptr<glslang::TProgram> program;
-	glslang::TShader::ForbidIncluder includer;
-	const EProfile profile = ECoreProfile;
-	const EShMessages messages =
-		static_cast<EShMessages>(EShMsgDefault | EShMsgSpvRules | EShMsgVulkanRules | (debug ? EShMsgDebugInfo : 0));
-	const int default_version = 450;
-
-	std::string full_source_code;
-	const char* pass_source_code = source.data();
-	int pass_source_code_length = static_cast<int>(source.size());
-	shader->setStringsWithLengths(&pass_source_code, &pass_source_code_length, 1);
-
-	auto DumpBadShader = [&](const char* msg) {
-		const std::string filename =
-			Path::Combine(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", s_next_bad_shader_id++));
-		Console.Error("CompileShaderToSPV: %s, writing to %s", msg, filename.c_str());
-
-		std::ofstream ofs(filename, std::ofstream::out | std::ofstream::binary);
-		if (ofs.is_open())
-		{
-			ofs << source;
-			ofs << "\n";
-
-			ofs << msg << std::endl;
-			ofs << "Shader Info Log:" << std::endl;
-			ofs << shader->getInfoLog() << std::endl;
-			ofs << shader->getInfoDebugLog() << std::endl;
-			if (program)
-			{
-				ofs << "Program Info Log:" << std::endl;
-				ofs << program->getInfoLog() << std::endl;
-				ofs << program->getInfoDebugLog() << std::endl;
-			}
-
-			ofs.close();
-		}
-	};
-
-	if (!shader->parse(&glslang::DefaultTBuiltInResource, default_version, profile, false, true, messages, includer))
+	if (s_compiler)
 	{
-		DumpBadShader("Failed to parse shader");
-		return std::nullopt;
+		shaderc_compiler_release(s_compiler);
+		s_compiler = nullptr;
 	}
 
-	// Even though there's only a single shader, we still need to link it to generate SPV
-	program = std::make_unique<glslang::TProgram>();
-	program->addShader(shader.get());
-	if (!program->link(messages))
+#define UNLOAD_FUNC(F) F = nullptr;
+	SHADERC_FUNCTIONS(UNLOAD_FUNC)
+#undef UNLOAD_FUNC
+
+	s_library.Close();
+}
+
+#undef SHADERC_FUNCTIONS
+#undef SHADERC_INIT_FUNCTIONS
+
+static void DumpBadShader(std::string_view code, std::string_view errors)
+{
+	const std::string filename = Path::Combine(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", ++s_next_bad_shader_id));
+	auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
+	if (fp)
 	{
-		DumpBadShader("Failed to link program");
-		return std::nullopt;
+		if (!code.empty())
+			std::fwrite(code.data(), code.size(), 1, fp.get());
+		std::fputs("\n\n**** ERRORS ****\n", fp.get());
+		if (!errors.empty())
+			std::fwrite(errors.data(), errors.size(), 1, fp.get());
+	}
+}
+
+static const char* compilation_status_to_string(shaderc_compilation_status status)
+{
+	switch (status)
+	{
+#define CASE(x) case shaderc_compilation_status_##x: return #x
+		CASE(success);
+		CASE(invalid_stage);
+		CASE(compilation_error);
+		CASE(internal_error);
+		CASE(null_result_object);
+		CASE(invalid_assembly);
+		CASE(validation_error);
+		CASE(transformation_error);
+		CASE(configuration_error);
+#undef CASE
+	}
+	return "unknown_error";
+}
+
+std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileShaderToSPV(u32 stage, std::string_view source, bool debug)
+{
+	std::optional<VKShaderCache::SPIRVCodeVector> ret;
+	if (!dyn_shaderc::Open())
+		return ret;
+
+	shaderc_compile_options_t options = dyn_shaderc::shaderc_compile_options_initialize();
+	pxAssertRel(options, "shaderc_compile_options_initialize() failed");
+
+	dyn_shaderc::shaderc_compile_options_set_source_language(options, shaderc_source_language_glsl);
+	dyn_shaderc::shaderc_compile_options_set_target_env(options, shaderc_target_env_vulkan, 0);
+#ifdef SHADERC_PCSX2_CUSTOM
+	dyn_shaderc::shaderc_compile_options_set_generate_debug_info(options, debug,
+		debug && GSDeviceVK::GetInstance()->GetOptionalExtensions().vk_khr_shader_non_semantic_info);
+#else
+	if (debug)
+		dyn_shaderc::shaderc_compile_options_set_generate_debug_info(options);
+#endif
+	dyn_shaderc::shaderc_compile_options_set_optimization_level(
+		options, debug ? shaderc_optimization_level_zero : shaderc_optimization_level_performance);
+
+	const shaderc_compilation_result_t result = dyn_shaderc::shaderc_compile_into_spv(
+		dyn_shaderc::s_compiler, source.data(), source.length(), static_cast<shaderc_shader_kind>(stage), "source",
+		"main", options);
+
+	shaderc_compilation_status status = shaderc_compilation_status_null_result_object;
+	if (!result || (status = dyn_shaderc::shaderc_result_get_compilation_status(result)) != shaderc_compilation_status_success)
+	{
+		const std::string_view errors(result ? dyn_shaderc::shaderc_result_get_error_message(result)
+		                                     : "null result object");
+		ERROR_LOG("Failed to compile shader to SPIR-V: {}\n{}", compilation_status_to_string(status), errors);
+		DumpBadShader(source, errors);
+	}
+	else
+	{
+		const size_t num_warnings = dyn_shaderc::shaderc_result_get_num_warnings(result);
+		if (num_warnings > 0)
+			WARNING_LOG("Shader compiled with warnings:\n{}", dyn_shaderc::shaderc_result_get_error_message(result));
+
+		const size_t spirv_size = dyn_shaderc::shaderc_result_get_length(result);
+		const char* bytes = dyn_shaderc::shaderc_result_get_bytes(result);
+		pxAssert(spirv_size > 0 && ((spirv_size % sizeof(u32)) == 0));
+		ret = VKShaderCache::SPIRVCodeVector(reinterpret_cast<const u32*>(bytes),
+			reinterpret_cast<const u32*>(bytes + spirv_size));
 	}
 
-	glslang::TIntermediate* intermediate = program->getIntermediate(static_cast<EShLanguage>(stage));
-	if (!intermediate)
-	{
-		DumpBadShader("Failed to generate SPIR-V");
-		return std::nullopt;
-	}
-
-	SPIRVCodeVector out_code;
-	spv::SpvBuildLogger logger;
-	glslang::SpvOptions options;
-	options.generateDebugInfo = debug;
-	glslang::GlslangToSpv(*intermediate, out_code, &logger, &options);
-
-	// Write out messages
-	if (std::strlen(shader->getInfoLog()) > 0)
-		Console.Warning("Shader info log: %s", shader->getInfoLog());
-	if (std::strlen(shader->getInfoDebugLog()) > 0)
-		Console.Warning("Shader debug info log: %s", shader->getInfoDebugLog());
-	if (std::strlen(program->getInfoLog()) > 0)
-		Console.Warning("Program info log: %s", program->getInfoLog());
-	if (std::strlen(program->getInfoDebugLog()) > 0)
-		Console.Warning("Program debug info log: %s", program->getInfoDebugLog());
-	std::string spv_messages = logger.getAllMessages();
-	if (!spv_messages.empty())
-		Console.Warning("SPIR-V conversion messages: %s", spv_messages.c_str());
-
-	return out_code;
+	dyn_shaderc::shaderc_result_release(result);
+	dyn_shaderc::shaderc_compile_options_release(options);
+	return ret;
 }
 
 VKShaderCache::VKShaderCache() = default;
@@ -548,7 +600,7 @@ std::string VKShaderCache::GetPipelineCacheBaseFileName(bool debug)
 	return Path::Combine(EmuFolders::Cache, base_filename);
 }
 
-VKShaderCache::CacheIndexKey VKShaderCache::GetCacheKey(u32 type, const std::string_view& shader_code)
+VKShaderCache::CacheIndexKey VKShaderCache::GetCacheKey(u32 type, const std::string_view shader_code)
 {
 	union HashParts
 	{
@@ -609,17 +661,17 @@ VkShaderModule VKShaderCache::GetShaderModule(u32 type, std::string_view shader_
 
 VkShaderModule VKShaderCache::GetVertexShader(std::string_view shader_code)
 {
-	return GetShaderModule(EShLangVertex, std::move(shader_code));
+	return GetShaderModule(shaderc_glsl_vertex_shader, std::move(shader_code));
 }
 
 VkShaderModule VKShaderCache::GetFragmentShader(std::string_view shader_code)
 {
-	return GetShaderModule(EShLangFragment, std::move(shader_code));
+	return GetShaderModule(shaderc_glsl_fragment_shader, std::move(shader_code));
 }
 
 VkShaderModule VKShaderCache::GetComputeShader(std::string_view shader_code)
 {
-	return GetShaderModule(EShLangCompute, std::move(shader_code));
+	return GetShaderModule(shaderc_glsl_compute_shader, std::move(shader_code));
 }
 
 std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileAndAddShaderSPV(

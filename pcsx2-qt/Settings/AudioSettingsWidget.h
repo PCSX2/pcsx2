@@ -1,51 +1,50 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
-#include <QtWidgets/QWidget>
-
 #include "ui_AudioSettingsWidget.h"
 
-class SettingsDialog;
+#include "common/Pcsx2Defs.h"
+
+#include <QtWidgets/QWidget>
+
+enum class AudioBackend : u8;
+enum class AudioExpansionMode : u8;
+
+class SettingsWindow;
 
 class AudioSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~AudioSettingsWidget();
 
 private Q_SLOTS:
-	void expansionModeChanged();
-	void outputModuleChanged();
-	void outputBackendChanged();
-	void updateDevices();
-	void volumeChanged(int value);
-	void volumeContextMenuRequested(const QPoint& pt);
-	void updateTargetLatencyRange();
-	void updateLatencyLabels();
-	void onMinimalOutputLatencyStateChanged();
-	void resetTimestretchDefaults();
+	void onExpansionModeChanged();
+	void onSyncModeChanged();
+
+	void updateDriverNames();
+	void updateDeviceNames();
+	void updateLatencyLabel();
+	void updateVolumeLabel();
+	void onMinimalOutputLatencyChanged();
+	void onOutputVolumeChanged(int new_value);
+	void onFastForwardVolumeChanged(int new_value);
+	void onOutputMutedChanged(int new_state);
+
+	void onExpansionSettingsClicked();
+	void onStretchSettingsClicked();
 
 private:
-	void populateOutputModules();
-	void updateVolumeLabel();
+	AudioBackend getEffectiveBackend() const;
+	AudioExpansionMode getEffectiveExpansionMode() const;
+	u32 getEffectiveExpansionBlockSize() const;
+	void resetVolume(bool fast_forward);
 
-	SettingsDialog* m_dialog;
 	Ui::AudioSettingsWidget m_ui;
+	SettingsWindow* m_dialog;
 	u32 m_output_device_latency = 0;
 };

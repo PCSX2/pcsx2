@@ -6,12 +6,9 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>829</width>
-    <height>641</height>
+    <width>674</width>
+    <height>481</height>
    </rect>
-  </property>
-  <property name="windowTitle">
-   <string notr="true">Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -29,9 +26,16 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Global Settings</string>
+      <string>Settings</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="spectatorMode">
+        <property name="text">
+         <string>Enable Spectator Mode</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QCheckBox" name="enable">
         <property name="text">
@@ -39,52 +43,24 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="richPresence">
-        <property name="text">
-         <string extracomment="This &quot;Rich Presence&quot; is not Discord's, but rather RetroAchivements own system.">Enable RA's Rich Presence</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="challengeMode">
-        <property name="text">
-         <string>Enable Hardcore Mode</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="leaderboards">
-        <property name="text">
-         <string>Enable Leaderboards</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QCheckBox" name="unofficialTestMode">
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="unofficialAchievements">
         <property name="text">
          <string>Test Unofficial Achievements</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="soundEffects">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="encoreMode">
         <property name="text">
-         <string>Enable Sound Effects</string>
+         <string>Enable Encore Mode</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="primedIndicators">
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="hardcoreMode">
         <property name="text">
-         <string>Show Challenge Indicators</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="testMode">
-        <property name="text">
-         <string>Enable Test Mode</string>
+         <string>Enable Hardcore Mode</string>
         </property>
        </widget>
       </item>
@@ -96,42 +72,16 @@
      <property name="title">
       <string>Notifications</string>
      </property>
-     <layout class="QVBoxLayout" name="notifications_box_layout" stretch="0,0">
-      <item>
-       <widget class="QCheckBox" name="notifications">
-        <property name="text">
-         <string>Show Notifications</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="notifications_duration_layout" stretch="0,0,0">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
+     <layout class="QGridLayout" name="gridLayout_2" columnstretch="1,1">
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
         <item>
-         <widget class="QLabel" name="notifications_duration_label">
-          <property name="text">
-           <string>Duration</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSlider" name="notifications_duration">
+         <widget class="QSlider" name="achievementNotificationsDuration">
           <property name="minimum">
            <number>3</number>
           </property>
           <property name="maximum">
-           <number>10</number>
+           <number>30</number>
           </property>
           <property name="pageStep">
            <number>1</number>
@@ -154,13 +104,80 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="notifications_duration_seconds">
+         <widget class="QLabel" name="achievementNotificationsDurationLabel">
           <property name="text">
            <string>5 seconds</string>
           </property>
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="achievementNotifications">
+        <property name="text">
+         <string>Show Achievement Notifications</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
+        <item>
+         <widget class="QSlider" name="leaderboardNotificationsDuration">
+          <property name="minimum">
+           <number>3</number>
+          </property>
+          <property name="maximum">
+           <number>30</number>
+          </property>
+          <property name="pageStep">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="invertedAppearance">
+           <bool>false</bool>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TicksBelow</enum>
+          </property>
+          <property name="tickInterval">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="leaderboardNotificationsDurationLabel">
+          <property name="text">
+           <string>5 seconds</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="leaderboardNotifications">
+        <property name="text">
+         <string>Show Leaderboard Notifications</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="soundEffects">
+        <property name="text">
+         <string>Enable Sound Effects</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="overlays">
+        <property name="text">
+         <string>Enable In-Game Overlays</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -173,24 +190,28 @@
      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
       <item>
        <widget class="QLabel" name="loginStatus">
+        <property name="text">
+         <string>Username:
+Login token generated at:</string>
+        </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
         </property>
        </widget>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QPushButton" name="loginButton">
-          <property name="text">
-           <string>Login...</string>
-          </property>
-         </widget>
-        </item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
          <widget class="QPushButton" name="viewProfile">
           <property name="text">
            <string>View Profile...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="loginButton">
+          <property name="text">
+           <string>Login...</string>
           </property>
          </widget>
         </item>
@@ -204,7 +225,7 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>80</height>
+       <height>75</height>
       </size>
      </property>
      <property name="title">

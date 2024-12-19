@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Host.h"
 #include "Input/InputManager.h"
@@ -444,30 +430,30 @@ namespace usb_pad
 	std::span<const InputBindingInfo> DJTurntableDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
-			{"DPadUp", TRANSLATE_NOOP("USB", "D-Pad Up"), InputBindingInfo::Type::Button, CID_DJ_DPAD_UP, GenericInputBinding::DPadUp},
-			{"DPadDown", TRANSLATE_NOOP("USB", "D-Pad Down"), InputBindingInfo::Type::Button, CID_DJ_DPAD_DOWN, GenericInputBinding::DPadDown},
-			{"DPadLeft", TRANSLATE_NOOP("USB", "D-Pad Left"), InputBindingInfo::Type::Button, CID_DJ_DPAD_LEFT, GenericInputBinding::DPadLeft},
-			{"DPadRight", TRANSLATE_NOOP("USB", "D-Pad Right"), InputBindingInfo::Type::Button, CID_DJ_DPAD_RIGHT, GenericInputBinding::DPadRight},
-			{"Square", TRANSLATE_NOOP("USB", "Square"), InputBindingInfo::Type::Button, CID_DJ_SQUARE, GenericInputBinding::Unknown},
-			{"Cross", TRANSLATE_NOOP("USB", "Cross"), InputBindingInfo::Type::Button, CID_DJ_CROSS, GenericInputBinding::Unknown},
-			{"Circle", TRANSLATE_NOOP("USB", "Circle"), InputBindingInfo::Type::Button, CID_DJ_CIRCLE, GenericInputBinding::Unknown},
-			{"Triangle", TRANSLATE_NOOP("USB", "Triangle / Euphoria"), InputBindingInfo::Type::Button, CID_DJ_TRIANGLE, GenericInputBinding::Triangle},
-			{"Select", TRANSLATE_NOOP("USB", "Select"), InputBindingInfo::Type::Button, CID_DJ_SELECT, GenericInputBinding::Select},
-			{"Start", TRANSLATE_NOOP("USB", "Start"), InputBindingInfo::Type::Button, CID_DJ_START, GenericInputBinding::Start},
-			{"CrossFaderLeft", TRANSLATE_NOOP("USB", "Crossfader Left"), InputBindingInfo::Type::HalfAxis, CID_DJ_CROSSFADER_LEFT, GenericInputBinding::RightStickDown},
-			{"CrossFaderRight", TRANSLATE_NOOP("USB", "Crossfader Right"), InputBindingInfo::Type::HalfAxis, CID_DJ_CROSSFADER_RIGHT, GenericInputBinding::RightStickUp},
-			{"EffectsKnobLeft", TRANSLATE_NOOP("USB", "Effects Knob Left"), InputBindingInfo::Type::HalfAxis, CID_DJ_EFFECTSKNOB_LEFT, GenericInputBinding::RightStickLeft},
-			{"EffectsKnobRight", TRANSLATE_NOOP("USB", "Effects Knob Right"), InputBindingInfo::Type::HalfAxis, CID_DJ_EFFECTSKNOB_RIGHT, GenericInputBinding::RightStickRight},
-			{"LeftTurntableCW", TRANSLATE_NOOP("USB", "Left Turntable Clockwise"), InputBindingInfo::Type::HalfAxis, CID_DJ_LEFT_TURNTABLE_CW, GenericInputBinding::LeftStickRight},
-			{"LeftTurntableCCW", TRANSLATE_NOOP("USB", "Left Turntable Counterclockwise"), InputBindingInfo::Type::HalfAxis, CID_DJ_LEFT_TURNTABLE_CCW, GenericInputBinding::LeftStickLeft},
-			{"RightTurntableCW", TRANSLATE_NOOP("USB", "Right Turntable Clockwise"), InputBindingInfo::Type::HalfAxis, CID_DJ_RIGHT_TURNTABLE_CW, GenericInputBinding::LeftStickDown},
-			{"RightTurntableCCW", TRANSLATE_NOOP("USB", "Right Turntable Counterclockwise"), InputBindingInfo::Type::HalfAxis, CID_DJ_RIGHT_TURNTABLE_CCW, GenericInputBinding::LeftStickUp},
-			{"LeftTurntableGreen", TRANSLATE_NOOP("USB", "Left Turntable Green"), InputBindingInfo::Type::Button, CID_DJ_LEFT_GREEN, GenericInputBinding::Unknown},
-			{"LeftTurntableRed", TRANSLATE_NOOP("USB", "Left Turntable Red"), InputBindingInfo::Type::Button, CID_DJ_LEFT_RED, GenericInputBinding::Unknown},
-			{"LeftTurntableBlue", TRANSLATE_NOOP("USB", "Left Turntable Blue"), InputBindingInfo::Type::Button, CID_DJ_LEFT_BLUE, GenericInputBinding::Unknown},
-			{"RightTurntableGreen", TRANSLATE_NOOP("USB", "Right Turntable Green"), InputBindingInfo::Type::Button, CID_DJ_RIGHT_GREEN, GenericInputBinding::Cross},
-			{"RightTurntableRed", TRANSLATE_NOOP("USB", "Right Turntable Red "), InputBindingInfo::Type::Button, CID_DJ_RIGHT_RED, GenericInputBinding::Circle},
-			{"RightTurntableBlue", TRANSLATE_NOOP("USB", "Right Turntable Blue"), InputBindingInfo::Type::Button, CID_DJ_RIGHT_BLUE, GenericInputBinding::Square}
+			{"DPadUp", TRANSLATE_NOOP("USB", "D-Pad Up"), nullptr, InputBindingInfo::Type::Button, CID_DJ_DPAD_UP, GenericInputBinding::DPadUp},
+			{"DPadDown", TRANSLATE_NOOP("USB", "D-Pad Down"), nullptr, InputBindingInfo::Type::Button, CID_DJ_DPAD_DOWN, GenericInputBinding::DPadDown},
+			{"DPadLeft", TRANSLATE_NOOP("USB", "D-Pad Left"), nullptr, InputBindingInfo::Type::Button, CID_DJ_DPAD_LEFT, GenericInputBinding::DPadLeft},
+			{"DPadRight", TRANSLATE_NOOP("USB", "D-Pad Right"), nullptr, InputBindingInfo::Type::Button, CID_DJ_DPAD_RIGHT, GenericInputBinding::DPadRight},
+			{"Square", TRANSLATE_NOOP("USB", "Square"), nullptr, InputBindingInfo::Type::Button, CID_DJ_SQUARE, GenericInputBinding::Unknown},
+			{"Cross", TRANSLATE_NOOP("USB", "Cross"), nullptr, InputBindingInfo::Type::Button, CID_DJ_CROSS, GenericInputBinding::Unknown},
+			{"Circle", TRANSLATE_NOOP("USB", "Circle"), nullptr, InputBindingInfo::Type::Button, CID_DJ_CIRCLE, GenericInputBinding::Unknown},
+			{"Triangle", TRANSLATE_NOOP("USB", "Triangle / Euphoria"), nullptr, InputBindingInfo::Type::Button, CID_DJ_TRIANGLE, GenericInputBinding::Triangle},
+			{"Select", TRANSLATE_NOOP("USB", "Select"), nullptr, InputBindingInfo::Type::Button, CID_DJ_SELECT, GenericInputBinding::Select},
+			{"Start", TRANSLATE_NOOP("USB", "Start"), nullptr, InputBindingInfo::Type::Button, CID_DJ_START, GenericInputBinding::Start},
+			{"CrossFaderLeft", TRANSLATE_NOOP("USB", "Crossfader Left"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_CROSSFADER_LEFT, GenericInputBinding::RightStickDown},
+			{"CrossFaderRight", TRANSLATE_NOOP("USB", "Crossfader Right"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_CROSSFADER_RIGHT, GenericInputBinding::RightStickUp},
+			{"EffectsKnobLeft", TRANSLATE_NOOP("USB", "Effects Knob Left"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_EFFECTSKNOB_LEFT, GenericInputBinding::RightStickLeft},
+			{"EffectsKnobRight", TRANSLATE_NOOP("USB", "Effects Knob Right"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_EFFECTSKNOB_RIGHT, GenericInputBinding::RightStickRight},
+			{"LeftTurntableCW", TRANSLATE_NOOP("USB", "Left Turntable Clockwise"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_LEFT_TURNTABLE_CW, GenericInputBinding::LeftStickRight},
+			{"LeftTurntableCCW", TRANSLATE_NOOP("USB", "Left Turntable Counterclockwise"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_LEFT_TURNTABLE_CCW, GenericInputBinding::LeftStickLeft},
+			{"RightTurntableCW", TRANSLATE_NOOP("USB", "Right Turntable Clockwise"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_RIGHT_TURNTABLE_CW, GenericInputBinding::LeftStickDown},
+			{"RightTurntableCCW", TRANSLATE_NOOP("USB", "Right Turntable Counterclockwise"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_RIGHT_TURNTABLE_CCW, GenericInputBinding::LeftStickUp},
+			{"LeftTurntableGreen", TRANSLATE_NOOP("USB", "Left Turntable Green"), nullptr, InputBindingInfo::Type::Button, CID_DJ_LEFT_GREEN, GenericInputBinding::Unknown},
+			{"LeftTurntableRed", TRANSLATE_NOOP("USB", "Left Turntable Red"), nullptr, InputBindingInfo::Type::Button, CID_DJ_LEFT_RED, GenericInputBinding::Unknown},
+			{"LeftTurntableBlue", TRANSLATE_NOOP("USB", "Left Turntable Blue"), nullptr, InputBindingInfo::Type::Button, CID_DJ_LEFT_BLUE, GenericInputBinding::Unknown},
+			{"RightTurntableGreen", TRANSLATE_NOOP("USB", "Right Turntable Green"), nullptr, InputBindingInfo::Type::Button, CID_DJ_RIGHT_GREEN, GenericInputBinding::Cross},
+			{"RightTurntableRed", TRANSLATE_NOOP("USB", "Right Turntable Red "), nullptr, InputBindingInfo::Type::Button, CID_DJ_RIGHT_RED, GenericInputBinding::Circle},
+			{"RightTurntableBlue", TRANSLATE_NOOP("USB", "Right Turntable Blue"), nullptr, InputBindingInfo::Type::Button, CID_DJ_RIGHT_BLUE, GenericInputBinding::Square}
 
 		};
 

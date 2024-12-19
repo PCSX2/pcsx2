@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include <QtCore/QAbstractTableModel>
 #include <QtCore/QDebug>
@@ -30,11 +16,20 @@
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
+#include "SettingWidgetBinder.h"
 
-GameListSettingsWidget::GameListSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 {
+	SettingsInterface* sif = dialog->getSettingsInterface();
+
 	m_ui.setupUi(this);
+
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preferEnglishGameList, "UI", "PreferEnglishGameList", false);
+	connect(m_ui.preferEnglishGameList, &QCheckBox::checkStateChanged, this, [this]{ emit preferEnglishGameListChanged(); });
+
+	dialog->registerWidgetHelp(m_ui.preferEnglishGameList, tr("Prefer English Titles"), tr("Unchecked"),
+		tr("For games with both a title in the game's native language and one in English, prefer the English title."));
 
 	m_ui.searchDirectoryList->setSelectionMode(QAbstractItemView::SingleSelection);
 	m_ui.searchDirectoryList->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -45,16 +40,14 @@ GameListSettingsWidget::GameListSettingsWidget(SettingsDialog* dialog, QWidget* 
 	m_ui.searchDirectoryList->setCurrentIndex({});
 	m_ui.searchDirectoryList->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 
-	connect(m_ui.searchDirectoryList, &QTableWidget::customContextMenuRequested, this,
-		&GameListSettingsWidget::onDirectoryListContextMenuRequested);
-	connect(m_ui.addSearchDirectoryButton, &QPushButton::clicked, this,
-		&GameListSettingsWidget::onAddSearchDirectoryButtonClicked);
-	connect(m_ui.removeSearchDirectoryButton, &QPushButton::clicked, this,
-		&GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked);
+	connect(m_ui.searchDirectoryList, &QTableWidget::customContextMenuRequested, this, &GameListSettingsWidget::onDirectoryListContextMenuRequested);
+	connect(m_ui.searchDirectoryList, &QTableWidget::itemSelectionChanged, this, &GameListSettingsWidget::onDirectoryListSelectionChanged);
+	connect(m_ui.addSearchDirectoryButton, &QPushButton::clicked, this, &GameListSettingsWidget::onAddSearchDirectoryButtonClicked);
+	connect(m_ui.removeSearchDirectoryButton, &QPushButton::clicked, this, &GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked);
 	connect(m_ui.addExcludedFile, &QPushButton::clicked, this, &GameListSettingsWidget::onAddExcludedFileButtonClicked);
 	connect(m_ui.addExcludedPath, &QPushButton::clicked, this, &GameListSettingsWidget::onAddExcludedPathButtonClicked);
-	connect(m_ui.removeExcludedPath, &QPushButton::clicked, this,
-		&GameListSettingsWidget::onRemoveExcludedPathButtonClicked);
+	connect(m_ui.removeExcludedPath, &QPushButton::clicked, this, &GameListSettingsWidget::onRemoveExcludedPathButtonClicked);
+	connect(m_ui.excludedPaths, &QListWidget::itemSelectionChanged, this, &GameListSettingsWidget::onExcludedPathsSelectionChanged);
 	connect(m_ui.rescanAllGames, &QPushButton::clicked, this, &GameListSettingsWidget::onRescanAllGamesClicked);
 	connect(m_ui.scanForNewGames, &QPushButton::clicked, this, &GameListSettingsWidget::onScanForNewGamesClicked);
 
@@ -82,13 +75,26 @@ void GameListSettingsWidget::refreshExclusionList()
 	const std::vector<std::string> paths(Host::GetBaseStringListSetting("GameList", "ExcludedPaths"));
 	for (const std::string& path : paths)
 		m_ui.excludedPaths->addItem(QString::fromStdString(path));
+
+	m_ui.removeExcludedPath->setEnabled(false);
 }
 
-void GameListSettingsWidget::resizeEvent(QResizeEvent* event)
+bool GameListSettingsWidget::event(QEvent* event)
 {
-	QWidget::resizeEvent(event);
+	bool res = QWidget::event(event);
 
-	QtUtils::ResizeColumnsForTableView(m_ui.searchDirectoryList, {-1, 100});
+	switch (event->type())
+	{
+		case QEvent::LayoutRequest:
+		case QEvent::Resize:
+			QtUtils::ResizeColumnsForTableView(m_ui.searchDirectoryList, {-1, 100});
+			break;
+
+		default:
+			break;
+	}
+
+	return res;
 }
 
 void GameListSettingsWidget::addPathToTable(const std::string& path, bool recursive)
@@ -105,7 +111,7 @@ void GameListSettingsWidget::addPathToTable(const std::string& path, bool recurs
 	m_ui.searchDirectoryList->setCellWidget(row, 1, cb);
 	cb->setChecked(recursive);
 
-	connect(cb, &QCheckBox::stateChanged, [item](int state) {
+	connect(cb, &QCheckBox::checkStateChanged, this, [item](Qt::CheckState state) {
 		const std::string path(item->text().toStdString());
 		if (state == Qt::Checked)
 		{
@@ -136,6 +142,8 @@ void GameListSettingsWidget::refreshDirectoryList()
 		addPathToTable(entry, true);
 
 	m_ui.searchDirectoryList->sortByColumn(0, Qt::AscendingOrder);
+
+	m_ui.removeSearchDirectoryButton->setEnabled(false);
 }
 
 void GameListSettingsWidget::addSearchDirectory(const QString& path, bool recursive)
@@ -177,6 +185,11 @@ void GameListSettingsWidget::onDirectoryListContextMenuRequested(const QPoint& p
 		QtUtils::OpenURL(this, QUrl::fromLocalFile(m_ui.searchDirectoryList->item(row, 0)->text()));
 	});
 	menu.exec(m_ui.searchDirectoryList->mapToGlobal(point));
+}
+
+void GameListSettingsWidget::onDirectoryListSelectionChanged()
+{
+	m_ui.removeSearchDirectoryButton->setEnabled(m_ui.searchDirectoryList->selectionModel()->hasSelection());
 }
 
 void GameListSettingsWidget::addSearchDirectory(QWidget* parent_widget)
@@ -250,6 +263,11 @@ void GameListSettingsWidget::onRemoveExcludedPathButtonClicked()
 	delete item;
 
 	g_main_window->refreshGameList(false);
+}
+
+void GameListSettingsWidget::onExcludedPathsSelectionChanged()
+{
+	m_ui.removeExcludedPath->setEnabled(!m_ui.excludedPaths->selectedItems().isEmpty());
 }
 
 void GameListSettingsWidget::onRescanAllGamesClicked()

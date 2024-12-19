@@ -4,10 +4,10 @@
 ///
 /// For big-endian CPU, define BIG_ENDIAN during compile-time to correctly
 /// parse the WAV files with such processors.
-/// 
-/// Admittingly, more complete WAV reader routines may exist in public domain, but 
+///
+/// Admittingly, more complete WAV reader routines may exist in public domain, but
 /// the reason for 'yet another' one is that those generic WAV reader libraries are
-/// exhaustingly large and cumbersome! Wanted to have something simpler here, i.e. 
+/// exhaustingly large and cumbersome! Wanted to have something simpler here, i.e.
 /// something that's not already larger than rest of the SoundTouch/SoundStretch program...
 ///
 /// Author        : Copyright (c) Olli Parviainen
@@ -40,15 +40,20 @@
 #ifndef WAVFILE_H
 #define WAVFILE_H
 
-#include <stdio.h>
+#include <cstdio>
+#include <string>
+#include "SS_CharTypes.h"
+
+namespace soundstretch
+{
 
 #ifndef uint
 typedef unsigned int uint;
-#endif           
+#endif
 
 
 /// WAV audio file 'riff' section header
-typedef struct 
+typedef struct
 {
     char riff_char[4];
     uint package_len;
@@ -56,7 +61,7 @@ typedef struct
 } WavRiff;
 
 /// WAV audio file 'format' section header
-typedef struct 
+typedef struct
 {
     char  fmt[4];
     unsigned int   format_len;
@@ -69,7 +74,7 @@ typedef struct
 } WavFormat;
 
 /// WAV audio file 'fact' section header
-typedef struct 
+typedef struct
 {
     char fact_field[4];
     uint fact_len;
@@ -77,7 +82,7 @@ typedef struct
 } WavFact;
 
 /// WAV audio file 'data' section header
-typedef struct 
+typedef struct
 {
     char  data_field[4];
     uint  data_len;
@@ -85,7 +90,7 @@ typedef struct
 
 
 /// WAV audio file header
-typedef struct 
+typedef struct
 {
     WavRiff   riff;
     WavFormat format;
@@ -118,9 +123,6 @@ private:
     /// File pointer.
     FILE *fptr;
 
-    /// Position within the audio stream
-    long position;
-
     /// Counter of how many bytes of sample data have been read from the file.
     long dataRead;
 
@@ -148,7 +150,7 @@ private:
 public:
     /// Constructor: Opens the given WAV file. If the file can't be opened,
     /// throws 'runtime_error' exception.
-    WavInFile(const char *filename);
+    WavInFile(const STRING& filename);
 
     WavInFile(FILE *file);
 
@@ -164,7 +166,7 @@ public:
     /// Get number of bits per sample, i.e. 8 or 16.
     uint getNumBits() const;
 
-    /// Get sample data size in bytes. Ahem, this should return same information as 
+    /// Get sample data size in bytes. Ahem, this should return same information as
     /// 'getBytesPerSample'...
     uint getDataSizeInBytes() const;
 
@@ -173,7 +175,7 @@ public:
 
     /// Get number of bytes per audio sample (e.g. 16bit stereo = 4 bytes/sample)
     uint getBytesPerSample() const;
-    
+
     /// Get number of audio channels in the file (1=mono, 2=stereo)
     uint getNumChannels() const;
 
@@ -186,14 +188,14 @@ public:
     uint getElapsedMS() const;
 
     /// Reads audio samples from the WAV file. This routine works only for 8 bit samples.
-    /// Reads given number of elements from the file or if end-of-file reached, as many 
+    /// Reads given number of elements from the file or if end-of-file reached, as many
     /// elements as are left in the file.
     ///
     /// \return Number of 8-bit integers read from the file.
     int read(unsigned char *buffer, int maxElems);
 
-    /// Reads audio samples from the WAV file to 16 bit integer format. Reads given number 
-    /// of elements from the file or if end-of-file reached, as many elements as are 
+    /// Reads audio samples from the WAV file to 16 bit integer format. Reads given number
+    /// of elements from the file or if end-of-file reached, as many elements as are
     /// left in the file.
     ///
     /// \return Number of 16-bit integers read from the file.
@@ -201,7 +203,7 @@ public:
              int maxElems       ///< Size of 'buffer' array (number of array elements).
              );
 
-    /// Reads audio samples from the WAV file to floating point format, converting 
+    /// Reads audio samples from the WAV file to floating point format, converting
     /// sample values to range [-1,1[. Reads given number of elements from the file
     /// or if end-of-file reached, as many elements as are left in the file.
     /// Notice that reading in float format supports 8/16/24/32bit sample formats.
@@ -242,9 +244,9 @@ private:
     void writeHeader();
 
 public:
-    /// Constructor: Creates a new WAV file. Throws a 'runtime_error' exception 
+    /// Constructor: Creates a new WAV file. Throws a 'runtime_error' exception
     /// if file creation fails.
-    WavOutFile(const char *fileName,    ///< Filename
+    WavOutFile(const STRING& fileName,  ///< Filename
                int sampleRate,          ///< Sample rate (e.g. 44100 etc)
                int bits,                ///< Bits per sample (8 or 16 bits)
                int channels             ///< Number of channels (1=mono, 2=stereo)
@@ -255,7 +257,7 @@ public:
     /// Destructor: Finalizes & closes the WAV file.
     ~WavOutFile();
 
-    /// Write data to WAV file. This function works only with 8bit samples. 
+    /// Write data to WAV file. This function works only with 8bit samples.
     /// Throws a 'runtime_error' exception if writing to file fails.
     void write(const unsigned char *buffer, ///< Pointer to sample data buffer.
                int numElems                 ///< How many array items are to be written to file.
@@ -273,5 +275,7 @@ public:
                int numElems             ///< How many array items are to be written to file.
                );
 };
+
+ }
 
 #endif

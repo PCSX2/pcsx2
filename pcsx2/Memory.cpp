@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 /*
 
@@ -34,25 +22,290 @@ BIOS
 0xBFC00000 - 0xBFFFFFFF un-cached
 */
 
-#include "PrecompiledHeader.h"
-
-#include "IopHw.h"
-#include "GS.h"
-#include "VUmicro.h"
-#include "MTVU.h"
 #include "DEV9/DEV9.h"
+#include "IopHw.h"
+#include "GS/Renderers/Common/GSFunctionMap.h"
+#include "GS.h"
+#include "Host.h"
+#include "MTVU.h"
+#include "SPU2/spu2.h"
+#include "SaveState.h"
+#include "VUmicro.h"
 
 #include "ps2/HwInternal.h"
 #include "ps2/BiosTools.h"
-#include "SPU2/spu2.h"
 
 #include "common/AlignedMalloc.h"
+#include "common/Error.h"
 
 #ifdef ENABLECACHE
 #include "Cache.h"
 #endif
 
+namespace Ps2MemSize
+{
+	u32 ExposedRam = MainRam;
+} // namespace Ps2MemSize
+
+namespace SysMemory
+{
+	static u8* TryAllocateVirtualMemory(const char* name, void* file_handle, uptr base, size_t size);
+	static u8* AllocateVirtualMemory(const char* name, void* file_handle, size_t size, size_t offset_from_base);
+
+	static bool AllocateMemoryMap();
+	static void DumpMemoryMap();
+	static void ReleaseMemoryMap();
+
+	static u8* s_data_memory;
+	static void* s_data_memory_file_handle;
+	static u8* s_code_memory;
+} // namespace SysMemory
+
+static void memAllocate();
+static void memReset();
+static void memRelease();
+
 int MemMode = 0;		// 0 is Kernel Mode, 1 is Supervisor Mode, 2 is User Mode
+
+static u16 s_ba[0xff];
+static u16 s_dve_regs[0xff];
+static bool s_ba_command_executing = false;
+static bool s_ba_error_detected = false;
+static u16 s_ba_current_reg = 0;
+static bool s_extra_memory = false;
+
+namespace HostMemoryMap
+{
+	// For debuggers
+	extern "C" {
+#ifdef _WIN32
+	_declspec(dllexport) uptr EEmem, IOPmem, VUmem;
+#else
+	__attribute__((visibility("default"), used)) uptr EEmem, IOPmem, VUmem;
+#endif
+	}
+} // namespace HostMemoryMap
+
+u8* SysMemory::TryAllocateVirtualMemory(const char* name, void* file_handle, uptr base, size_t size)
+{
+	u8* baseptr;
+
+	if (file_handle)
+		baseptr = static_cast<u8*>(HostSys::MapSharedMemory(file_handle, 0, (void*)base, size, PageAccess_ReadWrite()));
+	else
+		baseptr = static_cast<u8*>(HostSys::Mmap((void*)base, size, PageAccess_Any()));
+
+	if (!baseptr)
+		return nullptr;
+
+	if (base != 0 && (uptr)baseptr != base)
+	{
+		if (file_handle)
+		{
+			if (baseptr)
+				HostSys::UnmapSharedMemory(baseptr, size);
+		}
+		else
+		{
+			if (baseptr)
+				HostSys::Munmap(baseptr, size);
+		}
+
+		return nullptr;
+	}
+
+	DevCon.WriteLn(Color_Gray, "%-32s @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " %s", name,
+		baseptr, (uptr)baseptr + size, fmt::format("[{}mb]", size / _1mb).c_str());
+
+	return baseptr;
+}
+
+u8* SysMemory::AllocateVirtualMemory(const char* name, void* file_handle, size_t size, size_t offset_from_base)
+{
+	// ARM64 does not need the rec areas to be in +/- 2GB.
+#ifdef _M_X86
+	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Virtual memory size is page aligned");
+
+	// Everything looks nicer when the start of all the sections is a nice round looking number.
+	// Also reduces the variation in the address due to small changes in code.
+	// Breaks ASLR but so does anything else that tries to make addresses constant for our debugging pleasure
+	uptr codeBase = (uptr)(void*)AllocateVirtualMemory / (1 << 28) * (1 << 28);
+
+	// The allocation is ~640mb in size, slighly under 3*2^28.
+	// We'll hope that the code generated for the PCSX2 executable stays under 512mb (which is likely)
+	// On x86-64, code can reach 8*2^28 from its address [-6*2^28, 4*2^28] is the region that allows for code in the 640mb allocation to reach 512mb of code that either starts at codeBase or 256mb before it.
+	// We start high and count down because on macOS code starts at the beginning of useable address space, so starting as far ahead as possible reduces address variations due to code size.  Not sure about other platforms.  Obviously this only actually affects what shows up in a debugger and won't affect performance or correctness of anything.
+	for (int offset = 4; offset >= -6; offset--)
+	{
+		uptr base = codeBase + (offset << 28) + offset_from_base;
+		if ((sptr)base < 0 || (sptr)(base + size - 1) < 0)
+		{
+			// VTLB will throw a fit if we try to put EE main memory here
+			continue;
+		}
+
+		if (u8* ret = TryAllocateVirtualMemory(name, file_handle, base, size))
+			return ret;
+
+		DevCon.Warning("%s: host memory @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " is unavailable; attempting to map elsewhere...", name,
+			base, base + size);
+	}
+#else
+	return TryAllocateVirtualMemory(name, file_handle, 0, size);
+#endif
+
+	return nullptr;
+}
+
+bool SysMemory::AllocateMemoryMap()
+{
+	s_data_memory_file_handle = HostSys::CreateSharedMemory(HostSys::GetFileMappingName("pcsx2").c_str(), HostMemoryMap::MainSize);
+	if (!s_data_memory_file_handle)
+	{
+		Host::ReportErrorAsync("Error", "Failed to create shared memory file.");
+		ReleaseMemoryMap();
+		return false;
+	}
+
+	if ((s_data_memory = AllocateVirtualMemory("Data Memory", s_data_memory_file_handle, HostMemoryMap::MainSize, 0)) == nullptr)
+	{
+		Host::ReportErrorAsync("Error", "Failed to map data memory at an acceptable location.");
+		ReleaseMemoryMap();
+		return false;
+	}
+
+	if ((s_code_memory = AllocateVirtualMemory("Code Memory", nullptr, HostMemoryMap::CodeSize, HostMemoryMap::MainSize)) == nullptr)
+	{
+		Host::ReportErrorAsync("Error", "Failed to allocate code memory at an acceptable location.");
+		ReleaseMemoryMap();
+		return false;
+	}
+
+	HostMemoryMap::EEmem = (uptr)(s_data_memory + HostMemoryMap::EEmemOffset);
+	HostMemoryMap::IOPmem = (uptr)(s_data_memory + HostMemoryMap::IOPmemOffset);
+	HostMemoryMap::VUmem = (uptr)(s_data_memory + HostMemoryMap::VUmemSize);
+
+	DumpMemoryMap();
+	return true;
+}
+
+void SysMemory::DumpMemoryMap()
+{
+#define DUMP_REGION(name, base, offset, size) \
+	DevCon.WriteLn(Color_Gray, "  %-32s @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " %s", name, \
+		(uptr)(base + offset), (uptr)(base + offset + size), fmt::format("[{}mb]", size / _1mb).c_str());
+
+	DUMP_REGION("EE Main Memory", s_data_memory, HostMemoryMap::EEmemOffset, HostMemoryMap::EEmemSize);
+	DUMP_REGION("IOP Main Memory", s_data_memory, HostMemoryMap::IOPmemOffset, HostMemoryMap::IOPmemSize);
+	DUMP_REGION("VU0/1 On-Chip Memory", s_data_memory, HostMemoryMap::VUmemOffset, HostMemoryMap::VUmemSize);
+	DUMP_REGION("VTLB Virtual Map", s_data_memory, HostMemoryMap::VTLBAddressMapOffset, HostMemoryMap::VTLBVirtualMapSize);
+	DUMP_REGION("VTLB Address Map", s_data_memory, HostMemoryMap::VTLBAddressMapSize, HostMemoryMap::VTLBAddressMapSize);
+
+	DUMP_REGION("R5900 Recompiler Cache", s_code_memory, HostMemoryMap::EErecOffset, HostMemoryMap::EErecSize);
+	DUMP_REGION("R3000A Recompiler Cache", s_code_memory, HostMemoryMap::IOPrecOffset, HostMemoryMap::IOPrecSize);
+	DUMP_REGION("Micro VU0 Recompiler Cache", s_code_memory, HostMemoryMap::mVU0recOffset, HostMemoryMap::mVU0recSize);
+	DUMP_REGION("Micro VU0 Recompiler Cache", s_code_memory, HostMemoryMap::mVU1recOffset, HostMemoryMap::mVU1recSize);
+	DUMP_REGION("VIF0 Unpack Recompiler Cache", s_code_memory, HostMemoryMap::VIF0recOffset, HostMemoryMap::VIF0recSize);
+	DUMP_REGION("VIF1 Unpack Recompiler Cache", s_code_memory, HostMemoryMap::VIF1recOffset, HostMemoryMap::VIF1recSize);
+	DUMP_REGION("VIF Unpack Recompiler Cache", s_code_memory, HostMemoryMap::VIFUnpackRecOffset, HostMemoryMap::VIFUnpackRecSize);
+	DUMP_REGION("GS Software Renderer", s_code_memory, HostMemoryMap::SWrecOffset, HostMemoryMap::SWrecSize);
+
+
+#undef DUMP_REGION
+}
+
+void SysMemory::ReleaseMemoryMap()
+{
+	if (s_code_memory)
+	{
+		HostSys::Munmap(s_code_memory, HostMemoryMap::CodeSize);
+		s_code_memory = nullptr;
+	}
+
+	if (s_data_memory)
+	{
+		HostSys::UnmapSharedMemory(s_data_memory, HostMemoryMap::MainSize);
+		s_data_memory = nullptr;
+	}
+
+	if (s_data_memory_file_handle)
+	{
+		HostSys::DestroySharedMemory(s_data_memory_file_handle);
+		s_data_memory_file_handle = nullptr;
+	}
+}
+
+bool SysMemory::Allocate()
+{
+	DevCon.WriteLn(Color_StrongBlue, "Allocating host memory for virtual systems...");
+
+	if (!AllocateMemoryMap())
+		return false;
+
+	memAllocate();
+	iopMemAlloc();
+	vuMemAllocate();
+
+	if (!vtlb_Core_Alloc())
+		return false;
+
+	return true;
+}
+
+void SysMemory::Reset()
+{
+	DevCon.WriteLn(Color_StrongBlue, "Resetting host memory for virtual systems...");
+
+	memReset();
+	iopMemReset();
+	vuMemReset();
+
+	// Note: newVif is reset as part of other VIF structures.
+	// Software is reset on the GS thread.
+}
+
+void SysMemory::Release()
+{
+	Console.WriteLn(Color_Blue, "Releasing host memory for virtual systems...");
+
+	vtlb_Core_Free(); // Just to be sure... (calling order could result in it getting missed during Decommit).
+
+	vuMemRelease();
+	iopMemRelease();
+	memRelease();
+
+	ReleaseMemoryMap();
+}
+
+u8* SysMemory::GetDataPtr(size_t offset)
+{
+	pxAssert(offset <= HostMemoryMap::MainSize);
+	return s_data_memory + offset;
+}
+
+u8* SysMemory::GetCodePtr(size_t offset)
+{
+	pxAssert(offset <= HostMemoryMap::CodeSize);
+	return s_code_memory + offset;
+}
+
+void* SysMemory::GetDataFileHandle()
+{
+	return s_data_memory_file_handle;
+}
+
+bool memGetExtraMemMode()
+{
+	return s_extra_memory;
+}
+
+void memSetExtraMemMode(bool mode)
+{
+	s_extra_memory = mode;
+
+	// update the amount of RAM exposed to the VM
+	Ps2MemSize::ExposedRam = mode ? Ps2MemSize::TotalRam : Ps2MemSize::MainRam;
+}
 
 void memSetKernelMode() {
 	//Do something here
@@ -66,17 +319,87 @@ void memSetUserMode() {
 
 }
 
+// These regs are related to DEV9 and DVE stuff, we don't have to go crazy with this, but this sucks less than the original code
+void ba0W16(u32 mem, u16 value)
+{
+	//MEM_LOG("ba000000 Memory write16 address %x value %x", mem, value);
+	u32 masked_mem = (mem & 0xFF);
+
+	if (masked_mem == 0x6) // Status Reg
+	{
+		s_ba[0x6] &= ~3;
+	}
+	else
+		s_ba[masked_mem] = value;
+
+	if (masked_mem == 0x00) // Command Execute Reg
+	{
+		if (s_ba[0x2] == 0x4F || s_ba[0x2] == 0x41)
+		{
+			DevCon.Warning("Error running DVE command, Control Reg value set to %x", value);
+			s_ba_error_detected = true;
+		}
+		else if (s_ba[masked_mem] & 0x80) // Start executing
+		{
+			if (s_ba[0x2] == 0x43) // Write Mode
+			{
+				int size = (s_ba[masked_mem] & 0xF);
+				s_ba_current_reg = s_ba[0x10];
+				size--;
+
+				// 0x10->0x22 seems to be some sort of FIFO, with 0x10 generally being the register to read/write
+				for (int i = 0; i < size; i++)
+				{
+					s_dve_regs[s_ba_current_reg] = s_ba[0x12 + i];
+				}
+
+				s_ba_command_executing = true;
+				s_ba_error_detected = false;
+			}
+			else if(s_ba[0x2] == 0x42) // Read Mode
+			{
+				int size = (s_ba[masked_mem] & 0xF);
+
+				for (int i = 0; i < size; i++)
+					s_ba[0x10 + i] = s_dve_regs[s_ba_current_reg]; // Probably not right but we don't access the real regs, will be enough for now.
+				s_ba_command_executing = true;
+				s_ba_error_detected = false;
+			}
+		}
+	}
+	else if (masked_mem == 0xA) // Power/Standby (?) Reg
+	{
+		if (value == 0)
+			s_ba_error_detected = true;
+		else
+			s_ba_error_detected = false;
+
+		DevCon.Warning("DVE powered %s", value == 0 ? "off" : "on");
+	}
+}
+
 u16 ba0R16(u32 mem)
 {
-	//MEM_LOG("ba00000 Memory read16 address %x", mem);
+	//MEM_LOG("ba000000 Memory read16 address %x", mem);
 
-	if (mem == 0x1a000006) {
-		static int ba6;
-		ba6++;
-		if (ba6 == 3) ba6 = 0;
-		return ba6;
+	if (mem == 0x1a000006)
+	{
+		// 0xba00000A bit 0 is kind of an "on" switch. bit 0 of ba000006 seems to be the powered off/error bit.
+		// bit 1 in ba000006 seems to be "ready".
+		u16 return_val = (s_ba[0x6] & 2);
+
+		if (s_ba_error_detected)
+			return_val |= 1;
+
+		if (s_ba[0x6] < 3 && s_ba_command_executing)
+			s_ba[0x6]++;
+		else
+			s_ba_command_executing = false;
+
+		return return_val;
 	}
-	return 0;
+
+	return s_ba[mem & 0x1F];
 }
 
 #define CHECK_MEM(mem) //MyMemCheck(mem)
@@ -113,7 +436,8 @@ static vtlbHandler
 
 	iopHw_by_page_01,
 	iopHw_by_page_03,
-	iopHw_by_page_08;
+	iopHw_by_page_08,
+	iop_memory;
 
 
 void memMapVUmicro()
@@ -144,9 +468,10 @@ void memMapVUmicro()
 void memMapPhy()
 {
 	// Main memory
-	vtlb_MapBlock(eeMem->Main,	0x00000000,Ps2MemSize::MainRam);//mirrored on first 256 mb ?
+	vtlb_MapBlock(eeMem->Main,	0x00000000,Ps2MemSize::ExposedRam);//mirrored on first 256 mb ?
+
 	// High memory, uninstalled on the configuration we emulate
-	vtlb_MapHandler(null_handler, Ps2MemSize::MainRam, 0x10000000 - Ps2MemSize::MainRam);
+	vtlb_MapHandler(null_handler, Ps2MemSize::ExposedRam, 0x10000000 - Ps2MemSize::ExposedRam);
 
 	// Various ROMs (all read-only)
 	vtlb_MapBlock(eeMem->ROM,	0x1fc00000, Ps2MemSize::Rom);
@@ -156,7 +481,7 @@ void memMapPhy()
 	// IOP memory
 	// (used by the EE Bios Kernel during initial hardware initialization, Apps/Games
 	//  are "supposed" to use the thread-safe SIF instead.)
-	vtlb_MapBlock(iopMem->Main,0x1c000000,0x00800000);
+	vtlb_MapHandler(iop_memory,0x1c000000,0x00800000);
 
 	// Generic Handlers; These fallback to mem* stuff...
 	vtlb_MapHandler(tlb_fallback_7,0x14000000, _64kb);
@@ -262,6 +587,8 @@ static mem8_t _ext_memRead8 (u32 mem)
 			Console.WriteLn("DEV9 read8 %8.8lx: %2.2lx", mem & ~0xa4000000, retval);
 			return retval;
 		}
+		case 9:
+			return iopMemRead8(mem & ~0x1c000000);
 		default: break;
 	}
 
@@ -279,6 +606,7 @@ static mem16_t _ext_memRead16(u32 mem)
 			MEM_LOG("b800000 Memory read16 address %x", mem);
 			return 0;
 		case 5: // ba0
+			MEM_LOG("ba000000 Memory read16 address %x", mem);
 			return ba0R16(mem);
 		case 6: // gsm
 			return gsRead16(mem);
@@ -292,6 +620,8 @@ static mem16_t _ext_memRead16(u32 mem)
 
 		case 8: // spu2
 			return SPU2read(mem);
+		case 9:
+			return iopMemRead16(mem & ~0x1c000000);
 
 		default: break;
 	}
@@ -313,6 +643,8 @@ static mem32_t _ext_memRead32(u32 mem)
 			Console.WriteLn("DEV9 read32 %8.8lx: %8.8lx", mem & ~0xa4000000, retval);
 			return retval;
 		}
+		case 9:
+			return iopMemRead32(mem & ~0x1c000000);
 		default: break;
 	}
 
@@ -328,6 +660,13 @@ static u64 _ext_memRead64(u32 mem)
 	{
 		case 6: // gsm
 			return gsRead64(mem);
+		case 9:
+		{
+			u64 ret = 0;
+			ret |= ((u64)(iopMemRead32((mem + 0) & ~0x1c000000)) << 0);
+			ret |= ((u64)(iopMemRead32((mem + 4) & ~0x1c000000)) << 32);
+			return ret;
+		}
 		default: break;
 	}
 
@@ -345,6 +684,15 @@ static RETURNS_R128 _ext_memRead128(u32 mem)
 		//	return hwRead128(mem & ~0xa0000000);
 		case 6: // gsm
 			return r128_load(PS2GS_BASE(mem));
+		case 9:
+		{
+			u128 ret = {};
+			ret._u32[0] = iopMemRead32((mem + 0) & ~0x1c000000);
+			ret._u32[1] = iopMemRead32((mem + 4) & ~0x1c000000);
+			ret._u32[2] = iopMemRead32((mem + 8) & ~0x1c000000);
+			ret._u32[3] = iopMemRead32((mem + 12) & ~0x1c000000);
+			return r128_from_u128(ret);
+		}
 		default: break;
 	}
 
@@ -365,6 +713,9 @@ static void _ext_memWrite8 (u32 mem, mem8_t  value)
 			DEV9write8(mem & ~0xa4000000, value);
 			Console.WriteLn("DEV9 write8 %8.8lx: %2.2lx", mem & ~0xa4000000, value);
 			return;
+		case 9:
+			iopMemWrite8(mem & ~0x1c000000, value);
+			return;
 		default: break;
 	}
 
@@ -377,7 +728,8 @@ static void _ext_memWrite16(u32 mem, mem16_t value)
 {
 	switch (p) {
 		case 5: // ba0
-			MEM_LOG("ba00000 Memory write16 to  address %x with data %x", mem, value);
+			MEM_LOG("ba000000 Memory write16 address %x value %x", mem, value);
+			ba0W16(mem, value);
 			return;
 		case 6: // gsm
 			gsWrite16(mem, value); return;
@@ -387,6 +739,9 @@ static void _ext_memWrite16(u32 mem, mem16_t value)
 			return;
 		case 8: // spu2
 			SPU2write(mem, value); return;
+		case 9:
+			iopMemWrite16(mem & ~0x1c000000, value);
+			return;
 		default: break;
 	}
 	MEM_LOG("Unknown Memory write16  to  address %x with data %4.4x", mem, value);
@@ -403,6 +758,9 @@ static void _ext_memWrite32(u32 mem, mem32_t value)
 			DEV9write32(mem & ~0xa4000000, value);
 			Console.WriteLn("DEV9 write32 %8.8lx: %8.8lx", mem & ~0xa4000000, value);
 			return;
+		case 9:
+			iopMemWrite32(mem & ~0x1c000000, value);
+			return;
 		default: break;
 	}
 	MEM_LOG("Unknown Memory write32  to  address %x with data %8.8x", mem, value);
@@ -412,7 +770,15 @@ static void _ext_memWrite32(u32 mem, mem32_t value)
 template<int p>
 static void _ext_memWrite64(u32 mem, mem64_t value)
 {
-
+	switch (p)
+	{
+		case 9:
+			iopMemWrite32((mem + 0) & ~0x1c000000, (value >>  0) & 0xffffffff);
+			iopMemWrite32((mem + 4) & ~0x1c000000, (value >> 32) & 0xffffffff);
+			return;
+		default:
+			break;
+	}
 	/*switch (p) {
 		//case 1: // hwm
 		//	hwWrite64(mem & ~0xa0000000, *value);
@@ -428,6 +794,21 @@ static void _ext_memWrite64(u32 mem, mem64_t value)
 template<int p>
 static void TAKES_R128 _ext_memWrite128(u32 mem, r128 value)
 {
+	switch (p)
+	{
+		case 9:
+		{
+			u128 val = r128_to_u128(value);
+			iopMemWrite32((mem + 0) & ~0x1c000000, val._u32[0] & 0xffffffff);
+			iopMemWrite32((mem + 4) & ~0x1c000000, val._u32[1] & 0xffffffff);
+			iopMemWrite32((mem + 8) & ~0x1c000000, val._u32[2] & 0xffffffff);
+			iopMemWrite32((mem + 12) & ~0x1c000000, val._u32[3] & 0xffffffff);
+
+			return;
+		}
+		default:
+			break;
+	}
 	/*switch (p) {
 		//case 1: // hwm
 		//	hwWrite128(mem & ~0xa0000000, value);
@@ -665,8 +1046,8 @@ void memClearPageAddr(u32 vaddr)
 ///////////////////////////////////////////////////////////////////////////
 // PS2 Memory Init / Reset / Shutdown
 
-EEVM_MemoryAllocMess* eeMem = NULL;
-alignas(__pagesize) u8 eeHw[Ps2MemSize::Hardware];
+EEVM_MemoryAllocMess* eeMem = nullptr;
+alignas(__pagealignsize) u8 eeHw[Ps2MemSize::Hardware];
 
 
 void memBindConditionalHandlers()
@@ -701,28 +1082,13 @@ void memBindConditionalHandlers()
 // --------------------------------------------------------------------------------------
 //  eeMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------
-eeMemoryReserve::eeMemoryReserve()
-	: _parent("EE Main Memory")
+void memAllocate()
 {
+	eeMem = reinterpret_cast<EEVM_MemoryAllocMess*>(SysMemory::GetEEMem());
 }
 
-eeMemoryReserve::~eeMemoryReserve()
+void memReset()
 {
-	Release();
-}
-
-void eeMemoryReserve::Assign(VirtualMemoryManagerPtr allocator)
-{
-	_parent::Assign(std::move(allocator), HostMemoryMap::EEmemOffset, sizeof(*eeMem));
-	eeMem = reinterpret_cast<EEVM_MemoryAllocMess*>(GetPtr());
-}
-
-
-// Resets memory mappings, unmaps TLBs, reloads bios roms, etc.
-void eeMemoryReserve::Reset()
-{
-	_parent::Reset();
-
 	// Note!!  Ideally the vtlb should only be initialized once, and then subsequent
 	// resets of the system hardware would only clear vtlb mappings, but since the
 	// rest of the emu is not really set up to support a "soft" reset of that sort
@@ -745,6 +1111,7 @@ void eeMemoryReserve::Reset()
 	tlb_fallback_5 = vtlb_RegisterHandlerTempl1(_ext_mem,5);
 	tlb_fallback_7 = vtlb_RegisterHandlerTempl1(_ext_mem,7);
 	tlb_fallback_8 = vtlb_RegisterHandlerTempl1(_ext_mem,8);
+	iop_memory = vtlb_RegisterHandlerTempl1(_ext_mem,9);
 
 	// Dynarec versions of VUs
 	vu0_micro_mem = vtlb_RegisterHandlerTempl1(vuMicro,0);
@@ -778,7 +1145,6 @@ void eeMemoryReserve::Reset()
 		iopHwRead8_Page8, iopHwRead16_Page8, iopHwRead32_Page8, _ext_memRead64<2>, _ext_memRead128<2>,
 		iopHwWrite8_Page8, iopHwWrite16_Page8, iopHwWrite32_Page8, _ext_memWrite64<2>, _ext_memWrite128<2>
 	);
-
 
 	// psHw Optimized Mappings
 	// The HW Registers have been split into pages to improve optimization.
@@ -839,11 +1205,44 @@ void eeMemoryReserve::Reset()
 	vtlb_VMap(0x00000000,0x00000000,0x20000000);
 	vtlb_VMapUnmap(0x20000000,0x60000000);
 
+	std::memset(s_ba, 0, sizeof(s_ba));
+
+	s_ba[0xA] = 1; // Power on
+	s_ba_command_executing = false;
+	s_ba_error_detected = false;
+	s_ba_current_reg = 0;
+
+	std::memset(s_dve_regs, 0, sizeof(s_dve_regs));
+
+	s_dve_regs[0x7e] = 0x1C; // Status register. 0x1C seems to be the value it's expecting for everything being OK.
+
+	// BIOS is included in eeMem, so it needs to be copied after zeroing.
+	std::memset(eeMem, 0, sizeof(*eeMem));
 	CopyBIOSToMemory();
 }
 
-void eeMemoryReserve::Release()
+void memRelease()
 {
 	eeMem = nullptr;
-	_parent::Release();
+}
+
+bool SaveStateBase::memFreeze(Error* error)
+{
+	Freeze(s_ba);
+	Freeze(s_dve_regs);
+	Freeze(s_ba_command_executing);
+	Freeze(s_ba_error_detected);
+	Freeze(s_ba_current_reg);
+
+	bool extra_memory = s_extra_memory;
+	Freeze(extra_memory);
+
+	if (extra_memory != s_extra_memory)
+	{
+		Error::SetStringFmt(error, "Memory size mismatch, save state requires {}, but VM currently has {}.",
+			extra_memory ? "128MB" : "32MB", s_extra_memory ? "128MB" : "32MB");
+		return false;
+	}
+
+	return IsOkay();
 }

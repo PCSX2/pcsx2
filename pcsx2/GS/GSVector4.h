@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 class alignas(16) GSVector4
 {
@@ -66,8 +54,6 @@ public:
 	static const GSVector4 m_min;
 
 	GSVector4() = default;
-
-	constexpr GSVector4(const GSVector4&) = default;
 
 	constexpr static GSVector4 cxpr(float x, float y, float z, float w)
 	{
@@ -165,7 +151,7 @@ public:
 	{
 		GSVector4i v((int)u);
 
-		*this = GSVector4(v) + (m_x4f800000 & GSVector4::cast(v.sra32(31)));
+		*this = GSVector4(v) + (m_x4f800000 & GSVector4::cast(v.sra32<31>()));
 	}
 
 	__forceinline explicit GSVector4(const GSVector4i& v);
@@ -187,11 +173,6 @@ public:
 	__forceinline static GSVector4 f64(double x, double y)
 	{
 		return GSVector4(_mm_castpd_ps(_mm_set_pd(y, x)));
-	}
-
-	__forceinline void operator=(const GSVector4& v)
-	{
-		m = v.m;
 	}
 
 	__forceinline void operator=(float f)
@@ -534,92 +515,17 @@ public:
 	template <int src, int dst>
 	__forceinline GSVector4 insert32(const GSVector4& v) const
 	{
-		// TODO: use blendps when src == dst
-
-#if 0 // _M_SSE >= 0x401
-
-		// NOTE: it's faster with shuffles...
-
-		return GSVector4(_mm_insert_ps(m, v.m, _MM_MK_INSERTPS_NDX(src, dst, 0)));
-
-#else
-
-		switch (dst)
-		{
-			case 0:
-				switch (src)
-				{
-					case 0: return yyxx(v).zxzw(*this);
-					case 1: return yyyy(v).zxzw(*this);
-					case 2: return yyzz(v).zxzw(*this);
-					case 3: return yyww(v).zxzw(*this);
-					default: __assume(0);
-				}
-				break;
-			case 1:
-				switch (src)
-				{
-					case 0: return xxxx(v).xzzw(*this);
-					case 1: return xxyy(v).xzzw(*this);
-					case 2: return xxzz(v).xzzw(*this);
-					case 3: return xxww(v).xzzw(*this);
-					default: __assume(0);
-				}
-				break;
-			case 2:
-				switch (src)
-				{
-					case 0: return xyzx(wwxx(v));
-					case 1: return xyzx(wwyy(v));
-					case 2: return xyzx(wwzz(v));
-					case 3: return xyzx(wwww(v));
-					default: __assume(0);
-				}
-				break;
-			case 3:
-				switch (src)
-				{
-					case 0: return xyxz(zzxx(v));
-					case 1: return xyxz(zzyy(v));
-					case 2: return xyxz(zzzz(v));
-					case 3: return xyxz(zzww(v));
-					default: __assume(0);
-				}
-				break;
-			default:
-				__assume(0);
-		}
-
-#endif
+		if constexpr (src == dst)
+			return GSVector4(_mm_blend_ps(m, v.m, 1 << src));
+		else
+			return GSVector4(_mm_insert_ps(m, v.m, _MM_MK_INSERTPS_NDX(src, dst, 0)));
 	}
 
-#ifdef __linux__
-#if 0
-	// Debug build error, _mm_extract_ps is actually a macro that use an anonymous union
-	// that contains i. I decide to rename the template on linux but it makes windows unhappy
-	// Hence the nice ifdef
-	//
-	// Code extract:
-	// union { int i; float f; } __tmp;
-
-GSVector.h:2977:40: error: declaration of 'int GSVector4::extract32() const::<anonymous union>::i'
-   return _mm_extract_ps(m, i);
-GSVector.h:2973:15: error:  shadows template parm 'int i'
-  template<int i> __forceinline int extract32() const
-#endif
-
-	template <int index>
-	__forceinline int extract32() const
-	{
-		return _mm_extract_ps(m, index);
-	}
-#else
 	template <int i>
 	__forceinline int extract32() const
 	{
 		return _mm_extract_ps(m, i);
 	}
-#endif
 
 	__forceinline static GSVector4 zero()
 	{
@@ -655,7 +561,7 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 	{
 		GSVector4i v = GSVector4i::load((int)u);
 
-		return GSVector4(v) + (m_x4f800000 & GSVector4::cast(v.sra32(31)));
+		return GSVector4(v) + (m_x4f800000 & GSVector4::cast(v.sra32<31>()));
 	}
 
 	template <bool aligned>

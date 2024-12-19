@@ -1,6 +1,6 @@
 /*
   zip_winzip_aes.c -- Winzip AES de/encryption backend routines
-  Copyright (C) 2017-2021 Dieter Baron and Thomas Klausner
+  Copyright (C) 2017-2022 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>

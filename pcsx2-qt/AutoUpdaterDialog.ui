@@ -77,6 +77,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="downloadSize">
+     <property name="text">
+      <string>Download Size: </string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QTextBrowser" name="updateNotes"/>
    </item>
    <item>

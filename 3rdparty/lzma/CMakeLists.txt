@@ -6,13 +6,17 @@ add_library(pcsx2-lzma STATIC
 	include/7zFile.h
 	include/7zTypes.h
 	include/7zVersion.h
+	include/7zWindows.h
 	include/Alloc.h
+	include/Aes.h
 	include/Bcj2.h
 	include/Bra.h
 	include/Compiler.h
 	include/CpuArch.h
 	include/Delta.h
+	include/DllSecur.h
 	include/LzFind.h
+	include/LzFindMt.h
 	include/LzHash.h
 	include/Lzma2Dec.h
 	include/Lzma2DecMt.h
@@ -21,11 +25,16 @@ add_library(pcsx2-lzma STATIC
 	include/LzmaDec.h
 	include/LzmaEnc.h
 	include/LzmaLib.h
+	include/MtCoder.h
+	include/MtDec.h
 	include/Ppmd.h
 	include/Ppmd7.h
 	include/Precomp.h
 	include/RotateDefs.h
 	include/Sha256.h
+	include/Sort.h
+	include/SwapBytes.h
+	include/Threads.h
 	include/Xz.h
 	include/XzCrc64.h
 	include/XzEnc.h
@@ -38,6 +47,8 @@ add_library(pcsx2-lzma STATIC
 	src/7zDec.c
 	src/7zFile.c
 	src/7zStream.c
+	src/Aes.c
+	src/AesOpt.c
 	src/Alloc.c
 	src/Bcj2.c
 	src/Bcj2Enc.c
@@ -45,8 +56,10 @@ add_library(pcsx2-lzma STATIC
 	src/Bra86.c
 	src/BraIA64.c
 	src/CpuArch.c
+	src/DllSecur.c
 	src/Delta.c
 	src/LzFind.c
+	src/LzFindMt.c
 	src/LzFindOpt.c
 	src/Lzma2Dec.c
 	src/Lzma2DecMt.c
@@ -56,11 +69,16 @@ add_library(pcsx2-lzma STATIC
 	src/LzmaDec.c
 	src/LzmaEnc.c
 	src/LzmaLib.c
+	src/MtCoder.c
+	src/MtDec.c
 	src/Ppmd7.c
 	src/Ppmd7Dec.c
 	src/Ppmd7Enc.c
 	src/Sha256.c
 	src/Sha256Opt.c
+	src/Sort.c
+	src/SwapBytes.c
+	src/Threads.c
 	src/Xz.c
 	src/XzCrc64.c
 	src/XzCrc64Opt.c

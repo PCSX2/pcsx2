@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -25,7 +13,7 @@
 
 class QTimer;
 
-class ControllerSettingsDialog;
+class ControllerSettingsWindow;
 class SettingsInterface;
 
 class InputBindingWidget : public QPushButton
@@ -92,10 +80,10 @@ class InputVibrationBindingWidget : public QPushButton
 
 public:
 	InputVibrationBindingWidget(QWidget* parent);
-	InputVibrationBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, std::string section_name, std::string key_name);
+	InputVibrationBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, std::string section_name, std::string key_name);
 	~InputVibrationBindingWidget();
 
-	void setKey(ControllerSettingsDialog* dialog, std::string section_name, std::string key_name);
+	void setKey(ControllerSettingsWindow* dialog, std::string section_name, std::string key_name);
 
 public Q_SLOTS:
 	void clearBinding();
@@ -111,5 +99,5 @@ private:
 	std::string m_key_name;
 	std::string m_binding;
 
-	ControllerSettingsDialog* m_dialog;
+	ControllerSettingsWindow* m_dialog;
 };

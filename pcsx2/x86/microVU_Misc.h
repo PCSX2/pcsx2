@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -189,18 +177,6 @@ typedef Fntype_mVUrecInst* Fnptr_mVUrecInst;
 #define opCase2 if (opCase == 2) // BC Opcodes
 #define opCase3 if (opCase == 3) // I  Opcodes
 #define opCase4 if (opCase == 4) // Q  Opcodes
-
-//------------------------------------------------------------------
-// Define mVUquickSearch
-//------------------------------------------------------------------
-alignas(__pagesize) extern u8 mVUsearchXMM[__pagesize];
-typedef u32 (*mVUCall)(void*, void*);
-#define mVUquickSearch(dest, src, size) ((((mVUCall)((void*)mVUsearchXMM))(dest, src)) == 0)
-#define mVUemitSearch() \
-	{ \
-		mVUcustomSearch(); \
-	}
-//------------------------------------------------------------------
 
 // Misc Macros...
 #define mVUcurProg   mVU.prog.cur[0]

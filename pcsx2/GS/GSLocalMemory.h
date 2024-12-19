@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -19,8 +7,13 @@
 #include "GSVector.h"
 #include "GSClut.h"
 #include "MultiISA.h"
+
+#include "common/Assertions.h"
+
 #include <array>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 struct GSPixelOffset
 {
@@ -312,7 +305,7 @@ public:
 			int endOff   = firstRowPgXEnd;
 			int yCnt = this->yCnt;
 
-			if (unlikely(slowPath))
+			if (slowPath) [[unlikely]]
 			{
 				u32 touched[MAX_PAGES / 32] = {};
 				for (int y = 0; y < yCnt; y++)
@@ -398,7 +391,7 @@ public:
 	constexpr GSOffset assertSizesMatch(const GSSwizzleInfo& swz) const
 	{
 		GSOffset o = *this;
-#define MATCH(x) ASSERT(o.x == swz.x); o.x = swz.x;
+#define MATCH(x) pxAssert(o.x == swz.x); o.x = swz.x;
 		MATCH(m_pageMask)
 		MATCH(m_blockMask)
 		MATCH(m_pixelRowMask)
@@ -444,6 +437,13 @@ public:
 	typedef void (*readImage)(const GSLocalMemory& mem, int& tx, int& ty, u8* dst, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG);
 	typedef void (*readTexture)(GSLocalMemory& mem, const GSOffset& off, const GSVector4i& r, u8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 	typedef void (*readTextureBlock)(const GSLocalMemory& mem, u32 bp, u8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+
+	enum PSM_FMT
+	{
+		PSM_FMT_32,
+		PSM_FMT_24,
+		PSM_FMT_16
+	};
 
 	struct alignas(128) psm_t
 	{

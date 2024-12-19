@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "DebugTools/Debug.h"
 #include "MemoryTypes.h"
@@ -22,6 +8,7 @@
 #include "InputRecordingControls.h"
 #include "Utilities/InputRecordingLogger.h"
 
+#include "Host.h"
 #include "MTGS.h"
 #include "VMManager.h"
 
@@ -42,14 +29,14 @@ void InputRecordingControls::setRecordMode(bool waitForFrameToEnd)
 	if (!waitForFrameToEnd || VMManager::GetState() == VMState::Paused)
 	{
 		m_state = Mode::Recording;
-		InputRec::log("Record mode ON");
+		InputRec::log(TRANSLATE("InputRecordingControls","Record Mode Enabled"), Host::OSD_INFO_DURATION);
 		MTGS::PresentCurrentFrame();
 	}
 	else
 	{
 		m_controlQueue.push([&]() {
 			m_state = Mode::Recording;
-			InputRec::log("Record mode ON");
+			InputRec::log(TRANSLATE("InputRecordingControls","Record Mode Enabled"), Host::OSD_INFO_DURATION);
 		});
 	}
 }
@@ -59,14 +46,14 @@ void InputRecordingControls::setReplayMode(bool waitForFrameToEnd)
 	if (!waitForFrameToEnd || VMManager::GetState() == VMState::Paused)
 	{
 		m_state = Mode::Replaying;
-		InputRec::log("Replay mode ON");
+		InputRec::log(TRANSLATE("InputRecordingControls","Replay Mode Enabled"), Host::OSD_INFO_DURATION);
 		MTGS::PresentCurrentFrame();
 	}
 	else
 	{
 		m_controlQueue.push([&]() {
 			m_state = Mode::Replaying;
-			InputRec::log("Replay mode ON");
+			InputRec::log(TRANSLATE("InputRecordingControls","Record Mode Enabled"), Host::OSD_INFO_DURATION);
 		});
 	}
 }

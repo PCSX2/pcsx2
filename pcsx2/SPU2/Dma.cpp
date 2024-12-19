@@ -1,20 +1,8 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
-#include "SPU2/Global.h"
+#include "SPU2/defs.h"
+#include "SPU2/Debug.h"
 #include "SPU2/Dma.h"
 #include "SPU2/spu2.h"
 #include "R3000A.h"
@@ -22,6 +10,9 @@
 #include "Config.h"
 
 #ifdef PCSX2_DEVBUILD
+
+#define safe_fclose(ptr) \
+	((void)((((ptr) != nullptr) && (std::fclose(ptr), !!0)), (ptr) = nullptr))
 
 static FILE* DMA4LogFile = nullptr;
 static FILE* DMA7LogFile = nullptr;
@@ -354,15 +345,15 @@ void V_Core::FinishDMAwrite()
 
 	DMAICounter = (DMAICounter - ReadSize) * 4;
 
-	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
+	if (((psxCounters[6].startCycle + psxCounters[6].deltaCycles) - psxRegs.cycle) > (u32)DMAICounter)
 	{
-		psxCounters[6].sCycleT = psxRegs.cycle;
-		psxCounters[6].CycleT = DMAICounter;
+		psxCounters[6].startCycle = psxRegs.cycle;
+		psxCounters[6].deltaCycles = DMAICounter;
 
-		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-		psxNextsCounter = psxRegs.cycle;
-		if (psxCounters[6].CycleT < psxNextCounter)
-			psxNextCounter = psxCounters[6].CycleT;
+		psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
+		psxNextStartCounter = psxRegs.cycle;
+		if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
+			psxNextDeltaCounter = psxCounters[6].deltaCycles;
 	}
 
 	ActiveTSA = TDA;
@@ -448,15 +439,15 @@ void V_Core::FinishDMAread()
 	else
 		DMAICounter = 4;
 
-	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
+	if (((psxCounters[6].startCycle + psxCounters[6].deltaCycles) - psxRegs.cycle) > (u32)DMAICounter)
 	{
-		psxCounters[6].sCycleT = psxRegs.cycle;
-		psxCounters[6].CycleT = DMAICounter;
+		psxCounters[6].startCycle = psxRegs.cycle;
+		psxCounters[6].deltaCycles = DMAICounter;
 
-		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-		psxNextsCounter = psxRegs.cycle;
-		if (psxCounters[6].CycleT < psxNextCounter)
-			psxNextCounter = psxCounters[6].CycleT;
+		psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
+		psxNextStartCounter = psxRegs.cycle;
+		if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
+			psxNextDeltaCounter = psxCounters[6].deltaCycles;
 	}
 
 	ActiveTSA = TDA;
@@ -479,15 +470,15 @@ void V_Core::DoDMAread(u16* pMem, u32 size)
 	//Regs.ATTR |= 0x30;
 	TADR = MADR + (size << 1);
 
-	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
+	if (((psxCounters[6].startCycle + psxCounters[6].deltaCycles) - psxRegs.cycle) > (u32)DMAICounter)
 	{
-		psxCounters[6].sCycleT = psxRegs.cycle;
-		psxCounters[6].CycleT = DMAICounter;
+		psxCounters[6].startCycle = psxRegs.cycle;
+		psxCounters[6].deltaCycles = DMAICounter;
 
-		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-		psxNextsCounter = psxRegs.cycle;
-		if (psxCounters[6].CycleT < psxNextCounter)
-			psxNextCounter = psxCounters[6].CycleT;
+		psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
+		psxNextStartCounter = psxRegs.cycle;
+		if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
+			psxNextDeltaCounter = psxCounters[6].deltaCycles;
 	}
 
 	if (SPU2::MsgDMA())

@@ -34,23 +34,20 @@
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);_7ZIP_ST</PreprocessorDefinitions>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <AdditionalIncludeDirectories>$(ProjectDir)libchdr\include;$(ProjectDir)\libchdr\src;$(SolutionDir)3rdparty\lzma\include;$(SolutionDir)3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(SolutionDir)3rdparty\lzma\include;$(SolutionDir)deps\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="libchdr\src\libchdr_bitstream.c" />
-    <ClCompile Include="libchdr\src\libchdr_cdrom.c" />
-    <ClCompile Include="libchdr\src\libchdr_chd.c" />
-    <ClCompile Include="libchdr\src\libchdr_flac.c" />
-    <ClCompile Include="libchdr\src\libchdr_huffman.c" />
+    <ClCompile Include="src\libchdr_bitstream.c" />
+    <ClCompile Include="src\libchdr_cdrom.c" />
+    <ClCompile Include="src\libchdr_chd.c" />
+    <ClCompile Include="src\libchdr_flac.c" />
+    <ClCompile Include="src\libchdr_huffman.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lzma\lzma.vcxproj">
       <Project>{a4323327-3f2b-4271-83d9-7f9a3c66b6b2}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\zlib\zlib.vcxproj">
-      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

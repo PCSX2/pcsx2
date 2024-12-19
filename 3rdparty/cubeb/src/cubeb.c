@@ -31,10 +31,6 @@ struct cubeb_stream {
 int
 pulse_init(cubeb ** context, char const * context_name);
 #endif
-#if defined(USE_PULSE_RUST)
-int
-pulse_rust_init(cubeb ** contet, char const * context_name);
-#endif
 #if defined(USE_JACK)
 int
 jack_init(cubeb ** context, char const * context_name);
@@ -46,10 +42,6 @@ alsa_init(cubeb ** context, char const * context_name);
 #if defined(USE_AUDIOUNIT)
 int
 audiounit_init(cubeb ** context, char const * context_name);
-#endif
-#if defined(USE_AUDIOUNIT_RUST)
-int
-audiounit_rust_init(cubeb ** contet, char const * context_name);
 #endif
 #if defined(USE_WINMM)
 int
@@ -63,29 +55,9 @@ wasapi_init(cubeb ** context, char const * context_name);
 int
 sndio_init(cubeb ** context, char const * context_name);
 #endif
-#if defined(USE_SUN)
-int
-sun_init(cubeb ** context, char const * context_name);
-#endif
-#if defined(USE_OPENSL)
-int
-opensl_init(cubeb ** context, char const * context_name);
-#endif
 #if defined(USE_OSS)
 int
 oss_init(cubeb ** context, char const * context_name);
-#endif
-#if defined(USE_AAUDIO)
-int
-aaudio_init(cubeb ** context, char const * context_name);
-#endif
-#if defined(USE_AUDIOTRACK)
-int
-audiotrack_init(cubeb ** context, char const * context_name);
-#endif
-#if defined(USE_KAI)
-int
-kai_init(cubeb ** context, char const * context_name);
 #endif
 
 static int
@@ -95,7 +67,7 @@ validate_stream_params(cubeb_stream_params * input_stream_params,
   XASSERT(input_stream_params || output_stream_params);
   if (output_stream_params) {
     if (output_stream_params->rate < 1000 ||
-        output_stream_params->rate > 192000 ||
+        output_stream_params->rate > 768000 ||
         output_stream_params->channels < 1 ||
         output_stream_params->channels > UINT8_MAX) {
       return CUBEB_ERROR_INVALID_FORMAT;
@@ -103,7 +75,7 @@ validate_stream_params(cubeb_stream_params * input_stream_params,
   }
   if (input_stream_params) {
     if (input_stream_params->rate < 1000 ||
-        input_stream_params->rate > 192000 ||
+        input_stream_params->rate > 768000 ||
         input_stream_params->channels < 1 ||
         input_stream_params->channels > UINT8_MAX) {
       return CUBEB_ERROR_INVALID_FORMAT;
@@ -152,10 +124,6 @@ cubeb_init(cubeb ** context, char const * context_name,
 #if defined(USE_PULSE)
       init_oneshot = pulse_init;
 #endif
-    } else if (!strcmp(backend_name, "pulse-rust")) {
-#if defined(USE_PULSE_RUST)
-      init_oneshot = pulse_rust_init;
-#endif
     } else if (!strcmp(backend_name, "jack")) {
 #if defined(USE_JACK)
       init_oneshot = jack_init;
@@ -167,10 +135,6 @@ cubeb_init(cubeb ** context, char const * context_name,
     } else if (!strcmp(backend_name, "audiounit")) {
 #if defined(USE_AUDIOUNIT)
       init_oneshot = audiounit_init;
-#endif
-    } else if (!strcmp(backend_name, "audiounit-rust")) {
-#if defined(USE_AUDIOUNIT_RUST)
-      init_oneshot = audiounit_rust_init;
 #endif
     } else if (!strcmp(backend_name, "wasapi")) {
 #if defined(USE_WASAPI)
@@ -184,29 +148,9 @@ cubeb_init(cubeb ** context, char const * context_name,
 #if defined(USE_SNDIO)
       init_oneshot = sndio_init;
 #endif
-    } else if (!strcmp(backend_name, "sun")) {
-#if defined(USE_SUN)
-      init_oneshot = sun_init;
-#endif
-    } else if (!strcmp(backend_name, "opensl")) {
-#if defined(USE_OPENSL)
-      init_oneshot = opensl_init;
-#endif
     } else if (!strcmp(backend_name, "oss")) {
 #if defined(USE_OSS)
       init_oneshot = oss_init;
-#endif
-    } else if (!strcmp(backend_name, "aaudio")) {
-#if defined(USE_AAUDIO)
-      init_oneshot = aaudio_init;
-#endif
-    } else if (!strcmp(backend_name, "audiotrack")) {
-#if defined(USE_AUDIOTRACK)
-      init_oneshot = audiotrack_init;
-#endif
-    } else if (!strcmp(backend_name, "kai")) {
-#if defined(USE_KAI)
-      init_oneshot = kai_init;
 #endif
     } else {
       /* Already set */
@@ -219,9 +163,6 @@ cubeb_init(cubeb ** context, char const * context_name,
      * to override all other choices
      */
     init_oneshot,
-#if defined(USE_PULSE_RUST)
-    pulse_rust_init,
-#endif
 #if defined(USE_PULSE)
     pulse_init,
 #endif
@@ -237,9 +178,6 @@ cubeb_init(cubeb ** context, char const * context_name,
 #if defined(USE_OSS)
     oss_init,
 #endif
-#if defined(USE_AUDIOUNIT_RUST)
-    audiounit_rust_init,
-#endif
 #if defined(USE_AUDIOUNIT)
     audiounit_init,
 #endif
@@ -251,20 +189,6 @@ cubeb_init(cubeb ** context, char const * context_name,
 #endif
 #if defined(USE_SUN)
     sun_init,
-#endif
-#if defined(USE_OPENSL)
-    opensl_init,
-#endif
-  // TODO: should probably be preferred over OpenSLES when available.
-  // Initialization will fail on old android devices.
-#if defined(USE_AAUDIO)
-    aaudio_init,
-#endif
-#if defined(USE_AUDIOTRACK)
-    audiotrack_init,
-#endif
-#if defined(USE_KAI)
-    kai_init,
 #endif
   };
   int i;
@@ -290,15 +214,12 @@ cubeb_init(cubeb ** context, char const * context_name,
   return CUBEB_ERROR;
 }
 
-const char* const*
+const char**
 cubeb_get_backend_names()
 {
   static const char* backend_names[] = {
 #if defined(USE_PULSE)
     "pulse",
-#endif
-#if defined(USE_PULSE_RUST)
-    "pulse-rust",
 #endif
 #if defined(USE_JACK)
     "jack",
@@ -309,9 +230,6 @@ cubeb_get_backend_names()
 #if defined(USE_AUDIOUNIT)
     "audiounit",
 #endif
-#if defined(USE_AUDIOUNIT_RUST)
-    "audiounit-rust",
-#endif
 #if defined(USE_WASAPI)
     "wasapi",
 #endif
@@ -321,23 +239,8 @@ cubeb_get_backend_names()
 #if defined(USE_SNDIO)
     "sndio",
 #endif
-#if defined(USE_SUN)
-    "sun",
-#endif
-#if defined(USE_OPENSL)
-    "opensl",
-#endif
 #if defined(USE_OSS)
     "oss",
-#endif
-#if defined(USE_AAUDIO)
-    "aaudio",
-#endif
-#if defined(USE_AUDIOTRACK)
-    "audiotrack",
-#endif
-#if defined(USE_KAI)
-    "kai",
 #endif
     NULL,
   };
@@ -398,6 +301,21 @@ cubeb_get_preferred_sample_rate(cubeb * context, uint32_t * rate)
   return context->ops->get_preferred_sample_rate(context, rate);
 }
 
+int
+cubeb_get_supported_input_processing_params(
+    cubeb * context, cubeb_input_processing_params * params)
+{
+  if (!context || !params) {
+    return CUBEB_ERROR_INVALID_PARAMETER;
+  }
+
+  if (!context->ops->get_supported_input_processing_params) {
+    return CUBEB_ERROR_NOT_SUPPORTED;
+  }
+
+  return context->ops->get_supported_input_processing_params(context, params);
+}
+
 void
 cubeb_destroy(cubeb * context)
 {
@@ -406,6 +324,8 @@ cubeb_destroy(cubeb * context)
   }
 
   context->ops->destroy(context);
+
+  cubeb_set_log_callback(CUBEB_LOG_DISABLED, NULL);
 }
 
 int
@@ -553,6 +473,36 @@ cubeb_stream_get_current_device(cubeb_stream * stream,
   }
 
   return stream->context->ops->stream_get_current_device(stream, device);
+}
+
+int
+cubeb_stream_set_input_mute(cubeb_stream * stream, int mute)
+{
+  if (!stream) {
+    return CUBEB_ERROR_INVALID_PARAMETER;
+  }
+
+  if (!stream->context->ops->stream_set_input_mute) {
+    return CUBEB_ERROR_NOT_SUPPORTED;
+  }
+
+  return stream->context->ops->stream_set_input_mute(stream, mute);
+}
+
+int
+cubeb_stream_set_input_processing_params(cubeb_stream * stream,
+                                         cubeb_input_processing_params params)
+{
+  if (!stream) {
+    return CUBEB_ERROR_INVALID_PARAMETER;
+  }
+
+  if (!stream->context->ops->stream_set_input_processing_params) {
+    return CUBEB_ERROR_NOT_SUPPORTED;
+  }
+
+  return stream->context->ops->stream_set_input_processing_params(stream,
+                                                                  params);
 }
 
 int

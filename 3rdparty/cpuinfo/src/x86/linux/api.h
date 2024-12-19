@@ -5,9 +5,8 @@
 
 #include <cpuinfo.h>
 #include <cpuinfo/common.h>
-#include <x86/api.h>
 #include <linux/api.h>
-
+#include <x86/api.h>
 
 struct cpuinfo_x86_linux_processor {
 	uint32_t apic_id;

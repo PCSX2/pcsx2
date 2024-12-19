@@ -1,23 +1,11 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
-
-#include "SPU2/Global.h"
+#include "SPU2/Debug.h"
+#include "SPU2/regs.h"
 #include "Config.h"
 
+#include "common/Console.h"
 #include "common/FileSystem.h"
 
 #include <cstdarg>
@@ -82,10 +70,8 @@ void SPU2::ConLog(const char* fmt, ...)
 void V_VolumeSlide::DebugDump(FILE* dump, const char* title, const char* nameLR)
 {
 	fprintf(dump, "%s Volume for %s Channel:\t%x\n"
-				  "  - Value:     %x\n"
-				  "  - Mode:      %x\n"
-				  "  - Increment: %x\n",
-			title, nameLR, Reg_VOL, Value, Mode, Increment);
+				  "  - Value:     %x\n",
+			title, nameLR, Reg_VOL, Value);
 }
 
 void V_VolumeSlideLR::DebugDump(FILE* dump, const char* title)
@@ -176,25 +162,29 @@ void SPU2::DoFullDump()
 				Cores[c].Voices[v].Volume.DebugDump(dump, "");
 
 				fprintf(dump, "  - ADSR Envelope: %x & %x\n"
-							  "     - Ar: %x\n"
+							  "     - Ash: %x\n"
+							  "     - Ast: %x\n"
 							  "     - Am: %x\n"
-							  "     - Dr: %x\n"
+							  "     - Dsh: %x\n"
 							  "     - Sl: %x\n"
-							  "     - Sr: %x\n"
+							  "     - Ssh: %x\n"
+							  "     - Sst: %x\n"
 							  "     - Sm: %x\n"
-							  "     - Rr: %x\n"
+							  "     - Rsh: %x\n"
 							  "     - Rm: %x\n"
 							  "     - Phase: %x\n"
 							  "     - Value: %x\n",
 						Cores[c].Voices[v].ADSR.regADSR1,
 						Cores[c].Voices[v].ADSR.regADSR2,
-						Cores[c].Voices[v].ADSR.AttackRate,
+						Cores[c].Voices[v].ADSR.AttackShift,
+						Cores[c].Voices[v].ADSR.AttackStep,
 						Cores[c].Voices[v].ADSR.AttackMode,
-						Cores[c].Voices[v].ADSR.DecayRate,
+						Cores[c].Voices[v].ADSR.DecayShift,
 						Cores[c].Voices[v].ADSR.SustainLevel,
-						Cores[c].Voices[v].ADSR.SustainRate,
+						Cores[c].Voices[v].ADSR.SustainShift,
+						Cores[c].Voices[v].ADSR.SustainStep,
 						Cores[c].Voices[v].ADSR.SustainMode,
-						Cores[c].Voices[v].ADSR.ReleaseRate,
+						Cores[c].Voices[v].ADSR.ReleaseShift,
 						Cores[c].Voices[v].ADSR.ReleaseMode,
 						Cores[c].Voices[v].ADSR.Phase,
 						Cores[c].Voices[v].ADSR.Value);

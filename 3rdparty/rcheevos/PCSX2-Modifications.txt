@@ -1,0 +1,2 @@
+ - aes and 3DS functions in hash.c removed, due to potential legal issues.
+ - .github/test/validator directories removed, as they are unnecessary.

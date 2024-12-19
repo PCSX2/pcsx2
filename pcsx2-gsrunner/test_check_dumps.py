@@ -60,7 +60,7 @@ def compare_frames(path1, path2):
 def extract_stats(file):
     stats = {}
     try:
-        with open(file, "r") as f:
+        with open(file, "r", errors="ignore") as f:
             for line in f.readlines():
                 m = re.match(".*@HWSTAT@ ([^:]+): (.*) \(avg ([^)]+)\)$", line)
                 if m is None:
@@ -96,7 +96,7 @@ def check_regression_test(baselinedir, testdir, name):
         #print("*** %s is missing in test set" % name)
         return False
 
-    images = glob.glob(os.path.join(dir1, "*_frame*.png"))
+    images = glob.glob(os.path.join(glob.escape(dir1), "*_frame*.png"))
     diff_frames = []
     first_fail = True
     stats = compare_stats(dir1, dir2)

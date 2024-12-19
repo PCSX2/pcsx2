@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "GameListModel.h"
 #include "QtHost.h"
@@ -131,6 +117,7 @@ GameListModel::GameListModel(float cover_scale, bool show_cover_titles, QObject*
 	: QAbstractTableModel(parent)
 	, m_show_titles_for_covers(show_cover_titles)
 {
+	loadSettings();
 	loadCommonImages();
 	setCoverScale(cover_scale);
 	setColumnDisplayNames();
@@ -179,11 +166,11 @@ void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 	// while there's outstanding jobs, the old jobs won't proceed (at the wrong size), or get added into the grid.
 	const u32 counter = m_cover_scale_counter.load(std::memory_order_acquire);
 
-	QFuture<QPixmap> future = QtConcurrent::run([this, path = ge->path, title = ge->title, serial = ge->serial, counter]() -> QPixmap {
+	QFuture<QPixmap> future = QtConcurrent::run([this, entry = *ge, counter]() -> QPixmap {
 		QPixmap image;
 		if (m_cover_scale_counter.load(std::memory_order_acquire) == counter)
 		{
-			const std::string cover_path(GameList::GetCoverImagePath(path, serial, title));
+			const std::string cover_path(GameList::GetCoverImagePathForEntry(&entry));
 			if (!cover_path.empty())
 			{
 				const float dpr = qApp->devicePixelRatio();
@@ -195,6 +182,8 @@ void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 				}
 			}
 		}
+
+		const std::string& title = entry.GetTitle(m_prefer_english_titles);
 
 		if (image.isNull())
 			image = createPlaceholderImage(m_placeholder_pixmap, getCoverArtWidth(), getCoverArtHeight(), m_cover_scale, title);
@@ -270,6 +259,17 @@ int GameListModel::columnCount(const QModelIndex& parent) const
 	return Column_Count;
 }
 
+QString GameListModel::formatTimespan(time_t timespan)
+{
+	// avoid an extra string conversion
+	const u32 hours = static_cast<u32>(timespan / 3600);
+	const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
+	if (hours > 0)
+		return qApp->translate("GameList", "%n hours", "", hours);
+	else
+		return qApp->translate("GameList", "%n minutes", "", minutes);
+}
+
 QVariant GameListModel::data(const QModelIndex& index, int role) const
 {
 	if (!index.isValid())
@@ -294,7 +294,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 					return QString::fromStdString(ge->serial);
 
 				case Column_Title:
-					return QString::fromStdString(ge->title);
+					return QString::fromStdString(ge->GetTitle(m_prefer_english_titles));
 
 				case Column_FileTitle:
 					return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
@@ -307,7 +307,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 					if (ge->total_played_time == 0)
 						return {};
 					else
-						return QString::fromStdString(GameList::FormatTimespan(ge->total_played_time, true));
+						return formatTimespan(ge->total_played_time);
 				}
 
 				case Column_LastPlayed:
@@ -319,7 +319,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 				case Column_Cover:
 				{
 					if (m_show_titles_for_covers)
-						return QString::fromStdString(ge->title);
+						return QString::fromStdString(ge->GetTitle(m_prefer_english_titles));
 					else
 						return {};
 				}
@@ -341,7 +341,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
 				case Column_Title:
 				case Column_Cover:
-					return QString::fromStdString(ge->title);
+					return QString::fromStdString(ge->GetTitleSort(m_prefer_english_titles));
 
 				case Column_FileTitle:
 					return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
@@ -425,6 +425,7 @@ QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int
 void GameListModel::refresh()
 {
 	beginResetModel();
+	loadSettings();
 	endResetModel();
 }
 
@@ -438,7 +439,8 @@ bool GameListModel::titlesLessThan(int left_row, int right_row) const
 
 	const GameList::Entry* left = GameList::GetEntryByIndex(left_row);
 	const GameList::Entry* right = GameList::GetEntryByIndex(right_row);
-	return (StringUtil::Strcasecmp(left->title.c_str(), right->title.c_str()) < 0);
+	return QtHost::LocaleSensitiveCompare(QString::fromStdString(left->GetTitleSort(m_prefer_english_titles)),
+	                                      QString::fromStdString(right->GetTitleSort(m_prefer_english_titles))) < 0;
 }
 
 bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const
@@ -543,6 +545,11 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 		default:
 			return false;
 	}
+}
+
+void GameListModel::loadSettings()
+{
+	m_prefer_english_titles = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
 }
 
 QIcon GameListModel::getIconForType(GameList::EntryType type)

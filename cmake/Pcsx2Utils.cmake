@@ -1,155 +1,142 @@
-#-------------------------------------------------------------------------------
-#                       detectOperatingSystem
-#-------------------------------------------------------------------------------
-# This function detects on which OS cmake is run and set a flag to control the
-# build process. Supported OS: Linux, MacOSX, Windows
-# 
-# On linux, it also set a flag for specific distribution (ie Fedora)
-#-------------------------------------------------------------------------------
-function(detectOperatingSystem)
+function(detect_operating_system)
+	message(STATUS "CMake Version: ${CMAKE_VERSION}")
+	message(STATUS "CMake System Name: ${CMAKE_SYSTEM_NAME}")
+
+	# LINUX wasn't added until CMake 3.25.
+	if (CMAKE_VERSION VERSION_LESS 3.25.0 AND CMAKE_SYSTEM_NAME MATCHES "Linux")
+		# Have to make it visible in this scope as well for below.
+		set(LINUX TRUE PARENT_SCOPE)
+		set(LINUX TRUE)
+	endif()
+
 	if(WIN32)
-		set(Windows TRUE PARENT_SCOPE)
-	elseif(UNIX AND APPLE)
-		if(IOS)
-			message(WARNING "iOS isn't supported, the build will most likely fail")
-		endif()
-		set(MacOSX TRUE PARENT_SCOPE)
-	elseif(UNIX)
-		if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-			set(Linux TRUE PARENT_SCOPE)
-			if (EXISTS /etc/os-release)
-				# Read the file without CR character
-				file(STRINGS /etc/os-release OS_RELEASE)
-				if("${OS_RELEASE}" MATCHES "^.*ID=fedora.*$")
-					set(Fedora TRUE PARENT_SCOPE)
-					message(STATUS "Build Fedora specific")
-				elseif("${OS_RELEASE}" MATCHES "^.*ID=.*suse.*$")
-					set(openSUSE TRUE PARENT_SCOPE)
-					message(STATUS "Build openSUSE specific")
-				endif()
-			endif()
-		elseif(CMAKE_SYSTEM_NAME MATCHES "kFreeBSD")
-			set(kFreeBSD TRUE PARENT_SCOPE)
-		elseif(CMAKE_SYSTEM_NAME STREQUAL "GNU")
-			set(GNU TRUE PARENT_SCOPE)
-		endif()
+		message(STATUS "Building for Windows.")
+	elseif(APPLE AND NOT IOS)
+		message(STATUS "Building for MacOS.")
+	elseif(LINUX)
+		message(STATUS "Building for Linux.")
+	elseif(BSD)
+		message(STATUS "Building for *BSD.")
+	else()
+		message(FATAL_ERROR "Unsupported platform.")
+	endif()
+endfunction()
+
+function(detect_compiler)
+	if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+		set(USE_CLANG_CL TRUE PARENT_SCOPE)
+		set(IS_SUPPORTED_COMPILER TRUE PARENT_SCOPE)
+		message(STATUS "Building with Clang-CL.")
+	elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+		set(USE_CLANG TRUE PARENT_SCOPE)
+		set(IS_SUPPORTED_COMPILER TRUE PARENT_SCOPE)
+		message(STATUS "Building with Clang/LLVM.")
+	elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		set(USE_GCC TRUE PARENT_SCOPE)
+		set(IS_SUPPORTED_COMPILER FALSE PARENT_SCOPE)
+		message(STATUS "Building with GNU GCC.")
+	elseif(MSVC)
+		set(IS_SUPPORTED_COMPILER TRUE PARENT_SCOPE)
+		message(STATUS "Building with MSVC.")
+	else()
+		message(FATAL_ERROR "Unknown compiler: ${CMAKE_CXX_COMPILER_ID}")
 	endif()
 endfunction()
 
 function(get_git_version_info)
-	set(PCSX2_WC_TIME 0)
 	set(PCSX2_GIT_REV "")
 	set(PCSX2_GIT_TAG "")
 	set(PCSX2_GIT_HASH "")
 	if (GIT_FOUND AND EXISTS ${PROJECT_SOURCE_DIR}/.git)
-		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} show -s --format=%ci HEAD
-			OUTPUT_VARIABLE PCSX2_WC_TIME
-			OUTPUT_STRIP_TRAILING_WHITESPACE)
-		# Output: "YYYY-MM-DD HH:MM:SS +HHMM" (last part is time zone, offset from UTC)
-		string(REGEX REPLACE "[%:\\-]" "" PCSX2_WC_TIME "${PCSX2_WC_TIME}")
-		string(REGEX REPLACE "([0-9]+) ([0-9]+).*" "\\1\\2" PCSX2_WC_TIME "${PCSX2_WC_TIME}")
-
-		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} describe
+		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} describe --tags
 			OUTPUT_VARIABLE PCSX2_GIT_REV
 			OUTPUT_STRIP_TRAILING_WHITESPACE
 			ERROR_QUIET)
 
-		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} tag --points-at HEAD
-			OUTPUT_VARIABLE PCSX2_GIT_TAG
+		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} tag --points-at HEAD --sort=version:refname
+			OUTPUT_VARIABLE PCSX2_GIT_TAG_LIST
+			RESULT_VARIABLE TAG_RESULT
 			OUTPUT_STRIP_TRAILING_WHITESPACE
 			ERROR_QUIET)
+
+		# CAUTION: There is a race here, this solves the problem of a commit being tagged multiple times (take the last tag)
+		# however, if simultaneous builds are pushing tags to the same commit you might get inconsistent results (it's a race)
+		#
+		# The easy solution is, don't do that, but just something to be aware of.
+		if(PCSX2_GIT_TAG_LIST AND TAG_RESULT EQUAL 0)
+			string(REPLACE "\n" ";" PCSX2_GIT_TAG_LIST "${PCSX2_GIT_TAG_LIST}")
+			if (PCSX2_GIT_TAG_LIST)
+				list(GET PCSX2_GIT_TAG_LIST -1 PCSX2_GIT_TAG)
+				message("Using tag: ${PCSX2_GIT_TAG}")
+			endif()
+		endif()
 
 		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
 			OUTPUT_VARIABLE PCSX2_GIT_HASH
 			OUTPUT_STRIP_TRAILING_WHITESPACE
 			ERROR_QUIET)
+
+		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} log -1 --format=%cd --date=local
+			OUTPUT_VARIABLE PCSX2_GIT_DATE
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			ERROR_QUIET)
 	endif()
-	if ("${PCSX2_GIT_TAG}" MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
-		string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" PCSX2_VERSION_LONG  "${PCSX2_GIT_TAG}")
-		string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" PCSX2_VERSION_SHORT "${PCSX2_GIT_TAG}")
-	elseif(PCSX2_GIT_REV)
-		set(PCSX2_VERSION_LONG "${PCSX2_GIT_REV}")
-		string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?(-[a-z][a-z0-9]+)?" PCSX2_VERSION_SHORT "${PCSX2_VERSION_LONG}")
-	else()
-		set(PCSX2_VERSION_LONG "Unknown (git unavailable)")
-		set(PCSX2_VERSION_SHORT "Unknown")
-	endif()
-	if ("${PCSX2_WC_TIME}" STREQUAL "")
-		set(PCSX2_WC_TIME 0)
+	if (NOT PCSX2_GIT_REV)
+		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+			OUTPUT_VARIABLE PCSX2_GIT_REV
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			ERROR_QUIET)
+		if (NOT PCSX2_GIT_REV)
+			set(PCSX2_GIT_REV "Unknown")
+		endif()
 	endif()
 
-	set(PCSX2_WC_TIME "${PCSX2_WC_TIME}" PARENT_SCOPE)
 	set(PCSX2_GIT_REV "${PCSX2_GIT_REV}" PARENT_SCOPE)
 	set(PCSX2_GIT_TAG "${PCSX2_GIT_TAG}" PARENT_SCOPE)
 	set(PCSX2_GIT_HASH "${PCSX2_GIT_HASH}" PARENT_SCOPE)
-	set(PCSX2_VERSION_LONG "${PCSX2_VERSION_LONG}" PARENT_SCOPE)
-	set(PCSX2_VERSION_SHORT "${PCSX2_VERSION_SHORT}" PARENT_SCOPE)
+	set(PCSX2_GIT_DATE "${PCSX2_GIT_DATE}" PARENT_SCOPE)
 endfunction()
 
 function(write_svnrev_h)
-	if(PCSX2_GIT_TAG)
-		if ("${PCSX2_GIT_TAG}" MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
-			file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h
-				"#define SVN_REV ${PCSX2_WC_TIME}ll\n"
-				"#define GIT_TAG \"${PCSX2_GIT_TAG}\"\n"
-				"#define GIT_TAGGED_COMMIT 1\n"
-				"#define GIT_TAG_HI  ${CMAKE_MATCH_1}\n"
-				"#define GIT_TAG_MID ${CMAKE_MATCH_2}\n"
-				"#define GIT_TAG_LO  ${CMAKE_MATCH_3}\n"
-				"#define GIT_REV \"\"\n"
-				"#define GIT_HASH \"${PCSX2_GIT_HASH}\"\n"
-			)
-		else()
-			file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h
-				"#define SVN_REV ${PCSX2_WC_TIME}ll\n"
-				"#define GIT_TAG \"${PCSX2_GIT_TAG}\"\n"
-				"#define GIT_TAGGED_COMMIT 1\n"
-				"#define GIT_REV \"\"\n"
-				"#define GIT_HASH \"${PCSX2_GIT_HASH}\"\n"
-			)
-		endif()
-	else()
-		file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h 
-			"#define SVN_REV ${PCSX2_WC_TIME}ll\n"
+	if ("${PCSX2_GIT_TAG}" MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
+		file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h
+			"#define GIT_TAG \"${PCSX2_GIT_TAG}\"\n"
+			"#define GIT_TAGGED_COMMIT 1\n"
+			"#define GIT_TAG_HI  ${CMAKE_MATCH_1}\n"
+			"#define GIT_TAG_MID ${CMAKE_MATCH_2}\n"
+			"#define GIT_TAG_LO  ${CMAKE_MATCH_3}\n"
+			"#define GIT_REV \"${PCSX2_GIT_TAG}\"\n"
+			"#define GIT_HASH \"${PCSX2_GIT_HASH}\"\n"
+			"#define GIT_DATE \"${PCSX2_GIT_DATE}\"\n"
+		)
+	elseif ("${PCSX2_GIT_REV}" MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)")
+		file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h
 			"#define GIT_TAG \"${PCSX2_GIT_TAG}\"\n"
 			"#define GIT_TAGGED_COMMIT 0\n"
+			"#define GIT_TAG_HI  ${CMAKE_MATCH_1}\n"
+			"#define GIT_TAG_MID ${CMAKE_MATCH_2}\n"
+			"#define GIT_TAG_LO  ${CMAKE_MATCH_3}\n"
 			"#define GIT_REV \"${PCSX2_GIT_REV}\"\n"
 			"#define GIT_HASH \"${PCSX2_GIT_HASH}\"\n"
+			"#define GIT_DATE \"${PCSX2_GIT_DATE}\"\n"
 		)
-	endif()
-endfunction()
-
-function(check_compiler_version version_warn version_err)
-	if(CMAKE_COMPILER_IS_GNUCXX)
-		execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-		string(STRIP "${GCC_VERSION}" GCC_VERSION)
-		if(GCC_VERSION VERSION_LESS ${version_err})
-			message(FATAL_ERROR "PCSX2 doesn't support your old GCC ${GCC_VERSION}! Please upgrade it!
-
-			The minimum supported version is ${version_err} but ${version_warn} is warmly recommended")
-		else()
-			if(GCC_VERSION VERSION_LESS ${version_warn})
-				message(WARNING "PCSX2 will stop supporting GCC ${GCC_VERSION} in the near future. Please upgrade to at least GCC ${version_warn}.")
-			endif()
-		endif()
-
-		set(GCC_VERSION "${GCC_VERSION}" PARENT_SCOPE)
+	else()
+		file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h
+			"#define GIT_TAG \"${PCSX2_GIT_TAG}\"\n"
+			"#define GIT_TAGGED_COMMIT 0\n"
+			"#define GIT_TAG_HI 0\n"
+			"#define GIT_TAG_MID 0\n"
+			"#define GIT_TAG_LO 0\n"
+			"#define GIT_REV \"${PCSX2_GIT_REV}\"\n"
+			"#define GIT_HASH \"${PCSX2_GIT_HASH}\"\n"
+			"#define GIT_DATE \"${PCSX2_GIT_DATE}\"\n"
+		)
 	endif()
 endfunction()
 
 function(check_no_parenthesis_in_path)
 	if ("${CMAKE_BINARY_DIR}" MATCHES "[()]" OR "${CMAKE_SOURCE_DIR}" MATCHES "[()]")
 		message(FATAL_ERROR "Your path contains some parenthesis. Unfortunately Cmake doesn't support them correctly.\nPlease rename your directory to avoid '(' and ')' characters\n")
-	endif()
-endfunction()
-
-# Makes an imported target if it doesn't exist.  Useful for when find scripts from older versions of cmake don't make the targets you need
-function(make_imported_target_if_missing target lib)
-	if(${lib}_FOUND AND NOT TARGET ${target})
-		add_library(_${lib} INTERFACE)
-		target_link_libraries(_${lib} INTERFACE "${${lib}_LIBRARIES}")
-		target_include_directories(_${lib} INTERFACE "${${lib}_INCLUDE_DIRS}")
-		add_library(${target} ALIAS _${lib})
 	endif()
 endfunction()
 
@@ -162,25 +149,6 @@ function(alias_library new old)
 	endif()
 	add_library(${new} ALIAS _alias_${library_no_namespace})
 endfunction()
-
-# Helper macro to generate resources on linux (based on glib)
-macro(add_custom_glib_res out xml prefix)
-	set(RESOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/res")
-	set(RESOURCE_FILES "${ARGN}")
-	# Note: trying to combine --generate-source and --generate-header doesn't work.
-	# It outputs whichever one comes last into the file named by the first
-	add_custom_command(
-		OUTPUT ${out}.h
-		COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-header
-			--c-name ${prefix} "${RESOURCE_DIR}/${xml}" --target=${out}.h
-		DEPENDS res/${xml} ${RESOURCE_FILES})
-
-	add_custom_command(
-		OUTPUT ${out}.cpp
-		COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-source
-			--c-name ${prefix} "${RESOURCE_DIR}/${xml}" --target=${out}.cpp
-		DEPENDS res/${xml} ${RESOURCE_FILES})
-endmacro()
 
 function(source_groups_from_vcxproj_filters file)
 	file(READ "${file}" filecontent)
@@ -197,6 +165,36 @@ function(source_groups_from_vcxproj_filters file)
 	endforeach()
 endfunction()
 
+# Extracts a translation with the given type ("source" or "translation") from the given category of the given ts file
+# (If there's multiple strings under the same category, which one it extracts is implementation defined.  Just don't do it.)
+function(extract_translation_from_ts file type category output)
+	file(READ "${file}" filecontent)
+	# Don't you love it when the best parser your language has to offer is regex?
+	set(regex_search "(<[^\\/>]+>[^<>]+<\\/[^>\\/]+>|<\\/?context>)")
+	set(regex_extract "<[^\\/>]+>([^<>]+)<\\/([^>\\/]+)>")
+	string(REGEX MATCHALL "${regex_search}" pieces "${filecontent}")
+	foreach(piece IN LISTS pieces)
+		if (piece STREQUAL "<context>")
+			set(found "")
+			set(name_match FALSE)
+		elseif (piece STREQUAL "</context>")
+			if (name_match)
+				set(${output} "${found}" PARENT_SCOPE)
+				break()
+			endif()
+		else()
+			string(REGEX REPLACE "${regex_extract}" "\\1" content "${piece}")
+			string(REGEX REPLACE "${regex_extract}" "\\2" tag "${piece}")
+			if (tag STREQUAL "name" AND content STREQUAL "${category}")
+				set(name_match TRUE)
+			endif()
+			if (tag STREQUAL "${type}")
+				set(found "${content}")
+			endif()
+		endif()
+	endforeach()
+endfunction()
+
 function(fixup_file_properties target)
 	get_target_property(SOURCES ${target} SOURCES)
 	if(APPLE)
@@ -204,6 +202,9 @@ function(fixup_file_properties target)
 			# Set the right file types for .inl files in Xcode
 			if("${source}" MATCHES "\\.(inl|h)$")
 				set_source_files_properties("${source}" PROPERTIES XCODE_EXPLICIT_FILE_TYPE sourcecode.cpp.h)
+			endif()
+			if("${source}" MATCHES "\\.(qm)$")
+				set_source_files_properties("${source}" PROPERTIES XCODE_EXPLICIT_FILE_TYPE compiled)
 			endif()
 			# CMake makefile and ninja generators will attempt to share one PCH for both cpp and mm files
 			# That's not actually OK
@@ -220,4 +221,124 @@ function(disable_compiler_warnings_for_target target)
 	else()
 		target_compile_options(${target} PRIVATE "-w")
 	endif()
+endfunction()
+
+function(detect_page_size)
+	message(STATUS "Determining host page size")
+	set(detect_page_size_file ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.c)
+	file(WRITE ${detect_page_size_file} "
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+int main() {
+	int res = sysconf(_SC_PAGESIZE);
+	printf(\"%d\", res);
+	return (res > 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+}")
+	try_run(
+		detect_page_size_run_result
+		detect_page_size_compile_result
+		${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}
+		${detect_page_size_file}
+		RUN_OUTPUT_VARIABLE detect_page_size_output)
+	if(NOT detect_page_size_compile_result OR NOT detect_page_size_run_result EQUAL 0 OR CMAKE_CROSSCOMPILING)
+		message(FATAL_ERROR "Could not determine host page size.")
+	else()
+		message(STATUS "Host page size: ${detect_page_size_output}")
+		set(HOST_PAGE_SIZE ${detect_page_size_output} CACHE STRING "Reported host page size")
+	endif()
+endfunction()
+
+function(detect_cache_line_size)
+	message(STATUS "Determining host cache line size")
+	set(detect_cache_line_size_file ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.c)
+	file(WRITE ${detect_cache_line_size_file} "
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+int main() {
+	int l1i = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
+	int l1d = sysconf(_SC_LEVEL1_ICACHE_LINESIZE);
+	int res = (l1i > l1d) ? l1i : l1d;
+	for (int index = 0; index < 16; index++) {
+		char buf[128];
+		snprintf(buf, sizeof(buf), \"/sys/devices/system/cpu/cpu0/cache/index%d/coherency_line_size\", index);
+		FILE* fp = fopen(buf, \"rb\");
+		if (!fp)
+			break;
+		fread(buf, sizeof(buf), 1, fp);
+		fclose(fp);
+		int val = atoi(buf);
+		res = (val > res) ? val : res;
+	}
+	printf(\"%d\", res);
+	return (res > 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+}")
+	try_run(
+		detect_cache_line_size_run_result
+		detect_cache_line_size_compile_result
+		${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}
+		${detect_cache_line_size_file}
+		RUN_OUTPUT_VARIABLE detect_cache_line_size_output)
+	if(NOT detect_cache_line_size_compile_result OR NOT detect_cache_line_size_run_result EQUAL 0 OR CMAKE_CROSSCOMPILING)
+		message(FATAL_ERROR "Could not determine host cache line size.")
+	else()
+		message(STATUS "Host cache line size: ${detect_cache_line_size_output}")
+		set(HOST_CACHE_LINE_SIZE ${detect_cache_line_size_output} CACHE STRING "Reported host cache line size")
+	endif()
+endfunction()
+
+function(get_recursive_include_directories output target inc_prop link_prop)
+	get_target_property(dirs ${target} ${inc_prop})
+	if(NOT dirs)
+		set(dirs)
+	endif()
+	get_target_property(deps ${target} ${link_prop})
+	if(deps)
+		foreach(dep IN LISTS deps)
+			if(TARGET ${dep})
+				get_recursive_include_directories(depdirs ${dep} INTERFACE_INCLUDE_DIRECTORIES INTERFACE_LINK_LIBRARIES)
+				foreach(depdir IN LISTS depdirs)
+					# Only match absolute paths
+					# We'll hope any non-absolute paths will not get set as system directories
+					if(depdir MATCHES "^/")
+						list(APPEND dirs ${depdir})
+					endif()
+				endforeach()
+			endif()
+		endforeach()
+		list(REMOVE_DUPLICATES dirs)
+	endif()
+	set(${output} "${dirs}" PARENT_SCOPE)
+endfunction()
+
+function(force_include_last_impl target include inc_prop link_prop)
+	get_recursive_include_directories(dirs ${target} ${inc_prop} ${link_prop})
+	set(remove)
+	foreach(dir IN LISTS dirs)
+		if("${dir}" MATCHES "${include}")
+			list(APPEND remove ${dir})
+		endif()
+	endforeach()
+	if(NOT "${remove}" STREQUAL "")
+		get_target_property(sysdirs ${target} INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
+		if(NOT sysdirs)
+			set(sysdirs)
+		endif()
+		# Move matching items to the end
+		list(REMOVE_ITEM dirs ${remove})
+		list(APPEND dirs ${remove})
+		# Set them as system include directories
+		list(APPEND sysdirs ${remove})
+		list(REMOVE_DUPLICATES sysdirs)
+		set_target_properties(${target} PROPERTIES
+			${inc_prop} "${dirs}"
+			INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sysdirs}"
+		)
+	endif()
+endfunction()
+
+function(force_include_last target include)
+	force_include_last_impl(${target} "${include}" INTERFACE_INCLUDE_DIRECTORIES INTERFACE_LINK_LIBRARIES)
+	force_include_last_impl(${target} "${include}" INCLUDE_DIRECTORIES LINK_LIBRARIES)
 endfunction()

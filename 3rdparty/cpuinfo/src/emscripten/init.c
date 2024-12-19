@@ -1,8 +1,8 @@
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 #include <emscripten/threading.h>
 
@@ -10,10 +10,9 @@
 #include <cpuinfo/internal-api.h>
 #include <cpuinfo/log.h>
 
-
 static const volatile float infinity = INFINITY;
 
-static struct cpuinfo_package static_package = { };
+static struct cpuinfo_package static_package = {};
 
 static struct cpuinfo_cache static_x86_l3 = {
 	.size = 2 * 1024 * 1024,
@@ -37,7 +36,7 @@ void cpuinfo_emscripten_init(void) {
 	if (logical_cores_count <= 0) {
 		logical_cores_count = 1;
 	}
-	uint32_t processor_count = (uint32_t) logical_cores_count;
+	uint32_t processor_count = (uint32_t)logical_cores_count;
 	uint32_t core_count = processor_count;
 	uint32_t cluster_count = 1;
 	uint32_t big_cluster_core_count = core_count;
@@ -60,41 +59,53 @@ void cpuinfo_emscripten_init(void) {
 
 	processors = calloc(processor_count, sizeof(struct cpuinfo_processor));
 	if (processors == NULL) {
-		cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" logical processors",
-			processor_count * sizeof(struct cpuinfo_processor), processor_count);
+		cpuinfo_log_error(
+			"failed to allocate %zu bytes for descriptions of %" PRIu32 " logical processors",
+			processor_count * sizeof(struct cpuinfo_processor),
+			processor_count);
 		goto cleanup;
 	}
 	cores = calloc(processor_count, sizeof(struct cpuinfo_core));
 	if (cores == NULL) {
-		cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" cores",
-			processor_count * sizeof(struct cpuinfo_core), processor_count);
+		cpuinfo_log_error(
+			"failed to allocate %zu bytes for descriptions of %" PRIu32 " cores",
+			processor_count * sizeof(struct cpuinfo_core),
+			processor_count);
 		goto cleanup;
 	}
 	clusters = calloc(cluster_count, sizeof(struct cpuinfo_cluster));
 	if (clusters == NULL) {
-		cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" clusters",
-			cluster_count * sizeof(struct cpuinfo_cluster), cluster_count);
+		cpuinfo_log_error(
+			"failed to allocate %zu bytes for descriptions of %" PRIu32 " clusters",
+			cluster_count * sizeof(struct cpuinfo_cluster),
+			cluster_count);
 		goto cleanup;
 	}
 
 	l1i = calloc(core_count, sizeof(struct cpuinfo_cache));
 	if (l1i == NULL) {
-		cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" L1I caches",
-			core_count * sizeof(struct cpuinfo_cache), core_count);
+		cpuinfo_log_error(
+			"failed to allocate %zu bytes for descriptions of %" PRIu32 " L1I caches",
+			core_count * sizeof(struct cpuinfo_cache),
+			core_count);
 		goto cleanup;
 	}
 
 	l1d = calloc(core_count, sizeof(struct cpuinfo_cache));
 	if (l1d == NULL) {
-		cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" L1D caches",
-			core_count * sizeof(struct cpuinfo_cache), core_count);
+		cpuinfo_log_error(
+			"failed to allocate %zu bytes for descriptions of %" PRIu32 " L1D caches",
+			core_count * sizeof(struct cpuinfo_cache),
+			core_count);
 		goto cleanup;
 	}
 
 	l2 = calloc(l2_count, sizeof(struct cpuinfo_cache));
 	if (l2 == NULL) {
-		cpuinfo_log_error("failed to allocate %zu bytes for descriptions of %"PRIu32" L2 caches",
-			l2_count * sizeof(struct cpuinfo_cache), l2_count);
+		cpuinfo_log_error(
+			"failed to allocate %zu bytes for descriptions of %" PRIu32 " L2 caches",
+			l2_count * sizeof(struct cpuinfo_cache),
+			l2_count);
 		goto cleanup;
 	}
 
@@ -109,30 +120,30 @@ void cpuinfo_emscripten_init(void) {
 
 	for (uint32_t i = 0; i < core_count; i++) {
 		for (uint32_t j = 0; j < processors_per_core; j++) {
-			processors[i * processors_per_core + j] = (struct cpuinfo_processor) {
+			processors[i * processors_per_core + j] = (struct cpuinfo_processor){
 				.smt_id = j,
 				.core = cores + i,
-				.cluster = clusters + (uint32_t) (i >= big_cluster_core_count),
+				.cluster = clusters + (uint32_t)(i >= big_cluster_core_count),
 				.package = &static_package,
 				.cache.l1i = l1i + i,
 				.cache.l1d = l1d + i,
-				.cache.l2 = is_x86 ? l2 + i : l2 + (uint32_t) (i >= big_cluster_core_count),
+				.cache.l2 = is_x86 ? l2 + i : l2 + (uint32_t)(i >= big_cluster_core_count),
 				.cache.l3 = is_x86 ? &static_x86_l3 : NULL,
 			};
 		}
 
-		cores[i] = (struct cpuinfo_core) {
+		cores[i] = (struct cpuinfo_core){
 			.processor_start = i * processors_per_core,
 			.processor_count = processors_per_core,
 			.core_id = i,
-			.cluster = clusters + (uint32_t) (i >= big_cluster_core_count),
+			.cluster = clusters + (uint32_t)(i >= big_cluster_core_count),
 			.package = &static_package,
 			.vendor = cpuinfo_vendor_unknown,
 			.uarch = cpuinfo_uarch_unknown,
 			.frequency = 0,
 		};
 
-		l1i[i] = (struct cpuinfo_cache) {
+		l1i[i] = (struct cpuinfo_cache){
 			.size = 32 * 1024,
 			.associativity = 4,
 			.sets = 128,
@@ -142,7 +153,7 @@ void cpuinfo_emscripten_init(void) {
 			.processor_count = processors_per_core,
 		};
 
-		l1d[i] = (struct cpuinfo_cache) {
+		l1d[i] = (struct cpuinfo_cache){
 			.size = 32 * 1024,
 			.associativity = 4,
 			.sets = 128,
@@ -153,7 +164,7 @@ void cpuinfo_emscripten_init(void) {
 		};
 
 		if (is_x86) {
-			l2[i] = (struct cpuinfo_cache) {
+			l2[i] = (struct cpuinfo_cache){
 				.size = 256 * 1024,
 				.associativity = 8,
 				.sets = 512,
@@ -166,7 +177,7 @@ void cpuinfo_emscripten_init(void) {
 	}
 
 	if (is_x86) {
-		clusters[0] = (struct cpuinfo_cluster) {
+		clusters[0] = (struct cpuinfo_cluster){
 			.processor_start = 0,
 			.processor_count = processor_count,
 			.core_start = 0,
@@ -180,7 +191,7 @@ void cpuinfo_emscripten_init(void) {
 
 		static_x86_l3.processor_count = processor_count;
 	} else {
-		clusters[0] = (struct cpuinfo_cluster) {
+		clusters[0] = (struct cpuinfo_cluster){
 			.processor_start = 0,
 			.processor_count = big_cluster_core_count,
 			.core_start = 0,
@@ -192,7 +203,7 @@ void cpuinfo_emscripten_init(void) {
 			.frequency = 0,
 		};
 
-		l2[0] = (struct cpuinfo_cache) {
+		l2[0] = (struct cpuinfo_cache){
 			.size = 1024 * 1024,
 			.associativity = 8,
 			.sets = 2048,
@@ -203,7 +214,7 @@ void cpuinfo_emscripten_init(void) {
 		};
 
 		if (cluster_count > 1) {
-			l2[1] = (struct cpuinfo_cache) {
+			l2[1] = (struct cpuinfo_cache){
 				.size = 256 * 1024,
 				.associativity = 8,
 				.sets = 512,
@@ -213,7 +224,7 @@ void cpuinfo_emscripten_init(void) {
 				.processor_count = processor_count - big_cluster_core_count,
 			};
 
-			clusters[1] = (struct cpuinfo_cluster) {
+			clusters[1] = (struct cpuinfo_cluster){
 				.processor_start = big_cluster_core_count,
 				.processor_count = processor_count - big_cluster_core_count,
 				.core_start = big_cluster_core_count,
@@ -230,9 +241,9 @@ void cpuinfo_emscripten_init(void) {
 	/* Commit changes */
 	cpuinfo_cache[cpuinfo_cache_level_1i] = l1i;
 	cpuinfo_cache[cpuinfo_cache_level_1d] = l1d;
-	cpuinfo_cache[cpuinfo_cache_level_2]  = l2;
+	cpuinfo_cache[cpuinfo_cache_level_2] = l2;
 	if (is_x86) {
-		cpuinfo_cache[cpuinfo_cache_level_3]  = &static_x86_l3;
+		cpuinfo_cache[cpuinfo_cache_level_3] = &static_x86_l3;
 	}
 
 	cpuinfo_processors = processors;
@@ -242,12 +253,12 @@ void cpuinfo_emscripten_init(void) {
 
 	cpuinfo_cache_count[cpuinfo_cache_level_1i] = processor_count;
 	cpuinfo_cache_count[cpuinfo_cache_level_1d] = processor_count;
-	cpuinfo_cache_count[cpuinfo_cache_level_2]  = l2_count;
+	cpuinfo_cache_count[cpuinfo_cache_level_2] = l2_count;
 	if (is_x86) {
-		cpuinfo_cache_count[cpuinfo_cache_level_3]  = 1;
+		cpuinfo_cache_count[cpuinfo_cache_level_3] = 1;
 	}
 
-	cpuinfo_global_uarch = (struct cpuinfo_uarch_info) {
+	cpuinfo_global_uarch = (struct cpuinfo_uarch_info){
 		.uarch = cpuinfo_uarch_unknown,
 		.processor_count = processor_count,
 		.core_count = core_count,

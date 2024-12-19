@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -25,16 +13,18 @@ class GSTexture;
 
 class alignas(32) GSClut final : public GSAlignedClass<32>
 {
+	static constexpr u32 CLUT_ALLOC_SIZE = 4096 * 2;
+
 	static const GSVector4i m_bm;
 	static const GSVector4i m_gm;
 	static const GSVector4i m_rm;
 
 	GSLocalMemory* m_mem;
 
-	u32 m_CBP[2];
-	u16* m_clut;
-	u32* m_buff32;
-	u64* m_buff64;
+	u32 m_CBP[2] = {};
+	u16* m_clut = nullptr;
+	u32* m_buff32 = nullptr;
+	u64* m_buff64 = nullptr;
 
 	struct alignas(32) WriteState
 	{
@@ -43,7 +33,7 @@ class alignas(32) GSClut final : public GSAlignedClass<32>
 		u8 dirty;
 		u64 next_tex0;
 		bool IsDirty(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
-	} m_write;
+	} m_write = {};
 
 	struct alignas(32) ReadState
 	{
@@ -54,7 +44,7 @@ class alignas(32) GSClut final : public GSAlignedClass<32>
 		int amin, amax;
 		bool IsDirty(const GIFRegTEX0& TEX0);
 		bool IsDirty(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
-	} m_read;
+	} m_read = {};
 
 	GSTexture* m_gpu_clut4 = nullptr;
 	GSTexture* m_gpu_clut8 = nullptr;
@@ -108,12 +98,14 @@ public:
 
 	__fi GSTexture* GetGPUTexture() const { return m_current_gpu_clut; }
 
+	void Reset();
 	bool InvalidateRange(u32 start_block, u32 end_block, bool is_draw = false);
 	u8 IsInvalid();
 	void ClearDrawInvalidity();
 	u32 GetCLUTCBP();
 	u32 GetCLUTCPSM();
 	void SetNextCLUTTEX0(u64 CBP);
+	bool CanLoadCLUT(const GIFRegTEX0& TEX0, const bool update_CBP = false);
 	bool WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	void Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	//void Read(const GIFRegTEX0& TEX0);

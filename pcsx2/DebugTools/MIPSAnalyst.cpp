@@ -1,28 +1,13 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "MIPSAnalyst.h"
+#include "common/StringUtil.h"
 #include "Debug.h"
 #include "DebugInterface.h"
-#include "SymbolMap.h"
 #include "DebugInterface.h"
 #include "R5900.h"
 #include "R5900OpcodeTables.h"
-
-static std::vector<MIPSAnalyst::AnalyzedFunction> functions;
 
 #define MIPS_MAKE_J(addr)   (0x08000000 | ((addr)>>2))
 #define MIPS_MAKE_JAL(addr) (0x0C000000 | ((addr)>>2))
@@ -39,9 +24,9 @@ static std::vector<MIPSAnalyst::AnalyzedFunction> functions;
 
 namespace MIPSAnalyst
 {
-	u32 GetJumpTarget(u32 addr)
+	u32 GetJumpTarget(u32 addr, MemoryReader& reader)
 	{
-		u32 op = r5900Debug.read32(addr);
+		u32 op = reader.read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		if ((opcode.flags & IS_BRANCH) && (opcode.flags & BRANCHTYPE_MASK) == BRANCHTYPE_JUMP)
@@ -53,9 +38,9 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	u32 GetBranchTarget(u32 addr)
+	u32 GetBranchTarget(u32 addr, MemoryReader& reader)
 	{
-		u32 op = r5900Debug.read32(addr);
+		u32 op = reader.read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		int branchType = (opcode.flags & BRANCHTYPE_MASK);
@@ -65,9 +50,9 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	u32 GetBranchTargetNoRA(u32 addr)
+	u32 GetBranchTargetNoRA(u32 addr, MemoryReader& reader)
 	{
-		u32 op = r5900Debug.read32(addr);
+		u32 op = reader.read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		int branchType = (opcode.flags & BRANCHTYPE_MASK);
@@ -82,9 +67,9 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	u32 GetSureBranchTarget(u32 addr)
+	u32 GetSureBranchTarget(u32 addr, MemoryReader& reader)
 	{
-		u32 op = r5900Debug.read32(addr);
+		u32 op = reader.read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		if ((opcode.flags & IS_BRANCH) && (opcode.flags & BRANCHTYPE_MASK) == BRANCHTYPE_BRANCH)
@@ -130,13 +115,7 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	static const char *DefaultFunctionName(char buffer[256], u32 startAddr) {
-		sprintf(buffer, "z_un_%08x", startAddr);
-		return buffer;
-	}
-
-
-	static u32 ScanAheadForJumpback(u32 fromAddr, u32 knownStart, u32 knownEnd) {
+	static u32 ScanAheadForJumpback(u32 fromAddr, u32 knownStart, u32 knownEnd, MemoryReader& reader) {
 		static const u32 MAX_AHEAD_SCAN = 0x1000;
 		// Maybe a bit high... just to make sure we don't get confused by recursive tail recursion.
 		static const u32 MAX_FUNC_SIZE = 0x20000;
@@ -155,10 +134,10 @@ namespace MIPSAnalyst
 		u32 furthestJumpbackAddr = INVALIDTARGET;
 
 		for (u32 ahead = fromAddr; ahead < fromAddr + MAX_AHEAD_SCAN; ahead += 4) {
-			u32 aheadOp = r5900Debug.read32(ahead);
-			u32 target = GetBranchTargetNoRA(ahead);
+			u32 aheadOp = reader.read32(ahead);
+			u32 target = GetBranchTargetNoRA(ahead, reader);
 			if (target == INVALIDTARGET && ((aheadOp & 0xFC000000) == 0x08000000)) {
-				target = GetJumpTarget(ahead);
+				target = GetJumpTarget(ahead, reader);
 			}
 
 			if (target != INVALIDTARGET) {
@@ -179,10 +158,10 @@ namespace MIPSAnalyst
 
 		if (closestJumpbackAddr != INVALIDTARGET && furthestJumpbackAddr == INVALIDTARGET) {
 			for (u32 behind = closestJumpbackTarget; behind < fromAddr; behind += 4) {
-				u32 behindOp = r5900Debug.read32(behind);
-				u32 target = GetBranchTargetNoRA(behind);
+				u32 behindOp = reader.read32(behind);
+				u32 target = GetBranchTargetNoRA(behind, reader);
 				if (target == INVALIDTARGET && ((behindOp & 0xFC000000) == 0x08000000)) {
-					target = GetJumpTarget(behind);
+					target = GetJumpTarget(behind, reader);
 				}
 
 				if (target != INVALIDTARGET) {
@@ -196,27 +175,24 @@ namespace MIPSAnalyst
 		return furthestJumpbackAddr;
 	}
 
-	void ScanForFunctions(SymbolMap& map, u32 startAddr, u32 endAddr, bool insertSymbols) {
+	void ScanForFunctions(ccc::SymbolDatabase& database, MemoryReader& reader, u32 startAddr, u32 endAddr, bool generateHashes) {
+		std::vector<MIPSAnalyst::AnalyzedFunction> functions;
 		AnalyzedFunction currentFunction = {startAddr};
 
 		u32 furthestBranch = 0;
 		bool looking = false;
 		bool end = false;
 		bool isStraightLeaf = true;
-
-		functions.clear();
+		bool suspectedNoReturn = false;
 
 		u32 addr;
 		for (addr = startAddr; addr <= endAddr; addr += 4) {
 			// Use pre-existing symbol map info if available. May be more reliable.
-			SymbolInfo syminfo;
-			if (map.GetSymbolInfo(&syminfo, addr, ST_FUNCTION)) {
-				addr = syminfo.address + syminfo.size - 4;
-
-				// We still need to insert the func for hashing purposes.
-				currentFunction.start = syminfo.address;
-				currentFunction.end = syminfo.address + syminfo.size - 4;
-				functions.push_back(currentFunction);
+			ccc::FunctionHandle existing_symbol_handle = database.functions.first_handle_from_starting_address(addr);
+			const ccc::Function* existing_symbol = database.functions.symbol_from_handle(existing_symbol_handle);
+			
+			if (existing_symbol && existing_symbol->address().valid() && existing_symbol->size() > 0) {
+				addr = existing_symbol->address().value + existing_symbol->size() - 4;
 				currentFunction.start = addr + 4;
 				furthestBranch = 0;
 				looking = false;
@@ -224,16 +200,26 @@ namespace MIPSAnalyst
 				continue;
 			}
 
-			u32 op = r5900Debug.read32(addr);
+			u32 op = reader.read32(addr);
 
-			u32 target = GetBranchTargetNoRA(addr);
+			u32 target = GetBranchTargetNoRA(addr, reader);
 			if (target != INVALIDTARGET) {
 				isStraightLeaf = false;
 				if (target > furthestBranch) {
 					furthestBranch = target;
 				}
+
+				// beq $zero, $zero, xyz
+				if ((op >> 16) == 0x1000)
+				{
+					// If it's backwards, and there's no other branch passing it, treat as noreturn
+					if(target < addr && furthestBranch < addr)
+					{
+						end = suspectedNoReturn = true;
+					}
+				}
 			} else if ((op & 0xFC000000) == 0x08000000) {
-				u32 sureTarget = GetJumpTarget(addr);
+				u32 sureTarget = GetJumpTarget(addr, reader);
 				// Check for a tail call.  Might not even have a jr ra.
 				if (sureTarget != INVALIDTARGET && sureTarget < currentFunction.start) {
 					if (furthestBranch > addr) {
@@ -245,7 +231,7 @@ namespace MIPSAnalyst
 				} else if (sureTarget != INVALIDTARGET && sureTarget > addr && sureTarget > furthestBranch) {
 					// A jump later.  Probably tail, but let's check if it jumps back.
 					u32 knownEnd = furthestBranch == 0 ? addr : furthestBranch;
-					u32 jumpback = ScanAheadForJumpback(sureTarget, currentFunction.start, knownEnd);
+					u32 jumpback = ScanAheadForJumpback(sureTarget, currentFunction.start, knownEnd, reader);
 					if (jumpback != INVALIDTARGET && jumpback > addr && jumpback > knownEnd) {
 						furthestBranch = jumpback;
 					} else {
@@ -271,10 +257,10 @@ namespace MIPSAnalyst
 
 			if (looking) {
 				if (addr >= furthestBranch) {
-					u32 sureTarget = GetSureBranchTarget(addr);
+					u32 sureTarget = GetSureBranchTarget(addr, reader);
 					// Regular j only, jals are to new funcs.
 					if (sureTarget == INVALIDTARGET && ((op & 0xFC000000) == 0x08000000)) {
-						sureTarget = GetJumpTarget(addr);
+						sureTarget = GetJumpTarget(addr, reader);
 					}
 
 					if (sureTarget != INVALIDTARGET && sureTarget < addr) {
@@ -283,7 +269,7 @@ namespace MIPSAnalyst
 						// Okay, we have a downward jump.  Might be an else or a tail call...
 						// If there's a jump back upward in spitting distance of it, it's an else.
 						u32 knownEnd = furthestBranch == 0 ? addr : furthestBranch;
-						u32 jumpback = ScanAheadForJumpback(sureTarget, currentFunction.start, knownEnd);
+						u32 jumpback = ScanAheadForJumpback(sureTarget, currentFunction.start, knownEnd, reader);
 						if (jumpback != INVALIDTARGET && jumpback > addr && jumpback > knownEnd) {
 							furthestBranch = jumpback;
 						}
@@ -291,19 +277,29 @@ namespace MIPSAnalyst
 				}
 			}
 
+			// Prevent functions from being generated that overlap with existing
+			// symbols. This is mainly a problem with symbols from SNDLL symbol
+			// tables as they will have a size of zero.
+			ccc::FunctionHandle next_symbol_handle = database.functions.first_handle_from_starting_address(addr+8);
+			const ccc::Function* next_symbol = database.functions.symbol_from_handle(next_symbol_handle);
+			end |= next_symbol != nullptr;
+
 			if (end) {
-				// most functions are aligned to 8 or 16 bytes
-				// add the padding to this one
-				while (((addr+8) % 16)  && r5900Debug.read32(addr+8) == 0)
+				// Most functions are aligned to 8 or 16 bytes, so add padding
+				// to this one unless a symbol exists implying a new function
+				// follows immediately.
+				while (next_symbol == nullptr && ((addr+8) % 16) && reader.read32(addr+8) == 0)
 					addr += 4;
 
 				currentFunction.end = addr + 4;
 				currentFunction.isStraightLeaf = isStraightLeaf;
+				currentFunction.suspectedNoReturn = suspectedNoReturn;
 				functions.push_back(currentFunction);
 				furthestBranch = 0;
 				addr += 4;
 				looking = false;
 				end = false;
+				suspectedNoReturn = false;
 				isStraightLeaf = true;
 
 				currentFunction.start = addr+4;
@@ -312,13 +308,59 @@ namespace MIPSAnalyst
 
 		currentFunction.end = addr + 4;
 		functions.push_back(currentFunction);
+		
+		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("Function Scanner");
+		if (!source.success()) {
+			Console.Error("MIPSAnalyst: %s", source.error().message.c_str());
+			return;
+		}
 
-		for (auto iter = functions.begin(); iter != functions.end(); iter++) {
-			iter->size = iter->end - iter->start + 4;
-			if (insertSymbols) {
-				char temp[256];
-				map.AddFunction(DefaultFunctionName(temp, iter->start), iter->start, iter->end - iter->start + 4);
+		for (const AnalyzedFunction& function : functions) {
+			ccc::FunctionHandle handle = database.functions.first_handle_from_starting_address(function.start);
+			ccc::Function* symbol = database.functions.symbol_from_handle(handle);
+			bool generateHash = false;
+			
+			if (!symbol) {
+				std::string name;
+
+				// The SNDLL importer may create label symbols for functions if
+				// they're not in a section named ".text" since it can't
+				// otherwise distinguish between functions and globals.
+				for (auto [address, handle] : database.labels.handles_from_starting_address(function.start)) {
+					ccc::Label* label = database.labels.symbol_from_handle(handle);
+					if (label && !label->is_junk) {
+						name = label->name();
+						break;
+					}
+				}
+
+				if (name.empty()) {
+					name = StringUtil::StdStringFromFormat("z_un_%08x", function.start);
+				}
+
+				ccc::Result<ccc::Function*> symbol_result = database.functions.create_symbol(
+					std::move(name), function.start, *source, nullptr);
+				if (!symbol_result.success()) {
+					Console.Error("MIPSAnalyst: %s", symbol_result.error().message.c_str());
+					return;
+				}
+
+				symbol = *symbol_result;
+				generateHash = generateHashes;
 			}
+
+			if (symbol->size() == 0) {
+				symbol->set_size(function.end - function.start + 4);
+			}
+
+			if (generateHash) {
+				std::optional<ccc::FunctionHash> hash = SymbolGuardian::HashFunction(*symbol, reader);
+				if (hash.has_value()) {
+					symbol->set_original_hash(hash->get());
+				}
+			}
+
+			symbol->is_no_return = function.suspectedNoReturn;
 		}
 	}
 

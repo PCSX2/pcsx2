@@ -1,27 +1,16 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "SIO/Sio.h"
 
 #include "SIO/SioTypes.h"
 #include "SIO/Memcard/MemoryCardProtocol.h"
+#include "Counters.h"
 
 #include "Host.h"
-#include "IconsFontAwesome5.h"
+#include "IconsPromptFont.h"
+
+#include <atomic>
 
 _mcd mcds[2][4];
 _mcd *mcd;
@@ -91,17 +80,17 @@ void AutoEject::CountDownTicks()
 
 	if (reinserted)
 	{
-		Host::AddIconOSDMessage("AutoEjectAllSet", ICON_FA_SD_CARD,
+		Host::AddIconOSDMessage("AutoEjectAllSet", ICON_PF_MEMORY_CARD,
 			TRANSLATE_SV("MemoryCard", "Memory Cards reinserted."), Host::OSD_INFO_DURATION);
 	}
 }
 
 void AutoEject::Set(size_t port, size_t slot)
 {
-	if (EmuConfig.McdEnableEjection && mcds[port][slot].autoEjectTicks == 0)
+	if (mcds[port][slot].autoEjectTicks == 0)
 	{
-		mcds[port][slot].autoEjectTicks = 1; // 1 second is enough.
-		mcds[port][slot].term = 0x55; // Reset terminator to default (0x55), forces the PS2 to recheck the memcard.
+		mcds[port][slot].autoEjectTicks = 60; // 60 frames is enough.
+		mcds[port][slot].term = Terminator::NOT_READY; // Reset terminator to NOT_READY (0x66), forces the PS2 to recheck the memcard.
 	}
 }
 
@@ -112,7 +101,7 @@ void AutoEject::Clear(size_t port, size_t slot)
 
 void AutoEject::SetAll()
 {
-	Host::AddIconOSDMessage("AutoEjectAllSet", ICON_FA_SD_CARD,
+	Host::AddIconOSDMessage("AutoEjectAllSet", ICON_PF_MEMORY_CARD,
 		TRANSLATE_SV("MemoryCard", "Force ejecting all Memory Cards. Reinserting in 1 second."), Host::OSD_INFO_DURATION);
 
 	for (size_t port = 0; port < SIO::PORTS; port++)
@@ -132,5 +121,47 @@ void AutoEject::ClearAll()
 		{
 			AutoEject::Clear(port, slot);
 		}
+	}
+}
+
+// Decremented once per frame if nonzero, indicates how many more frames must pass before
+// memcards are considered "no longer being written to". Used as a way to detect if it is
+// unsafe to shutdown the VM due to memcard access.
+static std::atomic_uint32_t currentBusyTicks = 0;
+
+uint32_t sioLastFrameMcdBusy = 0;
+
+void MemcardBusy::Decrement()
+{
+	if (currentBusyTicks.load(std::memory_order_relaxed) == 0)
+		return;
+
+	currentBusyTicks.fetch_sub(1, std::memory_order_release);
+}
+
+void MemcardBusy::SetBusy()
+{
+	currentBusyTicks.store(300, std::memory_order_release);
+	sioLastFrameMcdBusy = g_FrameCount;
+}
+
+bool MemcardBusy::IsBusy()
+{
+	return (currentBusyTicks.load(std::memory_order_acquire) > 0);
+}
+
+void MemcardBusy::ClearBusy()
+{
+	currentBusyTicks.store(0, std::memory_order_release);
+	sioLastFrameMcdBusy = 0;
+}
+
+#include "common/Console.h"
+void MemcardBusy::CheckSaveStateDependency()
+{
+	if (g_FrameCount - sioLastFrameMcdBusy > NUM_FRAMES_BEFORE_SAVESTATE_DEPENDENCY_WARNING)
+	{
+		Host::AddIconOSDMessage("MemcardBusy", ICON_PF_MEMORY_CARD,
+			TRANSLATE_SV("MemoryCard", "The virtual console hasn't saved to your memory card for quite some time. Savestates should not be used in place of in-game saves."), Host::OSD_INFO_DURATION);
 	}
 }

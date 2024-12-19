@@ -1,6 +1,6 @@
 /*
   zip_get_archive_comment.c -- get archive comment
-  Copyright (C) 2006-2021 Dieter Baron and Thomas Klausner
+  Copyright (C) 2006-2022 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>

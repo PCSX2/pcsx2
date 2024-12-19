@@ -32,7 +32,7 @@ def run_regression_test(runner, dumpdir, renderer, upscale, renderhacks, paralle
 
     if upscale != 1.0:
         args.extend(["-upscale", str(upscale)])
-        
+
     if renderhacks is not None:
         args.extend(["-renderhacks", renderhacks])
 

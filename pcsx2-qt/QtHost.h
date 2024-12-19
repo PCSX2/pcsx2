@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -19,6 +7,8 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <string>
+#include <string_view>
 
 #include "pcsx2/Host.h"
 #include "pcsx2/Input/InputManager.h"
@@ -33,6 +23,8 @@
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 #include <QtCore/QThread>
+
+#include <QtGui/QIcon>
 
 class SettingsInterface;
 
@@ -69,9 +61,10 @@ public:
 	__fi bool isExclusiveFullscreen() const { return m_is_exclusive_fullscreen; }
 	__fi bool isRenderingToMain() const { return m_is_rendering_to_main; }
 	__fi bool isSurfaceless() const { return m_is_surfaceless; }
-	__fi bool isRunningFullscreenUI() const { return m_run_fullscreen_ui; }
+	__fi bool isRunningFullscreenUI() const { return m_run_fullscreen_ui.load(std::memory_order_acquire); }
 
-	bool isOnEmuThread() const;
+	__fi bool isOnEmuThread() const { return (QThread::currentThread() == this); }
+	__fi bool isOnUIThread() const { return (QThread::currentThread() == m_ui_thread); }
 	bool shouldRenderToMain() const;
 
 	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
@@ -104,7 +97,6 @@ public Q_SLOTS:
 	void reloadGameSettings();
 	void updateEmuFolders();
 	void toggleSoftwareRendering();
-	void switchRenderer(GSRendererType renderer);
 	void changeDisc(CDVD_SourceType source, const QString& path);
 	void setELFOverride(const QString& path);
 	void changeGSDump(const QString& path);
@@ -120,9 +112,12 @@ public Q_SLOTS:
 	void queueSnapshot(quint32 gsdump_frames);
 	void beginCapture(const QString& path);
 	void endCapture();
-
+	void setAudioOutputVolume(int volume, int fast_forward_volume);
+	void setAudioOutputMuted(bool muted);
+	
 Q_SIGNALS:
 	bool messageConfirmed(const QString& title, const QString& message);
+	void statusMessage(const QString& message);
 
 	std::optional<WindowInfo> onAcquireRenderWindowRequested(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
 	void onResizeRenderWindowRequested(qint32 width, qint32 height);
@@ -168,7 +163,14 @@ Q_SIGNALS:
 	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
 
 	/// Called when achievements are reloaded/refreshed (e.g. game change, login, option change).
-	void onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points);
+	void onAchievementsRefreshed(quint32 id, const QString& game_info_string);
+
+	/// Called when hardcore mode is enabled or disabled.
+	void onAchievementsHardcoreModeChanged(bool enabled);
+
+	/// Big Picture UI requests.
+	void onCoverDownloaderOpenRequested();
+	void onCreateMemoryCardOpenRequested();
 
 	/// Called when video capture starts/stops.
 	void onCaptureStarted(const QString& filename);
@@ -185,7 +187,6 @@ private:
 	static constexpr u32 FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
 
 	void destroyVM();
-	void executeVM();
 
 	void createBackgroundControllerPollTimer();
 	void destroyBackgroundControllerPollTimer();
@@ -205,9 +206,9 @@ private:
 	QTimer* m_background_controller_polling_timer = nullptr;
 
 	std::atomic_bool m_shutdown_flag{false};
+	std::atomic_bool m_run_fullscreen_ui{false};
 
 	bool m_verbose_status = false;
-	bool m_run_fullscreen_ui = false;
 	bool m_is_rendering_to_main = false;
 	bool m_is_fullscreen = false;
 	bool m_is_exclusive_fullscreen = false;
@@ -222,7 +223,7 @@ private:
 	float m_last_video_fps = 0.0f;
 	int m_last_internal_width = 0;
 	int m_last_internal_height = 0;
-	GSRendererType m_last_renderer = GSRendererType::Null;
+	GSRendererType m_last_renderer = GSRendererType::Auto;
 };
 
 extern EmuThread* g_emu_thread;
@@ -237,6 +238,9 @@ namespace QtHost
 
 	/// Sets application theme according to settings.
 	void UpdateApplicationTheme();
+
+	/// Returns true if the application theme is using dark colours.
+	bool IsDarkApplicationTheme();
 
 	/// Sets the icon theme, based on the current style (light/dark).
 	void SetIconThemeFromStyle();
@@ -260,7 +264,7 @@ namespace QtHost
 	std::vector<std::pair<QString, QString>> GetAvailableLanguageList();
 
 	/// Call when the language changes.
-	void InstallTranslator();
+	void InstallTranslator(QWidget* dialog_parent);
 
 	/// Returns the application name and version, optionally including debug/devel config indicator.
 	QString GetAppNameAndVersion();
@@ -268,10 +272,30 @@ namespace QtHost
 	/// Returns the debug/devel config indicator.
 	QString GetAppConfigSuffix();
 
+	/// Returns the main application icon.
+	QIcon GetAppIcon();
+
 	/// Returns the base path for resources. This may be : prefixed, if we're using embedded resources.
 	QString GetResourcesBasePath();
+
+	/// Returns the URL to a runtime-downloaded resource.
+	std::string GetRuntimeDownloadedResourceURL(std::string_view name);
+
+	/// Saves a game settings interface.
+	bool SaveGameSettings(SettingsInterface* sif, bool delete_if_empty);
+
+	/// Downloads the specified URL to the provided path.
+	bool DownloadFile(QWidget* parent, const QString& title, std::string url, const std::string& path);
 
 	/// VM state, safe to access on UI thread.
 	bool IsVMValid();
 	bool IsVMPaused();
+
+	/// Accessors for game information.
+	const QString& GetCurrentGameTitle();
+	const QString& GetCurrentGameSerial();
+	const QString& GetCurrentGamePath();
+
+	/// Compare strings in the locale of the current UI language
+	int LocaleSensitiveCompare(QStringView lhs, QStringView rhs);
 } // namespace QtHost

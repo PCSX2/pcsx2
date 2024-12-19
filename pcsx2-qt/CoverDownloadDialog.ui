@@ -60,7 +60,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>By default, the downloaded covers will be saved with the game's title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</string>
+      <string>By default, the downloaded covers will be saved with the game's serial to ensure covers do not break with GameDB changes and that titles with multiple regions do not conflict. If this is not desired, you can check the &quot;Use Title File Names&quot; box below.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -68,9 +68,9 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="useSerialFileNames">
+    <widget class="QCheckBox" name="useTitleFileNames">
      <property name="text">
-      <string>Use Serial File Names</string>
+      <string>Use Title File Names</string>
      </property>
     </widget>
    </item>

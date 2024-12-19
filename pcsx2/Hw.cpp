@@ -1,26 +1,11 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
 #include "Gif_Unit.h"
 #include "Hardware.h"
 #include "SPU2/spu2.h"
 #include "USB/USB.h"
-#include "x86/newVif.h"
 
 #include "common/WrappedMemCopy.h"
 
@@ -31,35 +16,8 @@ using namespace R5900;
 const int rdram_devices = 2;	// put 8 for TOOL and 2 for PS2 and PSX
 int rdram_sdevid = 0;
 
-static bool hwInitialized = false;
-
-void hwInit()
-{
-	// [TODO] / FIXME:  PCSX2 no longer works on an Init system.  It assumes that the
-	// static global vars for the process will be initialized when the process is created, and
-	// then issues *resets only* from then on. (reset code for various S2 components should do
-	// NULL checks and allocate memory and such if the pointers are NULL only).
-
-	if( hwInitialized ) return;
-
-	VifUnpackSSE_Init();
-
-	hwInitialized = true;
-}
-
-void hwShutdown()
-{
-	if (!hwInitialized) return;
-
-	VifUnpackSSE_Destroy();
-
-	hwInitialized = false;
-}
-
 void hwReset()
 {
-	hwInit();
-
 	std::memset(eeHw, 0, sizeof(eeHw));
 
 	psHu32(SBUS_F260) = 0x1D000060;
@@ -68,19 +26,19 @@ void hwReset()
 	psHu32(DMAC_ENABLEW) = 0x1201;
 	psHu32(DMAC_ENABLER) = 0x1201;
 
+	rcntInit();
+
 	// Sets SPU2 sample rate to PS2 standard (48KHz) whenever emulator is reset.
 	// For PSX mode sample rate setting, see HwWrite.cpp
 	SPU2::Reset(false);
 
 	sifReset();
-
 	gsReset();
 	gifUnit.Reset();
 	ipuReset();
 	vif0Reset();
 	vif1Reset();
 	gif_fifo.init();
-	rcntInit();
 	USBreset();
 }
 
@@ -174,7 +132,7 @@ __ri bool hwMFIFOWrite(u32 addr, const u128* data, uint qwc)
 	else
 	{
 		SPR_LOG( "Scratchpad/MFIFO: invalid base physical address: 0x%08x", dmacRegs.rbor.ADDR );
-		pxFailDev( fmt::format( "Scratchpad/MFIFO: Invalid base physical address: 0x{:08x}", u32(dmacRegs.rbor.ADDR)).c_str() );
+		pxFail( fmt::format( "Scratchpad/MFIFO: Invalid base physical address: 0x{:08x}", u32(dmacRegs.rbor.ADDR)).c_str() );
 		return false;
 	}
 

@@ -8,7 +8,7 @@ if [[ $# -lt 1 ]]; then
 fi
 
 OUTFILE=$1
-GIT_DATE=$(git log -1 --pretty=%cd --date=short)
+GIT_DATE=$(git log -1 --pretty=%cd --date=iso8601)
 GIT_VERSION=$(git tag --points-at HEAD)
 GIT_HASH=$(git rev-parse HEAD)
 

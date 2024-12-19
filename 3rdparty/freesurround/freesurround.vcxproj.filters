@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="src\_kiss_fft_guts.h" />
+    <ClInclude Include="src\kiss_fft.h" />
+    <ClInclude Include="src\kiss_fftr.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\ChannelMaps.cpp" />
+    <ClCompile Include="src\FreeSurroundDecoder.cpp" />
+    <ClCompile Include="src\kiss_fft.cpp" />
+    <ClCompile Include="src\kiss_fftr.cpp" />
+  </ItemGroup>
+</Project>

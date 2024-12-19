@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Capa_1" data-name="Capa 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+        stroke: #fff;
+        stroke-miterlimit: 1.94;
+        stroke-width: .48px;
+      }
+
+      .cls-2 {
+        fill: none;
+      }
+    </style>
+  </defs>
+  <g id="tela">
+    <path id="tela-2" class="cls-2" d="m0,0h150v150H0V0Z"/>
+  </g>
+  <g id="SVGRepo_iconCarrier" data-name="SVGRepo iconCarrier">
+    <path class="cls-1" d="m89.94,34.36l24.94,24.94-63.13,63.13-24.93-24.94,63.12-63.13Zm43.87-6.02l-11.12-11.12c-4.3-4.3-11.28-4.3-15.59,0l-10.65,10.65,24.94,24.94,12.43-12.43c3.33-3.33,3.33-8.71,0-12.04ZM13.77,132.55c-.45,2.04,1.39,3.87,3.43,3.38l27.79-6.74-24.93-24.94-6.3,28.3Z"/>
+  </g>
+</svg>

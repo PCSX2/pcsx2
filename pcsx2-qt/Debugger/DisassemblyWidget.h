@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -54,8 +42,10 @@ public slots:
 	void contextCopyAddress();
 	void contextCopyInstructionHex();
 	void contextCopyInstructionText();
+	void contextCopyFunctionName();
 	void contextAssembleInstruction();
 	void contextNoopInstruction();
+	void contextRestoreInstruction();
 	void contextRunToCursor();
 	void contextJumpToCursor();
 	void contextToggleBreakpoint();
@@ -64,8 +54,14 @@ public slots:
 	void contextAddFunction();
 	void contextRenameFunction();
 	void contextRemoveFunction();
-	void gotoAddress(u32 address);
+	void contextStubFunction();
+	void contextRestoreFunction();
+	void contextShowOpcode();
 
+	void gotoAddressAndSetFocus(u32 address);
+	void gotoAddress(u32 address, bool should_set_focus);
+
+	void setDemangle(bool demangle) { m_demangleFunctions = demangle; };
 signals:
 	void gotoInMemory(u32 address);
 	void breakpointsChanged();
@@ -74,9 +70,6 @@ signals:
 private:
 	Ui::DisassemblyWidget ui;
 
-	QMenu* m_contextMenu = 0x0;
-	void CreateCustomContextMenu();
-
 	DebugInterface* m_cpu;
 	u32 m_visibleStart = 0x00336318; // The address of the first opcode shown(row 0)
 	u32 m_visibleRows;
@@ -84,9 +77,14 @@ private:
 	u32 m_selectedAddressEnd = 0;
 	u32 m_rowHeight = 0;
 
+	std::map<u32, u32> m_nopedInstructions;
+	std::map<u32, std::tuple<u32, u32>> m_stubbedFunctions;
+
+	bool m_demangleFunctions = true;
+	bool m_showInstructionOpcode = true;
 	DisassemblyManager m_disassemblyManager;
 
-	inline QString DisassemblyStringFromAddress(u32 address, QFont font, u32 pc);
+	inline QString DisassemblyStringFromAddress(u32 address, QFont font, u32 pc, bool selected);
 	QColor GetAddressFunctionColor(u32 address);
 	enum class SelectionInfo
 	{
@@ -95,4 +93,7 @@ private:
 		INSTRUCTIONTEXT,
 	};
 	QString FetchSelectionInfo(SelectionInfo selInfo);
+
+	bool AddressCanRestore(u32 start, u32 end);
+	bool FunctionCanRestore(u32 address);
 };

@@ -1,25 +1,16 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include "DEV9/PacketReader/MAC_Address.h"
 #include "DEV9/PacketReader/IP/IP_Address.h"
 
+#include <cstring>
+
 #ifdef _WIN32
-#include "winsock.h"
+#include "common/RedtapeWindows.h"
+#include <winsock2.h>
 #else
 #include <arpa/inet.h>
 #endif
@@ -54,41 +45,41 @@ namespace PacketReader::NetLib
 		*(PacketReader::IP::IP_Address*)&data[*index] = value;
 		*index += sizeof(PacketReader::IP::IP_Address);
 	}
-	inline void WriteByteArray(u8* data, int* index, int length, u8* value)
+	inline void WriteByteArray(u8* data, int* index, int length, const u8* value)
 	{
 		memcpy(&data[*index], value, length);
 		*index += length;
 	}
 
 	// Read.
-	inline void ReadByte08(u8* data, int* index, u8* value)
+	inline void ReadByte08(const u8* data, int* index, u8* value)
 	{
 		*value = data[*index];
 		*index += sizeof(u8);
 	}
-	inline void ReadUInt16(u8* data, int* index, u16* value)
+	inline void ReadUInt16(const u8* data, int* index, u16* value)
 	{
 		*value = ntohs(*(u16*)&data[*index]);
 		*index += sizeof(u16);
 	}
-	inline void ReadUInt32(u8* data, int* index, u32* value)
+	inline void ReadUInt32(const u8* data, int* index, u32* value)
 	{
 		*value = ntohl(*(u32*)&data[*index]);
 		*index += sizeof(u32);
 	}
 
 	// Special read.
-	inline void ReadMACAddress(u8* data, int* index, PacketReader::MAC_Address* value)
+	inline void ReadMACAddress(const u8* data, int* index, PacketReader::MAC_Address* value)
 	{
 		*value = *(PacketReader::MAC_Address*)&data[*index];
 		*index += sizeof(PacketReader::MAC_Address);
 	}
-	inline void ReadIPAddress(u8* data, int* index, PacketReader::IP::IP_Address* value)
+	inline void ReadIPAddress(const u8* data, int* index, PacketReader::IP::IP_Address* value)
 	{
 		*value = *(PacketReader::IP::IP_Address*)&data[*index];
 		*index += sizeof(PacketReader::IP::IP_Address);
 	}
-	inline void ReadByteArray(u8* data, int* index, int length, u8* value)
+	inline void ReadByteArray(const u8* data, int* index, int length, u8* value)
 	{
 		memcpy(value, &data[*index], length);
 		*index += length;

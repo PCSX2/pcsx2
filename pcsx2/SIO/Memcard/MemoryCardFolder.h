@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2015  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -203,9 +191,9 @@ public:
 	~FileAccessHelper();
 
 	// Get an already opened file if possible, or open a new one and remember it
-	std::FILE* ReOpen(const std::string_view& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false);
+	std::FILE* ReOpen(const std::string_view folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false);
 	// Close all open files that start with the given path, so either a file if a filename is given or all files in a directory and its subdirectories when a directory is given
-	void CloseMatching(const std::string_view& path);
+	void CloseMatching(const std::string_view path);
 	// Close all open files
 	void CloseAll();
 	// Flush the written data of all open files to the file system
@@ -225,12 +213,12 @@ private:
 	static bool CleanMemcardFilenameEndDotOrSpace(char* name, size_t length);
 
 	// Open a new file and remember it for later
-	std::FILE* Open(const std::string_view& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false);
+	std::FILE* Open(const std::string_view folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false);
 	// Close a file and delete its handle
 	// If entry is given, it also attempts to set the created and modified timestamps of the file according to the entry
 	void CloseFileHandle(std::FILE*& file, const MemoryCardFileEntry* entry = nullptr);
 
-	void WriteMetadata(const std::string_view& folderName, const MemoryCardFileMetadataReference* fileRef);
+	void WriteMetadata(const std::string_view folderName, const MemoryCardFileMetadataReference* fileRef);
 };
 
 // --------------------------------------------------------------------------------------
@@ -450,7 +438,7 @@ protected:
 	// - dirPath: the full path to the directory in the host file system
 	// - parent: pointer to the parent dir's quick-access reference element
 	// - enableFiltering and filter: filter loaded contents, see LoadMemoryCardData()
-	bool AddFolder(MemoryCardFileEntry* const dirEntry, const std::string& dirPath, MemoryCardFileMetadataReference* parent = nullptr, const bool enableFiltering = false, const std::string_view& filter = "");
+	bool AddFolder(MemoryCardFileEntry* const dirEntry, const std::string& dirPath, MemoryCardFileMetadataReference* parent = nullptr, const bool enableFiltering = false, const std::string_view filter = "");
 
 	// adds a file in the host file sytem to the memory card
 	// - dirEntry: the entry of the directory in the parent directory, or the root "." entry
@@ -536,7 +524,7 @@ protected:
 	// for legacy entries without an entry in the index file, order is unspecified and should not be relied on
 	std::vector<EnumeratedFileEntry> GetOrderedFiles(const std::string& dirPath) const;
 
-	void DeleteFromIndex(const std::string& filePath, const std::string_view& entry) const;
+	void DeleteFromIndex(const std::string& filePath, const std::string_view entry) const;
 };
 
 // --------------------------------------------------------------------------------------

@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
@@ -51,7 +39,7 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC)
 	if (pc > (s64)mVU.microMemSize)
 	{
 		Console.Error("microVU%d: PC outside of VU memory PC=0x%04x", mVU.index, pc);
-		pxFailDev("microVU: PC out of VU memory");
+		pxFail("microVU: PC out of VU memory");
 	}
 
 	// The PC handling will prewrap the PC so we need to set the end PC to the end of the micro memory, but only if it wraps, no more.
@@ -93,16 +81,14 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC)
 	if (mVUrange.start <= cur_pc)
 	{
 		mVUrange.end = cur_pc;
-		s32& rStart = mVUrange.start;
-		s32& rEnd = mVUrange.end;
-		std::deque<microRange>::iterator it(ranges->begin());
-		it++;
-		for (;it != ranges->end();)
+		s32 rStart = mVUrange.start;
+		s32 rEnd = mVUrange.end;
+		for (auto it = ranges->begin() + 1; it != ranges->end();)
 		{
 			if (((it->start >= rStart) && (it->start <= rEnd)) || ((it->end >= rStart) && (it->end <= rEnd))) // Starts after this prog but starts before the end of current prog
 			{
-				rStart = std::min(it->start, rStart); // Choose the earlier start
-				rEnd = std::max(it->end, rEnd);
+				mVUrange.start = rStart = std::min(it->start, rStart); // Choose the earlier start
+				mVUrange.end = rEnd = std::max(it->end, rEnd);
 				it = ranges->erase(it);
 			}
 			else
@@ -464,6 +450,33 @@ void mVUtestCycles(microVU& mVU, microFlagCycles& mFC)
 {
 	iPC = mVUstartPC;
 
+	// If the VUSyncHack is on, we want the VU to run behind, to avoid conditions where the VU is sped up.
+	if (isVU0 && EmuConfig.Speedhacks.EECycleRate != 0 && (!EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Speedhacks.EECycleRate < 0))
+	{
+		switch (std::min(static_cast<int>(EmuConfig.Speedhacks.EECycleRate), static_cast<int>(mVUcycles)))
+		{
+			case -3: // 50%
+				mVUcycles *= 2.0f;
+				break;
+			case -2: // 60%
+				mVUcycles *= 1.6666667f;
+				break;
+			case -1: // 75%
+				mVUcycles *= 1.3333333f;
+				break;
+			case 1: // 130%
+				mVUcycles /= 1.3f;
+				break;
+			case 2: // 180%
+				mVUcycles /= 1.8f;
+				break;
+			case 3: // 300%
+				mVUcycles /= 3.0f;
+				break;
+			default:
+				break;
+		}
+	}
 	xMOV(eax, ptr32[&mVU.cycles]);
 	if (EmuConfig.Gamefixes.VUSyncHack)
 		xSUB(eax, mVUcycles); // Running behind, make sure we have time to run the block
@@ -531,7 +544,7 @@ __fi void mVUinitFirstPass(microVU& mVU, uptr pState, u8* thisPtr)
 		memcpy((u8*)&mVU.prog.lpState, (u8*)pState, sizeof(microRegInfo));
 	}
 	mVUblock.x86ptrStart = thisPtr;
-	mVUpBlock = mVUblocks[mVUstartPC / 2]->add(&mVUblock); // Add this block to block manager
+	mVUpBlock = mVUblocks[mVUstartPC / 2]->add(mVU, &mVUblock); // Add this block to block manager
 	mVUregs.needExactMatch = (mVUpBlock->pState.blockType) ? 7 : 0; // ToDo: Fix 1-Op block flag linking (MGS2:Demo/Sly Cooper)
 	mVUregs.blockType = 0;
 	mVUregs.viBackUp  = 0;
@@ -988,7 +1001,7 @@ perf_and_return:
 // Returns the entry point of the block (compiles it if not found)
 __fi void* mVUentryGet(microVU& mVU, microBlockManager* block, u32 startPC, uptr pState)
 {
-	microBlock* pBlock = block->search((microRegInfo*)pState);
+	microBlock* pBlock = block->search(mVU, (microRegInfo*)pState);
 	if (pBlock)
 		return pBlock->x86ptrStart;
 	else

@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
 #include "DebugInterface.h"
 #include "Memory.h"
@@ -24,9 +10,9 @@
 #include "GS.h" // Required for gsNonMirroredRead()
 #include "Counters.h"
 
+#include "Host.h"
 #include "R3000A.h"
 #include "IopMem.h"
-#include "SymbolMap.h"
 #include "VMManager.h"
 
 #include "common/StringUtil.h"
@@ -34,183 +20,20 @@
 R5900DebugInterface r5900Debug;
 R3000DebugInterface r3000Debug;
 
-#ifdef _WIN32
-#define strcasecmp stricmp
-#endif
-
 enum ReferenceIndexType
 {
-	REF_INDEX_PC       = 32,
-	REF_INDEX_HI       = 33,
-	REF_INDEX_LO       = 34,
+	REF_INDEX_PC = 32,
+	REF_INDEX_HI = 33,
+	REF_INDEX_LO = 34,
 	REF_INDEX_OPTARGET = 0x800,
-	REF_INDEX_OPSTORE  = 0x1000,
-	REF_INDEX_OPLOAD   = 0x2000,
-	REF_INDEX_IS_OPSL  = REF_INDEX_OPTARGET | REF_INDEX_OPSTORE | REF_INDEX_OPLOAD,
-	REF_INDEX_FPU      = 0x4000,
-	REF_INDEX_FPU_INT  = 0x8000,
-	REF_INDEX_VFPU     = 0x10000,
+	REF_INDEX_OPSTORE = 0x1000,
+	REF_INDEX_OPLOAD = 0x2000,
+	REF_INDEX_IS_OPSL = REF_INDEX_OPTARGET | REF_INDEX_OPSTORE | REF_INDEX_OPLOAD,
+	REF_INDEX_FPU = 0x4000,
+	REF_INDEX_FPU_INT = 0x8000,
+	REF_INDEX_VFPU = 0x10000,
 	REF_INDEX_VFPU_INT = 0x20000,
 	REF_INDEX_IS_FLOAT = REF_INDEX_FPU | REF_INDEX_VFPU,
-
-};
-
-
-class MipsExpressionFunctions : public IExpressionFunctions
-{
-public:
-	explicit MipsExpressionFunctions(DebugInterface* cpu)
-		: cpu(cpu){};
-
-	virtual bool parseReference(char* str, u64& referenceIndex)
-	{
-		for (int i = 0; i < 32; i++)
-		{
-			char reg[8];
-			sprintf(reg, "r%d", i);
-
-			if (strcasecmp(str, reg) == 0 || strcasecmp(str, cpu->getRegisterName(0, i)) == 0)
-			{
-				referenceIndex = i;
-				return true;
-			}
-		}
-
-		if (strcasecmp(str, "pc") == 0)
-		{
-			referenceIndex = REF_INDEX_PC;
-			return true;
-		}
-
-		if (strcasecmp(str, "hi") == 0)
-		{
-			referenceIndex = REF_INDEX_HI;
-			return true;
-		}
-
-		if (strcasecmp(str, "lo") == 0)
-		{
-			referenceIndex = REF_INDEX_LO;
-			return true;
-		}
-
-		if (strcasecmp(str, "target") == 0)
-		{
-			referenceIndex = REF_INDEX_OPTARGET;
-			return true;
-		}
-
-		if (strcasecmp(str, "load") == 0)
-		{
-			referenceIndex = REF_INDEX_OPLOAD;
-			return true;
-		}
-
-		if (strcasecmp(str, "store") == 0)
-		{
-			referenceIndex = REF_INDEX_OPSTORE;
-			return true;
-		}
-		return false;
-	}
-
-	virtual bool parseSymbol(char* str, u64& symbolValue)
-	{
-		u32 value;
-		bool result = cpu->GetSymbolMap().GetLabelValue(str, value);
-		symbolValue = value;
-		return result;
-	}
-
-	virtual u64 getReferenceValue(u64 referenceIndex)
-	{
-		if (referenceIndex < 32)
-			return cpu->getRegister(0, referenceIndex)._u64[0];
-		if (referenceIndex == REF_INDEX_PC)
-			return cpu->getPC();
-		if (referenceIndex == REF_INDEX_HI)
-			return cpu->getHI()._u64[0];
-		if (referenceIndex == REF_INDEX_LO)
-			return cpu->getLO()._u64[0];
-		if (referenceIndex & REF_INDEX_IS_OPSL)
-		{
-			const u32 OP = memRead32(cpu->getPC());
-			const R5900::OPCODE& opcode = R5900::GetInstruction(OP);
-			if (opcode.flags & IS_MEMORY)
-			{
-				// Fetch the address in the base register 
-				u32 target = cpuRegs.GPR.r[(OP >> 21) & 0x1F].UD[0];
-				// Add the offset (lower 16 bits)
-				target += static_cast<u16>(OP);
-
-				if (referenceIndex & REF_INDEX_OPTARGET)
-				{
-					return target;
-				}
-				else if (referenceIndex & REF_INDEX_OPLOAD)
-				{
-					return (opcode.flags & IS_LOAD) ? target : 0;
-				}
-				else if (referenceIndex & REF_INDEX_OPSTORE)
-				{
-					return (opcode.flags & IS_STORE) ? target : 0;
-				}
-			}
-			return 0;
-		}
-		return -1;
-	}
-
-	virtual ExpressionType getReferenceType(u64 referenceIndex)
-	{
-		if (referenceIndex & REF_INDEX_IS_FLOAT)
-		{
-			return EXPR_TYPE_FLOAT;
-		}
-		return EXPR_TYPE_UINT;
-	}
-
-	virtual bool getMemoryValue(u32 address, int size, u64& dest, char* error)
-	{
-		switch (size)
-		{
-			case 1:
-			case 2:
-			case 4:
-			case 8:
-				break;
-			default:
-				sprintf(error, "Invalid memory access size %d", size);
-				return false;
-		}
-
-		if (address % size)
-		{
-			sprintf(error, "Invalid memory access (unaligned)");
-			return false;
-		}
-
-		switch (size)
-		{
-			case 1:
-				dest = cpu->read8(address);
-				break;
-			case 2:
-				dest = cpu->read16(address);
-				break;
-			case 4:
-				dest = cpu->read32(address);
-				break;
-			case 8:
-				dest = cpu->read64(address);
-				break;
-		}
-
-		return true;
-	}
-
-private:
-	DebugInterface* cpu;
 };
 
 //
@@ -241,7 +64,7 @@ void DebugInterface::resumeCpu()
 
 char* DebugInterface::stringFromPointer(u32 p)
 {
-	const int BUFFER_LEN = 25;
+	const int BUFFER_LEN = 64;
 	static char buf[BUFFER_LEN] = {0};
 
 	if (!isValidAddress(p))
@@ -270,18 +93,70 @@ char* DebugInterface::stringFromPointer(u32 p)
 	return buf;
 }
 
-bool DebugInterface::initExpression(const char* exp, PostfixExpression& dest)
+std::optional<u32> DebugInterface::getCallerStackPointer(const ccc::Function& currentFunction)
 {
-	MipsExpressionFunctions funcs(this);
-	return initPostfixExpression(exp, &funcs, dest);
+	u32 sp = getRegister(EECAT_GPR, 29);
+	u32 pc = getPC();
+
+	if (pc != currentFunction.address().value)
+	{
+		std::optional<u32> stack_frame_size = getStackFrameSize(currentFunction);
+		if (!stack_frame_size.has_value())
+			return std::nullopt;
+
+		sp += *stack_frame_size;
+	}
+
+	return sp;
 }
 
-bool DebugInterface::parseExpression(PostfixExpression& exp, u64& dest)
+std::optional<u32> DebugInterface::getStackFrameSize(const ccc::Function& function)
 {
-	MipsExpressionFunctions funcs(this);
-	return parsePostfixExpression(exp, &funcs, dest);
+	s32 stack_frame_size = function.stack_frame_size;
+
+	if (stack_frame_size < 0)
+	{
+		// The stack frame size isn't stored in the symbol table, so we try
+		// to extract it from the code by checking for an instruction at the
+		// start of the current function that is in the form of
+		// "addiu $sp, $sp, frame_size" instead.
+
+		u32 instruction = read32(function.address().value);
+
+		if ((instruction & 0xffff0000) == 0x27bd0000)
+			stack_frame_size = -static_cast<s16>(instruction & 0xffff);
+
+		if (stack_frame_size < 0)
+			return std::nullopt;
+	}
+
+	return static_cast<u32>(stack_frame_size);
 }
 
+bool DebugInterface::evaluateExpression(const char* expression, u64& dest, std::string& error)
+{
+	PostfixExpression postfix;
+
+	if (!initExpression(expression, postfix, error))
+		return false;
+
+	if (!parseExpression(postfix, dest, error))
+		return false;
+
+	return true;
+}
+
+bool DebugInterface::initExpression(const char* exp, PostfixExpression& dest, std::string& error)
+{
+	MipsExpressionFunctions funcs(this, nullptr, true);
+	return initPostfixExpression(exp, &funcs, dest, error);
+}
+
+bool DebugInterface::parseExpression(PostfixExpression& exp, u64& dest, std::string& error)
+{
+	MipsExpressionFunctions funcs(this, nullptr, false);
+	return parsePostfixExpression(exp, &funcs, dest, error);
+}
 
 //
 // R5900DebugInterface
@@ -297,7 +172,11 @@ u32 R5900DebugInterface::read8(u32 address)
 	if (!isValidAddress(address))
 		return -1;
 
-	return memRead8(address);
+	u8 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u8)))
+		return -1;
+
+	return value;
 }
 
 u32 R5900DebugInterface::read8(u32 address, bool& valid)
@@ -305,7 +184,11 @@ u32 R5900DebugInterface::read8(u32 address, bool& valid)
 	if (!(valid = isValidAddress(address)))
 		return -1;
 
-	return memRead8(address);
+	u8 value;
+	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u8))))
+		return -1;
+
+	return value;
 }
 
 
@@ -314,7 +197,11 @@ u32 R5900DebugInterface::read16(u32 address)
 	if (!isValidAddress(address) || address % 2)
 		return -1;
 
-	return memRead16(address);
+	u16 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u16)))
+		return -1;
+
+	return static_cast<u32>(value);
 }
 
 u32 R5900DebugInterface::read16(u32 address, bool& valid)
@@ -322,7 +209,11 @@ u32 R5900DebugInterface::read16(u32 address, bool& valid)
 	if (!(valid = (isValidAddress(address) || address % 2)))
 		return -1;
 
-	return memRead16(address);
+	u16 value;
+	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u16))))
+		return -1;
+
+	return static_cast<u32>(value);
 }
 
 u32 R5900DebugInterface::read32(u32 address)
@@ -330,7 +221,11 @@ u32 R5900DebugInterface::read32(u32 address)
 	if (!isValidAddress(address) || address % 4)
 		return -1;
 
-	return memRead32(address);
+	u32 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u32)))
+		return -1;
+
+	return value;
 }
 
 u32 R5900DebugInterface::read32(u32 address, bool& valid)
@@ -338,7 +233,11 @@ u32 R5900DebugInterface::read32(u32 address, bool& valid)
 	if (!(valid = (isValidAddress(address) || address % 4)))
 		return -1;
 
-	return memRead32(address);
+	u32 value;
+	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u32))))
+		return -1;
+
+	return value;
 }
 
 u64 R5900DebugInterface::read64(u32 address)
@@ -346,7 +245,11 @@ u64 R5900DebugInterface::read64(u32 address)
 	if (!isValidAddress(address) || address % 8)
 		return -1;
 
-	return memRead64(address);
+	u64 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u64)))
+		return -1;
+
+	return value;
 }
 
 u64 R5900DebugInterface::read64(u32 address, bool& valid)
@@ -354,7 +257,11 @@ u64 R5900DebugInterface::read64(u32 address, bool& valid)
 	if (!(valid = (isValidAddress(address) || address % 8)))
 		return -1;
 
-	return memRead64(address);
+	u64 value;
+	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u64))))
+		return -1;
+
+	return value;
 }
 
 u128 R5900DebugInterface::read128(u32 address)
@@ -366,7 +273,11 @@ u128 R5900DebugInterface::read128(u32 address)
 		return result;
 	}
 
-	memRead128(address, result);
+	if (!vtlb_memSafeReadBytes(address, &result, sizeof(u128)))
+	{
+		result.hi = result.lo = -1;
+	}
+
 	return result;
 }
 
@@ -375,7 +286,15 @@ void R5900DebugInterface::write8(u32 address, u8 value)
 	if (!isValidAddress(address))
 		return;
 
-	memWrite8(address, value);
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u8));
+}
+
+void R5900DebugInterface::write16(u32 address, u16 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u16));
 }
 
 void R5900DebugInterface::write32(u32 address, u32 value)
@@ -383,9 +302,24 @@ void R5900DebugInterface::write32(u32 address, u32 value)
 	if (!isValidAddress(address))
 		return;
 
-	memWrite32(address, value);
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u32));
 }
 
+void R5900DebugInterface::write64(u32 address, u64 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u64));
+}
+
+void R5900DebugInterface::write128(u32 address, u128 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	vtlb_memSafeWriteBytes(address, &value, sizeof(u128));
+}
 
 int R5900DebugInterface::getRegisterCategoryCount()
 {
@@ -683,7 +617,7 @@ bool R5900DebugInterface::isValidAddress(u32 addr)
 			// [ 0000_8000 - 01FF_FFFF ] RAM
 			// [ 2000_8000 - 21FF_FFFF ] RAM MIRROR
 			// [ 3000_8000 - 31FF_FFFF ] RAM MIRROR
-			if (lopart >= 0x80000 && lopart <= 0x1ffFFff)
+			if (lopart >= 0x80000 && lopart < Ps2MemSize::ExposedRam)
 				return !!vtlb_GetPhyPtr(lopart);
 			break;
 		case 1:
@@ -709,11 +643,16 @@ bool R5900DebugInterface::isValidAddress(u32 addr)
 				return true;
 			break;
 		case 8:
-		case 9:
 		case 0xA:
+			if (lopart <= 0xFFFFF)
+				return true;
+			break;
+		case 9:
 		case 0xB:
 			// [ 8000_0000 - BFFF_FFFF ] kernel
-			return true;
+			if (lopart >= 0xFC00000)
+				return true;
+			break;
 		case 0xF:
 			// [ 8000_0000 - BFFF_FFFF ] IOP or kernel stack
 			if (lopart >= 0xfff8000)
@@ -729,9 +668,14 @@ u32 R5900DebugInterface::getCycles()
 	return cpuRegs.cycle;
 }
 
-SymbolMap& R5900DebugInterface::GetSymbolMap() const
+SymbolGuardian& R5900DebugInterface::GetSymbolGuardian() const
 {
-	return R5900SymbolMap;
+	return R5900SymbolGuardian;
+}
+
+SymbolImporter* R5900DebugInterface::GetSymbolImporter() const
+{
+	return &R5900SymbolImporter;
 }
 
 std::vector<std::unique_ptr<BiosThread>> R5900DebugInterface::GetThreadList() const
@@ -739,11 +683,9 @@ std::vector<std::unique_ptr<BiosThread>> R5900DebugInterface::GetThreadList() co
 	return getEEThreads();
 }
 
-
 //
 // R3000DebugInterface
 //
-
 
 BreakPointCpu R3000DebugInterface::getCpuType()
 {
@@ -790,7 +732,6 @@ u32 R3000DebugInterface::read32(u32 address, bool& valid)
 	if (!(valid = isValidAddress(address)))
 		return -1;
 	return iopMemRead32(address);
-
 }
 
 u64 R3000DebugInterface::read64(u32 address)
@@ -817,12 +758,40 @@ void R3000DebugInterface::write8(u32 address, u8 value)
 	iopMemWrite8(address, value);
 }
 
+void R3000DebugInterface::write16(u32 address, u16 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	iopMemWrite16(address, value);
+}
+
 void R3000DebugInterface::write32(u32 address, u32 value)
 {
 	if (!isValidAddress(address))
 		return;
 
 	iopMemWrite32(address, value);
+}
+
+void R3000DebugInterface::write64(u32 address, u64 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	iopMemWrite32(address + 0, value);
+	iopMemWrite32(address + 4, value >> 32);
+}
+
+void R3000DebugInterface::write128(u32 address, u128 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	iopMemWrite32(address + 0x0, value._u32[0]);
+	iopMemWrite32(address + 0x4, value._u32[1]);
+	iopMemWrite32(address + 0x8, value._u32[2]);
+	iopMemWrite32(address + 0xc, value._u32[3]);
 }
 
 int R3000DebugInterface::getRegisterCategoryCount()
@@ -998,14 +967,22 @@ std::string R3000DebugInterface::disasm(u32 address, bool simplify)
 
 bool R3000DebugInterface::isValidAddress(u32 addr)
 {
-	if (addr >= 0x10000000 && addr < 0x10010000)
+	if (addr >= 0x1D000000 && addr < 0x1E000000)
+	{
 		return true;
-	if (addr >= 0x12000000 && addr < 0x12001100)
-		return true;
-	if (addr >= 0x70000000 && addr < 0x70004000)
-		return true;
+	}
 
-	return !(addr & 0x40000000) && vtlb_GetPhyPtr(addr & 0x1FFFFFFF) != NULL;
+	if (addr >= 0x1F400000 && addr < 0x1FA00000)
+	{
+		return true;
+	}
+
+	if (addr < 0x200000)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 u32 R3000DebugInterface::getCycles()
@@ -1013,12 +990,334 @@ u32 R3000DebugInterface::getCycles()
 	return psxRegs.cycle;
 }
 
-SymbolMap& R3000DebugInterface::GetSymbolMap() const
+SymbolGuardian& R3000DebugInterface::GetSymbolGuardian() const
 {
-	return R3000SymbolMap;
+	return R3000SymbolGuardian;
+}
+
+SymbolImporter* R3000DebugInterface::GetSymbolImporter() const
+{
+	return nullptr;
 }
 
 std::vector<std::unique_ptr<BiosThread>> R3000DebugInterface::GetThreadList() const
 {
 	return getIOPThreads();
+}
+
+ElfMemoryReader::ElfMemoryReader(const ccc::ElfFile& elf)
+	: m_elf(elf)
+{
+}
+
+u32 ElfMemoryReader::read8(u32 address)
+{
+	std::optional<u8> result = m_elf.get_object_virtual<u8>(address);
+	if (!result.has_value())
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read8(u32 address, bool& valid)
+{
+	std::optional<u8> result = m_elf.get_object_virtual<u8>(address);
+	valid = result.has_value();
+	if (!valid)
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read16(u32 address)
+{
+	std::optional<u16> result = m_elf.get_object_virtual<u16>(address);
+	if (!result.has_value())
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read16(u32 address, bool& valid)
+{
+	std::optional<u16> result = m_elf.get_object_virtual<u16>(address);
+	valid = result.has_value();
+	if (!valid)
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read32(u32 address)
+{
+	std::optional<u32> result = m_elf.get_object_virtual<u32>(address);
+	if (!result.has_value())
+		return 0;
+
+	return *result;
+}
+
+u32 ElfMemoryReader::read32(u32 address, bool& valid)
+{
+	std::optional<u32> result = m_elf.get_object_virtual<u32>(address);
+	valid = result.has_value();
+	if (!valid)
+		return 0;
+
+	return *result;
+}
+
+u64 ElfMemoryReader::read64(u32 address)
+{
+	std::optional<u64> result = m_elf.get_object_virtual<u64>(address);
+	if (!result.has_value())
+		return 0;
+
+	return *result;
+}
+
+u64 ElfMemoryReader::read64(u32 address, bool& valid)
+{
+	std::optional<u64> result = m_elf.get_object_virtual<u64>(address);
+	valid = result.has_value();
+	if (!valid)
+		return 0;
+
+	return *result;
+}
+
+//
+// MipsExpressionFunctions
+//
+
+MipsExpressionFunctions::MipsExpressionFunctions(
+	DebugInterface* cpu, const ccc::SymbolDatabase* symbolDatabase, bool shouldEnumerateSymbols)
+	: m_cpu(cpu)
+	, m_database(symbolDatabase)
+{
+	if (!shouldEnumerateSymbols)
+		return;
+
+	if (symbolDatabase)
+	{
+		enumerateSymbols(*symbolDatabase);
+	}
+	else
+	{
+		m_cpu->GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
+			enumerateSymbols(database);
+		});
+	}
+}
+
+void MipsExpressionFunctions::enumerateSymbols(const ccc::SymbolDatabase& database)
+{
+	// TODO: Add mangled symbol name maps to CCC and remove this.
+
+	for (const ccc::Function& function : database.functions)
+		m_mangled_function_names_to_handles.emplace(function.mangled_name(), function.handle());
+
+	for (const ccc::GlobalVariable& global : database.global_variables)
+		m_mangled_global_names_to_handles.emplace(global.mangled_name(), global.handle());
+}
+
+bool MipsExpressionFunctions::parseReference(char* str, u64& referenceIndex)
+{
+	for (int i = 0; i < 32; i++)
+	{
+		char reg[8];
+		std::snprintf(reg, std::size(reg), "r%d", i);
+		if (StringUtil::Strcasecmp(str, reg) == 0 || StringUtil::Strcasecmp(str, m_cpu->getRegisterName(0, i)) == 0)
+		{
+			referenceIndex = i;
+			return true;
+		}
+
+		std::snprintf(reg, std::size(reg), "f%d", i);
+		if (StringUtil::Strcasecmp(str, reg) == 0)
+		{
+			referenceIndex = i | REF_INDEX_FPU;
+			return true;
+		}
+	}
+
+	if (StringUtil::Strcasecmp(str, "pc") == 0)
+	{
+		referenceIndex = REF_INDEX_PC;
+		return true;
+	}
+
+	if (StringUtil::Strcasecmp(str, "hi") == 0)
+	{
+		referenceIndex = REF_INDEX_HI;
+		return true;
+	}
+
+	if (StringUtil::Strcasecmp(str, "lo") == 0)
+	{
+		referenceIndex = REF_INDEX_LO;
+		return true;
+	}
+
+	if (StringUtil::Strcasecmp(str, "target") == 0)
+	{
+		referenceIndex = REF_INDEX_OPTARGET;
+		return true;
+	}
+
+	if (StringUtil::Strcasecmp(str, "load") == 0)
+	{
+		referenceIndex = REF_INDEX_OPLOAD;
+		return true;
+	}
+
+	if (StringUtil::Strcasecmp(str, "store") == 0)
+	{
+		referenceIndex = REF_INDEX_OPSTORE;
+		return true;
+	}
+	return false;
+}
+
+bool MipsExpressionFunctions::parseSymbol(char* str, u64& symbolValue)
+{
+	if (m_database)
+		return parseSymbol(str, symbolValue, *m_database);
+
+	bool success = false;
+	m_cpu->GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
+		success = parseSymbol(str, symbolValue, database);
+	});
+	return success;
+}
+
+bool MipsExpressionFunctions::parseSymbol(char* str, u64& symbolValue, const ccc::SymbolDatabase& database)
+{
+	std::string name = str;
+
+	// Check for mangled function names.
+	auto function_iterator = m_mangled_function_names_to_handles.find(name);
+	if (function_iterator != m_mangled_function_names_to_handles.end())
+	{
+		const ccc::Function* function = database.functions.symbol_from_handle(function_iterator->second);
+		if (function && function->address().valid())
+		{
+			symbolValue = function->address().value;
+			return true;
+		}
+	}
+
+	// Check for mangled global variable names.
+	auto global_iterator = m_mangled_global_names_to_handles.find(name);
+	if (global_iterator != m_mangled_global_names_to_handles.end())
+	{
+		const ccc::GlobalVariable* global = database.global_variables.symbol_from_handle(global_iterator->second);
+		if (global && global->address().valid())
+		{
+			symbolValue = global->address().value;
+			return true;
+		}
+	}
+
+	// Check for regular unmangled names.
+	const ccc::Symbol* symbol = database.symbol_with_name(name);
+	if (symbol && symbol->address().valid())
+	{
+		symbolValue = symbol->address().value;
+		return true;
+	}
+
+	return false;
+}
+
+u64 MipsExpressionFunctions::getReferenceValue(u64 referenceIndex)
+{
+	if (referenceIndex < 32)
+		return m_cpu->getRegister(0, referenceIndex)._u64[0];
+	if (referenceIndex == REF_INDEX_PC)
+		return m_cpu->getPC();
+	if (referenceIndex == REF_INDEX_HI)
+		return m_cpu->getHI()._u64[0];
+	if (referenceIndex == REF_INDEX_LO)
+		return m_cpu->getLO()._u64[0];
+	if (referenceIndex & REF_INDEX_IS_OPSL)
+	{
+		const u32 OP = m_cpu->read32(m_cpu->getPC());
+		const R5900::OPCODE& opcode = R5900::GetInstruction(OP);
+		if (opcode.flags & IS_MEMORY)
+		{
+			// Fetch the address in the base register
+			u32 target = cpuRegs.GPR.r[(OP >> 21) & 0x1F].UD[0];
+			// Add the offset (lower 16 bits)
+			target += static_cast<u16>(OP);
+
+			if (referenceIndex & REF_INDEX_OPTARGET)
+			{
+				return target;
+			}
+			else if (referenceIndex & REF_INDEX_OPLOAD)
+			{
+				return (opcode.flags & IS_LOAD) ? target : 0;
+			}
+			else if (referenceIndex & REF_INDEX_OPSTORE)
+			{
+				return (opcode.flags & IS_STORE) ? target : 0;
+			}
+		}
+		return 0;
+	}
+	if (referenceIndex & REF_INDEX_FPU)
+	{
+		return m_cpu->getRegister(EECAT_FPR, referenceIndex & 0x1F)._u64[0];
+	}
+	return -1;
+}
+
+ExpressionType MipsExpressionFunctions::getReferenceType(u64 referenceIndex)
+{
+	if (referenceIndex & REF_INDEX_IS_FLOAT)
+	{
+		return EXPR_TYPE_FLOAT;
+	}
+	return EXPR_TYPE_UINT;
+}
+
+bool MipsExpressionFunctions::getMemoryValue(u32 address, int size, u64& dest, std::string& error)
+{
+	switch (size)
+	{
+		case 1:
+		case 2:
+		case 4:
+		case 8:
+			break;
+		default:
+			error = StringUtil::StdStringFromFormat(
+				TRANSLATE("ExpressionParser", "Invalid memory access size %d."), size);
+			return false;
+	}
+
+	if (address % size)
+	{
+		error = TRANSLATE("ExpressionParser", "Invalid memory access (unaligned).");
+		return false;
+	}
+
+	switch (size)
+	{
+		case 1:
+			dest = m_cpu->read8(address);
+			break;
+		case 2:
+			dest = m_cpu->read16(address);
+			break;
+		case 4:
+			dest = m_cpu->read32(address);
+			break;
+		case 8:
+			dest = m_cpu->read64(address);
+			break;
+	}
+
+	return true;
 }

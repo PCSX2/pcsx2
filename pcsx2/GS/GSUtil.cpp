@@ -1,24 +1,13 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GS/GS.h"
 #include "GS/GSExtra.h"
 #include "GS/GSUtil.h"
 #include "MultiISA.h"
 #include "common/StringUtil.h"
+
+#include <array>
 
 #ifdef ENABLE_VULKAN
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
@@ -33,18 +22,17 @@
 #include <wil/com.h>
 #endif
 
-static class GSUtilMaps
+namespace {
+struct GSUtilMaps
 {
-public:
-	u8 PrimClassField[8];
-	u8 VertexCountField[8];
-	u8 ClassVertexCountField[4];
-	u32 CompatibleBitsField[64][2];
-	u32 SharedBitsField[64][2];
-	u32 SwizzleField[64][2];
+	u8 PrimClassField[8] = {};
+	u8 VertexCountField[8] = {};
+	u8 ClassVertexCountField[4] = {};
+	u32 CompatibleBitsField[64][2] = {};
+	u32 SharedBitsField[64][2] = {};
+	u32 SwizzleField[64][2] = {};
 
-	// Defer init to avoid AVX2 illegal instructions
-	void Init()
+	constexpr GSUtilMaps()
 	{
 		PrimClassField[GS_POINTLIST] = GS_POINT_CLASS;
 		PrimClassField[GS_LINELIST] = GS_LINE_CLASS;
@@ -69,8 +57,6 @@ public:
 		ClassVertexCountField[GS_TRIANGLE_CLASS] = 3;
 		ClassVertexCountField[GS_SPRITE_CLASS] = 2;
 
-		memset(CompatibleBitsField, 0, sizeof(CompatibleBitsField));
-
 		for (int i = 0; i < 64; i++)
 		{
 			CompatibleBitsField[i][i >> 5] |= 1U << (i & 0x1f);
@@ -84,8 +70,6 @@ public:
 		CompatibleBitsField[PSMZ24][PSMZ32 >> 5] |= 1 << (PSMZ32 & 0x1f);
 		CompatibleBitsField[PSMZ16][PSMZ16S >> 5] |= 1 << (PSMZ16S & 0x1f);
 		CompatibleBitsField[PSMZ16S][PSMZ16 >> 5] |= 1 << (PSMZ16 & 0x1f);
-
-		memset(SwizzleField, 0, sizeof(SwizzleField));
 
 		for (int i = 0; i < 64; i++)
 		{
@@ -103,8 +87,6 @@ public:
 		SwizzleField[PSMZ32][PSMZ24 >> 5] |= 1 << (PSMZ24 & 0x1f);
 		SwizzleField[PSMZ24][PSMZ32 >> 5] |= 1 << (PSMZ32 & 0x1f);
 
-		memset(SharedBitsField, 0, sizeof(SharedBitsField));
-
 		SharedBitsField[PSMCT24][PSMT8H >> 5] |= 1 << (PSMT8H & 0x1f);
 		SharedBitsField[PSMCT24][PSMT4HL >> 5] |= 1 << (PSMT4HL & 0x1f);
 		SharedBitsField[PSMCT24][PSMT4HH >> 5] |= 1 << (PSMT4HH & 0x1f);
@@ -120,12 +102,22 @@ public:
 		SharedBitsField[PSMT4HH][PSMZ24 >> 5] |= 1 << (PSMZ24 & 0x1f);
 		SharedBitsField[PSMT4HH][PSMT4HL >> 5] |= 1 << (PSMT4HL & 0x1f);
 	}
+};
+}
 
-} s_maps;
+static constexpr const GSUtilMaps s_maps;
 
-void GSUtil::Init()
+const char* GSUtil::GetATSTName(u32 atst)
 {
-	s_maps.Init();
+	static constexpr const char* names[] = {
+		"NEVER", "ALWAYS", "LESS", "LEQUAL", "EQUAL", "GEQUAL", "GREATER", "NOTEQUAL" };
+	return (atst < std::size(names)) ? names[atst] : "";
+}
+
+const char* GSUtil::GetAFAILName(u32 afail)
+{
+	static constexpr const char* names[] = {"KEEP", "FB_ONLY", "ZB_ONLY", "RGB_ONLY"};
+	return (afail < std::size(names)) ? names[afail] : "";
 }
 
 GS_PRIM_CLASS GSUtil::GetPrimClass(u32 prim)
@@ -199,37 +191,48 @@ u32 GSUtil::GetChannelMask(u32 spsm)
 u32 GSUtil::GetChannelMask(u32 spsm, u32 fbmsk)
 {
 	u32 mask = GetChannelMask(spsm);
-	mask &= (fbmsk & 0xFF) ? (~0x1 & 0xf) : 0xf;
-	mask &= (fbmsk & 0xFF00) ? (~0x2 & 0xf) : 0xf;
-	mask &= (fbmsk & 0xFF0000) ? (~0x4 & 0xf) : 0xf;
-	mask &= (fbmsk & 0xFF000000) ? (~0x8 & 0xf) : 0xf;
+	mask &= ((fbmsk & 0xFF) == 0xFF) ? (~0x1 & 0xf) : 0xf;
+	mask &= ((fbmsk & 0xFF00) == 0xFF00) ? (~0x2 & 0xf) : 0xf;
+	mask &= ((fbmsk & 0xFF0000) == 0xFF0000) ? (~0x4 & 0xf) : 0xf;
+	mask &= ((fbmsk & 0xFF000000) == 0xFF000000) ? (~0x8 & 0xf) : 0xf;
 	return mask;
 }
 
 GSRendererType GSUtil::GetPreferredRenderer()
 {
+	// Memorize the value, so we don't keep re-querying it.
+	static GSRendererType preferred_renderer = GSRendererType::Auto;
+	if (preferred_renderer == GSRendererType::Auto)
+	{
 #if defined(__APPLE__)
-	// Mac: Prefer Metal hardware.
-	return GSRendererType::Metal;
+		// Mac: Prefer Metal hardware.
+		preferred_renderer = GSRendererType::Metal;
+#elif defined(_WIN32) && defined(_M_ARM64)
+		// Default to DX12 on Windows-on-ARM.
+		preferred_renderer = GSRendererType::DX12;
 #elif defined(_WIN32)
-	// Use D3D device info to select renderer.
-	return D3D::GetPreferredRenderer();
+		// Use D3D device info to select renderer.
+		preferred_renderer = D3D::GetPreferredRenderer();
 #else
-	// Linux: Prefer Vulkan if the driver isn't buggy.
+		// Linux: Prefer Vulkan if the driver isn't buggy.
 #if defined(ENABLE_VULKAN)
-	if (GSDeviceVK::IsSuitableDefaultRenderer())
-		return GSRendererType::VK;
+		if (GSDeviceVK::IsSuitableDefaultRenderer())
+			preferred_renderer = GSRendererType::VK;
 #endif
 
-	// Otherwise, whatever is available.
+			// Otherwise, whatever is available.
+	if (preferred_renderer == GSRendererType::Auto) // If it's still auto, VK wasn't selected.
 #if defined(ENABLE_OPENGL)
-	return GSRendererType::OGL;
+		preferred_renderer = GSRendererType::OGL;
 #elif defined(ENABLE_VULKAN)
-	return GSRendererType::VK;
+		preferred_renderer = GSRendererType::VK;
 #else
-	return GSRendererType::SW;
+		preferred_renderer = GSRendererType::SW;
 #endif
 #endif
+	}
+
+	return preferred_renderer;
 }
 
 const char* psm_str(int psm)

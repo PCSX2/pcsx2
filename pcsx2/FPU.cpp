@@ -1,19 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "Common.h"
 
 #include <cmath>
@@ -76,12 +63,14 @@
 // If we have an infinity value, then Overflow has occured.
 bool checkOverflow(u32& xReg, u32 cFlagsToSet)
 {
-	if ( (xReg & ~0x80000000) == PosInfinity ) {
+	if ((xReg & ~0x80000000) == PosInfinity) {
 		/*Console.Warning( "FPU OVERFLOW!: Changing to +/-Fmax!!!!!!!!!!!!\n" );*/
 		xReg = (xReg & 0x80000000) | posFmax;
 		_ContVal_ |= (cFlagsToSet);
 		return true;
 	}
+	else if (cFlagsToSet & FPUflagO)
+		_ContVal_ &= ~FPUflagO;
 
 	return false;
 }
@@ -94,8 +83,20 @@ bool checkUnderflow(u32& xReg, u32 cFlagsToSet) {
 		_ContVal_ |= (cFlagsToSet);
 		return true;
 	}
+	else if (cFlagsToSet & FPUflagU)
+		_ContVal_ &= ~FPUflagU;
 
 	return false;
+}
+
+__fi u32 fp_max(u32 a, u32 b)
+{
+	return ((s32)a < 0 && (s32)b < 0) ? std::min<s32>(a, b) : std::max<s32>(a, b);
+}
+
+__fi u32 fp_min(u32 a, u32 b)
+{
+	return ((s32)a < 0 && (s32)b < 0) ? std::max<s32>(a, b) : std::min<s32>(a, b);
 }
 
 /*	Checks if Divide by Zero will occur. (z/y = x)
@@ -137,7 +138,7 @@ bool checkDivideByZero(u32& xReg, u32 yDivisorReg, u32 zDividendReg, u32 cFlagsT
 #else
 // Used for Comparing; This compares if the floats are exactly the same.
 	#define C_cond_S(cond) {  \
-	   _ContVal_ = ( _FsValf_ cond _FtValf_ ) ?  \
+	   _ContVal_ = ( fpuDouble(_FsValUl_) cond fpuDouble(_FtValUl_) ) ?  \
 				   ( _ContVal_ | FPUflagC ) :  \
 				   ( _ContVal_ & ~FPUflagC );  \
 	}
@@ -231,12 +232,14 @@ void C_LT() {
 }
 
 void CFC1() {
-	if ( !_Rt_ ) return;
+	if (!_Rt_) return;
 
-	if (_Fs_ >= 16)
+	if (_Fs_ == 31)
 		cpuRegs.GPR.r[_Rt_].SD[0] = (s32)fpuRegs.fprc[31];	// force sign extension to 64 bit
+	else if (_Fs_ == 0)
+		cpuRegs.GPR.r[_Rt_].SD[0] = 0x2E00;
 	else
-		cpuRegs.GPR.r[_Rt_].SD[0] = (s32)fpuRegs.fprc[0];	// force sign extension to 64 bit
+		cpuRegs.GPR.r[_Rt_].SD[0] = 0;
 }
 
 void CTC1() {
@@ -281,7 +284,7 @@ void MADDA_S() {
 }
 
 void MAX_S() {
-	_FdValf_  = std::max( _FsValf_, _FtValf_ );
+	_FdValUl_  = fp_max( _FsValUl_, _FtValUl_ );
 	clearFPUFlags( FPUflagO | FPUflagU );
 }
 
@@ -291,7 +294,7 @@ void MFC1() {
 }
 
 void MIN_S() {
-	_FdValf_  = std::min( _FsValf_, _FtValf_ );
+	_FdValUl_ = fp_min(_FsValUl_, _FtValUl_);
 	clearFPUFlags( FPUflagO | FPUflagU );
 }
 
@@ -336,9 +339,11 @@ void NEG_S() {
 
 void RSQRT_S() {
 	FPRreg temp;
+	clearFPUFlags(FPUflagD | FPUflagI);
+
 	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) { // Ft is zero (Denormals are Zero)
 		_ContVal_ |= FPUflagD | FPUflagSD;
-		_FdValUl_ = ( ( _FsValUl_ ^ _FtValUl_ ) & 0x80000000 ) | posFmax;
+		_FdValUl_ = ( _FtValUl_ & 0x80000000 ) | posFmax;
 		return;
 	}
 	else if ( _FtValUl_ & 0x80000000 ) { // Ft is negative
@@ -353,14 +358,15 @@ void RSQRT_S() {
 }
 
 void SQRT_S() {
+	clearFPUFlags(FPUflagI | FPUflagD);
+
 	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) // If Ft = +/-0
-		_FdValUl_ = 0;// result is 0
+		_FdValUl_ = _FtValUl_ & 0x80000000;// result is 0
 	else if ( _FtValUl_ & 0x80000000 ) { // If Ft is Negative
 		_ContVal_ |= FPUflagI | FPUflagSI;
 		_FdValf_ = sqrt( fabs( fpuDouble( _FtValUl_ ) ) );
 	} else
 		_FdValf_ = sqrt( fpuDouble( _FtValUl_ ) ); // If Ft is Positive
-	clearFPUFlags( FPUflagD );
 }
 
 void SUB_S() {

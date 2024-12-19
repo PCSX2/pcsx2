@@ -1,24 +1,12 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GS/Renderers/Metal/GSTextureMTL.h"
 #include "GS/Renderers/Metal/GSDeviceMTL.h"
 #include "GS/GSPerfMon.h"
 #include "common/BitUtils.h"
 #include "common/Console.h"
+#include "common/HostSys.h"
 
 #ifdef __APPLE__
 
@@ -140,17 +128,23 @@ void GSTextureMTL::GenerateMipmap()
 	}
 }}
 
-void GSTextureMTL::Swap(GSTexture* other)
-{
-	GSTexture::Swap(other);
+#ifdef PCSX2_DEVBUILD
 
-	GSTextureMTL* mtex = static_cast<GSTextureMTL*>(other);
-	pxAssert(m_dev == mtex->m_dev);
-#define SWAP(x) std::swap(x, mtex->x)
-	SWAP(m_texture);
-	SWAP(m_has_mipmaps);
-#undef SWAP
+void GSTextureMTL::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	@autoreleasepool {
+		NSString* label = [[[NSString alloc] autorelease]
+			initWithBytes:name.data()
+			length:static_cast<NSUInteger>(name.length())
+			encoding:NSUTF8StringEncoding];
+		[m_texture setLabel:label];
+	}
 }
+
+#endif
 
 GSDownloadTextureMTL::GSDownloadTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLBuffer>> buffer,
 	u32 width, u32 height, GSTexture::Format format)
@@ -164,7 +158,7 @@ GSDownloadTextureMTL::GSDownloadTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLBuff
 GSDownloadTextureMTL::~GSDownloadTextureMTL() = default;
 
 std::unique_ptr<GSDownloadTextureMTL> GSDownloadTextureMTL::Create(GSDeviceMTL* dev, u32 width, u32 height, GSTexture::Format format)
-{
+{ @autoreleasepool {
 	const u32 buffer_size = GetBufferSize(width, height, format, PITCH_ALIGNMENT);
 
 	MRCOwned<id<MTLBuffer>> buffer = MRCTransfer([dev->m_dev.dev newBufferWithLength:buffer_size options:MTLResourceStorageModeShared]);
@@ -175,7 +169,7 @@ std::unique_ptr<GSDownloadTextureMTL> GSDownloadTextureMTL::Create(GSDeviceMTL* 
 	}
 
 	return std::unique_ptr<GSDownloadTextureMTL>(new GSDownloadTextureMTL(dev, buffer, width, height, format));
-}
+}}
 
 void GSDownloadTextureMTL::CopyFromTexture(
 	const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch)
@@ -266,5 +260,23 @@ void GSDownloadTextureMTL::Flush()
 
 	m_copy_cmdbuffer = nil;
 }
+
+#ifdef PCSX2_DEVBUILD
+
+void GSDownloadTextureMTL::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	@autoreleasepool {
+		NSString* label = [[[NSString alloc] autorelease]
+			initWithBytes:name.data()
+			length:static_cast<NSUInteger>(name.length())
+			encoding:NSUTF8StringEncoding];
+		[m_buffer setLabel:label];
+	}
+}
+
+#endif
 
 #endif
