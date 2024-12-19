@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
-
+#include "PS2Float.h"
 #include <cmath>
 
 // Helper Macros
@@ -63,28 +63,57 @@
 // If we have an infinity value, then Overflow has occured.
 bool checkOverflow(u32& xReg, u32 cFlagsToSet)
 {
-	if ((xReg & ~0x80000000) == PosInfinity) {
-		/*Console.Warning( "FPU OVERFLOW!: Changing to +/-Fmax!!!!!!!!!!!!\n" );*/
-		xReg = (xReg & 0x80000000) | posFmax;
-		_ContVal_ |= (cFlagsToSet);
-		return true;
+	if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MULDIV || CHECK_FPU_SOFT_SQRT)
+	{
+		if (xReg == PS2Float::MAX_FLOATING_POINT_VALUE || xReg == PS2Float::MIN_FLOATING_POINT_VALUE)
+		{
+			_ContVal_ |= (cFlagsToSet);
+			return true;
+		}
+		else if (cFlagsToSet & FPUflagO)
+			_ContVal_ &= ~FPUflagO;
 	}
-	else if (cFlagsToSet & FPUflagO)
-		_ContVal_ &= ~FPUflagO;
+	else
+	{
+		if ((xReg & ~0x80000000) == PosInfinity)
+		{
+			/*Console.Warning( "FPU OVERFLOW!: Changing to +/-Fmax!!!!!!!!!!!!\n" );*/
+			xReg = (xReg & 0x80000000) | posFmax;
+			_ContVal_ |= (cFlagsToSet);
+			return true;
+		}
+		else if (cFlagsToSet & FPUflagO)
+			_ContVal_ &= ~FPUflagO;
+	}
 
 	return false;
 }
 
 // If we have a denormal value, then Underflow has occured.
 bool checkUnderflow(u32& xReg, u32 cFlagsToSet) {
-	if ( ( (xReg & 0x7F800000) == 0 ) && ( (xReg & 0x007FFFFF) != 0 ) ) {
-		/*Console.Warning( "FPU UNDERFLOW!: Changing to +/-0!!!!!!!!!!!!\n" );*/
-		xReg &= 0x80000000;
-		_ContVal_ |= (cFlagsToSet);
-		return true;
+
+	if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MULDIV || CHECK_FPU_SOFT_SQRT)
+	{
+		if (PS2Float(xReg).IsDenormalized())
+		{
+			_ContVal_ |= (cFlagsToSet);
+			return true;
+		}
+		else if (cFlagsToSet & FPUflagU)
+			_ContVal_ &= ~FPUflagU;
 	}
-	else if (cFlagsToSet & FPUflagU)
-		_ContVal_ &= ~FPUflagU;
+	else
+	{
+		if (((xReg & 0x7F800000) == 0) && ((xReg & 0x007FFFFF) != 0))
+		{
+			/*Console.Warning( "FPU UNDERFLOW!: Changing to +/-0!!!!!!!!!!!!\n" );*/
+			xReg &= 0x80000000;
+			_ContVal_ |= (cFlagsToSet);
+			return true;
+		}
+		else if (cFlagsToSet & FPUflagU)
+			_ContVal_ &= ~FPUflagU;
+	}
 
 	return false;
 }
@@ -106,9 +135,33 @@ __fi u32 fp_min(u32 a, u32 b)
 */
 bool checkDivideByZero(u32& xReg, u32 yDivisorReg, u32 zDividendReg, u32 cFlagsToSet1, u32 cFlagsToSet2) {
 
-	if ( (yDivisorReg & 0x7F800000) == 0 ) {
-		_ContVal_ |= ( (zDividendReg & 0x7F800000) == 0 ) ? cFlagsToSet2 : cFlagsToSet1;
-		xReg = ( (yDivisorReg ^ zDividendReg) & 0x80000000 ) | posFmax;
+	if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MULDIV || CHECK_FPU_SOFT_SQRT)
+	{
+		PS2Float yMatrix = PS2Float(yDivisorReg);
+		PS2Float zMatrix = PS2Float(zDividendReg);
+
+		if (yMatrix.IsZero())
+		{
+			bool dividendZero = zMatrix.IsZero();
+
+			_ContVal_ |= dividendZero ? cFlagsToSet2 : cFlagsToSet1;
+
+			bool IsSigned = yMatrix.Sign() ^ zMatrix.Sign();
+
+			if (dividendZero)
+				xReg = IsSigned ? PS2Float::MIN_FLOATING_POINT_VALUE : PS2Float::MAX_FLOATING_POINT_VALUE;
+			else
+			{
+				xReg = PS2Float(IsSigned, 0, 0).raw;
+			}
+
+			return true;
+		}
+	}
+	else if ((yDivisorReg & 0x7F800000) == 0)
+	{
+		_ContVal_ |= ((zDividendReg & 0x7F800000) == 0) ? cFlagsToSet2 : cFlagsToSet1;
+		xReg = ((yDivisorReg ^ zDividendReg) & 0x80000000) | posFmax;
 		return true;
 	}
 
@@ -124,25 +177,6 @@ bool checkDivideByZero(u32& xReg, u32 yDivisorReg, u32 zDividendReg, u32 cFlagsT
 #define clearFPUFlags(cFlags) {  \
 	_ContVal_ &= ~( cFlags ) ;  \
 }
-
-#ifdef comparePrecision
-// This compare discards the least-significant bit(s) in order to solve some rounding issues.
-	#define C_cond_S(cond) {  \
-		FPRreg tempA, tempB;  \
-		tempA.UL = _FsValUl_ & comparePrecision;  \
-		tempB.UL = _FtValUl_ & comparePrecision;  \
-		_ContVal_ = ( ( tempA.f ) cond ( tempB.f ) ) ?  \
-					( _ContVal_ | FPUflagC ) :  \
-					( _ContVal_ & ~FPUflagC );  \
-	}
-#else
-// Used for Comparing; This compares if the floats are exactly the same.
-	#define C_cond_S(cond) {  \
-	   _ContVal_ = ( fpuDouble(_FsValUl_) cond fpuDouble(_FtValUl_) ) ?  \
-				   ( _ContVal_ | FPUflagC ) :  \
-				   ( _ContVal_ & ~FPUflagC );  \
-	}
-#endif
 
 // Conditional Branch
 #define BC1(cond)                               \
@@ -182,19 +216,94 @@ float fpuDouble(u32 f)
 	}
 }
 
+static __fi u32 fpuAccurateAdd(u32 a, u32 b)
+{
+	if (CHECK_FPU_SOFT_ADDSUB) return PS2Float(a).Add(PS2Float(b)).raw;
+
+	return std::bit_cast<u32>(fpuDouble(a) + fpuDouble(b));
+}
+
+static __fi u32 fpuAccurateSub(u32 a, u32 b)
+{
+	if (CHECK_FPU_SOFT_ADDSUB) return PS2Float(a).Sub(PS2Float(b)).raw;
+
+	return std::bit_cast<u32>(fpuDouble(a) - fpuDouble(b));
+}
+
+static __fi u32 fpuAccurateMul(u32 a, u32 b)
+{
+	if (CHECK_FPU_SOFT_MULDIV) return PS2Float(a).Mul(PS2Float(b)).raw;
+
+	return std::bit_cast<u32>(fpuDouble(a) * fpuDouble(b));
+}
+
+static __fi u32 fpuAccurateDiv(u32 a, u32 b)
+{
+	if (CHECK_FPU_SOFT_MULDIV) return PS2Float(a).Div(PS2Float(b)).raw;
+
+	return std::bit_cast<u32>(fpuDouble(a) / fpuDouble(b));
+}
+
+static __fi s32 double_to_int(double value)
+{
+	if (value >= 2147483647.0)
+		return 2147483647LL;
+	if (value <= -2147483648.0)
+		return -2147483648LL;
+	return value;
+}
+
+static __fi void C_cond_S(uint8_t mode)
+{
+	switch (mode)
+	{
+		case 0: // ==
+			if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MULDIV || CHECK_FPU_SOFT_SQRT)
+			{
+				_ContVal_ = (PS2Float(_FsValUl_).CompareTo(PS2Float(_FtValUl_)) == 0) ? (_ContVal_ | FPUflagC) : (_ContVal_ & ~FPUflagC); 
+			}
+			else
+			{
+				_ContVal_ = (fpuDouble(_FsValUl_) == fpuDouble(_FtValUl_)) ? (_ContVal_ | FPUflagC) : (_ContVal_ & ~FPUflagC); 
+			}
+			break;
+		case 1: // <=
+			if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MULDIV || CHECK_FPU_SOFT_SQRT)
+			{
+				int32_t cmpResult = PS2Float(_FsValUl_).CompareTo(PS2Float(_FtValUl_));
+				_ContVal_ = (cmpResult == 0 || cmpResult == -1) ? (_ContVal_ | FPUflagC) : (_ContVal_ & ~FPUflagC);
+			}
+			else
+			{
+				_ContVal_ = (fpuDouble(_FsValUl_) <= fpuDouble(_FtValUl_)) ? (_ContVal_ | FPUflagC) : (_ContVal_ & ~FPUflagC);
+			}
+			break;
+		case 2: // <
+			if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MULDIV || CHECK_FPU_SOFT_SQRT)
+			{
+				_ContVal_ = (PS2Float(_FsValUl_).CompareTo(PS2Float(_FtValUl_)) == -1) ? (_ContVal_ | FPUflagC) : (_ContVal_ & ~FPUflagC);
+			}
+			else
+			{
+				_ContVal_ = (fpuDouble(_FsValUl_) < fpuDouble(_FtValUl_)) ? (_ContVal_ | FPUflagC) : (_ContVal_ & ~FPUflagC);
+			}
+			break;
+	}
+}
+
 void ABS_S() {
 	_FdValUl_ = _FsValUl_ & 0x7fffffff;
 	clearFPUFlags( FPUflagO | FPUflagU );
 }
 
 void ADD_S() {
-	_FdValf_  = fpuDouble( _FsValUl_ ) + fpuDouble( _FtValUl_ );
+	_FdValUl_ = fpuAccurateAdd(_FsValUl_, _FtValUl_);
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FdValUl_, FPUflagU | FPUflagSU);
 }
 
 void ADDA_S() {
-	_FAValf_  = fpuDouble( _FsValUl_ ) + fpuDouble( _FtValUl_ );
+	_FAValUl_ = fpuAccurateAdd(_FsValUl_, _FtValUl_);
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU);
 }
@@ -216,7 +325,7 @@ void BC1TL() {
 }
 
 void C_EQ() {
-	C_cond_S(==);
+	C_cond_S(0);
 }
 
 void C_F() {
@@ -224,11 +333,11 @@ void C_F() {
 }
 
 void C_LE() {
-	C_cond_S(<=);
+	C_cond_S(1);
 }
 
 void C_LT() {
-	C_cond_S(<);
+	C_cond_S(2);
 }
 
 void CFC1() {
@@ -253,14 +362,30 @@ void CVT_S() {
 }
 
 void CVT_W() {
-	if ( ( _FsValUl_ & 0x7F800000 ) <= 0x4E800000 ) { _FdValSl_ = (s32)_FsValf_; }
-	else if ( ( _FsValUl_ & 0x80000000 ) == 0 ) { _FdValUl_ = 0x7fffffff; }
-	else { _FdValUl_ = 0x80000000; }
+	if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MULDIV || CHECK_FPU_SOFT_SQRT)
+	{
+		_FdValSl_ = double_to_int(PS2Float(_FsValUl_).ToDouble());
+	}
+	else
+	{
+		if ((_FsValUl_ & 0x7F800000) <= 0x4E800000)
+		{
+			_FdValSl_ = (s32)_FsValf_;
+		}
+		else if ((_FsValUl_ & 0x80000000) == 0)
+		{
+			_FdValUl_ = 0x7fffffff;
+		}
+		else
+		{
+			_FdValUl_ = 0x80000000;
+		}
+	}
 }
 
 void DIV_S() {
 	if (checkDivideByZero( _FdValUl_, _FtValUl_, _FsValUl_, FPUflagD | FPUflagSD, FPUflagI | FPUflagSI)) return;
-	_FdValf_ = fpuDouble( _FsValUl_ ) / fpuDouble( _FtValUl_ );
+	_FdValUl_ = fpuAccurateDiv(_FsValUl_, _FtValUl_);
 	if (checkOverflow( _FdValUl_, 0)) return;
 	checkUnderflow( _FdValUl_, 0);
 }
@@ -270,15 +395,13 @@ void DIV_S() {
 	method provides a similar outcome and is faster. (cottonvibes)
 */
 void MADD_S() {
-	FPRreg temp;
-	temp.f = fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
-	_FdValf_  = fpuDouble( _FAValUl_ ) + fpuDouble( temp.UL );
+	_FdValUl_ = fpuAccurateAdd(_FAValUl_, fpuAccurateMul(_FsValUl_, _FtValUl_));
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FdValUl_, FPUflagU | FPUflagSU);
 }
 
 void MADDA_S() {
-	_FAValf_ += fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
+	_FAValUl_ = fpuAccurateAdd(_FAValUl_, fpuAccurateMul(_FsValUl_, _FtValUl_));
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU);
 }
@@ -303,15 +426,13 @@ void MOV_S() {
 }
 
 void MSUB_S() {
-	FPRreg temp;
-	temp.f = fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
-	_FdValf_  = fpuDouble( _FAValUl_ ) - fpuDouble( temp.UL );
+	_FdValUl_ = fpuAccurateSub(_FAValUl_, fpuAccurateMul(_FsValUl_, _FtValUl_));
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FdValUl_, FPUflagU | FPUflagSU);
 }
 
 void MSUBA_S() {
-	_FAValf_ -= fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
+	_FAValUl_ = fpuAccurateSub(_FAValUl_, fpuAccurateMul(_FsValUl_, _FtValUl_));
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU);
 }
@@ -321,13 +442,13 @@ void MTC1() {
 }
 
 void MUL_S() {
-	_FdValf_  = fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
+	_FdValUl_ = fpuAccurateMul(_FsValUl_, _FtValUl_);
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FdValUl_, FPUflagU | FPUflagSU);
 }
 
 void MULA_S() {
-	_FAValf_  = fpuDouble( _FsValUl_ ) * fpuDouble( _FtValUl_ );
+	_FAValUl_ = fpuAccurateMul(_FsValUl_, _FtValUl_);
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU);
 }
@@ -341,17 +462,45 @@ void RSQRT_S() {
 	FPRreg temp;
 	clearFPUFlags(FPUflagD | FPUflagI);
 
-	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) { // Ft is zero (Denormals are Zero)
-		_ContVal_ |= FPUflagD | FPUflagSD;
-		_FdValUl_ = ( _FtValUl_ & 0x80000000 ) | posFmax;
-		return;
+	if (CHECK_FPU_SOFT_SQRT)
+	{
+		PS2Float value = PS2Float(_FtValUl_);
+
+		if (value.IsDenormalized())
+		{
+			_ContVal_ |= FPUflagD | FPUflagSD;
+			_FdValUl_ = value.Sign() ? PS2Float::MIN_FLOATING_POINT_VALUE : PS2Float::MAX_FLOATING_POINT_VALUE;
+			return;
+		}
+		else if (_FtValUl_ & 0x80000000) // Ft is negative
+		{
+			_ContVal_ |= FPUflagI | FPUflagSI;
+			_FdValUl_ = PS2Float(_FsValUl_).Rsqrt(PS2Float(value.Abs())).raw;
+		}
+		else // Ft is positive and not zero
+		{
+			_FdValUl_ = PS2Float(_FsValUl_).Rsqrt(value).raw;
+		}
 	}
-	else if ( _FtValUl_ & 0x80000000 ) { // Ft is negative
-		_ContVal_ |= FPUflagI | FPUflagSI;
-		temp.f = sqrt( fabs( fpuDouble( _FtValUl_ ) ) );
-		_FdValf_ = fpuDouble( _FsValUl_ ) / fpuDouble( temp.UL );
+	else
+	{
+		if ((_FtValUl_ & 0x7F800000) == 0) // Ft is zero (Denormals are Zero)
+		{
+			_ContVal_ |= FPUflagD | FPUflagSD;
+			_FdValUl_ = (_FtValUl_ & 0x80000000) | posFmax;
+			return;
+		}
+		else if (_FtValUl_ & 0x80000000) // Ft is negative
+		{
+			_ContVal_ |= FPUflagI | FPUflagSI;
+			temp.f = sqrt(fabs(fpuDouble(_FtValUl_)));
+			_FdValf_ = fpuDouble(_FsValUl_) / fpuDouble(temp.UL);
+		}
+		else // Ft is positive and not zero
+		{
+			_FdValf_ = fpuDouble(_FsValUl_) / sqrt(fpuDouble(_FtValUl_));
+		}
 	}
-	else { _FdValf_ = fpuDouble( _FsValUl_ ) / sqrt( fpuDouble( _FtValUl_ ) ); } // Ft is positive and not zero
 
 	if (checkOverflow( _FdValUl_, 0)) return;
 	checkUnderflow( _FdValUl_, 0);
@@ -360,23 +509,40 @@ void RSQRT_S() {
 void SQRT_S() {
 	clearFPUFlags(FPUflagI | FPUflagD);
 
-	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) // If Ft = +/-0
-		_FdValUl_ = _FtValUl_ & 0x80000000;// result is 0
-	else if ( _FtValUl_ & 0x80000000 ) { // If Ft is Negative
-		_ContVal_ |= FPUflagI | FPUflagSI;
-		_FdValf_ = sqrt( fabs( fpuDouble( _FtValUl_ ) ) );
-	} else
-		_FdValf_ = sqrt( fpuDouble( _FtValUl_ ) ); // If Ft is Positive
+	if (CHECK_FPU_SOFT_SQRT)
+	{
+		PS2Float value = PS2Float(_FtValUl_);
+
+		if (_FtValUl_ & 0x80000000) // If Ft is Negative
+		{
+			_ContVal_ |= FPUflagI | FPUflagSI;
+			_FdValUl_ = PS2Float(value.Abs()).Sqrt().raw;
+		}
+		else
+			_FdValUl_ = value.Sqrt().raw; // If Ft is Positive
+	}
+	else
+	{
+		if ((_FtValUl_ & 0x7F800000) == 0) // If Ft = +/-0
+			_FdValUl_ = _FtValUl_ & 0x80000000; // result is 0
+		else if (_FtValUl_ & 0x80000000) // If Ft is Negative
+		{
+			_ContVal_ |= FPUflagI | FPUflagSI;
+			_FdValf_ = sqrt(fabs(fpuDouble(_FtValUl_)));
+		}
+		else
+			_FdValf_ = sqrt(fpuDouble(_FtValUl_)); // If Ft is Positive
+	}
 }
 
 void SUB_S() {
-	_FdValf_  = fpuDouble( _FsValUl_ ) - fpuDouble( _FtValUl_ );
+	_FdValUl_ = fpuAccurateSub(_FsValUl_, _FtValUl_);
 	if (checkOverflow( _FdValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FdValUl_, FPUflagU | FPUflagSU);
 }
 
 void SUBA_S() {
-	_FAValf_  = fpuDouble( _FsValUl_ ) - fpuDouble( _FtValUl_ );
+	_FAValUl_ = fpuAccurateSub(_FsValUl_, _FtValUl_);
 	if (checkOverflow( _FAValUl_, FPUflagO | FPUflagSO)) return;
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU);
 }
