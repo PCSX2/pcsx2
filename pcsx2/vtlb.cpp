@@ -128,21 +128,22 @@ __inline int CheckCache(u32 addr)
 		return false; //
 	}
 
-	for (int i = 1; i < 48; i++)
+	for (int i = 0; i < cachedTlbs.size(); i++)
 	{
-		if (((tlb[i].EntryLo1 & 0x38) >> 3) == 0x3)
+		const auto& entry = cachedTlbs[i];
+		if (entry->EntryLo1.isCached())
 		{
-			mask = ConvertPageMask(tlb[i].PageMask);
-			if ((addr >= tlb[i].PFN1) && (addr <= tlb[i].PFN1 + mask))
+			mask = ConvertPageMask(entry->PageMask.UL);
+			if ((addr >= entry->PFN1()) && (addr <= entry->PFN1() + mask))
 			{
 				//DevCon.Warning("Yay! Cache check cache addr=%x, mask=%x, addr+mask=%x, VPN2=%x PFN0=%x", addr, mask, (addr & mask), tlb[i].VPN2, tlb[i].PFN0);
 				return true;
 			}
 		}
-		if (((tlb[i].EntryLo0 & 0x38) >> 3) == 0x3)
+		if (entry->EntryLo0.isCached())
 		{
-			mask = ConvertPageMask(tlb[i].PageMask);
-			if ((addr >= tlb[i].PFN0) && (addr <= tlb[i].PFN0 + mask))
+			mask = ConvertPageMask(entry->PageMask.UL);
+			if ((addr >= entry->PFN0()) && (addr <= entry->PFN0() + mask))
 			{
 				//DevCon.Warning("Yay! Cache check cache addr=%x, mask=%x, addr+mask=%x, VPN2=%x PFN0=%x", addr, mask, (addr & mask), tlb[i].VPN2, tlb[i].PFN0);
 				return true;
