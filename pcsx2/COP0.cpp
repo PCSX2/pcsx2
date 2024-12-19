@@ -230,54 +230,63 @@ void MapTLB(const tlbs& t, int i)
 	u32 saddr, eaddr;
 
 	COP0_LOG("MAP TLB %d: 0x%08X-> [0x%08X 0x%08X] S=%d G=%d ASID=%d Mask=0x%03X EntryLo0 PFN=%x EntryLo0 Cache=%x EntryLo1 PFN=%x EntryLo1 Cache=%x VPN2=%x",
-		i, t.VPN2, t.PFN0, t.PFN1, t.S >> 31, t.G, t.ASID,
-		t.Mask, t.EntryLo0 >> 6, (t.EntryLo0 & 0x38) >> 3, t.EntryLo1 >> 6, (t.EntryLo1 & 0x38) >> 3, t.VPN2);
+		i, t.VPN2(), t.PFN0(), t.PFN1(), t.isSPR() >> 31, t.isGlobal(), t.EntryHi.ASID,
+		t.Mask(), t.EntryLo0.PFN, t.EntryLo0.C, t.EntryLo1.PFN, t.EntryLo1.C, t.VPN2());
 
 	// According to the manual
 	// 'It [SPR] must be mapped into a contiguous 16 KB of virtual address space that is
 	// aligned on a 16KB boundary.Results are not guaranteed if this restriction is not followed.'
 	// Assume that the game isn't doing anything less-than-ideal with the scratchpad mapping and map it directly to eeMem->Scratch.
-	if (t.S)
+	if (t.isSPR())
 	{
-		if (t.VPN2 != 0x70000000)
-			Console.Warning("COP0: Mapping Scratchpad to non-default address 0x%08X", t.VPN2);
+		if (t.VPN2() != 0x70000000)
+			Console.Warning("COP0: Mapping Scratchpad to non-default address 0x%08X", t.VPN2());
 
-		vtlb_VMapBuffer(t.VPN2, eeMem->Scratch, Ps2MemSize::Scratch);
+		vtlb_VMapBuffer(t.VPN2(), eeMem->Scratch, Ps2MemSize::Scratch);
 	}
 	else
 	{
-		if (t.EntryLo0 & 0x2)
+		if (t.EntryLo0.V)
 		{
-			mask = ((~t.Mask) << 1) & 0xfffff;
-			saddr = t.VPN2 >> 12;
-			eaddr = saddr + t.Mask + 1;
+			mask = ((~t.Mask()) << 1) & 0xfffff;
+			saddr = t.VPN2() >> 12;
+			eaddr = saddr + t.Mask() + 1;
 
 			for (addr = saddr; addr < eaddr; addr++)
 			{
-				if ((addr & mask) == ((t.VPN2 >> 12) & mask))
+				if ((addr & mask) == ((t.VPN2() >> 12) & mask))
 				{ //match
-					memSetPageAddr(addr << 12, t.PFN0 + ((addr - saddr) << 12));
+					memSetPageAddr(addr << 12, t.PFN0() + ((addr - saddr) << 12));
 					Cpu->Clear(addr << 12, 0x400);
 				}
 			}
 		}
 
-		if (t.EntryLo1 & 0x2)
+		if (t.EntryLo1.V)
 		{
-			mask = ((~t.Mask) << 1) & 0xfffff;
-			saddr = (t.VPN2 >> 12) + t.Mask + 1;
-			eaddr = saddr + t.Mask + 1;
+			mask = ((~t.Mask()) << 1) & 0xfffff;
+			saddr = (t.VPN2() >> 12) + t.Mask() + 1;
+			eaddr = saddr + t.Mask() + 1;
 
 			for (addr = saddr; addr < eaddr; addr++)
 			{
-				if ((addr & mask) == ((t.VPN2 >> 12) & mask))
+				if ((addr & mask) == ((t.VPN2() >> 12) & mask))
 				{ //match
-					memSetPageAddr(addr << 12, t.PFN1 + ((addr - saddr) << 12));
+					memSetPageAddr(addr << 12, t.PFN1() + ((addr - saddr) << 12));
 					Cpu->Clear(addr << 12, 0x400);
 				}
 			}
 		}
 	}
+}
+
+__inline u32 ConvertPageMask(const u32 PageMask)
+{
+	const u32 mask = std::popcount(PageMask >> 13);
+
+	pxAssertMsg(!((mask & 1) || mask > 12), "Invalid page mask for this TLB entry. EE cache doesn't know what to do here.");
+
+	return (1 << (12 + mask)) - 1;
 }
 
 void UnmapTLB(const tlbs& t, int i)
@@ -286,21 +295,21 @@ void UnmapTLB(const tlbs& t, int i)
 	u32 mask, addr;
 	u32 saddr, eaddr;
 
-	if (t.S)
+	if (t.isSPR())
 	{
-		vtlb_VMapUnmap(t.VPN2, 0x4000);
+		vtlb_VMapUnmap(t.VPN2(), 0x4000);
 		return;
 	}
 
-	if (t.EntryLo0 & 0x2)
+	if (t.EntryLo0.V)
 	{
-		mask = ((~t.Mask) << 1) & 0xfffff;
-		saddr = t.VPN2 >> 12;
-		eaddr = saddr + t.Mask + 1;
+		mask = ((~t.Mask()) << 1) & 0xfffff;
+		saddr = t.VPN2() >> 12;
+		eaddr = saddr + t.Mask() + 1;
 		//	Console.WriteLn("Clear TLB: %08x ~ %08x",saddr,eaddr-1);
 		for (addr = saddr; addr < eaddr; addr++)
 		{
-			if ((addr & mask) == ((t.VPN2 >> 12) & mask))
+			if ((addr & mask) == ((t.VPN2() >> 12) & mask))
 			{ //match
 				memClearPageAddr(addr << 12);
 				Cpu->Clear(addr << 12, 0x400);
@@ -308,38 +317,58 @@ void UnmapTLB(const tlbs& t, int i)
 		}
 	}
 
-	if (t.EntryLo1 & 0x2)
+	if (t.EntryLo1.V)
 	{
-		mask = ((~t.Mask) << 1) & 0xfffff;
-		saddr = (t.VPN2 >> 12) + t.Mask + 1;
-		eaddr = saddr + t.Mask + 1;
+		mask = ((~t.Mask()) << 1) & 0xfffff;
+		saddr = (t.VPN2() >> 12) + t.Mask() + 1;
+		eaddr = saddr + t.Mask() + 1;
 		//	Console.WriteLn("Clear TLB: %08x ~ %08x",saddr,eaddr-1);
 		for (addr = saddr; addr < eaddr; addr++)
 		{
-			if ((addr & mask) == ((t.VPN2 >> 12) & mask))
+			if ((addr & mask) == ((t.VPN2() >> 12) & mask))
 			{ //match
 				memClearPageAddr(addr << 12);
 				Cpu->Clear(addr << 12, 0x400);
 			}
+		}
+	}
+
+	for (size_t i = 0; i < cachedTlbs.count; i++)
+	{
+		if (cachedTlbs.PFN0s[i] == t.PFN0() && cachedTlbs.PFN1s[i] == t.PFN1() && cachedTlbs.PageMasks[i] == ConvertPageMask(t.PageMask.UL))
+		{
+			for (size_t j = i; j < cachedTlbs.count - 1; j++)
+			{
+				cachedTlbs.CacheEnabled0[j] = cachedTlbs.CacheEnabled0[j + 1];
+				cachedTlbs.CacheEnabled1[j] = cachedTlbs.CacheEnabled1[j + 1];
+				cachedTlbs.PFN0s[j] = cachedTlbs.PFN0s[j + 1];
+				cachedTlbs.PFN1s[j] = cachedTlbs.PFN1s[j + 1];
+				cachedTlbs.PageMasks[j] = cachedTlbs.PageMasks[j + 1];
+			}
+			cachedTlbs.count--;
+			break;
 		}
 	}
 }
 
 void WriteTLB(int i)
 {
-	tlb[i].PageMask = cpuRegs.CP0.n.PageMask;
-	tlb[i].EntryHi = cpuRegs.CP0.n.EntryHi;
-	tlb[i].EntryLo0 = cpuRegs.CP0.n.EntryLo0;
-	tlb[i].EntryLo1 = cpuRegs.CP0.n.EntryLo1;
+	tlb[i].PageMask.UL = cpuRegs.CP0.n.PageMask;
+	tlb[i].EntryHi.UL = cpuRegs.CP0.n.EntryHi;
+	tlb[i].EntryLo0.UL = cpuRegs.CP0.n.EntryLo0;
+	tlb[i].EntryLo1.UL = cpuRegs.CP0.n.EntryLo1;
 
-	tlb[i].Mask = (cpuRegs.CP0.n.PageMask >> 13) & 0xfff;
-	tlb[i].nMask = (~tlb[i].Mask) & 0xfff;
-	tlb[i].VPN2 = ((cpuRegs.CP0.n.EntryHi >> 13) & (~tlb[i].Mask)) << 13;
-	tlb[i].ASID = cpuRegs.CP0.n.EntryHi & 0xfff;
-	tlb[i].G = cpuRegs.CP0.n.EntryLo0 & cpuRegs.CP0.n.EntryLo1 & 0x1;
-	tlb[i].PFN0 = (((cpuRegs.CP0.n.EntryLo0 >> 6) & 0xFFFFF) & (~tlb[i].Mask)) << 12;
-	tlb[i].PFN1 = (((cpuRegs.CP0.n.EntryLo1 >> 6) & 0xFFFFF) & (~tlb[i].Mask)) << 12;
-	tlb[i].S = cpuRegs.CP0.n.EntryLo0 & 0x80000000;
+	if (!tlb[i].isSPR() && ((tlb[i].EntryLo0.V && tlb[i].EntryLo0.isCached()) || (tlb[i].EntryLo1.V && tlb[i].EntryLo1.isCached())))
+	{
+		const size_t idx = cachedTlbs.count;
+		cachedTlbs.CacheEnabled0[idx] = tlb[i].EntryLo0.isCached() ? ~0 : 0;
+		cachedTlbs.CacheEnabled1[idx] = tlb[i].EntryLo1.isCached() ? ~0 : 0;
+		cachedTlbs.PFN1s[idx] = tlb[i].PFN1();
+		cachedTlbs.PFN0s[idx] = tlb[i].PFN0();
+		cachedTlbs.PageMasks[idx] = ConvertPageMask(tlb[i].PageMask.UL);
+
+		cachedTlbs.count++;
+	}
 
 	MapTLB(tlb[i], i);
 }
@@ -357,10 +386,16 @@ namespace COP0 {
 
 		int i = cpuRegs.CP0.n.Index & 0x3f;
 
-		cpuRegs.CP0.n.PageMask = tlb[i].PageMask;
-		cpuRegs.CP0.n.EntryHi = tlb[i].EntryHi & ~(tlb[i].PageMask | 0x1f00);
-		cpuRegs.CP0.n.EntryLo0 = (tlb[i].EntryLo0 & ~1) | ((tlb[i].EntryHi >> 12) & 1);
-		cpuRegs.CP0.n.EntryLo1 = (tlb[i].EntryLo1 & ~1) | ((tlb[i].EntryHi >> 12) & 1);
+		cpuRegs.CP0.n.PageMask = tlb[i].PageMask.UL;
+		cpuRegs.CP0.n.EntryHi = tlb[i].EntryHi.UL & ~(tlb[i].PageMask.UL | 0x1f00);
+		/*
+		* TEST THIS??
+		cpuRegs.CP0.n.EntryLo0 = (tlb[i].EntryLo0 & ~1) | ((tlb[i].EntryHi.UL >> 12) & 1);
+		cpuRegs.CP0.n.EntryLo1 = (tlb[i].EntryLo1 & ~1) | ((tlb[i].EntryHi.UL >> 12) & 1);
+		*/
+		cpuRegs.CP0.n.EntryLo0 = tlb[i].EntryLo0.UL;
+		cpuRegs.CP0.n.EntryLo1 = tlb[i].EntryLo1.UL;
+
 	}
 
 	void TLBWI()
@@ -374,10 +409,10 @@ namespace COP0 {
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
 
 		UnmapTLB(tlb[j], j);
-		tlb[j].PageMask = cpuRegs.CP0.n.PageMask;
-		tlb[j].EntryHi = cpuRegs.CP0.n.EntryHi;
-		tlb[j].EntryLo0 = cpuRegs.CP0.n.EntryLo0;
-		tlb[j].EntryLo1 = cpuRegs.CP0.n.EntryLo1;
+		tlb[j].PageMask.UL = cpuRegs.CP0.n.PageMask;
+		tlb[j].EntryHi.UL = cpuRegs.CP0.n.EntryHi;
+		tlb[j].EntryLo0.UL = cpuRegs.CP0.n.EntryLo0;
+		tlb[j].EntryLo1.UL = cpuRegs.CP0.n.EntryLo1;
 		WriteTLB(j);
 	}
 
@@ -394,10 +429,10 @@ namespace COP0 {
 		//if (j > 48) return;
 
 		UnmapTLB(tlb[j], j);
-		tlb[j].PageMask = cpuRegs.CP0.n.PageMask;
-		tlb[j].EntryHi = cpuRegs.CP0.n.EntryHi;
-		tlb[j].EntryLo0 = cpuRegs.CP0.n.EntryLo0;
-		tlb[j].EntryLo1 = cpuRegs.CP0.n.EntryLo1;
+		tlb[j].PageMask.UL = cpuRegs.CP0.n.PageMask;
+		tlb[j].EntryHi.UL = cpuRegs.CP0.n.EntryHi;
+		tlb[j].EntryLo0.UL = cpuRegs.CP0.n.EntryLo0;
+		tlb[j].EntryLo1.UL = cpuRegs.CP0.n.EntryLo1;
 		WriteTLB(j);
 	}
 
@@ -422,7 +457,7 @@ namespace COP0 {
 		cpuRegs.CP0.n.Index = 0xFFFFFFFF;
 		for (i = 0; i < 48; i++)
 		{
-			if (tlb[i].VPN2 == ((~tlb[i].Mask) & (EntryHi32.s.VPN2)) && ((tlb[i].G & 1) || ((tlb[i].ASID & 0xff) == EntryHi32.s.ASID)))
+			if (tlb[i].VPN2() == ((~tlb[i].Mask()) & (EntryHi32.s.VPN2)) && ((tlb[i].isGlobal()) || ((tlb[i].EntryHi.ASID & 0xff) == EntryHi32.s.ASID)))
 			{
 				cpuRegs.CP0.n.Index = i;
 				break;

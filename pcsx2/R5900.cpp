@@ -36,6 +36,8 @@ u32 EEoCycle;
 
 alignas(16) cpuRegistersPack _cpuRegistersPack;
 alignas(16) tlbs tlb[48];
+cachedTlbs_t cachedTlbs;
+
 R5900cpu *Cpu = NULL;
 
 static constexpr uint eeWaitCycles = 3072;
@@ -59,6 +61,7 @@ void cpuReset()
 	std::memset(&cpuRegs, 0, sizeof(cpuRegs));
 	std::memset(&fpuRegs, 0, sizeof(fpuRegs));
 	std::memset(&tlb, 0, sizeof(tlb));
+	cachedTlbs.count = 0;
 
 	cpuRegs.pc				= 0xbfc00000; //set pc reg to stack
 	cpuRegs.CP0.n.Config	= 0x440;
