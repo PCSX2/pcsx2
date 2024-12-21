@@ -106,7 +106,16 @@ namespace FileSystem
 	/// open files
 	using ManagedCFilePtr = std::unique_ptr<std::FILE, FileDeleter>;
 	ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode, Error* error = nullptr);
+	// Tries to open a file using the given filename, but if that fails searches
+	// the directory for a file with a case-insensitive match.
+	// This is the same as OpenManagedCFile on Windows and MacOS
+	ManagedCFilePtr OpenManagedCFileTryIgnoreCase(const char* filename, const char* mode, Error* error = nullptr);
 	std::FILE* OpenCFile(const char* filename, const char* mode, Error* error = nullptr);
+	// Tries to open a file using the given filename, but if that fails searches
+	// the directory for a file with a case-insensitive match.
+	// This is the same as OpenCFile on Windows and MacOS
+	std::FILE* OpenCFileTryIgnoreCase(const char* filename, const char* mode, Error* error = nullptr);
+
 	int FSeek64(std::FILE* fp, s64 offset, int whence);
 	s64 FTell64(std::FILE* fp);
 	s64 FSize64(std::FILE* fp);
@@ -135,6 +144,8 @@ namespace FileSystem
 	bool WriteStringToFile(const char* filename, const std::string_view sv);
 	size_t ReadFileWithProgress(std::FILE* fp, void* dst, size_t length, ProgressCallback* progress,
 		Error* error = nullptr, size_t chunk_size = 16 * 1024 * 1024);
+	size_t ReadFileWithPartialProgress(std::FILE* fp, void* dst, size_t length, ProgressCallback* progress,
+		int startPercent, int endPercent, Error* error = nullptr, size_t chunk_size = 16 * 1024 * 1024);
 
 	/// creates a directory in the local filesystem
 	/// if the directory already exists, the return value will be true.
@@ -168,6 +179,10 @@ namespace FileSystem
 	/// Does not apply the compression flag recursively if called for a directory.
 	/// Does nothing and returns false on non-Windows platforms.
 	bool SetPathCompression(const char* path, bool enable);
+
+	// Creates a symbolic link. Note that on Windows this requires elevated
+	// privileges so this is mostly useful for testing purposes.
+	bool CreateSymLink(const char* link, const char* target);
 
 	/// Checks if a file or directory is a symbolic link.
 	bool IsSymbolicLink(const char* path);

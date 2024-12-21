@@ -5,6 +5,7 @@
 
 #include "SIO/SioTypes.h"
 #include "SIO/Memcard/MemoryCardProtocol.h"
+#include "Counters.h"
 
 #include "Host.h"
 #include "IconsPromptFont.h"
@@ -128,6 +129,8 @@ void AutoEject::ClearAll()
 // unsafe to shutdown the VM due to memcard access.
 static std::atomic_uint32_t currentBusyTicks = 0;
 
+uint32_t sioLastFrameMcdBusy = 0;
+
 void MemcardBusy::Decrement()
 {
 	if (currentBusyTicks.load(std::memory_order_relaxed) == 0)
@@ -139,6 +142,7 @@ void MemcardBusy::Decrement()
 void MemcardBusy::SetBusy()
 {
 	currentBusyTicks.store(300, std::memory_order_release);
+	sioLastFrameMcdBusy = g_FrameCount;
 }
 
 bool MemcardBusy::IsBusy()
@@ -149,4 +153,15 @@ bool MemcardBusy::IsBusy()
 void MemcardBusy::ClearBusy()
 {
 	currentBusyTicks.store(0, std::memory_order_release);
+	sioLastFrameMcdBusy = 0;
+}
+
+#include "common/Console.h"
+void MemcardBusy::CheckSaveStateDependency()
+{
+	if (g_FrameCount - sioLastFrameMcdBusy > NUM_FRAMES_BEFORE_SAVESTATE_DEPENDENCY_WARNING)
+	{
+		Host::AddIconOSDMessage("MemcardBusy", ICON_PF_MEMORY_CARD,
+			TRANSLATE_SV("MemoryCard", "The virtual console hasn't saved to your memory card for quite some time. Savestates should not be used in place of in-game saves."), Host::OSD_INFO_DURATION);
+	}
 }

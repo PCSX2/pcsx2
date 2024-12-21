@@ -22,7 +22,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           title: "PAD: Update to latest controller database"
-          commit-message: "PAD: Update to latest controller database."
+          commit-message: "[ci skip] PAD: Update to latest controller database."
           committer: "PCSX2 Bot <PCSX2Bot@users.noreply.github.com>"
           author: "PCSX2 Bot <PCSX2Bot@users.noreply.github.com>"
           body: "Weekly automatic update of SDL Controller DB."

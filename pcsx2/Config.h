@@ -1268,8 +1268,6 @@ struct Pcsx2Config
 		EnablePatches : 1, // enables patch detection and application
 		EnableCheats : 1, // enables cheat detection and application
 		EnablePINE : 1, // enables inter-process communication
-		EnableWideScreenPatches : 1,
-		EnableNoInterlacingPatches : 1,
 		EnableFastBoot : 1,
 		EnableFastBootFastForward : 1,
 		EnableThreadPinning : 1,

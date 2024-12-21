@@ -7,8 +7,6 @@
 
 #ifdef __linux__
 
-#include <unistd.h>
-
 static std::optional<std::string> create_test_directory()
 {
 	for (u16 i = 0; i < UINT16_MAX; i++)
@@ -42,13 +40,13 @@ TEST(FileSystem, RecursiveDeleteDirectoryDontFollowSymbolicLinks)
 	std::string dir_to_delete = Path::Combine(*test_dir, "dir_to_delete");
 	ASSERT_TRUE(FileSystem::CreateDirectoryPath(dir_to_delete.c_str(), false));
 	std::string symlink_path = Path::Combine(dir_to_delete, "link");
-	ASSERT_EQ(symlink(target_dir.c_str(), symlink_path.c_str()), 0);
+	ASSERT_TRUE(FileSystem::CreateSymLink(symlink_path.c_str(), target_dir.c_str()));
 
 	// Delete the directory containing the symlink.
-	ASSERT_TRUE(dir_to_delete.starts_with("/tmp/"));
+	ASSERT_TRUE(dir_to_delete.starts_with("/tmp/pcsx2_filesystem_test_"));
 	ASSERT_TRUE(FileSystem::RecursiveDeleteDirectory(dir_to_delete.c_str()));
 
-	// Make sure the target file didn't get deleted.
+	// Make sure the file in the target directory didn't get deleted.
 	ASSERT_TRUE(FileSystem::FileExists(file_path.c_str()));
 
 	// Clean up.
