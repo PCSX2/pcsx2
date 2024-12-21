@@ -76,6 +76,7 @@ private Q_SLOTS:
 	void onCurrentProfileChanged(int index);
 	void onNewProfileClicked();
 	void onApplyProfileClicked();
+	void onRenameProfileClicked();
 	void onDeleteProfileClicked();
 	void onMappingSettingsClicked();
 	void onRestoreDefaultsClicked();
