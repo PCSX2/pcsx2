@@ -1922,6 +1922,8 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnablePatches);
 	SettingsWrapBitBool(EnableCheats);
 	SettingsWrapBitBool(EnablePINE);
+	SettingsWrapBitBool(EnableWideScreenPatches);
+	SettingsWrapBitBool(EnableNoInterlacingPatches);
 	SettingsWrapBitBool(EnableFastBoot);
 	SettingsWrapBitBool(EnableFastBootFastForward);
 	SettingsWrapBitBool(EnableThreadPinning);
