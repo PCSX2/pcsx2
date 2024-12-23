@@ -397,9 +397,10 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		EmuConfig.Cpu.Recompiler.GetEEClampMode(), static_cast<unsigned>(EmuConfig.Cpu.VU0FPCR.GetRoundMode()),
 		EmuConfig.Cpu.Recompiler.GetVUClampMode(), EmuConfig.GS.VsyncQueueSize);
 
-	if (EmuConfig.EnableCheats)
+	if (EmuConfig.EnableCheats || EmuConfig.EnableWideScreenPatches || EmuConfig.EnableNoInterlacingPatches)
 	{
-		APPEND("CHT ");
+		APPEND("C={}{}{} ", EmuConfig.EnableCheats ? "C" : "", EmuConfig.EnableWideScreenPatches ? "W" : "",
+			EmuConfig.EnableNoInterlacingPatches ? "N" : "");
 	}
 
 	if (GSIsHardwareRenderer())
