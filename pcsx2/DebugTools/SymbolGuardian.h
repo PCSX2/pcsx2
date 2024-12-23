@@ -6,6 +6,7 @@
 #include <atomic>
 #include <thread>
 #include <functional>
+#include <mutex>
 #include <shared_mutex>
 
 #include <ccc/ast.h>
