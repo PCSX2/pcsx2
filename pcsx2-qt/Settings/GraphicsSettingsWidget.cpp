@@ -8,6 +8,7 @@
 #include <QtWidgets/QMessageBox>
 
 #include "pcsx2/Host.h"
+#include "pcsx2/Patch.h"
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GS/GSCapture.h"
 #include "pcsx2/GS/GSUtil.h"
@@ -321,24 +322,61 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	}
 #endif
 
-	// Get rid of widescreen/no-interlace checkboxes from per-game settings, unless the user previously had them set.
+	// Get rid of widescreen/no-interlace checkboxes from per-game settings, and migrate them to Patches if necessary.
 	if (m_dialog->isPerGameSettings())
 	{
-		if ((m_dialog->containsSettingValue("EmuCore", "EnableWideScreenPatches") || m_dialog->containsSettingValue("EmuCore", "EnableNoInterlacingPatches")) &&
-			QMessageBox::question(QtUtils::GetRootWidget(this), tr("Remove Unsupported Settings"),
-				tr("You currently have the <strong>Enable Widescreen Patches</strong> or <strong>Enable No-Interlacing Patches</strong> options enabled for this game.<br><br>"
-				   "We no longer support these options, instead <strong>you should select the \"Patches\" section, and explicitly enable the patches you want.</strong><br><br>"
-				   "Do you want to remove these options from your game configuration now?"),
-				QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+		SettingsInterface* si = m_dialog->getSettingsInterface();
+		bool needs_save = false;
+
+		if (si->ContainsValue("EmuCore", "EnableWideScreenPatches"))
 		{
-			m_dialog->removeSettingValue("EmuCore", "EnableWideScreenPatches");
-			m_dialog->removeSettingValue("EmuCore", "EnableNoInterlacingPatches");
+			const bool ws_enabled = si->GetBoolValue("EmuCore", "EnableWideScreenPatches");
+			si->DeleteValue("EmuCore", "EnableWideScreenPatches");
+
+			const char* WS_PATCH_NAME = "Widescreen 16:9";
+			if (ws_enabled)
+			{
+				si->AddToStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY, WS_PATCH_NAME);
+				si->RemoveFromStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_DISABLE_CONFIG_KEY, WS_PATCH_NAME);
+			}
+			else
+			{
+				si->AddToStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_DISABLE_CONFIG_KEY, WS_PATCH_NAME);
+				si->RemoveFromStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY, WS_PATCH_NAME);
+			}
+			needs_save = true;
+		}
+
+		if (si->ContainsValue("EmuCore", "EnableNoInterlacingPatches"))
+		{
+			const bool ni_enabled = si->GetBoolValue("EmuCore", "EnableNoInterlacingPatches");
+			si->DeleteValue("EmuCore", "EnableNoInterlacingPatches");
+
+			const char* NI_PATCH_NAME = "No-Interlacing";
+			if (ni_enabled)
+			{
+				si->AddToStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY, NI_PATCH_NAME);
+				si->RemoveFromStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_DISABLE_CONFIG_KEY, NI_PATCH_NAME);
+			}
+			else
+			{
+				si->AddToStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_DISABLE_CONFIG_KEY, NI_PATCH_NAME);
+				si->RemoveFromStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY, NI_PATCH_NAME);
+			}
+			needs_save = true;
+		}
+
+		if (needs_save)
+		{
+			m_dialog->saveAndReloadGameSettings();
 		}
 
 		m_ui.displayGridLayout->removeWidget(m_ui.widescreenPatches);
 		m_ui.displayGridLayout->removeWidget(m_ui.noInterlacingPatches);
-		safe_delete(m_ui.widescreenPatches);
-		safe_delete(m_ui.noInterlacingPatches);
+		m_ui.widescreenPatches->deleteLater();
+		m_ui.noInterlacingPatches->deleteLater();
+		m_ui.widescreenPatches = nullptr;
+		m_ui.noInterlacingPatches = nullptr;
 	}
 
 	// Hide advanced options by default.
