@@ -78,6 +78,7 @@ namespace Patch
 	extern const char* PATCHES_CONFIG_SECTION;
 	extern const char* CHEATS_CONFIG_SECTION;
 	extern const char* PATCH_ENABLE_CONFIG_KEY;
+	extern const char* PATCH_DISABLE_CONFIG_KEY;
 
 	extern PatchInfoList GetPatchInfo(const std::string_view serial, u32 crc, bool cheats, bool showAllCRCS, u32* num_unlabelled_patches);
 
@@ -103,4 +104,6 @@ namespace Patch
 	// and then it loads only the ones which are enabled according to the current config
 	// (this happens at AppCoreThread::ApplySettings(...) )
 	extern void ApplyLoadedPatches(patch_place_type place);
+
+	extern bool IsGloballyToggleablePatch(const PatchInfo& patch_info);
 } // namespace Patch

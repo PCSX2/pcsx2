@@ -171,6 +171,7 @@ namespace Patch
 	const char* PATCHES_CONFIG_SECTION = "Patches";
 	const char* CHEATS_CONFIG_SECTION = "Cheats";
 	const char* PATCH_ENABLE_CONFIG_KEY = "Enable";
+	const char* PATCH_DISABLE_CONFIG_KEY = "Disable";
 
 	static zip_t* s_patches_zip;
 	static PatchList s_gamedb_patches;
@@ -589,6 +590,8 @@ void Patch::ReloadEnabledLists()
 
 	s_enabled_patches = Host::GetStringListSetting(PATCHES_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY);
 
+	const EnablePatchList disabled_patches = Host::GetStringListSetting(PATCHES_CONFIG_SECTION, PATCH_DISABLE_CONFIG_KEY);
+
 	// Name based matching for widescreen/NI settings.
 	if (EmuConfig.EnableWideScreenPatches)
 	{
@@ -604,6 +607,18 @@ void Patch::ReloadEnabledLists()
 				[](const std::string& it) { return (it == NI_PATCH_NAME); }))
 		{
 			s_enabled_patches.emplace_back(NI_PATCH_NAME);
+		}
+	}
+
+	for (auto it = s_enabled_patches.begin(); it != s_enabled_patches.end();)
+	{
+		if (std::find(disabled_patches.begin(), disabled_patches.end(), *it) != disabled_patches.end())
+		{
+			it = s_enabled_patches.erase(it);
+		}
+		else
+		{
+			++it;
 		}
 	}
 }
@@ -1025,6 +1040,11 @@ void Patch::ApplyLoadedPatches(patch_place_type place)
 		if (i->placetopatch == place)
 			ApplyPatch(i);
 	}
+}
+
+bool Patch::IsGloballyToggleablePatch(const PatchInfo& patch_info)
+{
+	return patch_info.name == WS_PATCH_NAME || patch_info.name == NI_PATCH_NAME;
 }
 
 void Patch::ApplyDynamicPatches(u32 pc)
