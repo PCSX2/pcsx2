@@ -200,10 +200,11 @@ void ControllerSettingsWindow::onRenameProfileClicked()
 		return;
 	}
 
-	std::string game_settings_dir(EmuFolders::GameSettings);
-	for (const auto& game_settings : std::filesystem::recursive_directory_iterator(game_settings_dir))
+	FileSystem::FindResultsArray files;
+	FileSystem::FindFiles(EmuFolders::GameSettings.c_str(), "*", FILESYSTEM_FIND_FILES, &files);
+	for (const auto& game_settings : files)
 	{
-		std::string game_settings_path(game_settings.path().string());
+		std::string game_settings_path(game_settings.FileName.c_str());
 		std::unique_ptr<INISettingsInterface> update_sif(std::make_unique<INISettingsInterface>(std::move(game_settings_path)));
 		
 		update_sif->Load();
@@ -212,8 +213,7 @@ void ControllerSettingsWindow::onRenameProfileClicked()
 		{
 			update_sif->SetStringValue("EmuCore", "InputProfileName", profile_name.toUtf8());
 		}
-	}	
-			
+	}
 
 	refreshProfileList();
 	switchProfile({profile_name});
