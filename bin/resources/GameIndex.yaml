@@ -5367,6 +5367,7 @@ SCES-52033:
     autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
+    bilinearUpscale: 1 # Smooths out bloom on lights.
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
@@ -7075,6 +7076,7 @@ SCKA-20032:
     autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
+    bilinearUpscale: 1 # Smooths out bloom on lights.
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
@@ -11107,6 +11109,7 @@ SCUS-97264:
     autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
+    bilinearUpscale: 1 # Smooths out bloom on lights.
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
@@ -11449,6 +11452,7 @@ SCUS-97377:
     autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
+    bilinearUpscale: 1 # Smooths out bloom on lights.
 SCUS-97378:
   name: "EyeToy and EyeToy Play [Demo]"
   region: "NTSC-U"
@@ -12153,6 +12157,7 @@ SCUS-97520:
     autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
+    bilinearUpscale: 1 # Smooths out bloom on lights.
 SCUS-97523:
   name: "EyeToy - Operation Spy!"
   region: "NTSC-U"
@@ -24567,6 +24572,8 @@ SLES-54152:
   name: "The Ant Bully"
   name-sort: "Ant Bully, The"
   region: "PAL-M5"
+  gsHWFixes:
+    nativeScaling: 2 # Fixes misaligned post effects.
 SLES-54153:
   name: "Virtua Pro Football"
   region: "PAL-M5"
@@ -24691,6 +24698,8 @@ SLES-54178:
   name: "The Ant Bully"
   name-sort: "Ant Bully, The"
   region: "PAL-E-F"
+  gsHWFixes:
+    nativeScaling: 2 # Fixes misaligned post effects.
 SLES-54179:
   name: "Pirates of the Caribbean - At World's End"
   region: "PAL-M6"
@@ -56525,6 +56534,8 @@ SLPS-25426:
   name-sort: "めいたんていこなん だいえいていこくのいさん"
   name-en: "Detective Conan - Inheritance of Britain"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned blur in game and on the UI.
 SLPS-25427:
   name: "レジェンズ 激闘！サーガバトル"
   name-sort: "れじぇんず げきとう さーがばとる"
@@ -57432,6 +57443,8 @@ SLPS-25588:
   name-sort: "めいたんていこなん だいえいていこくのいさん BANDAI THE BEST"
   name-en: "Meitantei Conan - Daiei Teikoku no Isan [Bandai The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned blur in game and on the UI.
 SLPS-25589:
   name: "NARUTO-ナルト- ナルティメットヒーロー3"
   name-sort: "なると なるてぃめっとひーろー3"
@@ -68410,6 +68423,8 @@ SLUS-21415:
   name-sort: "Ant Bully, The"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    nativeScaling: 2 # Fixes misaligned post effects.
 SLUS-21416:
   name: "D1 Grand Prix Series - Professional Drift"
   region: "NTSC-U"
@@ -72231,6 +72246,7 @@ TCES-52033:
     autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
+    bilinearUpscale: 1 # Smooths out bloom on lights.
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
