@@ -16,7 +16,7 @@
 #include <algorithm>
 
 GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::string& author,
-	const std::string& description, bool enabled, SettingsWindow* dialog, QWidget* parent)
+	const std::string& description, bool tristate, Qt::CheckState checkState, SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
 	, m_name(name)
@@ -30,7 +30,8 @@ GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::stri
 			.arg(description.empty() ? tr("No description provided.") : QString::fromStdString(description)));
 
 	pxAssert(dialog->getSettingsInterface());
-	m_ui.enabled->setChecked(enabled);
+	m_ui.enabled->setTristate(tristate);
+	m_ui.enabled->setCheckState(checkState);
 	connect(m_ui.enabled, &QCheckBox::checkStateChanged, this, &GamePatchDetailsWidget::onEnabledStateChanged);
 }
 
@@ -40,9 +41,25 @@ void GamePatchDetailsWidget::onEnabledStateChanged(int state)
 {
 	SettingsInterface* si = m_dialog->getSettingsInterface();
 	if (state == Qt::Checked)
-		si->AddToStringList("Patches", "Enable", m_name.c_str());
+	{
+		si->AddToStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY, m_name.c_str());
+		si->RemoveFromStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_DISABLE_CONFIG_KEY, m_name.c_str());
+	}
 	else
-		si->RemoveFromStringList("Patches", "Enable", m_name.c_str());
+	{
+		si->RemoveFromStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY, m_name.c_str());
+		if (m_ui.enabled->isTristate())
+		{
+			if (state == Qt::Unchecked)
+			{
+				si->AddToStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_DISABLE_CONFIG_KEY, m_name.c_str());
+			}
+			else
+			{
+				si->RemoveFromStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_DISABLE_CONFIG_KEY, m_name.c_str());
+			}
+		}
+	}
 
 	si->Save();
 	g_emu_thread->reloadGameSettings();
@@ -56,6 +73,8 @@ GamePatchSettingsWidget::GamePatchSettingsWidget(SettingsWindow* dialog, QWidget
 	m_ui.scrollArea->setFrameShadow(QFrame::Sunken);
 
 	setUnlabeledPatchesWarningVisibility(false);
+	setGlobalWsPatchNoteVisibility(false);
+	setGlobalNiPatchNoteVisibility(false);
 
 	SettingsInterface* sif = m_dialog->getSettingsInterface();
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.allCRCsCheckbox, "EmuCore", "ShowPatchesForAllCRCs", false);
@@ -88,14 +107,22 @@ void GamePatchSettingsWidget::disableAllPatches()
 
 void GamePatchSettingsWidget::reloadList()
 {
+	const SettingsInterface* si = m_dialog->getSettingsInterface();
 	// Patches shouldn't have any unlabelled patch groups, because they're new.
 	u32 number_of_unlabeled_patches = 0;
 	bool showAllCRCS = m_ui.allCRCsCheckbox->isChecked();
 	std::vector<Patch::PatchInfo> patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), false, showAllCRCS, &number_of_unlabeled_patches);
 	std::vector<std::string> enabled_list =
-		m_dialog->getSettingsInterface()->GetStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
+		si->GetStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
+	std::vector<std::string> disabled_list =
+		si->GetStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_DISABLE_CONFIG_KEY);
+
+	const bool ws_patches_enabled_globally = m_dialog->getEffectiveBoolValue("EmuCore", "EnableWideScreenPatches", false);
+	const bool ni_patches_enabled_globally = m_dialog->getEffectiveBoolValue("EmuCore", "EnableNoInterlacingPatches", false);
 
 	setUnlabeledPatchesWarningVisibility(number_of_unlabeled_patches > 0);
+	setGlobalWsPatchNoteVisibility(ws_patches_enabled_globally);
+	setGlobalNiPatchNoteVisibility(ni_patches_enabled_globally);
 	delete m_ui.scrollArea->takeWidget();
 
 	QWidget* container = new QWidget(m_ui.scrollArea);
@@ -106,7 +133,7 @@ void GamePatchSettingsWidget::reloadList()
 	{
 		bool first = true;
 
-		for (Patch::PatchInfo& pi : patches)
+		for (const Patch::PatchInfo& pi : patches)
 		{
 			if (!first)
 			{
@@ -120,9 +147,35 @@ void GamePatchSettingsWidget::reloadList()
 				first = false;
 			}
 
-			const bool enabled = (std::find(enabled_list.begin(), enabled_list.end(), pi.name) != enabled_list.end());
+			const bool is_on_enable_list = std::find(enabled_list.begin(), enabled_list.end(), pi.name) != enabled_list.end();
+			const bool is_on_disable_list = std::find(disabled_list.begin(), disabled_list.end(), pi.name) != disabled_list.end();
+			const bool globally_toggleable_option = Patch::IsGloballyToggleablePatch(pi);
+
+			Qt::CheckState check_state;
+			if (!globally_toggleable_option)
+			{
+				// Normal patches
+				check_state = is_on_enable_list && !is_on_disable_list ? Qt::CheckState::Checked : Qt::CheckState::Unchecked;
+			}
+			else
+			{
+				// WS/NI patches
+				if (is_on_disable_list)
+				{
+					check_state = Qt::CheckState::Unchecked;
+				}
+				else if (is_on_enable_list)
+				{
+					check_state = Qt::CheckState::Checked;
+				}
+				else
+				{
+					check_state = Qt::CheckState::PartiallyChecked;
+				}
+			}
+
 			GamePatchDetailsWidget* it =
-				new GamePatchDetailsWidget(std::move(pi.name), pi.author, pi.description, enabled, m_dialog, container);
+				new GamePatchDetailsWidget(std::move(pi.name), pi.author, pi.description, globally_toggleable_option, check_state, m_dialog, container);
 			layout->addWidget(it);
 		}
 	}
@@ -140,4 +193,14 @@ void GamePatchSettingsWidget::reloadList()
 void GamePatchSettingsWidget::setUnlabeledPatchesWarningVisibility(bool visible)
 {
 	m_ui.unlabeledPatchWarning->setVisible(visible);
+}
+
+void GamePatchSettingsWidget::setGlobalWsPatchNoteVisibility(bool visible)
+{
+	m_ui.globalWsPatchState->setVisible(visible);
+}
+
+void GamePatchSettingsWidget::setGlobalNiPatchNoteVisibility(bool visible)
+{
+	m_ui.globalNiPatchState->setVisible(visible);
 }
