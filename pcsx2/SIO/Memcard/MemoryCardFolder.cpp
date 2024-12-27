@@ -260,11 +260,11 @@ void FolderMemoryCard::LoadMemoryCardData(const u32 sizeInClusters, const bool e
 	{
 		if (enableFiltering)
 		{
-			Console.WriteLn(Color_Green, "(FolderMcd) Indexing slot %u with filter \"%s\".", m_slot, filter.c_str());
+			Console.WriteLn(Color_Green, "FolderMcd: Indexing slot %u with filter \"%s\".", m_slot, filter.c_str());
 		}
 		else
 		{
-			Console.WriteLn(Color_Green, "(FolderMcd) Indexing slot %u without filter.", m_slot);
+			Console.WriteLn(Color_Green, "FolderMcd: Indexing slot %u without filter.", m_slot);
 		}
 
 		CreateFat();
@@ -636,7 +636,7 @@ bool FolderMemoryCard::AddFile(MemoryCardFileEntry* const dirEntry, const std::s
 	}
 	else
 	{
-		Console.WriteLn("(FolderMcd) Could not open file: %s", relativeFilePath.c_str());
+		Console.WriteLn("FolderMcd: Could not open file: %s", relativeFilePath.c_str());
 		return false;
 	}
 }
@@ -1082,7 +1082,7 @@ void FolderMemoryCard::Flush()
 	WriteToFile(m_folderName.GetFullPath().RemoveLast() + L"-debug_" + wxDateTime::Now().Format(L"%Y-%m-%d-%H-%M-%S") + L"_pre-flush.ps2");
 #endif
 
-	Console.WriteLn("(FolderMcd) Writing data for slot %u to file system...", m_slot);
+	Console.WriteLn("FolderMcd: Writing data for slot %u to file system...", m_slot);
 	Common::Timer timeFlushStart;
 
 	// Keep a copy of the old file entries so we can figure out which files and directories, if any, have been deleted from the memory card.
@@ -1104,7 +1104,7 @@ void FolderMemoryCard::Flush()
 	FlushBlock(m_superBlock.data.backup_block2);
 	if (m_backupBlock2.programmedBlock != 0xFFFFFFFFu)
 	{
-		Console.Warning("(FolderMcd) Aborting flush of slot %u, emulation was interrupted during save process!", m_slot);
+		Console.Warning("FolderMcd: Aborting flush of slot %u, emulation was interrupted during save process!", m_slot);
 		return;
 	}
 
@@ -1150,7 +1150,7 @@ void FolderMemoryCard::Flush()
 	m_lastAccessedFile.ClearMetadataWriteState();
 	m_oldDataCache.clear();
 
-	Console.WriteLn("(FolderMcd) Done! Took %.2f ms.", timeFlushStart.GetTimeMilliseconds());
+	Console.WriteLn("FolderMcd: Done! Took %.2f ms.", timeFlushStart.GetTimeMilliseconds());
 
 #ifdef DEBUG_WRITE_FOLDER_CARD_IN_MEMORY_TO_FILE_ON_CHANGE
 	WriteToFile(m_folderName.GetFullPath().RemoveLast() + L"-debug_" + wxDateTime::Now().Format(L"%Y-%m-%d-%H-%M-%S") + L"_post-flush.ps2");
@@ -1763,7 +1763,7 @@ std::string FolderMemoryCard::GetDisabledMessage(uint slot) const
 
 std::string FolderMemoryCard::GetCardFullMessage(const std::string& filePath) const
 {
-	return fmt::format("(FolderMcd) Memory Card is full, could not add: {}", filePath);
+	return fmt::format("FolderMcd: Memory Card is full, could not add: {}", filePath);
 }
 
 std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedFiles(const std::string& dirPath) const

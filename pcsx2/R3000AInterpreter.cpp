@@ -237,7 +237,7 @@ static void doBranch(s32 tar) {
 	// This detects when SYSMEM is called and clears the modules then
 	if(tar == 0x890)
 	{
-		DevCon.WriteLn(Color_Gray, "[R3000 Debugger] Branch to 0x890 (SYSMEM). Clearing modules.");
+		DevCon.WriteLn(Color_Gray, "R3000 Debugger: Branch to 0x890 (SYSMEM). Clearing modules.");
 		R3000SymbolGuardian.ClearIrxModules();
 	}
 

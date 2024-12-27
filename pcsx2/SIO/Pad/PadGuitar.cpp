@@ -47,7 +47,7 @@ void PadGuitar::ConfigLog()
 
 	// AL: Analog Light (is it turned on right now)
 	// AB: Analog Button (is it useable or is it locked in its current state)
-	Console.WriteLn(fmt::format("[Pad] Guitar Config Finished - P{0}/S{1} - AL: {2} - AB: {3}",
+	Console.WriteLn(fmt::format("Pad: Guitar Config Finished - P{0}/S{1} - AL: {2} - AB: {3}",
 		port + 1,
 		slot + 1,
 		(this->analogLight ? "On" : "Off"),

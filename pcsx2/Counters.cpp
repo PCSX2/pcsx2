@@ -403,7 +403,7 @@ void UpdateVSyncRate(bool force)
 		vSyncInfoCalc(&vSyncInfo, frames_per_second, total_scanlines);
 
 		if (video_mode_initialized)
-			Console.WriteLn(Color_Green, "(UpdateVSyncRate) Mode Changed to %s.", ReportVideoMode());
+			Console.WriteLn(Color_Green, "UpdateVSyncRate: Mode Changed to %s.", ReportVideoMode());
 
 		if (custom && video_mode_initialized)
 			Console.WriteLn(Color_StrongGreen, "  ... with user configured refresh rate: %.02f Hz", vertical_frequency);
