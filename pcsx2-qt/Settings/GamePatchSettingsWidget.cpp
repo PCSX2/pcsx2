@@ -124,6 +124,7 @@ void GamePatchSettingsWidget::reloadList()
 	setGlobalWsPatchNoteVisibility(ws_patches_enabled_globally);
 	setGlobalNiPatchNoteVisibility(ni_patches_enabled_globally);
 	delete m_ui.scrollArea->takeWidget();
+	m_ui.allCRCsCheckbox->setEnabled(!m_dialog->getSerial().empty());
 
 	QWidget* container = new QWidget(m_ui.scrollArea);
 	QVBoxLayout* layout = new QVBoxLayout(container);
