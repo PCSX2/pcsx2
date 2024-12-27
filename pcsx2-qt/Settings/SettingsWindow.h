@@ -72,6 +72,7 @@ public:
 	bool eventFilter(QObject* object, QEvent* event) override;
 
 	void setWindowTitle(const QString& title);
+	void setSerial(std::string serial);
 
 	QString getCategory() const;
 	void setCategory(const char* category);
@@ -96,7 +97,7 @@ public:
 	void saveAndReloadGameSettings();
 
 Q_SIGNALS:
-	void settingsResetToDefaults();
+	void discSerialChanged();
 
 private Q_SLOTS:
 	void onCategoryCurrentRowChanged(int row);

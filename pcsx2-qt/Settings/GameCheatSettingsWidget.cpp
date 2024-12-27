@@ -56,6 +56,7 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
 		m_model_proxy->setFilterFixedString(text);
 		m_ui.cheatList->expandAll();
 	});
+	connect(m_dialog, &SettingsWindow::discSerialChanged, this, &GameCheatSettingsWidget::reloadList);
 
 	dialog->registerWidgetHelp(m_ui.allCRCsCheckbox, tr("Show Cheats For All CRCs"), tr("Checked"),
 		tr("Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded."));

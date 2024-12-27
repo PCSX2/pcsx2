@@ -447,6 +447,12 @@ void SettingsWindow::setWindowTitle(const QString& title)
 		QWidget::setWindowTitle(QStringLiteral("%1 [%2]").arg(title, m_filename));
 }
 
+void SettingsWindow::setSerial(std::string serial)
+{
+	m_serial = std::move(serial);
+	emit discSerialChanged();
+}
+
 bool SettingsWindow::getEffectiveBoolValue(const char* section, const char* key, bool default_value) const
 {
 	bool value;
