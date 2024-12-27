@@ -478,6 +478,7 @@ void GSRendererSW::Draw()
 			m_mem.SaveBMP(s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, r.z, r.w);
 		}
 
+		data.get()->global.t_bbox = m_vt.m_min.t.xyxy(m_vt.m_max.t); // Set min/max UV values for scanline function to clip
 		Queue(data);
 
 		Sync(3);
@@ -509,6 +510,7 @@ void GSRendererSW::Draw()
 	}
 	else
 	{
+		data.get()->global.t_bbox = m_vt.m_min.t.xyxy(m_vt.m_max.t); // Set min/max UV values for scanline function to clip
 		Queue(data);
 	}
 

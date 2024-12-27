@@ -137,6 +137,8 @@ struct alignas(32) GSScanlineGlobalData // per batch variables, this is like a p
 	GSVector4i afix;
 	struct { GSVector4i min, max, minmax, mask, invmask; } t; // [u] x 4 [v] x 4
 
+	GSVector4 t_bbox = GSVector4(0.0f, 0.0f, 10000.0f, 10000.0f); // Min/max values of UV in verts.
+
 #if _M_SSE >= 0x501
 
 	u32 fm, zm;

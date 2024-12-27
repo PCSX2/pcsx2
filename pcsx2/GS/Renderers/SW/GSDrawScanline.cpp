@@ -11,7 +11,7 @@
 #include <fstream>
 
 // Comment to disable all dynamic code generation.
-#define ENABLE_JIT_RASTERIZER
+// #define ENABLE_JIT_RASTERIZER // disabled to use C scanline renderer for testing
 
 #if MULTI_ISA_COMPILE_ONCE
 // Lack of a better home
@@ -627,6 +627,14 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 		}
 	}
 
+	// Save the min/max values of UV that are passed from the renderer class.
+	// This will probably fail if the texture coordinate mode is ST intead of UV (FIXME).
+	// This could be computed in the renderer class itself to save some time (TODO). 
+	GSVector4i u_min = GSVector4i(global.t_bbox.xxxx().ceil());
+	GSVector4i v_min = GSVector4i(global.t_bbox.yyyy().ceil());
+	GSVector4i u_max = GSVector4i(global.t_bbox.zzzz().floor());
+	GSVector4i v_max = GSVector4i(global.t_bbox.wwww().floor());
+
 	while (1)
 	{
 		do
@@ -978,11 +986,27 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 							uv1 = clamp.blend8(repeat, VectorI::broadcast128(global.t.mask));
 						}
 
+						if (sel.fst)
+						{
+							// Clip UV coordinate to min/max UV of the primitive
+							GSVector4i u0_clip = uv0.upl16().max_u32(u_min).min_u32(u_max);
+							GSVector4i v0_clip = uv0.uph16().max_u32(v_min).min_u32(v_max);
+							uv0 = u0_clip.ps32(v0_clip);
+						}
+
 						VectorI y0 = uv0.uph16() << (sel.tw + 3);
 						VectorI x0 = uv0.upl16();
 
 						if (sel.ltf)
 						{
+							if (sel.fst)
+							{
+								// Clip UV coordinate to min/max UV of the primitive
+								GSVector4i u1_clip = uv1.upl16().max_u32(u_min).min_u32(u_max);
+								GSVector4i v1_clip = uv1.uph16().max_u32(v_min).min_u32(v_max);
+								uv1 = u1_clip.ps32(v1_clip);
+							}
+
 							VectorI y1 = uv1.uph16() << (sel.tw + 3);
 							VectorI x1 = uv1.upl16();
 
@@ -1119,11 +1143,27 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 						uv1 = clamp.blend8(repeat, VectorI::broadcast128(global.t.mask));
 					}
 
+					if (sel.fst)
+					{
+						// Clip UV coordinate to min/max UV of the primitive
+						GSVector4i u0_clip = uv0.upl16().max_u32(u_min).min_u32(u_max);
+						GSVector4i v0_clip = uv0.uph16().max_u32(v_min).min_u32(v_max);
+						uv0 = u0_clip.ps32(v0_clip);
+					}
+
 					VectorI y0 = uv0.uph16() << (sel.tw + 3);
 					VectorI x0 = uv0.upl16();
 
 					if (sel.ltf)
 					{
+						if (sel.fst)
+						{
+							// Clip UV coordinate to min/max UV of the primitive
+							GSVector4i u1_clip = uv1.upl16().max_u32(u_min).min_u32(u_max);
+							GSVector4i v1_clip = uv1.uph16().max_u32(v_min).min_u32(v_max);
+							uv1 = u1_clip.ps32(v1_clip);
+						}
+
 						VectorI y1 = uv1.uph16() << (sel.tw + 3);
 						VectorI x1 = uv1.upl16();
 
