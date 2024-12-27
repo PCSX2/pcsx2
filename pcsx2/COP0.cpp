@@ -358,6 +358,22 @@ void WriteTLB(int i)
 	tlb[i].EntryLo0.UL = cpuRegs.CP0.n.EntryLo0;
 	tlb[i].EntryLo1.UL = cpuRegs.CP0.n.EntryLo1;
 
+	// Setting the cache mode to reserved values is vaguely defined in the manual.
+	// I found that SPR is set to cached regardless.
+	// Non-SPR entries default to uncached on reserved cache modes.
+	if (tlb[i].isSPR())
+	{
+		tlb[i].EntryLo0.C = 3;
+		tlb[i].EntryLo1.C = 3;
+	}
+	else
+	{
+		if (!tlb[i].EntryLo0.isValidCacheMode())
+			tlb[i].EntryLo0.C = 2;
+		if (!tlb[i].EntryLo1.isValidCacheMode())
+			tlb[i].EntryLo1.C = 2;
+	}
+
 	if (!tlb[i].isSPR() && ((tlb[i].EntryLo0.V && tlb[i].EntryLo0.isCached()) || (tlb[i].EntryLo1.V && tlb[i].EntryLo1.isCached())))
 	{
 		const size_t idx = cachedTlbs.count;
@@ -384,55 +400,57 @@ namespace COP0 {
 			cpuRegs.CP0.n.Index, cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
 
-		int i = cpuRegs.CP0.n.Index & 0x3f;
+		const u8 i = cpuRegs.CP0.n.Index & 0x3f;
 
-		cpuRegs.CP0.n.PageMask = tlb[i].PageMask.UL;
-		cpuRegs.CP0.n.EntryHi = tlb[i].EntryHi.UL & ~(tlb[i].PageMask.UL | 0x1f00);
-		/*
-		* TEST THIS??
-		cpuRegs.CP0.n.EntryLo0 = (tlb[i].EntryLo0 & ~1) | ((tlb[i].EntryHi.UL >> 12) & 1);
-		cpuRegs.CP0.n.EntryLo1 = (tlb[i].EntryLo1 & ~1) | ((tlb[i].EntryHi.UL >> 12) & 1);
-		*/
-		cpuRegs.CP0.n.EntryLo0 = tlb[i].EntryLo0.UL;
-		cpuRegs.CP0.n.EntryLo1 = tlb[i].EntryLo1.UL;
+		if (i > 47)
+		{
+			Console.Warning("TLBR with index > 47! (%d)", i);
+			return;
+		}
 
+		cpuRegs.CP0.n.PageMask = tlb[i].PageMask.Mask << 13;
+		cpuRegs.CP0.n.EntryHi = tlb[i].EntryHi.UL & ~((tlb[i].PageMask.Mask << 13) | 0x1f00);
+		cpuRegs.CP0.n.EntryLo0 = tlb[i].EntryLo0.UL & ~(0xFC000000) & ~1;
+		cpuRegs.CP0.n.EntryLo1 = tlb[i].EntryLo1.UL & ~(0x7C000000) & ~1;
+		// "If both the Global bit of EntryLo0 and EntryLo1 are set to 1, the processor ignores the ASID during TLB lookup."
+		// This is reflected during TLBR, where G is only set if both EntryLo0 and EntryLo1 are global.
+		cpuRegs.CP0.n.EntryLo0 |= (tlb[i].EntryLo0.UL & 1) & (tlb[i].EntryLo1.UL & 1);
+		cpuRegs.CP0.n.EntryLo1 |= (tlb[i].EntryLo0.UL & 1) & (tlb[i].EntryLo1.UL & 1);
 	}
 
 	void TLBWI()
 	{
-		int j = cpuRegs.CP0.n.Index & 0x3f;
+		const u8 j = cpuRegs.CP0.n.Index & 0x3f;
 
-		//if (j > 48) return;
+		if (j > 47)
+		{
+			Console.Warning("TLBWI with index > 47! (%d)", j);
+			return;
+		}
 
 		COP0_LOG("COP0_TLBWI %d:%x,%x,%x,%x",
 			cpuRegs.CP0.n.Index, cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
 
 		UnmapTLB(tlb[j], j);
-		tlb[j].PageMask.UL = cpuRegs.CP0.n.PageMask;
-		tlb[j].EntryHi.UL = cpuRegs.CP0.n.EntryHi;
-		tlb[j].EntryLo0.UL = cpuRegs.CP0.n.EntryLo0;
-		tlb[j].EntryLo1.UL = cpuRegs.CP0.n.EntryLo1;
 		WriteTLB(j);
 	}
 
 	void TLBWR()
 	{
-		int j = cpuRegs.CP0.n.Random & 0x3f;
+		const u8 j = cpuRegs.CP0.n.Random & 0x3f;
 
-		//if (j > 48) return;
+		if (j > 47)
+		{
+			Console.Warning("TLBWR with random > 47! (%d)", j);
+			return;
+		}
 
 		DevCon.Warning("COP0_TLBWR %d:%x,%x,%x,%x\n",
 			cpuRegs.CP0.n.Random, cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
 
-		//if (j > 48) return;
-
 		UnmapTLB(tlb[j], j);
-		tlb[j].PageMask.UL = cpuRegs.CP0.n.PageMask;
-		tlb[j].EntryHi.UL = cpuRegs.CP0.n.EntryHi;
-		tlb[j].EntryLo0.UL = cpuRegs.CP0.n.EntryLo0;
-		tlb[j].EntryLo1.UL = cpuRegs.CP0.n.EntryLo1;
 		WriteTLB(j);
 	}
 

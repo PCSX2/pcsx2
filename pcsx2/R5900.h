@@ -171,8 +171,6 @@ union PageMask_t
 		u32 : 7;
 	};
 	u32 UL;
-
-	constexpr u32 nMask() const { return ~Mask & 0xfff; };
 };
 
 union EntryHi_t
@@ -201,6 +199,7 @@ union EntryLo_t
 	u32 UL;
 
 	constexpr bool isCached() const { return C == 0x3; }
+	constexpr bool isValidCacheMode() const { return C == 0x2 || C == 0x3 || C == 0x7; }
 };
 
 struct tlbs
