@@ -1346,9 +1346,8 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		if (action->isEnabled())
 		{
 			connect(action, &QAction::triggered, [entry]() {
-				SettingsWindow::openGamePropertiesDialog(entry, entry->title,
-					(entry->type != GameList::EntryType::ELF) ? entry->serial : std::string(),
-					entry->crc);
+				SettingsWindow::openGamePropertiesDialog(entry,
+					entry->title, entry->serial, entry->crc, entry->type == GameList::EntryType::ELF);
 			});
 		}
 
@@ -1564,7 +1563,7 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 		if (entry)
 		{
 			SettingsWindow::openGamePropertiesDialog(
-				entry, entry->title, s_current_elf_override.isEmpty() ? entry->serial : std::string(), entry->crc);
+				entry, entry->title, entry->serial, entry->crc, !s_current_elf_override.isEmpty());
 			return;
 		}
 	}
@@ -1580,12 +1579,12 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 	if (s_current_elf_override.isEmpty())
 	{
 		SettingsWindow::openGamePropertiesDialog(
-			nullptr, s_current_title.toStdString(), s_current_disc_serial.toStdString(), s_current_disc_crc);
+			nullptr, s_current_title.toStdString(), s_current_disc_serial.toStdString(), s_current_disc_crc, false);
 	}
 	else
 	{
 		SettingsWindow::openGamePropertiesDialog(
-			nullptr, s_current_title.toStdString(), std::string(), s_current_disc_crc);
+			nullptr, s_current_title.toStdString(), std::string(), s_current_disc_crc, true);
 	}
 }
 
