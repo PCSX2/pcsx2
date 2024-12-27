@@ -415,6 +415,10 @@ bool VMManager::Internal::CPUThreadInitialize()
 	if (EmuConfig.EnableDiscordPresence)
 		InitializeDiscordPresence();
 
+	// Check for advanced settings status and warn the user if its enabled
+	if (Host::GetBaseBoolSettingValue("UI", "ShowAdvancedSettings", false))
+		Console.Warning("Settings: Advanced Settings are enabled; only proceed if you know what you're doing! No support will be provided if you have the option enabled.");
+
 	return true;
 }
 
