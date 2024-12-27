@@ -12,7 +12,7 @@ on:
       os:
         required: false
         type: string
-        default: windows-2022
+        default: windows-2025
       platform:
         required: false
         type: string
@@ -57,7 +57,7 @@ jobs:
     steps:
       - name: Tempfix Clang
         if: inputs.configuration == 'CMake'
-        run: choco uninstall llvm
+        run: choco upgrade llvm
         
       - name: Checkout Repository
         uses: actions/checkout@v4
