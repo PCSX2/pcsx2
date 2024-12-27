@@ -12,7 +12,7 @@ on:
       os:
         required: false
         type: string
-        default: windows-2022
+        default: windows-2025
       platform:
         required: false
         type: string
