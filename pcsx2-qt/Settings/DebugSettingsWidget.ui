@@ -167,7 +167,7 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
+            <item row="1" column="1">
              <widget class="QCheckBox" name="saveRT">
               <property name="text">
                <string>Save RT</string>
@@ -181,7 +181,7 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
+            <item row="2" column="1">
              <widget class="QCheckBox" name="saveTexture">
               <property name="text">
                <string>Save Texture</string>

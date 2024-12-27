@@ -151,6 +151,14 @@ void DebugSettingsWidget::onDrawDumpingChanged()
 	m_ui.saveFrame->setEnabled(enabled);
 	m_ui.saveTexture->setEnabled(enabled);
 	m_ui.saveDepth->setEnabled(enabled);
+	m_ui.startDraw->setEnabled(enabled);
+	m_ui.dumpCount->setEnabled(enabled);
+	m_ui.hwDumpDirectory->setEnabled(enabled);
+	m_ui.hwDumpBrowse->setEnabled(enabled);
+	m_ui.hwDumpOpen->setEnabled(enabled);
+	m_ui.swDumpDirectory->setEnabled(enabled);
+	m_ui.swDumpBrowse->setEnabled(enabled);
+	m_ui.swDumpOpen->setEnabled(enabled);
 }
 
 #ifdef PCSX2_DEVBUILD
