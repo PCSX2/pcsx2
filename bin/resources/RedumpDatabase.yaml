@@ -1,7 +1,7 @@
 - hashes:
   - md5: e445296980eb9c51e6e1ebccc6f664cd
     size: 699722352
-  name: Tekken Tag Tournament (Europe) (En,Fr,De,Es,It)
+  name: Tekken Tag Tournament (Europe) (En,Fr,De,Es,It) (v2.00)
   serial: SCES-50001
   version: '2.00'
 - hashes:
@@ -13,13 +13,13 @@
 - hashes:
   - md5: 5dcf9d9fc6ed3284b6dec18b9e36b52f
     size: 699722352
-  name: Tekken Tag Tournament (Europe) (En,Fr,De,Es,It)
+  name: Tekken Tag Tournament (Europe) (En,Fr,De,Es,It) (v1.00)
   serial: SCES-50001
   version: '1.00'
 - hashes:
   - md5: 01bf1c4c4339431c64bd12c57c80bece
     size: 4385505280
-  name: kill.switch (Europe) (En,Fr,De,Es,It)
+  name: Kill Switch (Europe) (En,Fr,De,Es,It)
   serial: SCES-52124
   version: '1.00'
 - hashes:
@@ -85,7 +85,7 @@
 - hashes:
   - md5: 57998b60010b7583c423d5b2142ad1a3
     size: 4508221440
-  name: Final Fantasy X (USA)
+  name: Final Fantasy X (USA, Canada)
   serial: SLUS-20312
   version: '1.00'
 - hashes:
@@ -157,7 +157,7 @@
 - hashes:
   - md5: c69de9c89f817560bda42e7c9c744013
     size: 3878649856
-  name: Gran Turismo 3 - A-Spec (USA)
+  name: Gran Turismo 3 - A-Spec (USA) (v1.00)
   serial: SCUS-97512
   version: '1.00'
 - hashes:
@@ -217,13 +217,13 @@
 - hashes:
   - md5: 26a95962a62f996d7458ebea6fd8a8b1
     size: 3687022592
-  name: Gran Turismo 3 - A-Spec (Europe, Australia) (En,Fr,De,Es,It)
+  name: Gran Turismo 3 - A-Spec (Europe, Australia) (En,Fr,De,Es,It) (v2.00)
   serial: SCES-50294
   version: '2.00'
 - hashes:
   - md5: 65df1ad58683aa5154966441a74fd8c2
     size: 4476272640
-  name: Tekken 4 (Europe) (En,Fr,De,Es,It)
+  name: Tekken 4 (Europe) (En,Fr,De,Es,It) (v1.00)
   serial: SCES-50878
   version: '1.00'
 - hashes:
@@ -339,7 +339,7 @@
 - hashes:
   - md5: f50a9731acda9ee6902770f53b331cc6
     size: 4691755008
-  name: Demo Disc (Europe) (En,Fr,De,Es,It)
+  name: Demo Disc (Europe) (En,Fr,De,Es,It) (PBPX-95514)
   serial: PBPX-95514
   version: '1.03'
 - hashes:
@@ -351,7 +351,7 @@
 - hashes:
   - md5: 1c2fbf905a3ce52cb9215b88c81daf9e
     size: 4471390208
-  name: Tekken 4 (Europe, Australia) (En,Fr,De,Es,It)
+  name: Tekken 4 (Europe, Australia) (En,Fr,De,Es,It) (v2.00)
   serial: SCES-50878
   version: '2.00'
 - hashes:
@@ -429,7 +429,7 @@
 - hashes:
   - md5: 3a3791af7cd0ceb3ed70c90c3604e6ae
     size: 4388782080
-  name: Soulcalibur III (Europe, Australia) (En,Fr,De,Es,It)
+  name: Soulcalibur III (Europe, Australia) (En,Fr,De,Es,It) (v1.00)
   serial: SCES-53312
   version: '1.00'
 - hashes:
@@ -483,7 +483,7 @@
 - hashes:
   - md5: 0f97749bb48bbca0b958c40403f53da4
     size: 3501228032
-  name: Network Access Disc (Europe) (En,Fr,De,Es,It)
+  name: Network Access Disc (Europe) (En,Fr,De,Es,It) (v3.00)
   serial: SCES-51578
   version: '3.00'
 - hashes:
@@ -501,13 +501,13 @@
 - hashes:
   - md5: f6485fee7d9c728eb9ad15e6ecab398d
     size: 3598712832
-  name: Demo Disc (Europe) (En,Fr,De,Es,It)
+  name: Demo Disc (Europe) (En,Fr,De,Es,It) (PBPX-95520)
   serial: PBPX-95520
   version: '1.02'
 - hashes:
   - md5: dd0f8bde3d5c4718c5c4a46f32850654
     size: 4450353152
-  name: Getaway, The (Europe) (En,Fr,De,Es,It)
+  name: Getaway, The (Europe) (En,Fr,De,Es,It) (v1.03)
   serial: SCES-51159
   version: '1.03'
 - hashes:
@@ -585,7 +585,7 @@
 - hashes:
   - md5: d09b5ca1c119ab09bc764febfcb66862
     size: 4641062912
-  name: Demo Disc (Europe) (En,Fr,De,Es,It)
+  name: Demo Disc (Europe) (En,Fr,De,Es,It) (PBPX-95506)
   serial: PBPX-95506
   version: '1.00'
 - hashes:
@@ -609,7 +609,7 @@
 - hashes:
   - md5: f9446f5995144a3b8fac5eb428f51915
     size: 681583728
-  name: Demo Disc (Europe) (En,Fr,De,Es,It)
+  name: Demo Disc (Europe) (En,Fr,De,Es,It) (PBPX-95205)
   serial: PBPX-95205
   version: '1.11'
 - hashes:
@@ -621,7 +621,7 @@
 - hashes:
   - md5: 2332e43abc83d498989e8ccb88c7ee58
     size: 4097146880
-  name: Need for Speed - Underground 2 (Europe) (En,Fr,De,Es,It,Nl,Sv,Da)
+  name: Need for Speed - Underground 2 (Europe) (En,Fr,De,Es,It,Nl,Sv,Da) (v1.01)
   serial: SLES-52725
   version: '1.01'
 - hashes:
@@ -706,7 +706,6 @@
   - md5: 6ae2ca6bf48f4697171a59220e67a1ec
     size: 4016177152
   name: Hitman - Blood Money (Europe)
-  serial: SLES-53028
   version: '2.00'
 - hashes:
   - md5: 28339853a85bacebac38b114d139e851
@@ -723,13 +722,13 @@
 - hashes:
   - md5: df2302b38dc447e0f63a0336e759fb46
     size: 4698767360
-  name: Grand Theft Auto III (Europe, Australia) (En,Fr,De,Es,It)
+  name: Grand Theft Auto III (Europe, Australia) (En,Fr,De,Es,It) (v1.60)
   serial: SLES-50330
   version: '1.60'
 - hashes:
   - md5: 9d6e795843e3829fb0e2505f9b5630af
     size: 4661805056
-  name: Grand Theft Auto - Vice City (Europe) (En,Fr,De,Es,It)
+  name: Grand Theft Auto - Vice City (Europe) (En,Fr,De,Es,It) (v2.03)
   serial: SLES-51061
   version: '2.03'
 - hashes:
@@ -813,7 +812,7 @@
 - hashes:
   - md5: e29479572deaf9e96c63da6db1a7d66e
     size: 1612480512
-  name: Pro Evolution Soccer 6 (Europe)
+  name: PES 6 - Pro Evolution Soccer (Europe)
   serial: SLES-54203
   version: '1.02'
 - hashes:
@@ -874,6 +873,7 @@
   - md5: 0e8b5635ab74fad1c6b6aa0c8a1151aa
     size: 3210215424
   name: Official PlayStation 2 Magazine Demo 31 (Europe, Australia) (En,Fr,De,Es,It)
+    (SCED-51529)
   serial: SCED-51529
   version: '1.02'
 - hashes:
@@ -1017,7 +1017,7 @@
 - hashes:
   - md5: e2084eb31a4dd6e47c652523670e80f9
     size: 3644948480
-  name: EyeToy - Play 2 (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi,El)
+  name: EyeToy - Play 2 (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi,El) (v3.03)
   serial: SCES-52748
   version: '3.03'
 - hashes:
@@ -1155,7 +1155,7 @@
 - hashes:
   - md5: e9e440f55e9207c5bd8a28e20a083b42
     size: 4388782080
-  name: Soulcalibur III (Europe, Australia) (En,Fr,De,Es,It)
+  name: Soulcalibur III (Europe, Australia) (En,Fr,De,Es,It) (v2.00)
   serial: SCES-53312
   version: '2.00'
 - hashes:
@@ -1191,7 +1191,7 @@
 - hashes:
   - md5: ea2c948b508aa4eff466772af4de7d25
     size: 3691479040
-  name: WRC - Rally Evolved (Europe, Australia) (En,Fr,De,Es,It,Pt,No,Fi)
+  name: WRC - Rally Evolved (Europe, Australia) (En,Fr,De,Es,It,Pt,No,Fi) (v2.00)
   serial: SCES-53247
   version: '2.00'
 - hashes:
@@ -1275,7 +1275,7 @@
 - hashes:
   - md5: efbc62891b18d7cf901dd10a316728ca
     size: 3062693888
-  name: Getaway, The - Black Monday (Europe) (En,Pt,Ru,El)
+  name: Getaway, The - Black Monday (Europe) (En,Pt,Ru,El) (v2.00)
   serial: SCES-52948
   version: '2.00'
 - hashes:
@@ -1287,7 +1287,7 @@
 - hashes:
   - md5: 75da8914131dd39581c4104c8d00c9d1
     size: 6219333632
-  name: 24 - The Game (Europe, Australia) (En,Fr,De,Es,It,Nl,Pl,Cs,Hu)
+  name: 24 - The Game (Europe, Australia) (En,Fr,De,Es,It,Nl,Pl,Cs,Hu) (v2.00)
   serial: SCES-53358
   version: '2.00'
 - hashes:
@@ -1311,7 +1311,7 @@
 - hashes:
   - md5: b179e241b9e696063a8c915f1bde78e1
     size: 5314478080
-  name: Gran Turismo 4 (USA)
+  name: Gran Turismo 4 (USA) (v1.01)
   serial: SCUS-97328
   version: '1.01'
 - hashes:
@@ -1407,7 +1407,7 @@
 - hashes:
   - md5: edc44411486cfb3386016d6599df470e
     size: 4671799296
-  name: Grand Theft Auto - Vice City (Europe) (En,Fr,De,Es,It)
+  name: Grand Theft Auto - Vice City (Europe) (En,Fr,De,Es,It) (v1.50)
   serial: SLES-51061
   version: '1.50'
 - hashes:
@@ -1467,7 +1467,7 @@
 - hashes:
   - md5: d0f6e946910d059cb624c3f9e46cda0d
     size: 1228832768
-  name: Network Access Disc (Europe) (En,Fr,De,Es,It,Nl,Pt)
+  name: Network Access Disc (Europe) (En,Fr,De,Es,It,Nl,Pt) (v1.02)
   serial: SCES-52677
   version: '1.02'
 - hashes:
@@ -1479,13 +1479,13 @@
 - hashes:
   - md5: 5cd9d9c3d4b4e814373f301ac3b6ed7a
     size: 4502913024
-  name: Grand Theft Auto - San Andreas (Europe, Australia) (En,Fr,De,Es,It)
+  name: Grand Theft Auto - San Andreas (Europe, Australia) (En,Fr,De,Es,It) (v1.03)
   serial: SLES-52541
   version: '1.03'
 - hashes:
   - md5: b4c7b0068cafa814a93b5f02b0acf5e6
     size: 4520214528
-  name: Grand Theft Auto - San Andreas (Europe, Australia) (En,Fr,De,Es,It)
+  name: Grand Theft Auto - San Andreas (Europe, Australia) (En,Fr,De,Es,It) (v2.01)
   serial: SLES-52541
   version: '2.01'
 - hashes:
@@ -1521,7 +1521,7 @@
 - hashes:
   - md5: 1478f9b549f5703fd9f1c46811b49cbe
     size: 709516080
-  name: Pro Evolution Soccer (Europe) (En,Fr,De)
+  name: Pro Evolution Soccer (Europe) (En,Fr,De) (v1.02)
   serial: SLES-50412
   version: '1.02'
 - hashes:
@@ -1533,7 +1533,7 @@
 - hashes:
   - md5: b22226a880d981339a59b3fee595a086
     size: 3121184768
-  name: Need for Speed - Hot Pursuit 2 (Europe, Australia) (En,Fr,De,Es,It,Sv)
+  name: Need for Speed - Hot Pursuit 2 (Europe, Australia) (En,Fr,De,Es,It,Sv) (v1.00)
   serial: SLES-50731
   version: '1.00'
 - hashes:
@@ -1557,7 +1557,7 @@
 - hashes:
   - md5: 251fee43006d86e4ffc98642a816b16d
     size: 2668855296
-  name: FIFA Football 2004 (Europe) (En,It,Nl,Sv)
+  name: FIFA Football 2004 (Europe) (En,It,Nl,Sv) (v2.00)
   serial: SLES-51953
   version: '2.00'
 - hashes:
@@ -1569,7 +1569,7 @@
 - hashes:
   - md5: c2d35a725f4dcfd79c77f7f56b9f58c9
     size: 3320938496
-  name: SSX 3 (Europe) (En,Fr,De,Es)
+  name: SSX 3 (Europe) (En,Fr,De,Es) (v2.00)
   serial: SLES-51697
   version: '2.00'
 - hashes:
@@ -1665,7 +1665,7 @@
 - hashes:
   - md5: dfb8a50d84b3ec9a2638abd4f5a85de1
     size: 4657840128
-  name: Legacy of Kain - Soul Reaver 2 (USA)
+  name: Legacy of Kain - Soul Reaver 2 (USA) (v1.01)
   serial: SLUS-20165
   version: '1.01'
 - hashes:
@@ -1677,7 +1677,7 @@
 - hashes:
   - md5: 1ff83fc2204c416594d10dd323127dcb
     size: 602516544
-  name: Crash Bandicoot - The Wrath of Cortex (Europe) (En,Fr,De,Es,It,Nl)
+  name: Crash Bandicoot - The Wrath of Cortex (Europe) (En,Fr,De,Es,It,Nl) (v2.01)
   serial: SLES-50386
   version: '2.01'
 - hashes:
@@ -1713,7 +1713,7 @@
 - hashes:
   - md5: bf8f6d5500fea32effbf6f2223c9dce5
     size: 3793256448
-  name: Enter the Matrix (Europe) (En,Fr,De,Es,It)
+  name: Enter the Matrix (Europe) (En,Fr,De,Es,It) (v1.01)
   serial: SLES-51203
   version: '1.01'
 - hashes:
@@ -1797,7 +1797,7 @@
 - hashes:
   - md5: 0aa2c0772f6b3020d9685360165a7a1b
     size: 3036381184
-  name: Spider-Man (USA)
+  name: Spider-Man (USA) (v1.00)
   serial: SLUS-20336
   version: '1.00'
 - hashes:
@@ -1827,7 +1827,7 @@
 - hashes:
   - md5: fbd597a064199b00e53fd0fad6b56c3a
     size: 2633859072
-  name: Buzz! The Big Quiz (Europe)
+  name: Buzz! The Big Quiz (Europe) (v1.01)
   serial: SCES-53879
   version: '1.01'
 - hashes:
@@ -1887,7 +1887,7 @@
 - hashes:
   - md5: 5e26dde9849e35631340b7c8a73688ab
     size: 1676017664
-  name: Hitman 2 - Silent Assassin (USA)
+  name: Hitman 2 - Silent Assassin (USA) (v1.01)
   serial: SLUS-20374
   version: '1.01'
 - hashes:
@@ -1983,13 +1983,13 @@
 - hashes:
   - md5: 056dd051c41339ad4edf7a0c11d10003
     size: 4667703296
-  name: Grand Theft Auto - Vice City (USA)
+  name: Grand Theft Auto - Vice City (USA) (v1.40)
   serial: SLUS-20552
   version: '1.40'
 - hashes:
   - md5: 05e47ea6aee8da89289c5567c742db8d
     size: 3878649856
-  name: Gran Turismo 3 - A-Spec (USA)
+  name: Gran Turismo 3 - A-Spec (USA) (v1.10)
   serial: PBPX-95503
   version: '1.10'
 - hashes:
@@ -2127,7 +2127,7 @@
 - hashes:
   - md5: ef69e75e20b3a86d3bdedd03c0170052
     size: 4487905280
-  name: Getaway, The (Australia) (En,Fr,De,Es,It)
+  name: Getaway, The (Australia) (En,Fr,De,Es,It) (v3.00)
   serial: SCES-51426
   version: '3.00'
 - hashes:
@@ -2152,7 +2152,6 @@
   - md5: 77e40c0f722c54902f1dacff922ea07a
     size: 4048289792
   name: Final Fantasy XII (Germany)
-  serial: SLES-54356
   version: '1.00'
 - hashes:
   - md5: 9b21e5f5c3c9aec343cac908118753a8
@@ -2169,13 +2168,13 @@
 - hashes:
   - md5: 7e974de02c405ca35a179b861aa3afb5
     size: 1432748032
-  name: Network Adaptor Start-Up Disc (USA)
+  name: Network Adaptor Start-Up Disc (USA) (v1.01)
   serial: PBPX-95517
   version: '1.01'
 - hashes:
   - md5: ae99bb7daff6ad94cbd4e58ed2566c9a
     size: 4487446528
-  name: ATV Offroad Fury 2 (USA)
+  name: ATV Offroad Fury 2 (USA) (v2.00)
   serial: SCUS-97211
   version: '2.00'
 - hashes:
@@ -2283,7 +2282,7 @@
 - hashes:
   - md5: d17fd4d9193168e0f0431fb24cef199a
     size: 728143920
-  name: Tekken Tag Tournament (USA)
+  name: Tekken Tag Tournament (USA) (v2.00)
   serial: SLUS-20001
   version: '2.00'
 - hashes:
@@ -2307,7 +2306,7 @@
 - hashes:
   - md5: 6000d5de5a81d814aad355a451685a84
     size: 601596912
-  name: Crash Bandicoot - The Wrath of Cortex (Europe) (En,Fr,De,Es,It,Nl)
+  name: Crash Bandicoot - The Wrath of Cortex (Europe) (En,Fr,De,Es,It,Nl) (v1.03)
   serial: SLES-50386
   version: '1.03'
 - hashes:
@@ -2337,13 +2336,13 @@
 - hashes:
   - md5: c383c015065f8060343032480928d08d
     size: 4499767296
-  name: Grand Theft Auto - San Andreas (USA)
+  name: Grand Theft Auto - San Andreas (USA) (v1.03)
   serial: SLUS-20946
   version: '1.03'
 - hashes:
   - md5: 05ea10e36233b5de02bc1cfb8d2a1547
     size: 686826336
-  name: Demo Disc (Europe) (En,Fr,De,Es,It)
+  name: Demo Disc (Europe) (En,Fr,De,Es,It) (PBPX-95204)
   serial: PBPX-95204
   version: '1.10'
 - hashes:
@@ -2493,7 +2492,7 @@
 - hashes:
   - md5: 2a7144ff12a306d7dbe09a441e4ab649
     size: 3798466560
-  name: Enter the Matrix (Europe) (En,Fr,De,Es,It)
+  name: Enter the Matrix (Europe) (En,Fr,De,Es,It) (v2.00)
   serial: SLES-51203
   version: '2.00'
 - hashes:
@@ -2566,7 +2565,6 @@
   - md5: 6c2a1dbe6f43764dc7699539a3b56ea6
     size: 4188471296
   name: Dirge of Cerberus - Final Fantasy VII (Europe, Australia) (En,Fr,De,Es,It)
-  serial: SLES-54185
   version: '1.00'
 - hashes:
   - md5: f121ed57d3cfb80dd6f7e0162f1b9257
@@ -2577,7 +2575,7 @@
 - hashes:
   - md5: fe6a428d3ab39b678607beb4e7d63aab
     size: 2255126528
-  name: WipEout Fusion (Europe) (En,Fr,De,Es,It)
+  name: Wipeout Fusion (Europe) (En,Fr,De,Es,It)
   serial: SCES-50005
   version: '1.01'
 - hashes:
@@ -2613,7 +2611,7 @@
 - hashes:
   - md5: 1d3bc49e0e34d4cc6bd37b9cfa7e2db2
     size: 2789638144
-  name: Network Access Disc (Europe) (En,Fr,De,Es,It)
+  name: Network Access Disc (Europe) (En,Fr,De,Es,It) (v2.00)
   serial: SCES-51578
   version: '2.00'
 - hashes:
@@ -2862,7 +2860,7 @@
 - hashes:
   - md5: 1f23a2999812c76582545df522138358
     size: 1485602816
-  name: Barbie in the 12 Dancing Princesses (USA)
+  name: Barbie in The 12 Dancing Princesses (USA)
   serial: SLUS-21579
   version: '1.00'
 - hashes:
@@ -3024,7 +3022,7 @@
 - hashes:
   - md5: fdda7f8bb670acc26c273d314f22bc62
     size: 3146481664
-  name: Ar tonelico - Melody of Elemia (USA)
+  name: Ar Tonelico - Melody of Elemia (USA)
   serial: SLUS-21445
   version: '1.01'
 - hashes:
@@ -3073,7 +3071,6 @@
   - md5: fc43c3e4bcbf2e906db0dcc3d0a01c52
     size: 4047667200
   name: Final Fantasy XII (France)
-  serial: SLES-54355
   version: '1.00'
 - hashes:
   - md5: 39dcbbf75c09ca13b6a5f280e0def8fa
@@ -3109,7 +3106,7 @@
   - md5: fbad980569dac759ccc15da99eab18a6
     size: 2912321536
   name: WRC 4 - The Official Game of the FIA World Rally Championship (Europe, Australia)
-    (En,Fr,De,Es,It,Pt,No,Fi)
+    (En,Fr,De,Es,It,Pt,No,Fi) (v2.00)
   serial: SCES-52389
   version: '2.00'
 - hashes:
@@ -3241,7 +3238,7 @@
 - hashes:
   - md5: 936047108ef15e65b95ef473bbd80194
     size: 4213997568
-  name: Ratchet & Clank (Europe) (En,Fr,De,Es,It)
+  name: Ratchet & Clank (Europe) (En,Fr,De,Es,It) (v1.00)
   serial: SCES-50916
   version: '1.00'
 - hashes:
@@ -3271,7 +3268,7 @@
 - hashes:
   - md5: fa2c90a0a173c0299dc1447f868c013a
     size: 6225395712
-  name: 24 - The Game (Europe, Australia) (En,Fr,De,Es,It,Nl,Pl,Cs,Hu)
+  name: 24 - The Game (Europe, Australia) (En,Fr,De,Es,It,Nl,Pl,Cs,Hu) (v1.00)
   serial: SCES-53358
   version: '1.00'
 - hashes:
@@ -3475,7 +3472,7 @@
 - hashes:
   - md5: 48cf20e6476d6f4f20992522a2d2d37e
     size: 1869316096
-  name: LEGO Star Wars - The Video Game (USA)
+  name: LEGO Star Wars - The Video Game (USA) (v2.00)
   serial: SLUS-21083
   version: '2.00'
 - hashes:
@@ -3523,7 +3520,7 @@
 - hashes:
   - md5: ebb41b62f3ae349be605b93efb1d6a8e
     size: 4477124608
-  name: SingStar '80s (Sweden)
+  name: SingStar '80s (Sweden) (v2.00)
   serial: SCES-53609
   version: '2.00'
 - hashes:
@@ -3625,7 +3622,7 @@
 - hashes:
   - md5: 32b8347b2bb80cd30d30ba0601ebb0ee
     size: 4214784000
-  name: Ratchet & Clank (Europe, Australia) (En,Fr,De,Es,It)
+  name: Ratchet & Clank (Europe, Australia) (En,Fr,De,Es,It) (v2.00)
   serial: SCED-50916
   version: '2.00'
 - hashes:
@@ -3637,7 +3634,7 @@
 - hashes:
   - md5: 19f51d7f087c1e079ac4d14dff60dde9
     size: 4698767360
-  name: Grand Theft Auto III (Europe) (En,Fr,De,Es,It)
+  name: Grand Theft Auto III (Europe) (En,Fr,De,Es,It) (v1.40)
   serial: SLES-50330
   version: '1.40'
 - hashes:
@@ -3709,7 +3706,7 @@
 - hashes:
   - md5: 25b6579db5fe53e67e08cd6724575fb6
     size: 1434746880
-  name: Network Access Disc (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi)
+  name: Network Access Disc (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi) (v4.03)
   serial: SCES-51578
   version: '4.03'
 - hashes:
@@ -3758,7 +3755,6 @@
   - md5: bdac6a97a6a3268d03f7c3a2b7185334
     size: 3836116992
   name: Who Wants to Be a Millionaire - Party Edition (Europe)
-  serial: SLES-54199
   version: '1.01'
 - hashes:
   - md5: 90e4e6d4bc94d5eafd7fec609eae4add
@@ -3805,7 +3801,7 @@
 - hashes:
   - md5: 627438d6d9589842844cb2d193818f3a
     size: 2084339712
-  name: Hitman 2 - Silent Assassin (USA)
+  name: Hitman 2 - Silent Assassin (USA) (v3.01)
   serial: SLUS-20374
   version: '3.01'
 - hashes:
@@ -3871,7 +3867,7 @@
 - hashes:
   - md5: 06beb1360abe88fa9be4ff589fd66299
     size: 603972432
-  name: XGIII - Extreme G Racing (Europe) (En,Fr,De,Es)
+  name: XGIII - Extreme G Racing (Europe) (En,Fr,De,Es) (v1.02)
   serial: SLES-50210
   version: '1.02'
 - hashes:
@@ -3944,7 +3940,6 @@
   - md5: dbcb41d448eecb3c709ff9cc154bcebc
     size: 3634593792
   name: Just Cause (Europe) (En,Es,It)
-  serial: SLES-54137
   version: '1.00'
 - hashes:
   - md5: 26aedd2f41edae14eb750501a9c21907
@@ -4063,7 +4058,7 @@
 - hashes:
   - md5: df75eee621ff1b17c1503d013870b575
     size: 3045687296
-  name: Disney-Pixar Cars (Europe, Australia)
+  name: Disney-Pixar Cars (Europe, Australia) (v2.00)
   serial: SLES-53624
   version: '2.00'
 - hashes:
@@ -4099,7 +4094,7 @@
 - hashes:
   - md5: 1619d04de308a028457b4ac741f0ffc2
     size: 4303224832
-  name: Hitman 2 - Silent Assassin (Europe)
+  name: Hitman 2 - Silent Assassin (Europe) (v2.00)
   serial: SLES-50992
   version: '2.00'
 - hashes:
@@ -4111,13 +4106,13 @@
 - hashes:
   - md5: adafe3fb24a9ab3403cfa0102ce45060
     size: 2402942976
-  name: ObsCure (Europe)
+  name: Obscure (Europe)
   serial: SLES-52737
   version: '1.00'
 - hashes:
   - md5: d6a335c4ce074a953e9070d960faf1ab
     size: 952893440
-  name: Rayman M (Europe) (En,Fr,De,Es,It)
+  name: Rayman M (Europe) (En,Fr,De,Es,It) (v2.00)
   serial: SLES-50457
   version: '2.00'
 - hashes:
@@ -4159,7 +4154,7 @@
 - hashes:
   - md5: ef25e74b87270cff0d26c18ff4ba8f87
     size: 704656848
-  name: Thomas & Friends - A Day at the Races (Europe) (En,Sv,No,Da,Fi)
+  name: Thomas & Friends - A Day at the Races (Europe) (Sv,No,Da,Fi)
   serial: SLES-54861
   version: '1.00'
 - hashes:
@@ -4195,7 +4190,7 @@
 - hashes:
   - md5: 2220acb6d040a0a0e947e6650631f90d
     size: 3687022592
-  name: Gran Turismo 3 - A-Spec (Europe, Australia) (En,Fr,De,Es,It)
+  name: Gran Turismo 3 - A-Spec (Europe, Australia) (En,Fr,De,Es,It) (v1.00)
   serial: SCES-50294
   version: '1.00'
 - hashes:
@@ -4207,7 +4202,7 @@
 - hashes:
   - md5: d4ce2b5046a640d494a7f0ac618bd5fa
     size: 2668855296
-  name: FIFA Football 2004 (Europe) (En,It,Nl,Sv)
+  name: FIFA Football 2004 (Europe) (En,It,Nl,Sv) (v1.00)
   serial: SLES-51953
   version: '1.00'
 - hashes:
@@ -4539,7 +4534,7 @@
 - hashes:
   - md5: 120303ffeabc566f70e81bcb5bc7900e
     size: 4698767360
-  name: Grand Theft Auto - Vice City (Europe) (En,Fr,De,Es,It)
+  name: Grand Theft Auto - Vice City (Europe) (En,Fr,De,Es,It) (v3.00)
   serial: SLES-51061
   version: '3.00'
 - hashes:
@@ -4551,7 +4546,7 @@
 - hashes:
   - md5: 1e1da3b9a9169f0cc3ee006fe2023cfd
     size: 805634048
-  name: Soldier of Fortune - Gold Edition (Europe) (En,Fr,De,Es,It)
+  name: Soldier of Fortune - Gold Edition (Europe) (En,Fr,De,Es,It) (v1.01)
   serial: SLES-50739
   version: '1.01'
 - hashes:
@@ -4894,7 +4889,7 @@
 - hashes:
   - md5: 89f03ed67b3f22d591f07110b3b106dd
     size: 3370614784
-  name: Formula One 2001 (Europe, Australia) (En,Fr,De,Es,It,Fi)
+  name: Formula One 2001 (Europe, Australia) (En,Fr,De,Es,It,Fi) (v2.00)
   serial: SCES-50004
   version: '2.00'
 - hashes:
@@ -4912,7 +4907,7 @@
 - hashes:
   - md5: 4060dd8a7c4aff391ebf1c05ff9246ca
     size: 2327150592
-  name: WipEout Fusion (USA)
+  name: Wipeout Fusion (USA)
   serial: SLUS-20462
   version: '1.03'
 - hashes:
@@ -4943,7 +4938,7 @@
 - hashes:
   - md5: b2ced6c0f098fca1087c3ca7e1ea099d
     size: 538161120
-  name: Crash Bandicoot - The Wrath of Cortex (USA)
+  name: Crash Bandicoot - The Wrath of Cortex (USA) (v1.01)
   serial: SLUS-20238
   version: '1.01'
 - hashes:
@@ -5039,7 +5034,7 @@
 - hashes:
   - md5: 53d599c20ab9dbb55037672ba684fd81
     size: 4676091904
-  name: Tiger Woods PGA Tour 2005 (Europe) (En,Fr,De,Sv)
+  name: Tiger Woods PGA Tour 2005 (Europe) (En,Fr,De,Sv) (v2.00)
   serial: SLES-52509
   version: '2.00'
 - hashes:
@@ -5093,13 +5088,13 @@
 - hashes:
   - md5: fddacf178b4c847c98a7c2567bb916b5
     size: 1839693824
-  name: Red Faction (USA)
+  name: Red Faction (USA) (v1.01)
   serial: SLUS-20073
   version: '1.01'
 - hashes:
   - md5: 053307e504d88101924d8017d165676b
     size: 3492675584
-  name: SOCOM - U.S. Navy SEALs (USA)
+  name: SOCOM - U.S. Navy SEALs (USA) (v1.00)
   serial: SCUS-97134
   version: '1.00'
 - hashes:
@@ -5214,7 +5209,7 @@
 - hashes:
   - md5: f9017705514e00a0c9b6f95c5de2317e
     size: 725777808
-  name: Tekken Tag Tournament (Japan)
+  name: Tekken Tag Tournament (Japan) (v3.00)
   serial: SLPS-71501
   version: '3.00'
 - hashes:
@@ -5293,7 +5288,7 @@
 - hashes:
   - md5: 4b013a97fc496e990477eae4d3173e7a
     size: 2687205376
-  name: Network Access Disc (Europe) (En,Fr,De,Es,It)
+  name: Network Access Disc (Europe) (En,Fr,De,Es,It) (v1.03)
   serial: SCES-51578
   version: '1.03'
 - hashes:
@@ -5372,7 +5367,6 @@
   - md5: e41dbd2a50f014ebabd2991d39142f6d
     size: 4047568896
   name: Final Fantasy XII (Spain)
-  serial: SLES-54358
   version: '1.00'
 - hashes:
   - md5: 3bf85783142bd4ebf8535b29d4251a67
@@ -5389,7 +5383,7 @@
 - hashes:
   - md5: 4c597bb198fc3553e525bf6d0f6257e4
     size: 1841561600
-  name: Pro Evolution Soccer 4 (Europe) (En,Fr,De,Es)
+  name: Pro Evolution Soccer 4 (Europe) (En,Fr,De,Es) (v1.02)
   serial: SLES-52760
   version: '1.02'
 - hashes:
@@ -5509,7 +5503,7 @@
 - hashes:
   - md5: fd484a27771980614b9e86f760f15c93
     size: 4437737472
-  name: Dark Cloud 2 (USA)
+  name: Dark Cloud 2 (USA) (v1.00)
   serial: SCUS-97213
   version: '1.00'
 - hashes:
@@ -5617,7 +5611,7 @@
 - hashes:
   - md5: cd25cfc22f9f6a78ddff1f96d0bc4b11
     size: 1369276416
-  name: Network Access Disc (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi)
+  name: Network Access Disc (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi) (v6.00)
   serial: SCES-51578
   version: '6.00'
 - hashes:
@@ -5701,7 +5695,7 @@
 - hashes:
   - md5: 928550b20dd6ad2a4a2593179832594e
     size: 4626612224
-  name: Official PlayStation 2 Magazine Demo 50 (Germany) (En,Fr,De,Es,It)
+  name: Official PlayStation 2 Magazine Demo 50 (Germany) (En,Fr,De,Es,It) (SCED-52796)
   serial: SCED-52796
   version: '1.01'
 - hashes:
@@ -5941,7 +5935,7 @@
 - hashes:
   - md5: 3c7d30a1369d1669ac18ef64a8706487
     size: 3320938496
-  name: SSX 3 (Europe) (En,Fr,De,Es)
+  name: SSX 3 (Europe) (En,Fr,De,Es) (v1.00)
   serial: SLES-51697
   version: '1.00'
 - hashes:
@@ -5953,7 +5947,7 @@
 - hashes:
   - md5: bb2e77b3a2061b035726978a5e3a900a
     size: 4664262656
-  name: State of Emergency (Europe) (En,Fr,Es,It)
+  name: State of Emergency (Europe) (En,Fr,Es,It) (v1.02)
   serial: SLES-50606
   version: '1.02'
 - hashes:
@@ -5977,7 +5971,7 @@
 - hashes:
   - md5: 207cfeacc6af19d0a83ce3a39da05125
     size: 719502672
-  name: TimeSplitters (USA)
+  name: TimeSplitters (USA) (v2.00)
   serial: SLUS-20090
   version: '2.00'
 - hashes:
@@ -6067,7 +6061,7 @@
 - hashes:
   - md5: 72222ccb70b3a634543752954232b3fd
     size: 3935567872
-  name: Enter the Matrix (USA)
+  name: Enter the Matrix (USA) (v1.01)
   serial: SLUS-20454
   version: '1.01'
 - hashes:
@@ -6181,7 +6175,7 @@
 - hashes:
   - md5: a9ec75365fa326f0d6a50be73e720465
     size: 4588339200
-  name: SingStar '80s (Europe, Australia)
+  name: SingStar '80s (Europe, Australia) (v2.00)
   serial: SCES-53602
   version: '2.00'
 - hashes:
@@ -6241,13 +6235,13 @@
 - hashes:
   - md5: a7e51117609b98673851ef9abc2fd6f3
     size: 4698767360
-  name: Grand Theft Auto - Vice City (USA)
+  name: Grand Theft Auto - Vice City (USA) (v3.00)
   serial: SLUS-20552
   version: '3.00'
 - hashes:
   - md5: 0cc7e76c94e4842a87085fa5484832df
     size: 4517036032
-  name: Grand Theft Auto - San Andreas (USA)
+  name: Grand Theft Auto - San Andreas (USA) (v3.00)
   serial: SLUS-20946
   version: '3.00'
 - hashes:
@@ -6403,7 +6397,7 @@
 - hashes:
   - md5: c7dd94521130e053594d543e10a77d02
     size: 2202370048
-  name: Splashdown (Europe) (En,Fr,De,Es,It)
+  name: Splashdown (Europe) (En,Fr,De,Es,It) (v1.00)
   serial: SLES-50486
   version: '1.00'
 - hashes:
@@ -6421,7 +6415,7 @@
 - hashes:
   - md5: 1b83937656fd8fede5c0fbc8dbc11f8f
     size: 4401790976
-  name: Ar tonelico II - Melody of Metafalica (USA)
+  name: Ar Tonelico II - Melody of Metafalica (USA)
   serial: SLUS-21788
   version: '1.00'
 - hashes:
@@ -6722,7 +6716,7 @@
 - hashes:
   - md5: e074fae418feff31ee9b4c6422527cab
     size: 1927217152
-  name: Fullmetal Alchemist and the Broken Angel (USA)
+  name: Fullmetal Alchemist and the Broken Angel (USA, Canada)
   serial: SLUS-20994
   version: '1.00'
 - hashes:
@@ -6890,7 +6884,7 @@
 - hashes:
   - md5: bf52f680ec81c4d2c95f15ba577b3d07
     size: 982614016
-  name: Giants - Citizen Kabuto (Europe)
+  name: Giants - Citizen Kabuto (Europe) (En,Fr,De,Es,It)
   serial: SLES-50314
   version: '1.02'
 - hashes:
@@ -7082,7 +7076,7 @@
 - hashes:
   - md5: d9d0655a355a1987cc0b55c3c6eaf744
     size: 603977136
-  name: XGIII - Extreme G Racing (Europe) (En,Fr,De,Es)
+  name: XGIII - Extreme G Racing (Europe) (En,Fr,De,Es) (v2.00)
   serial: SLES-50210
   version: '2.00'
 - hashes:
@@ -7172,7 +7166,7 @@
 - hashes:
   - md5: 3a6587656d942f49a8d3478cf1ae92d5
     size: 2898296832
-  name: NiGHTS into Dreams... (Japan)
+  name: Nights into Dreams... (Japan)
   serial: SLPM-66926
   version: '1.00'
 - hashes:
@@ -7185,7 +7179,7 @@
   - md5: a4bd1b1286b31b29188c6084fdcb3a6e
     size: 3540123648
   name: Kingdom Hearts - Final Mix (Japan, Asia)
-  serial: SLAJ-25004
+  serial: SCAJ-20149
   version: '1.00'
 - hashes:
   - md5: 9af8119107df074b6badcb923c2a58a0
@@ -7352,13 +7346,13 @@
 - hashes:
   - md5: 170523443197d6074ddecedaa0249c52
     size: 3781885952
-  name: Simpsons Game, The (USA)
+  name: Simpsons Game, The (USA, Canada)
   serial: SLUS-21665
   version: '1.00'
 - hashes:
   - md5: 6bdc85acb6cd0d31912d61590005e4db
     size: 4665671680
-  name: Star Wars - Battlefront II (USA)
+  name: Star Wars - Battlefront II (USA) (v2.01)
   serial: SLUS-21240
   version: '2.01'
 - hashes:
@@ -7448,7 +7442,7 @@
 - hashes:
   - md5: fa4108a52412c91784c94b42ba4f65db
     size: 223865712
-  name: PDC World Championship Darts (Europe) (En,Fr,De,Es,It,Nl)
+  name: PDC World Championship Darts (Europe) (En,Fr,De,Es,It,Nl) (v1.02)
   serial: SLES-54111
   version: '1.02'
 - hashes:
@@ -7466,7 +7460,7 @@
 - hashes:
   - md5: 7db634f47cc86a3623005a68dac4f0f7
     size: 3483860992
-  name: Tiger Woods PGA Tour 2004 (Europe)
+  name: Tiger Woods PGA Tour 2004 (Europe) (v1.00)
   serial: SLES-51887
   version: '1.00'
 - hashes:
@@ -7808,7 +7802,7 @@
 - hashes:
   - md5: cda1ae0d9f719325e4686eb19dc7f954
     size: 882343936
-  name: ATV Offroad Fury (USA)
+  name: ATV Offroad Fury (USA) (v3.01)
   serial: SCUS-97104
   version: '3.01'
 - hashes:
@@ -8031,7 +8025,7 @@
   - md5: 2a8476852ff9a6ba5656d06e9a97fa66
     size: 4691427328
   name: NHL 2004 (USA)
-  serial: SLUS-20756
+  serial: SKUS-20756
   version: '1.00'
 - hashes:
   - md5: 1df43e718e40816ccf70f63c2cada0fc
@@ -8144,7 +8138,7 @@
 - hashes:
   - md5: e75426ec244c65b92bf9e4aedbbddd01
     size: 4641193984
-  name: Silent Hill 2 (USA) (En,Ja)
+  name: Silent Hill 2 (USA) (En,Ja) (v1.20)
   serial: SLUS-20228
   version: '1.20'
 - hashes:
@@ -8168,7 +8162,7 @@
 - hashes:
   - md5: 66c45bb13c62452808dbbe4b9075597d
     size: 391939632
-  name: World Championship Poker (USA)
+  name: World Championship Poker (USA, Canada)
   serial: SLUS-21028
   version: '1.02'
 - hashes:
@@ -8342,7 +8336,7 @@
 - hashes:
   - md5: 1c26a0602691862a06a5f68d1589fd22
     size: 3033333760
-  name: Spider-Man (USA)
+  name: Spider-Man (USA) (v2.01)
   serial: SLUS-20336
   version: '2.01'
 - hashes:
@@ -8596,7 +8590,7 @@
 - hashes:
   - md5: a69e13869875b63edb9ff9491095ae4b
     size: 4410671104
-  name: Jak II (USA) (En,Ja,Fr,De,Es,It,Ko)
+  name: Jak II (USA) (En,Ja,Fr,De,Es,It,Ko) (v2.01)
   serial: SCUS-97265
   version: '2.01'
 - hashes:
@@ -8692,7 +8686,7 @@
 - hashes:
   - md5: 648721cc81d5dc2e360501aa110a2324
     size: 2658664448
-  name: FIFA Football 2004 (Europe) (Fr,De)
+  name: FIFA Football 2004 (Europe) (Fr,De) (v2.00)
   serial: SLES-51963
   version: '2.00'
 - hashes:
@@ -8710,7 +8704,7 @@
 - hashes:
   - md5: 05883a85fc0e5ae63fda1e0742614c12
     size: 4698767360
-  name: Resident Evil - Outbreak (USA)
+  name: Resident Evil - Outbreak (USA) (v1.01)
   serial: SLUS-20765
   version: '1.01'
 - hashes:
@@ -8758,7 +8752,7 @@
 - hashes:
   - md5: ce993270c3842e4cd1074929f31dc354
     size: 4517888000
-  name: Grand Theft Auto - San Andreas (Germany) (En,De)
+  name: Grand Theft Auto - San Andreas (Germany) (En,De) (v2.01)
   serial: SLES-52927
   version: '2.01'
 - hashes:
@@ -8794,7 +8788,7 @@
 - hashes:
   - md5: f3a1eb209a74a4110f088f11be9e07e9
     size: 1472167936
-  name: Nickelodeon Avatar - The Legend of Aang (Europe) (En,Fr,De,Nl)
+  name: Nickelodeon Avatar - The Legend of Aang (Europe) (En,Fr,De,Nl) (v1.00)
   serial: SLES-54188
   version: '1.00'
 - hashes:
@@ -9112,7 +9106,7 @@
 - hashes:
   - md5: d034b5430cfb9d5b72729e4c6c8f1f7d
     size: 571147920
-  name: Pro Evolution Soccer (Europe) (Es,It)
+  name: Pro Evolution Soccer (Europe) (Es,It) (v1.02)
   serial: SLES-50462
   version: '1.02'
 - hashes:
@@ -9184,7 +9178,7 @@
 - hashes:
   - md5: 4c21a55f71f9936fe48b20319047e6d6
     size: 3703078912
-  name: Need for Speed - Most Wanted (USA)
+  name: Need for Speed - Most Wanted (USA) (v1.01)
   serial: SLUS-21267
   version: '1.01'
 - hashes:
@@ -9383,7 +9377,7 @@
 - hashes:
   - md5: 4eef59c9a1c98b9202904c571bd14a3f
     size: 3892936704
-  name: WipEout Pulse (Europe) (En,Fr,De,Es,It)
+  name: Wipeout Pulse (Europe) (En,Fr,De,Es,It)
   serial: SCES-54748
   version: '1.00'
 - hashes:
@@ -9401,7 +9395,7 @@
 - hashes:
   - md5: 8a3a380a1e1a2f1426d3fd0dc4f03588
     size: 4592238592
-  name: Sly 2 - Band of Thieves (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi)
+  name: Sly 2 - Band of Thieves (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi) (v1.00)
   serial: SCES-52529
   version: '1.00'
 - hashes:
@@ -9711,7 +9705,7 @@
 - hashes:
   - md5: 89a13d7fbc5f293a7721358294431bf0
     size: 2658664448
-  name: FIFA Football 2004 (Europe) (Fr,De)
+  name: FIFA Football 2004 (Europe) (Fr,De) (v1.01)
   serial: SLES-51963
   version: '1.01'
 - hashes:
@@ -9795,7 +9789,7 @@
 - hashes:
   - md5: 3d8aa805d2f1a406dc116a26c867ccfe
     size: 4684972032
-  name: SingStar '80s (Germany)
+  name: SingStar '80s (Germany) (v2.00)
   serial: SCES-53604
   version: '2.00'
 - hashes:
@@ -9831,7 +9825,7 @@
 - hashes:
   - md5: 566a6e7255142d4c909ae74529cd90bd
     size: 3702456320
-  name: Need for Speed - Most Wanted (USA)
+  name: Need for Speed - Most Wanted (USA) (v2.00)
   serial: SLUS-21267
   version: '2.00'
 - hashes:
@@ -10138,7 +10132,7 @@
 - hashes:
   - md5: f5b70bf1de1e4310d806249685f1b2bb
     size: 33746496
-  name: Ultimate Music Quiz, The (Europe) (En,Fr,De,Es,It,Nl)
+  name: Ultimate Music Quiz, The (Europe) (En,Fr,De,Es,It,Nl) (v2.00)
   serial: SLES-53599
   version: '2.00'
 - hashes:
@@ -10174,7 +10168,7 @@
 - hashes:
   - md5: 1b8f29a383e887f6895bd2bb1980dd2e
     size: 582832656
-  name: Real World Golf (Europe)
+  name: Real World Golf (Europe) (v1.01)
   serial: SLES-53371
   version: '1.01'
 - hashes:
@@ -10312,7 +10306,7 @@
 - hashes:
   - md5: 46ad6cabe58a40b7a79ebd3232a6a93c
     size: 4698767360
-  name: Resident Evil - Outbreak (USA)
+  name: Resident Evil - Outbreak (USA) (v2.00)
   serial: SLUS-20765
   version: '2.00'
 - hashes:
@@ -10396,7 +10390,7 @@
 - hashes:
   - md5: c5f3e058efd704c4bfe24a8e15922b20
     size: 3936256000
-  name: Hitman 2 - Silent Assassin (France)
+  name: Hitman 2 - Silent Assassin (France) (v2.00)
   serial: SLES-51108
   version: '2.00'
 - hashes:
@@ -10585,6 +10579,7 @@
   - md5: 7e7c2d1e001edb8acdf6a588509956c3
     size: 1760591872
   name: EyeToy - Play 2 (Europe, Australia) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi,El)
+    (v1.00)
   serial: SCES-52748
   version: '1.00'
 - hashes:
@@ -10644,7 +10639,7 @@
 - hashes:
   - md5: e4b88206c668b0a40d7607dd109a9efa
     size: 634807152
-  name: Age of Empires II - The Age of Kings (Europe) (En,Fr,De,Es,It)
+  name: Age of Empires II - The Age of Kings (Europe) (En,Fr,De,Es,It) (v1.20)
   serial: SLES-50282
   version: '1.20'
 - hashes:
@@ -10866,7 +10861,7 @@
 - hashes:
   - md5: 51322332502214348c5a06457ddf714f
     size: 3885924352
-  name: Arthur and the Invisibles - The Game (USA) (En,Fr,Es)
+  name: Arthur and the Invisibles (USA) (En,Fr,Es)
   serial: SLUS-21305
   version: '1.00'
 - hashes:
@@ -10968,7 +10963,7 @@
 - hashes:
   - md5: ed08be35e84e571d21395899ede7e1f7
     size: 4487905280
-  name: Getaway, The (Europe) (En,Fr,De,Es,It)
+  name: Getaway, The (Europe) (En,Fr,De,Es,It) (v2.03)
   serial: SCES-51159
   version: '2.03'
 - hashes:
@@ -10992,7 +10987,7 @@
 - hashes:
   - md5: 8028e0c9e7d8fb5b3f926a744334a41c
     size: 4588797952
-  name: AND 1 Streetball (USA) (En,Fr,Es)
+  name: AND 1 Streetball (USA) (En,Fr,Es) (v2.00)
   serial: SLUS-21237
   version: '2.00'
 - hashes:
@@ -11178,7 +11173,7 @@
 - hashes:
   - md5: e534b75ce37de48ebb1a9ba114dc9f3a
     size: 4540891136
-  name: Boogie (USA)
+  name: Boogie (USA) (En,Es,Fi)
   serial: SLUS-21681
   version: '1.00'
 - hashes:
@@ -11376,7 +11371,7 @@
 - hashes:
   - md5: 877c58da9d2b10e86ef9e733e2be473f
     size: 709516080
-  name: Pro Evolution Soccer (Europe) (En,Fr,De)
+  name: Pro Evolution Soccer (Europe) (En,Fr,De) (v2.00)
   serial: SLES-50412
   version: '2.00'
 - hashes:
@@ -11448,7 +11443,7 @@
 - hashes:
   - md5: 939d1bfb508f6943cc39a84733eb5f31
     size: 4268097536
-  name: Official PlayStation 2 Magazine Demo 49 (Europe) (En,Fr,De,Es,It)
+  name: Official PlayStation 2 Magazine Demo 49 (Europe) (En,Fr,De,Es,It) (SCED-52164)
   serial: SCED-52164
   version: '1.03'
 - hashes:
@@ -11484,7 +11479,7 @@
 - hashes:
   - md5: b81b5b940b9749051edeef639ff425f1
     size: 3683090432
-  name: Official PlayStation 2 Magazine Demo 54 (Europe) (En,Fr,De,Es,It)
+  name: Official PlayStation 2 Magazine Demo 54 (Europe) (En,Fr,De,Es,It) (SCED-52169)
   serial: SCED-52169
   version: '1.01'
 - hashes:
@@ -11520,7 +11515,7 @@
 - hashes:
   - md5: 4d92eeebfaff0f53283bebae34f4eb0d
     size: 4269735936
-  name: Sims 2, The - Pets (Europe) (En,Fr,De,Es,It,Nl,Sv,No,Da,Fi,Pl)
+  name: Sims 2, The - Pets (Europe) (En,Fr,De,Es,It,Nl,Sv,No,Da,Fi,Pl) (v1.00)
   serial: SLES-54347
   version: '1.00'
 - hashes:
@@ -11562,7 +11557,7 @@
 - hashes:
   - md5: df7dc7fc57dcbfac64ee73eaf79fb860
     size: 4594892800
-  name: Call of Duty - Finest Hour (USA)
+  name: Call of Duty - Finest Hour (USA) (v1.04)
   serial: SLUS-20725
   version: '1.04'
 - hashes:
@@ -11610,7 +11605,7 @@
 - hashes:
   - md5: 886c884b18f4ccc301907d2c11d98dd1
     size: 4293984256
-  name: Champions - Return to Arms (USA)
+  name: Champions - Return to Arms (USA) (v2.00)
   serial: SLUS-20973
   version: '2.00'
 - hashes:
@@ -11856,7 +11851,7 @@
 - hashes:
   - md5: c2125d6bc68d23c2e13ba3ee6cbc2d2a
     size: 3504504832
-  name: Area 51 (Europe) (En,Fr,De,Es,It)
+  name: Area 51 (Europe) (En,Fr,De,Es,It) (v1.02)
   serial: SLES-52570
   version: '1.02'
 - hashes:
@@ -11928,7 +11923,7 @@
 - hashes:
   - md5: 300e8fa26d8980fedfeb5698cdf4013b
     size: 3392929792
-  name: Tony Hawk's Pro Skater 4 (USA)
+  name: Tony Hawk's Pro Skater 4 (USA) (v1.02)
   serial: SLUS-20504
   version: '1.02'
 - hashes:
@@ -11971,7 +11966,6 @@
   - md5: 9983163ae461e365082b90ade97c4bae
     size: 1418133504
   name: Championship Manager 2006 (Europe) (En,Fr,Es,It,Pt)
-  serial: SLES-53945
   version: '1.00'
 - hashes:
   - md5: 910772c53b1617fe0f1853725f8916e9
@@ -11988,7 +11982,7 @@
 - hashes:
   - md5: 4b3835f701aad83bce7e34355e8d2be4
     size: 1228832768
-  name: Cricket 2004 (Europe)
+  name: Cricket 2004 (Europe) (v2.00)
   serial: SLES-52123
   version: '2.00'
 - hashes:
@@ -12252,7 +12246,7 @@
 - hashes:
   - md5: b5c0831dbbafa7374447c803c0a69024
     size: 618663024
-  name: Dark Angel - Vampire Apocalypse (USA)
+  name: Dark Angel - Vampire Apocalypse (USA) (v1.02)
   serial: SLUS-20131
   version: '1.02'
 - hashes:
@@ -12342,7 +12336,7 @@
 - hashes:
   - md5: 408d20779b16d038be236594e876c231
     size: 384396768
-  name: Tour de France, Le - 1903 - 2003 - Centenary Edition (Europe) (En,Fr,De,Es,It)
+  name: Tour de France, Le - 1903-2003 - Centenary Edition (Europe) (En,Fr,De,Es,It)
   serial: SLES-51488
   version: '1.01'
 - hashes:
@@ -12480,7 +12474,7 @@
 - hashes:
   - md5: 3b1390e399947756ccda4cac79931f01
     size: 3370614784
-  name: Formula One 2001 (Europe) (En,Fr,De,Es,It,Fi)
+  name: Formula One 2001 (Europe) (En,Fr,De,Es,It,Fi) (v1.01)
   serial: SCES-50004
   version: '1.01'
 - hashes:
@@ -12588,7 +12582,7 @@
 - hashes:
   - md5: 68938b438e4ced81664b237ce56f3e95
     size: 3920592896
-  name: TOCA Race Driver (Europe) (En,Fr,Es)
+  name: TOCA Race Driver (Europe) (En,Fr,Es) (v2.00)
   serial: SLES-50723
   version: '2.00'
 - hashes:
@@ -12642,7 +12636,7 @@
 - hashes:
   - md5: a49eae4fa8d2f4789c79ef69a28ab5ba
     size: 4307353600
-  name: Hitman 2 - Silent Assassin (Europe)
+  name: Hitman 2 - Silent Assassin (Europe) (v1.01)
   serial: SLES-50992
   version: '1.01'
 - hashes:
@@ -12672,7 +12666,7 @@
 - hashes:
   - md5: a82647fe907b8949b1fea8cb0a1e2237
     size: 3912269824
-  name: Battlefield 2 - Modern Combat (Europe) (En,Es,Nl,Sv)
+  name: Battlefield 2 - Modern Combat (Europe) (En,Es,Nl,Sv) (v2.01)
   serial: SLES-53729
   version: '2.01'
 - hashes:
@@ -12720,7 +12714,7 @@
 - hashes:
   - md5: 43858b4d42c3c160f68dc52a11c9f354
     size: 1579122688
-  name: Pro Evolution Soccer 6 (France)
+  name: PES 6 - Pro Evolution Soccer (France)
   serial: SLES-54360
   version: '1.01'
 - hashes:
@@ -12846,13 +12840,13 @@
 - hashes:
   - md5: e41c0df003244066ebc29f5a77c21dac
     size: 3919839232
-  name: Battlefield 2 - Modern Combat (Europe) (En,Es,Nl,Sv)
+  name: Battlefield 2 - Modern Combat (Europe) (En,Es,Nl,Sv) (v1.00)
   serial: SLES-53729
   version: '1.00'
 - hashes:
   - md5: 26dd141fb8cf85676fd3370933c99c9f
     size: 4421681152
-  name: Ar tonelico II - Melody of Metafalica (Europe)
+  name: Ar Tonelico II - Melody of Metafalica (Europe)
   serial: SLES-55444
   version: '1.00'
 - hashes:
@@ -12871,7 +12865,6 @@
   - md5: ad2c6a0489788a0ec88e64d2c8334541
     size: 2753396736
   name: Bionicle Heroes (Europe) (En,Fr,De,Es,It,Da)
-  serial: SLES-54150
   version: '1.01'
 - hashes:
   - md5: 9887fa3b2ae6f3ee4be7e11b9194b813
@@ -13050,7 +13043,7 @@
 - hashes:
   - md5: 0bec104614687df18f28f6f58c2285ad
     size: 4437770240
-  name: Dark Cloud 2 (USA)
+  name: Dark Cloud 2 (USA) (v2.00)
   serial: SCUS-97213
   version: '2.00'
 - hashes:
@@ -13266,7 +13259,7 @@
 - hashes:
   - md5: 2544e1a72a4769ea707244e0c7a9a072
     size: 4410671104
-  name: Jak II (USA) (En,Ja,Fr,De,Es,It,Ko)
+  name: Jak II (USA) (En,Ja,Fr,De,Es,It,Ko) (v1.00)
   serial: SCUS-97265
   version: '1.00'
 - hashes:
@@ -13332,7 +13325,7 @@
 - hashes:
   - md5: 38586f5041daa7738c2bd4d4836e1896
     size: 3670540288
-  name: WRC - Rally Evolved (Europe) (En,Fr,De,Es,It,Pt,No,Fi)
+  name: WRC - Rally Evolved (Europe) (En,Fr,De,Es,It,Pt,No,Fi) (v1.01)
   serial: SCES-53247
   version: '1.01'
 - hashes:
@@ -13356,7 +13349,7 @@
 - hashes:
   - md5: 027262923440f0caf538ce8a80b27d1e
     size: 1154875392
-  name: Monster Rancher 3 (USA)
+  name: Monster Rancher 3 (USA) (v2.01)
   serial: SLUS-20190
   version: '2.01'
 - hashes:
@@ -13542,7 +13535,7 @@
 - hashes:
   - md5: 3cbbb5127ee8a0be93ef0876f7781ee8
     size: 3828350976
-  name: Ratchet & Clank - Going Commando (USA)
+  name: Ratchet & Clank - Going Commando (USA) (v1.01)
   serial: SCUS-97268
   version: '1.01'
 - hashes:
@@ -13567,7 +13560,6 @@
   - md5: bddb58b04c0d813c1fee830d7cc2c074
     size: 3634593792
   name: Just Cause (Europe) (Fr,De)
-  serial: SLES-54200
   version: '1.00'
 - hashes:
   - md5: 23446ef35816065541d868d9cb17e4ad
@@ -13789,7 +13781,7 @@
 - hashes:
   - md5: 7866bb4d627188116812295c08fe3d38
     size: 1766883328
-  name: Formula One 04 (Europe) (En,Fr,De,Es,It,Fi)
+  name: Formula One 04 (Europe) (En,Fr,De,Es,It,Fi) (v1.01)
   serial: SCES-52042
   version: '1.01'
 - hashes:
@@ -13927,7 +13919,7 @@
 - hashes:
   - md5: 24588dbb3a0ec54fe7e2a7f813096849
     size: 2108489728
-  name: Crash Twinsanity (USA)
+  name: Crash Twinsanity (USA) (v2.00)
   serial: SLUS-20909
   version: '2.00'
 - hashes:
@@ -14377,7 +14369,7 @@
 - hashes:
   - md5: 5d355c4d5617e8f011672399423e1b31
     size: 23320080
-  name: Ultimate Music Quiz, The (Europe) (En,Fr,De,Es,It,Nl)
+  name: Ultimate Music Quiz, The (Europe) (En,Fr,De,Es,It,Nl) (v1.00)
   serial: SLES-53599
   version: '1.00'
 - hashes:
@@ -14599,7 +14591,7 @@
 - hashes:
   - md5: 8a3ce7327fd044bfbaf93da80093c95f
     size: 3868295168
-  name: DTM Race Driver (Europe) (En,Fr,De)
+  name: DTM Race Driver (Europe) (En,Fr,De) (v1.01)
   serial: SLES-50816
   version: '1.01'
 - hashes:
@@ -14924,7 +14916,6 @@
   - md5: 6e92b26e942e924e5aab3876fa7354c2
     size: 3726573568
   name: Reservoir Dogs (Europe) (En,Fr,Es,It)
-  serial: SLES-53775
   version: '1.02'
 - hashes:
   - md5: fc5885a160d57cbafebc8f5bf50dac2d
@@ -15277,7 +15268,7 @@
 - hashes:
   - md5: d90e400d71581fae82d211225f11be2f
     size: 3171287040
-  name: Ar tonelico - Melody of Elemia (Europe)
+  name: Ar Tonelico - Melody of Elemia (Europe)
   serial: SLES-54586
   version: '1.01'
 - hashes:
@@ -15410,7 +15401,7 @@
 - hashes:
   - md5: c0a9ca90cc215ff5a7c1404e93d90c00
     size: 4690509824
-  name: NHL 09 (USA)
+  name: NHL 09 (USA) (v2.00)
   serial: SLUS-21771
   version: '2.00'
 - hashes:
@@ -15631,7 +15622,7 @@
 - hashes:
   - md5: e6de45d4be80467a6f8e60bdb1ba0875
     size: 731135664
-  name: LEGO Star Wars - The Video Game (USA)
+  name: LEGO Star Wars - The Video Game (USA) (v1.01)
   serial: SLUS-21083
   version: '1.01'
 - hashes:
@@ -15787,7 +15778,7 @@
 - hashes:
   - md5: 396e230b0ea58d17ee5d721cdc8dd6ea
     size: 3248455680
-  name: kill.switch (USA)
+  name: Kill Switch (USA)
   serial: SLUS-20706
   version: '1.01'
 - hashes:
@@ -15865,7 +15856,7 @@
 - hashes:
   - md5: 872efeda988c57a08cd418d650fc6e4c
     size: 4557176832
-  name: AFL Live 2004 (Australia)
+  name: AFL Live 2004 (Australia) (v1.03)
   serial: SLES-51826
   version: '1.03'
 - hashes:
@@ -15883,7 +15874,7 @@
 - hashes:
   - md5: 9cc68e9ff52f2ec533e8efc3c643cb0f
     size: 632904384
-  name: Age of Empires II - The Age of Kings (Europe) (En,Fr,De,Es,It)
+  name: Age of Empires II - The Age of Kings (Europe) (En,Fr,De,Es,It) (v2.00)
   serial: SLES-50282
   version: '2.00'
 - hashes:
@@ -16238,6 +16229,7 @@
   - md5: 578c0efa2297040ffa3923ab78f1a839
     size: 590149728
   name: Simple 2000 Series Ultimate Vol. 29 - K-1 Premium 2005 Dynamite!! (Japan)
+    (v2.00)
   serial: SLPS-20453
   version: '2.00'
 - hashes:
@@ -16291,7 +16283,7 @@
 - hashes:
   - md5: 2c25c8c7184f4131b49558f03519b873
     size: 1652293632
-  name: Pro Evolution Soccer 6 (Germany)
+  name: PES 6 - Pro Evolution Soccer (Germany)
   serial: SLES-54361
   version: '1.01'
 - hashes:
@@ -16388,7 +16380,7 @@
 - hashes:
   - md5: 0191fe482029c54907c442269619b623
     size: 4273012736
-  name: Champions - Return to Arms (USA)
+  name: Champions - Return to Arms (USA) (v1.01)
   serial: SLUS-20973
   version: '1.01'
 - hashes:
@@ -16436,7 +16428,7 @@
 - hashes:
   - md5: dd78bf6cee80df1984bd4e01e7d2019f
     size: 3537338368
-  name: Bonus Demo 5 (Europe) (En,Fr,De,Es,It)
+  name: Bonus Demo 5 (Europe) (En,Fr,De,Es,It) (SCED-51941)
   serial: SCED-51941
   version: '1.02'
 - hashes:
@@ -16616,7 +16608,7 @@
 - hashes:
   - md5: 7b760c3c831a542d30949b87bdd5db6f
     size: 4462804992
-  name: Buzz! The Big Quiz (Europe)
+  name: Buzz! The Big Quiz (Europe) (v2.00)
   serial: SCES-53879
   version: '2.00'
 - hashes:
@@ -16724,7 +16716,7 @@
 - hashes:
   - md5: 220cdcdde830b3434af98c2d3172a20b
     size: 3934978048
-  name: Enter the Matrix (USA)
+  name: Enter the Matrix (USA) (v2.00)
   serial: SLUS-20454
   version: '2.00'
 - hashes:
@@ -16736,7 +16728,7 @@
 - hashes:
   - md5: 7b758c7d64b5ced2a700503b50621454
     size: 3162013696
-  name: WRC 4 - The Official Game of the FIA World Rally Championship (Japan)
+  name: WRC 4 - The Official Game of the FIA World Rally Championship (Japan) (v2.00)
   serial: SLPM-65975
   version: '2.00'
 - hashes:
@@ -16868,7 +16860,7 @@
 - hashes:
   - md5: 5e641cda83051934efce271a03e0a773
     size: 1065877504
-  name: Thunderstrike - Operation Phoenix (USA)
+  name: Thunderstrike - Operation Phoenix (USA) (v1.00)
   serial: SLUS-20232
   version: '1.00'
 - hashes:
@@ -16922,7 +16914,7 @@
 - hashes:
   - md5: 94dce6c4d231ecf81f3d03d22f447667
     size: 102448416
-  name: Junior Board Games (Europe) (En,Fr,De,Es,It)
+  name: Junior Board Games (Europe) (En,Fr,De,Es,It) (v2.00)
   serial: SLES-52776
   version: '2.00'
 - hashes:
@@ -17525,7 +17517,7 @@
 - hashes:
   - md5: 726d964c485c93f5705a185202424dc9
     size: 2042298368
-  name: ObsCure II (Europe) (En,Fr,De,Es,It)
+  name: Obscure II (Europe) (En,Fr,De,Es,It)
   serial: SLES-54782
   version: '1.01'
 - hashes:
@@ -17693,7 +17685,7 @@
 - hashes:
   - md5: fe9c69a25bbad8f8ef608d53accb1e90
     size: 1327693824
-  name: Hot Shots Golf 3 (USA)
+  name: Hot Shots Golf 3 (USA) (v1.01)
   serial: SCUS-97130
   version: '1.01'
 - hashes:
@@ -17801,7 +17793,7 @@
 - hashes:
   - md5: 586b84609aa35e87f099f1fffa1c3b64
     size: 2085847040
-  name: Pro Evolution Soccer 6 (Europe) (It,Pl)
+  name: PES 6 - Pro Evolution Soccer (Europe) (It,Pl) (v1.01)
   serial: SLES-54204
   version: '1.01'
 - hashes:
@@ -17892,7 +17884,6 @@
   - md5: c4cea784a7416dcd377deac21265aa39
     size: 4027449344
   name: Final Fantasy XII (Italy)
-  serial: SLES-54357
   version: '1.00'
 - hashes:
   - md5: 664782ff6bb561168171050cf2762fe7
@@ -18096,6 +18087,7 @@
   - md5: 1d2dcfe943c9aaf500e4145f8d5ecdd7
     size: 4673699840
   name: Pirates of the Caribbean - The Legend of Jack Sparrow (Europe) (En,Fr,De,Es,It)
+    (v2.00)
   serial: SLES-54237
   version: '2.00'
 - hashes:
@@ -18197,7 +18189,7 @@
 - hashes:
   - md5: 9e19ce632ce9e079b1e34b982c5ef592
     size: 2766798848
-  name: ObsCure (Europe) (De,Es)
+  name: Obscure (Europe) (De,Es)
   serial: SLES-52508
   version: '1.01'
 - hashes:
@@ -18245,7 +18237,7 @@
 - hashes:
   - md5: f4d0e271be673fceb020e241dd2fdc2c
     size: 734480208
-  name: Jikkyou J.League - Perfect Striker 3 (Japan)
+  name: Jikkyou J.League - Perfect Striker 3 (Japan) (v1.03)
   serial: SLPM-62045
   version: '1.03'
 - hashes:
@@ -18347,7 +18339,7 @@
 - hashes:
   - md5: 0f92bfa0d0b7e91527c7341d77c09bb0
     size: 2192375808
-  name: J.League Winning Eleven 10 + Europe League '06-'07 (Japan)
+  name: J.League Winning Eleven 10 + Europe League '06-'07 (Japan) (v2.01)
   serial: SLPM-66595
   version: '2.01'
 - hashes:
@@ -18431,7 +18423,7 @@
 - hashes:
   - md5: ab8f9bbf8bba0ddf29b36e1d83cfe0ca
     size: 3448930304
-  name: Barbie in the 12 Dancing Princesses (Europe) (Fr,De,Es,It)
+  name: Barbie in The 12 Dancing Princesses (Europe) (Fr,De,Es,It)
   serial: SLES-54608
   version: '1.00'
 - hashes:
@@ -18533,7 +18525,7 @@
 - hashes:
   - md5: 6005a26609b57d13dc2eb89d743bcc2c
     size: 35407008
-  name: Ultimate Film Quiz, The (Europe) (En,Fr,De,Es,It,Nl)
+  name: Ultimate Film Quiz, The (Europe) (En,Fr,De,Es,It,Nl) (v2.00)
   serial: SLES-53596
   version: '2.00'
 - hashes:
@@ -18623,8 +18615,8 @@
 - hashes:
   - md5: 8572a0578a9e2c7c1b7456f2bdb2f693
     size: 3376414720
-  name: SOCOM - U.S. Navy SEALs (Korea)
-  serial: SCKA-24008
+  name: SOCOM - U.S. Navy SEALs (Korea) (SCKA-24008)
+  serial: SCKA-20013
   version: '1.00'
 - hashes:
   - md5: 175e9130d1ac448cab0ab1d8ce7eee68
@@ -19169,7 +19161,7 @@
 - hashes:
   - md5: 5b4ee3a2378cfdf1c955e8125981cdeb
     size: 1264648192
-  name: Shrek 2 (Europe)
+  name: Shrek 2 (Europe) (v1.00)
   serial: SLES-52379
   version: '1.00'
 - hashes:
@@ -19277,7 +19269,7 @@
 - hashes:
   - md5: 8b35484b1609a8fb0f6d0dc46f16b74f
     size: 1485733888
-  name: Barbie in the 12 Dancing Princesses (Europe)
+  name: Barbie in The 12 Dancing Princesses (Europe)
   serial: SLES-54566
   version: '1.00'
 - hashes:
@@ -19637,7 +19629,7 @@
 - hashes:
   - md5: 1d5fb68dafea02256960e26430f5a8b5
     size: 1841561600
-  name: Pro Evolution Soccer 4 (Europe) (En,Fr,De,Es)
+  name: Pro Evolution Soccer 4 (Europe) (En,Fr,De,Es) (v2.00)
   serial: SLES-52760
   version: '2.00'
 - hashes:
@@ -20045,7 +20037,7 @@
 - hashes:
   - md5: c31e0f580eb8a82748ef98a6787880f1
     size: 705030816
-  name: Legends of Wrestling (USA)
+  name: Legends of Wrestling (USA) (v1.02)
   serial: SLUS-20242
   version: '1.02'
 - hashes:
@@ -20347,7 +20339,7 @@
 - hashes:
   - md5: cca117a2a04c69047f5426061d8a960f
     size: 3195535360
-  name: Inuyasha - Juso no Kamen (Japan)
+  name: Inuyasha - Juso no Kamen (Japan) (v1.02)
   serial: SLPS-25320
   version: '1.02'
 - hashes:
@@ -20576,6 +20568,7 @@
   - md5: dfdbd7dfde6b74ef9e2a63d53e5665a4
     size: 3063611392
   name: Official PlayStation 2 Magazine Demo 74 (Europe, Australia) (En,Fr,De,Es,It)
+    (SCED-54046)
   serial: SCED-54046
   version: '1.00'
 - hashes:
@@ -20653,8 +20646,8 @@
 - hashes:
   - md5: f077dccf79c47454e120899cea419c42
     size: 4118052864
-  name: Spider-Man 3 (USA)
-  serial: SLUS-21552
+  name: Spider-Man 3 (USA) (v1.02)
+  serial: SLUS-21617
   version: '1.02'
 - hashes:
   - md5: 59a2701f92990a288a04b0fc179b908b
@@ -20665,7 +20658,7 @@
 - hashes:
   - md5: 0ce41d7d245d3efffaa57bfdfdcc0e66
     size: 1700921344
-  name: Judie no Atelier - Gramnad no Renkinjutsushi (Japan)
+  name: Judie no Atelier - Gramnad no Renkinjutsushi (Japan) (v1.03)
   serial: SLPM-65131
   version: '1.03'
 - hashes:
@@ -20689,7 +20682,7 @@
 - hashes:
   - md5: aede6d8bf9f25dd5e05e9da463d6fd88
     size: 3936157696
-  name: Hitman 2 - Silent Assassin (Germany)
+  name: Hitman 2 - Silent Assassin (Germany) (v2.00)
   serial: SLES-51109
   version: '2.00'
 - hashes:
@@ -20737,7 +20730,7 @@
 - hashes:
   - md5: 953fa1da81f6eba8f010eba926cdfc0d
     size: 4657774592
-  name: Grand Theft Auto - Vice City (USA)
+  name: Grand Theft Auto - Vice City (USA) (v2.01)
   serial: SLUS-20552
   version: '2.01'
 - hashes:
@@ -21093,7 +21086,7 @@
 - hashes:
   - md5: e5c03ca08f68c5994ea4404f3635a0b7
     size: 1763147776
-  name: Formula One 04 (Europe, Australia) (En,Fr,De,Es,It,Fi)
+  name: Formula One 04 (Europe, Australia) (En,Fr,De,Es,It,Fi) (v2.02)
   serial: SCES-52042
   version: '2.02'
 - hashes:
@@ -21105,7 +21098,7 @@
 - hashes:
   - md5: 8c5901995e11f63108bd17ab7b3465b7
     size: 554615712
-  name: Football Generation (Europe) (En,Fr,De,Es,It)
+  name: Football Generation (Europe) (En,Fr,De,Es,It) (v1.04)
   serial: SLES-51959
   version: '1.04'
 - hashes:
@@ -21153,7 +21146,7 @@
 - hashes:
   - md5: eda65cfe650f838673aed6a5e49deecc
     size: 571147920
-  name: Pro Evolution Soccer (Europe) (Es,It)
+  name: Pro Evolution Soccer (Europe) (Es,It) (v2.00)
   serial: SLES-50462
   version: '2.00'
 - hashes:
@@ -21575,7 +21568,6 @@
   - md5: c724ebdef24313c180116d98af3a4bc5
     size: 4646600704
   name: Urban Chaos - Riot Response (Europe) (En,Fr,De,Es,It)
-  serial: SLES-53991
   version: '1.02'
 - hashes:
   - md5: 5b4345d7c9d32f67057a3ac847f37fa5
@@ -21610,7 +21602,7 @@
 - hashes:
   - md5: 876932944e8e79fad0ac558f0122cab8
     size: 58642416
-  name: Wacky Races - Mad Motors (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi)
+  name: Wacky Races - Mad Motors (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi) (v1.03)
   serial: SLES-54670
   version: '1.03'
 - hashes:
@@ -21778,7 +21770,7 @@
 - hashes:
   - md5: 094becf404b74489110edb34a64f0953
     size: 3869933568
-  name: TOCA Race Driver (Europe) (En,Fr,Es)
+  name: TOCA Race Driver (Europe) (En,Fr,Es) (v1.01)
   serial: SLES-50723
   version: '1.01'
 - hashes:
@@ -22084,7 +22076,7 @@
 - hashes:
   - md5: ad0850a8b6b1778219be62f3df9c873f
     size: 4282515456
-  name: Kidou Senshi Gundam - Renpou vs. Zeon DX (Japan)
+  name: Kidou Senshi Gundam - Renpou vs. Zeon DX (Japan) (v1.02)
   serial: SLPM-65076
   version: '1.02'
 - hashes:
@@ -22204,7 +22196,7 @@
 - hashes:
   - md5: 4cbd0e31bcddec071dc36fc71cb5660a
     size: 2760802304
-  name: Ferrari Challenge - Trofeo Pirelli (Europe) (En,Fr,De,Es,It)
+  name: Ferrari Challenge - Trofeo Pirelli (Europe) (En,Fr,De,Es,It) (v1.00)
   serial: SLES-55294
   version: '1.00'
 - hashes:
@@ -22420,7 +22412,7 @@
 - hashes:
   - md5: 49503143248ccfb9efc2098d175cec72
     size: 4366434304
-  name: SingStar Mallorca Party (Germany)
+  name: SingStar Mallorca Party (Germany) (v1.00)
   serial: SCES-55489
   version: '1.00'
 - hashes:
@@ -22468,7 +22460,7 @@
 - hashes:
   - md5: f8e6f3025eb702c29fc1f0d867d037d5
     size: 727631184
-  name: Tekken Tag Tournament (Japan)
+  name: Tekken Tag Tournament (Japan) (v1.20)
   serial: SLPS-20015
   version: '1.20'
 - hashes:
@@ -22510,7 +22502,7 @@
 - hashes:
   - md5: fcb046997717ae89b468b2455edc5e67
     size: 4653285376
-  name: Tiger Woods PGA Tour 2005 (Europe) (En,Fr,De,Sv)
+  name: Tiger Woods PGA Tour 2005 (Europe) (En,Fr,De,Sv) (v1.01)
   serial: SLES-52509
   version: '1.01'
 - hashes:
@@ -23020,7 +23012,7 @@
 - hashes:
   - md5: aef2cff41e16901d71e70b020cb531d3
     size: 4661313536
-  name: Jak X - Combat Racing (USA) (En,Fr,De,Es,It,Pt,Ru)
+  name: Jak X - Combat Racing (USA) (En,Fr,De,Es,It,Pt,Ru) (v1.00)
   serial: SCUS-97429
   version: '1.00'
 - hashes:
@@ -23068,13 +23060,13 @@
 - hashes:
   - md5: f7fb32fc429d564efe3c889322ff8368
     size: 23607024
-  name: Ultimate Sports Quiz, The (Europe)
+  name: Ultimate Sports Quiz, The (Europe) (v1.00)
   serial: SLES-53597
   version: '1.00'
 - hashes:
   - md5: a0da9c1263e83387d3793abd07185802
     size: 882769920
-  name: ATV Offroad Fury (USA)
+  name: ATV Offroad Fury (USA) (v1.00)
   serial: SCUS-97104
   version: '1.00'
 - hashes:
@@ -23509,7 +23501,7 @@
 - hashes:
   - md5: 97d938d2c3a0c167d21cb0d19f721dd8
     size: 4131749888
-  name: Test Drive (USA)
+  name: Test Drive (USA) (v2.00)
   serial: SLUS-20213
   version: '2.00'
 - hashes:
@@ -23527,7 +23519,7 @@
 - hashes:
   - md5: 9197fb7b467f4aaa63220d6e94257ebf
     size: 606980640
-  name: Driving Emotion Type-S (USA) (En,Fr,De,Es,It)
+  name: Driving Emotion Type-S (USA, Canada) (En,Fr,De,Es,It)
   serial: SLUS-20113
   version: '1.00'
 - hashes:
@@ -23623,7 +23615,7 @@
 - hashes:
   - md5: ad264ad0590c8fe0cbc9508b7c610008
     size: 749041440
-  name: Pro Mahjong Kiwame Next (Japan)
+  name: Pro Mahjong Kiwame Next (Japan) (v1.00)
   serial: SLPS-20035
   version: '1.00'
 - hashes:
@@ -23641,7 +23633,7 @@
 - hashes:
   - md5: 8593a08c24ac934f38abd4ee2d03f296
     size: 4325179392
-  name: Pro Yakyuu Spirits 3 (Japan)
+  name: Pro Yakyuu Spirits 3 (Japan) (v1.02)
   serial: SLPM-66364
   version: '1.02'
 - hashes:
@@ -23779,7 +23771,7 @@
 - hashes:
   - md5: d3b90dd298b23695404c7f1d55b041ad
     size: 1644396544
-  name: Pro Evolution Soccer 6 (Spain)
+  name: PES 6 - Pro Evolution Soccer (Spain)
   serial: SLES-54362
   version: '1.01'
 - hashes:
@@ -23936,7 +23928,7 @@
 - hashes:
   - md5: 46142ac6dfe6ce764dc527912470e4ca
     size: 4494950400
-  name: Thrillville (USA)
+  name: Thrillville (USA) (v2.00)
   serial: SLUS-21413
   version: '2.00'
 - hashes:
@@ -24026,7 +24018,7 @@
 - hashes:
   - md5: b4b97b9ecbad25c9f4fe21a73688431e
     size: 3082977280
-  name: Spider-Man (Spain)
+  name: Spider-Man (Spain) (v1.00)
   serial: SLES-50965
   version: '1.00'
 - hashes:
@@ -24152,7 +24144,7 @@
 - hashes:
   - md5: a00a39461b6fe2580ceb7af4e5048d2d
     size: 1118175232
-  name: Pac-Man World 2 (USA)
+  name: Pac-Man World 2 (USA) (v2.00)
   serial: SLUS-20224
   version: '2.00'
 - hashes:
@@ -24224,7 +24216,7 @@
 - hashes:
   - md5: 8f8715c08981f844b2ef771c3214b5fd
     size: 3638624256
-  name: EyeToy - Play 2 (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi,El)
+  name: EyeToy - Play 2 (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi,El) (v2.00)
   serial: SCES-52748
   version: '2.00'
 - hashes:
@@ -24873,7 +24865,7 @@
 - hashes:
   - md5: ba2ef5557bd2686585972f8461754804
     size: 3070394368
-  name: Minna no Golf 4 (Japan)
+  name: Minna no Golf 4 (Japan) (v2.00)
   serial: SCPS-19301
   version: '2.00'
 - hashes:
@@ -24909,7 +24901,7 @@
 - hashes:
   - md5: 3b481f424697970c2a337c74b19eafa9
     size: 3469836288
-  name: Bleach - Erabareshi Tamashii (Japan)
+  name: Bleach - Erabareshi Tamashii (Japan) (v1.00)
   serial: SCPS-15087
   version: '1.00'
 - hashes:
@@ -24940,7 +24932,7 @@
   - md5: aa7cdf78c953f898443dbb5f89c3187f
     size: 4495507456
   name: Grand Theft Auto - San Andreas (Japan)
-  serial: SLPM-65984
+  serial: SLPM-55092
   version: '1.03'
 - hashes:
   - md5: 361bd9008bedbf64627325915701f94e
@@ -24963,7 +24955,7 @@
 - hashes:
   - md5: 663c026fc4e8f9eee09bec7be7807df5
     size: 279074208
-  name: Taiko no Tatsujin - Waku Waku Anime Matsuri (Japan)
+  name: Taiko no Tatsujin - Waku Waku Anime Matsuri (Japan) (v1.00)
   serial: SLPS-20330
   version: '1.00'
 - hashes:
@@ -25101,8 +25093,8 @@
 - hashes:
   - md5: 31c69c95d24634f44f01785b7c643634
     size: 4222877696
-  name: SD Gundam - GGeneration Spirits - G-Spirits (Japan)
-  serial: SLPS-25832
+  name: SD Gundam - GGeneration Spirits - G-Spirits (Japan, Korea)
+  serial: SLKA-25413
   version: '1.02'
 - hashes:
   - md5: f3c3323f9471aae51045d1e48982f7a4
@@ -25216,6 +25208,7 @@
   - md5: 4dea5a6f8509748e12e1982f4d6a6df0
     size: 2890629120
   name: WRC 4 - The Official Game of the FIA World Rally Championship (Europe) (En,Fr,De,Es,It,Pt,No,Fi)
+    (v1.01)
   serial: SCES-52389
   version: '1.01'
 - hashes:
@@ -25251,7 +25244,7 @@
 - hashes:
   - md5: d56e5aeb291835c9ae8e25bf17b7e657
     size: 1249804288
-  name: Nickelodeon SpongeBob SquarePants - The Movie (Europe, Australia)
+  name: Nickelodeon The SpongeBob SquarePants Movie (Europe, Australia)
   serial: SLES-52895
   version: '1.00'
 - hashes:
@@ -25479,7 +25472,7 @@
 - hashes:
   - md5: c0bbc0a207039c29a57f89ae81572ad2
     size: 3471998976
-  name: Tiger Woods PGA Tour 2004 (Europe)
+  name: Tiger Woods PGA Tour 2004 (Europe) (v2.00)
   serial: SLES-51887
   version: '2.00'
 - hashes:
@@ -25563,7 +25556,7 @@
 - hashes:
   - md5: f946e0b4d61b7c4af9b78c22eaa9d4e5
     size: 4386258944
-  name: MLB 07 - The Show (USA)
+  name: MLB 07 - The Show (USA) (v2.00)
   serial: SCUS-97556
   version: '2.00'
 - hashes:
@@ -25983,7 +25976,7 @@
 - hashes:
   - md5: 1a7780425ce7a4d8177cdb806c54e27a
     size: 4453203968
-  name: WWE SmackDown vs. Raw 2007 (USA)
+  name: WWE SmackDown vs. Raw 2007 (USA) (v1.01)
   serial: SLUS-21427
   version: '1.01'
 - hashes:
@@ -26157,7 +26150,7 @@
 - hashes:
   - md5: 762bb983015dad66e07ad4495d7a0ec5
     size: 2068119552
-  name: ObsCure - The Aftermath (USA) (En,Fr,Es)
+  name: Obscure - The Aftermath (USA) (En,Fr,Es)
   serial: SLUS-21709
   version: '1.00'
 - hashes:
@@ -26657,7 +26650,7 @@
 - hashes:
   - md5: 3bd0dff031be174427aa0a5332b6df36
     size: 3120857088
-  name: Need for Speed - Hot Pursuit 2 (Europe, Australia) (En,Fr,De,Es,It,Sv)
+  name: Need for Speed - Hot Pursuit 2 (Europe, Australia) (En,Fr,De,Es,It,Sv) (v2.00)
   serial: SLES-50731
   version: '2.00'
 - hashes:
@@ -26741,7 +26734,7 @@
 - hashes:
   - md5: 7e0c418cc2b6771b4fcf5e32a9fe0877
     size: 709040976
-  name: Cricket 2002 (Europe)
+  name: Cricket 2002 (Europe) (v1.01)
   serial: SLES-50424
   version: '1.01'
 - hashes:
@@ -26874,7 +26867,7 @@
 - hashes:
   - md5: 341f43e5962b7ab858367401acb1e325
     size: 1648689152
-  name: Battlestar Galactica (USA)
+  name: Battlestar Galactica (USA) (v1.01)
   serial: SLUS-20421
   version: '1.01'
 - hashes:
@@ -27024,13 +27017,13 @@
 - hashes:
   - md5: abac05261dd4cf3fd3c92592e8c98cb0
     size: 3822321664
-  name: V8 Supercars Australia - Race Driver (Australia)
+  name: V8 Supercars Australia - Race Driver (Australia) (v1.00)
   serial: SLES-50767
   version: '1.00'
 - hashes:
   - md5: 56a78ce0792bf7dfbcff2661abb4ed1f
     size: 1394999296
-  name: Network Adaptor Start-Up Disc (USA)
+  name: Network Adaptor Start-Up Disc (USA) (v1.00)
   serial: SCUS-97097
   version: '1.00'
 - hashes:
@@ -27090,7 +27083,7 @@
 - hashes:
   - md5: 5e2b8252d7d099c098c704964d5f0a70
     size: 4449566720
-  name: SOCOM II - U.S. Navy SEALs (Korea)
+  name: SOCOM II - U.S. Navy SEALs (Korea) (v1.01)
   serial: SCKA-20020
   version: '1.01'
 - hashes:
@@ -27334,7 +27327,7 @@
 - hashes:
   - md5: 8025c41b3c4c96ddced319c211bd7dd2
     size: 2992930816
-  name: MTV Pimp My Ride (USA)
+  name: MTV Pimp My Ride (USA) (v2.00)
   serial: SLUS-21580
   version: '2.00'
 - hashes:
@@ -27461,7 +27454,7 @@
 - hashes:
   - md5: 46d03827cfc6815e7efe7a52930bb445
     size: 3955752960
-  name: Hitman 2 - Silent Assassin (Spain)
+  name: Hitman 2 - Silent Assassin (Spain) (v2.00)
   serial: SLES-51110
   version: '2.00'
 - hashes:
@@ -27563,7 +27556,7 @@
 - hashes:
   - md5: 799df73a316ea682ad168d7cf3848feb
     size: 2176483328
-  name: Splashdown (USA)
+  name: Splashdown (USA) (v2.01)
   serial: SLUS-20223
   version: '2.01'
 - hashes:
@@ -27689,7 +27682,7 @@
 - hashes:
   - md5: 36e73e2e9c22752d22a1422238af9e11
     size: 3122462720
-  name: King of Colosseum - Shin Nippon x Zen Nippon x Pancrase Disc (Japan)
+  name: King of Colosseum - Shin Nihon x Zen Nihon x Pancrase Disc (Japan)
   serial: SLPM-65176
   version: '1.07'
 - hashes:
@@ -27731,7 +27724,7 @@
 - hashes:
   - md5: ed65744be8c361072cd89863eb3837c8
     size: 8283684864
-  name: Wild Arms - Alter Code - F (Japan)
+  name: Wild Arms - Alter Code - F (Japan) (v1.03)
   serial: SCPS-17002
   version: '1.03'
 - hashes:
@@ -28011,7 +28004,7 @@
 - hashes:
   - md5: 9f0b8727b592cab12dad8043292c292f
     size: 727631184
-  name: Tekken Tag Tournament (Japan)
+  name: Tekken Tag Tournament (Japan) (v2.00)
   serial: SLPS-20015
   version: '2.00'
 - hashes:
@@ -28263,7 +28256,7 @@
 - hashes:
   - md5: 2f3abd545f8853a1f598554ec5205d1e
     size: 1480556544
-  name: Reiselied - Ephemeral Fantasia (Japan)
+  name: Reiselied - Ephemeral Fantasia (Japan) (v2.01)
   serial: SLPM-65004
   version: '2.01'
 - hashes:
@@ -28287,7 +28280,7 @@
 - hashes:
   - md5: 4adb35a92c506e14cfc284933090a161
     size: 4690509824
-  name: NHL 09 (Germany) (En,De)
+  name: NHL 09 (Germany) (En,De) (v2.00)
   serial: SLES-55339
   version: '2.00'
 - hashes:
@@ -28761,7 +28754,7 @@
 - hashes:
   - md5: ed2a00953c31e0c4d08ec8370894eec0
     size: 1961885696
-  name: Initial D - Special Stage (Japan)
+  name: Initial D - Special Stage (Japan) (v2.00)
   serial: SLPM-74420
   version: '2.00'
 - hashes:
@@ -28779,13 +28772,13 @@
 - hashes:
   - md5: 78a212b468033236407a52eb671855e6
     size: 4295000064
-  name: Gensou Suikoden III (Japan)
+  name: Gensou Suikoden III (Japan) (v1.02)
   serial: SLPM-65074
   version: '1.02'
 - hashes:
   - md5: 706dc855e32a433b6e7d958d98ddc847
     size: 4295000064
-  name: Gensou Suikoden III (Japan)
+  name: Gensou Suikoden III (Japan) (v2.01)
   serial: SLPM-65305
   version: '2.01'
 - hashes:
@@ -29217,7 +29210,7 @@
 - hashes:
   - md5: 8aff1d239c7489f0374065e7b7abe8fe
     size: 2742353920
-  name: DJ - Decks & FX - Live Session (Spain)
+  name: DJ - Decks & FX - Live Session - Privilege Maxiclubbing Edition (Spain)
   serial: SCES-52764
   version: '1.00'
 - hashes:
@@ -29823,7 +29816,7 @@
 - hashes:
   - md5: d1be085a83b761d7af891a52ebb88552
     size: 58642416
-  name: Wacky Races - Mad Motors (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi)
+  name: Wacky Races - Mad Motors (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi) (v2.00)
   serial: SLES-54670
   version: '2.00'
 - hashes:
@@ -29992,13 +29985,13 @@
 - hashes:
   - md5: ec5f1b26ec2764ade1847ed8f432041a
     size: 3445489664
-  name: Izumo Complete (Japan)
+  name: Izumo Complete (Japan) (v1.03)
   serial: SLPM-65832
   version: '1.03'
 - hashes:
   - md5: 21c2cc42e942da9d19399bd0f4f21a6d
     size: 4614914048
-  name: Izumo 2 - Takeki Tsurugi no Senki (Japan)
+  name: Izumo 2 - Takeki Tsurugi no Senki (Japan) (v2.02)
   serial: SLPM-66876
   version: '2.02'
 - hashes:
@@ -30136,7 +30129,7 @@
 - hashes:
   - md5: d84a28aad15402bba204a8d6a50f0900
     size: 709040976
-  name: Cricket 2002 (Europe)
+  name: Cricket 2002 (Europe) (v2.00)
   serial: SLES-50424
   version: '2.00'
 - hashes:
@@ -30600,7 +30593,7 @@
 - hashes:
   - md5: b66db0d45a989ac9ba23ca6f8be93108
     size: 2856976384
-  name: Zettai Zetsumei Toshi (Japan)
+  name: Zettai Zetsumei Toshi (Japan) (v2.00)
   serial: SLPS-73204
   version: '2.00'
 - hashes:
@@ -30690,7 +30683,7 @@
 - hashes:
   - md5: 17a6ad85285229f786ac0902d7447a48
     size: 751111200
-  name: State of Emergency (Europe) (En,Fr,Es,It)
+  name: State of Emergency (Europe) (En,Fr,Es,It) (v3.00)
   serial: SLES-51046
   version: '3.00'
 - hashes:
@@ -30757,7 +30750,7 @@
 - hashes:
   - md5: 40c39d26e3fd7259bee1c9d82bc87ef3
     size: 2796945408
-  name: ObsCure (Europe) (Fr,It)
+  name: Obscure (Europe) (Fr,It)
   serial: SLES-52738
   version: '1.00'
 - hashes:
@@ -30931,13 +30924,13 @@
 - hashes:
   - md5: acb36e659e8a5aca88dd4f0c55f76f19
     size: 840105984
-  name: Disney's Tarzan - Untamed (USA)
+  name: Disney's Tarzan - Untamed (USA) (En,Fr)
   serial: SLUS-20076
   version: '1.00'
 - hashes:
   - md5: d4bfb547bbb40b5457694bed99e88575
     size: 1671364608
-  name: Judie no Atelier - Gramnad no Renkinjutsushi (Japan)
+  name: Judie no Atelier - Gramnad no Renkinjutsushi (Japan) (v2.01)
   serial: SLPM-65359
   version: '2.01'
 - hashes:
@@ -30991,13 +30984,13 @@
 - hashes:
   - md5: 6fe7fcf8665a4fe7a0499932bb357ac9
     size: 7270531072
-  name: Lord of the Rings, The - Futatsu no Tou (Japan)
+  name: Lord of the Rings - Futatsu no Tou (Japan)
   serial: SLPM-67005
   version: '1.00'
 - hashes:
   - md5: a14569197692ff0958d75105c6d33608
     size: 3994943488
-  name: Lord of the Rings, The - Ou no Kikan (Japan) (En,Ja)
+  name: Lord of the Rings - Ou no Kikan (Japan) (En,Ja)
   serial: SLPM-65503
   version: '1.00'
 - hashes:
@@ -31105,7 +31098,7 @@
 - hashes:
   - md5: fb09ff126f606294ff56d47ce29b24ec
     size: 4601118720
-  name: Dark Chronicle (Japan)
+  name: Dark Chronicle (Japan) (v1.10)
   serial: SCPS-15033
   version: '1.10'
 - hashes:
@@ -31123,7 +31116,7 @@
 - hashes:
   - md5: bf0e04e0857ae5359fe44c67773fda26
     size: 4668293120
-  name: Star Ocean - Till the End of Time (Japan, Asia)
+  name: Star Ocean - Till the End of Time (Japan, Asia) (v1.10)
   serial: SCPS-55019
   version: '1.10'
 - hashes:
@@ -31189,7 +31182,7 @@
 - hashes:
   - md5: 58dfeef1b2a96e800ddae2386c9c60f6
     size: 1273823232
-  name: Busin 0 - Wizardry Alternative Neo (Japan)
+  name: Busin 0 - Wizardry Alternative Neo (Japan) (v1.03)
   serial: SLPM-65378
   version: '1.03'
 - hashes:
@@ -31213,13 +31206,13 @@
 - hashes:
   - md5: c2a2e068685e9e8e9cadeeabc7b0dba4
     size: 2457632768
-  name: Nishikaze no Rhapsody - The Rhapsody of Zephyr (Japan)
+  name: Rhapsody of Zephyr, The (Japan)
   serial: SLPS-25324
   version: '1.02'
 - hashes:
   - md5: 8fb6c82245d1d6438ad325e1072aa634
     size: 2706309120
-  name: Wild Arms - Advanced 3rd (Japan, Asia)
+  name: Wild Arms - Advanced 3rd (Japan, Asia) (v1.04)
   serial: SCPS-15024
   version: '1.04'
 - hashes:
@@ -31273,7 +31266,7 @@
 - hashes:
   - md5: 37611a159efe789280fb60fd7c4136f4
     size: 4291297280
-  name: Lord of the Rings, The - Nakatsu Kuni Daisanki (Japan)
+  name: Lord of the Rings - Nakatsu Kuni Daisanki (Japan)
   serial: SLPM-65846
   version: '1.00'
 - hashes:
@@ -31363,7 +31356,7 @@
 - hashes:
   - md5: 4d1e1480c94017a9705978c6f9ded527
     size: 3846078464
-  name: 7 (Seven) - Molmorth no Kiheitai (Japan)
+  name: 7 (Seven) - Molmorth no Kiheitai (Japan) (v2.00)
   serial: SLPS-25025
   version: '2.00'
 - hashes:
@@ -31387,7 +31380,7 @@
 - hashes:
   - md5: 965a5bbc3998b75814f0f5f2fb44880b
     size: 4637949952
-  name: My Merry May with be (Japan)
+  name: My Merry May with Be (Japan)
   serial: SLPM-66045
   version: '1.01'
 - hashes:
@@ -31429,14 +31422,14 @@
 - hashes:
   - md5: 0a43fd05ac43d5fd55df4fc78fad6eb7
     size: 2619506688
-  name: Ar tonelico - Sekai no Owari de Utai Tsuzukeru Shoujo (Japan) (PlayStation
+  name: Ar Tonelico - Sekai no Owari de Utai Tsuzukeru Shoujo (Japan) (PlayStation
     2 the Best)
   serial: SLPS-73249
   version: '1.01'
 - hashes:
   - md5: 24d5f51c6ae3d24599e6a7b4595a1dbb
     size: 4299980800
-  name: Ar tonelico II - Sekai ni Hibiku Shoujo-tachi no Metafalica (Japan) (PlayStation
+  name: Ar Tonelico II - Sekai ni Hibiku Shoujo-tachi no Metafalica (Japan) (PlayStation
     2 the Best)
   serial: SLPS-73263
   version: '1.01'
@@ -31732,7 +31725,6 @@
   - md5: 15ae537c213f755d869c645b78f865d7
     size: 4450353152
   name: Cabela's Dangerous Hunts 2 (Australia)
-  serial: SLES-53885
   version: '1.00'
 - hashes:
   - md5: 7759e7d3c52d5a0361b777a8dae08cdf
@@ -32037,7 +32029,7 @@
 - hashes:
   - md5: 7d85f6d213f383afcb2f54998e243049
     size: 1526693888
-  name: Nickelodeon SpongeBob SquarePants - The Movie (Europe) (Fr,Nl)
+  name: Nickelodeon The SpongeBob SquarePants Movie (Europe) (Fr,Nl)
   serial: SLES-52896
   version: '1.00'
 - hashes:
@@ -32572,7 +32564,7 @@
 - hashes:
   - md5: 6e040d98c4dda3b800544b547f0de88c
     size: 1366392832
-  name: Shrek 2 (Europe)
+  name: Shrek 2 (Europe) (v2.00)
   serial: SLES-52379
   version: '2.00'
 - hashes:
@@ -32854,7 +32846,7 @@
 - hashes:
   - md5: 6b411818fb2fe1d051306eac6f1e30c1
     size: 2807660544
-  name: Nickelodeon SpongeBob SquarePants - Battle for Bikini Bottom (Europe)
+  name: Nickelodeon SpongeBob SquarePants - Battle for Bikini Bottom (Europe) (v2.00)
   serial: SLES-51968
   version: '2.00'
 - hashes:
@@ -32884,7 +32876,7 @@
 - hashes:
   - md5: 87d7845a5a015ffb3be85bc16f3e7217
     size: 3938254848
-  name: Hitman 2 - Silent Assassin (Italy)
+  name: Hitman 2 - Silent Assassin (Italy) (v2.00)
   serial: SLES-51107
   version: '2.00'
 - hashes:
@@ -32950,7 +32942,7 @@
 - hashes:
   - md5: 24eaa5b3890f6f384b9db1076d4e1542
     size: 4587356160
-  name: SingStar '80s (Europe, Australia)
+  name: SingStar '80s (Europe, Australia) (v1.00)
   serial: SCES-53602
   version: '1.00'
 - hashes:
@@ -32962,13 +32954,13 @@
 - hashes:
   - md5: b9a2b2ba5f85aacda6a2694e9a8722ce
     size: 3835002880
-  name: Official PlayStation 2 Magazine Demo 54 (Europe) (En,Fr,De,Es,It)
+  name: Official PlayStation 2 Magazine Demo 54 (Europe) (En,Fr,De,Es,It) (SCED-53068)
   serial: SCED-53068
   version: '1.01'
 - hashes:
   - md5: 62810d95c123671aee907ec1686be694
     size: 4147118080
-  name: Official PlayStation 2 Magazine Demo 56 (Europe) (En,Fr,De,Es,It)
+  name: Official PlayStation 2 Magazine Demo 56 (Europe) (En,Fr,De,Es,It) (SCED-53132)
   serial: SCED-53132
   version: '1.01'
 - hashes:
@@ -33293,7 +33285,7 @@
 - hashes:
   - md5: 06916f6e6764d492b274f86078e18e01
     size: 1634500608
-  name: Gundam True Odyssey - Ushinawareshi G no Densetsu (Japan)
+  name: Gundam True Odyssey - Ushinawareshi G no Densetsu (Japan) (v2.00)
   serial: SLPS-73246
   version: '2.00'
 - hashes:
@@ -33311,7 +33303,7 @@
 - hashes:
   - md5: 73a3f67f84815c410d2d37f622f09b97
     size: 3822321664
-  name: TOCA Race Driver (Italy)
+  name: TOCA Race Driver (Italy) (v2.00)
   serial: SLES-50818
   version: '2.00'
 - hashes:
@@ -33347,7 +33339,7 @@
 - hashes:
   - md5: d7c34f0445ad76b75167e6b3046434c4
     size: 3822321664
-  name: TOCA Race Driver (Italy)
+  name: TOCA Race Driver (Italy) (v1.00)
   serial: SLES-50818
   version: '1.00'
 - hashes:
@@ -33533,7 +33525,7 @@
 - hashes:
   - md5: 22aac86e2cdb35582a3b45c633a8a8df
     size: 4660559872
-  name: Buzz! Brain of Oz (Australia)
+  name: Buzz! Brain of Oz (Australia, New Zealand)
   serial: SCES-55419
   version: '1.00'
 - hashes:
@@ -33569,7 +33561,7 @@
 - hashes:
   - md5: f303fdd69719026c1585e8f65422f39b
     size: 4324032512
-  name: Buzz! The Big Quiz (Australia)
+  name: Buzz! The Big Quiz (Australia) (v2.00)
   serial: SCES-53880
   version: '2.00'
 - hashes:
@@ -33605,7 +33597,7 @@
 - hashes:
   - md5: 26bacf037265fb46e89e31fdd74730f9
     size: 4314857472
-  name: SingStar '80s (Netherlands)
+  name: SingStar '80s (Netherlands) (v2.00)
   serial: SCES-53607
   version: '2.00'
 - hashes:
@@ -33713,7 +33705,7 @@
 - hashes:
   - md5: ca4280a61a9ffff60aa3604497b4f3f8
     size: 3868295168
-  name: DTM Race Driver (Europe) (En,Fr,De)
+  name: DTM Race Driver (Europe) (En,Fr,De) (v2.00)
   serial: SLES-50816
   version: '2.00'
 - hashes:
@@ -33803,7 +33795,7 @@
 - hashes:
   - md5: d6d678da3ae052a9bdea1c722297d613
     size: 2856976384
-  name: Zettai Zetsumei Toshi (Japan)
+  name: Zettai Zetsumei Toshi (Japan) (v1.05)
   serial: SLPS-25113
   version: '1.05'
 - hashes:
@@ -33947,7 +33939,7 @@
 - hashes:
   - md5: f1e9ab6d8cf29d4268453061090b5d1e
     size: 4670717952
-  name: Star Ocean - Till the End of Time (Japan)
+  name: Star Ocean - Till the End of Time (Japan) (v2.03)
   serial: SLPM-65209
   version: '2.03'
 - hashes:
@@ -34019,7 +34011,7 @@
 - hashes:
   - md5: a2bcd707a429923b716efcca6c0e5dae
     size: 35517552
-  name: Ultimate Film Quiz, The (Europe) (En,Fr,De,Es,It,Nl)
+  name: Ultimate Film Quiz, The (Europe) (En,Fr,De,Es,It,Nl) (v1.00)
   serial: SLES-53596
   version: '1.00'
 - hashes:
@@ -34195,13 +34187,13 @@
 - hashes:
   - md5: a90afd57873930d1dee2a2679eba5aec
     size: 4388290560
-  name: Soulcalibur III (Japan)
+  name: Soulcalibur III (Japan) (v1.01)
   serial: SLPS-25577
   version: '1.01'
 - hashes:
   - md5: 7991a66ff3fb85e2a7742c086d8e7d39
     size: 4388290560
-  name: Soulcalibur III (Japan) (En,Ja)
+  name: Soulcalibur III (Japan) (En,Ja) (v2.00)
   serial: SLPS-25577
   version: '2.00'
 - hashes:
@@ -34327,7 +34319,7 @@
 - hashes:
   - md5: 613a9cef8f38c7c7818ec2a4a6e9433d
     size: 4239196160
-  name: ESPN College Hoops (USA)
+  name: ESPN College Hoops (USA) (v1.02)
   serial: SLUS-20729
   version: '1.02'
 - hashes:
@@ -34670,13 +34662,13 @@
 - hashes:
   - md5: fe2b0035bd780e442e81761af9c8a7b5
     size: 728143920
-  name: Tekken Tag Tournament (USA)
+  name: Tekken Tag Tournament (USA) (v1.00)
   serial: SLUS-20001
   version: '1.00'
 - hashes:
   - md5: d4e451b6940d8e86ca5c1ba455e96dec
     size: 2176483328
-  name: Splashdown (USA)
+  name: Splashdown (USA) (v1.00)
   serial: SLUS-20223
   version: '1.00'
 - hashes:
@@ -35260,7 +35252,7 @@
 - hashes:
   - md5: 14c4034e0960663809e7efe5be080112
     size: 3450109952
-  name: Eien no Aseria - Kono Daichi no Hate de (Japan)
+  name: Eien no Aselia - Kono Daichi no Hate de (Japan)
   serial: SLPS-25468
   version: '1.02'
 - hashes:
@@ -35476,7 +35468,7 @@
 - hashes:
   - md5: 0efd9c2f1f6ffb474ff9a1ba7b1abff8
     size: 2037579776
-  name: Tenshou Gakuen Gensouroku (Japan)
+  name: Tenshou Gakuen Gensouroku (Japan) (v1.04)
   serial: SLPM-65598
   version: '1.04'
 - hashes:
@@ -35543,6 +35535,7 @@
   - md5: 2ea14764099d49eb3b7ce44b057941d8
     size: 1474822144
   name: Nickelodeon Avatar - The Legend of Aang (Europe, Australia) (En,Fr,De,Nl)
+    (v2.01)
   serial: SLES-54188
   version: '2.01'
 - hashes:
@@ -35584,7 +35577,7 @@
 - hashes:
   - md5: 428e5f1159defd71fbe01d32dbaa5c38
     size: 805634048
-  name: Soldier of Fortune - Gold Edition (Europe) (En,Fr,De,Es,It)
+  name: Soldier of Fortune - Gold Edition (Europe) (En,Fr,De,Es,It) (v2.00)
   serial: SLES-50739
   version: '2.00'
 - hashes:
@@ -35596,7 +35589,7 @@
 - hashes:
   - md5: 37502aeaabd4791c28aed278fba7e6b4
     size: 582399888
-  name: Football Generation (Europe) (En,Fr,De,Es,It)
+  name: Football Generation (Europe) (En,Fr,De,Es,It) (v2.00)
   serial: SLES-51959
   version: '2.00'
 - hashes:
@@ -35680,7 +35673,7 @@
 - hashes:
   - md5: 7186325c2cb3155a1a0328461d34b1f4
     size: 3822321664
-  name: V8 Supercars Australia - Race Driver (Australia)
+  name: V8 Supercars Australia - Race Driver (Australia) (v2.00)
   serial: SLES-50767
   version: '2.00'
 - hashes:
@@ -35776,7 +35769,7 @@
 - hashes:
   - md5: 8f84c14cac12f4242cc8112599ef07cb
     size: 2143551488
-  name: Project Minerva Professional (Japan)
+  name: Simple 2000 Series Ultimate Vol. 23 - Project Minerva Professional (Japan)
   serial: SLPM-65344
   version: '1.02'
 - hashes:
@@ -35867,7 +35860,7 @@
 - hashes:
   - md5: b9c6cd743eb07f59a1447317b4808f29
     size: 4520280064
-  name: Densha de Go! Shinkansen - San'you Shinkansen-hen (Japan)
+  name: Densha de Go! Shinkansen - San'you Shinkansen-hen (Japan) (v2.01)
   serial: SLPM-65039
   version: '2.01'
 - hashes:
@@ -35898,13 +35891,13 @@
 - hashes:
   - md5: 9d547021da595849cfca18efb1c9f8ad
     size: 747456192
-  name: Netchuu! Pro Yakyuu 2002 (Japan)
+  name: Netchuu! Pro Yakyuu 2002 (Japan) (v1.01)
   serial: SLPS-20190
   version: '1.01'
 - hashes:
   - md5: dc7f80ed0abbbcd8297d359861c14466
     size: 652303680
-  name: Mahjong Taikai III - Millennium League (Japan)
+  name: Mahjong Taikai III - Millennium League (Japan) (v1.10)
   serial: SLPM-62003
   version: '1.10'
 - hashes:
@@ -36066,7 +36059,7 @@
 - hashes:
   - md5: b7a39605d038c5e96756d3b9dea97538
     size: 4058284032
-  name: Gran Turismo Concept - 2002 Tokyo-Seoul (Korea)
+  name: Gran Turismo Concept - 2002 Tokyo-Seoul (Korea) (v2.00)
   serial: SCKA-20029
   version: '2.00'
 - hashes:
@@ -36104,13 +36097,13 @@
 - hashes:
   - md5: 1ba7ee0979aac339f2b05a9a853e8215
     size: 4386258944
-  name: MLB 07 - The Show (USA)
+  name: MLB 07 - The Show (USA) (v1.00)
   serial: SCUS-97556
   version: '1.00'
 - hashes:
   - md5: 3cef1cb4d286b3c2030c5c9f722eb3d4
     size: 1401618432
-  name: Hitman 2 - Silent Assassin (USA)
+  name: Hitman 2 - Silent Assassin (USA) (v2.01)
   serial: SLUS-20374
   version: '2.01'
 - hashes:
@@ -36134,7 +36127,7 @@
 - hashes:
   - md5: bd4ce64b50de0e7d83eeb884374b6f87
     size: 4487446528
-  name: ATV Offroad Fury 2 (USA)
+  name: ATV Offroad Fury 2 (USA) (v1.00)
   serial: SCUS-97211
   version: '1.00'
 - hashes:
@@ -36152,7 +36145,7 @@
 - hashes:
   - md5: 95b13c55e5c9b9248db8e1bab095b86a
     size: 3493593088
-  name: SOCOM - U.S. Navy SEALs (USA)
+  name: SOCOM - U.S. Navy SEALs (USA) (v2.01)
   serial: SCUS-97134
   version: '2.01'
 - hashes:
@@ -36332,7 +36325,7 @@
 - hashes:
   - md5: d4d502850d6ebe38b594c3bab2885f71
     size: 1249804288
-  name: Nickelodeon SpongeBob SquarePants - The Movie (USA)
+  name: Nickelodeon The SpongeBob SquarePants Movie (USA)
   serial: SLUS-20904
   version: '1.00'
 - hashes:
@@ -36422,7 +36415,7 @@
 - hashes:
   - md5: 7eae3cdad28c855ce6f3c9ae15966960
     size: 4677763072
-  name: FIFA Soccer 08 (USA) (En,Es)
+  name: FIFA Soccer 08 (USA, Canada) (En,Es)
   serial: SLUS-21648
   version: '1.00'
 - hashes:
@@ -36446,13 +36439,13 @@
 - hashes:
   - md5: 1c3d3b582f407426ff9e76436cd0fadb
     size: 4367122432
-  name: Need for Speed - Underground 2 (Europe) (En,Fr,De,Es,It,Nl,Sv,Da)
+  name: Need for Speed - Underground 2 (Europe) (En,Fr,De,Es,It,Nl,Sv,Da) (v2.00)
   serial: SLES-52725
   version: '2.00'
 - hashes:
   - md5: ad5e50e420af4dd5480ca7f228849240
     size: 4179394560
-  name: Buzz! The Big Quiz (Australia)
+  name: Buzz! The Big Quiz (Australia) (v1.00)
   serial: SCES-53880
   version: '1.00'
 - hashes:
@@ -37134,7 +37127,7 @@
 - hashes:
   - md5: da9e99642d7e6fca112c741705bbec1c
     size: 3672932352
-  name: Minna no Golf 4 (Japan, Asia)
+  name: Minna no Golf 4 (Japan, Asia) (v1.04)
   serial: SCAJ-20094
   version: '1.04'
 - hashes:
@@ -37339,6 +37332,7 @@
   - md5: af5928bacf24474d7ca6325d9deeb3ef
     size: 2716925952
   name: Baseball 2003, The - Battle Ball Park Sengen - Perfect Play Pro Yakyuu (Japan)
+    (v2.02)
   serial: SLPM-65180
   version: '2.02'
 - hashes:
@@ -37404,7 +37398,7 @@
 - hashes:
   - md5: 4e98e9686f2dc891062892b3bd94ca47
     size: 3846078464
-  name: 7 (Seven) - Molmorth no Kiheitai (Japan)
+  name: 7 (Seven) - Molmorth no Kiheitai (Japan) (v1.20)
   serial: SLPS-25025
   version: '1.20'
 - hashes:
@@ -37428,7 +37422,7 @@
 - hashes:
   - md5: d4db1f4376f57610a40c78bc54216ebc
     size: 4008148992
-  name: Pro Yakyuu - Netsu Star 2006 (Japan)
+  name: Pro Yakyuu - Netsusta 2006 (Japan)
   serial: SLPS-25630
   version: '1.01'
 - hashes:
@@ -37536,13 +37530,13 @@
 - hashes:
   - md5: 7c75f1eef3e221305e5dccc9cba18089
     size: 3783163904
-  name: Ar tonelico - Sekai no Owari de Utai Tsuzukeru Shoujo (Japan)
+  name: Ar Tonelico - Sekai no Owari de Utai Tsuzukeru Shoujo (Japan)
   serial: SLPS-25604
   version: '1.03'
 - hashes:
   - md5: 41104c57da5cd8c71947df9145a3ce53
     size: 4352966656
-  name: Ar tonelico II - Sekai ni Hibiku Shoujo-tachi no Metafalica (Japan)
+  name: Ar Tonelico II - Sekai ni Hibiku Shoujo-tachi no Metafalica (Japan)
   serial: SLPS-25819
   version: '1.03'
 - hashes:
@@ -37722,7 +37716,7 @@
 - hashes:
   - md5: 37a90d79dea1d60b90b54b371c34c53a
     size: 3879108608
-  name: Silent Hill 2 (USA) (En,Ja,Fr,De,Es,It)
+  name: Silent Hill 2 (USA) (En,Ja,Fr,De,Es,It) (v2.01)
   serial: SLUS-20228
   version: '2.01'
 - hashes:
@@ -37752,7 +37746,7 @@
 - hashes:
   - md5: fba5f60d54909d50b5d132d2c5ad9cc4
     size: 582853824
-  name: Real World Golf (Europe)
+  name: Real World Golf (Europe) (v2.01)
   serial: SLES-53371
   version: '2.01'
 - hashes:
@@ -38059,7 +38053,7 @@
 - hashes:
   - md5: 91ebac27ad7295523ff05df2e219c297
     size: 4605673472
-  name: Midnight Club 3 - DUB Edition (USA)
+  name: Midnight Club 3 - DUB Edition (USA) (v1.04)
   serial: SLUS-21029
   version: '1.04'
 - hashes:
@@ -38161,7 +38155,7 @@
 - hashes:
   - md5: e35b1e98bcb05fd2c751d8fa1ced2908
     size: 4691525632
-  name: Thrillville (USA)
+  name: Thrillville (USA) (v1.03)
   serial: SLUS-21413
   version: '1.03'
 - hashes:
@@ -38227,7 +38221,7 @@
 - hashes:
   - md5: aefb1dcd1281daa1b76994e40625a841
     size: 2846359552
-  name: PES 2008 - Pro Evolution Soccer (USA)
+  name: PES 2008 - Pro Evolution Soccer (USA) (En,Fr,Es)
   serial: SLUS-21685
   version: '1.01'
 - hashes:
@@ -38575,7 +38569,7 @@
 - hashes:
   - md5: 433f46abe06b4c9ca6acd894d46c7196
     size: 3119742976
-  name: ObsCure (USA) (En,Fr,Es)
+  name: Obscure (USA) (En,Fr,Es)
   serial: SLUS-20777
   version: '1.00'
 - hashes:
@@ -38623,7 +38617,7 @@
 - hashes:
   - md5: bd8f6916cc378d45ac4a1e7c0a16dd91
     size: 1374584832
-  name: DreamWorks Madagascar (USA)
+  name: DreamWorks Madagascar (USA) (v2.01)
   serial: SLUS-21015
   version: '2.01'
 - hashes:
@@ -38923,7 +38917,7 @@
 - hashes:
   - md5: 161d935e34f6848bcc26713381670793
     size: 606256224
-  name: Zapper - One Wicked Cricket (USA)
+  name: Zapper (USA)
   serial: SLUS-20528
   version: '1.00'
 - hashes:
@@ -39007,7 +39001,7 @@
 - hashes:
   - md5: eb3b214438c25dbed7ffcd54b1b6608b
     size: 4450680832
-  name: Getaway, The (Australia) (En,Fr,De,Es,It)
+  name: Getaway, The (Australia) (En,Fr,De,Es,It) (v1.00)
   serial: SCES-51426
   version: '1.00'
 - hashes:
@@ -39037,7 +39031,7 @@
 - hashes:
   - md5: f9a35702354b2d5005fdfa8714a4022d
     size: 3493593088
-  name: SOCOM - U.S. Navy SEALs (USA)
+  name: SOCOM - U.S. Navy SEALs (USA) (v3.00)
   serial: SCUS-97230
   version: '3.00'
 - hashes:
@@ -39079,7 +39073,7 @@
 - hashes:
   - md5: 593f0f4c545e70dc2a6b5851cb08f162
     size: 614144832
-  name: DreamWorks Madagascar (USA)
+  name: DreamWorks Madagascar (USA) (v1.01)
   serial: SLUS-21015
   version: '1.01'
 - hashes:
@@ -39109,7 +39103,7 @@
 - hashes:
   - md5: 4951ab89ccd2f63edfffc71a118fba3b
     size: 2851831808
-  name: SRS - Street Racing Syndicate (USA)
+  name: SRS - Street Racing Syndicate (USA) (v1.03)
   serial: SLUS-20582
   version: '1.03'
 - hashes:
@@ -39163,7 +39157,7 @@
 - hashes:
   - md5: 06833eaa5faabe16721f9f94715c8ce8
     size: 1150943232
-  name: Pac-Man World 2 (Asia)
+  name: Pac-Man World 2 (Japan, Asia)
   serial: SCPS-55038
   version: '1.01'
 - hashes:
@@ -39493,7 +39487,7 @@
 - hashes:
   - md5: 2e046f09bd3032818e5aa22e0af5ddd3
     size: 1861222400
-  name: Initial D - Special Stage (Japan, Asia)
+  name: Initial D - Special Stage (Japan, Asia) (v1.01)
   serial: SLAJ-25008
   version: '1.01'
 - hashes:
@@ -39590,7 +39584,7 @@
 - hashes:
   - md5: bfc956b0bf03d6531ddc23eb40c83a6c
     size: 3216310272
-  name: V-Rally 3 (Japan) (En,Ja,Fr,De,Es,It)
+  name: V-Rally 3 (Japan) (En,Ja,Fr,De,Es,It) (v1.02)
   serial: SLPM-65191
   version: '1.02'
 - hashes:
@@ -39776,7 +39770,7 @@
 - hashes:
   - md5: 6f2533c2ae433f1beac4f1aa3a88f4c6
     size: 4588797952
-  name: AND 1 Streetball (USA)
+  name: AND 1 Streetball (USA) (v1.03)
   serial: SLUS-21237
   version: '1.03'
 - hashes:
@@ -39950,19 +39944,19 @@
 - hashes:
   - md5: ae781bfe9e202e8a5cce018e797b3b04
     size: 718702992
-  name: TimeSplitters (USA)
+  name: TimeSplitters (USA) (v1.10)
   serial: SLUS-20090
   version: '1.10'
 - hashes:
   - md5: 0f2a056b55a6c37ff41f42c4cb6dc5f4
     size: 534176832
-  name: Crash Bandicoot - The Wrath of Cortex (USA)
+  name: Crash Bandicoot - The Wrath of Cortex (USA) (v1.00)
   serial: SLUS-20238
   version: '1.00'
 - hashes:
   - md5: b79c4f9ea9bbaec0edf884f963cc9022
     size: 1096253440
-  name: Pac-Man World 2 (USA)
+  name: Pac-Man World 2 (USA) (v1.00)
   serial: SLUS-20224
   version: '1.00'
 - hashes:
@@ -40270,6 +40264,7 @@
   - md5: 8b1961826ce1ae29fb52dd66fddcede5
     size: 590145024
   name: Simple 2000 Series Ultimate Vol. 29 - K-1 Premium 2005 Dynamite!! (Japan)
+    (v1.00)
   serial: SLPS-20453
   version: '1.00'
 - hashes:
@@ -40431,7 +40426,7 @@
 - hashes:
   - md5: e46b173394f0fec19fdab85bc6448082
     size: 740096784
-  name: Bloody Roar 3 (Japan)
+  name: Bloody Roar 3 (Japan) (v2.01)
   serial: SLPM-62055
   version: '2.01'
 - hashes:
@@ -40455,7 +40450,7 @@
 - hashes:
   - md5: 948f64c757a0e7277a31b3566abdf433
     size: 3335979008
-  name: Dot Hack G.U. Vol. 3 - Aruku You na Hayasa de (Japan)
+  name: Dot Hack G.U. Vol. 3 - Aruku You na Hayasa de (Japan) (v1.00)
   serial: SLPS-25656
   version: '1.00'
 - hashes:
@@ -40570,7 +40565,7 @@
 - hashes:
   - md5: 5db57119a59035c557fcc75c28a47fc7
     size: 1154875392
-  name: Monster Rancher 3 (USA)
+  name: Monster Rancher 3 (USA) (v1.00)
   serial: SLUS-20190
   version: '1.00'
 - hashes:
@@ -40606,13 +40601,13 @@
 - hashes:
   - md5: 624c9c0a12f28e7edf92a343e193c262
     size: 3986620416
-  name: PlayStation Experience (Europe)
+  name: PlayStation Experience (Europe) (SCED-51148)
   serial: SCED-51148
   version: '1.00'
 - hashes:
   - md5: 920d30ccfe6b03e3cb50c8c3ac54e8af
     size: 4374036480
-  name: PlayStation Experience (Europe)
+  name: PlayStation Experience (Europe) (SCED-51899)
   serial: SCED-51899
   version: '1.01'
 - hashes:
@@ -40864,7 +40859,7 @@
 - hashes:
   - md5: d684d7de14697dd0b1faa8b31206c710
     size: 3824615424
-  name: Ratchet & Clank - Going Commando (USA)
+  name: Ratchet & Clank - Going Commando (USA) (v2.00)
   serial: SCUS-97268
   version: '2.00'
 - hashes:
@@ -40972,7 +40967,7 @@
 - hashes:
   - md5: 3bbb4a312a8ba980082f06a68b883b53
     size: 2321055744
-  name: Nobunaga no Yabou - Tenka Sousei (Japan)
+  name: Nobunaga no Yabou - Tenka Sousei (Japan) (v1.30)
   serial: SLPM-65556
   version: '1.30'
 - hashes:
@@ -41056,7 +41051,7 @@
 - hashes:
   - md5: 58a2e3ce09b965b1070d912b7bd4cd53
     size: 713241648
-  name: NHL Hitz 2002 (USA)
+  name: NHL Hitz 2002 (USA) (v2.00)
   serial: SLUS-20140
   version: '2.00'
 - hashes:
@@ -41152,7 +41147,7 @@
 - hashes:
   - md5: 1637b255fd6b7f9d018c7d8a585613a7
     size: 1074003968
-  name: Thunderstrike - Operation Phoenix (USA)
+  name: Thunderstrike - Operation Phoenix (USA) (v2.00)
   serial: SLUS-20232
   version: '2.00'
 - hashes:
@@ -41164,7 +41159,7 @@
 - hashes:
   - md5: 336900f0e68e30394d281e70118308e9
     size: 2008645632
-  name: Red Faction (USA)
+  name: Red Faction (USA) (v2.00)
   serial: SLUS-20073
   version: '2.00'
 - hashes:
@@ -41194,13 +41189,13 @@
 - hashes:
   - md5: 5e1ddbd39d86d90b42d77597c6da2f2c
     size: 2872803328
-  name: SRS - Street Racing Syndicate (USA)
+  name: SRS - Street Racing Syndicate (USA) (v2.00)
   serial: SLUS-20582
   version: '2.00'
 - hashes:
   - md5: 6ed88e5758ab98d33dcc40d49cbd110e
     size: 1327792128
-  name: Hot Shots Golf 3 (USA)
+  name: Hot Shots Golf 3 (USA) (v2.00)
   serial: SCUS-97130
   version: '2.00'
 - hashes:
@@ -41218,7 +41213,7 @@
 - hashes:
   - md5: 7d7cf01d5b3da4e8ec716883563b050b
     size: 3393847296
-  name: Tony Hawk's Pro Skater 4 (USA)
+  name: Tony Hawk's Pro Skater 4 (USA) (v2.01)
   serial: SLUS-20504
   version: '2.01'
 - hashes:
@@ -41254,7 +41249,7 @@
 - hashes:
   - md5: 9036ef5a8782d5106f326c85f9430316
     size: 4625367040
-  name: F - Fanatic (Japan)
+  name: F - Fanatic (Japan) (Shokai Genteiban)
   serial: SLPM-65296
   version: '1.05'
 - hashes:
@@ -41442,13 +41437,13 @@
 - hashes:
   - md5: 21bffd6263462a6025f2ba5fdbd905fa
     size: 1362231296
-  name: Winning Post 7 (Japan)
+  name: Winning Post 7 (Japan) (v1.03)
   serial: SLPM-66087
   version: '1.03'
 - hashes:
   - md5: 203e886c809be7c5b0d09fd2e470b356
     size: 4324950016
-  name: Pro Yakyuu Spirits 3 (Japan)
+  name: Pro Yakyuu Spirits 3 (Japan) (v2.00)
   serial: SLPM-66364
   version: '2.00'
 - hashes:
@@ -41782,7 +41777,7 @@
   - md5: d10137561bda185df4c81d424f501390
     size: 2026110976
   name: Sangokushi 11 (Japan)
-  serial: SLPM-66549
+  serial: SLPM-55049
   version: '1.02'
 - hashes:
   - md5: be144d9d28111f54567ce751f4ea67dc
@@ -41842,7 +41837,7 @@
   - md5: 030de1cedf2847b4cf74c3ffefb3d43d
     size: 3110961152
   name: Godfather, The (Japan)
-  serial: SLPM-66966
+  serial: SLPM-66710
   version: '1.01'
 - hashes:
   - md5: d0bd43aa0c32b6e8e5ad70c2904dc67e
@@ -41902,7 +41897,7 @@
   - md5: 9586ee137c47111b2a92f1b4c8aa805e
     size: 2636021760
   name: Gokujou Seitokai (Japan)
-  serial: SLPM-66631
+  serial: SLPM-66086
   version: '1.01'
 - hashes:
   - md5: e7f0998ffc3780906728fa47a6cf4595
@@ -42081,7 +42076,7 @@
 - hashes:
   - md5: 564334eb15dedcf1e3a6a4d78766d536
     size: 194566848
-  name: Tennis no Oujisama - Smash Hit! Original Anime Game (Japan)
+  name: Tennis no Oujisama - Smash Hit! Original Anime Game (Japan) (SLPM-62359)
   serial: SLPM-62359
   version: '1.01'
 - hashes:
@@ -42148,7 +42143,7 @@
 - hashes:
   - md5: 0375176a586c0cef1cd4ba658172cc7b
     size: 278385072
-  name: Taiko no Tatsujin - Waku Waku Anime Matsuri (Japan)
+  name: Taiko no Tatsujin - Waku Waku Anime Matsuri (Japan) (v2.00)
   serial: SLPS-73111
   version: '2.00'
 - hashes:
@@ -42160,7 +42155,7 @@
 - hashes:
   - md5: 76a7dbd8a54387302978246583fa71d0
     size: 4191027200
-  name: Ayakashi-bito - Gen'you Ibunroku (Japan)
+  name: Ayakashibito - Gen'you Ibunroku (Japan)
   serial: SLPM-66491
   version: '1.02'
 - hashes:
@@ -42620,7 +42615,7 @@
 - hashes:
   - md5: 95fbe9fe35c69b12e078bf54609482e9
     size: 644777280
-  name: SuperLite 2000 Vol. 13 - Tetris - Kiwame Michi (Japan)
+  name: SuperLite 2000 Vol. 13 - Tetris - Kiwame Michi (Japan) (v1.02)
   serial: SLPM-62423
   version: '1.02'
 - hashes:
@@ -42662,7 +42657,7 @@
 - hashes:
   - md5: 029b628bde15c6bfd43853f8976009d5
     size: 425958960
-  name: Se-Pa 2001 (Japan)
+  name: Ce-Pa 2001 (Japan)
   serial: SLPM-62079
   version: '1.04'
 - hashes:
@@ -42758,7 +42753,7 @@
 - hashes:
   - md5: 4aea2f52dd556b131232f3ce7539141b
     size: 1562869760
-  name: Quilt - Anata to Tsumugu Yume to Koi no Dress (Japan)
+  name: Quilt - Anata to Tsumugu Yume to Koi no Dress (Japan) (Shokai Genteiban)
   serial: SLPM-66734
   version: '1.02'
 - hashes:
@@ -42993,7 +42988,7 @@
 - hashes:
   - md5: 33b1fe2b9f494dda06aecf5a1ce267e0
     size: 1336868864
-  name: Cricket 2004 (Europe)
+  name: Cricket 2004 (Europe) (v1.00)
   serial: SLES-52123
   version: '1.00'
 - hashes:
@@ -43241,7 +43236,7 @@
 - hashes:
   - md5: 5c0b51ff9f4d243a2b0910797b589b58
     size: 233515968
-  name: Card Captor Sakura - Sakura-chan to Asobo! (Japan)
+  name: Cardcaptor Sakura - Sakura-chan to Asobo! (Japan)
   serial: SLPS-20408
   version: '1.03'
 - hashes:
@@ -43277,7 +43272,7 @@
 - hashes:
   - md5: b5833335967190cdd0bf9f6d1fab9899
     size: 4593909760
-  name: Izumo 2 - Takeki Tsurugi no Senki (Japan)
+  name: Izumo 2 - Takeki Tsurugi no Senki (Japan) (v1.01)
   serial: SLPM-66192
   version: '1.01'
 - hashes:
@@ -43422,7 +43417,7 @@
 - hashes:
   - md5: f4ae949aec89e4296e56ce43aa5a6571
     size: 2192375808
-  name: J.League Winning Eleven 10 + Europe League '06-'07 (Japan)
+  name: J.League Winning Eleven 10 + Europe League '06-'07 (Japan) (v1.03)
   serial: SLPM-66595
   version: '1.03'
 - hashes:
@@ -43464,7 +43459,7 @@
 - hashes:
   - md5: ae8b23b16e18698d4b1f0bbcc43a0f23
     size: 4684218368
-  name: Culdcept II Expansion (Japan)
+  name: Culdcept II Expansion (Japan) (v3.00)
   serial: SLPM-74411
   version: '3.00'
 - hashes:
@@ -43482,7 +43477,7 @@
 - hashes:
   - md5: 9e6a101320d814442542690ef8cde501
     size: 1987772416
-  name: Monster Farm 4 (Japan)
+  name: Monster Farm 4 (Japan) (v1.04)
   serial: SLPS-25263
   version: '1.04'
 - hashes:
@@ -43542,7 +43537,7 @@
 - hashes:
   - md5: 57560c67958840f2478cf64a3b686d7c
     size: 1452834816
-  name: Tennis no Oujisama - Saikyou Team o Kessei seyo! (Japan)
+  name: Tennis no Oujisama - Saikyou Team o Kessei seyo! (Japan) (v1.03)
   serial: SLPM-65680
   version: '1.03'
 - hashes:
@@ -43633,7 +43628,7 @@
 - hashes:
   - md5: 449b7b086707e86a9dc0187443b3bf4b
     size: 734955312
-  name: Bloody Roar 3 (Japan)
+  name: Bloody Roar 3 (Japan) (v1.02)
   serial: SLPM-62055
   version: '1.02'
 - hashes:
@@ -44106,7 +44101,7 @@
 - hashes:
   - md5: 533a26970a92732988eded618176cffe
     size: 8284209152
-  name: Wild Arms - Alter Code - F (Japan)
+  name: Wild Arms - Alter Code - F (Japan) (v2.00)
   serial: SCPS-19251
   version: '2.00'
 - hashes:
@@ -44155,7 +44150,7 @@
 - hashes:
   - md5: 0d5bf58dee915e9903058a9d53bd8f03
     size: 2960883712
-  name: Capcom Classics Collection (Japan)
+  name: Capcom Classics Collection (Japan) (v2.00)
   serial: SLPM-66852
   version: '2.00'
 - hashes:
@@ -44203,7 +44198,7 @@
 - hashes:
   - md5: baa2ab1bd553dadf99cf3b3513b7b222
     size: 4429807616
-  name: Pro Yakyuu Spirits 5 (Japan)
+  name: Pro Yakyuu Spirits 5 (Japan) (v1.03)
   serial: SLPM-66970
   version: '1.03'
 - hashes:
@@ -44347,7 +44342,7 @@
 - hashes:
   - md5: 33ce7ab6afb163ed6c73325def6d4279
     size: 734484912
-  name: Jikkyou J.League - Perfect Striker 3 (Japan)
+  name: Jikkyou J.League - Perfect Striker 3 (Japan) (v2.01)
   serial: SLPM-62045
   version: '2.01'
 - hashes:
@@ -44684,7 +44679,7 @@
 - hashes:
   - md5: 93141c0620e1934e7ca4dcca2d035f3e
     size: 3469967360
-  name: Bleach - Erabareshi Tamashii (Japan)
+  name: Bleach - Erabareshi Tamashii (Japan) (v2.00)
   serial: SCPS-15087
   version: '2.00'
 - hashes:
@@ -44804,7 +44799,7 @@
 - hashes:
   - md5: 57ca2a727ac082e72b57ee52ac0e43cc
     size: 4129292288
-  name: ToraCap! Daash!! (Japan)
+  name: ToraCap! Daash!! (Japan) (Deluxe Pack)
   serial: SLPM-65301
   version: '1.01'
 - hashes:
@@ -44840,7 +44835,7 @@
 - hashes:
   - md5: abd0ab6130f9f7c175ae16e793ab9d6a
     size: 1634500608
-  name: Gundam True Odyssey - Ushinawareshi G no Densetsu (Japan)
+  name: Gundam True Odyssey - Ushinawareshi G no Densetsu (Japan) (v1.02)
   serial: SLPS-25520
   version: '1.02'
 - hashes:
@@ -44858,7 +44853,7 @@
 - hashes:
   - md5: 5cfb6f344fb64726e5473c6251956096
     size: 523877424
-  name: Sky Surfer (Japan)
+  name: Sky Surfer (Japan) (v1.04)
   serial: SLPS-20012
   version: '1.04'
 - hashes:
@@ -44936,7 +44931,7 @@
 - hashes:
   - md5: 3c1219256cdcd959a881531d6caed48d
     size: 222863760
-  name: PDC World Championship Darts (Europe) (En,Fr,De,Es,It,Nl)
+  name: PDC World Championship Darts (Europe) (En,Fr,De,Es,It,Nl) (v2.00)
   serial: SLES-54111
   version: '2.00'
 - hashes:
@@ -45023,7 +45018,7 @@
   - md5: b487e292ac842b6183981f11c6ca5df3
     size: 2392555520
   name: Nobunaga no Yabou - Tenka Sousei with Power-Up Kit (Japan)
-  serial: SLPM-65864
+  serial: SLPM-55232
   version: '1.01'
 - hashes:
   - md5: 7336ffccf7e6dda1b3207ffdd3698823
@@ -45249,7 +45244,7 @@
 - hashes:
   - md5: 04f33895ef458f332f8d1265d6e8c26f
     size: 4243488768
-  name: Code Geass - Hangyaku no Lelouch - Lost Colors (Japan)
+  name: Code Geass - Hangyaku no Lelouch - Lost Colors (Japan) (v2.00)
   serial: SLPS-25860
   version: '2.00'
 - hashes:
@@ -45371,6 +45366,7 @@
   - md5: 2c1028d60855671c0aa7fefc607b7a17
     size: 2719416320
   name: Baseball 2003, The - Battle Ball Park Sengen - Perfect Play Pro Yakyuu (Japan)
+    (v1.05)
   serial: SLPM-65180
   version: '1.05'
 - hashes:
@@ -45712,7 +45708,7 @@
 - hashes:
   - md5: 6b4d054b20516d4ac041c849cef2d5c7
     size: 2259222528
-  name: Yu-Gi-Oh! Shin Duel Monsters II - Keishou sareshi Kioku (Japan)
+  name: Yu-Gi-Oh! Shin Duel Monsters II - Keishou sareshi Kioku (Japan) (v2.00)
   serial: SLPM-65647
   version: '2.00'
 - hashes:
@@ -46086,7 +46082,7 @@
 - hashes:
   - md5: 705c80af21f8095afd45b7fa98c7955e
     size: 711237744
-  name: Phantom Brave - 2-shuume Hajimemashita. (Japan)
+  name: Phantom Brave - 2-shuume Hajimemashita. (Japan) (v2.00)
   serial: SLPS-73108
   version: '2.00'
 - hashes:
@@ -46098,7 +46094,7 @@
 - hashes:
   - md5: 4d73b67f8926e3e90fccf1b2adf434b9
     size: 1480458240
-  name: Reiselied - Ephemeral Fantasia (Japan)
+  name: Reiselied - Ephemeral Fantasia (Japan) (v1.00)
   serial: SLPM-65004
   version: '1.00'
 - hashes:
@@ -46116,7 +46112,7 @@
 - hashes:
   - md5: 6a57f952ee204dbab198d3ad6057acaa
     size: 4684218368
-  name: Culdcept II Expansion (Japan)
+  name: Culdcept II Expansion (Japan) (v1.01)
   serial: SLPM-65179
   version: '1.01'
 - hashes:
@@ -46165,7 +46161,7 @@
   - md5: 7737b47a799e822315bc0b247e897327
     size: 3237478400
   name: Ratchet & Clank 4th - Giri Giri Ginga no Giga Battle (Japan)
-  serial: SCPS-19328
+  serial: SCPS-15100
   version: '1.00'
 - hashes:
   - md5: bb850b12493218aa58d98cf9d01c4be5
@@ -46182,7 +46178,7 @@
 - hashes:
   - md5: 6ae394a497d4cd3d962021fb46ffa443
     size: 4237066240
-  name: Code Geass - Hangyaku no Lelouch - Lost Colors (Japan)
+  name: Code Geass - Hangyaku no Lelouch - Lost Colors (Japan) (v1.01)
   serial: SLPS-25860
   version: '1.01'
 - hashes:
@@ -46326,7 +46322,7 @@
 - hashes:
   - md5: a2749ad7e49f1f7886b8f920e6dbeb7f
     size: 4697456640
-  name: Star Wars - Battlefront II (USA)
+  name: Star Wars - Battlefront II (USA) (v1.01)
   serial: SLUS-21240
   version: '1.01'
 - hashes:
@@ -46380,7 +46376,7 @@
 - hashes:
   - md5: ade7cffcbd5d7818ed00f2b39e8f8de6
     size: 3099951104
-  name: SingStar Russian Hit (Russia)
+  name: SingStar Russkij Xit (Russia)
   serial: SCES-55241
   version: '1.00'
 - hashes:
@@ -46602,7 +46598,7 @@
   - md5: c6ad769c83351162745c64a0fef27c49
     size: 3653369856
   name: Gakkou o Tsukurou!! Happy Days (Japan)
-  serial: SLPS-25598
+  serial: SLPS-25471
   version: '1.01'
 - hashes:
   - md5: eda400970439af8e71034a172c658943
@@ -46907,7 +46903,7 @@
 - hashes:
   - md5: e7cc6d969dfddb31238980d39a61d37e
     size: 4592238592
-  name: Sly 2 - Band of Thieves (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi)
+  name: Sly 2 - Band of Thieves (Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi) (v2.01)
   serial: SCES-52529
   version: '2.01'
 - hashes:
@@ -46931,7 +46927,7 @@
 - hashes:
   - md5: a9195dfa99637c2b7d5bc29995914a8b
     size: 2558656512
-  name: ObsCure (Russia)
+  name: Obscure (Russia)
   serial: SLES-53322
   version: '1.01'
 - hashes:
@@ -47118,7 +47114,7 @@
 - hashes:
   - md5: b34274984cb5828dabceeb07fc58cc69
     size: 682924368
-  name: SuperLite 2000 Vol. 13 - Tetris - Kiwame Michi (Japan)
+  name: SuperLite 2000 Vol. 13 - Tetris - Kiwame Michi (Japan) (v2.01)
   serial: SLPM-62423
   version: '2.01'
 - hashes:
@@ -47274,13 +47270,13 @@
 - hashes:
   - md5: 68634f9b74fe47e4a039ada615970ca1
     size: 541969008
-  name: Momotarou Dentetsu 15 - Godai Bombee Toujou! no Maki (Japan)
+  name: Momotarou Dentetsu 15 - Godai Bombee Toujou! no Maki (Japan) (v2.00)
   serial: SLPM-74104
   version: '2.00'
 - hashes:
   - md5: 5a708047222aee46d5767346b9e13939
     size: 4657250304
-  name: Legacy of Kain - Soul Reaver 2 (USA)
+  name: Legacy of Kain - Soul Reaver 2 (USA) (v2.00)
   serial: SLUS-20165
   version: '2.00'
 - hashes:
@@ -47310,7 +47306,7 @@
 - hashes:
   - md5: 6ba01870aa8ae3f735ec58298dbc813c
     size: 2108096512
-  name: Crash Twinsanity (USA)
+  name: Crash Twinsanity (USA) (v1.00)
   serial: SLUS-20909
   version: '1.00'
 - hashes:
@@ -47576,7 +47572,7 @@
 - hashes:
   - md5: d39d7b9f202bc21ded105cce2ecf4c88
     size: 2056945664
-  name: Tenshou Gakuen Gensouroku (Japan)
+  name: Tenshou Gakuen Gensouroku (Japan) (v2.01)
   serial: SLPM-66382
   version: '2.01'
 - hashes:
@@ -47630,13 +47626,13 @@
 - hashes:
   - md5: 1cf78ace77ba9764c9b71a7df71aa4b7
     size: 3884744704
-  name: Test Drive (USA)
+  name: Test Drive (USA) (v1.00)
   serial: SLUS-20213
   version: '1.00'
 - hashes:
   - md5: 7ec07e8d73d5b930b581745881b31ec0
     size: 2993946624
-  name: MTV Pimp My Ride (USA)
+  name: MTV Pimp My Ride (USA) (v1.00)
   serial: SLUS-21580
   version: '1.00'
 - hashes:
@@ -47679,7 +47675,7 @@
   - md5: 53ccb3cce5a1a9c133eba168dbc24fe9
     size: 1232470016
   name: King of Fighters 2000, The (Japan)
-  serial: SLPS-25429
+  serial: SLPS-25156
   version: '1.03'
 - hashes:
   - md5: 48610cafbe9cfe4ef22e575005a864d9
@@ -47708,7 +47704,7 @@
 - hashes:
   - md5: 38d102e46cb495a7f43237fe57166c73
     size: 584622528
-  name: Nobunaga no Yabou Online (Japan) (Beta) (2002-11-19)
+  name: Nobunaga no Yabou Online (Japan) (Beta) (v1.04) (2002-11-19)
   serial: SLPM-62208
   version: '1.04'
 - hashes:
@@ -47774,7 +47770,7 @@
 - hashes:
   - md5: a90a9b7f32fb422da5d0a54945ffb6be
     size: 747451488
-  name: Netchuu! Pro Yakyuu 2002 (Japan)
+  name: Netchuu! Pro Yakyuu 2002 (Japan) (v2.01)
   serial: SLPS-20190
   version: '2.01'
 - hashes:
@@ -47846,7 +47842,7 @@
 - hashes:
   - md5: 96338e8bcbfdf914fee65be93e9af524
     size: 4092362752
-  name: Densha de Go! Professional 2 (Japan)
+  name: Densha de Go! Professional 2 (Japan) (v2.03)
   serial: SLPM-65661
   version: '2.03'
 - hashes:
@@ -47954,7 +47950,7 @@
 - hashes:
   - md5: 7950f342fae8a55162d7315f888db953
     size: 3681550336
-  name: Katamari Damacy (Japan)
+  name: Katamari Damacy (Japan) (v2.00)
   serial: SLPS-25360
   version: '2.00'
 - hashes:
@@ -48020,7 +48016,7 @@
 - hashes:
   - md5: 85bfa4a96ab137429a5e1ca930e0f8fb
     size: 2259222528
-  name: Yu-Gi-Oh! Shin Duel Monsters II - Keishou sareshi Kioku (Japan)
+  name: Yu-Gi-Oh! Shin Duel Monsters II - Keishou sareshi Kioku (Japan) (v1.03)
   serial: SLPM-65050
   version: '1.03'
 - hashes:
@@ -48237,13 +48233,13 @@
 - hashes:
   - md5: 68313531e0f035a75f7536bfc288022d
     size: 107208864
-  name: Junior Board Games (Europe) (En,Fr,De,Es,It)
+  name: Junior Board Games (Europe) (En,Fr,De,Es,It) (v1.01)
   serial: SLES-52776
   version: '1.01'
 - hashes:
   - md5: fd729ae5bf82d6a1c97cd6fec94e3767
     size: 952893440
-  name: Rayman M (Europe) (En,Fr,De,Es,It)
+  name: Rayman M (Europe) (En,Fr,De,Es,It) (v1.02)
   serial: SLES-50457
   version: '1.02'
 - hashes:
@@ -48467,7 +48463,7 @@
 - hashes:
   - md5: 96840c55e20f4822821f52c830c8789b
     size: 4257611776
-  name: Neo Atlas III (Japan)
+  name: Neo Atlas III (Japan) (v2.00)
   serial: SLPS-25176
   version: '2.00'
 - hashes:
@@ -48551,7 +48547,7 @@
 - hashes:
   - md5: 78a07b414434f9031c51425329d1dd85
     size: 744499728
-  name: Pro Mahjong Kiwame Next (Japan)
+  name: Pro Mahjong Kiwame Next (Japan) (v3.01)
   serial: SLPS-20133
   version: '3.01'
 - hashes:
@@ -48720,7 +48716,7 @@
   - md5: b292c834f63db71ecb52083d1d7a14c1
     size: 747016368
   name: Sega Ages 2500 Series Vol. 22 - Advanced Daisenryaku - Deutsch Dengeki Sakusen
-    (Japan)
+    (Japan) (v2.00)
   serial: SLPM-62708
   version: '2.00'
 - hashes:
@@ -48751,7 +48747,7 @@
 - hashes:
   - md5: e7a3df8f24200c3831bee9305d2996d9
     size: 3141042176
-  name: WRC 4 - The Official Game of the FIA World Rally Championship (Japan)
+  name: WRC 4 - The Official Game of the FIA World Rally Championship (Japan) (v1.02)
   serial: SLPM-65975
   version: '1.02'
 - hashes:
@@ -48769,7 +48765,7 @@
 - hashes:
   - md5: 6a19289753f5d85a717cc2bbb32b2347
     size: 3335979008
-  name: Dot Hack G.U. Vol. 3 - Aruku You na Hayasa de (Japan)
+  name: Dot Hack G.U. Vol. 3 - Aruku You na Hayasa de (Japan) (v2.00)
   serial: SLPS-73267
   version: '2.00'
 - hashes:
@@ -48799,7 +48795,7 @@
 - hashes:
   - md5: d4a0ea206a803b2bf6605747248d01f0
     size: 1492484096
-  name: Pachi Para 12 - Ooumi to Natsu no Omoide (Japan)
+  name: Pachi Para 12 - Ooumi to Natsu no Omoide (Japan) (v2.01)
   serial: SLPS-25574
   version: '2.01'
 - hashes:
@@ -48902,7 +48898,7 @@
 - hashes:
   - md5: edc2438adbcaec262995d1f88809cdf5
     size: 32165952
-  name: Chou! Tanoshii Internet - Tomodachi no Wa (Japan) (Broadband)
+  name: Chou! Tanoshii Internet - Tomodachi no Wa (Japan) (Broadband) (v1.05)
   serial: SLPS-20149
   version: '1.05'
 - hashes:
@@ -48920,7 +48916,7 @@
 - hashes:
   - md5: f22c881468dd30cc25be63d73708aa2f
     size: 3479535616
-  name: Pop'n Music 10 (Japan)
+  name: Pop'n Music 10 (Japan) (v2.00)
   serial: SLPM-66210
   version: '2.00'
 - hashes:
@@ -49010,7 +49006,7 @@
 - hashes:
   - md5: 506039703a1454e80d6841635db89659
     size: 1583874048
-  name: Gitadora! GuitarFreaks 4th Mix & DrumMania 3rd Mix (Japan)
+  name: Gitadora! GuitarFreaks 4th Mix & DrumMania 3rd Mix (Japan) (v1.01)
   serial: SLPM-65052
   version: '1.01'
 - hashes:
@@ -49022,7 +49018,7 @@
 - hashes:
   - md5: 163c7b0ed01f8ce4c022daa725b765ee
     size: 3479601152
-  name: Pop'n Music 10 (Japan)
+  name: Pop'n Music 10 (Japan) (v1.01)
   serial: SLPM-65770
   version: '1.01'
 - hashes:
@@ -49161,7 +49157,7 @@
 - hashes:
   - md5: 785e0fa027bb2f80a0fb80644f9ff7ed
     size: 1246855168
-  name: Tennis no Oujisama - Smash Hit! (Japan) (Shokai SP Genteiban)
+  name: Tennis no Oujisama - Smash Hit! (Japan) (Shokai SP Genteiban) (SLPM-65321)
   serial: SLPM-65321
   version: '1.00'
 - hashes:
@@ -49366,7 +49362,7 @@
 - hashes:
   - md5: d19bf00694105baf62bf974247bdd6f0
     size: 3401777152
-  name: Official PlayStation 2 Magazine Demo 50 (Germany) (En,De)
+  name: Official PlayStation 2 Magazine Demo 50 (Germany) (En,De) (SCED-52090)
   serial: SCED-52090
   version: '1.02'
 - hashes:
@@ -49427,7 +49423,7 @@
   - md5: aa26f473fc9ecf2df7fad3a9acc30351
     size: 3115188224
   name: Harukanaru Toki no Naka de 3 (Japan) (Triple Pack)
-  serial: SLPM-66128
+  serial: SLPM-65850
   version: '1.02'
 - hashes:
   - md5: 3fbcf872e27357fe0c8ef1923bfe79bf
@@ -49468,7 +49464,7 @@
 - hashes:
   - md5: ab9f3171f9e7f7ac745ff817807806b6
     size: 3215982592
-  name: V-Rally 3 (Japan) (En,Ja,Fr,De,Es,It)
+  name: V-Rally 3 (Japan) (En,Ja,Fr,De,Es,It) (v2.00)
   serial: SLPM-65539
   version: '2.00'
 - hashes:
@@ -49511,7 +49507,7 @@
 - hashes:
   - md5: f9cffad5fb225ab63d437d1230132663
     size: 457515744
-  name: PrintFan (Japan)
+  name: PrintFan (Japan) (v1.00)
   serial: SLPM-62025
   version: '1.00'
 - hashes:
@@ -49720,7 +49716,7 @@
   - md5: c29f1d6042c2df28d7f6fb7c4d96870c
     size: 3630104576
   name: Boukoku no Aegis 2035 - Warship Gunner (Japan)
-  serial: SLPM-66939
+  serial: SLPM-66060
   version: '1.03'
 - hashes:
   - md5: 2ab4f7c586a9305f8a3bd8fcc451496d
@@ -49738,7 +49734,7 @@
   - md5: c614d5629fab54b186e6497725ef9d82
     size: 747016368
   name: Sega Ages 2500 Series Vol. 22 - Advanced Daisenryaku - Deutsch Dengeki Sakusen
-    (Japan)
+    (Japan) (v3.00)
   serial: SLPM-62708
   version: '3.00'
 - hashes:
@@ -49750,13 +49746,13 @@
 - hashes:
   - md5: 42e035e29b946c488c813064120d4086
     size: 13197072
-  name: EGBrowser (Japan)
+  name: EGBrowser (Japan) (v1.06)
   serial: SLPM-62068
   version: '1.06'
 - hashes:
   - md5: d3a68be7479fe512456033a879bca651
     size: 1331003392
-  name: GI Jockey 4 2007 (Japan)
+  name: GI Jockey 4 2007 (Japan) (Premium Pack)
   serial: SLPM-66903
   version: '1.02'
 - hashes:
@@ -49782,7 +49778,7 @@
 - hashes:
   - md5: e001771b2394d5d63028c4f907cb1503
     size: 1420460032
-  name: Winning Post 7 Maximum 2007 (Japan)
+  name: Winning Post 7 Maximum 2007 (Japan) (v1.00)
   serial: SLPM-66904
   version: '1.00'
 - hashes:
@@ -50576,7 +50572,7 @@
 - hashes:
   - md5: 06ce58c5ce983c9d90050dd08cdb936d
     size: 4456775680
-  name: Pro Yakyuu Spirits 5 (Japan)
+  name: Pro Yakyuu Spirits 5 (Japan) (v2.00)
   serial: SLPM-66970
   version: '2.00'
 - hashes:
@@ -50625,7 +50621,7 @@
 - hashes:
   - md5: 1346126a4a102aeec5b08788a9caaef3
     size: 3170664448
-  name: Ponkotsu Roman Daikatsugeki - Bumpy Trot (Japan)
+  name: Ponkotsu Roman Daikatsugeki - Bumpy Trot (Japan) (v2.00)
   serial: SLPS-25683
   version: '2.00'
 - hashes:
@@ -50836,7 +50832,7 @@
 - hashes:
   - md5: 57899c048e0abebccc780d065025cbe2
     size: 469929600
-  name: PlayStation BB Navigator - Version 0.10 (Prerelease) (Japan) (Disc 2)
+  name: PlayStation BB Navigator - Version 0.10 (Prerelease) (Japan) (Disc 2) (SCPN-60103)
   serial: SCPN-60103
 - hashes:
   - md5: 10c30143ba90a8450ce3271378a320eb
@@ -50931,7 +50927,7 @@
 - hashes:
   - md5: 4c5ae7ca2fc72901f4299b8af96d6d1f
     size: 2321055744
-  name: Nobunaga no Yabou - Tenka Sousei (Japan)
+  name: Nobunaga no Yabou - Tenka Sousei (Japan) (v1.40)
   serial: SLPM-74225
   version: '1.40'
 - hashes:
@@ -51045,7 +51041,7 @@
 - hashes:
   - md5: 572fa446171877834d8e80c195eb23ff
     size: 330253728
-  name: Network Access Disc (Europe)
+  name: Network Access Disc (Europe) (v0.02)
   serial: SCES-51003
   version: '0.02'
 - hashes:
@@ -51129,7 +51125,7 @@
 - hashes:
   - md5: 51739d16d2f85d1d005eec1c8718c5bf
     size: 4055269376
-  name: Official PlayStation 2 Magazine Demo 49 (Europe) (En,Fr,De,Es,It)
+  name: Official PlayStation 2 Magazine Demo 49 (Europe) (En,Fr,De,Es,It) (SCED-52728)
   serial: SCED-52728
   version: '1.00'
 - hashes:
@@ -51165,7 +51161,7 @@
 - hashes:
   - md5: d75fb418a9891aa51fb910345f67e79a
     size: 3101491200
-  name: Official PlayStation 2 Magazine Demo 74 (Europe) (En,Fr,De,Es,It)
+  name: Official PlayStation 2 Magazine Demo 74 (Europe) (En,Fr,De,Es,It) (SCED-54202)
   serial: SCED-54202
   version: '1.01'
 - hashes:
@@ -51208,7 +51204,7 @@
 - hashes:
   - md5: 02c2fb0c88795d078ffbbcdfb9ba194b
     size: 3632529408
-  name: Official PlayStation 2 Magazine Demo 31 (Europe) (En,Fr,De,Es,It)
+  name: Official PlayStation 2 Magazine Demo 31 (Europe) (En,Fr,De,Es,It) (SCED-51556)
   serial: SCED-51556
   version: '1.02'
 - hashes:
@@ -51262,7 +51258,7 @@
 - hashes:
   - md5: 313879bfeab45fc462bd1f6868b10f52
     size: 1493565440
-  name: Pachi Para 12 - Ooumi to Natsu no Omoide (Japan)
+  name: Pachi Para 12 - Ooumi to Natsu no Omoide (Japan) (v1.02)
   serial: SLPS-25574
   version: '1.02'
 - hashes:
@@ -51292,7 +51288,7 @@
 - hashes:
   - md5: f0b129f39934ec50e384e12aaf57c98b
     size: 4431839232
-  name: Official PlayStation 2 Magazine Demo 56 (Europe) (En,Fr,De,Es,It)
+  name: Official PlayStation 2 Magazine Demo 56 (Europe) (En,Fr,De,Es,It) (SCED-53176)
   serial: SCED-53176
   version: '1.03'
 - hashes:
@@ -51619,7 +51615,7 @@
 - hashes:
   - md5: 0c756ca8645512f60d660bb1294aa22f
     size: 469929600
-  name: PlayStation BB Navigator - Version 0.10 (Prerelease) (Japan) (Disc 2)
+  name: PlayStation BB Navigator - Version 0.10 (Prerelease) (Japan) (Disc 2) (SCPN-60111)
   serial: SCPN-60111
 - hashes:
   - md5: bebcf37750a7b9d2b64cee4c3b31d9ea
@@ -51678,7 +51674,7 @@
 - hashes:
   - md5: a44554d7f03c867c06f9347f5026b216
     size: 4487905280
-  name: Getaway, The (Australia) (En,Fr,De,Es,It)
+  name: Getaway, The (Australia) (En,Fr,De,Es,It) (v2.00)
   serial: SCES-51426
   version: '2.00'
 - hashes:
@@ -51798,7 +51794,7 @@
 - hashes:
   - md5: e2054c908b16b2d963b3692d35c63df2
     size: 4323246080
-  name: Bonus Demo 5 (Europe) (En,Fr,De,Es,It)
+  name: Bonus Demo 5 (Europe) (En,Fr,De,Es,It) (SCED-51940)
   serial: SCED-51940
   version: '1.02'
 - hashes:
@@ -51858,7 +51854,7 @@
 - hashes:
   - md5: f01d06fbaef585a21bfe816c799b4d5b
     size: 3960438784
-  name: Hitman 2 - Silent Assassin (Spain)
+  name: Hitman 2 - Silent Assassin (Spain) (v1.01)
   serial: SLES-51110
   version: '1.01'
 - hashes:
@@ -51876,7 +51872,7 @@
 - hashes:
   - md5: 0f1cc6406102bd4940db44bbe764b3a4
     size: 35359968
-  name: Ultimate Sports Quiz, The (Europe)
+  name: Ultimate Sports Quiz, The (Europe) (v2.00)
   serial: SLES-53597
   version: '2.00'
 - hashes:
@@ -51930,19 +51926,19 @@
 - hashes:
   - md5: 4bf5b5e6890e0b3c020b0d07c1a9c422
     size: 3942285312
-  name: Hitman 2 - Silent Assassin (Italy)
+  name: Hitman 2 - Silent Assassin (Italy) (v1.01)
   serial: SLES-51107
   version: '1.01'
 - hashes:
   - md5: a6b2e5f6fa963965dc66d4dff0182fbf
     size: 3940810752
-  name: Hitman 2 - Silent Assassin (Germany)
+  name: Hitman 2 - Silent Assassin (Germany) (v1.01)
   serial: SLES-51109
   version: '1.01'
 - hashes:
   - md5: 9eed6551c03754c9553c7a4698be5398
     size: 4500586496
-  name: Grand Theft Auto - San Andreas (Germany) (En,De)
+  name: Grand Theft Auto - San Andreas (Germany) (En,De) (v1.00)
   serial: SLES-52927
   version: '1.00'
 - hashes:
@@ -52036,7 +52032,7 @@
 - hashes:
   - md5: 43293a3ab2589066d50fe533756a88be
     size: 3940712448
-  name: Hitman 2 - Silent Assassin (France)
+  name: Hitman 2 - Silent Assassin (France) (v1.01)
   serial: SLES-51108
   version: '1.01'
 - hashes:
@@ -52054,7 +52050,7 @@
 - hashes:
   - md5: 5cf612d6cbfe9f03d334e8b1bba48d3e
     size: 4487905280
-  name: Getaway, The (Europe) (En,Fr,De,Es,It)
+  name: Getaway, The (Europe) (En,Fr,De,Es,It) (v3.00)
   serial: SCES-51159
   version: '3.00'
 - hashes:
@@ -52066,7 +52062,7 @@
 - hashes:
   - md5: 1428c6ba3492b002aaa08d55b0e344d0
     size: 4675174400
-  name: SingStar '80s (Italy)
+  name: SingStar '80s (Italy) (v1.01)
   serial: SCES-53605
   version: '1.01'
 - hashes:
@@ -52139,7 +52135,7 @@
 - hashes:
   - md5: 63c6d30113ab545c8249d58af246ae17
     size: 2085978112
-  name: Pro Evolution Soccer 6 (Europe) (It,Pl)
+  name: PES 6 - Pro Evolution Soccer (Europe) (It,Pl) (v2.00)
   serial: SLES-54204
   version: '2.00'
 - hashes:
@@ -52169,7 +52165,7 @@
 - hashes:
   - md5: 54f54d76d67174e91ea5297057826b49
     size: 3108634624
-  name: Burnout 2 - Point of Impact (Europe) (En,Fr,De,Es,It)
+  name: Burnout 2 - Point of Impact (Europe) (En,Fr,De,Es,It) (SLES-52968)
   serial: SLES-52968
   version: '1.00'
 - hashes:
@@ -52469,7 +52465,7 @@
 - hashes:
   - md5: 3a6c259fa9a1b2e41aa3448de2a90b6d
     size: 641070528
-  name: Legends of Wrestling (USA)
+  name: Legends of Wrestling (USA) (v1.00)
   serial: SLUS-20242
   version: '1.00'
 - hashes:
@@ -52537,7 +52533,7 @@
 - hashes:
   - md5: c7033668dc60e7de5743a6361d70a4dc
     size: 3080093696
-  name: Spider-Man (Spain)
+  name: Spider-Man (Spain) (v2.01)
   serial: SLES-50965
   version: '2.01'
 - hashes:
@@ -52665,7 +52661,7 @@
 - hashes:
   - md5: 4342cf22a402f3fb7215e1f25d8b9c27
     size: 438015312
-  name: WipEout Fusion (Europe) (Demo)
+  name: Wipeout Fusion (Europe) (Demo)
   serial: SCED-50768
   version: '1.10'
 - hashes:
@@ -52677,13 +52673,13 @@
 - hashes:
   - md5: 8b5cdd13ed50190234cbc35e04eb7fa2
     size: 4683300864
-  name: SingStar '80s (Germany)
+  name: SingStar '80s (Germany) (v1.00)
   serial: SCES-53604
   version: '1.00'
 - hashes:
   - md5: 2eaeb713980bbe8b3aea280dbc080a31
     size: 713686176
-  name: NHL Hitz 2002 (USA)
+  name: NHL Hitz 2002 (USA) (v1.01)
   serial: SLUS-20140
   version: '1.01'
 - hashes:
@@ -52918,7 +52914,7 @@
 - hashes:
   - md5: 60b2a5161bca85b0faf2c7f251dcd3ff
     size: 464470608
-  name: Nick Jr. Dora the Explorer - Dora Saves the Mermaids (Australia)
+  name: Nick Jr. Dora the Explorer - Dora Saves the Mermaids (Europe, Australia)
   serial: SLES-55112
   version: '1.01'
 - hashes:
@@ -52930,7 +52926,7 @@
 - hashes:
   - md5: 7b0cf7f12b223dd9a5b7a06847a59045
     size: 4690509824
-  name: NHL 09 (Europe, Australia) (En,De,Sv,Fi,Ru,Cs)
+  name: NHL 09 (Europe, Australia) (En,De,Sv,Fi,Ru,Cs) (v2.00)
   serial: SLES-55338
   version: '2.00'
 - hashes:
@@ -52990,7 +52986,7 @@
 - hashes:
   - md5: 6f7f5b7afcf03f4e4888e39b21b48363
     size: 4605673472
-  name: Midnight Club 3 - DUB Edition (USA)
+  name: Midnight Club 3 - DUB Edition (USA) (v2.00)
   serial: SLUS-21029
   version: '2.00'
 - hashes:
@@ -53032,7 +53028,7 @@
 - hashes:
   - md5: f12657869714dc216c65f0bc304a660b
     size: 2181660672
-  name: Splashdown (Europe) (En,Fr,De,Es,It)
+  name: Splashdown (Europe) (En,Fr,De,Es,It) (v2.00)
   serial: SLES-50486
   version: '2.00'
 - hashes:
@@ -53062,7 +53058,7 @@
 - hashes:
   - md5: 00b9c6a6a5c59c7736ba2b63cafe449c
     size: 761692848
-  name: Karat PS2-you Pro Action Replay 2 (Japan) (Unl)
+  name: Karat PS2-you Pro Action Replay 2 (Japan) (Unl) (v2.23)
   version: '2.23'
 - hashes:
   - md5: 87ed18a8353ad72bf3f0325032a0423a
@@ -53091,7 +53087,7 @@
 - hashes:
   - md5: e9906a5089c5cd072df6fd77e660f1ae
     size: 524009136
-  name: Sky Surfer (Japan)
+  name: Sky Surfer (Japan) (v2.02)
   serial: SLPS-20012
   version: '2.02'
 - hashes:
@@ -53350,7 +53346,7 @@
 - hashes:
   - md5: 0ffbba013cbaa0e97191ec0909b09b24
     size: 1642004480
-  name: Enthusia - Professional Racing (Europe) (Demo)
+  name: Enthusia - Professional Racing (Europe) (En,Fr,De,Es,It) (Demo)
   serial: SLED-53330
   version: '1.01'
 - hashes:
@@ -53536,7 +53532,7 @@
 - hashes:
   - md5: 3636e07b33bcbbd5213c71e778bcd24b
     size: 1501331456
-  name: DreamWorks Madagascar (USA)
+  name: DreamWorks Madagascar (USA) (v3.01)
   serial: SLUS-21015
   version: '3.01'
 - hashes:
@@ -53608,7 +53604,7 @@
 - hashes:
   - md5: 0c338c3949ee028db0128a928537ae5b
     size: 4239130624
-  name: ESPN College Hoops (USA)
+  name: ESPN College Hoops (USA) (v1.03)
   serial: SLUS-20729
   version: '1.03'
 - hashes:
@@ -53638,7 +53634,7 @@
 - hashes:
   - md5: 1d9aa2579b94d71b35062ae5310cc1a7
     size: 560279328
-  name: Pro Evolution Soccer 6 (Europe) (Demo)
+  name: PES 6 - Pro Evolution Soccer (Europe) (Demo)
   serial: SLED-54445
   version: '1.01'
 - hashes:
@@ -54046,7 +54042,7 @@
 - hashes:
   - md5: 442b4bf1cfc3f96357ede2248e32578d
     size: 3977543680
-  name: Festa!! Hyper Girls Party (Japan)
+  name: Festa!! Hyper Girls Party (Japan) (Genteiban)
   serial: SLPM-66434
   version: '1.01'
 - hashes:
@@ -54077,7 +54073,7 @@
 - hashes:
   - md5: 8932db7d1c6eb52caa906e35b1fcd048
     size: 4314857472
-  name: SingStar '80s (Netherlands)
+  name: SingStar '80s (Netherlands) (v1.00)
   serial: SCES-53607
   version: '1.00'
 - hashes:
@@ -54179,7 +54175,7 @@
 - hashes:
   - md5: 6ea711a02ed6fe8f2506706044ee54f4
     size: 4449566720
-  name: SOCOM II - U.S. Navy SEALs (Korea)
+  name: SOCOM II - U.S. Navy SEALs (Korea) (v2.00)
   serial: SCKA-20053
   version: '2.00'
 - hashes:
@@ -54359,7 +54355,7 @@
 - hashes:
   - md5: ce41462703a8df23c8960f58f04a2894
     size: 3681550336
-  name: Katamari Damacy (Japan)
+  name: Katamari Damacy (Japan) (v1.03)
   serial: SLPS-25360
   version: '1.03'
 - hashes:
@@ -54371,7 +54367,7 @@
 - hashes:
   - md5: dd3ff636bb30bb55e7971cc083e7432f
     size: 4282515456
-  name: Kidou Senshi Gundam - Renpou vs. Zeon DX (Japan)
+  name: Kidou Senshi Gundam - Renpou vs. Zeon DX (Japan) (v2.00)
   serial: SLPM-65076
   version: '2.00'
 - hashes:
@@ -54479,7 +54475,6 @@
   - md5: 5471b8e8e2d631043695c60ed6f409ed
     size: 3698622464
   name: Need for Speed - Undercover (Scandinavia) (En,Sv,Da,Fi)
-  serial: SLES-55352
   version: '1.00'
 - hashes:
   - md5: 0145e512d389782eeef8a4082f505182
@@ -54615,7 +54610,7 @@
 - hashes:
   - md5: fade5491c665228dc3f2250da0390f3e
     size: 4244832256
-  name: Dokapon the World (Japan)
+  name: Dokapon the World (Japan) (v1.03)
   serial: SLPM-65750
   version: '1.03'
 - hashes:
@@ -55222,7 +55217,7 @@
 - hashes:
   - md5: 05ed20ea58cf6c410314d1fd1905c002
     size: 4662296576
-  name: Jak X - Combat Racing (USA) (En,Fr,De,Es,It,Pt,Ru)
+  name: Jak X - Combat Racing (USA) (En,Fr,De,Es,It,Pt,Ru) (v2.00)
   serial: SCUS-97429
   version: '2.00'
 - hashes:
@@ -55425,7 +55420,7 @@
 - hashes:
   - md5: 8f3fd6d2b5cb323b8f19acba16f9cca5
     size: 761692848
-  name: Karat PS2-you Pro Action Replay 2 (Japan) (Unl) (Version 2.03)
+  name: Karat PS2-you Pro Action Replay 2 (Japan) (Unl) (v2.03)
   version: 2.0j
 - hashes:
   - md5: f90689ab0add3687912640952f5e8426
@@ -55442,7 +55437,7 @@
 - hashes:
   - md5: 9cb9525fae4bdd13bea9b8ae6cfd601d
     size: 3212345344
-  name: Network Adaptor Start-Up Disc v2.0 (USA) (Rev)
+  name: Network Adaptor Start-Up Disc v2.0 (USA) (Rev 1)
   serial: SCUS-97095
   version: '1.02'
 - hashes:
@@ -55574,7 +55569,7 @@
 - hashes:
   - md5: 52f78262d8407240669b8deb56f656d8
     size: 4183162880
-  name: PlayStation Experience (Europe)
+  name: PlayStation Experience (Europe) (SCED-51938)
   serial: SCED-51938
   version: '1.03'
 - hashes:
@@ -55885,7 +55880,7 @@
 - hashes:
   - md5: 59f9eb7b11416fd4b6701d7e1723f360
     size: 4611145728
-  name: RAhXEPhON - Soukyuu Gensoukyoku (Japan)
+  name: Rahxephon - Soukyuu Gensoukyoku (Japan)
   serial: SLPS-25264
   version: '1.01'
 - hashes:
@@ -56157,7 +56152,7 @@
 - hashes:
   - md5: 5d53c819d27db814ec8b21ad2c989276
     size: 3412459520
-  name: We Are- (Japan)
+  name: We Are- (Japan) (Genteiban)
   serial: SLPM-66448
   version: '1.00'
 - hashes:
@@ -56170,6 +56165,7 @@
   - md5: 1d71bedec13b65f7567c210a143c357a
     size: 4269801472
   name: Sims 2, The - Pets (Europe, Australia) (En,Fr,De,Es,It,Nl,Sv,No,Da,Fi,Pl)
+    (v2.00)
   serial: SLES-54347
   version: '2.00'
 - hashes:
@@ -56626,7 +56622,7 @@
 - hashes:
   - md5: e22e41f846735f321b4c9e4e957c0884
     size: 8525905920
-  name: Gran Turismo Concept - 2002 Tokyo-Geneva (Asia) (En,Zh)
+  name: Gran Turismo Concept - 2002 Tokyo-Geneva (Asia) (En,Zh) (SCPS-55902)
   serial: SCPS-55902
   version: '1.00'
 - hashes:
@@ -57008,7 +57004,7 @@
 - hashes:
   - md5: 945dbdcf9b8c962d74abdb747eb24e30
     size: 761692848
-  name: Action Replay Ultimate Codes for Use with Gran Turismo 3 (USA) (Unl)
+  name: Action Replay Ultimate Codes for Use with Gran Turismo 3 (USA) (Unl) (v1.10)
   version: '1.10'
 - hashes:
   - md5: e8e6e565c4d9f21d8a1ebca23ad1da06
@@ -57073,7 +57069,7 @@
 - hashes:
   - md5: 34eefb44e5669c6129e79f87dcc6efdd
     size: 761692848
-  name: SharkPort - Code and Save Transfer Kit (USA) (Unl)
+  name: SharkPort - Code and Save Transfer Kit (USA) (Unl) (v2.21)
   version: '2.21'
 - hashes:
   - md5: 7fd772ba44084f6ed0156ccd62a990a4
@@ -57141,7 +57137,7 @@
 - hashes:
   - md5: fe0d0b55e4277f45b115b70a6c4201fb
     size: 3062857728
-  name: Getaway, The - Black Monday (Europe) (En,Pt,Ru,El)
+  name: Getaway, The - Black Monday (Europe) (En,Pt,Ru,El) (v1.01)
   serial: SCES-52948
   version: '1.01'
 - hashes:
@@ -57405,7 +57401,7 @@
 - hashes:
   - md5: 5893d75f18c1ee42aa17954e56fd3a63
     size: 761692848
-  name: Action Replay 2 (USA) (En,Fr,Es,Pt) (Disc 1) (Unl)
+  name: Action Replay 2 (USA) (En,Fr,Es,Pt) (Disc 1) (Unl) (v2.30)
   version: '2.30'
 - hashes:
   - md5: 21d05daa5883f0fb1ecf22548efb1f69
@@ -57617,7 +57613,7 @@
 - hashes:
   - md5: de4e504efdd1f2bde3126e1a0fb86191
     size: 761692848
-  name: SharkPort - Code and Save Transfer Kit (USA) (Unl)
+  name: SharkPort - Code and Save Transfer Kit (USA) (Unl) (v1.2)
   version: '1.2'
 - hashes:
   - md5: 9334b5c0f9d83b229f4e66d8bc3aece9
@@ -57662,7 +57658,7 @@
 - hashes:
   - md5: 71f1a20b9d4109435bf771cc81bada38
     size: 761692848
-  name: GameShark 2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl)
+  name: GameShark 2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl) (v1.99b)
   version: 1.99b
 - hashes:
   - md5: c36180baa834d413d57cd1b89fae14df
@@ -57894,19 +57890,19 @@
 - hashes:
   - md5: b1bdb85315c977f0df632e62a921e013
     size: 197408064
-  name: Tennis no Oujisama - Smash Hit! Original Anime Game (Japan)
+  name: Tennis no Oujisama - Smash Hit! Original Anime Game (Japan) (SLPM-62357)
   serial: SLPM-62357
   version: '1.01'
 - hashes:
   - md5: ff8e27c81141063f1bd05ea829c673b7
     size: 194341056
-  name: Tennis no Oujisama - Smash Hit! Original Anime Game (Japan)
+  name: Tennis no Oujisama - Smash Hit! Original Anime Game (Japan) (SLPM-62358)
   serial: SLPM-62358
   version: '1.01'
 - hashes:
   - md5: 2ee95b9e42c0ca8f3af126db8a53a3a2
     size: 32177712
-  name: Chou! Tanoshii Internet - Tomodachi no Wa (Japan) (Broadband)
+  name: Chou! Tanoshii Internet - Tomodachi no Wa (Japan) (Broadband) (v3.00)
   serial: SLPS-20149
   version: '3.00'
 - hashes:
@@ -58203,7 +58199,7 @@
 - hashes:
   - md5: 8fc8ebd3081dda5fec63f14455c9cfd0
     size: 3225747456
-  name: Inuyasha - Juso no Kamen (Japan)
+  name: Inuyasha - Juso no Kamen (Japan) (v2.00)
   serial: SLPS-25552
   version: '2.00'
 - hashes:
@@ -58239,7 +58235,7 @@
 - hashes:
   - md5: bbb9ff58331cd1be1020a95ccd96dafa
     size: 476929152
-  name: Pro Evolution Soccer 6 (Italy) (Demo)
+  name: PES 6 - Pro Evolution Soccer (Italy) (Demo)
   serial: SLES-54447
   version: '1.01'
 - hashes:
@@ -58288,7 +58284,7 @@
 - hashes:
   - md5: ae1a09d72b9cb31573af5a5350ecab69
     size: 3445489664
-  name: Izumo Complete (Japan)
+  name: Izumo Complete (Japan) (v2.00)
   serial: SLPM-66801
   version: '2.00'
 - hashes:
@@ -58522,7 +58518,7 @@
 - hashes:
   - md5: b7f25b00cab37f2b4ceca6b5f8c59ab7
     size: 1280344064
-  name: AFL Live 2004 (Australia)
+  name: AFL Live 2004 (Australia) (v2.01)
   serial: SLES-51826
   version: '2.01'
 - hashes:
@@ -58661,7 +58657,7 @@
 - hashes:
   - md5: a7b8eb97c8bbafce34193741e52210ae
     size: 3865837568
-  name: Jin Samguk Mussang 3 (Korea)
+  name: Jin Samguk Mussang 3 (Korea) (v2.00)
   serial: SLKA-25050
   version: '2.00'
 - hashes:
@@ -58770,7 +58766,7 @@
 - hashes:
   - md5: 48a5639afdf9931913c7dde298dc5349
     size: 1274544128
-  name: Busin 0 - Wizardry Alternative Neo (Japan)
+  name: Busin 0 - Wizardry Alternative Neo (Japan) (v2.01)
   serial: SLPM-65876
   version: '2.01'
 - hashes:
@@ -59286,7 +59282,7 @@
 - hashes:
   - md5: 22a53da7af7b864f7a4a5b08350c7ade
     size: 3053027328
-  name: Disney-Pixar Cars (Australia)
+  name: Disney-Pixar Cars (Australia) (v1.00)
   serial: SLES-53624
   version: '1.00'
 - hashes:
@@ -59493,7 +59489,7 @@
 - hashes:
   - md5: 9eee2767fedbea97084b5d4dcf922066
     size: 4167434240
-  name: Death by Degrees - Tekken - Nina Willams (Japan)
+  name: Death by Degrees - Tekken - Nina Williams (Japan)
   serial: SLPS-25422
   version: '1.02'
 - hashes:
@@ -59584,6 +59580,7 @@
   - md5: ac4bfbd3434f265d9055e9585f6b9aca
     size: 4694769664
   name: Pirates of the Caribbean - The Legend of Jack Sparrow (Europe) (En,Fr,De,Es,It)
+    (v1.00)
   serial: SLES-54237
   version: '1.00'
 - hashes:
@@ -59620,7 +59617,7 @@
   - md5: 07f53d5c0b12f23c93f068b9ac6aa362
     size: 2882994176
   name: WRC - World Rally Championship (Japan) (En,Ja)
-  serial: SLPS-25099
+  serial: SLPM-74406
   version: '1.03'
 - hashes:
   - md5: 05d7ab95dbe49f64028ff6f5b6d84437
@@ -59877,7 +59874,7 @@
 - hashes:
   - md5: 1236261d50e79c6db60506fc6fa57ce8
     size: 7270531072
-  name: Lord of the Rings, The - Futatsu no Tou (Japan) (Collectors Box)
+  name: Lord of the Rings - Futatsu no Tou (Japan) (Collectors Box)
   serial: SLPS-29003
   version: '1.00'
 - hashes:
@@ -59972,7 +59969,7 @@
 - hashes:
   - md5: 8e02d244cf1746d71c29d9517ced436a
     size: 3698208768
-  name: TimeSplitters - Future Perfect (Europe) (En,Fr,De,Es,It) (Beta)
+  name: TimeSplitters - Future Perfect (Europe) (En,Fr,De,Es,It) (Beta) (2005-01-07)
   serial: SLES-52993
   version: '1.00'
 - hashes:
@@ -60014,13 +60011,13 @@
 - hashes:
   - md5: d00b8271fd7bdcf64d924325dc8ad6e3
     size: 1452834816
-  name: Tennis no Oujisama - Saikyou Team o Kessei seyo! (Japan)
+  name: Tennis no Oujisama - Saikyou Team o Kessei seyo! (Japan) (v2.01)
   serial: SLPM-66013
   version: '2.01'
 - hashes:
   - md5: 0d0af64af53f996cd9a7874793fac8f9
     size: 8525905920
-  name: Gran Turismo Concept - 2002 Tokyo-Geneva (Asia) (En,Zh)
+  name: Gran Turismo Concept - 2002 Tokyo-Geneva (Asia) (En,Zh) (SCPS-55903)
   serial: SCPS-55903
   version: '1.00'
 - hashes:
@@ -60032,7 +60029,7 @@
 - hashes:
   - md5: 143c5bef00cfd35845b28f97ac4d5a3d
     size: 761692848
-  name: GT Circuit Breaker for Use with GT3 (Europe) (Unl)
+  name: GT Circuit Breaker for Use with GT3 (UK) (Unl)
   version: '1.30'
 - hashes:
   - md5: 2d0faa719b239176c283f81bba82d31e
@@ -60091,7 +60088,7 @@
 - hashes:
   - md5: d748013e94ec702664e7cf94d388183b
     size: 3837526016
-  name: Grand Theft Auto - Vice City (USA)
+  name: Grand Theft Auto - Vice City (USA) (v4.00)
   serial: SLUS-20552
   version: '4.00'
 - hashes:
@@ -60392,7 +60389,7 @@
 - hashes:
   - md5: 855eaadf3f0b899e05ea1001e95f5c0e
     size: 761692848
-  name: Action Replay 2 V2 (USA) (Disc 1) (Unl)
+  name: Action Replay 2 V2 (USA) (Disc 1) (Unl) (v2.01)
   version: '2.01'
 - hashes:
   - md5: 5bdbb948474f445872aa55f72c108eeb
@@ -60409,7 +60406,7 @@
 - hashes:
   - md5: 11d4a01de9365fc456b577234a1f7314
     size: 761692848
-  name: Action Replay 2 (USA) (Disc 1) (Unl)
+  name: Action Replay 2 (USA) (Disc 1) (Unl) (v2.33)
   version: '2.33'
 - hashes:
   - md5: 197238c4235af9ad31337ecb703c6d63
@@ -60450,7 +60447,7 @@
 - hashes:
   - md5: 808a0a02b7fa1a176e6bbf6d13fa094c
     size: 761692848
-  name: Action Replay 2 (USA) (En,Fr,Es,Pt) (Disc 1) (Unl)
+  name: Action Replay 2 (USA) (En,Fr,Es,Pt) (Disc 1) (Unl) (v2.35)
   version: '2.35'
 - hashes:
   - md5: a0acb2a83c7c29c5f47b97e98f5e8a26
@@ -60461,7 +60458,7 @@
 - hashes:
   - md5: 02aede37b5bee17f1ef479f0925fc203
     size: 761692848
-  name: GameShark 2 V2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl)
+  name: GameShark 2 V2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl) (v2.21)
   version: '2.21'
 - hashes:
   - md5: 54b84aa092f1abebb46455925cfff065
@@ -60572,7 +60569,7 @@
 - hashes:
   - md5: c113e6727431b976ffb9352a53759870
     size: 718702992
-  name: GameShark 2 - Video Game Enhancer (USA) (Unl)
+  name: GameShark 2 - Video Game Enhancer (USA) (Unl) (v1.3)
   version: '1.3'
 - hashes:
   - md5: cc33475a55f61aabf430c5529a6f85b1
@@ -60668,7 +60665,7 @@
 - hashes:
   - md5: 5f1691fbbe65678f8a69980ad00e28a6
     size: 761692848
-  name: GameShark 2 V2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl)
+  name: GameShark 2 V2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl) (v2.22)
   version: '2.22'
 - hashes:
   - md5: c1323f072ca224b47caea20e13cc615a
@@ -60762,7 +60759,7 @@
 - hashes:
   - md5: 2ce68b2818970420b18dd0571df60424
     size: 761692848
-  name: GameShark 2 V2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl)
+  name: GameShark 2 V2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl) (v2.11)
   version: '2.11'
 - hashes:
   - md5: 7e964b27119adc590228452d42c634b0
@@ -60791,7 +60788,7 @@
 - hashes:
   - md5: aefa2da50b516bf573ba1c6013e94705
     size: 4118052864
-  name: Spider-Man 3 (USA)
+  name: Spider-Man 3 (USA) (v2.00)
   serial: SLUS-21552
   version: '2.00'
 - hashes:
@@ -61146,7 +61143,7 @@
 - hashes:
   - md5: db4e68d7099136f35f770c8f259130ee
     size: 262349136
-  name: Kuma Uta (Japan)
+  name: Kuma Uta (Japan) (v2.01)
   serial: SCPS-11031
   version: '2.01'
 - hashes:
@@ -61447,8 +61444,8 @@
 - hashes:
   - md5: 50bf2b548a3daa77ae256583d31e47a3
     size: 620558736
-  name: Super Puzzle Bobble 2 (Japan)
-  serial: SLPM-62229
+  name: Super Puzzle Bobble 2 (Japan, Asia)
+  serial: SCPS-51015
   version: '1.03'
 - hashes:
   - md5: d644297fb4f7d26f130d6725915c5f8f
@@ -61648,7 +61645,7 @@
 - hashes:
   - md5: d7c060fa2a49fe86bcdf8a9cf3cbec21
     size: 4665540608
-  name: Star Wars - Battlefront II (USA)
+  name: Star Wars - Battlefront II (USA) (v2.00)
   serial: SLUS-21240
   version: '2.00'
 - hashes:
@@ -61666,7 +61663,7 @@
 - hashes:
   - md5: 3665c22ca35246b3ea715a6d9b8f8906
     size: 761692848
-  name: Action Replay 2 (USA) (En,Fr,Es,Pt) (Disc 1) (Unl)
+  name: Action Replay 2 (USA) (En,Fr,Es,Pt) (Disc 1) (Unl) (v2.34)
   version: '2.34'
 - hashes:
   - md5: 6158fb8c86c5749ab27476b2dd3ab52a
@@ -61798,7 +61795,7 @@
 - hashes:
   - md5: ffdb72e30bc770b96a131b8857354bce
     size: 718702992
-  name: GameShark 2 - Video Game Enhancer (USA) (Unl)
+  name: GameShark 2 - Video Game Enhancer (USA) (Unl) (v1.6)
   version: '1.6'
 - hashes:
   - md5: 8a651e217c44b74bbf530ead8a97ee58
@@ -61968,7 +61965,7 @@
 - hashes:
   - md5: 7ebc769407375554c95e1e277728e7dd
     size: 581332080
-  name: Nobunaga no Yabou Online (Japan) (Beta) (2003-02-05)
+  name: Nobunaga no Yabou Online (Japan) (Beta) (v2.00) (2003-02-05)
   serial: SLPM-62208
   version: '2.00'
 - hashes:
@@ -62098,7 +62095,7 @@
 - hashes:
   - md5: 88782e1d966e6ff000c0bd7eb34ecfcd
     size: 4058251264
-  name: Gran Turismo Concept - 2002 Tokyo-Seoul (Korea)
+  name: Gran Turismo Concept - 2002 Tokyo-Seoul (Korea) (v1.02)
   serial: SCPS-56005
   version: '1.02'
 - hashes:
@@ -62114,7 +62111,7 @@
 - hashes:
   - md5: 83354371976b92a01159c613feca1347
     size: 718702992
-  name: GameShark 2 - Video Game Enhancer - V 1.0 (USA) (Unl)
+  name: GameShark 2 - Video Game Enhancer - V 1.0 (USA) (Unl) (v1.1)
   version: '1.1'
 - hashes:
   - md5: ca1d586d884c8bb3c9ed25f867d89636
@@ -62125,7 +62122,7 @@
 - hashes:
   - md5: ad3e1bc8582d5fea1b7d1d6121c02361
     size: 1998258176
-  name: Monster Farm 4 (Japan)
+  name: Monster Farm 4 (Japan) (v1.01)
   serial: SLPS-73423
   version: '1.01'
 - hashes:
@@ -62179,12 +62176,12 @@
 - hashes:
   - md5: 276e3d8fab33a997800d5846fecb1ddf
     size: 761692848
-  name: GameShark 2 V2 - Video Game Enhancer (USA) (Unl)
+  name: GameShark 2 V2 - Video Game Enhancer (USA) (Unl) (v1.99d)
   version: 1.99d
 - hashes:
   - md5: 77f1e2c63d71a4c263a58a3a8df5788d
     size: 618830016
-  name: Dark Angel - Vampire Apocalypse (USA)
+  name: Dark Angel - Vampire Apocalypse (USA) (v2.01)
   serial: SLUS-20131
   version: '2.01'
 - hashes:
@@ -62268,6 +62265,7 @@
   - md5: e95ac909d47574c4b3b48f994aff44f8
     size: 2236481536
   name: Nickelodeon SpongeBob SquarePants - Battle for Bikini Bottom (Europe, Australia)
+    (v1.01)
   serial: SLES-51968
   version: '1.01'
 - hashes:
@@ -62430,7 +62428,7 @@
 - hashes:
   - md5: 1444de1b098af281539c69ba8b412495
     size: 761692848
-  name: GameShark 2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl)
+  name: GameShark 2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl) (v2.00)
   version: '2.00'
 - hashes:
   - md5: df990bfac2fa78b891bd63974a5f3fda
@@ -62544,7 +62542,7 @@
   - md5: 0fd004b572b0f3c06fa665a8d0cc3a23
     size: 1616576512
   name: Sly Cooper - Jeonseolui Bibeobseoreul Chajaseo (Korea)
-  serial: SCKA-20030
+  serial: SCKA-20004
   version: '1.00'
 - hashes:
   - md5: 9054ff3a7fef52b7068ae8dfcc84355a
@@ -62618,7 +62616,7 @@
 - hashes:
   - md5: 8109615aa8dbf8ecc978a9de23ab87c6
     size: 32810400
-  name: GameShark 2 - Video Game Enhancer (USA) (Unl)
+  name: GameShark 2 - Video Game Enhancer (USA) (Unl) (v1.7)
   version: '1.7'
 - hashes:
   - md5: 51b9e68481047344c4f1f183da60fc22
@@ -62629,7 +62627,7 @@
 - hashes:
   - md5: 18ae950098f885629c91e87e4d4da353
     size: 761692848
-  name: GameShark 2 V2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl)
+  name: GameShark 2 V2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl) (v2.12)
   version: '2.12'
 - hashes:
   - md5: cf8579016c4d7b99e98ef63256294ccf
@@ -62710,28 +62708,28 @@
 - hashes:
   - md5: d51efc533365cfdc1e2d93841f09e12b
     size: 761692848
-  name: GameShark 2 - Video Game Enhancer (USA) (Unl)
+  name: GameShark 2 - Video Game Enhancer (USA) (Unl) (v1.91)
   version: '1.91'
 - hashes:
   - md5: 92411306fcb1da3bb354380a5b2c9c5d
     size: 761692848
-  name: GameShark 2 V2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl)
+  name: GameShark 2 V2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl) (v2.03)
   version: '2.03'
 - hashes:
   - md5: 8604cf4349b2e606514f2b15e1a415ac
     size: 761692848
-  name: GameShark 2 - Video Game Enhancer (USA) (Unl)
+  name: GameShark 2 - Video Game Enhancer (USA) (Unl) (v1.99c)
   version: 1.99c
 - hashes:
   - md5: 84d424945f7d3613904a52dcb1fdb880
     size: 761692848
-  name: Action Replay Ultimate Codes for Use with Grand Theft Auto - Vice City (USA)
-    (Unl)
+  name: 'Action Replay Ultimate Codes for Use with Grand Theft Auto - Vice City (USA)
+    (Unl) '
   version: Rev 1
 - hashes:
   - md5: aab58f54c7fd3cbe34b1fbc1107064cf
     size: 2235432960
-  name: Call of Duty - Finest Hour (USA)
+  name: Call of Duty - Finest Hour (USA) (v2.02)
   serial: SLUS-20725
   version: '2.02'
 - hashes:
@@ -62749,7 +62747,7 @@
 - hashes:
   - md5: 60c3285ea88451950dae56487d0e1005
     size: 761692848
-  name: GameShark 2 V2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl)
+  name: GameShark 2 V2 - Video Game Enhancer (USA) (En,Fr,Es,Pt) (Unl) (v2.20)
   version: '2.20'
 - hashes:
   - md5: 134c18bd9dabac89e11b3d27107b6b80
@@ -62936,7 +62934,7 @@
 - hashes:
   - md5: 5b6a0ca5f162349f4a180bc4dd342871
     size: 1583906816
-  name: Gitadora! GuitarFreaks 4th Mix & DrumMania 3rd Mix (Japan)
+  name: Gitadora! GuitarFreaks 4th Mix & DrumMania 3rd Mix (Japan) (v2.00)
   serial: SLPM-65052
   version: '2.00'
 - hashes:
@@ -63002,7 +63000,7 @@
 - hashes:
   - md5: f577240d72d9cfd317fc47ff2d6e5f2b
     size: 4478763008
-  name: SingStar '80s (Sweden)
+  name: SingStar '80s (Sweden) (v1.00)
   serial: SCES-53609
   version: '1.00'
 - hashes:
@@ -63032,12 +63030,12 @@
 - hashes:
   - md5: 4efed60f5910246e1dc4e4d4f972455a
     size: 761692848
-  name: StationMaster 02-2002 AR2v2 (Germany) (En,De) (Unl)
+  name: StationMaster 2-2002 AR2v2 (Germany) (En,De) (Unl)
   version: '1.2'
 - hashes:
   - md5: 9ddbdf9d77a7cf8ae3e5e5e11b521985
     size: 761692848
-  name: StationMaster 03-2002 AR2v2 (Germany) (En,De) (Unl)
+  name: StationMaster 3-2002 AR2v2 (Germany) (En,De) (Unl)
   version: '1.1'
 - hashes:
   - md5: d4bfcae2d842e8d6d76e55118ad172a6
@@ -63059,7 +63057,7 @@
 - hashes:
   - md5: 6e03af5873c30e418021553a8832ca42
     size: 5314478080
-  name: Gran Turismo 4 (USA)
+  name: Gran Turismo 4 (USA) (v2.00)
   serial: SCUS-90682
   version: '2.00'
 - hashes:
@@ -63526,7 +63524,7 @@
 - hashes:
   - md5: a85c40acf648340933004d95671e75a0
     size: 1858371584
-  name: Hanakisou (Japan)
+  name: Hanakisou (Japan) (v2.01)
   serial: SLPM-66471
   version: '2.01'
 - hashes:
@@ -63829,7 +63827,7 @@
 - hashes:
   - md5: 70c564ca30310fc5cd0032ffb3d83cce
     size: 4312006656
-  name: Pro Yakyuu - Netsu Star 2007 (Japan)
+  name: Pro Yakyuu - Netsusta 2007 (Japan)
   serial: SLPS-25769
   version: '1.01'
 - hashes:
@@ -64156,7 +64154,7 @@
 - hashes:
   - md5: 819d582a18f6fbab39ce61d6398d3c71
     size: 761692848
-  name: GameShark 2 - Video Game Enhancer (USA) (Unl)
+  name: GameShark 2 - Video Game Enhancer (USA) (Unl) (v1.8)
   version: '1.8'
 - hashes:
   - md5: 6987913161eb5c121cba8a51a8ff3fac
@@ -64173,7 +64171,7 @@
 - hashes:
   - md5: 1574cc59a04313264bcaf0d847cebbf4
     size: 761692848
-  name: SharkPort - Code and Save Transfer Kit (USA) (Unl)
+  name: SharkPort - Code and Save Transfer Kit (USA) (Unl) (v1.23)
   version: '1.23'
 - hashes:
   - md5: 7f02d646f9e9480b36c1aaf5368f717a
@@ -64321,13 +64319,13 @@
 - hashes:
   - md5: c17d91b5b8c54052de0e70d955ac3a62
     size: 169979040
-  name: Maximo (Australia) (Demo)
+  name: Maximo (Europe, Australia) (Demo)
   serial: SLED-50762
   version: '1.01'
 - hashes:
   - md5: 86463dff7992a549c3f1aa628494f028
     size: 262346784
-  name: Kuma Uta (Japan)
+  name: Kuma Uta (Japan) (v1.01)
   serial: SCPS-11031
   version: '1.01'
 - hashes:
@@ -64542,7 +64540,7 @@
 - hashes:
   - md5: 674552415c8e2e14b4b434e069d81674
     size: 469929600
-  name: PlayStation BB Navigator - Version 0.10 (Prerelease) (Japan) (Disc 2)
+  name: PlayStation BB Navigator - Version 0.10 (Prerelease) (Japan) (Disc 2) (SCPN-60110)
   serial: SCPN-60110
 - hashes:
   - md5: 566f62d61285d1532b8a0b0bf583572b
@@ -65048,7 +65046,7 @@
   - md5: 004a7d761400ed6f1ec33989092aa3f9
     size: 147331632
   name: Saikyou Toudai Shougi 3 (Japan)
-  serial: SLPS-20237
+  serial: SLPS-20082
   version: '1.04'
 - hashes:
   - md5: 66123c890d76f648713fc2dbf0c42414
@@ -65193,7 +65191,7 @@
 - hashes:
   - md5: db2b0c7d46e7f4bb9017dd8a5dc356ba
     size: 1420460032
-  name: Winning Post 7 Maximum 2007 (Japan)
+  name: Winning Post 7 Maximum 2007 (Japan) (v2.00)
   serial: SLPM-66702
   version: '2.00'
 - hashes:
@@ -65235,7 +65233,7 @@
 - hashes:
   - md5: 41611e79dcf10bde51a9ab12d2210c9a
     size: 4243259392
-  name: Dokapon the World (Japan)
+  name: Dokapon the World (Japan) (v2.00)
   serial: SLPM-65750
   version: '2.00'
 - hashes:
@@ -65519,7 +65517,7 @@
 - hashes:
   - md5: ba1e9fa9d6744c9aff220bef7361f134
     size: 3170304000
-  name: Ponkotsu Roman Daikatsugeki - Bumpy Trot (Japan)
+  name: Ponkotsu Roman Daikatsugeki - Bumpy Trot (Japan) (v1.04)
   serial: SLPS-25457
   version: '1.04'
 - hashes:
@@ -65761,8 +65759,8 @@
 - hashes:
   - md5: 84af7e5547813f9ef1b6176c5e6d48d6
     size: 3840638976
-  name: K-1 World GP 2006 (Japan)
-  serial: SLPS-25710
+  name: K-1 World GP 2006 (Japan, Korea)
+  serial: SCKA-20092
   version: '1.02'
 - hashes:
   - md5: 53e8325a63ff7ee1bc942f1f24cd2371
@@ -65972,6 +65970,7 @@
     size: 3768811520
   name: Gran Turismo - Subaru Driving Simulator Version (Japan)
   serial: PCPX-96634
+  version: '1.00'
 - hashes:
   - md5: 73451f989c6dc44d6da4b58b26d7cb79
     size: 723268224
@@ -66287,9 +66286,15 @@
 - hashes:
   - md5: 5b922b2c4316cf273c71cdbf6ea63d67
     size: 1976696832
-  name: LMA Manager 2005 (Europe)
+  name: LMA Manager 2005 (Europe) (SLES-53149)
   serial: SLES-53149
   version: '1.00'
+- hashes:
+  - md5: d979220c6c939f113728cbb0282d8b52
+    size: 33859392
+  name: Karat PS2-you Pro Action Replay PS2-you PAR (Japan) (Unl) (v1.7)
+  serial: KRT-005
+  version: '1.7'
 - hashes:
   - md5: 218bece4af99e9ac448684f96b513013
     size: 4565762048
@@ -66329,7 +66334,7 @@
 - hashes:
   - md5: 06279ba4d1b4b8f9d6a4a5db5dc39dd4
     size: 12853680
-  name: EGBrowser (Japan)
+  name: EGBrowser (Japan) (v1.16)
   serial: SLPM-62111
   version: '1.16'
 - hashes:
@@ -66361,6 +66366,7 @@
     size: 3477733376
   name: Gran Turismo 4 - Lupo Cup Training Version (Japan)
   serial: PAPX-90508
+  version: '1.01'
 - hashes:
   - md5: 9ff896d1b39b7c6076d1f82d7b545db4
     size: 3288498176
@@ -66645,7 +66651,7 @@
 - hashes:
   - md5: 121fdef8c286e52c5f5750c10ce21703
     size: 2760802304
-  name: Ferrari Challenge - Trofeo Pirelli (Europe) (En,Fr,De,Es,It)
+  name: Ferrari Challenge - Trofeo Pirelli (Europe) (En,Fr,De,Es,It) (v2.00)
   serial: SLES-55294
   version: '2.00'
 - hashes:
@@ -66695,7 +66701,7 @@
 - hashes:
   - md5: a7c99a3fd263ecb3c0c09305cc1c5aa1
     size: 4601118720
-  name: Dark Chronicle (Japan)
+  name: Dark Chronicle (Japan) (v2.01)
   serial: SCPS-19306
   version: '2.01'
 - hashes:
@@ -66761,19 +66767,19 @@
 - hashes:
   - md5: 346094aa1a59ff2cd643382985458577
     size: 457518096
-  name: PrintFan (Japan)
+  name: PrintFan (Japan) (v2.00)
   serial: SLPM-62025
   version: '2.00'
 - hashes:
   - md5: fce4fc8a95ff3d625cf90f9956370dc3
     size: 4095836160
-  name: Densha de Go! Professional 2 (Japan)
+  name: Densha de Go! Professional 2 (Japan) (v1.02)
   serial: SLPM-65243
   version: '1.02'
 - hashes:
   - md5: 977ac151118482ddf084ab1ee473ac21
     size: 1420460032
-  name: Winning Post 7 Maximum 2007 (Japan)
+  name: Winning Post 7 Maximum 2007 (Japan) (v1.01)
   serial: SLPM-66702
   version: '1.01'
 - hashes:
@@ -66803,7 +66809,7 @@
 - hashes:
   - md5: 857ed766c3fc8227704d1f64a6465f22
     size: 761692848
-  name: Karat PS2-you PAR2 Pro Action Replay 2 Taikenban (Japan) (Unl)
+  name: Karat PS2-you PAR2 Pro Action Replay 2 Taikenban (Japan) (Unl) (v2.21)
   version: '2.21'
 - hashes:
   - md5: fc92807625e8fdf988085a77e4e95f87
@@ -66838,7 +66844,7 @@
 - hashes:
   - md5: 7e59221e8f20dd3cfbbd8aeaf8c90c14
     size: 711237744
-  name: Phantom Brave - 2-shuume Hajimemashita. (Japan)
+  name: Phantom Brave - 2-shuume Hajimemashita. (Japan) (v1.00)
   serial: SLPS-73108
   version: '1.00'
 - hashes:
@@ -67234,7 +67240,7 @@
 - hashes:
   - md5: e465be509f7608e428c006cd8dc31308
     size: 761692848
-  name: Action Replay - Lite Version (UK) (Unl)
+  name: Action Replay - Lite Version (UK) (Unl) (02100902)
   version: '1.30'
 - hashes:
   - md5: e70165ac94568c63497651bc3bf658c8
@@ -67472,13 +67478,13 @@
 - hashes:
   - md5: 9b06f86ad2adafc03b6afd52ee180d66
     size: 653606688
-  name: Mahjong Taikai III - Millennium League (Japan)
+  name: Mahjong Taikai III - Millennium League (Japan) (v1.30)
   serial: SLPM-62191
   version: '1.30'
 - hashes:
   - md5: a8877badbf7bf70c71f57e7ac6898d3c
     size: 1362231296
-  name: Winning Post 7 (Japan)
+  name: Winning Post 7 (Japan) (v1.00)
   serial: SLPM-66811
   version: '1.00'
 - hashes:
@@ -67490,7 +67496,7 @@
 - hashes:
   - md5: 277defd81c31077a961992a76534cdab
     size: 1858371584
-  name: Hanakisou (Japan)
+  name: Hanakisou (Japan) (v1.01)
   serial: SLPM-66471
   version: '1.01'
 - hashes:
@@ -67854,7 +67860,7 @@
 - hashes:
   - md5: 2ccb78e904c90c41f5ce221bcc93c8de
     size: 718702992
-  name: Playable Cheats Vol. 21 (UK) (Unl) (04081101)
+  name: Playable Cheats Vol. 21 (UK, Australia) (Unl) (04081101)
   version: 1.00 (European)
 - hashes:
   - md5: 3fa7842bbe16d6726b46b62f87500f62
@@ -67889,7 +67895,7 @@
 - hashes:
   - md5: cdde1d64ac5ac120fbb6bb41b7411933
     size: 761692848
-  name: Action Replay Ultimate Cheats Fast & Furious (Europe) (Unl)
+  name: Action Replay Ultimate Cheats Fast & Furious (UK) (Unl)
   version: FAST_FU EUROPE
 - hashes:
   - md5: f74e740357ed83cfe7c5e2971cf0c1e2
@@ -67935,7 +67941,7 @@
   name: P2 Cheats - Volume 19 (UK) (Unl)
   version: 1.00 beta (European)
 - hashes:
-  - md5: 5202aeb8bfa1d040e88db89b15b0c7a4
+  - md5: f892cb33ef6911fab8ff2640cf0cefa0
     size: 718702992
   name: PSi2 15 (Germany) (Unl)
   version: 1.00 (European)
@@ -68023,7 +68029,7 @@
 - hashes:
   - md5: 5af1aba9170e773f5fa3d785224753ca
     size: 592642048
-  name: Jonny Moseley Mad Trix (Europe) (DVD Preview)
+  name: Jonny Moseley Mad Trix (Europe) (Beta) (2001-12-17)
   serial: SLES-50362
   version: '1.00'
 - hashes:
@@ -68277,7 +68283,7 @@
 - hashes:
   - md5: e9c1c2538af3ddff87f8e3fadd15e504
     size: 4362469376
-  name: Neo Atlas III (Japan)
+  name: Neo Atlas III (Japan) (v1.00)
   serial: SLPS-25016
   version: '1.00'
 - hashes:
@@ -68301,12 +68307,12 @@
 - hashes:
   - md5: a51ca5aca433700bcdef118772d52624
     size: 718702992
-  name: GameShark 2 - Video Game Enhancer (USA) (Unl)
+  name: GameShark 2 - Video Game Enhancer (USA) (Unl) (v1.2)
   version: '1.2'
 - hashes:
   - md5: ab659235456ff67be77714eb8c34f892
     size: 4453662720
-  name: WWE SmackDown vs. Raw 2007 (USA)
+  name: WWE SmackDown vs. Raw 2007 (USA) (v2.01)
   serial: SLUS-21427
   version: '2.01'
 - hashes:
@@ -68353,7 +68359,7 @@
 - hashes:
   - md5: f063b1563d194a82fc5f5669c4676ac7
     size: 761692848
-  name: GameShark 2 - Video Game Enhancer - Version 2 Lite (USA)
+  name: GameShark 2 - Video Game Enhancer - Version 2 Lite (USA) (Unl)
   version: '2.13'
 - hashes:
   - md5: 4da29291047492ee17e1e3e9fcff58d1
@@ -68364,7 +68370,7 @@
 - hashes:
   - md5: 2e05c350ae460e2388a9f5a06552a917
     size: 761692848
-  name: Action Replay Ultimate Cheats for WWF SmackDown! Just Bring It (Europe) (Unl)
+  name: Action Replay Ultimate Cheats for WWF SmackDown! Just Bring It (UK) (Unl)
   version: '1.2'
 - hashes:
   - md5: a5960170dfae5748751833ca58aa4f2c
@@ -68715,3 +68721,623 @@
   name: RedCard (Europe) (Demo)
   serial: SLED-50931
   version: '1.00'
+- hashes:
+  - md5: 3543dbe7f0badee6eb93eeb399abc79f
+    size: 761692848
+  name: Action Replay - Lite Version (UK) (Unl) (02122301)
+  version: PLAYTV_03 EUROPE
+- hashes:
+  - md5: 0f84fc3ee4dd86ced9f0462fdfbaa271
+    size: 761692848
+  name: Xtreme Cheats (UK) (Unl) (02112901)
+  version: DIXONS 01 EUROPE
+- hashes:
+  - md5: 1dce0a29590af1c98bea097697daf577
+    size: 3134357504
+  name: 2002 FIFA World Cup (Asia)
+  serial: SLPM-65099
+  version: '1.00'
+- hashes:
+  - md5: 9b7e6b19313f3f9bf1decc68d42bddc3
+    size: 718702992
+  name: Cyber PS2-you Pro Action Replay 3 (Japan) (Unl) (v3.33)
+  version: 3.33 (Japanese)
+- hashes:
+  - md5: 369bb32086e7977fcdd0f285f6f12239
+    size: 1262387200
+  name: Ratchet & Clank 2 (Europe) (En,Fr,De,Es,It) (Demo)
+  serial: SCED-51878
+  version: '1.00'
+- hashes:
+  - md5: b2a4acdd9248369b87b4375f38fa831a
+    size: 2831319040
+  name: Sly Cooper 2 - Goedo Brothers Daejakjeon! (Korea)
+  serial: SCKA-20044
+  version: '1.01'
+- hashes:
+  - md5: 24d6566db6f522f2e78c0eaf593dd66c
+    size: 3507421184
+  name: Sly Cooper 3 - Choehu-ui Daedo (Korea)
+  serial: SCKA-20063
+  version: '1.00'
+- hashes:
+  - md5: 4d21c43bc97bdd83cb7583491612a53e
+    size: 761692848
+  name: Karat PS2-you Pro Action Replay 2 (Japan) (Unl) (v2.25)
+  version: 2.25 JAPAN
+- hashes:
+  - md5: 649a3b03008e36f6efc7548b89a9607a
+    size: 646524816
+  name: CodeBreaker (USA) (Unl) (v9.3)
+  version: '9.3'
+- hashes:
+  - md5: 9042831ec817b742ec951089843bd1ec
+    size: 2882240512
+  name: Blazing Souls (Korea)
+  serial: SLKA-25384
+  version: '1.01'
+- hashes:
+  - md5: 5961d4db40dfeab9ed31d068298fdd3f
+    size: 4676583424
+  name: Crimson Sea 2 (Korea)
+  serial: SLKA-25155
+  version: '1.00'
+- hashes:
+  - md5: 979352022ea70e6ab30e06e9e31a06da
+    size: 3223126016
+  name: Mobile Suit Gundam - Lost War Chronicles (Korea)
+  serial: SLKA-25035
+  version: '1.00'
+- hashes:
+  - md5: 4cfeaf8f46dd2b25ae0b47f2b4b0557f
+    size: 1440382976
+  name: One Piece - Grand Adventure (Korea)
+  serial: SLKA-25388
+  version: '1.00'
+- hashes:
+  - md5: f53b1e45f58c32d0caf1bf000728dfce
+    size: 1388249088
+  name: Real Bass Fishing - Top Angler (Korea)
+  serial: SLKA-25034
+  version: '1.02'
+- hashes:
+  - md5: d5e6d2a96d680b81a70a03e7f6b967e2
+    size: 3444375552
+  name: Rumble Roses (Korea)
+  serial: SLKA-25234
+  version: '1.01'
+- hashes:
+  - md5: b109eb3b6982d3bfeef8551f224e1bc3
+    size: 3289645056
+  name: Samurai Champloo (Korea)
+  serial: SLKA-25360
+  version: '1.00'
+- hashes:
+  - md5: a0bb369cab7ec114f072390d9752c522
+    size: 330740592
+  name: WinBack (Korea)
+  serial: SLPM-64502
+  version: '1.01'
+- hashes:
+  - md5: df02a031a5cd37500218419f77913d22
+    size: 750130416
+  name: Medio Digital Media Player (Europe) (Unl)
+  version: 2.2.0.146
+- hashes:
+  - md5: bf5e245371284bf6461ce51cd378bcd2
+    size: 1231945728
+  name: DJ - Decks & FX - Live Session - Privilege Maxiclubbing Edition (Spain) (Demo)
+  serial: SCED-52881
+  version: '1.00'
+- hashes:
+  - md5: 1cafc369643a9ca91fb7fc19b627270a
+    size: 3911745536
+  name: Batman - Rise of Sin Tzu (Korea)
+  serial: SLKA-25102
+  version: '1.01'
+- hashes:
+  - md5: e6a986805ab710b3686309dc93c915e0
+    size: 4683268096
+  name: NBA Live 08 (Korea)
+  serial: SLKA-25404
+  version: '1.00'
+- hashes:
+  - md5: 4269db0069214f0496b9d3a3bd8ea269
+    size: 1439137792
+  name: Neo Contra (Korea)
+  serial: SLKA-25227
+  version: '1.00'
+- hashes:
+  - md5: 1e8ea02c1e90295d9cc589a104cd8ade
+    size: 1750499328
+  name: Disney's Chicken Little (Korea)
+  serial: SLKA-25345
+  version: '1.00'
+- hashes:
+  - md5: 2fb950a8fe1bae24cc62e09e51526c37
+    size: 5573115904
+  name: Gran Turismo 4 (Europe) (Beta) (2005-01-18)
+  serial: SCES-51719
+- hashes:
+  - md5: fc5904cdf8c55e89de1191a326ed9ae1
+    size: 761692848
+  name: CD avec les Codes Exclusifs et Inedits de Grand Theft Auto - Vice City (France)
+    (Unl)
+  version: '1.30'
+- hashes:
+  - md5: d6a4fd6ef12b96cc44dca7ab1942e83a
+    size: 408450672
+  name: Simple 2000 Series - The Suyeongdaehoe (Korea)
+  serial: SLKA-15042
+  version: '1.01'
+- hashes:
+  - md5: a764f486a7fb5177b2341944be8a0908
+    size: 718702992
+  name: Playable Cheats Vol. 3 (Australia) (Unl)
+  version: 1.00 (European)
+- hashes:
+  - md5: 24a2994de2c6250fb043eeb74da42163
+    size: 718702992
+  name: Playable Cheats Vol. 4 (Australia) (Unl)
+  version: 1.00 (European)
+- hashes:
+  - md5: c4a226e576453610d68e0d51a0bd590e
+    size: 761692848
+  name: Action Replay Ultimate Cheats for Metal Gear Solid 2 (UK) (Unl)
+  version: '1.1'
+- hashes:
+  - md5: c54c7c984cbb23cafe003f32c6ad000b
+    size: 3366912000
+  name: Energy Airforce - Aim Strike! (Korea)
+  serial: SLKA-25181
+  version: '1.03'
+- hashes:
+  - md5: e78bbeb2bdd1042ce29ef5f8fc9c1a65
+    size: 3937730560
+  name: Natural 2 - Duo - Sakura-iro no Kisetsu (Japan) (DX Pack)
+  serial: SLPM-65771
+  version: '1.01'
+- hashes:
+  - md5: 57ced25b4846ba4c505f8e5f88fe536c
+    size: 1583185920
+  name: Shuffle! On the Stage (Japan) (DX Pack)
+  serial: SLPM-66133
+  version: '1.01'
+- hashes:
+  - md5: 91fe0a5262fdebf6b71f1cc625e81435
+    size: 3353640960
+  name: EyeToy - Kinetic (Europe) (En,Fr,De,Es,It,Pt,No) (Beta) (2005-07-05)
+  serial: SCES-52883
+  version: '1.00'
+- hashes:
+  - md5: 91f131976528cf905446f26d15f58ee3
+    size: 1437204480
+  name: Enthusia - Professional Racing (Italy) (Demo)
+  serial: SLED-53337
+  version: '1.00'
+- hashes:
+  - md5: 25db496631ac4c9cf6a8bf0a1e504590
+    size: 3504799744
+  name: Area 51 (Europe) (En,Fr,De,Es,It) (v2.00)
+  serial: SLES-52570
+  version: '2.00'
+- hashes:
+  - md5: 40b725064af65cdb40c9da26a04b09a0
+    size: 761692848
+  name: GameShark 2 - Video Game Enhancer (USA) (Unl) (v1.9)
+  version: '1.9'
+- hashes:
+  - md5: c99ba3f41aebf748e3e445680c3ed45d
+    size: 761692848
+  name: Xtreme Cheats - Volume 02 (UK) (Unl)
+  version: '1.1'
+- hashes:
+  - md5: fa52e90638ded42c206a3ad5e12b76a0
+    size: 718702992
+  name: PlayStation 2 Cheats - Volume 11 (UK) (Unl)
+- hashes:
+  - md5: a7d5efba3aa31d3d2b9e264673dd9f46
+    size: 718702992
+  name: PlayStation 2 Cheats - Volume 13 (UK) (Unl)
+  version: 1.00 beta (European)
+- hashes:
+  - md5: a2fc048c324333e04ead4cf73fe60df0
+    size: 718702992
+  name: Action Replay Ultimate Cheats for Use with Medal Of Honor - Rising Sun (UK)
+    (Unl)
+  version: 1.00 (European)
+- hashes:
+  - md5: 783e1a31ec3151298cbb3b170dd4d481
+    size: 761692848
+  name: Action Replay Ultimate Cheats for Tony Hawk's Pro Skater 3 (UK) (Unl)
+  version: '1.2'
+- hashes:
+  - md5: 27665bb0058def8c08787f0ba817cddf
+    size: 761692848
+  name: Xtreme Cheats - Volume 01 (UK) (Unl)
+  version: '1.30'
+- hashes:
+  - md5: 6fd777593454211c4b0a6b1b8961c2a9
+    size: 718702992
+  name: Action Replay Red Hot Codes for Use with Burnout 3 (UK) (Unl)
+- hashes:
+  - md5: 7d9041d61dc878b531398d318b85bf7f
+    size: 718702992
+  name: Action Replay Ultimate Cheats for Use with Prince Of Persia - The Sands Of
+    Time (UK) (Unl)
+  version: 1.00 (European)
+- hashes:
+  - md5: 7c1423ec92c080b6149585bc1b741f84
+    size: 761692848
+  name: Action Replay Ultimate Cheats for Use with The Lord of the Rings - The Two
+    Towers (UK) (Unl)
+  version: '1.30'
+- hashes:
+  - md5: 51dfeae0350dc7a67a18b24ad1432fb6
+    size: 761692848
+  name: Action Replay Ultimate Cheats for Use with Soul Calibur II (UK) (Unl)
+  version: 1.00 (European)
+- hashes:
+  - md5: 1f2ba6e270df0e987f7470f2a3281cdc
+    size: 761692848
+  name: Action Replay Ultimate Cheats for Grand Theft Auto III (UK) (Unl)
+  version: '14'
+- hashes:
+  - md5: c5c1698cab947ebe7ad5cdc5bd37f5ea
+    size: 761692848
+  name: Action Replay Ultimate Cheats for Use with Stuntman (UK) (Unl)
+  version: '1.30'
+- hashes:
+  - md5: b15e2a58875a0f2b92f5264487cdace9
+    size: 1292894208
+  name: Bloody Roar 4 (Korea)
+  serial: SLKA-25130
+  version: '1.00'
+- hashes:
+  - md5: 379ac355ae145eb1d047a9a72445018c
+    size: 4140924928
+  name: Urban Reign (Korea)
+  serial: SCKA-20065
+  version: '1.00'
+- hashes:
+  - md5: 25ad097ef92e275e0fe091154c9d0079
+    size: 731740128
+  name: Choeyugi Reload Gunlock (Korea)
+  serial: SLKA-15035
+  version: '1.01'
+- hashes:
+  - md5: 80e81ef7351286fbfa6cee754265fff0
+    size: 141270528
+  name: Tengai Premium Package (Korea)
+  serial: SLKA-15037
+  version: '1.00'
+- hashes:
+  - md5: 34edce098483358beed5e1709f930f27
+    size: 718627728
+  name: Geunyukman Generations (Korea)
+  serial: SLKA-15034
+  version: '1.01'
+- hashes:
+  - md5: 49eeaa5bec61ffcc4729acf3e8b969ac
+    size: 1385562112
+  name: Metal Slug 4 (Korea)
+  serial: SLKA-25287
+  version: '1.01'
+- hashes:
+  - md5: bffe1559f84e97dbfb1513d09d8c0b05
+    size: 1421377536
+  name: Metal Slug 5 (Korea)
+  serial: SLKA-25288
+  version: '1.01'
+- hashes:
+  - md5: 5cc540f2eda81e78e55eba1ffda0cd2a
+    size: 1287159808
+  name: Monster House (Korea)
+  serial: SCKA-20084
+  version: '1.00'
+- hashes:
+  - md5: c5627016f37c03a59600d50881cee597
+    size: 3613425664
+  name: NHL 2003 (Korea)
+  serial: SLPM-67530
+  version: '1.01'
+- hashes:
+  - md5: 1319bdbfc474d06009eb68be06ee8558
+    size: 4244504576
+  name: Pump It Up - Exceed (Korea) (En,Ko)
+  serial: SLKA-25176
+  version: '1.00'
+- hashes:
+  - md5: e38450c27207919459ee2a897ef29494
+    size: 222724096
+  name: Capcom vs. SNK 2 - Mark of the Millennium 2001 (Korea)
+  serial: SLPM-67517
+  version: '1.01'
+- hashes:
+  - md5: 6a7b777295e33ac2c2af4686fbd7a2b0
+    size: 3694231552
+  name: Chains of Power (Korea)
+  serial: SLKA-25291
+  version: '1.00'
+- hashes:
+  - md5: 534000a35cb2f387a07d59f95f99fc4c
+    size: 4166582272
+  name: Death by Degrees - Tekken - Nina (Korea)
+  serial: SCKA-20039
+  version: '1.00'
+- hashes:
+  - md5: 709a743b3cc3abd7bde9b5a079007356
+    size: 840105984
+  name: Disney's Tarzan - Untamed (Korea) (En,Fr)
+  serial: SLPM-67520
+  version: '1.00'
+- hashes:
+  - md5: 9c64e316b2fbdb90a374b8c714666c58
+    size: 2360999936
+  name: Evil Dead - Regeneration (Korea)
+  serial: SLKA-25306
+  version: '1.00'
+- hashes:
+  - md5: 42670adf6a3097f9e27170cd0be10acc
+    size: 4698734592
+  name: FIFA 11 (Korea) (En,Fr,Es)
+  serial: SLKA-25475
+  version: '1.00'
+- hashes:
+  - md5: 52155c46a82fd309bb8979b3b94277ca
+    size: 3867377664
+  name: Prince of Persia - Warrior Within (Korea) (En,Fr,Es)
+  serial: SLKA-25247
+  version: '1.00'
+- hashes:
+  - md5: 2263950c1586b3bafe82cd1b7bd11b69
+    size: 3269066752
+  name: Street Fighter Anniversary Collection (Korea) (En,Ja)
+  serial: SLKA-25183
+  version: '1.00'
+- hashes:
+  - md5: 0abd9ab7ddd39b484d6c6165db3cac99
+    size: 4584767488
+  name: Yonggwa Gachi 2 (Korea) (Disc 1)
+  serial: SLKA-25280
+  version: '1.00'
+- hashes:
+  - md5: cc06c64fdfae762bb10836e9f2da56ed
+    size: 4501766144
+  name: Yonggwa Gachi 2 (Korea) (Disc 2)
+  serial: SLKA-25281
+  version: '1.00'
+- hashes:
+  - md5: 42a6f41d046be7d8e88901b3928cf792
+    size: 3723558912
+  name: Ikki Tousen - Shining Dragon (Japan) (Gentei Bakuretsu Pack)
+  serial: SLPS-25797
+  version: '1.01'
+- hashes:
+  - md5: 5d86c28562ca715de28d316af0a52e7a
+    size: 133165536
+  name: Ikki Tousen! Sekiheki Daitobibako Enbu (Japan)
+  serial: SLPS-20498
+  version: '1.01'
+- hashes:
+  - md5: d3fa01ee25187c64e4761ac962b03657
+    size: 4438327296
+  name: Dark Cloud 2 (USA) (Beta) (2003-01-06)
+  version: '1.00'
+- hashes:
+  - md5: 2d884a6975537044c8bb9abc9d857c13
+    size: 761692848
+  name: Mega Memory (USA) (Unl) (Version 2.21)
+  version: '2.21'
+- hashes:
+  - md5: 6f6837053d32f03f656811c3224c85de
+    size: 1854668800
+  name: DreamWorks Bee Movie Game (USA, Canada) (En,Fr)
+  serial: SLUS-21695
+  version: '1.01'
+- hashes:
+  - md5: 946cc183cd5ba1356e3ba74ccd512300
+    size: 761692848
+  name: Memory Manager Plus (USA) (Unl) (Version 2.10)
+  version: '2.10'
+- hashes:
+  - md5: 6a017d49786ea50300499f5d074a36d5
+    size: 4357783552
+  name: SingStar Mallorca Party (Germany) (v2.00)
+  serial: SCES-55489
+  version: '2.00'
+- hashes:
+  - md5: 40e97584fd9ad34bf4aca6520834f5bf
+    size: 1250983936
+  name: Mononoke Imullok (Korea)
+  serial: SLKA-25123
+  version: '1.02'
+- hashes:
+  - md5: 62a895e2d9a5d658853e9c2798a361cb
+    size: 495373536
+  name: F1 Career Challenge (Korea) (En,Fr,De)
+  serial: SLKA-15019
+  version: '1.00'
+- hashes:
+  - md5: a6152fb9f7ee689adb69ef36b0ab03b1
+    size: 3945037824
+  name: WWE SmackDown vs. Raw 2010 (Korea)
+  serial: SLKA-25463
+  version: '1.00'
+- hashes:
+  - md5: fd7521760bb53e41749daa02e177e32a
+    size: 4194926592
+  name: UEFA Champions League 2004-2005 (Europe) (Demo)
+  serial: SLED-53085
+  version: '1.00'
+- hashes:
+  - md5: 652ec663d6e576950a8b5e1b0f6029da
+    size: 751993200
+  name: PS2 Seizou Kensa DISC3 CD-ROM Ver. 5.40 (EU ban) (Europe)
+  serial: PEPX-10011
+  version: '5.40'
+- hashes:
+  - md5: b1a91a68819d17b6fd3dcc27733b87a7
+    size: 14408352
+  name: Sengoku Musou & Sengoku Musou - Moushouden Saikyou Data (Japan)
+  serial: SLPM-62716
+  version: '1.00'
+- hashes:
+  - md5: 88f8b58f9795184c9b4ba19df9dee1e5
+    size: 761692848
+  name: Karat PS2-you Pro Action Replay PS2-you PAR (Japan) (Unl) (v1.9)
+  serial: KRT-005
+  version: '1.9'
+- hashes:
+  - md5: b81e1a332954fee352945dffac9a23ca
+    size: 3725557760
+  name: Third Plac3, The - Demo 2002 (Europe)
+  serial: SCED-50943
+- hashes:
+  - md5: ffcdb29fd218555e2b377091c000323e
+    size: 2532507648
+  name: Gunparade Orchestra - Midori no Shou - Ookami to Kare no Shounen (Japan) (Genteiban)
+  serial: SCPS-15107
+  version: '1.00'
+- hashes:
+  - md5: 643f2f25d37cdeb37e2fa0f5d6a52e17
+    size: 1385562112
+  name: Hoshi no Furu Toki (Japan) (Genteiban)
+  serial: SLPM-66106
+  version: '1.01'
+- hashes:
+  - md5: d320070d2706931982234d01f01d80f1
+    size: 1423540224
+  name: Itsuka, Todoku, Ano Sora ni. - You no Michi to Hi no Tasogare to (Japan) (Genteiban)
+  serial: SLPM-66857
+  version: '1.01'
+- hashes:
+  - md5: 55aa4f77e464d7049f1b6cb62ee81406
+    size: 2296774656
+  name: Mai-HiME - Unmei no Keitouju (Japan) (DX Pack)
+  serial: SLPS-25507
+  version: '1.01'
+- hashes:
+  - md5: 20765a44124ff87e1913b6896dbceb6c
+    size: 1440612352
+  name: Princess Princess - Hime-tachi no Abunai Houkago (Japan) (Shokai Genteiban)
+  serial: SLPS-25693
+  version: '1.01'
+- hashes:
+  - md5: 817bf960d1f6aabc7a120da2dfba4324
+    size: 3025600512
+  name: Shinten Makai - Generation of Chaos IV (Japan) (Genteiban)
+  serial: SLPM-65571
+  version: '1.02'
+- hashes:
+  - md5: 9fff3826dfb75fe866cc250cdf3cab87
+    size: 33476016
+  name: Action Replay Ultimate Cheats for Metal Gear Solid 2 (France) (Unl)
+  version: '1.3'
+- hashes:
+  - md5: 1ecaa8019eb44cac091cff42e61feb95
+    size: 718702992
+  name: Action Replay Ultimate Cheats fuer Grand Theft Auto - San Andreas (Germany)
+    (Unl)
+  version: 1.00 (European)
+- hashes:
+  - md5: 44e6666c3eab03bcdf598c94e036a207
+    size: 718702992
+  name: Action Replay Ultimate Cheats fuer Metal Gear Solid 3 - Snake Eater (Germany)
+    (Unl)
+  version: 1.00 (European)
+- hashes:
+  - md5: 72dc539006685b7dbae7e284fbae4714
+    size: 1331003392
+  name: GI Jockey 4 2007 (Japan)
+  serial: SLPM-66888
+  version: '1.02'
+- hashes:
+  - md5: 2222e2bf9ecc3de8e5367d16312bc6ed
+    size: 718702992
+  name: Action Replay Max (USA) (US PS2 Memory Utility) (Unl)
+  version: 1.38 (American)
+- hashes:
+  - md5: 57048388a05e378ce3f840bea4d14b11
+    size: 539939232
+  name: U - Underwater Unit (Korea) (Cheheompan)
+  serial: SCKA-90001
+  version: '1.00'
+- hashes:
+  - md5: 0ddc276a235587e731a9f5e8cb544cbc
+    size: 2706472960
+  name: Wild Arms - Advanced 3rd (Japan) (v2.00)
+  serial: SCPS-19323
+  version: '2.00'
+- hashes:
+  - md5: c90ca3ca4175866b689f178eedd0e869
+    size: 1727889408
+  name: Shoujo Yoshitsune-den Ni - Toki o Koeru Chigiri (Japan)
+  serial: SLPM-65989
+  version: '1.02'
+- hashes:
+  - md5: 6905874bbb6167417bac324464d70d28
+    size: 541969008
+  name: Momotarou Dentetsu 15 - Godai Bombee Toujou! no Maki (Japan) (v1.01)
+  serial: SLPM-62702
+  version: '1.01'
+- hashes:
+  - md5: d5b1dfcc11e5a748386127a15f137439
+    size: 4236935168
+  name: Snow (Japan)
+  serial: SLPS-25342
+  version: '1.02'
+- hashes:
+  - md5: e2cac186976db2fb7c9189b53ac7761d
+    size: 3412459520
+  name: We Are- (Japan)
+  serial: SLPM-66449
+  version: '1.00'
+- hashes:
+  - md5: a98adb1cb754d18023be0e692e3700b0
+    size: 4129292288
+  name: ToraCap! Daash!! (Japan)
+  serial: SLPM-65302
+  version: '1.01'
+- hashes:
+  - md5: ae029f3c897ab82f0b77cf5b19824b41
+    size: 3977543680
+  name: Festa!! Hyper Girls Party (Japan)
+  serial: SLPM-66435
+  version: '1.01'
+- hashes:
+  - md5: b3e6519b26467c5b47f6ab1b2df667fd
+    size: 1303314432
+  name: Asobi ni Iku yo! Chikyuu Pinch no Kon'yaku Sengen (Japan)
+  serial: SLPM-66457
+  version: '1.01'
+- hashes:
+  - md5: 1cd12f11508f8a08b095d6001eb121ca
+    size: 1506607104
+  name: Homemaid - Tsui no Yakata (Japan) (Shokai Genteiban)
+  serial: SLPM-65962
+  version: '1.01'
+- hashes:
+  - md5: 32f7504e4912228e9730519852504d4a
+    size: 2605842432
+  name: White Breath - Kizuna (Japan) (Genteiban)
+  serial: SLPM-66606
+  version: '1.01'
+- hashes:
+  - md5: 950783ce0723d41ff7aa46659a6eafbc
+    size: 4492853248
+  name: Magical Tale - Chiicha na Mahoutsukai (Japan) (Shokai Genteiban)
+  serial: SLPM-65964
+  version: '1.01'
+- hashes:
+  - md5: 48ceadd792c053fa4dd460f8450e1c3a
+    size: 821100544
+  name: Kindan no Pet - Seaman - Gasse Hakase no Jikken-tou (Japan)
+  serial: SLPS-25066
+  version: '1.02'
+- hashes:
+  - md5: 656005a5b7ddb5d317e2dc48c62fbe85
+    size: 1562869760
+  name: Quilt - Anata to Tsumugu Yume to Koi no Dress (Japan)
+  serial: SLPM-66735
+  version: '1.02'
