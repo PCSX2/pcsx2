@@ -97,6 +97,7 @@ void GamePatchSettingsWidget::reloadList()
 
 	setUnlabeledPatchesWarningVisibility(number_of_unlabeled_patches > 0);
 	delete m_ui.scrollArea->takeWidget();
+	m_ui.allCRCsCheckbox->setEnabled(!m_dialog->getSerial().empty());
 
 	QWidget* container = new QWidget(m_ui.scrollArea);
 	QVBoxLayout* layout = new QVBoxLayout(container);
