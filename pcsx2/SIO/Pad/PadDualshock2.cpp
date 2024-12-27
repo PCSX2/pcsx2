@@ -145,7 +145,7 @@ void PadDualshock2::ConfigLog()
 	// VS: Vibration Small (how is the small vibration motor mapped)
 	// VL: Vibration Large (how is the large vibration motor mapped)
 	// RB: Response Bytes (what data is included in the controller's responses - D = Digital, A = Analog, P = Pressure)
-	Console.WriteLn(fmt::format("[Pad] DS2 Config Finished - P{0}/S{1} - AL: {2} - AB: {3} - VS: {4} - VL: {5} - RB: {6} (0x{7:08X})",
+	Console.WriteLn(fmt::format("Pad: DS2 Config Finished - P{0}/S{1} - AL: {2} - AB: {3} - VS: {4} - VL: {5} - RB: {6} (0x{7:08X})",
 		port + 1,
 		slot + 1,
 		(this->analogLight ? "On" : "Off"),

@@ -56,7 +56,7 @@ void PadPopn::ConfigLog()
 	// AL: Analog Light (is it turned on right now)
 	// AB: Analog Button (is it useable or is it locked in its current state)
 	// RB: Response Bytes (what data is included in the controller's responses - D = Digital, A = Analog, P = Pressure)
-	Console.WriteLn(fmt::format("[Pad] Pop'n Config Finished - P{0}/S{1} - AL: {2} - AB: {3} - RB: {4} (0x{5:08X})",
+	Console.WriteLn(fmt::format("Pad: Pop'n Config Finished - P{0}/S{1} - AL: {2} - AB: {3} - RB: {4} (0x{5:08X})",
 		port + 1,
 		slot + 1,
 		(this->analogLight ? "On" : "Off"),

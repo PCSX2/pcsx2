@@ -118,7 +118,7 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::
 			if (eeVal >= 0 && eeVal < static_cast<int>(FPRoundMode::MaxCount))
 				gameEntry.eeRoundMode = static_cast<FPRoundMode>(eeVal);
 			else
-				Console.Error(fmt::format("[GameDB] Invalid EE round mode '{}', specified for serial: '{}'.", eeVal, serial));
+				Console.Error(fmt::format("GameDB: Invalid EE round mode '{}', specified for serial: '{}'.", eeVal, serial));
 		}
 		if (node["roundModes"].has_child("eeDivRoundMode"))
 		{
@@ -127,7 +127,7 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::
 			if (eeVal >= 0 && eeVal < static_cast<int>(FPRoundMode::MaxCount))
 				gameEntry.eeDivRoundMode = static_cast<FPRoundMode>(eeVal);
 			else
-				Console.Error(fmt::format("[GameDB] Invalid EE division round mode '{}', specified for serial: '{}'.", eeVal, serial));
+				Console.Error(fmt::format("GameDB: Invalid EE division round mode '{}', specified for serial: '{}'.", eeVal, serial));
 		}
 		if (node["roundModes"].has_child("vuRoundMode"))
 		{
@@ -140,7 +140,7 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::
 			}
 			else
 			{
-				Console.Error(fmt::format("[GameDB] Invalid VU round mode '{}', specified for serial: '{}'.", vuVal, serial));
+				Console.Error(fmt::format("GameDB: Invalid VU round mode '{}', specified for serial: '{}'.", vuVal, serial));
 			}
 		}
 		if (node["roundModes"].has_child("vu0RoundMode"))
@@ -150,7 +150,7 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::
 			if (vuVal >= 0 && vuVal < static_cast<int>(FPRoundMode::MaxCount))
 				gameEntry.vu0RoundMode = static_cast<FPRoundMode>(vuVal);
 			else
-				Console.Error(fmt::format("[GameDB] Invalid VU0 round mode '{}', specified for serial: '{}'.", vuVal, serial));
+				Console.Error(fmt::format("GameDB: Invalid VU0 round mode '{}', specified for serial: '{}'.", vuVal, serial));
 		}
 		if (node["roundModes"].has_child("vu1RoundMode"))
 		{
@@ -159,7 +159,7 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::
 			if (vuVal >= 0 && vuVal < static_cast<int>(FPRoundMode::MaxCount))
 				gameEntry.vu1RoundMode = static_cast<FPRoundMode>(vuVal);
 			else
-				Console.Error(fmt::format("[GameDB] Invalid VU1 round mode '{}', specified for serial: '{}'.", vuVal, serial));
+				Console.Error(fmt::format("GameDB: Invalid VU1 round mode '{}', specified for serial: '{}'.", vuVal, serial));
 		}
 	}
 	if (node.has_child("clampModes"))
@@ -217,7 +217,7 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::
 
 			if (!fixValidated)
 			{
-				Console.Error(fmt::format("[GameDB] Invalid gamefix: '{}', specified for serial: '{}'. Dropping!", fix, serial));
+				Console.Error(fmt::format("GameDB: Invalid gamefix: '{}', specified for serial: '{}'. Dropping!", fix, serial));
 			}
 		}
 	}
@@ -239,7 +239,7 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::
 			}
 			else
 			{
-				Console.Error(fmt::format("[GameDB] Invalid speedhack: '{}={}', specified for serial: '{}'. Dropping!",
+				Console.Error(fmt::format("GameDB: Invalid speedhack: '{}={}', specified for serial: '{}'. Dropping!",
 					id_view, value_view, serial));
 			}
 		}
@@ -266,7 +266,7 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::
 
 				if (value.value_or(-1) < 0)
 				{
-					Console.Error(fmt::format("[GameDB] Invalid GS HW Fix Value for '{}' in '{}': '{}'", id_name, serial, str_value));
+					Console.Error(fmt::format("GameDB: Invalid GS HW Fix Value for '{}' in '{}': '{}'", id_name, serial, str_value));
 					continue;
 				}
 			}
@@ -276,7 +276,7 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::
 			}
 			if (!id.has_value() || !value.has_value())
 			{
-				Console.Error(fmt::format("[GameDB] Invalid GS HW Fix: '{}' specified for serial '{}'. Dropping!", id_name, serial));
+				Console.Error(fmt::format("GameDB: Invalid GS HW Fix: '{}' specified for serial '{}'. Dropping!", id_name, serial));
 				continue;
 			}
 
@@ -305,12 +305,12 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::
 			const std::optional<u32> crc = (StringUtil::compareNoCase(crc_str, "default")) ? std::optional<u32>(0) : StringUtil::FromChars<u32>(crc_str, 16);
 			if (!crc.has_value())
 			{
-				Console.Error(fmt::format("[GameDB] Invalid CRC '{}' found for serial: '{}'. Skipping!", crc_str, serial));
+				Console.Error(fmt::format("GameDB: Invalid CRC '{}' found for serial: '{}'. Skipping!", crc_str, serial));
 				continue;
 			}
 			if (gameEntry.patches.find(crc.value()) != gameEntry.patches.end())
 			{
-				Console.Error(fmt::format("[GameDB] Duplicate CRC '{}' found for serial: '{}'. Skipping, CRCs are case-insensitive!", crc_str, serial));
+				Console.Error(fmt::format("GameDB: Duplicate CRC '{}' found for serial: '{}'. Skipping, CRCs are case-insensitive!", crc_str, serial));
 				continue;
 			}
 
@@ -442,18 +442,18 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 {
 	// Only apply core game fixes if the user has enabled them.
 	if (!applyAuto)
-		Console.Warning("[GameDB] Game Fixes are disabled");
+		Console.Warning("GameDB: Game Fixes are disabled");
 
 	if (eeRoundMode < FPRoundMode::MaxCount)
 	{
 		if (applyAuto)
 		{
-			Console.WriteLn("(GameDB) Changing EE/FPU roundmode to %d [%s]", eeRoundMode, s_round_modes[static_cast<u8>(eeRoundMode)]);
+			Console.WriteLn("GameDB: Changing EE/FPU roundmode to %d [%s]", eeRoundMode, s_round_modes[static_cast<u8>(eeRoundMode)]);
 			config.Cpu.FPUFPCR.SetRoundMode(eeRoundMode);
 		}
 		else
 		{
-			Console.Warning("[GameDB] Skipping changing EE/FPU roundmode to %d [%s]", eeRoundMode, s_round_modes[static_cast<u8>(eeRoundMode)]);
+			Console.Warning("GameDB: Skipping changing EE/FPU roundmode to %d [%s]", eeRoundMode, s_round_modes[static_cast<u8>(eeRoundMode)]);
 		}
 	}
 
@@ -461,12 +461,12 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 	{
 		if (applyAuto)
 		{
-			Console.WriteLn("(GameDB) Changing EE/FPU divison roundmode to %d [%s]", eeRoundMode, s_round_modes[static_cast<u8>(eeDivRoundMode)]);
+			Console.WriteLn("GameDB: Changing EE/FPU divison roundmode to %d [%s]", eeRoundMode, s_round_modes[static_cast<u8>(eeDivRoundMode)]);
 			config.Cpu.FPUDivFPCR.SetRoundMode(eeDivRoundMode);
 		}
 		else
 		{
-			Console.Warning("[GameDB] Skipping changing EE/FPU roundmode to %d [%s]", eeRoundMode, s_round_modes[static_cast<u8>(eeRoundMode)]);
+			Console.Warning("GameDB: Skipping changing EE/FPU roundmode to %d [%s]", eeRoundMode, s_round_modes[static_cast<u8>(eeRoundMode)]);
 		}
 	}
 
@@ -474,12 +474,12 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 	{
 		if (applyAuto)
 		{
-			Console.WriteLn("(GameDB) Changing VU0 roundmode to %d [%s]", vu0RoundMode, s_round_modes[static_cast<u8>(vu0RoundMode)]);
+			Console.WriteLn("GameDB: Changing VU0 roundmode to %d [%s]", vu0RoundMode, s_round_modes[static_cast<u8>(vu0RoundMode)]);
 			config.Cpu.VU0FPCR.SetRoundMode(vu0RoundMode);
 		}
 		else
 		{
-			Console.Warning("[GameDB] Skipping changing VU0 roundmode to %d [%s]", vu0RoundMode, s_round_modes[static_cast<u8>(vu0RoundMode)]);
+			Console.Warning("GameDB: Skipping changing VU0 roundmode to %d [%s]", vu0RoundMode, s_round_modes[static_cast<u8>(vu0RoundMode)]);
 		}
 	}
 
@@ -487,12 +487,12 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 	{
 		if (applyAuto)
 		{
-			Console.WriteLn("(GameDB) Changing VU1 roundmode to %d [%s]", vu1RoundMode, s_round_modes[static_cast<u8>(vu1RoundMode)]);
+			Console.WriteLn("GameDB: Changing VU1 roundmode to %d [%s]", vu1RoundMode, s_round_modes[static_cast<u8>(vu1RoundMode)]);
 			config.Cpu.VU1FPCR.SetRoundMode(vu1RoundMode);
 		}
 		else
 		{
-			Console.Warning("[GameDB] Skipping changing VU1 roundmode to %d [%s]", vu1RoundMode, s_round_modes[static_cast<u8>(vu1RoundMode)]);
+			Console.Warning("GameDB: Skipping changing VU1 roundmode to %d [%s]", vu1RoundMode, s_round_modes[static_cast<u8>(vu1RoundMode)]);
 		}
 	}
 
@@ -501,13 +501,13 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 		const int clampMode = enum_cast(eeClampMode);
 		if (applyAuto)
 		{
-			Console.WriteLn("(GameDB) Changing EE/FPU clamp mode [mode=%d]", clampMode);
+			Console.WriteLn("GameDB: Changing EE/FPU clamp mode [mode=%d]", clampMode);
 			config.Cpu.Recompiler.fpuOverflow = (clampMode >= 1);
 			config.Cpu.Recompiler.fpuExtraOverflow = (clampMode >= 2);
 			config.Cpu.Recompiler.fpuFullMode = (clampMode >= 3);
 		}
 		else
-			Console.Warning("[GameDB] Skipping changing EE/FPU clamp mode [mode=%d]", clampMode);
+			Console.Warning("GameDB: Skipping changing EE/FPU clamp mode [mode=%d]", clampMode);
 	}
 
 	if (vu0ClampMode != GameDatabaseSchema::ClampMode::Undefined)
@@ -515,13 +515,13 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 		const int clampMode = enum_cast(vu0ClampMode);
 		if (applyAuto)
 		{
-			Console.WriteLn("(GameDB) Changing VU0 clamp mode [mode=%d]", clampMode);
+			Console.WriteLn("GameDB: Changing VU0 clamp mode [mode=%d]", clampMode);
 			config.Cpu.Recompiler.vu0Overflow = (clampMode >= 1);
 			config.Cpu.Recompiler.vu0ExtraOverflow = (clampMode >= 2);
 			config.Cpu.Recompiler.vu0SignOverflow = (clampMode >= 3);
 		}
 		else
-			Console.Warning("[GameDB] Skipping changing VU0 clamp mode [mode=%d]", clampMode);
+			Console.Warning("GameDB: Skipping changing VU0 clamp mode [mode=%d]", clampMode);
 	}
 
 	if (vu1ClampMode != GameDatabaseSchema::ClampMode::Undefined)
@@ -529,13 +529,13 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 		const int clampMode = enum_cast(vu1ClampMode);
 		if (applyAuto)
 		{
-			Console.WriteLn("(GameDB) Changing VU1 clamp mode [mode=%d]", clampMode);
+			Console.WriteLn("GameDB: Changing VU1 clamp mode [mode=%d]", clampMode);
 			config.Cpu.Recompiler.vu1Overflow = (clampMode >= 1);
 			config.Cpu.Recompiler.vu1ExtraOverflow = (clampMode >= 2);
 			config.Cpu.Recompiler.vu1SignOverflow = (clampMode >= 3);
 		}
 		else
-			Console.Warning("[GameDB] Skipping changing VU1 clamp mode [mode=%d]", clampMode);
+			Console.Warning("GameDB: Skipping changing VU1 clamp mode [mode=%d]", clampMode);
 	}
 
 	// TODO - config - this could be simplified with maps instead of bitfields and enums
@@ -543,14 +543,14 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 	{
 		if (!applyAuto)
 		{
-			Console.Warning("[GameDB] Skipping setting Speedhack '%s' to [mode=%d]",
+			Console.Warning("GameDB: Skipping setting Speedhack '%s' to [mode=%d]",
 				Pcsx2Config::SpeedhackOptions::GetSpeedHackName(it.first), it.second);
 			continue;
 		}
 		// Legacy note - speedhacks are setup in the GameDB as integer values, but
 		// are effectively booleans like the gamefixes
 		config.Speedhacks.Set(it.first, it.second);
-		Console.WriteLn("(GameDB) Setting Speedhack '%s' to [mode=%d]",
+		Console.WriteLn("GameDB: Setting Speedhack '%s' to [mode=%d]",
 			Pcsx2Config::SpeedhackOptions::GetSpeedHackName(it.first), it.second);
 	}
 
@@ -559,12 +559,12 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 	{
 		if (!applyAuto)
 		{
-			Console.Warning("[GameDB] Skipping Gamefix: %s", Pcsx2Config::GamefixOptions::GetGameFixName(id));
+			Console.Warning("GameDB: Skipping Gamefix: %s", Pcsx2Config::GamefixOptions::GetGameFixName(id));
 			continue;
 		}
 		// if the fix is present, it is said to be enabled
 		config.Gamefixes.Set(id, true);
-		Console.WriteLn("(GameDB) Enabled Gamefix: %s", Pcsx2Config::GamefixOptions::GetGameFixName(id));
+		Console.WriteLn("GameDB: Enabled Gamefix: %s", Pcsx2Config::GamefixOptions::GetGameFixName(id));
 
 		// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
 		if (id == Fix_GoemonTlbMiss && true)
@@ -694,7 +694,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 	const bool apply_auto_fixes = !config.ManualUserHacks;
 	const bool is_sw_renderer = EmuConfig.GS.Renderer == GSRendererType::SW;
 	if (!apply_auto_fixes)
-		Console.Warning("[GameDB] Manual GS hardware renderer fixes are enabled, not using automatic hardware renderer fixes from GameDB.");
+		Console.Warning("GameDB: Manual GS hardware renderer fixes are enabled, not using automatic hardware renderer fixes from GameDB.");
 
 	for (const auto& [id, value] : gsHWFixes)
 	{
@@ -703,7 +703,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 			if (configMatchesHWFix(config, id, value))
 				continue;
 
-			Console.Warning("[GameDB] Skipping GS Hardware Fix: %s to [mode=%d]", getHWFixName(id), value);
+			Console.Warning("GameDB: Skipping GS Hardware Fix: %s to [mode=%d]", getHWFixName(id), value);
 			fmt::format_to(std::back_inserter(disabled_fixes), "{} {} = {}", disabled_fixes.empty() ? "  " : "\n  ", getHWFixName(id), value);
 			continue;
 		}
@@ -790,7 +790,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 					if (config.TriFilter == TriFiltering::Automatic)
 						config.TriFilter = static_cast<TriFiltering>(value);
 					else if (config.TriFilter > TriFiltering::Off)
-						Console.Warning("[GameDB] Game requires trilinear filtering to be disabled.");
+						Console.Warning("GameDB: Game requires trilinear filtering to be disabled.");
 				}
 			}
 			break;
@@ -832,7 +832,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 					if (config.InterlaceMode == GSInterlaceMode::Automatic)
 						config.InterlaceMode = static_cast<GSInterlaceMode>(value);
 					else
-						Console.Warning("[GameDB] Game requires different deinterlace mode but it has been overridden by user setting.");
+						Console.Warning("GameDB: Game requires different deinterlace mode but it has been overridden by user setting.");
 				}
 			}
 			break;
@@ -919,7 +919,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 				break;
 		}
 
-		Console.WriteLn("[GameDB] Enabled GS Hardware Fix: %s to [mode=%d]", getHWFixName(id), value);
+		Console.WriteLn("GameDB: Enabled GS Hardware Fix: %s to [mode=%d]", getHWFixName(id), value);
 	}
 
 	// fixup skipdraw range just in case the db has a bad range (but the linter should catch this)
@@ -954,7 +954,7 @@ void GameDatabase::initDatabase()
 	auto buf = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, GAMEDB_YAML_FILE_NAME).c_str());
 	if (!buf.has_value())
 	{
-		Console.Error("[GameDB] Unable to open GameDB file, file does not exist.");
+		Console.Error("GameDB: Unable to open GameDB file, file does not exist.");
 		return;
 	}
 
@@ -971,7 +971,7 @@ void GameDatabase::initDatabase()
 		// However, YAML's keys are as expected case-sensitive, so we have to explicitly do our own duplicate checking
 		if (s_game_db.count(serial) == 1)
 		{
-			Console.Error(fmt::format("[GameDB] Duplicate serial '{}' found in GameDB. Skipping, Serials are case-insensitive!", serial));
+			Console.Error(fmt::format("GameDB: Duplicate serial '{}' found in GameDB. Skipping, Serials are case-insensitive!", serial));
 			continue;
 		}
 
@@ -988,9 +988,9 @@ void GameDatabase::ensureLoaded()
 {
 	std::call_once(s_load_once_flag, []() {
 		Common::Timer timer;
-		Console.WriteLn(fmt::format("[GameDB] Has not been initialized yet, initializing..."));
+		Console.WriteLn(fmt::format("GameDB: Has not been initialized yet, initializing..."));
 		initDatabase();
-		Console.WriteLn("[GameDB] %zu games on record (loaded in %.2fms)", s_game_db.size(), timer.GetTimeMilliseconds());
+		Console.WriteLn("GameDB: %zu games on record (loaded in %.2fms)", s_game_db.size(), timer.GetTimeMilliseconds());
 	});
 }
 
@@ -1115,7 +1115,7 @@ bool GameDatabase::loadHashDatabase()
 	auto buf = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, HASHDB_YAML_FILE_NAME).c_str());
 	if (!buf.has_value())
 	{
-		Console.Error("[GameDB] Unable to open hash database file, file does not exist.");
+		Console.Error("GameDB: Unable to open hash database file, file does not exist.");
 		return false;
 	}
 
