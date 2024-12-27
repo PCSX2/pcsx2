@@ -53320,11 +53320,17 @@ SLPS-20308:
   name-sort: "はなびひゃっけい [とくてんばん]"
   name-en: "Hanabi Hyakkei [Tokutenban]"
   region: "NTSC-J"
+  speedHacks:
+    instantVU1: 0 # Fixes working speed to correctly.
+    mtvu: 0 # Fixes working speed to correctly.
 SLPS-20309:
   name: "花火百景"
   name-sort: "はなびひゃっけい"
   name-en: "Hanabi Hyakkei"
   region: "NTSC-J"
+  speedHacks:
+    instantVU1: 0 # Fixes working speed to correctly.
+    mtvu: 0 # Fixes working speed to correctly.
 SLPS-20310:
   name: "麻雀飛龍伝説 天牌"
   name-sort: "まーじゃんひりゅうでんせつ てんぱい"
@@ -57178,6 +57184,9 @@ SLPS-25481:
   name-sort: "がっつだ もりのいしまつ"
   name-en: "Gattsu Da!! Mori no Ishimatsu"
   region: "NTSC-J"
+  speedHacks:
+    instantVU1: 0 # Fixes Turbo mode Freeze.
+    mtvu: 0 # Fixes Turbo mode Freeze.
 SLPS-25482:
   name: "雪語り リニューアル版"
   name-sort: "ゆきがたり りにゅーあるばん"
