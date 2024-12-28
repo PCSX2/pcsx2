@@ -3229,29 +3229,34 @@ Not Configured/Buttons configured</extracomment>
     </message>
     <message>
         <location filename="../Settings/ControllerSettingsWindow.ui" line="119"/>
-        <source>Delete Profile</source>
+        <source>Rename Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/ControllerSettingsWindow.ui" line="129"/>
-        <source>Mapping Settings</source>
+        <source>Delete Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/ControllerSettingsWindow.ui" line="139"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="209"/>
+        <source>Mapping Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerSettingsWindow.ui" line="149"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="252"/>
         <source>Restore Defaults</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="91"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="105"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="118"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="92"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="106"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="119"/>
         <source>Create Input Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="92"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="93"/>
         <source>Custom input profiles are used to override the Shared input profile for specific games.
 To apply a custom input profile to a game, go to its Game Properties, then change the &apos;Input Profile&apos; on the Summary tab.
 
@@ -3259,40 +3264,43 @@ Enter the name for the new input profile:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="101"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="146"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="192"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="529"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="102"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="147"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="193"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="199"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="235"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="573"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="101"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="102"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="193"/>
         <source>A profile with the name &apos;%1&apos; already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="106"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="107"/>
         <source>Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely empty profile.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="119"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="120"/>
         <source>Do you want to copy the current hotkey bindings from global settings to the new input profile?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="146"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="147"/>
         <source>Failed to save the new profile to &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="156"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="157"/>
         <source>Load Input Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="157"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="158"/>
         <source>Are you sure you want to load the input profile named &apos;%1&apos;?
 
 All current global bindings will be removed, and the profile bindings loaded.
@@ -3301,24 +3309,39 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="181"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="182"/>
+        <source>Rename Input Profile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="183"/>
+        <source>Enter the new name for the input profile:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="199"/>
+        <source>Failed to rename &apos;%1&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="224"/>
         <source>Delete Input Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="182"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="225"/>
         <source>Are you sure you want to delete the input profile named &apos;%1&apos;?
 
 You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="192"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="235"/>
         <source>Failed to delete &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="210"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="253"/>
         <source>Are you sure you want to restore the default controller configuration?
 
 All shared bindings and configuration will be lost, but your input profiles will remain.
@@ -3327,46 +3350,46 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="385"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="428"/>
         <source>Global Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="418"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="473"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="461"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="517"/>
         <source>Controller Port %1%2
 %3</source>
         <extracomment>Controller Port is an official term from Sony. Find the official translation for your language inside the console&apos;s manual.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="420"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="475"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="463"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="519"/>
         <source>Controller Port %1
 %2</source>
         <extracomment>Controller Port is an official term from Sony. Find the official translation for your language inside the console&apos;s manual.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="436"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="493"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="479"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="537"/>
         <source>USB Port %1
 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="446"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="489"/>
         <source>Hotkeys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="507"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="551"/>
         <source>Shared</source>
         <extracomment>&quot;Shared&quot; refers here to the shared input profile.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="529"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="573"/>
         <source>The input profile named &apos;%1&apos; cannot be found.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18423,7 +18446,7 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>SaveState</name>
     <message>
-        <location filename="../../pcsx2/SaveState.cpp" line="1099"/>
+        <location filename="../../pcsx2/SaveState.cpp" line="1100"/>
         <source>This save state is outdated and is no longer compatible with the current version of PCSX2.
 
 If you have any unsaved progress on this save state, you can download the compatible version (PCSX2 {}) from pcsx2.net, load the save state, and save your progress to the memory card.</source>
@@ -21613,42 +21636,42 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>VMManager</name>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1852"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1856"/>
         <source>Failed to back up old save state {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1837"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1841"/>
         <source>Failed to save save state: {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1022"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1026"/>
         <source>PS2 BIOS ({})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1083"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1087"/>
         <source>Unknown Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1246"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1250"/>
         <source>CDVD precaching was cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1252"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1256"/>
         <source>CDVD precaching failed: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1345"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1349"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1346"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1350"/>
         <source>PCSX2 requires a PS2 BIOS in order to run.
 
 For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn&apos;t count).
@@ -21659,270 +21682,270 @@ Please consult the FAQs and Guides for further instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1437"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1441"/>
         <source>Resuming state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1442"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1446"/>
         <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1810"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1814"/>
         <source>Failed to load save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1885"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1889"/>
         <source>State saved to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1892"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1896"/>
         <source>Failed to save save state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1960"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="1997"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1964"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2001"/>
         <source>Loading state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1971"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1975"/>
         <source>Failed to load state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1990"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1994"/>
         <source>There is no save state in slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2008"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2012"/>
         <source>Failed to load state from slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2014"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2018"/>
         <source>Loading state from slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2023"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2027"/>
         <source>Failed to save state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2040"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2044"/>
         <source>Failed to save state to slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2047"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2051"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2213"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2217"/>
         <source>Frame advancing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2241"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2245"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2247"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2251"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2256"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2260"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2265"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2269"/>
         <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3048"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3052"/>
         <source>Cheats have been disabled due to achievements hardcore mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3101"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3105"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3105"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3109"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3115"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3119"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3155"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3159"/>
         <source>Mipmapping is disabled. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3164"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3168"/>
         <source>Renderer is not set to Automatic. This may cause performance problems and graphical issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3170"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3174"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3633"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3637"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3120"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3124"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3125"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3129"/>
         <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3130"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3134"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3176"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3180"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3182"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3186"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3187"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3191"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3192"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3196"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3199"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3203"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3204"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3208"/>
         <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3209"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3213"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3214"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3218"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3218"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3222"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3220"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3224"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3239"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3243"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3244"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3248"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3249"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3253"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3254"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3258"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3259"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3263"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3264"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3268"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3269"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3273"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3272"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3276"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3276"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3280"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3281"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3285"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3135"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3139"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3140"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3144"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3145"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3149"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3150"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3154"/>
         <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
         <translation type="unfinished"></translation>
     </message>
