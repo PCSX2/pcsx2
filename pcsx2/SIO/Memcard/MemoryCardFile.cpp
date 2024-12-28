@@ -360,24 +360,7 @@ void FileMemoryCard::Close()
 // Returns FALSE if the seek failed (is outside the bounds of the file).
 bool FileMemoryCard::Seek(std::FILE* f, u32 adr)
 {
-	const s64 size = FileSystem::FSize64(f);
-
-	// If anyone knows why this filesize logic is here (it appears to be related to legacy PSX
-	// cards, perhaps hacked support for some special emulator-specific memcard formats that
-	// had header info?), then please replace this comment with something useful.  Thanks!  -- air
-
-	u32 offset = 0;
-
-	if (size == MCD_SIZE + 64)
-		offset = 64;
-	else if (size == MCD_SIZE + 3904)
-		offset = 3904;
-	else
-	{
-		// perform sanity checks here?
-	}
-
-	return (FileSystem::FSeek64(f, adr + offset, SEEK_SET) == 0);
+	return (FileSystem::FSeek64(f, adr, SEEK_SET) == 0);
 }
 
 // returns FALSE if an error occurred (either permission denied or disk full)
