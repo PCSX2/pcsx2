@@ -3840,141 +3840,160 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 	}
 	else
 	{
-		// Optimisation aims to reduce the amount of texture loaded to only the bit which will be read
-		GSVector4 st = m_vt.m_min.t.xyxy(m_vt.m_max.t);
-		if (linear)
+		const GSVector2 dp(std::max(m_vt.m_max.p.x - m_vt.m_min.p.x, 1.0f), std::max(m_vt.m_max.p.y - m_vt.m_min.p.y, 1.0f));
+		const GSVector2 dt(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y); // Format: (du, dv)
+
+		// Find the top-left and bottom-right pixels contained in the bounding box
+		// Format: (x_min, y_min, x_max, y_max)
+		GSVector4 p_int = m_vt.m_min.p.ceil().xyxy(m_vt.m_max.p.floor());
+
+		// FIXME: I don't know how to do this with SIMD...
+		// We want exclusive range for maximum because right/bottom edges are not drawn by GS rules
+		if (p_int.z == m_vt.m_max.p.x)
 		{
-			st += GSVector4(-0.5f, 0.5f).xxyy();
-			
-			// If it's the start of the texture and our little adjustment is all that pushed it over, clamp it to 0.
-			// This stops the border check failing when using repeat but needed less than the full texture
-			// since this was making it take the full texture even though it wasn't needed.
-			if (!clamp_to_tsize && ((m_vt.m_min.t.floor() == GSVector4::zero()).mask() & 0x3) == 0x3)
-				st = st.max(GSVector4::zero());
+			p_int.z -= 1.0f;
+		}
+		if (p_int.w == m_vt.m_max.p.y)
+		{
+			p_int.w -= 1.0f;
 		}
 
-		// draw will get scissored, adjust UVs to suit
-		const GSVector2 pos_range(std::max(m_vt.m_max.p.x - m_vt.m_min.p.x, 1.0f), std::max(m_vt.m_max.p.y - m_vt.m_min.p.y, 1.0f));
-		const GSVector2 uv_range(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
-		const GSVector2 grad(uv_range / pos_range);
+		const GSVector2 dtdp(dt / dp);
+
+		// Linear interpolation the UV coordinates at the minimum/maximum pixel centers in the bounding box
+		// FIXME: This assume that the minmum U corresponds to the minimnum X and same for V/Y =/
+		// Format: (u_min, v_min, u_max, v_max)
+		GSVector4 t_int = m_vt.m_min.t.xyxy() + (p_int - m_vt.m_min.p.xyxy()) * GSVector4(dtdp.x, dtdp.y, dtdp.x, dtdp.y);
+
+		if (linear)
+		{
+			// Get the top-left bilinear interpolation UV for the min values and the bottom-right for the max values
+			t_int = (t_int - 0.5).floor();
+			t_int = t_int.xyzw(t_int + 1);
+		}
+
 		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
 		// optimization doesn't work when perspective correction is enabled.
 		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1 && m_primitive_covers_without_gaps != NoGapsType::GapsFound)
 		{
 			// When coordinates are fractional, GS appears to draw to the right/bottom (effectively
 			// taking the ceiling), not to the top/left (taking the floor).
-			const GSVector4i int_rc(m_vt.m_min.p.ceil().xyxy(m_vt.m_max.p.floor()));
-			const GSVector4i scissored_rc(int_rc.rintersect(m_context->scissor.in));
-			if (!int_rc.eq(scissored_rc))
+			const GSVector4i scissored_rc(GSVector4i(p_int).rintersect(m_context->scissor.in));
+			if (!GSVector4i(p_int).eq(scissored_rc))
 			{
+				// Note: I believe that it was incorrect to use the floored/ceiled values for interpolation
+				// Better to use the actual values of X, Y in the registers. (FIXME: remove this comment in final)
 
 				const GSVertex* vert_first = &m_vertex.buff[m_index.buff[0]];
 				const GSVertex* vert_second = &m_vertex.buff[m_index.buff[1]];
 
-				GSVector4 new_st = st;
-				// Check if the UV coords are going in a different direction to the verts, if they match direction, no need to swap
-				const bool u_forward = vert_first->U < vert_second->U;
-				const bool x_forward = vert_first->XYZ.X < vert_second->XYZ.X;
-				const bool swap_x = u_forward != x_forward;
+				// m_primitive_covers_without_gaps guarantees that we are drawing only one sprite
+				const GSVector4 t_tmp(vert_first->U / 16.0f, vert_first->V / 16.0f, vert_second->U / 16.0f, vert_second->V / 16.0f);
+				const GSVector4 p_tmp(vert_first->XYZ.X / 16.0f, vert_first->XYZ.Y / 16.0f, vert_second->XYZ.X / 16.0f, vert_second->XYZ.Y / 16.0f);
+				GSVector4 t_int2;
 
-				if (int_rc.left < scissored_rc.left)
+				// Interpolate U
+				if (p_tmp.x < p_tmp.z)
 				{
-					if (!swap_x)
-						new_st.x += floor(static_cast<float>(scissored_rc.left - int_rc.left) * grad.x);
-					else
-						new_st.z -= floor(static_cast<float>(scissored_rc.left - int_rc.left) * grad.x);
+					t_int2.x = t_tmp.x + (p_tmp.z - static_cast<float>(scissored_rc.left)) * (t_tmp.z - t_tmp.x) / (p_tmp.z - p_tmp.x);
+					t_int2.z = t_tmp.x + (p_tmp.z - static_cast<float>(scissored_rc.right)) * (t_tmp.z - t_tmp.x) / (p_tmp.z - p_tmp.x);
 				}
-				if (int_rc.right > scissored_rc.right)
-				{
-					if (!swap_x)
-						new_st.z -= floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
-					else
-						new_st.x += floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
-				}
-				// we need to check that it's not going to repeat over the non-clipped part
-				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(new_st.x) & ~tw_mask) == (static_cast<int>(new_st.z - 1) & ~tw_mask)))
-				{
-					st.x = new_st.x;
-					st.z = new_st.z;
+				else {
+					t_int2.x = t_tmp.x + (p_tmp.z - scissored_rc.right) * (t_tmp.z - t_tmp.x) / (p_tmp.z - p_tmp.x);
+					t_int2.z = t_tmp.x + (p_tmp.z - scissored_rc.left) * (t_tmp.z - t_tmp.x) / (p_tmp.z - p_tmp.x);
 				}
 
-				const bool v_forward = vert_first->V < vert_second->V;
-				const bool y_forward = vert_first->XYZ.Y < vert_second->XYZ.Y;
-				const bool swap_y = v_forward != y_forward;
+				// Interpolate V
+				if (p_tmp.y < p_tmp.w)
+				{
+					t_int2.y = t_tmp.y + (p_tmp.w - scissored_rc.left) * (t_tmp.w - t_tmp.y) / (p_tmp.w - p_tmp.y);
+					t_int2.w = t_tmp.y + (p_tmp.w - scissored_rc.right) * (t_tmp.w - t_tmp.y) / (p_tmp.w - p_tmp.y);
+				}
+				else
+				{
+					t_int2.y = t_tmp.y + (p_tmp.w - scissored_rc.right) * (t_tmp.w - t_tmp.y) / (p_tmp.w - p_tmp.y);
+					t_int2.w = t_tmp.y + (p_tmp.w - scissored_rc.left) * (t_tmp.w - t_tmp.y) / (p_tmp.w - p_tmp.y);
+				}
 
-				if (int_rc.top < scissored_rc.top)
+				t_int2 = GSVector4(std::min(t_int2.x, t_int2.z), std::max(t_int2.y, t_int2.w), std::min(t_int2.x, t_int2.z), std::max(t_int.y, t_int.w));
+				
+				// Get the top-left interpolation UV for the min values and the bottom-right for the max values
+				t_int2 = (t_int2 - 0.5).floor();
+				t_int2 = t_int2.xyzw(t_int2 + 1);
+
+				// Why was 1 subtracted from the main point before? That defeats the purpose of calculating the bilinear interped points.
+				// FIXME: Remove this comment in the final version...
+
+				// We need to check that it's not going to repeat over the non-clipped part
+				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(t_int2.x) & ~tw_mask) == (static_cast<int>(t_int2.z) & ~tw_mask)))
 				{
-					if (!swap_y)
-						new_st.y += floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
-					else
-						new_st.w -= floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
+					t_int.x = t_int2.x;
+					t_int.z = t_int2.z;
 				}
-				if (int_rc.bottom > scissored_rc.bottom)
+
+				// We need to check that it's not going to repeat over the non-clipped part
+				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(t_int2.y) & ~th_mask) == (static_cast<int>(t_int2.w) & ~th_mask)))
 				{
-					if (!swap_y)
-						new_st.w -= floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
-					else
-						new_st.y += floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
-				}
-				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(new_st.y) & ~th_mask) == (static_cast<int>(new_st.w - 1) & ~th_mask)))
-				{
-					st.y = new_st.y;
-					st.w = new_st.w;
+					t_int.y = t_int2.y;
+					t_int.w = t_int2.w;
 				}
 			}
 		}
 
-		const GSVector4i uv = GSVector4i(st.floor());
-		uses_border = GSVector4::cast((uv < vr).blend32<0xc>(uv >= vr)).mask();
+		// Format: (u_min, v_min, u_max, v_max)
+		const GSVector4i t_inti(t_int);
 
-		// Need to make sure we don't oversample, this can cause trouble in grabbing textures.
-		// This may be inaccurate depending on the draw, but adding 1 all the time is wrong too.
-		const int inclusive_x_req = ((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.x < 1.0f || (grad.x == 1.0f && m_vt.m_max.p.x != floor(m_vt.m_max.p.x)))) ? 1 : 0;
-		const int inclusive_y_req = ((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.y < 1.0f || (grad.y == 1.0f && m_vt.m_max.p.y != floor(m_vt.m_max.p.y)))) ? 1 : 0;
-	
+		uses_border = GSVector4::cast((t_inti < vr).blend32<0xc>(t_inti >= vr)).mask();
+
 		// Roughly cut out the min/max of the read (Clamp)
 		switch (wms)
 		{
 			case CLAMP_REPEAT:
-				if ((uv.x & ~tw_mask) == (uv.z & ~tw_mask))
+				if ((t_inti.x & ~tw_mask) == (t_inti.z & ~tw_mask))
 				{
-					vr.x = std::max(vr.x, uv.x & tw_mask);
-					vr.z = std::min(vr.z, (uv.z & tw_mask) + inclusive_x_req);
+					vr.x = std::max(vr.x, (t_inti.x & tw_mask));
+					vr.z = std::min(vr.z, (t_inti.z & tw_mask) + 1); // +1 to convert inclusive to exclusive
 				}
 				break;
 			case CLAMP_CLAMP:
 			case CLAMP_REGION_CLAMP:
-				if (vr.x < uv.x)
-					vr.x = std::min(uv.x, vr.z - 1);
-				if (vr.z > (uv.z + 1))
-					vr.z = std::max(uv.z, vr.x) + inclusive_x_req;
+				if (vr.x < t_inti.x)
+					vr.x = std::min(vr.z - 1, t_inti.x);
+				if (vr.z > (t_inti.z + 1))
+					vr.z = std::max(vr.x + 1, t_inti.z + 1); // +1 to convert inclusive to exclusive
 				break;
+			// Note that UsesRegionRepeat already adds +1 to max result to make it exclusive
 			case CLAMP_REGION_REPEAT:
-				if (UsesRegionRepeat(maxu, minu, uv.x, uv.z, &vr.x, &vr.z) || maxu >= tw)
+				if (UsesRegionRepeat(maxu, minu, t_inti.x, t_inti.z, &vr.x, &vr.z) || maxu >= tw)
 					uses_border |= TextureMinMaxResult::USES_BOUNDARY_U;
 				break;
+			default:
+				ASSUME(0);
 		}
 
 		switch (wmt)
 		{
 			case CLAMP_REPEAT:
-				if ((uv.y & ~th_mask) == (uv.w & ~th_mask))
+				if ((t_inti.y & ~th_mask) == (t_inti.w & ~th_mask))
 				{
-					vr.y = std::max(vr.y, uv.y & th_mask);
-					vr.w = std::min(vr.w, (uv.w & th_mask) + inclusive_y_req);
+					vr.y = std::max(vr.y, t_inti.y & th_mask);
+					vr.w = std::min(vr.w, (t_inti.w & th_mask) + 1); // +1 to convert inclusive to exclusive
 				}
 				break;
 			case CLAMP_CLAMP:
 			case CLAMP_REGION_CLAMP:
-				if (vr.y < uv.y)
-					vr.y = std::min(uv.y, vr.w - 1);
-				if (vr.w > (uv.w + 1))
-					vr.w = std::max(uv.w, vr.y) + inclusive_y_req;
+				if (vr.y < t_inti.y)
+					vr.y = std::min(vr.w - 1, t_inti.y);
+				if (vr.w > (t_inti.w + 1))
+					vr.w = std::max(vr.y + 1, t_inti.w + 1); // +1 to convert inclusive to exclusive
 				break;
 			case CLAMP_REGION_REPEAT:
-				if (UsesRegionRepeat(maxv, minv, uv.y, uv.w, &vr.y, &vr.w) || maxv >= th)
+				// Note that UsesRegionRepeat already adds +1 to max result to make it exclusive
+				if (UsesRegionRepeat(maxv, minv, t_inti.y, t_inti.w, &vr.y, &vr.w) || maxv >= th)
 					uses_border |= TextureMinMaxResult::USES_BOUNDARY_V;
 				break;
+			default:
+				ASSUME(0);
 		}
 	}
 
@@ -4006,7 +4025,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 		vr = (vr + GSVector4i(0, inc_y ? 0 : -1, 0, inc_y ? 1 : 0)).rintersect(tr);
 	}
 
-	return { vr, uses_border };
+	return {vr, uses_border};
 }
 
 void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
