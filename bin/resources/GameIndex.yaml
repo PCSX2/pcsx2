@@ -8742,7 +8742,7 @@ SCPS-15079:
 SCPS-15080:
   name: "我が竜を見よ"
   name-sort: "わがりゅうをみよ"
-  name-en: "Waga Ryuomiyo - Pride of the Dragon Peace"
+  name-en: "Waga Ryuu wo miyo - Pride of the Dragon Peace"
   region: "NTSC-J"
 SCPS-15081:
   name: "どこでもいっしょ トロといっぱい"
@@ -32001,8 +32001,8 @@ SLPM-55095:
   name-en: "Shinkyoku Soukai Polyphonica - The Black - Episode 1 & 2 Box Edition"
   region: "NTSC-J"
 SLPM-55096:
-  name: "THUNDERFORCE Ⅳ"
-  name-sort: "さんだーふぉーす4"
+  name: "THUNDERFORCE Ⅵ"
+  name-sort: "さんだーふぉーす6"
   name-en: "ThunderForce VI"
   region: "NTSC-J"
   compat: 5
@@ -35305,7 +35305,7 @@ SLPM-62132:
   region: "NTSC-J"
 SLPM-62133:
   name: "ブラッディロア 3 [HUDSON THE BEST]"
-  name-sort: "ぶらっでぃろあ 3 [はどそん ざ べすと]"
+  name-sort: "ぶらっでぃろあ 3 [HUDSON THE BEST]"
   name-en: "Bloody Roar 3 [HUDSON THE BEST]"
   region: "NTSC-J"
 SLPM-62134:
@@ -36229,7 +36229,7 @@ SLPM-62324:
 SLPM-62325:
   name: "ハイヒートメジャーリーグベースボール 2003 [THE BEST タカラモノ]"
   name-sort: "はいひーとめじゃーりーぐべーすぼーる 2003 [THE BEST たからもの]"
-  name-en: "High Heat Major League Baseball 2003 [KONAMI The BEST]"
+  name-en: "High Heat Major League Baseball 2003 [Takara THE BEST]"
   region: "NTSC-J"
 SLPM-62326:
   name: "G-taste麻雀 [フィギュア同梱スペシャル版]"
@@ -36382,7 +36382,7 @@ SLPM-62354:
 SLPM-62355:
   name: "チョロQ HG2 [THE BEST タカラモノ]"
   name-sort: "ちょろQ HG2 [THE BEST たからもの]"
-  name-en: "Choro Q HG 2"
+  name-en: "Choro Q HG 2 [Takara THE BEST]"
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 2 # Fixes sprite ghosting.
@@ -37516,12 +37516,12 @@ SLPM-62568:
   region: "NTSC-J"
 SLPM-62569:
   name: "PC原人 [HUDSON THE BEST]"
-  name-sort: "PCげんじん はどそん・ざ・べすと"
+  name-sort: "PCげんじん [HUDSON THE BEST]"
   name-en: "PC Genjin [Hudson The Best]"
   region: "NTSC-J"
 SLPM-62570:
   name: "高橋名人の冒険島 [HUDSON THE BEST]"
-  name-sort: "たかはしめいじんのぼうけんじま はどそん・ざ・べすと"
+  name-sort: "たかはしめいじんのぼうけんじま [HUDSON THE BEST]"
   name-en: "Takahashi Meijin no Adventure Island [Hudson The Best]"
   region: "NTSC-J"
 SLPM-62571:
@@ -37592,17 +37592,17 @@ SLPM-62582:
   region: "NTSC-J"
 SLPM-62583:
   name: "キュービックロードランナー [HUDSON THE BEST]"
-  name-sort: "きゅーびっくろーどらんなー はどそん・ざ・べすと"
+  name-sort: "きゅーびっくろーどらんなー [HUDSON THE BEST]"
   name-en: "Hudson Selection Vol.1 - Cubic Lode Runner [Hudson The Best]"
   region: "NTSC-J"
 SLPM-62584:
   name: "スターソルジャー [HUDSON THE BEST]"
-  name-sort: "すたーそるじゃー はどそん・ざ・べすと"
+  name-sort: "すたーそるじゃー [HUDSON THE BEST]"
   name-en: "Hudson Selection Vol.2 - Star Soldier [Hudson The Best]"
   region: "NTSC-J"
 SLPM-62585:
   name: "魁！クロマティ高校 [HUDSON THE BEST]"
-  name-sort: "さきがけ！くろまてぃこうこう はどそん・ざ・べすと"
+  name-sort: "さきがけ！くろまてぃこうこう [HUDSON THE BEST]"
   name-en: "Sakigake! Cromartie High School [Hudson The Best]"
   region: "NTSC-J"
 SLPM-62586:
@@ -37663,7 +37663,7 @@ SLPM-62598:
   region: "NTSC-J"
 SLPM-62599:
   name: "ボンバーマンカートDX [HUDSON THE BEST]"
-  name-sort: "ぼんばーまんかーとDX はどそん ざ べすと"
+  name-sort: "ぼんばーまんかーとDX [HUDSON THE BEST]"
   name-en: "Bomberman Kart DX"
   region: "NTSC-J"
 SLPM-62600:
@@ -38472,7 +38472,7 @@ SLPM-62762:
   region: "NTSC-J"
 SLPM-62763:
   name: "ボンバーマンランド3 [HUDSON THE BEST]"
-  name-sort: "ぼんばーまんらんど3 はどそん・ざ・べすと"
+  name-sort: "ぼんばーまんらんど3 [HUDSON THE BEST]"
   name-en: "Bomberman Land 3 [Hudson Best Version]"
   region: "NTSC-J"
 SLPM-62764:
@@ -39391,7 +39391,7 @@ SLPM-65116:
   region: "NTSC-J"
 SLPM-65117:
   name: "機甲兵団 J-PHOENIX [THE BEST タカラモノ]"
-  name-sort: "きこうへいだん じぇいふぇにっくす [ざ・べすと・たからもの]"
+  name-sort: "きこうへいだん じぇいふぇにっくす [THE BEST たからもの]"
   name-en: "Kikou Heidan J-Phoenix [Takara The Best]"
   region: "NTSC-J"
   memcardFilters:
@@ -39552,7 +39552,7 @@ SLPM-65148:
 SLPM-65149:
   name: "チョロQ HG [THE BEST タカラモノ]"
   name-sort: "ちょろQ HG [THE BEST タカラモノ]"
-  name-en: "Choro Q HG [THE BEST TAKARAMONO]"
+  name-en: "Choro Q HG [Takara THE BEST]"
   region: "NTSC-J"
 SLPM-65150:
   name: "エアロダンシング 4 ニュージェネレーション"
@@ -40595,9 +40595,9 @@ SLPM-65324:
   name-en: "Gregory Horror Show - Soul Collector"
   region: "NTSC-J"
 SLPM-65325:
-  name: "レスキューヘリ エアレンジャー2 低価格版"
-  name-sort: "れすきゅーへり えあれんじゃー2 ていかかくばん"
-  name-en: "Air Ranger 2 - Rescue Helicopter [Best]"
+  name: "レスキューヘリ エアレンジャー2  [わくわくプライス]"
+  name-sort: "れすきゅーへり えあれんじゃー2  [わくわくプライス]"
+  name-en: "Air Ranger 2 - Rescue Helicopter [WakWak Price]"
   region: "NTSC-J"
 SLPM-65326:
   name: "チョロQ HG4"
@@ -42871,7 +42871,7 @@ SLPM-65732:
   compat: 5
 SLPM-65734:
   name: "北へ。Diamond Dust [HUDSON THE BEST]"
-  name-sort: "きたへ Diamond Dust はどそん・ざ・べすと"
+  name-sort: "きたへ Diamond Dust [HUDSON THE BEST]"
   name-en: "Kita he - Diamond Dust [Hudson The Best]"
   region: "NTSC-J"
 SLPM-65735:
@@ -43909,7 +43909,7 @@ SLPM-65911:
   region: "NTSC-J"
 SLPM-65912:
   name: "ボボボーボ・ボーボボ ハジけ祭 [HUDSON THE BEST]"
-  name-sort: "ぼぼぼーぼ ぼーぼぼ はじけまつり [はどそん・ざ・べすと]"
+  name-sort: "ぼぼぼーぼ ぼーぼぼ はじけまつり [HUDSON THE BEST]"
   name-en: "Boboboubo Boubobo [Hudson the Best]"
   region: "NTSC-J"
 SLPM-65913:
@@ -43946,7 +43946,7 @@ SLPM-65916:
 SLPM-65917:
   name: "トランスフォーマー [THE BEST タカラモノ]"
   name-sort: "とらんすふぉーまー [THE BEST たからもの]"
-  name-en: "Transformers Tatakai [The Best]"
+  name-en: "Transformers Tatakai [Takara THE BEST]"
   region: "NTSC-J"
 SLPM-65918:
   name: "Dear My Friend ～Love like powdery snow～"
@@ -44305,7 +44305,7 @@ SLPM-65978:
   region: "NTSC-J"
 SLPM-65980:
   name: "ドリームミックスTV ワールドファイターズ [HUDSON THE BEST]"
-  name-sort: "どりーむみっくすTV わーるどふぁいたーず はどそん・ざ・べすと"
+  name-sort: "どりーむみっくすTV わーるどふぁいたーず [HUDSON THE BEST]"
   name-en: "Dream Mix TV World Fighters [Hudson the Best]"
   region: "NTSC-J"
 SLPM-65981:
@@ -46117,7 +46117,7 @@ SLPM-66261:
 SLPM-66262:
   name: "トム・クランシーシリーズ レインボーシックス3 [UBISOFT BEST]"
   name-sort: "とむくらんしーしりーず れいんぼーしっくす3 [UBISOFT BEST]"
-  name-en: "Tom Clancy's Rainbow Six 3 [Ubisoft The Best]"
+  name-en: "Tom Clancy's Rainbow Six 3 [Ubisoft Best]"
   region: "NTSC-J"
 SLPM-66263:
   name: "フル スペクトラム ウォリアー"
@@ -47575,9 +47575,9 @@ SLPM-66495:
         // This patch skips over the stack code, allowing the game to boot.
         patch=1,EE,00149F18,word,10000003
 SLPM-66496:
-  name: "ユービーアイソフト ベスト トム・クランシーシリーズ スプリンターセル カオスセオリー"
-  name-sort: "とむくらんしーしりーず すぷりんたーせる かおすせおりー [ゆーびーあいそふと べすと]"
-  name-en: "Tom Clancy's Splinter Cell - Chaos Theory"
+  name: "トム・クランシーシリーズ スプリンターセル カオスセオリー  [UBISOFT BEST]"
+  name-sort: "とむくらんしーしりーず すぷりんたーせる かおすせおりー  [UBISOFT BEST]"
+  name-en: "Tom Clancy's Splinter Cell - Chaos Theory [Ubisoft Best]"
   region: "NTSC-J"
   gsHWFixes:
     minimumBlendingLevel: 4 # Fixes missing lights especially in NVGs.
@@ -47746,8 +47746,8 @@ SLPM-66520:
   name-en: "BioHazard - Code Veronica [Premium Box]"
   region: "NTSC-J"
 SLPM-66521:
-  name: "タイトーメモリーズ 下巻 TAITO BEST"
-  name-sort: "たいとーめもりーず げかん TAITO BEST"
+  name: "タイトーメモリーズ 下巻 [TAITO BEST]"
+  name-sort: "たいとーめもりーず げかん [TAITO BEST]"
   name-en: "Taito Memories Vol.2 [TAITO BEST]"
   region: "NTSC-J"
   compat: 5
@@ -48003,8 +48003,8 @@ SLPM-66567:
     roundSprite: 1 # Reduces misaligned bloom.
     mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
 SLPM-66568:
-  name: "ユービーアイソフト ベスト ブラザー イン アームズ ロード トゥ ヒル サーティ"
-  name-sort: "ぶらざー いん あーむず ろーど とぅ ひる さーてぃ [ゆーびーあいそふと べすと]"
+  name: "ブラザー イン アームズ ロード トゥ ヒル サーティ [UBISOFT BEST]"
+  name-sort: "ぶらざー いん あーむず ろーど とぅ ひる さーてぃ [UBISOFT BEST]"
   name-en: "Brothers in Arms - Road to Hill 30 [Ubisoft Best]"
   region: "NTSC-J"
   gsHWFixes:
@@ -48647,7 +48647,7 @@ SLPM-66672:
 SLPM-66673:
   name: "プリンス・オブ・ペルシャ ケンシ ノ ココロ [UBISOFT BEST]"
   name-sort: "ぷりんす おぶ ぺるしゃ けんし の こころ [UBISOFT BEST]"
-  name-en: "Prince of Persia - Warrior Within [Ubisoft the Best]"
+  name-en: "Prince of Persia - Warrior Within [Ubisoft Best]"
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 2 # Reduces post-processing misalignment.
@@ -49287,14 +49287,14 @@ SLPM-66774:
   region: "NTSC-J"
 SLPM-66775:
   name: "タイトーメモリーズ 上巻 [Eternal Hits]"
-  name-sort: "たいとーめもりーず じょうかん [Eternal Hits]"
+  name-sort: "たいとーめもりーず 01 じょうかん [Eternal Hits]"
   name-en: "Taito Memories - Joukan [Eternal Hits]"
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes vertical and horizontal lines.
 SLPM-66776:
   name: "タイトーメモリーズ 下巻 [Eternal Hits]"
-  name-sort: "たいとーめもりーず げかん [Eternal Hits]"
+  name-sort: "たいとーめもりーず 02 げかん [Eternal Hits]"
   name-en: "Taito Memories Gekan [Eternal Hits]"
   region: "NTSC-J"
   gsHWFixes:
@@ -49508,7 +49508,7 @@ SLPM-66807:
 SLPM-66808:
   name: "ゴーストリコン アドバンスウォーファイター [UBISOFT BEST]"
   name-sort: "ごーすとりこん あどばんすうぉーふぁいたー [UBISOFT BEST]"
-  name-en: "Tom Clancy's Ghost Recon - Advanced Warfighter [Ubisoft the Best]"
+  name-en: "Tom Clancy's Ghost Recon - Advanced Warfighter [Ubisoft Best]"
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes  building and ground colours.
@@ -49818,7 +49818,7 @@ SLPM-66867:
 SLPM-66868:
   name: "スプリンターセル 二重スパイ [UBISOFT BEST]"
   name-sort: "すぷりんたーせる にじゅうすぱい [UBISOFT BEST]"
-  name-en: "Tom Clancy's Splinter Cell - Double Agent [Ubisoft the Best]"
+  name-en: "Tom Clancy's Splinter Cell - Double Agent [Ubisoft Best]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 4 # Aligns post effects.
@@ -51101,7 +51101,9 @@ SLPM-74007:
   name-en: "Busin - Wizardry Alternative [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74044:
-  name: "Space Channel 5 - Part 2 [PlayStation2 the Best]"
+  name: "スペースチャンネル5 パート2 [PlayStation2 the Best]"
+  name-sort: "すぺーすちゃんねる5 ぱーと2 [PlayStation2 the Best]"
+  name-en: "Space Channel 5 - Part 2 [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74101:
   name: "ボンバーマンランド2 [PlayStation2 the Best]"
@@ -51193,24 +51195,29 @@ SLPM-74212:
   name-en: "Sengoku Musou Moushouden [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74213:
-  name: "幻想水滸伝Ⅳ"
-  name-sort: "げんそうすいこでん4"
-  name-en: "Gensou Suikoden IV"
+  name: "幻想水滸伝Ⅳ [PlayStation2 the Best]"
+  name-sort: "げんそうすいこでん4 [PlayStation2 the Best]"
+  name-en: "Gensou Suikoden IV [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74214:
-  name: "電車でGO！FINAL"
-  name-sort: "でんしゃでごーFINAL"
-  name-en: "Densha de Go! Final"
+  name: "電車でGO！FINAL [PlayStation2 the Best]"
+  name-sort: "でんしゃでごーFINAL [PlayStation2 the Best]"
+  name-en: "Densha de Go! Final [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74215:
   name: "真・三國無双3 [PlayStation2 the Best]"
   name-sort: "しんさんごくむそう3 [PlayStation2 the Best]"
   name-en: "Shin Sangoku Musou 3 [PlayStation2 the Best]"
   region: "NTSC-J"
+SLPM-74216:
+  name: "真・三國無双3 猛将伝 [PlayStation2 the Best]"
+  name-sort: "しんさんごくむそう3 もうしょうでん [PlayStation2 the Best]"
+  name-en: "Shin Sangoku Musou 3 - Moushouden [PlayStation2 the Best]"
+  region: "NTSC-J"
 SLPM-74217:
-  name: "真・三國無双3"
-  name-sort: "しんさんごくむそう3"
-  name-en: "Shin Sangoku Musou 3"
+  name: "真・三國無双3 [PlayStation2 the Best] [メガパック]"
+  name-sort: "しんさんごくむそう3 [PlayStation2 the Best] [めがぱっく]"
+  name-en: "Shin Sangoku Musou 3 [PlayStation2 the Best] [Mega Pack]"
   region: "NTSC-J"
 SLPM-74218:
   name: "シャイニング・ティアーズ [PlayStation2 the Best]"
@@ -51331,7 +51338,7 @@ SLPM-74234:
   gsHWFixes:
     alignSprite: 1 # Helps align bloom.
 SLPM-74235:
-  name: "戦国無双 [PlayStation2 the Best][価格改定版]"
+  name: "戦国無双 [PlayStation2 the Best]"
   name-sort: "せんごくむそう [PlayStation2 the Best]"
   name-en: "Sengoku Musou [PlayStation2 the Best]"
   region: "NTSC-J"
@@ -51405,7 +51412,7 @@ SLPM-74244:
   roundModes:
     eeRoundMode: 0 # Fixes enemies not moving (especially Chapter 7 boss).
 SLPM-74245:
-  name: "モンスターハンター2（dos） [PlayStation2 the Best]"
+  name: "モンスターハンター2 [PlayStation2 the Best]"
   name-sort: "もんすたーはんたー2 [PlayStation2 the Best]"
   name-en: "Monster Hunter 2 [PlayStation2 the Best]"
   region: "NTSC-J"
@@ -51617,9 +51624,9 @@ SLPM-74274:
   name-en: "EX Jinsei Game II [PlayStation 2 the Best]"
   region: "NTSC-J"
 SLPM-74275:
-  name: "戦国BASARA 2 英雄外伝"
-  name-sort: "せんごくばさら 2 ひーろーず"
-  name-en: "Sengoku Basara 2 Heroes"
+  name: "戦国BASARA 2 英雄外伝 [PlayStation2 the Best]"
+  name-sort: "せんごくばさら 2 ひーろーず [PlayStation2 the Best]"
+  name-en: "Sengoku Basara 2 Heroes [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74276:
   name: "ガンダム無双2 [PlayStation2 the Best]"
@@ -51638,29 +51645,29 @@ SLPM-74278:
   name-en: "Persona 4 [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74279:
-  name: "真・三國無双4 猛将伝"
-  name-sort: "しんさんごくむそう4 もうしょうでん"
-  name-en: "Shin Sangoku Musou 4 - Moushouden"
+  name: "真・三國無双4 猛将伝 [PlayStation2 the Best]"
+  name-sort: "しんさんごくむそう4 もうしょうでん [PlayStation2 the Best]"
+  name-en: "Shin Sangoku Musou 4 - Moushouden [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74281:
-  name: "信長の野望・革新"
-  name-sort: "のぶながのやぼう かくしん"
-  name-en: "Nobunaga no Yabou - Kakushin"
+  name: "信長の野望・革新 [PlayStation2 the Best]"
+  name-sort: "のぶながのやぼう かくしん [PlayStation2 the Best]"
+  name-en: "Nobunaga no Yabou - Kakushin [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74282:
-  name: "無双OROCHI 魔王再臨"
-  name-sort: "むそうOROCHI まおうさいりん"
-  name-en: "Musou Orochi - Maou Sairin"
+  name: "無双OROCHI 魔王再臨 [PlayStation2 the Best]"
+  name-sort: "むそうOROCHI まおうさいりん [PlayStation2 the Best]"
+  name-en: "Musou Orochi - Maou Sairin [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74283:
-  name: "真・三國無双4 Empires"
-  name-sort: "しんさんごくむそう4 えんぱいあーず"
-  name-en: "Shin Sangoku Musou 4 - Empires"
+  name: "真・三國無双4 Empires [PlayStation2 the Best]"
+  name-sort: "しんさんごくむそう4 えんぱいあーず [PlayStation2 the Best]"
+  name-en: "Shin Sangoku Musou 4 - Empires [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74284:
-  name: "戦国無双2 Empires"
-  name-sort: "せんごくむそう2 Empires"
-  name-en: "Sengoku Musou 2 - Empires"
+  name: "戦国無双2 Empires [PlayStation2 the Best]"
+  name-sort: "せんごくむそう2 Empires [PlayStation2 the Best]"
+  name-en: "Sengoku Musou 2 - Empires [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74286:
   name: "真・三國無双5 Special [PlayStation2 the Best] [ディスク 1]"
@@ -52305,7 +52312,7 @@ SLPS-20087:
   region: "NTSC-J"
 SLPS-20089:
   name: "ガンハーツ [未発売]"
-  name-sort: "がんはーつ"
+  name-sort: "がんはーつ [みはつばい]"
   name-en: "Gun-Heats [Cancelled]"
   region: "NTSC-J"
 SLPS-20090:
@@ -56827,7 +56834,7 @@ SLPS-25419:
 SLPS-25420:
   name: "シンドバットアドベンチャーは榎本加奈子でどうですか"
   name-sort: "しんどばっどあどべんちゃーはえのもとかなこでどうですか"
-  name-en: "Golden Voyage - Sindbad Adventure"
+  name-en: "Sindbad Adventure wa Enomoto Kanako de Doudesuka"
   region: "NTSC-J"
 SLPS-25421:
   name: "牧場物語 Oh！ ワンダフルライフ [初回版]"
