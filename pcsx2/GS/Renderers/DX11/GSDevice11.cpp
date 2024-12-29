@@ -112,7 +112,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	{
 		Host::ReportErrorAsync("GS",
 			fmt::format(
-				TRANSLATE_FS("GS", "Failed to create D3D device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required."),
+				TRANSLATE_FS("GS", "Failed to create D3D11 device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required."),
 				hr));
 		return false;
 	}
@@ -149,10 +149,10 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	if (m_dev.try_query_to(&dxgi_device) && SUCCEEDED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.put()))))
 	{
 		m_name = D3D::GetAdapterName(dxgi_adapter.get());
-		Console.WriteLn(fmt::format("D3D Adapter: {}", m_name));
+		Console.WriteLn(fmt::format("D3D11: Adapter: {}", m_name));
 	}
 	else
-		Console.Error("Failed to obtain D3D adapter name.");
+		Console.Error("D3D11: Failed to obtain adapter name.");
 
 	BOOL allow_tearing_supported = false;
 	hr = m_dxgi_factory->CheckFeatureSupport(
@@ -172,7 +172,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		m_annotation = m_ctx.try_query<ID3DUserDefinedAnnotation>();
 
 	if (!m_shader_cache.Open(m_feature_level, GSConfig.UseDebugDevice))
-		Console.Warning("Shader cache failed to open.");
+		Console.Warning("D3D11: Shader cache failed to open.");
 
 	{
 		// HACK: check AMD
@@ -341,7 +341,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_vb.put())))
 	{
-		Console.Error("Failed to create vertex buffer.");
+		Console.Error("D3D11: Failed to create vertex buffer.");
 		return false;
 	}
 
@@ -349,7 +349,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_ib.put())))
 	{
-		Console.Error("Failed to create index buffer.");
+		Console.Error("D3D11: Failed to create index buffer.");
 		return false;
 	}
 	IASetIndexBuffer(m_ib.get());
@@ -363,7 +363,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 		if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_expand_vb.put())))
 		{
-			Console.Error("Failed to create expand vertex buffer.");
+			Console.Error("D3D11: Failed to create expand vertex buffer.");
 			return false;
 		}
 
@@ -371,7 +371,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 			D3D11_SRV_DIMENSION_BUFFER, DXGI_FORMAT_UNKNOWN, 0, VERTEX_BUFFER_SIZE / sizeof(GSVertex));
 		if (FAILED(m_dev->CreateShaderResourceView(m_expand_vb.get(), &vb_srv_desc, m_expand_vb_srv.put())))
 		{
-			Console.Error("Failed to create expand vertex buffer SRV.");
+			Console.Error("D3D11: Failed to create expand vertex buffer SRV.");
 			return false;
 		}
 
@@ -388,7 +388,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		const D3D11_SUBRESOURCE_DATA srd = {expand_data.get()};
 		if (FAILED(m_dev->CreateBuffer(&bd, &srd, m_expand_ib.put())))
 		{
-			Console.Error("Failed to create expand index buffer.");
+			Console.Error("D3D11: Failed to create expand index buffer.");
 			return false;
 		}
 	}
@@ -440,7 +440,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_vs_cb.put())))
 	{
-		Console.Error("Failed to create vertex shader constant buffer.");
+		Console.Error("D3D11: Failed to create vertex shader constant buffer.");
 		return false;
 	}
 
@@ -452,7 +452,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_ps_cb.put())))
 	{
-		Console.Error("Failed to create pixel shader constant buffer.");
+		Console.Error("D3D11: Failed to create pixel shader constant buffer.");
 		return false;
 	}
 
@@ -511,7 +511,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	if (m_feature_level < D3D_FEATURE_LEVEL_11_0)
 	{
 		Host::AddIconOSDMessage("d3d11_feature_level_warning", ICON_FA_EXCLAMATION_TRIANGLE,
-			TRANSLATE_SV("GS", "The Direct3D renderer is running at feature level 10.0. This is an UNSUPPORTED configuration.\n"
+			TRANSLATE_SV("GS", "The Direct3D11 renderer is running at feature level 10.0. This is an UNSUPPORTED configuration.\n"
 							   "Do not request support, please upgrade your hardware/drivers first."),
 			Host::OSD_WARNING_DURATION);
 	}
@@ -594,7 +594,7 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 		if (SUCCEEDED(m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &options, sizeof(options))) &&
 			!options.TypedUAVLoadAdditionalFormats)
 		{
-			Console.Warning("Disabling VS expand due to potentially buggy NVIDIA driver.");
+			Console.Warning("D3D11: Disabling VS expand due to potentially buggy NVIDIA driver.");
 			m_features.vs_expand = false;
 		}
 	}
@@ -616,7 +616,7 @@ void GSDevice11::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 	// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
 	if (mode == GSVSyncMode::Mailbox && m_is_exclusive_fullscreen)
 	{
-		WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+		WARNING_LOG("D3D11: Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
 		mode = GSVSyncMode::FIFO;
 	}
 
@@ -632,7 +632,7 @@ void GSDevice11::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 	{
 		DestroySwapChain();
 		if (!CreateSwapChain())
-			pxFailRel("Failed to recreate swap chain after vsync change.");
+			pxFailRel("D3D11: Failed to recreate swap chain after vsync change.");
 	}
 }
 
@@ -669,7 +669,7 @@ bool GSDevice11::CreateSwapChain()
 		// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
 		if (m_vsync_mode == GSVSyncMode::Mailbox && m_is_exclusive_fullscreen)
 		{
-			WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+			WARNING_LOG("D3D11: Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
 			m_vsync_mode = GSVSyncMode::FIFO;
 		}
 	}
@@ -709,12 +709,12 @@ bool GSDevice11::CreateSwapChain()
 		fs_desc.Scaling = fullscreen_mode.Scaling;
 		fs_desc.Windowed = FALSE;
 
-		Console.WriteLn("Creating a %dx%d exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
+		Console.WriteLn("D3D11: Creating a %dx%d exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
 		hr = m_dxgi_factory->CreateSwapChainForHwnd(
 			m_dev.get(), window_hwnd, &fs_sd_desc, &fs_desc, fullscreen_output.get(), m_swap_chain.put());
 		if (FAILED(hr))
 		{
-			Console.Warning("Failed to create fullscreen swap chain, trying windowed.");
+			Console.Warning("D3D11: Failed to create fullscreen swap chain, trying windowed.");
 			m_is_exclusive_fullscreen = false;
 			m_using_allow_tearing = m_allow_tearing_supported && m_using_flip_model_swap_chain;
 		}
@@ -722,7 +722,7 @@ bool GSDevice11::CreateSwapChain()
 
 	if (!m_is_exclusive_fullscreen)
 	{
-		Console.WriteLn("Creating a %dx%d %s windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height,
+		Console.WriteLn("D3D11: Creating a %dx%d %s windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height,
 			m_using_flip_model_swap_chain ? "flip-discard" : "discard");
 		hr = m_dxgi_factory->CreateSwapChainForHwnd(
 			m_dev.get(), window_hwnd, &swap_chain_desc, nullptr, nullptr, m_swap_chain.put());
@@ -730,7 +730,7 @@ bool GSDevice11::CreateSwapChain()
 
 	if (FAILED(hr) && m_using_flip_model_swap_chain)
 	{
-		Console.Warning("Failed to create a flip-discard swap chain, trying discard.");
+		Console.Warning("D3D11: Failed to create a flip-discard swap chain, trying discard.");
 		swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		swap_chain_desc.Flags = 0;
 		m_using_flip_model_swap_chain = false;
@@ -740,7 +740,7 @@ bool GSDevice11::CreateSwapChain()
 			m_dev.get(), window_hwnd, &swap_chain_desc, nullptr, nullptr, m_swap_chain.put());
 		if (FAILED(hr))
 		{
-			Console.Error("CreateSwapChainForHwnd failed: 0x%08X", hr);
+			Console.Error("D3D11: CreateSwapChainForHwnd failed: 0x%08X", hr);
 			return false;
 		}
 	}
@@ -752,11 +752,11 @@ bool GSDevice11::CreateSwapChain()
 	{
 		hr = swap_chain_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 		if (FAILED(hr))
-			Console.ErrorFmt("MakeWindowAssociation() to disable ALT+ENTER failed: {}", Error::CreateHResult(hr).GetDescription());
+			Console.ErrorFmt("D3D11: MakeWindowAssociation() to disable ALT+ENTER failed: {}", Error::CreateHResult(hr).GetDescription());
 	}
 	else
 	{
-		Console.ErrorFmt("GetParent() on swap chain to get factory failed: {}", Error::CreateHResult(hr).GetDescription());
+		Console.ErrorFmt("D3D11: GetParent() on swap chain to get factory failed: {}", Error::CreateHResult(hr).GetDescription());
 	}	
 
 	if (!CreateSwapChainRTV())
@@ -777,7 +777,7 @@ bool GSDevice11::CreateSwapChainRTV()
 	HRESULT hr = m_swap_chain->GetBuffer(0, IID_PPV_ARGS(backbuffer.put()));
 	if (FAILED(hr))
 	{
-		Console.Error("GetBuffer for RTV failed: 0x%08X", hr);
+		Console.Error("D3D11: GetBuffer for RTV failed: 0x%08X", hr);
 		return false;
 	}
 
@@ -789,14 +789,14 @@ bool GSDevice11::CreateSwapChainRTV()
 	hr = m_dev->CreateRenderTargetView(backbuffer.get(), &rtv_desc, m_swap_chain_rtv.put());
 	if (FAILED(hr))
 	{
-		Console.Error("CreateRenderTargetView for swap chain failed: 0x%08X", hr);
+		Console.Error("D3D11: CreateRenderTargetView for swap chain failed: 0x%08X", hr);
 		m_swap_chain_rtv.reset();
 		return false;
 	}
 
 	m_window_info.surface_width = backbuffer_desc.Width;
 	m_window_info.surface_height = backbuffer_desc.Height;
-	DevCon.WriteLn("Swap chain buffer size: %ux%u", m_window_info.surface_width, m_window_info.surface_height);
+	DevCon.WriteLn("D3D11: Swap chain buffer size: %ux%u", m_window_info.surface_width, m_window_info.surface_height);
 
 	if (m_window_info.type == WindowInfo::Type::Win32)
 	{
@@ -838,7 +838,7 @@ bool GSDevice11::UpdateWindow()
 
 	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain())
 	{
-		Console.WriteLn("Failed to create swap chain on updated window");
+		Console.WriteLn("D3D11: Failed to create swap chain on updated window");
 		return false;
 	}
 
@@ -911,7 +911,7 @@ void GSDevice11::ResizeWindow(s32 new_window_width, s32 new_window_height, float
 	HRESULT hr = m_swap_chain->ResizeBuffers(
 		0, 0, 0, DXGI_FORMAT_UNKNOWN, m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
 	if (FAILED(hr))
-		Console.Error("ResizeBuffers() failed: 0x%08X", hr);
+		Console.Error("D3D11: ResizeBuffers() failed: 0x%08X", hr);
 
 	if (!CreateSwapChainRTV())
 		pxFailRel("Failed to recreate swap chain RTV after resize");
@@ -1031,7 +1031,7 @@ void GSDevice11::PopTimestampQuery()
 
 		if (disjoint.Disjoint)
 		{
-			DevCon.WriteLn("GPU timing disjoint, resetting.");
+			DevCon.WriteLn("D3D11: GPU timing disjoint, resetting.");
 			m_read_timestamp_query = 0;
 			m_write_timestamp_query = 0;
 			m_waiting_timestamp_queries = 0;
@@ -1217,7 +1217,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 	HRESULT hr = m_dev->CreateTexture2D(&desc, nullptr, texture.put());
 	if (FAILED(hr))
 	{
-		Console.Error("DX11: Failed to allocate %dx%d surface", width, height);
+		Console.Error("D3D11: Failed to allocate %dx%d surface", width, height);
 		return nullptr;
 	}
 
@@ -1630,7 +1630,7 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 		const std::optional<std::string> shader = ReadShaderSource("shaders/common/fxaa.fx");
 		if (!shader.has_value())
 		{
-			Console.Error("FXAA shader is missing");
+			Console.Error("D3D11: FXAA shader is missing");
 			return;
 		}
 
@@ -1957,7 +1957,7 @@ bool GSDevice11::CreateCASShaders()
 	m_cas.cs_upscale = m_shader_cache.GetComputeShader(m_dev.get(), cas_source.value(), nullptr, "main");
 	if (!m_cas.cs_sharpen || !m_cas.cs_upscale)
 	{
-		Console.Error("Failed to create CAS compute shaders.");
+		Console.Error("D3D11: Failed to create CAS compute shaders.");
 		return false;
 	}
 
@@ -1996,7 +1996,7 @@ bool GSDevice11::CreateImGuiResources()
 	const std::optional<std::string> hlsl = ReadShaderSource("shaders/dx11/imgui.fx");
 	if (!hlsl.has_value())
 	{
-		Console.Error("Failed to read imgui.fx");
+		Console.Error("D3D11: Failed to read imgui.fx");
 		return false;
 	}
 
@@ -2013,7 +2013,7 @@ bool GSDevice11::CreateImGuiResources()
 			std::size(layout), hlsl.value(), nullptr, "vs_main") ||
 		!(m_imgui.ps = m_shader_cache.GetPixelShader(m_dev.get(), hlsl.value(), nullptr, "ps_main")))
 	{
-		Console.Error("Failed to compile ImGui shaders");
+		Console.Error("D3D11: Failed to compile ImGui shaders");
 		return false;
 	}
 
@@ -2029,7 +2029,7 @@ bool GSDevice11::CreateImGuiResources()
 	hr = m_dev->CreateBlendState(&blend_desc, m_imgui.bs.put());
 	if (FAILED(hr))
 	{
-		Console.Error("CreateImGuiResources(): CreateBlendState() failed: %08X", hr);
+		Console.Error("D3D11: CreateImGuiResources(): CreateBlendState() failed: %08X", hr);
 		return false;
 	}
 
@@ -2040,7 +2040,7 @@ bool GSDevice11::CreateImGuiResources()
 	hr = m_dev->CreateBuffer(&buffer_desc, nullptr, m_imgui.vs_cb.put());
 	if (FAILED(hr))
 	{
-		Console.Error("CreateImGuiResources(): CreateBlendState() failed: %08X", hr);
+		Console.Error("D3D11: CreateImGuiResources(): CreateBlendState() failed: %08X", hr);
 		return false;
 	}
 
@@ -2566,7 +2566,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		if (!IASetExpandVertexBuffer(config.verts, sizeof(*config.verts), config.nverts))
 		{
-			Console.Error("Failed to upload structured vertices (%u)", config.nverts);
+			Console.Error("D3D11: Failed to upload structured vertices (%u)", config.nverts);
 			return;
 		}
 
@@ -2576,7 +2576,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		if (!IASetVertexBuffer(config.verts, sizeof(*config.verts), config.nverts))
 		{
-			Console.Error("Failed to upload vertices (%u)", config.nverts);
+			Console.Error("D3D11: Failed to upload vertices (%u)", config.nverts);
 			return;
 		}
 	}
@@ -2591,7 +2591,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		if (!IASetIndexBuffer(config.indices, config.nindices))
 		{
-			Console.Error("Failed to upload indices (%u)", config.nindices);
+			Console.Error("D3D11: Failed to upload indices (%u)", config.nindices);
 			return;
 		}
 	}
