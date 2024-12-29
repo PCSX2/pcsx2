@@ -157,7 +157,7 @@ bool GSDeviceVK::SelectInstanceExtensions(ExtensionList* extension_list, const W
 
 	if (extension_count == 0)
 	{
-		Console.Error("Vulkan: No extensions supported by instance.");
+		Console.Error("VK: No extensions supported by instance.");
 		return false;
 	}
 
@@ -170,13 +170,13 @@ bool GSDeviceVK::SelectInstanceExtensions(ExtensionList* extension_list, const W
 				[name](const VkExtensionProperties& properties) { return !strcmp(name, properties.extensionName); }) !=
 			available_extension_list.end())
 		{
-			DevCon.WriteLn("Enabling extension: %s", name);
+			DevCon.WriteLn("VK: Enabling extension: %s", name);
 			extension_list->push_back(name);
 			return true;
 		}
 
 		if (required)
-			Console.Error("Vulkan: Missing required extension %s.", name);
+			Console.Error("VK: Missing required extension %s.", name);
 
 		return false;
 	};
@@ -204,7 +204,7 @@ bool GSDeviceVK::SelectInstanceExtensions(ExtensionList* extension_list, const W
 
 	// VK_EXT_debug_utils
 	if (enable_debug_utils && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
-		Console.Warning("Vulkan: Debug report requested, but extension is not available.");
+		Console.Warning("VK: Debug report requested, but extension is not available.");
 
 	oe->vk_ext_swapchain_maintenance1 = (wi.type != WindowInfo::Type::Surfaceless &&
 										 SupportsExtension(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME, false));
@@ -231,7 +231,7 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 	res = vkEnumeratePhysicalDevices(instance, &gpu_count, physical_devices.data());
 	if (res == VK_INCOMPLETE)
 	{
-		Console.Warning("First vkEnumeratePhysicalDevices() call returned %zu devices, but second returned %u",
+		Console.Warning("VK: First vkEnumeratePhysicalDevices() call returned %zu devices, but second returned %u",
 			physical_devices.size(), gpu_count);
 	}
 	else if (res != VK_SUCCESS)
@@ -254,7 +254,7 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 		if (VK_API_VERSION_VARIANT(props.apiVersion) == 0 && VK_API_VERSION_MAJOR(props.apiVersion) <= 1 &&
 			VK_API_VERSION_MINOR(props.apiVersion) < 1)
 		{
-			Console.Warning(fmt::format("Ignoring Vulkan GPU '{}' because it only claims support for Vulkan {}.{}.{}",
+			Console.Warning(fmt::format("VK: Ignoring GPU '{}' because it only claims support for Vulkan {}.{}.{}",
 				props.deviceName, VK_API_VERSION_MAJOR(props.apiVersion), VK_API_VERSION_MINOR(props.apiVersion),
 				VK_API_VERSION_PATCH(props.apiVersion)));
 			continue;
@@ -265,7 +265,7 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 		res = vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
 		if (res != VK_SUCCESS)
 		{
-			Console.Warning(fmt::format("Ignoring Vulkan GPU '{}' because vkEnumerateInstanceExtensionProperties() failed: ",
+			Console.Warning(fmt::format("VK: Ignoring GPU '{}' because vkEnumerateInstanceExtensionProperties() failed: ",
 				props.deviceName, Vulkan::VkResultToString(res)));
 			continue;
 		}
@@ -283,7 +283,7 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 					return (std::strcmp(required_extension_name, ext.extensionName) == 0);
 				}) == available_extension_list.end())
 			{
-				Console.Warning(fmt::format("Ignoring Vulkan GPU '{}' because is is missing required extension {}",
+				Console.Warning(fmt::format("VK: Ignoring GPU '{}' because is is missing required extension {}",
 					props.deviceName, required_extension_name));
 				has_missing_extension = true;
 			}
@@ -360,7 +360,7 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 
 	if (extension_count == 0)
 	{
-		Console.Error("Vulkan: No extensions supported by device.");
+		Console.Error("VK: No extensions supported by device.");
 		return false;
 	}
 
@@ -377,7 +377,7 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 			if (std::none_of(extension_list->begin(), extension_list->end(),
 					[name](const char* existing_name) { return (std::strcmp(existing_name, name) == 0); }))
 			{
-				DevCon.WriteLn("Enabling extension: %s", name);
+				DevCon.WriteLn("VK: Enabling extension: %s", name);
 				extension_list->push_back(name);
 			}
 
@@ -385,7 +385,7 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 		}
 
 		if (required)
-			Console.Error("Vulkan: Missing required extension %s.", name);
+			Console.Error("VK: Missing required extension %s.", name);
 
 		return false;
 	};
@@ -531,12 +531,12 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	}
 	if (m_graphics_queue_family_index == queue_family_count)
 	{
-		Console.Error("Vulkan: Failed to find an acceptable graphics queue.");
+		Console.Error("VK: Failed to find an acceptable graphics queue.");
 		return false;
 	}
 	if (surface != VK_NULL_HANDLE && m_present_queue_family_index == queue_family_count)
 	{
-		Console.Error("Vulkan: Failed to find an acceptable present queue.");
+		Console.Error("VK: Failed to find an acceptable present queue.");
 		return false;
 	}
 
@@ -758,7 +758,7 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	// confirm we actually support it
 	if (push_descriptor_properties.maxPushDescriptors < NUM_TFX_TEXTURES)
 	{
-		Console.Error("maxPushDescriptors (%u) is below required (%u)", push_descriptor_properties.maxPushDescriptors,
+		Console.Error("VK: maxPushDescriptors (%u) is below required (%u)", push_descriptor_properties.maxPushDescriptors,
 			NUM_TFX_TEXTURES);
 		return false;
 	}
@@ -766,7 +766,7 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	if (!line_rasterization_feature.bresenhamLines)
 	{
 		// See note in SelectDeviceExtensions().
-		Console.Error("bresenhamLines is not supported.");
+		Console.Error("VK: bresenhamLines is not supported.");
 #ifndef __APPLE__
 		return false;
 #else
@@ -870,7 +870,7 @@ bool GSDeviceVK::CreateAllocator()
 
 			if (heap_size_limits[type.heapIndex] == VK_WHOLE_SIZE)
 			{
-				Console.Warning("Disabling allocation from upload heap #%u (%.2f MB) due to debug device.",
+				Console.Warning("VK: Disabling allocation from upload heap #%u (%.2f MB) due to debug device.",
 					type.heapIndex, static_cast<float>(heap.size) / 1048576.0f);
 				heap_size_limits[type.heapIndex] = 0;
 				has_upload_heap = true;
@@ -1447,22 +1447,22 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessengerCallback(VkDebugUtilsMessageSeverit
 {
 	if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 	{
-		Console.Error("Vulkan debug report: (%s) %s",
+		Console.Error("VK: debug report: (%s) %s",
 			pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "", pCallbackData->pMessage);
 	}
 	else if (severity & (VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT))
 	{
-		Console.Warning("Vulkan debug report: (%s) %s",
+		Console.Warning("VK: debug report: (%s) %s",
 			pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "", pCallbackData->pMessage);
 	}
 	else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
 	{
-		Console.WriteLn("Vulkan debug report: (%s) %s",
+		Console.WriteLn("VK: debug report: (%s) %s",
 			pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "", pCallbackData->pMessage);
 	}
 	else
 	{
-		DevCon.WriteLn("Vulkan debug report: (%s) %s",
+		DevCon.WriteLn("VK: debug report: (%s) %s",
 			pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "", pCallbackData->pMessage);
 	}
 
@@ -2173,7 +2173,7 @@ bool GSDeviceVK::UpdateWindow()
 	VkSurfaceKHR surface = VKSwapChain::CreateVulkanSurface(m_instance, m_physical_device, &m_window_info);
 	if (surface == VK_NULL_HANDLE)
 	{
-		Console.Error("Failed to create new surface for swap chain");
+		Console.Error("VK: Failed to create new surface for swap chain");
 		return false;
 	}
 
@@ -2182,7 +2182,7 @@ bool GSDeviceVK::UpdateWindow()
 		!(m_swap_chain = VKSwapChain::Create(m_window_info, surface, present_mode,
 			  Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl))))
 	{
-		Console.Error("Failed to create swap chain");
+		Console.Error("VK: Failed to create swap chain");
 		VKSwapChain::DestroyVulkanSurface(m_instance, &m_window_info, surface);
 		return false;
 	}
@@ -2210,7 +2210,7 @@ void GSDeviceVK::ResizeWindow(s32 new_window_width, s32 new_window_height, float
 	if (!m_swap_chain->ResizeSwapChain(new_window_width, new_window_height, new_window_scale))
 	{
 		// AcquireNextImage() will fail, and we'll recreate the surface.
-		Console.Error("Failed to resize swap chain. Next present will fail.");
+		Console.Error("VK: Failed to resize swap chain. Next present will fail.");
 		return;
 	}
 
@@ -2316,10 +2316,10 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 		}
 		else if (res == VK_ERROR_SURFACE_LOST_KHR)
 		{
-			Console.Warning("Surface lost, attempting to recreate");
+			Console.Warning("VK: Surface lost, attempting to recreate");
 			if (!m_swap_chain->RecreateSurface(m_window_info))
 			{
-				Console.Error("Failed to recreate surface after loss");
+				Console.Error("VK: Failed to recreate surface after loss");
 				ExecuteCommandBuffer(false);
 				return PresentResult::FrameSkipped;
 			}
@@ -2494,7 +2494,7 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 				return false;
 			}
 
-			ERROR_LOG("Vulkan validation/debug layers requested but are unavailable. Creating non-debug device.");
+			ERROR_LOG("VK: validation/debug layers requested but are unavailable. Creating non-debug device.");
 		}
 	}
 
@@ -2624,7 +2624,7 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
 
 	if (!m_features.texture_barrier)
-		Console.Warning("Texture buffers are disabled. This may break some graphical effects.");
+		Console.Warning("VK: Texture buffers are disabled. This may break some graphical effects.");
 
 	// Test for D32S8 support.
 	{
@@ -2670,7 +2670,7 @@ bool GSDeviceVK::CheckFeatures()
 		vkGetPhysicalDeviceFormatProperties(m_physical_device, vkfmt, &props);
 		if ((props.optimalTilingFeatures & bits) != bits)
 		{
-			Host::ReportFormattedErrorAsync("Vulkan Renderer Unavailable",
+			Host::ReportFormattedErrorAsync("VK: Renderer Unavailable",
 				"Required format %u is missing bits, you may need to update your driver. (vk:%u, has:0x%x, needs:0x%x)",
 				fmt, static_cast<unsigned>(vkfmt), props.optimalTilingFeatures, bits);
 			return false;
@@ -4387,14 +4387,14 @@ bool GSDeviceVK::CompileImGuiPipeline()
 	const std::optional<std::string> glsl = ReadShaderSource("shaders/vulkan/imgui.glsl");
 	if (!glsl.has_value())
 	{
-		Console.Error("Failed to read imgui.glsl");
+		Console.Error("VK: Failed to read imgui.glsl");
 		return false;
 	}
 
 	VkShaderModule vs = GetUtilityVertexShader(glsl.value(), "vs_main");
 	if (vs == VK_NULL_HANDLE)
 	{
-		Console.Error("Failed to compile ImGui vertex shader");
+		Console.Error("VK: Failed to compile ImGui vertex shader");
 		return false;
 	}
 	ScopedGuard vs_guard([this, &vs]() { vkDestroyShaderModule(m_device, vs, nullptr); });
@@ -4402,7 +4402,7 @@ bool GSDeviceVK::CompileImGuiPipeline()
 	VkShaderModule ps = GetUtilityFragmentShader(glsl.value(), "ps_main");
 	if (ps == VK_NULL_HANDLE)
 	{
-		Console.Error("Failed to compile ImGui pixel shader");
+		Console.Error("VK: Failed to compile ImGui pixel shader");
 		return false;
 	}
 	ScopedGuard ps_guard([this, &ps]() { vkDestroyShaderModule(m_device, ps, nullptr); });
@@ -4429,7 +4429,7 @@ bool GSDeviceVK::CompileImGuiPipeline()
 	m_imgui_pipeline = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(), false);
 	if (!m_imgui_pipeline)
 	{
-		Console.Error("Failed to compile ImGui pipeline");
+		Console.Error("VK: Failed to compile ImGui pipeline");
 		return false;
 	}
 
@@ -4474,7 +4474,7 @@ void GSDeviceVK::RenderImGui()
 			const u32 size = sizeof(ImDrawVert) * static_cast<u32>(cmd_list->VtxBuffer.Size);
 			if (!m_vertex_stream_buffer.ReserveMemory(size, sizeof(ImDrawVert)))
 			{
-				Console.Warning("Skipping ImGui draw because of no vertex buffer space");
+				Console.Warning("VK: Skipping ImGui draw because of no vertex buffer space");
 				return;
 			}
 
@@ -4518,7 +4518,7 @@ void GSDeviceVK::RenderBlankFrame()
 	VkResult res = m_swap_chain->AcquireNextImage();
 	if (res != VK_SUCCESS)
 	{
-		Console.Error("Failed to acquire image for blank frame present");
+		Console.Error("VK: Failed to acquire image for blank frame present");
 		return;
 	}
 
@@ -5021,13 +5021,13 @@ void GSDeviceVK::ExecuteCommandBuffer(bool wait_for_completion, const char* reas
 	const std::string reason_str(StringUtil::StdStringFromFormatV(reason, ap));
 	va_end(ap);
 
-	Console.Warning("Vulkan: Executing command buffer due to '%s'", reason_str.c_str());
+	Console.Warning("VK: Executing command buffer due to '%s'", reason_str.c_str());
 	ExecuteCommandBuffer(wait_for_completion);
 }
 
 void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completion, const char* reason)
 {
-	Console.Warning("Vulkan: Executing command buffer due to '%s'", reason);
+	Console.Warning("VK: Executing command buffer due to '%s'", reason);
 
 	const VkRenderPass render_pass = m_current_render_pass;
 	const GSVector4i render_pass_area = m_current_render_pass_area;
@@ -5344,7 +5344,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		{
 			if (already_execed)
 			{
-				Console.Error("Failed to reserve vertex uniform space");
+				Console.Error("VK: Failed to reserve vertex uniform space");
 				return false;
 			}
 
@@ -5365,7 +5365,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		{
 			if (already_execed)
 			{
-				Console.Error("Failed to reserve pixel uniform space");
+				Console.Error("VK: Failed to reserve pixel uniform space");
 				return false;
 			}
 
@@ -5991,7 +5991,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
 
 #ifdef PCSX2_DEVBUILD
 	if ((one_barrier || full_barrier) && !m_pipeline_selector.ps.IsFeedbackLoop()) [[unlikely]]
-		Console.Warning("GS: Possible unnecessary barrier detected.");
+		Console.Warning("VK: Possible unnecessary barrier detected.");
 #endif
 	const VkDependencyFlags barrier_flags = GetColorBufferBarrierFlags();
 	if (full_barrier)
