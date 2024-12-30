@@ -22,7 +22,7 @@ MULTI_ISA_UNSHARED_IMPL;
 u64 __noinline CURRENT_ISA::GSXXH3_64_Long(const void* data, size_t len)
 {
 	// XXH marks its function that calls this noinline, and it would be silly to stack noinline functions, so call the internal function directly
-	return XXH3_hashLong_64b_internal(data, len, XXH3_kSecret, sizeof(XXH3_kSecret), XXH3_accumulate_512, XXH3_scrambleAcc);
+	return XXH3_hashLong_64b_internal(data, len, XXH3_kSecret, sizeof(XXH3_kSecret), XXH3_accumulate, XXH3_scrambleAcc);
 }
 
 u32 CURRENT_ISA::GSXXH3_64_Update(void* state, const void* data, size_t len)
