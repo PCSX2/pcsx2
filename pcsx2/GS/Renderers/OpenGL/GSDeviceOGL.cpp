@@ -170,13 +170,13 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_gl_context = GLContext::Create(m_window_info, &error);
 	if (!m_gl_context)
 	{
-		Console.ErrorFmt("Failed to create any GL context: {}", error.GetDescription());
+		Console.ErrorFmt("GL: Failed to create any context: {}", error.GetDescription());
 		return false;
 	}
 
 	if (!m_gl_context->MakeCurrent())
 	{
-		Console.Error("Failed to make GL context current");
+		Console.Error("GL: Failed to make context current");
 		return false;
 	}
 
@@ -196,11 +196,11 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	if (!GSConfig.DisableShaderCache)
 	{
 		if (!m_shader_cache.Open())
-			Console.Warning("Shader cache failed to open.");
+			Console.Warning("GL: Shader cache failed to open.");
 	}
 	else
 	{
-		Console.WriteLn("Not using shader cache.");
+		Console.WriteLn("GL: Not using shader cache.");
 	}
 
 	// because of fbo bindings below...
@@ -544,7 +544,7 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		}
 		else
 		{
-			Console.Error("Failed to create texture upload buffer. Using slow path.");
+			Console.Error("GL: Failed to create texture upload buffer. Using slow path.");
 		}
 	}
 
@@ -617,17 +617,17 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 	if (std::strstr(vendor, "Advanced Micro Devices") || std::strstr(vendor, "ATI Technologies Inc.") ||
 		std::strstr(vendor, "ATI"))
 	{
-		Console.WriteLn(Color_StrongRed, "OGL: AMD GPU detected.");
+		Console.WriteLn(Color_StrongRed, "GL: AMD GPU detected.");
 		//vendor_id_amd = true;
 	}
 	else if (std::strstr(vendor, "NVIDIA Corporation"))
 	{
-		Console.WriteLn(Color_StrongGreen, "OGL: NVIDIA GPU detected.");
+		Console.WriteLn(Color_StrongGreen, "GL: NVIDIA GPU detected.");
 		vendor_id_nvidia = true;
 	}
 	else if (std::strstr(vendor, "Intel"))
 	{
-		Console.WriteLn(Color_StrongBlue, "OGL: Intel GPU detected.");
+		Console.WriteLn(Color_StrongBlue, "GL: Intel GPU detected.");
 		//vendor_id_intel = true;
 	}
 
@@ -706,13 +706,13 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 	// using the normal texture update routines and letting the driver take care of it.
 	buggy_pbo = !GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage;
 	if (buggy_pbo)
-		Console.Warning("Not using PBOs for texture uploads because buffer_storage is unavailable.");
+		Console.Warning("GL: Not using PBOs for texture uploads because buffer_storage is unavailable.");
 
 	// Give the user the option to disable PBO usage for downloads.
 	// Most drivers seem to be faster with PBO.
 	m_disable_download_pbo = Host::GetBoolSettingValue("EmuCore/GS", "DisableGLDownloadPBO", false);
 	if (m_disable_download_pbo)
-		Console.Warning("Not using PBOs for texture downloads, this may reduce performance.");
+		Console.Warning("GL: Not using PBOs for texture downloads, this may reduce performance.");
 
 	// optional features based on context
 	m_features.broken_point_sampler = false;
@@ -751,7 +751,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 	const bool buggy_vs_expand =
 		vendor_id_nvidia && (!GLAD_GL_ARB_bindless_texture && !GLAD_GL_NV_bindless_texture);
 	if (buggy_vs_expand)
-		Console.Warning("Disabling vertex shader expand due to broken NVIDIA driver.");
+		Console.Warning("GL: Disabling vertex shader expand due to broken NVIDIA driver.");
 
 	if (GLAD_GL_ARB_shader_storage_buffer_object)
 	{
@@ -762,7 +762,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 								GLAD_GL_ARB_gpu_shader5);
 	}
 	if (!m_features.vs_expand)
-		Console.Warning("Vertex expansion is not supported. This will reduce performance.");
+		Console.Warning("GL: Vertex expansion is not supported. This will reduce performance.");
 
 	GLint point_range[2] = {};
 	glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, point_range);
@@ -774,7 +774,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 	m_max_texture_size = std::max(1024u, static_cast<u32>(max_texture_size));
 
-	Console.WriteLn("Using %s for point expansion, %s for line expansion and %s for sprite expansion.",
+	Console.WriteLn("GL: Using %s for point expansion, %s for line expansion and %s for sprite expansion.",
 		m_features.point_expand ? "hardware" : (m_features.vs_expand ? "vertex expanding" : "UNSUPPORTED"),
 		m_features.line_expand ? "hardware" : (m_features.vs_expand ? "vertex expanding" : "UNSUPPORTED"),
 		m_features.vs_expand ? "vertex expanding" : "CPU");
@@ -798,7 +798,7 @@ void GSDeviceOGL::SetSwapInterval()
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	if (!m_gl_context->SetSwapInterval(interval))
-		WARNING_LOG("Failed to set swap interval to {}", interval);
+		WARNING_LOG("GL: Failed to set swap interval to {}", interval);
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
@@ -881,7 +881,7 @@ bool GSDeviceOGL::UpdateWindow()
 
 	if (!m_gl_context->ChangeSurface(m_window_info))
 	{
-		Console.Error("Failed to change surface");
+		Console.Error("GL: Failed to change surface");
 		return false;
 	}
 
@@ -920,7 +920,7 @@ void GSDeviceOGL::DestroySurface()
 {
 	m_window_info = {};
 	if (!m_gl_context->ChangeSurface(m_window_info))
-		Console.Error("Failed to switch to surfaceless");
+		Console.Error("GL: Failed to switch to surfaceless");
 }
 
 std::string GSDeviceOGL::GetDriverInfo() const
@@ -1336,7 +1336,7 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 
 std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 {
-	DevCon.WriteLn("Compiling new vertex shader with selector 0x%" PRIX64, sel.key);
+	DevCon.WriteLn("GL: Compiling new vertex shader with selector 0x%" PRIX64, sel.key);
 
 	std::string macro = fmt::format("#define VS_FST {}\n", static_cast<u32>(sel.fst))
 		+ fmt::format("#define VS_IIP {}\n", static_cast<u32>(sel.iip))
@@ -1350,7 +1350,7 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 
 std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 {
-	DevCon.WriteLn("Compiling new pixel shader with selector 0x%" PRIX64 "%08X", sel.key_hi, sel.key_lo);
+	DevCon.WriteLn("GL: Compiling new pixel shader with selector 0x%" PRIX64 "%08X", sel.key_hi, sel.key_lo);
 
 	std::string macro = fmt::format("#define PS_FST {}\n", sel.fst)
 		+ fmt::format("#define PS_WMS {}\n", sel.wms)
@@ -1834,7 +1834,7 @@ bool GSDeviceOGL::CompileFXAAProgram()
 	const std::optional<std::string> shader = ReadShaderSource("shaders/common/fxaa.fx");
 	if (!shader.has_value())
 	{
-		Console.Error("Failed to read fxaa.fs");
+		Console.Error("GL: Failed to read fxaa.fs");
 		return false;
 	}
 
@@ -1842,7 +1842,7 @@ bool GSDeviceOGL::CompileFXAAProgram()
 	std::optional<GLProgram> prog = m_shader_cache.GetProgram(m_convert.vs, ps);
 	if (!prog.has_value())
 	{
-		Console.Error("Failed to compile FXAA fragment shader");
+		Console.Error("GL: Failed to compile FXAA fragment shader");
 		return false;
 	}
 
@@ -2065,7 +2065,7 @@ bool GSDeviceOGL::CreateImGuiProgram()
 	const std::optional<std::string> glsl = ReadShaderSource("shaders/opengl/imgui.glsl");
 	if (!glsl.has_value())
 	{
-		Console.Error("Failed to read imgui.glsl");
+		Console.Error("GL: Failed to read imgui.glsl");
 		return false;
 	}
 
@@ -2074,7 +2074,7 @@ bool GSDeviceOGL::CreateImGuiProgram()
 		GetShaderSource("ps_main", GL_FRAGMENT_SHADER, glsl.value()));
 	if (!prog.has_value())
 	{
-		Console.Error("Failed to compile imgui shaders");
+		Console.Error("GL: Failed to compile imgui shaders");
 		return false;
 	}
 
