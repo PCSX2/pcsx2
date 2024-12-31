@@ -1,63 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="hi_IN" sourcelanguage="en_US">
+<TS version="2.1" language="gn_PY" sourcelanguage="en_US">
   <context>
     <name>AboutDialog</name>
     <message>
       <location filename="../AboutDialog.ui" line="14"/>
       <source>About PCSX2</source>
-      <translation>PCSX2 के बारे मे</translation>
+      <translation>Ñe'ẽngue PCSX2 rehegua</translation>
     </message>
     <message>
       <location filename="../AboutDialog.ui" line="69"/>
       <source>SCM Version</source>
       <extracomment>SCM= Source Code Management</extracomment>
-      <translation>SCM संस्करण</translation>
+      <translation>Version de SCM</translation>
     </message>
     <message>
       <location filename="../AboutDialog.ui" line="79"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2&apos;s hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 एक मूफत ओर खूला स्त्रोत Playstation 2 (PS2) का एम्यूलेटर हे। इसका उघ्ऐशय PS2 के हार्डवेयर को MIPS CPU दुभाषियोँ, Recompilers और एक Virtual Machine के संयोजण को इस्तमाल करके आपको PS2 की गेम्स आपके PC पे चलाने देता है, कई विशेषताएं और फायदों के साथ।&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>PCSX2 ha'e peteĩ emulador PlayStation 2 (PS2) oĩva oikóva ha oñemohendáva. Pe porãite ohechauka ha'etehápe ohechauka PS2 rehegua, oipuruva MIPS CPU Interpreté, Recompiladore ha peteĩ Mašiná Virtual oiporúva Estado-kuéra ha Memoria PS2 rehegua. Ko'ãichagua, ikatúta reho guasu PS2 ñe'ẽ rehegua ojapo PC-pe, ojapoháicha heta mba'e porã ha beneficios rehegua.</translation>
     </message>
     <message>
       <location filename="../AboutDialog.ui" line="105"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PlayStation 2 और PS2 Sony Interactive Entertainment के पंजीकृत ट्रेडमार्क हैं। यह एप्लिकेशन किसी भी तरह से Sony Interactive entertainment से संबद्ध नहीं है।&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>PlayStation 2 ha PS2, ha'e umi marca registrada Sony Interactive Entertainment-gua. Ko aplicación ndaipóri hikuái ne'ĩra jehechaukaha Sony Interactive Entertainment ndive.</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="51"/>
       <source>Website</source>
-      <translation>वेबसाइट</translation>
+      <translation>Ñande Website</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="53"/>
       <source>Support Forums</source>
-      <translation>सहयता फोरम</translation>
+      <translation>Foro rembiapo</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="55"/>
       <source>GitHub Repository</source>
-      <translation>गिटहब रिपोजिटरी</translation>
+      <translation>GitHub ryru</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="57"/>
       <source>License</source>
-      <translation>लाइसेंस</translation>
+      <translation>Licencia</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="59"/>
       <source>Third-Party Licenses</source>
-      <translation>थर्ड-पार्टी लाइसेंस</translation>
+      <translation>Licencias de Terceros rehegua</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="109"/>
       <source>View Document</source>
-      <translation>डॉक्यूमेंट देखें</translation>
+      <translation>ehecha kuatiakuéra</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="131"/>
       <source>File not found: %1</source>
-      <translation>फ़ाइल नहीं मिली: %1</translation>
+      <translation>Archivo ndojejuhúi: %1</translation>
     </message>
   </context>
   <context>
@@ -66,53 +66,53 @@
       <location filename="../Settings/AchievementLoginDialog.ui" line="17"/>
       <source>RetroAchievements Login</source>
       <comment>Window title</comment>
-      <translation>Retro Achievements पर लॉगिन करें</translation>
+      <translation>RetroAchievements Jeike rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.ui" line="44"/>
       <source>RetroAchievements Login</source>
       <comment>Header text</comment>
-      <translation>RetroAchievements लॉगिन</translation>
+      <translation>RetroAchievements Jeike rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.ui" line="56"/>
       <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in PCSX2, an access token will be generated and used instead.</source>
-      <translation>कृपया अपना नाम और पासवर्ड retroachievements.org के इस्तमाल के लिए नीचे लिखे। आपका पासवर्ड PCSX2 मे नही रखा जाएगा, इसके बजाय एक एक्सेस टोकन बनेगा और उसका इस्तमाल करा जाएगा।</translation>
+      <translation>Emoinge puruhára réra ha ñe’ẽñemi retroachievements.org-pe g̃uarã ko’ápe. Ne ñe’ẽñemi noñongatúi PCSX2-pe, ojejapóta peteĩ jeikerã token ha ojeporúta hendaguépe.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.ui" line="81"/>
       <source>User Name:</source>
-      <translation>उपयोगकर्ता नाम:</translation>
+      <translation>Pojoapy puruhára réra:</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.ui" line="91"/>
       <source>Password:</source>
-      <translation>पासवर्ड:</translation>
+      <translation>Terañemí:</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.ui" line="109"/>
       <source>Ready...</source>
-      <translation>तैयार है</translation>
+      <translation>Oĩmbáma...</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="25"/>
       <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in PCSX2, an access token will be generated and used instead.</source>
-      <translation>&lt;strong&gt;आपका रेट्रोअचीवमेंट्स लॉगिन टोकन अब मान्य नहीं है।&lt;/strong&gt; उपलब्धियों को ट्रैक करने के लिए आपको अपनी साख दोबारा दर्ज करनी होगी। आपका पासवर्ड PCSX2 में सहेजा नहीं जाएगा, इसके बजाय एक एक्सेस टोकन बनाया और उपयोग किया जाएगा।</translation>
+      <translation>&lt;strong&gt;Ne RetroAchievements jeikerã token ndoikovéima.&lt;/strong&gt; Reike jeyva’erã ne credencial-kuérape ikatu hag̃uáicha ojesegui umi mba’e ojehupytýva. Ne ñe’ẽñemi noñongatúi PCSX2-pe, ojejapóta peteĩ jeikerã token ha ojeporúta hendaguépe.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="30"/>
       <source>&amp;Login</source>
-      <translation>लॉग इन करें</translation>
+      <translation>&amp;Jeike</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="43"/>
       <source>Logging in...</source>
-      <translation>लॉगिन कर रहे है...</translation>
+      <translation>Oike jave...</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="73"/>
       <source>Login Error</source>
-      <translation>लॉग इन करने में त्रुटि</translation>
+      <translation>Error ojeike jave</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="74"/>
@@ -120,35 +120,34 @@
 Error: %1
 
 Please check your username and password, and try again.</source>
-      <translation>लॉगिन असफल।
-गलती: %1
+      <translation>¡Ojejavy oñepyrũvo sesión!
+Error: %1
 
- कृपया अपने यूज़रनेम और पासवर्ड की जाँच करें और पुन: प्रयास करें।</translation>
+Emoañete ne puruhára réra ha ne ñe’ẽñemi ha eñeha’ã jey.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="75"/>
       <source>Login failed.</source>
-      <translation>लॉगिन असफल है</translation>
+      <translation>Ojejavy ojeike jave</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="83"/>
       <source>Enable Achievements</source>
-      <translation>उपलब्धियाँ सक्षम करें</translation>
+      <translation>Ombokatupyry umi jehupytyrã</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="84"/>
       <source>Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.
 
 Do you want to enable tracking now?</source>
-      <translation>उपलब्धियो पे अभी आथ रथना बन्द है, आपके लोगिन का कोड असर नही होगा जब तक आप ट्रैकिंग (आश रशना) डनेबल नही करते है।
+      <translation>Ko’áĝa ndojehejái jehupytyrã jesareko. Nde jeike ndoikomo’ãi efecto ojemboguata peve seguimiento.
 
-
-क्या आप टरैकिन्ग (आश रशना) डनेबल करना चाहेंगे?</translation>
+¿Remboguatasépa ko’áĝa seguimiento?</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="95"/>
       <source>Enable Hardcore Mode</source>
-      <translation>हार्डकोर मोड को सक्षम करें</translation>
+      <translation>Emboguata Modo Hardcore rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="96"/>
@@ -157,21 +156,17 @@ Do you want to enable tracking now?</source>
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
 
 Do you want to enable hardcore mode?</source>
-      <translation>हार्डकोर मोड फिलहाल सक्षम नहीं है. हार्डकोर मोड को सक्षम करने से आप समय, स्कोर निर्धारित कर सकते हैं और गेम-विशिष्ट लीडरबोर्ड में भाग ले सकते हैं।
-
-मगर, हार्डकोर मोड सेव स्टेट्स, चीट्स और स्लोडाउन कार्यक्षमता के उपयोग को भी रोकता है।
-
-क्या आप हार्डकोर मोड सक्षम करना चाहते हैं?</translation>
+      <translation/>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="112"/>
       <source>Reset System</source>
-      <translation>रीसेट सिस्टम</translation>
+      <translation>Emoñepyrũ jey pe sistema</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="113"/>
       <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-      <translation>सिस्टम रीसेट होने तक हार्डकोर मोड सक्षम नहीं किया जाएगा। क्या आप अब सिस्टम को रीसेट करना चाहते हैं?</translation>
+      <translation>Modo extremo ndojejapomo’ãi oñemboguata jey peve sistema. ¿Remohendase jeýpa ko’áĝa pe sistema?</translation>
     </message>
   </context>
   <context>
@@ -180,104 +175,104 @@ Do you want to enable hardcore mode?</source>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="42"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="39"/>
       <source>Enable Achievements</source>
-      <translation>उपलब्धियाँ सक्षम करें</translation>
+      <translation>Ombokatupyry umi jehupytyrã</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="63"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="40"/>
       <source>Enable Hardcore Mode</source>
-      <translation>हार्डकोर मोड सक्षम करें</translation>
+      <translation>Emboguata modo extremo rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="49"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="47"/>
       <source>Test Unofficial Achievements</source>
-      <translation>अनौपचारिक अचीवमेंट्स का परीक्षण करें</translation>
+      <translation>Umi Jehupytyrã Prueba No Oficial rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="171"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="43"/>
       <source>Enable Sound Effects</source>
-      <translation>ध्वनि प्रभाव सक्षम करें</translation>
+      <translation>Emboguata umi efectos de sonido</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="73"/>
       <source>Notifications</source>
-      <translation>सूचनाएं</translation>
+      <translation>Emomba’apo umi marandu</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="109"/>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="155"/>
       <source>5 seconds</source>
-      <translation>5 सेकंड</translation>
+      <translation>5 aravo'ive</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="188"/>
       <source>Account</source>
-      <translation>अकाउंट</translation>
+      <translation>Mba'erepy</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="214"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="162"/>
       <source>Login...</source>
-      <translation>लॉग इन करें...</translation>
+      <translation>Eike ko'ápe...</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="207"/>
       <source>View Profile...</source>
-      <translation>प्रोफ़ाइल देखें...</translation>
+      <translation>Ehecha perfil...</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="29"/>
       <source>Settings</source>
-      <translation>समायोजन</translation>
+      <translation>Ajustes</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="35"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="46"/>
       <source>Enable Spectator Mode</source>
-      <translation>दर्शक मोड सक्षम करे</translation>
+      <translation>Emboguata modo espectador rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="56"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="45"/>
       <source>Enable Encore Mode</source>
-      <translation>ऐणकोर मोड सक्षम करे</translation>
+      <translation>Emboguata Modo Encore rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="118"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="41"/>
       <source>Show Achievement Notifications</source>
-      <translation>उपलब्धियों की सूचनाएं दिखाए</translation>
+      <translation>Ohechauka Marandu Jehupytyrã rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="164"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="42"/>
       <source>Show Leaderboard Notifications</source>
-      <translation>लीडर बोर्ड की सूचनाएं दिखाए</translation>
+      <translation>Ohechauka umi marandu calificación rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="178"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="44"/>
       <source>Enable In-Game Overlays</source>
-      <translation>ईन-गेम ओवरलय सक्षम करे</translation>
+      <translation>Emboguata umi superposición ñembosarái ryepýpe</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="194"/>
       <source>Username:
 Login token generated at:</source>
-      <translation>उपयोगकर्ता नाम: 
-लॉगिन टोकन उत्पन्न किया गया:</translation>
+      <translation>Pojoapy puruhára réra:
+Token jeikerã oñembohekopyréva ko’ápe:</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="232"/>
       <source>Game Info</source>
-      <translation>गेम की जानकारी</translation>
+      <translation>Ñembosarái rehegua Info</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="248"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 RetroAchievements को एक उपलब्धी डेटाबेस और प्रोग्रेस ट्रैकिंग के लिए इस्तमाल कर्ता है। उपलब्धियां का इस्तमाल करने के लिए कृपया एक अकाउंट बनाएं &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt; गेम के दोरान उपलब्धियां की लिस्ट देखने के लिए हॉटकी दबायें &lt;span style=&quot; font-weight:600;&quot;&gt;विराम मेन्यू खोलिये़&lt;/span&gt; और मेन्यू में से &lt;span style=&quot; font-weight:600;&quot;&gt;उपलब्धियां&lt;/span&gt;चुनिए।&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 oipuru RetroAchievements peteĩ mba’ekuaarã ryru jehupytyrã ramo ha ojesareko hag̃ua mba’éichapa oho ohóvo. Eipuru hag̃ua jehupytyrã, eñemboguapy peteĩ cuenta-pe &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot; justify&quot;&gt;Ehecha hag̃ua lista jehupytyrã ñembosarái ryepýpe, eity tecla caliente &lt;span style=&quot; font-weight:600;&quot;&gt;Eipe'a Menú Pausa rehegua&lt;/span&gt; ha eiporavo &lt;estilo span=&quot; font-weight:600;&quot;&gt;Ojehupytyva’ekue&lt;/span&gt; menúgui.&lt;/p&gt;&lt;/tete&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="39"/>
@@ -286,23 +281,22 @@ Login token generated at:</source>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="46"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="47"/>
       <source>Unchecked</source>
-      <translation>अनियंत्रित</translation>
+      <translation>Ndojejokóiva</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="46"/>
       <source>When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.</source>
-      <translation>इनेबल होने पर, PCSX2 मान लेगा कि सभी उपलब्धियाँ लॉक हो गई हैं और सर्वर पर कोई अनलॉक सूचना नहीं भेजेगा।</translation>
+      <translation>Ojehejávo, PCSX2 oimo’ãta opaite jehupytyrã oñembotyha ha nomondói mba’eveichagua marandu desbloqueo rehegua servidor-pe.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="47"/>
       <source>When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-      <translation>इनेबल होने पर, PCSX2 अनौपचारिक स्टेटस मे से उपलब्धियों की सूची देगा।
-कृपया ध्यान रखें कि ये उपलब्धिये़ RetroAchievements के द्वारा ट्रैक नहीं की जाएंगी, तो यह हर बार खुलेंगे।</translation>
+      <translation>Ojehejávo, PCSX2 omoĩta umi mba’e ojehupytýva umi conjunto ndaha’éiva oficial-gui. Eñatendéke ko’ã jehupytyrã ndojejapóiha seguimiento RetroAchievements rupive, upévare ojedesblokea opaite jey.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="40"/>
       <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-      <translation>&quot;चुनती&quot;उपलब्धियां और लीडर बोर्ड ट्रैकिंग के लिए मोड। सेव स्टेट, चिटस और स्लोडाउन के समारोह को बंध कर देता है।</translation>
+      <translation>&quot;Desafío&quot; modo umi jehupytyrã, oikehápe seguimiento tablero de liderazgo rehegua. Ombogue umi función estado de salvar, cheats ha desaceleración rehegua.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="41"/>
@@ -310,73 +304,73 @@ Login token generated at:</source>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="43"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="44"/>
       <source>Checked</source>
-      <translation>नियंत्रित</translation>
+      <translation>Ojehechákuri</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="43"/>
       <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
-      <translation>उपलब्धियां खुलने और लीडर बर्ड्स प्रविष्टियाँ होने पर आवाज का प्रभाव बजाता है।</translation>
+      <translation>Ombopu efectos de sonido umi evento-pe g̃uarã haꞌeháicha desbloqueo jehupytyrã ha umi presentación tablero de liderazgo rehegua.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="44"/>
       <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
-      <translation>चुनौती/दुरुस्त उपलब्धी सक्रिय होते समाए निचले-दाएं स्क्रीन के कोने पर आइकनस दिखाता है।</translation>
+      <translation>Ohechauka icono oĩva pantalla esquina inferior-derecha-pe oĩ jave activo peteĩ jehupytyrã desafío/primed.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="39"/>
       <source>When enabled and logged in, PCSX2 will scan for achievements on startup.</source>
-      <translation>सक्षम और लॉग इन होने पर PCSX2 गेम लोड पर उपलब्धियों के लिए स्कैन करेगा।</translation>
+      <translation>Ojehejávo ha ojeike jave, PCSX2 ohesa’ỹijóta umi mba’e ojehupytýva oñepyrũvo.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="41"/>
       <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
-      <translation>उपलब्धियां खुलने और गेम समापन होने पर पॉप अप संदेशों को दिखाता है।</translation>
+      <translation>Ohechauka marandu ojehechaukáva umi mbaꞌe ojehúva rehe haꞌeháicha jehupytyrã ñemboty ha ñembosarái ñembopaha.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="42"/>
       <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
-      <translation>लीडर बोर्ड चुनौती को शुरू, जमा करते या हारते समय पॉपअप संदेश दिखाता है।</translation>
+      <translation>Ohechauka marandu ojehechaukáva oñepyrũvo, omondo térã ofalla jave peteĩ desafío tablero de líderes rehegua.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="45"/>
       <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
-      <translation>सक्षम होने पर, हर सत्र ऐसा बर्ताव करेगा जैसे कोई उपलब्धियां ना खुली हो।</translation>
+      <translation>Ojehejávo, peteĩteĩva sesión oñekomportáta ndojepe’áiramoguáicha mba’eveichagua jehupytyrã.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="120"/>
       <source>Reset System</source>
-      <translation>रीसेट सिस्टम</translation>
+      <translation>Emoñepyrũ jey pe sistema</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="121"/>
       <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-      <translation>हार्डकोर मोड सिस्टम रिसेट होने से पहले सक्षम नहीं होगा, क्या आप सिस्टम को अभी रिसेट करना चाहते हैं?</translation>
+      <translation>Modo extremo ndojehejamoꞌãi oñemboheko jey peve sistema. ¿Remohendase jeýpa ko’áĝa pe sistema?</translation>
     </message>
     <message numerus="yes">
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="134"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="141"/>
       <source>%n seconds</source>
-      <translation type="unfinished">
-        <numerusform>%n सेकंड</numerusform>
-        <numerusform>%n seconds</numerusform>
+      <translation>
+        <numerusform>%n aravo'ive</numerusform>
+        <numerusform/>
       </translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="154"/>
       <source>Username: %1
 Login token generated on %2.</source>
-      <translation>उपयोगकर्ता नाम: %1
-लॉगिन टोकन %2 पर उत्पन्न किया गया है।</translation>
+      <translation>Pojoapy réra: %1
+Token jeikerã oñembohekopyréva %2-pe.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="157"/>
       <source>Logout</source>
-      <translation>लॉगआउट</translation>
+      <translation>Ojedesconecta sesión rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="161"/>
       <source>Not Logged In.</source>
-      <translation>लॉग इन नहीं हैं</translation>
+      <translation>Nde ndaha’éi reikeva’ekue.</translation>
     </message>
   </context>
   <context>
@@ -384,23 +378,23 @@ Login token generated on %2.</source>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1065"/>
       <source>Hardcore mode will be enabled on system reset.</source>
-      <translation>हार्डकोर मोड सिस्टम रिसेट पर सक्षम होगा।</translation>
+      <translation>Modo extremo oñembohapéta sistema reset jave.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1845"/>
       <location filename="../../pcsx2/Achievements.cpp" line="1886"/>
       <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
-      <translation>हार्डकोर मोड के सक्रिय होने पर {0} नहीं किया जा सकता है। क्या आप हार्डकोर मोड को असक्षम करना चाहते हैं? नहीं चुन्ने पर {0} रद्द हो जाएगा।</translation>
+      <translation>.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1457"/>
       <source>Hardcore mode is now enabled.</source>
-      <translation>हार्डकोर मोड अब सक्षम है।</translation>
+      <translation>Ko’áĝa oñembohapéma pe modo extremo.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1023"/>
       <source>{} (Hardcore Mode)</source>
-      <translation>{} (हार्डकोर मोड)</translation>
+      <translation>{} (Modo extremo) rehegua</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1031"/>
@@ -412,7 +406,7 @@ Login token generated on %2.</source>
       <source>You have unlocked {} of %n achievements</source>
       <comment>Achievement popup</comment>
       <translation type="unfinished">
-        <numerusform>आपने %n में से {} को अनलॉक कर दिया है</numerusform>
+        <numerusform>Reipe'áva’ekue {} %n jehupytyrãgui</numerusform>
         <numerusform>You have unlocked {} of %n achievements</numerusform>
       </translation>
     </message>
@@ -421,32 +415,32 @@ Login token generated on %2.</source>
       <source>and earned {} of %n points</source>
       <comment>Achievement popup</comment>
       <translation type="unfinished">
-        <numerusform>and earned {} of %n points</numerusform>
+        <numerusform>ha ohejáva {} umi %n puntos</numerusform>
         <numerusform>and earned {} of %n points</numerusform>
       </translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1093"/>
       <source>{} (Unofficial)</source>
-      <translation>{} (अनौपचारिक)</translation>
+      <translation>{} (Ndaha'éiva oficial)</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1117"/>
       <source>Mastered {}</source>
-      <translation>महारती {}</translation>
+      <translation>Ojedomina {}</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1119"/>
       <source>{0}, {1}</source>
-      <translation type="unfinished">{0}, {1}</translation>
+      <translation>{0}, {1}</translation>
     </message>
     <message numerus="yes">
       <location filename="../../pcsx2/Achievements.cpp" line="1120"/>
       <source>%n achievements</source>
       <comment>Mastery popup</comment>
-      <translation type="unfinished">
-        <numerusform>%n उपलब्धिया ।</numerusform>
-        <numerusform>%n achievements</numerusform>
+      <translation>
+        <numerusform>%n jehupytyrã</numerusform>
+        <numerusform/>
       </translation>
     </message>
     <message numerus="yes">
@@ -454,274 +448,271 @@ Login token generated on %2.</source>
       <source>%n points</source>
       <comment>Mastery popup</comment>
       <translation>
-        <numerusform>%n अंक</numerusform>
-        <numerusform>%n अंक</numerusform>
+        <numerusform>%n puntos rehegua</numerusform>
+        <numerusform/>
       </translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1141"/>
       <source>Leaderboard attempt started.</source>
-      <translation>लीडर बोर्ड चेष्टा शुरू हो गई।</translation>
+      <translation>Oñepyrũ ñeha’ã tablero de liderazgo rehegua.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1160"/>
       <source>Leaderboard attempt failed.</source>
-      <translation>लीडर बोर्ड चेष्टा असफल रही।</translation>
+      <translation>Leaderboard ñeha’ã ndoikói.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1179"/>
       <source>Your Time: {}{}</source>
-      <translation>आपका समय: {}{}</translation>
+      <translation>Nde Aravo: {}{}</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1180"/>
       <source>Your Score: {}{}</source>
-      <translation>आपका अंक:{}{}</translation>
+      <translation>Nde Puntuación: {}{}</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1181"/>
       <source>Your Value: {}{}</source>
-      <translation>आपका मह्त्व: {}{}</translation>
+      <translation>Nde Valor: {}{}</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1189"/>
       <source> (Submitting)</source>
-      <translation> (जमा हो रहा है)</translation>
+      <translation> (Omoguahẽvo)</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1355"/>
       <source>Achievements Disconnected</source>
-      <translation>उपलब्धियां कट गयी।</translation>
+      <translation>Umi mba’e ojehupytýva Ojedesconecta</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1356"/>
       <source>An unlock request could not be completed. We will keep retrying to submit this request.</source>
-      <translation>एक खोलने की विन्ती पूरी नहीं की जा सकी। हम इस विन्ती को भेजने की कोशिस करते करेंगे।</translation>
+      <translation>Peteĩ mba’ejerure desbloqueo rehegua ndaikatúikuri oñembotýkuri. Pe mba’ejerure oñembohasáta gueteri.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1368"/>
       <source>Achievements Reconnected</source>
-      <translation>उपलब्धियां जुड़ गई।</translation>
+      <translation>Umi jehupytyrã ombojoaju jeýva</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1369"/>
       <source>All pending unlock requests have completed.</source>
-      <translation>सभी लंबित खुलने वाली विन्तीयां पूरी हो चुकी है।</translation>
+      <translation>Opaite mba’ejerure desbloqueo pendiente oñembotýma.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1458"/>
       <source>Hardcore mode is now disabled.</source>
-      <translation>हार्डकोर मोड अब असक्षम है।</translation>
+      <translation>Modo «hardcore» oñembogue.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1761"/>
       <source>Score: {0} pts (softcore: {1} pts)
 Unread messages: {2}</source>
-      <translation>अंक: {0} (सॉफ्टकोर: {1})
-अपठित संदेश: {2}</translation>
+      <translation>Puntuación: {0} pts. (modo normal-pe: {1} pts.) Marandu noñemoñe'ẽiva: {2}</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1844"/>
       <location filename="../../pcsx2/Achievements.cpp" line="1885"/>
       <source>Confirm Hardcore Mode</source>
-      <translation>हार्डकोर मोड स्थायी करें</translation>
+      <translation>Omoañete modo «hardcore»</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2102"/>
       <source>Active Challenge Achievements</source>
-      <translation>चालू चुनौती की उपलब्धियां</translation>
+      <translation>Umi Jehupytyrã Desafío Activo rehegua</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2227"/>
       <source> (Hardcore Mode)</source>
-      <translation> (हार्डकोर मोड)</translation>
+      <translation> (modo «hardcore») rehegua</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2240"/>
       <source>You have unlocked all achievements and earned {} points!</source>
-      <translation>आपने सारी उपलब्धियां खोल ली है और {} अंक कमाये है।</translation>
+      <translation>¡Redesblokea opaite jehupytyrã ha rehupyty {} punto!</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2943"/>
       <location filename="../../pcsx2/Achievements.cpp" line="2963"/>
       <source>Leaderboard Download Failed</source>
-      <translation>लीडरबोर्ड डाउनलोड असफल रहा</translation>
+      <translation>Ojejavy ojegueru jave tablero de liderazgo</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1212"/>
       <source>Your Time: {0} (Best: {1})</source>
-      <translation>आपका समय: {0} (श्रेष्ट: {1})</translation>
+      <translation>Nde aravo: {0} (Iporãvéva: {1})</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1213"/>
       <source>Your Score: {0} (Best: {1})</source>
-      <translation>आपका अंक: {0} (श्रेष्ट: {1})</translation>
+      <translation>Nde puntuación: {0} (Iporãvéva: {1})</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1214"/>
       <source>Your Value: {0} (Best: {1})</source>
-      <translation>आपका मह्त्व: {0} (श्रेष्ट: {1})</translation>
+      <translation>Nde Valor: {0} (Iporãvéva: {1})</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1218"/>
       <source>{0}
 Leaderboard Position: {1} of {2}</source>
-      <translation>{0}
-लीडर बोर्ड स्तिथि: {1} मे {2}</translation>
+      <translation>{0} Mesa ñemohenda: {1} {2}-gui</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1341"/>
       <source>Server error in {0}:
 {1}</source>
-      <translation>{0} मे सर्वर की तुष्टि:
-{1}</translation>
+      <translation>Servidor jejavy {0}-pe: {1}</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1889"/>
       <source>Yes</source>
-      <translation>हाँ ।</translation>
+      <translation>Rõ</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1890"/>
       <source>No</source>
-      <translation>नही ।</translation>
+      <translation>Nahániri</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2245"/>
       <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
-      <translation>आपने {1} मे से {0} उपलब्धियां खोल ली है, {3} मे से {2} सम्भावित अंक कमाये है।</translation>
+      <translation>Rehupyty {0} {1} jehupytyrãgui ha {2} {3} punto-gui.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2293"/>
       <source>Unknown</source>
-      <translation>अनजान</translation>
+      <translation>Kuaa'ỹva</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2294"/>
       <source>Locked</source>
-      <translation>अवरोधित</translation>
+      <translation>Ojejoko</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2295"/>
       <source>Unlocked</source>
-      <translation>खुला</translation>
+      <translation>Ojedesblokea</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2296"/>
       <source>Unsupported</source>
-      <translation>असमर्थित</translation>
+      <translation>Ndojeguerohorýiva</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2297"/>
       <source>Unofficial</source>
-      <translation>अनौपचारिक</translation>
+      <translation>Ndaha'éi oficial</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2298"/>
       <source>Recently Unlocked</source>
-      <translation>हाल ही में खुला गया</translation>
+      <translation>Nda’aréi ojedesblokea</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2299"/>
       <source>Active Challenges</source>
-      <translation>चालू चुनौतियां</translation>
+      <translation>Umi Jehupytyrã Desafío Activo rehegua</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2300"/>
       <source>Almost There</source>
-      <translation>लगभग हो गया!</translation>
+      <translation>Nda’aréi opyta...</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2402"/>
       <source>{} points</source>
-      <translation>{} अंक</translation>
+      <translation>{} puntos</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2402"/>
       <source>{} point</source>
-      <translation>{} अंक</translation>
+      <translation>{} punto</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2354"/>
       <source>XXX points</source>
-      <translation>XXX अंक</translation>
+      <translation>XXX puntos</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2453"/>
       <source>Unlocked: {}</source>
-      <translation>खुल गया: {}</translation>
+      <translation>Ojepe'a: {}</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2620"/>
       <source>This game has {} leaderboards.</source>
-      <translation>इस गेम मे {} लीडर बोर्ड है।</translation>
+      <translation>Ko ñembosarái oguereko {leaderboards}</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2636"/>
       <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
-      <translation>अंक भेजना असक्षम है क्यूंकि हार्डकोर मोड बंध है। लीडर बोर्ड अब केवल पढ़ने के लिए है।</translation>
+      <translation>Ndaipóri puntuación oñemondomo’ãiva oñemboykégui modo hardcore. Umi cuadro de puntuación oĩ modo ojelee hag̃uánte.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2652"/>
       <source>Show Best</source>
-      <translation>श्रेष्ट दिखाएं</translation>
+      <translation>Ehechauka raẽ</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2652"/>
       <source>Show Nearby</source>
-      <translation>पास के दिखाएं</translation>
+      <translation>Ehechauka hi’aguĩva</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2677"/>
       <source>Rank</source>
-      <translation>स्थान</translation>
+      <translation>ñemohendaha</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2682"/>
       <source>Name</source>
-      <translation>नाम</translation>
+      <translation>héra</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2686"/>
       <source>Time</source>
-      <translation>समय</translation>
+      <translation>Fecha</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2687"/>
       <source>Score</source>
-      <translation>अंक</translation>
+      <translation>Kytã</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2688"/>
       <source>Value</source>
-      <translation>मूल्य</translation>
+      <translation>Ovaléva</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2700"/>
       <source>Date Submitted</source>
-      <translation>सबमिट करने की तारीख</translation>
+      <translation>Ára oñemondo haguã</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2761"/>
       <source>Downloading leaderboard data, please wait...</source>
-      <translation>लीडर बोर्ड डाटा डाउनलोड हो रहा है, कृपया प्रतीक्षा करे।</translation>
+      <translation>Ojegueru umi dato tablero de liderazgo rehegua, eha'arõmi...</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="2780"/>
       <location filename="../../pcsx2/Achievements.cpp" line="2789"/>
       <source>Loading...</source>
-      <translation>लोड हो रहा है...</translation>
+      <translation>Oñembosarái...</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1041"/>
       <location filename="../../pcsx2/Achievements.cpp" line="2252"/>
       <source>This game has no achievements.</source>
-      <translation>इस गेम मे कोई उपलब्धियां नहीं हैं।</translation>
+      <translation>Ko jehechauka ndaipóri logros.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="893"/>
       <source>Failed to read executable from disc. Achievements disabled.</source>
-      <translation>निष्पादन को डिस्क से पढ़ने मे असफलता। उपलब्धियां असक्रिय है।</translation>
+      <translation>Ojejavy omoñe’ẽvo ejecutable disco-gui. Umi jehupytyrã oñemboykéva.</translation>
     </message>
   </context>
   <context>
@@ -731,62 +722,62 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="41"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="42"/>
       <source>Use Global Setting [%1]</source>
-      <translation>ग्लोबल समायोजन इस्तमाल करें [%1]</translation>
+      <translation>Eipuru ñemboheko atyguasu [%1]</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
       <source>Rounding Mode</source>
-      <translation>राऊंडिंग मोड</translation>
+      <translation>Modo de redondeo rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="110"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="113"/>
       <source>Chop/Zero (Default)</source>
-      <translation>चौप / जिरो (डिफौलट)</translation>
+      <translation>Ombogue/cero (por defecto)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
       <source>Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Floating Point Unit (EE FPU). Because the various FPUs in the PS2 are non-compliant with international standards, some games may need different modes to do math correctly. The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
-      <translation type="unfinished">Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Floating Point Unit (EE FPU). Because the various FPUs in the PS2 are non-compliant with international standards, some games may need different modes to do math correctly. The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</translation>
+      <translation>Omoambue PCSX2 omboguataháicha papapy redondeo oemula rupi Unidad de Punto Flotante (EE FPU) Motor Emoción rehegua. Umi cálculo FPU PS2 rehegua ndojoajúigui umi estándar internacional-pe, oĩ ñembosarái oikotevẽtava peteĩ modalidad iñambuéva ojejapo hag̃ua hekopete koꞌã cálculo. Pe valor por defecto ombaꞌapo hetaiterei ñembosaráipe g̃uarã. &lt;b&gt;Oñemoambuéramo ko ñemboheko peteĩ ñembosarái ndorekói jave mba’e’oka ojehecháva ikatu omoheñói inestabilidad.&lt;/b&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="80"/>
       <source>Division Rounding Mode</source>
-      <translation type="unfinished">Division Rounding Mode</translation>
+      <translation>Modo redondeo división rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="80"/>
       <source>Nearest (Default)</source>
-      <translation>सबसे पास वाला (डिफॉल्ट)</translation>
+      <translation>Hi’aguĩ rupi (por defecto)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="80"/>
       <source>Determines how the results of floating-point division are rounded. Some games need specific settings; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
-      <translation type="unfinished">Determines how the results of floating-point division are rounded. Some games need specific settings; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</translation>
+      <translation>Oikuaauka mbaꞌeichaitépa ojerredondea umi resultado peteĩ división valor punto flotante rehegua. Oĩ ñembosarái oikotevẽtava peteĩ ñemboheko tee: &lt;b&gt;oñemoambue ko ñemboheko peteĩ ñembosarái ndorekói jave mba’e’oka ojehecháva ikatu omoheñói inestabilidad.&lt;/b&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
       <source>Clamping Mode</source>
-      <translation>क्लैंपिंग मोड</translation>
+      <translation>Modo limitación rehegua:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="116"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
       <source>Normal (Default)</source>
-      <translation>नॉर्मल (डिफॉल्ट)</translation>
+      <translation>Normal (por defecto) rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
       <source>Changes how PCSX2 handles keeping floats in a standard x86 range. The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
-      <translation type="unfinished">Changes how PCSX2 handles keeping floats in a standard x86 range. The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</translation>
+      <translation>Omoambue mbaꞌeichaitépa PCSX2 oñatende oñongatúvo umi flotador peteĩ rango x86 estándar-pe. Pe valor por defecto oñatende hetaiterei ñembosarái rehe; &lt;b&gt;omoambuéramo ko ñemboheko peteĩ ñembosarái ndoguerekói jave peteĩ apañuãi ojehecháva ikatu omoheñói inestabilidad.&lt;/b&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="85"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="134"/>
       <source>Enable Recompiler</source>
-      <translation>रिकम्पाईलर सक्षम करे</translation>
+      <translation>Emboguata recompilador rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="59"/>
@@ -803,38 +794,38 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="140"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="153"/>
       <source>Checked</source>
-      <translation>जांचा हुआ</translation>
+      <translation>ojehecha</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="59"/>
       <source>Use Save State Selector</source>
-      <translation type="unfinished">Use Save State Selector</translation>
+      <translation>Eipuru selector ñeñongatu pyaꞌe</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="60"/>
       <source>Show a save state selector UI when switching slots instead of showing a notification bubble.</source>
-      <translation type="unfinished">Show a save state selector UI when switching slots instead of showing a notification bubble.</translation>
+      <translation>Ohechauka peteĩ ventána jeporavorã ñeñongatu pyaꞌe rehegua oñemoambuévo espacio peteĩ marandu rangue.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="86"/>
       <source>Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86.</source>
-      <translation>64-बीट MIPS-IV मशीन कोड को x86 मे जस्ट-ईन-टाईम अनुवाद कर्ता है।</translation>
+      <translation>Ojapo peteĩ ñembohasa binario justo-in-time máquina MIPS-IV código 64 bits rehegua x86-pe.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="89"/>
       <source>Wait Loop Detection</source>
       <extracomment>Wait loop: When the game makes the CPU do nothing (loop/spin) while it waits for something to happen (usually an interrupt).</extracomment>
-      <translation>वेट लुप डिटेक्शन</translation>
+      <translation>Detección de Bucle oha’arõva</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="90"/>
       <source>Moderate speedup for some games, with no known side effects.</source>
-      <translation>कुछ गेम्स के लिए मध्यम गतिबढ़न, बगेर किसी जाने माने दूश प्रभाव के साथ।</translation>
+      <translation>Pe velocidad moderada oĩ ñembosaráipe g̃uarã, ndojekuaáiva umi efecto secundario.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
       <source>Enable Cache (Slow)</source>
-      <translation>द्रुतिका सक्षम करे (धीमा)</translation>
+      <translation>Emboguata caché (mbegue)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
@@ -842,213 +833,213 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="107"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="149"/>
       <source>Unchecked</source>
-      <translation>अनियंत्रित</translation>
+      <translation>Ndojejokóiva</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
       <source>Interpreter only, provided for diagnostic.</source>
-      <translation>केवल ईनटरर्पेटर, निदान के लिए प्रदान किया गया।</translation>
+      <translation>Intérprete-pe g̃uarãnte, ojeporúva ojejapo hag̃ua diagnóstico.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="95"/>
       <source>INTC Spin Detection</source>
       <extracomment>INTC = Name of a PS2 register, leave as-is. &quot;spin&quot; = to make a cpu (or gpu) actively do nothing while you wait for something. Like spinning in a circle, you&apos;re moving but not actually going anywhere.</extracomment>
-      <translation>INTC स्पिन डिटेक्शन</translation>
+      <translation>INTC Mba’ekuaarã jehechakuaa</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="96"/>
       <source>Huge speedup for some games, with almost no compatibility side effects.</source>
-      <translation>कुछ गेम्स के लिए विशाल गतिबढ़न, बगैर किसी सुसंगति दूश प्रभाव के साथ।</translation>
+      <translation>Tuicha velocidad algunos juegos-pe g̃uarã, haimete ndorekóiva efecto secundario compatibilidad rehegua.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="98"/>
       <source>Enable Fast Memory Access</source>
-      <translation>तेज मेमोरी एक्सेस सक्षम करे</translation>
+      <translation>Emboguata mandu’a jeike pya’e</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="100"/>
       <source>Uses backpatching to avoid register flushing on every memory access.</source>
       <extracomment>&quot;Backpatching&quot; = To edit previously generated code to change what it does (in this case, we generate direct memory accesses, then backpatch them to jump to a fancier handler function when we realize they need the fancier handler function)</extracomment>
-      <translation>बेकपैचिंग का उपयोग करके रजिस्टर फ्लशिंग का बचाव कर्ता है हर मेमोरी एक्सेस पर।</translation>
+      <translation>Oipuru pe técnica «backpatching» ani hag̃ua oñemboyke umi registro peteĩteĩva memoria jeike reheve.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="102"/>
       <source>Pause On TLB Miss</source>
-      <translation>TLB चुकने पर ठेरना</translation>
+      <translation>Pausa TLB falla rehe</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="103"/>
       <source>Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing. Note that the VM will pause after the end of the block, not on the instruction which caused the exception. Refer to the console to see the address where the invalid access occurred.</source>
-      <translation>TLB चुकने पर वर्चुअल मशीन को अनदेखा करने और जारी रखने के बजाय उसे रोक देता है। ध्यान दें कि VM ब्लॉक के अंत के बाद रुकेगा, न कि उस निर्देश पर जिसके कारण अपवाद हुआ। उस पते को देखने के लिए कंसोल का संदर्भ लें जहां अमान्य पहुंच हुई थी।</translation>
+      <translation>Oĩ jave peteĩ mba’e’oka TLB jejapópe, máquina virtual ojepytasóta oñemboyke rangue pe jejavy ha oñemboguata. Ñañamindu’u opytataha pe bloque pahápe, ndaha’éi pe ñe’ẽmondo omoheñóiva excepción-pe. Oikuaa hag̃ua dirección oiko haguépe jeike ndovaléiva, eike consola-pe.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="107"/>
       <source>Enable 128MB RAM (Dev Console)</source>
-      <translation type="unfinished">Enable 128MB RAM (Dev Console)</translation>
+      <translation>Emboguata 128 MB RAM (consola desarrollo rehegua) </translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="108"/>
       <source>Exposes an additional 96MB of memory to the virtual machine.</source>
-      <translation type="unfinished">Exposes an additional 96MB of memory to the virtual machine.</translation>
+      <translation>Ohechauka peteĩ 96 MB manduꞌa ambuéva máquina virtual-pe.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="110"/>
       <source>VU0 Rounding Mode</source>
-      <translation>VU0 राऊंडिंग मोड</translation>
+      <translation>VU0 modo redondeo rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="110"/>
       <source>Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Vector Unit 0 (EE VU0). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.&lt;/b&gt;</source>
-      <translation type="unfinished">Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Vector Unit 0 (EE VU0). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.&lt;/b&gt;</translation>
+      <translation>Omoambue PCSX2 omboguataháicha papapy redondeo oemula rupi Unidad Vectorial 0 Motor Emoción rehegua ("unidad vectorial 0", térã VU0 EE rehegua). Pe valor por defecto ombaꞌapo hetaiterei ñembosaráipe g̃uarã. &lt;b&gt;Oñemoambuéramo ko ñemboheko peteĩ ñembosarái ndorekói jave mba’e’oka ojehecháva ikatu omoheñói inestabilidad.&lt;/b&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="113"/>
       <source>VU1 Rounding Mode</source>
-      <translation>VU1 राऊंडिंग मोड</translation>
+      <translation>VU1 modo redondeo rehegua:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="113"/>
       <source>Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Vector Unit 1 (EE VU1). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.&lt;/b&gt;</source>
-      <translation type="unfinished">Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Vector Unit 1 (EE VU1). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.&lt;/b&gt;</translation>
+      <translation>Omoambue PCSX2 omboguataháicha papapy redondeo oemula rupi Unidad Vectorial 1 Motor Emoción rehegua ("unidad vectorial 1", térã VU1 EE rehegua). Pe valor por defecto ombaꞌapo hetaiterei ñembosaráipe g̃uarã. &lt;b&gt;Oñemoambuéramo ko ñemboheko peteĩ ñembosarái ndorekói jave mba’e’oka ojehecháva ikatu omoheñói inestabilidad.&lt;/b&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="116"/>
       <source>VU0 Clamping Mode</source>
-      <translation>VU0 क्लैंपिंग मोड</translation>
+      <translation>VU0 limitación modalidad rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="116"/>
       <source>Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine&apos;s Vector Unit 0 (EE VU0). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
-      <translation type="unfinished">Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine&apos;s Vector Unit 0 (EE VU0). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</translation>
+      <translation>Omoambue mbaꞌeichaitépa PCSX2 oñatende mbaꞌeichaitépa oñembohasa umi valor punto flotante rehegua peteĩ rango x86 estándar-pe Emotion Engine Unit Vector 0 ryepýpe ("unidad vectorial 0", térã EE VU0). Pe valor por defecto ombaꞌapo hetaiterei ñembosaráipe g̃uarã. &lt;b&gt;Oñemoambuéramo ko ñemboheko peteĩ ñembosarái ndorekói jave mba’e’oka ojehecháva ikatu omoheñói inestabilidad.&lt;/b&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
       <source>VU1 Clamping Mode</source>
-      <translation>VU1 क्लैंपिंग मोड</translation>
+      <translation>VU1 modo limitante rehegua:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
       <source>Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine&apos;s Vector Unit 1 (EE VU1). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
-      <translation type="unfinished">Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine&apos;s Vector Unit 1 (EE VU1). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</translation>
+      <translation>Omoambue mbaꞌeichaitépa PCSX2 oñatende umi valor punto flotante rehegua ñemoambue peteĩ rango x86 estándar-pe Emotion Engine Unit Vector 1 ryepýpe ("unidad vectorial 1", térã EE VU1). Pe valor por defecto ombaꞌapo hetaiterei ñembosaráipe g̃uarã. &lt;b&gt;Oñemoambuéramo ko ñemboheko peteĩ ñembosarái ndorekói jave mba’e’oka ojehecháva ikatu omoheñói inestabilidad.&lt;/b&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
       <source>Enable Instant VU1</source>
-      <translation type="unfinished">Enable Instant VU1</translation>
+      <translation>Emboguata VU1 taꞌãngamýi</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
       <source>Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.</source>
-      <translation type="unfinished">Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.</translation>
+      <translation>Omboguata VU1 pya'eterei. Omoporãve michĩmi velocidad hetavéva ñembosaráipe. Haꞌehína peteĩ opción segura haimete opavavepe g̃uarã, ha katu oĩ ikatúva ohechaukáva jejavy gráfico.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="125"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
       <extracomment>VU0 = Vector Unit 0. One of the PS2&apos;s processors.</extracomment>
-      <translation>VU0 रिकम्पाईलर सक्षम करे (माइक्रो मोड)</translation>
+      <translation>Emboguata VU0 recompilador (modo micro) rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="125"/>
       <source>Enables VU0 Recompiler.</source>
-      <translation>VU0 रिकम्पाईलर सक्षम कर्ता है</translation>
+      <translation>Ombohapéva VU0 Recompilador.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="128"/>
       <source>Enable VU1 Recompiler</source>
       <extracomment>VU1 = Vector Unit 1. One of the PS2&apos;s processors.</extracomment>
-      <translation>VU1 रिकम्पाईलर सक्षम करे</translation>
+      <translation>Emboguata VU1 recompilador rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="128"/>
       <source>Enables VU1 Recompiler.</source>
-      <translation>VU1 रिकम्पाईलर सक्षम कर्ता है</translation>
+      <translation>Emboguata VU1 recompilador rehegua.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="132"/>
       <source>mVU Flag Hack</source>
       <extracomment>mVU = PCSX2&apos;s recompiler for VU (Vector Unit) code (full name: microVU)</extracomment>
-      <translation>mVU फ्लैग हैक</translation>
+      <translation>mVU indicador ñemyatyrõ</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="132"/>
       <source>Good speedup and high compatibility, may cause graphical errors.</source>
-      <translation>अच्छा गतिबढ़ण और उच्च अनुकूलता, मगर ग्राफिकल त्रुटियाँ कर सकता है।</translation>
+      <translation>Tuicha omoporãve velocidad ha oguereko compatibilidad yvate, ha katu ikatu omoheñói jejavy gráfico.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="135"/>
       <source>Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86.</source>
-      <translation>32-बीट MIPS-IV मशीन कोड को x86 मे जस्ट-ईन-टाईम अनुवाद कर्ता है।</translation>
+      <translation>Ojapo peteĩ ñembohasa binario justo-in-time máquina MIPS-I kódigo 32 bits rehegua x86-pe.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="137"/>
       <source>Enable Game Fixes</source>
-      <translation>गेम फिक्स सक्षम करें</translation>
+      <translation>Emboguata ñemyatyrõ ñembosaráipe g̃uarã</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="138"/>
       <source>Automatically loads and applies fixes to known problematic games on game start.</source>
-      <translation>खुद ब खुद ज्ञात समस्यात्मक गेम्स मे फिक्स लगाता है गेम के शुरू होने पर।</translation>
+      <translation>Okarga ha omoĩ ijeheguiete ñemyatyrõ omoñepyrũvo oimeraẽ ñembosarái ojekuaáva omoheñóiha apañuãi.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="140"/>
       <source>Enable Compatibility Patches</source>
-      <translation>कम्पेटिबिलीटी पेचीस सक्षम करे</translation>
+      <translation>Emboguata umi Parche Compatibilidad rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="141"/>
       <source>Automatically loads and applies compatibility patches to known problematic games.</source>
-      <translation>खुद ब खुद ज्ञात समस्यात्मक गेम्स मे सुसंगति पैच लगाता है।</translation>
+      <translation>Okarga ha omoĩ ijeheguiete umi parche compatibilidad rehegua umi ñembosarái problemático ojekuaávape.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="143"/>
       <source>Savestate Compression Method</source>
-      <translation type="unfinished">Savestate Compression Method</translation>
+      <translation>Savestate Método de Compresión rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="143"/>
       <source>Zstandard</source>
-      <translation type="unfinished">Zstandard</translation>
+      <translation>Zstandard rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="144"/>
       <source>Determines the algorithm to be used when compressing savestates.</source>
-      <translation type="unfinished">Determines the algorithm to be used when compressing savestates.</translation>
+      <translation>Omohenda algoritmo ojeporútava oñembohysýi jave umi savestate.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="146"/>
       <source>Savestate Compression Level</source>
-      <translation type="unfinished">Savestate Compression Level</translation>
+      <translation>Nivel de compresión ñeñongatu pyaꞌe</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="146"/>
       <source>Medium</source>
-      <translation type="unfinished">Medium</translation>
+      <translation>Medio</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="147"/>
       <source>Determines the level to be used when compressing savestates.</source>
-      <translation type="unfinished">Determines the level to be used when compressing savestates.</translation>
+      <translation>Omohenda nivel ojeporútava oñembohysýi jave umi savestate.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="149"/>
       <source>Save State On Shutdown</source>
-      <translation type="unfinished">Save State On Shutdown</translation>
+      <translation>Oñongatu Estado En Apagado</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="150"/>
       <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
-      <translation type="unfinished">Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</translation>
+      <translation>Oñongatu ijeheguiete pe emulador estado oñembogue térã osẽ jave. Upéi ikatu reñepyrũ jey directamente repyta haguégui ambue jey.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="153"/>
       <source>Create Save State Backups</source>
-      <translation type="unfinished">Create Save State Backups</translation>
+      <translation>Ejapo Ñongatu Estado rehegua jekopytyjoja</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="155"/>
       <source>Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix.</source>
       <extracomment>Do not translate the &quot;.backup&quot; extension.</extracomment>
-      <translation type="unfinished">Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix.</translation>
+      <translation>Ojapo peteĩ copia de seguridad peteĩ estado ñeñongatu rehegua oĩmaramo ojejapo jave ñeñongatu. Pe copia de seguridad oguereko peteĩ .backup ñe’ẽpehẽtai.</translation>
     </message>
   </context>
   <context>
@@ -1056,7 +1047,7 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="53"/>
       <source>Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.</source>
-      <translation>इन विकल्पों को बदलने से गेम्स गैर-कार्यात्मक हो सकते हैं। अपने जोखिम पर संशोधित करें, PCSX2 टीम इन सेटिंग्स में बदलाव के साथ कॉन्फ़िगरेशन के लिए सहायता प्रदान नहीं करेगी।</translation>
+      <translation>Oñemoambuéramo ko’ã opción ikatu ojapo umi ñembosarái ndojejapóiva. Emoambue nde riesgo reheve, PCSX2 equipo nome’ẽmo’ãi pytyvõ umi configuración ko’ã ñemboheko oñemoambuéva reheve.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="63"/>
@@ -1068,14 +1059,14 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="69"/>
       <source>Rounding Mode:</source>
       <extracomment>Rounding refers here to the mathematical term.</extracomment>
-      <translation>राऊंडिंग मोड:</translation>
+      <translation>Modo de Redondeo rehegua:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="77"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="232"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="333"/>
       <source>Nearest</source>
-      <translation>नेयरेस्ट</translation>
+      <translation>Hi’aguĩvéva</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="82"/>
@@ -1083,7 +1074,7 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="237"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="338"/>
       <source>Negative</source>
-      <translation>नेगेटिव</translation>
+      <translation>Mbotove</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="87"/>
@@ -1091,55 +1082,55 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="242"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="343"/>
       <source>Positive</source>
-      <translation>पौसेटिव</translation>
+      <translation>Py'aporã</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="131"/>
       <source>Clamping Mode:</source>
       <extracomment>Clamping: Forcing out of bounds things in bounds by changing them to the closest possible value.  In this case, this refers to clamping large PS2 floating point values (which map to infinity or NaN in PCs&apos; IEEE754 floats) to non-infinite ones.</extracomment>
-      <translation>क्लैंपिंग मोड:</translation>
+      <translation>Modo de Abrazadera:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="288"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="357"/>
       <source>None</source>
-      <translation>कोई नहीं</translation>
+      <translation>Avave</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="144"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="293"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="362"/>
       <source>Normal (Default)</source>
-      <translation>नॉर्मल (डिफॉल्ट)</translation>
+      <translation>Normal (Predeterminado) rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="92"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="247"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="348"/>
       <source>Chop/Zero (Default)</source>
-      <translation type="unfinished">Chop/Zero (Default)</translation>
+      <translation>Eliminar/cero (predeterminado) Ñe’ẽpoty ha purahéi</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="100"/>
       <source>Division Rounding Mode:</source>
       <extracomment>Rounding refers here to the mathematical term.</extracomment>
-      <translation type="unfinished">Division Rounding Mode:</translation>
+      <translation>Modo de Redondeo División rehegua:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="108"/>
       <source>Nearest (Default)</source>
-      <translation type="unfinished">Nearest (Default)</translation>
+      <translation>Hi'aguĩvéva (Predeterminado)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="123"/>
       <source>Chop/Zero</source>
-      <translation type="unfinished">Chop/Zero</translation>
+      <translation>Eliminar/cero</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="139"/>
       <source>None</source>
       <comment>ClampMode</comment>
-      <translation>कोई नहीं</translation>
+      <translation>Avave</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="149"/>
@@ -1147,120 +1138,120 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="372"/>
       <source>Extra + Preserve Sign</source>
       <extracomment>Sign: refers here to the mathematical meaning (plus/minus).</extracomment>
-      <translation>एक्स्ट्रा + पर्रीसर्व साइन</translation>
+      <translation>Extra + Preserva Señal rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="154"/>
       <source>Full</source>
-      <translation>पूरा</translation>
+      <translation>Todo</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="164"/>
       <source>Wait Loop Detection</source>
-      <translation>वेट लुप डिटेक्शन</translation>
+      <translation>Detección de Bucle de Espera</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="171"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="389"/>
       <source>Enable Recompiler</source>
-      <translation>रिकम्पाईलर सक्षम करे</translation>
+      <translation>Emboguata Recompilador rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="178"/>
       <source>Enable Fast Memory Access</source>
-      <translation>तेज मेमोरी एक्सेस सक्षम करे</translation>
+      <translation>Emboguata Jeike Pya’e Mandu’arã</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="185"/>
       <source>Enable Cache (Slow)</source>
-      <translation>द्रुतिका सक्षम करे (धीमा)</translation>
+      <translation>Emboguata Caché (Mbegue)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="192"/>
       <source>INTC Spin Detection</source>
-      <translation>INTC स्पिन डिटेक्शन</translation>
+      <translation>INTC Detección de Giro rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="199"/>
       <source>Pause On TLB Miss</source>
-      <translation>TLB चुकने पर ठेरना</translation>
+      <translation>Pausar al fallar el TLB</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="206"/>
       <source>Enable 128MB RAM (Dev Console)</source>
-      <translation type="unfinished">Enable 128MB RAM (Dev Console)</translation>
+      <translation>Emboguata 128MB RAM (Consola de Desarrollador)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="218"/>
       <source>Vector Units (VU)</source>
       <extracomment>Vector Unit/VU: refers to two of PS2&apos;s processors. Do not translate the full text or do so as a comment. Leave the acronym as-is.</extracomment>
-      <translation>वेक्टर यूनिट्स (VU)</translation>
+      <translation>Unidades Vectoriales (VU) rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="224"/>
       <source>VU1 Rounding Mode:</source>
-      <translation>VU1 राऊंडिंग मोड:</translation>
+      <translation>VU1 modo redondeo rehegua:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="257"/>
       <source>mVU Flag Hack</source>
-      <translation>mVU फ्लैग हैक</translation>
+      <translation>corrección del indicador de mVU</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="264"/>
       <source>Enable VU1 Recompiler</source>
-      <translation>VU1 रिकम्पाईलर सक्षम करे</translation>
+      <translation>Emboguata VU1 recompilador rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="271"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
-      <translation>VU0 रिकम्पाईलर सक्षम करे (माइक्रो मोड)</translation>
+      <translation>Emboguata VU0 recompilador (modo micro)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="278"/>
       <source>Enable Instant VU1</source>
-      <translation type="unfinished">Enable Instant VU1</translation>
+      <translation>Emboguata VU1 Instantáneo rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="298"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="367"/>
       <source>Extra</source>
-      <translation>अतिरिक्त</translation>
+      <translation type="unfinished">Extra</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="311"/>
       <source>VU0 Clamping Mode:</source>
-      <translation>VU0 क्लैंपिंग मोड:</translation>
+      <translation type="unfinished">VU0 Clamping Mode:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="318"/>
       <source>VU0 Rounding Mode:</source>
-      <translation>VU0 राऊंडिंग मोड:</translation>
+      <translation type="unfinished">VU0 Rounding Mode:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="325"/>
       <source>VU1 Clamping Mode:</source>
-      <translation>VU1 क्लैंपिंग मोड:</translation>
+      <translation type="unfinished">VU1 Clamping Mode:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="383"/>
       <source>I/O Processor (IOP, MIPS-I)</source>
-      <translation>I/O प्रोसेसर (IOP, MIPS-I)</translation>
+      <translation type="unfinished">I/O Processor (IOP, MIPS-I)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="399"/>
       <source>Game Settings</source>
-      <translation>गेम की सेटिंग</translation>
+      <translation type="unfinished">Game Settings</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="405"/>
       <source>Enable Game Fixes</source>
-      <translation>गेम फिक्स सक्षम करें</translation>
+      <translation type="unfinished">Enable Game Fixes</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="412"/>
       <source>Enable Compatibility Patches</source>
-      <translation>कम्पेटिबिलीटी पेचीस सक्षम करे</translation>
+      <translation type="unfinished">Enable Compatibility Patches</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="490"/>
@@ -1275,24 +1266,24 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="514"/>
       <source>Frame Rate Control</source>
-      <translation>फ्रेम रेट नियंत्रण</translation>
+      <translation type="unfinished">Frame Rate Control</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="520"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="536"/>
       <source> hz</source>
       <extracomment>hz=Hertz, as in the measuring unit. Shown after the corresponding number. Those languages who&apos;d need to remove the space or do something in between should do so.</extracomment>
-      <translation> hz</translation>
+      <translation type="unfinished"> hz</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="552"/>
       <source>PAL Frame Rate:</source>
-      <translation>PAL फ्रेम रेट:</translation>
+      <translation type="unfinished">PAL Frame Rate:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="559"/>
       <source>NTSC Frame Rate:</source>
-      <translation>NTSC फ्रेम रेट:</translation>
+      <translation type="unfinished">NTSC Frame Rate:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="422"/>
@@ -1357,17 +1348,17 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="569"/>
       <source>PINE Settings</source>
-      <translation>PINE सेटिंग्स</translation>
+      <translation type="unfinished">PINE Settings</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="591"/>
       <source>Slot:</source>
-      <translation>स्लॉट:</translation>
+      <translation type="unfinished">Slot:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="598"/>
       <source>Enable</source>
-      <translation>सक्षम</translation>
+      <translation type="unfinished">Enable</translation>
     </message>
   </context>
   <context>
@@ -1542,7 +1533,7 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/AudioSettingsWidget.ui" line="256"/>
       <location filename="../Settings/AudioSettingsWidget.ui" line="305"/>
       <source>100%</source>
-      <translation>100%</translation>
+      <translation type="unfinished">100%</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="327"/>
@@ -1558,63 +1549,63 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="206"/>
       <source>Synchronization:</source>
-      <translation>तुल्यकालन:</translation>
+      <translation type="unfinished">Synchronization:</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="118"/>
       <source>TimeStretch (Recommended)</source>
-      <translation>टाइम-स्ट्रेच (अनुशंसित)</translation>
+      <translation type="unfinished">TimeStretch (Recommended)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="199"/>
       <source>Expansion:</source>
-      <translation>विस्तार:</translation>
+      <translation type="unfinished">Expansion:</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="182"/>
       <source>Output Latency:</source>
-      <translation>उत्पादन की विलंबता:</translation>
+      <translation type="unfinished">Output Latency:</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="170"/>
       <source>Minimal</source>
-      <translation>न्यूनतम</translation>
+      <translation type="unfinished">Minimal</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="192"/>
       <source>Output Device:</source>
-      <translation>आउटपुट डिवाइस:</translation>
+      <translation type="unfinished">Output Device:</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="118"/>
       <source>Synchronization</source>
-      <translation>तुल्यकालन</translation>
+      <translation type="unfinished">Synchronization</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="119"/>
       <source>When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast-forward/slowdown audio.</source>
-      <translation>100% गति से बाहर चलने पर, फ़्रेम को गिराने के बजाय ऑडियो पर गति को समायोजित करता है। बहुत अच्छा तेज़-फ़ॉरवर्ड/धीमा ऑडियो तैयार करता है।</translation>
+      <translation type="unfinished">When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast-forward/slowdown audio.</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="188"/>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="218"/>
       <source>Default</source>
-      <translation>डिफॉल्ट</translation>
+      <translation type="unfinished">Default</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="101"/>
       <source>Determines the buffer size which the time stretcher will try to keep filled. It effectively selects the average latency, as audio will be stretched/shrunk to keep the buffer size within check.</source>
-      <translation>बफ़र आकार निर्धारित करता है जिसे टाइम स्ट्रेचर भरा रखने का प्रयास करेगा। यह प्रभावी रूप से औसत विलंबता का चयन करता है, क्योंकि बफर आकार को नियंत्रण में रखने के लिए ऑडियो को बढ़ाया/सिकुड़ा जाएगा।</translation>
+      <translation type="unfinished">Determines the buffer size which the time stretcher will try to keep filled. It effectively selects the average latency, as audio will be stretched/shrunk to keep the buffer size within check.</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="104"/>
       <source>Output Latency</source>
-      <translation>उत्पादन की विलंबता</translation>
+      <translation type="unfinished">Output Latency</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="105"/>
       <source>Determines the latency from the buffer to the host audio output. This can be set lower than the target latency to reduce audio delay.</source>
-      <translation>बफ़र से होस्ट ऑडियो आउटपुट तक विलंबता निर्धारित करता है। ऑडियो विलंब को कम करने के लिए इसे लक्ष्य विलंबता से कम सेट किया जा सकता है।</translation>
+      <translation type="unfinished">Determines the latency from the buffer to the host audio output. This can be set lower than the target latency to reduce audio delay.</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="123"/>
@@ -1640,7 +1631,7 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="296"/>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="297"/>
       <source>%1%</source>
-      <translation>%1%</translation>
+      <translation type="unfinished">%1%</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="116"/>
@@ -1650,7 +1641,7 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="257"/>
       <source>N/A</source>
       <extracomment>Preserve the %1 variable, adapt the latter ms (and/or any possible spaces in between) to your language&apos;s ruleset.</extracomment>
-      <translation>अनुपलब्ध</translation>
+      <translation type="unfinished">N/A</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="87"/>
@@ -1675,7 +1666,7 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="257"/>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="258"/>
       <source>%1 ms</source>
-      <translation>%1 ms</translation>
+      <translation type="unfinished">%1 ms</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="100"/>
@@ -1805,28 +1796,28 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../../pcsx2/Host/AudioStream.cpp" line="194"/>
       <source>Quadraphonic</source>
-      <translation type="unfinished">Quadraphonic</translation>
+      <translation>Sonido cuadrafónico rehegua</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Host/AudioStream.cpp" line="195"/>
       <source>Quadraphonic with LFE</source>
-      <translation type="unfinished">Quadraphonic with LFE</translation>
+      <translation>Sonido cuadrafónico orekóva LFE</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Host/AudioStream.cpp" line="196"/>
       <source>5.1 Surround</source>
-      <translation type="unfinished">5.1 Surround</translation>
+      <translation>5.1 Surround ( Versión 5.1 sonido envolvente rehegua)</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Host/AudioStream.cpp" line="197"/>
       <source>7.1 Surround</source>
-      <translation type="unfinished">7.1 Surround</translation>
+      <translation>7.1 Surround ( Versión 7.1 sonido envolvente rehegua)</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Host/CubebAudioStream.cpp" line="289"/>
       <location filename="../../pcsx2/Host/CubebAudioStream.cpp" line="301"/>
       <source>Default</source>
-      <translation type="unfinished">Default</translation>
+      <translation>Oñembohory</translation>
     </message>
   </context>
   <context>
@@ -1834,52 +1825,52 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Settings/AudioStretchSettingsDialog.ui" line="14"/>
       <source>Audio Stretch Settings</source>
-      <translation type="unfinished">Audio Stretch Settings</translation>
+      <translation>Ajustes rehegua arandupy ohechauka</translation>
     </message>
     <message>
       <location filename="../Settings/AudioStretchSettingsDialog.ui" line="20"/>
       <source>Sequence Length:</source>
-      <translation type="unfinished">Sequence Length:</translation>
+      <translation>Kuatia pukukue: .</translation>
     </message>
     <message>
       <location filename="../Settings/AudioStretchSettingsDialog.ui" line="51"/>
       <source>30</source>
-      <translation type="unfinished">30</translation>
+      <translation>30</translation>
     </message>
     <message>
       <location filename="../Settings/AudioStretchSettingsDialog.ui" line="60"/>
       <source>Seekwindow Size:</source>
-      <translation type="unfinished">Seekwindow Size:</translation>
+      <translation>Pe periodo jeheka tuichakue:</translation>
     </message>
     <message>
       <location filename="../Settings/AudioStretchSettingsDialog.ui" line="91"/>
       <source>20</source>
-      <translation type="unfinished">20</translation>
+      <translation>20</translation>
     </message>
     <message>
       <location filename="../Settings/AudioStretchSettingsDialog.ui" line="100"/>
       <source>Overlap:</source>
-      <translation type="unfinished">Overlap:</translation>
+      <translation>Solapar:</translation>
     </message>
     <message>
       <location filename="../Settings/AudioStretchSettingsDialog.ui" line="131"/>
       <source>10</source>
-      <translation type="unfinished">10</translation>
+      <translation>10</translation>
     </message>
     <message>
       <location filename="../Settings/AudioStretchSettingsDialog.ui" line="171"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio Stretch Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio Stretch Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio estiramiento ñemboheko&lt;/span&gt;&lt;br/&gt;Ko’ã ñemboheko omohenda porã SoundTouch audio aravo camilla reko oñemboguata jave okápe 100% velocidad-gui..&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/AudioStretchSettingsDialog.ui" line="189"/>
       <source>Use Quickseek</source>
-      <translation type="unfinished">Use Quickseek</translation>
+      <translation>Eipuru jeheka pya’e</translation>
     </message>
     <message>
       <location filename="../Settings/AudioStretchSettingsDialog.ui" line="196"/>
       <source>Use Anti-Aliasing Filter</source>
-      <translation type="unfinished">Use Anti-Aliasing Filter</translation>
+      <translation>Eipuru filtro antialiasing rehegua</translation>
     </message>
   </context>
   <context>
@@ -1889,108 +1880,108 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../AutoUpdaterDialog.cpp" line="483"/>
       <location filename="../AutoUpdaterDialog.cpp" line="548"/>
       <source>Automatic Updater</source>
-      <translation>स्वत: अद्यतन</translation>
+      <translation>Actualización Automática rehegua</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="59"/>
       <source>Update Available</source>
-      <translation>अपडेट उपलब्ध है</translation>
+      <translation>Actualización ojeguerekóva</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="68"/>
       <source>Current Version: </source>
-      <translation>वर्तमान संस्करण: </translation>
+      <translation>Versión ko’áĝagua: </translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="75"/>
       <source>New Version: </source>
-      <translation>नया संस्करण: </translation>
+      <translation>Versión ipyahuvéva: </translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="82"/>
       <source>Download Size: </source>
-      <translation>डाउनलोड माप: </translation>
+      <translation>Ojegueru tuichakue: </translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="110"/>
       <source>Download and Install...</source>
-      <translation>डाउनलोड और स्थापित करें</translation>
+      <translation>Emboguejy ha emoĩ...</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="117"/>
       <source>Skip This Update</source>
-      <translation>इस अद्यतन को छोड़ें</translation>
+      <translation>Embohasa ko ñembopyahu</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="124"/>
       <source>Remind Me Later</source>
-      <translation>मुझे बाद में याद दिलाएं</translation>
+      <translation>Penemanduʼákena upe rire</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="166"/>
       <location filename="../AutoUpdaterDialog.cpp" line="677"/>
       <source>Updater Error</source>
-      <translation>अपडेट त्रुटि</translation>
+      <translation>Ñembopyahu jejavy</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="396"/>
       <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
-      <translation>&lt;h2&gt;परिवर्तन:&lt;/h2&gt;</translation>
+      <translation>&lt;h2&gt;Cambios:&lt;/h2&gt;</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="430"/>
       <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to a Memory Card before installing this update or you will lose progress.&lt;/p&gt;</source>
-      <translation>&lt;h2&gt;सेव स्टेट चेतावनी&lt;/h2&gt;&lt;p&gt;इस अपडेट को इंस्टॉल करने से आपके सेव स्टेट्स &lt;b&gt;असंगत&lt;/b&gt; हो जाएंगे। कृपया सुनिश्चित करें कि आपने इस अद्यतन को स्थापित करने से पहले अपने गेम को मेमोरी कार्ड में सेव कर लिया है अन्यथा आप प्रगति खो देंगे।&lt;/p&gt;</translation>
+      <translation>&lt;h2&gt;Ñeñongatu pya’e ñe’ẽñemi&lt;/h2&gt;&lt;p&gt;Emoĩramo ko ñembopyahu, ne ñongatu pya’e &lt;b&gt;noñepytyvõvéima&lt;/b&gt;. Ejesareko eñongatu hague ne progreso peteĩ Tarjeta de Memoria-pe emoĩ mboyve ko ñembopyahu, térã reperdéta ne progreso.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="440"/>
       <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
-      <translation>&lt;h2&gt;सेटिंग्स चेतावनी&lt;/h2&gt;&lt;p&gt;इस अपडेट को इंस्टॉल करने से आपका प्रोग्राम कॉन्फ़िगरेशन रीसेट हो जाएगा। कृपया ध्यान दें कि इस अपडेट के बाद आपको अपनी सेटिंग्स को फिर से कॉन्फ़िगर करना होगा।&lt;/p&gt;</translation>
+      <translation>&lt;h2&gt;Ñembohekorã Ñe’ẽñemi&lt;/h2&gt;&lt;p&gt;Emoĩramo ko ñembopyahu omoĩjeýta programa ñemboheko. Penemandu’áke pemoambue jeyva’erãha programa ñemboheko ojejapo rire ko ñembopyahu.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="466"/>
       <source>Savestate Warning</source>
-      <translation>सेवस्टेट चेतावनी</translation>
+      <translation>Ñe’ẽñemi ñeñongatu pya’e rehegua</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="467"/>
       <source>&lt;h1&gt;WARNING&lt;/h1&gt;&lt;p style=&apos;font-size:12pt;&apos;&gt;Installing this update will make your &lt;b&gt;save states incompatible&lt;/b&gt;, &lt;i&gt;be sure to save any progress to your memory cards before proceeding&lt;/i&gt;.&lt;/p&gt;&lt;p&gt;Do you wish to continue?&lt;/p&gt;</source>
-      <translation>&lt;h1&gt;चेतावनी&lt;/h1&gt;&lt;p style=&apos;font-size:12pt;&apos;&gt;इस अपडेट को इंस्टॉल करने से आपके &lt;b&gt;सेव स्टेट्स असंगत&lt;/b&gt; हो जाएंगे, &lt;i&gt;सुनिश्चित करें आगे बढ़ने से पहले अपने मेमोरी कार्ड में किसी भी प्रगति को सहेजने के लिए&lt;/i&gt;.&lt;/p&gt;&lt;p&gt;क्या आप जारी रखना चाहते हैं?&lt;/p&gt;</translation>
+      <translation>&lt;h1&gt;AVISO DE ADVERTENCIA!&lt;/h1&gt;&lt;p style=&apos;font-size:12pt;&apos;&gt;Emoĩramo ko ñembopyahu nde &lt;b&gt;estado ñongatuha ndojoguerahái&lt;/b&gt;, &lt;i&gt;eime seguro eñongatu hag̃ua oimeraẽ progreso nde tarjeta de memoria-pe upe mboyve proceder&lt;/i&gt;.&lt;/p&gt;&lt;p&gt;Reseguise piko?&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="484"/>
       <source>Downloading %1...</source>
-      <translation>डाउनलोड कर रहा है %1...</translation>
+      <translation>Descargando %1 rehegua...</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="549"/>
       <source>No updates are currently available. Please try again later.</source>
-      <translation>फिलहाल कोई अपडेट उपलब्ध नहीं है. कृपया बाद में पुन: प्रयास करें।</translation>
+      <translation>Ndaipóri mba’eveichagua actualización ojeguerekóva. Eñeha’ã jey upe rire.</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="567"/>
       <source>Current Version: %1 (%2)</source>
-      <translation>वर्तमान संस्करण: %1 (%2)</translation>
+      <translation>Versión ko’ag̃agua: %1 (%2)</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="568"/>
       <source>New Version: %1 (%2)</source>
-      <translation>नया संस्करण: %1 (%2)</translation>
+      <translation>Versión ipyahuvéva: %1 (%2)</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="569"/>
       <source>Download Size: %1 MB</source>
-      <translation>डाउनलोड माप: %1 MB</translation>
+      <translation>Ñemboguejy tuichakue: %1 MB</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="570"/>
       <source>Loading...</source>
-      <translation>लोड हो रहा है...</translation>
+      <translation>Oñembohasa...</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="677"/>
       <source>Failed to remove updater exe after update.</source>
-      <translation type="unfinished">Failed to remove updater exe after update.</translation>
+      <translation>Ojejavy oñembogue jave actualizador ejecutable oñembopyahu rire.</translation>
     </message>
   </context>
   <context>
@@ -1998,84 +1989,84 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="29"/>
       <source>BIOS Directory</source>
-      <translation>BIOS निर्देशिका</translation>
+      <translation>BIOS ryru: </translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="35"/>
       <source>PCSX2 will search for BIOS images in this directory.</source>
-      <translation>PCSX2 इस निर्देशिका में BIOS छवियों की खोज करेगा।</translation>
+      <translation>PCSX2 ohekáta BIOS taꞌãngamýi ko kundahárape.</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="50"/>
       <source>Browse...</source>
-      <translation>ब्राउज़ करें...</translation>
+      <translation>Heka...</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="57"/>
       <source>Reset</source>
-      <translation>रीसेट</translation>
+      <translation>Eñepyrũ jey</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="69"/>
       <source>BIOS Selection</source>
-      <translation>BIOS चयन</translation>
+      <translation>BIOS jeporavo rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="90"/>
       <source>Open BIOS Folder...</source>
-      <translation>BIOS फ़ोल्डर खोलें...</translation>
+      <translation>Eipe'a BIOS ryru...</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="97"/>
       <source>Refresh List</source>
-      <translation>सूची रिफ्रेश करे</translation>
+      <translation>Ombopyahu lista</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="116"/>
       <source>Filename</source>
-      <translation>फ़ाइल का नाम</translation>
+      <translation>Archivo réra</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="121"/>
       <source>Version</source>
-      <translation>संस्करण</translation>
+      <translation>Versión</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="132"/>
       <source>Options and Patches</source>
-      <translation>विकल्प ऐवम पैच</translation>
+      <translation>Opciones ha parches rehegua</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="140"/>
       <location filename="../Settings/BIOSSettingsWidget.cpp" line="32"/>
       <source>Fast Boot</source>
-      <translation>फास्ट बूट</translation>
+      <translation>Ñemboguata Pya’e</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="147"/>
       <location filename="../Settings/BIOSSettingsWidget.cpp" line="35"/>
       <source>Fast Forward Boot</source>
-      <translation>फास्ट फॉरवर्ड बूट</translation>
+      <translation>Ombopya'e arranque</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.cpp" line="32"/>
       <source>Checked</source>
-      <translation>जांचा हुआ</translation>
+      <translation>oñemoañeteva’ekue</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.cpp" line="33"/>
       <source>Patches the BIOS to skip the console&apos;s boot animation.</source>
-      <translation>कंसोल के बूट एनीमेशन को छोड़ने के लिए BIOS को पैच करता है।</translation>
+      <translation>Omboheko BIOS omboyke hag̃ua consola ñepyrũrã ñemohaꞌãnga.</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.cpp" line="35"/>
       <source>Unchecked</source>
-      <translation>अनियंत्रित</translation>
+      <translation type="unfinished">Unchecked</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.cpp" line="36"/>
       <source>Removes emulation speed throttle until the game starts to reduce startup time.</source>
-      <translation>जब तक खेल शुरू न हो जाए, स्टार्टअप समय को कम करने के लिए इम्यूलेशन स्पीड थ्रॉटल को हटा देता है।</translation>
+      <translation type="unfinished">Removes emulation speed throttle until the game starts to reduce startup time.</translation>
     </message>
   </context>
   <context>
@@ -2083,73 +2074,73 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="41"/>
       <source>Create / Modify Breakpoint</source>
-      <translation>ब्रेकपॉइंट बनाएं/संशोधित करें</translation>
+      <translation type="unfinished">Create / Modify Breakpoint</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="78"/>
       <source>Type</source>
-      <translation>प्रकार</translation>
+      <translation type="unfinished">Type</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="84"/>
       <source>Execute</source>
-      <translation>निष्‍पादित करें</translation>
+      <translation type="unfinished">Execute</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="91"/>
       <location filename="../Debugger/BreakpointDialog.ui" line="157"/>
       <source>Memory</source>
-      <translation>मेमोरी</translation>
+      <translation type="unfinished">Memory</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="116"/>
       <source>Address</source>
-      <translation>पता</translation>
+      <translation type="unfinished">Address</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="138"/>
       <source>0</source>
-      <translation>0</translation>
+      <translation type="unfinished">0</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="165"/>
       <source>Read</source>
-      <translation>पढ़ें</translation>
+      <translation type="unfinished">Read</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="175"/>
       <source>Write</source>
-      <translation>लिखें</translation>
+      <translation type="unfinished">Write</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="185"/>
       <source>Change</source>
-      <translation>बदलें</translation>
+      <translation type="unfinished">Change</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="196"/>
       <source>Size</source>
-      <translation>आकार</translation>
+      <translation type="unfinished">Size</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="215"/>
       <source>1</source>
-      <translation>1</translation>
+      <translation type="unfinished">1</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="239"/>
       <source>Condition</source>
-      <translation>हालत</translation>
+      <translation type="unfinished">Condition</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="267"/>
       <source>Log</source>
-      <translation>लॉग</translation>
+      <translation type="unfinished">Log</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="277"/>
       <source>Enable</source>
-      <translation>सक्षम</translation>
+      <translation type="unfinished">Enable</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.cpp" line="100"/>
@@ -2174,81 +2165,81 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="46"/>
       <source>Execute</source>
-      <translation>निष्‍पादित करें</translation>
+      <translation type="unfinished">Execute</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="57"/>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="80"/>
       <source>--</source>
-      <translation>--</translation>
+      <translation type="unfinished">--</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="65"/>
       <source>Enabled</source>
-      <translation>सक्षम है</translation>
+      <translation type="unfinished">Enabled</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="65"/>
       <source>Disabled</source>
-      <translation>असक्षम है</translation>
+      <translation type="unfinished">Disabled</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="69"/>
       <source>Read</source>
-      <translation>पढ़ें</translation>
+      <translation type="unfinished">Read</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="72"/>
       <source>Write(C)</source>
       <extracomment>(C) = changes, as in &quot;look for changes&quot;.</extracomment>
-      <translation>लिखें(C)</translation>
+      <translation type="unfinished">Write(C)</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="72"/>
       <source>Write</source>
-      <translation>लिखें</translation>
+      <translation type="unfinished">Write</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="207"/>
       <source>TYPE</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation>प्रकार</translation>
+      <translation type="unfinished">TYPE</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="210"/>
       <source>OFFSET</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation>ओफ़्सेट</translation>
+      <translation type="unfinished">OFFSET</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="213"/>
       <source>SIZE / LABEL</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation>आकार/लेबल</translation>
+      <translation type="unfinished">SIZE / LABEL</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="216"/>
       <source>INSTRUCTION</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation>निर्देश</translation>
+      <translation type="unfinished">INSTRUCTION</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="219"/>
       <source>CONDITION</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation>हालत</translation>
+      <translation type="unfinished">CONDITION</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="222"/>
       <source>HITS</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation>हिट्स</translation>
+      <translation type="unfinished">HITS</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="225"/>
       <source>X</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation>X</translation>
+      <translation type="unfinished">X</translation>
     </message>
   </context>
   <context>
@@ -2256,12 +2247,12 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="287"/>
       <source>Game disc location is on a removable drive, performance issues such as jittering and freezing may occur.</source>
-      <translation>गेम डिस्क का स्थान हटाने योग्य ड्राइव पर है, घबराहट और अटकने जैसी प्रदर्शन समस्याएं हो सकती हैं।</translation>
+      <translation type="unfinished">Game disc location is on a removable drive, performance issues such as jittering and freezing may occur.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="382"/>
       <source>Saving CDVD block dump to &apos;{}&apos;.</source>
-      <translation>CDVD ब्लॉक डंप को &apos;{}&apos; में सहेजा जा रहा है।</translation>
+      <translation type="unfinished">Saving CDVD block dump to &apos;{}&apos;.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="412"/>
@@ -2271,22 +2262,22 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="28"/>
       <source>Audio</source>
-      <translation>ध्वनि</translation>
+      <translation type="unfinished">Audio</translation>
     </message>
     <message>
       <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="30"/>
       <source>Mode 1</source>
-      <translation>मोड 1</translation>
+      <translation type="unfinished">Mode 1</translation>
     </message>
     <message>
       <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="32"/>
       <source>Mode 2</source>
-      <translation>मोड 2</translation>
+      <translation type="unfinished">Mode 2</translation>
     </message>
     <message>
       <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="34"/>
       <source>Unknown</source>
-      <translation>अनजान</translation>
+      <translation type="unfinished">Unknown</translation>
     </message>
     <message>
       <location filename="../../pcsx2/CDVD/CDVDdiscReader.cpp" line="201"/>
@@ -2314,7 +2305,7 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../ColorPickerButton.cpp" line="42"/>
       <source>Select LED Color</source>
-      <translation>एलईडी रंग चुनें</translation>
+      <translation type="unfinished">Select LED Color</translation>
     </message>
   </context>
   <context>
@@ -2322,64 +2313,64 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Settings/ControllerBindingWidget.ui" line="29"/>
       <source>Virtual Controller Type</source>
-      <translation>वर्चुअल कंट्रोलर प्रकार</translation>
+      <translation type="unfinished">Virtual Controller Type</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.ui" line="40"/>
       <source>Bindings</source>
-      <translation>बाइंडिंगस</translation>
+      <translation type="unfinished">Bindings</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.ui" line="60"/>
       <source>Settings</source>
-      <translation>समायोजन</translation>
+      <translation type="unfinished">Settings</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.ui" line="80"/>
       <source>Macros</source>
-      <translation>मैक्रोज़</translation>
+      <translation type="unfinished">Macros</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.ui" line="117"/>
       <source>Automatic Mapping</source>
-      <translation>स्वचालित मानचित्रण</translation>
+      <translation type="unfinished">Automatic Mapping</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.ui" line="131"/>
       <source>Clear Mapping</source>
-      <translation>मैपिंग साफ़ करें</translation>
+      <translation type="unfinished">Clear Mapping</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.cpp" line="44"/>
       <source>Controller Port %1</source>
-      <translation>नियंत्रक पोर्ट %1</translation>
+      <translation type="unfinished">Controller Port %1</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.cpp" line="213"/>
       <source>No devices available</source>
-      <translation>कोई डिवाइस उपलब्ध नहीं</translation>
+      <translation type="unfinished">No devices available</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.cpp" line="223"/>
       <source>Clear Bindings</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
-      <translation>बाइन्डिंग क्लियर करें</translation>
+      <translation type="unfinished">Clear Bindings</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.cpp" line="225"/>
       <source>Are you sure you want to clear all bindings for this controller? This action cannot be undone.</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
-      <translation>क्या आप वाकई इस नियंत्रक के लिए सभी बाइंडिंग साफ़ करना चाहते हैं? इस एक्शन को वापस नहीं किया जा सकता।</translation>
+      <translation type="unfinished">Are you sure you want to clear all bindings for this controller? This action cannot be undone.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.cpp" line="254"/>
       <source>Automatic Binding</source>
-      <translation>स्वचालित मानचित्रण</translation>
+      <translation type="unfinished">Automatic Binding</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.cpp" line="255"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-      <translation>डिवाइस &apos;%1&apos; के लिए कोई सामान्य बाइंडिंग उत्पन्न नहीं की गई। नियंत्रक/स्रोत स्वचालित मैपिंग का समर्थन नहीं कर सकता है।</translation>
+      <translation type="unfinished">No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</translation>
     </message>
   </context>
   <context>
@@ -2388,145 +2379,145 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="43"/>
       <source>D-Pad</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation>D-Pad</translation>
+      <translation type="unfinished">D-Pad</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="49"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="218"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="861"/>
       <source>Down</source>
-      <translation>नीचे</translation>
+      <translation type="unfinished">Down</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="89"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="258"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="821"/>
       <source>Left</source>
-      <translation>बाएं</translation>
+      <translation type="unfinished">Left</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="129"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="298"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="941"/>
       <source>Up</source>
-      <translation>ऊपर</translation>
+      <translation type="unfinished">Up</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="169"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="338"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="901"/>
       <source>Right</source>
-      <translation>दाएँ</translation>
+      <translation type="unfinished">Right</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="212"/>
       <source>Left Analog</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation>बायें एनालॉग</translation>
+      <translation type="unfinished">Left Analog</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="381"/>
       <source>Large Motor</source>
-      <translation>बड़ी मोटर</translation>
+      <translation type="unfinished">Large Motor</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="438"/>
       <source>L2</source>
       <extracomment>Leave this button name as-is.</extracomment>
-      <translation>L2</translation>
+      <translation type="unfinished">L2</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="472"/>
       <source>R2</source>
       <extracomment>Leave this button name as-is.</extracomment>
-      <translation>R2</translation>
+      <translation type="unfinished">R2</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="506"/>
       <source>L1</source>
       <extracomment>Leave this button name as-is.</extracomment>
-      <translation>L1</translation>
+      <translation type="unfinished">L1</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="540"/>
       <source>R1</source>
       <extracomment>Leave this button name as-is.</extracomment>
-      <translation>R1</translation>
+      <translation type="unfinished">R1</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="574"/>
       <source>Start</source>
       <extracomment>Leave this button name as-is or uppercase it entirely.</extracomment>
-      <translation>शुरु</translation>
+      <translation type="unfinished">Start</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="608"/>
       <source>Select</source>
       <extracomment>Leave this button name as-is or uppercase it entirely.</extracomment>
-      <translation>चयन</translation>
+      <translation type="unfinished">Select</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="646"/>
       <source>Face Buttons</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation>फैस बटन</translation>
+      <translation type="unfinished">Face Buttons</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="652"/>
       <source>Cross</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation>क्रॉस</translation>
+      <translation type="unfinished">Cross</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="692"/>
       <source>Square</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation>स्कूऐर</translation>
+      <translation type="unfinished">Square</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="732"/>
       <source>Triangle</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation>ट्राईंगल</translation>
+      <translation type="unfinished">Triangle</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="772"/>
       <source>Circle</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation>सर्कल</translation>
+      <translation type="unfinished">Circle</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="815"/>
       <source>Right Analog</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation>दायाः एनालॉग</translation>
+      <translation type="unfinished">Right Analog</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="984"/>
       <source>Small Motor</source>
-      <translation>छोटी मोटर</translation>
+      <translation type="unfinished">Small Motor</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1109"/>
       <source>L3</source>
       <extracomment>Leave this button name as-is.</extracomment>
-      <translation>L3</translation>
+      <translation type="unfinished">L3</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1149"/>
       <source>R3</source>
       <extracomment>Leave this button name as-is.</extracomment>
-      <translation>R3</translation>
+      <translation type="unfinished">R3</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1189"/>
       <source>Pressure Modifier</source>
-      <translation>दबाव संशोधक</translation>
+      <translation type="unfinished">Pressure Modifier</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1223"/>
       <source>Analog</source>
-      <translation>ऐनालॉग</translation>
+      <translation type="unfinished">Analog</translation>
     </message>
   </context>
   <context>
@@ -2534,7 +2525,7 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="83"/>
       <source>Yellow</source>
-      <translation>पीला</translation>
+      <translation type="unfinished">Yellow</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="95"/>
@@ -2549,57 +2540,57 @@ Leaderboard Position: {1} of {2}</source>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="275"/>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="295"/>
       <source>PushButton</source>
-      <translation>पुशबटन</translation>
+      <translation type="unfinished">PushButton</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="103"/>
       <source>Start</source>
-      <translation>शुरु</translation>
+      <translation type="unfinished">Start</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="123"/>
       <source>Red</source>
-      <translation>लाल</translation>
+      <translation type="unfinished">Red</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="143"/>
       <source>Green</source>
-      <translation>हरा</translation>
+      <translation type="unfinished">Green</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="163"/>
       <source>Orange</source>
-      <translation>नारंगी</translation>
+      <translation type="unfinished">Orange</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="183"/>
       <source>Select</source>
-      <translation>चयन</translation>
+      <translation type="unfinished">Select</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="203"/>
       <source>Strum Up</source>
-      <translation>स्ट्रम अप</translation>
+      <translation type="unfinished">Strum Up</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="223"/>
       <source>Strum Down</source>
-      <translation>स्ट्रम डाउन</translation>
+      <translation type="unfinished">Strum Down</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="243"/>
       <source>Blue</source>
-      <translation>नीला</translation>
+      <translation type="unfinished">Blue</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="263"/>
       <source>Whammy Bar</source>
-      <translation>व्हैमी बार</translation>
+      <translation type="unfinished">Whammy Bar</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="283"/>
       <source>Tilt</source>
-      <translation>टिल्ट</translation>
+      <translation type="unfinished">Tilt</translation>
     </message>
   </context>
   <context>
@@ -2858,17 +2849,17 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Settings/ControllerBindingWidget.cpp" line="724"/>
       <source>Restore Default Settings</source>
-      <translation>डिफ़ॉल्ट सेटिंग्स रीस्टोर करें</translation>
+      <translation type="unfinished">Restore Default Settings</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.cpp" line="696"/>
       <source>Browse...</source>
-      <translation>ब्राउज़ करें...</translation>
+      <translation type="unfinished">Browse...</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.cpp" line="700"/>
       <source>Select File</source>
-      <translation>फ़ाइल चुनें</translation>
+      <translation type="unfinished">Select File</translation>
     </message>
   </context>
   <context>
@@ -2876,73 +2867,73 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="127"/>
       <source>SDL Input Source</source>
-      <translation>SDL इनपुट स्रोत</translation>
+      <translation type="unfinished">SDL Input Source</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="140"/>
       <source>The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</source>
-      <translation>SDL इनपुट स्रोत अधिकांश नियंत्रकों का समर्थन करता है, और ब्लूटूथ मोड (वाईर्बेशण / एलईडी नियंत्रण) में DualShock 4 / DualSense पैड के लिए उन्नत कार्यक्षमता प्रदान करता है।</translation>
+      <translation type="unfinished">The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="133"/>
       <source>Enable SDL Input Source</source>
-      <translation>SDL इनपुट स्रोत सक्षम करें</translation>
+      <translation type="unfinished">Enable SDL Input Source</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="152"/>
       <source>DualShock 4 / DualSense Enhanced Mode</source>
-      <translation>DualShock 4 / DualSense एन्हांस्ड मोड</translation>
+      <translation type="unfinished">DualShock 4 / DualSense Enhanced Mode</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="236"/>
       <source>XInput Source</source>
-      <translation>XInput स्रोत</translation>
+      <translation type="unfinished">XInput Source</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="252"/>
       <source>Enable XInput Input Source</source>
-      <translation>XInput स्रोत सक्षम करें</translation>
+      <translation type="unfinished">Enable XInput Input Source</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="75"/>
       <source>DInput Source</source>
-      <translation>DInput स्रोत</translation>
+      <translation type="unfinished">DInput Source</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="88"/>
       <source>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended, but DirectInput can be used if they are not compatible with SDL.</source>
-      <translation>DInput स्रोत पुराने नियंत्रकों के लिए समर्थन प्रदान करता है जो XInput का समर्थन नहीं करते हैं। इसके बजाय SDL के माध्यम से इन नियंत्रकों तक पहुँचने की अनुशंसा की जाती है, लेकिन यदि वे SDL के साथ संगत नहीं हैं तो DirectInput का उपयोग किया जा सकता है।</translation>
+      <translation type="unfinished">The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended, but DirectInput can be used if they are not compatible with SDL.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="81"/>
       <source>Enable DInput Input Source</source>
-      <translation>DInput इनपुट स्रोत सक्षम करें</translation>
+      <translation type="unfinished">Enable DInput Input Source</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="101"/>
       <source>Profile Settings</source>
-      <translation>प्रोफ़ाइल सेटिंग्स</translation>
+      <translation type="unfinished">Profile Settings</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="107"/>
       <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
-      <translation>जब यह विकल्प सक्षम होता है, तो हॉटकीज़ को इस इनपुट प्रोफ़ाइल में सेट किया जा सकता है, और वैश्विक हॉटकीज़ के बजाय इसका उपयोग किया जाएगा। डिफ़ॉल्ट रूप से, हॉटकीज़ हमेशा सभी प्रोफ़ाइलों के बीच साझा की जाती हैं।</translation>
+      <translation type="unfinished">When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="117"/>
       <source>Use Per-Profile Hotkeys</source>
-      <translation>प्रति-प्रोफ़ाइल हॉटकीज़ का उपयोग करें</translation>
+      <translation type="unfinished">Use Per-Profile Hotkeys</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="159"/>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="221"/>
       <source>Controller LED Settings</source>
-      <translation>कन्ट्रोलर LED सेटिंग्स</translation>
+      <translation type="unfinished">Controller LED Settings</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="172"/>
       <source>Enable SDL Raw Input</source>
-      <translation>SDL रो इनपुट सक्षम करें</translation>
+      <translation type="unfinished">Enable SDL Raw Input</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="179"/>
@@ -2957,47 +2948,47 @@ Leaderboard Position: {1} of {2}</source>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="242"/>
       <source>The XInput source provides support for Xbox 360 / Xbox One / Xbox Series controllers, and third party controllers which implement the XInput protocol.</source>
-      <translation>XInput स्रोत Xbox 360 / Xbox One / Xbox सीरीज कन्ट्रोर्लस और तीसरे पक्ष कन्ट्रोर्लस के लिए समर्थन प्रदान करता है जो XInput प्रोटोकॉल लागू करते हैं।</translation>
+      <translation type="unfinished">The XInput source provides support for Xbox 360 / Xbox One / Xbox Series controllers, and third party controllers which implement the XInput protocol.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="42"/>
       <source>Controller Multitap</source>
-      <translation>कन्ट्रोलर मल्टीटैप</translation>
+      <translation type="unfinished">Controller Multitap</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="62"/>
       <source>The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</source>
-      <translation>मल्टीटैप 8 कन्ट्रोर्लस को कंसोल से कनेक्ट करने में सक्षम बनाता है। प्रत्येक मल्टीटैप 4 पोर्ट प्रदान करता है। मल्टीटैप सभी गेम द्वारा समर्थित नहीं है.</translation>
+      <translation type="unfinished">The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="48"/>
       <source>Multitap on Console Port 1</source>
-      <translation>कंसोल पोर्ट 1 पर मल्टीटैप</translation>
+      <translation type="unfinished">Multitap on Console Port 1</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="55"/>
       <source>Multitap on Console Port 2</source>
-      <translation>कंसोल पोर्ट 2 पर मल्टीटैप</translation>
+      <translation type="unfinished">Multitap on Console Port 2</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="196"/>
       <source>Mouse/Pointer Source</source>
-      <translation>माउस/पॉइंटर स्रोत</translation>
+      <translation type="unfinished">Mouse/Pointer Source</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="202"/>
       <source>PCSX2 allows you to use your mouse to simulate analog stick movement.</source>
-      <translation>PCSX2 आपको एनालॉग स्टिक मूवमेंट का अनुकरण करने के लिए अपने माउस का उपयोग करने की अनुमति देता है।</translation>
+      <translation type="unfinished">PCSX2 allows you to use your mouse to simulate analog stick movement.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="224"/>
       <source>Settings...</source>
-      <translation>सेटिंग्स...</translation>
+      <translation type="unfinished">Settings...</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="214"/>
       <source>Enable Mouse Mapping</source>
-      <translation>माउस मैपिंग सक्षम करें</translation>
+      <translation type="unfinished">Enable Mouse Mapping</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="262"/>
@@ -6101,7 +6092,7 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</tran
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6984"/>
       <source>On-Screen Display</source>
-      <translation>ऑन-स्क्रीन डिस्प्ले</translation>
+      <translation type="unfinished">On-Screen Display</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6986"/>
@@ -6116,7 +6107,7 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</tran
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7005"/>
       <source>BIOS Configuration</source>
-      <translation>BIOS विन्यास</translation>
+      <translation type="unfinished">BIOS Configuration</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7007"/>
@@ -6126,7 +6117,7 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</tran
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7008"/>
       <source>Options and Patches</source>
-      <translation>विकल्प ऐवम पैच</translation>
+      <translation type="unfinished">Options and Patches</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7009"/>
@@ -6731,7 +6722,7 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</tran
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7130"/>
       <source>Upscaling Fixes</source>
-      <translation>अपस्केलिंग फिक्सीस</translation>
+      <translation type="unfinished">Upscaling Fixes</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7132"/>
@@ -7521,7 +7512,7 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</tran
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7247"/>
       <source>Logging</source>
-      <translation>लॉगिंग</translation>
+      <translation type="unfinished">Logging</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7721"/>
@@ -8150,12 +8141,12 @@ Do you want to load this save and continue?</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7084"/>
       <source>Selects where anisotropic filtering is utilized when rendering textures.</source>
-      <translation>टेक्स्चर प्रतिपादन करते समय अनीसोर्टोपिक फिल्टरिंग कहा उपयोग की जाएगी वह चयन कर्ता है।</translation>
+      <translation type="unfinished">Selects where anisotropic filtering is utilized when rendering textures.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7339"/>
       <source>Use alternative method to calculate internal FPS to avoid false readings in some games.</source>
-      <translation>कुछ गेम्स मे असत्य पढ़ने से बचने के लिए विकल्प माध्यम का प्रयोग करके अंदरूनी FPS की गणना करना।</translation>
+      <translation type="unfinished">Use alternative method to calculate internal FPS to avoid false readings in some games.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7358"/>
@@ -8390,7 +8381,7 @@ Do you want to load this save and continue?</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7373"/>
       <source>Account</source>
-      <translation>खाता</translation>
+      <translation type="unfinished">Account</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7374"/>
@@ -8405,7 +8396,7 @@ Do you want to load this save and continue?</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7376"/>
       <source>Current Game</source>
-      <translation>मौजूदा गेम</translation>
+      <translation type="unfinished">Current Game</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7377"/>
