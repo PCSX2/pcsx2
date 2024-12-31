@@ -4,6 +4,13 @@
 #include "Common.h"
 #include "common/BitUtils.h"
 
+#include <immintrin.h>
+
+#define LOAD_GPRS_INTO_SSE2 \
+	__m128i* pRd = (__m128i*)&cpuRegs.GPR.r[_Rd_]; \
+	const __m128i* pRs = (__m128i*)&cpuRegs.GPR.r[_Rs_]; \
+	const __m128i* pRt = (__m128i*)&cpuRegs.GPR.r[_Rt_];
+
 namespace R5900 {
 namespace Interpreter {
 namespace OpcodeImpl {
@@ -353,8 +360,11 @@ static __fi void _PADDH(int n)
 void PADDH() {
 	if (!_Rd_) return;
 
-	_PADDH(0);  _PADDH(1);  _PADDH(2);  _PADDH(3);
-	_PADDH(4);  _PADDH(5);  _PADDH(6);  _PADDH(7);
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_add_epi16(*pRs, *pRt);
+	/*_PADDH(0);  _PADDH(1);  _PADDH(2);  _PADDH(3);
+	_PADDH(4);  _PADDH(5);  _PADDH(6);  _PADDH(7);*/
 }
 
 static __fi void _PSUBH(int n)
@@ -365,8 +375,13 @@ static __fi void _PSUBH(int n)
 void PSUBH() {
 	if (!_Rd_) return;
 
-	_PSUBH(0);  _PSUBH(1);  _PSUBH(2);  _PSUBH(3);
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_subs_epu16(*pRs, *pRt);
+	
+	/*_PSUBH(0);  _PSUBH(1);  _PSUBH(2);  _PSUBH(3);
 	_PSUBH(4);  _PSUBH(5);  _PSUBH(6);  _PSUBH(7);
+	*/
 }
 
 static __fi void _PCGTH(int n)
@@ -380,8 +395,14 @@ static __fi void _PCGTH(int n)
 void PCGTH() {
 	if (!_Rd_) return;
 
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_cmpgt_epi16(*pRs, *pRt);
+
+	/*
 	_PCGTH(0);  _PCGTH(1);  _PCGTH(2);  _PCGTH(3);
 	_PCGTH(4);  _PCGTH(5);  _PCGTH(6);  _PCGTH(7);
+	*/
 }
 
 static __fi void _PMAXH(int n)
@@ -395,8 +416,13 @@ static __fi void _PMAXH(int n)
 void PMAXH() {
 	if (!_Rd_) return;
 
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_max_epu16(*pRs, *pRt);
+	/*
 	_PMAXH(0);  _PMAXH(1);  _PMAXH(2);  _PMAXH(3);
 	_PMAXH(4);  _PMAXH(5);  _PMAXH(6);  _PMAXH(7);
+	*/
 }
 
 static __fi void _PADDB(int n)
@@ -408,8 +434,13 @@ void PADDB() {
 	int i;
 	if (!_Rd_) return;
 
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_add_epi8(*pRs, *pRt);
+	/*
 	for( i=0; i<16; i++ )
 		_PADDB( i );
+		*/
 }
 
 static __fi void _PSUBB(int n)
@@ -437,8 +468,13 @@ void PCGTB() {
 	int i;
 	if (!_Rd_) return;
 
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_cmpgt_epi8(*pRs, *pRt);
+	/*
 	for( i=0; i<16; i++ )
 		_PCGTB( i );
+		*/
 }
 
 static __fi void _PADDSW(int n)
@@ -488,11 +524,16 @@ void PEXTLW() {
 
 	if (!_Rd_) return;
 
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_unpacklo_epi32(*pRt, *pRs);
+	/*
 	Rs = cpuRegs.GPR.r[_Rs_]; Rt = cpuRegs.GPR.r[_Rt_];
 	cpuRegs.GPR.r[_Rd_].UL[0] = Rt.UL[0];
 	cpuRegs.GPR.r[_Rd_].UL[1] = Rs.UL[0];
 	cpuRegs.GPR.r[_Rd_].UL[2] = Rt.UL[1];
 	cpuRegs.GPR.r[_Rd_].UL[3] = Rs.UL[1];
+	*/
 }
 
 void PPACW() {
@@ -552,6 +593,10 @@ void PEXTLH() {
 
 	if (!_Rd_) return;
 
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_unpacklo_epi16(*pRt, *pRs);
+	/*
 	Rs = cpuRegs.GPR.r[_Rs_]; Rt = cpuRegs.GPR.r[_Rt_];
 	cpuRegs.GPR.r[_Rd_].US[0] = Rt.US[0];
 	cpuRegs.GPR.r[_Rd_].US[1] = Rs.US[0];
@@ -561,6 +606,7 @@ void PEXTLH() {
 	cpuRegs.GPR.r[_Rd_].US[5] = Rs.US[2];
 	cpuRegs.GPR.r[_Rd_].US[6] = Rt.US[3];
 	cpuRegs.GPR.r[_Rd_].US[7] = Rs.US[3];
+	*/
 }
 
 void PPACH() {
@@ -626,6 +672,10 @@ void PEXTLB() {
 
 	if (!_Rd_) return;
 
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_unpacklo_epi8(*pRt, *pRs);
+	/*
 	Rs = cpuRegs.GPR.r[_Rs_]; Rt = cpuRegs.GPR.r[_Rt_];
 	cpuRegs.GPR.r[_Rd_].UC[0]  = Rt.UC[0];
 	cpuRegs.GPR.r[_Rd_].UC[1]  = Rs.UC[0];
@@ -646,6 +696,7 @@ void PEXTLB() {
 	cpuRegs.GPR.r[_Rd_].UC[13] = Rs.UC[6];
 	cpuRegs.GPR.r[_Rd_].UC[14] = Rt.UC[7];
 	cpuRegs.GPR.r[_Rd_].UC[15] = Rs.UC[7];
+	*/
 }
 
 void PPACB() {
@@ -692,6 +743,7 @@ void PEXT5() {
 
 __fi void  _PPAC5(int n)
 {
+
 	cpuRegs.GPR.r[_Rd_].UL[n] =
 		((cpuRegs.GPR.r[_Rt_].UL[n] >>  3) & 0x0000001F) |
 		((cpuRegs.GPR.r[_Rt_].UL[n] >>  6) & 0x000003E0) |
@@ -721,7 +773,10 @@ static __fi void _PABSW(int n)
 void PABSW() {
 	if (!_Rd_) return;
 
-	_PABSW(0);  _PABSW(1);  _PABSW(2);  _PABSW(3);
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_abs_epi32(*pRt);
+	/*_PABSW(0);  _PABSW(1);  _PABSW(2);  _PABSW(3);*/
 }
 
 static __fi void _PCEQW(int n)
@@ -735,7 +790,14 @@ static __fi void _PCEQW(int n)
 void PCEQW() {
 	if (!_Rd_) return;
 
-	_PCEQW(0); _PCEQW(1); _PCEQW(2); _PCEQW(3);
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_cmpeq_epi32(*pRs, *pRt);
+	/* _PCEQW(0);
+	_PCEQW(1);
+	_PCEQW(2);
+	_PCEQW(3);
+	*/
 }
 
 static __fi void _PMINW( u8 n )
@@ -749,7 +811,14 @@ static __fi void _PMINW( u8 n )
 void PMINW() {
 	if (!_Rd_) return;
 
-	_PMINW(0); _PMINW(1); _PMINW(2); _PMINW(3);
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_min_epi32(*pRs, *pRt);
+	/* _PMINW(0);
+	_PMINW(1);
+	_PMINW(2);
+	_PMINW(3);
+	*/
 }
 
 void PADSBH() {
@@ -772,8 +841,12 @@ static __fi void _PABSH(int n)
 void PABSH() {
 	if (!_Rd_) return;
 
-	_PABSH(0); _PABSH(1); _PABSH(2); _PABSH(3);
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_abs_epi16(*pRt);
+	/*_PABSH(0); _PABSH(1); _PABSH(2); _PABSH(3);
 	_PABSH(4); _PABSH(5); _PABSH(6); _PABSH(7);
+	*/
 }
 
 static __fi void  _PCEQH( u8 n )
@@ -787,8 +860,13 @@ static __fi void  _PCEQH( u8 n )
 void PCEQH() {
 	if (!_Rd_) return;
 
-	_PCEQH(0); _PCEQH(1); _PCEQH(2); _PCEQH(3);
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_cmpeq_epi16(*pRs, *pRt);
+
+	/*_PCEQH(0); _PCEQH(1); _PCEQH(2); _PCEQH(3);
 	_PCEQH(4); _PCEQH(5); _PCEQH(6); _PCEQH(7);
+	*/
 }
 
 static __fi void  _PMINH( u8 n )
@@ -802,8 +880,14 @@ static __fi void  _PMINH( u8 n )
 void PMINH() {
 	if (!_Rd_) return;
 
-	_PMINH(0); _PMINH(1); _PMINH(2); _PMINH(3);
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_min_epi16(*pRs, *pRt);
+
+/*	_PMINH(0); _PMINH(1); _PMINH(2); _PMINH(3);
 	_PMINH(4); _PMINH(5); _PMINH(6); _PMINH(7);
+	*/
+
 }
 
 __fi void  _PCEQB(int n)
@@ -818,8 +902,11 @@ void PCEQB() {
 	int i;
 	if (!_Rd_) return;
 
-	for( i=0; i<16; i++ )
-		_PCEQB(i);
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_cmpeq_epi8(*pRs, *pRt);
+//	for( i=0; i<16; i++ )
+	//	_PCEQB(i);
 }
 
 __fi void  _PADDUW(int n)
@@ -861,11 +948,16 @@ void PEXTUW() {
 
 	if (!_Rd_) return;
 
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_unpackhi_epi32(*pRt, *pRs);
+	/*
 	Rs = cpuRegs.GPR.r[_Rs_]; Rt = cpuRegs.GPR.r[_Rt_];
 	cpuRegs.GPR.r[_Rd_].UL[0] = Rt.UL[2];
 	cpuRegs.GPR.r[_Rd_].UL[1] = Rs.UL[2];
 	cpuRegs.GPR.r[_Rd_].UL[2] = Rt.UL[3];
 	cpuRegs.GPR.r[_Rd_].UL[3] = Rs.UL[3];
+	*/
 }
 
 __fi void  _PADDUH(int n)
@@ -909,6 +1001,10 @@ void PEXTUH() {
 
 	if (!_Rd_) return;
 
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_unpackhi_epi16(*pRt, *pRs);
+	/*
 	Rs = cpuRegs.GPR.r[_Rs_]; Rt = cpuRegs.GPR.r[_Rt_];
 	cpuRegs.GPR.r[_Rd_].US[0] = Rt.US[4];
 	cpuRegs.GPR.r[_Rd_].US[1] = Rs.US[4];
@@ -919,6 +1015,7 @@ void PEXTUH() {
 	cpuRegs.GPR.r[_Rd_].US[5] = Rs.US[6];
 	cpuRegs.GPR.r[_Rd_].US[6] = Rt.US[7];
 	cpuRegs.GPR.r[_Rd_].US[7] = Rs.US[7];
+	*/
 }
 
 __fi void  _PADDUB(int n)
@@ -963,6 +1060,10 @@ void PEXTUB() {
 
 	if (!_Rd_) return;
 
+	LOAD_GPRS_INTO_SSE2;
+
+	*pRd = _mm_unpackhi_epi8(*pRt, *pRs);
+	/*
 	Rs = cpuRegs.GPR.r[_Rs_]; Rt = cpuRegs.GPR.r[_Rt_];
 	cpuRegs.GPR.r[_Rd_].UC[0]  = Rt.UC[8];
 	cpuRegs.GPR.r[_Rd_].UC[1]  = Rs.UC[8];
@@ -980,6 +1081,7 @@ void PEXTUB() {
 	cpuRegs.GPR.r[_Rd_].UC[13] = Rs.UC[14];
 	cpuRegs.GPR.r[_Rd_].UC[14] = Rt.UC[15];
 	cpuRegs.GPR.r[_Rd_].UC[15] = Rs.UC[15];
+	*/
 }
 
 //int saZero = 0;
@@ -1256,16 +1358,24 @@ void PHMADH() {				// JayteeMaster: changed a bit to avoid screw up. Also used 0
 
 void PAND() {
 	if (!_Rd_) return;
+	LOAD_GPRS_INTO_SSE2;
 
+	*pRd = _mm_and_si128(*pRs, *pRt);
+	/*
 	cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.GPR.r[_Rs_].UD[0] & cpuRegs.GPR.r[_Rt_].UD[0];
 	cpuRegs.GPR.r[_Rd_].UD[1] = cpuRegs.GPR.r[_Rs_].UD[1] & cpuRegs.GPR.r[_Rt_].UD[1];
+	*/
 }
 
 void PXOR() {
 	if (!_Rd_) return;
+	LOAD_GPRS_INTO_SSE2;
 
+	*pRd = _mm_xor_si128(*pRs, *pRt);
+	/*
 	cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.GPR.r[_Rs_].UD[0] ^ cpuRegs.GPR.r[_Rt_].UD[0];
 	cpuRegs.GPR.r[_Rd_].UD[1] = cpuRegs.GPR.r[_Rs_].UD[1] ^ cpuRegs.GPR.r[_Rt_].UD[1];
+	*/
 }
 
 void PMSUBH() {			// JayteeMaster: changed a bit to avoid screw up
@@ -1437,6 +1547,7 @@ void PEXEW() {
 
 	if (!_Rd_) return;
 
+
 	Rt = cpuRegs.GPR.r[_Rt_];
 	cpuRegs.GPR.r[_Rd_].UL[0] = Rt.UL[2];
 	cpuRegs.GPR.r[_Rd_].UL[1] = Rt.UL[1];
@@ -1486,8 +1597,14 @@ void PSRAVW() {
 }
 
 void PMTHI() {
-	cpuRegs.HI.UD[0] = cpuRegs.GPR.r[_Rs_].UD[0];
+
+	__m128i* HI = (__m128i*)&cpuRegs.HI;
+	const __m128i* Rs = (__m128i*)&cpuRegs.GPR.r[_Rs_];
+
+	*HI = *Rs;
+	/* cpuRegs.HI.UD[0] = cpuRegs.GPR.r[_Rs_].UD[0];
 	cpuRegs.HI.UD[1] = cpuRegs.GPR.r[_Rs_].UD[1];
+	*/
 }
 
 void PMTLO() {
