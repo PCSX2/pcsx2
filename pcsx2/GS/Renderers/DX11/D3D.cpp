@@ -434,9 +434,14 @@ GSRendererType D3D::GetPreferredRenderer()
 
 		case VendorID::AMD:
 		{
+			// FIXME: When someone buys an RDNA 3 GPU please debug the driver timeouts on windows
+			// to figure out what's causing the crashes on Vulkan, seems to be related to barriers.
+			// RDNA 2 and higher support feature level 12.2 so use that to detect RDNA 3.
 			const std::optional<D3D_FEATURE_LEVEL> feature_level = get_d3d11_feature_level();
 			if (!feature_level.has_value())
 				return GSRendererType::DX11;
+			else if (feature_level == D3D_FEATURE_LEVEL_12_2)
+				return GSRendererType::OGL;
 			else if (feature_level == D3D_FEATURE_LEVEL_12_0)
 				return check_vulkan_supported() ? GSRendererType::VK : GSRendererType::DX11;
 			else
