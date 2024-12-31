@@ -27,17 +27,17 @@
     <message>
       <location filename="../AboutDialog.cpp" line="51"/>
       <source>Website</source>
-      <translation>Kezdőlap</translation>
+      <translation>Weboldal</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="53"/>
       <source>Support Forums</source>
-      <translation>Közösségi fórum</translation>
+      <translation>Közösségi Fórum</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="55"/>
       <source>GitHub Repository</source>
-      <translation>GitHub repó</translation>
+      <translation>GitHub Repó</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="57"/>
@@ -47,7 +47,7 @@
     <message>
       <location filename="../AboutDialog.cpp" line="59"/>
       <source>Third-Party Licenses</source>
-      <translation>Harmadik féltől származó licencek</translation>
+      <translation>Harmadik Féltől Származó Licencek</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="109"/>
@@ -732,307 +732,318 @@ Ranglista Helyezés: {1}/{2}</translation>
       <translation>Globális Beállítások Használata [%1]</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="74"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
       <source>Rounding Mode</source>
       <translation>Kerekítési Mód</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="74"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="106"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="110"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="113"/>
       <source>Chop/Zero (Default)</source>
       <translation>Levágás/Nulla (Alapértelmezett)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="74"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
       <source>Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Floating Point Unit (EE FPU). Because the various FPUs in the PS2 are non-compliant with international standards, some games may need different modes to do math correctly. The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
       <translation>Megváltoztatja hogyan kezeli a PCSX2 a kerekítést, mikor az Emotion Engine lebegőpontos egységét emulálja (EE FPU). Mivel a PS2 különféle FPU-i nem felelnek meg a nemzetközi szabványoknak, néhány játéknál más módokra lehet szükség, hogy helyesen végezze el a számításokat. Az alap érték megfelelően kezeli a játékok nagy részét; &lt;b&gt; Ennek a beállításnak a megváltoztatása, mikor egy játéknak nincs látható problémája, instabilitáshoz vezethet.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="76"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="80"/>
       <source>Division Rounding Mode</source>
       <translation>Osztási Kerekítési Mód</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="76"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="80"/>
       <source>Nearest (Default)</source>
       <translation>Legközelebbi (Alapértelmezett)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="76"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="80"/>
       <source>Determines how the results of floating-point division are rounded. Some games need specific settings; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
       <translation>Meghatározza, hogy a lebegőpontos osztás eredményét hogyan kerekíti. Néhány játék csak egy bizonyos beállítással működik megfelelően; &lt;b&gt; Ennek a beállításnak a megváltoztatása, mikor egy játéknak nincs látható problémája, instabilitáshoz vezethet.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
       <source>Clamping Mode</source>
       <translation>Rögzítési Mód</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="112"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="114"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="116"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
       <source>Normal (Default)</source>
       <translation>Normál (Alapértelmezett)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
       <source>Changes how PCSX2 handles keeping floats in a standard x86 range. The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
       <translation>Megváltoztatja hogyan tartja a PCSX2 a lebegőpontos értékeket az szabvány x86 tartományban. Az alap érték megfelelően kezeli a játékok nagy részét; &lt;b&gt; Ennek a beállításnak a megváltoztatása, mikor egy játéknak nincs látható problémája, instabilitáshoz vezethet.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="81"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="130"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="85"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="134"/>
       <source>Enable Recompiler</source>
       <translation>Újrafordító Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="81"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="59"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="85"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="91"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="94"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="117"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="89"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="95"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="98"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="124"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="125"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="128"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="130"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="133"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="136"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="149"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="132"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="134"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="137"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="140"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="153"/>
       <source>Checked</source>
       <translation>Bejelölve</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
-      <source>Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86.</source>
-      <translation>Valós idejű (JIT) bináris fordítást végez 64-bites MIPS-IV gépi kódról x86 kódra.</translation>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="59"/>
+      <source>Use Save State Selector</source>
+      <translation>Állásmentés Választó Használata</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="85"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="60"/>
+      <source>Show a save state selector UI when switching slots instead of showing a notification bubble.</source>
+      <translation>Grafikus felület megjelenítése mentési foglalat váltásakor információs buborék helyett.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="86"/>
+      <source>Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86.</source>
+      <translation>Futás idejű (JIT) bináris fordítást végez 64-bites MIPS-IV gépi kódról x86 kódra.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="89"/>
       <source>Wait Loop Detection</source>
       <extracomment>Wait loop: When the game makes the CPU do nothing (loop/spin) while it waits for something to happen (usually an interrupt).</extracomment>
       <translation>Várakozási Hurok Felismerése</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="86"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="90"/>
       <source>Moderate speedup for some games, with no known side effects.</source>
       <translation>Szerény teljesítmény növekedés bizonyos játékoknál, ismert problémák nélkül.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="88"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
       <source>Enable Cache (Slow)</source>
       <translation>Pufferelés bekapcsolása (lassú)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="88"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="98"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="103"/>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="145"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="102"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="107"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="149"/>
       <source>Unchecked</source>
       <translation>Nincs Bejelölve</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="88"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
       <source>Interpreter only, provided for diagnostic.</source>
       <translation>Kizárólag az értelmező módhoz elérhető, diagnosztikai célokra.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="91"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="95"/>
       <source>INTC Spin Detection</source>
       <extracomment>INTC = Name of a PS2 register, leave as-is. &quot;spin&quot; = to make a cpu (or gpu) actively do nothing while you wait for something. Like spinning in a circle, you&apos;re moving but not actually going anywhere.</extracomment>
       <translation>INTC Időzítés Átugrása</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="96"/>
       <source>Huge speedup for some games, with almost no compatibility side effects.</source>
       <translation>Nagy teljesítmény növekedés bizonyos játékok esetén, legtöbb esetben problémák nélkül.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="94"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="98"/>
       <source>Enable Fast Memory Access</source>
       <translation>Gyors Memória Hozzáférés Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="96"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="100"/>
       <source>Uses backpatching to avoid register flushing on every memory access.</source>
       <extracomment>&quot;Backpatching&quot; = To edit previously generated code to change what it does (in this case, we generate direct memory accesses, then backpatch them to jump to a fancier handler function when we realize they need the fancier handler function)</extracomment>
       <translation>Visszamenőleges csatolást használ, hogy elkerülje a regiszterek kiürítését minden memória-hozzáféréskor.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="98"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="102"/>
       <source>Pause On TLB Miss</source>
       <translation>Szünet TLB kivétel esetén</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="99"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="103"/>
       <source>Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing. Note that the VM will pause after the end of the block, not on the instruction which caused the exception. Refer to the console to see the address where the invalid access occurred.</source>
       <translation>A virtuális gép szüneteltetése ha TLB kivétel történik, a végrehajtás folytatása helyett. Fontos, hogy a virtuális gép az adott blokk végén fog megállni, nem az eseményt kiváltó utasításon. Az konzolkimenetben megtalálható az érvénytelen utasítás címe.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="103"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="107"/>
       <source>Enable 128MB RAM (Dev Console)</source>
       <translation>128MB RAM Engedélyezése (Fejlesztői Konzol)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="104"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="108"/>
       <source>Exposes an additional 96MB of memory to the virtual machine.</source>
       <translation>Bővíti a virtuális gép memóriáját további 96MB-al.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="106"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="110"/>
       <source>VU0 Rounding Mode</source>
       <translation>VU0 Kerekítési Mód</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="106"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="110"/>
       <source>Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Vector Unit 0 (EE VU0). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.&lt;/b&gt;</source>
       <translation>Megváltoztatja hogyan kezeli a PCSX2 a kerekítést mikor az Emotion Engine 0-ás vektor egységét emulálja (EE VU0). Az alap érték megfelelően kezeli a játékok nagy részét; &lt;b&gt; Ennek a beállításnak a megváltoztatása, mikor egy játéknak nincs látható problémája, instabilitáshoz és/vagy összeomláshoz vezethet.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="113"/>
       <source>VU1 Rounding Mode</source>
       <translation>VU1 Kerekítési Mód</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="113"/>
       <source>Changes how PCSX2 handles rounding while emulating the Emotion Engine&apos;s Vector Unit 1 (EE VU1). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.&lt;/b&gt;</source>
       <translation>Megváltoztatja hogyan kezeli a PCSX2 a kerekítést mikor az Emotion Engine 1-es vektor egységét emulálja (EE VU1). Az alap érték megfelelően kezeli a játékok nagy részét; &lt;b&gt; Ennek a beállításnak a megváltoztatása, mikor egy játéknak nincs látható problémája, instabilitáshoz és/vagy összeomláshoz vezethet.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="112"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="116"/>
       <source>VU0 Clamping Mode</source>
       <translation>VU0 Rögzítési Mód</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="112"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="116"/>
       <source>Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine&apos;s Vector Unit 0 (EE VU0). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
       <translation>Megváltoztatja hogyan tartja a PCSX2 a lebegőpontos értékeket az szabvány x86 tartományban az Emotion Engine 0-ás vektor egységében (EE VU0). Az alap érték megfelelően kezeli a játékok nagy részét; &lt;b&gt; Ennek a beállításnak a megváltoztatása, mikor egy játéknak nincs látható problémája, instabilitáshoz vezethet.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="114"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
       <source>VU1 Clamping Mode</source>
       <translation>VU1 Rögzítési Mód</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="114"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
       <source>Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine&apos;s Vector Unit 1 (EE VU1). The default value handles the vast majority of games; &lt;b&gt;modifying this setting when a game is not having a visible problem can cause instability.&lt;/b&gt;</source>
       <translation>Megváltoztatja hogyan tartja a PCSX2 a lebegőpontos értékeket az szabvány x86 tartományban az Emotion Engine 1-es vektor egységében (EE VU1). Az alap érték megfelelően kezeli a játékok nagy részét; &lt;b&gt; Ennek a beállításnak a megváltoztatása, mikor egy játéknak nincs látható problémája, instabilitáshoz vezethet.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="117"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
       <source>Enable Instant VU1</source>
       <translation>Azonnali VU1 Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="117"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
       <source>Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.</source>
       <translation>Azonnal futtatja a VU1-et. Szerény teljesítmény növekedést hozhat a legtöbb játéknál. A legtöbb esetben biztonságos, de néhány játékban grafikai hibákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="125"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
       <extracomment>VU0 = Vector Unit 0. One of the PS2&apos;s processors.</extracomment>
       <translation>VU0 Újrafordító Engedélyezése (Mikro Mód)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="125"/>
       <source>Enables VU0 Recompiler.</source>
       <translation>Újrafordító használata VU0 vektor egység kódjaihoz.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="124"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="128"/>
       <source>Enable VU1 Recompiler</source>
       <extracomment>VU1 = Vector Unit 1. One of the PS2&apos;s processors.</extracomment>
       <translation>VU1 Újrafordító Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="124"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="128"/>
       <source>Enables VU1 Recompiler.</source>
       <translation>Újrafordító használata VU1 vektor egység kódjaihoz.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="128"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="132"/>
       <source>mVU Flag Hack</source>
       <extracomment>mVU = PCSX2&apos;s recompiler for VU (Vector Unit) code (full name: microVU)</extracomment>
       <translation>mVU Felesleges Flag Kihagyása</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="128"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="132"/>
       <source>Good speedup and high compatibility, may cause graphical errors.</source>
       <translation>Teljesítmény növekedés és magas kompatibilitás, néha grafikai hibákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="131"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="135"/>
       <source>Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86.</source>
       <translation>Futás idejű (JIT) bináris fordítást végez 32-bites MIPS-I gépi kódról x86 kódra.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="133"/>
-      <source>Enable Game Fixes</source>
-      <translation>Játékjavítások Engedélyezése</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="134"/>
-      <source>Automatically loads and applies fixes to known problematic games on game start.</source>
-      <translation>Automatikusan betölti és alkalmazza a javításokat az ismert problémás játékokra a játék indításakor.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="136"/>
-      <source>Enable Compatibility Patches</source>
-      <translation>Kompatibilitási Javítások Engedélyezése</translation>
-    </message>
-    <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="137"/>
-      <source>Automatically loads and applies compatibility patches to known problematic games.</source>
-      <translation>Automatikusan betölti és alkalmazza a kompatibilitási javításokat az ismert problémás játékokhoz.</translation>
+      <source>Enable Game Fixes</source>
+      <translation>Játék Tapaszok Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="139"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="138"/>
+      <source>Automatically loads and applies fixes to known problematic games on game start.</source>
+      <translation>Automatikusan betölti és alkalmazza a javításokat az ismert problémás játékokra azok indításakor.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="140"/>
+      <source>Enable Compatibility Patches</source>
+      <translation>Kompatibilitási Tapaszok Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="141"/>
+      <source>Automatically loads and applies compatibility patches to known problematic games.</source>
+      <translation>Automatikusan betölti és alkalmazza a kompatibilitási tapaszokat az ismert problémás játékokhoz.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="143"/>
       <source>Savestate Compression Method</source>
       <translation>Állásmentés Tömörítési Módja</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="139"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="143"/>
       <source>Zstandard</source>
       <translation>Zstandard</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="140"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="144"/>
       <source>Determines the algorithm to be used when compressing savestates.</source>
       <translation>Meghatározza a játék állás mentések tömörítési algoritmusát.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="142"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="146"/>
       <source>Savestate Compression Level</source>
       <translation>Állásmentések Tömörítési Szintje</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="142"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="146"/>
       <source>Medium</source>
       <translation>Közepes</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="143"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="147"/>
       <source>Determines the level to be used when compressing savestates.</source>
       <translation>Meghatározza milyen szinten legyenek tömörítve az állásmentések.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="145"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="149"/>
       <source>Save State On Shutdown</source>
       <translation>Állás Mentése Leállításkor</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="146"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="150"/>
       <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
       <translation>Automatikusan menti az emulátor állapotát leállításnál vagy kilépésnél. Következő alkalommal ugyanott folytathatod.</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="149"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="153"/>
       <source>Create Save State Backups</source>
       <translation>Állásmentés Biztonsági Másolat</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="151"/>
+      <location filename="../Settings/AdvancedSettingsWidget.cpp" line="155"/>
       <source>Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix.</source>
       <extracomment>Do not translate the &quot;.backup&quot; extension.</extracomment>
       <translation>Készít egy biztonsági mentést a játék állás mentéséről ha létezik már egy ilyen fájl a mentés pillanatában. A biztonsági mentés a .backup kiterjesztést kapja.</translation>
@@ -1247,7 +1258,7 @@ Ranglista Helyezés: {1}/{2}</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="412"/>
       <source>Enable Compatibility Patches</source>
-      <translation>Kompatibilitási Javítások Engedélyezése</translation>
+      <translation>Kompatibilitási Tapaszok Engedélyezése</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="490"/>
@@ -1255,29 +1266,29 @@ Ranglista Helyezés: {1}/{2}</translation>
       <translation>Állásmentés Biztonsági Másolat</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="497"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="428"/>
       <source>Save State On Shutdown</source>
       <translation>Állás Mentése Leállítás Esetén</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="507"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="514"/>
       <source>Frame Rate Control</source>
       <translation>Képfrissítési Arány Vezérlés</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="513"/>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="529"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="520"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="536"/>
       <source> hz</source>
       <extracomment>hz=Hertz, as in the measuring unit. Shown after the corresponding number. Those languages who&apos;d need to remove the space or do something in between should do so.</extracomment>
       <translation> hz</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="545"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="552"/>
       <source>PAL Frame Rate:</source>
       <translation>PAL Képfrissítési Gyakoriság:</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="552"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="559"/>
       <source>NTSC Frame Rate:</source>
       <translation>NTSC Képfrissítési Gyakoriság:</translation>
     </message>
@@ -1292,7 +1303,7 @@ Ranglista Helyezés: {1}/{2}</translation>
       <translation>Tömörítési Szint:</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="428"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="497"/>
       <source>Compression Method:</source>
       <translation>Tömörítési Eljárás:</translation>
     </message>
@@ -1337,17 +1348,22 @@ Ranglista Helyezés: {1}/{2}</translation>
       <translation>Nagyon Magas (Lassú, Nem Ajánlott)</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="562"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="504"/>
+      <source>Use Save State Selector</source>
+      <translation>Állásmentés Választó Használata</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="569"/>
       <source>PINE Settings</source>
       <translation>PINE Beállítások</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="584"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="591"/>
       <source>Slot:</source>
       <translation>Port:</translation>
     </message>
     <message>
-      <location filename="../Settings/AdvancedSettingsWidget.ui" line="591"/>
+      <location filename="../Settings/AdvancedSettingsWidget.ui" line="598"/>
       <source>Enable</source>
       <translation>Engedélyezés</translation>
     </message>
@@ -1357,7 +1373,7 @@ Ranglista Helyezés: {1}/{2}</translation>
     <message>
       <location filename="../Debugger/AnalysisOptionsDialog.ui" line="20"/>
       <source>Analysis Options</source>
-      <translation>Ellemzés Beállítások</translation>
+      <translation>Elemzés Beállítások</translation>
     </message>
     <message>
       <location filename="../Debugger/AnalysisOptionsDialog.ui" line="32"/>
@@ -1447,12 +1463,12 @@ Ranglista Helyezés: {1}/{2}</translation>
     <message>
       <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="300"/>
       <source>Low Cutoff:</source>
-      <translation>Alacsony frekvenciák kivágása:</translation>
+      <translation>Alacsony frekvenciák levágása:</translation>
     </message>
     <message>
       <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="340"/>
       <source>High Cutoff:</source>
-      <translation>Magas frekvenciák kivágása:</translation>
+      <translation>Magas frekvenciák levágása:</translation>
     </message>
     <message>
       <location filename="../Settings/AudioExpansionSettingsDialog.ui" line="411"/>
@@ -1649,7 +1665,7 @@ Ranglista Helyezés: {1}/{2}</translation>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="96"/>
       <source>The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.</source>
-      <translation>A hang feldolgozó határozza meg, hogy az emulátor által készített képkockák hogyan kerülnek a gazdagéphez. A Cubeb biztosija a legalacsonyabb késleltetést, ha problémába ütközöl, próbáld ki az SDL feldolgozót. A null letilt minden hang kimenetet.</translation>
+      <translation>A hang feldolgozó határozza meg, hogy az emulátor által készített képkockák hogyan kerülnek a gazdagéphez. A Cubeb biztosítja a legalacsonyabb késleltetést, ha problémába ütközöl, próbáld ki az SDL feldolgozót. A null letilt minden hang kimenetet.</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="100"/>
@@ -1702,7 +1718,7 @@ Ranglista Helyezés: {1}/{2}</translation>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="113"/>
       <source>Disabled (Stereo)</source>
-      <translation>Kikapcsolva (sztereó)</translation>
+      <translation>Kikapcsolva (Sztereó)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="114"/>
@@ -1782,7 +1798,7 @@ Ranglista Helyezés: {1}/{2}</translation>
     <message>
       <location filename="../../pcsx2/Host/AudioStream.cpp" line="193"/>
       <source>Stereo with LFE</source>
-      <translation>Sztereo LFE-vel</translation>
+      <translation>Sztereó LFE-vel</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Host/AudioStream.cpp" line="194"/>
@@ -1868,8 +1884,8 @@ Ranglista Helyezés: {1}/{2}</translation>
     <name>AutoUpdaterDialog</name>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="17"/>
-      <location filename="../AutoUpdaterDialog.cpp" line="489"/>
-      <location filename="../AutoUpdaterDialog.cpp" line="554"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="483"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="548"/>
       <source>Automatic Updater</source>
       <translation>Automatikus Frissítés</translation>
     </message>
@@ -1909,69 +1925,69 @@ Ranglista Helyezés: {1}/{2}</translation>
       <translation>Emlékeztess Később</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="178"/>
-      <location filename="../AutoUpdaterDialog.cpp" line="683"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="166"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="677"/>
       <source>Updater Error</source>
       <translation>Frissítési Hiba</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="401"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="396"/>
       <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
       <translation>&lt;h2&gt;Változások:&lt;/h2&gt;</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="435"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="430"/>
       <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to a Memory Card before installing this update or you will lose progress.&lt;/p&gt;</source>
       <translation>&lt;h2&gt;Állapotmentésekkel kapcsolatos figyelmeztetés&lt;/
 h2&gt;&lt;p&gt;Ez a frissítés a jelenlegi állapotmentéseidet &lt;b&gt;használhatatlanná&lt;/b&gt; fogja tenni. Győződj meg róla, hogy a játékállásaidat memóriakártyára is lementetted mielőtt frissítenél, különben elveszhetnek.&lt;/p&gt;</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="445"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="440"/>
       <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
       <translation>&lt;h2&gt;Beállítások Figyelmeztetés&lt;/h2&gt;&lt;p&gt;A frissítés telepítése alaphelyzetbe állítja a program beállításait. Kérjük, vedd figyelembe, hogy a frissítés után újra be kell konfigurálnod a beállításaidat.&lt;/p&gt;</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="472"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="466"/>
       <source>Savestate Warning</source>
       <translation>Állásmentések Figyelmeztetés</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="473"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="467"/>
       <source>&lt;h1&gt;WARNING&lt;/h1&gt;&lt;p style=&apos;font-size:12pt;&apos;&gt;Installing this update will make your &lt;b&gt;save states incompatible&lt;/b&gt;, &lt;i&gt;be sure to save any progress to your memory cards before proceeding&lt;/i&gt;.&lt;/p&gt;&lt;p&gt;Do you wish to continue?&lt;/p&gt;</source>
       <translation>&lt;h1&gt;FIGYELEM&lt;/h1&gt;&lt;p style=&apos;font-size:12pt;&apos;&gt;A frissítés telepítése az &lt;b&gt;állás mentéseket inkompatibilissé teszi&lt;/b&gt;, &lt;i&gt;a folytatás előtt mindenképpen mentsd el az eddigi játékbeli haladásodat a memóriakártyára&lt;/i&gt;.&lt;/p&gt;&lt;p&gt;Kívánod folytatni?&lt;/p&gt;</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="490"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="484"/>
       <source>Downloading %1...</source>
       <translation>Letöltés %1...</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="555"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="549"/>
       <source>No updates are currently available. Please try again later.</source>
       <translation>Nincs jelenleg elérhető frissítés. Kérjük próbáld újra később.</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="573"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="567"/>
       <source>Current Version: %1 (%2)</source>
       <translation>Jelenlegi Verzió: %1 (%2)</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="574"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="568"/>
       <source>New Version: %1 (%2)</source>
       <translation>Új Verzió: %1 (%2)</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="575"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="569"/>
       <source>Download Size: %1 MB</source>
       <translation>Letöltési Méret: %1 MB</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="576"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="570"/>
       <source>Loading...</source>
       <translation>Betöltés...</translation>
     </message>
     <message>
-      <location filename="../AutoUpdaterDialog.cpp" line="683"/>
+      <location filename="../AutoUpdaterDialog.cpp" line="677"/>
       <source>Failed to remove updater exe after update.</source>
       <translation>A frissítő exe fájljának eltávolítása sikertelen a frissítés után.</translation>
     </message>
@@ -2135,19 +2151,19 @@ h2&gt;&lt;p&gt;Ez a frissítés a jelenlegi állapotmentéseidet &lt;b&gt;haszn�
       <translation>Engedélyezés</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.cpp" line="98"/>
-      <location filename="../Debugger/BreakpointDialog.cpp" line="126"/>
+      <location filename="../Debugger/BreakpointDialog.cpp" line="100"/>
+      <location filename="../Debugger/BreakpointDialog.cpp" line="128"/>
       <source>Invalid Address</source>
       <translation>Érvénytelen cím</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.cpp" line="113"/>
-      <location filename="../Debugger/BreakpointDialog.cpp" line="148"/>
+      <location filename="../Debugger/BreakpointDialog.cpp" line="115"/>
+      <location filename="../Debugger/BreakpointDialog.cpp" line="150"/>
       <source>Invalid Condition</source>
       <translation>Érvénytelen Kondició</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.cpp" line="133"/>
+      <location filename="../Debugger/BreakpointDialog.cpp" line="135"/>
       <source>Invalid Size</source>
       <translation>Érvénytelen méret</translation>
     </message>
@@ -2237,17 +2253,17 @@ h2&gt;&lt;p&gt;Ez a frissítés a jelenlegi állapotmentéseidet &lt;b&gt;haszn�
   <context>
     <name>CDVD</name>
     <message>
-      <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="286"/>
+      <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="287"/>
       <source>Game disc location is on a removable drive, performance issues such as jittering and freezing may occur.</source>
       <translation>A játéklemez egy cserélhető meghajtón található, teljesítmény problémák, mint például szaggatás és lefagyás történhet.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="381"/>
+      <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="382"/>
       <source>Saving CDVD block dump to &apos;{}&apos;.</source>
       <translation>CDVD blokk mentése ide: &apos;{}&apos;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="411"/>
+      <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="412"/>
       <source>Precaching CDVD</source>
       <translation>CDVD Előtöltés</translation>
     </message>
@@ -2272,7 +2288,7 @@ h2&gt;&lt;p&gt;Ez a frissítés a jelenlegi állapotmentéseidet &lt;b&gt;haszn�
       <translation>Ismeretlen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/CDVD/CDVDdiscReader.cpp" line="199"/>
+      <location filename="../../pcsx2/CDVD/CDVDdiscReader.cpp" line="201"/>
       <source>Precaching is not supported for discs.</source>
       <translation>Az előtöltés lemezeknél nem támogatott.</translation>
     </message>
@@ -2955,12 +2971,12 @@ h2&gt;&lt;p&gt;Ez a frissítés a jelenlegi állapotmentéseidet &lt;b&gt;haszn�
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="48"/>
       <source>Multitap on Console Port 1</source>
-      <translation>Multitap a konzol első csatlakozóján</translation>
+      <translation>Multitap a Konzol 1-es Portján</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="55"/>
       <source>Multitap on Console Port 2</source>
-      <translation>Multitap a konzol második csatlakozóján</translation>
+      <translation>Multitap a Konzol 2-es Portján</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="196"/>
@@ -3057,7 +3073,7 @@ h2&gt;&lt;p&gt;Ez a frissítés a jelenlegi állapotmentéseidet &lt;b&gt;haszn�
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="111"/>
       <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-      <translation>Válaszd ki a makró aktiválásához használandó gombot(kat). Ez lehet egyetlen gomb vagy gombok kombinációja (akkord). Több gombhoz Shift-kattintás.</translation>
+      <translation>Válaszd ki a makró aktiválásához használandó gombot/gombokat. Ez lehet egyetlen gomb vagy gombok kombinációja (akkord). Több gombhoz Shift-Kattintás.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="124"/>
@@ -3077,7 +3093,7 @@ h2&gt;&lt;p&gt;Ez a frissítés a jelenlegi állapotmentéseidet &lt;b&gt;haszn�
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="191"/>
       <source>Macro will toggle every N frames.</source>
-      <translation>A makró minden N képkockaként kapcsolódni fog.</translation>
+      <translation>A makró minden N képkockánként kapcsolódni fog.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="198"/>
@@ -3154,7 +3170,7 @@ Not Configured/Buttons configured</extracomment>
     <message>
       <location filename="../Settings/ControllerMappingSettingsDialog.ui" line="69"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Some third party controllers incorrectly flag their analog sticks as inverted on the positive component, but not negative.&lt;/p&gt;&lt;p&gt;As a result, the analog stick will be &amp;quot;stuck on&amp;quot; even while resting at neutral position. &lt;/p&gt;&lt;p&gt;Enabling this setting will tell PCSX2 to ignore inversion flags when creating mappings, allowing such controllers to function normally.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Néhány harmadik féltől származó játékvezérlő hibásan inverznek jelöli az analóg karját a pozitív irányba, de nem a negatívba.&lt;/p&gt;&lt;p&gt;Ennek eredményeképp, az analóg kar &amp;quot;beragad&amp;quot; még akkor is ha alaphelyzetben van. &lt;/p&gt;&lt;p&gt;Ennek a beállításnak az engedélyezése, jelzi a PCSX2-nek hogy ne vegye figyelembe a inverz jelöléseket mikor hozzárendeli őket, így megfelelően működhetnek ezek a játékvezérlők.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Néhány harmadik féltől származó játékvezérlő hibásan inverznek jelöli az analóg karját a pozitív irányba, de nem a negatívba.&lt;/p&gt;&lt;p&gt;Ennek eredményeképp, az analóg kar &amp;quot;beragad&amp;quot; még akkor is ha alaphelyzetben van. &lt;/p&gt;&lt;p&gt;Ennek a beállításnak az engedélyezése jelzi a PCSX2-nek, hogy ne vegye figyelembe a inverz jelöléseket mikor hozzárendeli őket, így megfelelően működhetnek ezek a játékvezérlők.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
   </context>
   <context>
@@ -3228,29 +3244,34 @@ Not Configured/Buttons configured</extracomment>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsWindow.ui" line="119"/>
+      <source>Rename Profile</source>
+      <translation>Profil Átnevezése</translation>
+    </message>
+    <message>
+      <location filename="../Settings/ControllerSettingsWindow.ui" line="129"/>
       <source>Delete Profile</source>
       <translation>Profil Törlése</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.ui" line="129"/>
+      <location filename="../Settings/ControllerSettingsWindow.ui" line="139"/>
       <source>Mapping Settings</source>
       <translation>Hozzárendelési Beállítások</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.ui" line="139"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="209"/>
+      <location filename="../Settings/ControllerSettingsWindow.ui" line="149"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="252"/>
       <source>Restore Defaults</source>
       <translation>Alapértelmezett beállítások visszaállítása</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="91"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="105"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="118"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="92"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="106"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="119"/>
       <source>Create Input Profile</source>
       <translation>Beviteli Profil Létrehozása</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="92"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="93"/>
       <source>Custom input profiles are used to override the Shared input profile for specific games.
 To apply a custom input profile to a game, go to its Game Properties, then change the &apos;Input Profile&apos; on the Summary tab.
 
@@ -3261,58 +3282,76 @@ Ha egyéni bemeneti profilt szeretnél alkalmazni egy játékra, menj a játék 
 Add meg az új bemeneti profil nevét:</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="101"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="146"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="192"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="529"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="102"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="147"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="193"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="199"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="235"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="573"/>
       <source>Error</source>
       <translation>Hiba</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="101"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="102"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="193"/>
       <source>A profile with the name &apos;%1&apos; already exists.</source>
       <translation>A profil a(z) &apos;%1&apos; névvel már létezik.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="106"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="107"/>
       <source>Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely empty profile.</source>
       <translation>Szeretnéd átmásolni az összes kiosztást a jelenleg kiválasztott profilból egy új profilba? A nem választása esetén egy új üres profil készül.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="119"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="120"/>
       <source>Do you want to copy the current hotkey bindings from global settings to the new input profile?</source>
       <translation>Szeretnéd átmásolni a jelenlegi gyorsbillentyű kiosztást a globális beállításokból egy új bemeneti profilba?</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="146"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="147"/>
       <source>Failed to save the new profile to &apos;%1&apos;.</source>
       <translation>Nem sikerült elmenteni az új profilt a következő helyre: &apos;%1&apos;.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="156"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="157"/>
       <source>Load Input Profile</source>
       <translation>Beviteli Profil Betöltése</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="157"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="158"/>
       <source>Are you sure you want to load the input profile named &apos;%1&apos;?
 
 All current global bindings will be removed, and the profile bindings loaded.
 
 You cannot undo this action.</source>
-      <translation>Biztos vagy benne, hogy szeretnéd betölteni a&apos;%1&apos; nevű bemeneti profilt?
+      <translation>Biztos vagy benne, hogy szeretnéd betölteni a &apos;%1&apos; nevű bemeneti profilt?
 
 Minden jelenlegi globális kiosztás törölve lesz,  és a profil beállításai lesznek betöltve.
 
 Ez a művelet nem visszavonható.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="181"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="182"/>
+      <source>Rename Input Profile</source>
+      <translation>Bemeneti Profil Átnevezése</translation>
+    </message>
+    <message>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="183"/>
+      <source>Enter the new name for the input profile:</source>
+      <translation>Írd be a bemeneti profil új nevét:</translation>
+    </message>
+    <message>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="199"/>
+      <source>Failed to rename &apos;%1&apos;.</source>
+      <translation>Sikertelen a(z) &apos;%1&apos; átnevezése.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="224"/>
       <source>Delete Input Profile</source>
       <translation>Beviteli Profil Törlése</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="182"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="225"/>
       <source>Are you sure you want to delete the input profile named &apos;%1&apos;?
 
 You cannot undo this action.</source>
@@ -3321,12 +3360,12 @@ You cannot undo this action.</source>
 Ez a művelet nem visszavonható.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="192"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="235"/>
       <source>Failed to delete &apos;%1&apos;.</source>
       <translation>&apos;%1&apos; törlése sikertelen.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="210"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="253"/>
       <source>Are you sure you want to restore the default controller configuration?
 
 All shared bindings and configuration will be lost, but your input profiles will remain.
@@ -3339,46 +3378,46 @@ Minden megosztott kiosztás és beállítás elveszik, de a bemeneti profiljaid 
 Ez a művelet nem visszavonható.</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="385"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="428"/>
       <source>Global Settings</source>
       <translation>Globális Beállítások</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="418"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="473"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="461"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="517"/>
       <source>Controller Port %1%2
 %3</source>
       <extracomment>Controller Port is an official term from Sony. Find the official translation for your language inside the console&apos;s manual.</extracomment>
       <translation>Játékvezérlő Port %1%2 %3</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="420"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="475"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="463"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="519"/>
       <source>Controller Port %1
 %2</source>
       <extracomment>Controller Port is an official term from Sony. Find the official translation for your language inside the console&apos;s manual.</extracomment>
       <translation>Játékvezérlő Port %1 %2</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="436"/>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="493"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="479"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="537"/>
       <source>USB Port %1
 %2</source>
       <translation>USB Port %1 %2</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="446"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="489"/>
       <source>Hotkeys</source>
       <translation>Gyorsbillentyű</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="507"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="551"/>
       <source>Shared</source>
       <extracomment>&quot;Shared&quot; refers here to the shared input profile.</extracomment>
       <translation>Megosztott</translation>
     </message>
     <message>
-      <location filename="../Settings/ControllerSettingsWindow.cpp" line="529"/>
+      <location filename="../Settings/ControllerSettingsWindow.cpp" line="573"/>
       <source>The input profile named &apos;%1&apos; cannot be found.</source>
       <translation>A beviteli profil az alábbi névvel nem található: &apos;%1&apos;.</translation>
     </message>
@@ -3403,12 +3442,12 @@ Ez a művelet nem visszavonható.</translation>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="63"/>
       <source>By default, the downloaded covers will be saved with the game&apos;s serial to ensure covers do not break with GameDB changes and that titles with multiple regions do not conflict. If this is not desired, you can check the &quot;Use Title File Names&quot; box below.</source>
-      <translation>Alapból a letöltött borítók a játék sorozat számával kerülnek mentésre, hogy ne okozzon problémát a GameDB változtatásokkal és a több régióban megjelent címek ne írják felül egymást. Ha ez nem szükséges jelöld be a &quot;Használja a Címet Fájlnévnek&quot; opciót lent.</translation>
+      <translation>Alapból a letöltött borítók a játék sorozatszámával kerülnek mentésre, hogy ne okozzon problémát a GameDB változtatásokkal és a több régióban megjelent címek ne írják felül egymást. Ha ez nem szükséges jelöld be a &quot;Cím Használata Fájlnévként&quot; opciót lent.</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="73"/>
       <source>Use Title File Names</source>
-      <translation>Alapból a letöltött borítók a játék sorozat számával kerülnek mentésre, hogy ne okozzon problémát a GameDB változtatásokkal és a több régióban megjelent címek ne írják felül egymást. Ha ez nem szükséges jelöld be a &quot;Használja a Címet Fájlnévnek&quot; opciót lent.</translation>
+      <translation>Cím Használata Fájlnévként</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="80"/>
@@ -4002,63 +4041,63 @@ Szeretnéd Felülírni?</translation>
       <translation>Importálás Fájlból (.elf, .sym stb.):</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="229"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="247"/>
       <source>Add</source>
       <translation>Hozzáad</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="236"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="254"/>
       <source>Remove</source>
       <translation>Eltávolít</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="255"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="273"/>
       <source>Scan For Functions</source>
       <translation>Függvények Keresése</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="263"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="281"/>
       <source>Scan Mode:</source>
       <translation>Keresési Mód:</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="271"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="289"/>
       <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="115"/>
       <source>Scan ELF</source>
       <translation>Keresés ELF-ben</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="276"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="294"/>
       <source>Scan Memory</source>
       <translation>Keresés Memóriában</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="281"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="299"/>
       <source>Skip</source>
       <translation>Kihagyás</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="291"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="309"/>
       <source>Custom Address Range:</source>
       <translation>Egyedi Címtartomány:</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="329"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="347"/>
       <source>Start:</source>
       <translation>Eleje:</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="339"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="357"/>
       <source>End:</source>
       <translation>Vége:</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="377"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="395"/>
       <source>Hash Functions</source>
       <translation>Hash Funkciók</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="383"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="401"/>
       <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="141"/>
       <source>Gray Out Symbols For Overwritten Functions</source>
       <translation>Szürke Szimbólumok a Felülírt Függvényekhez</translation>
@@ -4081,7 +4120,7 @@ Szeretnéd Felülírni?</translation>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="89"/>
       <source>Import symbol tables stored in the game&apos;s boot ELF.</source>
-      <translation>Szimbólumok importálása a játék ELF inditó fájljából.</translation>
+      <translation>Szimbólumok importálása a játék ELF indító fájljából.</translation>
     </message>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="91"/>
@@ -4129,17 +4168,32 @@ Szeretnéd Felülírni?</translation>
       <translation>Generáljon hash-okat az összes felismert függvényhez, és szürkítse ki a hibakeresőben megjelenített szimbólumokat a már nem egyező függvények esetében.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="234"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="220"/>
       <source>&lt;i&gt;No symbol sources in database.&lt;/i&gt;</source>
       <translation>&lt;i&gt;Nincs szimbólumforrás az adatbázisban.&lt;/i&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="254"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="240"/>
       <source>&lt;i&gt;Start this game to modify the symbol sources list.&lt;/i&gt;</source>
       <translation>&lt;i&gt;Indítsa el ezt a játékot a szimbólumforrások listájának módosításához.&lt;/i&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="347"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="312"/>
+      <source>Path</source>
+      <translation>Útvonal</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="313"/>
+      <source>Base Address</source>
+      <translation>Bázis Cím</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="314"/>
+      <source>Condition</source>
+      <translation>Állapot</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="361"/>
       <source>Add Symbol File</source>
       <translation>Szimbólumfájl Hozzáadása</translation>
     </message>
@@ -4579,7 +4633,7 @@ Szeretnéd Felülírni?</translation>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="89"/>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="122"/>
       <source>Log DMA-related MMIO accesses.</source>
-      <translation>Naplózza a DMA-val kapcsolatos MMIO-hozzáféréseket.</translation>
+      <translation>Naplózza a DMA-val kapcsolatos MMIO hozzáféréseket.</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="91"/>
@@ -4791,53 +4845,53 @@ Szeretnéd Felülírni?</translation>
       <translation>PCSX2 Hibakereső</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="66"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="65"/>
       <location filename="../Debugger/DebuggerWindow.cpp" line="76"/>
       <source>Run</source>
       <translation>Futtatás</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="75"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="73"/>
       <source>Step Into</source>
       <translation>Lépj bele</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="78"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="76"/>
       <source>F11</source>
       <translation>F11</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="87"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="84"/>
       <source>Step Over</source>
       <translation>Lépd át</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="90"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="87"/>
       <source>F10</source>
       <translation>F10</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="99"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="95"/>
       <source>Step Out</source>
       <translation>Lépj vissza</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="102"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="98"/>
       <source>Shift+F11</source>
       <translation>Shift+F11</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="114"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="109"/>
       <source>Always On Top</source>
       <translation>Mindig felül</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="117"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="112"/>
       <source>Show this window on top</source>
       <translation>Ezen ablak felül mutatása</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="126"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="120"/>
       <source>Analyze</source>
       <translation>Elemzés</translation>
     </message>
@@ -4852,51 +4906,51 @@ Szeretnéd Felülírni?</translation>
     <message>
       <location filename="../Debugger/DisassemblyWidget.ui" line="14"/>
       <source>Disassembly</source>
-      <translation>Disassembly</translation>
+      <translation>Visszafejtés</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="618"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="619"/>
       <source>Copy Address</source>
       <translation>Cím Másolása</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="620"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="621"/>
       <source>Copy Instruction Hex</source>
       <translation>Utasítás Másolása (Hexadecimálisan)</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="639"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="640"/>
       <source>NOP Instruction(s)</source>
       <translation>NOP Utasítás(ok)</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="642"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="643"/>
       <source>Run to Cursor</source>
       <translation>Futtatás a Kurzorig</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="650"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="651"/>
       <source>Follow Branch</source>
       <translation>Branch Követése</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="656"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="657"/>
       <source>Go to in Memory View</source>
       <translation>Memória Nézetbe lépés</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="659"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="660"/>
       <source>Add Function</source>
       <translation>Függvény Hozzáadása</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="228"/>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="661"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="229"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="662"/>
       <source>Rename Function</source>
       <translation>Függvény Átnevezése</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="663"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="664"/>
       <source>Remove Function</source>
       <translation>Függvény Eltávolítása</translation>
     </message>
@@ -4917,23 +4971,23 @@ Szeretnéd Felülírni?</translation>
       <translation>Utasítás Összerakás</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="228"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="229"/>
       <source>Function name</source>
       <translation>Függvény neve</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="221"/>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="234"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="222"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="235"/>
       <source>Rename Function Error</source>
       <translation>Függvény Hiba Átnevezése</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="234"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="235"/>
       <source>Function name cannot be nothing.</source>
       <translation>A Függvény nem lehet semmi.</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="221"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="222"/>
       <source>No function / symbol is currently selected.</source>
       <translation>Nincs függvény / szimbólum jelenleg kiválasztva.</translation>
     </message>
@@ -4943,73 +4997,72 @@ Szeretnéd Felülírni?</translation>
       <translation>Ugrás ide a disassemblerben</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="175"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="176"/>
       <source>Cannot Go To</source>
-      <translation>
-</translation>
+      <translation>Nem Lehet Ide Ugrani</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="278"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="279"/>
       <source>Restore Function Error</source>
       <translation>Függvény Hiba Visszaállítása</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="278"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="279"/>
       <source>Unable to stub selected address.</source>
       <translation>Nem sikerült a kiválasztott címet lekötni.</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="622"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="623"/>
       <source>&amp;Copy Instruction Text</source>
-      <translation>&amp;Utasítás Text Másolása</translation>
+      <translation>&amp;Utasítás Szöveg Másolása</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="627"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="628"/>
       <source>Copy Function Name</source>
       <translation>Függvény Név Másolása</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="633"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="634"/>
       <source>Restore Instruction(s)</source>
       <translation>Utasítás(ok) visszaállítása</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="636"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="637"/>
       <source>Asse&amp;mble new Instruction(s)</source>
       <translation>Új utasítás(ok) összeállítása</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="644"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="645"/>
       <source>&amp;Jump to Cursor</source>
       <translation>&amp;Ugrás a Kurzorhoz</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="647"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="648"/>
       <source>Toggle &amp;Breakpoint</source>
       <translation>Töréspont &amp;Bekapcsolása</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="653"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="654"/>
       <source>&amp;Go to Address</source>
       <translation>&amp;Ugrás Címhez</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="667"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="668"/>
       <source>Restore Function</source>
       <translation>Függvény Visszaállítása</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="672"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="673"/>
       <source>Stub (NOP) Function</source>
       <translation>Stub (NOP) Függvény</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="677"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="678"/>
       <source>Show &amp;Opcode</source>
       <translation>&amp;Opcode megjelenítése</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="692"/>
+      <location filename="../Debugger/DisassemblyWidget.cpp" line="693"/>
       <source>%1 NOT VALID ADDRESS</source>
       <translation>%1 HELYTELEN CÍM</translation>
     </message>
@@ -5036,85 +5089,86 @@ Szeretnéd Felülírni?</translation>
     <name>EmuThread</name>
     <message>
       <location filename="../QtHost.cpp" line="1001"/>
-      <source>Slot: %1 | %2 | EE: %3% | VU: %4% | GS: %5%</source>
-      <translation>Foglalat: %1 | %2 | EE: %3% | VU: %4% | GS: %5%</translation>
+      <source>Slot: %1 | Volume: %2% | %3 | EE: %4% | VU: %5% | GS: %6%</source>
+      <translation>Foglalat: %1 | Hangerő: %2% | %3 | EE: %4% | VU: %5% | GS: %6%</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1010"/>
-      <source>Slot: %1 | %2 | EE: %3% | GS: %4%</source>
-      <translation>Foglalat: %1 | %2 | EE: %3% | GS: %4%</translation>
+      <location filename="../QtHost.cpp" line="1011"/>
+      <source>Slot: %1 | Volume: %2% | %3 | EE: %4% | GS: %5%</source>
+      <translation>Foglalat: %1 | Hangerő: %2% | %3 | EE: %4% | GS: %5%</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1041"/>
+      <location filename="../QtHost.cpp" line="1043"/>
       <source>No Image</source>
       <translation>Nincs Kép</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1043"/>
+      <location filename="../QtHost.cpp" line="1045"/>
       <source>%1x%2</source>
       <translation>%1x%2</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1055"/>
+      <location filename="../QtHost.cpp" line="1057"/>
       <source>FPS: %1</source>
       <translation>FPS: %1</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1062"/>
+      <location filename="../QtHost.cpp" line="1064"/>
       <source>VPS: %1 </source>
       <translation>VPS: %1 </translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1068"/>
+      <location filename="../QtHost.cpp" line="1070"/>
       <source>Speed: %1% </source>
       <translation>Sebesség: %1% </translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1123"/>
+      <location filename="../QtHost.cpp" line="1125"/>
       <source>Game: %1 (%2)
 </source>
-      <translation>Játék: %1 (%2)</translation>
+      <translation>Játék: %1 (%2)
+</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1131"/>
+      <location filename="../QtHost.cpp" line="1133"/>
       <source>Rich presence inactive or unsupported.</source>
-      <translation>Rich presence kikapcsolva vagy nem támogatott.</translation>
+      <translation>"Rich presence" kikapcsolva vagy nem támogatott.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1135"/>
+      <location filename="../QtHost.cpp" line="1137"/>
       <source>Game not loaded or no RetroAchievements available.</source>
       <translation>Nincs betöltve játék vagy nincs elérhető RetroAchievements.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1543"/>
-      <location filename="../QtHost.cpp" line="1563"/>
-      <location filename="../QtHost.cpp" line="1571"/>
-      <location filename="../QtHost.cpp" line="1605"/>
+      <location filename="../QtHost.cpp" line="1545"/>
+      <location filename="../QtHost.cpp" line="1565"/>
+      <location filename="../QtHost.cpp" line="1573"/>
+      <location filename="../QtHost.cpp" line="1607"/>
       <source>Error</source>
       <translation>Hiba</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1543"/>
+      <location filename="../QtHost.cpp" line="1545"/>
       <source>Failed to create HTTPDownloader.</source>
       <translation>Nem sikerült létrehozni HTTPDownloader-t.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1551"/>
+      <location filename="../QtHost.cpp" line="1553"/>
       <source>Downloading %1...</source>
-      <translation>Letöltés... (%1)</translation>
+      <translation>Letöltés %1...</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1564"/>
+      <location filename="../QtHost.cpp" line="1566"/>
       <source>Download failed with HTTP status code %1.</source>
       <translation>Letöltés sikertelen HTTP státuszkóddal: %1.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1572"/>
+      <location filename="../QtHost.cpp" line="1574"/>
       <source>Download failed: Data is empty.</source>
       <translation>Letöltés sikertelen: Üres adat.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1606"/>
+      <location filename="../QtHost.cpp" line="1608"/>
       <source>Failed to write &apos;%1&apos;.</source>
       <translation>Nem sikerült írni &apos;%1&apos;.</translation>
     </message>
@@ -5124,7 +5178,7 @@ Szeretnéd Felülírni?</translation>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="29"/>
       <source>Speed Control</source>
-      <translation>Sebesség Vezérlés</translation>
+      <translation>Sebességvezérlés</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="48"/>
@@ -5436,7 +5490,7 @@ A legtöbb játéknál biztonságos, de van néhány ami nem kompatibilis és le
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="139"/>
       <source>Speeds up emulation so that the guest refresh rate matches the host. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync to Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
       <translation>Felgyorsítja annyira az emulációt, hogy a virtuális gép képfrissítése megegyezzen a gazdagépével. Ez a lehető legsimább animációkat eredményezi, de megnöveli az emuláció sebességét kevesebb mint 1%-al.
-Ez a funkció nem lép működésbe, ha a konzol képfrissítése túl messze van a gazdagép képfrissitésétől. A váltakozó képfrissítésű kijelzővel rendelkező felhasználóknak ajánlott ezt az opciót kikapcsolni.</translation>
+Ez a funkció nem lép működésbe, ha a konzol képfrissítése túl messze van a gazdagép képfrissítésétől. A váltakozó képfrissítésű kijelzővel rendelkező felhasználóknak ajánlott ezt az opciót kikapcsolni.</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="144"/>
@@ -5446,7 +5500,7 @@ Ez a funkció nem lép működésbe, ha a konzol képfrissítése túl messze va
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="147"/>
       <source>When synchronizing with the host refresh rate, this option disable&apos;s PCSX2&apos;s internal frame timing, and uses the host instead. Can result in smoother frame pacing, &lt;strong&gt;but at the cost of increased input latency&lt;/strong&gt;.</source>
-      <translation>Mikor szinkronizál a gazdagép képfrissitésével, ez az opció letiltja a PCSX2 belső képkocka időzítését, és a gazdagépét használja helyette. Ennek az eredménye egyenletesebb képkocka ütemezés lehet, &lt;strong&gt;megnőtt bemeneti késleltetésért cserébe&lt;/strong&gt;.</translation>
+      <translation>Mikor szinkronizál a gazdagép képfrissítésével, ez az opció letiltja a PCSX2 belső képkocka időzítését, és a gazdagépét használja helyette. Ennek az eredménye egyenletesebb képkocka ütemezés lehet, &lt;strong&gt;megnőtt bemeneti késleltetésért cserébe&lt;/strong&gt;.</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="161"/>
@@ -5490,80 +5544,75 @@ Ez a funkció nem lép működésbe, ha a konzol képfrissítése túl messze va
   <context>
     <name>ExpressionParser</name>
     <message>
-      <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="225"/>
+      <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1296"/>
       <source>Invalid memory access size %d.</source>
       <translation>Érvénytelen memória hozzáférési méret %d.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="231"/>
+      <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1302"/>
       <source>Invalid memory access (unaligned).</source>
       <translation>Érvénytelen memória hozzáférés (nem előjelzett).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="244"/>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="271"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="240"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="267"/>
       <source>Token too long.</source>
       <translation>Időtúllépés.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="255"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="251"/>
       <source>Invalid number &quot;%s&quot;.</source>
       <translation>Érvénytelen szám &quot;%s&quot;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="298"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="294"/>
       <source>Invalid symbol &quot;%s&quot;.</source>
       <translation>Érvénytelen szimbólum &quot;%s&quot;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="306"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="302"/>
       <source>Invalid operator at &quot;%s&quot;.</source>
       <translation>Érvénytelen operátor &quot;%s&quot;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="321"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="317"/>
       <source>Closing parenthesis without opening one.</source>
       <translation>Zárójel bezárása a megnyitása nélkül.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="335"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="331"/>
       <source>Closing bracket without opening one.</source>
       <translation>Szögletes zárójel bezárása a megnyitása nélkül.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="388"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="384"/>
       <source>Parenthesis not closed.</source>
-      <translation>Zárójel nincs bezárva</translation>
+      <translation>Zárójel nincs bezárva.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="447"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="443"/>
       <source>Not enough arguments.</source>
       <translation>Nincs elég argumentum.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="462"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="458"/>
       <source>Invalid memsize operator.</source>
       <translation>Érvénytelen memsize operátor.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="506"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="502"/>
       <source>Division by zero.</source>
       <translation>Osztás nullával.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="517"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="513"/>
       <source>Modulo by zero.</source>
       <translation>Modul nullával.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="596"/>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="592"/>
       <source>Invalid tertiary operator.</source>
       <translation>Érvénytelen harmadlagos operátor.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="621"/>
-      <source>Invalid expression.</source>
-      <translation>Érvénytelen kifejezés.</translation>
     </message>
   </context>
   <context>
@@ -5586,7 +5635,7 @@ A fájl: %1</translation>
       <location filename="../QtUtils.cpp" line="163"/>
       <source>Show in Folder</source>
       <extracomment>Windows action to show a file in Windows Explorer</extracomment>
-      <translation>Megjelenítés Mappában</translation>
+      <translation>Tartalmazó Mappa Megnyitása</translation>
     </message>
     <message>
       <location filename="../QtUtils.cpp" line="166"/>
@@ -5598,7 +5647,7 @@ A fájl: %1</translation>
       <location filename="../QtUtils.cpp" line="169"/>
       <source>Open Containing Directory</source>
       <extracomment>Opens the system file manager to the directory containing a selected file</extracomment>
-      <translation>Tartalmazó Mappa Megnyítása</translation>
+      <translation>Tartalmazó Mappa Megnyitása</translation>
     </message>
     <message>
       <location filename="../QtUtils.cpp" line="177"/>
@@ -5698,342 +5747,342 @@ A cím: %1</translation>
   <context>
     <name>FullscreenUI</name>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6903"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6907"/>
       <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
       <translation>Nem található CD/DVD-ROM eszköz. Kérjük, győződj meg arról, hogy van-e csatlakoztatott meghajtó és megfelelő jogosultságokkal rendelkezel-e a hozzáféréshez.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6905"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6909"/>
       <source>Use Global Setting</source>
       <translation>Globális beállítások használata</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6906"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6910"/>
       <source>Automatic binding failed, no devices are available.</source>
       <translation>Automatikus hozzárendelés sikertelen, nincs elérhető eszköz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6907"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6911"/>
       <source>Game title copied to clipboard.</source>
       <translation>A játék címe másolva a vágólapra.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6908"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6912"/>
       <source>Game serial copied to clipboard.</source>
       <translation>Játék sorozatszáma másolva a vágólapra.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6909"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6913"/>
       <source>Game CRC copied to clipboard.</source>
       <translation>Játék CRC másolva a vágólapra.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6910"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6914"/>
       <source>Game type copied to clipboard.</source>
       <translation>A játék típusa másolva a vágólapra.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6911"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6915"/>
       <source>Game region copied to clipboard.</source>
       <translation>A játék régiója másolva a vágólapra.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6912"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6916"/>
       <source>Game compatibility copied to clipboard.</source>
       <translation>A játék kompatibilitása másolva a vágólapra.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6913"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6917"/>
       <source>Game path copied to clipboard.</source>
       <translation>Játék elérhetőségi útja másolva a vágólapra.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6915"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6919"/>
       <source>Controller settings reset to default.</source>
       <translation>Játékvezérlő beállítások visszaállítva alapértékre.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6916"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6920"/>
       <source>No input profiles available.</source>
       <translation>Nincs elérhető bemeneti profil.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6917"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6921"/>
       <source>Create New...</source>
       <translation>Új Létrehozása...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6918"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6922"/>
       <source>Enter the name of the input profile you wish to create.</source>
       <translation>Írd be a készítendő bemeneti profil nevét.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6919"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6923"/>
       <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
       <translation>Biztos hogy szeretnéd visszaállítani az alapértelmezett beállításokat? Minden beállítás elvész.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6920"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6924"/>
       <source>Settings reset to defaults.</source>
       <translation>Beállítások visszaállítása alapértelmezettre.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6921"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6925"/>
       <source>No save present in this slot.</source>
       <translation>Nincs mentés ebben a foglalatban.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6922"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6926"/>
       <source>No save states found.</source>
       <translation>Nem található mentett állás.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6923"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6927"/>
       <source>Failed to delete save state.</source>
       <translation>Nem sikerült a mentett állás törlése.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6924"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6928"/>
       <source>Failed to copy text to clipboard.</source>
       <translation>Nem sikerült a szöveget a vágólapra másolni.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6925"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6929"/>
       <source>This game has no achievements.</source>
       <translation>Ennek a játéknak nincsenek trófeái.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6926"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6930"/>
       <source>This game has no leaderboards.</source>
       <translation>Ennek a játéknak nincsenek ranglistái.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6927"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6931"/>
       <source>Reset System</source>
       <translation>Rendszer Újrainditása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6928"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6932"/>
       <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
       <translation>A Hardcore mód nem lesz engedélyezve a rendszer újraindításáig. Szeretnéd most újraindítani a rendszert?</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6930"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6934"/>
       <source>Launch a game from images scanned from your game directories.</source>
       <translation>Játék indítása a játék könyvtáraidban talált képfájlokból.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6938"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6942"/>
       <source>Launch a game by selecting a file/disc image.</source>
       <translation>Indíts el egy játékot fájl/lemezkép kiválasztásával.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6942"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6946"/>
       <source>Start the console without any disc inserted.</source>
       <translation>Konzol indítása behelyezett lemez nélkül.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6940"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6944"/>
       <source>Start a game from a disc in your PC&apos;s DVD drive.</source>
       <translation>Indíts el egy játékot lemezről, a számítógéped DVD meghajtóját használva.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6950"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6954"/>
       <source>No Binding</source>
       <translation>Nincs Hozzárendelve</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6951"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6955"/>
       <source>Setting %s binding %s.</source>
       <translation>Beállítás %s hozzárendelés %s.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6952"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
       <source>Push a controller button or axis now.</source>
       <translation>Nyomj meg egy játékvezérlő gombot vagy tengelyt most.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6953"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6957"/>
       <source>Timing out in %.0f seconds...</source>
       <translation>Időtúllépés %.0f másodperc múlva...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6954"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6958"/>
       <source>Unknown</source>
       <translation>Ismeretlen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6955"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6959"/>
       <source>OK</source>
       <translation>OK</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6960"/>
       <source>Select Device</source>
       <translation>Eszköz Kiválasztása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6957"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6961"/>
       <source>Details</source>
       <translation>Részletek</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6961"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6965"/>
       <source>Options</source>
       <translation>Opciók</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6962"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6966"/>
       <source>Copies the current global settings to this game.</source>
       <translation>Másolja a jelenlegi globális beállításokat ehhez a játékhoz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6963"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6967"/>
       <source>Clears all settings set for this game.</source>
       <translation>Eltávolítja ennek a játéknak a beállításait.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6964"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6968"/>
       <source>Behaviour</source>
       <translation>Viselkedés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6965"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6969"/>
       <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
-      <translation>Megakadályozza a képernyő kímélőt, és a gazdagépet az alvó állapottól mikor fut az emuláció.</translation>
+      <translation>Megakadályozza a képernyőkímélőt, és a gazdagépet az alvó állapottól mikor fut az emuláció.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6966"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6970"/>
       <source>Shows the game you are currently playing as part of your profile on Discord.</source>
       <translation>Megjeleníti az éppen játszott játékot a Discord profilodon.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6967"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6971"/>
       <source>Pauses the emulator when a game is started.</source>
       <translation>Szüneteli az emulációt játék indításánál.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6968"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6972"/>
       <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
-      <translation>Leszüneteli az emulátort ha kis méretbe rakod az ablakot, vagy átváltasz egy másik alkalmazásra, mikor visszaváltasz, automatikusan folytatja.</translation>
+      <translation>Szüneteli az emulátort ha kis méretbe rakod az ablakot vagy átváltasz egy másik alkalmazásra, mikor visszaváltasz, automatikusan folytatja.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6970"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6974"/>
       <source>Pauses the emulator when you open the quick menu, and unpauses when you close it.</source>
       <translation>Szüneteli az emulátort ha megnyitod a gyors menüt, és folytatja mikor bezárod.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6971"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6975"/>
       <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
       <translation>Meghatározza hogy megjelenjen-e egy ablak ami megerősíti a leállítását a virtuális gépnek, mikor lenyomásra kerül a gyorsbillentyű.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6972"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6976"/>
       <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
       <translation>Automatikusan menti az emulátor állapotát leállításnál vagy kilépésnél. Következő alkalommal ugyanott folytathatod.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6974"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6979"/>
       <source>Uses a light coloured theme instead of the default dark theme.</source>
       <translation>Világos színű téma használata az alapértelmezett sötét helyett.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6975"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6980"/>
       <source>Game Display</source>
       <translation>Játék Képernyő</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6977"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6982"/>
       <source>Switches between full screen and windowed when the window is double-clicked.</source>
       <translation>Teljes képernyős és ablakos mód között vált dupla kattintásra.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6978"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6983"/>
       <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
       <translation>Elrejti az egér mutatót/kurzort mikor az emulátor teljes képernyős módba van.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6980"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6985"/>
       <source>Determines how large the on-screen messages and monitor are.</source>
       <translation>Meghatározza a méretét a képernyőn megjelenő üzeneteknek és a monitornak.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6982"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6987"/>
       <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
       <translation>Megjelenít képernyőmenü üzeneteket mikor olyan események történnek mint a játék állások mentése/betöltése, képernyőkép készült, stb.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6984"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6989"/>
       <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
       <translation>Megjeleníti a jelenlegi emulációs sebességét a kijelző jobb felső sarkában százalék formában.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6985"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6990"/>
       <source>Shows the number of video frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
       <translation>Kiírja hány PS2 képkocka-megjelenítés (vagy vertikális szinkronizáció) történt egy másodpercben a kép jobb felső sarkában.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6986"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6991"/>
       <source>Shows the CPU usage based on threads in the top-right corner of the display.</source>
       <translation>Kiírja a CPU szálankénti kihasználtságát a képernyő jobb felső sarkában.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6987"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6992"/>
       <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
       <translation>Megjeleníti a játék felbontását a képernyő jobb felső sarkában.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6989"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6994"/>
       <source>Shows statistics about GS (primitives, draw calls) in the top-right corner of the display.</source>
       <translation>Kiírja a releváns GS statisztikákat (primitívek, rajzolási kérelmek száma) a képernyő jobb felső sarkában.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6990"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6995"/>
       <source>Shows indicators when fast forwarding, pausing, and other abnormal states are active.</source>
       <translation>Jelzéseket mutat, ha a gyorsítás, szünet, vagy bármilyen más rendellenes állapot van érvényben.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6993"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6998"/>
       <source>Shows the current configuration in the bottom-right corner of the display.</source>
       <translation>Megjeleníti az aktuális PCSX2 verzióját a képernyő jobb felső sarkában.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6994"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6999"/>
       <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
       <translation>Megjeleníti a jelenleg a rendszerhez kapcsolódó játékvezérlők állapotát a képernyő bal alsó sarkában.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6997"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7002"/>
       <source>Displays warnings when settings are enabled which may break games.</source>
-      <translation>Figyelmeztetést jelenít meg, ha olyan beállitások vannak engedélyezve amik problémákat okozhatnak.</translation>
+      <translation>Figyelmeztetést jelenít meg, ha olyan beállítások vannak engedélyezve amik problémákat okozhatnak.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6999"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7004"/>
       <source>Resets configuration to defaults (excluding controller settings).</source>
       <translation>Beállítások visszaállítása alapértékre (kivéve a játékvezérlő beállítások).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7001"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7006"/>
       <source>Changes the BIOS image used to start future sessions.</source>
-      <translation>Kiválasztható a BIOS képfájl ami a jövőbeni indításokhoz használ.</translation>
+      <translation>Kiválasztható a BIOS képfájl ami a jövőbeni indításokhoz lesz használva.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6914"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6918"/>
       <source>Automatic</source>
       <translation>Automatikus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7376"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7381"/>
       <source>{0}/{1}/{2}/{3}</source>
       <translation>{0}/{1}/{2}/{3}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7606"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7611"/>
       <source>Default</source>
       <translation>Alapértelmezett</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6904"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6908"/>
       <source>WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.
 
 Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</source>
@@ -6042,1978 +6091,1983 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</sour
 Ennek ellenére szeretnéd mégis leállítani és VISSZAVONHATATLANUL TÖNKRETENNI A MEMÓRIA KÁRTYÁD?</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6976"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
       <source>Automatically switches to fullscreen mode when a game is started.</source>
       <translation>Automatikusan teljes képernyős módba vált játék indításánál.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6979"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6984"/>
       <source>On-Screen Display</source>
       <translation>Képernyő Menü</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6986"/>
       <source>%d%%</source>
       <translation>%d%%</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6988"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6993"/>
       <source>Shows the resolution of the game in the top-right corner of the display.</source>
       <translation>Megjeleníti a játék felbontását a kijelző jobb felső sarkában.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7000"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7005"/>
       <source>BIOS Configuration</source>
       <translation>BIOS Konfiguráció</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7002"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7007"/>
       <source>BIOS Selection</source>
       <translation>BIOS Választás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7003"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7008"/>
       <source>Options and Patches</source>
-      <translation>Opciók és Javítások</translation>
+      <translation>További Lehetőségek</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7004"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7009"/>
       <source>Skips the intro screen, and bypasses region checks.</source>
       <translation>Kihagyja a bevezetőképernyőt, és felülírja a régió ellenőrzést.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7005"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7010"/>
       <source>Speed Control</source>
-      <translation>Sebbeség Vezérlés</translation>
+      <translation>Sebességvezérlés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7660"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7666"/>
       <source>Normal Speed</source>
       <translation>Normális Sebesség</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7006"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7011"/>
       <source>Sets the speed when running without fast forwarding.</source>
       <translation>Beállítja a sebességet mikor gyorsítás nélkül fut az emulátor.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7661"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7667"/>
       <source>Fast Forward Speed</source>
       <translation>Gyorsított Sebesség</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7007"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7012"/>
       <source>Sets the speed when using the fast forward hotkey.</source>
       <translation>Beállítja a sebességet a gyorsított sebesség gomb lenyomásakor.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7662"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7668"/>
       <source>Slow Motion Speed</source>
       <translation>Lassított Sebesség</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7008"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7013"/>
       <source>Sets the speed when using the slow motion hotkey.</source>
       <translation>Beállítja a sebességet a lassított sebesség gomb lenyomásakor.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7009"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7014"/>
       <source>System Settings</source>
       <translation>Rendszerbeállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7010"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7015"/>
       <source>EE Cycle Rate</source>
       <translation>EE Ciklus Ráta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7011"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7016"/>
       <source>Underclocks or overclocks the emulated Emotion Engine CPU.</source>
       <translation>Növeli vagy csökkenti az emulált Emotion Engine órajelét.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7012"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7017"/>
       <source>EE Cycle Skipping</source>
       <translation>EE Ciklus Kihagyás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7014"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7019"/>
       <source>Enable MTVU (Multi-Threaded VU1)</source>
       <translation>MTVU Engedélyezése (Több Szálon Futó VU1)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7277"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7282"/>
       <source>Enable Instant VU1</source>
       <translation>Azonnali VU1 Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7018"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7023"/>
       <source>Enable Cheats</source>
       <translation>Csalások Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7019"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7024"/>
       <source>Enables loading cheats from pnach files.</source>
       <translation>Engedélyezi a csalások betöltését pnach fájlokból.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7020"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7025"/>
       <source>Enable Host Filesystem</source>
       <translation>Gazda Fájlrendszer Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7021"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7026"/>
       <source>Enables access to files from the host: namespace in the virtual machine.</source>
       <translation>Engedélyezi a hozzáférés fájlokhoz a gazdagépről: névtér a virtuális gépben.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7022"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7027"/>
       <source>Enable Fast CDVD</source>
       <translation>Gyors CDVD Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7023"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7028"/>
       <source>Fast disc access, less loading times. Not recommended.</source>
       <translation>Gyors lemez hozzáférés, rövidebb betöltési idők. Nem ajánlott.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7026"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7031"/>
       <source>Frame Pacing/Latency Control</source>
       <translation>Képkocka Ütemezés / Késleltetés Vezérlés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7027"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7032"/>
       <source>Maximum Frame Latency</source>
       <translation>Maximum Képkocka Késleltetés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7028"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7033"/>
       <source>Sets the number of frames which can be queued.</source>
       <translation>Beállítható az előre elkészített képkockák száma.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7029"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7034"/>
       <source>Optimal Frame Pacing</source>
       <translation>Optimális Képkocka Ütemezés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7030"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7035"/>
       <source>Synchronize EE and GS threads after each frame. Lowest input latency, but increases system requirements.</source>
       <translation>Szinkronizálja az EE és a GS szálakat minden képkockánál. Alacsonyabb késleltetés, de növeli a rendszer igényeket.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7034"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7039"/>
       <source>Speeds up emulation so that the guest refresh rate matches the host.</source>
       <translation>Felgyorsítja az emulációt, hogy a virtuális gép képfrissítése azonos legyen a gazdagépével.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7037"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7042"/>
       <source>Renderer</source>
       <translation>Leképező</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7038"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7043"/>
       <source>Selects the API used to render the emulated GS.</source>
       <translation>Kiválasztható a API amit az emulált GS a leképezéshez használ.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7032"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7037"/>
       <source>Synchronizes frame presentation with host refresh.</source>
       <translation>Szinkronizálja az emulált konzol képfrissítéseit a kijelzőjével.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7039"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7044"/>
       <source>Display</source>
       <translation>Kijelző</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7040"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7045"/>
       <source>Aspect Ratio</source>
       <translation>Képarány</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7041"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7046"/>
       <source>Selects the aspect ratio to display the game content at.</source>
-      <translation>Kiválasztható a képarány, amivel a játékot megjeleníti.</translation>
+      <translation>Kiválasztható a képarány, amivel a játék tartalma megjelenik.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7042"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7047"/>
       <source>FMV Aspect Ratio Override</source>
       <translation>FMV Képarány Felülírás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7043"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7048"/>
       <source>Selects the aspect ratio for display when a FMV is detected as playing.</source>
-      <translation>Kiválasztható a képarány, amikor egy FMV játszódik le.</translation>
+      <translation>Kiválasztható a képarány, amikor FMV lejátszása érzékelhető.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7044"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7049"/>
       <source>Deinterlacing</source>
-      <translation>Deinterlace</translation>
+      <translation>Váltottsorosság Megszüntetés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7045"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7050"/>
       <source>Selects the algorithm used to convert the PS2&apos;s interlaced output to progressive for display.</source>
       <translation>Kiválasztható az algoritmus, amivel a PS2 váltottsoros kimenete progresszívvá lesz alakítva.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7046"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7051"/>
       <source>Screenshot Size</source>
-      <translation>Képernyőmentés Mérete</translation>
+      <translation>Képernyőkép Mérete</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7047"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7052"/>
       <source>Determines the resolution at which screenshots will be saved.</source>
-      <translation>Megállapítja, milyen felbontásban mentse a képernyőmentéseket.</translation>
+      <translation>Meghatározza, milyen felbontásban kerülnek mentésre a képernyőképek.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7048"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7053"/>
       <source>Screenshot Format</source>
       <translation>Képernyőkép Formátuma</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7049"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7054"/>
       <source>Selects the format which will be used to save screenshots.</source>
-      <translation>Megállapítja a formátumot, amibe menti a képernyőmentéseket.</translation>
+      <translation>Kiválasztható a formátum, amiben mentésre kerülnek a képernyőképek.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7050"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7055"/>
       <source>Screenshot Quality</source>
-      <translation>Képernyőmentés Minősége</translation>
+      <translation>Képernyőkép Minősége</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7051"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7056"/>
       <source>Selects the quality at which screenshots will be compressed.</source>
-      <translation>Megállapítja, milyen minőségben lesznek tömörítve a képernyőmentések.</translation>
+      <translation>Kiválasztható milyen minőségben legyenek a képernyőképek tömörítve.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7052"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7057"/>
       <source>Vertical Stretch</source>
       <translation>Függőleges Nyújtás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7053"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7058"/>
       <source>Increases or decreases the virtual picture size vertically.</source>
       <translation>Növeli vagy csökkenti a virtuális kép függőleges méretét.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7054"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7059"/>
       <source>Crop</source>
       <translation>Levágás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7055"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7060"/>
       <source>Crops the image, while respecting aspect ratio.</source>
       <translation>Levágja a képet, megtartva a képarányt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7056"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7061"/>
       <source>%dpx</source>
       <translation>%dpx</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7057"/>
-      <source>Enable Widescreen Patches</source>
-      <translation>Szélesvásznú Javítások Engedélyezése</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7058"/>
-      <source>Enables loading widescreen patches from pnach files.</source>
-      <translation>Engedélyezi a szélesvásznú javítások betöltését pnach fájlokból.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7059"/>
-      <source>Enable No-Interlacing Patches</source>
-      <translation>Váltottsoros Megjelenítést Megszüntető Javítások Engedélyezése</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7060"/>
-      <source>Enables loading no-interlacing patches from pnach files.</source>
-      <translation>Engedélyezi a váltottsoros megjelenítést megszüntető javítások betöltését pnach fájlokból.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7061"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7066"/>
       <source>Bilinear Upscaling</source>
       <translation>Bilineáris Felskálázás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7062"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7067"/>
       <source>Smooths out the image when upscaling the console to the screen.</source>
       <translation>Kisimítja a konzol felskálázott kimeneti képét amikor a kijelző méretéhez nyújtja.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7063"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7068"/>
       <source>Integer Upscaling</source>
       <translation>Egész Szám Felskálázás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7064"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7069"/>
       <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games.</source>
       <translation>Kitölti a képernyő területet, hogy a konzol és a gazdagép közötti pixel arány egész szám legyen. Élesebb képet eredményezhet 2D játékokban.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7065"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7070"/>
       <source>Screen Offsets</source>
       <translation>Képernyő Eltolás Értékek</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7066"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7071"/>
       <source>Enables PCRTC Offsets which position the screen as the game requests.</source>
       <translation>Engedélyezi a PCRTC eltolás figyelembe vételét, amik a kijelző pozícióját határozzák meg, ha a játék utasítást ad rá.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7067"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7072"/>
       <source>Show Overscan</source>
       <translation>Túlpásztázás Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7068"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7073"/>
       <source>Enables the option to show the overscan area on games which draw more than the safe area of the screen.</source>
       <translation>Engedélyezi hogy megjelenjen a játékok túlpásztázási területe, ami többet mutat a képernyőből mint a biztonságos terület.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7069"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7074"/>
       <source>Anti-Blur</source>
       <translation>Elmosódottság Csökkentése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7070"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7075"/>
       <source>Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry.</source>
       <translation>Engedélyezi a beépített homályos kép elleni javításokat. Kevésbé lesz hű az eredeti PS2 megjelenítéshez, de rengeteg játékot kevésbé elmosódottá tesz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7071"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7076"/>
       <source>Rendering</source>
       <translation>Leképezés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7072"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7077"/>
       <source>Internal Resolution</source>
       <translation>Leképezési Felbontás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7073"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7078"/>
       <source>Multiplies the render resolution by the specified factor (upscaling).</source>
       <translation>Növeli a leképezési felbontást a megadott szorzó szám szerint (felskálázás)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7084"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7089"/>
       <source>Mipmapping</source>
       <translation>Mipmappok Használata</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7074"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7079"/>
       <source>Bilinear Filtering</source>
       <translation>Bilineáris Szűrő</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7075"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7080"/>
       <source>Selects where bilinear filtering is utilized when rendering textures.</source>
       <translation>Kiválasztható mikor legyen bilineáris szűrés használva a textúrák megjelenítésénél.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7076"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7081"/>
       <source>Trilinear Filtering</source>
       <translation>Trilineáris Szűrés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7077"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7082"/>
       <source>Selects where trilinear filtering is utilized when rendering textures.</source>
       <translation>Kiválasztható mikor legyen trilineáris szűrés használva a textúrák megjelenítésénél.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7078"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7083"/>
       <source>Anisotropic Filtering</source>
       <translation>Anizotróp Szűrés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7080"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7085"/>
       <source>Dithering</source>
       <translation>Zajmoduláció</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7081"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7086"/>
       <source>Selects the type of dithering applies when the game requests it.</source>
       <translation>Kiválasztható milyen típusú zajmoduláció alkalmazódjon mikor a játék ezt kéri.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7082"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7087"/>
       <source>Blending Accuracy</source>
       <translation>Keverés Pontossága</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7083"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7088"/>
       <source>Determines the level of accuracy when emulating blend modes not supported by the host graphics API.</source>
-      <translation>Meghatározza a pontosságot ha a kiválasztott leképező által nem támogatott keverési módokat emulál.</translation>
+      <translation>Meghatározza a pontosságot ha a gazdagép leképezője által nem támogatott keverési módokat emulál.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7200"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7205"/>
       <source>Texture Preloading</source>
       <translation>Textúra Előtöltés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7201"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7206"/>
       <source>Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games.</source>
       <translation>A teljes textúrák feltölti a GPU-nak, nem csak a használatban lévő területét. Növelheti a teljesítményt néhány játékban.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7086"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7091"/>
       <source>Software Rendering Threads</source>
       <translation>Szoftveres Leképezés Szálai</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7087"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7092"/>
       <source>Number of threads to use in addition to the main GS thread for rasterization.</source>
       <translation>A használt folyamat szálak száma a fő GS szálak mellet a képalkotáshoz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7088"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7093"/>
       <source>Auto Flush (Software)</source>
       <translation>Auto Ürítés (szoftveres)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7089"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7094"/>
       <source>Force a primitive flush when a framebuffer is also an input texture.</source>
       <translation>Kényszerít egy primitív ürítést, ha a képpuffer a bemeneti textúra is egyben.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7090"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7095"/>
       <source>Edge AA (AA1)</source>
       <translation>Szél AA (AA1)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7091"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7096"/>
       <source>Enables emulation of the GS&apos;s edge anti-aliasing (AA1).</source>
       <translation>Engedélyezi a GS élsimításának emulációját (AA1).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7085"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7090"/>
       <source>Enables emulation of the GS&apos;s texture mipmapping.</source>
       <translation>Engedélyezi hogy a GS emulálja a mipmappokat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6958"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6962"/>
       <source>The selected input profile will be used for this game.</source>
       <translation>A kiválasztott bemeneti profil lesz használva ehhez a játékhoz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6959"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6963"/>
       <source>Shared</source>
       <translation>Megosztott</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6960"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6964"/>
       <source>Input Profile</source>
       <translation>Bemeneti Profil</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6983"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6978"/>
+      <source>Show a save state selector UI when switching slots instead of showing a notification bubble.</source>
+      <translation>Grafikus felület megjelenítése mentési foglalat váltásakor információs buborék helyett.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6988"/>
       <source>Shows the current PCSX2 version on the top-right corner of the display.</source>
       <translation>Megjeleníti az aktuális PCSX2 verzióját a kijelző jobb felső sarkában.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6991"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6996"/>
       <source>Shows the currently active input recording status.</source>
       <translation>Megjeleníti az éppen aktív bemenet rögzítés állapotát.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6992"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6997"/>
       <source>Shows the currently active video capture status.</source>
       <translation>Megjeleníti az éppen aktív videó felvétel állapotát.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6995"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7000"/>
       <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
       <translation>Megjeleníti vizuálisan a történetét a képkocka időknek a képernyő bal felső sarkában.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6996"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7001"/>
       <source>Shows the current system hardware information on the OSD.</source>
       <translation>Megjeleníti a jelenlegi rendszer hardver információkat a képernyőmenün.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7017"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7022"/>
       <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
       <translation>Hozzárendeli a szálakat a CPU maghoz, lehetségesen növelve a teljesítményt/képkocka időt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7092"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7062"/>
+      <source>Enable Widescreen Patches</source>
+      <translation>Szélesvásznú Tapaszok Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7063"/>
+      <source>Enables loading widescreen patches from pnach files.</source>
+      <translation>Engedélyezi a szélesvásznú tapaszok betöltését pnach fájlokból.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7064"/>
+      <source>Enable No-Interlacing Patches</source>
+      <translation>Váltottsorosságot Megszüntető Tapaszok Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7065"/>
+      <source>Enables loading no-interlacing patches from pnach files.</source>
+      <translation>Engedélyezi a váltottsoros megjelenítést megszüntető tapaszok betöltését pnach fájlokból.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7097"/>
       <source>Hardware Fixes</source>
       <translation>Hardveres Javítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7093"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7098"/>
       <source>Manual Hardware Fixes</source>
       <translation>Manuális Hardveres Javítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7094"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7099"/>
       <source>Disables automatic hardware fixes, allowing you to set fixes manually.</source>
       <translation>Letiltja az automatikus hardveres javításokat, engedélyezve a kézi beállításukat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7095"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7100"/>
       <source>CPU Sprite Render Size</source>
       <translation>CPU Sprite Leképezés Mérete</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7096"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7101"/>
       <source>Uses software renderer to draw texture decompression-like sprites.</source>
       <translation>A szoftveres leképezőt használja a textúra kitömörítéses spriteok megjelenítéséhez.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7097"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7102"/>
       <source>CPU Sprite Render Level</source>
       <translation>CPU Sprite Leképezés Mérete</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7098"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7103"/>
       <source>Determines filter level for CPU sprite render.</source>
       <translation>Meghatározza a CPU sprite leképező szűrési szintjét.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7099"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7104"/>
       <source>Software CLUT Render</source>
       <translation>Szoftveres CLUT Leképezés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7100"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7105"/>
       <source>Uses software renderer to draw texture CLUT points/sprites.</source>
       <translation>Szoftveres leképezés használata CLUT pont/sprite textúrákhoz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7101"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7106"/>
       <source>Skip Draw Start</source>
       <translation>Rajzolás Kihagyásának a Kezdete</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7102"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7107"/>
       <source>Object range to skip drawing.</source>
       <translation>A tartomány ahol kihagyja a rajzolást.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7103"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7108"/>
       <source>Skip Draw End</source>
       <translation>Rajzolási Határ Kihagyás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7104"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7109"/>
       <source>Auto Flush (Hardware)</source>
       <translation>Auto Ürítés (Hardver)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7105"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7110"/>
       <source>CPU Framebuffer Conversion</source>
       <translation>CPU Képpuffer Átalakítás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7107"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7112"/>
       <source>Disable Depth Conversion</source>
       <translation>Mélység Átalakítás Letiltása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7109"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7114"/>
       <source>Disable Safe Features</source>
       <translation>Biztonsági Funkciók Letiltása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7110"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7115"/>
       <source>This option disables multiple safe features.</source>
       <translation>Ez az opció kikapcsol számos biztonsági funkciót.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7112"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7117"/>
       <source>This option disables game-specific render fixes.</source>
       <translation>Ez az opció letiltja a játék specifikus javításokat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7114"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7119"/>
       <source>Uploads GS data when rendering a new frame to reproduce some effects accurately.</source>
       <translation>Feltölti a GS tartalmát új képkockák leképezésekor, hogy néhány hatást pontosabban tudjon megjeleníteni.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7115"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7120"/>
       <source>Disable Partial Invalidation</source>
       <translation>Részleges Érvénytelenítés Letiltása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7116"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7121"/>
       <source>Removes texture cache entries when there is any intersection, rather than only the intersected areas.</source>
       <translation>Minden átfedett textúrát töröl a textúra-gyorsítótárból, nem csak az átfedett területeket.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7118"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7123"/>
       <source>Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.</source>
       <translation>Engedélyezi a textúra gyorsítótárnák, hogy újra használja bemeneti textúraként az előző képpuffer belső részét.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7119"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7124"/>
       <source>Read Targets When Closing</source>
       <translation>Célok Beolvasása Bezárásnál</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7120"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7125"/>
       <source>Flushes all targets in the texture cache back to local memory when shutting down.</source>
       <translation>Minden célt visszaürít a textúra gyorsítótárból a helyi memóriába leállításnál.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7121"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7126"/>
       <source>Estimate Texture Region</source>
       <translation>Textúra Terület Megállapítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7122"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7127"/>
       <source>Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).</source>
       <translation>Megpróbálja csökkenteni a textúra méretet ha a játék nem teszi ezt meg (pl. Snowblind játékok).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7123"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7128"/>
       <source>GPU Palette Conversion</source>
       <translation>GPU Paletta Átalakítás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7125"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7130"/>
       <source>Upscaling Fixes</source>
       <translation>Felskálázási Javítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7127"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7132"/>
       <source>Adjusts vertices relative to upscaling.</source>
       <translation>Vertexek finomhangolása relatívan a felskálázáshoz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7128"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7133"/>
       <source>Native Scaling</source>
       <translation>Natív Skálázás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7129"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7134"/>
       <source>Attempt to do rescaling at native resolution.</source>
       <translation>Megpróbál a natív felbontáson újraskálázni.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7130"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7135"/>
       <source>Round Sprite</source>
       <translation>Kerekített Sprite</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7131"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7136"/>
       <source>Adjusts sprite coordinates.</source>
       <translation>Meghatározza a sprite koordinátákat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7132"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7137"/>
       <source>Bilinear Upscale</source>
       <translation>Bilineáris Felskálázás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7133"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7138"/>
       <source>Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.</source>
       <translation>Kisimíthatja a textúrákat, hogy bilineáris szűrő alkalmazódjon rájuk felskálázásnál. Pl. Nap fény lencse hatás.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7135"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7140"/>
       <source>Adjusts target texture offsets.</source>
       <translation>Cél textúra eltolás értékek finomítása.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7137"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7142"/>
       <source>Align Sprite</source>
       <translation>Sprite Illesztés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7138"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7143"/>
       <source>Fixes issues with upscaling (vertical lines) in some games.</source>
       <translation>Javítja a felskálázási problémákat (függőleges vonalak) bizonyos játékokban.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7139"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7144"/>
       <source>Merge Sprite</source>
       <translation>Sprite Egyesítés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7140"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7145"/>
       <source>Replaces multiple post-processing sprites with a larger single sprite.</source>
       <translation>Lecseréli a több utófeldolgozó spriteokat egy nagy spriteval.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7142"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7147"/>
       <source>Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.</source>
       <translation>Csökkenti a GS pontosságát, hogy elkerülje a pixelek közötti réseket felskálázásnál. Javítja a szöveget a Wild Arms játékoknál.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7143"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7148"/>
       <source>Unscaled Palette Texture Draws</source>
       <translation>Skálázatlan Paletta Textúra Rajzolás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7144"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7149"/>
       <source>Can fix some broken effects which rely on pixel perfect precision.</source>
       <translation>Javíthat néhány rosszul megjelenő hatást, ha a pixel elhelyezkedésre támaszkodnak.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7145"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7150"/>
       <source>Texture Replacement</source>
       <translation>Textúra Lecserélés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7146"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7151"/>
       <source>Load Textures</source>
       <translation>Textúrák Betöltése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7147"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7152"/>
       <source>Loads replacement textures where available and user-provided.</source>
       <translation>Betölti a cseretextúrákat ha elérhetők.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7148"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7153"/>
       <source>Asynchronous Texture Loading</source>
       <translation>Aszinkron Textúrabetöltés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7149"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7154"/>
       <source>Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled.</source>
       <translation>Egy külön szálat használ a cseretextúrák betöltéséhez, csökkentve ezzel a mikroszaggatásokat mikor a csere engedélyezve van.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7150"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7155"/>
       <source>Precache Replacements</source>
       <translation>Cseretextúrák Előtöltése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7151"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7156"/>
       <source>Preloads all replacement textures to memory. Not necessary with asynchronous loading.</source>
       <translation>Minden cseretextúrát betölt a memóriába. Nem szükséges aszinkron betöltésnél.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7152"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7157"/>
       <source>Replacements Directory</source>
       <translation>Cserék Mappája</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7153"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7158"/>
       <source>Folders</source>
       <translation>Mappák</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7154"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7159"/>
       <source>Texture Dumping</source>
       <translation>Textúra Mentés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7155"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7160"/>
       <source>Dump Textures</source>
       <translation>Textúrák Lementése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7157"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7162"/>
       <source>Dump Mipmaps</source>
       <translation>Mipmappok Lementése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7158"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7163"/>
       <source>Includes mipmaps when dumping textures.</source>
       <translation>A mipmappokat is hozzáadja a lementett textúrákhoz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7159"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7164"/>
       <source>Dump FMV Textures</source>
       <translation>FMV Textúrák Lementése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7160"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7165"/>
       <source>Allows texture dumping when FMVs are active. You should not enable this.</source>
       <translation>Akkor is lementi a textúrákat mikor egy FMV aktív. Nem ajánlott engedélyezni.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7161"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7166"/>
       <source>Post-Processing</source>
       <translation>Utófeldolgozás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7162"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7167"/>
       <source>FXAA</source>
       <translation>FXAA</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7163"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7168"/>
       <source>Enables FXAA post-processing shader.</source>
       <translation>Engedélyezi az FXAA útó-feldolgozó árnyékolót.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7164"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7169"/>
       <source>Contrast Adaptive Sharpening</source>
       <translation>Kontraszt Adaptív Élesítés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7165"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7170"/>
       <source>Enables FidelityFX Contrast Adaptive Sharpening.</source>
       <translation>Engedélyezi a FidelityFX kontraszt adaptív élesítést.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7166"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7171"/>
       <source>CAS Sharpness</source>
       <translation>CAS Élesség</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7167"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7172"/>
       <source>Determines the intensity the sharpening effect in CAS post-processing.</source>
       <translation>Meghatározza az élesítő hatást intenzitását CAS útó-feldólgozásnál</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7168"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7173"/>
       <source>Filters</source>
       <translation>Szűrők</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7169"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7174"/>
       <source>Shade Boost</source>
-      <translation>Árnyalat Nővelés</translation>
+      <translation>Árnyalat Növelés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7170"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7175"/>
       <source>Enables brightness/contrast/saturation adjustment.</source>
       <translation>Engedélyezi a fényerő/kontraszt/telítettség beállítását.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7171"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7176"/>
       <source>Shade Boost Brightness</source>
       <translation>Fényerő</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7172"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7177"/>
       <source>Adjusts brightness. 50 is normal.</source>
       <translation>Beállítja a fényerőt. 50 az alap.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7173"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7178"/>
       <source>Shade Boost Contrast</source>
       <translation>Kontraszt</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7174"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7179"/>
       <source>Adjusts contrast. 50 is normal.</source>
       <translation>Beállítja a kontrasztot. 50 az alap.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7175"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7180"/>
       <source>Shade Boost Saturation</source>
       <translation>Telítettség</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7176"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7181"/>
       <source>Adjusts saturation. 50 is normal.</source>
       <translation>Beállítja a telítettséget. 50 az alap.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7177"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7182"/>
       <source>TV Shaders</source>
       <translation>TV Szűrök</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7179"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7184"/>
       <source>Advanced</source>
       <translation>Szakértő</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7180"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7185"/>
       <source>Skip Presenting Duplicate Frames</source>
       <translation>Duplikált Képkockák Átugrása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7184"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7189"/>
       <source>Extended Upscaling Multipliers</source>
       <translation>Kiterjesztett Felskálázási Szorzók</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7185"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7190"/>
       <source>Displays additional, very high upscaling multipliers dependent on GPU capability.</source>
       <translation>Megjelenít további, nagyon magas felskálázási szorzókat a GPU képességei függvényében.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7186"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7191"/>
       <source>Hardware Download Mode</source>
       <translation>Hardveres Letöltési Mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7187"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7192"/>
       <source>Changes synchronization behavior for GS downloads.</source>
       <translation>Megváltoztatja a GS letöltések szinkronizációjának viselkedését.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7188"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7193"/>
       <source>Allow Exclusive Fullscreen</source>
       <translation>Exkluzív Teljes Képernyő Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7189"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7194"/>
       <source>Overrides the driver&apos;s heuristics for enabling exclusive fullscreen, or direct flip/scanout.</source>
       <translation>Felülírja az illesztőprogram heurisztikáját, hogy engedélyezze az exkluzív teljes képernyőt, vagy közvetlen váltást/kiolvasást.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7190"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7195"/>
       <source>Override Texture Barriers</source>
       <translation>Textúra Határok Felülbírálása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7191"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7196"/>
       <source>Forces texture barrier functionality to the specified value.</source>
       <translation>Kényszeríti a textúra határ funkcionalitást egy megadott értékre.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7192"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7197"/>
       <source>GS Dump Compression</source>
       <translation>GS Adat Tömörítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7193"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7198"/>
       <source>Sets the compression algorithm for GS dumps.</source>
       <translation>Beállítja a tömörítési algoritmust a lementett GS adathoz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7194"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7199"/>
       <source>Disable Framebuffer Fetch</source>
       <translation>Képpuffer Lekérdezés Letiltása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7195"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7200"/>
       <source>Prevents the usage of framebuffer fetch when supported by host GPU.</source>
       <translation>Megakadályozza a képpuffer lekérését ha támogatja a gazdagép GPU-ja.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7196"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7201"/>
       <source>Disable Shader Cache</source>
       <translation>Shader Gyorsítótár Letiltása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7197"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7202"/>
       <source>Prevents the loading and saving of shaders/pipelines to disk.</source>
       <translation>Megakadályozza a betöltését és a mentését az árnyékolóknak/csővezeték architektúráknak a lemezre.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7198"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7203"/>
       <source>Disable Vertex Shader Expand</source>
       <translation>Vertex Árnyékolók Kiterjesztésének Letiltása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7199"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7204"/>
       <source>Falls back to the CPU for expanding sprites/lines.</source>
       <translation>A CPU-ra ugrik vissza a spriteok/vonalak kiterjesztéséhez.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7209"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7214"/>
       <source>Changes when SPU samples are generated relative to system emulation.</source>
       <translation>Megváltoztatja hány SPU minta kerül generálásra a rendszer emulációval arányosan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7211"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7216"/>
       <source>%d ms</source>
       <translation>%d ms</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7214"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7219"/>
       <source>Settings and Operations</source>
       <translation>Beállítások és Műveletek</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7215"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7220"/>
       <source>Creates a new memory card file or folder.</source>
       <translation>Új memória kártya mappát vagy fájlt készít.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7216"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7221"/>
       <source>Simulates a larger memory card by filtering saves only to the current game.</source>
       <translation>Nagyobb memória kártyát szimulál, azzal hogy kiszűri csak a jelenlegi játék mentéseit.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7217"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7222"/>
       <source>If not set, this card will be considered unplugged.</source>
       <translation>Ha nincs kiválasztva, akkor ez a kártya nem behelyezettnek számít.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7218"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7223"/>
       <source>The selected memory card image will be used for this slot.</source>
-      <translation>A kiválaszott memória kártya fájl lesz használva ebben a foglalatban.</translation>
+      <translation>A kiválasztott memória kártya fájl lesz használva ebben a foglalatban.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7227"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7232"/>
       <source>Enable/Disable the Player LED on DualSense controllers.</source>
       <translation>Engedélyezi/Letiltja a Játékon LED-et DualSense játékvezérlőkön.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7233"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7238"/>
       <source>Trigger</source>
       <translation>Ravasz</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7234"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7239"/>
       <source>Toggles the macro when the button is pressed, instead of held.</source>
       <translation>Bekapcsólja a makrót a gomb lenyomásánál, lenntartás helyett.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7282"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7287"/>
       <source>Savestate</source>
       <translation>Állásmentés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7283"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7288"/>
       <source>Compression Method</source>
       <translation>Tömörítési Eljárás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7284"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7289"/>
       <source>Sets the compression algorithm for savestate.</source>
       <translation>Beállítja a tömörítési algoritmust az állásmentésekhez.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7285"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7290"/>
       <source>Compression Level</source>
       <translation>Tömörítési Szint</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7286"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7291"/>
       <source>Sets the compression level for savestate.</source>
       <translation>Beállítja a tömörítési szintet az állásmentésekhez.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7357"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7362"/>
       <source>Version: %s</source>
       <translation>Verzió: %s</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7375"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7380"/>
       <source>{:%H:%M}</source>
       <translation>{:%H:%M}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7381"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7386"/>
       <source>Slot {}</source>
       <translation>Foglalat {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7481"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7486"/>
       <source>1.25x Native (~450px)</source>
       <translation>1.25x Natív (~450px)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7482"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7487"/>
       <source>1.5x Native (~540px)</source>
       <translation>1.5x Natív (~540px)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7483"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7488"/>
       <source>1.75x Native (~630px)</source>
       <translation>1.75x Natív (~630px)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7484"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7489"/>
       <source>2x Native (~720px/HD)</source>
       <translation>2x Natív (~720px/HD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7485"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7490"/>
       <source>2.5x Native (~900px/HD+)</source>
       <translation>2.5x Natív (~900px/HD+)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7486"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7491"/>
       <source>3x Native (~1080px/FHD)</source>
       <translation>3x Natív (~1080px/FHD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7487"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7492"/>
       <source>3.5x Native (~1260px)</source>
       <translation>3.5x Natív (~1260px)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7488"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7493"/>
       <source>4x Native (~1440px/QHD)</source>
       <translation>4x Natív (~1440px/QHD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7489"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7494"/>
       <source>5x Native (~1800px/QHD+)</source>
       <translation>5x Natív (~1800px/QHD+)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7490"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7495"/>
       <source>6x Native (~2160px/4K UHD)</source>
       <translation>6x Natív (~2160px/4K UHD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7491"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7496"/>
       <source>7x Native (~2520px)</source>
       <translation>7x Natív (~2520px)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7492"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7497"/>
       <source>8x Native (~2880px/5K UHD)</source>
       <translation>8x Natív (~2880px/5K UHD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7493"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7498"/>
       <source>9x Native (~3240px)</source>
       <translation>9x Natív (~3240px)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7494"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7499"/>
       <source>10x Native (~3600px/6K UHD)</source>
       <translation>10x Natív (~3600px/6K UHD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7495"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7500"/>
       <source>11x Native (~3960px)</source>
       <translation>11x Natív (~3960px)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7496"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7501"/>
       <source>12x Native (~4320px/8K UHD)</source>
       <translation>12x Natív (~4320px/8K UHD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7530"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7535"/>
       <source>WebP</source>
       <translation>WebP</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7554"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7559"/>
       <source>Aggressive</source>
       <translation>Agresszív</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7582"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7587"/>
       <source>Deflate64</source>
       <translation>Deflate64</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7583"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7588"/>
       <source>Zstandard</source>
       <translation>Zstandard</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7584"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7589"/>
       <source>LZMA2</source>
       <translation>LZMA2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7585"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7590"/>
       <source>Low (Fast)</source>
       <translation>Alacsony (Gyors)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7586"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7591"/>
       <source>Medium (Recommended)</source>
       <translation>Közepes (Ajánlott)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7587"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7592"/>
       <source>Very High (Slow, Not Recommended)</source>
       <translation>Nagyon Magas (Lassú, Nem Ajánlott)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7597"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7602"/>
       <source>Change Selection</source>
       <translation>Kijelölés Módosítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7598"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7603"/>
       <source>Select</source>
       <translation>Kiválasztás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7600"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7605"/>
       <source>Parent Directory</source>
       <translation>Szülőkönyvtár</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7601"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7606"/>
       <source>Enter Value</source>
       <translation>Érték Megadása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7602"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7607"/>
       <source>About</source>
       <translation>Névjegy</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7604"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7609"/>
       <source>Toggle Fullscreen</source>
       <translation>Váltás Teljes Képernyőre</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7603"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7608"/>
       <source>Navigate</source>
       <translation>Navigálás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7605"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7610"/>
       <source>Load Global State</source>
       <translation>Globális Állapot Betöltése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7607"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7612"/>
       <source>Change Page</source>
       <translation>Lapozás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7609"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7614"/>
       <source>Return To Game</source>
       <translation>Vissza a Játékba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7610"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7615"/>
       <source>Select State</source>
       <translation>Állás Választása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7612"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7617"/>
       <source>Select Game</source>
       <translation>Játék Kiválasztása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7613"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7618"/>
       <source>Change View</source>
       <translation>Nézet Módosítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7614"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7619"/>
       <source>Launch Options</source>
       <translation>Indítási Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7635"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7640"/>
       <source>Create Save State Backups</source>
       <translation>Állásmentés Biztonsági Másolat</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7642"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7648"/>
       <source>Show PCSX2 Version</source>
       <translation>PCSX2 Verziójának Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7650"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7656"/>
       <source>Show Input Recording Status</source>
       <translation>Bemenet Rögzítési Állapot Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7651"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7657"/>
       <source>Show Video Capture Status</source>
       <translation>Videó Rögzítési Állapot Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7654"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7660"/>
       <source>Show Frame Times</source>
       <translation>Képkocka Idők Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7655"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7661"/>
       <source>Show Hardware Info</source>
       <translation>Hardver Információ Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7672"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7678"/>
       <source>Create Memory Card</source>
       <translation>Memória Kártya Létrehozása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7220"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7225"/>
       <source>Configuration</source>
       <translation>Konfiguráció</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6931"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
       <source>Start Game</source>
       <translation>Játék indítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6932"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6936"/>
       <source>Launch a game from a file, disc, or starts the console without any disc inserted.</source>
       <translation>Játék indítása fájlból, lemezről, vagy a konzol elindítása behelyezett lemez nélkül.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6934"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6938"/>
       <source>Changes settings for the application.</source>
       <translation>Az alkalmazás beállításainak módosítása.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6936"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6940"/>
       <source>Return to desktop mode, or exit the application.</source>
       <translation>Visszatérés asztali módba, vagy kilépés az alkalmazásból.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6943"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6947"/>
       <source>Back</source>
       <translation>Vissza</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6944"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6948"/>
       <source>Return to the previous menu.</source>
       <translation>Visszatérés az előző menübe.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6945"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6949"/>
       <source>Exit PCSX2</source>
       <translation>PCSX2 Bezárása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6946"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6950"/>
       <source>Completely exits the application, returning you to your desktop.</source>
       <translation>Kilép az alkalmazásból, és visszatérsz az asztalra.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6947"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6951"/>
       <source>Desktop Mode</source>
       <translation>Asztali Mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6948"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6952"/>
       <source>Exits Big Picture mode, returning to the desktop interface.</source>
       <translation>Kilép a Nagy Kép módból, és visszatér az asztali kezelőfelületre.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7221"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7226"/>
       <source>Resets all configuration to defaults (including bindings).</source>
-      <translation>Visszaállít minden beállítást az alapértékre (a gombkiosztást is)</translation>
+      <translation>Visszaállít minden beállítást az alapértékre (a gombkiosztást is).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7222"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7227"/>
       <source>Replaces these settings with a previously saved input profile.</source>
       <translation>Kicseréli ezeket a beállításokat előzőleg mentett bemeneti profillal.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7223"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7228"/>
       <source>Stores the current settings to an input profile.</source>
       <translation>Tárolja a jelenlegi beállításokat egy bemeneti profilban.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7224"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7229"/>
       <source>Input Sources</source>
       <translation>Bemeneti Források</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7225"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7230"/>
       <source>The SDL input source supports most controllers.</source>
       <translation>Az SDL bemeneti forrás támogatja a legtöbb játékvezérlőt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7226"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7231"/>
       <source>Provides vibration and LED control support over Bluetooth.</source>
       <translation>Lehetővé teszi a rezgést és a led vezérlését bluetooth-on keresztül.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7228"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7233"/>
       <source>Allow SDL to use raw access to input devices.</source>
       <translation>Engedélyezi az SDL-nek, hogy nyers hozzáférést kapjon a bemeneti eszközökhöz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7229"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7234"/>
       <source>The XInput source provides support for XBox 360/XBox One/XBox Series controllers.</source>
       <translation>Az XInput forrás biztosít támogatást az XBox 360/XBox One/XBox Series játékvezérlőkhöz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7230"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7235"/>
       <source>Multitap</source>
       <translation>Multitap</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7231"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7236"/>
       <source>Enables an additional three controller slots. Not supported in all games.</source>
       <translation>Engedélyez további három játékvezérlő foglalatot. Nem minden játék támogatja.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7232"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7237"/>
       <source>Attempts to map the selected port to a chosen controller.</source>
       <translation>Megpróbálja a kiválasztott portot a kiválasztott játékvezérlőhöz kiosztani.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7236"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7241"/>
       <source>Determines how much pressure is simulated when macro is active.</source>
       <translation>Meghatározza mekkora nyomás erősség legyen szimulálva ha a makró aktív.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7237"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7242"/>
       <source>Determines the pressure required to activate the macro.</source>
       <translation>Meghatározza a szükséges nyomás erősséget a makró aktiválásához.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7238"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7243"/>
       <source>Toggle every %d frames</source>
       <translation>Átkapcsolás %d képkockánként</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7239"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7244"/>
       <source>Clears all bindings for this USB controller.</source>
       <translation>Minden az ehhez az USB játékvezérlőhöz tartozó hozzárendelést eltávolít.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7240"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7245"/>
       <source>Data Save Locations</source>
       <translation>Adat Mentési Helyek</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7714"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7720"/>
       <source>Show Advanced Settings</source>
       <translation>Szakértő Beállítások Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7241"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7246"/>
       <source>Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.</source>
       <translation>Ezeknek a beállításoknak a módosítása játékok működésképtelenségét okozhatja. Csak saját felelősségre módosítsd, a PCSX2 csapata nem tud segítséget nyújtani, ha ezek a beállítások meg lettek változtatva.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7242"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7247"/>
       <source>Logging</source>
       <translation>Naplózás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7715"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7721"/>
       <source>System Console</source>
       <translation>Rendszer Konzol</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7243"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7248"/>
       <source>Writes log messages to the system console (console window/standard output).</source>
-      <translation>Napló üzeneteket ír a rendszer konzolba (konzol ablak/hagyományos kimenet)</translation>
+      <translation>Napló üzeneteket ír a rendszer konzolba (konzol ablak/hagyományos kimenet).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7716"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7722"/>
       <source>File Logging</source>
       <translation>Fájl Naplózás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7244"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7249"/>
       <source>Writes log messages to emulog.txt.</source>
       <translation>Napló üzeneteket ír az emulog.txt-be.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7717"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7723"/>
       <source>Verbose Logging</source>
       <translation>Részletes Naplózás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7245"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7250"/>
       <source>Writes dev log messages to log sinks.</source>
       <translation>Fejlesztői napló üzeneteket ír a napló gyűjtőbe.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7718"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7724"/>
       <source>Log Timestamps</source>
       <translation>Napló Időbélyegek</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7246"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7251"/>
       <source>Writes timestamps alongside log messages.</source>
       <translation>Dátumbélyegeket ír a napló üzenetek elé.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7719"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7725"/>
       <source>EE Console</source>
       <translation>EE Konzol</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7247"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7252"/>
       <source>Writes debug messages from the game&apos;s EE code to the console.</source>
       <translation>Hibakeresési üzeneteket ír a játék EE kódjából a konzolba.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7720"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7726"/>
       <source>IOP Console</source>
       <translation>IOP Konzol</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7248"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7253"/>
       <source>Writes debug messages from the game&apos;s IOP code to the console.</source>
       <translation>Hibakeresési üzeneteket ír a játék IOP kódjából a konzolba.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7721"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7727"/>
       <source>CDVD Verbose Reads</source>
       <translation>CDVD Olvasások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7249"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7254"/>
       <source>Logs disc reads from games.</source>
       <translation>Naplóza a játékok lemez olvasását.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7250"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7255"/>
       <source>Emotion Engine</source>
       <translation>Emotion Engine</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7251"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7256"/>
       <source>Rounding Mode</source>
       <translation>Kerekítési Mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7252"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7257"/>
       <source>Determines how the results of floating-point operations are rounded. Some games need specific settings.</source>
       <translation>Meghatározza hogy a lebegőpontos számítások hogyan legyenek kerekítve. Vannak játékok, amikben egy bizonyos beállításra van szüksége.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7253"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7258"/>
       <source>Division Rounding Mode</source>
       <translation>Osztási Kerekítési Mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7254"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7259"/>
       <source>Determines how the results of floating-point division is rounded. Some games need specific settings.</source>
       <translation>Meghatározza, hogy a lebegőpontos osztás eredményét hogyan kerekíti. Néhány játék csak egy bizonyos beállítással működik megfelelően.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7255"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7260"/>
       <source>Clamping Mode</source>
       <translation>Rögzítési mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7256"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7261"/>
       <source>Determines how out-of-range floating point numbers are handled. Some games need specific settings.</source>
       <translation>Meghatározza hogy a határon túlépő lebegőpontos számítások hogyan legyenek kezelve. Vannak játékok, amikben egy bizonyos beállításra van szüksége.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7257"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7262"/>
       <source>Enable EE Recompiler</source>
       <translation>EE Újrafordító Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7258"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7263"/>
       <source>Performs just-in-time binary translation of 64-bit MIPS-IV machine code to native code.</source>
       <translation>Futás idejű (JIT) bináris fordítást végez 64-bites MIPS-IV gépi kódról x86 kódra.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7259"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7264"/>
       <source>Enable EE Cache</source>
       <translation>EE Gyorsítótár Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7260"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7265"/>
       <source>Enables simulation of the EE&apos;s cache. Slow.</source>
       <translation>Engedélyezi az EE gyorsítótár szimulálását. Lassú.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7261"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7266"/>
       <source>Enable INTC Spin Detection</source>
       <translation>INTC Időzítés Átugrásának Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7262"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7267"/>
       <source>Huge speedup for some games, with almost no compatibility side effects.</source>
       <translation>Nagy teljesítmény növekedés bizonyos játékok esetén, legtöbb esetben problémák nélkül.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7263"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7268"/>
       <source>Enable Wait Loop Detection</source>
       <translation>Várakozási Hurok Felismerés Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7264"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7269"/>
       <source>Moderate speedup for some games, with no known side effects.</source>
       <translation>Szerény teljesítmény növekedés bizonyos játékoknál, ismert problémák nélkül.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7265"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7270"/>
       <source>Enable Fast Memory Access</source>
       <translation>Gyors Memória Hozzáférés Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7266"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7271"/>
       <source>Uses backpatching to avoid register flushing on every memory access.</source>
       <translation>Backpatching használatával elkerüli a regiszterek kiürítését minden memória-hozzáférés során.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7267"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7272"/>
       <source>Vector Units</source>
       <translation>Vektor Egységek</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7268"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7273"/>
       <source>VU0 Rounding Mode</source>
       <translation>VU0 Kerekítési Mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7269"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7274"/>
       <source>VU0 Clamping Mode</source>
       <translation>VU0 Rögzítési mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7270"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7275"/>
       <source>VU1 Rounding Mode</source>
       <translation>VU1 Kerekítési Mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7271"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7276"/>
       <source>VU1 Clamping Mode</source>
       <translation>VU1 Rögzítési mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7272"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7277"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
       <translation>VU0 Újraforditó Engedélyezése (Mikro Mód)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7273"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7278"/>
       <source>New Vector Unit recompiler with much improved compatibility. Recommended.</source>
       <translation>Az új VU újrafordító, jóval szélesebb kompatibilitással. Ajánlott.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7274"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7279"/>
       <source>Enable VU1 Recompiler</source>
       <translation>VU1 Újrafordító Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7275"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7280"/>
       <source>Enable VU Flag Optimization</source>
       <translation>VU Jelölök Optimalizációja</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7276"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7281"/>
       <source>Good speedup and high compatibility, may cause graphical errors.</source>
       <translation>Teljesítmény növekedés és magas kompatibilitás, néha grafikai hibákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7279"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7284"/>
       <source>I/O Processor</source>
       <translation>I/O Processzor</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7280"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7285"/>
       <source>Enable IOP Recompiler</source>
       <translation>IOP Újrafordító Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7281"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7286"/>
       <source>Performs just-in-time binary translation of 32-bit MIPS-I machine code to native code.</source>
       <translation>Futás idejű (JIT) bináris fordítást végez 32-bites MIPS-I gépi kódról x86 kódra.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7287"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7292"/>
       <source>Graphics</source>
       <translation>Grafika</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7288"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7293"/>
       <source>Use Debug Device</source>
       <translation>Hibakeresési Eszköz Használata</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6933"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6937"/>
       <source>Settings</source>
       <translation>Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7290"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7295"/>
       <source>No cheats are available for this game.</source>
       <translation>Nincs elérhető csalás ehhez a játékhoz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7291"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7296"/>
       <source>Cheat Codes</source>
       <translation>Csaláskódok</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7292"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7297"/>
       <source>No patches are available for this game.</source>
-      <translation>Nincs elérhető javítás ehhez a játékhoz.</translation>
+      <translation>Nincs elérhető tapasz ehhez a játékhoz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7293"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7298"/>
       <source>Game Patches</source>
-      <translation>Játék Javítások</translation>
+      <translation>Játék Tapaszok</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7294"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7299"/>
       <source>Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
       <translation>A csalások engedélyezése nem várt működést eredményezhet, összeomlást, nem folytatható játékot, tönkrement mentéseket</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7295"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7300"/>
       <source>Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
-      <translation>A javítások engedélyezése nem várt működést eredményezhet, összeomlást, nem folytatható játékot, tönkrement mentéseket.</translation>
+      <translation>A tapaszok engedélyezése nem várt működést eredményezhet, összeomlást, nem folytatható játékot, tönkrement mentéseket.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7296"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7301"/>
       <source>Use patches at your own risk, the PCSX2 team will provide no support for users who have enabled game patches.</source>
-      <translation>Csak saját felelősségre használj javításokat, a PCSX2 csapat nem tud támogatás nyújtani a javításokat engedélyező felhasználóknak.</translation>
+      <translation>Csak saját felelősségre használj tapaszokat, a PCSX2 csapat nem tud támogatás nyújtani a tapaszokat engedélyező felhasználóknak.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7297"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7302"/>
       <source>Game Fixes</source>
       <translation>Játékjavítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7298"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7303"/>
       <source>Game fixes should not be modified unless you are aware of what each option does and the implications of doing so.</source>
-      <translation>A játék javítások módosítása nem ajánlott, hacsak pontosan nem tudod melyik opció mit csinál, és milyen hatása van.</translation>
+      <translation>A játékjavítások módosítása nem ajánlott, hacsak pontosan nem tudod melyik opció mit csinál, és milyen hatása van.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7299"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7304"/>
       <source>FPU Multiply Hack</source>
       <translation>FPU Szorzás Hack</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7300"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7305"/>
       <source>For Tales of Destiny.</source>
       <translation>A Tales of Destiny-hez.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7305"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7310"/>
       <source>Preload TLB Hack</source>
       <translation>TLB Előtöltése Hack</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7302"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7307"/>
       <source>Needed for some games with complex FMV rendering.</source>
       <translation>Szükséges néhány játékhoz amik komplexen képezik le az FMV-ket.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7303"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7308"/>
       <source>Skip MPEG Hack</source>
       <translation>MPEG Kihagyás Hack</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7304"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7309"/>
       <source>Skips videos/FMVs in games to avoid game hanging/freezes.</source>
       <translation>Kihagyja a videókat/FMV-ket a játékokban, hogy megakadályozza a lefagyást.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7311"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7316"/>
       <source>OPH Flag Hack</source>
       <translation>OPH Flag Hack</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7307"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7312"/>
       <source>EE Timing Hack</source>
       <translation>EE Időzítés Hack</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7309"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7314"/>
       <source>Instant DMA Hack</source>
       <translation>Azonnali DMA Hack</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7316"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7321"/>
       <source>Known to affect following games: Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines.</source>
       <translation>A következő játékokra van hatással: Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7318"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7323"/>
       <source>For SOCOM 2 HUD and Spy Hunter loading hang.</source>
       <translation>A SOCOM 2 HUD és Spy Hunter betöltés elakadásához.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7325"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7330"/>
       <source>VU Add Hack</source>
       <translation>VU Hozzáadás Hack</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7321"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7326"/>
       <source>Full VU0 Synchronization</source>
       <translation>Teljes VU0 Szinkronizáció</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7322"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7327"/>
       <source>Forces tight VU0 sync on every COP2 instruction.</source>
       <translation>Szoros VU0 szinkront kényszerít minden COP2 utasításnál.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7327"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7332"/>
       <source>VU Overflow Hack</source>
       <translation>VU Túlcsordulás Hack</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7328"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7333"/>
       <source>To check for possible float overflows (Superman Returns).</source>
       <translation>Ellenőrzi a lehetséges lebegőpontos túlcsordulást (Superman Returns)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7332"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7337"/>
       <source>Use accurate timing for VU XGKicks (slower).</source>
       <translation>Precíz időzítést használ a VU XGKiscks-hez (lassabb).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7335"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7340"/>
       <source>Load State</source>
       <translation>Állás Betöltése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7013"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7018"/>
       <source>Makes the emulated Emotion Engine skip cycles. Helps a small subset of games like SOTC. Most of the time it&apos;s harmful to performance.</source>
       <translation>Kényszeríti az Emotion Engine-t hogy kihagyjon ciklusokat. Néhány játéknál segíthet, mint például a Shadow of The Colossus. De a legtöbb esetben csökkenti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7015"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7020"/>
       <source>Generally a speedup on CPUs with 4 or more cores. Safe for most games, but a few are incompatible and may hang.</source>
       <translation>Általában növeli a teljesítményt a 4 vagy több magos processzoroknál.
 A legtöbb játéknál biztonságos, de van néhány ami nem kompatibilis és lefagyhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7278"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7283"/>
       <source>Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.</source>
       <translation>Azonnal futtatja a VU1-et. Szerény teljesítmény növekedést hozhat a legtöbb játéknál. A legtöbb esetben biztonságos, de néhány játékban grafikai hibákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7108"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7113"/>
       <source>Disable the support of depth buffers in the texture cache.</source>
       <translation>Kikapcsolja a mélységbufferek támogatását a textúra-gyorsítótárban.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7111"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7116"/>
       <source>Disable Render Fixes</source>
       <translation>Leképezési Javítások Letiltása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7113"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7118"/>
       <source>Preload Frame Data</source>
       <translation>Képkocka Adat Előtöltése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7117"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7122"/>
       <source>Texture Inside RT</source>
       <translation>Textúra a Leképezési Célban</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7124"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7129"/>
       <source>When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU.</source>
       <translation>Ha engedélyezve van a GPU alakítja át a színtérkép-textúrákat, egyéb esetben a CPU. Ez egy kompromisszum a CPU és a GPU között.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7126"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7131"/>
       <source>Half Pixel Offset</source>
       <translation>Fél Pixel Eltolás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7134"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7139"/>
       <source>Texture Offset X</source>
       <translation>Textúra Eltolás X</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7136"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7141"/>
       <source>Texture Offset Y</source>
       <translation>Textúra Eltolás Y</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7156"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7161"/>
       <source>Dumps replaceable textures to disk. Will reduce performance.</source>
       <translation>Lementi a lecserélhető textúrákat a lemezre. Csökkenti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7178"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7183"/>
       <source>Applies a shader which replicates the visual effects of different styles of television set.</source>
       <translation>Árnyékolót alkalmaz, ami imitálja a megjelenését többféle típusú televíziós készüléknek.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7181"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7186"/>
       <source>Skips displaying frames that don&apos;t change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing worse.</source>
       <translation>Nem jeleníti meg azokat a képkockákat amik nem változnak 25/30fps játékokban. Javíthatja a sebességet, de növelheti a bemeneti késleltetés/rosszabb lehet a képkocka elosztás.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7289"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7294"/>
       <source>Enables API-level validation of graphics commands.</source>
       <translation>Engedélyezi az API-szintű érvényesítését a grafikai parancsoknak.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7301"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7306"/>
       <source>Use Software Renderer For FMVs</source>
       <translation>Szoftveres Leképező Használata FMV-hez</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7306"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7311"/>
       <source>To avoid TLB miss on Goemon.</source>
       <translation>TLB kivétel elkerüléséhez a Goemonban.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7308"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7313"/>
       <source>General-purpose timing hack. Known to affect following games: Digital Devil Saga, SSX.</source>
       <translation>Általános célú időzítési hack. Ismerten hatással van az alábbi játékokra: Digital Devil Saga, SSX. </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7310"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7315"/>
       <source>Good for cache emulation problems. Known to affect following games: Fire Pro Wrestling Z.</source>
       <translation>Jó a gyorsítótár emulációs problémákra. Ismerten hatással van az alábbi játékokra: Fire Pro Wrestling Z.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7312"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7317"/>
       <source>Known to affect following games: Bleach Blade Battlers, Growlanser II and III, Wizardry.</source>
       <translation>A következő játékokat befolyásolja: Bleach Blade Battlers, Growlanser II és III, Wizardry.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7313"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7318"/>
       <source>Emulate GIF FIFO</source>
       <translation>GIF FIFO Emulálása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7314"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7319"/>
       <source>Correct but slower. Known to affect the following games: Fifa Street 2.</source>
       <translation>Pontosabb de lassabb. Hatása van a következő játékra: Fifa Street 2.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7315"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7320"/>
       <source>DMA Busy Hack</source>
       <translation>DMA Lefoglalás Hack</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7317"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7322"/>
       <source>Delay VIF1 Stalls</source>
       <translation>VIF1 Megakadás Késleltetése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7319"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7324"/>
       <source>Emulate VIF FIFO</source>
       <translation>VIF FIFO Emulálása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7320"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7325"/>
       <source>Simulate VIF1 FIFO read ahead. Known to affect following games: Test Drive Unlimited, Transformers.</source>
       <translation>VIF1 FIFO előreolvasást szimulál. Ismerten hatással van az alábbi játékokra: Test Drive Unlimited, Transformers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7323"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7328"/>
       <source>VU I Bit Hack</source>
       <translation>VU I Bit Hack</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7324"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7329"/>
       <source>Avoids constant recompilation in some games. Known to affect the following games: Scarface The World is Yours, Crash Tag Team Racing.</source>
       <translation>Engedélyezi a folyamatos újrafordítást bizonyos játékokban. Ismerten hatással van az alábbi játékokra:Scarface The World is Yours, Crash Tag Team Racing.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7326"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7331"/>
       <source>For Tri-Ace Games: Star Ocean 3, Radiata Stories, Valkyrie Profile 2.</source>
       <translation>A Tri-Ace játékokhoz: Star Ocean 3, Radiata Stories, Valkyrie Profile 2.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7329"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7334"/>
       <source>VU Sync</source>
       <translation>VU Szinkron</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7330"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7335"/>
       <source>Run behind. To avoid sync problems when reading or writing VU registers.</source>
-      <translation>Lemaradás. Hogy elkerülje a problémákat a VU regiszterek írásánál vagy olvasásánál.</translation>
+      <translation>Késleltetés. Hogy elkerülje a problémákat a VU regiszterek írásánál vagy olvasásánál.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7331"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7336"/>
       <source>VU XGKick Sync</source>
       <translation>VU XGKick Szinkron</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7333"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7338"/>
       <source>Force Blit Internal FPS Detection</source>
       <translation>BLIT Belső FPS Azonosítás Kényszerítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7336"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7341"/>
       <source>Save State</source>
       <translation>Állás Mentése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7337"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7342"/>
       <source>Load Resume State</source>
       <translation>Gyorsmentés Betöltése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7338"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7343"/>
       <source>A resume save state created at %s was found.
 
 Do you want to load this save and continue?</source>
@@ -8022,2071 +8076,2076 @@ Do you want to load this save and continue?</source>
 Szeretnéd betölteni ezt az állást és folytatni?</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7339"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7344"/>
       <source>Region: </source>
       <translation>Régió: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7340"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7345"/>
       <source>Compatibility: </source>
       <translation>Kompatibilitás: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7341"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7346"/>
       <source>No Game Selected</source>
       <translation>Nincs Kiválasztott Játék</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7343"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7348"/>
       <source>Search Directories</source>
       <translation>Mappák Vizsgálása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7344"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7349"/>
       <source>Adds a new directory to the game search list.</source>
       <translation>Új mappát ad hozzá a játék keresési listához.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7345"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7350"/>
       <source>Scanning Subdirectories</source>
       <translation>Alkönyvtárak Vizsgálása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7346"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7351"/>
       <source>Not Scanning Subdirectories</source>
       <translation>Alkönyvtárak Nincsenek Vizsgálva</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7347"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7352"/>
       <source>List Settings</source>
       <translation>Lista Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7348"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7353"/>
       <source>Sets which view the game list will open to.</source>
       <translation>Kiválasztható melyik megjelenéssel nyíljon meg a játék lista.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7349"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7354"/>
       <source>Determines which field the game list will be sorted by.</source>
       <translation>Meghatározza, hogy a játéklista melyik mező szerint legyen rendezve.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7350"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7355"/>
       <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
       <translation>Megfordítja a játéklista sorrendjét az alapértelmezettől (általában növekvő sorrendről csökkenőre).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7351"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7356"/>
       <source>Cover Settings</source>
       <translation>Borító Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7352"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7357"/>
       <source>Downloads covers from a user-specified URL template.</source>
       <translation>Borítókat tölt le a felhasználó által megadott címről.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6998"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7003"/>
       <source>Operations</source>
       <translation>Műveletek</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7079"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7084"/>
       <source>Selects where anisotropic filtering is utilized when rendering textures.</source>
       <translation>Kiválasztható mikor legyen bilineáris szűrés használva a textúrák megjelenítésénél.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7334"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7339"/>
       <source>Use alternative method to calculate internal FPS to avoid false readings in some games.</source>
       <translation>Alternatív módszer használata a belső FPS számításához, amivel elkerülhető a hamis eredmény néhány játéknál.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7353"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7358"/>
       <source>Identifies any new files added to the game directories.</source>
       <translation>Azonosítja az újonnan hozzáadott fájlokat a játék könyvtárakból.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7354"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7359"/>
       <source>Forces a full rescan of all games previously identified.</source>
       <translation>Kényszeríti az összes eddig hozzáadott játék újrakeresését.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7749"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7755"/>
       <source>Download Covers</source>
       <translation>Borítók Letöltése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7355"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7360"/>
       <source>About PCSX2</source>
       <translation>A PCSX2 Névjegye</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7356"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7361"/>
       <source>PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2&apos;s hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.</source>
       <translation>PCSX2 egy ingyenes és nyílt forráskódú PlayStation 2 (PS2) emulátor. Célja a PS2 hardver emulálása MIPS CPU értelmezők, újrafordítók és egy virtuális gép kombinációjával, ami a hardverállapotot és a PS2 rendszer memóriáját kezeli. Ez lehetővé teszi, hogy PS2 játékokkal játszhass PC-n, számos hozzáadott funkcióval és előnnyel.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7358"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7363"/>
       <source>PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.</source>
       <translation>PlayStation 2 és a PS2 a Sony Interactive Entertainment bejegyzett védjegyei. Ez az alkalmazás nem áll semmiféle kapcsolatban a Sony Interactive Entertainment-el</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7359"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7364"/>
       <source>When enabled and logged in, PCSX2 will scan for achievements on startup.</source>
       <translation>Ha be van jelölve és be vagy jelentkezve, a PCSX2 össze fogja gyűjteni a játékhoz tartozó trófeákat a játék inditásakor.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7360"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7365"/>
       <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
       <translation>&quot;Nehezített&quot; mód a trófeák megszerzésére, külön ranglistán vezetve. Kikapcsolja az állásmentéseket, a csalásokat, és a játéksebesség-manipulációt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7361"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7366"/>
       <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
       <translation>Felugró üzeneteket jelenít meg az olyan eseményekről, mint például a trófeák feloldása és a ranglistára kerülés.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7363"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7368"/>
       <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
       <translation>Hanghatások lejátszása olyan eseményekhez, mint például az trófeák feloldása és a ranglistán való szereplés.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7364"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7369"/>
       <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
       <translation>Ikon megjelenítése a képernyő jobb alsó sarkában, ha egy kihívás/elérhető trófea aktív.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7367"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7372"/>
       <source>When enabled, PCSX2 will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
       <translation>Ha engedélyezve van, a PCSX2 listázza a nem hivatalos gyűjtemények trófeáit is. Kérjük, vedd figyelembe, hogy ezeket az eredményeket a RetroAchievements nem követi nyomon.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7366"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7371"/>
       <source>When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.</source>
       <translation>Ha engedélyezve van, a PCSX2 azt feltételezi, hogy minden eredmény le van zárva, és nem küld értesítést a feloldásról a szervernek.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6902"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6906"/>
       <source>Error</source>
       <translation>Hiba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6969"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6973"/>
       <source>Pauses the emulator when a controller with bindings is disconnected.</source>
       <translation>Szüneteli az emulátort mikor egy játékvezérlővel aminek vannak kiosztott gombjai, megszakad a kapcsolat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6973"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6977"/>
       <source>Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix</source>
       <translation>Készít egy biztonsági mentést a játék pillanat mentéséről ha létezik már egy ilyen fájl a mentés pillanatában. A biztonsági mentés a .backup kiterjesztést kapja</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7024"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7029"/>
       <source>Enable CDVD Precaching</source>
       <translation>CDVD Előtöltés Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7025"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7030"/>
       <source>Loads the disc image into RAM before starting the virtual machine.</source>
       <translation>Betölti a játék képfájlt a RAM-ba a virtuális gép indítása előtt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7031"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7036"/>
       <source>Vertical Sync (VSync)</source>
       <translation>Függőleges Szinkronizáció (Vsync)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7033"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7038"/>
       <source>Sync to Host Refresh Rate</source>
       <translation>Szinkronizálás a Gazdagép Képfrissítéséhez</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7035"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7040"/>
       <source>Use Host VSync Timing</source>
       <translation>Gazda Gép VSync Időzítésének Használata</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7036"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7041"/>
       <source>Disables PCSX2&apos;s internal frame timing, and uses host vsync instead.</source>
       <translation>Letiltja a PCSX2 belső képkocka időzítését, és a gazdagépét használja inkább.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7182"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7187"/>
       <source>Disable Mailbox Presentation</source>
       <translation>Mailbox Prezentáció Letiltása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7183"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7188"/>
       <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
       <translation>Kényszeríti a FIFO használatát a Mailbox bemutatással szemben, azaz kettős pufferelés a hármas pufferelés helyett. Általában rosszabb képkocka elosztást eredményez.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7202"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7207"/>
       <source>Audio Control</source>
       <translation>Hang Vezérlés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7203"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7208"/>
       <source>Controls the volume of the audio played on the host.</source>
       <translation>Szabályozza a gazdagépen lejátszott hang hangerősségét.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7664"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7670"/>
       <source>Fast Forward Volume</source>
       <translation>Gyorsított Sebesség Hangereje</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7204"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7209"/>
       <source>Controls the volume of the audio played on the host when fast forwarding.</source>
       <translation>Szabályozza a gazdagépen lejátszott hang hangerősségét gyorsításkor.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7665"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7671"/>
       <source>Mute All Sound</source>
       <translation>Minden Hang Némítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7205"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7210"/>
       <source>Prevents the emulator from producing any audible sound.</source>
       <translation>Megakadályozza, hogy az emulátor bármiféle hangot adjon ki.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7206"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7211"/>
       <source>Backend Settings</source>
       <translation>Feldolgozó Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7666"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7672"/>
       <source>Audio Backend</source>
       <translation>Hang feldolgozó</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7207"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7212"/>
       <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
       <translation>A hang feldolgozó határozza meg, hogy az emulátor által készített képkockák hogyan kerülnek a gazdagéphez.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7667"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7673"/>
       <source>Expansion</source>
       <translation>Kiterjesztés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7208"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7213"/>
       <source>Determines how audio is expanded from stereo to surround for supported games.</source>
       <translation>Meghatározza hogyan legyen a hang kiterjesztve sztereóról térhangzásúra, a támogatott játékoknál.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7668"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7674"/>
       <source>Synchronization</source>
       <translation>Szinkronizáció</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7669"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7675"/>
       <source>Buffer Size</source>
       <translation>Puffer Méret</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7210"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7215"/>
       <source>Determines the amount of audio buffered before being pulled by the host API.</source>
       <translation>Meghatározza mennyi hang legyen pufferelve, mielőtt megkapja azokat a gazdagép feldolgozója.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7670"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7676"/>
       <source>Output Latency</source>
       <translation>Kimeneti késleltetés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7212"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7217"/>
       <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
       <translation>Meghatározza mekkora késleltetés legyen aközött, hogy a gazdagép feldolgozója felvette a hangot, és a hangszórón lejátszódik.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7671"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7677"/>
       <source>Minimal Output Latency</source>
       <translation>Minimális Kimeneti Késleltetés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7213"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7218"/>
       <source>When enabled, the minimum supported output latency will be used for the host API.</source>
       <translation>Ha engedélyezve van, a legkisebb támogatott késleltetés lesz használva.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7016"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7021"/>
       <source>Thread Pinning</source>
-      <translation>Szál Megjelőlés</translation>
+      <translation>Szál Megjelölés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7141"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7146"/>
       <source>Force Even Sprite Position</source>
       <translation>Egyenlő Sprite Pozíció Kényszerítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7362"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7367"/>
       <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
       <translation>Felugró üzeneteket jelenít meg, amikor elindul, beküldésre kerül vagy elbukik egy ranglista-kihívás.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7365"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7370"/>
       <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
       <translation>Ha be van jelölve, mindegyik játékmenet úgy fog viselkedni, mintha nem lenne feloldva semmilyen trófea.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7368"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7373"/>
       <source>Account</source>
       <translation>Fiók</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7369"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7374"/>
       <source>Logs out of RetroAchievements.</source>
-      <translation>Kijelentkezik a RetroAchievements-ből.</translation>
+      <translation>Kijelentkezés a RetroAchievements-ből.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7370"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7375"/>
       <source>Logs in to RetroAchievements.</source>
-      <translation>Bejelentkezik a RetroAchievements-be.</translation>
+      <translation>Bejelentkezés a RetroAchievements-be.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7371"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7376"/>
       <source>Current Game</source>
       <translation>Jelenlegi Játék</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7372"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7377"/>
       <source>An error occurred while deleting empty game settings:
 {}</source>
       <translation>Egy hiba történt az üres játék beállítások törlése közben:
 {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7373"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7378"/>
       <source>An error occurred while saving game settings:
 {}</source>
       <translation>Egy hiba történt a játék beállítások mentése során:
 {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7374"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7379"/>
       <source>{} is not a valid disc image.</source>
       <translation>{} nem egy érvényes lemezkép.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7377"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7382"/>
       <source>Automatic mapping completed for {}.</source>
       <translation>Automatikus hozzárendelés sikeres a {}-hoz</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7378"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7383"/>
       <source>Automatic mapping failed for {}.</source>
       <translation>Automatikus hozzárendelés sikertelen a {}-hoz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7379"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7384"/>
       <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
       <translation>Játék beállítások inicializálva a globális beállítások alapján a &apos;{}&apos; játékhoz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7380"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7385"/>
       <source>Game settings have been cleared for &apos;{}&apos;.</source>
       <translation>Játék beállítások eltávolítva a &apos;{}&apos; játékhoz.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7382"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7387"/>
       <source>{} (Current)</source>
       <translation>{} (Jelenlegi)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7383"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7388"/>
       <source>{} (Folder)</source>
       <translation>{} (Mappa)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7384"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7389"/>
       <source>Failed to load &apos;{}&apos;.</source>
       <translation>Sikertelen a &apos;%1&apos; betöltése.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7385"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7390"/>
       <source>Input profile &apos;{}&apos; loaded.</source>
       <translation>Bemeneti profil &apos;{}&apos; betöltve.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7386"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7391"/>
       <source>Input profile &apos;{}&apos; saved.</source>
       <translation>Bemeneti profil &apos;{}&apos; mentve.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7387"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7392"/>
       <source>Failed to save input profile &apos;{}&apos;.</source>
       <translation>Bemeneti profil &apos;{}&apos; mentése sikertelen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7388"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7393"/>
       <source>Port {} Controller Type</source>
       <translation>Port {} Játékvezérlő Típus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7389"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7394"/>
       <source>Select Macro {} Binds</source>
       <translation> {} Makró Hozzárendelés Kiválasztása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7391"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7396"/>
       <source>Port {} Device</source>
       <translation>Port {} Eszköz</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7392"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7397"/>
       <source>Port {} Subtype</source>
       <translation>Port {} Altípusa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7393"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7398"/>
       <source>{} unlabelled patch codes will automatically activate.</source>
-      <translation>%1 nem címkézett javítás kód automatikusan betöltődik.</translation>
+      <translation>{} nem címkézett tapasz kód automatikusan betöltődik.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7394"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7399"/>
       <source>{} unlabelled patch codes found but not enabled.</source>
-      <translation>%1 nem címkézett javítás kód található de nincs engedélyezve.</translation>
+      <translation>{} nem címkézett tapasz kód található de nincs engedélyezve.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7395"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7400"/>
       <source>This Session: {}</source>
       <translation>Ez a Munkamenet: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7396"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7401"/>
       <source>All Time: {}</source>
       <translation>Összes Idő: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7397"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7402"/>
       <source>Save Slot {0}</source>
       <translation>Mentési Foglalat {0}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7398"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7403"/>
       <source>Saved {}</source>
       <translation>Mentve {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7399"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7404"/>
       <source>{} does not exist.</source>
       <translation>{} nem létezik.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7400"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7405"/>
       <source>{} deleted.</source>
       <translation>{} törölve.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7401"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7406"/>
       <source>Failed to delete {}.</source>
       <translation>{} törlése sikertelen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7402"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7407"/>
       <source>File: {}</source>
       <translation>Fájl: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7403"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7408"/>
       <source>CRC: {:08X}</source>
       <translation>CRC: {:08X}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7404"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7409"/>
       <source>Time Played: {}</source>
       <translation>Játékidő: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7405"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7410"/>
       <source>Last Played: {}</source>
       <translation>Utoljára Megnyitva: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7406"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7411"/>
       <source>Size: {:.2f} MB</source>
       <translation>Méret: {:.2f} MB</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7407"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7412"/>
       <source>Left: </source>
       <translation>Bal: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7408"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7413"/>
       <source>Top: </source>
       <translation>Fent: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7409"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7414"/>
       <source>Right: </source>
       <translation>Jobb: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7410"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7415"/>
       <source>Bottom: </source>
       <translation>Lent: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7411"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7416"/>
       <source>Summary</source>
       <translation>Összegzés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7412"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7417"/>
       <source>Interface Settings</source>
       <translation>Felület Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7413"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7418"/>
       <source>BIOS Settings</source>
       <translation>BIOS Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7414"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7419"/>
       <source>Emulation Settings</source>
       <translation>Emuláció Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7415"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7420"/>
       <source>Graphics Settings</source>
       <translation>Grafikai Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7416"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7421"/>
       <source>Audio Settings</source>
       <translation>Hang Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7417"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7422"/>
       <source>Memory Card Settings</source>
       <translation>Memória Kártya Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7418"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7423"/>
       <source>Controller Settings</source>
       <translation>Játékvezérlő Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7419"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7424"/>
       <source>Hotkey Settings</source>
       <translation>Gyorsbillentyű Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7420"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7425"/>
       <source>Achievements Settings</source>
       <translation>Trófea Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7421"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7426"/>
       <source>Folder Settings</source>
       <translation>Könyvtár Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7422"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7427"/>
       <source>Advanced Settings</source>
       <translation>Szakértő Beállítások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7423"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7428"/>
       <source>Patches</source>
-      <translation>Javítások</translation>
+      <translation>Tapaszok</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7424"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7429"/>
       <source>Cheats</source>
       <translation>Csalások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7425"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7430"/>
       <source>2% [1 FPS (NTSC) / 1 FPS (PAL)]</source>
       <translation>2% [1 FPS (NTSC) / 1 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7426"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7431"/>
       <source>10% [6 FPS (NTSC) / 5 FPS (PAL)]</source>
       <translation>10% [6 FPS (NTSC) / 5 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7427"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7432"/>
       <source>25% [15 FPS (NTSC) / 12 FPS (PAL)]</source>
       <translation>25% [15 FPS (NTSC) / 12 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7428"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7433"/>
       <source>50% [30 FPS (NTSC) / 25 FPS (PAL)]</source>
       <translation>50% [30 FPS (NTSC) / 25 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7429"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7434"/>
       <source>75% [45 FPS (NTSC) / 37 FPS (PAL)]</source>
       <translation>75% [45 FPS (NTSC) / 37 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7430"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7435"/>
       <source>90% [54 FPS (NTSC) / 45 FPS (PAL)]</source>
       <translation>90% [54 FPS (NTSC) / 45 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7431"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7436"/>
       <source>100% [60 FPS (NTSC) / 50 FPS (PAL)]</source>
       <translation>100% [60 FPS (NTSC) / 50 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7432"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7437"/>
       <source>110% [66 FPS (NTSC) / 55 FPS (PAL)]</source>
       <translation>110% [66 FPS (NTSC) / 55 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7433"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7438"/>
       <source>120% [72 FPS (NTSC) / 60 FPS (PAL)]</source>
       <translation>120% [72 FPS (NTSC) / 60 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7434"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7439"/>
       <source>150% [90 FPS (NTSC) / 75 FPS (PAL)]</source>
       <translation>150% [90 FPS (NTSC) / 75 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7435"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7440"/>
       <source>175% [105 FPS (NTSC) / 87 FPS (PAL)]</source>
       <translation>175% [105 FPS (NTSC) / 87 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7436"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7441"/>
       <source>200% [120 FPS (NTSC) / 100 FPS (PAL)]</source>
       <translation>200% [120 FPS (NTSC) / 100 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7437"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7442"/>
       <source>300% [180 FPS (NTSC) / 150 FPS (PAL)]</source>
       <translation>300% [180 FPS (NTSC) / 150 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7438"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7443"/>
       <source>400% [240 FPS (NTSC) / 200 FPS (PAL)]</source>
       <translation>400% [240 FPS (NTSC) / 200 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7439"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7444"/>
       <source>500% [300 FPS (NTSC) / 250 FPS (PAL)]</source>
       <translation>500% [300 FPS (NTSC) / 250 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7440"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7445"/>
       <source>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</source>
       <translation>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7441"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7446"/>
       <source>50% Speed</source>
       <translation>50% Sebesség</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7442"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7447"/>
       <source>60% Speed</source>
       <translation>60% Sebesség</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7443"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7448"/>
       <source>75% Speed</source>
       <translation>75% Sebesség</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7444"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7449"/>
       <source>100% Speed (Default)</source>
       <translation>100% Sebesség</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7445"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7450"/>
       <source>130% Speed</source>
       <translation>130% Sebesség</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7446"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7451"/>
       <source>180% Speed</source>
       <translation>180% Sebesség</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7447"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7452"/>
       <source>300% Speed</source>
       <translation>300% Sebesség</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7448"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7453"/>
       <source>Normal (Default)</source>
       <translation>Normál (Alapértelmezett)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7449"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7454"/>
       <source>Mild Underclock</source>
       <translation>Alacsony Órajel Csökkentés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7450"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7455"/>
       <source>Moderate Underclock</source>
       <translation>Jelentős Órajel Csökkentés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7451"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7456"/>
       <source>Maximum Underclock</source>
       <translation>Maximum Órajel Csökkentés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7547"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7552"/>
       <source>Disabled</source>
       <translation>Letiltva</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7452"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7457"/>
       <source>0 Frames (Hard Sync)</source>
       <translation>0 Képkocka (Direkt Szinkron)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7453"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7458"/>
       <source>1 Frame</source>
       <translation>1 Képkocka</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7454"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7459"/>
       <source>2 Frames</source>
       <translation>2 Képkocka</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7455"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7460"/>
       <source>3 Frames</source>
       <translation>3 Képkocka</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7456"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7461"/>
       <source>None</source>
       <translation>Nincs</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7457"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7462"/>
       <source>Extra + Preserve Sign</source>
       <translation>Extra + Előjel Megtartás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7458"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7463"/>
       <source>Full</source>
       <translation>Teljes</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7459"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7464"/>
       <source>Extra</source>
       <translation>Extra</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7460"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7465"/>
       <source>Automatic (Default)</source>
       <translation>Automatikus (Alapértelmezett)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7461"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7466"/>
       <source>Direct3D 11</source>
       <translation>Direct3D 11</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7462"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7467"/>
       <source>Direct3D 12</source>
       <translation>Direct3D 12</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7463"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7468"/>
       <source>OpenGL</source>
       <translation>OpenGL</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7464"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7469"/>
       <source>Vulkan</source>
       <translation>Vulkan</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7465"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7470"/>
       <source>Metal</source>
       <translation>Metal</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7466"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7471"/>
       <source>Software</source>
       <translation>Szoftveres</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7467"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7472"/>
       <source>Null</source>
       <translation>Nincs Leképezés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7468"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7473"/>
       <source>Off</source>
       <translation>Ki</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7469"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7474"/>
       <source>Bilinear (Smooth)</source>
       <translation>Bilineáris (Simított)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7470"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7475"/>
       <source>Bilinear (Sharp)</source>
       <translation>Bilineáris (Éles)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7472"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7477"/>
       <source>Weave (Top Field First, Sawtooth)</source>
       <translation>Összefésülés (Felső Mező Először, Fűrészfog)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7473"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7478"/>
       <source>Weave (Bottom Field First, Sawtooth)</source>
       <translation>Összefésülés (Alsó Mező Először, Fűrészfog)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7474"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7479"/>
       <source>Bob (Top Field First)</source>
       <translation>Ugráló (Felső Mező Először)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7475"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7480"/>
       <source>Bob (Bottom Field First)</source>
       <translation>Ugráló (Alsó Mező Először)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7476"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7481"/>
       <source>Blend (Top Field First, Half FPS)</source>
       <translation>Összeolvasztás (Felső Mező Először, Fél FPS)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7477"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7482"/>
       <source>Blend (Bottom Field First, Half FPS)</source>
       <translation>Összeolvasztás (Alsó Mező Először, Fél FPS)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7478"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7483"/>
       <source>Adaptive (Top Field First)</source>
       <translation>Adaptív (Felső Mező Először)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7479"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7484"/>
       <source>Adaptive (Bottom Field First)</source>
       <translation>Összefésülés (Alsó Mező Először)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7480"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7485"/>
       <source>Native (PS2)</source>
       <translation>Natív (PS2)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7497"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7502"/>
       <source>Nearest</source>
       <translation>Legközelebbi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7498"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7503"/>
       <source>Bilinear (Forced)</source>
       <translation>Bilineáris (Kényszerített)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7499"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7504"/>
       <source>Bilinear (PS2)</source>
       <translation>Bilineáris (PS2)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7500"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7505"/>
       <source>Bilinear (Forced excluding sprite)</source>
       <translation>Bilineáris (Kényszerített kivéve 2D spriteok)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7501"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7506"/>
       <source>Off (None)</source>
       <translation>Ki (Nincs)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7502"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7507"/>
       <source>Trilinear (PS2)</source>
       <translation>Trilineáris (PS2)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7503"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7508"/>
       <source>Trilinear (Forced)</source>
       <translation>Trilineáris (Kényszerített)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7504"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7509"/>
       <source>Scaled</source>
       <translation>Skálázott</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7505"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7510"/>
       <source>Unscaled (Default)</source>
       <translation>Skálázatlan (Alapértelmezett)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7507"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7512"/>
       <source>Minimum</source>
       <translation>Minimum</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7508"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7513"/>
       <source>Basic (Recommended)</source>
       <translation>Egyszerű (Ajánlott)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7509"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7514"/>
       <source>Medium</source>
       <translation>Közepes</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7510"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7515"/>
       <source>High</source>
       <translation>Magas</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7511"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7516"/>
       <source>Full (Slow)</source>
       <translation>Teljes (Lassú)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7512"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7517"/>
       <source>Maximum (Very Slow)</source>
       <translation>Maximum (Nagyon Lassú)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7513"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7518"/>
       <source>Off (Default)</source>
       <translation>Ki (Alapértelmezett)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7514"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7519"/>
       <source>2x</source>
       <translation>2x</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7515"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7520"/>
       <source>4x</source>
       <translation>4x</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7516"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7521"/>
       <source>8x</source>
       <translation>8x</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7517"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7522"/>
       <source>16x</source>
       <translation>16x</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7518"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7523"/>
       <source>Partial</source>
       <translation>Részleges</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7519"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7524"/>
       <source>Full (Hash Cache)</source>
       <translation>Teljes (Hash Gyorsítótár)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7520"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7525"/>
       <source>Force Disabled</source>
       <translation>Kényszerített Letiltás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7521"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7526"/>
       <source>Force Enabled</source>
       <translation>Kényszerített Engedélyezés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7522"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7527"/>
       <source>Accurate (Recommended)</source>
       <translation>Precíz (Ajánlott)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7523"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7528"/>
       <source>Disable Readbacks (Synchronize GS Thread)</source>
       <translation>Visszaolvasás Letiltása (GS Szál Szinkronizálása)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7524"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7529"/>
       <source>Unsynchronized (Non-Deterministic)</source>
       <translation>Nem Szinkronizált</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7525"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7530"/>
       <source>Disabled (Ignore Transfers)</source>
       <translation>Letiltva (Átvitel Figyelmen Kívül Hagyása)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7526"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7531"/>
       <source>Screen Resolution</source>
       <translation>Képernyőfelbontás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7527"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7532"/>
       <source>Internal Resolution (Aspect Uncorrected)</source>
       <translation>Leképezési Felbontás (Arány Nem Javított)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7611"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7616"/>
       <source>Load/Save State</source>
       <translation>Állás Mentése/Betöltése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7617"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7622"/>
       <source>WARNING: Memory Card Busy</source>
       <translation>FIGYELEM: Memóriakártya Használatban</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7624"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7629"/>
       <source>Cannot show details for games which were not scanned in the game list.</source>
       <translation>Nem lehet olyan játékok részleteit megjeleníteni, amik nincsenek benne a játék listában.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7631"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7636"/>
       <source>Pause On Controller Disconnection</source>
       <translation>Szünet a Játékvezérlő Lecsatlakozása Esetén</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7680"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7641"/>
+      <source>Use Save State Selector</source>
+      <translation>Állásmentés Választó Használata</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7686"/>
       <source>SDL DualSense Player LED</source>
       <translation>SDL DualSense Fénysáv</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7693"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7699"/>
       <source>Press To Toggle</source>
       <translation>Lenyomás az Átkapcsoláshoz</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7695"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7701"/>
       <source>Deadzone</source>
       <translation>Holttér</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7739"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7745"/>
       <source>Full Boot</source>
       <translation>Teljes Indítás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7760"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7766"/>
       <source>Achievement Notifications</source>
       <translation>Trófea Értesítések</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7761"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7767"/>
       <source>Leaderboard Notifications</source>
       <translation>Ranglista Értesítések</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7763"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7769"/>
       <source>Enable In-Game Overlays</source>
       <translation>Játékon Belüli Átfedések Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7764"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7770"/>
       <source>Encore Mode</source>
       <translation>Ráadás Mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7765"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7771"/>
       <source>Spectator Mode</source>
       <translation>Megfigyelő Mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7528"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7533"/>
       <source>PNG</source>
       <translation>PNG</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6949"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6953"/>
       <source>-</source>
       <translation>-</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7106"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7111"/>
       <source>Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU.</source>
       <translation>A 4-bites és 8-bites képpuffert a CPU-n alakítja át a GPU helyett.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7219"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7224"/>
       <source>Removes the current card from the slot.</source>
       <translation>Kiadja a lejenlegi kártyát a foglalatból.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7235"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7240"/>
       <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
       <translation>Meghatározza, hogy a makró milyen gyakorisággal kapcsolja be és ki a gombokat (más néven automatikus tűz).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7390"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7395"/>
       <source>{} Frames</source>
       <translation>{} Képkocka</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7471"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7476"/>
       <source>No Deinterlacing</source>
       <translation>Nincs Deinterlace</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7506"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7511"/>
       <source>Force 32bit</source>
       <translation>32bit Kényszerítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7529"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7534"/>
       <source>JPEG</source>
       <translation>JPEG</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7531"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7536"/>
       <source>0 (Disabled)</source>
       <translation>0 (Letiltva)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7532"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7537"/>
       <source>1 (64 Max Width)</source>
       <translation>1 (64 Max Széllesség)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7533"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7538"/>
       <source>2 (128 Max Width)</source>
       <translation>2 (128 Max Széllesség)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7534"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7539"/>
       <source>3 (192 Max Width)</source>
       <translation>3 (192 Max Széllesség)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7535"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7540"/>
       <source>4 (256 Max Width)</source>
       <translation>4 (256 Max Széllesség)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7536"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7541"/>
       <source>5 (320 Max Width)</source>
       <translation>5 (320 Max Széllesség)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7537"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7542"/>
       <source>6 (384 Max Width)</source>
       <translation>6 (384 Max Széllesség)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7538"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7543"/>
       <source>7 (448 Max Width)</source>
       <translation>7 (448 Max Széllesség)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7539"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7544"/>
       <source>8 (512 Max Width)</source>
       <translation>8 (512 Max Széllesség)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7540"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7545"/>
       <source>9 (576 Max Width)</source>
       <translation>9 (576 Max Széllesség)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7541"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7546"/>
       <source>10 (640 Max Width)</source>
       <translation>10 (640 Max Széllesség)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7542"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7547"/>
       <source>Sprites Only</source>
       <translation>Csak Spriteok</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7543"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7548"/>
       <source>Sprites/Triangles</source>
       <translation>Spriteok/Háromszögek</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7544"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7549"/>
       <source>Blended Sprites/Triangles</source>
       <translation>Összeolvasztott Spriteok/Háromszögek</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7545"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7550"/>
       <source>1 (Normal)</source>
       <translation>1 (Alap)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7546"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7551"/>
       <source>2 (Aggressive)</source>
       <translation>2 (Agresszív)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7548"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7553"/>
       <source>Inside Target</source>
       <translation>A Célon Belül</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7549"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7554"/>
       <source>Merge Targets</source>
       <translation>Célok Összeolvasztása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7550"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7555"/>
       <source>Normal (Vertex)</source>
       <translation>Normális (Vertex)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7551"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7556"/>
       <source>Special (Texture)</source>
       <translation>Speciális (Textúra)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7552"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7557"/>
       <source>Special (Texture - Aggressive)</source>
       <translation>Speciális (Textúra - Agresszív)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7553"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7558"/>
       <source>Align To Native</source>
       <translation>Natívhoz Igazítás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7555"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7560"/>
       <source>Half</source>
       <translation>Fél</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7556"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7561"/>
       <source>Force Bilinear</source>
       <translation>Bilineáris Kényszerítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7557"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7562"/>
       <source>Force Nearest</source>
       <translation>Legközelebbi Kényszerítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7558"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7563"/>
       <source>Disabled (Default)</source>
       <translation>Letiltott (Alapértelmezett)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7559"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7564"/>
       <source>Enabled (Sprites Only)</source>
       <translation>Engedélyezve (Csak Spriteok)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7560"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7565"/>
       <source>Enabled (All Primitives)</source>
       <translation>Engedélyezve (Minden Primitív)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7561"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7566"/>
       <source>None (Default)</source>
       <translation>Nincs (Alapértelmezett)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7562"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7567"/>
       <source>Sharpen Only (Internal Resolution)</source>
       <translation>Csak Élesítés (Leképezési Felbontás)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7563"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7568"/>
       <source>Sharpen and Resize (Display Resolution)</source>
       <translation>Élesítés és Méretezés (Kijelző Felbontás)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7564"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7569"/>
       <source>Scanline Filter</source>
       <translation>Képsor Filter</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7565"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7570"/>
       <source>Diagonal Filter</source>
       <translation>Diagonális Filter</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7566"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7571"/>
       <source>Triangular Filter</source>
       <translation>Háromszöges Filter</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7567"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7572"/>
       <source>Wave Filter</source>
       <translation>Hullám Filter</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7568"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7573"/>
       <source>Lottes CRT</source>
       <translation>Lottes Képcső</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7569"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7574"/>
       <source>4xRGSS</source>
       <translation>4xRGSS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7570"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7575"/>
       <source>NxAGSS</source>
       <translation>NxAGSS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7571"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7576"/>
       <source>Uncompressed</source>
       <translation>Tömörítetlen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7572"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7577"/>
       <source>LZMA (xz)</source>
       <translation>LZMA (xz)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7573"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7578"/>
       <source>Zstandard (zst)</source>
       <translation>Zstandard (zst)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7574"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7579"/>
       <source>PS2 (8MB)</source>
       <translation>PS2 (8MB)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7575"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7580"/>
       <source>PS2 (16MB)</source>
       <translation>PS2 (16MB)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7576"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
       <source>PS2 (32MB)</source>
       <translation>PS2 (32MB)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7577"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7582"/>
       <source>PS2 (64MB)</source>
       <translation>PS2 (64MB)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7578"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7583"/>
       <source>PS1</source>
       <translation>PS1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7579"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7584"/>
       <source>Negative</source>
       <translation>Negatív</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7580"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7585"/>
       <source>Positive</source>
       <translation>Pozitív</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7586"/>
       <source>Chop/Zero (Default)</source>
       <translation>Levágás/Nulla (Alapértelmezett)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7588"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7593"/>
       <source>Game Grid</source>
       <translation>Játék Négyzetrács</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6929"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6933"/>
       <source>Game List</source>
       <translation>Játék Lista</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7342"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7347"/>
       <source>Game List Settings</source>
-      <translation>Játék Lista Beállitásai</translation>
+      <translation>Játék Lista Beállításai</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7589"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7594"/>
       <source>Type</source>
       <translation>Típus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7590"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7595"/>
       <source>Serial</source>
       <translation>Sorozatszám</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7591"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7596"/>
       <source>Title</source>
       <translation>Cím</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7592"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7597"/>
       <source>File Title</source>
       <translation>Fájl Név</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7593"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7598"/>
       <source>CRC</source>
       <translation>CRC</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7594"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7599"/>
       <source>Time Played</source>
       <translation>Játékidő</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7595"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7600"/>
       <source>Last Played</source>
       <translation>Utoljára Megnyitva</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7596"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7601"/>
       <source>Size</source>
       <translation>Méret</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7615"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7620"/>
       <source>Select Disc Image</source>
       <translation>Lemez Képfájl Kiválasztása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7616"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7621"/>
       <source>Select Disc Drive</source>
       <translation>Lemez Meghajtó Kiválasztása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6937"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6941"/>
       <source>Start File</source>
       <translation>Fájl Indítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6941"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6945"/>
       <source>Start BIOS</source>
       <translation>Bios Indítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6939"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6943"/>
       <source>Start Disc</source>
       <translation>Lemez Indítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6939"/>
       <source>Exit</source>
       <translation>Kilépés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7618"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7623"/>
       <source>Set Input Binding</source>
       <translation>Bemeneti Hozzárendelés Kiválasztása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7619"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7624"/>
       <source>Region</source>
       <translation>Régió</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7620"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7625"/>
       <source>Compatibility Rating</source>
       <translation>Kompatibilitási Szint</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7621"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7626"/>
       <source>Path</source>
       <translation>Elérési Út</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7622"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7627"/>
       <source>Disc Path</source>
       <translation>Lemez Útvonal</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7623"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7628"/>
       <source>Select Disc Path</source>
       <translation>Lemez Meghajtó Kiválasztása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7625"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7630"/>
       <source>Copy Settings</source>
       <translation>Beállítások Másolása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7626"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7631"/>
       <source>Clear Settings</source>
-      <translation>Beállítások Elvávolítása</translation>
+      <translation>Beállítások Eltávolítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7627"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7632"/>
       <source>Inhibit Screensaver</source>
       <translation>Képernyőkímélő Megakadályozása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7628"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7633"/>
       <source>Enable Discord Presence</source>
       <translation>Discord Jelenlét Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7629"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7634"/>
       <source>Pause On Start</source>
       <translation>Szünet Indításnál</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7630"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7635"/>
       <source>Pause On Focus Loss</source>
       <translation>Szünet Fókusz Elvesztése Esetén</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7632"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7637"/>
       <source>Pause On Menu</source>
       <translation>Szünet a Menüben</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7633"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7638"/>
       <source>Confirm Shutdown</source>
       <translation>Bezárás Megerősítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7634"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7639"/>
       <source>Save State On Shutdown</source>
       <translation>Állás Mentése Leállítás Esetén</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7636"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7642"/>
       <source>Use Light Theme</source>
       <translation>Világos Téma Használata</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7637"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7643"/>
       <source>Start Fullscreen</source>
       <translation>Indítás Teljes Képernyőn</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7638"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7644"/>
       <source>Double-Click Toggles Fullscreen</source>
-      <translation>A Dupla Kattintás Bekapcsolja a Teljes Képernyőt</translation>
+      <translation>Dupla Kattintásra Teljes Képernyő</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7639"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7645"/>
       <source>Hide Cursor In Fullscreen</source>
       <translation>Kurzor Elrejtése Teljes Képernyőn</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7640"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7646"/>
       <source>OSD Scale</source>
       <translation>Képernyőmenü Mérete</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7641"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7647"/>
       <source>Show Messages</source>
       <translation>Üzenetek Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7643"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7649"/>
       <source>Show Speed</source>
-      <translation>Sebesség Megjelenítése.</translation>
+      <translation>Sebesség Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7644"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7650"/>
       <source>Show FPS</source>
       <translation>Képkocka Számláló Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7645"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7651"/>
       <source>Show CPU Usage</source>
       <translation>CPU Használat Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7646"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7652"/>
       <source>Show GPU Usage</source>
       <translation>GPU Használat Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7647"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7653"/>
       <source>Show Resolution</source>
       <translation>Felbontás Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7648"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7654"/>
       <source>Show GS Statistics</source>
       <translation>GS Statisztika Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7649"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7655"/>
       <source>Show Status Indicators</source>
       <translation>Státusz Indikátorok Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7652"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7658"/>
       <source>Show Settings</source>
       <translation>Beállítások Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7653"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7659"/>
       <source>Show Inputs</source>
       <translation>Bemenet Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7656"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7662"/>
       <source>Warn About Unsafe Settings</source>
       <translation>Figyelmeztetés a Nem Biztonságos Beállításokról</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7657"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7663"/>
       <source>Reset Settings</source>
       <translation>Beállítások Visszaállítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7658"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7664"/>
       <source>Change Search Directory</source>
       <translation>Játék Könyvtár Kiválasztása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7659"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7665"/>
       <source>Fast Boot</source>
       <translation>Gyors Indítás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7663"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7669"/>
       <source>Output Volume</source>
       <translation>Kimeneti Hangerő</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7673"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7679"/>
       <source>Memory Card Directory</source>
       <translation>Memória Kártyák Mappája</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7674"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7680"/>
       <source>Folder Memory Card Filter</source>
       <translation>Mappa Memória Kártya Szűrő</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7677"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7683"/>
       <source>Create</source>
       <translation>Létrehozás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7599"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7604"/>
       <source>Cancel</source>
       <translation>Mégse</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7675"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7681"/>
       <source>Load Profile</source>
       <translation>Profil Betöltése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7676"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7682"/>
       <source>Save Profile</source>
       <translation>Profil Mentése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7678"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7684"/>
       <source>Enable SDL Input Source</source>
       <translation>SDL Bemenetforrás Használata</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7679"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7685"/>
       <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
       <translation>SDL DualShock 4 / DualSense Bővített Mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7681"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7687"/>
       <source>SDL Raw Input</source>
       <translation>SDL Nyers Bemenet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7682"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7688"/>
       <source>Enable XInput Input Source</source>
       <translation>XInput Bemenetforrás Használata</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7683"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7689"/>
       <source>Enable Console Port 1 Multitap</source>
       <translation>Port 1 Multitap Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7684"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7690"/>
       <source>Enable Console Port 2 Multitap</source>
       <translation>Port 2 Multitap Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7685"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7691"/>
       <source>Controller Port {}{}</source>
       <translation>Játékvezérlő Port {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7686"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7692"/>
       <source>Controller Port {}</source>
       <translation>Játékvezérlő Port {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7687"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7693"/>
       <source>Controller Type</source>
       <translation>Játékvezérlő Típus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7688"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7694"/>
       <source>Automatic Mapping</source>
       <translation>Automatikus Hozzárendelés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7689"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7695"/>
       <source>Controller Port {}{} Macros</source>
       <translation>Játékvezérlő Port {}{} Makrók</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7690"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7696"/>
       <source>Controller Port {} Macros</source>
       <translation>Játékvezérlő Port {} Makrók</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7691"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7697"/>
       <source>Macro Button {}</source>
       <translation>Makró Gomb {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7692"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7698"/>
       <source>Buttons</source>
       <translation>Gombok</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7608"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7613"/>
       <source>Frequency</source>
       <translation>Gyakoriság</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7694"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7700"/>
       <source>Pressure</source>
       <translation>Nyomás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7696"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7702"/>
       <source>Controller Port {}{} Settings</source>
       <translation>Játékvezérlő Port {}{} Beállításai</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7697"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7703"/>
       <source>Controller Port {} Settings</source>
       <translation>Játékvezérlő Port {} Beállításai</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7698"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7704"/>
       <source>USB Port {}</source>
       <translation>USB Port {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7699"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7705"/>
       <source>Device Type</source>
       <translation>Eszköz Típusa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7700"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7706"/>
       <source>Device Subtype</source>
       <translation>Eszköz Altípusa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7701"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7707"/>
       <source>{} Bindings</source>
       <translation>{} Gomb Kiosztása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7702"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7708"/>
       <source>Clear Bindings</source>
       <translation>Hozzárendelések Elvávolítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7703"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7709"/>
       <source>{} Settings</source>
       <translation>{} Beállításai</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7704"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7710"/>
       <source>Cache Directory</source>
       <translation>Gyorsítótár Elérési Útvonala</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7705"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7711"/>
       <source>Covers Directory</source>
       <translation>Borítok Elérési Útvonala</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7706"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7712"/>
       <source>Snapshots Directory</source>
       <translation>Képernyőképek Könyvtár</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7707"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7713"/>
       <source>Save States Directory</source>
       <translation>Állásmentések Mappája</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7708"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7714"/>
       <source>Game Settings Directory</source>
       <translation>Játék Beállítások Mappája</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7709"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7715"/>
       <source>Input Profile Directory</source>
       <translation>Bemeneti Profilok Mappája</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7710"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7716"/>
       <source>Cheats Directory</source>
       <translation>Csalások Elérési Útvonala</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7711"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7717"/>
       <source>Patches Directory</source>
-      <translation>Javítások Mappája</translation>
+      <translation>Tapaszok Mappája</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7712"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7718"/>
       <source>Texture Replacements Directory</source>
       <translation>Cseretextúrák Mappája</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7713"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7719"/>
       <source>Video Dumping Directory</source>
       <translation>Videó Mentések Mappája</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7722"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7728"/>
       <source>Resume Game</source>
       <translation>Játék Folytatása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7723"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7729"/>
       <source>Toggle Frame Limit</source>
       <translation>Képkocka Limit Ki/Be</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7724"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7730"/>
       <source>Game Properties</source>
       <translation>Játék Tulajdonságai</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7725"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7731"/>
       <source>Achievements</source>
       <translation>Trófeák</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7726"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7732"/>
       <source>Save Screenshot</source>
       <translation>Képernyőkép Készítése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7727"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7733"/>
       <source>Switch To Software Renderer</source>
       <translation>Váltás Szoftveres Leképezésre</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7728"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7734"/>
       <source>Switch To Hardware Renderer</source>
       <translation>Váltás Hardveres Leképezésre</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7729"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7735"/>
       <source>Change Disc</source>
       <translation>Lemez Cseréje</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7730"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7736"/>
       <source>Close Game</source>
       <translation>Játék Bezárása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7731"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7737"/>
       <source>Exit Without Saving</source>
       <translation>Kilépés Mentés Nélkül</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7732"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7738"/>
       <source>Back To Pause Menu</source>
       <translation>Vissza A Szünet Menübe</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7733"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7739"/>
       <source>Exit And Save State</source>
       <translation>Kilépés És Állás Mentése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7734"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7740"/>
       <source>Leaderboards</source>
       <translation>Ranglisták</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7735"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7741"/>
       <source>Delete Save</source>
       <translation>Mentés Törlése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7736"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7742"/>
       <source>Close Menu</source>
       <translation>Menü Bezárása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7738"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7744"/>
       <source>Delete State</source>
       <translation>Állás Törlése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7737"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7743"/>
       <source>Default Boot</source>
       <translation>Normál Indítás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7740"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7746"/>
       <source>Reset Play Time</source>
-      <translation>Játék Idő Nullázása</translation>
+      <translation>Játékidő Nullázása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7741"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7747"/>
       <source>Add Search Directory</source>
       <translation>Keresendő Mappa Hozzáadása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7742"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7748"/>
       <source>Open in File Browser</source>
       <translation>Megnyitás Böngészőben</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7743"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7749"/>
       <source>Disable Subdirectory Scanning</source>
       <translation>Almappák Keresésének Letiltása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7744"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7750"/>
       <source>Enable Subdirectory Scanning</source>
       <translation>Almappák Keresésének Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7745"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7751"/>
       <source>Remove From List</source>
       <translation>Eltávolítás a Listáról</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7746"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7752"/>
       <source>Default View</source>
       <translation>Alapértelmezett Nézet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7747"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7753"/>
       <source>Sort By</source>
       <translation>Rendezés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7748"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7754"/>
       <source>Sort Reversed</source>
       <translation>Fordított Rendezés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7750"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7756"/>
       <source>Scan For New Games</source>
       <translation>Új Játékok Keresése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7751"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7757"/>
       <source>Rescan All Games</source>
       <translation>Minden Játék Újrakeresése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7752"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7758"/>
       <source>Website</source>
       <translation>Honlap</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7753"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7759"/>
       <source>Support Forums</source>
       <translation>Közösségi fórum</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7754"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7760"/>
       <source>GitHub Repository</source>
       <translation>GitHub Repó</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7755"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7761"/>
       <source>License</source>
-      <translation>Licensz</translation>
+      <translation>Licenc</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7756"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7762"/>
       <source>Close</source>
       <translation>Bezárás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7757"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7763"/>
       <source>RAIntegration is being used instead of the built-in achievements implementation.</source>
       <translation>RAIntegration lesz használatban a beépített trófea megoldás helyett.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7758"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7764"/>
       <source>Enable Achievements</source>
       <translation>Trófeák Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7759"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7765"/>
       <source>Hardcore Mode</source>
       <translation>Hardcore mód</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7762"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7768"/>
       <source>Sound Effects</source>
       <translation>Hanghatások</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7766"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7772"/>
       <source>Test Unofficial Achievements</source>
       <translation>Nem Hivatalos Trófeák Kipróbálása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7767"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7773"/>
       <source>Username: {}</source>
       <translation>Felhasználónév: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7768"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7774"/>
       <source>Login token generated on {}</source>
       <translation>Bejelentkezési azonosító létrehozva {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7769"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7775"/>
       <source>Logout</source>
       <translation>Kijelentkezés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7770"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7776"/>
       <source>Not Logged In</source>
       <translation>Nincs Bejelentkezve</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7771"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7777"/>
       <source>Login</source>
       <translation>Bejelentkezés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7772"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7778"/>
       <source>Game: {0} ({1})</source>
       <translation>Játék: {0} ({1})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7773"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7779"/>
       <source>Rich presence inactive or unsupported.</source>
       <translation>Gazdag jelenlét inaktív vagy nem támogatott.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7774"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7780"/>
       <source>Game not loaded or no RetroAchievements available.</source>
       <translation>Nincs játék betöltve vagy nem elérhető a RetroAchievements adatbázisban.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7775"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7781"/>
       <source>Card Enabled</source>
       <translation>Kártya Engedélyezve</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7776"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7782"/>
       <source>Card Name</source>
       <translation>Kártya Neve</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7777"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7783"/>
       <source>Eject Card</source>
       <translation>Kártya Kiadása</translation>
     </message>
@@ -10218,7 +10277,8 @@ A Vulkan leképező használatához el kell távolítani ezt az alkalmazáscsoma
        You should update all graphics drivers in your system, including any integrated GPUs
        to use the Vulkan renderer.</source>
       <translation>A Vulkan leképező lett automatikusan kiválasztva, azonban nem található kompatibilis eszköz.
-       Próbáld meg frissíteni a videokártya illesztőprogramot, beleérve az integrált kártyáét is, hogy használhasd a Vulkan leképezőt.</translation>
+       Próbáld meg frissíteni a videokártya illesztőprogramot, beleérve az integrált kártyáét is,
+        hogy használhasd a Vulkan leképezőt.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/MTGS.cpp" line="997"/>
@@ -10358,7 +10418,7 @@ További információkért kérjük, olvasd el a hivatalos dokumentációnkat.</
     <message>
       <location filename="../Settings/GameCheatSettingsWidget.ui" line="79"/>
       <source>Disable All</source>
-      <translation>Összes Letíltása</translation>
+      <translation>Összes Letiltása</translation>
     </message>
     <message>
       <location filename="../Settings/GameCheatSettingsWidget.ui" line="86"/>
@@ -10383,12 +10443,12 @@ További információkért kérjük, olvasd el a hivatalos dokumentációnkat.</
     <message>
       <location filename="../Settings/GameCheatSettingsWidget.cpp" line="61"/>
       <source>Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</source>
-      <translation>Bekapcsolja a javítás fájlok keresését a játék összes CRC-jéhez. Ezzel minden elérhető javítás a játék sorozatszámához különböző CRC-kel is betöltődik.</translation>
+      <translation>Bekapcsolja a tapasz fájlok keresését a játék összes CRC-jéhez. Ezzel minden elérhető tapasz a játék sorozatszámához különböző CRC-kel is betöltődik.</translation>
     </message>
     <message>
       <location filename="../Settings/GameCheatSettingsWidget.cpp" line="234"/>
       <source>%1 unlabelled patch codes will automatically activate.</source>
-      <translation>%1 nem címkézett javítás kód automatikusan betöltődik.</translation>
+      <translation>%1 nem címkézett tapasz kód automatikusan betöltődik.</translation>
     </message>
   </context>
   <context>
@@ -10636,7 +10696,7 @@ grafikai minőséget, de ez megnöveli a rendszerkövetelményeket.</translation
     <message>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="46"/>
       <source>Known to affect following games: Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines.</source>
-      <translation>A következő játékokra van hatással: Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines</translation>
+      <translation>A következő játékokra van hatással: Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines.</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="47"/>
@@ -10661,7 +10721,7 @@ grafikai minőséget, de ez megnöveli a rendszerkövetelményeket.</translation
     <message>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="51"/>
       <source>Avoids constant recompilation in some games. Known to affect the following games: Scarface The World is Yours, Crash Tag Team Racing.</source>
-      <translation>Engedélyezi a folyamatos újrafordítást bizonyos játékokban. Ismerten hatással van az alábbi játékokra:Scarface The World is Yours, Crash Tag Team Racing.</translation>
+      <translation>Elkerüli a folyamatos újrafordítást bizonyos játékokban. Ismerten hatással van az alábbi játékokra: Scarface The World is Yours, Crash Tag Team Racing.</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="52"/>
@@ -10671,12 +10731,12 @@ grafikai minőséget, de ez megnöveli a rendszerkövetelményeket.</translation
     <message>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="53"/>
       <source>Run behind. To avoid sync problems when reading or writing VU registers.</source>
-      <translation>Lemaradás. Hogy elkerülje a problémákat a VU regiszterek írásánál vagy olvasásánál.</translation>
+      <translation>Késleltetés. Hogy elkerülje a problémákat a VU regiszterek írásánál vagy olvasásánál.</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="54"/>
       <source>To check for possible float overflows (Superman Returns).</source>
-      <translation>Ellenőrzi a lehetséges lebegőpontos túlcsordulást (Superman Returns)</translation>
+      <translation>Ellenőrzi a lehetséges lebegőpontos túlcsordulást (Superman Returns).</translation>
     </message>
     <message>
       <location filename="../Settings/GameFixSettingsWidget.cpp" line="55"/>
@@ -10850,7 +10910,7 @@ grafikai minőséget, de ez megnöveli a rendszerkövetelményeket.</translation
     <message>
       <location filename="../GameList/GameListModel.cpp" line="602"/>
       <source>Time Played</source>
-      <translation>Játék Idő</translation>
+      <translation>Játékidő</translation>
     </message>
     <message>
       <location filename="../GameList/GameListModel.cpp" line="603"/>
@@ -10910,7 +10970,7 @@ grafikai minőséget, de ez megnöveli a rendszerkövetelményeket.</translation
     <message>
       <location filename="../Settings/GameListSettingsWidget.ui" line="115"/>
       <source>Excluded Paths (will not be scanned)</source>
-      <translation>Kihagyott Útvonalak (nem lesz itt keresve)</translation>
+      <translation>Kihagyott Útvonalak (itt nem lesz keresve)</translation>
     </message>
     <message>
       <location filename="../Settings/GameListSettingsWidget.ui" line="141"/>
@@ -11027,7 +11087,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
       <location filename="../Settings/GamePatchDetailsWidget.ui" line="37"/>
       <location filename="../Settings/PatchDetailsWidget.ui" line="25"/>
       <source>Patch Title</source>
-      <translation>Javítás Neve</translation>
+      <translation>Tapasz Neve</translation>
     </message>
     <message>
       <location filename="../Settings/GamePatchDetailsWidget.ui" line="62"/>
@@ -11039,7 +11099,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
       <location filename="../Settings/GamePatchDetailsWidget.ui" line="73"/>
       <location filename="../Settings/PatchDetailsWidget.ui" line="58"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Author: &lt;/span&gt;Patch Author&lt;/p&gt;&lt;p&gt;Description would go here&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Készítő: &lt;/span&gt;Javítás Készítője&lt;/p&gt;&lt;p&gt;Ide kerül a leírás&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Készítő: &lt;/span&gt;Tapasz Készítője&lt;/p&gt;&lt;p&gt;Ide kerül a leírás&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/GamePatchSettingsWidget.cpp" line="28"/>
@@ -11054,7 +11114,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
     <message>
       <location filename="../Settings/GamePatchSettingsWidget.cpp" line="30"/>
       <source>No description provided.</source>
-      <translation>Nincs leírás megadva</translation>
+      <translation>Nincs leírás megadva.</translation>
     </message>
   </context>
   <context>
@@ -11062,42 +11122,52 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
     <message>
       <location filename="../Settings/GamePatchSettingsWidget.ui" line="29"/>
       <source>Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games. Use patches at your own risk, the PCSX2 team will provide no support for users who have enabled game patches.</source>
-      <translation>A javítások engedélyezése nem várt működést eredményezhet, összeomlást, nem folytatható játékot, tönkrement mentéseket. Csak saját felelősségre használj javításokat, a PCSX2 csapat nem tud támogatást nyújtani azoknak a felhasználóknak, akik javításokat használnak.</translation>
+      <translation>A tapaszok engedélyezése nem várt működést eredményezhet, összeomlást, nem folytatható játékot, tönkrement mentéseket. Csak saját felelősségre használj tapaszokat, a PCSX2 csapat nem tud támogatást nyújtani azoknak a felhasználóknak, akik tapaszokat használnak.</translation>
     </message>
     <message>
       <location filename="../Settings/GamePatchSettingsWidget.ui" line="39"/>
       <source>Any patches bundled with PCSX2 for this game will be disabled since you have unlabeled patches loaded.</source>
-      <translation>Minden a PCSX2-be épített javítás ehhez a játékhoz letiltódik, mert nem címkézett javításokat töltöttél be.</translation>
+      <translation>Minden a PCSX2-be épített tapasz ehhez a játékhoz letiltódik, mert nem címkézett tapaszokat töltöttél be.</translation>
     </message>
     <message>
-      <location filename="../Settings/GamePatchSettingsWidget.ui" line="61"/>
+      <location filename="../Settings/GamePatchSettingsWidget.ui" line="49"/>
+      <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Widescreen patches are currently &lt;span style=&quot; font-weight:600;&quot;&gt;ENABLED&lt;/span&gt; globally.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A szélesvásznú tapaszok jelenleg &lt;span style=&quot; font-weight:600;&quot;&gt;ENGEDÉLYEZVE&lt;/span&gt; vannak globálisan.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GamePatchSettingsWidget.ui" line="59"/>
+      <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;No-Interlacing patches are currently &lt;span style=&quot; font-weight:600;&quot;&gt;ENABLED&lt;/span&gt; globally.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A Váltottsorosságot megszüntető tapaszok jelenleg &lt;span style=&quot; font-weight:600;&quot;&gt;ENGEDÉLYEZVE&lt;/span&gt; vannak globálisan.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GamePatchSettingsWidget.ui" line="84"/>
       <source>All CRCs</source>
       <translation>Minden CRC</translation>
     </message>
     <message>
-      <location filename="../Settings/GamePatchSettingsWidget.ui" line="84"/>
+      <location filename="../Settings/GamePatchSettingsWidget.ui" line="107"/>
       <source>Reload Patches</source>
-      <translation>Javítások Újratöltése</translation>
+      <translation>Tapaszok Újratöltése</translation>
     </message>
     <message>
-      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="66"/>
+      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="85"/>
       <source>Show Patches For All CRCs</source>
-      <translation>Javítások Megjelenítése Minden CRC-hez</translation>
+      <translation>Tapaszok Megjelenítése Minden CRC-hez</translation>
     </message>
     <message>
-      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="66"/>
+      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="85"/>
       <source>Checked</source>
       <translation>Bejelölve</translation>
     </message>
     <message>
-      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="67"/>
+      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="86"/>
       <source>Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</source>
-      <translation>Bekapcsolja a javítás fájlok keresését a játék összes CRC-jéhez. Ezzel minden elérhető javítás a játék sorozatszámához különböző CRC-kel is betöltődik.</translation>
+      <translation>Bekapcsolja a tapasz fájlok keresését a játék összes CRC-jéhez. Ezzel minden elérhető tapasz a játék sorozatszámához különböző CRC-kel is betöltődik.</translation>
     </message>
     <message>
-      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="131"/>
+      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="184"/>
       <source>There are no patches available for this game.</source>
-      <translation>Nincs elérhető javítás ehhez a játékhoz.</translation>
+      <translation>Nincs elérhető tapasz ehhez a játékhoz.</translation>
     </message>
   </context>
   <context>
@@ -11414,7 +11484,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
     <message>
       <location filename="../Settings/GameSummaryWidget.cpp" line="178"/>
       <source>Game is not a CD/DVD.</source>
-      <translation>A játék nem egy CD/DVD</translation>
+      <translation>A játék nem egy CD/DVD.</translation>
     </message>
     <message>
       <location filename="../Settings/GameSummaryWidget.cpp" line="185"/>
@@ -11486,7 +11556,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
     <message>
       <location filename="../Settings/GameSummaryWidget.cpp" line="266"/>
       <source>Cannot verify image while a game is running.</source>
-      <translation>Nem ellenőrihető a képfájl ha a játék fut.</translation>
+      <translation>Nem ellenőrizhető a képfájl ha a játék fut.</translation>
     </message>
     <message>
       <location filename="../Settings/GameSummaryWidget.cpp" line="296"/>
@@ -11509,7 +11579,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
     <message>
       <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="796"/>
       <source>unknown function</source>
-      <translation>Ismeretlen függvény</translation>
+      <translation>ismeretlen függvény</translation>
     </message>
   </context>
   <context>
@@ -11571,11 +11641,11 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="125"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1038"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1100"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="47"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="453"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="526"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="634"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="637"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="48"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="494"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="567"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="675"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
       <source>Off (Default)</source>
       <translation>Ki (Alapértelmezett)</translation>
     </message>
@@ -11585,10 +11655,10 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1126"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="2184"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="2245"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="22"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="468"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="520"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="819"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="23"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="509"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="561"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="860"/>
       <source>Automatic (Default)</source>
       <translation>Automatikus (Alapértelmezett)</translation>
     </message>
@@ -11655,7 +11725,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="227"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="440"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
       <source>Bilinear (Smooth)</source>
       <extracomment>Smooth: Refers to the texture clarity.</extracomment>
       <translation>Bilineáris (Simított)</translation>
@@ -11721,29 +11791,19 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="448"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="485"/>
       <source>Screen Offsets</source>
       <translation>Képernyő Eltolás Értékek</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="455"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="449"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="490"/>
       <source>Show Overscan</source>
       <translation>Túlpásztázási Terület Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="431"/>
-      <source>Enable Widescreen Patches</source>
-      <translation>Szélesvásznú Javítások Engedélyezése</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="434"/>
-      <source>Enable No-Interlacing Patches</source>
-      <translation>Váltott-soros Megjelenítést Tiltó Javítások Engedélyezése</translation>
-    </message>
-    <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="431"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="498"/>
       <source>Anti-Blur</source>
       <translation>Elmosódottság Csökkentése</translation>
     </message>
@@ -11754,7 +11814,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="441"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="437"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
       <source>Disable Interlace Offset</source>
       <translation>Váltott-Sor Eltolás Letiltása</translation>
     </message>
@@ -11764,18 +11824,18 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>Képernyő Mentés Mérete:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="470"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="511"/>
       <source>Screen Resolution</source>
       <translation>Képernyő Felbontás</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="504"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="545"/>
       <source>Internal Resolution</source>
-      <translation>Renderelési Felbontás</translation>
+      <translation>Belső Felbontás</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="269"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="474"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="515"/>
       <source>PNG</source>
       <translation>PNG</translation>
     </message>
@@ -11793,12 +11853,12 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="465"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="644"/>
       <source>Rendering</source>
-      <translation>Renderelés</translation>
+      <translation>Leképezés</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="471"/>
       <source>Internal Resolution:</source>
-      <translation>Renderelési Felbontás:</translation>
+      <translation>Belső Felbontás:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="561"/>
@@ -11827,7 +11887,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="499"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="680"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="513"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="554"/>
       <source>Bilinear (PS2)</source>
       <translation>Bilineáris (PS2)</translation>
     </message>
@@ -11860,7 +11920,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="543"/>
       <source>Anisotropic Filtering:</source>
-      <translation>Anizotrop Szűrés:</translation>
+      <translation>Anizotróp Szűrés:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="553"/>
@@ -11874,7 +11934,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="571"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="529"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="570"/>
       <source>Unscaled (Default)</source>
       <translation>Skálázatlan (Alapértelmezett)</translation>
     </message>
@@ -11890,7 +11950,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="597"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="577"/>
       <source>Basic (Recommended)</source>
       <translation>Egyszerű (Ajánlott)</translation>
     </message>
@@ -11926,7 +11986,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="2213"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="542"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="583"/>
       <source>Full (Hash Cache)</source>
       <translation>Teljes (Hash Gyorsítótár)</translation>
     </message>
@@ -11942,31 +12002,31 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="958"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="597"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="638"/>
       <source>Disable Depth Conversion</source>
       <translation>Mélység Átalakítás Letiltása</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="993"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="546"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="587"/>
       <source>GPU Palette Conversion</source>
       <translation>GPU Paletta Átalakítás</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="627"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="550"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="591"/>
       <source>Manual Hardware Renderer Fixes</source>
       <translation>Manuális Hardveres Leképező Javítások</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="2160"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="559"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="600"/>
       <source>Spin GPU During Readbacks</source>
       <translation>GPU Lefoglalása Visszaolvasásnál</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="2167"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="555"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="596"/>
       <source>Spin CPU During Readbacks</source>
       <translation>CPU Lefoglalása Visszaolvasásnál</translation>
     </message>
@@ -11978,15 +12038,15 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="634"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="709"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="510"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="573"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="551"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="614"/>
       <source>Mipmapping</source>
       <translation>Mipmappok Használata</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="716"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="568"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="593"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="609"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="634"/>
       <source>Auto Flush</source>
       <translation>Automatikus Ürítés</translation>
     </message>
@@ -12014,8 +12074,8 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="742"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="828"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="835"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="578"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="581"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="619"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="622"/>
       <source>0 (Disabled)</source>
       <extracomment>0 (Disabled)</extracomment>
       <translation>0 (Letiltva)</translation>
@@ -12072,18 +12132,18 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="972"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="601"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
       <source>Disable Safe Features</source>
       <translation>Biztonsági Funkciók Letiltása</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="986"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="618"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
       <source>Preload Frame Data</source>
       <translation>Képkocka Adat Előtöltése</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="621"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="662"/>
       <source>Texture Inside RT</source>
       <translation>Textúra a Leképezési Célban</translation>
     </message>
@@ -12182,13 +12242,13 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1199"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="704"/>
       <source>Merge Sprite</source>
       <translation>Sprite Egyesítés</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1185"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="652"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="693"/>
       <source>Align Sprite</source>
       <translation>Sprite Illesztés</translation>
     </message>
@@ -12201,16 +12261,6 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="166"/>
       <source>No Deinterlacing</source>
       <translation>Nincs Váltottsorosság Megszüntetés</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="417"/>
-      <source>Apply Widescreen Patches</source>
-      <translation>Szélesvásznú Javítások Alkalmazása</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="424"/>
-      <source>Apply No-Interlacing Patches</source>
-      <translation>Váltottsorosságot Megszüntető Javítások Alkalmazása</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="250"/>
@@ -12284,25 +12334,25 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="965"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="610"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="651"/>
       <source>Disable Partial Source Invalidation</source>
       <translation>Részleges Forrás Érvénytelenítés Letiltása</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="979"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="624"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="665"/>
       <source>Read Targets When Closing</source>
       <translation>Célok Beolvasása Bezárásnál</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1007"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
       <source>Estimate Texture Region</source>
       <translation>Textúra Terület Megállapítása</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1014"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="608"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="649"/>
       <source>Disable Render Fixes</source>
       <translation>Leképezési Javítások Letiltása</translation>
     </message>
@@ -12313,7 +12363,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1192"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="666"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
       <source>Unscaled Palette Texture Draws</source>
       <translation>Skálázatlan Paletta Textúra Rajzolás</translation>
     </message>
@@ -12372,25 +12422,25 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1249"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="672"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
       <source>Dump Textures</source>
       <translation>Textúrák Lementése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1256"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="674"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="715"/>
       <source>Dump Mipmaps</source>
       <translation>Mipmappok Lementése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1263"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="676"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
       <source>Dump FMV Textures</source>
       <translation>FMV Textúrák Lementése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1242"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
       <source>Load Textures</source>
       <translation>Textúrák Betöltése</translation>
     </message>
@@ -12399,6 +12449,16 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="145"/>
       <source>Native (10:7)</source>
       <translation>Natív (10:7)</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="417"/>
+      <source>Apply Widescreen Patches</source>
+      <translation>Szélesvásznú Tapaszok Alkalmazása</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="424"/>
+      <source>Apply No-Interlacing Patches</source>
+      <translation>Váltottsorosságot Megszüntető Tapaszok Alkalmazása</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1066"/>
@@ -12417,13 +12477,13 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1206"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="656"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="697"/>
       <source>Force Even Sprite Position</source>
       <translation>Egyenlő Sprite Pozíció Kényszerítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1228"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
       <source>Precache Textures</source>
       <translation>Textúrák Előtöltése</translation>
     </message>
@@ -12446,8 +12506,8 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1349"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1417"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="688"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="746"/>
       <source>None (Default)</source>
       <translation>Nincs (Alapértelmezett)</translation>
     </message>
@@ -12468,7 +12528,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1393"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="697"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="738"/>
       <source>FXAA</source>
       <translation>FXAA</translation>
     </message>
@@ -12520,14 +12580,14 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1460"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="733"/>
       <source>Shade Boost</source>
-      <translation>Árnyalat Nővelés</translation>
+      <translation>Árnyalat Növelés</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1482"/>
       <source>Brightness:</source>
-      <translation>Fényerő</translation>
+      <translation>Fényerő:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1499"/>
@@ -12535,7 +12595,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>Kontraszt:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="703"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="744"/>
       <source>Saturation</source>
       <translation>Telítettség</translation>
     </message>
@@ -12556,50 +12616,50 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1659"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="739"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="780"/>
       <source>Show Indicators</source>
       <translation>Indikátorok Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1722"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="770"/>
       <source>Show Resolution</source>
       <translation>Felbontás Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1680"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="745"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="786"/>
       <source>Show Inputs</source>
       <translation>Bemenet Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1694"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="734"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="775"/>
       <source>Show GPU Usage</source>
       <translation>GPU Használat Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1708"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="742"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="783"/>
       <source>Show Settings</source>
       <translation>Beállítások Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1666"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="720"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="761"/>
       <source>Show FPS</source>
       <translation>Képkocka Számláló Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="2132"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="829"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="870"/>
       <source>Disable Mailbox Presentation</source>
       <extracomment>Mailbox Presentation: a type of graphics-rendering technique that has not been exposed to the public that often, so chances are you will need to keep the word mailbox in English. It does not have anything to do with postal mailboxes or email inboxes/outboxes.</extracomment>
       <translation>Mailbox Prezentáció Letiltása</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="2153"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="833"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="874"/>
       <source>Extended Upscaling Multipliers</source>
       <translation>Kiterjesztett Felskálázási Szorzók</translation>
     </message>
@@ -12615,13 +12675,13 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1729"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="736"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="777"/>
       <source>Show Statistics</source>
       <translation>Statisztika Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1235"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="719"/>
       <source>Asynchronous Texture Loading</source>
       <translation>Aszinkron Textúrabetöltés</translation>
     </message>
@@ -12632,13 +12692,13 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1701"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="732"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="773"/>
       <source>Show CPU Usage</source>
       <translation>CPU Használat Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1743"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="763"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="804"/>
       <source>Warn About Unsafe Settings</source>
       <translation>Figyelmeztetés a Nem Biztonságos Beállításokról</translation>
     </message>
@@ -12664,7 +12724,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1597"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="754"/>
       <source>Left (Default)</source>
       <translation>Bal (Alapértelmezett)</translation>
     </message>
@@ -12675,43 +12735,43 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1628"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="758"/>
       <source>Right (Default)</source>
       <translation>Jobb (Alapértelmezett)</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1715"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="748"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="789"/>
       <source>Show Frame Times</source>
       <translation>Képkocka Idők Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1736"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="751"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="792"/>
       <source>Show PCSX2 Version</source>
       <translation>PCSX2 Verziójának Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1687"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="760"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="801"/>
       <source>Show Hardware Info</source>
       <translation>Hardver Információ Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1652"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="757"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="798"/>
       <source>Show Input Recording Status</source>
       <translation>Bemenet Rögzítési Állapot Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1645"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="754"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="795"/>
       <source>Show Video Capture Status</source>
       <translation>Videó Rögzítési Állapot Megjelenítése</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1673"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="764"/>
       <source>Show VPS</source>
       <translation>VPS Megjelenítése</translation>
     </message>
@@ -12820,19 +12880,19 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="2122"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="809"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="850"/>
       <source>Zstandard (zst)</source>
       <translation>Zstandard (zst)</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="2146"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="823"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="864"/>
       <source>Skip Presenting Duplicate Frames</source>
       <translation>Duplikált Képkockák Átugrása</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="2139"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="813"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="854"/>
       <source>Use Blit Swap Chain</source>
       <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft&apos;s Terminology Portal.
 ----------
@@ -12885,7 +12945,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1638"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="726"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="767"/>
       <source>Show Speed Percentages</source>
       <translation>Sebesség Százalékok Megjelenítése</translation>
     </message>
@@ -12895,1214 +12955,1214 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <translation>Képpuffer Lekérdezés Letiltása</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="25"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="26"/>
       <source>Direct3D 11</source>
       <extracomment>Graphics backend/engine type. Leave as-is.</extracomment>
       <translation>Direct3D 11</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="27"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="28"/>
       <source>Direct3D 12</source>
       <extracomment>Graphics backend/engine type. Leave as-is.</extracomment>
       <translation>Direct3D 12</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="31"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="32"/>
       <source>OpenGL</source>
       <extracomment>Graphics backend/engine type. Leave as-is.</extracomment>
       <translation>OpenGL</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="35"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="36"/>
       <source>Vulkan</source>
       <extracomment>Graphics backend/engine type. Leave as-is.</extracomment>
       <translation>Vulkan</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="39"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="40"/>
       <source>Metal</source>
       <extracomment>Graphics backend/engine type. Leave as-is.</extracomment>
       <translation>Metal</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="42"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="43"/>
       <source>Software</source>
       <extracomment>Graphics backend/engine type (refers to emulating the GS in software, on the CPU). Translate accordingly.</extracomment>
       <translation>Szoftver</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="44"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="45"/>
       <source>Null</source>
       <extracomment>Null here means that this is a graphics backend that will show nothing.</extracomment>
       <translation>Nincs Leképezés</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="48"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="49"/>
       <source>2x</source>
       <translation>2x</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="48"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="49"/>
       <source>4x</source>
       <translation>4x</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="49"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="50"/>
       <source>8x</source>
       <translation>8x</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="49"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="50"/>
       <source>16x</source>
       <translation>16x</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="288"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1148"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1182"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1266"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="289"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1189"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1223"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1307"/>
       <source>Use Global Setting [%1]</source>
       <translation>Globális beállítások használata [%1]</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="431"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="434"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="437"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="444"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="449"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="460"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="546"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="550"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="555"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="559"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="593"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="597"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="601"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="608"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="610"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="614"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="618"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="624"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="652"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="656"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="660"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="666"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="672"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="674"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="676"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="692"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="472"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="475"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="485"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="490"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="501"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="587"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="591"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="596"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="600"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="634"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="638"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="649"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="651"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="665"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="693"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="697"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="720"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="701"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="704"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="715"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="726"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="732"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="734"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="736"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="742"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="745"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="748"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="751"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="760"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="781"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="733"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="738"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="761"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="764"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="767"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="770"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="773"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="775"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="777"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="783"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="786"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="799"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="813"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="823"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="829"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="833"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="836"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="789"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="792"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="801"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="822"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="827"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="840"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="854"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="864"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="870"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="874"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="877"/>
       <source>Unchecked</source>
       <translation>Nincs Bejelölve</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="432"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="472"/>
+      <source>Enable Widescreen Patches</source>
+      <translation>Szélesvásznú Tapaszok Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="473"/>
       <source>Automatically loads and applies widescreen patches on game start. Can cause issues.</source>
-      <translation>Automatikusan betölti és alkalmazza a szélesvásznú javításokat. Problémákat okozhat.</translation>
+      <translation>Automatikusan betölti és alkalmazza a szélesvásznú tapaszokat a játék indításakor. Problémákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="435"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="475"/>
+      <source>Enable No-Interlacing Patches</source>
+      <translation>Váltottsorosságot Megszüntető Tapaszok Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="476"/>
       <source>Automatically loads and applies no-interlacing patches on game start. Can cause issues.</source>
-      <translation>Automatikusan betölti és alkalmazza a váltotsorosság megszüntető javításokat. Problémákat okozhat.</translation>
+      <translation>Automatikusan betölti és alkalmazza a váltotsorosság megszüntető tapaszokat a játék indításakor. Problémákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="438"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="479"/>
       <source>Disables interlacing offset which may reduce blurring in some situations.</source>
       <translation>Letiltja a váltottsoros eltolást, ami bizonyos esetekben csökkentheti az elmosódottságot.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="440"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
       <source>Bilinear Filtering</source>
       <translation>Bilineáris Szűrő</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="441"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="482"/>
       <source>Enables bilinear post processing filter. Smooths the overall picture as it is displayed on the screen. Corrects positioning between pixels.</source>
       <translation>Engedélyezi a bilineáris utófeldolgozó szűrőt. Kisimítja a képet ahogy megjelenik a kijelzőn. Javítja a pozicionálást a pixelek között.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="446"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="487"/>
       <source>Enables PCRTC Offsets which position the screen as the game requests. Useful for some games such as WipEout Fusion for its screen shake effect, but can make the picture blurry.</source>
       <extracomment>PCRTC: Programmable CRT (Cathode Ray Tube) Controller.</extracomment>
       <translation>Engedélyezi a PCRTC eltolást, ami áthelyezi a képernyőt a játék kérésére. Hasznos olyan játékoknál mint például a WipEout Fusion ami ezt használja a rázkódó képernyő hatáshoz, de elmosódottá teheti a képet.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="450"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="491"/>
       <source>Enables the option to show the overscan area on games which draw more than the safe area of the screen.</source>
       <translation>Engedélyezi hogy megjelenjen a játékok túlpásztázási területe, ami többet mutat a képernyőn mint a biztonságos terület.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="453"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="494"/>
       <source>FMV Aspect Ratio Override</source>
       <translation>FMV Képarány Felülírás</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="468"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="509"/>
       <source>Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the available options.</source>
       <translation>Meghatározza a milyen eljárással legyen megszüntetve a váltottsoroság az emulált konzol váltottsoros képernyőjén. Az automatikus beállítás a legtöbb játéknál megfelelően megszünteti a váltottsoroságot, de ha remegőnek látod a képet, próbáld meg az elérhető opciókat.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="537"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="578"/>
       <source>Control the accuracy level of the GS blending unit emulation.&lt;br&gt; The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will be.&lt;br&gt; Do note that Direct3D&apos;s blending is reduced in capability compared to OpenGL/Vulkan.</source>
       <translation>Szabályozza a GS keverő egységének emulációs pontosságát.&lt;br&gt; Minél magasabb a beállítás, annál pontosabban emulálódik a keverés a shaderben, és annál nagyobb lesz az erőforrás igény.&lt;br&gt; Vegyed figyelembe, hogy a Direct3D keverési képességei elmaradnak az OpenGL/Vulkanhoz képest.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="564"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="605"/>
       <source>Software Rendering Threads</source>
       <translation>Szoftveres Leképezés Szálai</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="578"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="619"/>
       <source>CPU Sprite Render Size</source>
       <translation>CPU Sprite Leképezés Mérete</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="581"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="622"/>
       <source>Software CLUT Render</source>
       <translation>Szoftveres CLUT Leképezés</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="585"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="626"/>
       <source>Try to detect when a game is drawing its own color palette and then renders it on the GPU with special handling.</source>
       <translation>Megpróbálja érzékelni ha egy játék a saját színpalettáját rajzolja, és leképezi a GPU-ba különleges eljárással.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="608"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="649"/>
       <source>This option disables game-specific render fixes.</source>
       <translation>Ez az opció letiltja a játék specifikus javításokat.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="611"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="652"/>
       <source>By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise. This hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load. It helps with the Snowblind engine games.</source>
       <translation>Alapból a textúra gyorsítótár kezeli a részleges érvénytelenítést. Sajnálatos módon ez nagyon számítás igényes a processzornak. Ez a funkció lecseréli a részleges érvénytelenítést a textúra teljes törlésére ezzel csökkentve a számítás igényt. Segít a Snowblind motorral készült játékokon.</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1000"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="614"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
       <source>Framebuffer Conversion</source>
       <translation>Képpuffer Átalakítás</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="615"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="656"/>
       <source>Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU. Helps Harry Potter and Stuntman games. It has a big impact on performance.</source>
       <translation>A 4-bites és a 8-bites képpuffer átalakítását a processzor végzi a videokártya helyett. Segít a Harry Potter és a Stuntman játékokon. A funkciónak nagy hatása van a teljesítményre.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="584"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="621"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="625"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="662"/>
       <source>Disabled</source>
       <translation>Letiltva</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="328"/>
-      <source>Remove Unsupported Settings</source>
-      <translation>Nem Támogatott Beállítások Törlése</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="329"/>
-      <source>You currently have the &lt;strong&gt;Enable Widescreen Patches&lt;/strong&gt; or &lt;strong&gt;Enable No-Interlacing Patches&lt;/strong&gt; options enabled for this game.&lt;br&gt;&lt;br&gt;We no longer support these options, instead &lt;strong&gt;you should select the &quot;Patches&quot; section, and explicitly enable the patches you want.&lt;/strong&gt;&lt;br&gt;&lt;br&gt;Do you want to remove these options from your game configuration now?</source>
-      <translation>Jelenleg engedélyezve van a &lt;strong&gt;Szélesvásznú Javítások&lt;/strong&gt; vagy a &lt;strong&gt;Váltottsoroság Megszüntető Javítások&lt;/strong&gt; ehhez a játékhoz.&lt;br&gt;&lt;br&gt;Ezeket az opciókat már nem támogatjuk, helyette &lt;strong&gt;inkább válaszd ki a &quot;Javítások&quot; szekciót, és engedélyezd a kívánt javításokat.&lt;/strong&gt;&lt;br&gt;&lt;br&gt;Szeretnéd törölni ezeket az opciókat a játék beállításaiból?</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="454"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="495"/>
       <source>Overrides the full-motion video (FMV) aspect ratio. If disabled, the FMV Aspect Ratio will match the same value as the general Aspect Ratio setting.</source>
       <translation>Felülírja a játékba ágyazott videók (FMV) képarányát. Ha nincs engedélyezve, a videók ugyanazt a képarányt használják, ami a játékhoz be lett állítva.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="510"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="551"/>
       <source>Enables mipmapping, which some games require to render correctly. Mipmapping uses progressively lower resolution variants of textures at progressively further distances to reduce processing load and avoid visual artifacts.</source>
       <translation>Engedélyezi a mipmappokat, ami bizonyos játékokhoz szükséges a helyes megjelenítéshez. A mipmappok folyamatosan csökkenő felbontású verziói egy textúrának, amik a távolságtól függően változnak, hogy csökkentség a számítási igényt és megakadályozzák a vizuális hibákat.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="514"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="555"/>
       <source>Changes what filtering algorithm is used to map textures to surfaces.&lt;br&gt; Nearest: Makes no attempt to blend colors.&lt;br&gt; Bilinear (Forced): Will blend colors together to remove harsh edges between different colored pixels even if the game told the PS2 not to.&lt;br&gt; Bilinear (PS2): Will apply filtering to all surfaces that a game instructs the PS2 to filter.&lt;br&gt; Bilinear (Forced Excluding Sprites): Will apply filtering to all surfaces, even if the game told the PS2 not to, except sprites.</source>
       <translation>Megváltoztatja a szűrési algoritmust ami a felületeken lévő textúrákra alkalmazódik.&lt;br&gt; Legközelebbi: Nem próbálja összemosni a színeket.&lt;br&gt; Bilineáris (Kényszerített): Összemossa a színeket, hogy eltüntesse az élek határokat a különféle színek között, még akkor is, ha erre a játék a PS2-őt nem utasítja.&lt;br&gt; Bilineáris (PS2): Minden olyan felületre szűrést alkalmaz, amire a játék a PS2-őt utasítja.&lt;br&gt; Bilineáris (Kényszerített Kivéve Spriteok) Minden felületre szűrőt alkalmaz, akkor is, ha erre a játék a PS2-őt nem utasítja, kivéve a spriteokat (2D).</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="521"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="562"/>
       <source>Reduces blurriness of large textures applied to small, steeply angled surfaces by sampling colors from the two nearest Mipmaps. Requires Mipmapping to be &apos;on&apos;.&lt;br&gt; Off: Disables the feature.&lt;br&gt; Trilinear (PS2): Applies Trilinear filtering to all surfaces that a game instructs the PS2 to.&lt;br&gt; Trilinear (Forced): Applies Trilinear filtering to all surfaces, even if the game told the PS2 not to.</source>
       <translation>Csökkenti a kis, meredek szögű felületekre alkalmazott nagyméretű textúrák elmosódottságát a két legközelebbi Mipmapból történő színmintavételezéssel. A Mipmappingnek &apos;engedélyezett&apos; állapotban kell lennie.&lt;br&gt; Ki: Kikapcsolja a funkciót.&lt;br&gt; Trilineáris (PS2): Trilineáris szűrést alkalmaz minden olyan felületre, amelyre a játék utasítja a PS2-t.&lt;br&gt; Trilineáris (Kényszerített): Trilineáris szűrést alkalmaz minden felületre, még akkor is, ha a játék azt mondja a PS2-nek, hogy ne tegye.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="530"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="571"/>
       <source>Reduces banding between colors and improves the perceived color depth.&lt;br&gt; Off: Disables any dithering.&lt;br&gt; Scaled: Upscaling-aware / Highest dithering effect.&lt;br&gt; Unscaled: Native Dithering / Lowest dithering effect does not increase size of squares when upscaling.&lt;br&gt; Force 32bit: Treat all draws as if they were 32bit to avoid banding and dithering.</source>
       <translation>Csökkenti a színek közötti sávokat, és növeli az érzékelt színmélységet.&lt;br&gt; Ki: Letiltja a zajmodulációt.&lt;br&gt; Skálázott: Figyelembe veszi a felskálázást / Legnagyobb zajmodulációs hatás.&lt;br&gt; Skálázatlan: Natív Zajmoduláció / Legkisebb zajmodulációs hatás, nem növeli a négyzetek méretét felskálázásnál.&lt;br&gt; 32-bit Kényszerítése: Minden rajzolást 32-bitesként kezel, hogy elkerülje a sávozást és a zajmodulációt.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="556"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="597"/>
       <source>Does useless work on the CPU during readbacks to prevent it from going to into powersave modes. May improve performance during readbacks but with a significant increase in power usage.</source>
       <translation>Hasztalan műveleteket hajtat végre a processzorral visszaolvasásánál, hogy megakadályozza, hogy energiakímélő módba lépjen. Növelheti a teljesítményt visszaolvasásnál, de nagymértékben emeli az energiafogyasztást.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="560"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="601"/>
       <source>Submits useless work to the GPU during readbacks to prevent it from going into powersave modes. May improve performance during readbacks but with a significant increase in power usage.</source>
       <translation>Hasztalan műveleteket hajtat végre a videokártyával visszaolvasásánál, hogy megakadályozza, hogy energiakímélő módba lépjen. Növelheti a teljesítményt visszaolvasásnál, de nagymértékben emeli az energiafogyasztást.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="565"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="606"/>
       <source>Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging). 2 to 4 threads is recommended, any more than that is likely to be slower instead of faster.</source>
       <translation>Leképezési szálak száma: 0 egy szálhoz, 2 vagy több a többszálúhoz (1 a hibakereséshez) 2-4 szál az ajánlott, ennél több nagy eséllyel lassabb lesz mint gyorsabb.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="598"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="639"/>
       <source>Disable the support of depth buffers in the texture cache. Will likely create various glitches and is only useful for debugging.</source>
       <translation>Letiltja a mélység puffer támogatását a textúra gyorsítótárban. Nagy eséllyel hibákat fog okozni ezért ez csak hibakereséshez használatos.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="622"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
       <source>Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.</source>
       <translation>Engedélyezi a textúra gyorsítótárnák, hogy újra használja bemeneti textúraként az előző képpuffer belső részét.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="625"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="666"/>
       <source>Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving state or switching renderers, but can also cause graphical corruption.</source>
-      <translation>Minden célt visszaüríti a textúra gyorsítótárból a helyi memóriába leállításnál. Megakadályozhatja az elveszett képrészleteket állás mentésnél vagy leképező váltásnál, de grafikai hibákat is okozhat.</translation>
+      <translation>Minden célt visszaürít a textúra gyorsítótárból a helyi memóriába leállításnál. Megakadályozhatja az elveszett képrészleteket állás mentésnél vagy leképező váltásnál, de grafikai hibákat is okozhat.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="629"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="670"/>
       <source>Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).</source>
       <translation>Megpróbálja csökkenteni a textúra méretet ha a játék nem teszi ezt meg (pl. Snowblind játékok).</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="654"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="695"/>
       <source>Fixes issues with upscaling (vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc.</source>
       <extracomment>Namco: a game publisher and development company. Leave the name as-is. Ace Combat, Tekken, Soul Calibur: game names. Leave as-is or use official translations.</extracomment>
       <translation>Javítja a problémákat a felskálázással (függőleges vonalak) a Namco játékokban mint a Ace Combat, Tekken, Soul Calibur, stb.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="672"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
       <source>Dumps replaceable textures to disk. Will reduce performance.</source>
       <translation>Lementi a lecserélhető textúrákat a lemezre. Csökkenti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="674"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="715"/>
       <source>Includes mipmaps when dumping textures.</source>
       <translation>A mipmappokat is hozzáadja a lementett textúrákhoz.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="676"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
       <source>Allows texture dumping when FMVs are active. You should not enable this.</source>
       <translation>Akkor is lementi a textúrákat mikor egy FMV aktív. Nem ajánlott engedélyezni.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="719"/>
       <source>Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled.</source>
       <translation>Egy külön szálat használ a cseretextúrák betöltéséhez, csökkentve ezzel a mikroszaggatásokat mikor a csere engedélyezve van.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
       <source>Loads replacement textures where available and user-provided.</source>
       <translation>Betölti a cseretextúrákat ha elérhetők.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="682"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
       <source>Preloads all replacement textures to memory. Not necessary with asynchronous loading.</source>
       <translation>Minden cseretextúrát betölt a memóriába. Nem szükséges aszinkron betöltésnél.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="688"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
       <source>Enables FidelityFX Contrast Adaptive Sharpening.</source>
       <translation>Engedélyezi a FidelityFX kontraszt adaptív élesítést.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="690"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="731"/>
       <source>Determines the intensity the sharpening effect in CAS post-processing.</source>
-      <translation>Meghatározza az élesítő hatást intenzitását CAS útó-feldólgozásnál</translation>
+      <translation>Meghatározza az élesítő hatást intenzitását CAS utófeldolgozásnál.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="699"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="740"/>
       <source>Adjusts brightness. 50 is normal.</source>
       <translation>Növeli a fényerőt. Az 50 az alap.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="701"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="742"/>
       <source>Adjusts contrast. 50 is normal.</source>
       <translation>Növeli a kontrasztot. Az 50 az alap.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="703"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="744"/>
       <source>Adjusts saturation. 50 is normal.</source>
       <translation>Növeli a telítettséget. Az 50 az alap.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="711"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
       <source>Scales the size of the onscreen OSD from 50% to 500%.</source>
-      <translation>Skálázza a képernyőmenü méretét 50%-tól 500%-ig</translation>
+      <translation>Skálázza a képernyőmenü méretét 50%-tól 500%-ig.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="754"/>
       <source>OSD Messages Position</source>
       <translation>Képernyőmenü Üzenetek Pozíciója</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="758"/>
       <source>OSD Statistics Position</source>
       <translation>Képernyőmenü Statisztikák Pozíciója</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="718"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="759"/>
       <source>Shows a variety of on-screen performance data points as selected by the user.</source>
       <translation>Többféle teljesítmény adatot jelenít meg a képernyőn, amiket a felhasználó kiválasztott.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="724"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="765"/>
       <source>Shows the vsync rate of the emulator in the top-right corner of the display.</source>
       <translation>Megjeleníti a függőleges szinkronizáció folyamát a képernyő jobb felső sarkában.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="740"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="781"/>
       <source>Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast-Forward, and Slow-Motion.</source>
       <translation>Ikonokat jelenít meg a képernyőmenün olyan emulációs állapotokhoz, mint a Szünet, Turbó, Gyorsítás, Lassítás.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="743"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="784"/>
       <source>Displays various settings and the current values of those settings, useful for debugging.</source>
       <translation>Megjelenít különféle beállításokat, és a jelenlegi értékeit ezeknek a beállításoknak, hibakereséshez lehet hasznos.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="749"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
       <source>Displays a graph showing the average frametimes.</source>
       <translation>Megjelenít egy grafikát az átlagos képkocka időkkel.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="761"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="802"/>
       <source>Shows the current system hardware information on the OSD.</source>
       <translation>Megjeleníti a jelenlegi rendszer hardver információkat a képernyőmenün.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="769"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="810"/>
       <source>Video Codec</source>
       <translation>Videótömörítő</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="769"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="810"/>
       <source>Selects which Video Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
       <translation>Kiválasztható melyik videó kódoló legyen használva a videó rögzítéshez. &lt;b&gt;Ha bizonytalan vagy, hagyd alapértéken.&lt;b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="773"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="814"/>
       <source>Video Format</source>
       <translation>Videó Formátum</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="773"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="814"/>
       <source>Selects which Video Format to be used for Video Capture. If by chance the codec does not support the format, the first format available will be used. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
       <translation>Kiválasztható melyik videó formátum legyen használva videó rögzítéshez. Ha a kódoló esetleg nem támogatja ezt a formátumot, akkor az első elérhető lesz használva helyette.&lt;b&gt;Ha bizonytalan vagy, hagyd alapértéken.&lt;b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="777"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="818"/>
       <source>Video Bitrate</source>
       <translation>Videó Bitráta</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="777"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="818"/>
       <source>6000 kbps</source>
       <translation>6000 kbps</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="777"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="818"/>
       <source>Sets the video bitrate to be used. Larger bitrate generally yields better video quality at the cost of larger resulting file size.</source>
       <translation>Beállítja a használandó videó bitrátát. A nagyobb bitráta általában jobb videóminőséget eredményez, de a fájl mérete nagyobb lesz.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="781"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="822"/>
       <source>Automatic Resolution</source>
       <translation>Automatikus Felbontás</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="781"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="822"/>
       <source>When checked, the video capture resolution will follows the internal resolution of the running game.&lt;br&gt;&lt;br&gt;&lt;b&gt;Be careful when using this setting especially when you are upscaling, as higher internal resolution (above 4x) can results in very large video capture and can cause system overload.&lt;/b&gt;</source>
       <translation>Ha be van jelölve, a videofelvétel felbontása követi a futó játék belső felbontását.&lt;br&gt;&lt;br&gt;&lt;b&gt; Legyél óvatos ennek a beállításnak a használatával, különösen a felskálázás során, mivel a nagyobb belső felbontás (4x feletti) nagyon nagy méretű videofelvételt eredményezhet, és a rendszer leterhelését okozhatja.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="786"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="827"/>
       <source>Enable Extra Video Arguments</source>
       <translation>További Videó Paraméterek Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="786"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="827"/>
       <source>Allows you to pass arguments to the selected video codec.</source>
       <translation>Lehetővé teszi az argumentumok átadását a kiválasztott videokodeknek.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="788"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="829"/>
       <source>Extra Video Arguments</source>
       <translation>További Paraméterek</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="793"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="834"/>
       <source>Audio Codec</source>
-      <translation>Audiótömörítő</translation>
+      <translation>Audiotömörítő</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="793"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="834"/>
       <source>Selects which Audio Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
       <translation>Kiválasztható melyik hang kódoló legyen használva a videó rögzítéshez. &lt;b&gt;Ha bizonytalan vagy, hagyd alapértéken.&lt;b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="797"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="838"/>
       <source>Audio Bitrate</source>
       <translation>Hang Bitráta</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="799"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="840"/>
       <source>Enable Extra Audio Arguments</source>
       <translation>További Hang Paraméterek Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="799"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="840"/>
       <source>Allows you to pass arguments to the selected audio codec.</source>
       <translation>Lehetővé teszi az argumentumok átadását a kiválasztott audiokodeknek.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="801"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="842"/>
       <source>Extra Audio Arguments</source>
       <translation>További Hang Paraméterek</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="819"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="860"/>
       <source>Allow Exclusive Fullscreen</source>
       <translation>Exkluzív Teljes Képernyő Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="820"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="861"/>
       <source>Overrides the driver&apos;s heuristics for enabling exclusive fullscreen, or direct flip/scanout.&lt;br&gt;Disallowing exclusive fullscreen may enable smoother task switching and overlays, but increase input latency.</source>
       <translation>Felülírja az illesztőprogram heurisztikáját az exkluzív teljes képernyő vagy a közvetlen lapozás/kiolvasás engedélyezéséhez.&lt;br&gt;Az exkluzív teljes képernyő letiltása simább feladatváltást és átfedéseket tesz lehetővé, de növeli a bemeneti késleltetést.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1210"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1251"/>
       <source>1.25x Native (~450px)</source>
       <translation>1.25x Natív (~450px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1211"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1252"/>
       <source>1.5x Native (~540px)</source>
       <translation>1.5x Natív (~540px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1212"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1253"/>
       <source>1.75x Native (~630px)</source>
       <translation>1.75x Natív (~630px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1213"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1254"/>
       <source>2x Native (~720px/HD)</source>
       <translation>2x Natív (~720px/HD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1214"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1255"/>
       <source>2.5x Native (~900px/HD+)</source>
       <translation>2.5x Natív (~900px/HD+)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1215"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1256"/>
       <source>3x Native (~1080px/FHD)</source>
       <translation>3x Natív (~1080px/FHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1216"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1257"/>
       <source>3.5x Native (~1260px)</source>
       <translation>3.5x Natív (~1260px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1217"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1258"/>
       <source>4x Native (~1440px/QHD)</source>
       <translation>4x Natív (~1440px/QHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1218"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1259"/>
       <source>5x Native (~1800px/QHD+)</source>
       <translation>5x Natív (~1800px/QHD+)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1219"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1260"/>
       <source>6x Native (~2160px/4K UHD)</source>
       <translation>6x Natív (~2160px/4K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1220"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1261"/>
       <source>7x Native (~2520px)</source>
       <translation>7x Natív (~2520px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1221"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1262"/>
       <source>8x Native (~2880px/5K UHD)</source>
       <translation>8x Natív (~2880px/5K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1222"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1263"/>
       <source>9x Native (~3240px)</source>
       <translation>9x Natív (~3240px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1223"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1264"/>
       <source>10x Native (~3600px/6K UHD)</source>
       <translation>10x Natív (~3600px/6K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1224"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1265"/>
       <source>11x Native (~3960px)</source>
       <translation>11x Natív (~3960px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1225"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1266"/>
       <source>12x Native (~4320px/8K UHD)</source>
       <translation>12x Natív (~4320px/8K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1226"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1267"/>
       <source>13x Native (~4680px)</source>
       <translation>13x Natív (~4680px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1227"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1268"/>
       <source>14x Native (~5040px)</source>
       <translation>14x Natív (~5040px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1228"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1269"/>
       <source>15x Native (~5400px)</source>
       <translation>15x Natív (~5400px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1229"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1270"/>
       <source>16x Native (~5760px)</source>
       <translation>16x Natív (~5760px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1230"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1271"/>
       <source>17x Native (~6120px)</source>
       <translation>17x Natív (~6120px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1231"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1272"/>
       <source>18x Native (~6480px/12K UHD)</source>
       <translation>18x Natív (~6480px/12K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1232"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1273"/>
       <source>19x Native (~6840px)</source>
       <translation>19x Natív (~6840px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1233"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1274"/>
       <source>20x Native (~7200px)</source>
       <translation>20x Natív (~7200px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1234"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1275"/>
       <source>21x Native (~7560px)</source>
       <translation>21x Natív (~7560px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1235"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1276"/>
       <source>22x Native (~7920px)</source>
       <translation>22x Natív (~7920px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1236"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1277"/>
       <source>23x Native (~8280px)</source>
       <translation>23x Natív (~8280px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1237"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1278"/>
       <source>24x Native (~8640px/16K UHD)</source>
       <translation>24x Natív (~8640px/16K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1238"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1279"/>
       <source>25x Native (~9000px)</source>
       <translation>25x Natív (~9000px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1259"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1265"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1300"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1306"/>
       <source>%1x Native</source>
       <translation>%1x Natív</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="457"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="510"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="568"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="573"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="739"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="754"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="757"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="763"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="498"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="551"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="609"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="614"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="719"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="780"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="795"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="798"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="804"/>
       <source>Checked</source>
       <translation>Bejelölve</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="458"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="499"/>
       <source>Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry.</source>
       <translation>Engedélyezi a beépített homályos kép elleni javításokat. Kevésbé lesz hű az eredeti PS2 megjelenítéshez, de rengeteg játékot kevésbé elmosódottá tesz.</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="410"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="460"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="501"/>
       <source>Integer Scaling</source>
       <translation>Egész Számos Skálázás</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="461"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="502"/>
       <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games.</source>
       <translation>Kitölti a képernyő területet, hogy a konzol és a gazdagép közötti pixel arány egész szám legyen. Élesebb képet eredményezhet 2D játékokban.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="464"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="505"/>
       <source>Aspect Ratio</source>
       <translation>Képarány</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="464"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="505"/>
       <source>Auto Standard (4:3/3:2 Progressive)</source>
       <translation>Automatikus Szabvány (4:3/3:2 Progresszív)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="465"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="506"/>
       <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto Standard (4:3/3:2 Progressive) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
       <translation>Megváltoztatja a képarányt amivel megjeleníti a konzol kimenetét a képernyőn. Az alapértelmezett az Automatikus Szabvány (4:3/3:2 Progresszív), ami úgy állítja be a képarányt, ahogy a játék megjelent volna egy korabeli TV-n.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="468"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="509"/>
       <source>Deinterlacing</source>
       <translation>Deinterlace</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="470"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="511"/>
       <source>Screenshot Size</source>
       <translation>Képernyőmentés Mérete</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="471"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="512"/>
       <source>Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of file size.</source>
       <translation>Meghatározza milyen felbontásban kerüljenek mentésre a képernyőképek. A leképezési felbontások több részletet tartalmaznak a fájl méret hátrányára.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="474"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="515"/>
       <source>Screenshot Format</source>
       <translation>Képernyőmentés Formátuma</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="475"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="516"/>
       <source>Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail.</source>
       <translation>Kiválasztható milyen formátumban legyenek mentve a képernyőképek. A JPEG kisebb méretű, de veszít a részletekből.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="477"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="518"/>
       <source>Screenshot Quality</source>
       <translation>Képernyőmentés Minősége</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="477"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="690"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="518"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="731"/>
       <source>50%</source>
       <translation>50%</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="519"/>
       <source>Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG, and reduce file size for PNG.</source>
       <translation>Kiválasztható milyen minőségben legyenek a képernyőképek tömörítve. A magasabb értékek növelik a JPEG részletességét, és csökkentik a PNG fájl méretét.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="711"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="522"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
       <source>100%</source>
       <translation>100%</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="522"/>
       <source>Vertical Stretch</source>
       <translation>Függőleges Nyújtás</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="483"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="524"/>
       <source>Stretches (&amp;lt; 100%) or squashes (&amp;gt; 100%) the vertical component of the display.</source>
       <translation>Kinyújtja (&amp;lt; 100%) vagy összenyomja (&amp;gt; 100%) a képernyő függőleges részét.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="485"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="526"/>
       <source>Fullscreen Mode</source>
       <translation>Teljes Képernyős Mód</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="485"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1176"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1182"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="526"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1217"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1223"/>
       <source>Borderless Fullscreen</source>
       <translation>Keret Nélküli Teljes Képernyő</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="486"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="527"/>
       <source>Chooses the fullscreen resolution and frequency.</source>
-      <translation>Kiválaszta a teljes képernyő felbontását és frissitését.</translation>
+      <translation>Kiválasztja a teljes képernyő felbontását és frissítését.</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1623"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="489"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="530"/>
       <source>Left</source>
       <translation>Bal</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="489"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="492"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="495"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="498"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="530"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="533"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="539"/>
       <source>0px</source>
       <translation>0px</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="489"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="530"/>
       <source>Changes the number of pixels cropped from the left side of the display.</source>
       <translation>Megváltoztatja, hogy hány pixel legyen levágva a képernyő bal oldaláról.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="492"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="533"/>
       <source>Top</source>
       <translation>Fent</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="492"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="533"/>
       <source>Changes the number of pixels cropped from the top of the display.</source>
       <translation>Megváltoztatja, hogy hány pixel legyen levágva a képernyő tetejéről.</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1602"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="495"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
       <source>Right</source>
       <translation>Jobb</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="495"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
       <source>Changes the number of pixels cropped from the right side of the display.</source>
       <translation>Megváltoztatja, hogy hány pixel legyen levágva a képernyő jobb oldaláról.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="498"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="539"/>
       <source>Bottom</source>
       <translation>Lent</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="498"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="539"/>
       <source>Changes the number of pixels cropped from the bottom of the display.</source>
       <translation>Megváltoztatja, hogy hány pixel legyen levágva a képernyő aljáról.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="504"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1209"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="545"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1250"/>
       <source>Native (PS2) (Default)</source>
       <translation>Natív (PS2) (Alapértelmezett)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="505"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="546"/>
       <source>Control the resolution at which games are rendered. High resolutions can impact performance on older or lower-end GPUs.&lt;br&gt;Non-native resolution may cause minor graphical issues in some games.&lt;br&gt;FMV resolution will remain unchanged, as the video files are pre-rendered.</source>
       <translation>Vezérli a felbontást, amivel a játékok leképezésre kerülnek. A nagy felbontások csökkenthetik a teljesítményt régebbi vagy alsó kategóriás videó kártyákon.&lt;br&gt;A nem natív felbontások apróbb grafikai hibákat okozhatnak bizonyos játékokban.&lt;br&gt;A videók (FMV) felbontása változatlan marad, mivel a videó fájlok előre le vannak képezve.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="513"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="554"/>
       <source>Texture Filtering</source>
       <translation>Textúra Szűrés</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="520"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="561"/>
       <source>Trilinear Filtering</source>
       <translation>Trilineáris Szűrés</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="526"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="567"/>
       <source>Anisotropic Filtering</source>
       <translation>Anizotróp Szűrés</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="527"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="568"/>
       <source>Reduces texture aliasing at extreme viewing angles.</source>
       <translation>Csökkenti a textúra aliasing hatást szélsőséges látószögekből.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="529"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="570"/>
       <source>Dithering</source>
       <translation>Zajmoduláció</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="577"/>
       <source>Blending Accuracy</source>
       <translation>Keverés Pontossága</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="542"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="583"/>
       <source>Texture Preloading</source>
       <translation>Textúra Előtöltés</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="543"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="584"/>
       <source>Uploads entire textures at once instead of small pieces, avoiding redundant uploads when possible. Improves performance in most games, but can make a small selection slower.</source>
       <translation>Teljes textúrákat tölt fel kis részletek helyett, elkerülve a felesleges feltöltéseket mikor lehetséges. A legtöbb játékban növeli a teljesítményt, de néhányat lassabbá is tehet.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="547"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="588"/>
       <source>When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU.</source>
       <translation>Ha engedélyezve van a GPU alakítja át a színtérkép-textúrákat, egyéb esetben a CPU. Ez egy kompromisszum a CPU és a GPU között.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="551"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="592"/>
       <source>Enabling this option gives you the ability to change the renderer and upscaling fixes to your games. However IF you have ENABLED this, you WILL DISABLE AUTOMATIC SETTINGS and you can re-enable automatic settings by unchecking this option.</source>
       <translation>Ez az opció lehetőséget ad a leképező és a felskálázási javítások beállításainak manuális megváltoztatására. Azonban HA ez az opció ENGEDÉLYEZVE VAN, akkor LETILTOD AZ AUTOMATIKUS BEÁLLÍTÁSOKAT, ha ezt az opciót kikapcsolod, akkor ismét aktiválódnak az automatikus beállítások.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="564"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="605"/>
       <source>2 threads</source>
       <translation>2 szál</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="569"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="594"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="610"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="635"/>
       <source>Force a primitive flush when a framebuffer is also an input texture. Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.</source>
       <translation>Kényszerít egy primitív ürítést ha a képpuffer bemeneti textúra is. Javít néhány speciális hatást, mint például az árnyék a Jak sorozatban, vagy a sugárzást a GTA:SA-ban.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="573"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="614"/>
       <source>Enables mipmapping, which some games require to render correctly.</source>
       <translation>Engedélyezi a mipmappokat, ami bizonyos játékoknak szükséges, hogy megfelelően jelenjenek meg.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="579"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="620"/>
       <source>The maximum target memory width that will allow the CPU Sprite Renderer to activate on.</source>
       <translation>A maximális célmemória-szélesség, amelyen a CPU Sprite Leképező aktiválódhat.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="582"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="623"/>
       <source>Tries to detect when a game is drawing its own color palette and then renders it in software, instead of on the GPU.</source>
       <translation>Megpróbálja érzékelni ha egy játék a saját színpalettáját rajzolja, és ezután leképezi szoftveresen, nem pedig a GPU-val.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="584"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="625"/>
       <source>GPU Target CLUT</source>
       <translation>GPU Cél CLUT</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="587"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
       <source>Skipdraw Range Start</source>
       <translation>Rajzolás Kihagyás Eleje</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="587"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="590"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="647"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="631"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="683"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="688"/>
       <source>0</source>
       <translation>0</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="588"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="591"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="629"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="632"/>
       <source>Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right.</source>
       <translation>Teljesen kihagyja a felületek rajzolását a bal oldalon megadott értéktől, a jobb oldalon megadott értékig.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="590"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="631"/>
       <source>Skipdraw Range End</source>
       <translation>Rajzolás Kihagyás Vége</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="602"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="643"/>
       <source>This option disables multiple safe features. Disables accurate Unscale Point and Line rendering which can help Xenosaga games. Disables accurate GS Memory Clearing to be done on the CPU, and let the GPU handle it, which can help Kingdom Hearts games.</source>
       <translation>Ez az opció több biztonsági funkciót is letilt. Letiltja a precíz nem skálázott pont és vonal leképezést, ami segíthet a Xenosaga játékokban. Letiltja, hogy a precíz GS memória ürítést a CPU végezze el, és hagyja, hogy a GPU kezelje, ami segíthet a Kingdom Hearts játékoknak.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="619"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="660"/>
       <source>Uploads GS data when rendering a new frame to reproduce some effects accurately.</source>
       <translation>Feltölti a GS tartalmát új képkockák leképezésekor, hogy néhány hatást pontosabban tudjon megjeleníteni.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="634"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="675"/>
       <source>Half Pixel Offset</source>
       <translation>Fél Pixel Eltolás</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="635"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="676"/>
       <source>Might fix some misaligned fog, bloom, or blend effect.</source>
       <translation>Javíthat rossz helyen lévő ködöt, fényhatásokat, vagy összemosás hatásokat.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="637"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
       <source>Round Sprite</source>
       <translation>Sprite Kerekítés</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="638"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="679"/>
       <source>Corrects the sampling of 2D sprite textures when upscaling. Fixes lines in sprites of games like Ar tonelico when upscaling. Half option is for flat sprites, Full is for all sprites.</source>
       <translation>Javítja a mintavételezését a 2D sprite textúráknak felskálázásnál. Javítja a csíkokat a spriteokban olyan játékoknál mint az Ar tonelico felskálázásnál. A Fél opció a lapos spriteokhoz van, a Teljes minden spritehoz.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="683"/>
       <source>Texture Offsets X</source>
       <translation>Textúra Eltolás X</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="644"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="649"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="685"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="690"/>
       <source>Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too.</source>
       <extracomment>ST and UV are different types of texture coordinates, like XY would be spatial coordinates.</extracomment>
       <translation>Eltolás az ST/UV textúra koordinátákhoz. Javíthat néhány furcsa textúra hibát, és javíthat rossz pozícióban lévő utóhatásokat.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="647"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="688"/>
       <source>Texture Offsets Y</source>
       <translation>Textúra Eltolás Y</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="658"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="699"/>
       <source>Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.</source>
       <extracomment>Wild Arms: name of a game series. Leave as-is or use an official translation.</extracomment>
       <translation>Csökkenti a GS pontosságát, hogy elkerülje a pixelek közötti réseket felskálázásnál. Javítja a szöveget a Wild Arms játékoknál.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="660"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="701"/>
       <source>Bilinear Upscale</source>
       <translation>Bilineáris Felskálázás</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="702"/>
       <source>Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.</source>
       <translation>Kisimíthatja a textúrákat, hogy bilineáris szűrő alkalmazódjon rájuk felskálázásnál. Pl. Nap fény lencse hatás.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="664"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
       <source>Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines.</source>
       <translation>A több takaró sprite utólagos feldolgozását egyetlen nagy sprite-ra cseréli. Csökkenti a különböző felskálázási sorokat.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="667"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="708"/>
       <source>Force palette texture draws to render at native resolution.</source>
       <translation>Kényszeríti a paletta textúra rajzolásokat, hogy natív felbontások jelenjenek meg.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="688"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
       <source>Contrast Adaptive Sharpening</source>
       <extracomment>You might find an official translation for this on AMD&apos;s website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx</extracomment>
       <translation>Kontraszt Adaptív Élesítés</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="690"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="731"/>
       <source>Sharpness</source>
       <translation>Élesség</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="693"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="734"/>
       <source>Enables saturation, contrast, and brightness to be adjusted. Values of brightness, saturation, and contrast are at default 50.</source>
       <translation>Engedélyezi a telítettség, kontraszt, fényerő értékek szabályozását. A fényerő, telítettség, és kontraszt alap értéke az 50.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="697"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="738"/>
       <source>Applies the FXAA anti-aliasing algorithm to improve the visual quality of games.</source>
       <translation>Alkalmazza a FXAA élsimítási algoritmust, hogy növelje a játékok megjelenítési minőségét.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="699"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="740"/>
       <source>Brightness</source>
       <translation>Fényerő</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="699"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="701"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="703"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="740"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="742"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="744"/>
       <source>50</source>
       <translation>50</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="701"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="742"/>
       <source>Contrast</source>
       <translation>Kontraszt</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="746"/>
       <source>TV Shader</source>
       <translation>TV Árnyékoló</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="706"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="747"/>
       <source>Applies a shader which replicates the visual effects of different styles of television set.</source>
       <translation>Árnyékolót alkalmaz, ami imitálja a megjelenését többféle típusú televíziós készüléknek.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="711"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
       <source>OSD Scale</source>
       <translation>Képernyőmenü Mérete</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="714"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="755"/>
       <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
       <translation>Megjelenít képernyőmenü üzeneteket mikor olyan események történnek mint a játék állások mentése/betöltése, képernyőkép készült, stb.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="762"/>
       <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
       <translation>Megjeleníti a játék belső képkocka számát a képernyő jobb felső sarkában.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="727"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="768"/>
       <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
       <translation>Megjeleníti a jelenlegi emulációs sebességét a kijelző jobb felső sarkában százalék formában.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="730"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="771"/>
       <source>Shows the resolution of the game in the top-right corner of the display.</source>
       <translation>Megjeleníti a játék felbontását a kijelző jobb felső sarkában.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="732"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="773"/>
       <source>Shows host&apos;s CPU utilization.</source>
       <translation>Megjeleníti a gazdagép CPU kihasználtságát.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="734"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="775"/>
       <source>Shows host&apos;s GPU utilization.</source>
       <translation>Megjeleníti a gazdagép GPU kihasználtságát.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="737"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="778"/>
       <source>Shows counters for internal graphical utilization, useful for debugging.</source>
       <translation>Megjeleníti a belső grafikai kihasználtság számlálóit, hasznos a hibakereséshez.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="746"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="787"/>
       <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
       <translation>Megjeleníti a jelenleg a rendszerhez kapcsolódó játékvezérlők állapotát a képernyő bal alsó sarkában.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="793"/>
       <source>Shows the current PCSX2 version on the top-right corner of the display.</source>
       <translation>Megjeleníti az aktuális PCSX2 verzióját a kijelző jobb felső sarkában.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="755"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="796"/>
       <source>Shows the currently active video capture status.</source>
       <translation>Megjeleníti az éppen aktív videó felvétel állapotát.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="758"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="799"/>
       <source>Shows the currently active input recording status.</source>
       <translation>Megjeleníti az éppen aktív bemeneti rögzítés állapotát.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="764"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="805"/>
       <source>Displays warnings when settings are enabled which may break games.</source>
-      <translation>Figyelmeztetést jelenít meg, ha olyan beállitások vannak engedélyezve amik problémákat okozhatnak.</translation>
+      <translation>Figyelmeztetést jelenít meg, ha olyan beállítások vannak engedélyezve amik problémákat okozhatnak.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="788"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="801"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="829"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="842"/>
       <source>Leave It Blank</source>
       <translation>Hagyd Üresen</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="789"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="830"/>
       <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
       <translation>A kiválasztott videokodeknek átadott paraméterek.&lt;br&gt;&lt;b&gt;A &apos;=&apos; kifejezéssel kell elválasztani a kulcsot az értéktől, a &apos;:&apos; pedig két párt választ el egymástól.&lt;/b&gt;&lt;br&gt;Például: &quot;crf = 21 : preset = veryfast&quot;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="797"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="838"/>
       <source>Sets the audio bitrate to be used.</source>
       <translation>Beállítja a használni kívánt hangbitrátát.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="797"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="838"/>
       <source>160 kbps</source>
       <translation>160 kbps</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="802"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="843"/>
       <source>Parameters passed to the selected audio codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;compression_level = 4 : joint_stereo = 1&quot;</source>
       <translation>A kiválasztott audiokodeknek átadott paraméterek.&lt;br&gt;&lt;b&gt;A &apos;=&apos; kifejezéssel kell elválasztani a kulcsot az értéktől, a &apos;:&apos; pedig két párt választ el egymástól.&lt;/b&gt;&lt;br&gt;Például: &quot;compression_level = 4 : joint_stereo = 1&quot;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="809"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="850"/>
       <source>GS Dump Compression</source>
       <translation>GS Adat Tömörítése</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="810"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="851"/>
       <source>Change the compression algorithm used when creating a GS dump.</source>
       <translation>Megváltoztatja melyik tömörítési algoritmus legyen használva a mentett GS adatokhoz.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="815"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="856"/>
       <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
       <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit</extracomment>
       <translation>A Direct3D 11 leképező használata esetén a lapozás helyett BLIT prezentációs modellt használ. Ez általában lassabb teljesítményt eredményez, de néhány streaming alkalmazásnál vagy egyes rendszereknél a képkockasebesség feloldásához szükséges lehet.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="824"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="865"/>
       <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
       <translation>Érzékeli, ha 25/30fps sebességű játékokban tétlen képkockák jelennek meg, és kihagyja ezek megjelenítését. A képkocka továbbra is leképezésre kerül, csak a GPU-nak több ideje van a befejezésre (ez NEM képkocka kihagyás). Kiegyenlítheti a képkockaidő-ingadozásokat, amikor a CPU/GPU maximális kihasználtsága közelében van, de a képkockák ütemét egyenetlenebbé teszi, és növelheti a bemeneti késleltetést.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="834"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="875"/>
       <source>Displays additional, very high upscaling multipliers dependent on GPU capability.</source>
       <translation>Megjelenít további, nagyon magas felskálázási szorzókat a GPU képességei függvényében.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="836"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="877"/>
       <source>Enable Debug Device</source>
       <translation>Hibakeresési Eszköz Használata</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="837"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="878"/>
       <source>Enables API-level validation of graphics commands.</source>
       <translation>Engedélyezi az API-szintű érvényesítését a grafikai parancsoknak.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="839"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="880"/>
       <source>GS Download Mode</source>
       <translation>GS Letöltési Mód</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="839"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="880"/>
       <source>Accurate</source>
       <translation>Precíz</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="840"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="881"/>
       <source>Skips synchronizing with the GS thread and host GPU for GS downloads. Can result in a large speed boost on slower systems, at the cost of many broken graphical effects. If games are broken and you have this option enabled, please disable it first.</source>
       <translation>Kihagyja a GS-szál és a gazdagép GPU szinkronizálását a GS-letöltésekhez. Lassúbb rendszereken nagy sebességnövekedést eredményezhet, de sok hibás grafikai hatás árán. Ha a játékok nem megfelelően jelenek meg, és ez az opció be van kapcsolva, kérjük, először kapcsold ki.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="769"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="773"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="793"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="970"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="984"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="810"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="814"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="834"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1011"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1025"/>
       <source>Default</source>
       <extracomment>This string refers to a default codec, whether it&apos;s an audio codec or a video codec.</extracomment>
       <translation>Alapértelmezett</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="830"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="871"/>
       <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
       <translation>Kényszeríti a FIFO használatát a Mailbox bemutatással szemben, azaz kettős pufferelés a hármas pufferelés helyett. Általában rosszabb képkocka elosztást eredményez.</translation>
     </message>
@@ -14110,7 +14170,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
   <context>
     <name>GraphicsSettingsWidget::GraphicsSettingsWidget</name>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1001"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1042"/>
       <source>Default</source>
       <extracomment>This string refers to a default pixel format</extracomment>
       <translation>Alapértelmezett</translation>
@@ -14164,7 +14224,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../../pcsx2/GS/GS.cpp" line="1137"/>
       <source>Increase Upscale Multiplier</source>
-      <translation>Felskálázási Szorzó Nővelése</translation>
+      <translation>Felskálázási Szorzó Növelése</translation>
     </message>
     <message>
       <location filename="../../pcsx2/GS/GS.cpp" line="1143"/>
@@ -14327,261 +14387,261 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <translation>Nem található állás mentés a {} foglalatban.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="110"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="115"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="120"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="126"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="130"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="125"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="131"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="135"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="144"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="152"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="160"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="177"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="140"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="149"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="157"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="165"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="182"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="187"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="192"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="197"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="202"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="206"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="207"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="211"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="216"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="221"/>
       <source>System</source>
       <translation>Rendszer</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="110"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="115"/>
       <source>Open Pause Menu</source>
       <translation>Szünet Menü Megnyitása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="116"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="121"/>
       <source>Open Achievements List</source>
       <translation>Trófea Lista Megnyitása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="121"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="126"/>
       <source>Open Leaderboards List</source>
       <translation>Ranglista Megnyitása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="126"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="131"/>
       <source>Toggle Pause</source>
       <translation>Szünet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="130"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="135"/>
       <source>Toggle Fullscreen</source>
       <translation>Teljes Képernyő</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="135"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="140"/>
       <source>Toggle Frame Limit</source>
       <translation>Képkocka Limit Ki/Be</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="145"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="150"/>
       <source>Toggle Turbo / Fast Forward</source>
       <translation>Ki/Be Turbó / Gyorsítás</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="152"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="157"/>
       <source>Toggle Slow Motion</source>
       <translation>Lassítás Ki/Be</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="161"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="166"/>
       <source>Turbo / Fast Forward (Hold)</source>
       <translation>Turbó / Gyorsítás (Lenyomva Tartott)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="177"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="182"/>
       <source>Increase Target Speed</source>
       <translation>Célsebesség Növelése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="182"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="187"/>
       <source>Decrease Target Speed</source>
       <translation>Célsebesség Csökkentése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="187"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="192"/>
       <source>Increase Volume</source>
       <translation>Hangerő Növelése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="192"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="197"/>
       <source>Decrease Volume</source>
       <translation>Hangerő Csökkentése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="197"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="202"/>
       <source>Toggle Mute</source>
       <translation>Némítás Ki/Be</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="202"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="207"/>
       <source>Frame Advance</source>
       <translation>Képkocka Léptetés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="206"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="211"/>
       <source>Shut Down Virtual Machine</source>
       <translation>Virtuális Gép Leállítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="211"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="216"/>
       <source>Reset Virtual Machine</source>
       <translation>Virtuális Gép Újraindítása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="217"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="222"/>
       <source>Toggle Input Recording Mode</source>
       <translation>Bemenet Rögzítésének Ki/Be Kapcsolása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="222"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="227"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="232"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="237"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="242"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="250"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="247"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="255"/>
       <source>Save States</source>
       <translation>Állásmentések</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="223"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="228"/>
       <source>Select Previous Save Slot</source>
       <translation>Előző Állás Foglalat Kiválasztása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="228"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="233"/>
       <source>Select Next Save Slot</source>
       <translation>Következő Állás Foglalat Kiválasztása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="233"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="238"/>
       <source>Save State To Selected Slot</source>
       <translation>Állás Mentése a Kiválasztott Foglalatba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="238"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="243"/>
       <source>Load State From Selected Slot</source>
       <translation>Állás Betöltése a Kiválasztott Foglalatból</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="243"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="248"/>
       <source>Save State and Select Next Slot</source>
       <translation>Állás Mentése és Ugrás a Következő Foglalatra</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="251"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="256"/>
       <source>Select Next Slot and Save State</source>
       <translation>Ugrás a Következő Foglalatra és Állás Mentése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="269"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="274"/>
       <source>Save State To Slot 1</source>
       <translation>Állás Mentése az 1. Foglalatba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="270"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="275"/>
       <source>Load State From Slot 1</source>
       <translation>Állás Betöltése az 1. Foglalatból</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="271"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="276"/>
       <source>Save State To Slot 2</source>
       <translation>Állás Mentése az 2. Foglalatba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="272"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="277"/>
       <source>Load State From Slot 2</source>
       <translation>Állás Betöltése az 2. Foglalatból</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="273"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="278"/>
       <source>Save State To Slot 3</source>
       <translation>Állás Mentése az 3. Foglalatba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="274"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="279"/>
       <source>Load State From Slot 3</source>
       <translation>Állás Betöltése az 3. Foglalatból</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="275"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="280"/>
       <source>Save State To Slot 4</source>
       <translation>Állás Mentése az 4. Foglalatba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="276"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="281"/>
       <source>Load State From Slot 4</source>
       <translation>Állás Betöltése az 4. Foglalatból</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="277"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="282"/>
       <source>Save State To Slot 5</source>
       <translation>Állás Mentése az 5. Foglalatba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="278"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="283"/>
       <source>Load State From Slot 5</source>
       <translation>Állás Betöltése az 5. Foglalatból</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="279"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="284"/>
       <source>Save State To Slot 6</source>
       <translation>Állás Mentése az 6. Foglalatba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="280"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="285"/>
       <source>Load State From Slot 6</source>
       <translation>Állás Betöltése az 6. Foglalatból</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="281"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="286"/>
       <source>Save State To Slot 7</source>
       <translation>Állás Mentése az 7. Foglalatba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="282"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="287"/>
       <source>Load State From Slot 7</source>
       <translation>Állás Betöltése az 7. Foglalatból</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="283"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="288"/>
       <source>Save State To Slot 8</source>
       <translation>Állás Mentése az 8. Foglalatba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="284"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="289"/>
       <source>Load State From Slot 8</source>
       <translation>Állás Betöltése az 8. Foglalatból</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="285"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="290"/>
       <source>Save State To Slot 9</source>
       <translation>Állás Mentése az 9. Foglalatba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="286"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="291"/>
       <source>Load State From Slot 9</source>
       <translation>Állás Betöltése az 9. Foglalatból</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="287"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="292"/>
       <source>Save State To Slot 10</source>
       <translation>Állás Mentése az 10. Foglalatba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="288"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="293"/>
       <source>Load State From Slot 10</source>
       <translation>Állás Betöltése az 10. Foglalatból</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1130"/>
       <source>Save slot {0} selected ({1}).</source>
-      <translation>{0} Mentési foglalat kiválasztva ({1})</translation>
+      <translation>{0} Mentési foglalat kiválasztva ({1}).</translation>
     </message>
   </context>
   <context>
@@ -14678,7 +14738,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../Settings/InputBindingDialog.ui" line="51"/>
       <source>Sensitivity:</source>
-      <translation>Érzékenység: </translation>
+      <translation>Érzékenység:</translation>
     </message>
     <message>
       <location filename="../Settings/InputBindingDialog.ui" line="77"/>
@@ -14704,7 +14764,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../Settings/InputBindingDialog.ui" line="146"/>
       <source>Clear Bindings</source>
-      <translation>Hozzárendelések Elvávolítása</translation>
+      <translation>Hozzárendelések Eltávolítása</translation>
     </message>
     <message>
       <location filename="../Settings/InputBindingDialog.cpp" line="28"/>
@@ -14720,7 +14780,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <location filename="../Settings/InputBindingDialog.cpp" line="159"/>
       <location filename="../Settings/InputBindingDialog.cpp" line="174"/>
       <source>Push Button/Axis... [%1]</source>
-      <translation>Nyomj Egy Gombot/Tengelyt</translation>
+      <translation>Nyomj Egy Gombot/Tengelyt... [%1]</translation>
     </message>
     <message>
       <location filename="../Settings/InputBindingDialog.cpp" line="332"/>
@@ -15051,7 +15111,7 @@ Jobb gomb az eltávolításhoz</translation>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="93"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
       <source>Double-Click Toggles Fullscreen</source>
-      <translation>A Dupla Kattintás Bekapcsolja a Teljes Képernyőt</translation>
+      <translation>Dupla Kattintásra Teljes Képernyő</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="100"/>
@@ -15111,7 +15171,7 @@ Jobb gomb az eltávolításhoz</translation>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="192"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="109"/>
       <source>Enable Automatic Update Check</source>
-      <translation>Automatikus Frissítés Ellenőrzés Bekapcsolása</translation>
+      <translation>Automatikus Frissítés Bekapcsolása</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="199"/>
@@ -15224,7 +15284,7 @@ Jobb gomb az eltávolításhoz</translation>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="110"/>
       <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
-      <translation>Automatikusan ellenőrzi a frissitéseket a program indulásakor. A frissitéseket később is lehet telepíteni, vagy ki is lehet hagyni.</translation>
+      <translation>Automatikusan ellenőrzi a frissítéseket a program indulásakor. A frissítéseket később is lehet telepíteni, vagy ki is lehet hagyni.</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="118"/>
@@ -15235,7 +15295,7 @@ Jobb gomb az eltávolításhoz</translation>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="139"/>
       <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
-      <translation>Megakadályozza a képernyő kímélőt és a gazdagépet az alvó állapottól mikor fut az emuláció.</translation>
+      <translation>Megakadályozza a képernyőkímélőt és a gazdagépet az alvó állapottól mikor fut az emuláció.</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="142"/>
@@ -15245,7 +15305,7 @@ Jobb gomb az eltávolításhoz</translation>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
       <source>Pauses the emulator when a controller with bindings is disconnected.</source>
-      <translation>Szüneteli az emulátort mikor egy játékvezérlővel aminek vannak kiosztott gombjai, megszakad a kapcsolat.</translation>
+      <translation>Szüneteli az emulátort mikor egy játékvezérlővel, amire vannak gombok kiosztva, megszakad a kapcsolat.</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="166"/>
@@ -15283,7 +15343,7 @@ Jobb gomb az eltávolításhoz</translation>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="147"/>
       <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
-      <translation>Leszüneteli az emulátort ha kis méretbe rakod az ablakot, vagy átváltasz egy másik alkalmazásra, mikor visszaváltasz, automatikusan folytatja.</translation>
+      <translation>Szüneteli az emulátort, ha kis méretbe rakod az ablakot vagy átváltasz egy másik alkalmazásra, mikor visszaváltasz, automatikusan folytatja.</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
@@ -15451,594 +15511,608 @@ Jobb gomb az eltávolításhoz</translation>
       <translation>&amp;Rendszer</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="43"/>
-      <location filename="../MainWindow.cpp" line="1407"/>
-      <location filename="../MainWindow.cpp" line="1468"/>
+      <location filename="../MainWindow.cpp" line="1406"/>
+      <location filename="../MainWindow.cpp" line="1467"/>
       <source>Change Disc</source>
       <translation>Lemez Cseréje</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="58"/>
-      <location filename="../MainWindow.cpp" line="2791"/>
+      <location filename="../MainWindow.cpp" line="2785"/>
       <source>Load State</source>
       <translation>Állás Betöltése</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="67"/>
-      <source>Save State</source>
-      <translation>Állás Mentése</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="95"/>
+      <location filename="../MainWindow.ui" line="596"/>
       <source>S&amp;ettings</source>
       <translation>B&amp;eállítások</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="118"/>
+      <location filename="../MainWindow.ui" line="116"/>
       <source>&amp;Help</source>
       <translation>&amp;Segítség</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="131"/>
+      <location filename="../MainWindow.ui" line="129"/>
       <source>&amp;Debug</source>
       <translation>&amp;Hibakeresés</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="135"/>
-      <source>Switch Renderer</source>
-      <translation>Leképező Váltása</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="154"/>
+      <location filename="../MainWindow.ui" line="151"/>
       <source>&amp;View</source>
       <translation>&amp;Nézet</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="158"/>
+      <location filename="../MainWindow.ui" line="155"/>
       <source>&amp;Window Size</source>
       <translation>&amp;Ablak Méret</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="184"/>
+      <location filename="../MainWindow.ui" line="180"/>
       <source>&amp;Tools</source>
       <translation>&amp;Eszközök</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="188"/>
-      <source>Input Recording</source>
-      <translation>Bemenet Felvétel</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="237"/>
+      <location filename="../MainWindow.ui" line="230"/>
       <source>Toolbar</source>
       <translation>Eszköztár</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="282"/>
+      <location filename="../MainWindow.ui" line="274"/>
       <source>Start &amp;File...</source>
       <translation>Fájl &amp;Indítása...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="300"/>
-      <source>Start &amp;Disc...</source>
-      <translation>Lemez &amp;Indítása...</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="318"/>
+      <location filename="../MainWindow.ui" line="306"/>
       <source>Start &amp;BIOS</source>
       <translation>Bios &amp;Indítása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="336"/>
+      <location filename="../MainWindow.ui" line="322"/>
       <source>&amp;Scan For New Games</source>
       <translation>&amp;Új Játékok Keresése</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="345"/>
+      <location filename="../MainWindow.ui" line="330"/>
       <source>&amp;Rescan All Games</source>
       <translation>&amp;Minden Játék Újra Keresése</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="354"/>
+      <location filename="../MainWindow.ui" line="338"/>
       <source>Shut &amp;Down</source>
       <translation>Le&amp;állítás</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="372"/>
+      <location filename="../MainWindow.ui" line="354"/>
       <source>Shut Down &amp;Without Saving</source>
       <translation>Leállítás &amp;Mentés Nélkül</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="381"/>
+      <location filename="../MainWindow.ui" line="362"/>
       <source>&amp;Reset</source>
       <translation>&amp;Újraindítás</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="402"/>
+      <location filename="../MainWindow.ui" line="381"/>
       <source>&amp;Pause</source>
       <translation>&amp;Szünet</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="441"/>
+      <location filename="../MainWindow.ui" line="416"/>
       <source>E&amp;xit</source>
       <translation>K&amp;ilépés</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="450"/>
+      <location filename="../MainWindow.ui" line="424"/>
       <source>&amp;BIOS</source>
       <translation>&amp;BIOS</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="459"/>
-      <source>Emulation</source>
-      <translation>Emuláció</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="468"/>
+      <location filename="../MainWindow.ui" line="440"/>
       <source>&amp;Controllers</source>
       <translation>&amp;Játékvezérlők</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="486"/>
+      <location filename="../MainWindow.ui" line="456"/>
       <source>&amp;Hotkeys</source>
       <translation>&amp;Gyorsbillentyűk</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="495"/>
+      <location filename="../MainWindow.ui" line="464"/>
       <source>&amp;Graphics</source>
       <translation>&amp;Grafika</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="504"/>
-      <source>A&amp;chievements</source>
-      <translation>T&amp;rófeák</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="509"/>
+      <location filename="../MainWindow.ui" line="477"/>
       <source>&amp;Post-Processing Settings...</source>
       <translation>&amp;Utófeldolgozás Beállításai...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="518"/>
-      <source>Fullscreen</source>
-      <translation>Teljes-képernyő</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="532"/>
+      <location filename="../MainWindow.ui" line="498"/>
       <source>Resolution Scale</source>
       <translation>Felbontás Skálája</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="541"/>
+      <location filename="../MainWindow.ui" line="506"/>
       <source>&amp;GitHub Repository...</source>
       <translation>&amp;GitHub Repó...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="550"/>
+      <location filename="../MainWindow.ui" line="514"/>
       <source>Support &amp;Forums...</source>
       <translation>Támogatás &amp;Fórum...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="559"/>
+      <location filename="../MainWindow.ui" line="522"/>
       <source>&amp;Discord Server...</source>
       <translation>&amp;Discord Szerver...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="568"/>
+      <location filename="../MainWindow.ui" line="530"/>
       <source>Check for &amp;Updates...</source>
       <translation>Frissítések &amp;Keresése...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="577"/>
+      <location filename="../MainWindow.ui" line="539"/>
       <source>About &amp;Qt...</source>
       <translation>A &amp;Qt Névjegye...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="586"/>
+      <location filename="../MainWindow.ui" line="548"/>
       <source>&amp;About PCSX2...</source>
       <translation>&amp;A PCSX2 Névjegye...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="527"/>
+      <location filename="../MainWindow.ui" line="493"/>
       <source>Fullscreen</source>
       <comment>In Toolbar</comment>
       <translation>Teljes Képernyő</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="595"/>
+      <location filename="../MainWindow.ui" line="556"/>
       <source>Change Disc...</source>
       <comment>In Toolbar</comment>
       <translation>Lemez Cseréje...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="604"/>
+      <location filename="../MainWindow.ui" line="564"/>
       <source>&amp;Audio</source>
       <translation>&amp;Hang</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="613"/>
-      <source>Game List</source>
-      <translation>Játék Lista</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="622"/>
-      <source>Interface</source>
-      <translation>Kezelőfelület</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="631"/>
-      <source>Add Game Directory...</source>
-      <translation>Játék Könyvtár Hozzáadása...</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="640"/>
-      <source>&amp;Settings</source>
-      <translation>&amp;Beállítások</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="660"/>
-      <source>From File...</source>
-      <translation>Fájl Megnyitása...</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="665"/>
-      <source>From Device...</source>
-      <translation>Eszköz Megnyitása...</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="670"/>
-      <source>From Game List...</source>
-      <translation>Játék Listából...</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="675"/>
-      <source>Remove Disc</source>
-      <translation>Lemez Kiadása</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="680"/>
+      <location filename="../MainWindow.ui" line="635"/>
       <source>Global State</source>
       <translation>Globális Állapot</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="689"/>
+      <location filename="../MainWindow.ui" line="643"/>
       <source>&amp;Screenshot</source>
       <translation>&amp;Képernyő Kép</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="291"/>
+      <location filename="../MainWindow.ui" line="282"/>
       <source>Start File</source>
       <comment>In Toolbar</comment>
       <translation>Fájl Indítása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="309"/>
+      <location filename="../MainWindow.ui" line="43"/>
+      <source>&amp;Change Disc</source>
+      <translation>&amp;Lemez Cseréje</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="57"/>
+      <source>&amp;Load State</source>
+      <translation>&amp;Állás Betöltése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="65"/>
+      <source>Sa&amp;ve State</source>
+      <translation>Állás &amp;Mentése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="93"/>
+      <source>Setti&amp;ngs</source>
+      <translation>Beállítá&amp;sok</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="133"/>
+      <source>&amp;Switch Renderer</source>
+      <translation>&amp;Leképező Váltása</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="184"/>
+      <source>&amp;Input Recording</source>
+      <translation>&amp;Bemenet Felvétel</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="290"/>
+      <source>Start D&amp;isc...</source>
+      <translation>Lemez &amp;Indítása...</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="298"/>
       <source>Start Disc</source>
       <comment>In Toolbar</comment>
       <translation>Lemez Indítása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="327"/>
+      <location filename="../MainWindow.ui" line="314"/>
       <source>Start BIOS</source>
       <comment>In Toolbar</comment>
       <translation>Bios Indítása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="363"/>
+      <location filename="../MainWindow.ui" line="346"/>
       <source>Shut Down</source>
       <comment>In Toolbar</comment>
       <translation>Leállítás</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="390"/>
+      <location filename="../MainWindow.ui" line="370"/>
       <source>Reset</source>
       <comment>In Toolbar</comment>
       <translation>Újraindítás</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="414"/>
+      <location filename="../MainWindow.ui" line="392"/>
       <source>Pause</source>
       <comment>In Toolbar</comment>
       <translation>Szünet</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="423"/>
+      <location filename="../MainWindow.ui" line="400"/>
       <source>Load State</source>
       <comment>In Toolbar</comment>
       <translation>Állás Betöltése</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="432"/>
+      <location filename="../MainWindow.ui" line="408"/>
       <source>Save State</source>
       <comment>In Toolbar</comment>
       <translation>Állás Mentése</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="477"/>
+      <location filename="../MainWindow.ui" line="432"/>
+      <source>&amp;Emulation</source>
+      <translation>&amp;Emuláció</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="448"/>
       <source>Controllers</source>
       <comment>In Toolbar</comment>
       <translation>Játékvezérlők</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="652"/>
+      <location filename="../MainWindow.ui" line="472"/>
+      <source>Achie&amp;vements</source>
+      <translation>Tróf&amp;eák</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="485"/>
+      <source>&amp;Fullscreen</source>
+      <translation>&amp;Teljes Képernyő</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="580"/>
+      <source>&amp;Interface</source>
+      <translation>&amp;Kezelőfelület</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="588"/>
+      <source>Add Game &amp;Directory...</source>
+      <translation>Játék Könyvtár &amp;Hozzáadása...</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="607"/>
       <source>Settings</source>
       <comment>In Toolbar</comment>
       <translation>Beállítások</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="698"/>
+      <location filename="../MainWindow.ui" line="615"/>
+      <source>&amp;From File...</source>
+      <translation>&amp;Fájlból...</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="620"/>
+      <source>From &amp;Device...</source>
+      <translation>Esz&amp;közből</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="625"/>
+      <source>From &amp;Game List...</source>
+      <translation>Játék&amp;listából...</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="630"/>
+      <source>&amp;Remove Disc</source>
+      <translation>&amp;Lemez Kiadása</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="651"/>
       <source>Screenshot</source>
       <comment>In Toolbar</comment>
       <translation>Képernyőkép</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="707"/>
+      <location filename="../MainWindow.ui" line="659"/>
       <source>&amp;Memory Cards</source>
       <translation>&amp;Memória Kártyák</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="716"/>
+      <location filename="../MainWindow.ui" line="667"/>
       <source>&amp;Network &amp;&amp; HDD</source>
       <translation>&amp;Hálózat &amp;&amp; HDD</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="725"/>
+      <location filename="../MainWindow.ui" line="675"/>
       <source>&amp;Folders</source>
       <translation>&amp;Könyvtárak</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="736"/>
+      <location filename="../MainWindow.ui" line="686"/>
       <source>&amp;Toolbar</source>
       <translation>&amp;Eszköztár</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="747"/>
-      <source>Lock Toolbar</source>
-      <translation>Eszköztár Rögzítése</translation>
+      <location filename="../MainWindow.ui" line="771"/>
+      <source>Show Titl&amp;es (Grid View)</source>
+      <translation>Címek Megjelenítése (Négyzetrács Mód)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="758"/>
+      <location filename="../MainWindow.ui" line="817"/>
+      <source>&amp;Open Data Directory...</source>
+      <translation>&amp;Adatkönyvtár Megnyitása...</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="825"/>
+      <source>&amp;Toggle Software Rendering</source>
+      <translation>&amp;Szoftveres Leképezésre Váltás</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="833"/>
+      <source>&amp;Open Debugger</source>
+      <translation>&amp;Hibajavító Eszköztár Megnyitása</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="841"/>
+      <source>&amp;Reload Cheats/Patches</source>
+      <translation>&amp;Csalások/Tapaszok Újratöltése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="849"/>
+      <source>E&amp;nable System Console</source>
+      <translation>Re&amp;ndszer Konzol Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="857"/>
+      <source>Enable &amp;Debug Console</source>
+      <translation>Hibajavító &amp;Konzol Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="865"/>
+      <source>Enable &amp;Log Window</source>
+      <translation>&amp;Napló Ablak Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="873"/>
+      <source>Enable &amp;Verbose Logging</source>
+      <translation>&amp;Részletes Naplózás Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="881"/>
+      <source>Enable EE Console &amp;Logging</source>
+      <translation>EE Konzol Na&amp;plózás Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="889"/>
+      <source>Enable &amp;IOP Console Logging</source>
+      <translation>I&amp;OP Konzol Naplózás Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="897"/>
+      <source>Save Single Frame &amp;GS Dump</source>
+      <translation>Egy Képkockányi G&amp;S Adat Mentése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="905"/>
+      <source>&amp;New</source>
+      <extracomment>This section refers to the Input Recording submenu.</extracomment>
+      <translation>&amp;Új</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="913"/>
+      <source>&amp;Play</source>
+      <extracomment>This section refers to the Input Recording submenu.</extracomment>
+      <translation>Le&amp;játszás</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="921"/>
+      <source>&amp;Stop</source>
+      <extracomment>This section refers to the Input Recording submenu.</extracomment>
+      <translation>&amp;Leállítás</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="934"/>
+      <source>&amp;Controller Logs</source>
+      <translation>&amp;Játékvezérlő Napló</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="942"/>
+      <source>&amp;Input Recording Logs</source>
+      <translation>&amp;Felvételi Napló</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="958"/>
+      <source>Enable &amp;CDVD Read Logging</source>
+      <translation>C&amp;DVD Napló Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="966"/>
+      <source>Save CDVD &amp;Block Dump</source>
+      <translation>CDVD Blo&amp;kk Mentése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="974"/>
+      <source>&amp;Enable Log Timestamps</source>
+      <translation>Napló D&amp;átumbélyegek Engedélyezése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="982"/>
+      <source>Start Big Picture &amp;Mode</source>
+      <translation>Nagy Kép M&amp;ód Indítása</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="998"/>
+      <source>&amp;Cover Downloader...</source>
+      <translation>&amp;Borítók Letöltése...</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="1006"/>
+      <source>&amp;Show Advanced Settings</source>
+      <translation>&amp;Szakértő Beállítások Megjelenítése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="1011"/>
+      <source>&amp;Recording Viewer</source>
+      <translation>&amp;Bemeneti Felvétel Megtekintő</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="1022"/>
+      <source>&amp;Video Capture</source>
+      <translation>&amp;Videó Felvétel</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="1030"/>
+      <source>&amp;Edit Cheats...</source>
+      <translation>&amp;Csalások Szerkesztése...</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="1038"/>
+      <source>Edit &amp;Patches...</source>
+      <translation>Tapaszok Sz&amp;erkesztése...</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="708"/>
       <source>&amp;Status Bar</source>
-      <translation>&amp;Státusz Sáv</translation>
+      <translation>&amp;Állapotsor</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="769"/>
-      <source>Verbose Status</source>
-      <translation>Részletes Állapot</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="778"/>
+      <location filename="../MainWindow.ui" line="572"/>
+      <location filename="../MainWindow.ui" line="727"/>
       <source>Game &amp;List</source>
       <translation>Játék &amp;Lista</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="790"/>
+      <location filename="../MainWindow.ui" line="697"/>
+      <source>Loc&amp;k Toolbar</source>
+      <translation>Eszköztár R&amp;ögzítése</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="719"/>
+      <source>&amp;Verbose Status</source>
+      <translation>R&amp;észletes Állapot</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="738"/>
       <source>System &amp;Display</source>
       <extracomment>This grayed-out at first option will become available while there is a game emulated and the game list is displayed over the actual emulation, to let users display the system emulation once more.</extracomment>
       <translation>Játék Ké&amp;pernyő</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="802"/>
+      <location filename="../MainWindow.ui" line="749"/>
       <source>Game &amp;Properties</source>
       <translation>Játék &amp;Beállítások</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="811"/>
+      <location filename="../MainWindow.ui" line="757"/>
       <source>Game &amp;Grid</source>
       <translation>&amp;Játék Négyzetrács</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="822"/>
-      <source>Show Titles (Grid View)</source>
-      <translation>Címek Megjelenítése (Négyzetrács Mód)</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="831"/>
+      <location filename="../MainWindow.ui" line="779"/>
       <source>Zoom &amp;In (Grid View)</source>
       <translation>&amp;Nagyítás (Négyzetrács Mód)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="834"/>
+      <location filename="../MainWindow.ui" line="782"/>
       <source>Ctrl++</source>
       <translation>Ctrl++</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="843"/>
+      <location filename="../MainWindow.ui" line="790"/>
       <source>Zoom &amp;Out (Grid View)</source>
       <translation>&amp;Kicsinyítés (Négyzetrács Mód)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="846"/>
+      <location filename="../MainWindow.ui" line="793"/>
       <source>Ctrl+-</source>
       <translation>Ctrl+-</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="855"/>
+      <location filename="../MainWindow.ui" line="801"/>
       <source>Refresh &amp;Covers (Grid View)</source>
       <translation>Borítók &amp;Frissítése (Négyzetrács Mód)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="864"/>
+      <location filename="../MainWindow.ui" line="809"/>
       <source>Open Memory Card Directory...</source>
       <translation>Memória Kártyák Mappájának Megnyitása...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="873"/>
-      <source>Open Data Directory...</source>
-      <translation>Adat Könyvtár Megnyitása...</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="882"/>
-      <source>Toggle Software Rendering</source>
-      <translation>Szoftveres Leképezés Bekapcsolása</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="891"/>
-      <source>Open Debugger</source>
-      <translation>Hibajavító Eszköztár Megnyitása</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="900"/>
-      <source>Reload Cheats/Patches</source>
-      <translation>Csalások/Javítások Újratöltése</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="908"/>
-      <source>Enable System Console</source>
-      <translation>Rendszer Konzol Engedélyezése</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="916"/>
-      <source>Enable Debug Console</source>
-      <translation>Hibajavító Konzol Engedélyezése</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="924"/>
-      <source>Enable Log Window</source>
-      <translation>Napló Ablak Engedélyezése</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="932"/>
-      <source>Enable Verbose Logging</source>
-      <translation>Részletes Naplózás Engedélyezése</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="940"/>
-      <source>Enable EE Console Logging</source>
-      <translation>EE Konzol Naplózás Engedélyezése</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="948"/>
-      <source>Enable IOP Console Logging</source>
-      <translation>IOP Konzol Naplózás Engedélyezése</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="957"/>
-      <source>Save Single Frame GS Dump</source>
-      <translation>Egy Képkockányi GS Adat Mentése</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="965"/>
-      <source>New</source>
-      <extracomment>This section refers to the Input Recording submenu.</extracomment>
-      <translation>Új</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="973"/>
-      <source>Play</source>
-      <extracomment>This section refers to the Input Recording submenu.</extracomment>
-      <translation>Lejátszás</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="981"/>
-      <source>Stop</source>
-      <extracomment>This section refers to the Input Recording submenu.</extracomment>
-      <translation>Leállítás</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="989"/>
-      <source>Settings</source>
-      <extracomment>This section refers to the Input Recording submenu.</extracomment>
-      <translation>Beállítások</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="994"/>
-      <location filename="../MainWindow.ui" line="1010"/>
+      <location filename="../MainWindow.ui" line="926"/>
       <source>Input Recording Logs</source>
       <translation>Felvételi Napló</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1002"/>
-      <source>Controller Logs</source>
-      <translation>Játékvezérlő Napló</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="1018"/>
+      <location filename="../MainWindow.ui" line="950"/>
       <source>Enable &amp;File Logging</source>
       <translation>Fájl &amp;Naplózás Engedélyezése</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1026"/>
-      <source>Enable CDVD Read Logging</source>
-      <translation>CDVD Napló Engedélyezése</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="1034"/>
-      <source>Save CDVD Block Dump</source>
-      <translation>CDVD Blokk Mentése</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="1042"/>
-      <source>Enable Log Timestamps</source>
-      <translation>Napló Dátumbélyegek Engedélyezése</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="1051"/>
-      <location filename="../MainWindow.cpp" line="1511"/>
+      <location filename="../MainWindow.cpp" line="1510"/>
       <source>Start Big Picture Mode</source>
       <translation>Nagy Kép Mód Indítása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1060"/>
-      <location filename="../MainWindow.cpp" line="1512"/>
+      <location filename="../MainWindow.ui" line="990"/>
+      <location filename="../MainWindow.cpp" line="1511"/>
       <source>Big Picture</source>
       <comment>In Toolbar</comment>
       <translation>Nagy Kép</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1069"/>
-      <source>Cover Downloader...</source>
-      <translation>Borítók Letöltése...</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="1077"/>
-      <location filename="../MainWindow.cpp" line="674"/>
+      <location filename="../MainWindow.cpp" line="673"/>
       <source>Show Advanced Settings</source>
       <translation>Szakértő Beállítások Megjelenítése</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1082"/>
-      <source>Recording Viewer</source>
-      <translation>Felvétel Megtekintő</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="1090"/>
-      <location filename="../MainWindow.cpp" line="743"/>
+      <location filename="../MainWindow.cpp" line="742"/>
       <source>Video Capture</source>
       <translation>Videó Felvétel</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1099"/>
-      <source>Edit Cheats...</source>
-      <translation>Csalások Szerkesztése...</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.ui" line="1108"/>
-      <source>Edit Patches...</source>
-      <translation>Javítások Szerkesztése...</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.cpp" line="252"/>
+      <location filename="../MainWindow.cpp" line="251"/>
       <source>Internal Resolution</source>
       <translation>Leképezési Felbontás</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="252"/>
+      <location filename="../MainWindow.cpp" line="251"/>
       <source>%1x Scale</source>
       <translation>%1x Skála</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="652"/>
+      <location filename="../MainWindow.cpp" line="651"/>
       <source>Select location to save block dump:</source>
       <translation>Válaszd ki a blokk adat mentési helyét:</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="670"/>
+      <location filename="../MainWindow.cpp" line="669"/>
       <source>Do not show again</source>
       <translation>Ne mutassa többet</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="675"/>
+      <location filename="../MainWindow.cpp" line="674"/>
       <source>Changing advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and even corrupted save files. We do not recommend changing advanced settings unless you know what you are doing, and the implications of changing each setting.
 
 The PCSX2 team will not provide any support for configurations that modify these settings, you are on your own.
@@ -16051,298 +16125,298 @@ A PCSX2 csapat nem ad támogatást abban az esetben ha ezek a beállítások meg
 Biztos hogy folytatni szeretnéd?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="740"/>
+      <location filename="../MainWindow.cpp" line="739"/>
       <source>%1 Files (*.%2)</source>
       <translation>%1 Fájlok (*.%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1079"/>
+      <location filename="../MainWindow.cpp" line="1078"/>
       <source>WARNING: Memory Card Busy</source>
       <translation>FIGYELEM: Memóriakártya Használatban</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1200"/>
+      <location filename="../MainWindow.cpp" line="1199"/>
       <source>Confirm Shutdown</source>
       <translation>Bezárás Megerősítése</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1203"/>
+      <location filename="../MainWindow.cpp" line="1202"/>
       <source>Are you sure you want to shut down the virtual machine?</source>
       <translation>Biztos, hogy le akarod állítani a virtuális gépet?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1205"/>
+      <location filename="../MainWindow.cpp" line="1204"/>
       <source>Save State For Resume</source>
       <translation>Gyorsmentés Létrehozása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1313"/>
-      <location filename="../MainWindow.cpp" line="1708"/>
-      <location filename="../MainWindow.cpp" line="2200"/>
-      <location filename="../MainWindow.cpp" line="2335"/>
-      <location filename="../MainWindow.cpp" line="2696"/>
-      <location filename="../MainWindow.cpp" line="2810"/>
+      <location filename="../MainWindow.cpp" line="1312"/>
+      <location filename="../MainWindow.cpp" line="1707"/>
+      <location filename="../MainWindow.cpp" line="2194"/>
+      <location filename="../MainWindow.cpp" line="2329"/>
+      <location filename="../MainWindow.cpp" line="2690"/>
+      <location filename="../MainWindow.cpp" line="2804"/>
       <source>Error</source>
       <translation>Hiba</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1313"/>
+      <location filename="../MainWindow.cpp" line="1312"/>
       <source>You must select a disc to change discs.</source>
       <translation>Ki kell választanod egy lemezt a lemez váltáshoz.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1345"/>
+      <location filename="../MainWindow.cpp" line="1344"/>
       <source>Properties...</source>
       <translation>Tulajdonságok...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1362"/>
+      <location filename="../MainWindow.cpp" line="1361"/>
       <source>Set Cover Image...</source>
-      <translation>Borító Kép Kiválasztása...</translation>
+      <translation>Borítókép Kiválasztása...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1365"/>
+      <location filename="../MainWindow.cpp" line="1364"/>
       <source>Exclude From List</source>
       <translation>Kihagyás a Listáról</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1368"/>
+      <location filename="../MainWindow.cpp" line="1367"/>
       <source>Reset Play Time</source>
-      <translation>Játék Idő Nullázása</translation>
+      <translation>Játékidő Nullázása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1372"/>
+      <location filename="../MainWindow.cpp" line="1371"/>
       <source>Check Wiki Page</source>
       <translation>Wiki Oldal Megnyitása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1379"/>
+      <location filename="../MainWindow.cpp" line="1378"/>
       <source>Default Boot</source>
       <translation>Normál Indítás</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1386"/>
+      <location filename="../MainWindow.cpp" line="1385"/>
       <source>Fast Boot</source>
       <translation>Gyors Indítás</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1389"/>
+      <location filename="../MainWindow.cpp" line="1388"/>
       <source>Full Boot</source>
       <translation>Teljes Indítás</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1394"/>
+      <location filename="../MainWindow.cpp" line="1393"/>
       <source>Boot and Debug</source>
       <translation>Indítás és Hibakeresés</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1418"/>
+      <location filename="../MainWindow.cpp" line="1417"/>
       <source>Add Search Directory...</source>
       <translation>Keresendő Mappa Hozzáadása...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1427"/>
+      <location filename="../MainWindow.cpp" line="1426"/>
       <source>Start File</source>
       <translation>Fájl Indítása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1436"/>
+      <location filename="../MainWindow.cpp" line="1435"/>
       <source>Start Disc</source>
       <translation>Lemez Indítása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1453"/>
+      <location filename="../MainWindow.cpp" line="1452"/>
       <source>Select Disc Image</source>
       <translation>Lemez Képfájl Kiválasztása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1621"/>
+      <location filename="../MainWindow.cpp" line="1620"/>
       <source>Updater Error</source>
       <translation>Frissítő Hiba</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1627"/>
+      <location filename="../MainWindow.cpp" line="1626"/>
       <source>&lt;p&gt;Sorry, you are trying to update a PCSX2 version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please download from the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://pcsx2.net/downloads/&quot;&gt;https://pcsx2.net/downloads/&lt;/a&gt;&lt;/p&gt;</source>
       <translation>&lt;p&gt; Sajnáljuk, egy olyan PCSX2 verziót próbálsz frissíteni, amely nem hivatalos GitHub kiadás. Az inkompatibilitások elkerülése érdekében az automatikus frissítés csak a hivatalos buildek esetében engedélyezett.&lt;/p&gt;&lt;p&gt;&lt;p&gt;Hivatalos buildet az alábbi linkről töltheted le:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://pcsx2.net/downloads/&quot;&gt;https://pcsx2.net/downloads/&lt;/a&gt;&lt;/p&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1632"/>
+      <location filename="../MainWindow.cpp" line="1631"/>
       <source>Automatic updating is not supported on the current platform.</source>
       <translation>Automatikus frissítés nem támogatott ezen a platformon.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1698"/>
+      <location filename="../MainWindow.cpp" line="1697"/>
       <source>Confirm File Creation</source>
       <translation>Fájl Létrehozásának Jóváhagyása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1699"/>
+      <location filename="../MainWindow.cpp" line="1698"/>
       <source>The pnach file &apos;%1&apos; does not currently exist. Do you want to create it?</source>
       <translation>A pnach file &apos;%1&apos; jelenleg nem létezik. Szeretnéd létrehozni?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1708"/>
+      <location filename="../MainWindow.cpp" line="1707"/>
       <source>Failed to create &apos;%1&apos;.</source>
       <translation>Sikertelen a &apos;%1&apos; létrehozása.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1733"/>
+      <location filename="../MainWindow.cpp" line="1732"/>
       <source>Theme Change</source>
       <translation>Téma Váltás</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1734"/>
+      <location filename="../MainWindow.cpp" line="1733"/>
       <source>Changing the theme will close the debugger window. Any unsaved data will be lost. Do you want to continue?</source>
       <translation>A téma váltása bezárja a hibakereső ablakot.
 Minden nem mentett adat elveszik. Szeretnéd folytatni?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1832"/>
+      <location filename="../MainWindow.cpp" line="1831"/>
       <source>Input Recording Failed</source>
       <translation>Bemenet Felvétele Sikertelen</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1833"/>
+      <location filename="../MainWindow.cpp" line="1832"/>
       <source>Failed to create file: {}</source>
       <translation>Nem sikerült a fájlt létrehozni: {}</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1856"/>
+      <location filename="../MainWindow.cpp" line="1855"/>
       <source>Input Recording Files (*.p2m2)</source>
       <translation>Bemeneti Felvétel Fájlok (*.p2m2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1891"/>
+      <location filename="../MainWindow.cpp" line="1890"/>
       <source>Input Playback Failed</source>
       <translation>Felvétel Lejátszása Sikertelen</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1892"/>
+      <location filename="../MainWindow.cpp" line="1891"/>
       <source>Failed to open file: {}</source>
       <translation>Fájl megnyitása sikertelen: {}</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1978"/>
+      <location filename="../MainWindow.cpp" line="1972"/>
       <source>Paused</source>
       <translation>Szünetelve</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2157"/>
+      <location filename="../MainWindow.cpp" line="2151"/>
       <source>Load State Failed</source>
       <translation>Állás Betöltése Sikertelen</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2157"/>
+      <location filename="../MainWindow.cpp" line="2151"/>
       <source>Cannot load a save state without a running VM.</source>
       <translation>Nem lehet állást betölteni, ha nem fut a virtuális gép.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2185"/>
+      <location filename="../MainWindow.cpp" line="2179"/>
       <source>The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?</source>
       <translation>Az új ELF nem betölthető a virtuális gép újraindítása nélkül. Szeretnéd most újraindítani a virtuális gépet?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2200"/>
+      <location filename="../MainWindow.cpp" line="2194"/>
       <source>Cannot change from game to GS dump without shutting down first.</source>
       <translation>Nem lehet játékról GS adatra váltani leállítás nélkül.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2335"/>
+      <location filename="../MainWindow.cpp" line="2329"/>
       <source>Failed to get window info from widget</source>
       <translation>Sikertelen az ablakinformáció lekérése a widgetből</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1511"/>
+      <location filename="../MainWindow.cpp" line="1510"/>
       <source>Stop Big Picture Mode</source>
       <translation>Nagy Kép Mód Leállítása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1512"/>
+      <location filename="../MainWindow.cpp" line="1511"/>
       <source>Exit Big Picture</source>
       <comment>In Toolbar</comment>
       <translation>Kilépés a Nagy Kép Módból</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1576"/>
+      <location filename="../MainWindow.cpp" line="1575"/>
       <source>Game Properties</source>
       <translation>Játék Tulajdonságai</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1576"/>
+      <location filename="../MainWindow.cpp" line="1575"/>
       <source>Game properties is unavailable for the current game.</source>
       <translation>A játék tulajdonságok nem elérhetők a jelenlegi játékhoz.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2654"/>
+      <location filename="../MainWindow.cpp" line="2648"/>
       <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
       <translation>Nem található CD/DVD-ROM egység. Kérlek Bizonyosod meg róla, hogy a meghajtó csatlakoztatva van, és a megfelelő hozzáférés biztosított.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2672"/>
+      <location filename="../MainWindow.cpp" line="2666"/>
       <source>Select disc drive:</source>
       <translation>Lemez meghajtó kiválasztása:</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2696"/>
+      <location filename="../MainWindow.cpp" line="2690"/>
       <source>This save state does not exist.</source>
       <translation>Ez az állás mentés nem létezik.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2709"/>
+      <location filename="../MainWindow.cpp" line="2703"/>
       <source>Select Cover Image</source>
-      <translation>Válassz Borító Képet</translation>
+      <translation>Válassz Borítóképet</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2726"/>
+      <location filename="../MainWindow.cpp" line="2720"/>
       <source>Cover Already Exists</source>
       <translation>Ez A Borító Már Létezik</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2727"/>
+      <location filename="../MainWindow.cpp" line="2721"/>
       <source>A cover image for this game already exists, do you wish to replace it?</source>
-      <translation>Ehhez a játékhoz már található borító kép, szeretnéd lecserélni?</translation>
+      <translation>Ehhez a játékhoz már található borítókép, szeretnéd lecserélni?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2722"/>
+      <location filename="../MainWindow.cpp" line="2716"/>
+      <location filename="../MainWindow.cpp" line="2730"/>
       <location filename="../MainWindow.cpp" line="2736"/>
       <location filename="../MainWindow.cpp" line="2742"/>
-      <location filename="../MainWindow.cpp" line="2748"/>
       <source>Copy Error</source>
       <translation>Másolás Hiba</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2736"/>
+      <location filename="../MainWindow.cpp" line="2730"/>
       <source>Failed to remove existing cover &apos;%1&apos;</source>
       <translation>Sikertelen a létező borító törlése &apos;%1&apos;</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2742"/>
+      <location filename="../MainWindow.cpp" line="2736"/>
       <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
       <translation>Sikertelen a &apos;%1&apos; másolása a &apos;%2&apos;-ba</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2748"/>
+      <location filename="../MainWindow.cpp" line="2742"/>
       <source>Failed to remove &apos;%1&apos;</source>
       <translation>Sikertelen a törlés &apos;%1&apos;</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2184"/>
-      <location filename="../MainWindow.cpp" line="2757"/>
+      <location filename="../MainWindow.cpp" line="2178"/>
+      <location filename="../MainWindow.cpp" line="2751"/>
       <source>Confirm Reset</source>
       <translation>Újraindítás Jóváhagyása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2709"/>
+      <location filename="../MainWindow.cpp" line="2703"/>
       <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
       <translation>Minden Borító Formátum (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2722"/>
+      <location filename="../MainWindow.cpp" line="2716"/>
       <source>You must select a different file to the current cover image.</source>
-      <translation>Másik fájlt kell választanod a jelenlegi borító képhez.</translation>
+      <translation>Másik fájlt kell választanod a jelenlegi borítóképhez.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2758"/>
+      <location filename="../MainWindow.cpp" line="2752"/>
       <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
@@ -16351,12 +16425,12 @@ This action cannot be undone.</source>
 Ez a művelet nem visszavonható.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2785"/>
+      <location filename="../MainWindow.cpp" line="2779"/>
       <source>Load Resume State</source>
       <translation>Gyorsmentés Betöltése</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2788"/>
+      <location filename="../MainWindow.cpp" line="2782"/>
       <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -16369,133 +16443,133 @@ Do you want to load this state, or start from a fresh boot?</source>
 Szeretnéd betölteni ezt az állást, vagy-e nélkül indítanád?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2792"/>
+      <location filename="../MainWindow.cpp" line="2786"/>
       <source>Fresh Boot</source>
       <translation>Friss Indítás</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2793"/>
+      <location filename="../MainWindow.cpp" line="2787"/>
       <source>Delete And Boot</source>
       <translation>Törlés És Indítás</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2810"/>
+      <location filename="../MainWindow.cpp" line="2804"/>
       <source>Failed to delete save state file &apos;%1&apos;.</source>
       <translation>Nem sikerült az állás törlése &apos;%1&apos;.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2868"/>
+      <location filename="../MainWindow.cpp" line="2862"/>
       <source>Load State File...</source>
       <translation>Állás Fájl Betöltése...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2868"/>
+      <location filename="../MainWindow.cpp" line="2862"/>
       <source>Load From File...</source>
       <translation>Betöltés Fájlból...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2871"/>
-      <location filename="../MainWindow.cpp" line="2942"/>
+      <location filename="../MainWindow.cpp" line="2865"/>
+      <location filename="../MainWindow.cpp" line="2936"/>
       <source>Select Save State File</source>
       <translation>Mentett Állás Fájl Kiválasztása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2942"/>
+      <location filename="../MainWindow.cpp" line="2936"/>
       <source>Save States (*.p2s)</source>
-      <translation>Állás Mentések (*.p2s)</translation>
+      <translation>Állásmentések (*.p2s)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2878"/>
+      <location filename="../MainWindow.cpp" line="2872"/>
       <source>Delete Save States...</source>
-      <translation>Állás Mentések Törlése...</translation>
+      <translation>Állásmentések Törlése...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="58"/>
+      <location filename="../MainWindow.cpp" line="57"/>
       <source>All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;Single-Track Raw Images (*.bin *.iso);;Cue Sheets (*.cue);;Media Descriptor File (*.mdf);;MAME CHD Images (*.chd);;CSO Images (*.cso);;ZSO Images (*.zso);;GZ Images (*.gz);;ELF Executables (*.elf);;IRX Executables (*.irx);;GS Dumps (*.gs *.gs.xz *.gs.zst);;Block Dumps (*.dump)</source>
       <translation>Minden Fájltípus (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;Egy-Sávos Nyers Képfájlok (*.bin *.iso);;Cue Adatlap (*.cue);;Media Leíró Fájl (*.mdf);;MAME CHD Képfájlok (*.chd);;CSO Képfájlok (*.cso);;ZSO Képfájlok (*.zso);;GZ Képfájlok (*.gz);;ELF Végrehajthatók (*.elf);;IRX Végrehajthatók (*.irx);;GS Adatok (*.gs *.gs.xz *.gs.zst);;Blokk Adatok (*.dump)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="71"/>
+      <location filename="../MainWindow.cpp" line="70"/>
       <source>All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.dump);;Single-Track Raw Images (*.bin *.iso);;Cue Sheets (*.cue);;Media Descriptor File (*.mdf);;MAME CHD Images (*.chd);;CSO Images (*.cso);;ZSO Images (*.zso);;GZ Images (*.gz);;Block Dumps (*.dump)</source>
       <translation>Minden Fájltípus (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.elf *.irx *.gs *. *. *.dump);;Egy-Sávos Nyers Képfájlok (*.bin *.iso);;Cue Adatlap (*.cue);;Media Leíró Fájl (*.mdf);;MAME CHD Képfájlok (*.chd);;CSO Képfájlok (*.cso);;ZSO Képfájlok (*.zso);;GZ Képfájlok (*.gz);;Blokk Adatok (*.dump)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1080"/>
+      <location filename="../MainWindow.cpp" line="1079"/>
       <source>WARNING: Your memory card is still writing data. Shutting down now &lt;b&gt;WILL IRREVERSIBLY DESTROY YOUR MEMORY CARD.&lt;/b&gt; It is strongly recommended to resume your game and let it finish writing to your memory card.&lt;br&gt;&lt;br&gt;Do you wish to shutdown anyways and &lt;b&gt;IRREVERSIBLY DESTROY YOUR MEMORY CARD?&lt;/b&gt;</source>
       <translation>FIGYELEM: A memória kártya még mindig adatot ír. Ha most leállítód a játékot az &lt;b&gt;VISSZAVONHATATLANUL KÁROSÍTJA A MEMÓRIA KÁRTYÁT.&lt;/b&gt; Erősen ajánlott visszatérni a játékhoz, és hagyni, hogy befejezze az írást a memória kártyára.&lt;br&gt;&lt;br&gt;Ennek ellenére szeretnéd mégis leállítani és &lt;b&gt;VISSZAVONHATATLANUL TÖNKRETENNI A MEMÓRIA KÁRTYÁD?&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2871"/>
+      <location filename="../MainWindow.cpp" line="2865"/>
       <source>Save States (*.p2s *.p2s.backup)</source>
-      <translation>Állás Mentések (*.p2s *.p2s.backup)</translation>
+      <translation>Állásmentések (*.p2s *.p2s.backup)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2883"/>
+      <location filename="../MainWindow.cpp" line="2877"/>
       <source>Undo Load State</source>
       <translation>Állás Betöltés Visszavonása</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2897"/>
+      <location filename="../MainWindow.cpp" line="2891"/>
       <source>Resume (%2)</source>
       <translation>Folytatás (%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2913"/>
+      <location filename="../MainWindow.cpp" line="2907"/>
       <source>Load Slot %1 (%2)</source>
       <translation>%1 Foglalat Betöltése (%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2922"/>
-      <location filename="../MainWindow.cpp" line="2930"/>
+      <location filename="../MainWindow.cpp" line="2916"/>
+      <location filename="../MainWindow.cpp" line="2924"/>
       <source>Delete Save States</source>
       <translation>Mentett Állások Törlése</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2923"/>
+      <location filename="../MainWindow.cpp" line="2917"/>
       <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
       <translation>Biztos, hogy törölni szeretnéd a %1 minden mentett állását?
 
-Ezek az állás mentések nem lesznek helyreállíthatók.</translation>
+Ezek az állásmentések nem lesznek helyreállíthatók.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2930"/>
+      <location filename="../MainWindow.cpp" line="2924"/>
       <source>%1 save states deleted.</source>
       <translation>A %1 mentett állásai törölve.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2940"/>
+      <location filename="../MainWindow.cpp" line="2934"/>
       <source>Save To File...</source>
       <translation>Mentés Fájlba...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2960"/>
+      <location filename="../MainWindow.cpp" line="2954"/>
       <source>Empty</source>
       <translation>Üres</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2962"/>
+      <location filename="../MainWindow.cpp" line="2956"/>
       <source>Save Slot %1 (%2)</source>
       <translation>Mentés a %1 Foglalatba (%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="3013"/>
+      <location filename="../MainWindow.cpp" line="3007"/>
       <source>Confirm Disc Change</source>
       <translation>Lemez Csere Megerősítése</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="3014"/>
+      <location filename="../MainWindow.cpp" line="3008"/>
       <source>Do you want to swap discs or boot the new image (via system reset)?</source>
       <translation>Szeretnél lemezt cserélni vagy új képfájlt töltesz be (a rendszer újraindításával)?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="3015"/>
+      <location filename="../MainWindow.cpp" line="3009"/>
       <source>Swap Disc</source>
       <translation>Lemez Csere</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="3016"/>
+      <location filename="../MainWindow.cpp" line="3010"/>
       <source>Reset</source>
       <translation>Újraindítás</translation>
     </message>
@@ -16518,25 +16592,25 @@ Ezek az állás mentések nem lesznek helyreállíthatók.</translation>
   <context>
     <name>MemoryCard</name>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="284"/>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="969"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="282"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="967"/>
       <source>Memory Card Creation Failed</source>
       <translation>Memória Kártya Létrehozása Sikertelen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="285"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="283"/>
       <source>Could not create the memory card:
 {}</source>
       <translation>Memória kártya létrehozása sikertelen:
 {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="310"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="308"/>
       <source>Memory Card Read Failed</source>
       <translation>Memória Kártya Olvasása Sikertelen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="311"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="309"/>
       <source>Unable to access memory card:
 
 {}
@@ -16549,29 +16623,35 @@ Close any other instances of PCSX2, or restart your computer.
 {}
 
 Lehetséges hogy a PCSX2 egy már futó példánya használja ezt a kártyát vagy írásvédett mappában található.
-Zárd be a többi PCSX2 példányt, vagy indítsd újra a számítógépet.</translation>
+Zárd be a többi PCSX2 példányt, vagy indítsd újra a számítógépet.
+</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="506"/>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFolder.cpp" line="2346"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="504"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFolder.cpp" line="2344"/>
       <source>Memory Card &apos;{}&apos; was saved to storage.</source>
       <translation>A Memória Kártya &apos;{}&apos; mentett a tárhelyre.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="970"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="968"/>
       <source>Failed to create memory card. The error was:
 {}</source>
       <translation>Sikertelen a memória kártya létrehozása. A hiba: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Sio.cpp" line="83"/>
+      <location filename="../../pcsx2/SIO/Sio.cpp" line="84"/>
       <source>Memory Cards reinserted.</source>
       <translation>Memória Kártyák újra behelyezve.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Sio.cpp" line="104"/>
+      <location filename="../../pcsx2/SIO/Sio.cpp" line="105"/>
       <source>Force ejecting all Memory Cards. Reinserting in 1 second.</source>
       <translation>Memória Kártyák kiadásának kényszerítése. Újra behelyezés 1 másodperc múlva.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/SIO/Sio.cpp" line="165"/>
+      <source>The virtual console hasn&apos;t saved to your memory card for quite some time. Savestates should not be used in place of in-game saves.</source>
+      <translation>A virtuális konzol már jó ideje nem mentett a memóriakártyára. Állásmentések használata a játékban lévő mentés opció helyett nem ajánlott.</translation>
     </message>
   </context>
   <context>
@@ -16618,7 +16698,7 @@ Zárd be a többi PCSX2 példányt, vagy indítsd újra a számítógépet.</tra
     <message>
       <location filename="../Settings/MemoryCardConvertDialog.ui" line="89"/>
       <source>&lt;center&gt;&lt;strong&gt;Note:&lt;/strong&gt; Converting a Memory Card creates a &lt;strong&gt;COPY&lt;/strong&gt; of your existing Memory Card. It does &lt;strong&gt;NOT delete, modify, or replace&lt;/strong&gt; your existing Memory Card.&lt;/center&gt;</source>
-      <translation>&lt;center&gt;&lt;strong&gt;Megjegyzés::&lt;/strong&gt; A Memória Kártya konvertálása egy &lt;strong&gt;MÁSOLATOT&lt;/strong&gt;  készít a már létező Memória Kártyádból. Ez &lt;strong&gt;NEM törli, módosítja, vagy cseréli le&lt;/strong&gt; a már létező Memória Kártyádat.&lt;/center&gt;</translation>
+      <translation>&lt;center&gt;&lt;strong&gt;Megjegyzés:&lt;/strong&gt; A Memória Kártya konvertálása egy &lt;strong&gt;MÁSOLATOT&lt;/strong&gt; készít a már létező Memória Kártyádból. Ez &lt;strong&gt;NEM törli, módosítja, vagy cseréli le&lt;/strong&gt; a már létező Memória Kártyádat.&lt;/center&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardConvertDialog.ui" line="102"/>
@@ -16722,7 +16802,7 @@ Zárd be a többi PCSX2 példányt, vagy indítsd újra a számítógépet.</tra
     <message>
       <location filename="../Settings/MemoryCardCreateDialog.ui" line="87"/>
       <source>8 MB [Most Compatible]</source>
-      <translation>8 MB (Leginkább Kompatibilis)</translation>
+      <translation>8 MB [Leginkább Kompatibilis]</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardCreateDialog.ui" line="97"/>
@@ -16793,7 +16873,7 @@ Zárd be a többi PCSX2 példányt, vagy indítsd újra a számítógépet.</tra
     <message>
       <location filename="../Settings/MemoryCardCreateDialog.cpp" line="114"/>
       <source>Failed to create the Memory Card, because another card with the name &apos;%1&apos; already exists.</source>
-      <translation>Nem sikerült a Memória Kártya létrehozása, mert ezzel a névvel &apos;%1&apos;  már létezik kártya.</translation>
+      <translation>Nem sikerült a Memória Kártya létrehozása, mert ezzel a névvel &apos;%1&apos; már létezik kártya.</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardCreateDialog.cpp" line="121"/>
@@ -16920,7 +17000,7 @@ Zárd be a többi PCSX2 példányt, vagy indítsd újra a számítógépet.</tra
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="65"/>
       <source>(Folder type only / Card size: Auto) Loads only the relevant booted game saves, ignoring others. Avoids running out of space for saves.</source>
-      <translation>(Csak mappa típusú / Kártya méret: Automatikus) Csak az elindított játék mentéseit tölti be, a többit figyelmen kívül hagyja. Ezzel elkerülhető, hogy kifogyjon a mentési tárhely.</translation>
+      <translation>(Csak mappa típusú / Kártya méret: Automatikus) Csak az elindított játék mentéseit tölti be, a többit figyelmen kívül hagyja. Ezzel elkerülhető, hogy elfogyjon a mentési tárhely.</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="94"/>
@@ -16960,7 +17040,7 @@ Zárd be a többi PCSX2 példányt, vagy indítsd újra a számítógépet.</tra
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="237"/>
       <source>New name is invalid, it must end with .ps2</source>
-      <translation>Az új név érvénytelen, .ps2-vel kell végződnie.</translation>
+      <translation>Az új név érvénytelen, .ps2-vel kell végződnie</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="245"/>
@@ -17223,17 +17303,17 @@ Ez a művelet nem visszavonható, és minden mentést elveszítesz ezen a kárty
     <message>
       <location filename="../Debugger/MemorySearchWidget.cpp" line="500"/>
       <source>Start address can&apos;t be equal to or greater than the end address</source>
-      <translation>A kezdőcím nem lehet egyenlő vagy nagyobb a végcímnél.</translation>
+      <translation>A kezdőcím nem lehet egyenlő vagy nagyobb a végcímnél</translation>
     </message>
     <message>
       <location filename="../Debugger/MemorySearchWidget.cpp" line="531"/>
       <source>Invalid search value</source>
-      <translation>Érvénytelen keresési érték.</translation>
+      <translation>Érvénytelen keresési érték</translation>
     </message>
     <message>
       <location filename="../Debugger/MemorySearchWidget.cpp" line="555"/>
       <source>Value is larger than type</source>
-      <translation>Az érték nagyobb mint amennyit a típus megenged.</translation>
+      <translation>Az érték nagyobb mint amennyit a típus megenged</translation>
     </message>
     <message>
       <location filename="../Debugger/MemorySearchWidget.cpp" line="564"/>
@@ -17364,7 +17444,7 @@ Ez a művelet nem visszavonható, és minden mentést elveszítesz ezen a kárty
       <translation>Ugrás ide a Memória Böngészőben</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="604"/>
+      <location filename="../Debugger/MemoryViewWidget.cpp" line="605"/>
       <source>Cannot Go To</source>
       <translation>Nem Lehet Ide Ugrani</translation>
     </message>
@@ -17457,7 +17537,7 @@ Ez a művelet nem visszavonható, és minden mentést elveszítesz ezen a kárty
     <message>
       <location filename="../Tools/InputRecording/NewInputRecordingDlg.ui" line="67"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;Be Warned! Making an input recording that starts from a save-state will fail to work on future versions due to save-state versioning.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; color:#ff0000;&quot;&quot;&gt;Figyelem! Az állás mentésből induló bemeneti felvétel a állás mentések verziókezelése miatt nem fog működni a későbbi verziókban.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;Figyelem! Az állásmentésből induló bemeneti felvétel a állásmentések verziókezelése miatt nem fog működni a későbbi verziókban.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../Tools/InputRecording/NewInputRecordingDlg.ui" line="77"/>
@@ -17659,7 +17739,7 @@ Ez a művelet nem visszavonható, és minden mentést elveszítesz ezen a kárty
     <message>
       <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="232"/>
       <source>Address is not valid.</source>
-      <translation>Érvénytelen cím</translation>
+      <translation>Érvénytelen cím.</translation>
     </message>
     <message>
       <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="235"/>
@@ -18043,7 +18123,7 @@ Ez a művelet nem visszavonható, és minden mentést elveszítesz ezen a kárty
       <source>Controller port {0}, slot {1} has a {2} connected, but the save state has a {3}.
 Ejecting {3} and replacing it with {2}.</source>
       <translation>Játékvezérlő port {0}, foglalat {1}-ben egy {2} van csatlakoztatva, de az állás mentésben {3} van.
-{3} kiadása és cseréje a(z) {2}-vel</translation>
+{3} kiadása és cseréje a(z) {2}-vel.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/SIO/Pad/PadPopn.cpp" line="17"/>
@@ -18204,41 +18284,41 @@ Ejecting {3} and replacing it with {2}.</source>
   <context>
     <name>Patch</name>
     <message>
-      <location filename="../../pcsx2/Patch.cpp" line="348"/>
+      <location filename="../../pcsx2/Patch.cpp" line="350"/>
       <source>Failed to open {}. Built-in game patches are not available.</source>
-      <translation>Sikertelen a {} megnyitása. Beépített játékjavítások nem állnak rendelkezésre.</translation>
+      <translation>Sikertelen a {} megnyitása. Beépített játék tapaszok nem állnak rendelkezésre.</translation>
     </message>
     <message numerus="yes">
-      <location filename="../../pcsx2/Patch.cpp" line="710"/>
+      <location filename="../../pcsx2/Patch.cpp" line="726"/>
       <source>%n GameDB patches are active.</source>
       <comment>OSD Message</comment>
       <translation>
-        <numerusform>%n GameDB javítás aktív.</numerusform>
-        <numerusform>%n GameDB javítás aktív.</numerusform>
+        <numerusform>%n GameDB tapasz aktív.</numerusform>
+        <numerusform>%n GameDB tapasz aktív.</numerusform>
       </translation>
     </message>
     <message numerus="yes">
-      <location filename="../../pcsx2/Patch.cpp" line="717"/>
+      <location filename="../../pcsx2/Patch.cpp" line="733"/>
       <source>%n game patches are active.</source>
       <comment>OSD Message</comment>
       <translation>
-        <numerusform>%n játék javítás aktív.</numerusform>
-        <numerusform>%n játék javítás aktív.</numerusform>
+        <numerusform>%n játék tapasz aktív.</numerusform>
+        <numerusform>%n játék tapasz aktív.</numerusform>
       </translation>
     </message>
     <message numerus="yes">
-      <location filename="../../pcsx2/Patch.cpp" line="724"/>
+      <location filename="../../pcsx2/Patch.cpp" line="740"/>
       <source>%n cheat patches are active.</source>
       <comment>OSD Message</comment>
       <translation>
-        <numerusform>%n csalás aktív</numerusform>
-        <numerusform>%n csalás aktív</numerusform>
+        <numerusform>%n csalás aktív.</numerusform>
+        <numerusform>%n csalás aktív.</numerusform>
       </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Patch.cpp" line="739"/>
+      <location filename="../../pcsx2/Patch.cpp" line="755"/>
       <source>No cheats or patches (widescreen, compatibility or others) are found / enabled.</source>
-      <translation>Nincsenek csalások vagy javítások (szélesvászon, kompatibilitás vagy más) találva / engedélyezve</translation>
+      <translation>Nincsenek csalások vagy tapaszok (széles vászon, kompatibilitás vagy más) találva / engedélyezve.</translation>
     </message>
   </context>
   <context>
@@ -18300,7 +18380,7 @@ Ejecting {3} and replacing it with {2}.</source>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="679"/>
       <location filename="../Settings/HddCreateQt.cpp" line="35"/>
       <source>Failed to create HDD image</source>
-      <translation>HDD képfájl létrehozása sikertelen.</translation>
+      <translation>HDD képfájl létrehozása sikertelen</translation>
     </message>
     <message>
       <location filename="../Settings/HddCreateQt.cpp" line="17"/>
@@ -18337,47 +18417,47 @@ Ejecting {3} and replacing it with {2}.</source>
   <context>
     <name>QtHost</name>
     <message>
-      <location filename="../QtHost.cpp" line="1103"/>
+      <location filename="../QtHost.cpp" line="1105"/>
       <source>RA: Logged in as %1 (%2 pts, softcore: %3 pts). %4 unread messages.</source>
       <translation>RA: Bejelentkezett %1-ként (%2 pont, softcore: %3 pont). %4 olvasatlan üzenet.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1513"/>
-      <location filename="../QtHost.cpp" line="1528"/>
+      <location filename="../QtHost.cpp" line="1515"/>
+      <location filename="../QtHost.cpp" line="1530"/>
       <source>Error</source>
       <translation>Hiba</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1514"/>
+      <location filename="../QtHost.cpp" line="1516"/>
       <source>An error occurred while deleting empty game settings:
 {}</source>
       <translation>Egy hiba történt az üres játék beállítások törlése közben:
 {}</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1529"/>
+      <location filename="../QtHost.cpp" line="1531"/>
       <source>An error occurred while saving game settings:
 {}</source>
       <translation>Egy hiba történt a játék beállítások mentése során:
 {}</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1677"/>
+      <location filename="../QtHost.cpp" line="1679"/>
       <source>Controller {} connected.</source>
       <translation>Játékvezérlő {} csatlakoztatva.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1690"/>
+      <location filename="../QtHost.cpp" line="1692"/>
       <source>System paused because controller {} was disconnected.</source>
       <translation>A rendszer szünetel mert a {} játékvezérlő lecsatlakozott.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1703"/>
+      <location filename="../QtHost.cpp" line="1705"/>
       <source>Controller {} disconnected.</source>
       <translation>Játékvezérlő {} leválasztva.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1930"/>
+      <location filename="../QtHost.cpp" line="1932"/>
       <source>Cancel</source>
       <translation>Mégse</translation>
     </message>
@@ -18510,7 +18590,7 @@ Ejecting {3} and replacing it with {2}.</source>
   <context>
     <name>SaveState</name>
     <message>
-      <location filename="../../pcsx2/SaveState.cpp" line="1092"/>
+      <location filename="../../pcsx2/SaveState.cpp" line="1100"/>
       <source>This save state is outdated and is no longer compatible with the current version of PCSX2.
 
 If you have any unsaved progress on this save state, you can download the compatible version (PCSX2 {}) from pcsx2.net, load the save state, and save your progress to the memory card.</source>
@@ -18640,7 +18720,7 @@ Szeretnéd ezt a mappát létrehozni?</translation>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="77"/>
       <source>&lt;strong&gt;Summary&lt;/strong&gt;&lt;hr&gt;This page shows details about the selected game. Changing the Input Profile will set the controller binding scheme for this game to whichever profile is chosen, instead of the default (Shared) configuration. The track list and dump verification can be used to determine if your disc image matches a known good dump. If it does not match, the game may be broken.</source>
-      <translation>&lt;strong&gt;Összegzés&lt;/strong&gt;&lt;hr&gt;Ez az oldal részleteket mutat a kiválasztott játékról. A bemeneti profil megváltoztatásával beállítható a játékvezérlő gombkiosztása ehhez a játékhoz bármelyik profilra az alapértelmezett (Megosztott) beállítás helyett. A lejátszási lista és képfájl ellenőrzés használható a képfájl összehasonlítására egy ismert jó képfájllal. Ha ez nem egyezik, a játék állomány hibás lehet.</translation>
+      <translation>&lt;strong&gt;Összegzés&lt;/strong&gt;&lt;hr&gt;Ez az oldal részleteket mutat a kiválasztott játékról. A bemeneti profil megváltoztatásával beállítható a játékvezérlő gombkiosztása ehhez a játékhoz bármelyik profilra az alapértelmezett (Megosztott) beállítás helyett. Az adatsáv és képfájl ellenőrzés használható a képfájl összehasonlítására egy ismert jó képfájllal. Ha ez nem egyezik, a játékállomány hibás lehet.</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="83"/>
@@ -18681,12 +18761,12 @@ Szeretnéd ezt a mappát létrehozni?</translation>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="138"/>
       <source>Patches</source>
-      <translation>Javítások</translation>
+      <translation>Tapaszok</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="139"/>
       <source>&lt;strong&gt;Patches&lt;/strong&gt;&lt;hr&gt;This section allows you to select optional patches to apply to the game, which may provide performance, visual, or gameplay improvements.</source>
-      <translation>&lt;strong&gt;Javítások&lt;/strong&gt;&lt;hr&gt;Ez a szakasz lehetőséget ad rá, hogy opcionális javításokat alkalmazz a játékra, amik teljesítmény, vizuális, vagy játékmeneti javulásokat hozhatnak.</translation>
+      <translation>&lt;strong&gt;Tapaszok&lt;/strong&gt;&lt;hr&gt;Ez a szakasz lehetőséget ad rá, hogy opcionális tapaszokat alkalmazz a játékra, amik teljesítmény, vizuális, vagy játékmeneti javulásokat hozhatnak.</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="142"/>
@@ -18766,42 +18846,42 @@ Szeretnéd ezt a mappát létrehozni?</translation>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="114"/>
       <source>&lt;strong&gt;Interface Settings&lt;/strong&gt;&lt;hr&gt;These options control how the software looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-      <translation>&lt;strong&gt;Kezelőfelület Beállítások&lt;/strong&gt;&lt;hr&gt;Ezek a beállítások vezérlik a szoftver kinézetét és működését.&lt;br&gt;&lt;br&gt;Húzd az egeret egy beállítás fölé további információkért, és a Shift+Egérgörgőt hogy tekerd ezt a panelt.</translation>
+      <translation>&lt;strong&gt;Kezelőfelület Beállítások&lt;/strong&gt;&lt;hr&gt;Ezek a beállítások vezérlik a szoftver kinézetét és működését.&lt;br&gt;&lt;br&gt;Húzd az egérmutatót egy beállítás fölé további információkért, és használd a Shift+Egérgörgőt, hogy tekerd ezt a panelt.</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="125"/>
       <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;Configure your BIOS here.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-      <translation>&lt;strong&gt;BIOS Beállítások&lt;/strong&gt;&lt;hr&gt;Itt találhatók a BIOS beállításai.&lt;br&gt;&lt;br&gt;Húzd az egeret egy beállítás fölé további információkért, és a Shift+Egérgörgőt hogy tekerd ezt a panelt.</translation>
+      <translation>&lt;strong&gt;BIOS Beállítások&lt;/strong&gt;&lt;hr&gt;Itt találhatók a BIOS beállításai.&lt;br&gt;&lt;br&gt;Húzd az egérmutatót egy beállítás fölé további információkért, és használd a Shift+Egérgörgőt, hogy tekerd ezt a panelt.</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="132"/>
       <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of frame pacing and game settings.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-      <translation>&lt;strong&gt;Emuláció Beállitásai&lt;/strong&gt;&lt;hr&gt;Ezek a beállítások határozzák meg a képkocka ütemezés konfigurációját, és a játékok beállításait.&lt;br&gt;&lt;br&gt;Húzd az egeret egy beállítás fölé további információkért, és a Shift+Egérgörgőt hogy tekerd ezt a panelt.</translation>
+      <translation>&lt;strong&gt;Emuláció Beállitásai&lt;/strong&gt;&lt;hr&gt;Ezek a beállítások határozzák meg a képkocka ütemezés konfigurációját, és a játékok beállításait.&lt;br&gt;&lt;br&gt;Húzd az egérmutatót egy beállítás fölé további információkért, és használd a Shift+Egérgörgőt, hogy tekerd ezt a panelt.</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="158"/>
       <source>&lt;strong&gt;Graphics Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the graphical output.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-      <translation>&lt;strong&gt;Grafikai Beállítások&lt;/strong&gt;&lt;hr&gt;Ezek a beállítások határozzák meg a grafikai kimenet konfigurációját.&lt;br&gt;&lt;br&gt;Húzd az egeret egy beállítás fölé további információkért, és a Shift+Egérgörgőt hogy tekerd ezt a panelt.</translation>
+      <translation>&lt;strong&gt;Grafikai Beállítások&lt;/strong&gt;&lt;hr&gt;Ezek a beállítások határozzák meg a grafikai kimenet konfigurációját.&lt;br&gt;&lt;br&gt;Húzd az egérmutatót egy beállítás fölé további információkért, és használd a Shift+Egérgörgőt, hogy tekerd ezt a panelt.</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="161"/>
       <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-      <translation>&lt;strong&gt;Hang Beállítások&lt;/strong&gt;&lt;hr&gt;Ezek a beállítások vezérlik a konzol hang kimenetét.&lt;br&gt;&lt;br&gt;Húzd az egeret egy beállítás fölé további információkért, és a Shift+Egérgörgőt hogy tekerd ezt a panelt.</translation>
+      <translation>&lt;strong&gt;Hang Beállítások&lt;/strong&gt;&lt;hr&gt;Ezek a beállítások vezérlik a konzol hang kimenetét.&lt;br&gt;&lt;br&gt;Húzd az egérmutatót egy beállítás fölé további információkért, és használd a Shift+Egérgörgőt, hogy tekerd ezt a panelt.</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="166"/>
       <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;Create and configure Memory Cards here.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-      <translation>&lt;strong&gt;Memória Kártya Beállításai&lt;/strong&gt;&lt;hr&gt;Itt készítheted és állíthatod be a Memória Kártyáid.&lt;br&gt;&lt;br&gt;Húzd az egeret egy beállítás fölé további információkért, és a Shift+Egérgörgőt hogy tekerd ezt a panelt.</translation>
+      <translation>&lt;strong&gt;Memória Kártya Beállításai&lt;/strong&gt;&lt;hr&gt;Itt készítheted és állíthatod be a Memória Kártyáid.&lt;br&gt;&lt;br&gt;Húzd az egérmutatót egy beállítás fölé további információkért, és használd a Shift+Egérgörgőt, hogy tekerd ezt a panelt.</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="170"/>
       <source>&lt;strong&gt;Network &amp; HDD Settings&lt;/strong&gt;&lt;hr&gt;These options control the network connectivity and internal HDD storage of the console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-      <translation>&lt;strong&gt;Hálozat és Merevlemez Beállításai&lt;/strong&gt;&lt;hr&gt;Ezek a beállítások vezérlik a konzol hálózati kapcsolatát és a belső merevlemezét.&lt;br&gt;&lt;br&gt;Húzd az egeret egy beállítás fölé további információkért, és a Shift+Egérgörgőt hogy tekerd ezt a panelt.</translation>
+      <translation>&lt;strong&gt;Hálózat és Merevlemez Beállításai&lt;/strong&gt;&lt;hr&gt;Ezek a beállítások vezérlik a konzol hálózati kapcsolatát és a belső merevlemezét.&lt;br&gt;&lt;br&gt;Húzd az egérmutatót egy beállítás fölé további információkért, és használd a Shift+Egérgörgőt, hogy tekerd ezt a panelt.</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="204"/>
       <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These are advanced options to determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-      <translation>&lt;strong&gt;Szakértő Beállítások&lt;/strong&gt;&lt;hr&gt;Ezek szakértői beállítások, amik meghatározzák a szimulált konzol konfigurációját.&lt;br&gt;&lt;br&gt;Húzd az egeret egy beállítás fölé további információkért, és a Shift+Egérgörgőt hogy tekerd ezt a panelt.</translation>
+      <translation>&lt;strong&gt;Szakértő Beállítások&lt;/strong&gt;&lt;hr&gt;Ezek szakértői beállítások, amik meghatározzák a szimulált konzol konfigurációját.&lt;br&gt;&lt;br&gt;Húzd az egérmutatót egy beállítás fölé további információkért, és használd a Shift+Egérgörgőt, hogy tekerd ezt a panelt.</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="206"/>
@@ -18988,7 +19068,7 @@ Ha ez megvan, ez a BIOS fájl a bios mappába helyezendő az adat könyvtárban 
     <message>
       <location filename="../SetupWizardDialog.ui" line="143"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Welcome to PCSX2!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;This wizard will help guide you through the configuration steps required to use the application. It is recommended if this is your first time installing PCSX2 that you view the setup guide &lt;a href=&quot;https://pcsx2.net/docs/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;By default, PCSX2 will connect to the server at &lt;a href=&quot;https://pcsx2.net/&quot;&gt;pcsx2.net&lt;/a&gt; to check for updates, and if available and confirmed, download update packages from &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. If you do not wish for PCSX2 to make any network connections on startup, you should uncheck the Automatic Updates option now. The Automatic Update setting can be changed later at any time in Interface Settings.&lt;/p&gt;&lt;p&gt;Please choose a language and theme to begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Üdvözöl a PCSX2!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Ez a varázsló végigvezet a konfigurációs beállításokon amik szükségesek az alkalmazás használatához. Ha ez az első alkalom, hogy telepíted a PCSX2-őt, ajánlott megtekinteni a telepítési segédletet &lt;a href=&quot;https://pcsx2.net/docs/&quot;&gt;itt&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Alapból a PCSX2 a  &lt;a href=&quot;https://pcsx2.net/&quot;&gt;pcsx2.net&lt;/a&gt; szerverhez kapcsolódik, hogy frissítéseket keressen, és ha elérhető és jóváhagyott, letölti a frissítési csomagokat a  &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;-ról. Ha nem szeretnéd, hogy a PCSX2 kapcsolódjon a hálózathoz indulásnál, vedd ki a jelölést az Automatikus Frissítés opcióból most. Az Automatikus Frissítés később bármikor megváltoztatható a kezelőfelület beállításainál.&lt;/p&gt;&lt;p&gt;Kérlek válassz nyelvet és témát a kezdéshez.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Üdvözöl a PCSX2!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Ez a varázsló végigvezet a konfigurációs beállításokon amik szükségesek az alkalmazás használatához. Ha ez az első alkalom, hogy telepíted a PCSX2-őt, ajánlott megtekinteni a telepítési segédletet &lt;a href=&quot;https://pcsx2.net/docs/&quot;&gt;itt&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Alapból a PCSX2 a &lt;a href=&quot;https://pcsx2.net/&quot;&gt;pcsx2.net&lt;/a&gt; szerverhez kapcsolódik, hogy frissítéseket keressen, és ha elérhető és jóváhagyott, letölti a frissítési csomagokat a &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;-ról. Ha nem szeretnéd, hogy a PCSX2 kapcsolódjon a hálózathoz indulásnál, vedd ki a jelölést az Automatikus Frissítés opcióból most. Az Automatikus Frissítés később bármikor megváltoztatható a kezelőfelület beállításainál.&lt;/p&gt;&lt;p&gt;Kérlek válassz nyelvet és témát a kezdéshez.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../SetupWizardDialog.ui" line="462"/>
@@ -19004,7 +19084,7 @@ Ha ez megvan, ez a BIOS fájl a bios mappába helyezendő az adat könyvtárban 
       <location filename="../SetupWizardDialog.ui" line="484"/>
       <location filename="../SetupWizardDialog.ui" line="555"/>
       <source>Controller Mapped To:</source>
-      <translation>Játkvezérkő Kiosztva A:</translation>
+      <translation>Játékvezérlő Kiosztva A:</translation>
     </message>
     <message>
       <location filename="../SetupWizardDialog.ui" line="491"/>
@@ -19761,7 +19841,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
     <message>
       <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="611"/>
       <source>Applies a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)</source>
-      <translation>Színt alkalmaz a kiválasztott célkereszt képekre, több játékos esetében is használható. HTML/CSS formátumban adható meg (pl. #aabbcc).</translation>
+      <translation>Színt alkalmaz a kiválasztott célkereszt képekre, több játékos esetében is használható. HTML/CSS formátumban adható meg (pl. #aabbcc)</translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="614"/>
@@ -20197,7 +20277,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="808"/>
       <source>Wheel Device</source>
-      <translation>Görgő Eszköz</translation>
+      <translation>Kormány Eszköz</translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="847"/>
@@ -20633,7 +20713,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="455"/>
       <source>Right Turntable Red </source>
-      <translation>Jobb Lemez Piros</translation>
+      <translation>Jobb Lemez Piros </translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="456"/>
@@ -20998,7 +21078,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
       <location filename="../Settings/USBBindingWidget_DenshaCon.ui" line="242"/>
       <source>The Densha Controller Type 2 is a two-handle train master controller with a D-Pad and six buttons. The power axis starts from neutral and has five progressively higher notches of power. The brake axis starts released, and has eight progressively increasing notches plus an Emergency Brake. This controller is compatible with several games and generally maps well to hardware with one or two physical axes with a similar range of notches, such as the modern &quot;Zuiki One Handle MasCon&quot;.</source>
       <extracomment>This controller is created for the Densha De GO! game franchise, which is about playing the role of a train conductor. The controller mimics controls inside of Japanese trains. The &apos;Densha Controller Type 2&apos; and &apos;Zuiki One Handle MasCon&apos; are specific brands of USB train master controller. Both products are only distributed in Japan, so they do not have official non-Japanese names.</extracomment>
-      <translation>A Densha Controller Type 2 egy kétkezes vonatvezérlő D-Paddal és hat gombbal. A teljesítménytengely a semleges állásból indul, és öt progresszíven magasabb teljesítményfokozattal rendelkezik. A fék tengely kiengedve indul, és nyolc fokozatosan növekvő fokozattal, valamint egy vészfékkel rendelkezik. Ez a vezérlő számos játékkal kompatibilis, és általában jól illeszkedik az egy vagy két fizikai tengellyel rendelkező hardverekhez, amelyek hasonló fokozatokkal rendelkeznek, mint például a modern &quot;Zuiki One Handle MasCon&quot;.</translation>
+      <translation>A Densha Controller Type 2 egy kétkezes vonatvezérlő D-Paddal és hat gombbal. A sebességváltókar a semleges állásból indul, és öt progresszíven magasabb teljesítményfokozattal rendelkezik. A fék tengely kiengedve indul, és nyolc fokozatosan növekvő fokozattal, valamint egy vészfékkel rendelkezik. Ez a vezérlő számos játékkal kompatibilis, és általában jól illeszkedik az egy vagy két fizikai tengellyel rendelkező hardverekhez, amelyek hasonló fokozatokkal rendelkeznek, mint például a modern &quot;Zuiki One Handle MasCon&quot;.</translation>
     </message>
     <message>
       <location filename="../Settings/USBBindingWidget_DenshaCon.ui" line="272"/>
@@ -21029,7 +21109,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
       <location filename="../Settings/USBBindingWidget_DenshaCon.ui" line="460"/>
       <source>Power Lever</source>
       <extracomment>Power refers to the train&apos;s accelerator which causes the train to increase speed.</extracomment>
-      <translation>Teljesítménykar</translation>
+      <translation>Sebességváltó</translation>
     </message>
     <message>
       <location filename="../Settings/USBBindingWidget_DenshaCon.ui" line="513"/>
@@ -21162,7 +21242,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
     <message>
       <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="924"/>
       <source>Accelerator</source>
-      <translation>Gyorsító</translation>
+      <translation>Gáz</translation>
     </message>
   </context>
   <context>
@@ -21230,7 +21310,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
     <message>
       <location filename="../Settings/USBBindingWidget_GTForce.ui" line="615"/>
       <source>Accelerator</source>
-      <translation>Gyorsító</translation>
+      <translation>Gáz</translation>
     </message>
   </context>
   <context>
@@ -21371,7 +21451,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
 &lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;strong&gt;left unbound&lt;/strong&gt;.&lt;/p&gt;</source>
       <translation>&lt;p&gt;Alapértelmezés szerint a GunCon2 az egérmutatót használja. Az egér használatához &lt;strong&gt;nem&lt;/strong&gt;kell a ravaszt és a gombokat leszámítva semmilyen hozzárendelést konfigurálnod.&lt;/p&gt;;
 
-&lt;p&gt;Ha egér helyett egy vezérlőt vagy egy olyan fénypisztolyt szeretnél használni, amely az egér helyett egy vezérlőt szimulál, akkor a Relatív célzáshoz kell kötni. Ellenkező esetben a Relative Aiminget &lt;strong&gt;kötés nélkül kell hagyni&lt;/strong&gt;.&lt;/p&gt;</translation>
+&lt;p&gt;Ha egér helyett egy vezérlőt vagy egy olyan fénypisztolyt szeretnél használni, amely az egér helyett egy vezérlőt szimulál, akkor a Relatív célzáshoz kell hozzárendelni. Ellenkező esetben a Relatív Célzást &lt;strong&gt;hozzárendelés nélkül kell hagyni&lt;/strong&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="457"/>
@@ -21485,7 +21565,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
       <location filename="../Settings/USBBindingWidget_RyojouhenCon.ui" line="43"/>
       <source>The Ryojōhen Controller is a two-handle train master controller with a D-Pad and seven buttons. The power axis starts from neutral and has four progressively higher notches of power. The brake axis is analogue with three regions representing to release brake pressure, hold brakes at the current pressure, or increase brake pressure. Extending this axis to the extreme triggers the Emergency Brake. This controller is designed for use with Densha De GO! Ryojōhen, and is best used with hardware with two axes, one of which can be easily feathered to increase or decrease brake pressure.</source>
       <extracomment>Ryojōhen refers to a specific edition of the Densha De GO! game franchise, which is about playing the role of a train conductor. The controller mimics controls inside of Japanese trains. For consistency, romanization of &apos;Ryojōhen&apos; should be kept consistent across western languages, as there is no official translation for this name.</extracomment>
-      <translation>A Ryojōhen Controller egy kétkezes vonatvezérlő D-paddal és hét gombbal. A teljesítménytengely a semlegesről indul, és négy progresszív, magasabb teljesítményfokozattal rendelkezik. A féktengely analóg, három régióval, amelyek a féknyomás felengedését, a fékek aktuális nyomáson tartását vagy a féknyomás növelését biztosítják. Ha ezt a tengelyt a végsőkig kitoljuk, akkor a vészfék működésbe lép. Ez a vezérlő a Densha De GO! Ryojōhen, és a legjobban két tengellyel rendelkező hardverrel használható, amelyek közül az egyikkel könnyen növelhető vagy csökkenthető a féknyomás.</translation>
+      <translation>A Ryojōhen Controller egy kétkezes vonatvezérlő D-paddal és hét gombbal. A sebességváltókar a semlegesről indul, és négy progresszív, magasabb teljesítményfokozattal rendelkezik. A féktengely analóg, három régióval, amelyek a féknyomás felengedését, a fékek aktuális nyomáson tartását vagy a féknyomás növelését biztosítják. Ha ezt a tengelyt a végsőkig kitoljuk, akkor a vészfék működésbe lép. Ez a vezérlő a Densha De GO! Ryojōhen, és a legjobban két tengellyel rendelkező hardverrel használható, amelyek közül az egyikkel könnyen növelhető vagy csökkenthető a féknyomás.</translation>
     </message>
     <message>
       <location filename="../Settings/USBBindingWidget_RyojouhenCon.ui" line="79"/>
@@ -21535,7 +21615,7 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
       <location filename="../Settings/USBBindingWidget_RyojouhenCon.ui" line="391"/>
       <source>Power Lever</source>
       <extracomment>Power refers to the train&apos;s accelerator which causes the train to increase speed.</extracomment>
-      <translation>Teljesítménykar</translation>
+      <translation>Sebességváltó</translation>
     </message>
     <message>
       <location filename="../Settings/USBBindingWidget_RyojouhenCon.ui" line="528"/>
@@ -21582,13 +21662,13 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
       <location filename="../Settings/USBBindingWidget_ShinkansenCon.ui" line="43"/>
       <source>The Shinkansen Controller is a two-handle train master controller with a D-Pad and six buttons. The power axis starts from neutral and has thirteen progressively higher notches of power. The brake axis starts released, and has seven progressively increasing notches plus an Emergency Brake. This controller is designed for use with Densha De GO! San&apos;yō Shinkansen-hen, and is best used with hardware with 14 or more notch settings on an axis.</source>
       <extracomment>This controller is created for a specific edition of the Densha De GO! game franchise, which is about playing the role of a train conductor. The controller mimics controls inside of Japanese trains, in this case bullet trains. The product does not have an official name translation, and it is common to refer to the train type as Shinkansen.</extracomment>
-      <translation>A Shinkansen Controller egy kétkezes vonatvezérlő, D-paddal és hat gombbal. A teljesítménytengely a semlegesről indul, és tizenhárom progresszíven magasabb teljesítményfokozattal rendelkezik. A fék tengely elengedve indul, és hét fokozatosan növekvő fokozattal, valamint egy vészfékkel rendelkezik. Ez a vezérlő a Densha De GO! San&apos;yō Shinkansen-hen, és a legjobban olyan hardverrel használható, amely egy tengelyen 14 vagy több fokozatú beállítással rendelkezik.</translation>
+      <translation>A Shinkansen Controller egy kétkezes vonatvezérlő, D-paddal és hat gombbal. A sebességváltókar a semlegesről indul, és tizenhárom progresszíven magasabb teljesítményfokozattal rendelkezik. A fék tengely elengedve indul, és hét fokozatosan növekvő fokozattal, valamint egy vészfékkel rendelkezik. Ez a vezérlő a Densha De GO! San&apos;yō Shinkansen-hen, és a legjobban olyan hardverrel használható, amely egy tengelyen 14 vagy több fokozatú beállítással rendelkezik.</translation>
     </message>
     <message>
       <location filename="../Settings/USBBindingWidget_ShinkansenCon.ui" line="60"/>
       <source>Power Lever</source>
       <extracomment>Power refers to the train&apos;s accelerator which causes the train to increase speed.</extracomment>
-      <translation>Teljesítménykar</translation>
+      <translation>Sebességváltó</translation>
     </message>
     <message>
       <location filename="../Settings/USBBindingWidget_ShinkansenCon.ui" line="113"/>
@@ -21725,42 +21805,42 @@ Ez több időt vehet igénybe, de megtalálja a fájlokat az almappákban is.</t
   <context>
     <name>VMManager</name>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1851"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1856"/>
       <source>Failed to back up old save state {}.</source>
       <translation>Sikertelen a régi állásmentés biztonsági mentése {}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1836"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1841"/>
       <source>Failed to save save state: {}.</source>
       <translation>Sikertelen az állás mentése: {}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1022"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1026"/>
       <source>PS2 BIOS ({})</source>
       <translation>PS2 BIOS ({})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1083"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1087"/>
       <source>Unknown Game</source>
       <translation>Ismeretlen játék</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1246"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1250"/>
       <source>CDVD precaching was cancelled.</source>
       <translation>CDVD előtöltés megszakítva.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1252"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1256"/>
       <source>CDVD precaching failed: {}</source>
       <translation>CDVD előtöltés sikertelen: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1345"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1349"/>
       <source>Error</source>
       <translation>Hiba</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1346"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1350"/>
       <source>PCSX2 requires a PS2 BIOS in order to run.
 
 For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn&apos;t count).
@@ -21772,277 +21852,277 @@ Please consult the FAQs and Guides for further instructions.</source>
 
 Jogi okok miatt, a BIOS-t egy a tulajdonodban lévő PS2 egységről *kell* beszerezned (kölcsönkérés nem számít).
 
-Ha ez megvan, ez a BIOS fájl a bios mappába helyezendő az adat könyvtárban (Eszközök -&gt; Adat könyvtár megnyitása).
+Ha ez megvan, ez a BIOS fájl a bios mappába helyezendő az adat könyvtárban (Eszközök -&gt; Adatkönyvtár megnyitása).
 
 Kérlek tekintsd meg a GYIK-okat és az útmutatókat további segítségért.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1437"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1441"/>
       <source>Resuming state</source>
       <translation>Állás folytatása</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1442"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1446"/>
       <source>Boot and Debug</source>
       <translation>Indítás és Hibakeresés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1810"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1814"/>
       <source>Failed to load save state</source>
       <translation>Nem sikerült a mentett állás betöltése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1883"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1889"/>
       <source>State saved to slot {}.</source>
       <translation>Állás mentve a {} foglalatba.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1890"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1896"/>
       <source>Failed to save save state to slot {}.</source>
       <translation>Nem sikerült az állás mentése a {} foglalatba.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1958"/>
-      <location filename="../../pcsx2/VMManager.cpp" line="1995"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1964"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2001"/>
       <source>Loading state</source>
       <translation>Állás betöltése</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1969"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1975"/>
       <source>Failed to load state (Memory card is busy)</source>
       <translation>Nem sikerült az állást betölteni a(z) {} foglalatból (A memória kártya elfoglalt)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1988"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1994"/>
       <source>There is no save state in slot {}.</source>
       <translation>Nincs mentés a {} foglalatban.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2006"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2012"/>
       <source>Failed to load state from slot {} (Memory card is busy)</source>
       <translation>Nem sikerült az állást betölteni a {} foglalatból (A memória kártya elfoglalt)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2012"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2018"/>
       <source>Loading state from slot {}...</source>
       <translation>Állás betöltése a {} foglalatból...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2021"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2027"/>
       <source>Failed to save state (Memory card is busy)</source>
       <translation>Nem sikerült az állást menteni (A memória kártya elfoglalt)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2038"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2044"/>
       <source>Failed to save state to slot {} (Memory card is busy)</source>
       <translation>Nem sikerült az állást menteni a(z) {} foglalatba (A memória kártya elfoglalt)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2045"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2051"/>
       <source>Saving state to slot {}...</source>
       <translation>Állás mentése a {} foglalatba...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2211"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2217"/>
       <source>Frame advancing</source>
       <translation>Képkocka Léptetés</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2239"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2245"/>
       <source>Disc removed.</source>
       <translation>Lemez kiadva.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2245"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2251"/>
       <source>Disc changed to &apos;{}&apos;.</source>
       <translation>Lemez lecserélve a következőre &apos;{}&apos;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2254"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2260"/>
       <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
       <translation>Sikertelen az új képfájl megnyitása &apos;{}&apos;. Előző képfájl visszaállítása.
 A hiba: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2263"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2269"/>
       <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
       <translation>Sikertelen a régi képfájlra visszaváltás. Lemez kiadása.
 A hiba: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3048"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3054"/>
       <source>Cheats have been disabled due to achievements hardcore mode.</source>
       <translation>Csalások letiltva a trófea hardcore mód miatt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3101"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3107"/>
       <source>Fast CDVD is enabled, this may break games.</source>
       <translation>A gyors CDVD engedélyezve van, néhány játék nem kompatibilis vele.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3105"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3111"/>
       <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
       <translation>Ciklus ráta/kihagyás nem az alapbeállításon van, ez összeomlást vagy lassú játékot eredményezhet.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3115"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3121"/>
       <source>Upscale multiplier is below native, this will break rendering.</source>
       <translation>A felskálázási szorzó a natív alatt van, ez problémákat okozhat a leképezésben.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3155"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3161"/>
       <source>Mipmapping is disabled. This may break rendering in some games.</source>
       <translation>Mipmapping letiltva. Ez grafikai hibákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3164"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3170"/>
       <source>Renderer is not set to Automatic. This may cause performance problems and graphical issues.</source>
       <translation>A leképező nem Automatikusra van állítva. Ez teljesítmény problémákat és grafikai hibákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3170"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3176"/>
       <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
       <translation>A textúra szűrés nem Bilineáris (PS2)-re van állítva. Ez grafikai hibákat okozhat bizonyos játékoknál.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3633"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3639"/>
       <source>No Game Running</source>
       <translation>Nem fut játék</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3120"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3126"/>
       <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
       <translation>A trilineáris szűrő nem automatikuson van. Ez grafikai hibákat okozhat bizonyos játékoknál.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3125"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3131"/>
       <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
       <translation>A Keverés Pontosság az egyszerű beállítás alatt van, ez néhány játékban pontatlan effekteket okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3130"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3136"/>
       <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
       <translation>Hardveres Letöltési Mód nincs Precízre állítva, ez leképezési problémákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3176"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3182"/>
       <source>EE FPU Round Mode is not set to default, this may break some games.</source>
       <translation>EE FPU kerekítési mód nincs alapértelmezetten, ez problémákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3182"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3188"/>
       <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
       <translation>EE FPU rögzítési mód nincs alapértelmezetten, ez problémákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3187"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3193"/>
       <source>VU0 Round Mode is not set to default, this may break some games.</source>
       <translation>VU0 kerekítési mód nincs alapértelmezetten, ez problémákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3192"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3198"/>
       <source>VU1 Round Mode is not set to default, this may break some games.</source>
       <translation>VU1 kerekítési mód nincs alapértelmezetten, ez problémákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3199"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3205"/>
       <source>VU Clamp Mode is not set to default, this may break some games.</source>
       <translation>VU rögzítési mód nincs alapértelmezetten, ez problémákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3204"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3210"/>
       <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
       <translation>128MB RAM engedélyezve. Néhány játék kompatibilitását befolyásolhatja.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3209"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3215"/>
       <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
       <translation>Játék javítások nincsenek engedélyezve. Ez hatással lehet a játékok kompatibilitására.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3214"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3220"/>
       <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
-      <translation>Kompatibilitási javítások nincsenek engedélyezve. Ez hatással lehet a játékok kompatibilitására.</translation>
+      <translation>Kompatibilitási tapaszok nincsenek engedélyezve. Ez hatással lehet a játékok kompatibilitására.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3218"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3224"/>
       <source>Frame rate for NTSC is not default. This may break some games.</source>
       <translation>Az NTSC képfrissítés nincs alapértéken. Ez hibákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3220"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3226"/>
       <source>Frame rate for PAL is not default. This may break some games.</source>
       <translation>A PAL képfrissítés nincs alapértéken. Ez hibákat okozhat.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3239"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3245"/>
       <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
       <translation>EE újrafordító nincs engedélyezve, ez jelentősen csökkenti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3244"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3250"/>
       <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
       <translation>VU0 újrafordító nincs engedélyezve, ez jelentősen csökkenti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3249"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3255"/>
       <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
       <translation>VU1 újrafordító nincs engedélyezve, ez jelentősen csökkenti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3254"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3260"/>
       <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
       <translation>IOP újrafordító nincs engedélyezve, ez jelentősen csökkenti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3259"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3265"/>
       <source>EE Cache is enabled, this will significantly reduce performance.</source>
       <translation>EE gyorsítótár engedélyezve, ez jelentősen csökkenti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3264"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3270"/>
       <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
       <translation>Emotion Engine Várakozási Hurok Felismerése opció nincs engedélyezve, ez csökkentheti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3269"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3275"/>
       <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
       <translation>INTC Időzítés Átugrása nincs engedélyezve, ez csökkentheti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3272"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3278"/>
       <source>Fastmem is not enabled, this will reduce performance.</source>
       <translation>Gyors Memória nincs engedélyezve, ez csökkenti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3276"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3282"/>
       <source>Instant VU1 is disabled, this may reduce performance.</source>
       <translation>Azonnali VU1 letiltva, ez csökkentheti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3281"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3287"/>
       <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
       <translation>Az mVU Felesleges Flag Kihagyása opció nem engedélyezett, ez csökkentheti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3135"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3141"/>
       <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
       <translation>GPU Paletta Átalakítás engedélyezve, egy csökkentheti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3140"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3146"/>
       <source>Texture Preloading is not Full, this may reduce performance.</source>
       <translation>Textúra Előtöltés nem teljes, ez csökkentheti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3145"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3151"/>
       <source>Estimate texture region is enabled, this may reduce performance.</source>
       <translation>Becsült textúra terület engedélyezve, egy csökkentheti a teljesítményt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3150"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3156"/>
       <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
       <translation>Textúra mentés engedélyezve, folyamatosan menteni fogja a textúrákat a lemezre.</translation>
     </message>
