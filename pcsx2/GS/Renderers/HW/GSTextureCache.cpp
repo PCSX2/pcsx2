@@ -149,7 +149,8 @@ void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm
 
 	if (rect.rempty())
 		return;
-
+	if (rect.w > 2048)
+		DevCon.Warning("BAd");
 	std::vector<GSDirtyRect>::iterator it = target->m_dirty.end();
 	while (it != target->m_dirty.begin())
 	{
@@ -274,6 +275,15 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 		const int inc_horizontal_offset = (page_offset % src_pgw) * src_page_size.x;
 		in_rect = (in_rect + GSVector4i(0, inc_vertical_offset).xyxy()).max_i32(GSVector4i(0));
 		in_rect = (in_rect + GSVector4i(inc_horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
+
+		// Project Snowblind and Tomb Raider access the rect offset by 1 page and use a region to correct it, we need to account for that here.
+		if (in_rect.x >= (dst_pgw * dst_page_size.x))
+		{
+			in_rect.z -= dst_pgw * dst_page_size.x;
+			in_rect.x -= dst_pgw * dst_page_size.x;
+			in_rect.y += dst_page_size.y;
+			in_rect.w += dst_page_size.y;
+		}
 		page_offset = 0;
 		single_page = (in_rect.width() / src_page_size.x) <= 1 && (in_rect.height() / src_page_size.y) <= 1;
 	}
@@ -1448,8 +1458,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				// Make sure the texture actually is INSIDE the RT, it's possibly not valid if it isn't.
 				// Also check BP >= TBP, create source isn't equpped to expand it backwards and all data comes from the target. (GH3)
 				else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets &&
-					(GSLocalMemory::m_psm[color_psm].bpp >= 16 || (possible_shuffle && GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32)) && // Channel shuffles or non indexed lookups.
-					t->m_age <= 1 && (!found_t || t->m_last_draw > dst->m_last_draw) && CanTranslate(bp, bw, psm, block_boundary_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW))
+					(GSLocalMemory::m_psm[color_psm].bpp >= 16 || (/*possible_shuffle &&*/ GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32 && t->m_TEX0.TBW >= (bw * 2))) && // Channel shuffles or non indexed lookups.
+					t->m_age <= 1 && (!found_t || t->m_last_draw > dst->m_last_draw) /*&& CanTranslate(bp, bw, psm, block_boundary_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW)*/)
 				{
 
 					if (!t->HasValidBitsForFormat(psm, req_color, req_alpha) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
@@ -1481,7 +1491,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					}
 					if (bp > t->m_TEX0.TBP0)
 					{
-						GSVector4i new_rect = possible_shuffle ? block_boundary_rect : rect;
+						GSVector4i new_rect = (GSLocalMemory::m_psm[color_psm].bpp != GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp) ? block_boundary_rect : rect;
 						if (linear)
 						{
 							new_rect.z -= 1;
@@ -1586,15 +1596,18 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						// Omitting that check here seemed less risky than blowing CS targets out...
 						const GSVector2i& page_size = GSLocalMemory::m_psm[src_psm].pgs;
 						const GSOffset offset(GSLocalMemory::m_psm[src_psm].info, bp, bw, psm);
+						const u32 offset_bp = offset.bn(region.GetMinX(), region.GetMinY());
 						if (bp < t->m_TEX0.TBP0 && region.HasX() && region.HasY() &&
 							(region.GetMinX() & (page_size.x - 1)) == 0 && (region.GetMinY() & (page_size.y - 1)) == 0 &&
-							offset.bn(region.GetMinX(), region.GetMinY()) == t->m_TEX0.TBP0)
+								(offset.bn(region.GetMinX(), region.GetMinY()) == t->m_TEX0.TBP0 || 
+								(offset_bp >= t->m_TEX0.TBP0) && ((((offset_bp - t->m_TEX0.TBP0) >> 5) % bw) + (rect.width() / page_size.x)) <= bw))
 						{
 							GL_CACHE("TC: Target 0x%x detected in front of TBP 0x%x with %d,%d offset (%d pages)",
 								t->m_TEX0.TBP0, TEX0.TBP0, region.GetMinX(), region.GetMinY(),
 								(region.GetMinY() / page_size.y) * TEX0.TBW + (region.GetMinX() / page_size.x));
-							x_offset = -region.GetMinX();
-							y_offset = -region.GetMinY();
+							
+							x_offset = ((((offset_bp - t->m_TEX0.TBP0) >> 5) % bw) * page_size.x) - region.GetMinX();
+							y_offset = ((((offset_bp - t->m_TEX0.TBP0) >> 5) / bw) * page_size.y) - region.GetMinY();
 							dst = t;
 							tex_merge_rt = false;
 							found_t = true;
@@ -1827,7 +1840,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 	// TODO: Move all frame stuff to its own routine too.
 	if (!is_frame)
 	{
-		for (auto i = list.begin(); i != list.end(); ++i)
+		for (auto i = list.begin(); i != list.end();)
 		{
 			Target* t = *i;
 
@@ -1838,6 +1851,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				if (dst && (GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw))
 				{
 					DevCon.Warning("Ignoring target at %x as one at %x is newer", t->m_TEX0.TBP0, dst->m_TEX0.TBP0);
+					i++;
 					continue;
 				}
 					
@@ -1896,27 +1910,42 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					InvalidateSourcesFromTarget(t);
 					i = list.erase(i);
 					delete t;
+
+					continue;
 				}
 			}
 			// Probably pointing to half way through the target
-			else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
+			else if (!min_rect.rempty()&& GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
 			{
-				if (offset != -1 && (bp - t->m_TEX0.TBP0) != offset)
+				// Problem: Project - Snowblind and Tomb Raider offset the RT but not the Z
+				/*if (offset != -1 && (bp - t->m_TEX0.TBP0) != offset)
+				{
 					continue;
+				}*/
 
 				const u32 widthpage_offset = (std::abs(static_cast<int>(bp - t->m_TEX0.TBP0)) >> 5) % std::max(t->m_TEX0.TBW, 1U);
-				const bool is_aligned_ok = widthpage_offset == 0 || ((widthpage_offset + TEX0.TBW) <= t->m_TEX0.TBW) || min_rect.width() <= 64 || (widthpage_offset == (t->m_TEX0.TBW >> 1) && (static_cast<u32>(min_rect.width()) <= (widthpage_offset * 64)));
-				if ((!dst || ((GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw))) && is_aligned_ok && (t->m_TEX0.TBW == TEX0.TBW || (TEX0.TBW == 1 && t->m_TEX0.TBW > 1)) && t->Inside(bp, TEX0.TBW, TEX0.PSM, min_rect))
-				{
+				const bool is_aligned_ok = widthpage_offset == 0 || (t->m_TEX0.TBW == TEX0.TBW && ((min_rect.z >> 6) + widthpage_offset) <= TEX0.TBW) || ((widthpage_offset + TEX0.TBW) <= t->m_TEX0.TBW) || min_rect.width() <= 64 || (widthpage_offset == (t->m_TEX0.TBW >> 1) && (static_cast<u32>(min_rect.width()) <= (widthpage_offset * 64)));
+				if ((!dst || ((GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw))) && is_aligned_ok && (t->m_TEX0.TBW == TEX0.TBW || (TEX0.TBW == 1 && t->m_TEX0.TBW > 1)) && t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect))
+				{	/*TEX0.TBP0 == ((((t->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0)*/
 					// If it's too old, it's probably not a real target to jump in to anymore.
-					if ((GSState::s_n - t->m_last_draw) > 10 && (!t->m_dirty.empty() || (!is_shuffle &&
-						!(widthpage_offset == 0/*TEX0.TBP0 == ((((t->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0)*/ || min_rect.width() <= 64 ||
+					/*if ((GSState::s_n - t->m_last_draw) > 10 && (!t->m_dirty.empty() || (!is_shuffle &&
+						!(widthpage_offset == 0 || min_rect.width() <= 64 || 
 						(widthpage_offset == (t->m_TEX0.TBW >> 1) && min_rect.width() == widthpage_offset * 64)))))
 					{
 						GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to change in target", t->m_TEX0.TBP0, t->m_TEX0.TBW, psm_str(t->m_TEX0.PSM));
 						InvalidateSourcesFromTarget(t);
 						i = list.erase(i);
 						delete t;
+					}
+					else*/
+					if (!is_shuffle && !GSUtil::HasSameSwizzleBits(t->m_TEX0.PSM, TEX0.PSM))
+					{
+						GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to change in target", t->m_TEX0.TBP0, t->m_TEX0.TBW, psm_str(t->m_TEX0.PSM));
+						InvalidateSourcesFromTarget(t);
+						i = list.erase(i);
+						delete t;
+						
+						continue;
 					}
 					else
 					{
@@ -1931,6 +1960,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					}
 				}
 			}
+
+			i++;
 		}
 	}
 	else
@@ -2085,7 +2116,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			dst->m_alpha_min = 0;
 			dst->m_alpha_max = 0;
 		}
-		else if (!is_shuffle && std::abs(static_cast<s16>(GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp - GSLocalMemory::m_psm[TEX0.PSM].bpp)) == 16)
+		else if (std::abs(static_cast<s16>(GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp - GSLocalMemory::m_psm[TEX0.PSM].bpp)) == 16)
 		{
 			dst->Update(false);
 
@@ -2094,7 +2125,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			new_scaled_size = ScaleRenderTargetSize(dst->m_unscaled_size, scale);
 
 			dRect = (GSVector4(GSVector4i::loadh(dst->m_unscaled_size)) * GSVector4(scale)).ceil();
-			
+
 			if (scale_down)
 			{
 				if ((new_size.y * 2) < 1024)
@@ -2116,34 +2147,38 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				dst->m_valid.y /= 2;
 				dst->m_valid.w /= 2;
 			}
-			GL_INS("TC Convert to 16bit: %dx%d: %dx%d @ %f -> %dx%d @ %f", dst->m_unscaled_size.x, dst->m_unscaled_size.y,
-				dst->m_texture->GetWidth(), dst->m_texture->GetHeight(), dst->m_scale, new_scaled_size.x, new_scaled_size.y,
-				scale);
-			//DevCon.Warning("Scale %s draw %d", scale_down ? "down" : "up", GSState::s_n);
-			GSTexture* tex = type == RenderTarget ? g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::Color, true) :
-													g_gs_device->CreateDepthStencil(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::DepthStencil, true);
-			if (!tex)
-				return nullptr;
-			m_target_memory_usage += tex->GetMemUsage();
-
-			g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, (type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY, false);
-
-			
-			if (src && src->m_from_target && src->m_from_target == dst)
+			if (!is_shuffle)
 			{
-				src->m_texture = dst->m_texture;
-				src->m_target_direct = false;
-				src->m_shared_texture = false;
+				GL_INS("TC Convert to 16bit: %dx%d: %dx%d @ %f -> %dx%d @ %f", dst->m_unscaled_size.x, dst->m_unscaled_size.y,
+					dst->m_texture->GetWidth(), dst->m_texture->GetHeight(), dst->m_scale, new_scaled_size.x, new_scaled_size.y,
+					scale);
+				//DevCon.Warning("Scale %s draw %d", scale_down ? "down" : "up", GSState::s_n);
+				GSTexture* tex = type == RenderTarget ? g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::Color, true) :
+														g_gs_device->CreateDepthStencil(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::DepthStencil, true);
+				if (!tex)
+					return nullptr;
+				m_target_memory_usage += tex->GetMemUsage();
+
+				g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, (type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY, false);
+
+
+				if (src && src->m_from_target && src->m_from_target == dst)
+				{
+					src->m_texture = dst->m_texture;
+					src->m_target_direct = false;
+					src->m_shared_texture = false;
+				}
+				else
+				{
+					m_target_memory_usage -= dst->m_texture->GetMemUsage();
+					g_gs_device->Recycle(dst->m_texture);
+				}
+
+				dst->m_texture = tex;
+				dst->m_unscaled_size = new_size;
 			}
-			else
-			{
-				m_target_memory_usage -= dst->m_texture->GetMemUsage();
-				g_gs_device->Recycle(dst->m_texture);
-			}
-			
+			// New format or doing a shuffle to a 32bit target that used to be 16bit
 			dst->m_TEX0.PSM = TEX0.PSM;
-			dst->m_texture = tex;
-			dst->m_unscaled_size = new_size;
 			
 		}
 
@@ -2347,7 +2382,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			dst->m_valid_rgb = dst_match->m_valid_rgb;
 			dst->m_was_dst_matched = true;
 			dst_match->m_was_dst_matched = true;
-			dst_match->m_valid_rgb = false;
+			dst_match->m_valid_rgb = preserve_rgb;
 
 			if (GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].bpp > 16)
 				dst->m_TEX0.TBW = dst_match->m_TEX0.TBW; // Be careful of shuffles of the depth as C16, but using a buffer width of 16 (Mercenaries).
@@ -2572,7 +2607,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 
 	if (valid_draw_size && supported_fmt)
 	{
-		const GSVector4i newrect = GSVector4i::loadh(size);
+		const GSVector4i newrect = GSVector4i::loadh(valid_size);
 		const u32 rect_end = GSLocalMemory::GetUnwrappedEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, newrect);
 
 		RGBAMask rgba;
@@ -2711,12 +2746,14 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				auto j = i;
 				Target* t = *j;
 				
-				if (dst != t && t->m_TEX0.TBW == dst->m_TEX0.TBW && t->m_TEX0.PSM == dst->m_TEX0.PSM /*&& t->m_TEX0.TBW >= 4*/)
+				if (dst != t && t->m_TEX0.PSM == dst->m_TEX0.PSM /*&& t->m_TEX0.TBW >= 4*/)
 					if (t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid))
 					{
+						const u32 buffer_width = std::max(1U, dst->m_TEX0.TBW);
+
 						// If the two targets are misaligned, it's likely a relocation, so we can just kill the old target.
 						// Kill targets that are overlapping new targets, but ignore the copy if the old target is dirty  because we favour GS memory.
-						if (((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % dst->m_TEX0.TBW) != 0) && !t->m_dirty.empty())
+						if (((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % buffer_width) != 0) && !t->m_dirty.empty())
 						{
 							InvalidateSourcesFromTarget(t);
 							i = list.erase(j);
@@ -2739,16 +2776,16 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 						{
 							const int rt_pages = ((t->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 5;
 							const int overlapping_pages = std::min(rt_pages, static_cast<int>((dst->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 5);
-							const int overlapping_pages_height = (overlapping_pages / dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
+							const int overlapping_pages_height = (overlapping_pages / buffer_width) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
 
-							if (overlapping_pages_height == 0 || (overlapping_pages % dst->m_TEX0.TBW))
+							if (overlapping_pages_height == 0 || (overlapping_pages % buffer_width))
 							{
 								// No overlap top copy or the widths don't match.
 								i++;
 								continue;
 							}
 
-							const int dst_offset = ((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) / dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y);
+							const int dst_offset = ((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) / buffer_width) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y);
 
 							if ((dst_offset + t->m_valid.w) > dst->m_unscaled_size.y && !dst->ResizeTexture(dst->m_unscaled_size.x, (dst_offset + t->m_valid.w), true))
 							{
@@ -2757,22 +2794,26 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 								continue;
 							}
 							
-							const int dst_offset_width = (((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.x;
-							const int dst_offset_height = ((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) / dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y);
+							const int dst_offset_width = (((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % buffer_width) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.x;
+							const int dst_offset_height = ((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) / buffer_width) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y);
 							const int dst_offset_scaled_width = dst_offset_width * dst->m_scale;
 							const int dst_offset_scaled_height = dst_offset_height * dst->m_scale;
 							const GSVector4i dst_rect_scale = GSVector4i(t->m_valid.x, dst_offset_height, t->m_valid.z, dst_offset_height + overlapping_pages_height);
 							if (((!hw_clear && (preserve_target || preload)) || dst_rect_scale.rintersect(draw_rect).rempty()) && dst->GetScale() == t->GetScale())
 							{
-								const int copy_width = ((t->m_texture->GetWidth()) > (dst->m_texture->GetWidth()) ? (dst->m_texture->GetWidth()) : t->m_texture->GetWidth()) - dst_offset_scaled_width;
-								const int copy_height = overlapping_pages_height * t->m_scale;
+								int copy_width = ((t->m_texture->GetWidth()) > (dst->m_texture->GetWidth()) ? (dst->m_texture->GetWidth()) : t->m_texture->GetWidth()) - dst_offset_scaled_width;
+								int copy_height = overlapping_pages_height * t->m_scale;
 
 								GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, copy_width, copy_height, 0, dst_offset_scaled_height);
 
 								// Clear the dirty first
 								t->Update();
 								dst->Update();
-
+								if (copy_width < 0)
+								{
+									copy_width = 0;
+									DevCon.Warning("Copy has no width");
+								}
 								if ((dst_offset + copy_height) > dst->m_unscaled_size.y)
 									DevCon.Warning("Way too tall draw %d", GSState::s_n);
 
@@ -2787,6 +2828,12 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 								}
 								else
 								{
+									// Clamp size if it goes out of bounds.
+									if ((copy_width + dst_offset_scaled_width) > dst->m_unscaled_size.x || (copy_height + dst_offset_scaled_height) > dst->m_unscaled_size.y)
+									{
+										copy_width = std::min(copy_width, static_cast<int>((dst->m_unscaled_size.x * dst->m_scale) - dst_offset_scaled_width));
+										copy_height = std::min(copy_height, static_cast<int>((dst->m_unscaled_size.y * dst->m_scale) - dst_offset_scaled_height));
+									}
 									// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
 									g_gs_device->CopyRect(t->m_texture, dst->m_texture, GSVector4i(0, 0, copy_width, copy_height), dst_offset_scaled_width, dst_offset_scaled_height);
 								}
@@ -2808,6 +2855,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							InvalidateSourcesFromTarget(t);
 							i = list.erase(j);
 							delete t;
+							continue;
 						}
 					}
 				i++;
@@ -3160,7 +3208,7 @@ bool GSTextureCache::PrepareDownloadTexture(u32 width, u32 height, GSTexture::Fo
 	return true;
 }
 
-void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 write_psm)
+void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 write_psm, u32 write_bw)
 {
 	const bool preserve_alpha = (GSLocalMemory::m_psm[write_psm].trbpp == 24);
 	for (int type = 0; type < 2; type++)
@@ -3169,22 +3217,24 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 		for (auto i = list.begin(); i != list.end();)
 		{
 			Target* const t = *i;
-			if (start_bp != t->m_TEX0.TBP0 && (t->m_TEX0.TBP0 < start_bp || t->UnwrappedEndBlock() > end_bp))
+			if ((start_bp > t->UnwrappedEndBlock() || end_bp < t->m_TEX0.TBP0) || (start_bp != t->m_TEX0.TBP0 && (t->m_TEX0.TBP0 < start_bp || t->UnwrappedEndBlock() > end_bp) && t->m_dirty.empty()))
 			{
 				++i;
 				continue;
 			}
 
+			const u32 total_pages = ((end_bp + 1) - t->m_TEX0.TBP0) >> 5;
 			// Not covering the whole target, and a different format, so just dirty it.
-			if (start_bp == t->m_TEX0.TBP0 && (t->UnwrappedEndBlock() > end_bp) && write_psm != t->m_TEX0.PSM)
+			/*if (start_bp >= t->m_TEX0.TBP0 && (t->UnwrappedEndBlock() > end_bp) && write_psm != t->m_TEX0.PSM && write_bw == t->m_TEX0.TBW)
 			{
 				const GSLocalMemory::psm_t& target_psm = GSLocalMemory::m_psm[write_psm];
-				u32 total_pages = (end_bp - t->m_TEX0.TBP0) >> 5;
-				GSVector4i dirty_area = GSVector4i(0, 0, t->m_valid.z, (total_pages / t->m_TEX0.TBW) * target_psm.pgs.y);
-				InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(t->m_TEX0.TBP0, t->m_TEX0.TBW, write_psm), dirty_area, true);
+				const u32 page_offset = ((start_bp - t->m_TEX0.TBP0) >> 5);
+				const u32 vertical_offset = (page_offset / t->m_TEX0.TBW) * target_psm.pgs.y;
+				GSVector4i dirty_area = GSVector4i(page_offset % t->m_TEX0.TBW, vertical_offset, t->m_valid.z, vertical_offset + ((total_pages / t->m_TEX0.TBW) * target_psm.pgs.y));
+				InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM), dirty_area, true);
 				++i;
 				continue;
-			}
+			}*/
 
 			InvalidateSourcesFromTarget(t);
 
@@ -3867,6 +3917,19 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	if (alpha_only && (!dst || GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp != 32))
 		return false;
 
+	// This is probably copying to a new buffer but using the original one as an offset, so better to use a new texture, if we don't find one.
+	if (dst && DBP == SBP && dy > dst->m_unscaled_size.y)
+	{
+		u32 new_DBP = DBP + (((dy / GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs.y) * DBW) << 5);
+
+		dst = nullptr;
+
+		DBP = new_DBP;
+		dy = 0;
+
+		dst = GetExactTarget(DBP, DBW, dpsm_s.depth ? DepthStencil : RenderTarget, DBP);
+	}
+
 	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
 	// We use dx/dy == 0 and the TBW check as a safeguard to make sure these go through to local memory.
 	// We can also recreate the target if it's previously been created in the height cache with a valid size.
@@ -3940,7 +4003,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	// Make sure the copy doesn't go out of bounds (it shouldn't).
 	if ((scaled_dx + scaled_w) > dst->m_texture->GetWidth() || (scaled_dy + scaled_h) > dst->m_texture->GetHeight())
 		return false;
-	DevCon.Warning("HW Move 0x%x[BW:%u PSM:%s] to 0x%x[BW:%u PSM:%s] <%d,%d->%d,%d> -> <%d,%d->%d,%d>", SBP, SBW,
+	GL_CACHE("HW Move after draw %d 0x%x[BW:%u PSM:%s] to 0x%x[BW:%u PSM:%s] <%d,%d->%d,%d> -> <%d,%d->%d,%d>", GSState::s_n, SBP, SBW,
 		psm_str(SPSM), DBP, DBW, psm_str(DPSM), sx, sy, sx + w, sy + h, dx, dy, dx + w, dy + h);
 
 	const bool cover_whole_target = dst->m_type == RenderTarget && GSVector4i(dx, dy, dx + w, dy + h).rintersect(dst->m_valid).eq(dst->m_valid);
@@ -4066,6 +4129,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 	// Invalidate any sources that overlap with the target (since they're now stale).
 	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h), false);
+
 	return true;
 }
 
@@ -4252,7 +4316,7 @@ GSTextureCache::Target* GSTextureCache::GetExactTarget(u32 BP, u32 BW, int type,
 	{
 		Target* t = *it;
 
-		if (t->m_TEX0.TBP0 == BP && t->m_TEX0.TBW == BW && t->UnwrappedEndBlock() >= end_bp)
+		if ((t->m_TEX0.TBP0 == BP || (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->m_TEX0.TBP0 < BP && ((BP >> 5) % t->m_TEX0.TBW) == 0)) && t->m_TEX0.TBW == BW && t->UnwrappedEndBlock() >= end_bp)
 		{
 			rts.MoveFront(it.Index());
 			return t;
@@ -4313,7 +4377,7 @@ GSTextureCache::Target* GSTextureCache::FindOverlappingTarget(u32 BP, u32 BW, u3
 	return FindOverlappingTarget(BP, end_bp);
 }
 
-GSVector2i GSTextureCache::GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height)
+GSVector2i GSTextureCache::GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height, bool can_expand)
 {
 	TargetHeightElem search = {};
 	search.bp = bp;
@@ -4327,14 +4391,17 @@ GSVector2i GSTextureCache::GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width
 		TargetHeightElem& elem = const_cast<TargetHeightElem&>(*it);
 		if (elem.bits == search.bits)
 		{
-			if (elem.width < min_width || elem.height < min_height)
+			if (can_expand)
 			{
-				DbgCon.WriteLn("Expand size at %x %u %u from %ux%u to %ux%u", bp, fbw, psm, elem.width, elem.height,
-					min_width, min_height);
-			}
+				if (elem.width < min_width || elem.height < min_height)
+				{
+					DbgCon.WriteLn("Expand size at %x %u %u from %ux%u to %ux%u", bp, fbw, psm, elem.width, elem.height,
+						min_width, min_height);
+				}
 
-			elem.width = std::max(elem.width, min_width);
-			elem.height = std::max(elem.height, min_height);
+				elem.width = std::max(elem.width, min_width);
+				elem.height = std::max(elem.height, min_height);
+			}
 
 			m_target_heights.MoveFront(it.Index());
 			elem.age = 0;
@@ -4965,6 +5032,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 					g_gs_device->ConvertToIndexedTexture(sTex, dst->m_scale, x_offset, y_offset,
 						std::max<u32>(dst->m_TEX0.TBW, 1u) * 64, dst->m_TEX0.PSM, dTex,
 						std::max<u32>(TEX0.TBW, 1u) * 64, TEX0.PSM);
+
+					src->m_region.SetX((x_offset / GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs.x) * GSLocalMemory::m_psm[TEX0.PSM].pgs.x, tw);
+					src->m_region.SetY((y_offset / GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs.y) * GSLocalMemory::m_psm[TEX0.PSM].pgs.y, th);
 				}
 				else
 				{
@@ -5116,8 +5186,10 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 {
 	// We *should* be able to use the TBW here as an indicator of size... except Destroy All Humans 2 sets
 	// TBW to 10, and samples from 64 through 703... which means it'd be grabbing the next row at the end.
-	const int tex_width = std::max<int>(64 * TEX0.TBW, region.GetMaxX());
-	const int tex_height = region.HasY() ? region.GetHeight() : (1 << TEX0.TH);
+	// Round the size up to the next block
+	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
+	const int tex_width = (std::max<int>(64 * TEX0.TBW, region.GetMaxX()) + (psm_s.bs.x - 1)) & ~(psm_s.bs.x - 1);
+	const int tex_height = ((region.HasY() ? region.GetHeight() : (1 << TEX0.TH)) + (psm_s.bs.y - 1)) & ~(psm_s.bs.y - 1);
 	const int scaled_width = static_cast<int>(static_cast<float>(tex_width) * scale);
 	const int scaled_height = static_cast<int>(static_cast<float>(tex_height) * scale);
 
@@ -6579,9 +6651,11 @@ void GSTextureCache::Target::ResizeValidity(const GSVector4i& rect)
 		m_end_block = GSLocalMemory::GetEndBlockAddress(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM, m_valid);
 
 		const u32 offset = ((UnwrappedEndBlock() + 1) - m_TEX0.TBP0) % (std::max(m_TEX0.TBW, 1U) << 5);
-		m_end_block += offset;
+		
+		if (offset)
+			m_end_block = m_end_block + ((std::max(m_TEX0.TBW, 1U) << 5) - offset);
 	}
-	
+
 	// Else No valid size, so need to resize down.
 
 	// GL_CACHE("ResizeValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
@@ -6589,13 +6663,18 @@ void GSTextureCache::Target::ResizeValidity(const GSVector4i& rect)
 
 void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect, bool can_resize)
 {
+	if (m_TEX0.TBP0 == 0x1a00 && rect.w == 448 && can_resize)
+		DevCon.Warning("Here");
+
 	if (m_valid.eq(GSVector4i::zero()))
 	{
 		m_valid = rect;
 
 		m_end_block = GSLocalMemory::GetEndBlockAddress(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM, m_valid);
 		const u32 offset = ((UnwrappedEndBlock() + 1) - m_TEX0.TBP0) % (std::max(m_TEX0.TBW, 1U) << 5);
-		m_end_block += offset;
+
+		if (offset)
+			m_end_block = m_end_block + ((std::max(m_TEX0.TBW, 1U) << 5) - offset);
 	}
 	else if (can_resize)
 	{
@@ -6603,7 +6682,9 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect, bool can_res
 
 		m_end_block = GSLocalMemory::GetEndBlockAddress(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM, m_valid);
 		const u32 offset = ((UnwrappedEndBlock() + 1) - m_TEX0.TBP0) % (std::max(m_TEX0.TBW, 1U) << 5);
-		m_end_block += offset;
+
+		if (offset)
+			m_end_block = m_end_block + ((std::max(m_TEX0.TBW, 1U) << 5) - offset);
 	}
 	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
 }
@@ -6972,6 +7053,29 @@ void GSTextureCache::InvalidateTemporarySource()
 
 	delete m_temporary_source;
 	m_temporary_source = nullptr;
+}
+
+void GSTextureCache::SetTemporaryZ(GSTexture* temp_z)
+{
+	m_temporary_z = temp_z;
+}
+
+GSTexture* GSTextureCache::GetTemporaryZ()
+{
+	if (!m_temporary_z)
+		return nullptr;
+
+	return m_temporary_z;
+}
+
+
+void GSTextureCache::InvalidateTemporaryZ()
+{
+	if (!m_temporary_z)
+		return;
+
+	g_gs_device->Recycle(m_temporary_z);
+	m_temporary_z = nullptr;
 }
 
 void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* tex, const std::pair<u8, u8>& alpha_minmax)
