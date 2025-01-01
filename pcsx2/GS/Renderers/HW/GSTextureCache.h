@@ -427,6 +427,7 @@ protected:
 	std::unordered_map<SurfaceOffsetKey, SurfaceOffset, SurfaceOffsetKeyHash, SurfaceOffsetKeyEqual> m_surface_offset_cache;
 
 	Source* m_temporary_source = nullptr; // invalidated after the draw
+	GSTexture* m_temporary_z = nullptr; // invalidated after the draw
 
 	std::unique_ptr<GSDownloadTexture> m_color_download_texture;
 	std::unique_ptr<GSDownloadTexture> m_uint16_download_texture;
@@ -508,7 +509,7 @@ public:
 	bool HasTargetInHeightCache(u32 bp, u32 fbw, u32 psm, u32 max_age = std::numeric_limits<u32>::max(), bool move_front = true);
 	bool Has32BitTarget(u32 bp);
 
-	void InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 write_psm = PSMCT32);
+	void InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 write_psm = PSMCT32, u32 write_bw = 1);
 	void InvalidateVideoMemType(int type, u32 bp, u32 write_psm = PSMCT32, u32 write_fbmsk = 0, bool dirty_only = false);
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
 	void InvalidateVideoMem(const GSOffset& off, const GSVector4i& r, bool target = true);
@@ -551,6 +552,11 @@ public:
 
 	/// Invalidates a temporary source, a partial copy only created from the current RT/DS for the current draw.
 	void InvalidateTemporarySource();
+	void SetTemporaryZ(GSTexture* temp_z);
+	GSTexture* GetTemporaryZ();
+
+	/// Invalidates a temporary Z, a partial copy only created from the current DS for the current draw when Z is not offset but RT is
+	void InvalidateTemporaryZ();
 
 	/// Injects a texture into the hash cache, by using GSTexture::Swap(), transitively applying to all sources. Ownership of tex is transferred.
 	void InjectHashCacheTexture(const HashCacheKey& key, GSTexture* tex, const std::pair<u8, u8>& alpha_minmax);
