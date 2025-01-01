@@ -14,8 +14,8 @@
   "sources": [
     {
       "type": "archive",
-      "url": "https://libsdl.org/release/SDL2-2.30.10.tar.gz",
-      "sha256": "f59adf36a0fcf4c94198e7d3d776c1b3824211ab7aeebeb31fe19836661196aa"
+      "url": "https://libsdl.org/release/SDL2-2.30.11.tar.gz",
+      "sha256": "8b8d4aef2038533da814965220f88f77d60dfa0f32685f80ead65e501337da7f"
     }
   ],
   "cleanup": [
