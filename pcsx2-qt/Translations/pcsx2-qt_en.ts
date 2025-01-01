@@ -10244,12 +10244,12 @@ To use the Vulkan renderer, you should remove this app package.</source>
     </message>
     <message>
         <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="115"/>
-        <source>Failed to create D3D device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required.</source>
+        <source>Failed to create D3D11 device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="514"/>
-        <source>The Direct3D renderer is running at feature level 10.0. This is an UNSUPPORTED configuration.
+        <source>The Direct3D11 renderer is running at feature level 10.0. This is an UNSUPPORTED configuration.
 Do not request support, please upgrade your hardware/drivers first.</source>
         <translation type="unfinished"></translation>
     </message>
