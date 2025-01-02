@@ -17545,10 +17545,12 @@ SLES-51654:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves lighting.
 SLES-51658:
-  name: "Piglet's Big Game"
+  name: "Disney's ferkels grosses abenteuer-spiel"
+  name-en: "Piglet's Big Game"
   region: "PAL-G"
 SLES-51659:
-  name: "Piglet's Big Game"
+  name: "Disney's les aventures de porcinet"
+  name-en: "Piglet's Big Game"
   region: "PAL-F"
 SLES-51660:
   name: "Risk - Global Domination"
@@ -17570,12 +17572,15 @@ SLES-51665:
   region: "PAL-S"
 SLES-51666:
   name: "Piglet - El Gran Juego de Disney"
+  name-en: "Piglet's Big Game"
   region: "PAL-S"
 SLES-51667:
-  name: "Piglet's Big Game"
+  name: "Disney's Pimpi Piccolo Grande Eroe"
+  name-en: "Piglet's Big Game"
   region: "PAL-I"
 SLES-51668:
-  name: "Piglet's Big Game"
+  name: "Disney's Knorretje Kleine Grote Held"
+  name-en: "Piglet's Big Game"
   region: "PAL-NL"
 SLES-51670:
   name: "Alter Echo"
