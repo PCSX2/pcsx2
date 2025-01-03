@@ -12,7 +12,7 @@ on:
       os:
         required: false
         type: string
-        default: windows-2022
+        default: windows-2025
       platform:
         required: false
         type: string
@@ -55,12 +55,30 @@ jobs:
       POWERSHELL_TELEMETRY_OPTOUT: 1
 
     steps:
-      - name: Tempfix Clang
-        if: inputs.configuration == 'CMake'
-        run: choco uninstall llvm
-        
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Configure MSBuild Clang Version
+        if: inputs.configuration != 'CMake'
+        shell: pwsh
+        run: |
+          [string[]] $clang_cl = &clang-cl.exe --version
+          
+          $version = [Regex]::Match($clang_cl[0], "(\d+\.\d+\.\d+)")
+          $path = $clang_cl[3].TrimStart("InstalledDir: ").TrimEnd("\bin")
+          
+          $output = @"
+          <Project>
+            <PropertyGroup>
+              <LLVMInstallDir>$path</LLVMInstallDir>
+              <LLVMToolsVersion>$version</LLVMToolsVersion>
+            </PropertyGroup>
+          </Project>
+          "@
+          
+          Write-Host $output
+          
+          $output | Out-File Directory.build.props
 
       # actions/checkout elides tags, fetch them primarily for releases
       - name: Fetch Tags
