@@ -285,7 +285,7 @@ void FileMemoryCard::Open()
 			}
 		}
 
-		if (fname.ends_with(".bin"))
+		if (fname.ends_with(".bin") || fname.ends_with(".mc2"))
 		{
 			std::string newname(fname + "x");
 			if (!ConvertNoECCtoRAW(fname.c_str(), newname.c_str()))
@@ -346,7 +346,7 @@ void FileMemoryCard::Close()
 		std::fclose(m_file[slot]);
 		m_file[slot] = nullptr;
 
-		if (m_filenames[slot].ends_with(".bin"))
+		if (m_filenames[slot].ends_with(".bin") || m_filenames[slot].ends_with(".mc2"))
 		{
 			const std::string name_in(m_filenames[slot] + 'x');
 			if (ConvertRAWtoNoECC(name_in.c_str(), m_filenames[slot].c_str()))
@@ -786,13 +786,14 @@ int FileMcd_ReIndex(uint port, uint slot, const std::string& filter)
 
 static MemoryCardFileType GetMemoryCardFileTypeFromSize(s64 size)
 {
-	if (size == (8 * MC2_MBSIZE))
+	// Handle both ecc and non ecc versions
+	if (size == (8 * MC2_MBSIZE) || size == _8mb)
 		return MemoryCardFileType::PS2_8MB;
-	else if (size == (16 * MC2_MBSIZE))
+	else if (size == (16 * MC2_MBSIZE) || size == _16mb)
 		return MemoryCardFileType::PS2_16MB;
-	else if (size == (32 * MC2_MBSIZE))
+	else if (size == (32 * MC2_MBSIZE) || size == _32mb)
 		return MemoryCardFileType::PS2_32MB;
-	else if (size == (64 * MC2_MBSIZE))
+	else if (size == (64 * MC2_MBSIZE) || size == _64mb)
 		return MemoryCardFileType::PS2_64MB;
 	else if (size == MCD_SIZE)
 		return MemoryCardFileType::PS1;
@@ -862,7 +863,8 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 
 		// We only want relevant file types.
 		if (!(fd.FileName.ends_with(".ps2") || fd.FileName.ends_with(".mcr") ||
-				fd.FileName.ends_with(".mcd") || fd.FileName.ends_with(".bin")))
+				fd.FileName.ends_with(".mcd") || fd.FileName.ends_with(".bin") ||
+				fd.FileName.ends_with(".mc2")))
 			continue;
 
 		if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
