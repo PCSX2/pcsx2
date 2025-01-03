@@ -30,7 +30,9 @@
 #include "fmt/core.h"
 
 #include <bit>
+#ifdef _M_X86
 #include <immintrin.h>
+#endif
 #include <map>
 #include <unordered_set>
 #include <unordered_map>
@@ -118,12 +120,13 @@ __inline int CheckCache(u32 addr)
 		return false;
 	}
 
+	size_t i = 0;
 	const size_t size = cachedTlbs.count;
+
+#ifdef _M_X86
 	const int stride = 4;
 
-	__m128i addr_vec = _mm_set1_epi32(addr);
-
-	size_t i = 0;
+	const __m128i addr_vec = _mm_set1_epi32(addr);
 
 	for (; i + stride <= size; i += stride)
 	{
@@ -170,7 +173,7 @@ __inline int CheckCache(u32 addr)
 			return true;
 		}
 	}
-
+#endif
 	for (; i < size; i++)
 	{
 		const u32 mask = cachedTlbs.PageMasks[i];
