@@ -157,6 +157,7 @@ class FileMemoryCard
 {
 protected:
 	std::FILE* m_file[8] = {};
+	s64 m_fileSize[8] = {};
 	std::string m_filenames[8] = {};
 	std::vector<u8> m_currentdata;
 	u64 m_chksum[8] = {};
@@ -246,7 +247,13 @@ std::string FileMcd_GetDefaultName(uint slot)
 		return StringUtil::StdStringFromFormat("Mcd%03u.ps2", slot + 1);
 }
 
-FileMemoryCard::FileMemoryCard() = default;
+FileMemoryCard::FileMemoryCard()
+{
+	for (u8 slot = 0; slot < 8; slot++)
+	{
+		m_fileSize[slot] = -1;
+	}
+}
 
 FileMemoryCard::~FileMemoryCard() = default;
 
@@ -314,12 +321,14 @@ void FileMemoryCard::Open()
 		}
 		else // Load checksum
 		{
+			m_fileSize[slot] = FileSystem::FSize64(m_file[slot]);
+
 			Console.WriteLnFmt(Color_Green, "McdSlot {} [File]: {} [{} MB, {}]", slot, Path::GetFileName(fname),
-				(FileSystem::FSize64(m_file[slot]) + (MCD_SIZE + 1)) / MC2_MBSIZE,
+				(m_fileSize[slot] + (MCD_SIZE + 1)) / MC2_MBSIZE,
 				FileMcd_IsMemoryCardFormatted(m_file[slot]) ? "Formatted" : "UNFORMATTED");
 
 			m_filenames[slot] = std::move(fname);
-			m_ispsx[slot] = FileSystem::FSize64(m_file[slot]) == 0x20000;
+			m_ispsx[slot] = m_fileSize[slot] == 0x20000;
 			m_chkaddr = 0x210;
 
 			if (!m_ispsx[slot] && FileSystem::FSeek64(m_file[slot], m_chkaddr, SEEK_SET) == 0)
@@ -354,30 +363,14 @@ void FileMemoryCard::Close()
 		}
 
 		m_filenames[slot] = {};
+		m_fileSize[slot] = -1;
 	}
 }
 
 // Returns FALSE if the seek failed (is outside the bounds of the file).
 bool FileMemoryCard::Seek(std::FILE* f, u32 adr)
 {
-	const s64 size = FileSystem::FSize64(f);
-
-	// If anyone knows why this filesize logic is here (it appears to be related to legacy PSX
-	// cards, perhaps hacked support for some special emulator-specific memcard formats that
-	// had header info?), then please replace this comment with something useful.  Thanks!  -- air
-
-	u32 offset = 0;
-
-	if (size == MCD_SIZE + 64)
-		offset = 64;
-	else if (size == MCD_SIZE + 3904)
-		offset = 3904;
-	else
-	{
-		// perform sanity checks here?
-	}
-
-	return (FileSystem::FSeek64(f, adr + offset, SEEK_SET) == 0);
+	return (FileSystem::FSeek64(f, adr, SEEK_SET) == 0);
 }
 
 // returns FALSE if an error occurred (either permission denied or disk full)
@@ -415,7 +408,7 @@ void FileMemoryCard::GetSizeInfo(uint slot, McdSizeInfo& outways)
 
 	pxAssert(m_file[slot]);
 	if (m_file[slot])
-		outways.McdSizeInSectors = static_cast<u32>(FileSystem::FSize64(m_file[slot])) / (outways.SectorSize + outways.EraseBlockSizeInSectors);
+		outways.McdSizeInSectors = static_cast<u32>(m_fileSize[slot]) / (outways.SectorSize + outways.EraseBlockSizeInSectors);
 	else
 		outways.McdSizeInSectors = 0x4000;
 
@@ -542,7 +535,7 @@ u64 FileMemoryCard::GetCRC(uint slot)
 		if (!Seek(mcfp, 0))
 			return 0;
 
-		const s64 mcfpsize = FileSystem::FSize64(mcfp);
+		const s64 mcfpsize = m_fileSize[slot];
 		if (mcfpsize < 0)
 			return 0;
 
