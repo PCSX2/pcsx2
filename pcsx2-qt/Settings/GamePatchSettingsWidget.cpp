@@ -81,6 +81,7 @@ GamePatchSettingsWidget::GamePatchSettingsWidget(SettingsWindow* dialog, QWidget
 
 	connect(m_ui.reload, &QPushButton::clicked, this, &GamePatchSettingsWidget::onReloadClicked);
 	connect(m_ui.allCRCsCheckbox, &QCheckBox::checkStateChanged, this, &GamePatchSettingsWidget::reloadList);
+	connect(m_dialog, &SettingsWindow::discSerialChanged, this, &GamePatchSettingsWidget::reloadList);
 
 	dialog->registerWidgetHelp(m_ui.allCRCsCheckbox, tr("Show Patches For All CRCs"), tr("Checked"),
 		tr("Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded."));
@@ -124,6 +125,7 @@ void GamePatchSettingsWidget::reloadList()
 	setGlobalWsPatchNoteVisibility(ws_patches_enabled_globally);
 	setGlobalNiPatchNoteVisibility(ni_patches_enabled_globally);
 	delete m_ui.scrollArea->takeWidget();
+	m_ui.allCRCsCheckbox->setEnabled(!m_dialog->getSerial().empty());
 
 	QWidget* container = new QWidget(m_ui.scrollArea);
 	QVBoxLayout* layout = new QVBoxLayout(container);

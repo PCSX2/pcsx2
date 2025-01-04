@@ -56,6 +56,7 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
 		m_model_proxy->setFilterFixedString(text);
 		m_ui.cheatList->expandAll();
 	});
+	connect(m_dialog, &SettingsWindow::discSerialChanged, this, &GameCheatSettingsWidget::reloadList);
 
 	dialog->registerWidgetHelp(m_ui.allCRCsCheckbox, tr("Show Cheats For All CRCs"), tr("Checked"),
 		tr("Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded."));
@@ -124,7 +125,7 @@ void GameCheatSettingsWidget::updateListEnabled()
 	m_ui.enableAll->setEnabled(cheats_enabled);
 	m_ui.disableAll->setEnabled(cheats_enabled);
 	m_ui.reloadCheats->setEnabled(cheats_enabled);
-	m_ui.allCRCsCheckbox->setEnabled(cheats_enabled);
+	m_ui.allCRCsCheckbox->setEnabled(cheats_enabled && !m_dialog->getSerial().empty());
 	m_ui.searchText->setEnabled(cheats_enabled);
 }
 
@@ -210,6 +211,7 @@ void GameCheatSettingsWidget::reloadList()
 
 	m_parent_map.clear();
 	m_model->removeRows(0, m_model->rowCount());
+	m_ui.allCRCsCheckbox->setEnabled(!m_dialog->getSerial().empty() && m_ui.cheatList->isEnabled());
 
 	for (const Patch::PatchInfo& pi : m_patches)
 	{

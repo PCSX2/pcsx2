@@ -156,7 +156,15 @@ void GameSummaryWidget::onDiscPathChanged(const QString& value)
 
 	// force rescan of elf to update the serial
 	g_main_window->rescanFile(m_entry_path);
-	repopulateCurrentDetails();
+	
+	auto lock = GameList::GetLock();
+	const GameList::Entry* entry = GameList::GetEntryForPath(m_entry_path.c_str());
+	if (entry)
+	{
+		populateDetails(entry);
+		m_dialog->setSerial(entry->serial);
+		m_ui.checkWiki->setEnabled(!entry->serial.empty());
+	}
 }
 
 void GameSummaryWidget::onDiscPathBrowseClicked()

@@ -45,7 +45,7 @@ public:
 		u32 disc_crc, QString filename = QString());
 	~SettingsWindow();
 
-	static void openGamePropertiesDialog(const GameList::Entry* game, const std::string_view title, std::string serial, u32 disc_crc);
+	static void openGamePropertiesDialog(const GameList::Entry* game, const std::string_view title, std::string serial, u32 disc_crc, bool is_elf);
 	static void closeGamePropertiesDialogs();
 
 	SettingsInterface* getSettingsInterface() const;
@@ -72,6 +72,7 @@ public:
 	bool eventFilter(QObject* object, QEvent* event) override;
 
 	void setWindowTitle(const QString& title);
+	void setSerial(std::string serial);
 
 	QString getCategory() const;
 	void setCategory(const char* category);
@@ -96,7 +97,7 @@ public:
 	void saveAndReloadGameSettings();
 
 Q_SIGNALS:
-	void settingsResetToDefaults();
+	void discSerialChanged();
 
 private Q_SLOTS:
 	void onCategoryCurrentRowChanged(int row);
