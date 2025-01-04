@@ -23,10 +23,11 @@ namespace
 		// When this happens, the cache still fills with the data and when it gets evicted the data is lost.
 		// We don't emulate memory access on a logic level, so we need to ensure that we don't try to load/store to a non-existant physical address.
 		// This fixes the Find My Own Way demo.
-		bool validPFN = true;
+		
 		// The lower parts of a cache tags structure is as follows:
 		// 31 - 12: The physical address cache tag.
-		// 11 - 7: Unused.
+		// 11: Used by PCSX2 to indicate if the physical address is valid.
+		// 10 - 7: Unused.
 		// 6: Dirty flag.
 		// 5: Valid flag.
 		// 4: LRF flag - least recently filled flag.
@@ -39,7 +40,8 @@ namespace
 			VALID_FLAG = 0x20,
 			LRF_FLAG = 0x10,
 			LOCK_FLAG = 0x8,
-			ALL_FLAGS = 0xFFF
+			ALL_FLAGS = 0x7FF,
+			ALL_BITS = 0xFFF
 		};
 
 		int flags() const
@@ -65,22 +67,35 @@ namespace
 		void clearLocked() { rawValue &= ~LOCK_FLAG; }
 		void toggleLRF() { rawValue ^= LRF_FLAG; }
 
-		uptr addr() const { return rawValue & ~ALL_FLAGS; }
+		uptr addr() const { return rawValue & ~ALL_BITS; }
 
 		void setAddr(uptr addr)
 		{
-			rawValue &= ALL_FLAGS;
-			rawValue |= (addr & ~ALL_FLAGS);
+			rawValue &= ALL_BITS;
+			rawValue |= (addr & ~ALL_BITS);
 		}
 
 		bool matches(uptr other) const
 		{
-			return isValid() && addr() == (other & ~ALL_FLAGS);
+			return isValid() && addr() == (other & ~ALL_BITS);
 		}
 
 		void clear()
 		{
 			rawValue &= LRF_FLAG;
+		}
+
+		constexpr bool isValidPFN() const
+		{
+			return rawValue & 0x800;
+		}
+
+		constexpr void setValidPFN(bool valid)
+		{
+			if (valid)
+				rawValue |= 0x800;
+			else
+				rawValue &= ~0x800;
 		}
 	};
 
@@ -103,7 +118,7 @@ namespace
 			uptr target = addr();
 
 			CACHE_LOG("Write back at %zx", target);
-			if (tag.validPFN)
+			if (tag.isValidPFN())
 				*reinterpret_cast<CacheData*>(target) = data;
 			tag.clearDirty();
 		}
@@ -113,7 +128,7 @@ namespace
 			pxAssertMsg(!tag.isDirtyAndValid(), "Loaded a value into cache without writing back the old one!");
 
 			tag.setAddr(ppf);
-			if (!tag.validPFN)
+			if (!tag.isValidPFN())
 			{
 				// Reading from invalid physical addresses seems to return 0 on hardware
 				std::memset(&data, 0, sizeof(data));
@@ -238,7 +253,7 @@ static int getFreeCache(u32 mem, int* way, bool validPFN)
 
 		CacheLine line = cache.lineAt(setIdx, newWay);
 		line.writeBackIfNeeded();
-		line.tag.validPFN = validPFN;
+		line.tag.setValidPFN(validPFN);
 		line.load(ppf);
 		line.tag.toggleLRF();
 	}
