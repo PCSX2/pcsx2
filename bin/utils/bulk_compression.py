@@ -169,7 +169,9 @@ def checkDuplicates(source_files, target_extensions, crash_protection_type=0):
     print("║")
     print("║ You may choose to OVERWRITE or SKIP all of these.")
     if (crash_protection_type == 2):
-        print("║ NOTE: chdman cannot overwrite .cso files. These will be skipped regardless.")
+        # chdman CLI just crashes trying to overwrite a .iso file
+        print("║ NOTE: chdman cannot overwrite .iso files, which are used as an intermediate format.")
+        print("║       These will be skipped regardless.")
     choice = input("║ Press 'O' to overwrite or 'S' to skip and press ENTER: ").lower()
 
     if (choice in dupe_options):
