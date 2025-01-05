@@ -460,8 +460,8 @@ std::vector<std::unique_ptr<SymbolTreeNode>> SymbolTreeModel::populateChildren(
 
 			for (const ccc::ast::StructOrUnion::FlatField& field : fields)
 			{
-				if (symbol)
-					parent_handle = ccc::NodeHandle(*symbol, nullptr);
+				if (field.symbol)
+					parent_handle = ccc::NodeHandle(*field.symbol, nullptr);
 
 				SymbolTreeLocation field_location = location.addOffset(field.base_offset + field.node->offset_bytes);
 				if (field_location.type == SymbolTreeLocation::NONE)
