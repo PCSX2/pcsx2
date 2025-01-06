@@ -236,7 +236,7 @@ bool GSTextureCache::CanTranslate(u32 bp, u32 bw, u32 spsm, GSVector4i r, u32 db
 	// The page width matches.
 	// The rect width is less than the width of the destination texture and the height is less than or equal to 1 page high.
 	// The rect width and height is equal to the page size and it covers the width of the incoming bw, so lines are sequential.
-	const bool page_aligned_rect = masked_rect.eq(r);
+	const bool page_aligned_rect = masked_rect.xyxy().eq(r.xyxy());
 	const bool width_match = ((bw * 64) / src_page_size.x) == ((dbw * 64) / dst_page_size.x);
 	const bool sequential_pages = page_aligned_rect && r.x == 0 && r.z == src_pixel_width;
 	const bool single_row = (((bw * 64) / src_page_size.x) <= ((dbw * 64) / dst_page_size.x)) && r.z <= src_pixel_width && r.w <= src_page_size.y;
@@ -277,12 +277,12 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 		in_rect = (in_rect + GSVector4i(inc_horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
 
 		// Project Snowblind and Tomb Raider access the rect offset by 1 page and use a region to correct it, we need to account for that here.
-		if (in_rect.x >= (dst_pgw * dst_page_size.x))
+		if (in_rect.x >= (src_pgw * src_page_size.x))
 		{
-			in_rect.z -= dst_pgw * dst_page_size.x;
-			in_rect.x -= dst_pgw * dst_page_size.x;
-			in_rect.y += dst_page_size.y;
-			in_rect.w += dst_page_size.y;
+			in_rect.z -= src_pgw * src_page_size.x;
+			in_rect.x -= src_pgw * src_page_size.x;
+			in_rect.y += src_page_size.y;
+			in_rect.w += src_page_size.y;
 		}
 		page_offset = 0;
 		single_page = (in_rect.width() / src_page_size.x) <= 1 && (in_rect.height() / src_page_size.y) <= 1;
@@ -1458,13 +1458,24 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				// Make sure the texture actually is INSIDE the RT, it's possibly not valid if it isn't.
 				// Also check BP >= TBP, create source isn't equpped to expand it backwards and all data comes from the target. (GH3)
 				else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets &&
-					(GSLocalMemory::m_psm[color_psm].bpp >= 16 || (/*possible_shuffle &&*/ GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32 && t->m_TEX0.TBW >= (bw * 2))) && // Channel shuffles or non indexed lookups.
+						 (GSLocalMemory::m_psm[color_psm].bpp >= 16 || (/*possible_shuffle &&*/ GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32)) && // Channel shuffles or non indexed lookups.
 					t->m_age <= 1 && (!found_t || t->m_last_draw > dst->m_last_draw) /*&& CanTranslate(bp, bw, psm, block_boundary_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW)*/)
 				{
 
 					if (!t->HasValidBitsForFormat(psm, req_color, req_alpha) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
 						continue;
 
+					if (GSLocalMemory::m_psm[color_psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp && (t->m_TEX0.TBW != bw && (t->m_TEX0.TBW * 2) != bw))
+					{
+						DevCon.Warning("BP %x - 16bit bad match for target bp %x bw %d src %d format %d", bp, t->m_TEX0.TBP0, t->m_TEX0.TBW, bw, t->m_TEX0.PSM);
+						continue;
+					}
+					else if (!possible_shuffle && (GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32 &&
+						!((t->m_TEX0.TBW == (bw / 2)) || (t->m_TEX0.TBW >= (bw / 2) && (req_rect.w < GSLocalMemory::m_psm[psm].pgs.y)))))
+					{
+						DevCon.Warning("BP %x - 8bit bad match for target bp %x bw %d src %d format %d", bp, t->m_TEX0.TBP0, t->m_TEX0.TBW, bw, t->m_TEX0.PSM);
+						continue;
+					}
 					// PSM equality needed because CreateSource does not handle PSM conversion.
 					// Only inclusive hit to limit false hits.
 					GSVector4i rect = req_rect;
@@ -1600,7 +1611,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						if (bp < t->m_TEX0.TBP0 && region.HasX() && region.HasY() &&
 							(region.GetMinX() & (page_size.x - 1)) == 0 && (region.GetMinY() & (page_size.y - 1)) == 0 &&
 								(offset.bn(region.GetMinX(), region.GetMinY()) == t->m_TEX0.TBP0 || 
-								(offset_bp >= t->m_TEX0.TBP0) && ((((offset_bp - t->m_TEX0.TBP0) >> 5) % bw) + (rect.width() / page_size.x)) <= bw))
+								((offset_bp >= t->m_TEX0.TBP0) && ((((offset_bp - t->m_TEX0.TBP0) >> 5) % bw) + (rect.width() / page_size.x)) <= bw)))
 						{
 							GL_CACHE("TC: Target 0x%x detected in front of TBP 0x%x with %d,%d offset (%d pages)",
 								t->m_TEX0.TBP0, TEX0.TBP0, region.GetMinX(), region.GetMinY(),
@@ -1915,7 +1926,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				}
 			}
 			// Probably pointing to half way through the target
-			else if (!min_rect.rempty()&& GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
+			else if (!min_rect.rempty() && GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
 			{
 				// Problem: Project - Snowblind and Tomb Raider offset the RT but not the Z
 				/*if (offset != -1 && (bp - t->m_TEX0.TBP0) != offset)
@@ -2607,7 +2618,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 
 	if (valid_draw_size && supported_fmt)
 	{
-		const GSVector4i newrect = GSVector4i::loadh(valid_size);
+		const GSVector4i newrect = GSVector4i::loadh(size);
 		const u32 rect_end = GSLocalMemory::GetUnwrappedEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, newrect);
 
 		RGBAMask rgba;
@@ -3217,7 +3228,7 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 				continue;
 			}
 
-			const u32 total_pages = ((end_bp + 1) - t->m_TEX0.TBP0) >> 5;
+			//const u32 total_pages = ((end_bp + 1) - t->m_TEX0.TBP0) >> 5;
 			// Not covering the whole target, and a different format, so just dirty it.
 			/*if (start_bp >= t->m_TEX0.TBP0 && (t->UnwrappedEndBlock() > end_bp) && write_psm != t->m_TEX0.PSM && write_bw == t->m_TEX0.TBW)
 			{
@@ -4322,8 +4333,8 @@ GSTextureCache::Target* GSTextureCache::GetExactTarget(u32 BP, u32 BW, int type,
 	for (auto it = rts.begin(); it != rts.end(); ++it) // Iterate targets from MRU to LRU.
 	{
 		Target* t = *it;
-
-		if ((t->m_TEX0.TBP0 == BP || (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->m_TEX0.TBP0 < BP && ((BP >> 5) % t->m_TEX0.TBW) == 0)) && t->m_TEX0.TBW == BW && t->UnwrappedEndBlock() >= end_bp)
+		const u32 tgt_bw = std::max(t->m_TEX0.TBW, 1U);
+		if ((t->m_TEX0.TBP0 == BP || (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->m_TEX0.TBP0 < BP && ((BP >> 5) % tgt_bw) == 0)) && tgt_bw == BW && t->UnwrappedEndBlock() >= end_bp)
 		{
 			rts.MoveFront(it.Index());
 			return t;
@@ -5040,8 +5051,22 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 						std::max<u32>(dst->m_TEX0.TBW, 1u) * 64, dst->m_TEX0.PSM, dTex,
 						std::max<u32>(TEX0.TBW, 1u) * 64, TEX0.PSM);
 
-					src->m_region.SetX((x_offset / GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs.x) * GSLocalMemory::m_psm[TEX0.PSM].pgs.x, tw);
-					src->m_region.SetY((y_offset / GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs.y) * GSLocalMemory::m_psm[TEX0.PSM].pgs.y, th);
+					// Adjust the region for the newly translated rect.
+					u32 const dst_y_height = GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs.y;
+					u32 const src_y_height = GSLocalMemory::m_psm[TEX0.PSM].pgs.y;
+					u32 const dst_page_offset = (y_offset / dst_y_height) * std::max(dst->m_TEX0.TBW, 1U);
+					y_offset = (dst_page_offset / (std::max(TEX0.TBW / 2U, 1U))) * src_y_height;
+
+					u32 const src_page_width = GSLocalMemory::m_psm[TEX0.PSM].pgs.x;
+					x_offset = (x_offset / GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs.x) * GSLocalMemory::m_psm[TEX0.PSM].pgs.x;
+					if (x_offset >= static_cast<int>(std::max(TEX0.TBW, 1U) * src_page_width))
+					{
+						const u32 adjust = x_offset / src_page_width;
+						y_offset += adjust * GSLocalMemory::m_psm[TEX0.PSM].pgs.y;
+						x_offset -= src_page_width * adjust;
+					}
+					src->m_region.SetX(x_offset, x_offset + tw);
+					src->m_region.SetY(y_offset, y_offset + th);
 				}
 				else
 				{
@@ -6670,9 +6695,6 @@ void GSTextureCache::Target::ResizeValidity(const GSVector4i& rect)
 
 void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect, bool can_resize)
 {
-	if (m_TEX0.TBP0 == 0x1a00 && rect.w == 448 && can_resize)
-		DevCon.Warning("Here");
-
 	if (m_valid.eq(GSVector4i::zero()))
 	{
 		m_valid = rect;
