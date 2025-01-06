@@ -760,7 +760,7 @@ bool VMManager::ReloadGameSettings()
 		return false;
 
 	// Patches must come first, because they can affect aspect ratio/interlacing.
-	Patch::UpdateActivePatches(true, false, true);
+	Patch::UpdateActivePatches(true, false, true, HasValidVM());
 	ApplySettings();
 	return true;
 }
@@ -2899,7 +2899,7 @@ void VMManager::CheckForPatchConfigChanges(const Pcsx2Config& old_config)
 		return;
 	}
 
-	Patch::UpdateActivePatches(true, false, true);
+	Patch::UpdateActivePatches(true, false, true, HasValidVM());
 
 	// This is a bit messy, because the patch config update happens after the settings are loaded,
 	// if we disable widescreen patches, we have to reload the original settings again.
