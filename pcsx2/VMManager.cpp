@@ -2771,6 +2771,7 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 	HandleELFChange(true);
 
 	Patch::ApplyLoadedPatches(Patch::PPT_ONCE_ON_LOAD);
+	Patch::ApplyLoadedPatches(Patch::PPT_COMBINED_0_1);
 	// If the config changes at this point, it's a reset, so the game doesn't currently know about the memcard
 	// so there's no need to leave the eject running.
 	FileMcd_CancelEject();
