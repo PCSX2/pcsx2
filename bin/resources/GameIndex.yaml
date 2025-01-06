@@ -17189,7 +17189,7 @@ SLES-51439:
     halfPixelOffset: 4 # Aligns post effects.
     nativeScaling: 1 # Fixes post effects.
 SLES-51441:
-  name: "Dynasty Warriors 3 - Extreme Legends"
+  name: "Dynasty Warriors 3 - Xtreme Legends"
   region: "PAL-E"
 SLES-51442:
   name: "Dynasty Warriors 3 - Xtreme Legends"
@@ -65020,7 +65020,7 @@ SLUS-20811:
     recommendedBlendingLevel: 3 # Improves reflection quality.
     halfPixelOffset: 2 # Fixes misaligned post-processing.
 SLUS-20812:
-  name: "Dynasty Warriors 4 - Extreme Edition"
+  name: "Dynasty Warriors 4 - Xtreme Legends"
   region: "NTSC-U"
   compat: 5
 SLUS-20813:
