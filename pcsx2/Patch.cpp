@@ -156,7 +156,7 @@ namespace Patch
 	static bool PatchStringHasUnlabelledPatch(const std::string& pnach_data);
 	static void ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, u32* num_unlabelled_patches);
 	static void ReloadEnabledLists();
-	static u32 EnablePatches(const PatchList& patches, const EnablePatchList& enable_list);
+	static u32 EnablePatches(const PatchList& patches, const EnablePatchList& enable_list, const EnablePatchList& enable_immediately_list);
 
 	static void ApplyPatch(const PatchCommand* p);
 	static void ApplyDynaPatch(const DynamicPatch& patch, u32 address);
@@ -183,6 +183,8 @@ namespace Patch
 	static std::vector<DynamicPatch> s_active_pnach_dynamic_patches;
 	static EnablePatchList s_enabled_cheats;
 	static EnablePatchList s_enabled_patches;
+	static EnablePatchList s_just_enabled_cheats;
+	static EnablePatchList s_just_enabled_patches;
 	static u32 s_patches_crc;
 	static std::optional<AspectRatioType> s_override_aspect_ratio;
 	static std::optional<GSInterlaceMode> s_override_interlace_mode;
@@ -583,13 +585,13 @@ std::string Patch::GetPnachFilename(const std::string_view serial, u32 crc, bool
 
 void Patch::ReloadEnabledLists()
 {
+	const EnablePatchList prev_enabled_cheats = std::move(s_enabled_cheats);
 	if (EmuConfig.EnableCheats && !Achievements::IsHardcoreModeActive())
 		s_enabled_cheats = Host::GetStringListSetting(CHEATS_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY);
 	else
 		s_enabled_cheats = {};
 
-	s_enabled_patches = Host::GetStringListSetting(PATCHES_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY);
-
+	const EnablePatchList prev_enabled_patches = std::exchange(s_enabled_patches, Host::GetStringListSetting(PATCHES_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY));
 	const EnablePatchList disabled_patches = Host::GetStringListSetting(PATCHES_CONFIG_SECTION, PATCH_DISABLE_CONFIG_KEY);
 
 	// Name based matching for widescreen/NI settings.
@@ -621,10 +623,29 @@ void Patch::ReloadEnabledLists()
 			++it;
 		}
 	}
+
+	s_just_enabled_cheats.clear();
+	s_just_enabled_patches.clear();
+	for (const auto& p : s_enabled_cheats)
+	{
+		if (std::find(prev_enabled_cheats.begin(), prev_enabled_cheats.end(), p) == prev_enabled_cheats.end())
+		{
+			s_just_enabled_cheats.emplace_back(p);
+		}
+	}
+	for (const auto& p : s_enabled_patches)
+	{
+		if (std::find(prev_enabled_patches.begin(), prev_enabled_patches.end(), p) == prev_enabled_patches.end())
+		{
+			s_just_enabled_patches.emplace_back(p);
+		}
+	}
 }
 
-u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable_list)
+u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable_list, const EnablePatchList& enable_immediately_list)
 {
+	ActivePatchList patches_to_apply_immediately;
+
 	u32 count = 0;
 	for (const PatchGroup& p : patches)
 	{
@@ -636,6 +657,7 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 		Console.WriteLn(Color_Green, fmt::format("Enabled patch: {}",
 										 p.name.empty() ? std::string_view("<unknown>") : std::string_view(p.name)));
 
+		const bool apply_immediately = std::find(enable_immediately_list.begin(), enable_immediately_list.end(), p.name) != enable_immediately_list.end();
 		for (const PatchCommand& ip : p.patches)
 		{
 			// print the actual patch lines only in verbose mode (even in devel)
@@ -643,6 +665,8 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 				DevCon.WriteLnFmt("  {}", ip.ToString());
 
 			s_active_patches.push_back(&ip);
+			if (apply_immediately && ip.placetopatch == PPT_ONCE_ON_LOAD)
+				patches_to_apply_immediately.push_back(&ip);
 		}
 
 		for (const DynamicPatch& dp : p.dpatches)
@@ -657,6 +681,16 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 
 		// Count unlabelled patches once per command, or one patch per group.
 		count += p.name.empty() ? (static_cast<u32>(p.patches.size()) + static_cast<u32>(p.dpatches.size())) : 1;
+	}
+
+	if (!patches_to_apply_immediately.empty())
+	{
+		Host::RunOnCPUThread([patches = std::move(patches_to_apply_immediately)]() {
+			for (const PatchCommand* i : patches)
+			{
+				ApplyPatch(i);
+			}
+		});
 	}
 
 	return count;
@@ -703,10 +737,10 @@ void Patch::ReloadPatches(const std::string& serial, u32 crc, bool reload_files,
 			});
 	}
 
-	UpdateActivePatches(reload_enabled_list, verbose, verbose_if_changed);
+	UpdateActivePatches(reload_enabled_list, verbose, verbose_if_changed, false);
 }
 
-void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool verbose_if_changed)
+void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool verbose_if_changed, bool apply_new_patches)
 {
 	if (reload_enabled_list)
 		ReloadEnabledLists();
@@ -721,19 +755,19 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	u32 gp_count = 0;
 	if (EmuConfig.EnablePatches)
 	{
-		gp_count = EnablePatches(s_gamedb_patches, EnablePatchList());
+		gp_count = EnablePatches(s_gamedb_patches, EnablePatchList(), EnablePatchList());
 		if (gp_count > 0)
 			message.append(TRANSLATE_PLURAL_STR("Patch", "%n GameDB patches are active.", "OSD Message", gp_count));
 	}
 
-	const u32 p_count = EnablePatches(s_game_patches, s_enabled_patches);
+	const u32 p_count = EnablePatches(s_game_patches, s_enabled_patches, apply_new_patches ? s_just_enabled_patches : EnablePatchList());
 	if (p_count > 0)
 	{
 		message.append_format("{}{}", message.empty() ? "" : "\n",
 			TRANSLATE_PLURAL_STR("Patch", "%n game patches are active.", "OSD Message", p_count));
 	}
 
-	const u32 c_count = EmuConfig.EnableCheats ? EnablePatches(s_cheat_patches, s_enabled_cheats) : 0;
+	const u32 c_count = EmuConfig.EnableCheats ? EnablePatches(s_cheat_patches, s_enabled_cheats, apply_new_patches ? s_just_enabled_cheats : EnablePatchList()) : 0;
 	if (c_count > 0)
 	{
 		message.append_format("{}{}", message.empty() ? "" : "\n",
