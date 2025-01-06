@@ -1350,8 +1350,8 @@ void main()
 		// Write RB part. Mask will take care of the correct destination
 		#elif PS_SHUFFLE_ACROSS
 			#if(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
-				C.b = C.r;				
-				C.a = C.g;
+				C.br = C.rb;				
+				C.ag = C.ga;
 			#elif(PS_PROCESS_BA & SHUFFLE_READ)
 				C.rb = C.bb;
 				C.ga = C.aa;

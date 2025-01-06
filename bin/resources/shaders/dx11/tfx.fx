@@ -1123,8 +1123,8 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		{
 			if (PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 			{
-				C.b = C.r;
-				C.a = C.g;
+				C.br = C.rb;				
+				C.ag = C.ga;
 			}
 			else if(PS_PROCESS_BA & SHUFFLE_READ)
 			{
