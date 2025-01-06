@@ -467,7 +467,8 @@ void GSState::DumpVertices(const std::string& filename)
 		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.R) << DEL;
 		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.G) << DEL;
 		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.B) << DEL;
-		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.A);
+		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.A) << DEL;
+		file << "FOG: " << std::setfill('0') << std::setw(3) << unsigned(v.FOG);
 		file << std::endl;
 	}
 
@@ -3100,7 +3101,7 @@ __forceinline bool GSState::IsAutoFlushDraw(u32 prim)
 	{
 		// Pretty confident here...
 		GSVertex* buffer = &m_vertex.buff[0];
-		const bool const_spacing = (buffer[m_index.buff[0]].U - buffer[m_index.buff[0]].XYZ.X) == (m_v.U - m_v.XYZ.X);
+		const bool const_spacing = std::abs(buffer[m_index.buff[0]].U - buffer[m_index.buff[0]].XYZ.X) == std::abs(m_v.U - m_v.XYZ.X) && std::abs(buffer[m_index.buff[1]].XYZ.X - buffer[m_index.buff[0]].XYZ.X) < 64;
 
 		if (const_spacing)
 			return false;
