@@ -59,6 +59,7 @@ public slots:
 	void contextShowOpcode();
 
 	void gotoAddressAndSetFocus(u32 address);
+	void gotoProgramCounterOnPause();
 	void gotoAddress(u32 address, bool should_set_focus);
 
 	void setDemangle(bool demangle) { m_demangleFunctions = demangle; };
@@ -82,6 +83,7 @@ private:
 
 	bool m_demangleFunctions = true;
 	bool m_showInstructionOpcode = true;
+	bool m_goToProgramCounterOnPause = true;
 	DisassemblyManager m_disassemblyManager;
 
 	inline QString DisassemblyStringFromAddress(u32 address, QFont font, u32 pc, bool selected);

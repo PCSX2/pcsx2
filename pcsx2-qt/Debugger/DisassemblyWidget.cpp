@@ -656,6 +656,12 @@ void DisassemblyWidget::customMenuRequested(QPoint pos)
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextGoToAddress);
 	contextMenu->addAction(action = new QAction(tr("Go to in Memory View"), this));
 	connect(action, &QAction::triggered, this, [this]() { gotoInMemory(m_selectedAddressStart); });
+
+	contextMenu->addAction(action = new QAction(tr("Go to PC on Pause"), this));
+	action->setCheckable(true);
+	action->setChecked(m_goToProgramCounterOnPause);
+	connect(action, &QAction::triggered, this, [this](bool value) { m_goToProgramCounterOnPause = value; });
+
 	contextMenu->addSeparator();
 	contextMenu->addAction(action = new QAction(tr("Add Function"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextAddFunction);
@@ -820,6 +826,12 @@ QString DisassemblyWidget::FetchSelectionInfo(SelectionInfo selInfo)
 void DisassemblyWidget::gotoAddressAndSetFocus(u32 address)
 {
 	gotoAddress(address, true);
+}
+
+void DisassemblyWidget::gotoProgramCounterOnPause()
+{
+	if (m_goToProgramCounterOnPause)
+		gotoAddress(m_cpu->getPC(), false);
 }
 
 void DisassemblyWidget::gotoAddress(u32 address, bool should_set_focus)
