@@ -18195,12 +18195,12 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>Patch</name>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="350"/>
+        <location filename="../../pcsx2/Patch.cpp" line="352"/>
         <source>Failed to open {}. Built-in game patches are not available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="726"/>
+        <location filename="../../pcsx2/Patch.cpp" line="760"/>
         <source>%n GameDB patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -18209,7 +18209,7 @@ Ejecting {3} and replacing it with {2}.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="733"/>
+        <location filename="../../pcsx2/Patch.cpp" line="767"/>
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -18218,7 +18218,7 @@ Ejecting {3} and replacing it with {2}.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="740"/>
+        <location filename="../../pcsx2/Patch.cpp" line="774"/>
         <source>%n cheat patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -18227,7 +18227,7 @@ Ejecting {3} and replacing it with {2}.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="755"/>
+        <location filename="../../pcsx2/Patch.cpp" line="789"/>
         <source>No cheats or patches (widescreen, compatibility or others) are found / enabled.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21827,177 +21827,177 @@ Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3054"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3055"/>
         <source>Cheats have been disabled due to achievements hardcore mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3107"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3108"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3111"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3112"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3121"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3122"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3161"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3162"/>
         <source>Mipmapping is disabled. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3170"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3171"/>
         <source>Renderer is not set to Automatic. This may cause performance problems and graphical issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3176"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3177"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3639"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3640"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3126"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3127"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3131"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3132"/>
         <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3136"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3137"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3182"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3183"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3188"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3189"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3193"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3194"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3198"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3199"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3205"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3206"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3210"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3211"/>
         <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3215"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3216"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3220"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3221"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3224"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3225"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3226"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3227"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3245"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3246"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3250"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3251"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3255"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3256"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3260"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3261"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3265"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3266"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3270"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3271"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3275"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3276"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3278"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3279"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3282"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3283"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3287"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3288"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3141"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3142"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3146"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3147"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3151"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3152"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3156"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3157"/>
         <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
         <translation type="unfinished"></translation>
     </message>
