@@ -336,7 +336,7 @@ void CpuWidget::onVMPaused()
 	}
 	else
 	{
-		m_ui.disassemblyWidget->gotoAddress(m_cpu.getPC(), false);
+		m_ui.disassemblyWidget->gotoProgramCounterOnPause();
 	}
 
 	reloadCPUWidgets();
