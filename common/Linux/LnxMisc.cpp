@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Pcsx2Types.h"
@@ -22,6 +22,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <dbus/dbus.h>
+#include <cstdlib>
+#include <cstring>
 
 // Returns 0 on failure (not supported by the operating system).
 u64 GetPhysicalMemory()
@@ -101,6 +103,7 @@ static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* 
 	DBusMessage* message = nullptr;
 	DBusMessage* response = nullptr;
 	DBusMessageIter message_itr;
+	char* desktop_session = nullptr;
 
 	ScopedGuard cleanup = [&]() {
 		if (dbus_error_is_set(&error_dbus))
@@ -122,7 +125,17 @@ static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* 
 		s_cookie = 0;
 		s_comparison_connection = connection;
 	}
-	message = dbus_message_new_method_call("org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver", "org.freedesktop.ScreenSaver", bus_method);
+
+	desktop_session = std::getenv("DESKTOP_SESSION");
+	if (desktop_session && std::strncmp(desktop_session, "mate", 4) == 0)
+	{
+		message = dbus_message_new_method_call("org.mate.ScreenSaver", "/org/mate/ScreenSaver", "org.mate.ScreenSaver", bus_method);
+	}
+	else
+	{
+		message = dbus_message_new_method_call("org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver", "org.freedesktop.ScreenSaver", bus_method);
+	}
+
 	if (!message)
 		return false;
 	// Initialize an append iterator for the message, gets freed with the message.
