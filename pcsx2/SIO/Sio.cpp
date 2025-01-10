@@ -162,6 +162,6 @@ void MemcardBusy::CheckSaveStateDependency()
 	if (g_FrameCount - sioLastFrameMcdBusy > NUM_FRAMES_BEFORE_SAVESTATE_DEPENDENCY_WARNING)
 	{
 		Host::AddIconOSDMessage("MemcardBusy", ICON_PF_MEMORY_CARD,
-			TRANSLATE_SV("MemoryCard", "The virtual console hasn't saved to your memory card for quite some time. Savestates should not be used in place of in-game saves."), Host::OSD_INFO_DURATION);
+			TRANSLATE_SV("MemoryCard", "The virtual console hasn't saved to your memory card in a long time.\nSavestates should not be used in place of in-game saves."), Host::OSD_INFO_DURATION);
 	}
 }
