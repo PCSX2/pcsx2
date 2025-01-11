@@ -2717,20 +2717,23 @@ void GSRendererHW::Draw()
 
 		GIFRegTEX0 FRAME_TEX0;
 		bool shuffle_target = false;
-		if (!no_rt && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp >= 16)
+		if (!no_rt && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp >= 16 &&
+			(m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index.tail % 6) == 0 && TrianglesAreQuads(true))))
 		{
 			if (!shuffle_target && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16)
 			{
 				const GSVertex* v = &m_vertex.buff[0];
 
-				const int first_x = std::abs(static_cast<int>(((v[0].XYZ.X - m_context->XYOFFSET.OFX) + 8))) >> 4;
-				const int first_u = PRIM->FST ? ((v[0].U + 9) >> 4) : static_cast<int>(((1 << m_cached_ctx.TEX0.TW) * (v[0].ST.S / v[1].RGBAQ.Q)));
-				const int second_u = PRIM->FST ? ((v[1].U + 9) >> 4) : static_cast<int>(((1 << m_cached_ctx.TEX0.TW) * (v[1].ST.S / v[1].RGBAQ.Q)) + 0.6f);
+				const int first_x = std::clamp((static_cast<int>(((v[0].XYZ.X - m_context->XYOFFSET.OFX) + 8))) >> 4, 0, 2048);
+				const bool offset_last = PRIM->FST ? (v[1].U > v[0].U) : ((v[1].ST.S / v[1].RGBAQ.Q) > (v[0].ST.S / v[1].RGBAQ.Q));  
+				const int first_u = PRIM->FST ? ((v[0].U + (offset_last ? 0 : 9)) >> 4) : std::clamp(static_cast<int>(((1 << m_cached_ctx.TEX0.TW) * (v[0].ST.S / v[1].RGBAQ.Q)) + (offset_last ? 0.0f : 0.6f)), 0, 2048);
+				const int second_u = PRIM->FST ? ((v[1].U + (offset_last ? 9 : 0)) >> 4) : std::clamp(static_cast<int>(((1 << m_cached_ctx.TEX0.TW) * (v[1].ST.S / v[1].RGBAQ.Q)) + (offset_last ? 0.6f : 0.0f)), 0, 2048);
 				// offset coordinates swap around RG/BA. (Ace Combat)
 				const u32 minv = m_cached_ctx.CLAMP.MINV;
 				const u32 minu = m_cached_ctx.CLAMP.MINU;
 				const bool rgba_shuffle = ((m_cached_ctx.CLAMP.WMS == m_cached_ctx.CLAMP.WMT && m_cached_ctx.CLAMP.WMS == CLAMP_REGION_REPEAT) && (minu && minv));
-				const bool shuffle_coords = ((first_x ^ first_u) & 8) || rgba_shuffle;
+				const bool shuffle_coords = ((first_x ^ first_u) & 0xF) == 8 || rgba_shuffle;
+
 				// Round up half of second coord, it can sometimes be slightly under.
 				const int draw_width = std::abs(v[1].XYZ.X + 9 - v[0].XYZ.X) >> 4;
 				const int read_width = std::abs(second_u - first_u);
@@ -3161,14 +3164,13 @@ void GSRendererHW::Draw()
 			// Don't resize if the BPP don't match.
 			if (frame_psm.bpp == GSLocalMemory::m_psm[rt->m_TEX0.PSM].bpp)
 			{
-				if (m_r.w > rt->m_unscaled_size.y)
+				if (m_r.w > rt->m_unscaled_size.y || m_r.z > rt->m_unscaled_size.x)
 				{
-					u32 new_height = m_r.w;
+					u32 new_height = std::max(m_r.w, rt->m_unscaled_size.y);
+					u32 new_width = std::max(m_r.z, rt->m_unscaled_size.x);
 
-					if (possible_shuffle && std::abs(static_cast<s16>(GSLocalMemory::m_psm[rt->m_TEX0.PSM].bpp - GSLocalMemory::m_psm[TEX0.PSM].bpp)) == 16)
-						new_height /= 2;
 					//DevCon.Warning("Resizing texture %d x %d draw %d", rt->m_unscaled_size.x, new_height, s_n);
-					rt->ResizeTexture(rt->m_unscaled_size.x, new_height);
+					rt->ResizeTexture(new_height, new_height);
 
 					const bool frame_masked = ((m_cached_ctx.FRAME.FBMSK & frame_psm.fmsk) == frame_psm.fmsk) || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_NEVER && !(m_cached_ctx.TEST.AFAIL & AFAIL_FB_ONLY));
 			
@@ -3773,7 +3775,7 @@ void GSRendererHW::Draw()
 
 		if (rt && GSConfig.SaveRT)
 		{
-			s = GetDrawDumpPath("%05d_f%05lld_rt0_%05x_%s.bmp", s_n, frame, m_cached_ctx.FRAME.Block(), psm_str(m_cached_ctx.FRAME.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rt0_%05x_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.FRAME.Block(), rt->m_TEX0.TBP0, psm_str(m_cached_ctx.FRAME.PSM));
 
 			if (rt->m_texture)
 				rt->m_texture->Save(s);
@@ -3781,7 +3783,7 @@ void GSRendererHW::Draw()
 
 		if (ds && GSConfig.SaveDepth)
 		{
-			s = GetDrawDumpPath("%05d_f%05lld_rz0_%05x_%s.bmp", s_n, frame, m_cached_ctx.ZBUF.Block(), psm_str(m_cached_ctx.ZBUF.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rz0_%05x_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.ZBUF.Block(), ds->m_TEX0.TBP0, psm_str(m_cached_ctx.ZBUF.PSM));
 
 			if (g_texture_cache->GetTemporaryZ())
 				g_texture_cache->GetTemporaryZ()->Save(s);
