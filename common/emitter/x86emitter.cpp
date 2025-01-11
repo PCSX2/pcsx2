@@ -1224,22 +1224,35 @@ const xRegister32
 #ifdef _WIN32
 		xPUSH(rdi);
 		xPUSH(rsi);
-		xSUB(rsp, 32); // Windows calling convention specifies additional space for the callee to spill registers
-		m_offset += 48;
-#endif
+		m_offset += 16;
 
+		// Align for movaps, in addition to any following instructions
 		stackAlign(m_offset, true);
+
+		xSUB(rsp, 16 * 10);
+		for (u32 i = 6; i < 16; i++)
+			xMOVAPS(ptr128[rsp + (i - 6) * 16], xRegisterSSE(i));
+		xSUB(rsp, 32); // Windows calling convention specifies additional space for the callee to spill registers
+#else
+		// Align for any following instructions
+		stackAlign(m_offset, true);
+#endif
 	}
 
 	xScopedStackFrame::~xScopedStackFrame()
 	{
-		stackAlign(m_offset, false);
-
 		// Restore the register context
 #ifdef _WIN32
 		xADD(rsp, 32);
+		for (u32 i = 6; i < 16; i++)
+			xMOVAPS(xRegisterSSE::GetInstance(i), ptr[rsp + (i - 6) * 16]);
+		xADD(rsp, 16 * 10);
+
+		stackAlign(m_offset, false);
 		xPOP(rsi);
 		xPOP(rdi);
+#else
+		stackAlign(m_offset, false);
 #endif
 		xPOP(r15);
 		xPOP(r14);
