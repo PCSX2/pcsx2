@@ -3759,6 +3759,19 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		return false;
 
 	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
+	if (dst && DBP == SBP && dy > dst->m_unscaled_size.y)
+	{
+		const u32 new_DBP = DBP + (((dy / GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs.y) * DBW) << 5);
+
+		dst = nullptr;
+
+		DBP = new_DBP;
+		dy = 0;
+
+		dst = GetExactTarget(DBP, DBW, dpsm_s.depth ? DepthStencil : RenderTarget, DBP);
+	}
+
+	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
 	// We use dx/dy == 0 and the TBW check as a safeguard to make sure these go through to local memory.
 	// We can also recreate the target if it's previously been created in the height cache with a valid size.
 	// Good test case for this is the Xenosaga I cutscene transitions, or Gradius V.
