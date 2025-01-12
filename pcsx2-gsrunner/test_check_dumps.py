@@ -114,7 +114,7 @@ def check_regression_test(baselinedir, testdir, name):
         if not os.path.isfile(path2):
             print("--- Frame %u for %s is missing in test set" % (framenum, name))
             write("<h1>{}</h1>".format(name))
-            write("--- Frame %u for %s is missing in test set" % (framenum, name))
+            write("<pre>--- Frame %u for %s is missing in test set</pre>" % (framenum, name))
             return False
 
         if not compare_frames(path1, path2):
