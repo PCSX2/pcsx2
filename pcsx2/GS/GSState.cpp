@@ -467,7 +467,8 @@ void GSState::DumpVertices(const std::string& filename)
 		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.R) << DEL;
 		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.G) << DEL;
 		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.B) << DEL;
-		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.A);
+		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.A) << DEL;
+		file << "FOG: " << std::setfill('0') << std::setw(3) << unsigned(v.FOG);
 		file << std::endl;
 	}
 
@@ -1674,7 +1675,8 @@ void GSState::FlushPrim()
 			Console.Warning("GS: Possible invalid draw, Frame PSM %x ZPSM %x", m_context->FRAME.PSM, m_context->ZBUF.PSM);
 		}
 #endif
-
+		// Update scissor, it may have been modified by a previous draw
+		m_env.CTXT[PRIM->CTXT].UpdateScissor();
 		m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
 		// Texel coordinate rounding
@@ -3094,6 +3096,16 @@ __forceinline bool GSState::IsAutoFlushDraw(u32 prim)
 	if (!(GSUtil::GetChannelMask(m_context->TEX0.PSM) & GSUtil::GetChannelMask(m_context->FRAME.PSM, m_context->FRAME.FBMSK | ~(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk))))
 		return false;
 
+	// Try to detect shuffles, because these will not autoflush, they by design clash.
+	if (GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_context->TEX0.PSM].bpp == 16)
+	{
+		// Pretty confident here...
+		GSVertex* buffer = &m_vertex.buff[0];
+		const bool const_spacing = std::abs(buffer[m_index.buff[0]].U - buffer[m_index.buff[0]].XYZ.X) == std::abs(m_v.U - m_v.XYZ.X) && std::abs(buffer[m_index.buff[1]].XYZ.X - buffer[m_index.buff[0]].XYZ.X) < 64;
+
+		if (const_spacing)
+			return false;
+	}
 	const u32 frame_mask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
 	const bool frame_hit = m_context->FRAME.Block() == m_context->TEX0.TBP0 && !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL == 2) && ((m_context->FRAME.FBMSK & frame_mask) != frame_mask);
 	// There's a strange behaviour we need to test on a PS2 here, if the FRAME is a Z format, like Powerdrome something swaps over, and it seems Alpha Fail of "FB Only" writes to the Z.. it's odd.

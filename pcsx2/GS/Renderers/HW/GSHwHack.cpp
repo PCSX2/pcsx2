@@ -1047,7 +1047,7 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 	// compute shadow in RG,
 	// save result in alpha with a TS,
 	// Restore RG channel that we previously copied to render shadows.
-
+	// Important note: The game downsizes the target to half height, then later expands it back up to full size, that's why PCSX2 doesn't like it, we don't support that behaviour.
 	const GIFRegTEX0& Texture = RTEX0;
 
 	GIFRegTEX0 Frame = {};
@@ -1058,9 +1058,9 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 	if ((!rt) || (!RPRIM->TME) || (GSLocalMemory::m_psm[Texture.PSM].bpp != 16) || (GSLocalMemory::m_psm[Frame.PSM].bpp != 16) || (Texture.TBP0 == Frame.TBP0) || (Frame.TBW != 16 && Texture.TBW != 16))
 		return true;
 
-	GL_INS("OI_SonicUnleashed replace draw by a copy");
+	GL_INS("OI_SonicUnleashed replace draw by a copy draw %d", r.s_n);
 
-	GSTextureCache::Target* src = g_texture_cache->LookupTarget(Texture, GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
+	GSTextureCache::Target* src = g_texture_cache->LookupTarget(Texture, GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true, 0, false, false, true, true, GSVector4i::zero(), true);
 
 	if (!src)
 		return true;
