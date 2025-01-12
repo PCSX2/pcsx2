@@ -858,17 +858,37 @@ mVUop(mVU_IADDI)
 		if (_Is_ == 0)
 		{
 			const xRegister32& regT = mVU.regAlloc->allocGPR(-1, _It_, mVUlow.backupVI);
-			if (_Imm5_ != 0)
-				xMOV(regT, _Imm5_);
+			if (!EmuConfig.Gamefixes.IbitHack)
+			{
+				if (_Imm5_ != 0)
+					xMOV(regT, _Imm5_);
+				else
+					xXOR(regT, regT);
+			}
 			else
-				xXOR(regT, regT);
+			{
+				xMOV(regT, ptr32[&curI]);
+				xSHL(regT, 21);
+				xSAR(regT, 27);
+			}
 			mVU.regAlloc->clearNeeded(regT);
 		}
 		else
 		{
 			const xRegister32& regS = mVU.regAlloc->allocGPR(_Is_, _It_, mVUlow.backupVI);
-			if (_Imm5_ != 0)
-				xADD(regS, _Imm5_);
+			if (!EmuConfig.Gamefixes.IbitHack)
+			{
+				if (_Imm5_ != 0)
+					xADD(regS, _Imm5_);
+			}
+			else
+			{
+				xMOV(gprT1, ptr32[&curI]);
+				xSHL(gprT1, 21);
+				xSAR(gprT1, 27);
+
+				xADD(regS, gprT1);
+			}
 			mVU.regAlloc->clearNeeded(regS);
 		}
 		mVU.profiler.EmitOp(opIADDI);
@@ -884,17 +904,43 @@ mVUop(mVU_IADDIU)
 		if (_Is_ == 0)
 		{
 			const xRegister32& regT = mVU.regAlloc->allocGPR(-1, _It_, mVUlow.backupVI);
-			if (_Imm15_ != 0)
-				xMOV(regT, _Imm15_);
+			if (!EmuConfig.Gamefixes.IbitHack)
+			{
+				if (_Imm15_ != 0)
+					xMOV(regT, _Imm15_);
+				else
+					xXOR(regT, regT);
+			}
 			else
-				xXOR(regT, regT);
+			{
+				xMOV(regT, ptr32[&curI]);
+				xMOV(gprT1, regT);
+				xSHR(gprT1, 10);
+				xAND(gprT1, 0x7800);
+				xAND(regT, 0x7FF);
+				xOR(regT, gprT1);
+			}
 			mVU.regAlloc->clearNeeded(regT);
 		}
 		else
 		{
 			const xRegister32& regS = mVU.regAlloc->allocGPR(_Is_, _It_, mVUlow.backupVI);
-			if (_Imm15_ != 0)
-				xADD(regS, _Imm15_);
+			if (!EmuConfig.Gamefixes.IbitHack)
+			{
+				if (_Imm15_ != 0)
+					xADD(regS, _Imm15_);
+			}
+			else
+			{
+				xMOV(gprT1, ptr32[&curI]);
+				xMOV(gprT2, gprT1);
+				xSHR(gprT2, 10);
+				xAND(gprT2, 0x7800);
+				xAND(gprT1, 0x7FF);
+				xOR(gprT1, gprT2);
+
+				xADD(regS, gprT1);
+			}
 			mVU.regAlloc->clearNeeded(regS);
 		}
 		mVU.profiler.EmitOp(opIADDIU);
@@ -964,8 +1010,22 @@ mVUop(mVU_ISUBIU)
 	pass2
 	{
 		const xRegister32& regS = mVU.regAlloc->allocGPR(_Is_, _It_, mVUlow.backupVI);
-		if (_Imm15_ != 0)
-			xSUB(regS, _Imm15_);
+		if (!EmuConfig.Gamefixes.IbitHack)
+		{
+			if (_Imm15_ != 0)
+				xSUB(regS, _Imm15_);
+		}
+		else
+		{
+			xMOV(gprT1, ptr32[&curI]);
+			xMOV(gprT2, gprT1);
+			xSHR(gprT2, 10);
+			xAND(gprT2, 0x7800);
+			xAND(gprT1, 0x7FF);
+			xOR(gprT1, gprT2);
+
+			xSUB(regS, gprT1);
+		}
 		mVU.regAlloc->clearNeeded(regS);
 		mVU.profiler.EmitOp(opISUBIU);
 	}
@@ -1100,12 +1160,23 @@ mVUop(mVU_ILW)
 	pass2
 	{
 		void* ptr = mVU.regs().Mem + offsetSS;
-		std::optional<xAddressVoid> optaddr(mVUoptimizeConstantAddr(mVU, _Is_, _Imm11_, offsetSS));
+		std::optional<xAddressVoid> optaddr(EmuConfig.Gamefixes.IbitHack ? std::nullopt : mVUoptimizeConstantAddr(mVU, _Is_, _Imm11_, offsetSS));
 		if (!optaddr.has_value())
 		{
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
-			if (_Imm11_ != 0)
-				xADD(gprT1, _Imm11_);
+			if (!EmuConfig.Gamefixes.IbitHack)
+			{
+				if (_Imm11_ != 0)
+					xADD(gprT1, _Imm11_);
+			}
+			else
+			{
+				xMOV(gprT2, ptr32[&curI]);
+				xSHL(gprT2, 21);
+				xSAR(gprT2, 21);
+
+				xADD(gprT1, gprT2);
+			}
 			mVUaddrFix(mVU, gprT1q);
 		}
 
@@ -1164,12 +1235,23 @@ mVUop(mVU_ISW)
 	}
 	pass2
 	{
-		std::optional<xAddressVoid> optaddr(mVUoptimizeConstantAddr(mVU, _Is_, _Imm11_, 0));
+		std::optional<xAddressVoid> optaddr(EmuConfig.Gamefixes.IbitHack ? std::nullopt : mVUoptimizeConstantAddr(mVU, _Is_, _Imm11_, 0));
 		if (!optaddr.has_value())
 		{
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
-			if (_Imm11_ != 0)
-				xADD(gprT1, _Imm11_);
+			if (!EmuConfig.Gamefixes.IbitHack)
+			{
+				if (_Imm11_ != 0)
+					xADD(gprT1, _Imm11_);
+			}
+			else
+			{
+				xMOV(gprT2, ptr32[&curI]);
+				xSHL(gprT2, 21);
+				xSAR(gprT2, 21);
+
+				xADD(gprT1, gprT2);
+			}
 			mVUaddrFix(mVU, gprT1q);
 		}
 
@@ -1251,12 +1333,23 @@ mVUop(mVU_LQ)
 	pass1 { mVUanalyzeLQ(mVU, _Ft_, _Is_, false); }
 	pass2
 	{
-		const std::optional<xAddressVoid> optaddr(mVUoptimizeConstantAddr(mVU, _Is_, _Imm11_, 0));
+		const std::optional<xAddressVoid> optaddr(EmuConfig.Gamefixes.IbitHack ? std::nullopt : mVUoptimizeConstantAddr(mVU, _Is_, _Imm11_, 0));
 		if (!optaddr.has_value())
 		{
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
-			if (_Imm11_ != 0)
-				xADD(gprT1, _Imm11_);
+			if (!EmuConfig.Gamefixes.IbitHack)
+			{
+				if (_Imm11_ != 0)
+					xADD(gprT1, _Imm11_);
+			}
+			else
+			{
+				xMOV(gprT2, ptr32[&curI]);
+				xSHL(gprT2, 21);
+				xSAR(gprT2, 21);
+
+				xADD(gprT1, gprT2);
+			}
 			mVUaddrFix(mVU, gprT1q);
 		}
 
@@ -1345,12 +1438,23 @@ mVUop(mVU_SQ)
 	pass1 { mVUanalyzeSQ(mVU, _Fs_, _It_, false); }
 	pass2
 	{
-		const std::optional<xAddressVoid> optptr(mVUoptimizeConstantAddr(mVU, _It_, _Imm11_, 0));
+		const std::optional<xAddressVoid> optptr(EmuConfig.Gamefixes.IbitHack ? std::nullopt : mVUoptimizeConstantAddr(mVU, _It_, _Imm11_, 0));
 		if (!optptr.has_value())
 		{
 			mVU.regAlloc->moveVIToGPR(gprT1, _It_);
-			if (_Imm11_ != 0)
-				xADD(gprT1, _Imm11_);
+			if (!EmuConfig.Gamefixes.IbitHack)
+			{
+				if (_Imm11_ != 0)
+					xADD(gprT1, _Imm11_);
+			}
+			else
+			{
+				xMOV(gprT2, ptr32[&curI]);
+				xSHL(gprT2, 21);
+				xSAR(gprT2, 21);
+
+				xADD(gprT1, gprT2);
+			}
 			mVUaddrFix(mVU, gprT1q);
 		}
 
