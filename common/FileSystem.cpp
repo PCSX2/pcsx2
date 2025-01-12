@@ -1141,6 +1141,23 @@ s64 FileSystem::FSize64(std::FILE* fp)
 	return -1;
 }
 
+bool FileSystem::FFlush(std::FILE *fp)
+{
+#ifdef _WIN32
+	HANDLE hFile = (HANDLE)_get_osfhandle(_fileno(fp));
+	if(hFile != INVALID_HANDLE_VALUE)
+	{
+		if(FlushFileBuffers(hFile))
+		{
+			return true;
+		}
+	}
+	return false;
+#else
+	return !std::fflush(fp);
+#endif
+}
+
 s64 FileSystem::GetPathFileSize(const char* Path)
 {
 	FILESYSTEM_STAT_DATA sd;
