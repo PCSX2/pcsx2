@@ -318,6 +318,29 @@ size_t HostSys::GetRuntimeCacheLineSize()
 	return static_cast<size_t>(std::max<s64>(sysctlbyname_T<s64>("hw.cachelinesize").value_or(0), 0));
 }
 
+void* HostSys::CreateMappingFromFile(FILE* file)
+{
+	return reinterpret_cast<void*>(static_cast<uintptr_t>(fileno(file)));
+}
+
+void* HostSys::MapMapping(void* handle, size_t size, const PageProtectionMode& mode)
+{
+	const u32 mmap_prot = (mode.CanWrite() ? (PROT_READ | PROT_WRITE) : (PROT_READ)) | (mode.CanExecute() ? PROT_EXEC : 0);
+
+	return mmap(nullptr, size, mmap_prot, MAP_PRIVATE, static_cast<int>(reinterpret_cast<intptr_t>(handle)), 0);
+}
+
+void HostSys::DestroyMapping(void* handle)
+{
+	// The handle mmap requires is the same as the file descriptor.
+	return;
+}
+
+void HostSys::FlushMapping(void* handle, [[maybe_unused]] void* baseAddr, size_t size)
+{
+	msync(handle, size, MS_SYNC);
+}
+
 #ifdef ARCH_ARM64
 
 static thread_local int s_code_write_depth = 0;
