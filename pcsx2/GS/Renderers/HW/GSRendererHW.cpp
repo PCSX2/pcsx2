@@ -952,11 +952,11 @@ GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex)
 	return  GSVector2i(width, height);
 }
 
-GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex)
+GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex, const bool can_expand)
 {
 	const GSVector2i valid_size = GetValidSize(tex);
 
-	return g_texture_cache->GetTargetSize(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, valid_size.x, valid_size.y);
+	return g_texture_cache->GetTargetSize(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, valid_size.x, valid_size.y, can_expand);
 }
 
 bool GSRendererHW::IsPossibleChannelShuffle() const
@@ -2553,7 +2553,7 @@ void GSRendererHW::Draw()
 		const u32 color_mask = (m_vt.m_max.c > GSVector4i::zero()).mask();
 		const bool texture_function_color = m_cached_ctx.TEX0.TFX == TFX_DECAL || (color_mask & 0xFFF) || (m_cached_ctx.TEX0.TFX > TFX_DECAL && (color_mask & 0xF000));
 		const bool texture_function_alpha = m_cached_ctx.TEX0.TFX != TFX_MODULATE || (color_mask & 0xF000);
-		const bool req_color = texture_function_color && (!PRIM->ABE || (PRIM->ABE && IsUsingCsInBlend())) && (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0x00FFFFFF)) != (fm_mask & 0x00FFFFFF)) || need_aem_color;
+		const bool req_color = (texture_function_color && (!PRIM->ABE || (PRIM->ABE && IsUsingCsInBlend())) && (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0x00FFFFFF)) != (fm_mask & 0x00FFFFFF))) || need_aem_color;
 		const bool alpha_used = (GSUtil::GetChannelMask(m_context->TEX0.PSM) == 0x8 || (m_context->TEX0.TCC && texture_function_alpha)) && ((PRIM->ABE && IsUsingAsInBlend()) || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST > ATST_ALWAYS) || (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0xFF000000)) != (fm_mask & 0xFF000000)));
 		const bool req_alpha = (GSUtil::GetChannelMask(m_context->TEX0.PSM) & 0x8) && alpha_used;
 
@@ -2612,8 +2612,14 @@ void GSRendererHW::Draw()
 		}
 	}
 
+	// Urban Reign trolls by scissoring a draw to a target at 0x0-0x117F to 378x449 which ends up the size being rounded up to 640x480
+	// causing the buffer to expand to around 0x1400, which makes a later framebuffer at 0x1180 to fail to be created correctly.
+	// We can cheese this by checking if the Z is masked and the resultant colour is going to be black anyway.
+	const bool output_black = PRIM->ABE && ((m_context->ALPHA.A == 1 && m_context->ALPHA.B == 0 && GetAlphaMinMax().min >= 128) || m_context->ALPHA.IsBlack()) && m_draw_env->COLCLAMP.CLAMP == 1;
+	const bool can_expand = !(m_cached_ctx.ZBUF.ZMSK && output_black);
+
 	// Estimate size based on the scissor rectangle and height cache.
-	const GSVector2i t_size = GetTargetSize(src);
+	const GSVector2i t_size = GetTargetSize(src, can_expand);
 	const GSVector4i t_size_rect = GSVector4i::loadh(t_size);
 
 	// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
@@ -3404,20 +3410,18 @@ void GSRendererHW::Draw()
 
 		std::string s;
 
-		if (GSConfig.SaveRT && s_n >= GSConfig.SaveN)
+		if (rt && GSConfig.SaveRT && s_n >= GSConfig.SaveN)
 		{
-			s = GetDrawDumpPath("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, m_cached_ctx.FRAME.Block(), psm_str(m_cached_ctx.FRAME.PSM));
+			s = GetDrawDumpPath("%05d_f%lld_rt1_%05x_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.FRAME.Block(), rt->m_TEX0.TBP0, psm_str(m_cached_ctx.FRAME.PSM));
 
-			if (rt)
-				rt->m_texture->Save(s);
+			rt->m_texture->Save(s);
 		}
 
-		if (GSConfig.SaveDepth && s_n >= GSConfig.SaveN)
+		if (ds && GSConfig.SaveDepth && s_n >= GSConfig.SaveN)
 		{
-			s = GetDrawDumpPath("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, m_cached_ctx.ZBUF.Block(), psm_str(m_cached_ctx.ZBUF.PSM));
+			s = GetDrawDumpPath("%05d_f%lld_rz1_%05x_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.ZBUF.Block(), ds->m_TEX0.TBP0, psm_str(m_cached_ctx.ZBUF.PSM));
 
-			if (ds)
-				ds->m_texture->Save(s);
+			ds->m_texture->Save(s);
 		}
 
 		if (GSConfig.SaveL > 0 && (s_n - GSConfig.SaveN) > GSConfig.SaveL)
@@ -3429,6 +3433,8 @@ void GSRendererHW::Draw()
 	if (rt)
 		rt->m_last_draw = s_n;
 
+	if (ds)
+		ds->m_last_draw = s_n;
 #ifdef DISABLE_HW_TEXTURE_CACHE
 	if (rt)
 		g_texture_cache->Read(rt, real_rect);
@@ -7407,9 +7413,10 @@ ClearType GSRendererHW::IsConstantDirectWriteMemClear()
 		&& !(m_draw_env->SCANMSK.MSK & 2) && !m_cached_ctx.TEST.ATE // no alpha test
 		&& !m_cached_ctx.TEST.DATE // no destination alpha test
 		&& (!m_cached_ctx.TEST.ZTE || m_cached_ctx.TEST.ZTST == ZTST_ALWAYS) // no depth test
-		&& (m_vt.m_eq.rgba == 0xFFFF || m_vertex.next == 2)) // constant color write
+		&& (m_vt.m_eq.rgba == 0xFFFF || m_vertex.next == 2) // constant color write
+		&& (!PRIM->FGE || m_vt.m_min.p.w == 255.0f)) // No fog effect
 	{
-		if (PRIM->ABE && (!m_context->ALPHA.IsOpaque() || m_cached_ctx.FRAME.FBMSK))
+		if ((PRIM->ABE && !m_context->ALPHA.IsOpaque()) || (m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk))
 			return ClearWithDraw;
 
 		return NormalClear;

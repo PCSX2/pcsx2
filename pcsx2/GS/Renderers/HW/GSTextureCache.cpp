@@ -2569,7 +2569,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				{
 					const GSVector4i save_rect = preserve_target ? newrect : eerect;
 
-					if(!hw_clear)
+					if (!hw_clear)
 						dst->UpdateValidity(save_rect);
 					GL_INS("Preloading the RT DATA from updated GS Memory");
 					AddDirtyRectTarget(dst, save_rect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
@@ -2605,12 +2605,14 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				auto j = i;
 				Target* t = *j;
 
-				if (dst != t && t->m_TEX0.TBW == dst->m_TEX0.TBW && t->m_TEX0.PSM == dst->m_TEX0.PSM && t->m_TEX0.TBW > 4)
+				if (dst != t && t->m_TEX0.PSM == dst->m_TEX0.PSM/* && t->m_TEX0.TBW == dst->m_TEX0.TBW*/)
 					if (t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid))
 					{
+						const u32 buffer_width = std::max(1U, dst->m_TEX0.TBW);
+
 						// If the two targets are misaligned, it's likely a relocation, so we can just kill the old target.
 						// Kill targets that are overlapping new targets, but ignore the copy if the old target is dirty  because we favour GS memory.
-						if (((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % dst->m_TEX0.TBW) != 0) && !t->m_dirty.empty())
+						if (((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % buffer_width) != 0) && !t->m_dirty.empty())
 						{
 							InvalidateSourcesFromTarget(t);
 							i = list.erase(j);
@@ -2629,64 +2631,84 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							return hw_clear.value_or(false);
 						}
 						// The new texture is behind it but engulfs the whole thing, shrink the new target so it grows in the HW Draw resize.
-						else if (dst->m_TEX0.TBP0 < t->m_TEX0.TBP0 && (dst->UnwrappedEndBlock() + 1) > t->m_TEX0.TBP0 && dst->m_TEX0.TBP0 < (t->UnwrappedEndBlock() + 1))
+						else if (dst->m_TEX0.TBP0 < t->m_TEX0.TBP0 && (dst->UnwrappedEndBlock() + 1) > t->m_TEX0.TBP0)
 						{
 							const int rt_pages = ((t->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 5;
 							const int overlapping_pages = std::min(rt_pages, static_cast<int>((dst->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 5);
-							const int overlapping_pages_height = (overlapping_pages / dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
+							const int overlapping_pages_height = ((overlapping_pages + (buffer_width - 1)) / buffer_width) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
 
-							if (overlapping_pages_height == 0 || (overlapping_pages % dst->m_TEX0.TBW))
+							if (overlapping_pages_height == 0 || (overlapping_pages % buffer_width))
 							{
 								// No overlap top copy or the widths don't match.
 								i++;
 								continue;
 							}
 
-							const int dst_offset_width = (((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.x;
-							const int dst_offset_height = ((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) / dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y);
+							const int dst_offset_height = ((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) / buffer_width) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y);
+							const int texture_height = (dst->m_TEX0.TBW == t->m_TEX0.TBW) ? (dst_offset_height + t->m_valid.w) : (dst_offset_height + overlapping_pages_height);
+
+							if (texture_height > dst->m_unscaled_size.y && !dst->ResizeTexture(dst->m_unscaled_size.x, texture_height, true))
+							{
+								// Resize failed, probably ran out of VRAM, better luck next time. Fall back to CPU.
+								DevCon.Warning("Failed to resize target on preload? Draw %d", GSState::s_n);
+								i++;
+								continue;
+							}
+
+							const int dst_offset_width = (((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % buffer_width) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.x;
 							const int dst_offset_scaled_width = dst_offset_width * dst->m_scale;
 							const int dst_offset_scaled_height = dst_offset_height * dst->m_scale;
-							const GSVector4i dst_rect_scale = GSVector4i(t->m_valid.x, dst_offset_height, t->m_valid.z, dst_offset_height + overlapping_pages_height);
+							const GSVector4i dst_rect_scale = GSVector4i(t->m_valid.x, dst_offset_height, t->m_valid.z, texture_height);
+
 							if (((!hw_clear && (preserve_target || preload)) || dst_rect_scale.rintersect(draw_rect).rempty()) && dst->GetScale() == t->GetScale())
 							{
-								const int copy_width = ((t->m_texture->GetWidth()) > (dst->m_texture->GetWidth()) ? (dst->m_texture->GetWidth()) : t->m_texture->GetWidth()) - dst_offset_scaled_width;
-								const int copy_height = overlapping_pages_height * t->m_scale;
+								int copy_width = ((t->m_texture->GetWidth()) > (dst->m_texture->GetWidth()) ? (dst->m_texture->GetWidth()) : t->m_texture->GetWidth()) - dst_offset_scaled_width;
+								int copy_height = (texture_height - dst_offset_height) * t->m_scale;
 
 								GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, copy_width, copy_height, 0, dst_offset_scaled_height);
 
 								// Clear the dirty first
 								t->Update();
 								dst->Update();
+
+								// Clamp it if it gets too small, shouldn't happen but stranger things have happened.
+								if (copy_width < 0)
+								{
+									copy_width = 0;
+								}
+
 								// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
 								if (!t->m_valid_rgb || !(t->m_valid_alpha_high || t->m_valid_alpha_low) || t->m_scale != dst->m_scale)
 								{
 									const GSVector4 src_rect = GSVector4(0, 0, copy_width, copy_height) / (GSVector4(t->m_texture->GetSize()).xyxy());
-									const GSVector4 dst_rect = GSVector4(dst_offset_scaled_width, dst_offset_scaled_height, dst_offset_scaled_width + copy_width, dst_offset_scaled_width + copy_height);
+									const GSVector4 dst_rect = GSVector4(dst_offset_scaled_width, dst_offset_scaled_height, dst_offset_scaled_width + copy_width, dst_offset_scaled_height + copy_height);
 									g_gs_device->StretchRect(t->m_texture, src_rect, dst->m_texture, dst_rect, t->m_valid_rgb, t->m_valid_rgb, t->m_valid_rgb, t->m_valid_alpha_high || t->m_valid_alpha_low);
 								}
 								else
 								{
-									// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
+									if ((copy_width + dst_offset_scaled_width) > (dst->m_unscaled_size.x * dst->m_scale) || (copy_height + dst_offset_scaled_height) > (dst->m_unscaled_size.y * dst->m_scale))
+									{
+										copy_width = std::min(copy_width, static_cast<int>((dst->m_unscaled_size.x * dst->m_scale) - dst_offset_scaled_width));
+										copy_height = std::min(copy_height, static_cast<int>((dst->m_unscaled_size.y * dst->m_scale) - dst_offset_scaled_height));
+									}
+
 									g_gs_device->CopyRect(t->m_texture, dst->m_texture, GSVector4i(0, 0, copy_width, copy_height), dst_offset_scaled_width, dst_offset_scaled_height);
 								}
 							}
 
-							if ((overlapping_pages < rt_pages) || (src && src->m_target && src->m_from_target == t))
+							// src is using this target, so point it at the new copy.
+							if (src && src->m_target && src->m_from_target == t)
 							{
-								// This should never happen as we're making a new target so the src should never be something it overlaps, but just incase..
-								GSVector4i new_valid = t->m_valid;
-								new_valid.y = std::max(new_valid.y - overlapping_pages_height, 0);
-								new_valid.w = std::max(new_valid.w - overlapping_pages_height, 0);
-								t->m_TEX0.TBP0 += (overlapping_pages_height / GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y) << 5;
-								t->ResizeValidity(new_valid);
+								src->m_from_target = dst;
+								src->m_texture = dst->m_texture;
+								src->m_region.SetY(src->m_region.GetMinY() + dst_offset_height, src->m_region.GetMaxY() + dst_offset_height);
+								src->m_region.SetX(src->m_region.GetMinX() + dst_offset_width, src->m_region.GetMaxX() + dst_offset_width);
 							}
-							else
-							{
-								InvalidateSourcesFromTarget(t);
-								i = list.erase(j);
-								delete t;
-							}
-							return hw_clear.value_or(false);
+
+							InvalidateSourcesFromTarget(t);
+							i = list.erase(j);
+							delete t;
+							continue;
 						}
 					}
 				i++;
@@ -3737,6 +3759,19 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		return false;
 
 	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
+	if (dst && DBP == SBP && dy > dst->m_unscaled_size.y)
+	{
+		const u32 new_DBP = DBP + (((dy / GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs.y) * DBW) << 5);
+
+		dst = nullptr;
+
+		DBP = new_DBP;
+		dy = 0;
+
+		dst = GetExactTarget(DBP, DBW, dpsm_s.depth ? DepthStencil : RenderTarget, DBP);
+	}
+
+	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
 	// We use dx/dy == 0 and the TBW check as a safeguard to make sure these go through to local memory.
 	// We can also recreate the target if it's previously been created in the height cache with a valid size.
 	// Good test case for this is the Xenosaga I cutscene transitions, or Gradius V.
@@ -4182,7 +4217,7 @@ GSTextureCache::Target* GSTextureCache::FindOverlappingTarget(u32 BP, u32 BW, u3
 	return FindOverlappingTarget(BP, end_bp);
 }
 
-GSVector2i GSTextureCache::GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height)
+GSVector2i GSTextureCache::GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height, bool can_expand)
 {
 	TargetHeightElem search = {};
 	search.bp = bp;
@@ -4196,14 +4231,17 @@ GSVector2i GSTextureCache::GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width
 		TargetHeightElem& elem = const_cast<TargetHeightElem&>(*it);
 		if (elem.bits == search.bits)
 		{
-			if (elem.width < min_width || elem.height < min_height)
+			if (can_expand)
 			{
-				DbgCon.WriteLn("Expand size at %x %u %u from %ux%u to %ux%u", bp, fbw, psm, elem.width, elem.height,
-					min_width, min_height);
-			}
+				if (elem.width < min_width || elem.height < min_height)
+				{
+					DbgCon.WriteLn("Expand size at %x %u %u from %ux%u to %ux%u", bp, fbw, psm, elem.width, elem.height,
+						min_width, min_height);
+				}
 
-			elem.width = std::max(elem.width, min_width);
-			elem.height = std::max(elem.height, min_height);
+				elem.width = std::max(elem.width, min_width);
+				elem.height = std::max(elem.height, min_height);
+			}
 
 			m_target_heights.MoveFront(it.Index());
 			elem.age = 0;
@@ -4211,7 +4249,7 @@ GSVector2i GSTextureCache::GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width
 		}
 	}
 
-	DbgCon.WriteLn("New size at %x %u %u: %ux%u", bp, fbw, psm, min_width, min_height);
+	DbgCon.WriteLn("New size at %x %u %u: %ux%u draw %d", bp, fbw, psm, min_width, min_height, GSState::s_n);
 	m_target_heights.push_front(search);
 	return GSVector2i(min_width, min_height);
 }

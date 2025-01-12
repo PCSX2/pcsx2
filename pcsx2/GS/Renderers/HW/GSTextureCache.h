@@ -504,7 +504,7 @@ public:
 	Target* FindOverlappingTarget(u32 BP, u32 end_bp) const;
 	Target* FindOverlappingTarget(u32 BP, u32 BW, u32 PSM, GSVector4i rc) const;
 
-	GSVector2i GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height);
+	GSVector2i GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height, bool can_expand = true);
 	bool HasTargetInHeightCache(u32 bp, u32 fbw, u32 psm, u32 max_age = std::numeric_limits<u32>::max(), bool move_front = true);
 	bool Has32BitTarget(u32 bp);
 
