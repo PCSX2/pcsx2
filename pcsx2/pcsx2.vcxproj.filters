@@ -289,6 +289,9 @@
     <Filter Include="System\Ps2\EmotionEngine\EE\Dynarec\arm64">
       <UniqueIdentifier>{cd8ec519-2196-43f7-86de-7faced2d4296}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\Shared">
+      <UniqueIdentifier>{9a40984b-cb23-4a54-a5e9-9c54f3c16c5b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\License.txt">
@@ -1443,6 +1446,12 @@
     <ClCompile Include="SIO\Pad\PadNegcon.cpp">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClCompile>
+    <ClCompile Include="PS2Float.cpp">
+      <Filter>System\Ps2\EmotionEngine\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="FpgaDiv.cpp">
+      <Filter>System\Ps2\EmotionEngine\Shared</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2398,6 +2407,12 @@
     </ClInclude>
     <ClInclude Include="SIO\Pad\PadNegcon.h">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="PS2Float.h">
+      <Filter>System\Ps2\EmotionEngine\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="FpgaDiv.h">
+      <Filter>System\Ps2\EmotionEngine\Shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
