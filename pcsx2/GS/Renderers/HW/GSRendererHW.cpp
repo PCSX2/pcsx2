@@ -2741,7 +2741,7 @@ void GSRendererHW::Draw()
 				shuffle_target = shuffle_coords && (draw_width & 7) == 0 && std::abs(draw_width - read_width) <= 1;
 			}
 
-			if (m_cached_ctx.FRAME.Block() != m_cached_ctx.TEX0.TBP0 || !shuffle_target)
+			if (!shuffle_target)
 			{
 				// FBW is going to be wrong for channel shuffling into a new target, so take it from the source.
 				FRAME_TEX0.U64 = 0;
@@ -2827,7 +2827,7 @@ void GSRendererHW::Draw()
 	// Urban Reign trolls by scissoring a draw to a target at 0x0-0x117F to 378x449 which ends up the size being rounded up to 640x480
 	// causing the buffer to expand to around 0x1400, which makes a later framebuffer at 0x1180 to fail to be created correctly.
 	// We can cheese this by checking if the Z is masked and the resultant colour is going to be black anyway.
-	const bool output_black = PRIM->ABE && ((m_context->ALPHA.A == 1 && m_context->ALPHA.B == 0 && GetAlphaMinMax().min >= 128) || m_context->ALPHA.IsBlack()) && m_draw_env->COLCLAMP.CLAMP == 1;
+	const bool output_black = PRIM->ABE && ((m_context->ALPHA.A == 1 || m_context->ALPHA.IsBlack()) && m_context->ALPHA.D != 1) && m_draw_env->COLCLAMP.CLAMP == 1;
 	const bool can_expand = !(m_cached_ctx.ZBUF.ZMSK && output_black);
 
 	// Estimate size based on the scissor rectangle and height cache.
@@ -3064,7 +3064,7 @@ void GSRendererHW::Draw()
 		{
 			int vertical_offset = ((static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) / 32) / std::max(static_cast<int>(rt->m_TEX0.TBW), 1)) * frame_psm.pgs.y; // I know I could just not shift it..
 			int texture_offset = 0;
-			const int horizontal_offset = ((static_cast<int>((m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0)) / 32) % static_cast<int>(std::max(rt->m_TEX0.TBW, 1U))) * frame_psm.pgs.x;
+			int horizontal_offset = ((static_cast<int>((m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0)) / 32) % static_cast<int>(std::max(rt->m_TEX0.TBW, 1U))) * frame_psm.pgs.x;
 			// Used to reduce the offset made later in channel shuffles
 			m_target_offset = std::abs(static_cast<int>((m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0)) >> 5);
 
@@ -3103,6 +3103,13 @@ void GSRendererHW::Draw()
 				vertical_offset = 0;
 			}
 
+			if (horizontal_offset < 0)
+			{
+				// Thankfully this doesn't really happen, but catwoman moves the framebuffer backwards 1 page with a channel shuffle, which is really messy and not easy to deal with.
+				// Hopefully the quick channel shuffle will just guess this and run with it.
+				rt->m_TEX0.TBP0 += horizontal_offset;
+				horizontal_offset = 0;
+			}
 			// Z isn't offset but RT is, so we need a temp Z to align it, hopefully nothing will ever write to the Z too, right??
 			if (ds && vertical_offset && (m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) != (m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0))
 			{
@@ -3152,7 +3159,7 @@ void GSRendererHW::Draw()
 			m_r.w += vertical_offset;
 			m_r.x += horizontal_offset;
 			m_r.z += horizontal_offset;
-			m_in_target_draw = true;
+			m_in_target_draw = rt->m_TEX0.TBP0 != m_cached_ctx.FRAME.Block();
 			m_vt.m_min.p.x += horizontal_offset;
 			m_vt.m_max.p.x += horizontal_offset;
 			m_vt.m_min.p.y += vertical_offset;
