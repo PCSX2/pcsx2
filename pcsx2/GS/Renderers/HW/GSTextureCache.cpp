@@ -4204,7 +4204,7 @@ GSTextureCache::Target* GSTextureCache::FindOverlappingTarget(u32 BP, u32 BW, u3
 	return FindOverlappingTarget(BP, end_bp);
 }
 
-GSVector2i GSTextureCache::GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height)
+GSVector2i GSTextureCache::GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height, bool can_expand)
 {
 	TargetHeightElem search = {};
 	search.bp = bp;
@@ -4218,14 +4218,17 @@ GSVector2i GSTextureCache::GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width
 		TargetHeightElem& elem = const_cast<TargetHeightElem&>(*it);
 		if (elem.bits == search.bits)
 		{
-			if (elem.width < min_width || elem.height < min_height)
+			if (can_expand)
 			{
-				DbgCon.WriteLn("Expand size at %x %u %u from %ux%u to %ux%u", bp, fbw, psm, elem.width, elem.height,
-					min_width, min_height);
-			}
+				if (elem.width < min_width || elem.height < min_height)
+				{
+					DbgCon.WriteLn("Expand size at %x %u %u from %ux%u to %ux%u", bp, fbw, psm, elem.width, elem.height,
+						min_width, min_height);
+				}
 
-			elem.width = std::max(elem.width, min_width);
-			elem.height = std::max(elem.height, min_height);
+				elem.width = std::max(elem.width, min_width);
+				elem.height = std::max(elem.height, min_height);
+			}
 
 			m_target_heights.MoveFront(it.Index());
 			elem.age = 0;
@@ -4233,7 +4236,7 @@ GSVector2i GSTextureCache::GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width
 		}
 	}
 
-	DbgCon.WriteLn("New size at %x %u %u: %ux%u", bp, fbw, psm, min_width, min_height);
+	DbgCon.WriteLn("New size at %x %u %u: %ux%u draw %d", bp, fbw, psm, min_width, min_height, GSState::s_n);
 	m_target_heights.push_front(search);
 	return GSVector2i(min_width, min_height);
 }
