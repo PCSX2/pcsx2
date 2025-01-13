@@ -2074,7 +2074,6 @@
       {"scvtf_asimdmiscfp16_r"_h, &VISITORCLASS::VisitNEON2RegMiscFP16},       \
       {"ucvtf_asimdmiscfp16_r"_h, &VISITORCLASS::VisitNEON2RegMiscFP16},       \
       {"addhn_asimddiff_n"_h, &VISITORCLASS::VisitNEON3Different},             \
-      {"pmull_asimddiff_l"_h, &VISITORCLASS::VisitNEON3Different},             \
       {"raddhn_asimddiff_n"_h, &VISITORCLASS::VisitNEON3Different},            \
       {"rsubhn_asimddiff_n"_h, &VISITORCLASS::VisitNEON3Different},            \
       {"sabal_asimddiff_l"_h, &VISITORCLASS::VisitNEON3Different},             \
@@ -2592,6 +2591,7 @@
       {"dmb_bo_barriers"_h, &VISITORCLASS::VisitSystem},                       \
       {"dsb_bo_barriers"_h, &VISITORCLASS::VisitSystem},                       \
       {"hint_hm_hints"_h, &VISITORCLASS::VisitSystem},                         \
+      {"chkfeat_hf_hints"_h, &VISITORCLASS::VisitSystem},                      \
       {"mrs_rs_systemmove"_h, &VISITORCLASS::VisitSystem},                     \
       {"msr_sr_systemmove"_h, &VISITORCLASS::VisitSystem},                     \
       {"psb_hc_hints"_h, &VISITORCLASS::VisitSystem},                          \
@@ -2638,7 +2638,6 @@
        &VISITORCLASS::VisitUnconditionalBranchToRegister},                     \
       {"ret_64r_branch_reg"_h,                                                 \
        &VISITORCLASS::VisitUnconditionalBranchToRegister},                     \
-      {"bcax_vvv16_crypto4"_h, &VISITORCLASS::VisitUnimplemented},             \
       {"bfcvtn_asimdmisc_4s"_h, &VISITORCLASS::VisitUnimplemented},            \
       {"bfdot_asimdelem_e"_h, &VISITORCLASS::VisitUnimplemented},              \
       {"bfdot_asimdsame2_d"_h, &VISITORCLASS::VisitUnimplemented},             \
@@ -2646,7 +2645,6 @@
       {"bfmlal_asimdsame2_f"_h, &VISITORCLASS::VisitUnimplemented},            \
       {"bfmmla_asimdsame2_e"_h, &VISITORCLASS::VisitUnimplemented},            \
       {"dsb_bon_barriers"_h, &VISITORCLASS::VisitUnimplemented},               \
-      {"eor3_vvv16_crypto4"_h, &VISITORCLASS::VisitUnimplemented},             \
       {"ld64b_64l_memop"_h, &VISITORCLASS::VisitUnimplemented},                \
       {"ldgm_64bulk_ldsttags"_h, &VISITORCLASS::VisitUnimplemented},           \
       {"ldtrb_32_ldst_unpriv"_h, &VISITORCLASS::VisitUnimplemented},           \
@@ -2658,18 +2656,13 @@
       {"ldtrsw_64_ldst_unpriv"_h, &VISITORCLASS::VisitUnimplemented},          \
       {"ldtr_32_ldst_unpriv"_h, &VISITORCLASS::VisitUnimplemented},            \
       {"ldtr_64_ldst_unpriv"_h, &VISITORCLASS::VisitUnimplemented},            \
-      {"rax1_vvv2_cryptosha512_3"_h, &VISITORCLASS::VisitUnimplemented},       \
-      {"sha512h2_qqv_cryptosha512_3"_h, &VISITORCLASS::VisitUnimplemented},    \
-      {"sha512h_qqv_cryptosha512_3"_h, &VISITORCLASS::VisitUnimplemented},     \
-      {"sha512su0_vv2_cryptosha512_2"_h, &VISITORCLASS::VisitUnimplemented},   \
-      {"sha512su1_vvv2_cryptosha512_3"_h, &VISITORCLASS::VisitUnimplemented},  \
-      {"sm3partw1_vvv4_cryptosha512_3"_h, &VISITORCLASS::VisitUnimplemented},  \
-      {"sm3partw2_vvv4_cryptosha512_3"_h, &VISITORCLASS::VisitUnimplemented},  \
-      {"sm3ss1_vvv4_crypto4"_h, &VISITORCLASS::VisitUnimplemented},            \
-      {"sm3tt1a_vvv4_crypto3_imm2"_h, &VISITORCLASS::VisitUnimplemented},      \
-      {"sm3tt1b_vvv4_crypto3_imm2"_h, &VISITORCLASS::VisitUnimplemented},      \
-      {"sm3tt2a_vvv4_crypto3_imm2"_h, &VISITORCLASS::VisitUnimplemented},      \
-      {"sm3tt2b_vvv_crypto3_imm2"_h, &VISITORCLASS::VisitUnimplemented},       \
+      {"sm3partw1_vvv4_cryptosha512_3"_h, &VISITORCLASS::VisitCryptoSM3},      \
+      {"sm3partw2_vvv4_cryptosha512_3"_h, &VISITORCLASS::VisitCryptoSM3},      \
+      {"sm3ss1_vvv4_crypto4"_h, &VISITORCLASS::VisitCryptoSM3},                \
+      {"sm3tt1a_vvv4_crypto3_imm2"_h, &VISITORCLASS::VisitCryptoSM3},          \
+      {"sm3tt1b_vvv4_crypto3_imm2"_h, &VISITORCLASS::VisitCryptoSM3},          \
+      {"sm3tt2a_vvv4_crypto3_imm2"_h, &VISITORCLASS::VisitCryptoSM3},          \
+      {"sm3tt2b_vvv_crypto3_imm2"_h, &VISITORCLASS::VisitCryptoSM3},           \
       {"sm4ekey_vvv4_cryptosha512_3"_h, &VISITORCLASS::VisitUnimplemented},    \
       {"sm4e_vv4_cryptosha512_2"_h, &VISITORCLASS::VisitUnimplemented},        \
       {"st64b_64l_memop"_h, &VISITORCLASS::VisitUnimplemented},                \
@@ -2686,7 +2679,6 @@
       {"ttest_br_systemresult"_h, &VISITORCLASS::VisitUnimplemented},          \
       {"wfet_only_systeminstrswithreg"_h, &VISITORCLASS::VisitUnimplemented},  \
       {"wfit_only_systeminstrswithreg"_h, &VISITORCLASS::VisitUnimplemented},  \
-      {"xar_vvv2_crypto3_imm6"_h, &VISITORCLASS::VisitUnimplemented},          \
       {"bfcvt_z_p_z_s2bf"_h, &VISITORCLASS::VisitUnimplemented},               \
       {"bfcvtnt_z_p_z_s2bf"_h, &VISITORCLASS::VisitUnimplemented},             \
       {"bfdot_z_zzz"_h, &VISITORCLASS::VisitUnimplemented},                    \
@@ -2827,6 +2819,7 @@
       {"fmlal_asimdsame_f"_h, &VISITORCLASS::VisitNEON3Same},                  \
       {"fmlsl2_asimdsame_f"_h, &VISITORCLASS::VisitNEON3Same},                 \
       {"fmlsl_asimdsame_f"_h, &VISITORCLASS::VisitNEON3Same},                  \
+      {"pmull_asimddiff_l"_h, &VISITORCLASS::VisitNEON3Different},             \
       {"ushll_asimdshf_l"_h, &VISITORCLASS::VisitNEONShiftImmediate},          \
       {"sshll_asimdshf_l"_h, &VISITORCLASS::VisitNEONShiftImmediate},          \
       {"shrn_asimdshf_n"_h, &VISITORCLASS::VisitNEONShiftImmediate},           \

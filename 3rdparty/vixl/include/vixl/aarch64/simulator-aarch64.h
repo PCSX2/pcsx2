@@ -28,15 +28,18 @@
 #define VIXL_AARCH64_SIMULATOR_AARCH64_H_
 
 #include <memory>
+#include <mutex>
+#include <random>
 #include <unordered_map>
 #include <vector>
 
+#include "../cpu-features.h"
 #include "../globals-vixl.h"
 #include "../utils-vixl.h"
 
-#include "../cpu-features.h"
 #include "abi-aarch64.h"
 #include "cpu-features-auditor-aarch64.h"
+#include "debugger-aarch64.h"
 #include "disasm-aarch64.h"
 #include "instructions-aarch64.h"
 #include "simulator-constants-aarch64.h"
@@ -66,6 +69,28 @@ namespace aarch64 {
 
 class Simulator;
 struct RuntimeCallStructHelper;
+
+enum class MemoryAccessResult { Success = 0, Failure = 1 };
+
+// Try to access a piece of memory at the given address. Accessing that memory
+// might raise a signal which, if handled by a custom signal handler, should
+// setup the native and simulated context in order to continue. Return whether
+// the memory access failed (i.e: raised a signal) or succeeded.
+MemoryAccessResult TryMemoryAccess(uintptr_t address, uintptr_t access_size);
+
+#ifdef VIXL_ENABLE_IMPLICIT_CHECKS
+// Access a byte of memory from the address at the given offset. If the memory
+// could be accessed then return MemoryAccessResult::Success. If the memory
+// could not be accessed, and therefore raised a signal, setup the simulated
+// context and return MemoryAccessResult::Failure.
+//
+// If a signal is raised then it is expected that the signal handler will place
+// MemoryAccessResult::Failure in the native return register and the address of
+// _vixl_internal_AccessMemory_continue into the native instruction pointer.
+extern "C" MemoryAccessResult _vixl_internal_ReadMemory(uintptr_t address,
+                                                        uintptr_t offset);
+extern "C" uintptr_t _vixl_internal_AccessMemory_continue();
+#endif  // VIXL_ENABLE_IMPLICIT_CHECKS
 
 class SimStack {
  public:
@@ -135,7 +160,7 @@ class SimStack {
 
   // Allocate the stack, locking the parameters.
   Allocated Allocate() {
-    size_t align_to = 1 << align_log2_;
+    size_t align_to = uint64_t{1} << align_log2_;
     size_t l = AlignUp(limit_guard_size_, align_to);
     size_t u = AlignUp(usable_size_, align_to);
     size_t b = AlignUp(base_guard_size_, align_to);
@@ -365,7 +390,7 @@ class Memory {
   }
 
   template <typename T, typename A>
-  T Read(A address, Instruction const* pc = nullptr) const {
+  std::optional<T> Read(A address, Instruction const* pc = nullptr) const {
     T value;
     VIXL_STATIC_ASSERT((sizeof(value) == 1) || (sizeof(value) == 2) ||
                        (sizeof(value) == 4) || (sizeof(value) == 8) ||
@@ -377,12 +402,16 @@ class Memory {
     if (!IsMTETagsMatched(address, pc)) {
       VIXL_ABORT_WITH_MSG("Tag mismatch.");
     }
+    if (TryMemoryAccess(reinterpret_cast<uintptr_t>(base), sizeof(value)) ==
+        MemoryAccessResult::Failure) {
+      return std::nullopt;
+    }
     memcpy(&value, base, sizeof(value));
     return value;
   }
 
   template <typename T, typename A>
-  void Write(A address, T value, Instruction const* pc = nullptr) const {
+  bool Write(A address, T value, Instruction const* pc = nullptr) const {
     VIXL_STATIC_ASSERT((sizeof(value) == 1) || (sizeof(value) == 2) ||
                        (sizeof(value) == 4) || (sizeof(value) == 8) ||
                        (sizeof(value) == 16));
@@ -393,11 +422,16 @@ class Memory {
     if (!IsMTETagsMatched(address, pc)) {
       VIXL_ABORT_WITH_MSG("Tag mismatch.");
     }
+    if (TryMemoryAccess(reinterpret_cast<uintptr_t>(base), sizeof(value)) ==
+        MemoryAccessResult::Failure) {
+      return false;
+    }
     memcpy(base, &value, sizeof(value));
+    return true;
   }
 
   template <typename A>
-  uint64_t ReadUint(int size_in_bytes, A address) const {
+  std::optional<uint64_t> ReadUint(int size_in_bytes, A address) const {
     switch (size_in_bytes) {
       case 1:
         return Read<uint8_t>(address);
@@ -413,7 +447,7 @@ class Memory {
   }
 
   template <typename A>
-  int64_t ReadInt(int size_in_bytes, A address) const {
+  std::optional<int64_t> ReadInt(int size_in_bytes, A address) const {
     switch (size_in_bytes) {
       case 1:
         return Read<int8_t>(address);
@@ -429,7 +463,7 @@ class Memory {
   }
 
   template <typename A>
-  void Write(int size_in_bytes, A address, uint64_t value) const {
+  bool Write(int size_in_bytes, A address, uint64_t value) const {
     switch (size_in_bytes) {
       case 1:
         return Write(address, static_cast<uint8_t>(value));
@@ -441,6 +475,7 @@ class Memory {
         return Write(address, value);
     }
     VIXL_UNREACHABLE();
+    return false;
   }
 
   void AppendMetaData(MetaDataDepot* metadata_depot) {
@@ -649,7 +684,7 @@ class LogicPRegister {
 
   void SetAllBits() {
     int chunk_size = sizeof(ChunkType) * kBitsPerByte;
-    ChunkType bits = GetUintMask(chunk_size);
+    ChunkType bits = static_cast<ChunkType>(GetUintMask(chunk_size));
     for (int lane = 0;
          lane < (static_cast<int>(register_.GetSizeInBits() / chunk_size));
          lane++) {
@@ -701,6 +736,8 @@ class LogicPRegister {
 
   SimPRegister& register_;
 };
+
+using vixl_uint128_t = std::pair<uint64_t, uint64_t>;
 
 // Representation of a vector register, with typed getters and setters for lanes
 // and additional information to represent lane state.
@@ -828,6 +865,17 @@ class LogicVRegister {
         VIXL_UNREACHABLE();
         return;
     }
+  }
+
+  void SetUint(VectorFormat vform, int index, vixl_uint128_t value) const {
+    if (LaneSizeInBitsFromFormat(vform) <= 64) {
+      SetUint(vform, index, value.second);
+      return;
+    }
+    // TODO: Extend this to SVE.
+    VIXL_ASSERT((vform == kFormat1Q) && (index == 0));
+    SetUint(kFormat2D, 0, value.second);
+    SetUint(kFormat2D, 1, value.first);
   }
 
   void SetUintArray(VectorFormat vform, const uint64_t* src) const {
@@ -1233,6 +1281,11 @@ class SimExclusiveGlobalMonitor {
   uint32_t seed_;
 };
 
+class Debugger;
+
+template <uint32_t mode>
+uint64_t CryptoOp(uint64_t x, uint64_t y, uint64_t z);
+
 class Simulator : public DecoderVisitor {
  public:
   explicit Simulator(Decoder* decoder,
@@ -1248,7 +1301,7 @@ class Simulator : public DecoderVisitor {
 
 
 #if defined(VIXL_HAS_ABI_SUPPORT) && __cplusplus >= 201103L && \
-    (defined(__clang__) || GCC_VERSION_OR_NEWER(4, 9, 1))
+    (defined(_MSC_VER) || defined(__clang__) || GCC_VERSION_OR_NEWER(4, 9, 1))
   // Templated `RunFrom` version taking care of passing arguments and returning
   // the result value.
   // This allows code like:
@@ -1307,6 +1360,8 @@ class Simulator : public DecoderVisitor {
   static const Instruction* kEndOfSimAddress;
 
   // Simulation helpers.
+  bool IsSimulationFinished() const { return pc_ == kEndOfSimAddress; }
+
   const Instruction* ReadPc() const { return pc_; }
   VIXL_DEPRECATED("ReadPc", const Instruction* pc() const) { return ReadPc(); }
 
@@ -1456,6 +1511,7 @@ class Simulator : public DecoderVisitor {
   void SimulateNEONFPMulByElementLong(const Instruction* instr);
   void SimulateNEONComplexMulByElement(const Instruction* instr);
   void SimulateNEONDotProdByElement(const Instruction* instr);
+  void SimulateNEONSHA3(const Instruction* instr);
   void SimulateMTEAddSubTag(const Instruction* instr);
   void SimulateMTETagMaskInsert(const Instruction* instr);
   void SimulateMTESubPointer(const Instruction* instr);
@@ -1475,7 +1531,9 @@ class Simulator : public DecoderVisitor {
   void SimulateSetGM(const Instruction* instr);
   void SimulateSignedMinMax(const Instruction* instr);
   void SimulateUnsignedMinMax(const Instruction* instr);
+  void SimulateSHA512(const Instruction* instr);
 
+  void VisitCryptoSM3(const Instruction* instr);
 
   // Integer register accessors.
 
@@ -2006,62 +2064,66 @@ class Simulator : public DecoderVisitor {
   }
 
   template <typename T, typename A>
-  T MemRead(A address) const {
+  std::optional<T> MemRead(A address) const {
     Instruction const* pc = ReadPc();
     return memory_.Read<T>(address, pc);
   }
 
   template <typename T, typename A>
-  void MemWrite(A address, T value) const {
+  bool MemWrite(A address, T value) const {
     Instruction const* pc = ReadPc();
     return memory_.Write(address, value, pc);
   }
 
   template <typename A>
-  uint64_t MemReadUint(int size_in_bytes, A address) const {
+  std::optional<uint64_t> MemReadUint(int size_in_bytes, A address) const {
     return memory_.ReadUint(size_in_bytes, address);
   }
 
   template <typename A>
-  int64_t MemReadInt(int size_in_bytes, A address) const {
+  std::optional<int64_t> MemReadInt(int size_in_bytes, A address) const {
     return memory_.ReadInt(size_in_bytes, address);
   }
 
   template <typename A>
-  void MemWrite(int size_in_bytes, A address, uint64_t value) const {
+  bool MemWrite(int size_in_bytes, A address, uint64_t value) const {
     return memory_.Write(size_in_bytes, address, value);
   }
 
-  void LoadLane(LogicVRegister dst,
+  bool LoadLane(LogicVRegister dst,
                 VectorFormat vform,
                 int index,
                 uint64_t addr) const {
     unsigned msize_in_bytes = LaneSizeInBytesFromFormat(vform);
-    LoadUintToLane(dst, vform, msize_in_bytes, index, addr);
+    return LoadUintToLane(dst, vform, msize_in_bytes, index, addr);
   }
 
-  void LoadUintToLane(LogicVRegister dst,
+  bool LoadUintToLane(LogicVRegister dst,
                       VectorFormat vform,
                       unsigned msize_in_bytes,
                       int index,
                       uint64_t addr) const {
-    dst.SetUint(vform, index, MemReadUint(msize_in_bytes, addr));
+    VIXL_DEFINE_OR_RETURN_FALSE(value, MemReadUint(msize_in_bytes, addr));
+    dst.SetUint(vform, index, value);
+    return true;
   }
 
-  void LoadIntToLane(LogicVRegister dst,
+  bool LoadIntToLane(LogicVRegister dst,
                      VectorFormat vform,
                      unsigned msize_in_bytes,
                      int index,
                      uint64_t addr) const {
-    dst.SetInt(vform, index, MemReadInt(msize_in_bytes, addr));
+    VIXL_DEFINE_OR_RETURN_FALSE(value, MemReadInt(msize_in_bytes, addr));
+    dst.SetInt(vform, index, value);
+    return true;
   }
 
-  void StoreLane(const LogicVRegister& src,
+  bool StoreLane(const LogicVRegister& src,
                  VectorFormat vform,
                  int index,
                  uint64_t addr) const {
     unsigned msize_in_bytes = LaneSizeInBytesFromFormat(vform);
-    MemWrite(msize_in_bytes, addr, src.Uint(vform, index));
+    return MemWrite(msize_in_bytes, addr, src.Uint(vform, index));
   }
 
   uint64_t ComputeMemOperandAddress(const MemOperand& mem_op) const;
@@ -2072,12 +2134,14 @@ class Simulator : public DecoderVisitor {
       return ReadCPURegister<T>(operand.GetCPURegister());
     } else {
       VIXL_ASSERT(operand.IsMemOperand());
-      return MemRead<T>(ComputeMemOperandAddress(operand.GetMemOperand()));
+      auto res = MemRead<T>(ComputeMemOperandAddress(operand.GetMemOperand()));
+      VIXL_ASSERT(res);
+      return *res;
     }
   }
 
   template <typename T>
-  void WriteGenericOperand(GenericOperand operand,
+  bool WriteGenericOperand(GenericOperand operand,
                            T value,
                            RegLogMode log_mode = LogRegWrites) {
     if (operand.IsCPURegister()) {
@@ -2093,8 +2157,9 @@ class Simulator : public DecoderVisitor {
       WriteCPURegister(operand.GetCPURegister(), raw, log_mode);
     } else {
       VIXL_ASSERT(operand.IsMemOperand());
-      MemWrite(ComputeMemOperandAddress(operand.GetMemOperand()), value);
+      return MemWrite(ComputeMemOperandAddress(operand.GetMemOperand()), value);
     }
+    return true;
   }
 
   bool ReadN() const { return nzcv_.GetN() != 0; }
@@ -2470,11 +2535,15 @@ class Simulator : public DecoderVisitor {
   // Other state updates, including system registers.
   void PrintSystemRegister(SystemRegister id);
   void PrintTakenBranch(const Instruction* target);
+  void PrintGCS(bool is_push, uint64_t addr, size_t entry);
   void LogSystemRegister(SystemRegister id) {
     if (ShouldTraceSysRegs()) PrintSystemRegister(id);
   }
   void LogTakenBranch(const Instruction* target) {
     if (ShouldTraceBranches()) PrintTakenBranch(target);
+  }
+  void LogGCS(bool is_push, uint64_t addr, size_t entry) {
+    if (ShouldTraceSysRegs()) PrintGCS(is_push, addr, entry);
   }
 
   // Trace memory accesses.
@@ -2837,7 +2906,7 @@ class Simulator : public DecoderVisitor {
     }
 
     if (offset == 0) {
-      while ((exclude & (1 << tag)) != 0) {
+      while ((exclude & (uint64_t{1} << tag)) != 0) {
         tag = (tag + 1) % 16;
       }
     }
@@ -2845,7 +2914,7 @@ class Simulator : public DecoderVisitor {
     while (offset > 0) {
       offset--;
       tag = (tag + 1) % 16;
-      while ((exclude & (1 << tag)) != 0) {
+      while ((exclude & (uint64_t{1} << tag)) != 0) {
         tag = (tag + 1) % 16;
       }
     }
@@ -2857,12 +2926,15 @@ class Simulator : public DecoderVisitor {
     return (addr & ~(UINT64_C(0xf) << 56)) | (tag << 56);
   }
 
+#if __linux__
+#define VIXL_HAS_SIMULATED_MMAP
   // Create or remove a mapping with memory protection. Memory attributes such
   // as MTE and BTI are represented by metadata in Simulator.
   void* Mmap(
       void* address, size_t length, int prot, int flags, int fd, off_t offset);
 
   int Munmap(void* address, size_t length, int prot);
+#endif
 
   // The common CPUFeatures interface with the set of available features.
 
@@ -2885,7 +2957,7 @@ class Simulator : public DecoderVisitor {
 // Also, the initialisation of the tuples in RuntimeCall(Non)Void is incorrect
 // in GCC before 4.9.1: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=51253
 #if defined(VIXL_HAS_ABI_SUPPORT) && __cplusplus >= 201103L && \
-    (defined(__clang__) || GCC_VERSION_OR_NEWER(4, 9, 1))
+    (defined(_MSC_VER) || defined(__clang__) || GCC_VERSION_OR_NEWER(4, 9, 1))
 
 #define VIXL_HAS_SIMULATED_RUNTIME_CALL_SUPPORT
 
@@ -2943,7 +3015,10 @@ class Simulator : public DecoderVisitor {
     R return_value = DoRuntimeCall(function,
                                    argument_operands,
                                    __local_index_sequence_for<P...>{});
-    WriteGenericOperand(abi.GetReturnGenericOperand<R>(), return_value);
+    bool succeeded =
+        WriteGenericOperand(abi.GetReturnGenericOperand<R>(), return_value);
+    USE(succeeded);
+    VIXL_ASSERT(succeeded);
   }
 
   template <typename R, typename... P>
@@ -3076,8 +3151,9 @@ class Simulator : public DecoderVisitor {
     // either MTE protected or not.
     if (count != expected) {
       std::stringstream sstream;
-      sstream << std::hex << "MTE WARNING : the memory region being unmapped "
-                             "starting at address 0x"
+      sstream << std::hex
+              << "MTE WARNING : the memory region being unmapped "
+                 "starting at address 0x"
               << reinterpret_cast<uint64_t>(address)
               << "is not fully MTE protected.\n";
       VIXL_WARNING(sstream.str().c_str());
@@ -3114,6 +3190,52 @@ class Simulator : public DecoderVisitor {
                                   InterceptionCallback callback = nullptr) {
     meta_data_.RegisterBranchInterception(*function, callback);
   }
+
+  // Return the current output stream in use by the simulator.
+  FILE* GetOutputStream() const { return stream_; }
+
+  bool IsDebuggerEnabled() const { return debugger_enabled_; }
+
+  void SetDebuggerEnabled(bool enabled) { debugger_enabled_ = enabled; }
+
+  Debugger* GetDebugger() const { return debugger_.get(); }
+
+#ifdef VIXL_ENABLE_IMPLICIT_CHECKS
+  // Returns true if the faulting instruction address (usually the program
+  // counter or instruction pointer) comes from an internal VIXL memory access.
+  // This can be used by signal handlers to check if a signal was raised from
+  // the simulator (via TryMemoryAccess) before the actual
+  // access occurs.
+  bool IsSimulatedMemoryAccess(uintptr_t fault_pc) const {
+    return (fault_pc ==
+            reinterpret_cast<uintptr_t>(&_vixl_internal_ReadMemory));
+  }
+
+  // Get the instruction address of the internal VIXL memory access continuation
+  // label. Signal handlers can resume execution at this address to return to
+  // TryMemoryAccess which will continue simulation.
+  uintptr_t GetSignalReturnAddress() const {
+    return reinterpret_cast<uintptr_t>(&_vixl_internal_AccessMemory_continue);
+  }
+
+  // Replace the fault address reported by the kernel with the actual faulting
+  // address.
+  //
+  // This is required because TryMemoryAccess reads a section of
+  // memory 1 byte at a time meaning the fault address reported may not be the
+  // base address of memory being accessed.
+  void ReplaceFaultAddress(siginfo_t* siginfo, void* context) {
+#ifdef __x86_64__
+    // The base address being accessed is passed in as the first argument to
+    // _vixl_internal_ReadMemory.
+    ucontext_t* uc = reinterpret_cast<ucontext_t*>(context);
+    siginfo->si_addr = reinterpret_cast<void*>(uc->uc_mcontext.gregs[REG_RDI]);
+#else
+    USE(siginfo);
+    USE(context);
+#endif  // __x86_64__
+  }
+#endif  // VIXL_ENABLE_IMPLICIT_CHECKS
 
  protected:
   const char* clr_normal;
@@ -3195,8 +3317,9 @@ class Simulator : public DecoderVisitor {
                                             uint64_t left,
                                             uint64_t right,
                                             int carry_in);
-  using vixl_uint128_t = std::pair<uint64_t, uint64_t>;
   vixl_uint128_t Add128(vixl_uint128_t x, vixl_uint128_t y);
+  vixl_uint128_t Lsl128(vixl_uint128_t x, unsigned shift) const;
+  vixl_uint128_t Eor128(vixl_uint128_t x, vixl_uint128_t y) const;
   vixl_uint128_t Mul64(uint64_t x, uint64_t y);
   vixl_uint128_t Neg128(vixl_uint128_t x);
   void LogicalHelper(const Instruction* instr, int64_t op2);
@@ -3278,92 +3401,95 @@ class Simulator : public DecoderVisitor {
   uint64_t PolynomialMult(uint64_t op1,
                           uint64_t op2,
                           int lane_size_in_bits) const;
+  vixl_uint128_t PolynomialMult128(uint64_t op1,
+                                   uint64_t op2,
+                                   int lane_size_in_bits) const;
 
-  void ld1(VectorFormat vform, LogicVRegister dst, uint64_t addr);
-  void ld1(VectorFormat vform, LogicVRegister dst, int index, uint64_t addr);
-  void ld1r(VectorFormat vform, LogicVRegister dst, uint64_t addr);
-  void ld1r(VectorFormat vform,
+  bool ld1(VectorFormat vform, LogicVRegister dst, uint64_t addr);
+  bool ld1(VectorFormat vform, LogicVRegister dst, int index, uint64_t addr);
+  bool ld1r(VectorFormat vform, LogicVRegister dst, uint64_t addr);
+  bool ld1r(VectorFormat vform,
             VectorFormat unpack_vform,
             LogicVRegister dst,
             uint64_t addr,
             bool is_signed = false);
-  void ld2(VectorFormat vform,
+  bool ld2(VectorFormat vform,
            LogicVRegister dst1,
            LogicVRegister dst2,
            uint64_t addr);
-  void ld2(VectorFormat vform,
+  bool ld2(VectorFormat vform,
            LogicVRegister dst1,
            LogicVRegister dst2,
            int index,
            uint64_t addr);
-  void ld2r(VectorFormat vform,
+  bool ld2r(VectorFormat vform,
             LogicVRegister dst1,
             LogicVRegister dst2,
             uint64_t addr);
-  void ld3(VectorFormat vform,
+  bool ld3(VectorFormat vform,
            LogicVRegister dst1,
            LogicVRegister dst2,
            LogicVRegister dst3,
            uint64_t addr);
-  void ld3(VectorFormat vform,
+  bool ld3(VectorFormat vform,
            LogicVRegister dst1,
            LogicVRegister dst2,
            LogicVRegister dst3,
            int index,
            uint64_t addr);
-  void ld3r(VectorFormat vform,
+  bool ld3r(VectorFormat vform,
             LogicVRegister dst1,
             LogicVRegister dst2,
             LogicVRegister dst3,
             uint64_t addr);
-  void ld4(VectorFormat vform,
+  bool ld4(VectorFormat vform,
            LogicVRegister dst1,
            LogicVRegister dst2,
            LogicVRegister dst3,
            LogicVRegister dst4,
            uint64_t addr);
-  void ld4(VectorFormat vform,
+  bool ld4(VectorFormat vform,
            LogicVRegister dst1,
            LogicVRegister dst2,
            LogicVRegister dst3,
            LogicVRegister dst4,
            int index,
            uint64_t addr);
-  void ld4r(VectorFormat vform,
+  bool ld4r(VectorFormat vform,
             LogicVRegister dst1,
             LogicVRegister dst2,
             LogicVRegister dst3,
             LogicVRegister dst4,
             uint64_t addr);
-  void st1(VectorFormat vform, LogicVRegister src, uint64_t addr);
-  void st1(VectorFormat vform, LogicVRegister src, int index, uint64_t addr);
-  void st2(VectorFormat vform,
+  bool st1(VectorFormat vform, LogicVRegister src, uint64_t addr);
+  bool st1(VectorFormat vform, LogicVRegister src, int index, uint64_t addr);
+  bool st2(VectorFormat vform,
            LogicVRegister src,
            LogicVRegister src2,
            uint64_t addr);
-  void st2(VectorFormat vform,
+  bool st2(VectorFormat vform,
            LogicVRegister src,
            LogicVRegister src2,
            int index,
            uint64_t addr);
-  void st3(VectorFormat vform,
+  bool st3(VectorFormat vform,
            LogicVRegister src,
            LogicVRegister src2,
            LogicVRegister src3,
            uint64_t addr);
-  void st3(VectorFormat vform,
+  bool st3(VectorFormat vform,
            LogicVRegister src,
            LogicVRegister src2,
            LogicVRegister src3,
            int index,
            uint64_t addr);
-  void st4(VectorFormat vform,
+  bool st4(VectorFormat vform,
            LogicVRegister src,
            LogicVRegister src2,
            LogicVRegister src3,
            LogicVRegister src4,
            uint64_t addr);
-  void st4(VectorFormat vform,
+  bool st4(VectorFormat vform,
            LogicVRegister src,
            LogicVRegister src2,
            LogicVRegister src3,
@@ -3646,6 +3772,10 @@ class Simulator : public DecoderVisitor {
                         LogicVRegister dst,
                         const LogicVRegister& src);
   LogicVRegister ror(VectorFormat vform,
+                     LogicVRegister dst,
+                     const LogicVRegister& src,
+                     int rotation);
+  LogicVRegister rol(VectorFormat vform,
                      LogicVRegister dst,
                      const LogicVRegister& src,
                      int rotation);
@@ -4373,6 +4503,90 @@ class Simulator : public DecoderVisitor {
                          LogicVRegister srcdst,
                          const LogicVRegister& src1,
                          const LogicVRegister& src2);
+
+  template <unsigned N>
+  static void SHARotateEltsLeftOne(uint64_t (&x)[N]) {
+    VIXL_STATIC_ASSERT(N == 4);
+    uint64_t temp = x[3];
+    x[3] = x[2];
+    x[2] = x[1];
+    x[1] = x[0];
+    x[0] = temp;
+  }
+
+  template <uint32_t mode>
+  LogicVRegister sha1(LogicVRegister srcdst,
+                      const LogicVRegister& src1,
+                      const LogicVRegister& src2) {
+    uint64_t y = src1.Uint(kFormat4S, 0);
+    uint64_t sd[4] = {};
+    srcdst.UintArray(kFormat4S, sd);
+
+    for (unsigned i = 0; i < ArrayLength(sd); i++) {
+      uint64_t t = CryptoOp<mode>(sd[1], sd[2], sd[3]);
+
+      y += RotateLeft(sd[0], 5, kSRegSize) + t;
+      y += src2.Uint(kFormat4S, i);
+
+      sd[1] = RotateLeft(sd[1], 30, kSRegSize);
+
+      // y:sd = ROL(y:sd, 32)
+      SHARotateEltsLeftOne(sd);
+      std::swap(sd[0], y);
+    }
+
+    srcdst.SetUintArray(kFormat4S, sd);
+    return srcdst;
+  }
+
+  LogicVRegister sha2h(LogicVRegister srcdst,
+                       const LogicVRegister& src1,
+                       const LogicVRegister& src2,
+                       bool part1);
+  LogicVRegister sha2su0(LogicVRegister srcdst, const LogicVRegister& src1);
+  LogicVRegister sha2su1(LogicVRegister srcdst,
+                         const LogicVRegister& src1,
+                         const LogicVRegister& src2);
+  LogicVRegister sha512h(LogicVRegister srcdst,
+                         const LogicVRegister& src1,
+                         const LogicVRegister& src2);
+  LogicVRegister sha512h2(LogicVRegister srcdst,
+                          const LogicVRegister& src1,
+                          const LogicVRegister& src2);
+  LogicVRegister sha512su0(LogicVRegister srcdst, const LogicVRegister& src1);
+  LogicVRegister sha512su1(LogicVRegister srcdst,
+                           const LogicVRegister& src1,
+                           const LogicVRegister& src2);
+
+
+  LogicVRegister aes(LogicVRegister srcdst,
+                     const LogicVRegister& src1,
+                     bool decrypt);
+  LogicVRegister aesmix(LogicVRegister srcdst,
+                        const LogicVRegister& src1,
+                        bool inverse);
+
+  LogicVRegister sm3partw1(LogicVRegister dst,
+                           const LogicVRegister& src1,
+                           const LogicVRegister& src2);
+  LogicVRegister sm3partw2(LogicVRegister dst,
+                           const LogicVRegister& src1,
+                           const LogicVRegister& src2);
+  LogicVRegister sm3ss1(LogicVRegister dst,
+                        const LogicVRegister& src1,
+                        const LogicVRegister& src2,
+                        const LogicVRegister& src3);
+  LogicVRegister sm3tt1(LogicVRegister srcdst,
+                        const LogicVRegister& src1,
+                        const LogicVRegister& src2,
+                        int index,
+                        bool is_a);
+  LogicVRegister sm3tt2(LogicVRegister srcdst,
+                        const LogicVRegister& src1,
+                        const LogicVRegister& src2,
+                        int index,
+                        bool is_a);
+
 #define NEON_3VREG_LOGIC_LIST(V) \
   V(addhn)                       \
   V(addhn2)                      \
@@ -4940,7 +5154,8 @@ class Simulator : public DecoderVisitor {
                                 unsigned zt_code,
                                 const LogicSVEAddressVector& addr);
   // Load each active zt<i>[lane] from `addr.GetElementAddress(lane, ...)`.
-  void SVEStructuredLoadHelper(VectorFormat vform,
+  // Returns false if a load failed.
+  bool SVEStructuredLoadHelper(VectorFormat vform,
                                const LogicPRegister& pg,
                                unsigned zt_code,
                                const LogicSVEAddressVector& addr,
@@ -5138,10 +5353,12 @@ class Simulator : public DecoderVisitor {
 
   bool CanReadMemory(uintptr_t address, size_t size);
 
+#ifndef _WIN32
   // CanReadMemory needs placeholder file descriptors, so we use a pipe. We can
   // save some system call overhead by opening them on construction, rather than
   // on every call to CanReadMemory.
   int placeholder_pipe_fd_[2];
+#endif
 
   template <typename T>
   static T FPDefaultNaN();
@@ -5220,11 +5437,15 @@ class Simulator : public DecoderVisitor {
   CPUFeaturesAuditor cpu_features_auditor_;
   std::vector<CPUFeatures> saved_cpu_features_;
 
-  // State for *rand48 functions, used to simulate randomness with repeatable
+  // linear_congruential_engine, used to simulate randomness with repeatable
   // behaviour (so that tests are deterministic). This is used to simulate RNDR
   // and RNDRRS, as well as to simulate a source of entropy for architecturally
   // undefined behaviour.
-  uint16_t rand_state_[3];
+  std::linear_congruential_engine<uint64_t,
+                                  0x5DEECE66D,
+                                  0xB,
+                                  static_cast<uint64_t>(1) << 48>
+      rand_gen_;
 
   // A configurable size of SVE vector registers.
   unsigned vector_length_;
@@ -5232,6 +5453,167 @@ class Simulator : public DecoderVisitor {
   // Representation of memory attributes such as MTE tagging and BTI page
   // protection in addition to branch interceptions.
   MetaDataDepot meta_data_;
+
+  // True if the debugger is enabled and might get entered.
+  bool debugger_enabled_;
+
+  // Debugger for the simulator.
+  std::unique_ptr<Debugger> debugger_;
+
+  // The Guarded Control Stack is represented using a vector, where the more
+  // recently stored addresses are at higher-numbered indices.
+  using GuardedControlStack = std::vector<uint64_t>;
+
+  // The GCSManager handles the synchronisation of GCS across multiple
+  // Simulator instances. Each Simulator has its own stack, but all share
+  // a GCSManager instance. This allows exchanging stacks between Simulators
+  // in a threaded application.
+  class GCSManager {
+   public:
+    // Allocate a new Guarded Control Stack and add it to the vector of stacks.
+    uint64_t AllocateStack() {
+      const std::lock_guard<std::mutex> lock(stacks_mtx_);
+
+      GuardedControlStack* new_stack = new GuardedControlStack;
+      uint64_t result;
+
+      // Put the new stack into the first available slot.
+      for (result = 0; result < stacks_.size(); result++) {
+        if (stacks_[result] == nullptr) {
+          stacks_[result] = new_stack;
+          break;
+        }
+      }
+
+      // If there were no slots, create a new one.
+      if (result == stacks_.size()) {
+        stacks_.push_back(new_stack);
+      }
+
+      // Shift the index to look like a stack pointer aligned to a page.
+      result <<= kPageSizeLog2;
+
+      // Push the tagged index onto the new stack as a seal.
+      new_stack->push_back(result + 1);
+      return result;
+    }
+
+    // Free a Guarded Control Stack and set the stacks_ slot to null.
+    void FreeStack(uint64_t gcs) {
+      const std::lock_guard<std::mutex> lock(stacks_mtx_);
+      uint64_t gcs_index = GetGCSIndex(gcs);
+      GuardedControlStack* gcsptr = stacks_[gcs_index];
+      if (gcsptr == nullptr) {
+        VIXL_ABORT_WITH_MSG("Tried to free unallocated GCS ");
+      } else {
+        delete gcsptr;
+        stacks_[gcs_index] = nullptr;
+      }
+    }
+
+    // Get a pointer to the GCS vector using a GCS id.
+    GuardedControlStack* GetGCSPtr(uint64_t gcs) const {
+      return stacks_[GetGCSIndex(gcs)];
+    }
+
+   private:
+    uint64_t GetGCSIndex(uint64_t gcs) const { return gcs >> 12; }
+
+    std::vector<GuardedControlStack*> stacks_;
+    std::mutex stacks_mtx_;
+  };
+
+  // A GCS id indicating no GCS has been allocated.
+  static const uint64_t kGCSNoStack = kPageSize - 1;
+  uint64_t gcs_;
+  bool gcs_enabled_;
+
+ public:
+  GCSManager& GetGCSManager() {
+    static GCSManager manager;
+    return manager;
+  }
+
+  void EnableGCSCheck() { gcs_enabled_ = true; }
+  void DisableGCSCheck() { gcs_enabled_ = false; }
+  bool IsGCSCheckEnabled() const { return gcs_enabled_; }
+
+ private:
+  bool IsAllocatedGCS(uint64_t gcs) const { return gcs != kGCSNoStack; }
+  void ResetGCSState() {
+    GCSManager& m = GetGCSManager();
+    if (IsAllocatedGCS(gcs_)) {
+      m.FreeStack(gcs_);
+    }
+    ActivateGCS(m.AllocateStack());
+    GCSPop();  // Remove seal.
+  }
+
+  GuardedControlStack* GetGCSPtr(uint64_t gcs) {
+    GCSManager& m = GetGCSManager();
+    GuardedControlStack* result = m.GetGCSPtr(gcs);
+    return result;
+  }
+  GuardedControlStack* GetActiveGCSPtr() { return GetGCSPtr(gcs_); }
+
+  uint64_t ActivateGCS(uint64_t gcs) {
+    uint64_t outgoing_gcs = gcs_;
+    gcs_ = gcs;
+    return outgoing_gcs;
+  }
+
+  void GCSPush(uint64_t addr) {
+    GetActiveGCSPtr()->push_back(addr);
+    size_t entry = GetActiveGCSPtr()->size() - 1;
+    LogGCS(/* is_push = */ true, addr, entry);
+  }
+
+  uint64_t GCSPop() {
+    GuardedControlStack* gcs = GetActiveGCSPtr();
+    if (gcs->empty()) {
+      return 0;
+    }
+    uint64_t return_addr = gcs->back();
+    size_t entry = gcs->size() - 1;
+    gcs->pop_back();
+    LogGCS(/* is_push = */ false, return_addr, entry);
+    return return_addr;
+  }
+
+  uint64_t GCSPeek() {
+    GuardedControlStack* gcs = GetActiveGCSPtr();
+    if (gcs->empty()) {
+      return 0;
+    }
+    uint64_t return_addr = gcs->back();
+    return return_addr;
+  }
+
+  void ReportGCSFailure(const char* msg) {
+    if (IsGCSCheckEnabled()) {
+      GuardedControlStack* gcs = GetActiveGCSPtr();
+      printf("%s", msg);
+      if (gcs == nullptr) {
+        printf("GCS pointer is null\n");
+      } else {
+        printf("GCS records, most recent first:\n");
+        int most_recent_index = static_cast<int>(gcs->size()) - 1;
+        for (int i = 0; i < 8; i++) {
+          if (!gcs->empty()) {
+            uint64_t entry = gcs->back();
+            gcs->pop_back();
+            int index = most_recent_index - i;
+            printf(" gcs%" PRIu64 "[%d]: 0x%016" PRIx64 "\n",
+                   gcs_,
+                   index,
+                   entry);
+          }
+        }
+        printf("End of GCS records.\n");
+      }
+      VIXL_ABORT_WITH_MSG("GCS failed ");
+    }
+  }
 };
 
 #if defined(VIXL_HAS_SIMULATED_RUNTIME_CALL_SUPPORT) && __cplusplus < 201402L

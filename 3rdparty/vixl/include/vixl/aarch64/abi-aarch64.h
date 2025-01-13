@@ -159,8 +159,8 @@ template <>
 inline GenericOperand ABI::GetReturnGenericOperand<void>() const {
   return GenericOperand();
 }
-}
-}  // namespace vixl::aarch64
+}  // namespace aarch64
+}  // namespace vixl
 
 #endif  // VIXL_AARCH64_ABI_AARCH64_H_
 

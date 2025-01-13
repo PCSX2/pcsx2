@@ -24,14 +24,51 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifdef VIXL_CODE_BUFFER_MMAP
+extern "C" {
+#include <sys/mman.h>
+}
+#endif
+
 #include "code-buffer-vixl.h"
 #include "utils-vixl.h"
 
 namespace vixl {
 
 
+CodeBuffer::CodeBuffer(size_t capacity)
+    : buffer_(NULL),
+      managed_(true),
+      cursor_(NULL),
+      dirty_(false),
+      capacity_(capacity) {
+  if (capacity_ == 0) {
+    return;
+  }
+#ifdef VIXL_CODE_BUFFER_MALLOC
+  buffer_ = reinterpret_cast<byte*>(malloc(capacity_));
+#elif defined(VIXL_CODE_BUFFER_MMAP)
+  buffer_ = reinterpret_cast<byte*>(mmap(NULL,
+                                         capacity,
+                                         PROT_READ | PROT_WRITE,
+                                         MAP_PRIVATE | MAP_ANONYMOUS,
+                                         -1,
+                                         0));
+#else
+#error Unknown code buffer allocator.
+#endif
+  VIXL_CHECK(buffer_ != NULL);
+  // Aarch64 instructions must be word aligned, we assert the default allocator
+  // always returns word align memory.
+  VIXL_ASSERT(IsWordAligned(buffer_));
+
+  cursor_ = buffer_;
+}
+
+
 CodeBuffer::CodeBuffer(byte* buffer, size_t capacity)
     : buffer_(reinterpret_cast<byte*>(buffer)),
+      managed_(false),
       cursor_(reinterpret_cast<byte*>(buffer)),
       dirty_(false),
       capacity_(capacity) {
@@ -41,6 +78,39 @@ CodeBuffer::CodeBuffer(byte* buffer, size_t capacity)
 
 CodeBuffer::~CodeBuffer() VIXL_NEGATIVE_TESTING_ALLOW_EXCEPTION {
   VIXL_ASSERT(!IsDirty());
+  if (managed_) {
+#ifdef VIXL_CODE_BUFFER_MALLOC
+    free(buffer_);
+#elif defined(VIXL_CODE_BUFFER_MMAP)
+    munmap(buffer_, capacity_);
+#else
+#error Unknown code buffer allocator.
+#endif
+  }
+}
+
+
+void CodeBuffer::SetExecutable() {
+#ifdef VIXL_CODE_BUFFER_MMAP
+  int ret = mprotect(buffer_, capacity_, PROT_READ | PROT_EXEC);
+  VIXL_CHECK(ret == 0);
+#else
+  // This requires page-aligned memory blocks, which we can only guarantee with
+  // mmap.
+  VIXL_UNIMPLEMENTED();
+#endif
+}
+
+
+void CodeBuffer::SetWritable() {
+#ifdef VIXL_CODE_BUFFER_MMAP
+  int ret = mprotect(buffer_, capacity_, PROT_READ | PROT_WRITE);
+  VIXL_CHECK(ret == 0);
+#else
+  // This requires page-aligned memory blocks, which we can only guarantee with
+  // mmap.
+  VIXL_UNIMPLEMENTED();
+#endif
 }
 
 
@@ -78,15 +148,41 @@ void CodeBuffer::Align() {
 }
 
 void CodeBuffer::EmitZeroedBytes(int n) {
-  VIXL_ASSERT(HasSpaceFor(n));
+  EnsureSpaceFor(n);
   dirty_ = true;
   memset(cursor_, 0, n);
   cursor_ += n;
 }
 
 void CodeBuffer::Reset() {
+#ifdef VIXL_DEBUG
+  if (managed_) {
+    // Fill with zeros (there is no useful value common to A32 and T32).
+    memset(buffer_, 0, capacity_);
+  }
+#endif
   cursor_ = buffer_;
   SetClean();
+}
+
+
+void CodeBuffer::Grow(size_t new_capacity) {
+  VIXL_ASSERT(managed_);
+  VIXL_ASSERT(new_capacity > capacity_);
+  ptrdiff_t cursor_offset = GetCursorOffset();
+#ifdef VIXL_CODE_BUFFER_MALLOC
+  buffer_ = static_cast<byte*>(realloc(buffer_, new_capacity));
+  VIXL_CHECK(buffer_ != NULL);
+#elif defined(VIXL_CODE_BUFFER_MMAP)
+  buffer_ = static_cast<byte*>(
+      mremap(buffer_, capacity_, new_capacity, MREMAP_MAYMOVE));
+  VIXL_CHECK(buffer_ != MAP_FAILED);
+#else
+#error Unknown code buffer allocator.
+#endif
+
+  cursor_ = buffer_ + cursor_offset;
+  capacity_ = new_capacity;
 }
 
 

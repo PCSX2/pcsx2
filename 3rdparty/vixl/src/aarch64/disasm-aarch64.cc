@@ -24,11 +24,11 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "disasm-aarch64.h"
+
 #include <bitset>
 #include <cstdlib>
 #include <sstream>
-
-#include "disasm-aarch64.h"
 
 namespace vixl {
 namespace aarch64 {
@@ -330,6 +330,7 @@ const Disassembler::FormToVisitorFnMap *Disassembler::GetFormToVisitorFnMap() {
       {"frsqrte_asisdmisc_r"_h, &Disassembler::DisassembleNEONFPScalar2RegMisc},
       {"scvtf_asisdmisc_r"_h, &Disassembler::DisassembleNEONFPScalar2RegMisc},
       {"ucvtf_asisdmisc_r"_h, &Disassembler::DisassembleNEONFPScalar2RegMisc},
+      {"pmull_asimddiff_l"_h, &Disassembler::DisassembleNEONPolynomialMul},
       {"adclb_z_zzz"_h, &Disassembler::DisassembleSVEAddSubCarry},
       {"adclt_z_zzz"_h, &Disassembler::DisassembleSVEAddSubCarry},
       {"addhnb_z_zz"_h, &Disassembler::DisassembleSVEAddSubHigh},
@@ -752,6 +753,14 @@ const Disassembler::FormToVisitorFnMap *Disassembler::GetFormToVisitorFnMap() {
       {"umax_64u_minmax_imm"_h, &Disassembler::DisassembleMinMaxImm},
       {"umin_32u_minmax_imm"_h, &Disassembler::DisassembleMinMaxImm},
       {"umin_64u_minmax_imm"_h, &Disassembler::DisassembleMinMaxImm},
+      {"bcax_vvv16_crypto4"_h, &Disassembler::DisassembleNEON4Same},
+      {"eor3_vvv16_crypto4"_h, &Disassembler::DisassembleNEON4Same},
+      {"xar_vvv2_crypto3_imm6"_h, &Disassembler::DisassembleNEONXar},
+      {"rax1_vvv2_cryptosha512_3"_h, &Disassembler::DisassembleNEONRax1},
+      {"sha512h2_qqv_cryptosha512_3"_h, &Disassembler::DisassembleSHA512},
+      {"sha512h_qqv_cryptosha512_3"_h, &Disassembler::DisassembleSHA512},
+      {"sha512su0_vv2_cryptosha512_2"_h, &Disassembler::DisassembleSHA512},
+      {"sha512su1_vvv2_cryptosha512_3"_h, &Disassembler::DisassembleSHA512},
   };
   return &form_to_visitor;
 }  // NOLINT(readability/fn_size)
@@ -2017,7 +2026,7 @@ void Disassembler::DisassembleNoArgs(const Instruction *instr) {
 
 void Disassembler::VisitSystem(const Instruction *instr) {
   const char *mnemonic = mnemonic_.c_str();
-  const char *form = "(System)";
+  const char *form = "";
   const char *suffix = NULL;
 
   switch (form_hash_) {
@@ -2046,6 +2055,10 @@ void Disassembler::VisitSystem(const Instruction *instr) {
           break;
       }
       break;
+    case "chkfeat_hf_hints"_h:
+      mnemonic = "chkfeat";
+      form = "x16";
+      break;
     case "hint_hm_hints"_h:
       form = "'IH";
       break;
@@ -2066,9 +2079,6 @@ void Disassembler::VisitSystem(const Instruction *instr) {
       break;
     }
     case Hash("sys_cr_systeminstrs"): {
-      mnemonic = "dc";
-      suffix = ", 'Xt";
-
       const std::map<uint32_t, const char *> dcop = {
           {IVAU, "ivau"},
           {CVAC, "cvac"},
@@ -2091,17 +2101,36 @@ void Disassembler::VisitSystem(const Instruction *instr) {
       if (dcop.count(sysop)) {
         if (sysop == IVAU) {
           mnemonic = "ic";
+        } else {
+          mnemonic = "dc";
         }
         form = dcop.at(sysop);
+        suffix = ", 'Xt";
+      } else if (sysop == GCSSS1) {
+        mnemonic = "gcsss1";
+        form = "'Xt";
+      } else if (sysop == GCSPUSHM) {
+        mnemonic = "gcspushm";
+        form = "'Xt";
       } else {
         mnemonic = "sys";
         form = "'G1, 'Kn, 'Km, 'G2";
-        if (instr->GetRt() == 31) {
-          suffix = NULL;
+        if (instr->GetRt() < 31) {
+          suffix = ", 'Xt";
         }
-        break;
       }
+      break;
     }
+    case "sysl_rc_systeminstrs"_h:
+      uint32_t sysop = instr->GetSysOp();
+      if (sysop == GCSPOPM) {
+        mnemonic = "gcspopm";
+        form = (instr->GetRt() == 31) ? "" : "'Xt";
+      } else if (sysop == GCSSS2) {
+        mnemonic = "gcsss2";
+        form = "'Xt";
+      }
+      break;
   }
   Format(instr, mnemonic, form, suffix);
 }
@@ -2147,17 +2176,64 @@ void Disassembler::VisitException(const Instruction *instr) {
 
 
 void Disassembler::VisitCrypto2RegSHA(const Instruction *instr) {
-  VisitUnimplemented(instr);
+  const char *form = "'Vd.4s, 'Vn.4s";
+  if (form_hash_ == "sha1h_ss_cryptosha2"_h) {
+    form = "'Sd, 'Sn";
+  }
+  FormatWithDecodedMnemonic(instr, form);
 }
 
 
 void Disassembler::VisitCrypto3RegSHA(const Instruction *instr) {
-  VisitUnimplemented(instr);
+  const char *form = "'Qd, 'Sn, 'Vm.4s";
+  switch (form_hash_) {
+    case "sha1su0_vvv_cryptosha3"_h:
+    case "sha256su1_vvv_cryptosha3"_h:
+      form = "'Vd.4s, 'Vn.4s, 'Vm.4s";
+      break;
+    case "sha256h_qqv_cryptosha3"_h:
+    case "sha256h2_qqv_cryptosha3"_h:
+      form = "'Qd, 'Qn, 'Vm.4s";
+      break;
+  }
+  FormatWithDecodedMnemonic(instr, form);
 }
 
 
 void Disassembler::VisitCryptoAES(const Instruction *instr) {
-  VisitUnimplemented(instr);
+  FormatWithDecodedMnemonic(instr, "'Vd.16b, 'Vn.16b");
+}
+
+void Disassembler::VisitCryptoSM3(const Instruction *instr) {
+  const char *form = "'Vd.4s, 'Vn.4s, 'Vm.";
+  const char *suffix = "4s";
+
+  switch (form_hash_) {
+    case "sm3ss1_vvv4_crypto4"_h:
+      suffix = "4s, 'Va.4s";
+      break;
+    case "sm3tt1a_vvv4_crypto3_imm2"_h:
+    case "sm3tt1b_vvv4_crypto3_imm2"_h:
+    case "sm3tt2a_vvv4_crypto3_imm2"_h:
+    case "sm3tt2b_vvv_crypto3_imm2"_h:
+      suffix = "s['u1312]";
+      break;
+  }
+
+  FormatWithDecodedMnemonic(instr, form, suffix);
+}
+
+void Disassembler::DisassembleSHA512(const Instruction *instr) {
+  const char *form = "'Qd, 'Qn, 'Vm.2d";
+  const char *suffix = NULL;
+  switch (form_hash_) {
+    case "sha512su1_vvv2_cryptosha512_3"_h:
+      suffix = ", 'Vm.2d";
+      VIXL_FALLTHROUGH();
+    case "sha512su0_vv2_cryptosha512_2"_h:
+      form = "'Vd.2d, 'Vn.2d";
+  }
+  FormatWithDecodedMnemonic(instr, form, suffix);
 }
 
 void Disassembler::DisassembleNEON2RegAddlp(const Instruction *instr) {
@@ -2373,13 +2449,19 @@ void Disassembler::VisitNEON3SameFP16(const Instruction *instr) {
 }
 
 void Disassembler::VisitNEON3SameExtra(const Instruction *instr) {
-  static const NEONFormatMap map_usdot = {{30}, {NF_8B, NF_16B}};
+  static const NEONFormatMap map_dot =
+      {{23, 22, 30}, {NF_UNDEF, NF_UNDEF, NF_UNDEF, NF_UNDEF, NF_2S, NF_4S}};
+  static const NEONFormatMap map_fc =
+      {{23, 22, 30},
+       {NF_UNDEF, NF_UNDEF, NF_4H, NF_8H, NF_2S, NF_4S, NF_UNDEF, NF_2D}};
+  static const NEONFormatMap map_rdm =
+      {{23, 22, 30}, {NF_UNDEF, NF_UNDEF, NF_4H, NF_8H, NF_2S, NF_4S}};
 
   const char *mnemonic = mnemonic_.c_str();
   const char *form = "'Vd.%s, 'Vn.%s, 'Vm.%s";
   const char *suffix = NULL;
 
-  NEONFormatDecoder nfd(instr);
+  NEONFormatDecoder nfd(instr, &map_fc);
 
   switch (form_hash_) {
     case "fcmla_asimdsame2_c"_h:
@@ -2392,17 +2474,28 @@ void Disassembler::VisitNEON3SameExtra(const Instruction *instr) {
     case "sdot_asimdsame2_d"_h:
     case "udot_asimdsame2_d"_h:
     case "usdot_asimdsame2_d"_h:
-      nfd.SetFormatMap(1, &map_usdot);
-      nfd.SetFormatMap(2, &map_usdot);
+      nfd.SetFormatMaps(nfd.LogicalFormatMap());
+      nfd.SetFormatMap(0, &map_dot);
       break;
     default:
-      // sqrdml[as]h - nothing to do.
+      nfd.SetFormatMaps(&map_rdm);
       break;
   }
 
   Format(instr, mnemonic, nfd.Substitute(form), suffix);
 }
 
+void Disassembler::DisassembleNEON4Same(const Instruction *instr) {
+  FormatWithDecodedMnemonic(instr, "'Vd.16b, 'Vn.16b, 'Vm.16b, 'Va.16b");
+}
+
+void Disassembler::DisassembleNEONXar(const Instruction *instr) {
+  FormatWithDecodedMnemonic(instr, "'Vd.2d, 'Vn.2d, 'Vm.2d, #'u1510");
+}
+
+void Disassembler::DisassembleNEONRax1(const Instruction *instr) {
+  FormatWithDecodedMnemonic(instr, "'Vd.2d, 'Vn.2d, 'Vm.2d");
+}
 
 void Disassembler::VisitNEON3Different(const Instruction *instr) {
   const char *mnemonic = mnemonic_.c_str();
@@ -2425,11 +2518,6 @@ void Disassembler::VisitNEON3Different(const Instruction *instr) {
       nfd.SetFormatMaps(nfd.LongIntegerFormatMap());
       nfd.SetFormatMap(0, nfd.IntegerFormatMap());
       break;
-    case "pmull_asimddiff_l"_h:
-      if (nfd.GetVectorFormat(0) != kFormat8H) {
-        mnemonic = NULL;
-      }
-      break;
     case "sqdmlal_asimddiff_l"_h:
     case "sqdmlsl_asimddiff_l"_h:
     case "sqdmull_asimddiff_l"_h:
@@ -2439,6 +2527,22 @@ void Disassembler::VisitNEON3Different(const Instruction *instr) {
       break;
   }
   Format(instr, nfd.Mnemonic(mnemonic), nfd.Substitute(form));
+}
+
+void Disassembler::DisassembleNEONPolynomialMul(const Instruction *instr) {
+  const char *mnemonic = instr->ExtractBit(30) ? "pmull2" : "pmull";
+  const char *form = NULL;
+  int size = instr->ExtractBits(23, 22);
+  if (size == 0) {
+    // Bits 30:27 of the instruction are x001, where x is the Q bit. Map
+    // this to "8" and "16" by adding 7.
+    form = "'Vd.8h, 'Vn.'u3127+7b, 'Vm.'u3127+7b";
+  } else if (size == 3) {
+    form = "'Vd.1q, 'Vn.'?30:21d, 'Vm.'?30:21d";
+  } else {
+    mnemonic = NULL;
+  }
+  Format(instr, mnemonic, form);
 }
 
 void Disassembler::DisassembleNEONFPAcrossLanes(const Instruction *instr) {
@@ -3298,6 +3402,8 @@ void Disassembler::VisitNEONScalar3Same(const Instruction *instr) {
       break;
     case "sqdmulh_asisdsame_only"_h:
     case "sqrdmulh_asisdsame_only"_h:
+    case "sqrdmlah_asisdsame2_only"_h:
+    case "sqrdmlsh_asisdsame2_only"_h:
       if ((vform == kFormatB) || (vform == kFormatD)) {
         mnemonic = NULL;
       }
@@ -3916,8 +4022,7 @@ static bool SVEMoveMaskPreferred(uint64_t value, int lane_bytes_log2) {
     }
 
     // Check 0x0000pq00_0000pq00 or 0xffffpq00_ffffpq00.
-    uint64_t rotvalue = RotateRight(value, 32, 64);
-    if (value == rotvalue) {
+    if (AllWordsMatch(value)) {
       generic_value &= 0xffffffff;
       if ((generic_value == 0xffff) || (generic_value == UINT32_MAX)) {
         return false;
@@ -3925,8 +4030,7 @@ static bool SVEMoveMaskPreferred(uint64_t value, int lane_bytes_log2) {
     }
 
     // Check 0xpq00pq00_pq00pq00.
-    rotvalue = RotateRight(value, 16, 64);
-    if (value == rotvalue) {
+    if (AllHalfwordsMatch(value)) {
       return false;
     }
   } else {
@@ -3940,8 +4044,7 @@ static bool SVEMoveMaskPreferred(uint64_t value, int lane_bytes_log2) {
     }
 
     // Check 0x000000pq_000000pq or 0xffffffpq_ffffffpq.
-    uint64_t rotvalue = RotateRight(value, 32, 64);
-    if (value == rotvalue) {
+    if (AllWordsMatch(value)) {
       generic_value &= 0xffffffff;
       if ((generic_value == 0xff) || (generic_value == UINT32_MAX)) {
         return false;
@@ -3949,8 +4052,7 @@ static bool SVEMoveMaskPreferred(uint64_t value, int lane_bytes_log2) {
     }
 
     // Check 0x00pq00pq_00pq00pq or 0xffpqffpq_ffpqffpq.
-    rotvalue = RotateRight(value, 16, 64);
-    if (value == rotvalue) {
+    if (AllHalfwordsMatch(value)) {
       generic_value &= 0xffff;
       if ((generic_value == 0xff) || (generic_value == UINT16_MAX)) {
         return false;
@@ -3958,8 +4060,7 @@ static bool SVEMoveMaskPreferred(uint64_t value, int lane_bytes_log2) {
     }
 
     // Check 0xpqpqpqpq_pqpqpqpq.
-    rotvalue = RotateRight(value, 8, 64);
-    if (value == rotvalue) {
+    if (AllBytesMatch(value)) {
       return false;
     }
   }

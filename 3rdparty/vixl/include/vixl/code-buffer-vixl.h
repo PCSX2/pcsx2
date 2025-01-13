@@ -36,10 +36,20 @@ namespace vixl {
 
 class CodeBuffer {
  public:
+  static const size_t kDefaultCapacity = 4 * KBytes;
+
+  explicit CodeBuffer(size_t capacity = kDefaultCapacity);
   CodeBuffer(byte* buffer, size_t capacity);
   ~CodeBuffer() VIXL_NEGATIVE_TESTING_ALLOW_EXCEPTION;
 
   void Reset();
+
+  // Make the buffer executable or writable. These states are mutually
+  // exclusive.
+  // Note that these require page-aligned memory blocks, which we can only
+  // guarantee with VIXL_CODE_BUFFER_MMAP.
+  void SetExecutable();
+  void SetWritable();
 
   ptrdiff_t GetOffsetFrom(ptrdiff_t offset) const {
     ptrdiff_t cursor_offset = cursor_ - buffer_;
@@ -136,6 +146,10 @@ class CodeBuffer {
     return GetCapacity();
   }
 
+  bool IsManaged() const { return managed_; }
+
+  void Grow(size_t new_capacity);
+
   bool IsDirty() const { return dirty_; }
 
   void SetClean() { dirty_ = false; }
@@ -144,9 +158,24 @@ class CodeBuffer {
     return GetRemainingBytes() >= amount;
   }
 
+  void EnsureSpaceFor(size_t amount, bool* has_grown) {
+    bool is_full = !HasSpaceFor(amount);
+    if (is_full) Grow(capacity_ * 2 + amount);
+    VIXL_ASSERT(has_grown != NULL);
+    *has_grown = is_full;
+  }
+  void EnsureSpaceFor(size_t amount) {
+    bool placeholder;
+    EnsureSpaceFor(amount, &placeholder);
+  }
+
  private:
   // Backing store of the buffer.
   byte* buffer_;
+  // If true the backing store is allocated and deallocated by the buffer. The
+  // backing store can then grow on demand. If false the backing store is
+  // provided by the user and cannot be resized internally.
+  bool managed_;
   // Pointer to the next location to be written.
   byte* cursor_;
   // True if there has been any write since the buffer was created or cleaned.

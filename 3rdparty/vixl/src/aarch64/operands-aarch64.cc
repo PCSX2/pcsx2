@@ -465,5 +465,5 @@ bool GenericOperand::Equals(const GenericOperand& other) const {
   }
   return false;
 }
-}
-}  // namespace vixl::aarch64
+}  // namespace aarch64
+}  // namespace vixl
