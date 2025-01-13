@@ -3764,7 +3764,7 @@ static const DecodeMapping kDecodeMapping[] = {
       {"001110"_b, "autiaz_hi_hints"},
       {"001111"_b, "autibz_hi_hints"},
       {"0100xx"_b, "bti_hb_hints"},
-      {"010100"_b, "chkfeat_hi_hints"},
+      {"010100"_b, "chkfeat_hf_hints"},
       {"0101x1"_b, "hint_hm_hints"},
       {"01x110"_b, "hint_hm_hints"},
       {"10xxxx"_b, "hint_hm_hints"},

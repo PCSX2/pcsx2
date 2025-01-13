@@ -43,6 +43,9 @@ namespace internal {
 
 class AssemblerBase {
  public:
+  AssemblerBase() : allow_assembler_(false) {}
+  explicit AssemblerBase(size_t capacity)
+      : buffer_(capacity), allow_assembler_(false) {}
   AssemblerBase(byte* buffer, size_t capacity)
       : buffer_(buffer, capacity), allow_assembler_(false) {}
 

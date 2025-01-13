@@ -48,6 +48,7 @@
     <ClInclude Include="include\vixl\aarch64\constants-aarch64.h" />
     <ClInclude Include="include\vixl\aarch64\cpu-aarch64.h" />
     <ClInclude Include="include\vixl\aarch64\cpu-features-auditor-aarch64.h" />
+    <ClInclude Include="include\vixl\aarch64\debugger-aarch64.h" />
     <ClInclude Include="include\vixl\aarch64\decoder-aarch64.h" />
     <ClInclude Include="include\vixl\aarch64\decoder-constants-aarch64.h" />
     <ClInclude Include="include\vixl\aarch64\decoder-visitor-map-aarch64.h" />

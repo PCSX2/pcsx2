@@ -24,10 +24,10 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "registers-aarch64.h"
+
 #include <sstream>
 #include <string>
-
-#include "registers-aarch64.h"
 
 namespace vixl {
 namespace aarch64 {
@@ -153,7 +153,8 @@ VIXL_CPUREG_COERCION_LIST(VIXL_DEFINE_CPUREG_COERCION)
   V(2, S)                                 \
   V(4, S)                                 \
   V(1, D)                                 \
-  V(2, D)
+  V(2, D)                                 \
+  V(1, Q)
 #define VIXL_DEFINE_CPUREG_NEON_COERCION(LANES, LANE_TYPE)             \
   VRegister VRegister::V##LANES##LANE_TYPE() const {                   \
     VIXL_ASSERT(IsVRegister());                                        \
@@ -317,5 +318,5 @@ bool AreSameLaneSize(const CPURegister& reg1,
       !reg4.IsValid() || (reg4.GetLaneSizeInBits() == reg1.GetLaneSizeInBits());
   return match;
 }
-}
-}  // namespace vixl::aarch64
+}  // namespace aarch64
+}  // namespace vixl

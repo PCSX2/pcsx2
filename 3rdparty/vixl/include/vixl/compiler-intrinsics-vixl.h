@@ -29,6 +29,7 @@
 #define VIXL_COMPILER_INTRINSICS_H
 
 #include <limits.h>
+
 #include "globals-vixl.h"
 
 namespace vixl {
@@ -112,7 +113,8 @@ inline int CountLeadingSignBits(V value, int width = (sizeof(V) * 8)) {
   VIXL_ASSERT(IsPowerOf2(width) && (width <= 64));
 #if COMPILER_HAS_BUILTIN_CLRSB
   VIXL_ASSERT((LLONG_MIN <= value) && (value <= LLONG_MAX));
-  int ll_width = sizeof(long long) * kBitsPerByte;  // NOLINT(runtime/int)
+  int ll_width =
+      sizeof(long long) * kBitsPerByte;  // NOLINT(google-runtime-int)
   int result = __builtin_clrsbll(value) - (ll_width - width);
   // Check that the value fits in the specified width.
   VIXL_ASSERT(result >= 0);

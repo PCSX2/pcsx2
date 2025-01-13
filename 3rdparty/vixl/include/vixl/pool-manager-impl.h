@@ -27,10 +27,10 @@
 #ifndef VIXL_POOL_MANAGER_IMPL_H_
 #define VIXL_POOL_MANAGER_IMPL_H_
 
-#include "pool-manager.h"
-
 #include <algorithm>
+
 #include "assembler-base-vixl.h"
+#include "pool-manager.h"
 
 namespace vixl {
 
@@ -487,7 +487,7 @@ void PoolManager<T>::Release(T pc) {
 }
 
 template <typename T>
-PoolManager<T>::~PoolManager<T>() VIXL_NEGATIVE_TESTING_ALLOW_EXCEPTION {
+PoolManager<T>::~PoolManager() VIXL_NEGATIVE_TESTING_ALLOW_EXCEPTION {
 #ifdef VIXL_DEBUG
   // Check for unbound objects.
   for (objects_iter iter = objects_.begin(); iter != objects_.end(); ++iter) {
@@ -517,6 +517,6 @@ int PoolManager<T>::GetPoolSizeForTest() const {
   }
   return size;
 }
-}
+}  // namespace vixl
 
 #endif  // VIXL_POOL_MANAGER_IMPL_H_

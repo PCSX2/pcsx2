@@ -36,33 +36,33 @@ namespace aarch64 {
 using vixl::internal::SimFloat16;
 
 template <typename T>
-bool IsFloat64() {
+constexpr bool IsFloat64() {
   return false;
 }
 template <>
-bool IsFloat64<double>() {
+constexpr bool IsFloat64<double>() {
   return true;
 }
 
 template <typename T>
-bool IsFloat32() {
+constexpr bool IsFloat32() {
   return false;
 }
 template <>
-bool IsFloat32<float>() {
+constexpr bool IsFloat32<float>() {
   return true;
 }
 
 template <typename T>
-bool IsFloat16() {
+constexpr bool IsFloat16() {
   return false;
 }
 template <>
-bool IsFloat16<Float16>() {
+constexpr bool IsFloat16<Float16>() {
   return true;
 }
 template <>
-bool IsFloat16<SimFloat16>() {
+constexpr bool IsFloat16<SimFloat16>() {
   return true;
 }
 
@@ -168,11 +168,12 @@ SimFloat16 Simulator::UFixedToFloat16(uint64_t src,
 
 
 uint64_t Simulator::GenerateRandomTag(uint16_t exclude) {
-  uint64_t rtag = nrand48(rand_state_) >> 28;
+  // Generate a 4 bit integer from a 48bit random number
+  uint64_t rtag = rand_gen_() >> 44;
   VIXL_ASSERT(IsUint4(rtag));
 
   if (exclude == 0) {
-    exclude = nrand48(rand_state_) >> 27;
+    exclude = static_cast<uint16_t>(rand_gen_() >> 44);
   }
 
   // TODO: implement this to better match the specification, which calls for a
@@ -182,24 +183,28 @@ uint64_t Simulator::GenerateRandomTag(uint16_t exclude) {
 }
 
 
-void Simulator::ld1(VectorFormat vform, LogicVRegister dst, uint64_t addr) {
+bool Simulator::ld1(VectorFormat vform, LogicVRegister dst, uint64_t addr) {
   dst.ClearForWrite(vform);
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
-    LoadLane(dst, vform, i, addr);
+    if (!LoadLane(dst, vform, i, addr)) {
+      return false;
+    }
     addr += LaneSizeInBytesFromFormat(vform);
   }
+  return true;
 }
 
 
-void Simulator::ld1(VectorFormat vform,
+bool Simulator::ld1(VectorFormat vform,
                     LogicVRegister dst,
                     int index,
                     uint64_t addr) {
-  LoadLane(dst, vform, index, addr);
+  dst.ClearForWrite(vform);
+  return LoadLane(dst, vform, index, addr);
 }
 
 
-void Simulator::ld1r(VectorFormat vform,
+bool Simulator::ld1r(VectorFormat vform,
                      VectorFormat unpack_vform,
                      LogicVRegister dst,
                      uint64_t addr,
@@ -208,20 +213,25 @@ void Simulator::ld1r(VectorFormat vform,
   dst.ClearForWrite(vform);
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
     if (is_signed) {
-      LoadIntToLane(dst, vform, unpack_size, i, addr);
+      if (!LoadIntToLane(dst, vform, unpack_size, i, addr)) {
+        return false;
+      }
     } else {
-      LoadUintToLane(dst, vform, unpack_size, i, addr);
+      if (!LoadUintToLane(dst, vform, unpack_size, i, addr)) {
+        return false;
+      }
     }
   }
+  return true;
 }
 
 
-void Simulator::ld1r(VectorFormat vform, LogicVRegister dst, uint64_t addr) {
-  ld1r(vform, vform, dst, addr);
+bool Simulator::ld1r(VectorFormat vform, LogicVRegister dst, uint64_t addr) {
+  return ld1r(vform, vform, dst, addr);
 }
 
 
-void Simulator::ld2(VectorFormat vform,
+bool Simulator::ld2(VectorFormat vform,
                     LogicVRegister dst1,
                     LogicVRegister dst2,
                     uint64_t addr1) {
@@ -230,15 +240,17 @@ void Simulator::ld2(VectorFormat vform,
   int esize = LaneSizeInBytesFromFormat(vform);
   uint64_t addr2 = addr1 + esize;
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
-    LoadLane(dst1, vform, i, addr1);
-    LoadLane(dst2, vform, i, addr2);
+    if (!LoadLane(dst1, vform, i, addr1) || !LoadLane(dst2, vform, i, addr2)) {
+      return false;
+    }
     addr1 += 2 * esize;
     addr2 += 2 * esize;
   }
+  return true;
 }
 
 
-void Simulator::ld2(VectorFormat vform,
+bool Simulator::ld2(VectorFormat vform,
                     LogicVRegister dst1,
                     LogicVRegister dst2,
                     int index,
@@ -246,12 +258,12 @@ void Simulator::ld2(VectorFormat vform,
   dst1.ClearForWrite(vform);
   dst2.ClearForWrite(vform);
   uint64_t addr2 = addr1 + LaneSizeInBytesFromFormat(vform);
-  LoadLane(dst1, vform, index, addr1);
-  LoadLane(dst2, vform, index, addr2);
+  return (LoadLane(dst1, vform, index, addr1) &&
+          LoadLane(dst2, vform, index, addr2));
 }
 
 
-void Simulator::ld2r(VectorFormat vform,
+bool Simulator::ld2r(VectorFormat vform,
                      LogicVRegister dst1,
                      LogicVRegister dst2,
                      uint64_t addr) {
@@ -259,13 +271,15 @@ void Simulator::ld2r(VectorFormat vform,
   dst2.ClearForWrite(vform);
   uint64_t addr2 = addr + LaneSizeInBytesFromFormat(vform);
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
-    LoadLane(dst1, vform, i, addr);
-    LoadLane(dst2, vform, i, addr2);
+    if (!LoadLane(dst1, vform, i, addr) || !LoadLane(dst2, vform, i, addr2)) {
+      return false;
+    }
   }
+  return true;
 }
 
 
-void Simulator::ld3(VectorFormat vform,
+bool Simulator::ld3(VectorFormat vform,
                     LogicVRegister dst1,
                     LogicVRegister dst2,
                     LogicVRegister dst3,
@@ -277,17 +291,19 @@ void Simulator::ld3(VectorFormat vform,
   uint64_t addr2 = addr1 + esize;
   uint64_t addr3 = addr2 + esize;
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
-    LoadLane(dst1, vform, i, addr1);
-    LoadLane(dst2, vform, i, addr2);
-    LoadLane(dst3, vform, i, addr3);
+    if (!LoadLane(dst1, vform, i, addr1) || !LoadLane(dst2, vform, i, addr2) ||
+        !LoadLane(dst3, vform, i, addr3)) {
+      return false;
+    }
     addr1 += 3 * esize;
     addr2 += 3 * esize;
     addr3 += 3 * esize;
   }
+  return true;
 }
 
 
-void Simulator::ld3(VectorFormat vform,
+bool Simulator::ld3(VectorFormat vform,
                     LogicVRegister dst1,
                     LogicVRegister dst2,
                     LogicVRegister dst3,
@@ -298,13 +314,13 @@ void Simulator::ld3(VectorFormat vform,
   dst3.ClearForWrite(vform);
   uint64_t addr2 = addr1 + LaneSizeInBytesFromFormat(vform);
   uint64_t addr3 = addr2 + LaneSizeInBytesFromFormat(vform);
-  LoadLane(dst1, vform, index, addr1);
-  LoadLane(dst2, vform, index, addr2);
-  LoadLane(dst3, vform, index, addr3);
+  return (LoadLane(dst1, vform, index, addr1) &&
+          LoadLane(dst2, vform, index, addr2) &&
+          LoadLane(dst3, vform, index, addr3));
 }
 
 
-void Simulator::ld3r(VectorFormat vform,
+bool Simulator::ld3r(VectorFormat vform,
                      LogicVRegister dst1,
                      LogicVRegister dst2,
                      LogicVRegister dst3,
@@ -315,14 +331,16 @@ void Simulator::ld3r(VectorFormat vform,
   uint64_t addr2 = addr + LaneSizeInBytesFromFormat(vform);
   uint64_t addr3 = addr2 + LaneSizeInBytesFromFormat(vform);
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
-    LoadLane(dst1, vform, i, addr);
-    LoadLane(dst2, vform, i, addr2);
-    LoadLane(dst3, vform, i, addr3);
+    if (!LoadLane(dst1, vform, i, addr) || !LoadLane(dst2, vform, i, addr2) ||
+        !LoadLane(dst3, vform, i, addr3)) {
+      return false;
+    }
   }
+  return true;
 }
 
 
-void Simulator::ld4(VectorFormat vform,
+bool Simulator::ld4(VectorFormat vform,
                     LogicVRegister dst1,
                     LogicVRegister dst2,
                     LogicVRegister dst3,
@@ -337,19 +355,20 @@ void Simulator::ld4(VectorFormat vform,
   uint64_t addr3 = addr2 + esize;
   uint64_t addr4 = addr3 + esize;
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
-    LoadLane(dst1, vform, i, addr1);
-    LoadLane(dst2, vform, i, addr2);
-    LoadLane(dst3, vform, i, addr3);
-    LoadLane(dst4, vform, i, addr4);
+    if (!LoadLane(dst1, vform, i, addr1) || !LoadLane(dst2, vform, i, addr2) ||
+        !LoadLane(dst3, vform, i, addr3) || !LoadLane(dst4, vform, i, addr4)) {
+      return false;
+    }
     addr1 += 4 * esize;
     addr2 += 4 * esize;
     addr3 += 4 * esize;
     addr4 += 4 * esize;
   }
+  return true;
 }
 
 
-void Simulator::ld4(VectorFormat vform,
+bool Simulator::ld4(VectorFormat vform,
                     LogicVRegister dst1,
                     LogicVRegister dst2,
                     LogicVRegister dst3,
@@ -363,14 +382,14 @@ void Simulator::ld4(VectorFormat vform,
   uint64_t addr2 = addr1 + LaneSizeInBytesFromFormat(vform);
   uint64_t addr3 = addr2 + LaneSizeInBytesFromFormat(vform);
   uint64_t addr4 = addr3 + LaneSizeInBytesFromFormat(vform);
-  LoadLane(dst1, vform, index, addr1);
-  LoadLane(dst2, vform, index, addr2);
-  LoadLane(dst3, vform, index, addr3);
-  LoadLane(dst4, vform, index, addr4);
+  return (LoadLane(dst1, vform, index, addr1) &&
+          LoadLane(dst2, vform, index, addr2) &&
+          LoadLane(dst3, vform, index, addr3) &&
+          LoadLane(dst4, vform, index, addr4));
 }
 
 
-void Simulator::ld4r(VectorFormat vform,
+bool Simulator::ld4r(VectorFormat vform,
                      LogicVRegister dst1,
                      LogicVRegister dst2,
                      LogicVRegister dst3,
@@ -384,57 +403,61 @@ void Simulator::ld4r(VectorFormat vform,
   uint64_t addr3 = addr2 + LaneSizeInBytesFromFormat(vform);
   uint64_t addr4 = addr3 + LaneSizeInBytesFromFormat(vform);
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
-    LoadLane(dst1, vform, i, addr);
-    LoadLane(dst2, vform, i, addr2);
-    LoadLane(dst3, vform, i, addr3);
-    LoadLane(dst4, vform, i, addr4);
+    if (!LoadLane(dst1, vform, i, addr) || !LoadLane(dst2, vform, i, addr2) ||
+        !LoadLane(dst3, vform, i, addr3) || !LoadLane(dst4, vform, i, addr4)) {
+      return false;
+    }
   }
+  return true;
 }
 
 
-void Simulator::st1(VectorFormat vform, LogicVRegister src, uint64_t addr) {
+bool Simulator::st1(VectorFormat vform, LogicVRegister src, uint64_t addr) {
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
-    StoreLane(src, vform, i, addr);
+    if (!StoreLane(src, vform, i, addr)) return false;
     addr += LaneSizeInBytesFromFormat(vform);
   }
+  return true;
 }
 
 
-void Simulator::st1(VectorFormat vform,
+bool Simulator::st1(VectorFormat vform,
                     LogicVRegister src,
                     int index,
                     uint64_t addr) {
-  StoreLane(src, vform, index, addr);
+  return StoreLane(src, vform, index, addr);
 }
 
 
-void Simulator::st2(VectorFormat vform,
+bool Simulator::st2(VectorFormat vform,
                     LogicVRegister src,
                     LogicVRegister src2,
                     uint64_t addr) {
   int esize = LaneSizeInBytesFromFormat(vform);
   uint64_t addr2 = addr + esize;
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
-    StoreLane(src, vform, i, addr);
-    StoreLane(src2, vform, i, addr2);
+    if (!StoreLane(src, vform, i, addr) || !StoreLane(src2, vform, i, addr2)) {
+      return false;
+    }
     addr += 2 * esize;
     addr2 += 2 * esize;
   }
+  return true;
 }
 
 
-void Simulator::st2(VectorFormat vform,
+bool Simulator::st2(VectorFormat vform,
                     LogicVRegister src,
                     LogicVRegister src2,
                     int index,
                     uint64_t addr) {
   int esize = LaneSizeInBytesFromFormat(vform);
-  StoreLane(src, vform, index, addr);
-  StoreLane(src2, vform, index, addr + 1 * esize);
+  return (StoreLane(src, vform, index, addr) &&
+          StoreLane(src2, vform, index, addr + 1 * esize));
 }
 
 
-void Simulator::st3(VectorFormat vform,
+bool Simulator::st3(VectorFormat vform,
                     LogicVRegister src,
                     LogicVRegister src2,
                     LogicVRegister src3,
@@ -443,30 +466,32 @@ void Simulator::st3(VectorFormat vform,
   uint64_t addr2 = addr + esize;
   uint64_t addr3 = addr2 + esize;
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
-    StoreLane(src, vform, i, addr);
-    StoreLane(src2, vform, i, addr2);
-    StoreLane(src3, vform, i, addr3);
+    if (!StoreLane(src, vform, i, addr) || !StoreLane(src2, vform, i, addr2) ||
+        !StoreLane(src3, vform, i, addr3)) {
+      return false;
+    }
     addr += 3 * esize;
     addr2 += 3 * esize;
     addr3 += 3 * esize;
   }
+  return true;
 }
 
 
-void Simulator::st3(VectorFormat vform,
+bool Simulator::st3(VectorFormat vform,
                     LogicVRegister src,
                     LogicVRegister src2,
                     LogicVRegister src3,
                     int index,
                     uint64_t addr) {
   int esize = LaneSizeInBytesFromFormat(vform);
-  StoreLane(src, vform, index, addr);
-  StoreLane(src2, vform, index, addr + 1 * esize);
-  StoreLane(src3, vform, index, addr + 2 * esize);
+  return (StoreLane(src, vform, index, addr) &&
+          StoreLane(src2, vform, index, addr + 1 * esize) &&
+          StoreLane(src3, vform, index, addr + 2 * esize));
 }
 
 
-void Simulator::st4(VectorFormat vform,
+bool Simulator::st4(VectorFormat vform,
                     LogicVRegister src,
                     LogicVRegister src2,
                     LogicVRegister src3,
@@ -477,19 +502,21 @@ void Simulator::st4(VectorFormat vform,
   uint64_t addr3 = addr2 + esize;
   uint64_t addr4 = addr3 + esize;
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
-    StoreLane(src, vform, i, addr);
-    StoreLane(src2, vform, i, addr2);
-    StoreLane(src3, vform, i, addr3);
-    StoreLane(src4, vform, i, addr4);
+    if (!StoreLane(src, vform, i, addr) || !StoreLane(src2, vform, i, addr2) ||
+        !StoreLane(src3, vform, i, addr3) ||
+        !StoreLane(src4, vform, i, addr4)) {
+      return false;
+    }
     addr += 4 * esize;
     addr2 += 4 * esize;
     addr3 += 4 * esize;
     addr4 += 4 * esize;
   }
+  return true;
 }
 
 
-void Simulator::st4(VectorFormat vform,
+bool Simulator::st4(VectorFormat vform,
                     LogicVRegister src,
                     LogicVRegister src2,
                     LogicVRegister src3,
@@ -497,10 +524,10 @@ void Simulator::st4(VectorFormat vform,
                     int index,
                     uint64_t addr) {
   int esize = LaneSizeInBytesFromFormat(vform);
-  StoreLane(src, vform, index, addr);
-  StoreLane(src2, vform, index, addr + 1 * esize);
-  StoreLane(src3, vform, index, addr + 2 * esize);
-  StoreLane(src4, vform, index, addr + 3 * esize);
+  return (StoreLane(src, vform, index, addr) &&
+          StoreLane(src2, vform, index, addr + 1 * esize) &&
+          StoreLane(src3, vform, index, addr + 2 * esize) &&
+          StoreLane(src4, vform, index, addr + 3 * esize));
 }
 
 
@@ -895,22 +922,11 @@ LogicVRegister Simulator::sqrdmlsh(VectorFormat vform,
   return sqrdmlsh(vform, dst, src1, dup_element(indexform, temp, src2, index));
 }
 
-
 uint64_t Simulator::PolynomialMult(uint64_t op1,
                                    uint64_t op2,
                                    int lane_size_in_bits) const {
-  VIXL_ASSERT(static_cast<unsigned>(lane_size_in_bits) <= kSRegSize);
-  VIXL_ASSERT(IsUintN(lane_size_in_bits, op1));
-  VIXL_ASSERT(IsUintN(lane_size_in_bits, op2));
-  uint64_t result = 0;
-  for (int i = 0; i < lane_size_in_bits; ++i) {
-    if ((op1 >> i) & 1) {
-      result = result ^ (op2 << i);
-    }
-  }
-  return result;
+  return PolynomialMult128(op1, op2, lane_size_in_bits).second;
 }
-
 
 LogicVRegister Simulator::pmul(VectorFormat vform,
                                LogicVRegister dst,
@@ -933,14 +949,16 @@ LogicVRegister Simulator::pmull(VectorFormat vform,
                                 const LogicVRegister& src1,
                                 const LogicVRegister& src2) {
   dst.ClearForWrite(vform);
-
   VectorFormat vform_src = VectorFormatHalfWidth(vform);
-  for (int i = 0; i < LaneCountFromFormat(vform); i++) {
+
+  // Process the elements in reverse to avoid problems when the destination
+  // register is the same as a source.
+  for (int i = LaneCountFromFormat(vform) - 1; i >= 0; i--) {
     dst.SetUint(vform,
                 i,
-                PolynomialMult(src1.Uint(vform_src, i),
-                               src2.Uint(vform_src, i),
-                               LaneSizeInBitsFromFormat(vform_src)));
+                PolynomialMult128(src1.Uint(vform_src, i),
+                                  src2.Uint(vform_src, i),
+                                  LaneSizeInBitsFromFormat(vform_src)));
   }
 
   return dst;
@@ -951,16 +969,18 @@ LogicVRegister Simulator::pmull2(VectorFormat vform,
                                  LogicVRegister dst,
                                  const LogicVRegister& src1,
                                  const LogicVRegister& src2) {
-  VectorFormat vform_src = VectorFormatHalfWidthDoubleLanes(vform);
   dst.ClearForWrite(vform);
+  VectorFormat vform_src = VectorFormatHalfWidthDoubleLanes(vform);
+
   int lane_count = LaneCountFromFormat(vform);
   for (int i = 0; i < lane_count; i++) {
     dst.SetUint(vform,
                 i,
-                PolynomialMult(src1.Uint(vform_src, lane_count + i),
-                               src2.Uint(vform_src, lane_count + i),
-                               LaneSizeInBitsFromFormat(vform_src)));
+                PolynomialMult128(src1.Uint(vform_src, lane_count + i),
+                                  src2.Uint(vform_src, lane_count + i),
+                                  LaneSizeInBitsFromFormat(vform_src)));
   }
+
   return dst;
 }
 
@@ -2257,7 +2277,10 @@ LogicVRegister Simulator::extractnarrow(VectorFormat dstform,
     }
   }
 
-  if (!upperhalf) {
+  if (upperhalf) {
+    // Clear any bits beyond a Q register.
+    dst.ClearForWrite(kFormat16B);
+  } else {
     dst.ClearForWrite(dstform);
   }
   return dst;
@@ -2491,12 +2514,21 @@ LogicVRegister Simulator::ror(VectorFormat vform,
                               LogicVRegister dst,
                               const LogicVRegister& src,
                               int rotation) {
+  dst.ClearForWrite(vform);
   int width = LaneSizeInBitsFromFormat(vform);
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
     uint64_t value = src.Uint(vform, i);
     dst.SetUint(vform, i, RotateRight(value, rotation, width));
   }
   return dst;
+}
+
+LogicVRegister Simulator::rol(VectorFormat vform,
+                              LogicVRegister dst,
+                              const LogicVRegister& src,
+                              int rotation) {
+  int ror_equivalent = LaneSizeInBitsFromFormat(vform) - rotation;
+  return ror(vform, dst, src, ror_equivalent);
 }
 
 LogicVRegister Simulator::ext(VectorFormat vform,
@@ -2507,10 +2539,10 @@ LogicVRegister Simulator::ext(VectorFormat vform,
   uint8_t result[kZRegMaxSizeInBytes] = {};
   int lane_count = LaneCountFromFormat(vform);
   for (int i = 0; i < lane_count - index; ++i) {
-    result[i] = src1.Uint(vform, i + index);
+    result[i] = static_cast<uint8_t>(src1.Uint(vform, i + index));
   }
   for (int i = 0; i < index; ++i) {
-    result[lane_count - index + i] = src2.Uint(vform, i);
+    result[lane_count - index + i] = static_cast<uint8_t>(src2.Uint(vform, i));
   }
   dst.ClearForWrite(vform);
   for (int i = 0; i < lane_count; ++i) {
@@ -2707,7 +2739,7 @@ LogicVRegister Simulator::fcmla(VectorFormat vform,
                                 int index,
                                 int rot) {
   if (LaneSizeInBitsFromFormat(vform) == kHRegSize) {
-    VIXL_UNIMPLEMENTED();
+    fcmla<SimFloat16>(vform, dst, src1, src2, dst, index, rot);
   } else if (LaneSizeInBitsFromFormat(vform) == kSRegSize) {
     fcmla<float>(vform, dst, src1, src2, dst, index, rot);
   } else {
@@ -4153,7 +4185,7 @@ LogicVRegister Simulator::sqrdmlash_d(VectorFormat vform,
 
     // Arithmetic shift the whole value right by `esize - 1` bits.
     accum.second = (accum.first << 1) | (accum.second >> (esize - 1));
-    accum.first = -(accum.first >> (esize - 1));
+    accum.first = UnsignedNegate(accum.first >> (esize - 1));
 
     // Perform saturation.
     bool is_pos = (accum.first == 0) ? true : false;
@@ -4531,7 +4563,7 @@ T Simulator::FPMulx(T op1, T op2) {
   if ((IsInf(op1) && (op2 == 0.0)) || (IsInf(op2) && (op1 == 0.0))) {
     // inf * 0.0 returns +/-2.0.
     T two = 2.0;
-    return copysign(1.0, op1) * copysign(1.0, op2) * two;
+    return copysign(T(1.0), op1) * copysign(T(1.0), op2) * two;
   }
   return FPMul(op1, op2);
 }
@@ -4541,8 +4573,8 @@ template <typename T>
 T Simulator::FPMulAdd(T a, T op1, T op2) {
   T result = FPProcessNaNs3(a, op1, op2);
 
-  T sign_a = copysign(1.0, a);
-  T sign_prod = copysign(1.0, op1) * copysign(1.0, op2);
+  T sign_a = copysign(T(1.0), a);
+  T sign_prod = copysign(T(1.0), op1) * copysign(T(1.0), op2);
   bool isinf_prod = IsInf(op1) || IsInf(op2);
   bool operation_generates_nan =
       (IsInf(op1) && (op2 == 0.0)) ||                     // inf * 0.0
@@ -4568,7 +4600,7 @@ T Simulator::FPMulAdd(T a, T op1, T op2) {
   // Work around broken fma implementations for exact zero results: The sign of
   // exact 0.0 results is positive unless both a and op1 * op2 are negative.
   if (((op1 == 0.0) || (op2 == 0.0)) && (a == 0.0)) {
-    return ((sign_a < T(0.0)) && (sign_prod < T(0.0))) ? -0.0 : 0.0;
+    return ((sign_a < T(0.0)) && (sign_prod < T(0.0))) ? T(-0.0) : T(0.0);
   }
 
   result = FusedMultiplyAdd(op1, op2, a);
@@ -4577,7 +4609,7 @@ T Simulator::FPMulAdd(T a, T op1, T op2) {
   // Work around broken fma implementations for rounded zero results: If a is
   // 0.0, the sign of the result is the sign of op1 * op2 before rounding.
   if ((a == 0.0) && (result == 0.0)) {
-    return copysign(0.0, sign_prod);
+    return copysign(T(0.0), sign_prod);
   }
 
   return result;
@@ -4639,9 +4671,9 @@ T Simulator::FPMax(T a, T b) {
 template <typename T>
 T Simulator::FPMaxNM(T a, T b) {
   if (IsQuietNaN(a) && !IsQuietNaN(b)) {
-    a = kFP64NegativeInfinity;
+    a = T(kFP64NegativeInfinity);
   } else if (!IsQuietNaN(a) && IsQuietNaN(b)) {
-    b = kFP64NegativeInfinity;
+    b = T(kFP64NegativeInfinity);
   }
 
   T result = FPProcessNaNs(a, b);
@@ -4666,9 +4698,9 @@ T Simulator::FPMin(T a, T b) {
 template <typename T>
 T Simulator::FPMinNM(T a, T b) {
   if (IsQuietNaN(a) && !IsQuietNaN(b)) {
-    a = kFP64PositiveInfinity;
+    a = T(kFP64PositiveInfinity);
   } else if (!IsQuietNaN(a) && IsQuietNaN(b)) {
-    b = kFP64PositiveInfinity;
+    b = T(kFP64PositiveInfinity);
   }
 
   T result = FPProcessNaNs(a, b);
@@ -4683,8 +4715,8 @@ T Simulator::FPRecipStepFused(T op1, T op2) {
     return two;
   } else if (IsInf(op1) || IsInf(op2)) {
     // Return +inf if signs match, otherwise -inf.
-    return ((op1 >= 0.0) == (op2 >= 0.0)) ? kFP64PositiveInfinity
-                                          : kFP64NegativeInfinity;
+    return ((op1 >= 0.0) == (op2 >= 0.0)) ? T(kFP64PositiveInfinity)
+                                          : T(kFP64NegativeInfinity);
   } else {
     return FusedMultiplyAdd(op1, op2, two);
   }
@@ -4713,8 +4745,8 @@ T Simulator::FPRSqrtStepFused(T op1, T op2) {
     return one_point_five;
   } else if (IsInf(op1) || IsInf(op2)) {
     // Return +inf if signs match, otherwise -inf.
-    return ((op1 >= 0.0) == (op2 >= 0.0)) ? kFP64PositiveInfinity
-                                          : kFP64NegativeInfinity;
+    return ((op1 >= 0.0) == (op2 >= 0.0)) ? T(kFP64PositiveInfinity)
+                                          : T(kFP64NegativeInfinity);
   } else {
     // The multiply-add-halve operation must be fully fused, so avoid interim
     // rounding by checking which operand can be losslessly divided by two
@@ -4743,7 +4775,7 @@ int32_t Simulator::FPToFixedJS(double value) {
       (value == kFP64NegativeInfinity)) {
     // +/- zero and infinity all return zero, however -0 and +/- Infinity also
     // unset the Z-flag.
-    result = 0.0;
+    result = 0;
     if ((value != 0.0) || std::signbit(value)) {
       Z = 0;
     }
@@ -5528,38 +5560,40 @@ LogicVRegister Simulator::fsqrt(VectorFormat vform,
 }
 
 
-#define DEFINE_NEON_FP_PAIR_OP(FNP, FN, OP)                                    \
-  LogicVRegister Simulator::FNP(VectorFormat vform,                            \
-                                LogicVRegister dst,                            \
-                                const LogicVRegister& src1,                    \
-                                const LogicVRegister& src2) {                  \
-    SimVRegister temp1, temp2;                                                 \
-    uzp1(vform, temp1, src1, src2);                                            \
-    uzp2(vform, temp2, src1, src2);                                            \
-    FN(vform, dst, temp1, temp2);                                              \
-    if (IsSVEFormat(vform)) {                                                  \
-      interleave_top_bottom(vform, dst, dst);                                  \
-    }                                                                          \
-    return dst;                                                                \
-  }                                                                            \
-                                                                               \
-  LogicVRegister Simulator::FNP(VectorFormat vform,                            \
-                                LogicVRegister dst,                            \
-                                const LogicVRegister& src) {                   \
-    if (vform == kFormatH) {                                                   \
-      SimFloat16 result(OP(SimFloat16(RawbitsToFloat16(src.Uint(vform, 0))),   \
-                           SimFloat16(RawbitsToFloat16(src.Uint(vform, 1))))); \
-      dst.SetUint(vform, 0, Float16ToRawbits(result));                         \
-    } else if (vform == kFormatS) {                                            \
-      float result = OP(src.Float<float>(0), src.Float<float>(1));             \
-      dst.SetFloat(0, result);                                                 \
-    } else {                                                                   \
-      VIXL_ASSERT(vform == kFormatD);                                          \
-      double result = OP(src.Float<double>(0), src.Float<double>(1));          \
-      dst.SetFloat(0, result);                                                 \
-    }                                                                          \
-    dst.ClearForWrite(vform);                                                  \
-    return dst;                                                                \
+#define DEFINE_NEON_FP_PAIR_OP(FNP, FN, OP)                                   \
+  LogicVRegister Simulator::FNP(VectorFormat vform,                           \
+                                LogicVRegister dst,                           \
+                                const LogicVRegister& src1,                   \
+                                const LogicVRegister& src2) {                 \
+    SimVRegister temp1, temp2;                                                \
+    uzp1(vform, temp1, src1, src2);                                           \
+    uzp2(vform, temp2, src1, src2);                                           \
+    FN(vform, dst, temp1, temp2);                                             \
+    if (IsSVEFormat(vform)) {                                                 \
+      interleave_top_bottom(vform, dst, dst);                                 \
+    }                                                                         \
+    return dst;                                                               \
+  }                                                                           \
+                                                                              \
+  LogicVRegister Simulator::FNP(VectorFormat vform,                           \
+                                LogicVRegister dst,                           \
+                                const LogicVRegister& src) {                  \
+    if (vform == kFormatH) {                                                  \
+      SimFloat16 result(OP(SimFloat16(RawbitsToFloat16(                       \
+                               static_cast<uint16_t>(src.Uint(vform, 0)))),   \
+                           SimFloat16(RawbitsToFloat16(                       \
+                               static_cast<uint16_t>(src.Uint(vform, 1)))))); \
+      dst.SetUint(vform, 0, Float16ToRawbits(result));                        \
+    } else if (vform == kFormatS) {                                           \
+      float result = OP(src.Float<float>(0), src.Float<float>(1));            \
+      dst.SetFloat(0, result);                                                \
+    } else {                                                                  \
+      VIXL_ASSERT(vform == kFormatD);                                         \
+      double result = OP(src.Float<double>(0), src.Float<double>(1));         \
+      dst.SetFloat(0, result);                                                \
+    }                                                                         \
+    dst.ClearForWrite(vform);                                                 \
+    return dst;                                                               \
   }
 NEON_FPPAIRWISE_LIST(DEFINE_NEON_FP_PAIR_OP)
 #undef DEFINE_NEON_FP_PAIR_OP
@@ -5801,7 +5835,8 @@ LogicVRegister Simulator::frint(VectorFormat vform,
   } else if (LaneSizeInBitsFromFormat(vform) == kSRegSize) {
     for (int i = 0; i < LaneCountFromFormat(vform); i++) {
       float input = src.Float<float>(i);
-      float rounded = FPRoundInt(input, rounding_mode, frint_mode);
+      float rounded =
+          static_cast<float>(FPRoundInt(input, rounding_mode, frint_mode));
 
       if (inexact_exception && !IsNaN(input) && (input != rounded)) {
         FPProcessException();
@@ -5963,6 +5998,7 @@ LogicVRegister Simulator::fcvtu(VectorFormat vform,
 LogicVRegister Simulator::fcvtl(VectorFormat vform,
                                 LogicVRegister dst,
                                 const LogicVRegister& src) {
+  dst.ClearForWrite(vform);
   if (LaneSizeInBitsFromFormat(vform) == kSRegSize) {
     for (int i = LaneCountFromFormat(vform) - 1; i >= 0; i--) {
       // TODO: Full support for SimFloat16 in SimRegister(s).
@@ -5983,6 +6019,7 @@ LogicVRegister Simulator::fcvtl(VectorFormat vform,
 LogicVRegister Simulator::fcvtl2(VectorFormat vform,
                                  LogicVRegister dst,
                                  const LogicVRegister& src) {
+  dst.ClearForWrite(vform);
   int lane_count = LaneCountFromFormat(vform);
   if (LaneSizeInBitsFromFormat(vform) == kSRegSize) {
     for (int i = 0; i < lane_count; i++) {
@@ -6028,6 +6065,7 @@ LogicVRegister Simulator::fcvtn(VectorFormat vform,
 LogicVRegister Simulator::fcvtn2(VectorFormat vform,
                                  LogicVRegister dst,
                                  const LogicVRegister& src) {
+  dst.ClearForWrite(vform);
   int lane_count = LaneCountFromFormat(vform) / 2;
   if (LaneSizeInBitsFromFormat(vform) == kHRegSize) {
     for (int i = lane_count - 1; i >= 0; i--) {
@@ -6071,6 +6109,7 @@ LogicVRegister Simulator::fcvtxn2(VectorFormat vform,
                                   LogicVRegister dst,
                                   const LogicVRegister& src) {
   VIXL_ASSERT(LaneSizeInBitsFromFormat(vform) == kSRegSize);
+  dst.ClearForWrite(vform);
   int lane_count = LaneCountFromFormat(vform) / 2;
   for (int i = lane_count - 1; i >= 0; i--) {
     dst.SetFloat(i + lane_count,
@@ -6107,9 +6146,9 @@ T Simulator::FPRecipSqrtEstimate(T op) {
     return FPProcessNaN(op);
   } else if (op == 0.0) {
     if (copysign(1.0, op) < 0.0) {
-      return kFP64NegativeInfinity;
+      return T(kFP64NegativeInfinity);
     } else {
-      return kFP64PositiveInfinity;
+      return T(kFP64PositiveInfinity);
     }
   } else if (copysign(1.0, op) < 0.0) {
     FPProcessException();
@@ -6120,11 +6159,11 @@ T Simulator::FPRecipSqrtEstimate(T op) {
     uint64_t fraction;
     int exp, result_exp;
 
-    if (IsFloat16<T>()) {
+    if constexpr (IsFloat16<T>()) {
       exp = Float16Exp(op);
       fraction = Float16Mantissa(op);
       fraction <<= 42;
-    } else if (IsFloat32<T>()) {
+    } else if constexpr (IsFloat32<T>()) {
       exp = FloatExp(op);
       fraction = FloatMantissa(op);
       fraction <<= 29;
@@ -6149,9 +6188,9 @@ T Simulator::FPRecipSqrtEstimate(T op) {
       scaled = DoublePack(0, 1021, Bits(fraction, 51, 44) << 44);
     }
 
-    if (IsFloat16<T>()) {
+    if constexpr (IsFloat16<T>()) {
       result_exp = (44 - exp) / 2;
-    } else if (IsFloat32<T>()) {
+    } else if constexpr (IsFloat32<T>()) {
       result_exp = (380 - exp) / 2;
     } else {
       VIXL_ASSERT(IsFloat64<T>());
@@ -6160,11 +6199,11 @@ T Simulator::FPRecipSqrtEstimate(T op) {
 
     uint64_t estimate = DoubleToRawbits(recip_sqrt_estimate(scaled));
 
-    if (IsFloat16<T>()) {
+    if constexpr (IsFloat16<T>()) {
       uint16_t exp_bits = static_cast<uint16_t>(Bits(result_exp, 4, 0));
       uint16_t est_bits = static_cast<uint16_t>(Bits(estimate, 51, 42));
       return Float16Pack(0, exp_bits, est_bits);
-    } else if (IsFloat32<T>()) {
+    } else if constexpr (IsFloat32<T>()) {
       uint32_t exp_bits = static_cast<uint32_t>(Bits(result_exp, 7, 0));
       uint32_t est_bits = static_cast<uint32_t>(Bits(estimate, 51, 29));
       return FloatPack(0, exp_bits, est_bits);
@@ -6204,9 +6243,9 @@ template <typename T>
 T Simulator::FPRecipEstimate(T op, FPRounding rounding) {
   uint32_t sign;
 
-  if (IsFloat16<T>()) {
+  if constexpr (IsFloat16<T>()) {
     sign = Float16Sign(op);
-  } else if (IsFloat32<T>()) {
+  } else if constexpr (IsFloat32<T>()) {
     sign = FloatSign(op);
   } else {
     VIXL_ASSERT(IsFloat64<T>());
@@ -6216,10 +6255,10 @@ T Simulator::FPRecipEstimate(T op, FPRounding rounding) {
   if (IsNaN(op)) {
     return FPProcessNaN(op);
   } else if (IsInf(op)) {
-    return (sign == 1) ? -0.0 : 0.0;
+    return (sign == 1) ? T(-0.0) : T(0.0);
   } else if (op == 0.0) {
     FPProcessException();  // FPExc_DivideByZero exception.
-    return (sign == 1) ? kFP64NegativeInfinity : kFP64PositiveInfinity;
+    return (sign == 1) ? T(kFP64NegativeInfinity) : T(kFP64PositiveInfinity);
   } else if ((IsFloat16<T>() && (std::fabs(op) < std::pow(2.0, -16.0))) ||
              (IsFloat32<T>() && (std::fabs(op) < std::pow(2.0, -128.0))) ||
              (IsFloat64<T>() && (std::fabs(op) < std::pow(2.0, -1024.0)))) {
@@ -6242,12 +6281,12 @@ T Simulator::FPRecipEstimate(T op, FPRounding rounding) {
     }
     FPProcessException();  // FPExc_Overflow and FPExc_Inexact.
     if (overflow_to_inf) {
-      return (sign == 1) ? kFP64NegativeInfinity : kFP64PositiveInfinity;
+      return (sign == 1) ? T(kFP64NegativeInfinity) : T(kFP64PositiveInfinity);
     } else {
       // Return FPMaxNormal(sign).
-      if (IsFloat16<T>()) {
+      if constexpr (IsFloat16<T>()) {
         return Float16Pack(sign, 0x1f, 0x3ff);
-      } else if (IsFloat32<T>()) {
+      } else if constexpr (IsFloat32<T>()) {
         return FloatPack(sign, 0xfe, 0x07fffff);
       } else {
         VIXL_ASSERT(IsFloat64<T>());
@@ -6258,12 +6297,12 @@ T Simulator::FPRecipEstimate(T op, FPRounding rounding) {
     uint64_t fraction;
     int exp, result_exp;
 
-    if (IsFloat16<T>()) {
+    if constexpr (IsFloat16<T>()) {
       sign = Float16Sign(op);
       exp = Float16Exp(op);
       fraction = Float16Mantissa(op);
       fraction <<= 42;
-    } else if (IsFloat32<T>()) {
+    } else if constexpr (IsFloat32<T>()) {
       sign = FloatSign(op);
       exp = FloatExp(op);
       fraction = FloatMantissa(op);
@@ -6286,9 +6325,9 @@ T Simulator::FPRecipEstimate(T op, FPRounding rounding) {
 
     double scaled = DoublePack(0, 1022, Bits(fraction, 51, 44) << 44);
 
-    if (IsFloat16<T>()) {
+    if constexpr (IsFloat16<T>()) {
       result_exp = (29 - exp);  // In range 29-30 = -1 to 29+1 = 30.
-    } else if (IsFloat32<T>()) {
+    } else if constexpr (IsFloat32<T>()) {
       result_exp = (253 - exp);  // In range 253-254 = -1 to 253+1 = 254.
     } else {
       VIXL_ASSERT(IsFloat64<T>());
@@ -6304,11 +6343,11 @@ T Simulator::FPRecipEstimate(T op, FPRounding rounding) {
       fraction = (UINT64_C(1) << 50) | Bits(fraction, 51, 2);
       result_exp = 0;
     }
-    if (IsFloat16<T>()) {
+    if constexpr (IsFloat16<T>()) {
       uint16_t exp_bits = static_cast<uint16_t>(Bits(result_exp, 4, 0));
       uint16_t frac_bits = static_cast<uint16_t>(Bits(fraction, 51, 42));
       return Float16Pack(sign, exp_bits, frac_bits);
-    } else if (IsFloat32<T>()) {
+    } else if constexpr (IsFloat32<T>()) {
       uint32_t exp_bits = static_cast<uint32_t>(Bits(result_exp, 7, 0));
       uint32_t frac_bits = static_cast<uint32_t>(Bits(fraction, 51, 29));
       return FloatPack(sign, exp_bits, frac_bits);
@@ -6454,12 +6493,12 @@ LogicVRegister Simulator::frecpx(VectorFormat vform,
     } else {
       int exp;
       uint32_t sign;
-      if (IsFloat16<T>()) {
+      if constexpr (IsFloat16<T>()) {
         sign = Float16Sign(op);
         exp = Float16Exp(op);
         exp = (exp == 0) ? (0x1F - 1) : static_cast<int>(Bits(~exp, 4, 0));
         result = Float16Pack(sign, exp, 0);
-      } else if (IsFloat32<T>()) {
+      } else if constexpr (IsFloat32<T>()) {
         sign = FloatSign(op);
         exp = FloatExp(op);
         exp = (exp == 0) ? (0xFF - 1) : static_cast<int>(Bits(~exp, 7, 0));
@@ -6763,18 +6802,21 @@ LogicVRegister Simulator::fexpa(VectorFormat vform,
 
   if (lane_size == kHRegSize) {
     index_highbit = 4;
-    VIXL_ASSERT(ArrayLength(fexpa_coeff16) == (1U << (index_highbit + 1)));
+    VIXL_ASSERT(ArrayLength(fexpa_coeff16) ==
+                (uint64_t{1} << (index_highbit + 1)));
     fexpa_coeff = fexpa_coeff16;
     op_highbit = 9;
     op_shift = 10;
   } else if (lane_size == kSRegSize) {
-    VIXL_ASSERT(ArrayLength(fexpa_coeff32) == (1U << (index_highbit + 1)));
+    VIXL_ASSERT(ArrayLength(fexpa_coeff32) ==
+                (uint64_t{1} << (index_highbit + 1)));
     fexpa_coeff = fexpa_coeff32;
     op_highbit = 13;
     op_shift = 23;
   } else {
     VIXL_ASSERT(lane_size == kDRegSize);
-    VIXL_ASSERT(ArrayLength(fexpa_coeff64) == (1U << (index_highbit + 1)));
+    VIXL_ASSERT(ArrayLength(fexpa_coeff64) ==
+                (uint64_t{1} << (index_highbit + 1)));
     fexpa_coeff = fexpa_coeff64;
     op_highbit = 16;
     op_shift = 52;
@@ -7271,7 +7313,9 @@ void Simulator::SVEStructuredStoreHelper(VectorFormat vform,
 
     for (int r = 0; r < reg_count; r++) {
       uint64_t element_address = addr.GetElementAddress(i, r);
-      StoreLane(zt[r], unpack_vform, i << unpack_shift, element_address);
+      if (!StoreLane(zt[r], unpack_vform, i << unpack_shift, element_address)) {
+        return;
+      }
     }
   }
 
@@ -7295,7 +7339,7 @@ void Simulator::SVEStructuredStoreHelper(VectorFormat vform,
   }
 }
 
-void Simulator::SVEStructuredLoadHelper(VectorFormat vform,
+bool Simulator::SVEStructuredLoadHelper(VectorFormat vform,
                                         const LogicPRegister& pg,
                                         unsigned zt_code,
                                         const LogicSVEAddressVector& addr,
@@ -7330,9 +7374,13 @@ void Simulator::SVEStructuredLoadHelper(VectorFormat vform,
       }
 
       if (is_signed) {
-        LoadIntToLane(zt[r], vform, msize_in_bytes, i, element_address);
+        if (!LoadIntToLane(zt[r], vform, msize_in_bytes, i, element_address)) {
+          return false;
+        }
       } else {
-        LoadUintToLane(zt[r], vform, msize_in_bytes, i, element_address);
+        if (!LoadUintToLane(zt[r], vform, msize_in_bytes, i, element_address)) {
+          return false;
+        }
       }
     }
   }
@@ -7351,6 +7399,7 @@ void Simulator::SVEStructuredLoadHelper(VectorFormat vform,
                        "<-",
                        addr);
   }
+  return true;
 }
 
 LogicPRegister Simulator::brka(LogicPRegister pd,
@@ -7445,7 +7494,7 @@ void Simulator::SVEFaultTolerantLoadHelper(VectorFormat vform,
 
   // Non-faulting loads are allowed to fail arbitrarily. To stress user
   // code, fail a random element in roughly one in eight full-vector loads.
-  uint32_t rnd = static_cast<uint32_t>(jrand48(rand_state_));
+  uint32_t rnd = static_cast<uint32_t>(rand_gen_());
   int fake_fault_at_lane = rnd % (LaneCountFromFormat(vform) * 8);
 
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
@@ -7458,7 +7507,9 @@ void Simulator::SVEFaultTolerantLoadHelper(VectorFormat vform,
         // First-faulting loads always load the first active element, regardless
         // of FFR. The result will be discarded if its FFR lane is inactive, but
         // it could still generate a fault.
-        value = MemReadUint(msize_in_bytes, element_address);
+        VIXL_DEFINE_OR_RETURN(mem_result,
+                              MemReadUint(msize_in_bytes, element_address));
+        value = mem_result;
         // All subsequent elements have non-fault semantics.
         type = kSVENonFaultLoad;
 
@@ -7470,7 +7521,9 @@ void Simulator::SVEFaultTolerantLoadHelper(VectorFormat vform,
         bool can_read = (i < fake_fault_at_lane) &&
                         CanReadMemory(element_address, msize_in_bytes);
         if (can_read) {
-          value = MemReadUint(msize_in_bytes, element_address);
+          VIXL_DEFINE_OR_RETURN(mem_result,
+                                MemReadUint(msize_in_bytes, element_address));
+          value = mem_result;
         } else {
           // Propagate the fault to the end of FFR.
           for (int j = i; j < LaneCountFromFormat(vform); j++) {
@@ -7846,6 +7899,582 @@ LogicVRegister Simulator::fmatmul(VectorFormat vform,
     fmatmul<double>(vform, dst, src1, src2);
   }
   return dst;
+}
+
+template <>
+uint64_t CryptoOp<"choose"_h>(uint64_t x, uint64_t y, uint64_t z) {
+  return ((y ^ z) & x) ^ z;
+}
+
+template <>
+uint64_t CryptoOp<"majority"_h>(uint64_t x, uint64_t y, uint64_t z) {
+  return (x & y) | ((x | y) & z);
+}
+
+template <>
+uint64_t CryptoOp<"parity"_h>(uint64_t x, uint64_t y, uint64_t z) {
+  return x ^ y ^ z;
+}
+
+template <typename T, unsigned A, unsigned B, unsigned C>
+static uint64_t SHASigma(uint64_t x) {
+  return static_cast<T>(RotateRight(x, A, sizeof(T) * kBitsPerByte) ^
+                        RotateRight(x, B, sizeof(T) * kBitsPerByte) ^
+                        RotateRight(x, C, sizeof(T) * kBitsPerByte));
+}
+
+LogicVRegister Simulator::sha2h(LogicVRegister srcdst,
+                                const LogicVRegister& src1,
+                                const LogicVRegister& src2,
+                                bool part1) {
+  uint64_t x[4] = {};
+  uint64_t y[4] = {};
+  if (part1) {
+    // Switch input order based on which part is being handled.
+    srcdst.UintArray(kFormat4S, x);
+    src1.UintArray(kFormat4S, y);
+  } else {
+    src1.UintArray(kFormat4S, x);
+    srcdst.UintArray(kFormat4S, y);
+  }
+
+  for (unsigned i = 0; i < ArrayLength(x); i++) {
+    uint64_t chs = CryptoOp<"choose"_h>(y[0], y[1], y[2]);
+    uint64_t maj = CryptoOp<"majority"_h>(x[0], x[1], x[2]);
+
+    uint64_t w = src2.Uint(kFormat4S, i);
+    uint64_t t = y[3] + SHASigma<uint32_t, 6, 11, 25>(y[0]) + chs + w;
+
+    x[3] += t;
+    y[3] = t + SHASigma<uint32_t, 2, 13, 22>(x[0]) + maj;
+
+    // y:x = ROL(y:x, 32)
+    SHARotateEltsLeftOne(x);
+    SHARotateEltsLeftOne(y);
+    std::swap(x[0], y[0]);
+  }
+
+  srcdst.SetUintArray(kFormat4S, part1 ? x : y);
+  return srcdst;
+}
+
+template <typename T, unsigned A, unsigned B, unsigned C>
+static uint64_t SHASURotate(uint64_t x) {
+  return RotateRight(x, A, sizeof(T) * kBitsPerByte) ^
+         RotateRight(x, B, sizeof(T) * kBitsPerByte) ^
+         ((x & ~static_cast<T>(0)) >> C);
+}
+
+LogicVRegister Simulator::sha2su0(LogicVRegister srcdst,
+                                  const LogicVRegister& src1) {
+  uint64_t w[4] = {};
+  uint64_t result[4];
+  srcdst.UintArray(kFormat4S, w);
+  uint64_t x = src1.Uint(kFormat4S, 0);
+
+  result[0] = SHASURotate<uint32_t, 7, 18, 3>(w[1]) + w[0];
+  result[1] = SHASURotate<uint32_t, 7, 18, 3>(w[2]) + w[1];
+  result[2] = SHASURotate<uint32_t, 7, 18, 3>(w[3]) + w[2];
+  result[3] = SHASURotate<uint32_t, 7, 18, 3>(x) + w[3];
+
+  srcdst.SetUintArray(kFormat4S, result);
+  return srcdst;
+}
+
+LogicVRegister Simulator::sha2su1(LogicVRegister srcdst,
+                                  const LogicVRegister& src1,
+                                  const LogicVRegister& src2) {
+  uint64_t w[4] = {};
+  uint64_t x[4] = {};
+  uint64_t y[4] = {};
+  uint64_t result[4];
+  srcdst.UintArray(kFormat4S, w);
+  src1.UintArray(kFormat4S, x);
+  src2.UintArray(kFormat4S, y);
+
+  result[0] = SHASURotate<uint32_t, 17, 19, 10>(y[2]) + w[0] + x[1];
+  result[1] = SHASURotate<uint32_t, 17, 19, 10>(y[3]) + w[1] + x[2];
+  result[2] = SHASURotate<uint32_t, 17, 19, 10>(result[0]) + w[2] + x[3];
+  result[3] = SHASURotate<uint32_t, 17, 19, 10>(result[1]) + w[3] + y[0];
+
+  srcdst.SetUintArray(kFormat4S, result);
+  return srcdst;
+}
+
+LogicVRegister Simulator::sha512h(LogicVRegister srcdst,
+                                  const LogicVRegister& src1,
+                                  const LogicVRegister& src2) {
+  uint64_t w[2] = {};
+  uint64_t x[2] = {};
+  uint64_t y[2] = {};
+  uint64_t result[2] = {};
+  srcdst.UintArray(kFormat2D, w);
+  src1.UintArray(kFormat2D, x);
+  src2.UintArray(kFormat2D, y);
+
+  result[1] = (y[1] & x[0]) ^ (~y[1] & x[1]);
+  result[1] += SHASigma<uint64_t, 14, 18, 41>(y[1]) + w[1];
+
+  uint64_t tmp = result[1] + y[0];
+
+  result[0] = (tmp & y[1]) ^ (~tmp & x[0]);
+  result[0] += SHASigma<uint64_t, 14, 18, 41>(tmp) + w[0];
+
+  srcdst.SetUintArray(kFormat2D, result);
+  return srcdst;
+}
+
+LogicVRegister Simulator::sha512h2(LogicVRegister srcdst,
+                                   const LogicVRegister& src1,
+                                   const LogicVRegister& src2) {
+  uint64_t w[2] = {};
+  uint64_t x[2] = {};
+  uint64_t y[2] = {};
+  uint64_t result[2] = {};
+  srcdst.UintArray(kFormat2D, w);
+  src1.UintArray(kFormat2D, x);
+  src2.UintArray(kFormat2D, y);
+
+  result[1] = (x[0] & y[1]) ^ (x[0] & y[0]) ^ (y[1] & y[0]);
+  result[1] += SHASigma<uint64_t, 28, 34, 39>(y[0]) + w[1];
+
+  result[0] = (result[1] & y[0]) ^ (result[1] & y[1]) ^ (y[1] & y[0]);
+  result[0] += SHASigma<uint64_t, 28, 34, 39>(result[1]) + w[0];
+
+  srcdst.SetUintArray(kFormat2D, result);
+  return srcdst;
+}
+
+LogicVRegister Simulator::sha512su0(LogicVRegister srcdst,
+                                    const LogicVRegister& src1) {
+  uint64_t w[2] = {};
+  uint64_t x[2] = {};
+  uint64_t result[2] = {};
+  srcdst.UintArray(kFormat2D, w);
+  src1.UintArray(kFormat2D, x);
+
+  result[0] = SHASURotate<uint64_t, 1, 8, 7>(w[1]) + w[0];
+  result[1] = SHASURotate<uint64_t, 1, 8, 7>(x[0]) + w[1];
+
+  srcdst.SetUintArray(kFormat2D, result);
+  return srcdst;
+}
+
+LogicVRegister Simulator::sha512su1(LogicVRegister srcdst,
+                                    const LogicVRegister& src1,
+                                    const LogicVRegister& src2) {
+  uint64_t w[2] = {};
+  uint64_t x[2] = {};
+  uint64_t y[2] = {};
+  uint64_t result[2] = {};
+  srcdst.UintArray(kFormat2D, w);
+  src1.UintArray(kFormat2D, x);
+  src2.UintArray(kFormat2D, y);
+
+  result[1] = w[1] + SHASURotate<uint64_t, 19, 61, 6>(x[1]) + y[1];
+  result[0] = w[0] + SHASURotate<uint64_t, 19, 61, 6>(x[0]) + y[0];
+
+  srcdst.SetUintArray(kFormat2D, result);
+  return srcdst;
+}
+
+static uint8_t GalMul(int table, uint64_t x) {
+  // Galois multiplication lookup tables.
+  static const uint8_t ffmul02[256] = {
+      0x00, 0x02, 0x04, 0x06, 0x08, 0x0a, 0x0c, 0x0e, 0x10, 0x12, 0x14, 0x16,
+      0x18, 0x1a, 0x1c, 0x1e, 0x20, 0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e,
+      0x30, 0x32, 0x34, 0x36, 0x38, 0x3a, 0x3c, 0x3e, 0x40, 0x42, 0x44, 0x46,
+      0x48, 0x4a, 0x4c, 0x4e, 0x50, 0x52, 0x54, 0x56, 0x58, 0x5a, 0x5c, 0x5e,
+      0x60, 0x62, 0x64, 0x66, 0x68, 0x6a, 0x6c, 0x6e, 0x70, 0x72, 0x74, 0x76,
+      0x78, 0x7a, 0x7c, 0x7e, 0x80, 0x82, 0x84, 0x86, 0x88, 0x8a, 0x8c, 0x8e,
+      0x90, 0x92, 0x94, 0x96, 0x98, 0x9a, 0x9c, 0x9e, 0xa0, 0xa2, 0xa4, 0xa6,
+      0xa8, 0xaa, 0xac, 0xae, 0xb0, 0xb2, 0xb4, 0xb6, 0xb8, 0xba, 0xbc, 0xbe,
+      0xc0, 0xc2, 0xc4, 0xc6, 0xc8, 0xca, 0xcc, 0xce, 0xd0, 0xd2, 0xd4, 0xd6,
+      0xd8, 0xda, 0xdc, 0xde, 0xe0, 0xe2, 0xe4, 0xe6, 0xe8, 0xea, 0xec, 0xee,
+      0xf0, 0xf2, 0xf4, 0xf6, 0xf8, 0xfa, 0xfc, 0xfe, 0x1b, 0x19, 0x1f, 0x1d,
+      0x13, 0x11, 0x17, 0x15, 0x0b, 0x09, 0x0f, 0x0d, 0x03, 0x01, 0x07, 0x05,
+      0x3b, 0x39, 0x3f, 0x3d, 0x33, 0x31, 0x37, 0x35, 0x2b, 0x29, 0x2f, 0x2d,
+      0x23, 0x21, 0x27, 0x25, 0x5b, 0x59, 0x5f, 0x5d, 0x53, 0x51, 0x57, 0x55,
+      0x4b, 0x49, 0x4f, 0x4d, 0x43, 0x41, 0x47, 0x45, 0x7b, 0x79, 0x7f, 0x7d,
+      0x73, 0x71, 0x77, 0x75, 0x6b, 0x69, 0x6f, 0x6d, 0x63, 0x61, 0x67, 0x65,
+      0x9b, 0x99, 0x9f, 0x9d, 0x93, 0x91, 0x97, 0x95, 0x8b, 0x89, 0x8f, 0x8d,
+      0x83, 0x81, 0x87, 0x85, 0xbb, 0xb9, 0xbf, 0xbd, 0xb3, 0xb1, 0xb7, 0xb5,
+      0xab, 0xa9, 0xaf, 0xad, 0xa3, 0xa1, 0xa7, 0xa5, 0xdb, 0xd9, 0xdf, 0xdd,
+      0xd3, 0xd1, 0xd7, 0xd5, 0xcb, 0xc9, 0xcf, 0xcd, 0xc3, 0xc1, 0xc7, 0xc5,
+      0xfb, 0xf9, 0xff, 0xfd, 0xf3, 0xf1, 0xf7, 0xf5, 0xeb, 0xe9, 0xef, 0xed,
+      0xe3, 0xe1, 0xe7, 0xe5,
+  };
+
+  static const uint8_t ffmul03[256] = {
+      0x00, 0x03, 0x06, 0x05, 0x0c, 0x0f, 0x0a, 0x09, 0x18, 0x1b, 0x1e, 0x1d,
+      0x14, 0x17, 0x12, 0x11, 0x30, 0x33, 0x36, 0x35, 0x3c, 0x3f, 0x3a, 0x39,
+      0x28, 0x2b, 0x2e, 0x2d, 0x24, 0x27, 0x22, 0x21, 0x60, 0x63, 0x66, 0x65,
+      0x6c, 0x6f, 0x6a, 0x69, 0x78, 0x7b, 0x7e, 0x7d, 0x74, 0x77, 0x72, 0x71,
+      0x50, 0x53, 0x56, 0x55, 0x5c, 0x5f, 0x5a, 0x59, 0x48, 0x4b, 0x4e, 0x4d,
+      0x44, 0x47, 0x42, 0x41, 0xc0, 0xc3, 0xc6, 0xc5, 0xcc, 0xcf, 0xca, 0xc9,
+      0xd8, 0xdb, 0xde, 0xdd, 0xd4, 0xd7, 0xd2, 0xd1, 0xf0, 0xf3, 0xf6, 0xf5,
+      0xfc, 0xff, 0xfa, 0xf9, 0xe8, 0xeb, 0xee, 0xed, 0xe4, 0xe7, 0xe2, 0xe1,
+      0xa0, 0xa3, 0xa6, 0xa5, 0xac, 0xaf, 0xaa, 0xa9, 0xb8, 0xbb, 0xbe, 0xbd,
+      0xb4, 0xb7, 0xb2, 0xb1, 0x90, 0x93, 0x96, 0x95, 0x9c, 0x9f, 0x9a, 0x99,
+      0x88, 0x8b, 0x8e, 0x8d, 0x84, 0x87, 0x82, 0x81, 0x9b, 0x98, 0x9d, 0x9e,
+      0x97, 0x94, 0x91, 0x92, 0x83, 0x80, 0x85, 0x86, 0x8f, 0x8c, 0x89, 0x8a,
+      0xab, 0xa8, 0xad, 0xae, 0xa7, 0xa4, 0xa1, 0xa2, 0xb3, 0xb0, 0xb5, 0xb6,
+      0xbf, 0xbc, 0xb9, 0xba, 0xfb, 0xf8, 0xfd, 0xfe, 0xf7, 0xf4, 0xf1, 0xf2,
+      0xe3, 0xe0, 0xe5, 0xe6, 0xef, 0xec, 0xe9, 0xea, 0xcb, 0xc8, 0xcd, 0xce,
+      0xc7, 0xc4, 0xc1, 0xc2, 0xd3, 0xd0, 0xd5, 0xd6, 0xdf, 0xdc, 0xd9, 0xda,
+      0x5b, 0x58, 0x5d, 0x5e, 0x57, 0x54, 0x51, 0x52, 0x43, 0x40, 0x45, 0x46,
+      0x4f, 0x4c, 0x49, 0x4a, 0x6b, 0x68, 0x6d, 0x6e, 0x67, 0x64, 0x61, 0x62,
+      0x73, 0x70, 0x75, 0x76, 0x7f, 0x7c, 0x79, 0x7a, 0x3b, 0x38, 0x3d, 0x3e,
+      0x37, 0x34, 0x31, 0x32, 0x23, 0x20, 0x25, 0x26, 0x2f, 0x2c, 0x29, 0x2a,
+      0x0b, 0x08, 0x0d, 0x0e, 0x07, 0x04, 0x01, 0x02, 0x13, 0x10, 0x15, 0x16,
+      0x1f, 0x1c, 0x19, 0x1a,
+  };
+
+  static const uint8_t ffmul09[256] = {
+      0x00, 0x09, 0x12, 0x1b, 0x24, 0x2d, 0x36, 0x3f, 0x48, 0x41, 0x5a, 0x53,
+      0x6c, 0x65, 0x7e, 0x77, 0x90, 0x99, 0x82, 0x8b, 0xb4, 0xbd, 0xa6, 0xaf,
+      0xd8, 0xd1, 0xca, 0xc3, 0xfc, 0xf5, 0xee, 0xe7, 0x3b, 0x32, 0x29, 0x20,
+      0x1f, 0x16, 0x0d, 0x04, 0x73, 0x7a, 0x61, 0x68, 0x57, 0x5e, 0x45, 0x4c,
+      0xab, 0xa2, 0xb9, 0xb0, 0x8f, 0x86, 0x9d, 0x94, 0xe3, 0xea, 0xf1, 0xf8,
+      0xc7, 0xce, 0xd5, 0xdc, 0x76, 0x7f, 0x64, 0x6d, 0x52, 0x5b, 0x40, 0x49,
+      0x3e, 0x37, 0x2c, 0x25, 0x1a, 0x13, 0x08, 0x01, 0xe6, 0xef, 0xf4, 0xfd,
+      0xc2, 0xcb, 0xd0, 0xd9, 0xae, 0xa7, 0xbc, 0xb5, 0x8a, 0x83, 0x98, 0x91,
+      0x4d, 0x44, 0x5f, 0x56, 0x69, 0x60, 0x7b, 0x72, 0x05, 0x0c, 0x17, 0x1e,
+      0x21, 0x28, 0x33, 0x3a, 0xdd, 0xd4, 0xcf, 0xc6, 0xf9, 0xf0, 0xeb, 0xe2,
+      0x95, 0x9c, 0x87, 0x8e, 0xb1, 0xb8, 0xa3, 0xaa, 0xec, 0xe5, 0xfe, 0xf7,
+      0xc8, 0xc1, 0xda, 0xd3, 0xa4, 0xad, 0xb6, 0xbf, 0x80, 0x89, 0x92, 0x9b,
+      0x7c, 0x75, 0x6e, 0x67, 0x58, 0x51, 0x4a, 0x43, 0x34, 0x3d, 0x26, 0x2f,
+      0x10, 0x19, 0x02, 0x0b, 0xd7, 0xde, 0xc5, 0xcc, 0xf3, 0xfa, 0xe1, 0xe8,
+      0x9f, 0x96, 0x8d, 0x84, 0xbb, 0xb2, 0xa9, 0xa0, 0x47, 0x4e, 0x55, 0x5c,
+      0x63, 0x6a, 0x71, 0x78, 0x0f, 0x06, 0x1d, 0x14, 0x2b, 0x22, 0x39, 0x30,
+      0x9a, 0x93, 0x88, 0x81, 0xbe, 0xb7, 0xac, 0xa5, 0xd2, 0xdb, 0xc0, 0xc9,
+      0xf6, 0xff, 0xe4, 0xed, 0x0a, 0x03, 0x18, 0x11, 0x2e, 0x27, 0x3c, 0x35,
+      0x42, 0x4b, 0x50, 0x59, 0x66, 0x6f, 0x74, 0x7d, 0xa1, 0xa8, 0xb3, 0xba,
+      0x85, 0x8c, 0x97, 0x9e, 0xe9, 0xe0, 0xfb, 0xf2, 0xcd, 0xc4, 0xdf, 0xd6,
+      0x31, 0x38, 0x23, 0x2a, 0x15, 0x1c, 0x07, 0x0e, 0x79, 0x70, 0x6b, 0x62,
+      0x5d, 0x54, 0x4f, 0x46,
+  };
+
+  static const uint8_t ffmul0b[256] = {
+      0x00, 0x0b, 0x16, 0x1d, 0x2c, 0x27, 0x3a, 0x31, 0x58, 0x53, 0x4e, 0x45,
+      0x74, 0x7f, 0x62, 0x69, 0xb0, 0xbb, 0xa6, 0xad, 0x9c, 0x97, 0x8a, 0x81,
+      0xe8, 0xe3, 0xfe, 0xf5, 0xc4, 0xcf, 0xd2, 0xd9, 0x7b, 0x70, 0x6d, 0x66,
+      0x57, 0x5c, 0x41, 0x4a, 0x23, 0x28, 0x35, 0x3e, 0x0f, 0x04, 0x19, 0x12,
+      0xcb, 0xc0, 0xdd, 0xd6, 0xe7, 0xec, 0xf1, 0xfa, 0x93, 0x98, 0x85, 0x8e,
+      0xbf, 0xb4, 0xa9, 0xa2, 0xf6, 0xfd, 0xe0, 0xeb, 0xda, 0xd1, 0xcc, 0xc7,
+      0xae, 0xa5, 0xb8, 0xb3, 0x82, 0x89, 0x94, 0x9f, 0x46, 0x4d, 0x50, 0x5b,
+      0x6a, 0x61, 0x7c, 0x77, 0x1e, 0x15, 0x08, 0x03, 0x32, 0x39, 0x24, 0x2f,
+      0x8d, 0x86, 0x9b, 0x90, 0xa1, 0xaa, 0xb7, 0xbc, 0xd5, 0xde, 0xc3, 0xc8,
+      0xf9, 0xf2, 0xef, 0xe4, 0x3d, 0x36, 0x2b, 0x20, 0x11, 0x1a, 0x07, 0x0c,
+      0x65, 0x6e, 0x73, 0x78, 0x49, 0x42, 0x5f, 0x54, 0xf7, 0xfc, 0xe1, 0xea,
+      0xdb, 0xd0, 0xcd, 0xc6, 0xaf, 0xa4, 0xb9, 0xb2, 0x83, 0x88, 0x95, 0x9e,
+      0x47, 0x4c, 0x51, 0x5a, 0x6b, 0x60, 0x7d, 0x76, 0x1f, 0x14, 0x09, 0x02,
+      0x33, 0x38, 0x25, 0x2e, 0x8c, 0x87, 0x9a, 0x91, 0xa0, 0xab, 0xb6, 0xbd,
+      0xd4, 0xdf, 0xc2, 0xc9, 0xf8, 0xf3, 0xee, 0xe5, 0x3c, 0x37, 0x2a, 0x21,
+      0x10, 0x1b, 0x06, 0x0d, 0x64, 0x6f, 0x72, 0x79, 0x48, 0x43, 0x5e, 0x55,
+      0x01, 0x0a, 0x17, 0x1c, 0x2d, 0x26, 0x3b, 0x30, 0x59, 0x52, 0x4f, 0x44,
+      0x75, 0x7e, 0x63, 0x68, 0xb1, 0xba, 0xa7, 0xac, 0x9d, 0x96, 0x8b, 0x80,
+      0xe9, 0xe2, 0xff, 0xf4, 0xc5, 0xce, 0xd3, 0xd8, 0x7a, 0x71, 0x6c, 0x67,
+      0x56, 0x5d, 0x40, 0x4b, 0x22, 0x29, 0x34, 0x3f, 0x0e, 0x05, 0x18, 0x13,
+      0xca, 0xc1, 0xdc, 0xd7, 0xe6, 0xed, 0xf0, 0xfb, 0x92, 0x99, 0x84, 0x8f,
+      0xbe, 0xb5, 0xa8, 0xa3,
+  };
+
+  static const uint8_t ffmul0d[256] = {
+      0x00, 0x0d, 0x1a, 0x17, 0x34, 0x39, 0x2e, 0x23, 0x68, 0x65, 0x72, 0x7f,
+      0x5c, 0x51, 0x46, 0x4b, 0xd0, 0xdd, 0xca, 0xc7, 0xe4, 0xe9, 0xfe, 0xf3,
+      0xb8, 0xb5, 0xa2, 0xaf, 0x8c, 0x81, 0x96, 0x9b, 0xbb, 0xb6, 0xa1, 0xac,
+      0x8f, 0x82, 0x95, 0x98, 0xd3, 0xde, 0xc9, 0xc4, 0xe7, 0xea, 0xfd, 0xf0,
+      0x6b, 0x66, 0x71, 0x7c, 0x5f, 0x52, 0x45, 0x48, 0x03, 0x0e, 0x19, 0x14,
+      0x37, 0x3a, 0x2d, 0x20, 0x6d, 0x60, 0x77, 0x7a, 0x59, 0x54, 0x43, 0x4e,
+      0x05, 0x08, 0x1f, 0x12, 0x31, 0x3c, 0x2b, 0x26, 0xbd, 0xb0, 0xa7, 0xaa,
+      0x89, 0x84, 0x93, 0x9e, 0xd5, 0xd8, 0xcf, 0xc2, 0xe1, 0xec, 0xfb, 0xf6,
+      0xd6, 0xdb, 0xcc, 0xc1, 0xe2, 0xef, 0xf8, 0xf5, 0xbe, 0xb3, 0xa4, 0xa9,
+      0x8a, 0x87, 0x90, 0x9d, 0x06, 0x0b, 0x1c, 0x11, 0x32, 0x3f, 0x28, 0x25,
+      0x6e, 0x63, 0x74, 0x79, 0x5a, 0x57, 0x40, 0x4d, 0xda, 0xd7, 0xc0, 0xcd,
+      0xee, 0xe3, 0xf4, 0xf9, 0xb2, 0xbf, 0xa8, 0xa5, 0x86, 0x8b, 0x9c, 0x91,
+      0x0a, 0x07, 0x10, 0x1d, 0x3e, 0x33, 0x24, 0x29, 0x62, 0x6f, 0x78, 0x75,
+      0x56, 0x5b, 0x4c, 0x41, 0x61, 0x6c, 0x7b, 0x76, 0x55, 0x58, 0x4f, 0x42,
+      0x09, 0x04, 0x13, 0x1e, 0x3d, 0x30, 0x27, 0x2a, 0xb1, 0xbc, 0xab, 0xa6,
+      0x85, 0x88, 0x9f, 0x92, 0xd9, 0xd4, 0xc3, 0xce, 0xed, 0xe0, 0xf7, 0xfa,
+      0xb7, 0xba, 0xad, 0xa0, 0x83, 0x8e, 0x99, 0x94, 0xdf, 0xd2, 0xc5, 0xc8,
+      0xeb, 0xe6, 0xf1, 0xfc, 0x67, 0x6a, 0x7d, 0x70, 0x53, 0x5e, 0x49, 0x44,
+      0x0f, 0x02, 0x15, 0x18, 0x3b, 0x36, 0x21, 0x2c, 0x0c, 0x01, 0x16, 0x1b,
+      0x38, 0x35, 0x22, 0x2f, 0x64, 0x69, 0x7e, 0x73, 0x50, 0x5d, 0x4a, 0x47,
+      0xdc, 0xd1, 0xc6, 0xcb, 0xe8, 0xe5, 0xf2, 0xff, 0xb4, 0xb9, 0xae, 0xa3,
+      0x80, 0x8d, 0x9a, 0x97,
+  };
+
+  static const uint8_t ffmul0e[256] = {
+      0x00, 0x0e, 0x1c, 0x12, 0x38, 0x36, 0x24, 0x2a, 0x70, 0x7e, 0x6c, 0x62,
+      0x48, 0x46, 0x54, 0x5a, 0xe0, 0xee, 0xfc, 0xf2, 0xd8, 0xd6, 0xc4, 0xca,
+      0x90, 0x9e, 0x8c, 0x82, 0xa8, 0xa6, 0xb4, 0xba, 0xdb, 0xd5, 0xc7, 0xc9,
+      0xe3, 0xed, 0xff, 0xf1, 0xab, 0xa5, 0xb7, 0xb9, 0x93, 0x9d, 0x8f, 0x81,
+      0x3b, 0x35, 0x27, 0x29, 0x03, 0x0d, 0x1f, 0x11, 0x4b, 0x45, 0x57, 0x59,
+      0x73, 0x7d, 0x6f, 0x61, 0xad, 0xa3, 0xb1, 0xbf, 0x95, 0x9b, 0x89, 0x87,
+      0xdd, 0xd3, 0xc1, 0xcf, 0xe5, 0xeb, 0xf9, 0xf7, 0x4d, 0x43, 0x51, 0x5f,
+      0x75, 0x7b, 0x69, 0x67, 0x3d, 0x33, 0x21, 0x2f, 0x05, 0x0b, 0x19, 0x17,
+      0x76, 0x78, 0x6a, 0x64, 0x4e, 0x40, 0x52, 0x5c, 0x06, 0x08, 0x1a, 0x14,
+      0x3e, 0x30, 0x22, 0x2c, 0x96, 0x98, 0x8a, 0x84, 0xae, 0xa0, 0xb2, 0xbc,
+      0xe6, 0xe8, 0xfa, 0xf4, 0xde, 0xd0, 0xc2, 0xcc, 0x41, 0x4f, 0x5d, 0x53,
+      0x79, 0x77, 0x65, 0x6b, 0x31, 0x3f, 0x2d, 0x23, 0x09, 0x07, 0x15, 0x1b,
+      0xa1, 0xaf, 0xbd, 0xb3, 0x99, 0x97, 0x85, 0x8b, 0xd1, 0xdf, 0xcd, 0xc3,
+      0xe9, 0xe7, 0xf5, 0xfb, 0x9a, 0x94, 0x86, 0x88, 0xa2, 0xac, 0xbe, 0xb0,
+      0xea, 0xe4, 0xf6, 0xf8, 0xd2, 0xdc, 0xce, 0xc0, 0x7a, 0x74, 0x66, 0x68,
+      0x42, 0x4c, 0x5e, 0x50, 0x0a, 0x04, 0x16, 0x18, 0x32, 0x3c, 0x2e, 0x20,
+      0xec, 0xe2, 0xf0, 0xfe, 0xd4, 0xda, 0xc8, 0xc6, 0x9c, 0x92, 0x80, 0x8e,
+      0xa4, 0xaa, 0xb8, 0xb6, 0x0c, 0x02, 0x10, 0x1e, 0x34, 0x3a, 0x28, 0x26,
+      0x7c, 0x72, 0x60, 0x6e, 0x44, 0x4a, 0x58, 0x56, 0x37, 0x39, 0x2b, 0x25,
+      0x0f, 0x01, 0x13, 0x1d, 0x47, 0x49, 0x5b, 0x55, 0x7f, 0x71, 0x63, 0x6d,
+      0xd7, 0xd9, 0xcb, 0xc5, 0xef, 0xe1, 0xf3, 0xfd, 0xa7, 0xa9, 0xbb, 0xb5,
+      0x9f, 0x91, 0x83, 0x8d,
+  };
+
+  x &= 255;
+  switch (table) {
+    case 0x2:
+      return ffmul02[x];
+    case 0x3:
+      return ffmul03[x];
+    case 0x9:
+      return ffmul09[x];
+    case 0xb:
+      return ffmul0b[x];
+    case 0xd:
+      return ffmul0d[x];
+    case 0xe:
+      return ffmul0e[x];
+    case 0:
+      // Case 0 indicates no table lookup, used for some forward mix stages.
+      return static_cast<uint8_t>(x);
+    default:
+      VIXL_UNREACHABLE();
+      return static_cast<uint8_t>(x);
+  }
+}
+
+
+static uint8_t AESMixInner(uint64_t* x, int stage, bool inverse) {
+  VIXL_ASSERT(IsUint2(stage));
+
+  int imc_gm[7] = {0xb, 0xd, 0x9, 0xe};
+  int mc_gm[7] = {0x3, 0x0, 0x0, 0x2};
+
+  int* gm = inverse ? imc_gm : mc_gm;
+  int index = 3 - stage;
+
+  uint8_t result = 0;
+  for (int i = 0; i < 4; i++) {
+    result ^= GalMul(gm[(index + i) % 4], x[i]);
+  }
+  return result;
+}
+
+
+LogicVRegister Simulator::aesmix(LogicVRegister dst,
+                                 const LogicVRegister& src,
+                                 bool inverse) {
+  uint64_t in[16] = {};
+  src.UintArray(kFormat16B, in);
+  dst.ClearForWrite(kFormat16B);
+
+  for (int c = 0; c < 16; c++) {
+    int cmod4 = c % 4;
+    int d = c - cmod4;
+    VIXL_ASSERT((d == 0) || (d == 4) || (d == 8) || (d == 12));
+    dst.SetUint(kFormat16B, c, AESMixInner(&in[d], cmod4, inverse));
+  }
+
+  return dst;
+}
+
+LogicVRegister Simulator::aes(LogicVRegister dst,
+                              const LogicVRegister& src,
+                              bool decrypt) {
+  dst.ClearForWrite(kFormat16B);
+
+  // (Inverse) shift rows.
+  uint8_t shift[] = {0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11};
+  uint8_t shift_inv[] = {0, 13, 10, 7, 4, 1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3};
+  for (int i = 0; i < LaneCountFromFormat(kFormat16B); i++) {
+    uint8_t index = decrypt ? shift_inv[i] : shift[i];
+    dst.SetUint(kFormat16B, i, src.Uint(kFormat16B, index));
+  }
+
+  // (Inverse) substitute bytes.
+  static const uint8_t gf2[256] = {
+      0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b,
+      0xfe, 0xd7, 0xab, 0x76, 0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0,
+      0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0, 0xb7, 0xfd, 0x93, 0x26,
+      0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
+      0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2,
+      0xeb, 0x27, 0xb2, 0x75, 0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0,
+      0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84, 0x53, 0xd1, 0x00, 0xed,
+      0x20, 0xfc, 0xb1, 0x5b, 0x6a, 0xcb, 0xbe, 0x39, 0x4a, 0x4c, 0x58, 0xcf,
+      0xd0, 0xef, 0xaa, 0xfb, 0x43, 0x4d, 0x33, 0x85, 0x45, 0xf9, 0x02, 0x7f,
+      0x50, 0x3c, 0x9f, 0xa8, 0x51, 0xa3, 0x40, 0x8f, 0x92, 0x9d, 0x38, 0xf5,
+      0xbc, 0xb6, 0xda, 0x21, 0x10, 0xff, 0xf3, 0xd2, 0xcd, 0x0c, 0x13, 0xec,
+      0x5f, 0x97, 0x44, 0x17, 0xc4, 0xa7, 0x7e, 0x3d, 0x64, 0x5d, 0x19, 0x73,
+      0x60, 0x81, 0x4f, 0xdc, 0x22, 0x2a, 0x90, 0x88, 0x46, 0xee, 0xb8, 0x14,
+      0xde, 0x5e, 0x0b, 0xdb, 0xe0, 0x32, 0x3a, 0x0a, 0x49, 0x06, 0x24, 0x5c,
+      0xc2, 0xd3, 0xac, 0x62, 0x91, 0x95, 0xe4, 0x79, 0xe7, 0xc8, 0x37, 0x6d,
+      0x8d, 0xd5, 0x4e, 0xa9, 0x6c, 0x56, 0xf4, 0xea, 0x65, 0x7a, 0xae, 0x08,
+      0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6, 0xe8, 0xdd, 0x74, 0x1f,
+      0x4b, 0xbd, 0x8b, 0x8a, 0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e,
+      0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e, 0xe1, 0xf8, 0x98, 0x11,
+      0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
+      0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f,
+      0xb0, 0x54, 0xbb, 0x16,
+  };
+  static const uint8_t gf2_inv[256] = {
+      0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e,
+      0x81, 0xf3, 0xd7, 0xfb, 0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87,
+      0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb, 0x54, 0x7b, 0x94, 0x32,
+      0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e,
+      0x08, 0x2e, 0xa1, 0x66, 0x28, 0xd9, 0x24, 0xb2, 0x76, 0x5b, 0xa2, 0x49,
+      0x6d, 0x8b, 0xd1, 0x25, 0x72, 0xf8, 0xf6, 0x64, 0x86, 0x68, 0x98, 0x16,
+      0xd4, 0xa4, 0x5c, 0xcc, 0x5d, 0x65, 0xb6, 0x92, 0x6c, 0x70, 0x48, 0x50,
+      0xfd, 0xed, 0xb9, 0xda, 0x5e, 0x15, 0x46, 0x57, 0xa7, 0x8d, 0x9d, 0x84,
+      0x90, 0xd8, 0xab, 0x00, 0x8c, 0xbc, 0xd3, 0x0a, 0xf7, 0xe4, 0x58, 0x05,
+      0xb8, 0xb3, 0x45, 0x06, 0xd0, 0x2c, 0x1e, 0x8f, 0xca, 0x3f, 0x0f, 0x02,
+      0xc1, 0xaf, 0xbd, 0x03, 0x01, 0x13, 0x8a, 0x6b, 0x3a, 0x91, 0x11, 0x41,
+      0x4f, 0x67, 0xdc, 0xea, 0x97, 0xf2, 0xcf, 0xce, 0xf0, 0xb4, 0xe6, 0x73,
+      0x96, 0xac, 0x74, 0x22, 0xe7, 0xad, 0x35, 0x85, 0xe2, 0xf9, 0x37, 0xe8,
+      0x1c, 0x75, 0xdf, 0x6e, 0x47, 0xf1, 0x1a, 0x71, 0x1d, 0x29, 0xc5, 0x89,
+      0x6f, 0xb7, 0x62, 0x0e, 0xaa, 0x18, 0xbe, 0x1b, 0xfc, 0x56, 0x3e, 0x4b,
+      0xc6, 0xd2, 0x79, 0x20, 0x9a, 0xdb, 0xc0, 0xfe, 0x78, 0xcd, 0x5a, 0xf4,
+      0x1f, 0xdd, 0xa8, 0x33, 0x88, 0x07, 0xc7, 0x31, 0xb1, 0x12, 0x10, 0x59,
+      0x27, 0x80, 0xec, 0x5f, 0x60, 0x51, 0x7f, 0xa9, 0x19, 0xb5, 0x4a, 0x0d,
+      0x2d, 0xe5, 0x7a, 0x9f, 0x93, 0xc9, 0x9c, 0xef, 0xa0, 0xe0, 0x3b, 0x4d,
+      0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61,
+      0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63,
+      0x55, 0x21, 0x0c, 0x7d,
+  };
+
+  for (int i = 0; i < LaneCountFromFormat(kFormat16B); i++) {
+    const uint8_t* table = decrypt ? gf2_inv : gf2;
+    dst.SetUint(kFormat16B, i, table[dst.Uint(kFormat16B, i)]);
+  }
+  return dst;
+}
+
+LogicVRegister Simulator::sm3partw1(LogicVRegister srcdst,
+                                    const LogicVRegister& src1,
+                                    const LogicVRegister& src2) {
+  using namespace std::placeholders;
+  auto ROL = std::bind(RotateLeft, _1, _2, kSRegSize);
+
+  SimVRegister temp;
+
+  ext(kFormat16B, temp, src2, temp, 4);
+  rol(kFormat4S, temp, temp, 15);
+  eor(kFormat4S, temp, temp, src1);
+  LogicVRegister r = eor(kFormat4S, temp, temp, srcdst);
+
+  uint64_t result[4] = {};
+  r.UintArray(kFormat4S, result);
+  for (int i = 0; i < 4; i++) {
+    if (i == 3) {
+      // result[3] already contains srcdst[3] ^ src1[3] from the operations
+      // above.
+      result[i] ^= ROL(result[0], 15);
+    }
+    result[i] ^= ROL(result[i], 15) ^ ROL(result[i], 23);
+  }
+  srcdst.SetUintArray(kFormat4S, result);
+  return srcdst;
+}
+
+LogicVRegister Simulator::sm3partw2(LogicVRegister srcdst,
+                                    const LogicVRegister& src1,
+                                    const LogicVRegister& src2) {
+  using namespace std::placeholders;
+  auto ROL = std::bind(RotateLeft, _1, _2, kSRegSize);
+
+  SimVRegister temp;
+  VectorFormat vf = kFormat4S;
+
+  rol(vf, temp, src2, 7);
+  LogicVRegister r = eor(vf, temp, temp, src1);
+  eor(vf, srcdst, temp, srcdst);
+
+  uint64_t tmp2 = ROL(r.Uint(vf, 0), 15);
+  tmp2 ^= ROL(tmp2, 15) ^ ROL(tmp2, 23);
+  srcdst.SetUint(vf, 3, srcdst.Uint(vf, 3) ^ tmp2);
+  return srcdst;
+}
+
+LogicVRegister Simulator::sm3ss1(LogicVRegister dst,
+                                 const LogicVRegister& src1,
+                                 const LogicVRegister& src2,
+                                 const LogicVRegister& src3) {
+  using namespace std::placeholders;
+  auto ROL = std::bind(RotateLeft, _1, _2, kSRegSize);
+
+  VectorFormat vf = kFormat4S;
+  uint64_t result = ROL(src1.Uint(vf, 3), 12);
+  result += src2.Uint(vf, 3) + src3.Uint(vf, 3);
+  dst.Clear();
+  dst.SetUint(vf, 3, ROL(result, 7));
+  return dst;
+}
+
+LogicVRegister Simulator::sm3tt1(LogicVRegister srcdst,
+                                 const LogicVRegister& src1,
+                                 const LogicVRegister& src2,
+                                 int index,
+                                 bool is_a) {
+  VectorFormat vf = kFormat4S;
+  using namespace std::placeholders;
+  auto ROL = std::bind(RotateLeft, _1, _2, kSRegSize);
+  auto sd = std::bind(&LogicVRegister::Uint, srcdst, vf, _1);
+
+  VIXL_ASSERT(IsUint2(index));
+
+  uint64_t wjprime = src2.Uint(vf, index);
+  uint64_t ss2 = src1.Uint(vf, 3) ^ ROL(sd(3), 12);
+
+  uint64_t tt1;
+  if (is_a) {
+    tt1 = CryptoOp<"parity"_h>(sd(1), sd(2), sd(3));
+  } else {
+    tt1 = CryptoOp<"majority"_h>(sd(1), sd(2), sd(3));
+  }
+  tt1 += sd(0) + ss2 + wjprime;
+
+  ext(kFormat16B, srcdst, srcdst, srcdst, 4);
+  srcdst.SetUint(vf, 1, ROL(sd(1), 9));
+  srcdst.SetUint(vf, 3, tt1);
+  return srcdst;
+}
+
+LogicVRegister Simulator::sm3tt2(LogicVRegister srcdst,
+                                 const LogicVRegister& src1,
+                                 const LogicVRegister& src2,
+                                 int index,
+                                 bool is_a) {
+  VectorFormat vf = kFormat4S;
+  using namespace std::placeholders;
+  auto ROL = std::bind(RotateLeft, _1, _2, kSRegSize);
+  auto sd = std::bind(&LogicVRegister::Uint, srcdst, vf, _1);
+
+  VIXL_ASSERT(IsUint2(index));
+
+  uint64_t wj = src2.Uint(vf, index);
+
+  uint64_t tt2;
+  if (is_a) {
+    tt2 = CryptoOp<"parity"_h>(sd(1), sd(2), sd(3));
+  } else {
+    tt2 = CryptoOp<"choose"_h>(sd(3), sd(2), sd(1));
+  }
+  tt2 += sd(0) + src1.Uint(vf, 3) + wj;
+
+  ext(kFormat16B, srcdst, srcdst, srcdst, 4);
+  srcdst.SetUint(vf, 1, ROL(sd(1), 19));
+  tt2 ^= ROL(tt2, 9) ^ ROL(tt2, 17);
+  srcdst.SetUint(vf, 3, tt2);
+  return srcdst;
 }
 
 }  // namespace aarch64

@@ -32,11 +32,6 @@
 
 #include "constants-aarch64.h"
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-enum-enum-conversion"
-#endif
-
 namespace vixl {
 namespace aarch64 {
 // ISA constants. --------------------------------------------------------------
@@ -152,19 +147,19 @@ const unsigned kMTETagWidth = 4;
 
 // Make these moved float constants backwards compatible
 // with explicit vixl::aarch64:: namespace references.
-using vixl::kDoubleMantissaBits;
 using vixl::kDoubleExponentBits;
-using vixl::kFloatMantissaBits;
-using vixl::kFloatExponentBits;
-using vixl::kFloat16MantissaBits;
+using vixl::kDoubleMantissaBits;
 using vixl::kFloat16ExponentBits;
+using vixl::kFloat16MantissaBits;
+using vixl::kFloatExponentBits;
+using vixl::kFloatMantissaBits;
 
-using vixl::kFP16PositiveInfinity;
 using vixl::kFP16NegativeInfinity;
-using vixl::kFP32PositiveInfinity;
+using vixl::kFP16PositiveInfinity;
 using vixl::kFP32NegativeInfinity;
-using vixl::kFP64PositiveInfinity;
+using vixl::kFP32PositiveInfinity;
 using vixl::kFP64NegativeInfinity;
+using vixl::kFP64PositiveInfinity;
 
 using vixl::kFP16DefaultNaN;
 using vixl::kFP32DefaultNaN;
@@ -222,9 +217,10 @@ enum VectorFormat {
   kFormatVnQ = kFormatSVEQ | kFormatSVE,
   kFormatVnO = kFormatSVEO | kFormatSVE,
 
-  // An artificial value, used by simulator trace tests and a few oddball
+  // Artificial values, used by simulator trace tests and a few oddball
   // instructions (such as FMLAL).
-  kFormat2H = 0xfffffffe
+  kFormat2H = 0xfffffffe,
+  kFormat1Q = 0xfffffffd
 };
 
 // Instructions. ---------------------------------------------------------------
@@ -1140,9 +1136,5 @@ class NEONFormatDecoder {
 };
 }  // namespace aarch64
 }  // namespace vixl
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
 
 #endif  // VIXL_AARCH64_INSTRUCTIONS_AARCH64_H_
