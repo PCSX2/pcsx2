@@ -119,10 +119,10 @@ static constexpr const char* s_sdl_hat_direction_names[] = {
 };
 
 static constexpr const char* s_sdl_default_led_colors[] = {
-	"0000ff", // SDL-0
-	"ff0000", // SDL-1
-	"00ff00", // SDL-2
-	"ffff00", // SDL-3
+	"000080", // SDL-0
+	"800000", // SDL-1
+	"008000", // SDL-2
+	"808000", // SDL-3
 };
 
 static void SetControllerRGBLED(SDL_GameController* gc, u32 color)
