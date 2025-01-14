@@ -34,6 +34,7 @@
 #define CPUINFO_ARM_MIDR_KRYO_SILVER_820 UINT32_C(0x510F2110)
 #define CPUINFO_ARM_MIDR_EXYNOS_M1_M2 UINT32_C(0x530F0010)
 #define CPUINFO_ARM_MIDR_DENVER2 UINT32_C(0x4E0F0030)
+#define CPUINFO_ARM_MIDR_AMPERE_ALTRA UINT32_C(0x413fd0c1)
 
 inline static uint32_t midr_set_implementer(uint32_t midr, uint32_t implementer) {
 	return (midr & ~CPUINFO_ARM_MIDR_IMPLEMENTER_MASK) |
@@ -165,6 +166,11 @@ inline static bool midr_is_kryo_silver(uint32_t midr) {
 inline static bool midr_is_kryo_gold(uint32_t midr) {
 	const uint32_t uarch_mask = CPUINFO_ARM_MIDR_IMPLEMENTER_MASK | CPUINFO_ARM_MIDR_PART_MASK;
 	return (midr & uarch_mask) == (CPUINFO_ARM_MIDR_KRYO_GOLD & uarch_mask);
+}
+
+inline static bool midr_is_ampere_altra(uint32_t midr) {
+	const uint32_t uarch_mask = CPUINFO_ARM_MIDR_IMPLEMENTER_MASK | CPUINFO_ARM_MIDR_PART_MASK;
+	return (midr & uarch_mask) == (CPUINFO_ARM_MIDR_AMPERE_ALTRA & uarch_mask);
 }
 
 inline static uint32_t midr_score_core(uint32_t midr) {

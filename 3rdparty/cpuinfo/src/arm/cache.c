@@ -1341,7 +1341,8 @@ void cpuinfo_arm_decode_cache(
 			 * information, please refer to the technical manuals
 			 * linked above
 			 */
-			const uint32_t min_l2_size_KB = uarch == cpuinfo_uarch_neoverse_v2 ? 1024 : 256;
+			const uint32_t min_l2_size_KB =
+				(uarch == cpuinfo_uarch_neoverse_v2 || midr_is_ampere_altra(midr)) ? 1024 : 256;
 			const uint32_t min_l3_size_KB = 0;
 
 			*l1i = (struct cpuinfo_cache){
