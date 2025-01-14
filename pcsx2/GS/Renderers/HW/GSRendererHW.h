@@ -174,6 +174,7 @@ private:
 
 	u32 m_last_channel_shuffle_fbmsk = 0;
 	u32 m_last_channel_shuffle_fbp = 0;
+	u32 m_last_channel_shuffle_tbp = 0;
 	u32 m_last_channel_shuffle_end_block = 0;
 
 	GIFRegFRAME m_split_clear_start = {};
