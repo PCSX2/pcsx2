@@ -2222,7 +2222,7 @@ SCAJ-20162:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    halfPixelOffset: 4 # Aligns post bloom.
+    halfPixelOffset: 2 # Aligns post bloom.
     nativeScaling: 2 # Fixes doubled post and DOF effects.
 SCAJ-20163:
   name: "Tales of the Abyss"
@@ -6311,7 +6311,7 @@ SCES-54552:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    halfPixelOffset: 4 # Aligns post bloom.
+    halfPixelOffset: 2 # Aligns post bloom.
     nativeScaling: 2 # Fixes doubled post and DOF effects.
   patches:
     CBB4B383:
@@ -8953,7 +8953,7 @@ SCPS-15102:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    halfPixelOffset: 4 # Aligns post bloom.
+    halfPixelOffset: 2 # Aligns post bloom.
     nativeScaling: 2 # Fixes doubled post and DOF effects.
 SCPS-15103:
   name: "ガンパレード・オーケストラ 白の章 ～青森ペンギン伝説～（限定版）"
@@ -9210,7 +9210,7 @@ SCPS-17013:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    halfPixelOffset: 4 # Aligns post bloom.
+    halfPixelOffset: 2 # Aligns post bloom.
     nativeScaling: 2 # Fixes doubled post and DOF effects.
   patches:
     CDEE4B19:
@@ -9459,7 +9459,7 @@ SCPS-19254:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    halfPixelOffset: 4 # Aligns post bloom.
+    halfPixelOffset: 2 # Aligns post bloom.
     nativeScaling: 2 # Fixes doubled post and DOF effects.
 SCPS-19301:
   name: "みんなのGOLF 4 [PlayStation2 the Best]"
@@ -11990,7 +11990,7 @@ SCUS-97490:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    halfPixelOffset: 4 # Aligns post bloom.
+    halfPixelOffset: 2 # Aligns post bloom.
     nativeScaling: 2 # Fixes doubled post and DOF effects.
   patches:
     0643F90C:
@@ -12314,7 +12314,7 @@ SCUS-97572:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    halfPixelOffset: 4 # Aligns post bloom.
+    halfPixelOffset: 2 # Aligns post bloom.
     nativeScaling: 2 # Fixes doubled post and DOF effects.
 SCUS-97574:
   name: "Jak X - Combat Racing [Greatest Hits]"
@@ -13381,6 +13381,7 @@ SLED-53330:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+    mipmap: 0 # Currently causes texture flickering.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLED-53359:
@@ -17386,9 +17387,9 @@ SLES-51553:
   clampModes:
     vuClampMode: 2 # Fixes SPS in item menu.
   gsHWFixes:
-    textureInsideRT: 1 # Fixes rainbow shadow of legions.
     alignSprite: 1 # Fixes green vertical lines.
     roundSprite: 2 # Fixes vertical lines and some font artifacts but not completely fixed.
+    textureInsideRT: 1 # Fixes rainbow shadow of legions.
 SLES-51554:
   name: "Cell Damage Overdrive"
   region: "PAL-M5"
@@ -18443,6 +18444,8 @@ SLES-51981:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
   gsHWFixes:
     roundSprite: 1 # Fixes slight blur.
+    halfPixelOffset: 2 # Aligns sun post processing.
+    nativeScaling: 2 # Fixes sun lines.
 SLES-51982:
   name: "ShellShock - Nam '67"
   region: "PAL-M3"
@@ -18450,6 +18453,8 @@ SLES-51982:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
   gsHWFixes:
     roundSprite: 1 # Fixes slight blur.
+    halfPixelOffset: 2 # Aligns sun post processing.
+    nativeScaling: 2 # Fixes sun lines.
 SLES-51986:
   name: "Backyard Wrestling - Don't Try This At Home"
   region: "PAL-M5"
@@ -21588,6 +21593,7 @@ SLES-53125:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+    mipmap: 0 # Currently causes texture flickering.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLES-53127:
@@ -29547,9 +29553,9 @@ SLKA-25026:
   clampModes:
     vuClampMode: 2 # Fixes SPS in item menu.
   gsHWFixes:
-    textureInsideRT: 1 # Fixes rainbow shadow of legions.
     alignSprite: 1 # Fixes green vertical lines.
     roundSprite: 2 # Fixes vertical lines and some font artifacts but not completely fixed.
+    textureInsideRT: 1 # Fixes rainbow shadow of legions.
 SLKA-25027:
   name: "NBA Street Vol. 2"
   region: "NTSC-K"
@@ -34323,6 +34329,7 @@ SLPM-61110:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+    mipmap: 0 # Currently causes texture flickering.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLPM-61111:
@@ -40174,9 +40181,9 @@ SLPM-65249:
   clampModes:
     vuClampMode: 2 # Fixes SPS in item menu.
   gsHWFixes:
-    textureInsideRT: 1 # Fixes rainbow shadow of legions.
     alignSprite: 1 # Fixes green vertical lines.
     roundSprite: 2 # Fixes vertical lines and some font artifacts but not completely fixed.
+    textureInsideRT: 1 # Fixes rainbow shadow of legions.
 SLPM-65250:
   name: "カットビ！！ ゴルフ"
   name-sort: "かっとび！！ ごるふ"
@@ -44126,6 +44133,7 @@ SLPM-65948:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+    mipmap: 0 # Currently causes texture flickering.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLPM-65949:
@@ -46097,6 +46105,7 @@ SLPM-66257:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+    mipmap: 0 # Currently causes texture flickering.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLPM-66258:
@@ -51024,6 +51033,7 @@ SLPM-68519:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+    mipmap: 0 # Currently causes texture flickering.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLPM-68520:
@@ -64420,9 +64430,9 @@ SLUS-20695:
   clampModes:
     vuClampMode: 2 # Fixes SPS in item menu.
   gsHWFixes:
-    textureInsideRT: 1 # Fixes rainbow shadow of legions.
     alignSprite: 1 # Fixes green vertical lines.
     roundSprite: 2 # Fixes vertical lines and some font artifacts but not completely fixed.
+    textureInsideRT: 1 # Fixes rainbow shadow of legions.
 SLUS-20696:
   name: "Nickelodeon Jimmy Neutron Boy Genius - Jet Fusion"
   region: "NTSC-U"
@@ -65114,6 +65124,8 @@ SLUS-20828:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
   gsHWFixes:
     roundSprite: 1 # Fixes slight blur.
+    halfPixelOffset: 2 # Aligns sun post processing.
+    nativeScaling: 2 # Fixes sun lines.
 SLUS-20830:
   name: "Intellivision Lives!"
   region: "NTSC-U"
@@ -65943,6 +65955,7 @@ SLUS-20967:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+    mipmap: 0 # Currently causes texture flickering.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLUS-20968:
