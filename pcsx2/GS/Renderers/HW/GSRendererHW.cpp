@@ -5860,7 +5860,8 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		GL_CACHE("Source is render target, taking copy.");
 		src_target = rt;
 	}
-	else if (ds && m_conf.tex == m_conf.ds)
+	// Be careful of single page channel shuffles where depth is the source but it's not going to the same place, we can't read this directly.
+	else if (ds && m_conf.tex == m_conf.ds && (!m_channel_shuffle || static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) ==  static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0)))
 	{
 		// GL, Vulkan (in General layout), not DirectX!
 		const bool can_read_current_depth_buffer = g_gs_device->Features().test_and_sample_depth;
