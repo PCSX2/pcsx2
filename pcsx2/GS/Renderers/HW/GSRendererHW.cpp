@@ -1015,8 +1015,8 @@ GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex)
 
 		// Round up the page as channel shuffles are generally done in pages at a time
 		// Keep in mind the source might be an 8bit texture
-		int src_width = tex->GetUnscaledWidth();
-		int src_height = tex->GetUnscaledHeight();
+		int src_width = tex->m_from_target ? tex->m_from_target->m_valid.width() : tex->GetUnscaledWidth();
+		int src_height = tex->m_from_target ? tex->m_from_target->m_valid.height() : tex->GetUnscaledHeight();
 
 		if (!tex->m_from_target && GSLocalMemory::m_psm[tex->m_TEX0.PSM].bpp == 8)
 		{
@@ -2158,9 +2158,7 @@ void GSRendererHW::Draw()
 		DumpVertices(s);
 	}
 
-#ifdef ENABLE_OGL_DEBUG
 	static u32 num_skipped_channel_shuffle_draws = 0;
-#endif
 
 	// We mess with this state as an optimization, so take a copy and use that instead.
 	const GSDrawingContext* context = m_context;
@@ -2184,24 +2182,26 @@ void GSRendererHW::Draw()
 		// Tomb Raider: Underworld does similar, except with R, G, B in separate palettes, therefore
 		// we need to split on those too.
 		m_channel_shuffle = IsPossibleChannelShuffle() && m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK &&
-							m_last_channel_shuffle_fbp <= m_context->FRAME.Block() && m_last_channel_shuffle_end_block > m_context->FRAME.Block();
+							m_last_channel_shuffle_fbp <= m_context->FRAME.Block() && m_last_channel_shuffle_end_block > m_context->FRAME.Block() &&
+							m_last_channel_shuffle_tbp <= m_context->TEX0.TBP0;
 
-#ifdef ENABLE_OGL_DEBUG
 		if (m_channel_shuffle)
 		{
+			m_last_channel_shuffle_fbp = m_context->FRAME.Block();
+			m_last_channel_shuffle_tbp = m_context->TEX0.TBP0;
+
 			num_skipped_channel_shuffle_draws++;
 			return;
 		}
 
+#ifdef ENABLE_OGL_DEBUG
 		if (num_skipped_channel_shuffle_draws > 0)
-			GL_INS("Skipped %u channel shuffle draws", num_skipped_channel_shuffle_draws);
+			GL_CACHE("Skipped %d channel shuffle draws ending at %d", num_skipped_channel_shuffle_draws, s_n);
+#endif
 		num_skipped_channel_shuffle_draws = 0;
 		m_last_channel_shuffle_fbp = 0xffff;
+		m_last_channel_shuffle_tbp = 0xffff;
 		m_last_channel_shuffle_end_block = 0xffff;
-#else
-		if (m_channel_shuffle)
-			return;
-#endif
 	}
 
 	GL_PUSH("HW Draw %d (Context %u)", s_n, PRIM->CTXT);
@@ -3204,6 +3204,7 @@ void GSRendererHW::Draw()
 		if (m_channel_shuffle)
 		{
 			m_last_channel_shuffle_fbp = rt->m_TEX0.TBP0;
+			m_last_channel_shuffle_tbp = src->m_TEX0.TBP0;
 
 			// If it's a new target, we don't know where the end is as it's starting on a shuffle, so just do every shuffle following.
 			m_last_channel_shuffle_end_block = (rt->m_last_draw >= s_n) ? (MAX_BLOCKS - 1) : (rt->m_end_block < rt->m_TEX0.TBP0 ? (rt->m_end_block + MAX_BLOCKS) : rt->m_end_block);
@@ -3345,6 +3346,7 @@ void GSRendererHW::Draw()
 			if (rt)
 			{
 				m_last_channel_shuffle_fbp = rt->m_TEX0.TBP0;
+				m_last_channel_shuffle_tbp = src->m_TEX0.TBP0;
 				// Urban Chaos goes from Z16 to C32, so let's just use the rt's original end block.
 				if (!src->m_from_target || GSLocalMemory::m_psm[src->m_from_target_TEX0.PSM].bpp != GSLocalMemory::m_psm[rt->m_TEX0.PSM].bpp)
 					m_last_channel_shuffle_end_block = rt->m_end_block;
@@ -5835,8 +5837,9 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 	bool& target_region, GSVector2i& unscaled_size, float& scale, GSDevice::RecycledTexture& src_copy)
 {
 
-	const int tex_diff = tex->m_from_target ? static_cast<int>(m_cached_ctx.TEX0.TBP0 - tex->m_from_target->m_TEX0.TBP0) : 0;
+	const int tex_diff = tex->m_from_target ? static_cast<int>(m_cached_ctx.TEX0.TBP0 - tex->m_from_target->m_TEX0.TBP0) : static_cast<int>(m_cached_ctx.TEX0.TBP0 - tex->m_TEX0.TBP0);
 	const int frame_diff = rt ? static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) : 0;
+
 	// Detect framebuffer read that will need special handling
 	const GSTextureCache::Target* src_target = nullptr;
 
