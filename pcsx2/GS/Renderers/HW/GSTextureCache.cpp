@@ -2542,8 +2542,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 	// Avoid making garbage targets (usually PCRTC).
 	if (GSVector4i::loadh(size).rempty())
 		return nullptr;
-	if (TEX0.TBP0 == 0x3320 || TEX0.TBP0 == 0x32a0)
-		DevCon.Warning("Making target %x on draw %d", TEX0.TBP0, GSState::s_n);
+
 	Target* dst = Target::Create(TEX0, size.x, size.y, scale, type, true);
 	if (!dst) [[unlikely]]
 		return nullptr;
@@ -3428,6 +3427,12 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 	const u32 bw = off.bw();
 	const u32 psm = off.psm();
 
+	// Get the bounds that we're invalidating in blocks, so we can remove any targets which are completely contained.
+	// Unfortunately sometimes the draw rect is incorrect, and since the end block gets the rect -1, it'll underflow,
+	// so we need to prevent that from happening. Just make it a single block in that case, and hope for the best.
+	const u32 start_bp = GSLocalMemory::GetStartBlockAddress(off.bp(), off.bw(), off.psm(), rect);
+	const u32 end_bp = rect.rempty() ? start_bp : GSLocalMemory::GetUnwrappedEndBlockAddress(off.bp(), off.bw(), off.psm(), rect);
+
 	if (!target)
 	{
 		// Remove Source that have same BP as the render target (color&dss)
@@ -3438,7 +3443,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 			Source* s = *i;
 			++i;
 
-			if (GSUtil::HasSharedBits(bp, psm, s->m_TEX0.TBP0, s->m_TEX0.PSM) ||
+			if ((GSUtil::HasSharedBits(psm, s->m_TEX0.PSM) && (bp >= start_bp && bp < end_bp)) ||
 				(GSUtil::HasSharedBits(bp, psm, s->m_from_target_TEX0.TBP0, s->m_TEX0.PSM) && s->m_target))
 			{
 				m_src.RemoveAt(s);
@@ -3535,11 +3540,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 	if (!target)
 		return;
 
-	// Get the bounds that we're invalidating in blocks, so we can remove any targets which are completely contained.
-	// Unfortunately sometimes the draw rect is incorrect, and since the end block gets the rect -1, it'll underflow,
-	// so we need to prevent that from happening. Just make it a single block in that case, and hope for the best.
-	const u32 start_bp = GSLocalMemory::GetStartBlockAddress(off.bp(), off.bw(), off.psm(), rect);
-	const u32 end_bp = rect.rempty() ? start_bp : GSLocalMemory::GetUnwrappedEndBlockAddress(off.bp(), off.bw(), off.psm(), rect);
 
 	RGBAMask rgba;
 	rgba._u32 = GSUtil::GetChannelMask(psm);
@@ -4819,6 +4819,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			src->m_texture = dst->m_texture;
 			src->m_unscaled_size = dst->m_unscaled_size;
 			src->m_shared_texture = true;
+
+			if(channel_shuffle)
+				m_temporary_source = src;
 		}
 
 		// Invalidate immediately on recursive draws, because if we don't here, InvalidateVideoMem() will.
@@ -5074,7 +5077,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			}
 
 			// kill source immediately if it's the RT/DS, because that'll get invalidated immediately
-			if (GSRendererHW::GetInstance()->IsTBPFrameOrZ(dst->m_TEX0.TBP0))
+			if (GSRendererHW::GetInstance()->IsTBPFrameOrZ(dst->m_TEX0.TBP0) || channel_shuffle)
 			{
 				GL_CACHE("TC: Source is RT or ZBUF, invalidating after draw.");
 				m_temporary_source = src;
