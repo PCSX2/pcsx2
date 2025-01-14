@@ -97,9 +97,18 @@ void SymbolImporter::OnElfChanged(std::vector<u8> elf, const std::string& elf_fi
 		return;
 	}
 
-	AnalyseElf(std::move(elf), elf_file_name, EmuConfig.DebuggerAnalysis);
+	AnalyseElf(std::move(elf), elf_file_name, EmuConfig.DebuggerAnalysis, true);
 
 	m_symbol_table_loaded_on_boot = true;
+}
+
+void SymbolImporter::OnElfLoadedInMemory()
+{
+	{
+		std::lock_guard lock(m_elf_loaded_in_memory_mutex);
+		m_elf_loaded_in_memory = true;
+	}
+	m_elf_loaded_in_memory_condition_variable.notify_one();
 }
 
 void SymbolImporter::OnDebuggerOpened()
@@ -165,11 +174,23 @@ void SymbolImporter::LoadAndAnalyseElf(Pcsx2Config::DebugAnalysisOptions options
 		return;
 	}
 
-	AnalyseElf(elfo.ReleaseData(), elf_path, options);
+	AnalyseElf(elfo.ReleaseData(), elf_path, options, false);
 }
 
+struct SymbolImporterThreadParameters
+{
+	std::vector<u8> elf;
+	std::string elf_file_name;
+	std::string nocash_path;
+	Pcsx2Config::DebugAnalysisOptions options;
+	bool wait_until_elf_is_loaded;
+};
+
 void SymbolImporter::AnalyseElf(
-	std::vector<u8> elf, const std::string& elf_file_name, Pcsx2Config::DebugAnalysisOptions options)
+	std::vector<u8> elf,
+	const std::string& elf_file_name,
+	Pcsx2Config::DebugAnalysisOptions options,
+	bool wait_until_elf_is_loaded)
 {
 	// Search for a .sym file to load symbols from.
 	std::string nocash_path;
@@ -185,38 +206,63 @@ void SymbolImporter::AnalyseElf(
 			nocash_path = iso_file_path.substr(0, n) + ".sym";
 	}
 
-	ccc::Result<ccc::ElfFile> parsed_elf = ccc::ElfFile::parse(std::move(elf));
-	if (!parsed_elf.success())
-	{
-		ccc::report_error(parsed_elf.error());
-		return;
-	}
-
-	ccc::ElfSymbolFile symbol_file(std::move(*parsed_elf), std::move(elf_file_name));
+	SymbolImporterThreadParameters parameters;
+	parameters.elf = std::move(elf);
+	parameters.elf_file_name = elf_file_name;
+	parameters.nocash_path = std::move(nocash_path);
+	parameters.options = std::move(options);
+	parameters.wait_until_elf_is_loaded = wait_until_elf_is_loaded;
 
 	ShutdownWorkerThread();
 
-	m_import_thread = std::thread([this, nocash_path, options, worker_symbol_file = std::move(symbol_file), builtins = m_builtin_types]() {
+	m_import_thread = std::thread([this, params = std::move(parameters)]() {
 		Threading::SetNameOfCurrentThread("Symbol Worker");
+
+		ccc::Result<ccc::ElfFile> parsed_elf = ccc::ElfFile::parse(std::move(params.elf));
+		if (!parsed_elf.success())
+		{
+			ccc::report_error(parsed_elf.error());
+			return;
+		}
+
+		ccc::ElfSymbolFile symbol_file(std::move(*parsed_elf), std::move(params.elf_file_name));
 
 		ccc::SymbolDatabase temp_database;
 
-		ImportSymbols(temp_database, worker_symbol_file, nocash_path, options, builtins, &m_interrupt_import_thread);
+		ImportSymbols(
+			temp_database,
+			symbol_file,
+			params.nocash_path,
+			params.options,
+			m_builtin_types,
+			&m_interrupt_import_thread);
 
 		if (m_interrupt_import_thread)
 			return;
 
-		if (options.GenerateFunctionHashes)
+		if (params.options.GenerateFunctionHashes)
 		{
-			ElfMemoryReader reader(worker_symbol_file.elf());
+			ElfMemoryReader reader(symbol_file.elf());
 			SymbolGuardian::GenerateFunctionHashes(temp_database, reader);
 		}
 
 		if (m_interrupt_import_thread)
 			return;
 
+		if (params.wait_until_elf_is_loaded && params.options.FunctionScanMode == DebugFunctionScanMode::SCAN_MEMORY)
+		{
+			// Wait for the entry point to start compiling on the CPU thread so
+			// we know the functions we want to scan are loaded in memory.
+			std::unique_lock lock(m_elf_loaded_in_memory_mutex);
+			m_elf_loaded_in_memory_condition_variable.wait(lock,
+				[this]() { return m_elf_loaded_in_memory; });
+
+			if (m_interrupt_import_thread)
+				return;
+		}
+
 		m_guardian.ReadWrite([&](ccc::SymbolDatabase& database) {
-			ClearExistingSymbols(database, options);
+			ClearExistingSymbols(database, params.options);
 
 			if (m_interrupt_import_thread)
 				return;
@@ -229,7 +275,7 @@ void SymbolImporter::AnalyseElf(
 			// The function scanner has to be run on the main database so that
 			// functions created before the importer was run are still
 			// considered. Otherwise, duplicate functions will be created.
-			ScanForFunctions(database, worker_symbol_file, options);
+			ScanForFunctions(database, symbol_file, params.options);
 		});
 	});
 }
@@ -239,8 +285,22 @@ void SymbolImporter::ShutdownWorkerThread()
 	if (m_import_thread.joinable())
 	{
 		m_interrupt_import_thread = true;
+
+		// Make sure the import thread is woken up so we can shut it down.
+		{
+			std::lock_guard lock(m_elf_loaded_in_memory_mutex);
+			m_elf_loaded_in_memory = true;
+		}
+		m_elf_loaded_in_memory_condition_variable.notify_one();
+
 		m_import_thread.join();
+
 		m_interrupt_import_thread = false;
+	}
+
+	{
+		std::lock_guard lock(m_elf_loaded_in_memory_mutex);
+		m_elf_loaded_in_memory = false;
 	}
 }
 

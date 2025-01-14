@@ -2779,6 +2779,8 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 	// Toss all the recs, we're going to be executing new code.
 	mmap_ResetBlockTracking();
 	ClearCPUExecutionCaches();
+
+	R5900SymbolImporter.OnElfLoadedInMemory();
 }
 
 void VMManager::Internal::VSyncOnCPUThread()
