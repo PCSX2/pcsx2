@@ -387,6 +387,8 @@ enum cpuinfo_uarch cpuinfo_x86_decode_uarch(
 							return cpuinfo_uarch_zen4;
 					}
 					break;
+				case 0x1a:
+					return cpuinfo_uarch_zen5;
 			}
 			break;
 		case cpuinfo_vendor_hygon:

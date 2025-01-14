@@ -419,6 +419,8 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_zen3 = 0x0020010B,
 	/** AMD Zen 4 microarchitecture. */
 	cpuinfo_uarch_zen4 = 0x0020010C,
+	/** AMD Zen 5 microarchitecture. */
+	cpuinfo_uarch_zen5 = 0x0020010D,
 
 	/** NSC Geode and AMD Geode GX and LX. */
 	cpuinfo_uarch_geode = 0x00200200,
@@ -818,6 +820,7 @@ struct cpuinfo_x86_isa {
 	bool avx512vp2intersect;
 	bool avx512_4vnniw;
 	bool avx512_4fmaps;
+	bool avx10_1;
 	bool amx_bf16;
 	bool amx_tile;
 	bool amx_int8;
@@ -1428,6 +1431,14 @@ static inline bool cpuinfo_has_x86_avx_vnni_int16(void) {
 static inline bool cpuinfo_has_x86_avx_ne_convert(void) {
 #if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
 	return cpuinfo_isa.avx_ne_convert;
+#else
+	return false;
+#endif
+}
+
+static inline bool cpuinfo_has_x86_avx10_1(void) {
+#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+	return cpuinfo_isa.avx10_1;
 #else
 	return false;
 #endif
