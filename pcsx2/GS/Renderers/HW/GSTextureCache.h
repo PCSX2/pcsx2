@@ -518,7 +518,7 @@ public:
 	/// Removes any sources which point to the specified target.
 	void InvalidateSourcesFromTarget(const Target* t);
 
-	/// Replaces a source's texture externally. Required for some CRC hacks.
+	/// Removes any sources which point to the same address as a new target.
 	void ReplaceSourceTexture(Source* s, GSTexture* new_texture, float new_scale, const GSVector2i& new_unscaled_size,
 		HashCacheEntry* hc_entry, bool new_texture_is_shared);
 
