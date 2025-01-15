@@ -10,8 +10,26 @@
 
 MULTI_ISA_UNSHARED_IMPL;
 
+#define USE_HACK 1
+#define LOAD_FULL_TEX 0
+
+#include "debug.h"
+
+#if MY_DEBUG == 1
+extern bool savePoints;
+extern int s_n_debug;
+extern int s_n_exit;
+extern std::map<int, std::tuple<int, int, int, int>> pointsCalcRange;
+extern std::map<int, std::tuple<int, int, int, int>> pointsSWRange;
+extern void dumpRanges();
+#endif
+
 GSRenderer* CURRENT_ISA::makeGSRendererSW(int threads)
 {
+#if MY_DEBUG == 1
+	if (savePoints)
+		threads = 0;
+#endif
 	return new GSRendererSW(threads);
 }
 
@@ -431,8 +449,6 @@ void GSRendererSW::Draw()
 
 	sd->UsePages(fb_pages, m_context->offset.fb.psm(), zb_pages, m_context->offset.zb.psm());
 
-	//
-
 	if (GSConfig.DumpGSData)
 	{
 		Sync(2);
@@ -556,6 +572,11 @@ void GSRendererSW::Queue(GSRingHeap::SharedPtr<GSRasterizerData>& item)
 		fflush(s_fp);
 	}
 
+#if MY_DEBUG == 1
+	sd->global.s_n = s_n;
+	sd->global.TW = m_context->TEX0.TW;
+	sd->global.TH = m_context->TEX0.TH;
+#endif
 	m_rl->Queue(item);
 
 	// invalidate new parts rendered onto
@@ -1057,7 +1078,62 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 			GIFRegTEX0 TEX0 = m_context->GetSizeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t), m_vt.IsLinear(), mipmap);
 
-			GSVector4i r = GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf, true).coverage;
+			GSVector4i r;
+#if MY_DEBUG == 1
+			if (s_n > s_n_exit)
+			{
+				dumpRanges();
+				exit(0);
+			}
+			fprintf(stderr, "%d\n", s_n);
+#endif
+			if (m_vt.m_primclass == GS_TRIANGLE_CLASS && USE_HACK)
+			{
+				int minU = std::numeric_limits<int>::max();
+				int minV = std::numeric_limits<int>::max();
+				int maxU = std::numeric_limits<int>::min();
+				int maxV = std::numeric_limits<int>::min();
+				//GetTriangleMinMaxUV(1 << TEX0.TW, 1 << TEX0.TH, gd.sel.ltf, minU, minV, maxU, maxV);
+				GetTriangleMinMaxUV(1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH, gd.sel.ltf, minU, minV, maxU, maxV);
+
+				r = GSVector4i(minU, minV, maxU + 1, maxV + 1);
+#if MY_DEBUG == 1
+				GSVector4i r2 = GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf, true).coverage;
+				if (savePoints)
+				{
+					pointsCalcRange[s_n] = {minU, minV, maxU, maxV};
+				}
+#endif
+			}
+			else if (m_vt.m_primclass == GS_SPRITE_CLASS && USE_HACK)
+			{
+				int minU = std::numeric_limits<int>::max();
+				int minV = std::numeric_limits<int>::max();
+				int maxU = std::numeric_limits<int>::min();
+				int maxV = std::numeric_limits<int>::min();
+				//GetSpriteMinMaxUV(1 << TEX0.TW, 1 << TEX0.TH, gd.sel.ltf, minU, minV, maxU, maxV);
+				GetSpriteMinMaxUV(1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH, gd.sel.ltf, minU, minV, maxU, maxV);
+				
+				r = GSVector4i(minU, minV, maxU + 1, maxV + 1);
+#if MY_DEBUG == 1
+				GSVector4i r2 = GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf, true).coverage;
+				if (savePoints)
+				{
+					pointsCalcRange[s_n] = {minU, minV, maxU, maxV};
+				}
+#endif
+			}
+			else
+			{
+				if (LOAD_FULL_TEX || USE_HACK)
+				{
+					r = GSVector4i(0, 0, 1 << TEX0.TW, 1 << TEX0.TH);
+				}
+				else
+				{
+					r = GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf, true).coverage;
+				}
+			}
 
 			GSTextureCacheSW::Texture* t = m_tc->Lookup(TEX0, env.TEXA);
 

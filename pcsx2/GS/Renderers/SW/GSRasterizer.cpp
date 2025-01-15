@@ -19,6 +19,21 @@ MULTI_ISA_UNSHARED_IMPL;
 
 int GSRasterizerData::s_counter = 0;
 
+#include "debug.h"
+#if MY_DEBUG == 1
+extern bool savePoints;
+extern int s_n_debug;
+extern int s_n_exit;
+extern int primID;
+extern int* primIDSW;
+extern std::map<int, std::tuple<int, int, int, int>> pointsHackRange;
+extern std::map<int, std::tuple<int, int, int, int>> pointsSWRange;
+extern std::vector<std::tuple<int, int, int, int, int>> pointsHackDebug;
+extern std::vector<std::tuple<int, int, int, int, int>> pointsSWDebug;
+extern std::map<std::tuple<int, int>, std::tuple<double, double, double, double>> pointsHackDebugOrig;
+extern std::map<std::tuple<int, int>, std::tuple<double, double, double, double>> pointsSWDebugOrig;
+#endif
+
 static int compute_best_thread_height(int threads)
 {
 	// - for more threads screen segments should be smaller to better distribute the pixels
@@ -56,6 +71,10 @@ GSRasterizer::GSRasterizer(GSDrawScanline* ds, int id, int threads)
 	{
 		m_scanline[i] = (i % threads) == id ? 1 : 0;
 	}
+
+#if MY_DEBUG == 1
+	primIDSW = &m_primcount;
+#endif
 }
 
 GSRasterizer::~GSRasterizer()
@@ -597,6 +616,19 @@ void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW2& RESTRIC
 
 void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 {
+#if MY_DEBUG == 1
+	if (GSState::s_n == s_n_debug)
+	{
+		// FIXME; WHAT IS SCALING FOR UV?
+		double scaleTX = 1 / (double)(1 << m_local.gd->TW) / 256.0 / 256.0;
+		double scaleTY = 1 / (double)(1 << m_local.gd->TH) / 256.0 / 256.0;
+		pointsSWDebugOrig[{m_primcount, 0}] = {vertex[index[0]].p.x, vertex[index[0]].p.y, vertex[index[0]].t.x * scaleTX, vertex[index[0]].t.y * scaleTY};
+		pointsSWDebugOrig[{m_primcount, 1}] = {vertex[index[1]].p.x, vertex[index[1]].p.y, vertex[index[1]].t.x * scaleTX, vertex[index[1]].t.y * scaleTY};
+		pointsSWDebugOrig[{m_primcount, 2}] = {vertex[index[2]].p.x, vertex[index[2]].p.y, vertex[index[2]].t.x * scaleTX, vertex[index[2]].t.y * scaleTY};
+	}
+#endif
+
+	
 	m_primcount++;
 
 	GSVertexSW edge;

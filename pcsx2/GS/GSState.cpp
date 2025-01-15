@@ -18,9 +18,784 @@
 #include <iomanip>
 #include <bit>
 
+#include "debug.h"
+
+#define WALK_FULL_EDGE 1
+
 int GSState::s_n = 0;
 int GSState::s_last_transfer_draw_n = 0;
 int GSState::s_transfer_n = 0;
+
+#define DEBUG_FILE_STR "hack"
+#define DEBUG_DUMP_DIR "C:\\Users\\tchan\\Desktop\\ps2_debug\\" DEBUG_FILE_STR "-dump-all"
+#define DEBUG_RANGE_FILE_CALC "C:\\Users\\tchan\\Desktop\\log_files\\pointsRange_" DEBUG_FILE_STR "_calc.txt"
+#define DEBUG_RANGE_FILE_SW "C:\\Users\\tchan\\Desktop\\log_files\\pointsRange_" DEBUG_FILE_STR "_sw.txt"
+#define DEBUG_LIST_FILE_CALC "C:\\Users\\tchan\\Desktop\\log_files\\pointsList_" DEBUG_FILE_STR "_calc_%d.txt"
+#define DEBUG_LIST_FILE_SW "C:\\Users\\tchan\\Desktop\\log_files\\pointsList_" DEBUG_FILE_STR "_sw_%d.txt"
+#define DEBUG_ORIG_FILE_CALC "C:\\Users\\tchan\\Desktop\\log_files\\pointsOrig_" DEBUG_FILE_STR "_calc_%d.txt"
+#define DEBUG_ORIG_FILE_SW "C:\\Users\\tchan\\Desktop\\log_files\\pointsOrig_" DEBUG_FILE_STR "_sw_%d.txt"
+
+#if MY_DEBUG == 1
+bool savePoints = false;
+bool dumpAll = false;
+int s_n_debug = 58;
+int s_n_exit = 58;
+int primID = 0;
+int* primIDSW = 0;
+std::map<int, std::tuple<int, int, int, int>> pointsCalcRange;
+std::map<int, std::tuple<int, int, int, int>> pointsSWRange;
+std::vector<std::tuple<int, int, int, int, int>> pointsCalcDebug;
+std::vector<std::tuple<int, int, int, int, int>> pointsSWDebug;
+std::map<std::tuple<int, int>, std::tuple<double, double, double, double>> pointsCalcDebugOrig;
+std::map<std::tuple<int, int>, std::tuple<double, double, double, double>> pointsSWDebugOrig;
+std::string debugDumpDir = DEBUG_DUMP_DIR;
+
+void sortPoints(std::vector<std::tuple<int, int, int, int, int>>& v)
+{
+	std::sort(v.begin(), v.end(), [](const std::tuple<int, int, int, int, int>& a, const std::tuple<int, int, int, int, int>& b) {
+		int ai[5] = {std::get<0>(a), std::get<2>(a), std::get<1>(a), std::get<3>(a), std::get<4>(a)}; // prim, y, x, u, v
+		int bi[5] = {std::get<0>(b), std::get<2>(b), std::get<1>(b), std::get<3>(b), std::get<4>(b)}; // prim, y, x, u, v
+		for (int i = 0; i < 5; i++)
+		{
+			if (ai[i] < bi[i])
+				return true;
+			if (ai[i] > bi[i])
+				return false;
+		}
+		return false;
+	});
+}
+
+void dumpRanges()
+{
+	FILE* file = fopen(DEBUG_RANGE_FILE_CALC, "w");
+	for (auto it = pointsCalcRange.begin(); it != pointsCalcRange.end(); it++)
+	{
+		auto [x, y, u, v] = it->second;
+		fprintf(file, "%d,%d,%d,%d,%d\n", it->first, x, y, u, v);
+	}
+	fclose(file);
+
+	char fileName[1024];
+	sprintf(&fileName[0], DEBUG_LIST_FILE_CALC, s_n_debug);
+	file = fopen(fileName, "w");
+	sortPoints(pointsCalcDebug);
+	for (auto it = pointsCalcDebug.begin(); it != pointsCalcDebug.end(); it++)
+	{
+		auto [n, x, y, u, v] = *it;
+		fprintf(file, "%d,%d,%d,%d,%d\n", n, x, y, u, v);
+	}
+	fclose(file);
+
+	sprintf(&fileName[0], DEBUG_ORIG_FILE_CALC, s_n_debug);
+	file = fopen(fileName, "w");
+	for (auto it = pointsCalcDebugOrig.begin(); it != pointsCalcDebugOrig.end(); it++)
+	{
+		auto [prim_id, vert_id] = it->first;
+		auto [x, y, u, v] = it->second;
+		fprintf(file, "%d,%d,%f,%f,%f,%f\n", prim_id, vert_id, x, y, u, v);
+	}
+	fclose(file);
+
+	file = fopen(DEBUG_RANGE_FILE_SW, "w");
+	for (auto it = pointsSWRange.begin(); it != pointsSWRange.end(); it++)
+	{
+		auto [x, y, u, v] = it->second;
+		fprintf(file, "%d,%d,%d,%d,%d\n", it->first, x, y, u, v);
+	}
+	fclose(file);
+
+	sprintf(&fileName[0], DEBUG_LIST_FILE_SW, s_n_debug);
+	file = fopen(fileName, "w");
+	for (auto it = pointsSWDebug.begin(); it != pointsSWDebug.end(); it++)
+	{
+		auto [n, x, y, u, v] = *it;
+		fprintf(file, "%d,%d,%d,%d,%d\n", n, x, y, u, v);
+	}
+	fclose(file);
+
+	sprintf(&fileName[0], DEBUG_ORIG_FILE_SW, s_n_debug);
+	file = fopen(fileName, "w");
+	sortPoints(pointsSWDebug);
+	for (auto it = pointsSWDebugOrig.begin(); it != pointsSWDebugOrig.end(); it++)
+	{
+		auto [prim_id, vert_id] = it->first;
+		auto [x, y, u, v] = it->second;
+		fprintf(file, "%d,%d,%f,%f,%f,%f\n", prim_id, vert_id, x, y, u, v);
+	}
+	fclose(file);
+
+	//// Compare
+	//for (auto it = pointsCalcRange.begin(); it != pointsCalcRange.end(); it++)
+	//{
+	//	if (pointsSWRange.contains(it->first))
+	//	{
+	//		auto [x1, y1, u1, v1] = it->second;
+	//		auto [x2, y2, u2, v2] = pointsSWRange[it->first];
+	//		if (x1 != x2 || y1 != y2 || u1 != u2 || v1 != v2)
+	//		{
+	//			char c[1024];
+	//			sprintf(c, "Wrong range: %d; %d %d %d %d; %d %d %d %d;", it->first, x1, y1, u1, v1, x2, y2, u2, v2);
+	//			//throw std::exception(c);
+	//		}
+	//	}
+	//}
+}
+#endif
+
+__forceinline GSState::EdgeFunction GSState::GetEdgeFunction(const Point& a, const Point& b)
+{
+	return {a.y - b.y, b.x - a.x, a.x * b.y - a.y * b.x};
+}
+
+__forceinline bool GSState::CheckEdgeFunction(double e, EdgeType edgeType)
+{
+	if (edgeType == EdgeType::TOP || edgeType == EdgeType::LEFT)
+	{
+		return e >= 0;
+	}
+	else if (edgeType == EdgeType::RIGHT || edgeType == EdgeType::BOTTOM)
+	{
+		return e > 0;
+	}
+	else
+	{
+		pxFail("Invalid edge type");
+	}
+}
+
+__forceinline std::tuple<double, double> GSState::InterpolateEdgeFunctionsUV(
+	double e01, double e12, double e20, const Point& p0, const Point& p1, const Point& p2)
+{
+	return {(e12 * p0.U + e20 * p1.U + e01 * p2.U) / (e01 + e12 + e20), (e12 * p0.V + e20 * p1.V + e01 * p2.V) / (e01 + e12 + e20)};
+}
+
+__forceinline std::tuple<double, double, double> GSState::InterpolateEdgeFunctionsSTQ(
+	double e01, double e12, double e20, const Point& p0, const Point& p1, const Point& p2)
+{
+	double S = (e12 * p0.S + e20 * p1.S + e01 * p2.S) / (e01 + e12 + e20);
+	double T = (e12 * p0.T + e20 * p1.T + e01 * p2.T) / (e01 + e12 + e20);
+	double Q = (e12 * p0.Q + e20 * p1.Q + e01 * p2.Q) / (e01 + e12 + e20);
+	return {S, T, Q};
+}
+
+__forceinline bool GSState::CheckXYBounds(double x, double y, int minX, int minY, int maxX, int maxY, bool dxBigger, bool dyBigger)
+{
+	if (dxBigger)
+	{
+		return minX <= x && x <= maxX;
+	} else if (dyBigger)
+	{
+		return minY <= y && y <= maxY;
+	} else
+	{
+		return (minX <= x && x <= maxX) || (minY <= y && y <= maxY);
+	}
+}
+
+// Order points by y (ascending) then x (ascending)
+// Make sure conforms to rule where interior of triangle is on the right of each directed edge.
+__forceinline std::tuple<GSState::Point, GSState::Point, GSState::Point> GSState::SortPoints(Point p0, Point p1, Point p2)
+{
+	if ((p1.x - p0.x) * (p2.y - p0.y) - (p1.y - p0.y) * (p2.x - p0.x) < 0)
+	{
+		std::swap(p1, p2);
+	}
+
+	Point p[3] = {p0, p1, p2};
+	int i0 = 0;
+	for (int i = 1; i < 3; ++i)
+	{
+		if (p[i].y < p[i0].y || (p[i].y == p[i0].y && p[i].x < p[i0].x))
+		{
+			i0 = i;
+		}
+	}
+	return {p[i0], p[(i0 + 1) % 3], p[(i0 + 2) % 3]};
+}
+
+// Order the points so that p0-p1 is a top or right edge, p1-p2 is a right or bottom edge, and p0-p2 is a left edge.
+__forceinline std::tuple<GSState::Point, GSState::Point, GSState::Point, GSState::EdgeType, GSState::EdgeType, GSState::EdgeType>
+	GSState::SortAndClassifyTriangleVerts(Point p0, Point p1, Point p2)
+{
+	std::tie(p0, p1, p2) = SortPoints(p0, p1, p2);
+	EdgeType t01 = (p0.y == p1.y) ? EdgeType::TOP : EdgeType::RIGHT;
+	EdgeType t12 = (p1.y < p2.y) ? EdgeType::RIGHT : (p1.y > p2.y ? EdgeType::LEFT : EdgeType::BOTTOM);
+	EdgeType t20 = EdgeType::LEFT;
+	return {p0, p1, p2, t01, t12, t20};
+}
+
+__forceinline bool GSState::CheckScissor(int x, int y, int SCAX0, int SCAY0, int SCAX1, int SCAY1)
+{
+	return (SCAX0 <= x && x <= SCAX1) && (SCAY0 <= y && y <= SCAY1);
+}
+
+// Calculate the final UV coordinates of the rasterized points by performing wrapping/clamping.
+// Then adjust the min/max UV values accordingly.
+// TODO: We can remove this function. Not used.
+std::tuple<int, int> GSState::CalculateUVHelper(int U, int V, int W, int H, const GIFRegCLAMP& clamp)
+{
+	// Initial clamping done on all UVs
+	U = std::max(-2047, std::min(2047, U));
+	V = std::max(-2047, std::min(2047, V));
+
+	// Clamping/wrapping for U
+	const int MINU = static_cast<int>(clamp.MINU);
+	const int MAXU = static_cast<int>(clamp.MAXU);
+	const int MSKU = MINU, FIXU = MAXU;
+	switch (clamp.WMS) // U clamping/wrapping mode
+	{
+		case CLAMP_REPEAT:
+			U &= W - 1; // W is a power of 2
+			break;
+		case CLAMP_CLAMP:
+			U = std::max(0, std::min(W - 1, U));
+			break;
+		case CLAMP_REGION_CLAMP:
+			U = std::max(MINU, std::min(MAXU, U));
+			break;
+		case CLAMP_REGION_REPEAT:
+			U = (U & MSKU) | FIXU;
+			break;
+	}
+
+	// Clamping/wrapping for V
+	int MINV = static_cast<int>(clamp.MINV);
+	int MAXV = static_cast<int>(clamp.MAXV);
+	int MSKV = MINV, FIXV = MAXV;
+	switch (clamp.WMT) // V clamping/wrapping mode
+	{
+		case CLAMP_REPEAT:
+			V &= H - 1; // H is a power of 2
+			break;
+		case CLAMP_CLAMP:
+			V = std::max(0, std::min(H - 1, V));
+			break;
+		case CLAMP_REGION_CLAMP:
+			V = std::max(MINV, std::min(MAXV, V));
+			break;
+		case CLAMP_REGION_REPEAT:
+			V = (V & MSKV) | FIXV;
+			break;
+		default:
+			ASSUME(0);
+	}
+
+	return {U, V};
+}
+
+#if MY_DEBUG == 1
+bool g_switchOrient = false;
+#endif
+
+void GSState::CalculateUV(double e01, double e12, double e20, EdgeType t0, EdgeType t1, EdgeType t2,
+	const Point& p0, const Point& p1, const Point& p2,
+	int W, int H, bool FST, bool bilinear, const GIFRegCLAMP& clamp, int& minU, int& minV, int& maxU, int& maxV)
+{
+	double U, V;
+	if (FST)
+	{
+		std::tie(U, V) = InterpolateEdgeFunctionsUV(e01, e12, e20, p0, p1, p2);
+	}
+	else
+	{
+		auto [S, T, Q] = InterpolateEdgeFunctionsSTQ(e01, e12, e20, p0, p1, p2);
+		U = W * (S / Q);
+		V = H * (T / Q);
+	}
+
+	// Clamp to valid UV range
+	U = std::max(-2047.0, std::min(2047.0, U));
+	V = std::max(-2047.0, std::min(2047.0, V));
+
+	if (bilinear)
+	{
+#if MY_DEBUG == 1
+		if (GSState::s_n == s_n_debug)
+		{
+			int x = (int)((e01 * p2.x + e12 * p0.x + e20 * p1.x) / (e01 + e12 + e20));
+			int y = (int)((e01 * p2.y + e12 * p0.y + e20 * p1.y) / (e01 + e12 + e20));
+			if (g_switchOrient)
+				y = -y;
+			pointsCalcDebug.push_back({primID, x, y, (int)std::floor(U - 0.5), (int)std::floor(V - 0.5)});
+			pointsCalcDebug.push_back({primID, x, y, (int)std::floor(U - 0.5), (int)std::floor(V + 0.5)});
+			pointsCalcDebug.push_back({primID, x, y, (int)std::floor(U + 0.5), (int)std::floor(V - 0.5)});
+			pointsCalcDebug.push_back({primID, x, y, (int)std::floor(U + 0.5), (int)std::floor(V + 0.5)});
+		}
+#endif
+		minU = std::min(static_cast<int>(std::floor(U - 0.5)), minU);
+		minV = std::min(static_cast<int>(std::floor(V - 0.5)), minV);
+		maxU = std::max(static_cast<int>(std::floor(U + 0.5)), maxU);
+		maxV = std::max(static_cast<int>(std::floor(V + 0.5)), maxV);
+	}
+	else
+	{
+#if MY_DEBUG == 1
+		if (GSState::s_n == s_n_debug)
+		{
+			int x = (int)((e01 * p2.x + e12 * p0.x + e20 * p1.x) / (e01 + e12 + e20));
+			int y = (int)((e01 * p2.y + e12 * p0.y + e20 * p1.y) / (e01 + e12 + e20));
+			if (g_switchOrient)
+				y = -y;
+			pointsCalcDebug.push_back({primID, x, y, (int)std::floor(U), (int)std::floor(V)});
+		}
+#endif
+		minU = std::min(static_cast<int>(std::floor(U)), minU);
+		minV = std::min(static_cast<int>(std::floor(V)), minV);
+		maxU = std::max(static_cast<int>(std::floor(U)), maxU);
+		maxV = std::max(static_cast<int>(std::floor(V)), maxV);
+	}
+}
+
+// Test if any of the 4 scissor corners will be rasterized.
+// Helps with getting the proper min/max when the triangle is scissored
+void GSState::CheckScissorUV(Point p0, Point p1, Point p2, EdgeType t01, EdgeType t12, EdgeType t20, int W, int H, bool FST, bool bilinear,
+	const GIFRegSCISSOR& scissor, const GIFRegCLAMP& clamp, int& minU, int& minV, int& maxU, int& maxV)
+{
+	int SCAX0 = static_cast<int>(scissor.SCAX0);
+	int SCAY0 = static_cast<int>(scissor.SCAY0);
+	int SCAX1 = static_cast<int>(scissor.SCAX1);
+	int SCAY1 = static_cast<int>(scissor.SCAY1);
+
+	// Get edge function coefficients
+	EdgeFunction E01 = GetEdgeFunction(p0, p1);
+	EdgeFunction E12 = GetEdgeFunction(p1, p2);
+	EdgeFunction E20 = GetEdgeFunction(p2, p0);
+
+	for (int x : {SCAX0, SCAX1})
+	{
+		for (int y : {SCAY0, SCAY1})
+		{
+			double e01 = E01.a * x + E01.b * y + E01.c;
+			double e12 = E12.a * x + E12.b * y + E12.c;
+			double e20 = E20.a * x + E20.b * y + E20.c;
+			if (CheckEdgeFunction(e01, t01) && CheckEdgeFunction(e12, t12) && CheckEdgeFunction(e20, t20))
+			{
+				CalculateUV(e01, e12, e20, t01, t12, t20, p0, p1, p2, W, H, FST, bilinear, clamp, minU, minV, maxU, maxV);
+			}
+		}
+	}
+}
+
+void GSState::EdgeWalkTriangleMinMaxUVImpl(Point p0, Point p1, Point p2,
+	EdgeType t01, EdgeType t12, EdgeType t20, int W, int H, bool FST, bool bilinear,
+	const GIFRegSCISSOR& scissor, const GIFRegCLAMP& clamp, bool switchOrient, int& minU, int& minV, int& maxU, int& maxV)
+{
+	int SCAX0 = static_cast<int>(scissor.SCAX0);
+	int SCAY0 = static_cast<int>(scissor.SCAY0);
+	int SCAX1 = static_cast<int>(scissor.SCAX1);
+	int SCAY1 = static_cast<int>(scissor.SCAY1);
+
+#if MY_DEBUG == 1
+	g_switchOrient = switchOrient;
+#endif
+	// To traverse in the opposite direction we swap the first and second points
+	// and flip the whole triangle vertically (this is so that right-hand interior rule can still be followed).
+	// This only affects XY so doesn't matter for computing UV ranges.
+	if (switchOrient)
+	{
+		std::swap(p0, p1);
+		std::swap(t12, t20);
+		p0.y = -p0.y;
+		p1.y = -p1.y;
+		p2.y = -p2.y;
+		std::tie(SCAY0, SCAY1) = std::tuple(-SCAY1, -SCAY0);
+	};
+
+	// Get edge function coefficients
+	EdgeFunction E01 = GetEdgeFunction(p0, p1);
+	EdgeFunction E12 = GetEdgeFunction(p1, p2);
+	EdgeFunction E20 = GetEdgeFunction(p2, p0);
+
+	// Initialize deltas and steps
+	double dx = p1.x - p0.x;
+	double dy = p1.y - p0.y;
+	int sx = (dx > 0) ? 1.0 : -1.0;
+	int sy = (dy > 0) ? 1.0 : -1.0;
+
+	// Initialize starting point by rounding correctly
+	// Use right-hand-interior rule and brute force case analysis to get the correct starting point
+	// FIXME: THIS IS WRONG!!! THERE CAN REALLY BE 3 CANDIDDATE POINTS
+	int x, y;
+	if (dy == 0.0)
+	{
+		if (dx > 0.0)
+		{
+			x = static_cast<int>(std::floor(p0.x));
+			y = static_cast<int>(std::ceil(p0.y));
+			sy = 1;
+		}
+		else
+		{
+			x = static_cast<int>(std::ceil(p0.x));
+			y = static_cast<int>(std::floor(p0.y));
+			sy = -1;
+		}
+	}
+	else if (dx == 0.0)
+	{
+		if (dy > 0.0)
+		{
+			y = static_cast<int>(std::floor(p0.y));
+			x = static_cast<int>(std::floor(p0.x));
+			sx = -1;
+		}
+		else
+		{
+			y = static_cast<int>(std::ceil(p0.y));
+			x = static_cast<int>(std::ceil(p0.x));
+			sx = 1;
+		}
+	}
+	else if ((dx > 0.0) && (dy > 0.0))
+	{
+		if (E01.a * std::ceil(p0.x) + E01.b * std::ceil(p0.y) + E01.c >= 0.0)
+		{
+			x = static_cast<int>(std::ceil(p0.x));
+			y = static_cast<int>(std::ceil(p0.y));
+		}
+		else if (E01.a * std::floor(p0.x) + E01.b * std::ceil(p0.y) + E01.c >= 0.0)
+		{
+			x = static_cast<int>(std::floor(p0.x));
+			y = static_cast<int>(std::ceil(p0.y));
+		}
+		else
+		{
+			// Should be unreachable
+			pxFail("Invalid edge function");
+		}
+	}
+	else if ((dx < 0.0) && (dy > 0.0))
+	{
+		if (E01.a * std::floor(p0.x) + E01.b * std::ceil(p0.y) + E01.c >= 0)
+		{
+			x = static_cast<int>(std::floor(p0.x));
+			y = static_cast<int>(std::ceil(p0.y));
+		}
+		else if (E01.a * std::floor(p0.x) + E01.b * std::floor(p0.y) + E01.c >= 0)
+		{
+			x = static_cast<int>(std::floor(p0.x));
+			y = static_cast<int>(std::floor(p0.y));
+		}
+		else
+		{
+			// Should be unreachable
+			pxFail("Invalid edge function");
+		}
+	}
+	else if ((dx < 0.0) && (dy < 0.0))
+	{
+		if (E01.a * std::floor(p0.x) + E01.b * std::floor(p0.y) + E01.c >= 0)
+		{
+			x = static_cast<int>(std::floor(p0.x));
+			y = static_cast<int>(std::floor(p0.y));
+		}
+		else if (E01.a * std::ceil(p0.x) + E01.b * std::floor(p0.y) + E01.c >= 0)
+		{
+			x = static_cast<int>(std::ceil(p0.x));
+			y = static_cast<int>(std::floor(p0.y));
+		}
+		else
+		{
+			// Should be unreachable
+			pxFail("Invalid edge function");
+		}
+	}
+	else if ((dx > 0) && (dy < 0))
+	{
+		if (E01.a * std::ceil(p0.x) + E01.b * std::floor(p0.y) + E01.c >= 0)
+		{
+			x = static_cast<int>(std::ceil(p0.x));
+			y = static_cast<int>(std::floor(p0.y));
+		}
+		else if (E01.a * std::ceil(p0.x) + E01.b * std::ceil(p0.y) + E01.c >= 0)
+		{
+			x = static_cast<int>(std::ceil(p0.x));
+			y = static_cast<int>(std::ceil(p0.y));
+		}
+		else
+		{
+			pxFail("Invalid edge function");
+		}
+	}
+
+	// Initialize edge function values
+	double e01 = E01.a * x + E01.b * y + E01.c;
+	double e12 = E12.a * x + E12.b * y + E12.c;
+	double e20 = E20.a * x + E20.b * y + E20.c;
+
+	// Bounding box of the edge
+	const int minX = static_cast<int>(std::floor(std::min(p0.x, p1.x)));
+	const int minY = static_cast<int>(std::floor(std::min(p0.y, p1.y)));
+	const int maxX = static_cast<int>(std::ceil(std::max(p0.x, p1.x)));
+	const int maxY = static_cast<int>(std::ceil(std::max(p0.y, p1.y)));
+	bool dxBigger = std::abs(dx) > std::abs(dy);
+	bool dyBigger = std::abs(dy) > std::abs(dx);
+
+	// Walk along the longest axis
+	while (CheckXYBounds(x, y, minX, minY, maxX, maxY, dxBigger, dyBigger)) // Check if the current point is inside the bounds of the line
+	{
+		// Update min/max UV values if the current point is inside the triangle and XY is inside the scissor
+		if (CheckEdgeFunction(e01, t01) && CheckEdgeFunction(e12, t12) && CheckEdgeFunction(e20, t20) && CheckScissor(x, y, SCAX0, SCAY0, SCAX1, SCAY1))
+		{
+			CalculateUV(e01, e12, e20, t01, t12, t20, p0, p1, p2, W, H, FST, bilinear, clamp, minU, minV, maxU, maxV);
+			
+			// FIXME: TEST WITH dx == 0 and dy == 0 optimization for
+			// horiz and vert edges!
+			if (!WALK_FULL_EDGE)
+			// if (!WALK_FULL_EDGE || dx == 0 || dy == 0)
+			{
+				// Break after the first rasterizable point. If a horizontal or vertical edge, this should be sufficient
+				// since we walk along the edge in both directions.
+				// Otherwise, this might not always be the "most outside" point but should be much faster.
+				break;
+			}
+		}
+		// Test the horizontal and vertical edge functions
+		double e01x = e01 + E01.a * sx;
+		double e01y = e01 + E01.b * sy;
+		if (!CheckEdgeFunction(e01x, t01))
+		{
+			// Cannot go horizontally, so go vertically
+			y += sy;
+			e01 += E01.b * sy;
+			e12 += E12.b * sy;
+			e20 += E20.b * sy;
+		}
+		else if (!CheckEdgeFunction(e01y, t01))
+		{
+			// Cannot go vertically, so go horizontally
+			x += sx;
+			e01 += E01.a * sx;
+			e12 += E12.a * sx;
+			e20 += E20.a * sx;
+		}
+		else if (e01x < e01y)
+		{
+			// Can go both, but horizontal is closer to the line
+			x += sx;
+			e01 += E01.a * sx;
+			e12 += E12.a * sx;
+			e20 += E20.a * sx;
+		}
+		else if (e01x > e01y)
+		{
+			// Can go both, but diagonal is closer to the line
+			y += sy;
+			e01 += E01.b * sy;
+			e12 += E12.b * sy;
+			e20 += E20.b * sy;
+		}
+		else
+		{
+			// Should be unreachable
+			pxFail("Invalid edge function");
+		}
+	}
+}
+
+void GSState::EdgeWalkTriangleMinMaxUV(Point p0, Point p1, Point p2, int W, int H, bool FST, bool bilinear, GIFRegSCISSOR scissor, GIFRegCLAMP clamp,
+	int& minU, int& minV, int& maxU, int& maxV)
+{
+	// Rearrange the points in the correct order and walk along all edges
+	auto [v0_, v1_, v2_, t01, t12, t20] = SortAndClassifyTriangleVerts(p0, p1, p2);
+
+	// Check if the corners of the scissor region are inside the triangle
+	CheckScissorUV(v0_, v1_, v2_, t01, t12, t20, W, H, FST, bilinear, scissor, clamp, minU, minV, maxU, maxV);
+
+	// Walk along edges in the clockwise direction (if Y-axis points down)
+	EdgeWalkTriangleMinMaxUVImpl(v0_, v1_, v2_, t01, t12, t20, W, H, FST, bilinear, scissor, clamp, false, minU, minV, maxU, maxV);
+	EdgeWalkTriangleMinMaxUVImpl(v1_, v2_, v0_, t12, t20, t01, W, H, FST, bilinear, scissor, clamp, false, minU, minV, maxU, maxV);
+	EdgeWalkTriangleMinMaxUVImpl(v2_, v0_, v1_, t20, t01, t12, W, H, FST, bilinear, scissor, clamp, false, minU, minV, maxU, maxV);
+
+	// Walk along edges in the anti-clockwise direction (if Y-axis points down)
+	EdgeWalkTriangleMinMaxUVImpl(v0_, v1_, v2_, t01, t12, t20, W, H, FST, bilinear, scissor, clamp, true, minU, minV, maxU, maxV);
+	EdgeWalkTriangleMinMaxUVImpl(v1_, v2_, v0_, t12, t20, t01, W, H, FST, bilinear, scissor, clamp, true, minU, minV, maxU, maxV);
+	EdgeWalkTriangleMinMaxUVImpl(v2_, v0_, v1_, t20, t01, t12, W, H, FST, bilinear, scissor, clamp, true, minU, minV, maxU, maxV);
+}
+
+// Get the minimum and maximum UV coordinates of all triangles in the current vertex buffer
+// This should only be called if all vertices in the buffer are complete triangles
+// W and H are the texture width and height
+// minU, minV, maxU, maxV are the current min/max UV values and the output
+// bilinear is whether or not to use bilinear interpolation (if false, nearest neighbor is used)
+void GSState::GetTriangleMinMaxUV(int W, int H, bool bilinear, int& minU, int& minV, int& maxU, int& maxV) const
+{
+	// Get XY offset values to get XY in window coordinates
+	int OFX = static_cast<int>(m_context->XYOFFSET.OFX);
+	int OFY = static_cast<int>(m_context->XYOFFSET.OFY);
+
+	pxAssert((m_index.tail % 3) == 0); // should be a multiple of 3 for triangles
+
+	// Initialize min/max UV values
+	minU = std::numeric_limits<int>::max();
+	minV = std::numeric_limits<int>::max();
+	maxU = std::numeric_limits<int>::min();
+	maxV = std::numeric_limits<int>::min();
+
+	// Iterate through each triangle and get min/max UVs
+	for (size_t tri_i = 0; tri_i < m_index.tail / 3; tri_i++)
+	{
+#if MY_DEBUG == 1
+		primID = tri_i;
+		if (s_n == 58 && tri_i == 1207)
+		{
+			printf("");
+		}
+#endif
+		Point verts[3];
+		for (int vert_i = 0; vert_i < 3; vert_i++)
+		{
+			Point p;
+			const int xi = static_cast<int>(m_vertex.buff[m_index.buff[3 * tri_i + vert_i]].XYZ.X);
+			const int yi = static_cast<int>(m_vertex.buff[m_index.buff[3 * tri_i + vert_i]].XYZ.Y);
+			p.x = static_cast<double>(xi - OFX) / 16.0;
+			p.y = static_cast<double>(yi - OFY) / 16.0;
+			if (m_draw_env->PRIM.FST)
+			{
+				p.U = static_cast<double>(m_vertex.buff[m_index.buff[3 * tri_i + vert_i]].U) / 16.0;
+				p.V = static_cast<double>(m_vertex.buff[m_index.buff[3 * tri_i + vert_i]].V) / 16.0;
+			}
+			else
+			{
+				p.S = static_cast<double>(m_vertex.buff[m_index.buff[3 * tri_i + vert_i]].ST.S);
+				p.T = static_cast<double>(m_vertex.buff[m_index.buff[3 * tri_i + vert_i]].ST.T);
+				p.Q = static_cast<double>(m_vertex.buff[m_index.buff[3 * tri_i + vert_i]].RGBAQ.Q);
+			}
+			verts[vert_i] = p;
+		}
+
+#if MY_DEBUG == 1
+		if (s_n == s_n_debug)
+		{
+			pointsCalcDebugOrig[{tri_i, 0}] = {verts[0].x, verts[0].y, verts[0].S, verts[0].T};
+			pointsCalcDebugOrig[{tri_i, 1}] = {verts[1].x, verts[1].y, verts[1].S, verts[1].T};
+			pointsCalcDebugOrig[{tri_i, 2}] = {verts[2].x, verts[2].y, verts[2].S, verts[2].T};
+		}
+#endif
+		EdgeWalkTriangleMinMaxUV(verts[0], verts[1], verts[2], W, H, m_draw_env->PRIM.FST, bilinear, m_context->SCISSOR, m_context->CLAMP, minU, minV, maxU, maxV);
+	}
+
+	GSState::GetClampWrapMinMaxUV(W, m_context->CLAMP.WMS, m_context->CLAMP.MINU, m_context->CLAMP.MAXU, minU, maxU, minU, maxU);
+	GSState::GetClampWrapMinMaxUV(H, m_context->CLAMP.WMT, m_context->CLAMP.MINV, m_context->CLAMP.MAXV, minV, maxV, minV, maxV);
+}
+
+// Get the minimum and maximum UV coordinates of all sprites in the current vertex buffer
+// This should only be called if all vertices in the buffer are complete sprites
+// W and H are the texture width and height
+// minU, minV, maxU, maxV are the current min/max UV values and the output
+// bilinear is whether or not to use bilinear interpolation (if false, nearest neighbor is used)
+void GSState::GetSpriteMinMaxUV(int W, int H, bool bilinear, int& minU, int& minV, int& maxU, int& maxV) const
+{
+	// Get XY offset values to get XY in window coordinates
+	int OFX = static_cast<int>(m_context->XYOFFSET.OFX);
+	int OFY = static_cast<int>(m_context->XYOFFSET.OFY);
+
+	pxAssert((m_index.tail % 2) == 0); // should be a multiple of 2 for sprites
+
+	// Initialize min/max UV values
+	minU = std::numeric_limits<int>::max();
+	minV = std::numeric_limits<int>::max();
+	maxU = std::numeric_limits<int>::min();
+	maxV = std::numeric_limits<int>::min();
+
+	// Iterate through each sprite and get min/max UVs
+	for (size_t sprite_i = 0; sprite_i < m_index.tail / 2; sprite_i++)
+	{
+		Point verts[2];
+		for (int vert_i = 0; vert_i < 2; vert_i++)
+		{
+			int xi = static_cast<int>(m_vertex.buff[m_index.buff[2 * sprite_i + vert_i]].XYZ.X);
+			int yi = static_cast<int>(m_vertex.buff[m_index.buff[2 * sprite_i + vert_i]].XYZ.Y);
+			Point p;
+			p.x = static_cast<double>(xi - OFX) / 16.0;
+			p.y = static_cast<double>(yi - OFY) / 16.0;
+			if (m_draw_env->PRIM.FST)
+			{
+				p.U = static_cast<double>(m_vertex.buff[m_index.buff[2 * sprite_i + vert_i]].U) / 16.0;
+				p.V = static_cast<double>(m_vertex.buff[m_index.buff[2 * sprite_i + vert_i]].V) / 16.0;
+			}
+			else
+			{
+				p.U = static_cast<double>(m_vertex.buff[m_index.buff[2 * sprite_i + vert_i]].ST.S) * W;
+				p.T = static_cast<double>(m_vertex.buff[m_index.buff[2 * sprite_i + vert_i]].ST.T) * H;
+				p.Q = static_cast<double>(m_vertex.buff[m_index.buff[2 * sprite_i + vert_i]].RGBAQ.Q);
+			}
+			verts[vert_i] = p;
+		}
+
+		if (!m_draw_env->PRIM.FST)
+		{
+			// For sprites, always use the second Q value
+			verts[0].S = verts[0].S / verts[1].Q;
+			verts[0].T = verts[0].T / verts[1].Q;
+			verts[1].S = verts[1].S / verts[1].Q;
+			verts[1].T = verts[1].T / verts[1].Q;
+		}
+
+		double x0 = std::min(verts[0].x, verts[1].x);
+		double y0 = std::min(verts[0].y, verts[1].y);
+		double x1 = std::max(verts[0].x, verts[1].x);
+		double y1 = std::max(verts[0].y, verts[1].y);
+
+		double U0 = verts[0].x == x0 ? verts[0].U : verts[1].U;
+		double V0 = verts[0].y == y0 ? verts[0].V : verts[1].V;
+		double U1 = verts[0].x == x1 ? verts[0].U : verts[1].U;
+		double V1 = verts[0].y == y1 ? verts[0].V : verts[1].V;
+
+		int xVals[2] = { static_cast<int>(std::ceil(x0)), static_cast<int>(std::floor(x1)) };
+		int yVals[2] = { static_cast<int>(std::ceil(y0)), static_cast<int>(std::floor(y1)) };
+		if (std::floor(x1) == x1) // omit right edges
+			xVals[1]--;
+		if (std::floor(y1) == y1) // omit bottom edges
+			yVals[1]--;
+		
+		// scissoring
+		int SCAX0 = static_cast<int>(m_context->SCISSOR.SCAX0);
+		int SCAY0 = static_cast<int>(m_context->SCISSOR.SCAY0);
+		int SCAX1 = static_cast<int>(m_context->SCISSOR.SCAX1);
+		int SCAY1 = static_cast<int>(m_context->SCISSOR.SCAY1);
+		for (int i = 0; i < 2; i++)
+			xVals[i] = std::max(SCAX0, std::min(xVals[i], SCAX1));
+		for (int i = 0; i < 2; i++)
+			yVals[i] = std::max(SCAY0, std::min(yVals[i], SCAY1));
+		
+		if (xVals[0] <= xVals[1] && yVals[0] <= yVals[1])
+		{
+			for (double x : xVals)
+			{
+				const double U = ((x1 - x) * U0 + (x - x0) * U1) / (x1 - x0);
+				if (bilinear)
+				{
+					minU = std::min(static_cast<int>(std::floor(U - 0.5)), minU);
+					maxU = std::max(static_cast<int>(std::floor(U + 0.5)), maxU);
+				}
+				else
+				{
+					minU = std::min(static_cast<int>(std::floor(U)), minU);
+					maxU = std::max(static_cast<int>(std::floor(U)), maxU);
+				}
+			}
+			for (double y : yVals)
+			{
+				const double V = ((y1 - y) * V0 + (y - y0) * V1) / (y1 - y0);
+				if (bilinear)
+				{
+					minV = std::min(static_cast<int>(std::floor(V - 0.5)), minV);
+					maxV = std::max(static_cast<int>(std::floor(V + 0.5)), maxV);
+				}
+				else
+				{
+					minV = std::min(static_cast<int>(std::floor(V)), minV);
+					maxV = std::max(static_cast<int>(std::floor(V)), maxV);
+				}
+			}
+		}
+	}
+
+	GSState::GetClampWrapMinMaxUV(W, m_context->CLAMP.WMS, m_context->CLAMP.MINU, m_context->CLAMP.MAXU, minU, maxU, minU, maxU);
+	GSState::GetClampWrapMinMaxUV(H, m_context->CLAMP.WMT, m_context->CLAMP.MINV, m_context->CLAMP.MAXV, minV, maxV, minV, maxV);
+}
 
 static __fi bool IsAutoFlushEnabled()
 {
@@ -1675,6 +2450,7 @@ void GSState::FlushPrim()
 		}
 #endif
 
+		// TODO: Put the accurate UV calculation here?
 		m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
 		// Texel coordinate rounding
@@ -3716,16 +4492,117 @@ __forceinline void GSState::VertexKick(u32 skip)
 		Flush(VERTEXCOUNT);
 }
 
+// FIXME: Replace old UsesRepeatRange to this.
+// Maps the range [ min .. max ] under the region repeat function determined by MSK and FIX.
+// The region repeat function is f(x) = (x & MSK) | FIX.
+// Return true if f(x) != x for at least one x in [ min .. max ].
+bool GSState::GetRegionRepeatMinMaxUV(int MSK, int FIX, int min, int max, int& min_out, int& max_out)
+{
+	// If we cross from -1 to 0 combine the negative and positive parts separately
+	// as the below algorithm only works if min <= max as unsigned integers.
+	if (min < 0 && 0 <= max)
+	{
+		int min_out_1, max_out_1, min_out_2, max_out_2;
+		const bool modified_1 = GSState::GetRegionRepeatMinMaxUV(MSK, FIX, min, -1, min_out_1, max_out_1);
+		const bool modified_2 = GSState::GetRegionRepeatMinMaxUV(MSK, FIX, 0, max, min_out_2, max_out_2);
+		min_out = std::min(min_out_1, min_out_2);
+		max_out = std::max(max_out_1, max_out_2);
+		return modified_1 || modified_2;
+	}
+
+	const int cleared_bits = ~MSK & ~FIX; // Bits that are always cleared by applying msk and fix
+	const int set_bits = FIX; // Bits that are always set by applying msk and fix
+	unsigned long msb;
+	int variable_bits = min ^ max;
+	if (_BitScanReverse(&msb, variable_bits))
+		variable_bits |= (1 << msb) - 1; // Fill in all lower bits
+
+	const int always_set = min & ~variable_bits; // Bits that are set in every value in min...max
+	const int sometimes_set = min | variable_bits; // Bits that are set in at least one value in min...max
+
+	const bool sets_bits = (set_bits | always_set) != always_set; // At least one bit in min...max is set by applying msk and fix
+	const bool clears_bits = (cleared_bits & sometimes_set) != 0; // At least one bit in min...max is cleared by applying msk and fix
+
+	const int overwritten_variable_bits = (cleared_bits | set_bits) & variable_bits;
+	// A variable bit that's `0` in `min` will at some point switch to a `1` (because it's variable)
+	// When it does, all bits below it will switch to a `0` (that's how incrementing works)
+	// If the 0 to 1 switch is reflected in the final output (not masked and not replaced by a fixed value),
+	// the final value would be larger than the previous.  Otherwise, the final value will be less.
+	// The true minimum value is `min` with all bits below the most significant replaced variable `0` bit cleared
+	const int min_overwritten_variable_zeros = ~min & overwritten_variable_bits;
+	if (_BitScanReverse(&msb, min_overwritten_variable_zeros))
+		min &= (~0u << msb);
+	// Similar thing for max, but the first masked `1` bit
+	const int max_overwritten_variable_ones = max & overwritten_variable_bits;
+	if (_BitScanReverse(&msb, max_overwritten_variable_ones))
+		max |= (1 << msb) - 1;
+
+	min_out = (MSK & min) | FIX;
+	max_out = (MSK & max) | FIX;
+
+	return sets_bits || clears_bits;
+}
+
+// Get the min/max texel coordinate (U or V) assuming it takes the values min .. max and is then
+// wrapped/clamped according to the mode WM.
+// SIZE: Width/height of texture (power of 2)
+// MIN/MAX: Either the clamping range (in REGION_CLAMP mode) or the MKS/FIX parameters (in REGION_REPEAT mode)
+// Returns true if any of the values are changed. I.e., if f(x) is the mapping function for clamp/wrap mode,
+// return true if f(x) != x for some x in [ min .. max ]
+bool GSState::GetClampWrapMinMaxUV(int SIZE, int WM, int MIN, int MAX, int min, int max, int& min_out, int& max_out)
+{
+	const int MSK = MIN;
+	const int FIX = MAX;
+
+	if (WM == CLAMP_REPEAT)
+	{
+		// If we cross the SIZE boundary then we always get the largest/smallest possible wrapped value
+		if ((min & ~(SIZE - 1)) != (max & ~(SIZE - 1)))
+		{
+			min_out = 0;
+			max_out = SIZE - 1;
+		}
+		else
+		{
+			min_out = min & (SIZE - 1);
+			max_out = max & (SIZE - 1);
+		}
+		return 0 <= min && max <= SIZE - 1;
+	}
+	else if (WM == CLAMP_CLAMP)
+	{
+		min_out = std::max(0, std::min(SIZE - 1, min));
+		max_out = std::max(0, std::min(SIZE - 1, max));
+		return 0 <= min && max <= SIZE - 1;
+	}
+	else if (WM == CLAMP_REGION_CLAMP)
+	{
+		min_out = std::max(MIN, std::min(MAX, min));
+		max_out = std::max(MIN, std::min(MAX, max));
+		return MIN <= min && max <= MAX;
+	}
+	else if (WM == CLAMP_REGION_REPEAT)
+	{
+		return GSState::GetRegionRepeatMinMaxUV(MSK, FIX, min, max, min_out, max_out);
+	}
+	else
+	{
+		pxAssertMsg(false, "Invalid clamp/wrap mode");
+		return false;
+	}
+}
+
 /// Checks if region repeat is used (applying it does something to at least one of the values in min...max)
 /// Also calculates the real min and max values seen after applying the region repeat to all values in min...max
-static bool UsesRegionRepeat(int fix, int msk, int min, int max, int* min_out, int* max_out)
+/// FIXME: CHANGE MEMBER NAMES AND MAKE SURE CALLS HAVE ARGS IN IN RIGHT ORDER!!!
+bool GSState::UsesRegionRepeat(int fix, int msk, int min, int max, int* min_out, int* max_out)
 {
 	if ((min < 0) != (max < 0))
 	{
 		// Algorithm doesn't work properly if bits overflow when incrementing (happens on the -1 → 0 crossing)
 		// Conveniently, crossing zero guarantees you use the full range
 		*min_out = fix;
-		*max_out = (fix | msk) + 1;
+		*max_out = fix | msk;
 		return true;
 	}
 
@@ -3757,7 +4634,7 @@ static bool UsesRegionRepeat(int fix, int msk, int min, int max, int* min_out, i
 		max |= (1 << msb) - 1;
 
 	*min_out = (msk & min) | fix;
-	*max_out = ((msk & max) | fix) + 1;
+	*max_out = (msk & max) | fix;
 
 	return sets_bits || clears_bits;
 }

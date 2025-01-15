@@ -45,6 +45,13 @@
 #include "pcsx2/VMManager.h"
 
 #include "svnrev.h"
+#include "debug.h"
+#if MY_DEBUG == 1
+#include <cstdlib>
+extern bool savePoints;
+extern bool dumpAll;
+extern std::string debugDumpDir;
+#endif
 
 namespace GSRunner
 {
@@ -141,6 +148,21 @@ bool GSRunner::InitializeConfig()
 		si.SetStringValue("MemoryCards", fmt::format("Slot{}_Filename", i + 1).c_str(), "");
 	}
 
+#if MY_DEBUG == 1
+	 if (dumpAll)
+	 {
+		si.SetBoolValue("EmuCore/GS", "dump", true);
+		si.SetIntValue("EmuCore/GS", "saven", 0);
+		si.SetIntValue("EmuCore/GS", "savel", 100);
+		si.SetBoolValue("EmuCore/GS", "save", true);
+		si.SetBoolValue("EmuCore/GS", "savef", true);
+		si.SetBoolValue("EmuCore/GS", "savet", true);
+		si.SetBoolValue("EmuCore/GS", "savez", true);
+		si.SetStringValue("EmuCore/GS", "HWDumpDirectory", debugDumpDir.c_str());
+		si.SetStringValue("EmuCore/GS", "SWDumpDirectory", debugDumpDir.c_str());
+	 }
+	 std::string x = "as" "db";
+#endif
 	VMManager::Internal::LoadStartupSettings();
 	return true;
 }
@@ -857,8 +879,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
+#if MY_DEBUG == 1
+extern void dumpRanges();
+#endif
+
 int wmain(int argc, wchar_t** argv)
 {
+#if MY_DEBUG == 1
+	if (savePoints)
+		atexit(dumpRanges);
+#endif
 	std::vector<std::string> u8_args;
 	u8_args.reserve(static_cast<size_t>(argc));
 	for (int i = 0; i < argc; i++)

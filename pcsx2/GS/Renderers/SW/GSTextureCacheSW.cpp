@@ -215,7 +215,8 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 
 	GSVector4i r = rect;
 
-	r = r.ralign<Align_Outside>(bs);
+	// FIXME: Is this an ok rintersect hack to make sure we don't read outside the texture?
+	r = r.ralign<Align_Outside>(bs).rintersect(GSVector4i(0, 0, tw, th));
 
 	if (r.eq(GSVector4i(0, 0, tw, th)))
 	{

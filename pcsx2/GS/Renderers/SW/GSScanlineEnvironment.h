@@ -9,6 +9,8 @@
 #include <cstdio>
 #include <string>
 
+#include "debug.h"
+
 union GSScanlineSelector
 {
 	struct
@@ -117,6 +119,12 @@ union GSScanlineSelector
 
 struct alignas(32) GSScanlineGlobalData // per batch variables, this is like a pixel shader constant buffer
 {
+	// TODO: REMOVE DEBUG CODE
+#if MY_DEBUG == 1
+	int s_n = -1;
+	int TW = -1, TH = -1;
+#endif
+
 	GSScanlineSelector sel;
 
 	// - the data of vm, tex may change, multi-threaded drawing must be finished before that happens, clut and dimx are copies
