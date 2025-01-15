@@ -949,6 +949,17 @@ GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex)
 		}
 	}
 
+	// Make sure sizes are within max limit of 2048,
+	// this shouldn't happen but if it does it needs to be addressed,
+	// clamp the size so at least it doesn't cause a crash.
+	constexpr int valid_max_size = 2048;
+	if ((width > valid_max_size) || (height > valid_max_size))
+	{
+		Console.Warning("Warning: GetValidSize out of bounds, X:%d Y:%d", width, height);
+		width = std::min(width, valid_max_size);
+		height = std::min(height, valid_max_size);
+	}
+
 	return  GSVector2i(width, height);
 }
 
@@ -2728,7 +2739,7 @@ void GSRendererHW::Draw()
 			}
 
 			rt = g_texture_cache->CreateTarget(FRAME_TEX0, t_size, GetValidSize(src), (scale_draw < 0 && is_possible_mem_clear != ClearType::NormalClear) ? src->m_from_target->GetScale() : target_scale, GSTextureCache::RenderTarget, true,
-				fm, false, force_preload, preserve_rt_color | possible_shuffle, m_r, src);
+				fm, false, force_preload, preserve_rt_color || possible_shuffle, m_r, src);
 			if (!rt) [[unlikely]]
 			{
 				GL_INS("ERROR: Failed to create FRAME target, skipping.");
