@@ -10,6 +10,8 @@
 
 #include "IconsPromptFont.h"
 
+#include "fmt/format.h"
+
 #include <cmath>
 
 static const char* s_axis_names[XInputSource::NUM_AXES] = {

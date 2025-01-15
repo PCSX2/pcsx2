@@ -9,7 +9,7 @@
 
 #include "common/WrappedMemCopy.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 using namespace R5900;
 

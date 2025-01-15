@@ -27,7 +27,7 @@
 #include "common/BitUtils.h"
 #include "common/Error.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <bit>
 #ifdef _M_X86

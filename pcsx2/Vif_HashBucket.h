@@ -4,7 +4,6 @@
 #pragma once
 
 #include <array>
-#include "fmt/core.h"
 #include "common/AlignedMalloc.h"
 
 // nVifBlock - Ordered for Hashing; the 'num' and 'upkType' fields are

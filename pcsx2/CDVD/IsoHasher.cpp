@@ -9,7 +9,7 @@
 #include "common/MD5Digest.h"
 #include "common/StringUtil.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <algorithm>
 

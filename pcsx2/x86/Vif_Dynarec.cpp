@@ -5,7 +5,6 @@
 #include "MTVU.h"
 #include "common/Perf.h"
 #include "common/StringUtil.h"
-#include "fmt/core.h"
 
 void dVifReset(int idx)
 {

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #define eeAddrInRange(name, addr) \
 	(addr >= EEMemoryMap::name##_Start && addr < EEMemoryMap::name##_End)

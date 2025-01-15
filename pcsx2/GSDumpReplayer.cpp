@@ -16,7 +16,7 @@
 
 #include "imgui.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include "common/Error.h"
 #include "common/FileSystem.h"

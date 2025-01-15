@@ -8,8 +8,6 @@
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
 
-#include "fmt/core.h"
-
 #include <mmsystem.h>
 #include <timeapi.h>
 #include <VersionHelpers.h>

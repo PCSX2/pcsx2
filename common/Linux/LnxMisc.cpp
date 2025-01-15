@@ -11,7 +11,7 @@
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <ctype.h>
 #include <time.h>

@@ -26,8 +26,6 @@
 #include "common/Perf.h"
 #include "DebugTools/Breakpoints.h"
 
-#include "fmt/core.h"
-
 // #define DUMP_BLOCKS 1
 // #define TRACE_BLOCKS 1
 

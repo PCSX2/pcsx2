@@ -7,7 +7,6 @@
 #include "Threading.h"
 
 #include <mutex>
-#include "fmt/core.h"
 
 #ifdef _WIN32
 #include "RedtapeWindows.h"

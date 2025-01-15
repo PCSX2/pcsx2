@@ -13,7 +13,7 @@
 #include "common/RedtapeWindows.h"
 #endif
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"

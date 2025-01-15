@@ -8,7 +8,7 @@
 #include "common/FileSystem.h"
 #include "common/Path.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 // writes text directly to mVU.logFile, no newlines appended.
 _mVUt void __mVULog(const char* fmt, ...)

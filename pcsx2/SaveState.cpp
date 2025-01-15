@@ -37,7 +37,7 @@
 #include "common/StringUtil.h"
 #include "common/ZipHelpers.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <csetjmp>
 #include <png.h>

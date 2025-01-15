@@ -10,7 +10,7 @@
 #include <sstream>
 #include <algorithm>
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #ifdef _WIN32
 #include "RedtapeWindows.h"

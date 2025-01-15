@@ -10,7 +10,7 @@
 #include "GS.h"
 #include "Host.h"
 
-#include <fmt/core.h>
+#include "fmt/format.h"
 
 namespace InputRec
 {
