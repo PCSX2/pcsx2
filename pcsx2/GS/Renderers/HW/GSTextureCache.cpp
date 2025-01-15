@@ -1386,6 +1386,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 								DevCon.Warning("Failed to update dst matched texture");
 							}
 							t->m_valid_rgb = true;
+							t->m_TEX0 = dst_match->m_TEX0;
 							break;
 						}
 					}
@@ -4007,19 +4008,6 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	if (alpha_only && (!dst || GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp != 32))
 		return false;
 
-	// This is probably copying to a new buffer but using the original one as an offset, so better to use a new texture, if we don't find one.
-	if (dst && DBP == SBP && dy > dst->m_unscaled_size.y)
-	{
-		u32 new_DBP = DBP + (((dy / GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs.y) * DBW) << 5);
-
-		dst = nullptr;
-
-		DBP = new_DBP;
-		dy = 0;
-
-		dst = GetExactTarget(DBP, DBW, dpsm_s.depth ? DepthStencil : RenderTarget, DBP);
-	}
-
 	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
 	if (dst && DBP == SBP && dy > dst->m_unscaled_size.y)
 	{
@@ -4032,7 +4020,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 		dst = GetExactTarget(DBP, DBW, dpsm_s.depth ? DepthStencil : RenderTarget, DBP);
 	}
-
+	
 	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
 	// We use dx/dy == 0 and the TBW check as a safeguard to make sure these go through to local memory.
 	// We can also recreate the target if it's previously been created in the height cache with a valid size.
