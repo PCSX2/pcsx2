@@ -3,7 +3,7 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 #include "Host.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/Common/GSTexture.h"

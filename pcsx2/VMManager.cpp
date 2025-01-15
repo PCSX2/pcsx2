@@ -57,7 +57,7 @@
 #include "IconsPromptFont.h"
 #include "cpuinfo.h"
 #include "discord_rpc.h"
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <atomic>
 #include <mutex>

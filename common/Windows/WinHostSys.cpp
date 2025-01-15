@@ -10,7 +10,6 @@
 #include "common/RedtapeWindows.h"
 #include "common/StringUtil.h"
 
-#include "fmt/core.h"
 #include "fmt/format.h"
 
 #include <mutex>

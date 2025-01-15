@@ -5,7 +5,7 @@
 #include "R3000A.h"
 #include "IopMem.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 static std::string psxout_buf;
 

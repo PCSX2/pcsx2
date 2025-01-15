@@ -9,7 +9,6 @@
 #include <QtCore/QFile>
 
 #include "common/Console.h"
-#include "fmt/core.h"
 #include "VMManager.h"
 #include "Models/BreakpointModel.h"
 

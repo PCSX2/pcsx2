@@ -10,8 +10,6 @@
 
 #include "Config.h"
 
-#include "fmt/core.h"
-
 //#define DEBUG_WRITE_FOLDER_CARD_IN_MEMORY_TO_FILE_ON_CHANGE
 
 // --------------------------------------------------------------------------------------

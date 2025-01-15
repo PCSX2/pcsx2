@@ -6,7 +6,7 @@
 #include "Common.h"
 #include "IopHw.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 namespace IopMemory {
 namespace Internal {

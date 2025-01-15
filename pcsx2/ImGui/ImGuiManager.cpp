@@ -23,7 +23,7 @@
 #include "common/Path.h"
 #include "common/Timer.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "common/Image.h"

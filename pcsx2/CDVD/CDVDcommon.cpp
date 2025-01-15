@@ -23,7 +23,7 @@
 #include <memory>
 #include <time.h>
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 // TODO: FIXME! Should be platform specific.
 #ifdef _WIN32

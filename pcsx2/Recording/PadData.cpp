@@ -7,7 +7,7 @@
 #include "SIO/Pad/PadDualshock2.h"
 #include "SIO/Sio.h"
 
-#include <fmt/core.h>
+#include "fmt/format.h"
 
 PadData::PadData(const int port, const int slot)
 {

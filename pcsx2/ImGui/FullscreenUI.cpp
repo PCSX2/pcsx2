@@ -47,7 +47,7 @@
 #include "imgui_internal.h"
 
 #include "fmt/chrono.h"
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <array>
 #include <bitset>

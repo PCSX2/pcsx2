@@ -7,7 +7,7 @@
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #if defined(_WIN32)
 #include "7z.h"

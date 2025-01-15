@@ -17,7 +17,7 @@
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 #include "ryml_std.hpp"
 #include "ryml.hpp"
 

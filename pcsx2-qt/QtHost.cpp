@@ -51,7 +51,7 @@
 #include <QtGui/QClipboard>
 #include <QtGui/QInputMethod>
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <cmath>
 #include <csignal>

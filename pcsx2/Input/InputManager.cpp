@@ -16,7 +16,7 @@
 
 #include "IconsPromptFont.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <array>
 #include <atomic>

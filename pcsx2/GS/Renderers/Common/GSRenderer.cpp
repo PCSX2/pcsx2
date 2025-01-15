@@ -21,7 +21,7 @@
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 #include "IconsFontAwesome5.h"
 
 #include <algorithm>

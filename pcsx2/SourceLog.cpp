@@ -13,7 +13,7 @@
 #include "R3000A.h"
 #include "R5900.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <cctype>
 #include <cstdarg>

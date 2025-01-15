@@ -8,7 +8,7 @@
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <errno.h>
 
