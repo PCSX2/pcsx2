@@ -1599,6 +1599,11 @@ public:
 		return loadh(&v);
 	}
 
+	__forceinline static GSVector4i loadl(const GSVector2i& v)
+	{
+		return loadl(&v);
+	}
+
 	__forceinline static GSVector4i load(const void* pl, const void* ph)
 	{
 		return loadh(ph, loadl(pl));
