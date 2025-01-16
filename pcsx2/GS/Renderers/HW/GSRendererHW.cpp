@@ -2731,14 +2731,16 @@ void GSRendererHW::Draw()
 				// offset coordinates swap around RG/BA. (Ace Combat)
 				const u32 minv = m_cached_ctx.CLAMP.MINV;
 				const u32 minu = m_cached_ctx.CLAMP.MINU;
-				const bool rgba_shuffle = ((m_cached_ctx.CLAMP.WMS == m_cached_ctx.CLAMP.WMT && m_cached_ctx.CLAMP.WMS == CLAMP_REGION_REPEAT) && (minu && minv));
+				// Make sure minu or minv are actually a mask on some bits, false positives of games setting 512 (0x1ff) are not masks used for shuffles.
+				const bool rgba_shuffle = ((m_cached_ctx.CLAMP.WMS == m_cached_ctx.CLAMP.WMT && m_cached_ctx.CLAMP.WMS == CLAMP_REGION_REPEAT) && (minu && minv && ((minu + 1 & minu) || (minv + 1 & minv))));
 				const bool shuffle_coords = ((first_x ^ first_u) & 0xF) == 8 || rgba_shuffle;
 
 				// Round up half of second coord, it can sometimes be slightly under.
 				const int draw_width = std::abs(v[1].XYZ.X + 9 - v[0].XYZ.X) >> 4;
 				const int read_width = std::abs(second_u - first_u);
 
-				shuffle_target = shuffle_coords && (draw_width & 7) == 0 && std::abs(draw_width - read_width) <= 1;
+				// m_skip check is just mainly for NFS Undercover, but should hopefully pick up any other games which rewrite shuffles.
+				shuffle_target = shuffle_coords && (((draw_width & 7) == 0 && std::abs(draw_width - read_width) <= 1) || m_skip > 50);
 			}
 
 			if (!shuffle_target)
@@ -2785,7 +2787,7 @@ void GSRendererHW::Draw()
 				return;
 			}
 
-			possible_shuffle &= src && (src->m_from_target != nullptr);
+			possible_shuffle &= src && (src->m_from_target != nullptr && (src->m_from_target->m_32_bits_fmt) || (m_skip && possible_shuffle));
 			// We don't know the alpha range of direct sources when we first tried to optimize the alpha test.
 			// Moving the texture lookup before the ATST optimization complicates things a lot, so instead,
 			// recompute it, and everything derived from it again if it changes.
@@ -2827,7 +2829,7 @@ void GSRendererHW::Draw()
 	// Urban Reign trolls by scissoring a draw to a target at 0x0-0x117F to 378x449 which ends up the size being rounded up to 640x480
 	// causing the buffer to expand to around 0x1400, which makes a later framebuffer at 0x1180 to fail to be created correctly.
 	// We can cheese this by checking if the Z is masked and the resultant colour is going to be black anyway.
-	const bool output_black = PRIM->ABE && ((m_context->ALPHA.A == 1 || m_context->ALPHA.IsBlack()) && m_context->ALPHA.D != 1) && m_draw_env->COLCLAMP.CLAMP == 1;
+	const bool output_black = PRIM->ABE && ((m_context->ALPHA.A == 1 && m_context->ALPHA.D > 1) || (m_context->ALPHA.IsBlack() && m_context->ALPHA.D != 1)) && m_draw_env->COLCLAMP.CLAMP == 1;
 	const bool can_expand = !(m_cached_ctx.ZBUF.ZMSK && output_black);
 
 	// Estimate size based on the scissor rectangle and height cache.
@@ -7914,7 +7916,9 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 
 bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* tex, const GSVector4i& r_draw)
 {
-	/*if (r_draw.w > 1024 && (m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex.next == 2) && m_process_texture && !PRIM->ABE && tex && !tex->m_target && m_cached_ctx.TEX0.TBW > 0)
+	// Not required when using Tex in RT
+	if (r_draw.w > 1024 && (m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex.next == 2) && m_process_texture && !PRIM->ABE &&
+		tex && !tex->m_target && m_cached_ctx.TEX0.TBW > 0 && GSConfig.UserHacks_TextureInsideRt == GSTextureInRtMode::Disabled)
 	{
 		GL_PUSH("OI_BlitFMV");
 
@@ -7968,7 +7972,7 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		g_texture_cache->InvalidateVideoMemSubTarget(_rt);
 
 		return false; // skip current draw
-	}*/
+	}
 
 	// Nothing to see keep going
 	return true;
