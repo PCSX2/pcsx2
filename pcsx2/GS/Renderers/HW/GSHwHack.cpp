@@ -1145,7 +1145,7 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 
 	const GSVector4 sRect(0.0f, 0.0f, static_cast<float>(copy_size.x) / static_cast<float>(src_size.x), static_cast<float>(copy_size.y) / static_cast<float>(src_size.y));
 	// This is kind of a bodge because the game confuses everything since the source is really 16bit and it assumes it's really drawing 16bit on the copy back, resizing the target.
-	const GSVector4 dRect(0, 0, copy_size.x, copy_size.y * (src->m_32_bits_fmt ? 1 : 2));
+	const GSVector4 dRect(0, 0, copy_size.x, copy_size.y);
 
 	g_gs_device->StretchRect(src->m_texture, sRect, rt, dRect, true, true, true, false);
 
