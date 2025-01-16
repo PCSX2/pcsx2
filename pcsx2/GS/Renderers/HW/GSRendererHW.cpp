@@ -2718,7 +2718,7 @@ void GSRendererHW::Draw()
 		GIFRegTEX0 FRAME_TEX0;
 		bool shuffle_target = false;
 		if (!no_rt && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp >= 16 &&
-			(m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index.tail % 6) == 0 && TrianglesAreQuads(true))))
+			(m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index.tail % 6) == 0 && TrianglesAreQuads(true) && m_index.tail > 6)))
 		{
 			if (!shuffle_target && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16)
 			{
@@ -2787,7 +2787,7 @@ void GSRendererHW::Draw()
 				return;
 			}
 
-			possible_shuffle &= src && (src->m_from_target != nullptr && (src->m_from_target->m_32_bits_fmt) || (m_skip && possible_shuffle));
+			possible_shuffle &= src && (src->m_from_target != nullptr || (m_skip && possible_shuffle));
 			// We don't know the alpha range of direct sources when we first tried to optimize the alpha test.
 			// Moving the texture lookup before the ATST optimization complicates things a lot, so instead,
 			// recompute it, and everything derived from it again if it changes.
@@ -4564,7 +4564,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 	// Performance GPU note: it could be wise to reduce the size to
 	// the rendered size of the framebuffer
 
-	if (GSConfig.UserHacks_TextureInsideRt == GSTextureInRtMode::Disabled || (!m_in_target_draw && IsPageCopy()))
+	if (GSConfig.UserHacks_TextureInsideRt == GSTextureInRtMode::Disabled || (!m_in_target_draw && IsPageCopy()) || m_conf.ps.urban_chaos_hle || m_conf.ps.tales_of_abyss_hle)
 	{
 		GSVertex* s = &m_vertex.buff[0];
 		s[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + 0);
@@ -5919,7 +5919,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			target_region = false;
 			source_region.bits = 0;
 			//copied_rt = tex->m_from_target != nullptr;
-			if (m_in_target_draw)
+			if (page_offset && m_in_target_draw)
 			{
 				copy_size.x = m_r.width();
 				copy_size.y = m_r.height();
