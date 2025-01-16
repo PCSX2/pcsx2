@@ -33957,6 +33957,8 @@ SLPM-61030:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 2 # Fixes text box opacity.
+  clampModes:
+    vu1ClampMode: 3 # Fixes shading on Chapter 11-2's enemy.
 SLPM-61031:
   name: "電撃PS2 / 電撃PlayStation D52"
   name-sort: "でんげき PS2 でんげきPlayStation D52"
@@ -39516,6 +39518,8 @@ SLPM-65140:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 2 # Fixes text box opacity.
+  clampModes:
+    vu1ClampMode: 3 # Fixes shading on Chapter 11-2's enemy.
 SLPM-65141:
   name: "続せがれいじり 変珍たませがれ"
   name-sort: "ぞくせがれいじり へんちんたませがれ"
@@ -49740,10 +49744,12 @@ SLPM-66852:
 SLPM-66853:
   name: "ジョジョの奇妙な冒険 黄金の旋風 [Best Price]"
   name-sort: "じょじょのきみょうなぼうけん おうごんのせんぷう [Best Price]"
-  name-en: "Jojo no Kimyouna Bouken - Ougon no Kaze [Best Price]"
+  name-en: "JoJo no Kimyou na Bouken - Ougon no Kaze [Best Price]"
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 2 # Fixes text box opacity.
+  clampModes:
+    vu1ClampMode: 3 # Fixes shading on Chapter 11-2's enemy.
 SLPM-66854:
   name: "ストリートファイターゼロ ファイターズ ジェネレーション [Best Price]"
   name-sort: "すとりーとふぁいたーぜろ ふぁいたーず じぇねれーしょん [Best Price]"
@@ -58419,7 +58425,7 @@ SLPS-25685:
 SLPS-25686:
   name: "ジョジョの奇妙な冒険 ファントムブラッド"
   name-sort: "じょじょのきみょうなぼうけん ふぁんとむぶらっど"
-  name-en: "Jojo no Kimyou na Bouken - Phantom Blood"
+  name-en: "JoJo no Kimyou na Bouken - Phantom Blood"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post positioning.
