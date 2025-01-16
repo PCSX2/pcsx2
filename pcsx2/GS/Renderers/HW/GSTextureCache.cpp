@@ -2173,30 +2173,19 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				GL_INS("TC Convert to 16bit: %dx%d: %dx%d @ %f -> %dx%d @ %f", dst->m_unscaled_size.x, dst->m_unscaled_size.y,
 					dst->m_texture->GetWidth(), dst->m_texture->GetHeight(), dst->m_scale, new_scaled_size.x, new_scaled_size.y,
 					scale);
-				//DevCon.Warning("Scale %s draw %d", scale_down ? "down" : "up", GSState::s_n);
-				GSTexture* tex = type == RenderTarget ? g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::Color, true) :
-														g_gs_device->CreateDepthStencil(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::DepthStencil, true);
-				if (!tex)
-					return nullptr;
-				m_target_memory_usage += tex->GetMemUsage();
-
-				g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, (type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY, false);
-
 
 				if (src && src->m_from_target && src->m_from_target == dst)
 				{
 					src->m_texture = dst->m_texture;
 					src->m_target_direct = false;
 					src->m_shared_texture = false;
+
+					dst->ResizeTexture(new_size.x, new_size.y, true, true, GSVector4i(dRect), true);
 				}
 				else
 				{
-					m_target_memory_usage -= dst->m_texture->GetMemUsage();
-					g_gs_device->Recycle(dst->m_texture);
+					dst->ResizeTexture(new_size.x, new_size.y, true, true, GSVector4i(dRect));
 				}
-
-				dst->m_texture = tex;
-				dst->m_unscaled_size = new_size;
 			}
 			
 			// New format or doing a shuffle to a 32bit target that used to be 16bit
@@ -6782,7 +6771,7 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect, bool can_res
 	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
 }
 
-bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unscaled_height, bool recycle_old)
+bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unscaled_height, bool recycle_old, bool require_new_rect, GSVector4i new_rect, bool keep_old)
 {
 	if (m_unscaled_size.x == new_unscaled_width && m_unscaled_size.y == new_unscaled_height)
 		return true;
@@ -6806,7 +6795,7 @@ bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unsca
 	// Only need to copy if it's been written to.
 	if (m_texture->GetState() == GSTexture::State::Dirty)
 	{
-		const GSVector4i rc = GSVector4i::loadh(size.min(new_size));
+		const GSVector4i rc = require_new_rect ? new_rect : GSVector4i::loadh(size.min(new_size));
 		if (tex->IsDepthStencil())
 		{
 			// Can't do partial copies in DirectX for depth textures, and it's probably not ideal in other
@@ -6815,8 +6804,15 @@ bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unsca
 		}
 		else
 		{
-			// Fast memcpy()-like path for color targets.
-			g_gs_device->CopyRect(m_texture, tex, rc, 0, 0);
+			if (require_new_rect)
+			{
+				g_gs_device->StretchRect(m_texture, tex, GSVector4(rc), ShaderConvert::COPY, false);
+			}
+			else
+			{
+				// Fast memcpy()-like path for color targets.
+				g_gs_device->CopyRect(m_texture, tex, rc, 0, 0);
+			}
 		}
 
 		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
@@ -6834,12 +6830,18 @@ bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unsca
 		g_gs_device->InvalidateRenderTarget(tex);
 	}
 
-	g_texture_cache->m_target_memory_usage = (g_texture_cache->m_target_memory_usage - m_texture->GetMemUsage()) + tex->GetMemUsage();
 
-	if (recycle_old)
-		g_gs_device->Recycle(m_texture);
+	if (!keep_old)
+	{
+		g_texture_cache->m_target_memory_usage =  (g_texture_cache->m_target_memory_usage - m_texture->GetMemUsage()) + tex->GetMemUsage();
+
+		if (recycle_old)
+			g_gs_device->Recycle(m_texture);
+		else
+			delete m_texture;
+	}
 	else
-		delete m_texture;
+		g_texture_cache->m_target_memory_usage += tex->GetMemUsage();
 
 	m_texture = tex;
 	m_unscaled_size = new_unscaled_size;
