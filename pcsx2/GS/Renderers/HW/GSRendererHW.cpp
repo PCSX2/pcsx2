@@ -2187,8 +2187,12 @@ void GSRendererHW::Draw()
 
 		if (m_channel_shuffle)
 		{
-			m_last_channel_shuffle_fbp = m_context->FRAME.Block();
-			m_last_channel_shuffle_tbp = m_context->TEX0.TBP0;
+			// These HLE's skip several channel shuffles in a row which change blends etc. Let's not break the flow, it gets upset.
+			if (!m_conf.ps.urban_chaos_hle && !m_conf.ps.tales_of_abyss_hle)
+			{
+				m_last_channel_shuffle_fbp = m_context->FRAME.Block();
+				m_last_channel_shuffle_tbp = m_context->TEX0.TBP0;
+			}
 
 			num_skipped_channel_shuffle_draws++;
 			return;
