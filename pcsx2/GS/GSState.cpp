@@ -3871,7 +3871,8 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 		const GSVector2 grad(uv_range / pos_range);
 		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
 		// optimization doesn't work when perspective correction is enabled.
-		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1 && m_primitive_covers_without_gaps != NoGapsType::GapsFound)
+		// Allowing for quads when the gradiant is 1. It's not guaranteed (would need to check the grandient on each vector), but should be close enough.
+		if ((m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && TrianglesAreQuads(false) && grad.x == 1.0f && grad.y == 1.0f)) && m_primitive_covers_without_gaps != NoGapsType::GapsFound)
 		{
 			// When coordinates are fractional, GS appears to draw to the right/bottom (effectively
 			// taking the ceiling), not to the top/left (taking the floor).
@@ -3882,11 +3883,24 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 
 				const GSVertex* vert_first = &m_vertex.buff[m_index.buff[0]];
 				const GSVertex* vert_second = &m_vertex.buff[m_index.buff[1]];
+				const GSVertex* vert_third = &m_vertex.buff[m_index.buff[2]];
 
 				GSVector4 new_st = st;
+				bool u_forward_check = false;
+				bool x_forward_check = false;
+				if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+				{
+					u_forward_check = PRIM->FST ? ((vert_first->U < vert_second->U) || (vert_first->U < vert_third->U)) : (((vert_first->ST.S / vert_first->RGBAQ.Q) < (vert_second->ST.S / vert_second->RGBAQ.Q)) || ((vert_first->ST.S / vert_first->RGBAQ.Q) < (vert_third->ST.S / vert_third->RGBAQ.Q)));
+					x_forward_check = (vert_first->XYZ.X < vert_second->XYZ.X) || (vert_first->XYZ.X < vert_third->XYZ.X);
+				}
+				else
+				{
+					u_forward_check = PRIM->FST ? (vert_first->U < vert_second->U) : ((vert_first->ST.T / vert_first->RGBAQ.Q) < (vert_second->ST.T / vert_first->RGBAQ.Q));
+					x_forward_check = vert_first->XYZ.Y < vert_second->XYZ.Y;
+				}
 				// Check if the UV coords are going in a different direction to the verts, if they match direction, no need to swap
-				const bool u_forward = vert_first->U < vert_second->U;
-				const bool x_forward = vert_first->XYZ.X < vert_second->XYZ.X;
+				const bool u_forward = u_forward_check;
+				const bool x_forward = x_forward_check;
 				const bool swap_x = u_forward != x_forward;
 
 				if (int_rc.left < scissored_rc.left)
@@ -3909,9 +3923,20 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 					st.x = new_st.x;
 					st.z = new_st.z;
 				}
-
-				const bool v_forward = vert_first->V < vert_second->V;
-				const bool y_forward = vert_first->XYZ.Y < vert_second->XYZ.Y;
+				bool v_forward_check = false;
+				bool y_forward_check = false;
+				if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+				{
+					v_forward_check = PRIM->FST ? ((vert_first->V < vert_second->V) || (vert_first->V < vert_third->V)) : (((vert_first->ST.T / vert_first->RGBAQ.Q) < (vert_second->ST.T / vert_second->RGBAQ.Q)) || ((vert_first->ST.T / vert_first->RGBAQ.Q) < (vert_third->ST.T / vert_third->RGBAQ.Q)));
+					y_forward_check = (vert_first->XYZ.Y < vert_second->XYZ.Y) || (vert_first->XYZ.Y < vert_third->XYZ.Y);
+				}
+				else
+				{
+					v_forward_check = PRIM->FST ? (vert_first->V < vert_second->V) : ((vert_first->ST.T / vert_first->RGBAQ.Q) < (vert_second->ST.T / vert_first->RGBAQ.Q));
+					y_forward_check = vert_first->XYZ.Y < vert_second->XYZ.Y;
+				}
+				const bool v_forward = v_forward_check;
+				const bool y_forward = y_forward_check;
 				const bool swap_y = v_forward != y_forward;
 
 				if (int_rc.top < scissored_rc.top)
