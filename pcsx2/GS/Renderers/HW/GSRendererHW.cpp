@@ -3073,33 +3073,24 @@ void GSRendererHW::Draw()
 			if (vertical_offset < 0)
 			{
 				rt->m_TEX0.TBP0 = m_cached_ctx.FRAME.Block();
-				GSVector2i new_scaled_size = rt->m_unscaled_size * rt->m_scale;
+				GSVector2i new_size = rt->m_unscaled_size;
 				// Make sure to use the original format for the offset.
 				int new_offset = std::abs((vertical_offset / frame_psm.pgs.y) * GSLocalMemory::m_psm[rt->m_TEX0.PSM].pgs.y);
 				texture_offset = new_offset;
 
-				new_scaled_size.y += new_offset * rt->m_scale;
-				GSTexture* tex = g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::Color, true);
-				//if (!tex)
-				//	return nullptr;
-				//m_target_memory_usage += tex->GetMemUsage();
-				GSVector4i dRect = GSVector4i(0, new_offset * rt->m_scale, new_scaled_size.x, new_scaled_size.y);
-				g_gs_device->StretchRect(rt->m_texture, GSVector4(0,0,1,1), tex, GSVector4(dRect), ShaderConvert::COPY, false);
+				new_size.y += new_offset;
 
+				rt->ResizeTexture(new_size.x, new_size.y, true, true, GSVector4i::loadh(new_size * rt->m_scale).loadl(GSVector2i(0, new_offset * rt->m_scale)));
 
 				if (src && src->m_from_target && src->m_from_target == rt && src->m_target_direct)
 				{
-					src->m_texture = tex;
+					src->m_texture = rt->m_texture;
 				}
-
-				g_gs_device->Recycle(rt->m_texture);
 
 				rt->m_valid.y += new_offset;
 				rt->m_valid.w += new_offset;
 				rt->m_drawn_since_read.y += new_offset;
 				rt->m_drawn_since_read.w += new_offset;
-				rt->m_texture = tex;
-				rt->m_unscaled_size = new_scaled_size / rt->m_scale;
 
 				t_size.y += std::abs(vertical_offset);
 				vertical_offset = 0;
