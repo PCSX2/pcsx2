@@ -336,22 +336,8 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 				// Results won't be square, if it's not invalidation, it's a texture, which is problematic to translate, so let's not (FIFA 2005).
 				if (!is_invalidation)
 				{
-					if (sbp != tbp)
-					{
-						// Just take the start page, as this is likely tex in rt, and that's all we care about.
-						const u32 start_page = (in_rect.y / src_page_size.y) + (in_rect.x / src_page_size.x);
-						in_rect.x = (start_page % dst_pgw) * dst_page_size.x;
-						in_rect.y = (start_page / dst_pgw) * dst_page_size.y;
-						in_rect.z = in_rect.x + dst_page_size.x;
-						in_rect.w = in_rect.y + dst_page_size.y;
-
-						return in_rect;
-					}
-					else
-					{
-						DevCon.Warning("Uneven pages mess up sbp %x dbp %x spgw %d dpgw %d", sbp, tbp, src_pgw, dst_pgw);
-						return GSVector4i::zero();
-					}
+					DevCon.Warning("Uneven pages mess up sbp %x dbp %x spgw %d dpgw %d", sbp, tbp, src_pgw, dst_pgw);
+					return GSVector4i::zero();
 				}
 
 				//TODO: Maybe control dirty blocks directly and add them page at a time for better granularity.
@@ -1146,7 +1132,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				// Try to make sure the target has available what we need, be careful of self referencing frames with font in the alpha.
 				// Also is we have already found a target which we had to offset in to by using a region or exact address,
 				// it's probable that's more correct than being inside (Tomb Raider Legends + Project Snowblind)
-				if (!overlaps || (found_t && dst->m_TEX0.TBP0 >= bp && (GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw)))
+				// Vakyrie Profile 2 also has some in draws which get done on a different target due to a slight offset, so we need to make sure we have the newer one.
+				if (!overlaps || (found_t && (GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw)))
 					continue;
 
 				const bool width_match = (std::max(64U, bw * 64U) >> GSLocalMemory::m_psm[psm].info.pageShiftX()) ==
@@ -1487,8 +1474,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						DevCon.Warning("BP %x - 16bit bad match for target bp %x bw %d src %d format %d", bp, t->m_TEX0.TBP0, t->m_TEX0.TBW, bw, t->m_TEX0.PSM);
 						continue;
 					}
-					else if (!possible_shuffle && (GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32 && bw != 1 && 
-							!((t->m_TEX0.TBW == (bw / 2)) || (t->m_TEX0.TBW >= (bw / 2) && (block_boundary_rect.w <= GSLocalMemory::m_psm[psm].pgs.y)))))
+					// Keep note that 2 bw is basically 1 normal page, as bw is in 64 pixels, and 8bit pages are 128 pixels wide, aka 2 bw.
+					else if (!possible_shuffle && (GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32 &&
+													  !((t->m_TEX0.TBW == (bw / 2)) || (((bw + 1) / 2) <= t->m_TEX0.TBW && (block_boundary_rect.w <= GSLocalMemory::m_psm[psm].pgs.y)))))
 					{
 						DevCon.Warning("BP %x - 8bit bad match for target bp %x bw %d src %d format %d", bp, t->m_TEX0.TBP0, t->m_TEX0.TBW, bw, t->m_TEX0.PSM);
 						continue;
@@ -1566,7 +1554,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 
 							//rect = rect.rintersect(t->m_valid);
 
-							if (rect.rempty())
+							if (rect.rintersect(t->m_valid).rempty())
 								continue;
 
 							if (!t->m_dirty.empty())
