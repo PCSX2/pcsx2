@@ -2166,7 +2166,7 @@ void GSDeviceOGL::RenderImGui()
 			}
 
 			// Since we don't have the GSTexture...
-			const GLuint texture_id = static_cast<GLuint>(reinterpret_cast<uintptr_t>(pcmd->GetTexID()));
+			const GLuint texture_id = static_cast<GLuint>(pcmd->GetTexID());
 			if (GLState::tex_unit[0] != texture_id)
 			{
 				GLState::tex_unit[0] = texture_id;

@@ -1200,7 +1200,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 		{
 			const ImVec2 logo_pos = LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING);
 			const ImVec2 logo_size = LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-			dl->AddImage(GetCachedTexture("icons/AppIconLarge.png")->GetNativeHandle(), logo_pos, logo_pos + logo_size);
+			dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTexture("icons/AppIconLarge.png")->GetNativeHandle()),
+				logo_pos, logo_pos + logo_size);
 			dl->AddText(heading_font, heading_font->FontSize,
 				ImVec2(logo_pos.x + logo_size.x + LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), logo_pos.y),
 				ImGui::GetColorU32(ImGuiCol_Text), "PCSX2");
@@ -1238,8 +1239,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 					const ImVec2 badge_pos =
 						ImVec2(name_pos.x - badge_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
 
-					dl->AddImage(GetCachedTextureAsync(badge_path)->GetNativeHandle(), badge_pos,
-						badge_pos + badge_size);
+					dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(badge_path)->GetNativeHandle()),
+						badge_pos, badge_pos + badge_size);
 				}
 			}
 		}
@@ -5064,7 +5065,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		const ImVec2 image_max(image_min.x + LayoutScale(image_width), image_min.y + LayoutScale(image_height) + rp_height);
 		const ImRect image_rect(CenterImage(
 			ImRect(image_min, image_max), ImVec2(static_cast<float>(cover->GetWidth()), static_cast<float>(cover->GetHeight()))));
-		dl->AddImage(cover->GetNativeHandle(), image_rect.Min, image_rect.Max);
+		dl->AddImage(reinterpret_cast<ImTextureID>(cover->GetNativeHandle()), image_rect.Min, image_rect.Max);
 	}
 
 	// current time / play time
@@ -5614,8 +5615,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 				const ImRect image_rect(CenterImage(ImRect(bb.Min, bb.Min + image_size),
 					ImVec2(static_cast<float>(screenshot->GetWidth()), static_cast<float>(screenshot->GetHeight()))));
 
-				ImGui::GetWindowDrawList()->AddImage(screenshot->GetNativeHandle(), image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
-					ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+				ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(screenshot->GetNativeHandle()),
+					image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 
 				const ImVec2 title_pos(bb.Min.x, bb.Min.y + image_height + title_spacing);
 				const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + g_large_font->FontSize));
@@ -5738,8 +5739,8 @@ void FullscreenUI::DrawResumeStateSelector()
 		const ImVec2 pos(ImGui::GetCursorScreenPos() +
 						 ImVec2((ImGui::GetCurrentWindow()->WorkRect.GetWidth() - image_width) * 0.5f, LayoutScale(20.0f)));
 		const ImRect image_bb(pos, pos + ImVec2(image_width, image_height));
-		ImGui::GetWindowDrawList()->AddImage(static_cast<ImTextureID>(entry.preview_texture ? entry.preview_texture->GetNativeHandle() :
-																							  GetPlaceholderTexture()->GetNativeHandle()),
+		ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(entry.preview_texture ? entry.preview_texture->GetNativeHandle() :
+																								   GetPlaceholderTexture()->GetNativeHandle()),
 			image_bb.Min, image_bb.Max);
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + image_height + LayoutScale(40.0f));
@@ -6043,8 +6044,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			const ImRect image_rect(CenterImage(ImRect(bb.Min, bb.Min + image_size),
 				ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight()))));
 
-			ImGui::GetWindowDrawList()->AddImage(cover_texture->GetNativeHandle(), image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
-				ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+			ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(cover_texture->GetNativeHandle()),
+				image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 
 			const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
 			const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
@@ -6093,8 +6094,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 				ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight()))));
 
 			ImGui::SetCursorPos(LayoutScale(ImVec2(128.0f, 20.0f)) + image_rect.Min);
-			ImGui::Image(selected_entry ? GetGameListCover(selected_entry)->GetNativeHandle() :
-										  GetTextureForGameListEntryType(GameList::EntryType::Count)->GetNativeHandle(),
+			ImGui::Image(reinterpret_cast<ImTextureID>(selected_entry ? GetGameListCover(selected_entry)->GetNativeHandle() :
+																		GetTextureForGameListEntryType(GameList::EntryType::Count)->GetNativeHandle()),
 				image_rect.GetSize());
 		}
 
@@ -6140,7 +6141,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 				std::string flag_texture(fmt::format("icons/flags/{}.png", GameList::RegionToString(selected_entry->region)));
 				ImGui::TextUnformatted(FSUI_CSTR("Region: "));
 				ImGui::SameLine();
-				ImGui::Image(GetCachedTextureAsync(flag_texture.c_str())->GetNativeHandle(), LayoutScale(23.0f, 16.0f));
+				ImGui::Image(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(flag_texture.c_str())->GetNativeHandle()), LayoutScale(23.0f, 16.0f));
 				ImGui::SameLine();
 				ImGui::Text(" (%s)", GameList::RegionToString(selected_entry->region));
 			}
@@ -6150,7 +6151,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			ImGui::SameLine();
 			if (selected_entry->compatibility_rating != GameDatabaseSchema::Compatibility::Unknown)
 			{
-				ImGui::Image(s_game_compatibility_textures[static_cast<u32>(selected_entry->compatibility_rating) - 1]->GetNativeHandle(),
+				ImGui::Image(reinterpret_cast<ImTextureID>(s_game_compatibility_textures[static_cast<u32>(selected_entry->compatibility_rating) - 1]->GetNativeHandle()),
 					LayoutScale(64.0f, 16.0f));
 				ImGui::SameLine();
 			}
@@ -6269,8 +6270,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 			const ImRect image_rect(CenterImage(ImRect(bb.Min, bb.Min + image_size),
 				ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight()))));
 
-			ImGui::GetWindowDrawList()->AddImage(cover_texture->GetNativeHandle(), image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
-				ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+			ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(cover_texture->GetNativeHandle()),
+				image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 
 			const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
 			const std::string_view title(std::string_view(entry->GetTitle(true)).substr(0, 31));
