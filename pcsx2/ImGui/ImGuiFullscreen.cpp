@@ -589,8 +589,8 @@ void ImGuiFullscreen::ForceKeyNavEnabled()
 	ImGuiContext& g = *ImGui::GetCurrentContext();
 	g.ActiveIdSource = (g.ActiveIdSource == ImGuiInputSource_Mouse) ? ImGuiInputSource_Keyboard : g.ActiveIdSource;
 	g.NavInputSource = (g.NavInputSource == ImGuiInputSource_Mouse) ? ImGuiInputSource_Keyboard : g.ActiveIdSource;
-	g.NavDisableHighlight = false;
-	g.NavDisableMouseHover = true;
+	g.NavCursorVisible = true;
+	g.NavHighlightItemUnderNav = true;
 }
 
 bool ImGuiFullscreen::WantsToCloseMenu()
@@ -1289,7 +1289,9 @@ bool ImGuiFullscreen::FloatingButton(const char* text, float x, float y, float w
 	bool pressed;
 	if (enabled)
 	{
-		pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, repeat_button ? ImGuiButtonFlags_Repeat : 0);
+		ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, repeat_button);
+		pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+		ImGui::PopItemFlag();
 		if (hovered)
 		{
 			const float t = std::min<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0f);
@@ -1822,7 +1824,7 @@ bool ImGuiFullscreen::HorizontalMenuItem(GSTexture* icon, const char* title, con
 	const ImVec2 icon_pos = bb.Min + ImVec2((avail_width - icon_size) * 0.5f, 0.0f);
 
 	ImDrawList* dl = ImGui::GetWindowDrawList();
-	dl->AddImage(icon->GetNativeHandle(), icon_pos, icon_pos + ImVec2(icon_size, icon_size));
+	dl->AddImage(reinterpret_cast<ImTextureID>(icon->GetNativeHandle()), icon_pos, icon_pos + ImVec2(icon_size, icon_size));
 
 	ImFont* title_font = g_large_font;
 	const ImVec2 title_size = title_font->CalcTextSizeA(title_font->FontSize, avail_width, 0.0f, title);
@@ -2746,7 +2748,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 			GSTexture* tex = GetCachedTexture(notif.badge_path.c_str());
 			if (tex)
 			{
-				dl->AddImage(tex->GetNativeHandle(), badge_min, badge_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+				dl->AddImage(reinterpret_cast<ImTextureID>(tex->GetNativeHandle()), badge_min, badge_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
 					IM_COL32(255, 255, 255, opacity));
 			}
 		}

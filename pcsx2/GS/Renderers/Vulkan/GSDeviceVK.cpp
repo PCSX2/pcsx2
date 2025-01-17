@@ -4498,7 +4498,7 @@ void GSDeviceVK::RenderImGui()
 			SetScissor(GSVector4i(clip).max_i32(GSVector4i::zero()));
 
 			// Since we don't have the GSTexture...
-			GSTextureVK* tex = static_cast<GSTextureVK*>(pcmd->GetTexID());
+			GSTextureVK* tex = reinterpret_cast<GSTextureVK*>(pcmd->GetTexID());
 			if (tex)
 				SetUtilityTexture(tex, m_linear_sampler);
 

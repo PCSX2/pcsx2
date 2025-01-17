@@ -1038,7 +1038,7 @@ void SaveStateSelectorUI::Draw()
 				{
 					ImGui::SetCursorPosY(y_start + padding);
 					ImGui::SetCursorPosX(padding);
-					ImGui::Image(preview_texture->GetNativeHandle(), image_size);
+					ImGui::Image(reinterpret_cast<ImTextureID>(preview_texture->GetNativeHandle()), image_size);
 				}
 
 				ImGui::SetCursorPosY(y_start + padding);

@@ -2057,7 +2057,7 @@ void GSDevice12::RenderImGui()
 
 			SetScissor(GSVector4i(clip));
 
-			GSTexture12* tex = static_cast<GSTexture12*>(pcmd->GetTexID());
+			GSTexture12* tex = reinterpret_cast<GSTexture12*>(pcmd->GetTexID());
 			D3D12DescriptorHandle handle = m_null_texture->GetSRVDescriptor();
 			if (tex)
 			{
