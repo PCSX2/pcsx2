@@ -30,9 +30,6 @@
 #include "fmt/format.h"
 
 #include <bit>
-#ifdef _M_X86
-#include <immintrin.h>
-#endif
 #include <map>
 #include <unordered_set>
 #include <unordered_map>
@@ -112,6 +109,16 @@ vtlb_private::VTLBVirtual::VTLBVirtual(VTLBPhysical phys, u32 paddr, u32 vaddr)
 	}
 }
 
+#if defined(_M_X86)
+#include <immintrin.h>
+#elif defined(_M_ARM64)
+#if defined(_MSC_VER) && !defined(__clang__)
+#include <arm64_neon.h>
+#else
+#include <arm_neon.h>
+#endif
+#endif
+
 __inline int CheckCache(u32 addr)
 {
 	// Check if the cache is enabled
@@ -123,7 +130,7 @@ __inline int CheckCache(u32 addr)
 	size_t i = 0;
 	const size_t size = cachedTlbs.count;
 
-#ifdef _M_X86
+#if defined(_M_X86)
 	const int stride = 4;
 
 	const __m128i addr_vec = _mm_set1_epi32(addr);
@@ -172,6 +179,32 @@ __inline int CheckCache(u32 addr)
 		{
 			return true;
 		}
+	}
+#elif defined(_M_ARM64)
+	const int stride = 4;
+
+	const uint32x4_t addr_vec = vld1q_dup_u32(&addr);
+
+	for (; i + stride <= size; i += stride)
+	{
+		const uint32x4_t pfn1_vec = vld1q_u32(&cachedTlbs.PFN1s[i]);
+		const uint32x4_t pfn0_vec = vld1q_u32(&cachedTlbs.PFN0s[i]);
+		const uint32x4_t mask_vec = vld1q_u32(&cachedTlbs.PageMasks[i]);
+
+		const uint32x4_t cached1_vec = vld1q_u32(&cachedTlbs.CacheEnabled1[i]);
+		const uint32x4_t cached0_vec = vld1q_u32(&cachedTlbs.CacheEnabled0[i]);
+
+		const uint32x4_t pfn1_end_vec = vaddq_u32(pfn1_vec, mask_vec);
+		const uint32x4_t pfn0_end_vec = vaddq_u32(pfn0_vec, mask_vec);
+
+		const uint32x4_t cmp1 = vandq_u32(vcgeq_u32(addr_vec, pfn1_vec), vcleq_u32(addr_vec, pfn1_end_vec));
+		const uint32x4_t cmp0 = vandq_u32(vcgeq_u32(addr_vec, pfn0_vec), vcleq_u32(addr_vec, pfn0_end_vec));
+
+		const uint32x4_t lanes_enabled = vorrq_u32(vandq_u32(cached1_vec, cmp1), vandq_u32(cached0_vec, cmp0));
+
+		const uint32x2_t tmp = vorr_u32(vget_low_u32(lanes_enabled), vget_high_u32(lanes_enabled));
+		if (vget_lane_u32(vpmax_u32(tmp, tmp), 0))
+			return true;
 	}
 #endif
 	for (; i < size; i++)
