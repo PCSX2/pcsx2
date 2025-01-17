@@ -2294,6 +2294,8 @@ static void recRecompile(const u32 startpc)
 
 	while (1)
 	{
+		BASEBLOCK* pblock = PC_GETBLOCK(i);
+
 		// stop before breakpoints
 		if (isBreakpointNeeded(i) != 0 || isMemcheckNeeded(i) != 0)
 		{
@@ -2309,6 +2311,13 @@ static void recRecompile(const u32 startpc)
 				s_nEndBlock = i;
 
 				eeRecPerfLog.Write("Pagesplit @ %08X : size=%d insts", startpc, (i - startpc) / 4);
+				break;
+			}
+
+			if (pblock->GetFnptr() != (uptr)JITCompile)
+			{
+				willbranch3 = 1;
+				s_nEndBlock = i;
 				break;
 			}
 		}
@@ -2613,6 +2622,34 @@ StartRecomp:
 
 	pxAssert((pc - startpc) >> 2 <= 0xffff);
 	s_pCurBlockEx->size = (pc - startpc) >> 2;
+
+	if (HWADDR(pc) <= Ps2MemSize::ExposedRam)
+	{
+		BASEBLOCKEX* oldBlock;
+		int i;
+
+		i = recBlocks.LastIndex(HWADDR(pc) - 4);
+		while ((oldBlock = recBlocks[i--]))
+		{
+			if (oldBlock == s_pCurBlockEx)
+				continue;
+			if (oldBlock->startpc >= HWADDR(pc))
+				continue;
+			if ((oldBlock->startpc + oldBlock->size * 4) <= HWADDR(startpc))
+				break;
+
+			if (memcmp(&recRAMCopy[oldBlock->startpc / 4], PSM(oldBlock->startpc),
+					oldBlock->size * 4))
+			{
+				recClear(startpc, (pc - startpc) / 4);
+				s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
+				pxAssert(s_pCurBlockEx->startpc == HWADDR(startpc));
+				break;
+			}
+		}
+
+		memcpy(&recRAMCopy[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
+	}
 
 	s_pCurBlock->SetFnptr((uptr)recPtr);
 
