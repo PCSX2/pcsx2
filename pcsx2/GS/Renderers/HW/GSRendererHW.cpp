@@ -728,7 +728,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 
 	if (m_context->scissor.in.x & 8)
 	{
-		m_context->scissor.in.x &= ~0xf;//m_vt.m_min.p.x;
+		m_context->scissor.in.x &= ~0xf; //m_vt.m_min.p.x;
 
 		if (half_right_vert)
 			m_context->scissor.in.x /= 2;
@@ -757,6 +757,38 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 	{
 		m_vt.m_min.t.x /= 2.0f;
 		m_vt.m_max.t.x = (m_vt.m_max.t.x + 1.9f) / 2.0f;
+	}
+
+	// Special case used in Call of Duty - World at War where it doubles the height and halves the width, but the height is double doubled.
+	// Check the height of the original texture, if it's half of the draw height, then make it wide instead.
+	if (half_bottom_uv && tex->m_from_target && m_cached_ctx.TEX0.TBW == m_cached_ctx.FRAME.FBW &&
+		tex->m_from_target->m_TEX0.TBW == (m_cached_ctx.TEX0.TBW * 2) && (m_cached_ctx.TEX0.TBW * 64) == floor(m_vt.m_max.t.x))
+	{
+		m_r.z *= 2;
+		m_r.w /= 2;
+
+		m_vt.m_max.t.y /= 2;
+		m_vt.m_max.t.x *= 2;
+		m_vt.m_max.p.y /= 2;
+		m_vt.m_max.p.x *= 2;
+		m_context->scissor.in.w /= 2;
+		m_context->scissor.in.z *= 2;
+
+		v[1].XYZ.X = ((v[m_index.buff[m_index.tail - 1]].XYZ.X - m_context->XYOFFSET.OFX) * 2) + m_context->XYOFFSET.OFX;
+		v[1].XYZ.Y = ((v[m_index.buff[m_index.tail - 1]].XYZ.Y - m_context->XYOFFSET.OFY) / 2) + m_context->XYOFFSET.OFY;
+
+		v[1].U = v[m_index.buff[m_index.tail - 1]].U * 2;
+		v[1].V = v[m_index.buff[m_index.tail - 1]].V / 2;
+
+		v[1].ST.S = v[m_index.buff[m_index.tail - 1]].ST.S * 2;
+		v[1].ST.T = v[m_index.buff[m_index.tail - 1]].ST.T / 2;
+
+		m_vertex.head = m_vertex.tail = m_vertex.next = 2;
+		m_index.tail = 2;
+
+		m_cached_ctx.TEX0.TBW *= 2;
+		m_cached_ctx.FRAME.FBW *= 2;
+		GL_CACHE("Half width/double height shuffle detected, width changed to %d", m_cached_ctx.FRAME.FBW);
 	}
 }
 
@@ -3057,8 +3089,9 @@ void GSRendererHW::Draw()
 				FRAME_TEX0.TBW = src->m_from_target->m_TEX0.TBW;
 			}
 
-			rt = g_texture_cache->CreateTarget(FRAME_TEX0, t_size, GetValidSize(src), (scale_draw < 0 && is_possible_mem_clear != ClearType::NormalClear) ? src->m_from_target->GetScale() : target_scale, GSTextureCache::RenderTarget, true,
-				fm, false, force_preload, preserve_rt_color || possible_shuffle, m_r, src);
+			rt = g_texture_cache->CreateTarget(FRAME_TEX0, t_size, GetValidSize(src), (scale_draw < 0 && is_possible_mem_clear != ClearType::NormalClear) ? src->m_from_target->GetScale() : target_scale, 
+												GSTextureCache::RenderTarget, true, fm, false, force_preload, preserve_rt_color || possible_shuffle, lookup_rect, src);
+												
 			if (!rt) [[unlikely]]
 			{
 				GL_INS("ERROR: Failed to create FRAME target, skipping.");
@@ -4588,7 +4621,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 		const GSLocalMemory::psm_t frame_psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
 		const u32 frame_page_offset = std::max(static_cast<int>(((m_r.x / frame_psm.pgs.x) + (m_r.y / frame_psm.pgs.y) * src->m_TEX0.TBW) - m_target_offset), 0);
 		m_r = GSVector4i(m_r.x & ~(frame_psm.pgs.x - 1), m_r.y & ~(frame_psm.pgs.y - 1), (m_r.z + (frame_psm.pgs.x - 1)) & ~(frame_psm.pgs.x - 1), (m_r.w + (frame_psm.pgs.y - 1)) & ~(frame_psm.pgs.y - 1));
-		m_cached_ctx.FRAME.FBP += frame_page_offset;
+		//m_cached_ctx.FRAME.FBP += frame_page_offset;
 		m_in_target_draw |= frame_page_offset > 0;
 		GSVertex* s = &m_vertex.buff[0];
 		s[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + (m_r.x << 4));
@@ -4598,7 +4631,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 
 		const GSLocalMemory::psm_t tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
 		const u32 tex_page_offset = (m_vt.m_min.t.x / tex_psm.pgs.x) + (m_vt.m_min.t.y / tex_psm.pgs.y);
-		m_cached_ctx.TEX0.TBP0 += tex_page_offset << 5;
+		//m_cached_ctx.TEX0.TBP0 += tex_page_offset << 5;
 		s[0].U = m_r.x << 4;
 		s[1].U = m_r.z << 4;
 		s[0].V = m_r.y << 4;
@@ -5923,7 +5956,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			target_region = false;
 			source_region.bits = 0;
 			//copied_rt = tex->m_from_target != nullptr;
-			if (page_offset && m_in_target_draw)
+			if (m_in_target_draw && (page_offset || frame_diff))
 			{
 				copy_size.x = m_r.width();
 				copy_size.y = m_r.height();
