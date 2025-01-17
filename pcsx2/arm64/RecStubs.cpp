@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0
 
+#include "common/Console.h"
+#include "MTVU.h"
 #include "SaveState.h"
 #include "vtlb.h"
 
@@ -13,6 +15,16 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 
 bool SaveStateBase::vuJITFreeze()
 {
-  pxFailRel("Not implemented.");
-	return false;
+	if(IsSaving())
+		vu1Thread.WaitVU();
+
+	Console.Warning("recompiler state is stubbed in arm64!");
+
+	// HACK!!
+
+	// size of microRegInfo structure
+	std::array<u8,96> empty_data{};
+	Freeze(empty_data);
+	Freeze(empty_data);
+	return true;
 }
