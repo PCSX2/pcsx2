@@ -93,19 +93,19 @@ namespace usb_pad
 		u8 right_turntable = 0x80;
 		if (data.left_turntable_ccw > 0)
 		{
-			left_turntable -= static_cast<u8>(std::min<int>(data.left_turntable_ccw * turntable_multiplier, 0x7F));
+			left_turntable -= static_cast<u8>(std::min<int>(data.left_turntable_ccw, 0x7F));
 		}
 		else
 		{
-			left_turntable += static_cast<u8>(std::min<int>(data.left_turntable_cw * turntable_multiplier, 0x7F));
+			left_turntable += static_cast<u8>(std::min<int>(data.left_turntable_cw, 0x7F));
 		}
 		if (data.right_turntable_ccw > 0)
 		{
-			right_turntable -= static_cast<u8>(std::min<int>(data.right_turntable_ccw * turntable_multiplier, 0x7F));
+			right_turntable -= static_cast<u8>(std::min<int>(data.right_turntable_ccw, 0x7F));
 		}
 		else
 		{
-			right_turntable += static_cast<u8>(std::min<int>(data.right_turntable_cw * turntable_multiplier, 0x7F));
+			right_turntable += static_cast<u8>(std::min<int>(data.right_turntable_cw, 0x7F));
 		}
 		buf[3] = 0x80;
 		buf[4] = 0x80;
@@ -369,19 +369,19 @@ namespace usb_pad
 				break;
 
 			case CID_DJ_LEFT_TURNTABLE_CW:
-				s->data.left_turntable_cw = static_cast<u32>(std::clamp<long>(std::lroundf(value * 128.0f), 0, 128));
+				s->data.left_turntable_cw = static_cast<u32>(std::clamp<long>(std::lroundf(value * s->turntable_multiplier * 128.0f), 0, 128));
 				break;
 
 			case CID_DJ_LEFT_TURNTABLE_CCW:
-				s->data.left_turntable_ccw = static_cast<u32>(std::clamp<long>(std::lroundf(value * 128.0f), 0, 128));
+				s->data.left_turntable_ccw = static_cast<u32>(std::clamp<long>(std::lroundf(value * s->turntable_multiplier * 128.0f), 0, 128));
 				break;
 
 			case CID_DJ_RIGHT_TURNTABLE_CW:
-				s->data.right_turntable_cw = static_cast<u32>(std::clamp<long>(std::lroundf(value * 128.0f), 0, 128));
+				s->data.right_turntable_cw = static_cast<u32>(std::clamp<long>(std::lroundf(value * s->turntable_multiplier * 128.0f), 0, 128));
 				break;
 
 			case CID_DJ_RIGHT_TURNTABLE_CCW:
-				s->data.right_turntable_ccw = static_cast<u32>(std::clamp<long>(std::lroundf(value * 128.0f), 0, 128));
+				s->data.right_turntable_ccw = static_cast<u32>(std::clamp<long>(std::lroundf(value * s->turntable_multiplier * 128.0f), 0, 128));
 				break;
 
 			case CID_DJ_DPAD_UP:
@@ -446,8 +446,8 @@ namespace usb_pad
 			{"EffectsKnobRight", TRANSLATE_NOOP("USB", "Effects Knob Right"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_EFFECTSKNOB_RIGHT, GenericInputBinding::RightStickRight},
 			{"LeftTurntableCW", TRANSLATE_NOOP("USB", "Left Turntable Clockwise"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_LEFT_TURNTABLE_CW, GenericInputBinding::LeftStickRight},
 			{"LeftTurntableCCW", TRANSLATE_NOOP("USB", "Left Turntable Counterclockwise"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_LEFT_TURNTABLE_CCW, GenericInputBinding::LeftStickLeft},
-			{"RightTurntableCW", TRANSLATE_NOOP("USB", "Right Turntable Clockwise"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_RIGHT_TURNTABLE_CW, GenericInputBinding::LeftStickDown},
-			{"RightTurntableCCW", TRANSLATE_NOOP("USB", "Right Turntable Counterclockwise"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_RIGHT_TURNTABLE_CCW, GenericInputBinding::LeftStickUp},
+			{"RightTurntableCW", TRANSLATE_NOOP("USB", "Right Turntable Clockwise"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_RIGHT_TURNTABLE_CW, GenericInputBinding::LeftStickUp},
+			{"RightTurntableCCW", TRANSLATE_NOOP("USB", "Right Turntable Counterclockwise"), nullptr, InputBindingInfo::Type::HalfAxis, CID_DJ_RIGHT_TURNTABLE_CCW, GenericInputBinding::LeftStickDown},
 			{"LeftTurntableGreen", TRANSLATE_NOOP("USB", "Left Turntable Green"), nullptr, InputBindingInfo::Type::Button, CID_DJ_LEFT_GREEN, GenericInputBinding::Unknown},
 			{"LeftTurntableRed", TRANSLATE_NOOP("USB", "Left Turntable Red"), nullptr, InputBindingInfo::Type::Button, CID_DJ_LEFT_RED, GenericInputBinding::Unknown},
 			{"LeftTurntableBlue", TRANSLATE_NOOP("USB", "Left Turntable Blue"), nullptr, InputBindingInfo::Type::Button, CID_DJ_LEFT_BLUE, GenericInputBinding::Unknown},
@@ -464,8 +464,8 @@ namespace usb_pad
 	{
 		static constexpr const SettingInfo info[] = {
 			{SettingInfo::Type::Float, "TurntableMultiplier", TRANSLATE_NOOP("USB", "Turntable Multiplier"),
-				TRANSLATE_NOOP("USB", "Apply a multiplier to the turntable"),
-				"1.00", "0.00", "100.0", "1.0", "%.0fx", nullptr, nullptr, 1.0f}};
+				TRANSLATE_NOOP("USB", "Apply a sensitivity multiplier to turntable rotation.\nXbox 360 turntables require a 256x multiplier, most other turntables can use the default 1x multiplier."),
+				"1.00", "0.00", "512.0", "1.0", "%.0fx", nullptr, nullptr, 1.0f}};
 
 		return info;
 	}
