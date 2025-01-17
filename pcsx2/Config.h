@@ -1282,6 +1282,7 @@ struct Pcsx2Config
 		InhibitScreensaver : 1,
 		BackupSavestate : 1,
 		McdFolderAutoManage : 1,
+		ManuallySetRealTimeClock : 1,
 
 		HostFs : 1,
 
@@ -1314,6 +1315,13 @@ struct Pcsx2Config
 	std::string GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
 
 	int PINESlot;
+
+	int RtcYear;
+	int RtcMonth;
+	int RtcDay;
+	int RtcHour;
+	int RtcMinute;
+	int RtcSecond;
 
 	// Set at runtime, not loaded from config.
 	std::string CurrentBlockdump;

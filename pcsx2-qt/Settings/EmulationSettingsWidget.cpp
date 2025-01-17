@@ -48,6 +48,12 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 
 	if (m_dialog->isPerGameSettings())
 	{
+		SettingWidgetBinder::BindWidgetToDateTimeSetting(sif, m_ui.rtcDateTime, "EmuCore");
+		m_ui.rtcDateTime->setDateRange(QDate(2000, 1, 1), QDate(2099, 12, 31));
+		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.manuallySetRealTimeClock, "EmuCore", "ManuallySetRealTimeClock", false);
+		connect(m_ui.manuallySetRealTimeClock, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::onManuallySetRealTimeClockChanged);
+		EmulationSettingsWidget::onManuallySetRealTimeClockChanged();
+
 		m_ui.eeCycleRate->insertItem(
 			0, tr("Use Global Setting [%1]")
 				   .arg(m_ui.eeCycleRate->itemText(
@@ -74,6 +80,8 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 	}
 	else
 	{
+		m_ui.rtcGroup->hide();
+
 		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cheats, "EmuCore", "EnableCheats", false);
 
 		// Allow for FastCDVD for per-game settings only
@@ -146,6 +154,13 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 	dialog->registerWidgetHelp(m_ui.useVSyncForTiming, tr("Use Host VSync Timing"), tr("Unchecked"),
 		tr("When synchronizing with the host refresh rate, this option disable's PCSX2's internal frame timing, and uses the host instead. "
 		   "Can result in smoother frame pacing, <strong>but at the cost of increased input latency</strong>."));
+	dialog->registerWidgetHelp(m_ui.manuallySetRealTimeClock, tr("Manually Set Real-Time Clock"), tr("Unchecked"),
+		tr("Manually set a real-time clock to use for the virtual PlayStation 2 instead of using your OS' system clock."));
+	dialog->registerWidgetHelp(m_ui.rtcDateTime, tr("Real-Time Clock"), tr("Current date and time"),
+		tr("Real-time clock (RTC) used by the virtual PlayStation 2. Date format is the same as the one used by your OS. "
+			"This time is only applied upon booting the PS2; changing it while in-game will have no effect. "
+			"NOTE: This assumes you have your PS2 set to the default timezone of GMT+0 and default DST of Summer Time. "
+			"Some games require an RTC date/time set after their release date."));
 
 	updateOptimalFramePacing();
 	updateUseVSyncForTimingEnabled();
@@ -291,4 +306,10 @@ void EmulationSettingsWidget::updateUseVSyncForTimingEnabled()
 	const bool vsync = m_dialog->getEffectiveBoolValue("EmuCore/GS", "VsyncEnable", false);
 	const bool sync_to_host_refresh = m_dialog->getEffectiveBoolValue("EmuCore/GS", "SyncToHostRefreshRate", false);
 	m_ui.useVSyncForTiming->setEnabled(vsync && sync_to_host_refresh);
+}
+
+void EmulationSettingsWidget::onManuallySetRealTimeClockChanged()
+{
+	const bool enabled = m_dialog->getEffectiveBoolValue("EmuCore", "ManuallySetRealTimeClock", false);
+	m_ui.rtcDateTime->setEnabled(enabled);
 }

@@ -12,6 +12,7 @@
 #include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
+#include <QtWidgets/QDateTimeEdit>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLabel>
@@ -656,6 +657,26 @@ namespace SettingWidgetBinder
 		}
 	};
 
+	template <>
+	struct SettingAccessor<QDateTimeEdit>
+	{
+		static int getYear(const QDateTimeEdit* widget) { return widget->date().year(); }
+		static int getMonth(const QDateTimeEdit* widget) { return widget->date().month(); }
+		static int getDay(const QDateTimeEdit* widget) { return widget->date().day(); }
+
+		static int getHour(const QDateTimeEdit* widget) { return widget->time().hour(); }
+		static int getMinute(const QDateTimeEdit* widget) { return widget->time().minute(); }
+		static int getSecond(const QDateTimeEdit* widget) { return widget->time().second(); }
+
+		static void setDateTime(QDateTimeEdit* widget, const QDate date, const QTime time) { widget->setDateTime(QDateTime(date, time)); }
+
+		template <typename F>
+		static void connectValueChanged(QDateTimeEdit* widget, F func)
+		{
+			widget->connect(widget, &QDateTimeEdit::dateTimeChanged, func);
+		}
+	};
+
 	/// Binds a widget's value to a setting, updating it when the value changes.
 
 	template <typename WidgetType>
@@ -1238,5 +1259,106 @@ namespace SettingWidgetBinder
 		}
 
 		widget->connect(widget, &QLineEdit::editingFinished, widget, std::move(value_changed));
+	}
+
+	// No need to pass a section or key since this is only used once and has six keys associated with it
+	static inline void BindWidgetToDateTimeSetting(SettingsInterface* sif, QDateTimeEdit* widget, std::string section)
+	{
+		using Accessor = SettingAccessor<QDateTimeEdit>;
+
+		const int YEAR_OFFSET = 2000;
+		const int DEFAULT_YEAR = 0;
+		const int DEFAULT_MONTH = 1;
+		const int DEFAULT_DAY = 1;
+		const int DEFAULT_HOUR = 0;
+		const int DEFAULT_MINUTE = 0;
+		const int DEFAULT_SECOND = 0;
+
+		const char* YEAR_KEY = "RtcYear";
+		const char* MONTH_KEY = "RtcMonth";
+		const char* DAY_KEY = "RtcDay";
+		const char* HOUR_KEY = "RtcHour";
+		const char* MINUTE_KEY = "RtcMinute";
+		const char* SECOND_KEY = "RtcSecond";
+
+		// Fetch settings from .ini
+		const s32 year_value =
+			Host::GetBaseIntSettingValue(section.c_str(), YEAR_KEY, static_cast<s32>(DEFAULT_YEAR));
+		const s32 month_value =
+			Host::GetBaseIntSettingValue(section.c_str(), MONTH_KEY, static_cast<s32>(DEFAULT_MONTH));
+		const s32 day_value =
+			Host::GetBaseIntSettingValue(section.c_str(), DAY_KEY, static_cast<s32>(DEFAULT_DAY));
+		const s32 hour_value =
+			Host::GetBaseIntSettingValue(section.c_str(), HOUR_KEY, static_cast<s32>(DEFAULT_HOUR));
+		const s32 minute_value =
+			Host::GetBaseIntSettingValue(section.c_str(), MINUTE_KEY, static_cast<s32>(DEFAULT_MINUTE));
+		const s32 second_value =
+			Host::GetBaseIntSettingValue(section.c_str(), SECOND_KEY, static_cast<s32>(DEFAULT_SECOND));
+
+		if (sif)
+		{
+			int sif_year_value = DEFAULT_YEAR;
+			int sif_month_value = DEFAULT_MONTH;
+			int sif_day_value = DEFAULT_DAY;
+			int sif_hour_value = DEFAULT_HOUR;
+			int sif_minute_value = DEFAULT_MINUTE;
+			int sif_second_value = DEFAULT_SECOND;
+
+			// Get Settings Interface values or default if that fails
+			if (!sif->GetIntValue(section.c_str(), YEAR_KEY, &sif_year_value)) { sif_year_value = DEFAULT_YEAR; }
+			if (!sif->GetIntValue(section.c_str(), MONTH_KEY, &sif_month_value)) { sif_month_value = DEFAULT_MONTH; }
+			if (!sif->GetIntValue(section.c_str(), DAY_KEY, &sif_day_value)) { sif_day_value = DEFAULT_DAY; }
+			if (!sif->GetIntValue(section.c_str(), HOUR_KEY, &sif_hour_value)) { sif_hour_value = DEFAULT_HOUR; }
+			if (!sif->GetIntValue(section.c_str(), MINUTE_KEY, &sif_minute_value)) { sif_minute_value = DEFAULT_MINUTE; }
+			if (!sif->GetIntValue(section.c_str(), SECOND_KEY, &sif_second_value)) { sif_second_value = DEFAULT_SECOND; }
+
+			// No need to check for valid date since QDateTime resets to minimum upon becoming invalid
+			Accessor::setDateTime(widget, QDate(static_cast<int>(sif_year_value + YEAR_OFFSET), static_cast<int>(sif_month_value), static_cast<int>(sif_day_value)),
+				QTime(static_cast<int>(sif_hour_value), static_cast<int>(sif_minute_value), static_cast<int>(sif_second_value)));
+
+			// Update the settings interface and reload the game settings when changed
+			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), YEAR_KEY = std::move(YEAR_KEY), MONTH_KEY = std::move(MONTH_KEY),
+				DAY_KEY = std::move(DAY_KEY), HOUR_KEY = std::move(HOUR_KEY), MINUTE_KEY = std::move(MINUTE_KEY), SECOND_KEY = std::move(SECOND_KEY), YEAR_OFFSET = std::move(YEAR_OFFSET)]() {
+
+				sif->SetIntValue(section.c_str(), YEAR_KEY, Accessor::getYear(widget) - YEAR_OFFSET);
+				sif->SetIntValue(section.c_str(), MONTH_KEY, Accessor::getMonth(widget));
+				sif->SetIntValue(section.c_str(), DAY_KEY, Accessor::getDay(widget));
+				sif->SetIntValue(section.c_str(), HOUR_KEY, Accessor::getHour(widget));
+				sif->SetIntValue(section.c_str(), MINUTE_KEY, Accessor::getMinute(widget));
+				sif->SetIntValue(section.c_str(), SECOND_KEY, Accessor::getSecond(widget));
+
+				QtHost::SaveGameSettings(sif, true);
+				g_emu_thread->reloadGameSettings();
+			});
+		}
+
+		else
+		{
+			// No need to check for valid date since QDateTime resets to minimum upon becoming invalid
+			Accessor::setDateTime(widget, QDate(static_cast<int>(year_value + YEAR_OFFSET), static_cast<int>(month_value), static_cast<int>(day_value)),
+				QTime(static_cast<int>(hour_value), static_cast<int>(minute_value), static_cast<int>(second_value)));
+
+			// Update and apply base settings with values from widget when user changes it in UI
+			Accessor::connectValueChanged(widget, [widget, section = std::move(section), YEAR_KEY = std::move(YEAR_KEY), MONTH_KEY = std::move(MONTH_KEY),
+				DAY_KEY = std::move(DAY_KEY), HOUR_KEY = std::move(HOUR_KEY), MINUTE_KEY = std::move(MINUTE_KEY), SECOND_KEY = std::move(SECOND_KEY), YEAR_OFFSET = std::move(YEAR_OFFSET)]() {
+
+				const int new_year_value = Accessor::getYear(widget);
+				const int new_month_value = Accessor::getMonth(widget);
+				const int new_day_value = Accessor::getDay(widget);
+				const int new_hour_value = Accessor::getHour(widget);
+				const int new_minute_value = Accessor::getMinute(widget);
+				const int new_second_value = Accessor::getSecond(widget);
+
+				Host::SetBaseIntSettingValue(section.c_str(), YEAR_KEY, new_year_value - YEAR_OFFSET);
+				Host::SetBaseIntSettingValue(section.c_str(), MONTH_KEY, new_month_value);
+				Host::SetBaseIntSettingValue(section.c_str(), DAY_KEY, new_day_value);
+				Host::SetBaseIntSettingValue(section.c_str(), HOUR_KEY, new_hour_value);
+				Host::SetBaseIntSettingValue(section.c_str(), MINUTE_KEY, new_minute_value);
+				Host::SetBaseIntSettingValue(section.c_str(), SECOND_KEY, new_second_value);
+				Host::CommitBaseSettingChanges();
+				g_emu_thread->applySettings();
+			});
+		}
+
 	}
 } // namespace SettingWidgetBinder

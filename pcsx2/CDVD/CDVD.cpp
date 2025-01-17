@@ -28,6 +28,9 @@
 
 #include <cctype>
 #include <ctime>
+#ifndef _WIN32
+#include <time.h>
+#endif
 #include <memory>
 
 cdvdStruct cdvd;
@@ -917,9 +920,38 @@ void cdvdReset()
 	cdvd.ReadTime = cdvdBlockReadTime(MODE_DVDROM);
 	cdvd.RotSpeed = cdvdRotationTime(MODE_DVDROM);
 
+	if (EmuConfig.ManuallySetRealTimeClock)
+	{
+		// Convert to GMT+9 (assumes GMT+0)
+		std::tm tm{};
+		tm.tm_sec = EmuConfig.RtcSecond;
+		tm.tm_min = EmuConfig.RtcMinute;
+		tm.tm_hour = EmuConfig.RtcHour;
+		tm.tm_mday = EmuConfig.RtcDay;
+		tm.tm_mon = EmuConfig.RtcMonth - 1;
+		tm.tm_year = EmuConfig.RtcYear + 100; // 2000 - 1900
+		tm.tm_isdst = 1;
+
+		// Need this instead of mktime for timezone independence
+		std::time_t t = 0;
+		#if defined(_WIN32)
+			t = _mkgmtime(&tm) + 32400; //60 * 60 * 9 for GMT+9
+			gmtime_s(&tm, &t);
+		#else
+			t = timegm(&tm) + 32400;
+			gmtime_r(&t, &tm);
+		#endif
+
+		cdvd.RTC.second = tm.tm_sec;
+		cdvd.RTC.minute = tm.tm_min;
+		cdvd.RTC.hour = tm.tm_hour;
+		cdvd.RTC.day = tm.tm_mday;
+		cdvd.RTC.month = tm.tm_mon + 1;
+		cdvd.RTC.year = tm.tm_year - 100;
+	}
 	// If we are recording, always use the same RTC setting
 	// for games that use the RTC to seed their RNG -- this is very important to be the same everytime!
-	if (g_InputRecording.isActive())
+	else if (g_InputRecording.isActive())
 	{
 		Console.WriteLn("Input Recording Active - Using Constant RTC of 04-03-2020 (DD-MM-YYYY)");
 		// Why not just 0 everything? Some games apparently require the date to be valid in terms of when
