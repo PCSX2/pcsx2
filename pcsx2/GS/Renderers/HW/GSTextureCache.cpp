@@ -1948,10 +1948,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						(static_cast<u32>(min_rect.width()) <= (widthpage_offset * 64))));*/
 				const bool is_aligned_ok = widthpage_offset == 0 || ((min_rect.width() <= static_cast<int>((t->m_TEX0.TBW - widthpage_offset) * 64) && (t->m_TEX0.TBW == TEX0.TBW || TEX0.TBW == 1)) && bp >= t->m_TEX0.TBP0);
 				const bool no_target_or_newer = (!dst || ((GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw)));
-				const bool width_match = (t->m_TEX0.TBW == TEX0.TBW || TEX0.TBW == 1);
+				const bool width_match = (t->m_TEX0.TBW == TEX0.TBW || (TEX0.TBW == 1 && draw_rect.w <= GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y));
 				// if it's a shuffle, some games tend to offset back by a page, such as Tomb Raider, for no disernable reason, but it then causes problems.
 				// This can also happen horizontally (Catwoman moves everything one page left with shuffles), but this is too messy to deal with right now.
-				const bool overlaps = t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect) || (is_shuffle && t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect + GSVector4i(0, 0, 0, 32)));
+				const bool overlaps = t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect) || (is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 8 && t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect + GSVector4i(0, 0, 0, 32)));
 				if (no_target_or_newer && is_aligned_ok && width_match && overlaps)
 				{
 					const GSLocalMemory::psm_t& s_psm = GSLocalMemory::m_psm[TEX0.PSM];
