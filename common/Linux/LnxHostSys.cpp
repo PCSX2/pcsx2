@@ -115,6 +115,22 @@ void* HostSys::CreateSharedMemory(const char* name, size_t size)
 	return reinterpret_cast<void*>(static_cast<intptr_t>(fd));
 }
 
+void* HostSys::CreateMappingFromFile(FILE* file)
+{
+	return reinterpret_cast<void*>(static_cast<intptr_t>(fileno(file)));
+}
+
+void* HostSys::MapMapping(void* handle, size_t size, const PageProtectionMode& mode)
+{
+	return HostSys::MapSharedMemory(handle, 0, nullptr, size, mode);
+}
+
+void HostSys::DestroyMapping(void* handle)
+{
+	// The handle mmap requires is the same as the file descriptor.
+	return;
+}
+
 void HostSys::DestroySharedMemory(void* ptr)
 {
 	close(static_cast<int>(reinterpret_cast<intptr_t>(ptr)));
