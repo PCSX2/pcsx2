@@ -246,6 +246,12 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 
 		vt.m_min.t = tmin * s;
 		vt.m_max.t = tmax * s;
+
+		// Clamp the min/max values to the min/max valid UV values
+		// This is needed in certain cases where buggy GS input results
+		// in huge floating points values for ST.
+		vt.m_min.t = vt.m_min.t.min(GSVector4(2047.0f)).max(GSVector4(-2047.0f)).xyxy(vt.m_min.t);
+		vt.m_max.t = vt.m_max.t.min(GSVector4(2047.0f)).max(GSVector4(-2047.0f)).xyxy(vt.m_max.t);
 	}
 	else
 	{
