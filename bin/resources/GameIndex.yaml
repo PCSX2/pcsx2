@@ -53333,8 +53333,6 @@ SLPS-20307:
   name-sort: "らくしょう！ ぱちすろせんげん - もぐもぐふうりんかざん・しょうきんくび・びりーざびっぐ・すーぱーぶらっくじゃっく"
   name-en: "Rakushou! Pachi-Slot Sengen - MoguMoguFuuRinKaZan,Shoukin Kubi,Billy the Big,Super Black Jack"
   region: "NTSC-J"
-  gsHWFixes:
-    cpuFramebufferConversion: 1 # A liitle fixes some graphic glitchs on upper screen (not Perfectly).
 SLPS-20308:
   name: "花火百景 [特典版]"
   name-sort: "はなびひゃっけい [とくてんばん]"
@@ -53792,8 +53790,6 @@ SLPS-20404:
   name-sort: "らくしょう！ ぱちすろせんげん2 - じゅうじか・でかだん"
   name-en: "Rakushou! Pachi-Slot Sengen 2 - Juujika, Deka Dan"
   region: "NTSC-J"
-  gsHWFixes:
-    cpuFramebufferConversion: 1 # A liitle fixes some graphic glitchs on upper screen (not Perfectly).
 SLPS-20405:
   name: "スロッターUPコア5 ルパン大好き！主役は銭形"
   name-sort: "すろったーUPこあ 5 るぱんだいすき！しゅやくはぜにがた"
@@ -53870,8 +53866,6 @@ SLPS-20419:
   name-sort: "らくしょう！ ぱちすろせんげん3 - りおでかーにばる・じゅうじか600しき"
   name-en: "Rakushou! Pachi-Slot Sengen 3 - Rio de Carnival, Juujika 600-shiki"
   region: "NTSC-J"
-  gsHWFixes:
-    cpuFramebufferConversion: 1 # A liitle fixes some graphic glitchs on upper screen (not Perfectly).
 SLPS-20420:
   name: "ウルトラマンネクサス"
   name-sort: "うるとらまんねくさす"
@@ -54081,8 +54075,6 @@ SLPS-20460:
   name-sort: "らくしょう！ ぱちすろせんげん4 - しんもぐもぐふうりんかざん りおでかーにばる"
   name-en: "Rakushou! Pachi-Slot Sengen 4 - Shin MoguMogu FuuRinKaZan,Rio de Carnival"
   region: "NTSC-J"
-  gsHWFixes:
-    cpuFramebufferConversion: 1 # A liitle fixes some graphic glitchs on upper screen (not Perfectly).
 SLPS-20461:
   name: "SIMPLE2000シリーズ Vol.99 THE 原始人"
   name-sort: "しんぷる2000しりーず Vol.  99 THE げんしじん"
@@ -58933,8 +58925,6 @@ SLPS-25770:
   name-sort: "らくしょう！ ぱちすろせんげん5 - りおぱらだいす"
   name-en: "Rakushou! Pachi-Slot Sengen 5 - Rio Paradise"
   region: "NTSC-J"
-  gsHWFixes:
-    cpuFramebufferConversion: 1 # A liitle fixes some graphic glitchs on upper screen (not Perfectly).
 SLPS-25771:
   name: "グリムグリモア [初回生産版]"
   name-sort: "ぐりむぐりもあ [しょかいせいさんばん]"
@@ -59804,8 +59794,6 @@ SLPS-25921:
   name-sort: "らくしょう！ ぱちすろせんげん6 - りお2 くるーじんぐ ヴぁなでぃーす"
   name-en: "Rakushou! Pachi-Slot Sengen 6 - Rio 2 Cruising Vanadis"
   region: "NTSC-J"
-  gsHWFixes:
-    cpuFramebufferConversion: 1 # A liitle fixes some graphic glitchs on upper screen (not Perfectly).
 SLPS-25922:
   name: "Vitamin Z [限定版]"
   name-sort: "びたみん Z [げんていばん]"
@@ -67429,6 +67417,11 @@ SLUS-21218:
   name: "Tak - The Great Juju Challenge"
   region: "NTSC-U"
   compat: 5
+  memcardFilters:
+    - "SLUS-21218"
+    - "SLUS-21252"
+    - "SLUS-21277"
+    - "SLUS-21284"
 SLUS-21219:
   name: "Pac-Man World 3"
   region: "NTSC-U"
@@ -67672,6 +67665,11 @@ SLUS-21252:
     recommendedBlendingLevel: 3 # Fixes missing lights.
     halfPixelOffset: 4 # Aligns post processing.
     nativeScaling: 2 # Fixes post effects.
+  memcardFilters:
+    - "SLUS-21218"
+    - "SLUS-21252"
+    - "SLUS-21277"
+    - "SLUS-21284"
 SLUS-21253:
   name: "TY the Tasmanian Tiger 3 - Night of the Quinkan"
   region: "NTSC-U"
@@ -67863,6 +67861,11 @@ SLUS-21277:
     autoFlush: 2 # Needed for recursive mipmap rendering.
     nativeScaling: 1 # Fixes post effects.
     getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
+  memcardFilters:
+    - "SLUS-21218"
+    - "SLUS-21252"
+    - "SLUS-21277"
+    - "SLUS-21284"
 SLUS-21278:
   name: "SSX On Tour"
   region: "NTSC-U"
@@ -67933,6 +67936,11 @@ SLUS-21284:
     autoFlush: 2 # Fixes glows. Also needed for recursive mipmap rendering.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
     getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
+  memcardFilters:
+    - "SLUS-21218"
+    - "SLUS-21252"
+    - "SLUS-21277"
+    - "SLUS-21284"
 SLUS-21285:
   name: "Ultimate Spider-Man [Limited Edition]"
   region: "NTSC-U"
