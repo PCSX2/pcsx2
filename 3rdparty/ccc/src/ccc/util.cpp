@@ -51,14 +51,17 @@ void set_custom_error_callback(CustomErrorCallback callback)
 	custom_error_callback = callback;
 }
 
-const char* get_string(std::span<const u8> bytes, u64 offset)
+std::optional<std::string_view> get_string(std::span<const u8> bytes, u64 offset)
 {
-	for(const unsigned char* c = bytes.data() + offset; c < bytes.data() + bytes.size(); c++) {
-		if(*c == '\0') {
-			return (const char*) &bytes[offset];
+	for(u64 i = offset; i < bytes.size(); i++) {
+		if(bytes[i] == '\0') {
+			return std::string_view(
+				reinterpret_cast<const char*>(&bytes[offset]),
+				reinterpret_cast<const char*>(&bytes[i]));
 		}
 	}
-	return nullptr;
+	
+	return std::nullopt;
 }
 
 std::string merge_paths(const std::string& base, const std::string& path)

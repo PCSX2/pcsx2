@@ -1,11 +1,12 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
-#include "DebugTools/BiosDebugData.h"
-#include "MemoryTypes.h"
+
+#include "BiosDebugData.h"
 #include "ExpressionParser.h"
 #include "SymbolGuardian.h"
+#include "SymbolImporter.h"
 
 #include <string>
 
@@ -81,12 +82,13 @@ public:
 	virtual bool isValidAddress(u32 address) = 0;
 	virtual u32 getCycles() = 0;
 	virtual BreakPointCpu getCpuType() = 0;
-	[[nodiscard]] virtual SymbolGuardian& GetSymbolGuardian() const = 0;
-	[[nodiscard]] virtual std::vector<std::unique_ptr<BiosThread>> GetThreadList() const = 0;
+	virtual SymbolGuardian& GetSymbolGuardian() const = 0;
+	virtual SymbolImporter* GetSymbolImporter() const = 0;
+	virtual std::vector<std::unique_ptr<BiosThread>> GetThreadList() const = 0;
 
-	bool evaluateExpression(const char* expression, u64& dest);
-	bool initExpression(const char* exp, PostfixExpression& dest);
-	bool parseExpression(PostfixExpression& exp, u64& dest);
+	bool evaluateExpression(const char* expression, u64& dest, std::string& error);
+	bool initExpression(const char* exp, PostfixExpression& dest, std::string& error);
+	bool parseExpression(PostfixExpression& exp, u64& dest, std::string& error);
 	bool isAlive();
 	bool isCpuPaused();
 	void pauseCpu();
@@ -136,8 +138,9 @@ public:
 	bool getCPCOND0() override;
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
-	[[nodiscard]] SymbolGuardian& GetSymbolGuardian() const override;
-	[[nodiscard]] std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
+	SymbolGuardian& GetSymbolGuardian() const override;
+	SymbolImporter* GetSymbolImporter() const override;
+	std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
 	bool isValidAddress(u32 address) override;
@@ -178,8 +181,9 @@ public:
 	bool getCPCOND0() override;
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
-	[[nodiscard]] SymbolGuardian& GetSymbolGuardian() const override;
-	[[nodiscard]] std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
+	SymbolGuardian& GetSymbolGuardian() const override;
+	SymbolImporter* GetSymbolImporter() const override;
+	std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
 	bool isValidAddress(u32 address) override;
@@ -204,6 +208,27 @@ public:
 
 protected:
 	const ccc::ElfFile& m_elf;
+};
+
+class MipsExpressionFunctions : public IExpressionFunctions
+{
+public:
+	MipsExpressionFunctions(
+		DebugInterface* cpu, const ccc::SymbolDatabase* symbolDatabase, bool shouldEnumerateSymbols);
+
+	bool parseReference(char* str, u64& referenceIndex) override;
+	bool parseSymbol(char* str, u64& symbolValue) override;
+	u64 getReferenceValue(u64 referenceIndex) override;
+	ExpressionType getReferenceType(u64 referenceIndex) override;
+	bool getMemoryValue(u32 address, int size, u64& dest, std::string& error) override;
+
+protected:
+	void enumerateSymbols(const ccc::SymbolDatabase& database);
+	bool parseSymbol(char* str, u64& symbolValue, const ccc::SymbolDatabase& database);
+	DebugInterface* m_cpu;
+	const ccc::SymbolDatabase* m_database;
+	std::map<std::string, ccc::FunctionHandle> m_mangled_function_names_to_handles;
+	std::map<std::string, ccc::GlobalVariableHandle> m_mangled_global_names_to_handles;
 };
 
 extern R5900DebugInterface r5900Debug;

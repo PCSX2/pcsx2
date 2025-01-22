@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "UDP_Packet.h"
@@ -12,7 +12,7 @@ namespace PacketReader::IP::UDP
 		: payload{data}
 	{
 	}
-	UDP_Packet::UDP_Packet(u8* buffer, int bufferSize)
+	UDP_Packet::UDP_Packet(const u8* buffer, int bufferSize)
 	{
 		int offset = 0;
 		//Bits 0-31
@@ -42,7 +42,7 @@ namespace PacketReader::IP::UDP
 	{
 	}
 
-	Payload* UDP_Packet::GetPayload()
+	Payload* UDP_Packet::GetPayload() const
 	{
 		return payload.get();
 	}
@@ -67,7 +67,7 @@ namespace PacketReader::IP::UDP
 		return new UDP_Packet(*this);
 	}
 
-	u8 UDP_Packet::GetProtocol()
+	u8 UDP_Packet::GetProtocol() const
 	{
 		return (u8)protocol;
 	}

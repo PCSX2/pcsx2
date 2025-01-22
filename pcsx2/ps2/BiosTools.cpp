@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include <cstdio>
@@ -226,7 +226,7 @@ static void LoadExtraRom(const char* ext, u32 offset, u32 size)
 
 	BiosRom.resize(offset + size);
 
-	auto fp = FileSystem::OpenManagedCFile(Bios1.c_str(), "rb");
+	auto fp = FileSystem::OpenManagedCFileTryIgnoreCase(Bios1.c_str(), "rb");
 	if (!fp || std::fread(&BiosRom[offset], static_cast<size_t>(std::min<s64>(size, filesize)), 1, fp.get()) != 1)
 	{
 		Console.Warning("BIOS Warning: %s could not be read (permission denied?)", ext);

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "QtHost.h"
@@ -38,6 +38,7 @@ ControllerSettingsWindow::ControllerSettingsWindow()
 	connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &ControllerSettingsWindow::close);
 	connect(m_ui.newProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onNewProfileClicked);
 	connect(m_ui.applyProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onApplyProfileClicked);
+	connect(m_ui.renameProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onRenameProfileClicked);
 	connect(m_ui.deleteProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onDeleteProfileClicked);
 	connect(m_ui.mappingSettings, &QPushButton::clicked, this, &ControllerSettingsWindow::onMappingSettingsClicked);
 	connect(m_ui.restoreDefaults, &QPushButton::clicked, this, &ControllerSettingsWindow::onRestoreDefaultsClicked);
@@ -174,6 +175,48 @@ void ControllerSettingsWindow::onApplyProfileClicked()
 
 	// make it visible
 	switchProfile({});
+}
+
+void ControllerSettingsWindow::onRenameProfileClicked()
+{
+	const QString profile_name(QInputDialog::getText(this, tr("Rename Input Profile"),
+		tr("Enter the new name for the input profile:").arg(m_profile_name)));
+
+	if (profile_name.isEmpty())
+		return;
+
+	std::string old_profile_name(m_profile_name.toStdString());
+	std::string old_profile_path(VMManager::GetInputProfilePath(m_profile_name.toStdString()));
+	std::string profile_path(VMManager::GetInputProfilePath(profile_name.toStdString()));
+	if (FileSystem::FileExists(profile_path.c_str()))
+	{
+		QMessageBox::critical(this, tr("Error"), tr("A profile with the name '%1' already exists.").arg(profile_name));
+		return;
+	}
+
+	if (!FileSystem::RenamePath(old_profile_path.c_str(), profile_path.c_str()))
+	{
+		QMessageBox::critical(this, tr("Error"), tr("Failed to rename '%1'.").arg(QString::fromStdString(old_profile_path)));
+		return;
+	}
+
+	FileSystem::FindResultsArray files;
+	FileSystem::FindFiles(EmuFolders::GameSettings.c_str(), "*", FILESYSTEM_FIND_FILES, &files);
+	for (const auto& game_settings : files)
+	{
+		std::string game_settings_path(game_settings.FileName.c_str());
+		std::unique_ptr<INISettingsInterface> update_sif(std::make_unique<INISettingsInterface>(std::move(game_settings_path)));
+		
+		update_sif->Load();
+
+		if (!old_profile_name.compare(update_sif->GetStringValue("EmuCore", "InputProfileName")))
+		{
+			update_sif->SetStringValue("EmuCore", "InputProfileName", profile_name.toUtf8());
+		}
+	}
+
+	refreshProfileList();
+	switchProfile({profile_name});
 }
 
 void ControllerSettingsWindow::onDeleteProfileClicked()
@@ -451,6 +494,7 @@ void ControllerSettingsWindow::createWidgets()
 	}
 
 	m_ui.applyProfile->setEnabled(isEditingProfile());
+	m_ui.renameProfile->setEnabled(isEditingProfile());
 	m_ui.deleteProfile->setEnabled(isEditingProfile());
 	m_ui.restoreDefaults->setEnabled(isEditingGlobalSettings());
 }

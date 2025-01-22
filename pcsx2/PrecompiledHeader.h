@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -43,5 +43,5 @@
 // We use fmt a fair bit now.
 // fmt pch breaks GCC in debug builds: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114370
 #if !defined(__GNUC__) || defined(__clang__)
-#include "fmt/core.h"
+#include "fmt/format.h"
 #endif

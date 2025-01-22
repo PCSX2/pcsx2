@@ -257,11 +257,20 @@
     <ClCompile Include="Tools\InputRecording\InputRecordingViewer.cpp">
       <Filter>Tools\Input Recording</Filter>
     </ClCompile>
+    <ClCompile Include="Settings\DebugAnalysisSettingsWidget.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Settings\moc_DebugAnalysisSettingsWidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
     <ClCompile Include="Settings\DebugSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Settings\moc_DebugSettingsWidget.cpp">
       <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\AnalysisOptionsDialog.cpp">
+      <Filter>Debugger</Filter>
     </ClCompile>
     <ClCompile Include="Debugger\DebuggerWindow.cpp">
       <Filter>Debugger</Filter>
@@ -295,6 +304,9 @@
     </ClCompile>
     <ClCompile Include="Debugger\Models\SavedAddressesModel.cpp">
       <Filter>Debugger\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\moc_AnalysisOptionsDialog.cpp">
+      <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_CpuWidget.cpp">
       <Filter>moc</Filter>
@@ -520,8 +532,14 @@
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Tools\InputRecording\InputRecordingViewer.h" />
+    <QtMoc Include="Settings\DebugAnalysisSettingsWidget.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
     <QtMoc Include="Settings\DebugSettingsWidget.h">
       <Filter>Settings</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\AnalysisOptionsDialog.h">
+      <Filter>Debugger</Filter>
     </QtMoc>
     <QtMoc Include="Debugger\DebuggerWindow.h">
       <Filter>Debugger</Filter>
@@ -665,8 +683,14 @@
     <QtUi Include="Settings\USBDeviceWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
+    <QtUi Include="Settings\DebugAnalysisSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
     <QtUi Include="Settings\DebugSettingsWidget.ui">
       <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\AnalysisOptionsDialog.ui">
+      <Filter>Debugger</Filter>
     </QtUi>
     <QtUi Include="Debugger\DebuggerWindow.ui">
       <Filter>Debugger</Filter>

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Assertions.h"
@@ -136,7 +136,7 @@ bool PCAPAdapter::recv(NetPacket* pkt)
 		pxAssert(header->len == header->caplen);
 
 		memcpy(pkt->buffer, pkt_data, header->len);
-		pkt->size = (int)header->len;
+		pkt->size = static_cast<int>(header->len);
 
 		if (!switched)
 			SetMACBridgedRecv(pkt);
@@ -339,15 +339,15 @@ bool PCAPAdapter::SetMACSwitchedFilter(MAC_Address mac)
 void PCAPAdapter::SetMACBridgedRecv(NetPacket* pkt)
 {
 	EthernetFrameEditor frame(pkt);
-	if (frame.GetProtocol() == (u16)EtherType::IPv4) // IP
+	if (frame.GetProtocol() == static_cast<u16>(EtherType::IPv4)) // IP
 	{
 		// Compare DEST IP in IP with the PS2's IP, if they match, change DEST MAC to ps2MAC.
-		PayloadPtr* payload = frame.GetPayload();
+		PayloadPtrEditor* payload = frame.GetPayload();
 		IP_Packet ippkt(payload->data, payload->GetLength());
 		if (ippkt.destinationIP == ps2IP)
 			frame.SetDestinationMAC(ps2MAC);
 	}
-	if (frame.GetProtocol() == (u16)EtherType::ARP) // ARP
+	if (frame.GetProtocol() == static_cast<u16>(EtherType::ARP)) // ARP
 	{
 		// Compare DEST IP in ARP with the PS2's IP, if they match, DEST MAC to ps2MAC on both ARP and ETH Packet headers.
 		ARP_PacketEditor arpPkt(frame.GetPayload());
@@ -362,13 +362,13 @@ void PCAPAdapter::SetMACBridgedRecv(NetPacket* pkt)
 void PCAPAdapter::SetMACBridgedSend(NetPacket* pkt)
 {
 	EthernetFrameEditor frame(pkt);
-	if (frame.GetProtocol() == (u16)EtherType::IPv4) // IP
+	if (frame.GetProtocol() == static_cast<u16>(EtherType::IPv4)) // IP
 	{
-		PayloadPtr* payload = frame.GetPayload();
+		PayloadPtrEditor* payload = frame.GetPayload();
 		IP_Packet ippkt(payload->data, payload->GetLength());
 		ps2IP = ippkt.sourceIP;
 	}
-	if (frame.GetProtocol() == (u16)EtherType::ARP) // ARP
+	if (frame.GetProtocol() == static_cast<u16>(EtherType::ARP)) // ARP
 	{
 		ARP_PacketEditor arpPkt(frame.GetPayload());
 		ps2IP = *(IP_Address*)arpPkt.SenderProtocolAddress();
@@ -403,7 +403,7 @@ void PCAPAdapter::HandleFrameCheckSequence(NetPacket* pkt)
 	int payloadSize = -1;
 	if (frame.GetProtocol() == static_cast<u16>(EtherType::IPv4)) // IP
 	{
-		PayloadPtr* payload = frame.GetPayload();
+		PayloadPtrEditor* payload = frame.GetPayload();
 		IP_Packet ippkt(payload->data, payload->GetLength());
 		payloadSize = ippkt.GetLength();
 	}

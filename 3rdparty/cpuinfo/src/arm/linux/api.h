@@ -137,6 +137,13 @@ struct cpuinfo_arm_linux_proc_cpuinfo_cache {
 #define CPUINFO_ARM_LINUX_FEATURE2_DGH UINT32_C(0x00008000)
 #define CPUINFO_ARM_LINUX_FEATURE2_RNG UINT32_C(0x00010000)
 #define CPUINFO_ARM_LINUX_FEATURE2_BTI UINT32_C(0x00020000)
+#define CPUINFO_ARM_LINUX_FEATURE2_SME UINT32_C(0x00800000)
+#define CPUINFO_ARM_LINUX_FEATURE2_SME2 UINT64_C(0x0000002000000000)
+#define CPUINFO_ARM_LINUX_FEATURE2_SME2P1 UINT64_C(0x0000004000000000)
+#define CPUINFO_ARM_LINUX_FEATURE2_SME_I16I32 UINT64_C(0x0000008000000000)
+#define CPUINFO_ARM_LINUX_FEATURE2_SME_BI32I32 UINT64_C(0x0000010000000000)
+#define CPUINFO_ARM_LINUX_FEATURE2_SME_B16B16 UINT64_C(0x0000020000000000)
+#define CPUINFO_ARM_LINUX_FEATURE2_SME_F16F16 UINT64_C(0x0000040000000000)
 #endif
 
 #define CPUINFO_ARM_LINUX_VALID_ARCHITECTURE UINT32_C(0x00010000)
@@ -172,7 +179,7 @@ struct cpuinfo_arm_linux_processor {
 	struct cpuinfo_arm_linux_proc_cpuinfo_cache proc_cpuinfo_cache;
 #endif
 	uint32_t features;
-	uint32_t features2;
+	uint64_t features2;
 	/**
 	 * Main ID Register value.
 	 */
@@ -295,14 +302,14 @@ CPUINFO_INTERNAL bool cpuinfo_arm_linux_parse_proc_cpuinfo(
 #if CPUINFO_ARCH_ARM
 CPUINFO_INTERNAL bool cpuinfo_arm_linux_hwcap_from_getauxval(
 	uint32_t hwcap[restrict static 1],
-	uint32_t hwcap2[restrict static 1]);
+	uint64_t hwcap2[restrict static 1]);
 CPUINFO_INTERNAL bool cpuinfo_arm_linux_hwcap_from_procfs(
 	uint32_t hwcap[restrict static 1],
-	uint32_t hwcap2[restrict static 1]);
+	uint64_t hwcap2[restrict static 1]);
 
 CPUINFO_INTERNAL void cpuinfo_arm_linux_decode_isa_from_proc_cpuinfo(
 	uint32_t features,
-	uint32_t features2,
+	uint64_t features2,
 	uint32_t midr,
 	uint32_t architecture_version,
 	uint32_t architecture_flags,
@@ -311,11 +318,11 @@ CPUINFO_INTERNAL void cpuinfo_arm_linux_decode_isa_from_proc_cpuinfo(
 #elif CPUINFO_ARCH_ARM64
 CPUINFO_INTERNAL void cpuinfo_arm_linux_hwcap_from_getauxval(
 	uint32_t hwcap[restrict static 1],
-	uint32_t hwcap2[restrict static 1]);
+	uint64_t hwcap2[restrict static 1]);
 
 CPUINFO_INTERNAL void cpuinfo_arm64_linux_decode_isa_from_proc_cpuinfo(
 	uint32_t features,
-	uint32_t features2,
+	uint64_t features2,
 	uint32_t midr,
 	const struct cpuinfo_arm_chipset chipset[restrict static 1],
 	struct cpuinfo_arm_isa isa[restrict static 1]);

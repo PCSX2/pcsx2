@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "IopHw_Internal.h"
@@ -128,7 +128,7 @@ void iopHwWrite8_Page3( u32 addr, mem8_t val )
 	// all addresses are assumed to be prefixed with 0x1f803xxx:
 	pxAssert( (addr >> 12) == 0x1f803 );
 
-	if( SysConsole.iopConsole.IsActive() && (addr == 0x1f80380c) )	// STDOUT
+	if(ConsoleLogging.iopConsole.IsActive() && (addr == 0x1f80380c))	// STDOUT
 	{
 		static char pbuf[1024];
 		static int pidx;
@@ -286,6 +286,13 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 	{
 		switch( masked_addr )
 		{
+			case 0x450:
+				psxHu(addr) = val;
+				if (val & (1 << 1))
+				{
+					hwIntcIrq(INTC_SBUS);
+				}
+				break;
 			// ------------------------------------------------------------------------
 			case (HW_SIO_DATA & 0x0fff):
 				Console.Error("%s(%08X, %08X) Unexpected 16 or 32 bit write to SIO0 DATA!", __FUNCTION__, addr, val);

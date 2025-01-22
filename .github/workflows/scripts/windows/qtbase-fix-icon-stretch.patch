@@ -1,0 +1,13 @@
+diff --git a/src/plugins/styles/modernwindows/qwindowsvistastyle.cpp b/src/plugins/styles/modernwindows/qwindowsvistastyle.cpp
+index 208420d7e8..26ef6f31ef 100644
+--- a/src/plugins/styles/modernwindows/qwindowsvistastyle.cpp
++++ b/src/plugins/styles/modernwindows/qwindowsvistastyle.cpp
+@@ -4232,8 +4232,6 @@ QRect QWindowsVistaStyle::subElementRect(SubElement element, const QStyleOption
+
+     case SE_ItemViewItemDecoration:
+         rect = QWindowsStyle::subElementRect(element, option, widget);
+-        if (qstyleoption_cast<const QStyleOptionViewItem *>(option))
+-            rect.adjust(-2, 0, 2, 0);
+         break;
+
+     case SE_ItemViewItemFocusRect:

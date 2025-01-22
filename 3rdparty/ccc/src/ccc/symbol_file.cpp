@@ -7,8 +7,8 @@ namespace ccc {
 
 Result<std::unique_ptr<SymbolFile>> parse_symbol_file(std::vector<u8> image, std::string file_name)
 {
-	const u32* magic = get_packed<u32>(image, 0);
-	CCC_CHECK(magic, "File too small.");
+	const std::optional<u32> magic = copy_unaligned<u32>(image, 0);
+	CCC_CHECK(magic.has_value(), "File too small.");
 	
 	std::unique_ptr<SymbolFile> symbol_file;
 	

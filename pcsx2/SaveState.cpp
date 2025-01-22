@@ -1,25 +1,28 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Achievements.h"
+#include "BuildVersion.h"
 #include "CDVD/CDVD.h"
 #include "COP0.h"
 #include "Cache.h"
 #include "Config.h"
 #include "Counters.h"
 #include "DebugTools/Breakpoints.h"
+#include "DebugTools/SymbolImporter.h"
 #include "Elfheader.h"
 #include "GS.h"
 #include "GS/GS.h"
 #include "Host.h"
 #include "MTGS.h"
 #include "MTVU.h"
-#include "SIO/Pad/Pad.h"
 #include "Patch.h"
 #include "R3000A.h"
+#include "SIO/Multitap/MultitapProtocol.h"
+#include "SIO/Pad/Pad.h"
+#include "SIO/Sio.h"
 #include "SIO/Sio0.h"
 #include "SIO/Sio2.h"
-#include "SIO/Multitap/MultitapProtocol.h"
 #include "SPU2/spu2.h"
 #include "SaveState.h"
 #include "StateWrapper.h"
@@ -27,7 +30,6 @@
 #include "VMManager.h"
 #include "VUmicro.h"
 #include "ps2/BiosTools.h"
-#include "svnrev.h"
 
 #include "common/Error.h"
 #include "common/FileSystem.h"
@@ -36,7 +38,7 @@
 #include "common/StringUtil.h"
 #include "common/ZipHelpers.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <csetjmp>
 #include <png.h>
@@ -79,6 +81,9 @@ static void PostLoadPrep()
 	CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, 0);
 
 	UpdateVSyncRate(true);
+
+	if (VMManager::Internal::HasBootedELF())
+		R5900SymbolImporter.OnElfLoadedInMemory();
 }
 
 // --------------------------------------------------------------------------------------
@@ -182,6 +187,7 @@ bool SaveStateBase::FreezeInternals(Error* error)
 	Freeze(psxRegs);		// iop regs
 	Freeze(fpuRegs);
 	Freeze(tlb);			// tlbs
+	Freeze(cachedTlbs);		// cached tlbs
 	Freeze(AllowParams1);	//OSDConfig written (Fast Boot)
 	Freeze(AllowParams2);
 
@@ -275,6 +281,8 @@ bool SaveStateBase::FreezeInternals(Error* error)
 
 	okay = okay && InputRecordingFreeze();
 
+	okay = okay && handleFreeze(); //file handles
+
 	return okay;
 }
 
@@ -313,6 +321,9 @@ memLoadingState::memLoadingState(const VmStateBuffer& load_from)
 // Loading of state data from a memory buffer...
 void memLoadingState::FreezeMem( void* data, int size )
 {
+	if (static_cast<u32>(m_idx + size) > m_memory.size())
+		m_error = true;
+
 	if (m_error)
 	{
 		std::memset(data, 0, size);
@@ -970,11 +981,14 @@ static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateSc
 
 		VersionIndicator* vi = static_cast<VersionIndicator*>(std::malloc(sizeof(VersionIndicator)));
 		vi->save_version = g_SaveVersion;
-#if GIT_TAGGED_COMMIT
-		StringUtil::Strlcpy(vi->version, GIT_TAG, std::size(vi->version));
-#else
-		StringUtil::Strlcpy(vi->version, "Unknown", std::size(vi->version));
-#endif
+		if (BuildVersion::GitTaggedCommit)
+		{
+			StringUtil::Strlcpy(vi->version, BuildVersion::GitTag, std::size(vi->version));
+		}
+		else
+		{
+			StringUtil::Strlcpy(vi->version, "Unknown", std::size(vi->version));
+		}
 
 		zip_source_t* const zs = zip_source_buffer(zf, vi, sizeof(*vi), 1);
 		if (!zs)

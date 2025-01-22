@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -28,3 +28,16 @@ namespace SaveStateSelectorUI
 	void LoadCurrentSlot();
 	void SaveCurrentSlot();
 } // namespace SaveStateSelectorUI
+
+namespace InputRecordingUI
+{
+	struct InputRecordingData
+	{
+		bool is_recording = false;
+		TinyString recording_active_message = "";
+		TinyString frame_data_message = "";
+		TinyString undo_count_message = "";
+	};
+}
+
+extern InputRecordingUI::InputRecordingData g_InputRecordingData;

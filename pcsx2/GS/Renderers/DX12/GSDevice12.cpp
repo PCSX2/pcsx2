@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/GS.h"
@@ -121,7 +121,7 @@ GSDevice12::ComPtr<ID3D12RootSignature> GSDevice12::CreateRootSignature(const D3
 		m_device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(rs.put()));
 	if (FAILED(hr))
 	{
-		Console.Error("CreateRootSignature() failed: %08X", hr);
+		Console.Error("D3D12: CreateRootSignature() failed: %08X", hr);
 		return {};
 	}
 
@@ -149,7 +149,7 @@ u32 GSDevice12::GetAdapterVendorID() const
 	return desc.VendorId;
 }
 
-bool GSDevice12::CreateDevice()
+bool GSDevice12::CreateDevice(u32& vendor_id)
 {
 	bool enable_debug_layer = GSConfig.UseDebugDevice;
 
@@ -158,6 +158,7 @@ bool GSDevice12::CreateDevice()
 		return false;
 
 	m_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), GSConfig.Adapter);
+	vendor_id = GetAdapterVendorID();
 
 	HRESULT hr;
 
@@ -172,16 +173,19 @@ bool GSDevice12::CreateDevice()
 		}
 		else
 		{
-			Console.Error("Debug layer requested but not available.");
+			Console.Error("D3D12: Debug layer requested but not available.");
 			enable_debug_layer = false;
 		}
 	}
 
+	// Intel Haswell doesn't actually support DX12 even tho the device is created which results in a crash,
+	// to get around this check if device can be created using feature level 12 (skylake+).
+	const bool isIntel = (vendor_id == 0x163C || vendor_id == 0x8086 || vendor_id == 0x8087);
 	// Create the actual device.
-	hr = D3D12CreateDevice(m_adapter.get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
+	hr = D3D12CreateDevice(m_adapter.get(), isIntel ? D3D_FEATURE_LEVEL_12_0 : D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
 	if (FAILED(hr))
 	{
-		Console.Error("Failed to create D3D12 device: %08X", hr);
+		Console.Error("D3D12: Failed to create device: %08X", hr);
 		return false;
 	}
 
@@ -189,7 +193,7 @@ bool GSDevice12::CreateDevice()
 	{
 		const LUID luid(m_device->GetAdapterLuid());
 		if (FAILED(m_dxgi_factory->EnumAdapterByLuid(luid, IID_PPV_ARGS(m_adapter.put()))))
-			Console.Error("Failed to get lookup adapter by device LUID");
+			Console.Error("D3D12: Failed to get lookup adapter by device LUID");
 	}
 
 	if (enable_debug_layer)
@@ -222,7 +226,7 @@ bool GSDevice12::CreateDevice()
 	hr = m_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&m_command_queue));
 	if (FAILED(hr))
 	{
-		Console.Error("Failed to create command queue: %08X", hr);
+		Console.Error("D3D12: Failed to create command queue: %08X", hr);
 		return false;
 	}
 
@@ -236,21 +240,21 @@ bool GSDevice12::CreateDevice()
 	hr = D3D12MA::CreateAllocator(&allocatorDesc, m_allocator.put());
 	if (FAILED(hr))
 	{
-		Console.Error("D3D12MA::CreateAllocator() failed with HRESULT %08X", hr);
+		Console.Error("D3D12: CreateAllocator() failed with HRESULT %08X", hr);
 		return false;
 	}
 
 	hr = m_device->CreateFence(m_completed_fence_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
 	if (FAILED(hr))
 	{
-		Console.Error("Failed to create fence: %08X", hr);
+		Console.Error("D3D12: Failed to create fence: %08X", hr);
 		return false;
 	}
 
 	m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	if (m_fence_event == NULL)
 	{
-		Console.Error("Failed to create fence event: %08X", GetLastError());
+		Console.Error("D3D12: Failed to create fence event: %08X", GetLastError());
 		return false;
 	}
 
@@ -308,7 +312,7 @@ bool GSDevice12::CreateCommandLists()
 				nullptr, IID_PPV_ARGS(res.command_lists[i].put()));
 			if (FAILED(hr))
 			{
-				Console.Error("Failed to create command list: %08X", hr);
+				Console.Error("D3D12: Failed to create command list: %08X", hr);
 				return false;
 			}
 
@@ -321,13 +325,13 @@ bool GSDevice12::CreateCommandLists()
 
 		if (!res.descriptor_allocator.Create(m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MAX_GPU_SRVS))
 		{
-			Console.Error("Failed to create per frame descriptor allocator");
+			Console.Error("D3D12: Failed to create per frame descriptor allocator");
 			return false;
 		}
 
 		if (!res.sampler_allocator.Create(m_device.get(), MAX_GPU_SAMPLERS))
 		{
-			Console.Error("Failed to create per frame sampler allocator");
+			Console.Error("D3D12: Failed to create per frame sampler allocator");
 			return false;
 		}
 	}
@@ -374,7 +378,7 @@ void GSDevice12::MoveToNextCommandList()
 		}
 		else
 		{
-			Console.Warning("Map() for timestamp query failed: %08X", hr);
+			Console.Warning("D3D12: Map() for timestamp query failed: %08X", hr);
 		}
 	}
 
@@ -428,7 +432,7 @@ bool GSDevice12::ExecuteCommandList(WaitType wait_for_completion)
 		hr = res.command_lists[0]->Close();
 		if (FAILED(hr))
 		{
-			Console.Error("Closing init command list failed with HRESULT %08X", hr);
+			Console.Error("D3D12: Closing init command list failed with HRESULT %08X", hr);
 			return false;
 		}
 	}
@@ -437,7 +441,7 @@ bool GSDevice12::ExecuteCommandList(WaitType wait_for_completion)
 	hr = res.command_lists[1]->Close();
 	if (FAILED(hr))
 	{
-		Console.Error("Closing main command list failed with HRESULT %08X", hr);
+		Console.Error("D3D12: Closing main command list failed with HRESULT %08X", hr);
 		return false;
 	}
 
@@ -577,7 +581,7 @@ bool GSDevice12::CreateTimestampQuery()
 	HRESULT hr = m_device->CreateQueryHeap(&desc, IID_PPV_ARGS(m_timestamp_query_heap.put()));
 	if (FAILED(hr))
 	{
-		Console.Error("CreateQueryHeap() for timestamp failed with %08X", hr);
+		Console.Error("D3D12: CreateQueryHeap() for timestamp failed with %08X", hr);
 		return false;
 	}
 
@@ -588,7 +592,7 @@ bool GSDevice12::CreateTimestampQuery()
 		m_timestamp_query_allocation.put(), IID_PPV_ARGS(m_timestamp_query_buffer.put()));
 	if (FAILED(hr))
 	{
-		Console.Error("CreateResource() for timestamp failed with %08X", hr);
+		Console.Error("D3D12: CreateResource() for timestamp failed with %08X", hr);
 		return false;
 	}
 
@@ -596,7 +600,7 @@ bool GSDevice12::CreateTimestampQuery()
 	hr = m_command_queue->GetTimestampFrequency(&frequency);
 	if (FAILED(hr))
 	{
-		Console.Error("GetTimestampFrequency() failed: %08X", hr);
+		Console.Error("D3D12: GetTimestampFrequency() failed: %08X", hr);
 		return false;
 	}
 
@@ -681,12 +685,13 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
 		return false;
 
-	if (!CreateDevice())
+	u32 vendor_id = 0;
+	if (!CreateDevice(vendor_id))
 		return false;
 
-	if (!CheckFeatures())
+	if (!CheckFeatures(vendor_id))
 	{
-		Console.Error("Your GPU does not support the required D3D12 features.");
+		Console.Error("D3D12: Your GPU does not support the required D3D12 features.");
 		return false;
 	}
 
@@ -710,7 +715,7 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	}
 
 	if (!m_shader_cache.Open(m_feature_level, GSConfig.UseDebugDevice))
-		Console.Warning("Shader cache failed to open.");
+		Console.Warning("D3D12: Shader cache failed to open.");
 
 	if (!CreateNullTexture())
 	{
@@ -764,7 +769,7 @@ void GSDevice12::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 	// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
 	if (mode == GSVSyncMode::Mailbox && m_is_exclusive_fullscreen)
 	{
-		WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+		WARNING_LOG("D3D12: Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
 		mode = GSVSyncMode::FIFO;
 	}
 
@@ -817,7 +822,7 @@ bool GSDevice12::CreateSwapChain()
 		// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
 		if (m_vsync_mode == GSVSyncMode::Mailbox && m_is_exclusive_fullscreen)
 		{
-			WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+			WARNING_LOG("D3D12: Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
 			m_vsync_mode = GSVSyncMode::FIFO;
 		}
 	}
@@ -854,12 +859,12 @@ bool GSDevice12::CreateSwapChain()
 		fs_desc.Scaling = fullscreen_mode.Scaling;
 		fs_desc.Windowed = FALSE;
 
-		Console.WriteLn("Creating a %dx%d exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
+		Console.WriteLn("D3D12: Creating a %dx%d exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
 		hr = m_dxgi_factory->CreateSwapChainForHwnd(m_command_queue.get(), window_hwnd, &fs_sd_desc,
 			&fs_desc, fullscreen_output.get(), m_swap_chain.put());
 		if (FAILED(hr))
 		{
-			Console.Warning("Failed to create fullscreen swap chain, trying windowed.");
+			Console.Warning("D3D12: Failed to create fullscreen swap chain, trying windowed.");
 			m_is_exclusive_fullscreen = false;
 			m_using_allow_tearing = m_allow_tearing_supported;
 		}
@@ -867,12 +872,12 @@ bool GSDevice12::CreateSwapChain()
 
 	if (!m_is_exclusive_fullscreen)
 	{
-		Console.WriteLn("Creating a %dx%d windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
+		Console.WriteLn("D3D12: Creating a %dx%d windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
 		hr = m_dxgi_factory->CreateSwapChainForHwnd(
 			m_command_queue.get(), window_hwnd, &swap_chain_desc, nullptr, nullptr, m_swap_chain.put());
 
 		if (FAILED(hr))
-			Console.Warning("Failed to create windowed swap chain.");
+			Console.Warning("D3D12: Failed to create windowed swap chain.");
 	}
 
 	// MWA needs to be called on the correct factory.
@@ -882,11 +887,11 @@ bool GSDevice12::CreateSwapChain()
 	{
 		hr = swap_chain_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 		if (FAILED(hr))
-			Console.ErrorFmt("MakeWindowAssociation() to disable ALT+ENTER failed: {}", Error::CreateHResult(hr).GetDescription());
+			Console.ErrorFmt("D3D12: MakeWindowAssociation() to disable ALT+ENTER failed: {}", Error::CreateHResult(hr).GetDescription());
 	}
 	else
 	{
-		Console.ErrorFmt("GetParent() on swap chain to get factory failed: {}", Error::CreateHResult(hr).GetDescription());
+		Console.ErrorFmt("D3D12: GetParent() on swap chain to get factory failed: {}", Error::CreateHResult(hr).GetDescription());
 	}
 
 	if (!CreateSwapChainRTV())
@@ -921,7 +926,7 @@ bool GSDevice12::CreateSwapChainRTV()
 		hr = m_swap_chain->GetBuffer(i, IID_PPV_ARGS(backbuffer.put()));
 		if (FAILED(hr))
 		{
-			Console.Error("GetBuffer for RTV failed: 0x%08X", hr);
+			Console.Error("D3D12: GetBuffer for RTV failed: 0x%08X", hr);
 			m_swap_chain_buffers.clear();
 			return false;
 		}
@@ -941,7 +946,7 @@ bool GSDevice12::CreateSwapChainRTV()
 
 	m_window_info.surface_width = swap_chain_desc.BufferDesc.Width;
 	m_window_info.surface_height = swap_chain_desc.BufferDesc.Height;
-	DevCon.WriteLn("Swap chain buffer size: %ux%u", m_window_info.surface_width, m_window_info.surface_height);
+	DevCon.WriteLn("D3D12: Swap chain buffer size: %ux%u", m_window_info.surface_width, m_window_info.surface_height);
 
 	if (m_window_info.type == WindowInfo::Type::Win32)
 	{
@@ -993,7 +998,7 @@ bool GSDevice12::UpdateWindow()
 
 	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain())
 	{
-		Console.WriteLn("Failed to create swap chain on updated window");
+		Console.WriteLn("D3D12: Failed to create swap chain on updated window");
 		return false;
 	}
 
@@ -1010,7 +1015,7 @@ std::string GSDevice12::GetDriverInfo() const
 {
 	std::string ret = "Unknown Feature Level";
 
-	static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 4> feature_level_names = {{
+	static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 2> feature_level_names = {{
 		{D3D_FEATURE_LEVEL_11_0, "D3D_FEATURE_LEVEL_11_0"},
 		{D3D_FEATURE_LEVEL_11_1, "D3D_FEATURE_LEVEL_11_1"},
 	}};
@@ -1061,7 +1066,7 @@ void GSDevice12::ResizeWindow(s32 new_window_width, s32 new_window_height, float
 	HRESULT hr = m_swap_chain->ResizeBuffers(
 		0, 0, 0, DXGI_FORMAT_UNKNOWN, m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
 	if (FAILED(hr))
-		Console.Error("ResizeBuffers() failed: 0x%08X", hr);
+		Console.Error("D3D12: ResizeBuffers() failed: 0x%08X", hr);
 
 	if (!CreateSwapChainRTV())
 		pxFailRel("Failed to recreate swap chain RTV after resize");
@@ -1206,10 +1211,9 @@ void GSDevice12::InsertDebugMessage(DebugMessageCategory category, const char* f
 #endif
 }
 
-bool GSDevice12::CheckFeatures()
+bool GSDevice12::CheckFeatures(const u32& vendor_id)
 {
-	const u32 vendorID = GetAdapterVendorID();
-	const bool isAMD = (vendorID == 0x1002 || vendorID == 0x1022);
+	const bool isAMD = (vendor_id == 0x1002 || vendor_id == 0x1022);
 
 	m_features.texture_barrier = false;
 	m_features.broken_point_sampler = isAMD;
@@ -1232,7 +1236,7 @@ bool GSDevice12::CheckFeatures()
 	m_max_texture_size = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 
 	BOOL allow_tearing_supported = false;
-	HRESULT hr = m_dxgi_factory->CheckFeatureSupport(
+	const HRESULT hr = m_dxgi_factory->CheckFeatureSupport(
 		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
 	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
 
@@ -1927,7 +1931,7 @@ bool GSDevice12::CompileCASPipelines()
 	m_cas_sharpen_pipeline = cpb.Create(m_device.get(), m_shader_cache, false);
 	if (!m_cas_upscale_pipeline || !m_cas_sharpen_pipeline)
 	{
-		Console.Error("Failed to create CAS pipelines");
+		Console.Error("D3D12: Failed to create CAS pipelines");
 		return false;
 	}
 
@@ -1939,7 +1943,7 @@ bool GSDevice12::CompileImGuiPipeline()
 	const std::optional<std::string> hlsl = ReadShaderSource("shaders/dx11/imgui.fx");
 	if (!hlsl.has_value())
 	{
-		Console.Error("Failed to read imgui.fx");
+		Console.Error("D3D12: Failed to read imgui.fx");
 		return false;
 	}
 
@@ -1947,7 +1951,7 @@ bool GSDevice12::CompileImGuiPipeline()
 	const ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(hlsl.value(), nullptr, "ps_main");
 	if (!vs || !ps)
 	{
-		Console.Error("Failed to compile ImGui shaders");
+		Console.Error("D3D12: Failed to compile ImGui shaders");
 		return false;
 	}
 
@@ -1968,7 +1972,7 @@ bool GSDevice12::CompileImGuiPipeline()
 	m_imgui_pipeline = gpb.Create(m_device.get(), m_shader_cache, false);
 	if (!m_imgui_pipeline)
 	{
-		Console.Error("Failed to compile ImGui pipeline");
+		Console.Error("D3D12: Failed to compile ImGui pipeline");
 		return false;
 	}
 
@@ -2011,7 +2015,7 @@ void GSDevice12::RenderImGui()
 		// just skip if we run out.. we can't resume the present render pass :/
 		if (!GetSamplerAllocator().LookupSingle(&m_utility_sampler_gpu, m_linear_sampler_cpu))
 		{
-			Console.Warning("Skipping ImGui draw because of no descriptors");
+			Console.Warning("D3D12: Skipping ImGui draw because of no descriptors");
 			return;
 		}
 	}
@@ -2028,7 +2032,7 @@ void GSDevice12::RenderImGui()
 			const u32 size = sizeof(ImDrawVert) * static_cast<u32>(cmd_list->VtxBuffer.Size);
 			if (!m_vertex_stream_buffer.ReserveMemory(size, sizeof(ImDrawVert)))
 			{
-				Console.Warning("Skipping ImGui draw because of no vertex buffer space");
+				Console.Warning("D3D12: Skipping ImGui draw because of no vertex buffer space");
 				return;
 			}
 
@@ -2053,7 +2057,7 @@ void GSDevice12::RenderImGui()
 
 			SetScissor(GSVector4i(clip));
 
-			GSTexture12* tex = static_cast<GSTexture12*>(pcmd->GetTexID());
+			GSTexture12* tex = reinterpret_cast<GSTexture12*>(pcmd->GetTexID());
 			D3D12DescriptorHandle handle = m_null_texture->GetSRVDescriptor();
 			if (tex)
 			{
@@ -2068,7 +2072,7 @@ void GSDevice12::RenderImGui()
 
 				if (!GetTextureGroupDescriptors(&m_utility_texture_gpu, &handle, 1))
 				{
-					Console.Warning("Skipping ImGui draw because of no descriptors");
+					Console.Warning("D3D12: Skipping ImGui draw because of no descriptors");
 					return;
 				}
 			}
@@ -2099,7 +2103,7 @@ bool GSDevice12::DoCAS(
 		if (!GetTextureGroupDescriptors(&sTexDH, &sTex12->GetSRVDescriptor(), 1) ||
 			!GetTextureGroupDescriptors(&dTexDH, &dTex12->GetUAVDescriptor(), 1))
 		{
-			Console.Error("Failed to allocate CAS descriptors.");
+			Console.Error("D3D12: Failed to allocate CAS descriptors.");
 			return false;
 		}
 	}
@@ -3563,7 +3567,7 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		{
 			if (already_execed)
 			{
-				Console.Error("Failed to reserve vertex uniform space");
+				Console.Error("D3D12: Failed to reserve vertex uniform space");
 				return false;
 			}
 
@@ -3584,7 +3588,7 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		{
 			if (already_execed)
 			{
-				Console.Error("Failed to reserve pixel uniform space");
+				Console.Error("D3D12: Failed to reserve pixel uniform space");
 				return false;
 			}
 
@@ -3842,7 +3846,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		date_image = SetupPrimitiveTrackingDATE(config, pipe);
 		if (!date_image)
 		{
-			Console.WriteLn("Failed to allocate DATE image, aborting draw.");
+			Console.WriteLn("D3D12: Failed to allocate DATE image, aborting draw.");
 			return;
 		}
 	}
@@ -3870,7 +3874,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		hdr_rt = static_cast<GSTexture12*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor, false));
 		if (!hdr_rt)
 		{
-			Console.WriteLn("Failed to allocate HDR render target, aborting draw.");
+			Console.WriteLn("D3D12: Failed to allocate HDR render target, aborting draw.");
 			if (date_image)
 				Recycle(date_image);
 			return;

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -134,9 +134,9 @@ especially to test compatibility with D3D12_RESOURCE_HEAP_TIER_1 on modern GPUs.
 
 namespace D3D12MA
 {
-static constexpr UINT HEAP_TYPE_COUNT = 4;
-static constexpr UINT STANDARD_HEAP_TYPE_COUNT = 3; // Only DEFAULT, UPLOAD, READBACK.
-static constexpr UINT DEFAULT_POOL_MAX_COUNT = 9;
+static constexpr UINT HEAP_TYPE_COUNT = 5;
+static constexpr UINT STANDARD_HEAP_TYPE_COUNT = 4; // Only DEFAULT, UPLOAD, READBACK, GPU_UPLOAD.
+static constexpr UINT DEFAULT_POOL_MAX_COUNT = STANDARD_HEAP_TYPE_COUNT * 3;
 static const UINT NEW_BLOCK_SIZE_SHIFT_MAX = 3;
 // Minimum size of a free suballocation to register it in the free suballocation collection.
 static const UINT64 MIN_FREE_SUBALLOCATION_SIZE_TO_REGISTER = 16;
@@ -147,18 +147,22 @@ static const WCHAR* const HeapTypeNames[] =
     L"UPLOAD",
     L"READBACK",
     L"CUSTOM",
+    L"GPU_UPLOAD",
 };
 static const WCHAR* const StandardHeapTypeNames[] =
 {
     L"DEFAULT",
     L"UPLOAD",
     L"READBACK",
+    L"GPU_UPLOAD",
 };
 
 static const D3D12_HEAP_FLAGS RESOURCE_CLASS_HEAP_FLAGS =
     D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
 
 static const D3D12_RESIDENCY_PRIORITY D3D12_RESIDENCY_PRIORITY_NONE = D3D12_RESIDENCY_PRIORITY(0);
+
+static const D3D12_HEAP_TYPE D3D12_HEAP_TYPE_GPU_UPLOAD_COPY = (D3D12_HEAP_TYPE)5;
 
 #ifndef _D3D12MA_ENUM_DECLARATIONS
 
@@ -465,6 +469,7 @@ static UINT StandardHeapTypeToIndex(D3D12_HEAP_TYPE type)
     case D3D12_HEAP_TYPE_DEFAULT:  return 0;
     case D3D12_HEAP_TYPE_UPLOAD:   return 1;
     case D3D12_HEAP_TYPE_READBACK: return 2;
+    case D3D12_HEAP_TYPE_GPU_UPLOAD_COPY: return 3;
     default: D3D12MA_ASSERT(0); return UINT_MAX;
     }
 }
@@ -476,6 +481,7 @@ static D3D12_HEAP_TYPE IndexToStandardHeapType(UINT heapTypeIndex)
     case 0: return D3D12_HEAP_TYPE_DEFAULT;
     case 1: return D3D12_HEAP_TYPE_UPLOAD;
     case 2: return D3D12_HEAP_TYPE_READBACK;
+    case 3: return D3D12_HEAP_TYPE_GPU_UPLOAD_COPY;
     default: D3D12MA_ASSERT(0); return D3D12_HEAP_TYPE_CUSTOM;
     }
 }
@@ -525,7 +531,8 @@ static bool IsHeapTypeStandard(D3D12_HEAP_TYPE type)
 {
     return type == D3D12_HEAP_TYPE_DEFAULT ||
         type == D3D12_HEAP_TYPE_UPLOAD ||
-        type == D3D12_HEAP_TYPE_READBACK;
+        type == D3D12_HEAP_TYPE_READBACK ||
+        type == D3D12_HEAP_TYPE_GPU_UPLOAD_COPY;
 }
 
 static D3D12_HEAP_PROPERTIES StandardHeapTypeToHeapProperties(D3D12_HEAP_TYPE type)
@@ -2783,8 +2790,8 @@ class AllocationObjectAllocator
 {
     D3D12MA_CLASS_NO_COPY(AllocationObjectAllocator);
 public:
-    AllocationObjectAllocator(const ALLOCATION_CALLBACKS& allocationCallbacks)
-        : m_Allocator(allocationCallbacks, 1024) {}
+    AllocationObjectAllocator(const ALLOCATION_CALLBACKS& allocationCallbacks, bool useMutex)
+        : m_Allocator(allocationCallbacks, 1024), m_UseMutex(useMutex) {}
 
     template<typename... Types>
     Allocation* Allocate(Types... args);
@@ -2792,6 +2799,7 @@ public:
 
 private:
     D3D12MA_MUTEX m_Mutex;
+    bool m_UseMutex;
     PoolAllocator<Allocation> m_Allocator;
 };
 
@@ -2799,13 +2807,13 @@ private:
 template<typename... Types>
 Allocation* AllocationObjectAllocator::Allocate(Types... args)
 {
-    MutexLock mutexLock(m_Mutex);
+    MutexLock mutexLock(m_Mutex, m_UseMutex);
     return m_Allocator.Alloc(std::forward<Types>(args)...);
 }
 
 void AllocationObjectAllocator::Free(Allocation* alloc)
 {
-    MutexLock mutexLock(m_Mutex);
+    MutexLock mutexLock(m_Mutex, m_UseMutex);
     m_Allocator.Free(alloc);
 }
 #endif // _D3D12MA_ALLOCATION_OBJECT_ALLOCATOR_FUNCTIONS
@@ -2867,74 +2875,8 @@ struct AllocationRequest
     UINT64 sumFreeSize; // Sum size of free items that overlap with proposed allocation.
     UINT64 sumItemSize; // Sum size of items to make lost that overlap with proposed allocation.
     SuballocationList::iterator item;
-    BOOL zeroInitialized = FALSE; // TODO Implement proper handling in TLSF and Linear, using ZeroInitializedRange class.
 };
 #endif // _D3D12MA_ALLOCATION_REQUEST
-
-#ifndef _D3D12MA_ZERO_INITIALIZED_RANGE
-/*
-Keeps track of the range of bytes that are surely initialized with zeros.
-Everything outside of it is considered uninitialized memory that may contain
-garbage data.
-
-The range is left-inclusive.
-*/
-class ZeroInitializedRange
-{
-public:
-    void Reset(UINT64 size);
-    BOOL IsRangeZeroInitialized(UINT64 beg, UINT64 end) const;
-    void MarkRangeAsUsed(UINT64 usedBeg, UINT64 usedEnd);
-
-private:
-    UINT64 m_ZeroBeg = 0, m_ZeroEnd = 0;
-};
-
-#ifndef _D3D12MA_ZERO_INITIALIZED_RANGE_FUNCTIONS
-void ZeroInitializedRange::Reset(UINT64 size)
-{
-    D3D12MA_ASSERT(size > 0);
-    m_ZeroBeg = 0;
-    m_ZeroEnd = size;
-}
-
-BOOL ZeroInitializedRange::IsRangeZeroInitialized(UINT64 beg, UINT64 end) const
-{
-    D3D12MA_ASSERT(beg < end);
-    return m_ZeroBeg <= beg && end <= m_ZeroEnd;
-}
-
-void ZeroInitializedRange::MarkRangeAsUsed(UINT64 usedBeg, UINT64 usedEnd)
-{
-    D3D12MA_ASSERT(usedBeg < usedEnd);
-    // No new bytes marked.
-    if (usedEnd <= m_ZeroBeg || m_ZeroEnd <= usedBeg)
-    {
-        return;
-    }
-    // All bytes marked.
-    if (usedBeg <= m_ZeroBeg && m_ZeroEnd <= usedEnd)
-    {
-        m_ZeroBeg = m_ZeroEnd = 0;
-    }
-    // Some bytes marked.
-    else
-    {
-        const UINT64 remainingZeroBefore = usedBeg > m_ZeroBeg ? usedBeg - m_ZeroBeg : 0;
-        const UINT64 remainingZeroAfter = usedEnd < m_ZeroEnd ? m_ZeroEnd - usedEnd : 0;
-        D3D12MA_ASSERT(remainingZeroBefore > 0 || remainingZeroAfter > 0);
-        if (remainingZeroBefore > remainingZeroAfter)
-        {
-            m_ZeroEnd = usedBeg;
-        }
-        else
-        {
-            m_ZeroBeg = usedEnd;
-        }
-    }
-}
-#endif // _D3D12MA_ZERO_INITIALIZED_RANGE_FUNCTIONS
-#endif // _D3D12MA_ZERO_INITIALIZED_RANGE
 
 #ifndef _D3D12MA_BLOCK_METADATA
 /*
@@ -3113,610 +3055,6 @@ void BlockMetadata::PrintDetailedMap_End(JsonWriter& json) const
 }
 #endif // _D3D12MA_BLOCK_METADATA_FUNCTIONS
 #endif // _D3D12MA_BLOCK_METADATA
-
-#if 0
-#ifndef _D3D12MA_BLOCK_METADATA_GENERIC
-class BlockMetadata_Generic : public BlockMetadata
-{
-public:
-    BlockMetadata_Generic(const ALLOCATION_CALLBACKS* allocationCallbacks, bool isVirtual);
-    virtual ~BlockMetadata_Generic() = default;
-
-    size_t GetAllocationCount() const override { return m_Suballocations.size() - m_FreeCount; }
-    UINT64 GetSumFreeSize() const override { return m_SumFreeSize; }
-    UINT64 GetAllocationOffset(AllocHandle allocHandle) const override { return (UINT64)allocHandle - 1; }
-
-    void Init(UINT64 size) override;
-    bool Validate() const override;
-    bool IsEmpty() const override;
-    void GetAllocationInfo(AllocHandle allocHandle, VIRTUAL_ALLOCATION_INFO& outInfo) const override;
-
-    bool CreateAllocationRequest(
-        UINT64 allocSize,
-        UINT64 allocAlignment,
-        bool upperAddress,
-        AllocationRequest* pAllocationRequest) override;
-
-    void Alloc(
-        const AllocationRequest& request,
-        UINT64 allocSize,
-        void* privateData) override;
-
-    void Free(AllocHandle allocHandle) override;
-    void Clear() override;
-
-    void SetAllocationPrivateData(AllocHandle allocHandle, void* privateData) override;
-
-    void AddStatistics(Statistics& inoutStats) const override;
-    void AddDetailedStatistics(DetailedStatistics& inoutStats) const override;
-    void WriteAllocationInfoToJson(JsonWriter& json) const override;
-
-private:
-    UINT m_FreeCount;
-    UINT64 m_SumFreeSize;
-    SuballocationList m_Suballocations;
-    // Suballocations that are free and have size greater than certain threshold.
-    // Sorted by size, ascending.
-    Vector<SuballocationList::iterator> m_FreeSuballocationsBySize;
-    ZeroInitializedRange m_ZeroInitializedRange;
-
-    SuballocationList::const_iterator FindAtOffset(UINT64 offset) const;
-    bool ValidateFreeSuballocationList() const;
-
-    // Checks if requested suballocation with given parameters can be placed in given pFreeSuballocItem.
-    // If yes, fills pOffset and returns true. If no, returns false.
-    bool CheckAllocation(
-        UINT64 allocSize,
-        UINT64 allocAlignment,
-        SuballocationList::const_iterator suballocItem,
-        AllocHandle* pAllocHandle,
-        UINT64* pSumFreeSize,
-        UINT64* pSumItemSize,
-        BOOL *pZeroInitialized) const;
-    // Given free suballocation, it merges it with following one, which must also be free.
-    void MergeFreeWithNext(SuballocationList::iterator item);
-    // Releases given suballocation, making it free.
-    // Merges it with adjacent free suballocations if applicable.
-    // Returns iterator to new free suballocation at this place.
-    SuballocationList::iterator FreeSuballocation(SuballocationList::iterator suballocItem);
-    // Given free suballocation, it inserts it into sorted list of
-    // m_FreeSuballocationsBySize if it's suitable.
-    void RegisterFreeSuballocation(SuballocationList::iterator item);
-    // Given free suballocation, it removes it from sorted list of
-    // m_FreeSuballocationsBySize if it's suitable.
-    void UnregisterFreeSuballocation(SuballocationList::iterator item);
-
-    D3D12MA_CLASS_NO_COPY(BlockMetadata_Generic)
-};
-
-#ifndef _D3D12MA_BLOCK_METADATA_GENERIC_FUNCTIONS
-BlockMetadata_Generic::BlockMetadata_Generic(const ALLOCATION_CALLBACKS* allocationCallbacks, bool isVirtual)
-    : BlockMetadata(allocationCallbacks, isVirtual),
-    m_FreeCount(0),
-    m_SumFreeSize(0),
-    m_Suballocations(*allocationCallbacks),
-    m_FreeSuballocationsBySize(*allocationCallbacks)
-{
-    D3D12MA_ASSERT(allocationCallbacks);
-}
-
-void BlockMetadata_Generic::Init(UINT64 size)
-{
-    BlockMetadata::Init(size);
-    m_ZeroInitializedRange.Reset(size);
-
-    m_FreeCount = 1;
-    m_SumFreeSize = size;
-
-    Suballocation suballoc = {};
-    suballoc.offset = 0;
-    suballoc.size = size;
-    suballoc.type = SUBALLOCATION_TYPE_FREE;
-    suballoc.privateData = NULL;
-
-    D3D12MA_ASSERT(size > MIN_FREE_SUBALLOCATION_SIZE_TO_REGISTER);
-    m_Suballocations.push_back(suballoc);
-    SuballocationList::iterator suballocItem = m_Suballocations.end();
-    --suballocItem;
-    m_FreeSuballocationsBySize.push_back(suballocItem);
-}
-
-bool BlockMetadata_Generic::Validate() const
-{
-    D3D12MA_VALIDATE(!m_Suballocations.empty());
-
-    // Expected offset of new suballocation as calculated from previous ones.
-    UINT64 calculatedOffset = 0;
-    // Expected number of free suballocations as calculated from traversing their list.
-    UINT calculatedFreeCount = 0;
-    // Expected sum size of free suballocations as calculated from traversing their list.
-    UINT64 calculatedSumFreeSize = 0;
-    // Expected number of free suballocations that should be registered in
-    // m_FreeSuballocationsBySize calculated from traversing their list.
-    size_t freeSuballocationsToRegister = 0;
-    // True if previous visited suballocation was free.
-    bool prevFree = false;
-
-    for (const auto& subAlloc : m_Suballocations)
-    {
-        // Actual offset of this suballocation doesn't match expected one.
-        D3D12MA_VALIDATE(subAlloc.offset == calculatedOffset);
-
-        const bool currFree = (subAlloc.type == SUBALLOCATION_TYPE_FREE);
-        // Two adjacent free suballocations are invalid. They should be merged.
-        D3D12MA_VALIDATE(!prevFree || !currFree);
-
-        const Allocation* const alloc = (Allocation*)subAlloc.privateData;
-        if (!IsVirtual())
-        {
-            D3D12MA_VALIDATE(currFree == (alloc == NULL));
-        }
-
-        if (currFree)
-        {
-            calculatedSumFreeSize += subAlloc.size;
-            ++calculatedFreeCount;
-            if (subAlloc.size >= MIN_FREE_SUBALLOCATION_SIZE_TO_REGISTER)
-            {
-                ++freeSuballocationsToRegister;
-            }
-
-            // Margin required between allocations - every free space must be at least that large.
-            D3D12MA_VALIDATE(subAlloc.size >= GetDebugMargin());
-        }
-        else
-        {
-            if (!IsVirtual())
-            {
-                D3D12MA_VALIDATE(alloc->GetOffset() == subAlloc.offset);
-                D3D12MA_VALIDATE(alloc->GetSize() == subAlloc.size);
-            }
-
-            // Margin required between allocations - previous allocation must be free.
-            D3D12MA_VALIDATE(GetDebugMargin() == 0 || prevFree);
-        }
-
-        calculatedOffset += subAlloc.size;
-        prevFree = currFree;
-    }
-
-    // Number of free suballocations registered in m_FreeSuballocationsBySize doesn't
-    // match expected one.
-    D3D12MA_VALIDATE(m_FreeSuballocationsBySize.size() == freeSuballocationsToRegister);
-
-    UINT64 lastSize = 0;
-    for (size_t i = 0; i < m_FreeSuballocationsBySize.size(); ++i)
-    {
-        SuballocationList::iterator suballocItem = m_FreeSuballocationsBySize[i];
-
-        // Only free suballocations can be registered in m_FreeSuballocationsBySize.
-        D3D12MA_VALIDATE(suballocItem->type == SUBALLOCATION_TYPE_FREE);
-        // They must be sorted by size ascending.
-        D3D12MA_VALIDATE(suballocItem->size >= lastSize);
-
-        lastSize = suballocItem->size;
-    }
-
-    // Check if totals match calculacted values.
-    D3D12MA_VALIDATE(ValidateFreeSuballocationList());
-    D3D12MA_VALIDATE(calculatedOffset == GetSize());
-    D3D12MA_VALIDATE(calculatedSumFreeSize == m_SumFreeSize);
-    D3D12MA_VALIDATE(calculatedFreeCount == m_FreeCount);
-
-    return true;
-}
-
-bool BlockMetadata_Generic::IsEmpty() const
-{
-    return (m_Suballocations.size() == 1) && (m_FreeCount == 1);
-}
-
-void BlockMetadata_Generic::GetAllocationInfo(AllocHandle allocHandle, VIRTUAL_ALLOCATION_INFO& outInfo) const
-{
-    Suballocation& suballoc = *FindAtOffset((UINT64)allocHandle - 1).dropConst();
-    outInfo.Offset = suballoc.offset;
-    outInfo.Size = suballoc.size;
-    outInfo.pPrivateData = suballoc.privateData;
-}
-
-bool BlockMetadata_Generic::CreateAllocationRequest(
-    UINT64 allocSize,
-    UINT64 allocAlignment,
-    bool upperAddress,
-    AllocationRequest* pAllocationRequest)
-{
-    D3D12MA_ASSERT(allocSize > 0);
-    D3D12MA_ASSERT(!upperAddress && "ALLOCATION_FLAG_UPPER_ADDRESS can be used only with linear algorithm.");
-    D3D12MA_ASSERT(pAllocationRequest != NULL);
-    D3D12MA_HEAVY_ASSERT(Validate());
-
-    // There is not enough total free space in this block to fullfill the request: Early return.
-    if (m_SumFreeSize < allocSize + GetDebugMargin())
-    {
-        return false;
-    }
-
-    // New algorithm, efficiently searching freeSuballocationsBySize.
-    const size_t freeSuballocCount = m_FreeSuballocationsBySize.size();
-    if (freeSuballocCount > 0)
-    {
-        // Find first free suballocation with size not less than allocSize + GetDebugMargin().
-        SuballocationList::iterator* const it = BinaryFindFirstNotLess(
-            m_FreeSuballocationsBySize.data(),
-            m_FreeSuballocationsBySize.data() + freeSuballocCount,
-            allocSize + GetDebugMargin(),
-            SuballocationItemSizeLess());
-        size_t index = it - m_FreeSuballocationsBySize.data();
-        for (; index < freeSuballocCount; ++index)
-        {
-            if (CheckAllocation(
-                allocSize,
-                allocAlignment,
-                m_FreeSuballocationsBySize[index],
-                &pAllocationRequest->allocHandle,
-                &pAllocationRequest->sumFreeSize,
-                &pAllocationRequest->sumItemSize,
-                &pAllocationRequest->zeroInitialized))
-            {
-                pAllocationRequest->item = m_FreeSuballocationsBySize[index];
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-void BlockMetadata_Generic::Alloc(
-    const AllocationRequest& request,
-    UINT64 allocSize,
-    void* privateData)
-{
-    D3D12MA_ASSERT(request.item != m_Suballocations.end());
-    Suballocation& suballoc = *request.item;
-    // Given suballocation is a free block.
-    D3D12MA_ASSERT(suballoc.type == SUBALLOCATION_TYPE_FREE);
-    // Given offset is inside this suballocation.
-    UINT64 offset = (UINT64)request.allocHandle - 1;
-    D3D12MA_ASSERT(offset >= suballoc.offset);
-    const UINT64 paddingBegin = offset - suballoc.offset;
-    D3D12MA_ASSERT(suballoc.size >= paddingBegin + allocSize);
-    const UINT64 paddingEnd = suballoc.size - paddingBegin - allocSize;
-
-    // Unregister this free suballocation from m_FreeSuballocationsBySize and update
-    // it to become used.
-    UnregisterFreeSuballocation(request.item);
-
-    suballoc.offset = offset;
-    suballoc.size = allocSize;
-    suballoc.type = SUBALLOCATION_TYPE_ALLOCATION;
-    suballoc.privateData = privateData;
-
-    // If there are any free bytes remaining at the end, insert new free suballocation after current one.
-    if (paddingEnd)
-    {
-        Suballocation paddingSuballoc = {};
-        paddingSuballoc.offset = offset + allocSize;
-        paddingSuballoc.size = paddingEnd;
-        paddingSuballoc.type = SUBALLOCATION_TYPE_FREE;
-        SuballocationList::iterator next = request.item;
-        ++next;
-        const SuballocationList::iterator paddingEndItem =
-            m_Suballocations.insert(next, paddingSuballoc);
-        RegisterFreeSuballocation(paddingEndItem);
-    }
-
-    // If there are any free bytes remaining at the beginning, insert new free suballocation before current one.
-    if (paddingBegin)
-    {
-        Suballocation paddingSuballoc = {};
-        paddingSuballoc.offset = offset - paddingBegin;
-        paddingSuballoc.size = paddingBegin;
-        paddingSuballoc.type = SUBALLOCATION_TYPE_FREE;
-        const SuballocationList::iterator paddingBeginItem =
-            m_Suballocations.insert(request.item, paddingSuballoc);
-        RegisterFreeSuballocation(paddingBeginItem);
-    }
-
-    // Update totals.
-    m_FreeCount = m_FreeCount - 1;
-    if (paddingBegin > 0)
-    {
-        ++m_FreeCount;
-    }
-    if (paddingEnd > 0)
-    {
-        ++m_FreeCount;
-    }
-    m_SumFreeSize -= allocSize;
-
-    m_ZeroInitializedRange.MarkRangeAsUsed(offset, offset + allocSize);
-}
-
-void BlockMetadata_Generic::Free(AllocHandle allocHandle)
-{
-    FreeSuballocation(FindAtOffset((UINT64)allocHandle - 1).dropConst());
-}
-
-void BlockMetadata_Generic::Clear()
-{
-    m_FreeCount = 1;
-    m_SumFreeSize = GetSize();
-
-    m_Suballocations.clear();
-    Suballocation suballoc = {};
-    suballoc.offset = 0;
-    suballoc.size = GetSize();
-    suballoc.type = SUBALLOCATION_TYPE_FREE;
-    m_Suballocations.push_back(suballoc);
-
-    m_FreeSuballocationsBySize.clear();
-    m_FreeSuballocationsBySize.push_back(m_Suballocations.begin());
-}
-
-SuballocationList::const_iterator BlockMetadata_Generic::FindAtOffset(UINT64 offset) const
-{
-    const UINT64 last = m_Suballocations.crbegin()->offset;
-    if (last == offset)
-        return m_Suballocations.crbegin();
-    const UINT64 first = m_Suballocations.cbegin()->offset;
-    if (first == offset)
-        return m_Suballocations.cbegin();
-
-    const size_t suballocCount = m_Suballocations.size();
-    const UINT64 step = (last - first + m_Suballocations.cbegin()->size) / suballocCount;
-    auto findSuballocation = [&](auto begin, auto end) -> SuballocationList::const_iterator
-    {
-        for (auto suballocItem = begin;
-            suballocItem != end;
-            ++suballocItem)
-        {
-            const Suballocation& suballoc = *suballocItem;
-            if (suballoc.offset == offset)
-                return suballocItem;
-        }
-        D3D12MA_ASSERT(false && "Not found!");
-        return m_Suballocations.end();
-    };
-    // If requested offset is closer to the end of range, search from the end
-    if ((offset - first) > suballocCount * step / 2)
-    {
-        return findSuballocation(m_Suballocations.crbegin(), m_Suballocations.crend());
-    }
-    return findSuballocation(m_Suballocations.cbegin(), m_Suballocations.cend());
-}
-
-bool BlockMetadata_Generic::ValidateFreeSuballocationList() const
-{
-    UINT64 lastSize = 0;
-    for (size_t i = 0, count = m_FreeSuballocationsBySize.size(); i < count; ++i)
-    {
-        const SuballocationList::iterator it = m_FreeSuballocationsBySize[i];
-
-        D3D12MA_VALIDATE(it->type == SUBALLOCATION_TYPE_FREE);
-        D3D12MA_VALIDATE(it->size >= MIN_FREE_SUBALLOCATION_SIZE_TO_REGISTER);
-        D3D12MA_VALIDATE(it->size >= lastSize);
-        lastSize = it->size;
-    }
-    return true;
-}
-
-bool BlockMetadata_Generic::CheckAllocation(
-    UINT64 allocSize,
-    UINT64 allocAlignment,
-    SuballocationList::const_iterator suballocItem,
-    AllocHandle* pAllocHandle,
-    UINT64* pSumFreeSize,
-    UINT64* pSumItemSize,
-    BOOL* pZeroInitialized) const
-{
-    D3D12MA_ASSERT(allocSize > 0);
-    D3D12MA_ASSERT(suballocItem != m_Suballocations.cend());
-    D3D12MA_ASSERT(pAllocHandle != NULL && pZeroInitialized != NULL);
-
-    *pSumFreeSize = 0;
-    *pSumItemSize = 0;
-    *pZeroInitialized = FALSE;
-
-    const Suballocation& suballoc = *suballocItem;
-    D3D12MA_ASSERT(suballoc.type == SUBALLOCATION_TYPE_FREE);
-
-    *pSumFreeSize = suballoc.size;
-
-    // Size of this suballocation is too small for this request: Early return.
-    if (suballoc.size < allocSize)
-    {
-        return false;
-    }
-
-    // Start from offset equal to beginning of this suballocation and debug margin of previous allocation if present.
-    UINT64 offset = suballoc.offset + (suballocItem == m_Suballocations.cbegin() ? 0 : GetDebugMargin());
-
-    // Apply alignment.
-    offset = AlignUp(offset, allocAlignment);
-
-    // Calculate padding at the beginning based on current offset.
-    const UINT64 paddingBegin = offset - suballoc.offset;
-
-    // Fail if requested size plus margin after is bigger than size of this suballocation.
-    if (paddingBegin + allocSize + GetDebugMargin() > suballoc.size)
-    {
-        return false;
-    }
-
-    // All tests passed: Success. Offset is already filled.
-    *pZeroInitialized = m_ZeroInitializedRange.IsRangeZeroInitialized(offset, offset + allocSize);
-    *pAllocHandle = (AllocHandle)(offset + 1);
-    return true;
-}
-
-void BlockMetadata_Generic::MergeFreeWithNext(SuballocationList::iterator item)
-{
-    D3D12MA_ASSERT(item != m_Suballocations.end());
-    D3D12MA_ASSERT(item->type == SUBALLOCATION_TYPE_FREE);
-
-    SuballocationList::iterator nextItem = item;
-    ++nextItem;
-    D3D12MA_ASSERT(nextItem != m_Suballocations.end());
-    D3D12MA_ASSERT(nextItem->type == SUBALLOCATION_TYPE_FREE);
-
-    item->size += nextItem->size;
-    --m_FreeCount;
-    m_Suballocations.erase(nextItem);
-}
-
-SuballocationList::iterator BlockMetadata_Generic::FreeSuballocation(SuballocationList::iterator suballocItem)
-{
-    // Change this suballocation to be marked as free.
-    Suballocation& suballoc = *suballocItem;
-    suballoc.type = SUBALLOCATION_TYPE_FREE;
-    suballoc.privateData = NULL;
-
-    // Update totals.
-    ++m_FreeCount;
-    m_SumFreeSize += suballoc.size;
-
-    // Merge with previous and/or next suballocation if it's also free.
-    bool mergeWithNext = false;
-    bool mergeWithPrev = false;
-
-    SuballocationList::iterator nextItem = suballocItem;
-    ++nextItem;
-    if ((nextItem != m_Suballocations.end()) && (nextItem->type == SUBALLOCATION_TYPE_FREE))
-    {
-        mergeWithNext = true;
-    }
-
-    SuballocationList::iterator prevItem = suballocItem;
-    if (suballocItem != m_Suballocations.begin())
-    {
-        --prevItem;
-        if (prevItem->type == SUBALLOCATION_TYPE_FREE)
-        {
-            mergeWithPrev = true;
-        }
-    }
-
-    if (mergeWithNext)
-    {
-        UnregisterFreeSuballocation(nextItem);
-        MergeFreeWithNext(suballocItem);
-    }
-
-    if (mergeWithPrev)
-    {
-        UnregisterFreeSuballocation(prevItem);
-        MergeFreeWithNext(prevItem);
-        RegisterFreeSuballocation(prevItem);
-        return prevItem;
-    }
-    else
-    {
-        RegisterFreeSuballocation(suballocItem);
-        return suballocItem;
-    }
-}
-
-void BlockMetadata_Generic::RegisterFreeSuballocation(SuballocationList::iterator item)
-{
-    D3D12MA_ASSERT(item->type == SUBALLOCATION_TYPE_FREE);
-    D3D12MA_ASSERT(item->size > 0);
-
-    // You may want to enable this validation at the beginning or at the end of
-    // this function, depending on what do you want to check.
-    D3D12MA_HEAVY_ASSERT(ValidateFreeSuballocationList());
-
-    if (item->size >= MIN_FREE_SUBALLOCATION_SIZE_TO_REGISTER)
-    {
-        if (m_FreeSuballocationsBySize.empty())
-        {
-            m_FreeSuballocationsBySize.push_back(item);
-        }
-        else
-        {
-            m_FreeSuballocationsBySize.InsertSorted(item, SuballocationItemSizeLess());
-        }
-    }
-
-    //D3D12MA_HEAVY_ASSERT(ValidateFreeSuballocationList());
-}
-
-void BlockMetadata_Generic::UnregisterFreeSuballocation(SuballocationList::iterator item)
-{
-    D3D12MA_ASSERT(item->type == SUBALLOCATION_TYPE_FREE);
-    D3D12MA_ASSERT(item->size > 0);
-
-    // You may want to enable this validation at the beginning or at the end of
-    // this function, depending on what do you want to check.
-    D3D12MA_HEAVY_ASSERT(ValidateFreeSuballocationList());
-
-    if (item->size >= MIN_FREE_SUBALLOCATION_SIZE_TO_REGISTER)
-    {
-        SuballocationList::iterator* const it = BinaryFindFirstNotLess(
-            m_FreeSuballocationsBySize.data(),
-            m_FreeSuballocationsBySize.data() + m_FreeSuballocationsBySize.size(),
-            item,
-            SuballocationItemSizeLess());
-        for (size_t index = it - m_FreeSuballocationsBySize.data();
-            index < m_FreeSuballocationsBySize.size();
-            ++index)
-        {
-            if (m_FreeSuballocationsBySize[index] == item)
-            {
-                m_FreeSuballocationsBySize.remove(index);
-                return;
-            }
-            D3D12MA_ASSERT((m_FreeSuballocationsBySize[index]->size == item->size) && "Not found.");
-        }
-        D3D12MA_ASSERT(0 && "Not found.");
-    }
-
-    //D3D12MA_HEAVY_ASSERT(ValidateFreeSuballocationList());
-}
-
-void BlockMetadata_Generic::SetAllocationPrivateData(AllocHandle allocHandle, void* privateData)
-{
-    Suballocation& suballoc = *FindAtOffset((UINT64)allocHandle - 1).dropConst();
-    suballoc.privateData = privateData;
-}
-
-void BlockMetadata_Generic::AddStatistics(Statistics& inoutStats) const
-{
-    inoutStats.BlockCount++;
-    inoutStats.AllocationCount += (UINT)m_Suballocations.size() - m_FreeCount;
-    inoutStats.BlockBytes += GetSize();
-    inoutStats.AllocationBytes += GetSize() - m_SumFreeSize;
-}
-
-void BlockMetadata_Generic::AddDetailedStatistics(DetailedStatistics& inoutStats) const
-{
-    inoutStats.Stats.BlockCount++;
-    inoutStats.Stats.BlockBytes += GetSize();
-
-    for (const auto& suballoc : m_Suballocations)
-    {
-        if (suballoc.type == SUBALLOCATION_TYPE_FREE)
-            AddDetailedStatisticsUnusedRange(inoutStats, suballoc.size);
-        else
-            AddDetailedStatisticsAllocation(inoutStats, suballoc.size);
-    }
-}
-
-void BlockMetadata_Generic::WriteAllocationInfoToJson(JsonWriter& json) const
-{
-    PrintDetailedMap_Begin(json, GetSumFreeSize(), GetAllocationCount(), m_FreeCount);
-    for (const auto& suballoc : m_Suballocations)
-    {
-        if (suballoc.type == SUBALLOCATION_TYPE_FREE)
-            PrintDetailedMap_UnusedRange(json, suballoc.offset, suballoc.size);
-        else
-            PrintDetailedMap_Allocation(json, suballoc.offset, suballoc.size, suballoc.privateData);
-    }
-    PrintDetailedMap_End(json);
-}
-#endif // _D3D12MA_BLOCK_METADATA_GENERIC_FUNCTIONS
-#endif // _D3D12MA_BLOCK_METADATA_GENERIC
-#endif // #if 0
 
 #ifndef _D3D12MA_BLOCK_METADATA_LINEAR
 class BlockMetadata_Linear : public BlockMetadata
@@ -4027,6 +3365,10 @@ bool BlockMetadata_Linear::CreateAllocationRequest(
     D3D12MA_ASSERT(allocSize > 0 && "Cannot allocate empty block!");
     D3D12MA_ASSERT(pAllocationRequest != NULL);
     D3D12MA_HEAVY_ASSERT(Validate());
+
+    if(allocSize > GetSize())
+        return false;
+
     pAllocationRequest->size = allocSize;
     return upperAddress ?
         CreateAllocationRequest_UpperAddress(
@@ -5688,7 +5030,8 @@ void BlockMetadata_TLSF::WriteAllocationInfoToJson(JsonWriter& json) const
     }
     D3D12MA_ASSERT(i == 0);
 
-    PrintDetailedMap_Begin(json, GetSumFreeSize(), GetAllocationCount(), m_BlocksFreeCount + static_cast<bool>(m_NullBlock->size));
+    PrintDetailedMap_Begin(json, GetSumFreeSize(), GetAllocationCount(), m_BlocksFreeCount +
+        (m_NullBlock->size > 0 ? 1 : 0));
     for (; i < blockCount; ++i)
     {
         Block* block = blockList[i];
@@ -6567,6 +5910,7 @@ public:
     BOOL IsUMA() const { return m_D3D12Architecture.UMA; }
     BOOL IsCacheCoherentUMA() const { return m_D3D12Architecture.CacheCoherentUMA; }
     bool SupportsResourceHeapTier2() const { return m_D3D12Options.ResourceHeapTier >= D3D12_RESOURCE_HEAP_TIER_2; }
+    bool IsGPUUploadHeapSupported() const { return m_GPUUploadHeapSupported != FALSE; }
     bool UseMutex() const { return m_UseMutex; }
     AllocationObjectAllocator& GetAllocationObjectAllocator() { return m_AllocationObjectAllocator; }
     UINT GetCurrentFrameIndex() const { return m_CurrentFrameIndex.load(); }
@@ -6575,6 +5919,7 @@ public:
         0: D3D12_HEAP_TYPE_DEFAULT
         1: D3D12_HEAP_TYPE_UPLOAD
         2: D3D12_HEAP_TYPE_READBACK
+        3: D3D12_HEAP_TYPE_GPU_UPLOAD
     else:
         0: D3D12_HEAP_TYPE_DEFAULT + buffer
         1: D3D12_HEAP_TYPE_DEFAULT + texture
@@ -6585,8 +5930,11 @@ public:
         6: D3D12_HEAP_TYPE_READBACK + buffer
         7: D3D12_HEAP_TYPE_READBACK + texture
         8: D3D12_HEAP_TYPE_READBACK + texture RT or DS
+        9: D3D12_HEAP_TYPE_GPU_UPLOAD + buffer
+        10: D3D12_HEAP_TYPE_GPU_UPLOAD + texture
+        11: D3D12_HEAP_TYPE_GPU_UPLOAD + texture RT or DS
     */
-    UINT GetDefaultPoolCount() const { return SupportsResourceHeapTier2() ? 3 : 9; }
+    UINT GetDefaultPoolCount() const { return SupportsResourceHeapTier2() ? 4 : 12; }
     BlockVector** GetDefaultPools() { return m_BlockVectors; }
 
     HRESULT Init(const ALLOCATOR_DESC& desc);
@@ -6649,6 +5997,7 @@ private:
     const bool m_UseMutex;
     const bool m_AlwaysCommitted;
     const bool m_MsaaAlwaysCommitted;
+    const bool m_PreferSmallBuffersCommitted;
     bool m_DefaultPoolsNotZeroed = false;
     ID3D12Device* m_Device; // AddRef
 #ifdef __ID3D12Device1_INTERFACE_DEFINED__
@@ -6672,6 +6021,7 @@ private:
     D3D12MA_ATOMIC_UINT32 m_CurrentFrameIndex;
     DXGI_ADAPTER_DESC m_AdapterDesc;
     D3D12_FEATURE_DATA_D3D12_OPTIONS m_D3D12Options;
+    BOOL m_GPUUploadHeapSupported = FALSE;
     D3D12_FEATURE_DATA_ARCHITECTURE m_D3D12Architecture;
     AllocationObjectAllocator m_AllocationObjectAllocator;
 
@@ -6686,7 +6036,8 @@ private:
     dedicated allocation (committed resource rather than placed resource).
     */
     template<typename D3D12_RESOURCE_DESC_T>
-    static bool PrefersCommittedAllocation(const D3D12_RESOURCE_DESC_T& resourceDesc);
+    bool PrefersCommittedAllocation(const D3D12_RESOURCE_DESC_T& resourceDesc,
+        ALLOCATION_FLAGS strategy);
 
     // Allocates and registers new committed resource with implicit heap, as dedicated allocation.
     // Creates and returns Allocation object and optionally D3D12 resource.
@@ -6738,13 +6089,14 @@ AllocatorPimpl::AllocatorPimpl(const ALLOCATION_CALLBACKS& allocationCallbacks, 
     : m_UseMutex((desc.Flags & ALLOCATOR_FLAG_SINGLETHREADED) == 0),
     m_AlwaysCommitted((desc.Flags & ALLOCATOR_FLAG_ALWAYS_COMMITTED) != 0),
     m_MsaaAlwaysCommitted((desc.Flags & ALLOCATOR_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED) != 0),
+    m_PreferSmallBuffersCommitted((desc.Flags & ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED) == 0),
     m_Device(desc.pDevice),
     m_Adapter(desc.pAdapter),
     m_PreferredBlockSize(desc.PreferredBlockSize != 0 ? desc.PreferredBlockSize : D3D12MA_DEFAULT_BLOCK_SIZE),
     m_AllocationCallbacks(allocationCallbacks),
     m_CurrentFrameIndex(0),
     // Below this line don't use allocationCallbacks but m_AllocationCallbacks!!!
-    m_AllocationObjectAllocator(m_AllocationCallbacks)
+    m_AllocationObjectAllocator(m_AllocationCallbacks, m_UseMutex)
 {
     // desc.pAllocationCallbacks intentionally ignored here, preprocessed by CreateAllocator.
     ZeroMemory(&m_D3D12Options, sizeof(m_D3D12Options));
@@ -6809,6 +6161,20 @@ HRESULT AllocatorPimpl::Init(const ALLOCATOR_DESC& desc)
     }
 #ifdef D3D12MA_FORCE_RESOURCE_HEAP_TIER
     m_D3D12Options.ResourceHeapTier = (D3D12MA_FORCE_RESOURCE_HEAP_TIER);
+#endif
+
+// You must define this macro to like `#define D3D12MA_OPTIONS16_SUPPORTED 1` to enable GPU Upload Heaps!
+// Unfortunately there is no way to programmatically check if the included <d3d12.h> defines D3D12_FEATURE_DATA_D3D12_OPTIONS16 or not.
+// Main interfaces have respective macros like __ID3D12Device4_INTERFACE_DEFINED__, but structures like this do not.
+#if D3D12MA_OPTIONS16_SUPPORTED
+    {
+        D3D12_FEATURE_DATA_D3D12_OPTIONS16 options16 = {};
+        hr = m_Device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS16, &options16, sizeof(options16));
+        if (SUCCEEDED(hr))
+        {
+            m_GPUUploadHeapSupported = options16.GPUUploadHeapSupported;
+        }
+    }
 #endif
 
     hr = m_Device->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE, &m_D3D12Architecture, sizeof(m_D3D12Architecture));
@@ -6910,7 +6276,7 @@ UINT AllocatorPimpl::StandardHeapTypeToMemorySegmentGroup(D3D12_HEAP_TYPE heapTy
     D3D12MA_ASSERT(IsHeapTypeStandard(heapType));
     if (IsUMA())
         return DXGI_MEMORY_SEGMENT_GROUP_LOCAL_COPY;
-    return heapType == D3D12_HEAP_TYPE_DEFAULT ?
+    return (heapType == D3D12_HEAP_TYPE_DEFAULT || heapType == D3D12_HEAP_TYPE_GPU_UPLOAD_COPY) ?
         DXGI_MEMORY_SEGMENT_GROUP_LOCAL_COPY : DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL_COPY;
 }
 
@@ -7276,15 +6642,16 @@ void AllocatorPimpl::CalculateStatistics(TotalStatistics& outStats, DetailedStat
         ClearDetailedStatistics(outCustomHeaps[1]);
     }
 
-    // Process default pools. 3 standard heap types only. Add them to outStats.HeapType[i].
+    // Process default pools. 4 standard heap types only. Add them to outStats.HeapType[i].
     if (SupportsResourceHeapTier2())
     {
-        // DEFAULT, UPLOAD, READBACK.
+        // DEFAULT, UPLOAD, READBACK, GPU_UPLOAD.
         for (size_t heapTypeIndex = 0; heapTypeIndex < STANDARD_HEAP_TYPE_COUNT; ++heapTypeIndex)
         {
             BlockVector* const pBlockVector = m_BlockVectors[heapTypeIndex];
             D3D12MA_ASSERT(pBlockVector);
-            pBlockVector->AddDetailedStatistics(outStats.HeapType[heapTypeIndex]);
+            const size_t outputIndex = heapTypeIndex < 3 ? heapTypeIndex : 4; // GPU_UPLOAD 3 -> 4
+            pBlockVector->AddDetailedStatistics(outStats.HeapType[outputIndex]);
         }
     }
     else
@@ -7296,7 +6663,9 @@ void AllocatorPimpl::CalculateStatistics(TotalStatistics& outStats, DetailedStat
             {
                 BlockVector* const pBlockVector = m_BlockVectors[heapTypeIndex * 3 + heapSubType];
                 D3D12MA_ASSERT(pBlockVector);
-                pBlockVector->AddDetailedStatistics(outStats.HeapType[heapTypeIndex]);
+
+                const size_t outputIndex = heapTypeIndex < 3 ? heapTypeIndex : 4; // GPU_UPLOAD 3 -> 4
+                pBlockVector->AddDetailedStatistics(outStats.HeapType[outputIndex]);
             }
         }
     }
@@ -7311,6 +6680,9 @@ void AllocatorPimpl::CalculateStatistics(TotalStatistics& outStats, DetailedStat
     AddDetailedStatistics(
         outStats.MemorySegmentGroup[StandardHeapTypeToMemorySegmentGroup(D3D12_HEAP_TYPE_READBACK)],
         outStats.HeapType[2]);
+    AddDetailedStatistics(
+        outStats.MemorySegmentGroup[StandardHeapTypeToMemorySegmentGroup(D3D12_HEAP_TYPE_GPU_UPLOAD_COPY)],
+        outStats.HeapType[4]);
 
     // Process custom pools.
     DetailedStatistics tmpStats;
@@ -7335,13 +6707,14 @@ void AllocatorPimpl::CalculateStatistics(TotalStatistics& outStats, DetailedStat
         }
     }
 
-    // Process committed allocations. 3 standard heap types only.
+    // Process committed allocations. standard heap types only.
     for (UINT heapTypeIndex = 0; heapTypeIndex < STANDARD_HEAP_TYPE_COUNT; ++heapTypeIndex)
     {
         ClearDetailedStatistics(tmpStats);
         m_CommittedAllocations[heapTypeIndex].AddDetailedStatistics(tmpStats);
+        const size_t outputIndex = heapTypeIndex < 3 ? heapTypeIndex : 4; // GPU_UPLOAD 3 -> 4
         AddDetailedStatistics(
-            outStats.HeapType[heapTypeIndex], tmpStats);
+            outStats.HeapType[outputIndex], tmpStats);
         AddDetailedStatistics(
             outStats.MemorySegmentGroup[StandardHeapTypeToMemorySegmentGroup(IndexToStandardHeapType(heapTypeIndex))], tmpStats);
     }
@@ -7363,19 +6736,24 @@ void AllocatorPimpl::CalculateStatistics(TotalStatistics& outStats, DetailedStat
 
     D3D12MA_ASSERT(outStats.Total.Stats.BlockCount ==
         outStats.HeapType[0].Stats.BlockCount + outStats.HeapType[1].Stats.BlockCount +
-        outStats.HeapType[2].Stats.BlockCount + outStats.HeapType[3].Stats.BlockCount);
+        outStats.HeapType[2].Stats.BlockCount + outStats.HeapType[3].Stats.BlockCount +
+        outStats.HeapType[4].Stats.BlockCount);
     D3D12MA_ASSERT(outStats.Total.Stats.AllocationCount ==
         outStats.HeapType[0].Stats.AllocationCount + outStats.HeapType[1].Stats.AllocationCount +
-        outStats.HeapType[2].Stats.AllocationCount + outStats.HeapType[3].Stats.AllocationCount);
+        outStats.HeapType[2].Stats.AllocationCount + outStats.HeapType[3].Stats.AllocationCount +
+        outStats.HeapType[4].Stats.AllocationCount);
     D3D12MA_ASSERT(outStats.Total.Stats.BlockBytes ==
         outStats.HeapType[0].Stats.BlockBytes + outStats.HeapType[1].Stats.BlockBytes +
-        outStats.HeapType[2].Stats.BlockBytes + outStats.HeapType[3].Stats.BlockBytes);
+        outStats.HeapType[2].Stats.BlockBytes + outStats.HeapType[3].Stats.BlockBytes +
+        outStats.HeapType[4].Stats.BlockBytes);
     D3D12MA_ASSERT(outStats.Total.Stats.AllocationBytes ==
         outStats.HeapType[0].Stats.AllocationBytes + outStats.HeapType[1].Stats.AllocationBytes +
-        outStats.HeapType[2].Stats.AllocationBytes + outStats.HeapType[3].Stats.AllocationBytes);
+        outStats.HeapType[2].Stats.AllocationBytes + outStats.HeapType[3].Stats.AllocationBytes +
+        outStats.HeapType[4].Stats.AllocationBytes);
     D3D12MA_ASSERT(outStats.Total.UnusedRangeCount ==
         outStats.HeapType[0].UnusedRangeCount + outStats.HeapType[1].UnusedRangeCount +
-        outStats.HeapType[2].UnusedRangeCount + outStats.HeapType[3].UnusedRangeCount);
+        outStats.HeapType[2].UnusedRangeCount + outStats.HeapType[3].UnusedRangeCount +
+        outStats.HeapType[4].UnusedRangeCount);
 }
 
 void AllocatorPimpl::GetBudget(Budget* outLocalBudget, Budget* outNonLocalBudget)
@@ -7423,6 +6801,7 @@ void AllocatorPimpl::GetBudgetForHeapType(Budget& outBudget, D3D12_HEAP_TYPE hea
     switch (heapType)
     {
     case D3D12_HEAP_TYPE_DEFAULT:
+    case D3D12_HEAP_TYPE_GPU_UPLOAD_COPY:
         GetBudget(&outBudget, NULL);
         break;
     case D3D12_HEAP_TYPE_UPLOAD:
@@ -7479,6 +6858,9 @@ void AllocatorPimpl::BuildStatsString(WCHAR** ppStatsString, BOOL detailedMap)
                 json.WriteBool(m_D3D12Architecture.UMA);
                 json.WriteString(L"CacheCoherentUMA");
                 json.WriteBool(m_D3D12Architecture.CacheCoherentUMA);
+
+                json.WriteString(L"GPUUploadHeapSupported");
+                json.WriteBool(m_GPUUploadHeapSupported != FALSE);
             }
             json.EndObject();
         }
@@ -7511,6 +6893,17 @@ void AllocatorPimpl::BuildStatsString(WCHAR** ppStatsString, BOOL detailedMap)
                                 json.AddDetailedStatisticsInfoObject(stats.HeapType[0]);
                             }
                             json.EndObject();
+
+                            if(IsGPUUploadHeapSupported())
+                            {
+                                json.WriteString(L"GPU_UPLOAD");
+                                json.BeginObject();
+                                {
+                                    json.WriteString(L"Stats");
+                                    json.AddDetailedStatisticsInfoObject(stats.HeapType[4]);
+                                }
+                                json.EndObject();
+                            }
                         }
                         json.WriteString(L"UPLOAD");
                         json.BeginObject();
@@ -7561,6 +6954,17 @@ void AllocatorPimpl::BuildStatsString(WCHAR** ppStatsString, BOOL detailedMap)
                             }
                             json.EndObject();
 
+                            if(IsGPUUploadHeapSupported())
+                            {
+                                json.WriteString(L"GPU_UPLOAD");
+                                json.BeginObject();
+                                {
+                                    json.WriteString(L"Stats");
+                                    json.AddDetailedStatisticsInfoObject(stats.HeapType[4]);
+                                }
+                                json.EndObject();
+                            }
+                            
                             json.WriteString(L"CUSTOM");
                             json.BeginObject();
                             {
@@ -7766,8 +7170,19 @@ void AllocatorPimpl::FreeStatsString(WCHAR* pStatsString)
 }
 
 template<typename D3D12_RESOURCE_DESC_T>
-bool AllocatorPimpl::PrefersCommittedAllocation(const D3D12_RESOURCE_DESC_T& resourceDesc)
+bool AllocatorPimpl::PrefersCommittedAllocation(const D3D12_RESOURCE_DESC_T& resourceDesc,
+    ALLOCATION_FLAGS strategy)
 {
+    // Prefer creating small buffers <= 32 KB as committed, because drivers pack them better,
+    // while placed buffers require 64 KB alignment.
+    if(resourceDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER &&
+        resourceDesc.Width <= D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT / 2 &&
+        strategy != ALLOCATION_FLAG_STRATEGY_MIN_TIME &&  // Creating as committed would be slower.
+        m_PreferSmallBuffersCommitted)
+    {
+        return true;
+    }
+
     // Intentional. It may change in the future.
     return false;
 }
@@ -7900,16 +7315,8 @@ HRESULT AllocatorPimpl::AllocateCommittedResource(
         }
         if (SUCCEEDED(hr))
         {
-            BOOL wasZeroInitialized = TRUE;
-#if D3D12MA_CREATE_NOT_ZEROED_AVAILABLE
-            if((committedAllocParams.m_HeapFlags & D3D12_HEAP_FLAG_CREATE_NOT_ZEROED) != 0)
-            {
-                wasZeroInitialized = FALSE;
-            }
-#endif
-
             Allocation* alloc = m_AllocationObjectAllocator.Allocate(
-                this, resourceSize, createParams.GetBaseResourceDesc()->Alignment, wasZeroInitialized);
+                this, resourceSize, createParams.GetBaseResourceDesc()->Alignment);
             alloc->InitCommitted(committedAllocParams.m_List);
             alloc->SetResourcePointer(res, createParams.GetBaseResourceDesc());
             alloc->SetPrivateData(pPrivateData);
@@ -7968,16 +7375,7 @@ HRESULT AllocatorPimpl::AllocateHeap(
     if (SUCCEEDED(hr))
     {
         SetResidencyPriority(heap, committedAllocParams.m_ResidencyPriority);
-
-        BOOL wasZeroInitialized = TRUE;
-#if D3D12MA_CREATE_NOT_ZEROED_AVAILABLE
-        if((heapDesc.Flags & D3D12_HEAP_FLAG_CREATE_NOT_ZEROED) != 0)
-        {
-            wasZeroInitialized = FALSE;
-        }
-#endif
-
-        (*ppAllocation) = m_AllocationObjectAllocator.Allocate(this, allocInfo.SizeInBytes, allocInfo.Alignment, wasZeroInitialized);
+        (*ppAllocation) = m_AllocationObjectAllocator.Allocate(this, allocInfo.SizeInBytes, allocInfo.Alignment);
         (*ppAllocation)->InitHeap(committedAllocParams.m_List, heap);
         (*ppAllocation)->SetPrivateData(pPrivateData);
         committedAllocParams.m_List->Register(*ppAllocation);
@@ -7997,6 +7395,9 @@ HRESULT AllocatorPimpl::CalcAllocationParams(const ALLOCATION_DESC& allocDesc, U
     outBlockVector = NULL;
     outCommittedAllocationParams = CommittedAllocationParameters();
     outPreferCommitted = false;
+
+    D3D12MA_ASSERT((allocDesc.HeapType != D3D12_HEAP_TYPE_GPU_UPLOAD_COPY || IsGPUUploadHeapSupported()) &&
+        "Trying to allocate from D3D12_HEAP_TYPE_GPU_UPLOAD while GPUUploadHeapSupported == FALSE or D3D12MA_OPTIONS16_SUPPORTED macro was not defined when compiling D3D12MA library.");
 
     bool msaaAlwaysCommitted;
     if (allocDesc.CustomPool != NULL)
@@ -8066,7 +7467,7 @@ HRESULT AllocatorPimpl::CalcAllocationParams(const ALLOCATION_DESC& allocDesc, U
     {
         if (resDesc->SampleDesc.Count > 1 && msaaAlwaysCommitted)
             outBlockVector = NULL;
-        if (!outPreferCommitted && PrefersCommittedAllocation(*resDesc))
+        if (!outPreferCommitted && PrefersCommittedAllocation(*resDesc, allocDesc.Flags & ALLOCATION_FLAG_STRATEGY_MASK))
             outPreferCommitted = true;
     }
 
@@ -8097,6 +7498,7 @@ UINT AllocatorPimpl::CalcDefaultPoolIndex(const ALLOCATION_DESC& allocDesc, Reso
     case D3D12_HEAP_TYPE_DEFAULT:  poolIndex = 0; break;
     case D3D12_HEAP_TYPE_UPLOAD:   poolIndex = 1; break;
     case D3D12_HEAP_TYPE_READBACK: poolIndex = 2; break;
+    case D3D12_HEAP_TYPE_GPU_UPLOAD_COPY: poolIndex = 3; break;
     default: D3D12MA_ASSERT(0);
     }
 
@@ -8151,6 +7553,9 @@ void AllocatorPimpl::CalcDefaultPoolParams(D3D12_HEAP_TYPE& outHeapType, D3D12_H
         break;
     case 2:
         outHeapType = D3D12_HEAP_TYPE_READBACK;
+        break;
+    case 3:
+        outHeapType = D3D12_HEAP_TYPE_GPU_UPLOAD_COPY;
         break;
     default:
         D3D12MA_ASSERT(0);
@@ -8995,7 +8400,7 @@ HRESULT BlockVector::CommitAllocationRequest(
     if (pBlock->m_pMetadata->IsEmpty())
         m_HasEmptyBlock = false;
 
-    *pAllocation = m_hAllocator->GetAllocationObjectAllocator().Allocate(m_hAllocator, size, alignment, allocRequest.zeroInitialized);
+    *pAllocation = m_hAllocator->GetAllocationObjectAllocator().Allocate(m_hAllocator, size, alignment);
     pBlock->m_pMetadata->Alloc(allocRequest, size, *pAllocation);
 
     (*pAllocation)->InitPlaced(allocRequest.allocHandle, pBlock);
@@ -9908,11 +9313,6 @@ void Allocation::SetName(LPCWSTR Name)
 
 void Allocation::ReleaseThis()
 {
-    if (this == NULL)
-    {
-        return;
-    }
-
     SAFE_RELEASE(m_Resource);
 
     switch (m_PackedData.GetType())
@@ -9933,7 +9333,7 @@ void Allocation::ReleaseThis()
     m_Allocator->GetAllocationObjectAllocator().Free(this);
 }
 
-Allocation::Allocation(AllocatorPimpl* allocator, UINT64 size, UINT64 alignment, BOOL wasZeroInitialized)
+Allocation::Allocation(AllocatorPimpl* allocator, UINT64 size, UINT64 alignment)
     : m_Allocator{ allocator },
     m_Size{ size },
     m_Alignment{ alignment },
@@ -9947,7 +9347,6 @@ Allocation::Allocation(AllocatorPimpl* allocator, UINT64 size, UINT64 alignment,
     m_PackedData.SetResourceDimension(D3D12_RESOURCE_DIMENSION_UNKNOWN);
     m_PackedData.SetResourceFlags(D3D12_RESOURCE_FLAG_NONE);
     m_PackedData.SetTextureLayout(D3D12_TEXTURE_LAYOUT_UNKNOWN);
-    m_PackedData.SetWasZeroInitialized(wasZeroInitialized);
 }
 
 void Allocation::InitCommitted(CommittedAllocationList* list)
@@ -9981,7 +9380,6 @@ void Allocation::SwapBlockAllocation(Allocation* allocation)
     D3D12MA_ASSERT(allocation->m_PackedData.GetType() == TYPE_PLACED);
 
     D3D12MA_SWAP(m_Resource, allocation->m_Resource);
-    m_PackedData.SetWasZeroInitialized(allocation->m_PackedData.WasZeroInitialized());
     m_Placed.block->m_pMetadata->SetAllocationPrivateData(m_Placed.allocHandle, allocation);
     D3D12MA_SWAP(m_Placed, allocation->m_Placed);
     m_Placed.block->m_pMetadata->SetAllocationPrivateData(m_Placed.allocHandle, this);
@@ -10059,11 +9457,6 @@ void DefragmentationContext::GetStats(DEFRAGMENTATION_STATS* pStats)
 
 void DefragmentationContext::ReleaseThis()
 {
-    if (this == NULL)
-    {
-        return;
-    }
-
     D3D12MA_DELETE(m_Pimpl->GetAllocs(), this);
 }
 
@@ -10124,11 +9517,6 @@ HRESULT Pool::BeginDefragmentation(const DEFRAGMENTATION_DESC* pDesc, Defragment
 
 void Pool::ReleaseThis()
 {
-    if (this == NULL)
-    {
-        return;
-    }
-
     D3D12MA_DELETE(m_Pimpl->GetAllocator()->GetAllocs(), this);
 }
 
@@ -10157,6 +9545,11 @@ BOOL Allocator::IsUMA() const
 BOOL Allocator::IsCacheCoherentUMA() const
 {
     return m_Pimpl->IsCacheCoherentUMA();
+}
+
+BOOL Allocator::IsGPUUploadHeapSupported() const
+{
+    return m_Pimpl->IsGPUUploadHeapSupported();
 }
 
 UINT64 Allocator::GetMemoryCapacity(UINT memorySegmentGroup) const

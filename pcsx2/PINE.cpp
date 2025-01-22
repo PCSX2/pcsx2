@@ -1,13 +1,13 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "BuildVersion.h"
 #include "Common.h"
 #include "Host.h"
 #include "Memory.h"
 #include "Elfheader.h"
 #include "PINE.h"
 #include "VMManager.h"
-#include "svnrev.h"
 
 #include <atomic>
 #include <cstdio>
@@ -306,7 +306,7 @@ bool PINEServer::Initialize(int slot)
 		return false;
 	}
 	server.sun_family = AF_UNIX;
-	strcpy(server.sun_path, m_socket_name.c_str());
+	StringUtil::Strlcpy(server.sun_path, m_socket_name, sizeof(server.sun_path));
 
 	// we unlink the socket so that when releasing this thread the socket gets
 	// freed even if we didn't close correctly the loop
@@ -607,14 +607,12 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-
-				static constexpr const char* version = "PCSX2 " GIT_REV;
-				static constexpr u32 size = sizeof(version) + 1;
+				u32 size = strlen(BuildVersion::GitRev) + 7;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
 					goto error;
 				ToResultVector(ret_buffer, size, ret_cnt);
 				ret_cnt += 4;
-				memcpy(&ret_buffer[ret_cnt], version, size);
+				snprintf(reinterpret_cast<char*>(&ret_buffer[ret_cnt]), size, "PCSX2 %s", BuildVersion::GitRev);
 				ret_cnt += size;
 				break;
 			}

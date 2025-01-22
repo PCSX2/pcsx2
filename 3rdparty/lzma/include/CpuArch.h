@@ -1,5 +1,5 @@
 /* CpuArch.h -- CPU specific code
-2023-04-02 : Igor Pavlov : Public domain */
+2024-06-17 : Igor Pavlov : Public domain */
 
 #ifndef ZIP7_INC_CPU_ARCH_H
 #define ZIP7_INC_CPU_ARCH_H
@@ -20,6 +20,7 @@ MY_CPU_64BIT means that processor can work with 64-bit registers.
   MY_CPU_64BIT doesn't mean that (sizeof(void *) == 8)
 */
 
+#if !defined(_M_ARM64EC)
 #if  defined(_M_X64) \
   || defined(_M_AMD64) \
   || defined(__x86_64__) \
@@ -35,6 +36,7 @@ MY_CPU_64BIT means that processor can work with 64-bit registers.
   #endif
   #define MY_CPU_64BIT
 #endif
+#endif
 
 
 #if  defined(_M_IX86) \
@@ -47,17 +49,26 @@ MY_CPU_64BIT means that processor can work with 64-bit registers.
 
 
 #if  defined(_M_ARM64) \
+  || defined(_M_ARM64EC) \
   || defined(__AARCH64EL__) \
   || defined(__AARCH64EB__) \
   || defined(__aarch64__)
   #define MY_CPU_ARM64
-  #ifdef __ILP32__
+#if   defined(__ILP32__) \
+   || defined(__SIZEOF_POINTER__) && (__SIZEOF_POINTER__ == 4)
     #define MY_CPU_NAME "arm64-32"
     #define MY_CPU_SIZEOF_POINTER 4
-  #else
+#elif defined(__SIZEOF_POINTER__) && (__SIZEOF_POINTER__ == 16)
+    #define MY_CPU_NAME "arm64-128"
+    #define MY_CPU_SIZEOF_POINTER 16
+#else
+#if defined(_M_ARM64EC)
+    #define MY_CPU_NAME "arm64ec"
+#else
     #define MY_CPU_NAME "arm64"
+#endif
     #define MY_CPU_SIZEOF_POINTER 8
-  #endif
+#endif
   #define MY_CPU_64BIT
 #endif
 
@@ -133,8 +144,36 @@ MY_CPU_64BIT means that processor can work with 64-bit registers.
 #endif
 
 
+#if   defined(__sparc__) \
+   || defined(__sparc)
+  #define MY_CPU_SPARC
+  #if  defined(__LP64__) \
+    || defined(_LP64) \
+    || defined(__SIZEOF_POINTER__) && (__SIZEOF_POINTER__ == 8)
+    #define MY_CPU_NAME "sparcv9"
+    #define MY_CPU_SIZEOF_POINTER 8
+    #define MY_CPU_64BIT
+  #elif defined(__sparc_v9__) \
+     || defined(__sparcv9)
+    #define MY_CPU_64BIT
+    #if defined(__SIZEOF_POINTER__) && (__SIZEOF_POINTER__ == 4)
+      #define MY_CPU_NAME "sparcv9-32"
+    #else
+      #define MY_CPU_NAME "sparcv9m"
+    #endif
+  #elif defined(__sparc_v8__) \
+     || defined(__sparcv8)
+    #define MY_CPU_NAME "sparcv8"
+    #define MY_CPU_SIZEOF_POINTER 4
+  #else
+    #define MY_CPU_NAME "sparc"
+  #endif
+#endif
+
+
 #if  defined(__riscv) \
   || defined(__riscv__)
+    #define MY_CPU_RISCV
   #if __riscv_xlen == 32
     #define MY_CPU_NAME "riscv32"
   #elif __riscv_xlen == 64
@@ -142,6 +181,39 @@ MY_CPU_64BIT means that processor can work with 64-bit registers.
   #else
     #define MY_CPU_NAME "riscv"
   #endif
+#endif
+
+
+#if defined(__loongarch__)
+  #define MY_CPU_LOONGARCH
+  #if defined(__loongarch64) || defined(__loongarch_grlen) && (__loongarch_grlen == 64)
+  #define MY_CPU_64BIT
+  #endif
+  #if defined(__loongarch64)
+  #define MY_CPU_NAME "loongarch64"
+  #define MY_CPU_LOONGARCH64
+  #else
+  #define MY_CPU_NAME "loongarch"
+  #endif
+#endif
+
+
+// #undef MY_CPU_NAME
+// #undef MY_CPU_SIZEOF_POINTER
+// #define __e2k__
+// #define __SIZEOF_POINTER__ 4
+#if  defined(__e2k__)
+  #define MY_CPU_E2K
+  #if defined(__ILP32__) || defined(__SIZEOF_POINTER__) && (__SIZEOF_POINTER__ == 4)
+    #define MY_CPU_NAME "e2k-32"
+    #define MY_CPU_SIZEOF_POINTER 4
+  #else
+    #define MY_CPU_NAME "e2k"
+    #if defined(__LP64__) || defined(__SIZEOF_POINTER__) && (__SIZEOF_POINTER__ == 8)
+      #define MY_CPU_SIZEOF_POINTER 8
+    #endif
+  #endif
+  #define MY_CPU_64BIT
 #endif
 
 
@@ -175,6 +247,7 @@ MY_CPU_64BIT means that processor can work with 64-bit registers.
     || defined(MY_CPU_ARM_LE) \
     || defined(MY_CPU_ARM64_LE) \
     || defined(MY_CPU_IA64_LE) \
+    || defined(_LITTLE_ENDIAN) \
     || defined(__LITTLE_ENDIAN__) \
     || defined(__ARMEL__) \
     || defined(__THUMBEL__) \
@@ -251,6 +324,7 @@ MY_CPU_64BIT means that processor can work with 64-bit registers.
 
 
 #ifndef MY_CPU_NAME
+  // #define MY_CPU_IS_UNKNOWN
   #ifdef MY_CPU_LE
     #define MY_CPU_NAME "LE"
   #elif defined(MY_CPU_BE)
@@ -295,9 +369,19 @@ MY_CPU_64BIT means that processor can work with 64-bit registers.
 #define Z7_BSWAP64(v)  _byteswap_uint64(v)
 #define Z7_CPU_FAST_BSWAP_SUPPORTED
 
-#elif  (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) \
-    || (defined(__clang__) && Z7_has_builtin(__builtin_bswap16))
- 
+/* GCC can generate slow code that calls function for __builtin_bswap32() for:
+     - GCC for RISCV, if Zbb/XTHeadBb extension is not used.
+     - GCC for SPARC.
+   The code from CLANG for SPARC also is not fastest.
+   So we don't define Z7_CPU_FAST_BSWAP_SUPPORTED in some cases.
+*/
+#elif (!defined(MY_CPU_RISCV) || defined (__riscv_zbb) || defined(__riscv_xtheadbb)) \
+    && !defined(MY_CPU_SPARC) \
+    && ( \
+       (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) \
+    || (defined(__clang__) && Z7_has_builtin(__builtin_bswap16)) \
+    )
+
 #define Z7_BSWAP16(v)  __builtin_bswap16(v)
 #define Z7_BSWAP32(v)  __builtin_bswap32(v)
 #define Z7_BSWAP64(v)  __builtin_bswap64(v)
@@ -329,13 +413,48 @@ MY_CPU_64BIT means that processor can work with 64-bit registers.
 
 #ifdef MY_CPU_LE
   #if defined(MY_CPU_X86_OR_AMD64) \
-      || defined(MY_CPU_ARM64)
+      || defined(MY_CPU_ARM64) \
+      || defined(MY_CPU_RISCV) && defined(__riscv_misaligned_fast) \
+      || defined(MY_CPU_E2K) && defined(__iset__) && (__iset__ >= 6)
     #define MY_CPU_LE_UNALIGN
     #define MY_CPU_LE_UNALIGN_64
   #elif defined(__ARM_FEATURE_UNALIGNED)
-    /* gcc9 for 32-bit arm can use LDRD instruction that requires 32-bit alignment.
-       So we can't use unaligned 64-bit operations. */
-    #define MY_CPU_LE_UNALIGN
+/* === ALIGNMENT on 32-bit arm and LDRD/STRD/LDM/STM instructions.
+  Description of problems:
+problem-1 : 32-bit ARM architecture:
+  multi-access (pair of 32-bit accesses) instructions (LDRD/STRD/LDM/STM)
+  require 32-bit (WORD) alignment (by 32-bit ARM architecture).
+  So there is "Alignment fault exception", if data is not aligned for 32-bit.
+
+problem-2 : 32-bit kernels and arm64 kernels:
+  32-bit linux kernels provide fixup for these "paired" instruction "Alignment fault exception".
+  So unaligned paired-access instructions work via exception handler in kernel in 32-bit linux.
+ 
+  But some arm64 kernels do not handle these faults in 32-bit programs.
+  So we have unhandled exception for such instructions.
+  Probably some new arm64 kernels have fixed it, and unaligned
+  paired-access instructions work in new kernels?
+
+problem-3 : compiler for 32-bit arm:
+  Compilers use LDRD/STRD/LDM/STM for UInt64 accesses
+  and for another cases where two 32-bit accesses are fused
+  to one multi-access instruction.
+  So UInt64 variables must be aligned for 32-bit, and each
+  32-bit access must be aligned for 32-bit, if we want to
+  avoid "Alignment fault" exception (handled or unhandled).
+
+problem-4 : performace:
+  Even if unaligned access is handled by kernel, it will be slow.
+  So if we allow unaligned access, we can get fast unaligned
+  single-access, and slow unaligned paired-access.
+
+  We don't allow unaligned access on 32-bit arm, because compiler
+  genarates paired-access instructions that require 32-bit alignment,
+  and some arm64 kernels have no handler for these instructions.
+  Also unaligned paired-access instructions will be slow, if kernel handles them.
+*/
+    // it must be disabled:
+    // #define MY_CPU_LE_UNALIGN
   #endif
 #endif
 
@@ -439,11 +558,13 @@ MY_CPU_64BIT means that processor can work with 64-bit registers.
 
 #if defined(MY_CPU_BE)
 
+#define GetBe64a(p)      (*(const UInt64 *)(const void *)(p))
 #define GetBe32a(p)      (*(const UInt32 *)(const void *)(p))
 #define GetBe16a(p)      (*(const UInt16 *)(const void *)(p))
 #define SetBe32a(p, v)   { *(UInt32 *)(void *)(p) = (v); }
 #define SetBe16a(p, v)   { *(UInt16 *)(void *)(p) = (v); }
 
+#define GetUi64a(p)      GetUi64(p)
 #define GetUi32a(p)      GetUi32(p)
 #define GetUi16a(p)      GetUi16(p)
 #define SetUi32a(p, v)   SetUi32(p, v)
@@ -451,11 +572,13 @@ MY_CPU_64BIT means that processor can work with 64-bit registers.
 
 #elif defined(MY_CPU_LE)
 
+#define GetUi64a(p)      (*(const UInt64 *)(const void *)(p))
 #define GetUi32a(p)      (*(const UInt32 *)(const void *)(p))
 #define GetUi16a(p)      (*(const UInt16 *)(const void *)(p))
 #define SetUi32a(p, v)   { *(UInt32 *)(void *)(p) = (v); }
 #define SetUi16a(p, v)   { *(UInt16 *)(void *)(p) = (v); }
 
+#define GetBe64a(p)      GetBe64(p)
 #define GetBe32a(p)      GetBe32(p)
 #define GetBe16a(p)      GetBe16(p)
 #define SetBe32a(p, v)   SetBe32(p, v)
@@ -486,6 +609,7 @@ UInt32 Z7_FASTCALL z7_x86_cpuid_GetMaxFunc(void);
 BoolInt CPU_IsSupported_AES(void);
 BoolInt CPU_IsSupported_AVX(void);
 BoolInt CPU_IsSupported_AVX2(void);
+BoolInt CPU_IsSupported_AVX512F_AVX512VL(void);
 BoolInt CPU_IsSupported_VAES_AVX2(void);
 BoolInt CPU_IsSupported_CMOV(void);
 BoolInt CPU_IsSupported_SSE(void);

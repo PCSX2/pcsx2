@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -21,7 +21,7 @@ public:
 
 	void updateModel();
 	void reset();
-	void updateVisibleNodes();
+	void updateVisibleNodes(bool update_hashes);
 	void expandGroups(QModelIndex index);
 
 signals:
@@ -41,7 +41,7 @@ protected:
 		const ccc::SourceFile* source_file = nullptr;
 	};
 
-	explicit SymbolTreeWidget(u32 flags, s32 symbol_address_alignment, DebugInterface& cpu, QWidget* parent = nullptr);
+	SymbolTreeWidget(u32 flags, s32 symbol_address_alignment, DebugInterface& cpu, QWidget* parent = nullptr);
 
 	void resizeEvent(QResizeEvent* event) override;
 
@@ -71,6 +71,8 @@ protected:
 
 	void setupMenu();
 	void openMenu(QPoint pos);
+
+	virtual bool needsReset() const;
 
 	virtual std::vector<SymbolWork> getSymbols(
 		const QString& filter, const ccc::SymbolDatabase& database) = 0;
@@ -172,6 +174,8 @@ public:
 	virtual ~LocalVariableTreeWidget();
 
 protected:
+	bool needsReset() const override;
+
 	std::vector<SymbolWork> getSymbols(
 		const QString& filter, const ccc::SymbolDatabase& database) override;
 
@@ -182,6 +186,7 @@ protected:
 
 	void onNewButtonPressed() override;
 
+	ccc::FunctionHandle m_function;
 	std::optional<u32> m_caller_stack_pointer;
 };
 
@@ -193,6 +198,8 @@ public:
 	virtual ~ParameterVariableTreeWidget();
 
 protected:
+	bool needsReset() const override;
+
 	std::vector<SymbolWork> getSymbols(
 		const QString& filter, const ccc::SymbolDatabase& database) override;
 
@@ -203,6 +210,7 @@ protected:
 
 	void onNewButtonPressed() override;
 
+	ccc::FunctionHandle m_function;
 	std::optional<u32> m_caller_stack_pointer;
 };
 

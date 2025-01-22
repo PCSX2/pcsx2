@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-2.0+
 
 #pragma once
@@ -24,7 +24,8 @@ struct BreakPointCond
 	u32 Evaluate()
 	{
 		u64 result;
-		if (!debug->parseExpression(expression, result) || result == 0)
+		std::string error;
+		if (!debug->parseExpression(expression, result, error) || result == 0)
 			return 0;
 		return 1;
 	}

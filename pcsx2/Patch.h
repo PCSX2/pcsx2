@@ -1,21 +1,19 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 // Note about terminology:
-// "patch" in pcsx2 terminology is a single pnach style patch line, e.g. patch=1,EE,001110e0,word,00000000
+// "Patch" in PCSX2 terminology refers to a single pnach style patch line, e.g. `patch=1,EE,001110e0,word,00000000`
 // Such patches can appear in several places:
-// - At <CRC>.pnach files where each file could have several such patches:
-//   - At the "cheats" folder
-//     - UI name: "Cheats", controlled via system -> enable cheats
-//   - At the "cheats_ws" folder or inside "cheats_ws.zip" (the zip also called "widescreen cheats DB")
-//     - the latter is searched if the former is not found for a CRC
-//     - UI name: "Widescreen hacks/patches", controlled via system -> enable widescreen patches
-// - At GameIndex.yaml inside a [patches] section
-//   - UI name: "Patches", controlled via system -> enable automatic game fixes
-//   - note that automatic game fixes also controls automatic config changes from GameIndex.dbf (UI name: "fixes")
-//
+//  - At the "patches" folder or on the "patches.zip file inside the 'resources' folder
+//    - UI name: "Patch", Controlled via Per-Game Settings -> Patches
+//  - At the "cheats" folder
+//    - UI name: "Cheats", Controlled via Per-Game Settings -> Cheats -> Enable Cheat
+//  - At GameIndex.yaml inside a [patches] section
+//    - UI name: "Enable Compatibility Patches", controlled via Advanced section -> Enable compatability settings
+// Note: The file name has to be exactly "<Serial>_<CRC>.pnach" (For example "SLPS-25399_CD62245A.pnach")
+// Note #2: the old sytle of cheats are also supported but arent supported by the UI
 
 #include "Config.h"
 
@@ -80,6 +78,7 @@ namespace Patch
 	extern const char* PATCHES_CONFIG_SECTION;
 	extern const char* CHEATS_CONFIG_SECTION;
 	extern const char* PATCH_ENABLE_CONFIG_KEY;
+	extern const char* PATCH_DISABLE_CONFIG_KEY;
 
 	extern PatchInfoList GetPatchInfo(const std::string_view serial, u32 crc, bool cheats, bool showAllCRCS, u32* num_unlabelled_patches);
 
@@ -89,7 +88,7 @@ namespace Patch
 	/// Reloads cheats/patches. If verbose is set, the number of patches loaded will be shown in the OSD.
 	extern void ReloadPatches(const std::string& serial, u32 crc, bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
 
-	extern void UpdateActivePatches(bool reload_enabled_list, bool verbose, bool verbose_if_changed);
+	extern void UpdateActivePatches(bool reload_enabled_list, bool verbose, bool verbose_if_changed, bool apply_new_patches);
 	extern void ApplyPatchSettingOverrides();
 	extern bool ReloadPatchAffectingOptions();
 	extern void UnloadPatches();
@@ -105,4 +104,6 @@ namespace Patch
 	// and then it loads only the ones which are enabled according to the current config
 	// (this happens at AppCoreThread::ApplySettings(...) )
 	extern void ApplyLoadedPatches(patch_place_type place);
+
+	extern bool IsGloballyToggleablePatch(const PatchInfo& patch_info);
 } // namespace Patch

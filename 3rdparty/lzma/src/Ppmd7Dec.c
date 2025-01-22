@@ -1,5 +1,5 @@
 /* Ppmd7Dec.c -- Ppmd7z (PPMdH with 7z Range Coder) Decoder
-2023-04-02 : Igor Pavlov : Public domain
+2023-09-07 : Igor Pavlov : Public domain
 This code is based on:
   PPMd var.H (2001): Dmitry Shkarin : Public domain */
 
@@ -58,7 +58,7 @@ static void Ppmd7z_RD_Decode(CPpmd7 *p, UInt32 start, UInt32 size)
 #define SUCCESSOR(p) Ppmd_GET_SUCCESSOR(p)
 void Ppmd7_UpdateModel(CPpmd7 *p);
 
-#define MASK(sym) ((unsigned char *)charMask)[sym]
+#define MASK(sym)  ((Byte *)charMask)[sym]
 // Z7_FORCE_INLINE
 // static
 int Ppmd7z_DecodeSymbol(CPpmd7 *p)
@@ -120,8 +120,8 @@ int Ppmd7z_DecodeSymbol(CPpmd7 *p)
       MASK(s->Symbol) = 0;
       do
       {
-        unsigned sym0 = s2[0].Symbol;
-        unsigned sym1 = s2[1].Symbol;
+        const unsigned sym0 = s2[0].Symbol;
+        const unsigned sym1 = s2[1].Symbol;
         s2 += 2;
         MASK(sym0) = 0;
         MASK(sym1) = 0;
@@ -209,17 +209,17 @@ int Ppmd7z_DecodeSymbol(CPpmd7 *p)
       unsigned num2 = num / 2;
       
       num &= 1;
-      hiCnt = (s->Freq & (unsigned)(MASK(s->Symbol))) & (0 - (UInt32)num);
+      hiCnt = (s->Freq & (UInt32)(MASK(s->Symbol))) & (0 - (UInt32)num);
       s += num;
       p->MinContext = mc;
 
       do
       {
-        unsigned sym0 = s[0].Symbol;
-        unsigned sym1 = s[1].Symbol;
+        const unsigned sym0 = s[0].Symbol;
+        const unsigned sym1 = s[1].Symbol;
         s += 2;
-        hiCnt += (s[-2].Freq & (unsigned)(MASK(sym0)));
-        hiCnt += (s[-1].Freq & (unsigned)(MASK(sym1)));
+        hiCnt += (s[-2].Freq & (UInt32)(MASK(sym0)));
+        hiCnt += (s[-1].Freq & (UInt32)(MASK(sym1)));
       }
       while (--num2);
     }
@@ -238,13 +238,13 @@ int Ppmd7z_DecodeSymbol(CPpmd7 *p)
 
       s = Ppmd7_GetStats(p, p->MinContext);
       hiCnt = count;
-      // count -= s->Freq & (unsigned)(MASK(s->Symbol));
+      // count -= s->Freq & (UInt32)(MASK(s->Symbol));
       // if ((Int32)count >= 0)
       {
         for (;;)
         {
-          count -= s->Freq & (unsigned)(MASK((s)->Symbol)); s++; if ((Int32)count < 0) break;
-          // count -= s->Freq & (unsigned)(MASK((s)->Symbol)); s++; if ((Int32)count < 0) break;
+          count -= s->Freq & (UInt32)(MASK((s)->Symbol)); s++; if ((Int32)count < 0) break;
+          // count -= s->Freq & (UInt32)(MASK((s)->Symbol)); s++; if ((Int32)count < 0) break;
         }
       }
       s--;

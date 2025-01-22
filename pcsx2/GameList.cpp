@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "CDVD/CDVD.h"
@@ -623,7 +623,7 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 		}
 
 		const std::string_view filename = Path::GetFileName(ffd.FileName);
-		progress->SetFormattedStatusText(fmt::format(TRANSLATE_FS("GameList","Scanning {}..."), filename.data()).c_str());
+		progress->SetStatusText(fmt::format(TRANSLATE_FS("GameList","Scanning {}..."), filename.data()).c_str());
 		ScanFile(std::move(ffd.FileName), ffd.ModificationTime, lock, played_time_map, custom_attributes_ini);
 		progress->SetProgressValue(files_scanned);
 	}

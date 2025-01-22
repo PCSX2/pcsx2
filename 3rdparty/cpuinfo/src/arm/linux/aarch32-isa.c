@@ -24,7 +24,7 @@ void cpuinfo_set_wcid(uint32_t wcid) {
 
 void cpuinfo_arm_linux_decode_isa_from_proc_cpuinfo(
 	uint32_t features,
-	uint32_t features2,
+	uint64_t features2,
 	uint32_t midr,
 	uint32_t architecture_version,
 	uint32_t architecture_flags,
@@ -147,6 +147,8 @@ void cpuinfo_arm_linux_decode_isa_from_proc_cpuinfo(
 				"VDOT instructions disabled: cause occasional SIGILL on Spreadtrum SC9863A");
 		} else if (chipset->series == cpuinfo_arm_chipset_series_unisoc_t && chipset->model == 310) {
 			cpuinfo_log_warning("VDOT instructions disabled: cause occasional SIGILL on Unisoc T310");
+		} else if (chipset->series == cpuinfo_arm_chipset_series_unisoc_ums && chipset->model == 312) {
+			cpuinfo_log_warning("VDOT instructions disabled: cause occasional SIGILL on Unisoc UMS312");
 		} else {
 			switch (midr & (CPUINFO_ARM_MIDR_IMPLEMENTER_MASK | CPUINFO_ARM_MIDR_PART_MASK)) {
 				case UINT32_C(0x4100D0B0): /* Cortex-A76 */

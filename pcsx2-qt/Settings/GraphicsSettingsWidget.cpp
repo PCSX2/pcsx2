@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "GraphicsSettingsWidget.h"
@@ -8,6 +8,7 @@
 #include <QtWidgets/QMessageBox>
 
 #include "pcsx2/Host.h"
+#include "pcsx2/Patch.h"
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GS/GSCapture.h"
 #include "pcsx2/GS/GSUtil.h"
@@ -321,24 +322,61 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	}
 #endif
 
-	// Get rid of widescreen/no-interlace checkboxes from per-game settings, unless the user previously had them set.
+	// Get rid of widescreen/no-interlace checkboxes from per-game settings, and migrate them to Patches if necessary.
 	if (m_dialog->isPerGameSettings())
 	{
-		if ((m_dialog->containsSettingValue("EmuCore", "EnableWideScreenPatches") || m_dialog->containsSettingValue("EmuCore", "EnableNoInterlacingPatches")) &&
-			QMessageBox::question(QtUtils::GetRootWidget(this), tr("Remove Unsupported Settings"),
-				tr("You currently have the <strong>Enable Widescreen Patches</strong> or <strong>Enable No-Interlacing Patches</strong> options enabled for this game.<br><br>"
-				   "We no longer support these options, instead <strong>you should select the \"Patches\" section, and explicitly enable the patches you want.</strong><br><br>"
-				   "Do you want to remove these options from your game configuration now?"),
-				QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+		SettingsInterface* si = m_dialog->getSettingsInterface();
+		bool needs_save = false;
+
+		if (si->ContainsValue("EmuCore", "EnableWideScreenPatches"))
 		{
-			m_dialog->removeSettingValue("EmuCore", "EnableWideScreenPatches");
-			m_dialog->removeSettingValue("EmuCore", "EnableNoInterlacingPatches");
+			const bool ws_enabled = si->GetBoolValue("EmuCore", "EnableWideScreenPatches");
+			si->DeleteValue("EmuCore", "EnableWideScreenPatches");
+
+			const char* WS_PATCH_NAME = "Widescreen 16:9";
+			if (ws_enabled)
+			{
+				si->AddToStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY, WS_PATCH_NAME);
+				si->RemoveFromStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_DISABLE_CONFIG_KEY, WS_PATCH_NAME);
+			}
+			else
+			{
+				si->AddToStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_DISABLE_CONFIG_KEY, WS_PATCH_NAME);
+				si->RemoveFromStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY, WS_PATCH_NAME);
+			}
+			needs_save = true;
+		}
+
+		if (si->ContainsValue("EmuCore", "EnableNoInterlacingPatches"))
+		{
+			const bool ni_enabled = si->GetBoolValue("EmuCore", "EnableNoInterlacingPatches");
+			si->DeleteValue("EmuCore", "EnableNoInterlacingPatches");
+
+			const char* NI_PATCH_NAME = "No-Interlacing";
+			if (ni_enabled)
+			{
+				si->AddToStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY, NI_PATCH_NAME);
+				si->RemoveFromStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_DISABLE_CONFIG_KEY, NI_PATCH_NAME);
+			}
+			else
+			{
+				si->AddToStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_DISABLE_CONFIG_KEY, NI_PATCH_NAME);
+				si->RemoveFromStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY, NI_PATCH_NAME);
+			}
+			needs_save = true;
+		}
+
+		if (needs_save)
+		{
+			m_dialog->saveAndReloadGameSettings();
 		}
 
 		m_ui.displayGridLayout->removeWidget(m_ui.widescreenPatches);
 		m_ui.displayGridLayout->removeWidget(m_ui.noInterlacingPatches);
-		safe_delete(m_ui.widescreenPatches);
-		safe_delete(m_ui.noInterlacingPatches);
+		m_ui.widescreenPatches->deleteLater();
+		m_ui.noInterlacingPatches->deleteLater();
+		m_ui.widescreenPatches = nullptr;
+		m_ui.noInterlacingPatches = nullptr;
 	}
 
 	// Hide advanced options by default.
@@ -350,10 +388,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		m_ui.advancedTab = nullptr;
 		m_ui.gsDownloadMode = nullptr;
 		m_ui.gsDumpCompression = nullptr;
+		m_ui.texturePreloading = nullptr;
 		m_ui.exclusiveFullscreenControl = nullptr;
 		m_ui.useBlitSwapChain = nullptr;
 		m_ui.disableMailboxPresentation = nullptr;
 		m_ui.extendedUpscales = nullptr;
+		m_ui.spinCPUDuringReadbacks = nullptr;
+		m_ui.spinGPUDuringReadbacks = nullptr;
 		m_ui.skipPresentingDuplicateFrames = nullptr;
 		m_ui.overrideTextureBarriers = nullptr;
 		m_ui.disableFramebufferFetch = nullptr;
@@ -931,12 +972,14 @@ void GraphicsSettingsWidget::onPerformancePosChanged()
 {
 	const bool enabled = m_ui.osdPerformancePos->currentIndex() != (m_dialog->isPerGameSettings() ? 1 : 0);
 
+	m_ui.osdShowVPS->setEnabled(enabled);
 	m_ui.osdShowSpeed->setEnabled(enabled);
 	m_ui.osdShowFPS->setEnabled(enabled);
 	m_ui.osdShowCPU->setEnabled(enabled);
 	m_ui.osdShowGPU->setEnabled(enabled);
 	m_ui.osdShowResolution->setEnabled(enabled);
 	m_ui.osdShowGSStats->setEnabled(enabled);
+	m_ui.osdShowHardwareInfo->setEnabled(enabled);
 	m_ui.osdShowIndicators->setEnabled(enabled);
 	m_ui.osdShowFrameTimes->setEnabled(enabled);
 	m_ui.osdShowVersion->setEnabled(enabled);
@@ -1137,13 +1180,13 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 		std::string current_adapter = Host::GetBaseStringSettingValue("EmuCore/GS", "Adapter", "");
 		m_ui.adapterDropdown->clear();
 		m_ui.adapterDropdown->setEnabled(!adapters.empty());
-		m_ui.adapterDropdown->addItem(tr("(Default)"));
+		m_ui.adapterDropdown->addItem(GetDefaultAdapter().c_str());
 		m_ui.adapterDropdown->setCurrentIndex(0);
 
 		if (m_dialog->isPerGameSettings())
 		{
 			m_ui.adapterDropdown->insertItem(
-				0, tr("Use Global Setting [%1]").arg(current_adapter.empty() ? tr("(Default)") : QString::fromStdString(current_adapter)));
+				0, tr("Use Global Setting [%1]").arg(current_adapter.empty() ? GetDefaultAdapter().c_str() : QString::fromStdString(current_adapter)));
 			if (!m_dialog->getSettingsInterface()->GetStringValue("EmuCore/GS", "Adapter", &current_adapter))
 			{
 				// clear the adapter so we don't set it to the global value

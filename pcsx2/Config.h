@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -35,13 +35,13 @@ enum class CDVD_SourceType : uint8_t;
 
 namespace Pad
 {
-enum class ControllerType : u8;
+	enum class ControllerType : u8;
 }
 
 /// Generic setting information which can be reused in multiple components.
 struct SettingInfo
 {
-	using GetOptionsCallback = std::vector<std::pair<std::string, std::string>>(*)();
+	using GetOptionsCallback = std::vector<std::pair<std::string, std::string>> (*)();
 
 	enum class Type
 	{
@@ -188,6 +188,37 @@ enum class SpeedHack
 	MTVU,
 	EECycleRate,
 	MaxCount,
+};
+
+enum class DebugAnalysisCondition
+{
+	ALWAYS,
+	IF_DEBUGGER_IS_OPEN,
+	NEVER
+};
+
+struct DebugSymbolSource
+{
+	std::string Name;
+	bool ClearDuringAnalysis = false;
+
+	friend auto operator<=>(const DebugSymbolSource& lhs, const DebugSymbolSource& rhs) = default;
+};
+
+struct DebugExtraSymbolFile
+{
+	std::string Path;
+	std::string BaseAddress;
+	std::string Condition;
+
+	friend auto operator<=>(const DebugExtraSymbolFile& lhs, const DebugExtraSymbolFile& rhs) = default;
+};
+
+enum class DebugFunctionScanMode
+{
+	SCAN_ELF,
+	SCAN_MEMORY,
+	SKIP
 };
 
 enum class AspectRatioType : u8
@@ -421,41 +452,82 @@ enum class GSNativeScaling : u8
 };
 
 // --------------------------------------------------------------------------------------
-//  TraceFiltersEE
+//  TraceLogsEE
 // --------------------------------------------------------------------------------------
-struct TraceFiltersEE
+struct TraceLogsEE
 {
+	// EE
 	BITFIELD32()
 	bool
-		m_EnableAll : 1, // Master Enable switch (if false, no logs at all)
-		m_EnableDisasm : 1,
-		m_EnableRegisters : 1,
-		m_EnableEvents : 1; // Enables logging of event-driven activity -- counters, DMAs, etc.
+		bios : 1,
+		memory : 1,
+		giftag : 1,
+		vifcode : 1,
+		mskpath3 : 1,
+		r5900 : 1,
+		cop0 : 1,
+		cop1 : 1,
+		cop2 : 1,
+		cache : 1,
+		knownhw : 1,
+		unknownhw : 1,
+		dmahw : 1,
+		ipu : 1,
+		dmac : 1,
+		counters : 1,
+		spr : 1,
+		vif : 1,
+		gif : 1;
 	BITFIELD_END
 
-	TraceFiltersEE();
+	TraceLogsEE();
 
-	bool operator==(const TraceFiltersEE& right) const;
-	bool operator!=(const TraceFiltersEE& right) const;
+	bool operator==(const TraceLogsEE& right) const;
+	bool operator!=(const TraceLogsEE& right) const;
 };
 
 // --------------------------------------------------------------------------------------
-//  TraceFiltersIOP
+//  TraceLogsIOP
 // --------------------------------------------------------------------------------------
-struct TraceFiltersIOP
+struct TraceLogsIOP
 {
 	BITFIELD32()
 	bool
-		m_EnableAll : 1, // Master Enable switch (if false, no logs at all)
-		m_EnableDisasm : 1,
-		m_EnableRegisters : 1,
-		m_EnableEvents : 1; // Enables logging of event-driven activity -- counters, DMAs, etc.
+		bios : 1,
+		memcards : 1,
+		pad : 1,
+		r3000a : 1,
+		cop2 : 1,
+		memory : 1,
+		knownhw : 1,
+		unknownhw : 1,
+		dmahw : 1,
+		dmac : 1,
+		counters : 1,
+		cdvd : 1,
+		mdec : 1;
 	BITFIELD_END
 
-	TraceFiltersIOP();
+	TraceLogsIOP();
 
-	bool operator==(const TraceFiltersIOP& right) const;
-	bool operator!=(const TraceFiltersIOP& right) const;
+	bool operator==(const TraceLogsIOP& right) const;
+	bool operator!=(const TraceLogsIOP& right) const;
+};
+
+// --------------------------------------------------------------------------------------
+//  TraceLogsMISC
+// --------------------------------------------------------------------------------------
+struct TraceLogsMISC
+{
+	BITFIELD32()
+	bool
+		sif : 1;
+	BITFIELD_END
+
+	TraceLogsMISC();
+
+	bool operator==(const TraceLogsMISC& right) const;
+	bool operator!=(const TraceLogsMISC& right) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -463,21 +535,18 @@ struct TraceFiltersIOP
 // --------------------------------------------------------------------------------------
 struct TraceLogFilters
 {
-	// Enabled - global toggle for high volume logging.  This is effectively the equivalent to
-	// (EE.Enabled() || IOP.Enabled() || SIF) -- it's cached so that we can use the macros
-	// below to inline the conditional check.  This is desirable because these logs are
-	// *very* high volume, and debug builds get noticably slower if they have to invoke
-	// methods/accessors to test the log enable bits.  Debug builds are slow enough already,
-	// so I prefer this to help keep them usable.
 	bool Enabled;
 
-	TraceFiltersEE EE;
-	TraceFiltersIOP IOP;
+	TraceLogsEE EE;
+	TraceLogsIOP IOP;
+	TraceLogsMISC MISC;
 
 	TraceLogFilters();
 
 	void LoadSave(SettingsWrapper& ini);
-
+	// When logging, the tracelogpack is checked, not was in the config.
+	// Call this to sync the tracelogpack values with the config values.
+	void SyncToConfig() const;
 	bool operator==(const TraceLogFilters& right) const;
 	bool operator!=(const TraceLogFilters& right) const;
 };
@@ -647,7 +716,7 @@ struct Pcsx2Config
 					OsdShowInputs : 1,
 					OsdShowFrameTimes : 1,
 					OsdShowVersion : 1,
-					OsdShowVideoCapture: 1,
+					OsdShowVideoCapture : 1,
 					OsdShowInputRec : 1,
 					OsdShowHardwareInfo : 1,
 					HWSpinGPUForReadbacks : 1,
@@ -1007,11 +1076,43 @@ struct Pcsx2Config
 		u32 WindowHeight;
 		u32 MemoryViewBytesPerRow;
 
+
 		DebugOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
 		bool operator==(const DebugOptions& right) const;
 		bool operator!=(const DebugOptions& right) const;
+	};
+
+	// ------------------------------------------------------------------------
+	struct DebugAnalysisOptions
+	{
+
+		static const char* RunConditionNames[];
+		static const char* FunctionScanModeNames[];
+
+		DebugAnalysisCondition RunCondition = DebugAnalysisCondition::IF_DEBUGGER_IS_OPEN;
+		bool GenerateSymbolsForIRXExports = true;
+
+		bool AutomaticallySelectSymbolsToClear = true;
+		std::vector<DebugSymbolSource> SymbolSources;
+
+		bool ImportSymbolsFromELF = true;
+		bool ImportSymFileFromDefaultLocation = true;
+		bool DemangleSymbols = true;
+		bool DemangleParameters = true;
+		std::vector<DebugExtraSymbolFile> ExtraSymbolFiles;
+
+		DebugFunctionScanMode FunctionScanMode = DebugFunctionScanMode::SCAN_ELF;
+		bool CustomFunctionScanRange = false;
+		std::string FunctionScanStartAddress;
+		std::string FunctionScanEndAddress;
+
+		bool GenerateFunctionHashes = true;
+
+		void LoadSave(SettingsWrapper& wrap);
+
+		friend auto operator<=>(const DebugAnalysisOptions& lhs, const DebugAnalysisOptions& rhs) = default;
 	};
 
 	// ------------------------------------------------------------------------
@@ -1149,10 +1250,10 @@ struct Pcsx2Config
 	{
 		SavestateOptions();
 		void LoadSave(SettingsWrapper& wrap);
-	
+
 		SavestateCompressionMethod CompressionType = SavestateCompressionMethod::Zstandard;
 		SavestateCompressionLevel CompressionRatio = SavestateCompressionLevel::Medium;
-		
+
 		bool operator==(const SavestateOptions& right) const;
 		bool operator!=(const SavestateOptions& right) const;
 	};
@@ -1177,9 +1278,11 @@ struct Pcsx2Config
 		EnableGameFixes : 1, // enables automatic game fixes
 		SaveStateOnShutdown : 1, // default value for saving state on shutdown
 		EnableDiscordPresence : 1, // enables discord rich presence integration
+		UseSavestateSelector : 1,
 		InhibitScreensaver : 1,
 		BackupSavestate : 1,
 		McdFolderAutoManage : 1,
+		ManuallySetRealTimeClock : 1,
 
 		HostFs : 1,
 
@@ -1192,6 +1295,7 @@ struct Pcsx2Config
 	GamefixOptions Gamefixes;
 	ProfilerOptions Profiler;
 	DebugOptions Debugger;
+	DebugAnalysisOptions DebuggerAnalysis;
 	EmulationSpeedOptions EmulationSpeed;
 	SavestateOptions Savestate;
 	SPU2Options SPU2;
@@ -1211,6 +1315,13 @@ struct Pcsx2Config
 	std::string GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
 
 	int PINESlot;
+
+	int RtcYear;
+	int RtcMonth;
+	int RtcDay;
+	int RtcHour;
+	int RtcMinute;
+	int RtcSecond;
 
 	// Set at runtime, not loaded from config.
 	std::string CurrentBlockdump;

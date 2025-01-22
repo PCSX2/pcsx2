@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -54,7 +54,7 @@ namespace PacketReader::IP
 		std::unique_ptr<IP_Payload> payload;
 
 	public:
-		int GetHeaderLength();
+		int GetHeaderLength() const;
 
 		//DSCP/TOS Flags
 
@@ -85,8 +85,8 @@ namespace PacketReader::IP
 		 * Class 5,   Expedited Forwarding, 3
 		 * bit0: Set to zero
 		 */
-		u8 GetDscpValue();
-		void GetDscpValue(u8 value);
+		u8 GetDscpValue() const;
+		void SetDscpValue(u8 value);
 
 		/* 2 bits
 		 * In TOS, defined as follows
@@ -97,34 +97,34 @@ namespace PacketReader::IP
 		 * 1,2 ECN Supported
 		 * 3 = Congestion Encountered
 		 */
-		u8 GetDscpECN();
+		u8 GetDscpECN() const;
 		void SetDscpECN(u8 value);
 
 		//Fragment Flags
 		//bit 0, reserverd
 
-		bool GetDoNotFragment();
+		bool GetDoNotFragment() const;
 		void SetDoNotFragment(bool value);
 
-		bool GetMoreFragments();
+		bool GetMoreFragments() const;
 		void SetMoreFragments(bool value);
 
 		//Untested
-		u16 GetFragmentOffset();
+		u16 GetFragmentOffset() const;
 
 		//Takes ownership of payload
 		IP_Packet(IP_Payload* data);
-		IP_Packet(u8* buffer, int bufferSize, bool fromICMP = false);
+		IP_Packet(const u8* buffer, int bufferSize, bool fromICMP = false);
 		IP_Packet(const IP_Packet&);
 
-		IP_Payload* GetPayload();
+		IP_Payload* GetPayload() const;
 
 		virtual int GetLength();
 		virtual void WriteBytes(u8* buffer, int* offset);
 		virtual IP_Packet* Clone() const;
 
 		bool VerifyChecksum();
-		static u16 InternetChecksum(u8* buffer, int length);
+		static u16 InternetChecksum(const u8* buffer, int length);
 
 		~IP_Packet();
 

@@ -20,7 +20,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           title: "Qt: Update Base Translation"
-          commit-message: "Qt: Update Base Translation"
+          commit-message: "[ci skip] Qt: Update Base Translation."
           committer: "PCSX2 Bot <PCSX2Bot@users.noreply.github.com>"
           author: "PCSX2 Bot <PCSX2Bot@users.noreply.github.com>"
           body: "Daily update of base translation sources."

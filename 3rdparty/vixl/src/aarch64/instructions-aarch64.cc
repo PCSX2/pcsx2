@@ -25,6 +25,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "instructions-aarch64.h"
+
 #include "assembler-aarch64.h"
 
 namespace vixl {
@@ -1010,6 +1011,8 @@ VectorFormat VectorFormatHalfWidth(VectorFormat vform) {
       return kFormat4H;
     case kFormat2D:
       return kFormat2S;
+    case kFormat1Q:
+      return kFormat1D;
     case kFormatH:
       return kFormatB;
     case kFormatS:
@@ -1094,6 +1097,8 @@ VectorFormat VectorFormatHalfWidthDoubleLanes(VectorFormat vform) {
       return kFormat2S;
     case kFormat2D:
       return kFormat4S;
+    case kFormat1Q:
+      return kFormat2D;
     case kFormatVnH:
       return kFormatVnB;
     case kFormatVnS:
@@ -1245,6 +1250,7 @@ unsigned RegisterSizeInBitsFromFormat(VectorFormat vform) {
     case kFormat8H:
     case kFormat4S:
     case kFormat2D:
+    case kFormat1Q:
       return kQRegSize;
     default:
       VIXL_UNREACHABLE();
@@ -1282,6 +1288,7 @@ unsigned LaneSizeInBitsFromFormat(VectorFormat vform) {
     case kFormat2D:
     case kFormatVnD:
       return 64;
+    case kFormat1Q:
     case kFormatVnQ:
       return 128;
     case kFormatVnO:
@@ -1347,6 +1354,7 @@ int LaneCountFromFormat(VectorFormat vform) {
     case kFormat2D:
       return 2;
     case kFormat1D:
+    case kFormat1Q:
     case kFormatB:
     case kFormatH:
     case kFormatS:

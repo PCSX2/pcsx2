@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #ifdef _WIN32
@@ -91,8 +91,8 @@ namespace Sessions
 			return;
 		}
 
-		icmpEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		if (icmpEvent == NULL)
+		icmpEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+		if (icmpEvent == nullptr)
 		{
 			Console.Error("DEV9: ICMP: Failed to Create Event");
 			IcmpCloseHandle(icmpFile);
@@ -508,10 +508,10 @@ namespace Sessions
 		ipInfo.Ttl = parTimeToLive;
 		DWORD ret;
 		if (parAdapterIP.integer != 0)
-			ret = IcmpSendEcho2Ex(icmpFile, icmpEvent, nullptr, nullptr, parAdapterIP.integer, parDestIP.integer, parPayload->data, parPayload->GetLength(), &ipInfo, icmpResponseBuffer.get(), icmpResponseBufferLen,
+			ret = IcmpSendEcho2Ex(icmpFile, icmpEvent, nullptr, nullptr, parAdapterIP.integer, parDestIP.integer, const_cast<u8*>(parPayload->data), parPayload->GetLength(), &ipInfo, icmpResponseBuffer.get(), icmpResponseBufferLen,
 				static_cast<DWORD>(std::chrono::duration_cast<std::chrono::milliseconds>(ICMP_TIMEOUT).count()));
 		else
-			ret = IcmpSendEcho2(icmpFile, icmpEvent, nullptr, nullptr, parDestIP.integer, parPayload->data, parPayload->GetLength(), &ipInfo, icmpResponseBuffer.get(), icmpResponseBufferLen,
+			ret = IcmpSendEcho2(icmpFile, icmpEvent, nullptr, nullptr, parDestIP.integer, const_cast<u8*>(parPayload->data), parPayload->GetLength(), &ipInfo, icmpResponseBuffer.get(), icmpResponseBufferLen,
 				static_cast<DWORD>(std::chrono::duration_cast<std::chrono::milliseconds>(ICMP_TIMEOUT).count()));
 
 		// Documentation states that IcmpSendEcho2 returns ERROR_IO_PENDING
@@ -785,11 +785,28 @@ namespace Sessions
 							Console.Error("DEV9: ICMP: Malformed ICMP Packet");
 							int off = 1;
 							while ((icmpPayload->data[off] & 0xF0) != (4 << 4))
+							{
 								off += 1;
+
+								// Require space for the IP Header and source/dest port of a UDP/TCP packet
+								// We don't generate packets with IP options, so IP header is always 20 bytes
+								if (icmpPayload->GetLength() - off - 24 < 0)
+								{
+									off = -1;
+									break;
+								}
+							}
+
+							if (off == -1)
+							{
+								Console.Error("DEV9: ICMP: Unable To Recover Data");
+								Console.Error("DEV9: ICMP: Failed To Reset Rejected Connection");
+								break;
+							}
 
 							Console.Error("DEV9: ICMP: Payload delayed %d bytes", off);
 
-							retPkt = std::make_unique<IP_Packet>(&icmpPayload->data[off], icmpPayload->GetLength(), true);
+							retPkt = std::make_unique<IP_Packet>(&icmpPayload->data[off], icmpPayload->GetLength() - off, true);
 						}
 
 						const IP_Address srvIP = retPkt->sourceIP;

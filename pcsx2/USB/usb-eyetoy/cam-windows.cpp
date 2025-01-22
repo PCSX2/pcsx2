@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Console.h"
@@ -34,10 +34,9 @@ namespace usb_eyetoy
 
 		HRESULT DirectShow::CallbackHandler::SampleCB(double time, IMediaSample* sample)
 		{
-			HRESULT hr;
 			unsigned char* buffer;
 
-			hr = sample->GetPointer((BYTE**)&buffer);
+			const HRESULT hr = sample->GetPointer((BYTE**)&buffer);
 			if (hr != S_OK)
 				return S_OK;
 
@@ -588,7 +587,7 @@ namespace usb_eyetoy
 		{
 			mpeg_mutex.lock();
 			int len2 = mpeg_buffer.length;
-			if ((unsigned int)len < mpeg_buffer.length)
+			if (static_cast<size_t>(len) < mpeg_buffer.length)
 				len2 = len;
 			memcpy(buf, mpeg_buffer.start, len2);
 			mpeg_buffer.length = 0;

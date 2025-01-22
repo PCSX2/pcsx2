@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Assertions.h"
@@ -225,7 +225,7 @@ namespace Sessions
 				return false;
 			}
 
-			const int reuseAddress = true; // BOOL on Windows
+			constexpr int reuseAddress = true; // BOOL on Windows
 			ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuseAddress), sizeof(reuseAddress));
 
 			if (ret == SOCKET_ERROR)

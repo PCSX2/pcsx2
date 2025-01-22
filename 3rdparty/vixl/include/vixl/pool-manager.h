@@ -27,11 +27,10 @@
 #ifndef VIXL_POOL_MANAGER_H_
 #define VIXL_POOL_MANAGER_H_
 
-#include <stdint.h>
-
 #include <cstddef>
 #include <limits>
 #include <map>
+#include <stdint.h>
 #include <vector>
 
 #include "globals-vixl.h"

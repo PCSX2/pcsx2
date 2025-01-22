@@ -64,6 +64,7 @@ enum cpuinfo_arm_chipset_series {
 	cpuinfo_arm_chipset_series_telechips_tcc,
 	cpuinfo_arm_chipset_series_texas_instruments_omap,
 	cpuinfo_arm_chipset_series_unisoc_t,
+	cpuinfo_arm_chipset_series_unisoc_ums,
 	cpuinfo_arm_chipset_series_wondermedia_wm,
 	cpuinfo_arm_chipset_series_max,
 };

@@ -1,5 +1,5 @@
 /* Compiler.h : Compiler specific defines and pragmas
-2023-04-02 : Igor Pavlov : Public domain */
+2024-01-22 : Igor Pavlov : Public domain */
 
 #ifndef ZIP7_INC_COMPILER_H
 #define ZIP7_INC_COMPILER_H
@@ -25,11 +25,79 @@
 #define Z7_MINGW
 #endif
 
+#if defined(__LCC__) && (defined(__MCST__) || defined(__e2k__))
+#define Z7_MCST_LCC
+#define Z7_MCST_LCC_VERSION (__LCC__ * 100 + __LCC_MINOR__)
+#endif
+
+/*
+#if defined(__AVX2__) \
+    || defined(Z7_GCC_VERSION) && (Z7_GCC_VERSION >= 40900) \
+    || defined(Z7_APPLE_CLANG_VERSION) && (Z7_APPLE_CLANG_VERSION >= 40600) \
+    || defined(Z7_LLVM_CLANG_VERSION) && (Z7_LLVM_CLANG_VERSION >= 30100) \
+    || defined(Z7_MSC_VER_ORIGINAL) && (Z7_MSC_VER_ORIGINAL >= 1800) \
+    || defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 1400)
+    #define Z7_COMPILER_AVX2_SUPPORTED
+  #endif
+#endif
+*/
+
 // #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 
 #ifdef __clang__
 // padding size of '' with 4 bytes to alignment boundary
 #pragma GCC diagnostic ignored "-Wpadded"
+
+#if defined(Z7_LLVM_CLANG_VERSION) && (__clang_major__ == 13) \
+  && defined(__FreeBSD__)
+// freebsd:
+#pragma GCC diagnostic ignored "-Wexcess-padding"
+#endif
+
+#if __clang_major__ >= 16
+#pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+
+#if __clang_major__ == 13
+#if defined(__SIZEOF_POINTER__) && (__SIZEOF_POINTER__ == 16)
+// cheri
+#pragma GCC diagnostic ignored "-Wcapability-to-integer-cast"
+#endif
+#endif
+
+#if __clang_major__ == 13
+  // for <arm_neon.h>
+  #pragma GCC diagnostic ignored "-Wreserved-identifier"
+#endif
+
+#endif // __clang__
+
+#if defined(_WIN32) && defined(__clang__) && __clang_major__ >= 16
+// #pragma GCC diagnostic ignored "-Wcast-function-type-strict"
+#define Z7_DIAGNOSTIC_IGNORE_CAST_FUNCTION \
+  _Pragma("GCC diagnostic ignored \"-Wcast-function-type-strict\"")
+#else
+#define Z7_DIAGNOSTIC_IGNORE_CAST_FUNCTION
+#endif
+
+typedef void (*Z7_void_Function)(void);
+#if defined(__clang__) || defined(__GNUC__)
+#define Z7_CAST_FUNC_C  (Z7_void_Function)
+#elif defined(_MSC_VER) && _MSC_VER > 1920
+#define Z7_CAST_FUNC_C  (void *)
+// #pragma warning(disable : 4191) // 'type cast': unsafe conversion from 'FARPROC' to 'void (__cdecl *)()'
+#else
+#define Z7_CAST_FUNC_C
+#endif
+/*
+#if (defined(__GNUC__) && (__GNUC__ >= 8)) || defined(__clang__)
+  // #pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
+*/
+#ifdef __GNUC__
+#if defined(Z7_GCC_VERSION) && (Z7_GCC_VERSION >= 40000) && (Z7_GCC_VERSION < 70000)
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
 #endif
 
 
@@ -101,7 +169,8 @@
     _Pragma("clang loop unroll(disable)") \
     _Pragma("clang loop vectorize(disable)")
   #define Z7_ATTRIB_NO_VECTORIZE
-#elif defined(__GNUC__) && (__GNUC__ >= 5)
+#elif defined(__GNUC__) && (__GNUC__ >= 5) \
+    && (!defined(Z7_MCST_LCC_VERSION) || (Z7_MCST_LCC_VERSION >= 12610))
   #define Z7_ATTRIB_NO_VECTORIZE __attribute__((optimize("no-tree-vectorize")))
   // __attribute__((optimize("no-unroll-loops")));
   #define Z7_PRAGMA_OPT_DISABLE_LOOP_UNROLL_VECTORIZE
@@ -142,15 +211,23 @@
 #endif
 
 
-#if (defined(Z7_CLANG_VERSION) && (Z7_CLANG_VERSION >= 36000))
-#define Z7_DIAGNOSCTIC_IGNORE_BEGIN_RESERVED_MACRO_IDENTIFIER \
+#if (defined(Z7_CLANG_VERSION) && (Z7_CLANG_VERSION >= 30600))
+
+#if (Z7_CLANG_VERSION < 130000)
+#define Z7_DIAGNOSTIC_IGNORE_BEGIN_RESERVED_MACRO_IDENTIFIER \
+  _Pragma("GCC diagnostic push") \
+  _Pragma("GCC diagnostic ignored \"-Wreserved-id-macro\"")
+#else
+#define Z7_DIAGNOSTIC_IGNORE_BEGIN_RESERVED_MACRO_IDENTIFIER \
   _Pragma("GCC diagnostic push") \
   _Pragma("GCC diagnostic ignored \"-Wreserved-macro-identifier\"")
-#define Z7_DIAGNOSCTIC_IGNORE_END_RESERVED_MACRO_IDENTIFIER \
+#endif
+
+#define Z7_DIAGNOSTIC_IGNORE_END_RESERVED_MACRO_IDENTIFIER \
   _Pragma("GCC diagnostic pop")
 #else
-#define Z7_DIAGNOSCTIC_IGNORE_BEGIN_RESERVED_MACRO_IDENTIFIER
-#define Z7_DIAGNOSCTIC_IGNORE_END_RESERVED_MACRO_IDENTIFIER
+#define Z7_DIAGNOSTIC_IGNORE_BEGIN_RESERVED_MACRO_IDENTIFIER
+#define Z7_DIAGNOSTIC_IGNORE_END_RESERVED_MACRO_IDENTIFIER
 #endif
 
 #define UNUSED_VAR(x) (void)x;

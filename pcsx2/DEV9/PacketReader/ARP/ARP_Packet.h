@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -22,7 +22,7 @@ namespace PacketReader::ARP
 		std::unique_ptr<u8[]> targetProtocolAddress;
 
 		ARP_Packet(u8 hwAddrLen, u8 procAddrLen);
-		ARP_Packet(u8* buffer, int bufferSize);
+		ARP_Packet(const u8* buffer, int bufferSize);
 		ARP_Packet(const ARP_Packet&);
 
 		virtual int GetLength();

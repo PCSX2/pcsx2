@@ -239,6 +239,11 @@ inline uint64_t RotateRight(uint64_t value,
   return value & width_mask;
 }
 
+inline uint64_t RotateLeft(uint64_t value,
+                           unsigned int rotate,
+                           unsigned int width) {
+  return RotateRight(value, width - rotate, width);
+}
 
 // Wrapper class for passing FP16 values through the assembler.
 // This is purely to aid with type checking/casting.
@@ -289,6 +294,12 @@ template <typename T>
 T UnsignedNegate(T value) {
   VIXL_STATIC_ASSERT(std::is_unsigned<T>::value);
   return ~value + 1;
+}
+
+template <typename T>
+bool CanBeNegated(T value) {
+  VIXL_STATIC_ASSERT(std::is_signed<T>::value);
+  return (value == std::numeric_limits<T>::min()) ? false : true;
 }
 
 // An absolute operation for signed integers that is defined for results outside
@@ -548,13 +559,14 @@ inline T SignExtend(T val, int size_in_bits) {
 template <typename T>
 T ReverseBytes(T value, int block_bytes_log2) {
   VIXL_ASSERT((sizeof(value) == 4) || (sizeof(value) == 8));
-  VIXL_ASSERT((1U << block_bytes_log2) <= sizeof(value));
+  VIXL_ASSERT((uint64_t{1} << block_bytes_log2) <= sizeof(value));
   // Split the 64-bit value into an 8-bit array, where b[0] is the least
   // significant byte, and b[7] is the most significant.
   uint8_t bytes[8];
   uint64_t mask = UINT64_C(0xff00000000000000);
   for (int i = 7; i >= 0; i--) {
-    bytes[i] = (static_cast<uint64_t>(value) & mask) >> (i * 8);
+    bytes[i] =
+        static_cast<uint8_t>((static_cast<uint64_t>(value) & mask) >> (i * 8));
     mask >>= 8;
   }
 
@@ -609,6 +621,39 @@ inline bool IsAligned(T pointer) {
 template <typename T>
 bool IsWordAligned(T pointer) {
   return IsAligned<4>(pointer);
+}
+
+template <unsigned BITS, typename T>
+bool IsRepeatingPattern(T value) {
+  VIXL_STATIC_ASSERT(std::is_unsigned<T>::value);
+  VIXL_ASSERT(IsMultiple(sizeof(value) * kBitsPerByte, BITS));
+  VIXL_ASSERT(IsMultiple(BITS, 2));
+  VIXL_STATIC_ASSERT(BITS >= 2);
+#if (defined(__x86_64__) || defined(__i386)) && \
+    __clang_major__ >= 17 && __clang_major__ <= 19
+  // Workaround for https://github.com/llvm/llvm-project/issues/108722
+  unsigned hbits = BITS / 2;
+  T midmask = (~static_cast<T>(0) >> BITS) << hbits;
+  // E.g. for bytes in a word (0xb3b2b1b0): .b3b2b1. == .b2b1b0.
+  return (((value >> hbits) & midmask) == ((value << hbits) & midmask));
+#else
+  return value == RotateRight(value, BITS, sizeof(value) * kBitsPerByte);
+#endif
+}
+
+template <typename T>
+bool AllBytesMatch(T value) {
+  return IsRepeatingPattern<kBitsPerByte>(value);
+}
+
+template <typename T>
+bool AllHalfwordsMatch(T value) {
+  return IsRepeatingPattern<kBitsPerByte * 2>(value);
+}
+
+template <typename T>
+bool AllWordsMatch(T value) {
+  return IsRepeatingPattern<kBitsPerByte * 4>(value);
 }
 
 // Increment a pointer until it has the specified alignment. The alignment must

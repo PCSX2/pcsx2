@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include <algorithm>
@@ -193,7 +193,7 @@ namespace Sessions
 #endif
 
 
-		const int noDelay = true; // BOOL on Windows
+		constexpr int noDelay = true; // BOOL on Windows
 		ret = setsockopt(client, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&noDelay), sizeof(noDelay));
 
 		if (ret != 0)
@@ -366,7 +366,7 @@ namespace Sessions
 			std::unique_ptr<TCP_Packet> ret = CreateBasePacket();
 			ret->SetACK(true);
 
-			PushRecvBuff(std::move(ret));
+			PushRecvBuff(ReceivedPayload{destIP, std::move(ret)});
 		}
 		return true;
 	}
@@ -524,7 +524,7 @@ namespace Sessions
 		std::unique_ptr<TCP_Packet> ret = CreateBasePacket();
 
 		ret->SetACK(true);
-		PushRecvBuff(std::move(ret));
+		PushRecvBuff(ReceivedPayload{destIP, std::move(ret)});
 
 		return true;
 	}
@@ -591,7 +591,7 @@ namespace Sessions
 
 		ret->SetACK(true);
 
-		PushRecvBuff(std::move(ret));
+		PushRecvBuff(ReceivedPayload{destIP, std::move(ret)});
 
 		if (myNumberACKed.load())
 		{
@@ -611,7 +611,7 @@ namespace Sessions
 	{
 		std::unique_ptr<TCP_Packet> reterr = CreateBasePacket();
 		reterr->SetRST(true);
-		PushRecvBuff(std::move(reterr));
+		PushRecvBuff(ReceivedPayload{destIP, std::move(reterr)});
 
 		CloseSocket();
 		state = TCP_State::CloseCompletedFlushBuffer;

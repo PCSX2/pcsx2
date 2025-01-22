@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "R3000A.h"
@@ -188,8 +188,15 @@ void psxDma8(u32 madr, u32 bcr, u32 chcr)
 			PSXDMA_LOG("*** DMA 8 - DEV9 unknown *** %lx addr = %lx size = %lx", chcr, madr, bcr);
 			break;
 	}
-	HW_DMA8_CHCR &= ~0x01000000;
-	psxDmaInterrupt2(1);
+}
+
+void psxDMA8Interrupt()
+{
+	if (HW_DMA8_CHCR & 0x01000000)
+	{
+		HW_DMA8_CHCR &= ~0x01000000;
+		psxDmaInterrupt2(1);
+	}
 }
 
 void psxDma9(u32 madr, u32 bcr, u32 chcr)

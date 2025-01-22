@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -37,7 +37,6 @@ public:
 
 private:
 	bool InitPCAP(const std::string& adapter, bool promiscuous);
-	void InitPCAPDumper();
 	bool SetMACSwitchedFilter(PacketReader::MAC_Address mac);
 
 	void SetMACBridgedRecv(NetPacket* pkt);

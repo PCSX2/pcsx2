@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 /*
@@ -27,7 +27,7 @@
 #include "common/BitUtils.h"
 #include "common/Error.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <bit>
 #include <map>
@@ -109,46 +109,114 @@ vtlb_private::VTLBVirtual::VTLBVirtual(VTLBPhysical phys, u32 paddr, u32 vaddr)
 	}
 }
 
-__inline int ConvertPageMask(u32 PageMask)
-{
-	const u32 mask = std::popcount(PageMask >> 13);
-
-	pxAssertMsg(!((mask & 1) || mask > 12), "Invalid page mask for this TLB entry. EE cache doesn't know what to do here.");
-
-	return (1 << (12 + mask)) - 1;
-}
+#if defined(_M_X86)
+#include <immintrin.h>
+#elif defined(_M_ARM64)
+#if defined(_MSC_VER) && !defined(__clang__)
+#include <arm64_neon.h>
+#else
+#include <arm_neon.h>
+#endif
+#endif
 
 __inline int CheckCache(u32 addr)
 {
-	u32 mask;
-
+	// Check if the cache is enabled
 	if (((cpuRegs.CP0.n.Config >> 16) & 0x1) == 0)
 	{
-		//DevCon.Warning("Data Cache Disabled! %x", cpuRegs.CP0.n.Config);
-		return false; //
+		return false;
 	}
 
-	for (int i = 1; i < 48; i++)
+	size_t i = 0;
+	const size_t size = cachedTlbs.count;
+
+#if defined(_M_X86)
+	const int stride = 4;
+
+	const __m128i addr_vec = _mm_set1_epi32(addr);
+
+	for (; i + stride <= size; i += stride)
 	{
-		if (((tlb[i].EntryLo1 & 0x38) >> 3) == 0x3)
+		const __m128i pfn1_vec = _mm_loadu_si128(reinterpret_cast<const __m128i*>(&cachedTlbs.PFN1s[i]));
+		const __m128i pfn0_vec = _mm_loadu_si128(reinterpret_cast<const __m128i*>(&cachedTlbs.PFN0s[i]));
+		const __m128i mask_vec = _mm_loadu_si128(reinterpret_cast<const __m128i*>(&cachedTlbs.PageMasks[i]));
+
+		const __m128i cached1_vec = _mm_loadu_si128(reinterpret_cast<const __m128i*>(&cachedTlbs.CacheEnabled1[i]));
+		const __m128i cached0_vec = _mm_loadu_si128(reinterpret_cast<const __m128i*>(&cachedTlbs.CacheEnabled0[i]));
+
+		const __m128i pfn1_end_vec = _mm_add_epi32(pfn1_vec, mask_vec);
+		const __m128i pfn0_end_vec = _mm_add_epi32(pfn0_vec, mask_vec);
+
+		// pfn0 <= addr
+		const __m128i gteLowerBound0 = _mm_or_si128(
+			_mm_cmpgt_epi32(addr_vec, pfn0_vec),
+			_mm_cmpeq_epi32(addr_vec, pfn0_vec));
+		// pfn0 + mask >= addr
+		const __m128i gteUpperBound0 = _mm_or_si128(
+			_mm_cmpgt_epi32(pfn0_end_vec, addr_vec),
+			_mm_cmpeq_epi32(pfn0_end_vec, addr_vec));
+
+		// pfn1 <= addr
+		const __m128i gteUpperBound1 = _mm_or_si128(
+			_mm_cmpgt_epi32(pfn1_end_vec, addr_vec),
+			_mm_cmpeq_epi32(pfn1_end_vec, addr_vec));
+		// pfn1 + mask >= addr
+		const __m128i gteLowerBound1 = _mm_or_si128(
+			_mm_cmpgt_epi32(addr_vec, pfn1_vec),
+			_mm_cmpeq_epi32(addr_vec, pfn1_vec));
+
+		// pfn0 <= addr <= pfn0 + mask
+		__m128i cmp0 = _mm_and_si128(gteLowerBound0, gteUpperBound0);
+		// pfn1 <= addr <= pfn1 + mask
+		__m128i cmp1 = _mm_and_si128(gteLowerBound1, gteUpperBound1);
+
+		cmp1 = _mm_and_si128(cmp1, cached1_vec);
+		cmp0 = _mm_and_si128(cmp0, cached0_vec);
+
+		const __m128i cmp = _mm_or_si128(cmp1, cmp0);
+
+		if (!_mm_testz_si128(cmp, cmp))
 		{
-			mask = ConvertPageMask(tlb[i].PageMask);
-			if ((addr >= tlb[i].PFN1) && (addr <= tlb[i].PFN1 + mask))
-			{
-				//DevCon.Warning("Yay! Cache check cache addr=%x, mask=%x, addr+mask=%x, VPN2=%x PFN0=%x", addr, mask, (addr & mask), tlb[i].VPN2, tlb[i].PFN0);
-				return true;
-			}
-		}
-		if (((tlb[i].EntryLo0 & 0x38) >> 3) == 0x3)
-		{
-			mask = ConvertPageMask(tlb[i].PageMask);
-			if ((addr >= tlb[i].PFN0) && (addr <= tlb[i].PFN0 + mask))
-			{
-				//DevCon.Warning("Yay! Cache check cache addr=%x, mask=%x, addr+mask=%x, VPN2=%x PFN0=%x", addr, mask, (addr & mask), tlb[i].VPN2, tlb[i].PFN0);
-				return true;
-			}
+			return true;
 		}
 	}
+#elif defined(_M_ARM64)
+	const int stride = 4;
+
+	const uint32x4_t addr_vec = vld1q_dup_u32(&addr);
+
+	for (; i + stride <= size; i += stride)
+	{
+		const uint32x4_t pfn1_vec = vld1q_u32(&cachedTlbs.PFN1s[i]);
+		const uint32x4_t pfn0_vec = vld1q_u32(&cachedTlbs.PFN0s[i]);
+		const uint32x4_t mask_vec = vld1q_u32(&cachedTlbs.PageMasks[i]);
+
+		const uint32x4_t cached1_vec = vld1q_u32(&cachedTlbs.CacheEnabled1[i]);
+		const uint32x4_t cached0_vec = vld1q_u32(&cachedTlbs.CacheEnabled0[i]);
+
+		const uint32x4_t pfn1_end_vec = vaddq_u32(pfn1_vec, mask_vec);
+		const uint32x4_t pfn0_end_vec = vaddq_u32(pfn0_vec, mask_vec);
+
+		const uint32x4_t cmp1 = vandq_u32(vcgeq_u32(addr_vec, pfn1_vec), vcleq_u32(addr_vec, pfn1_end_vec));
+		const uint32x4_t cmp0 = vandq_u32(vcgeq_u32(addr_vec, pfn0_vec), vcleq_u32(addr_vec, pfn0_end_vec));
+
+		const uint32x4_t lanes_enabled = vorrq_u32(vandq_u32(cached1_vec, cmp1), vandq_u32(cached0_vec, cmp0));
+
+		const uint32x2_t tmp = vorr_u32(vget_low_u32(lanes_enabled), vget_high_u32(lanes_enabled));
+		if (vget_lane_u32(vpmax_u32(tmp, tmp), 0))
+			return true;
+	}
+#endif
+	for (; i < size; i++)
+	{
+		const u32 mask = cachedTlbs.PageMasks[i];
+		if ((cachedTlbs.CacheEnabled1[i] && addr >= cachedTlbs.PFN1s[i] && addr <= cachedTlbs.PFN1s[i] + mask) ||
+			(cachedTlbs.CacheEnabled0[i] && addr >= cachedTlbs.PFN0s[i] && addr <= cachedTlbs.PFN0s[i] + mask))
+		{
+			return true;
+		}
+	}
+
 	return false;
 }
 // --------------------------------------------------------------------------------------

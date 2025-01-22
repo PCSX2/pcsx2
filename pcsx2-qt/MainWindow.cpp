@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "AboutDialog.h"
@@ -19,7 +19,6 @@
 #include "Settings/MemoryCardCreateDialog.h"
 #include "Tools/InputRecording/InputRecordingViewer.h"
 #include "Tools/InputRecording/NewInputRecordingDlg.h"
-#include "svnrev.h"
 
 #include "pcsx2/Achievements.h"
 #include "pcsx2/CDVD/CDVDcommon.h"
@@ -1347,9 +1346,8 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		if (action->isEnabled())
 		{
 			connect(action, &QAction::triggered, [entry]() {
-				SettingsWindow::openGamePropertiesDialog(entry, entry->title,
-					(entry->type != GameList::EntryType::ELF) ? entry->serial : std::string(),
-					entry->crc);
+				SettingsWindow::openGamePropertiesDialog(entry,
+					entry->title, entry->serial, entry->crc, entry->type == GameList::EntryType::ELF);
 			});
 		}
 
@@ -1565,7 +1563,7 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 		if (entry)
 		{
 			SettingsWindow::openGamePropertiesDialog(
-				entry, entry->title, s_current_elf_override.isEmpty() ? entry->serial : std::string(), entry->crc);
+				entry, entry->title, entry->serial, entry->crc, !s_current_elf_override.isEmpty());
 			return;
 		}
 	}
@@ -1581,12 +1579,12 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 	if (s_current_elf_override.isEmpty())
 	{
 		SettingsWindow::openGamePropertiesDialog(
-			nullptr, s_current_title.toStdString(), s_current_disc_serial.toStdString(), s_current_disc_crc);
+			nullptr, s_current_title.toStdString(), s_current_disc_serial.toStdString(), s_current_disc_crc, false);
 	}
 	else
 	{
 		SettingsWindow::openGamePropertiesDialog(
-			nullptr, s_current_title.toStdString(), std::string(), s_current_disc_crc);
+			nullptr, s_current_title.toStdString(), std::string(), s_current_disc_crc, true);
 	}
 }
 
@@ -1723,8 +1721,36 @@ void MainWindow::onCreateMemoryCardOpenRequested()
 
 void MainWindow::updateTheme()
 {
+	// The debugger hates theme changes.
+	// We have unfortunately to destroy it and recreate it.
+	const bool debugger_is_open = m_debugger_window ? m_debugger_window->isVisible() : false;
+	const QSize debugger_size = m_debugger_window ? m_debugger_window->size() : QSize();
+	const QPoint debugger_pos = m_debugger_window ? m_debugger_window->pos() : QPoint();
+	if (m_debugger_window)
+	{
+		if (QMessageBox::question(this, tr("Theme Change"),
+				tr("Changing the theme will close the debugger window. Any unsaved data will be lost. Do you want to continue?"),
+				QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+		{
+			return;
+		}
+	}
+
 	QtHost::UpdateApplicationTheme();
 	reloadThemeSpecificImages();
+
+	if (m_debugger_window)
+	{
+		m_debugger_window->deleteLater();
+		m_debugger_window = nullptr;
+		getDebuggerWindow(); // populates m_debugger_window
+		m_debugger_window->resize(debugger_size);
+		m_debugger_window->move(debugger_pos);
+		if (debugger_is_open)
+		{
+			m_debugger_window->show();
+		}
+	}
 }
 
 void MainWindow::reloadThemeSpecificImages()
@@ -1883,11 +1909,6 @@ void MainWindow::onInputRecStopActionTriggered()
 	}
 }
 
-void MainWindow::onInputRecOpenSettingsTriggered()
-{
-	// TODO - Vaser - Implement
-}
-
 InputRecordingViewer* MainWindow::getInputRecordingViewer()
 {
 	if (!m_input_recording_viewer)
@@ -1989,6 +2010,7 @@ void MainWindow::onVMStopped()
 	m_status_fps_widget->setText(empty_string);
 	m_status_vps_widget->setText(empty_string);
 	m_status_speed_widget->setText(empty_string);
+	m_status_verbose_widget->setText(empty_string);
 
 	updateEmulationActions(false, false, false);
 	updateGameDependentActions();

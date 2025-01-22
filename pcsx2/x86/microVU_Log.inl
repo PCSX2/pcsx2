@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -8,7 +8,7 @@
 #include "common/FileSystem.h"
 #include "common/Path.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 // writes text directly to mVU.logFile, no newlines appended.
 _mVUt void __mVULog(const char* fmt, ...)

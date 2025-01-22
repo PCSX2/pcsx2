@@ -54,6 +54,7 @@ endif(WIN32)
 # Main pcsx2 source
 set(pcsx2Sources
 	Achievements.cpp
+	BuildVersion.cpp
 	Cache.cpp
 	COP0.cpp
 	COP2.cpp
@@ -140,6 +141,7 @@ set(pcsx2Sources
 # Main pcsx2 header
 set(pcsx2Headers
 	Achievements.h
+	BuildVersion.h
 	Cache.h
 	Common.h
 	Config.h
@@ -789,6 +791,7 @@ set(pcsx2DebugToolsSources
 	DebugTools/MipsStackWalk.cpp
 	DebugTools/Breakpoints.cpp
 	DebugTools/SymbolGuardian.cpp
+	DebugTools/SymbolImporter.cpp
 	DebugTools/DisR3000A.cpp
 	DebugTools/DisR5900asm.cpp
 	DebugTools/DisVU0Micro.cpp
@@ -806,6 +809,7 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/MipsStackWalk.h
 	DebugTools/Breakpoints.h
 	DebugTools/SymbolGuardian.h
+	DebugTools/SymbolImporter.h
 	DebugTools/Debug.h
 	DebugTools/DisASM.h
 	DebugTools/DisVUmicro.h
@@ -986,8 +990,8 @@ set(pcsx2x86Sources
 	x86/ix86-32/iR5900Shift.cpp
 	x86/ix86-32/iR5900Templates.cpp
 	x86/ix86-32/recVTLB.cpp
-	x86/newVif_Dynarec.cpp
-	x86/newVif_UnpackSSE.cpp
+	x86/Vif_Dynarec.cpp
+	x86/Vif_UnpackSSE.cpp
 	)
 
 # x86 headers
@@ -1027,15 +1031,15 @@ set(pcsx2x86Headers
 	x86/microVU_Tables.inl
 	x86/microVU_Upper.inl
 	x86/newVif.h
-	x86/newVif_UnpackSSE.h
+	x86/Vif_UnpackSSE.h
 	x86/R5900_Profiler.h
 	)
 
 # ARM64
 set(pcsx2arm64Sources
 	arm64/AsmHelpers.cpp
-	arm64/newVif_Dynarec.cpp
-	arm64/newVif_UnpackNEON.cpp
+	arm64/Vif_Dynarec.cpp
+	arm64/Vif_UnpackNEON.cpp
 	arm64/RecStubs.cpp
 	)
 
@@ -1223,6 +1227,10 @@ if (NOT APPLE)
 endif()
 
 fixup_file_properties(PCSX2)
+# Directories like /usr/local/include, /opt/local/include, etc tend to include lots of headers from lots of libraries.
+# Possibly including libraries that we compiled versions of with the dependency build script.
+# To ensure the dependency build script's headers are preferred, push any directories that look like */local/include to the end.
+force_include_last(PCSX2_FLAGS "/(usr|local)/include/?$")
 
 if (APPLE)
 	find_library(METAL_LIBRARY Metal)

@@ -1,19 +1,27 @@
-<svg 
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 -10 100 110" >
-  <g>
-    <path
-      fill="none"
-      stroke="white"
-      stroke-width="8"
-      stroke-miterlimit="5"
-      d="m 0 50
-         l 20,0
-         l 7.5,20
-         l 15,-45
-         l 15,55
-         l 15,-65
-         l 7.5,35
-         l 20,0" />
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Vibration_-_PCSX2" data-name="Vibration - PCSX2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke-miterlimit: 5;
+      }
+
+      .cls-1, .cls-2 {
+        fill: none;
+        stroke: #fff;
+        stroke-width: 12px;
+      }
+
+      .cls-2 {
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  <g id="By_maxihplay" data-name="By @maxihplay">
+    <rect class="cls-1" x="51.59" y="20.59" width="46.81" height="87.78" rx="17.19" ry="17.19"/>
+    <path class="cls-2" d="m75,113.37v7.22c0,4.85,3.97,8.82,8.82,8.82h18.88"/>
+    <polyline class="cls-2" points="130.09 33.5 116.93 58.56 132.07 75.26 118.88 95.92 130.8 116.5"/>
+    <polyline class="cls-2" points="19.91 33.5 33.07 58.56 17.93 75.26 31.12 95.92 19.2 116.5"/>
   </g>
 </svg>

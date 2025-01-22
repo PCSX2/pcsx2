@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "DEV9/ATA/ATA.h"
@@ -15,8 +15,12 @@ void ATA::DRQCmdPIODataToHost(u8* buff, int buffLen, int buffIndex, int size, bo
 	regStatus &= ~ATA_STAT_BUSY;
 	regStatus |= ATA_STAT_DRQ;
 
+	// Only set pendingInterrupt if nIEN is cleared
 	if (regControlEnableIRQ && sendIRQ)
-		_DEV9irq(ATA_INTR_INTRQ, 1); //0x6c cycles before
+	{
+		pendingInterrupt = true;
+		_DEV9irq(ATA_INTR_INTRQ, 1);
+	}
 }
 void ATA::PostCmdPIODataToHost()
 {
@@ -93,13 +97,17 @@ void ATA::HDD_ReadPIO(bool isLBA48)
 
 	IDE_CmdLBA48Transform(isLBA48);
 
+	regStatus &= ~ATA_STAT_SEEK;
 	if (!HDD_CanSeek())
 	{
 		regStatus |= ATA_STAT_ERR;
+		regStatusSeekLock = -1;
 		regError |= ATA_ERR_ID;
 		PostCmdNoData();
 		return;
 	}
+	else
+		regStatus |= ATA_STAT_SEEK;
 
 	HDD_ReadSync(&ATA::HDD_ReadPIOS2);
 }

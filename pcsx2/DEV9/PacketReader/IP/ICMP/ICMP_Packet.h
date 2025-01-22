@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -27,16 +27,16 @@ namespace PacketReader::IP::ICMP
 	public:
 		//Takes ownership of payload
 		ICMP_Packet(Payload* data);
-		ICMP_Packet(u8* buffer, int bufferSize);
+		ICMP_Packet(const u8* buffer, int bufferSize);
 		ICMP_Packet(const ICMP_Packet&);
 
-		Payload* GetPayload();
+		Payload* GetPayload() const;
 
 		virtual int GetLength();
 		virtual void WriteBytes(u8* buffer, int* offset);
 		virtual ICMP_Packet* Clone() const;
 
-		virtual u8 GetProtocol();
+		virtual u8 GetProtocol() const;
 
 		virtual bool VerifyChecksum(IP_Address srcIP, IP_Address dstIP);
 		virtual void CalculateChecksum(IP_Address srcIP, IP_Address dstIP);

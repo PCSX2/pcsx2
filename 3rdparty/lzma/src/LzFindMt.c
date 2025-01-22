@@ -1,5 +1,5 @@
 /* LzFindMt.c -- multithreaded Match finder for LZ algorithms
-2023-04-02 : Igor Pavlov : Public domain */
+2024-01-22 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -94,7 +94,7 @@ static void MtSync_Construct(CMtSync *p)
 }
 
 
-#define DEBUG_BUFFER_LOCK   // define it to debug lock state
+// #define DEBUG_BUFFER_LOCK   // define it to debug lock state
 
 #ifdef DEBUG_BUFFER_LOCK
 #include <stdlib.h>
@@ -877,8 +877,9 @@ SRes MatchFinderMt_InitMt(CMatchFinderMt *p)
 }
 
 
-static void MatchFinderMt_Init(CMatchFinderMt *p)
+static void MatchFinderMt_Init(void *_p)
 {
+  CMatchFinderMt *p = (CMatchFinderMt *)_p;
   CMatchFinder *mf = MF(p);
   
   p->btBufPos =
@@ -981,8 +982,9 @@ static UInt32 MatchFinderMt_GetNextBlock_Bt(CMatchFinderMt *p)
 
 
 
-static const Byte * MatchFinderMt_GetPointerToCurrentPos(CMatchFinderMt *p)
+static const Byte * MatchFinderMt_GetPointerToCurrentPos(void *_p)
 {
+  CMatchFinderMt *p = (CMatchFinderMt *)_p;
   return p->pointerToCurPos;
 }
 
@@ -990,8 +992,9 @@ static const Byte * MatchFinderMt_GetPointerToCurrentPos(CMatchFinderMt *p)
 #define GET_NEXT_BLOCK_IF_REQUIRED if (p->btBufPos == p->btBufPosLimit) MatchFinderMt_GetNextBlock_Bt(p);
 
 
-static UInt32 MatchFinderMt_GetNumAvailableBytes(CMatchFinderMt *p)
+static UInt32 MatchFinderMt_GetNumAvailableBytes(void *_p)
 {
+  CMatchFinderMt *p = (CMatchFinderMt *)_p;
   if (p->btBufPos != p->btBufPosLimit)
     return p->btNumAvailBytes;
   return MatchFinderMt_GetNextBlock_Bt(p);
@@ -1243,8 +1246,9 @@ static UInt32 * MixMatches4(CMatchFinderMt *p, UInt32 matchMinPos, UInt32 *d)
 }
 
 
-static UInt32 * MatchFinderMt2_GetMatches(CMatchFinderMt *p, UInt32 *d)
+static UInt32 * MatchFinderMt2_GetMatches(void *_p, UInt32 *d)
 {
+  CMatchFinderMt *p = (CMatchFinderMt *)_p;
   const UInt32 *bt = p->btBufPos;
   const UInt32 len = *bt++;
   const UInt32 *btLim = bt + len;
@@ -1267,8 +1271,9 @@ static UInt32 * MatchFinderMt2_GetMatches(CMatchFinderMt *p, UInt32 *d)
 
 
 
-static UInt32 * MatchFinderMt_GetMatches(CMatchFinderMt *p, UInt32 *d)
+static UInt32 * MatchFinderMt_GetMatches(void *_p, UInt32 *d)
 {
+  CMatchFinderMt *p = (CMatchFinderMt *)_p;
   const UInt32 *bt = p->btBufPos;
   UInt32 len = *bt++;
   const UInt32 avail = p->btNumAvailBytes - 1;
@@ -1315,14 +1320,16 @@ static UInt32 * MatchFinderMt_GetMatches(CMatchFinderMt *p, UInt32 *d)
 #define SKIP_HEADER_MT(n) SKIP_HEADER2_MT if (p->btNumAvailBytes-- >= (n)) { const Byte *cur = p->pointerToCurPos; UInt32 *hash = p->hash;
 #define SKIP_FOOTER_MT } INCREASE_LZ_POS p->btBufPos += (size_t)*p->btBufPos + 1; } while (--num != 0);
 
-static void MatchFinderMt0_Skip(CMatchFinderMt *p, UInt32 num)
+static void MatchFinderMt0_Skip(void *_p, UInt32 num)
 {
+  CMatchFinderMt *p = (CMatchFinderMt *)_p;
   SKIP_HEADER2_MT { p->btNumAvailBytes--;
   SKIP_FOOTER_MT
 }
 
-static void MatchFinderMt2_Skip(CMatchFinderMt *p, UInt32 num)
+static void MatchFinderMt2_Skip(void *_p, UInt32 num)
 {
+  CMatchFinderMt *p = (CMatchFinderMt *)_p;
   SKIP_HEADER_MT(2)
       UInt32 h2;
       MT_HASH2_CALC
@@ -1330,8 +1337,9 @@ static void MatchFinderMt2_Skip(CMatchFinderMt *p, UInt32 num)
   SKIP_FOOTER_MT
 }
 
-static void MatchFinderMt3_Skip(CMatchFinderMt *p, UInt32 num)
+static void MatchFinderMt3_Skip(void *_p, UInt32 num)
 {
+  CMatchFinderMt *p = (CMatchFinderMt *)_p;
   SKIP_HEADER_MT(3)
       UInt32 h2, h3;
       MT_HASH3_CALC
@@ -1361,39 +1369,39 @@ static void MatchFinderMt4_Skip(CMatchFinderMt *p, UInt32 num)
 
 void MatchFinderMt_CreateVTable(CMatchFinderMt *p, IMatchFinder2 *vTable)
 {
-  vTable->Init = (Mf_Init_Func)MatchFinderMt_Init;
-  vTable->GetNumAvailableBytes = (Mf_GetNumAvailableBytes_Func)MatchFinderMt_GetNumAvailableBytes;
-  vTable->GetPointerToCurrentPos = (Mf_GetPointerToCurrentPos_Func)MatchFinderMt_GetPointerToCurrentPos;
-  vTable->GetMatches = (Mf_GetMatches_Func)MatchFinderMt_GetMatches;
+  vTable->Init = MatchFinderMt_Init;
+  vTable->GetNumAvailableBytes = MatchFinderMt_GetNumAvailableBytes;
+  vTable->GetPointerToCurrentPos = MatchFinderMt_GetPointerToCurrentPos;
+  vTable->GetMatches = MatchFinderMt_GetMatches;
   
   switch (MF(p)->numHashBytes)
   {
     case 2:
       p->GetHeadsFunc = GetHeads2;
-      p->MixMatchesFunc = (Mf_Mix_Matches)NULL;
-      vTable->Skip = (Mf_Skip_Func)MatchFinderMt0_Skip;
-      vTable->GetMatches = (Mf_GetMatches_Func)MatchFinderMt2_GetMatches;
+      p->MixMatchesFunc = NULL;
+      vTable->Skip = MatchFinderMt0_Skip;
+      vTable->GetMatches = MatchFinderMt2_GetMatches;
       break;
     case 3:
       p->GetHeadsFunc = MF(p)->bigHash ? GetHeads3b : GetHeads3;
-      p->MixMatchesFunc = (Mf_Mix_Matches)MixMatches2;
-      vTable->Skip = (Mf_Skip_Func)MatchFinderMt2_Skip;
+      p->MixMatchesFunc = MixMatches2;
+      vTable->Skip = MatchFinderMt2_Skip;
       break;
     case 4:
       p->GetHeadsFunc = MF(p)->bigHash ? GetHeads4b : GetHeads4;
 
       // it's fast inline version of GetMatches()
-      // vTable->GetMatches = (Mf_GetMatches_Func)MatchFinderMt_GetMatches_Bt4;
+      // vTable->GetMatches = MatchFinderMt_GetMatches_Bt4;
 
-      p->MixMatchesFunc = (Mf_Mix_Matches)MixMatches3;
-      vTable->Skip = (Mf_Skip_Func)MatchFinderMt3_Skip;
+      p->MixMatchesFunc = MixMatches3;
+      vTable->Skip = MatchFinderMt3_Skip;
       break;
     default:
       p->GetHeadsFunc = MF(p)->bigHash ? GetHeads5b : GetHeads5;
-      p->MixMatchesFunc = (Mf_Mix_Matches)MixMatches4;
+      p->MixMatchesFunc = MixMatches4;
       vTable->Skip =
-          (Mf_Skip_Func)MatchFinderMt3_Skip;
-          // (Mf_Skip_Func)MatchFinderMt4_Skip;
+          MatchFinderMt3_Skip;
+          // MatchFinderMt4_Skip;
       break;
   }
 }

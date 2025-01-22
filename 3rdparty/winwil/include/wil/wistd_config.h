@@ -33,7 +33,7 @@
 // and non-exception based code should utilize this functionality.
 
 // This header mimics libc++'s '__config' header to the extent necessary to get the wistd::* definitions compiling. Note
-// that this has a few key differences since libc++'s MSVC compatability is currently not functional and a bit behind
+// that this has a few key differences since libc++'s MSVC compatibility is currently not functional and a bit behind
 
 #ifndef _WISTD_CONFIG_H_
 #define _WISTD_CONFIG_H_
@@ -130,7 +130,7 @@
 #define __WI_CLANG_DISABLE_WARNING(warning)
 #endif
 
-// NOTE: MSVC, which is what we primarily target, is severly underrepresented in libc++ and checks such as
+// NOTE: MSVC, which is what we primarily target, is severely underrepresented in libc++ and checks such as
 // __has_feature(...) are always false for MSVC, even when the feature being tested _is_ present in MSVC. Therefore, we
 // instead modify all checks to be __WI_HAS_FEATURE_IS_UNION, etc., which provides the correct value for MSVC and falls
 // back to the __has_feature(...), etc. value otherwise. We intentionally leave '__has_feature', etc. undefined for MSVC

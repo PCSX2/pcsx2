@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 #include "Achievements.h"
+#include "BuildVersion.h"
 #include "CDVD/CDVD.h"
 #include "Elfheader.h"
 #include "Host.h"
@@ -16,7 +17,6 @@
 #include "Memory.h"
 #include "SaveState.h"
 #include "VMManager.h"
-#include "svnrev.h"
 #include "vtlb.h"
 
 #include "common/Assertions.h"
@@ -300,7 +300,7 @@ std::string Achievements::GetGameHash(const std::string& elf_path)
 	Error error;
 	if (!cdvdLoadElf(&elfo, elf_path, false, &error))
 	{
-		Console.Error(fmt::format("(Achievements) Failed to read ELF '{}' on disc: {}", elf_path, error.GetDescription()));
+		Console.Error(fmt::format("Achievements: Failed to read ELF '{}' on disc: {}", elf_path, error.GetDescription()));
 		return {};
 	}
 
@@ -441,7 +441,7 @@ bool Achievements::Initialize()
 	const std::string api_token = Host::GetBaseStringSettingValue("Achievements", "Token");
 	if (!username.empty() && !api_token.empty())
 	{
-		Console.WriteLn("(Achievements) Attempting login with user '%s'...", username.c_str());
+		Console.WriteLn("Achievements: Attempting login with user '%s'...", username.c_str());
 		s_login_request =
 			rc_client_begin_login_with_token(s_client, username.c_str(), api_token.c_str(), ClientLoginWithTokenCallback, nullptr);
 	}
@@ -608,7 +608,7 @@ void Achievements::EnsureCacheDirectoriesExist()
 
 void Achievements::ClientMessageCallback(const char* message, const rc_client_t* client)
 {
-	Console.WriteLn("(Achievements) %s", message);
+	Console.WriteLn("Achievements: %s", message);
 }
 
 uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client)
@@ -865,7 +865,7 @@ void Achievements::IdentifyGame(u32 disc_crc, u32 crc)
 	// bail out if we're not logged in, just save the hash
 	if (!IsLoggedInOrLoggingIn())
 	{
-		Console.WriteLn(Color_StrongYellow, "(Achievements) Skipping load game because we're not logged in.");
+		Console.WriteLn(Color_StrongYellow, "Achievements: Skipping load game because we're not logged in.");
 		DisableHardcoreMode();
 		return;
 	}
@@ -908,7 +908,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 	if (result == RC_NO_GAME_LOADED)
 	{
 		// Unknown game.
-		Console.WriteLn(Color_StrongYellow, "(Achievements) Unknown game '%s', disabling achievements.", s_game_hash.c_str());
+		Console.WriteLn(Color_StrongYellow, "Achievements: Unknown game '%s', disabling achievements.", s_game_hash.c_str());
 		DisableHardcoreMode();
 		return;
 	}
@@ -1083,7 +1083,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 	const rc_client_achievement_t* cheevo = event->achievement;
 	pxAssert(cheevo);
 
-	Console.WriteLn("(Achievements) Achievement %s (%u) for game %u unlocked", cheevo->title, cheevo->id, s_game_id);
+	Console.WriteLn("Achievements: Achievement %s (%u) for game %u unlocked", cheevo->title, cheevo->id, s_game_id);
 	UpdateGameSummary();
 
 	if (EmuConfig.Achievements.Notifications)
@@ -1109,7 +1109,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 
 void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 {
-	Console.WriteLn("(Achievements) Game %u complete", s_game_id);
+	Console.WriteLn("Achievements: Game %u complete", s_game_id);
 	UpdateGameSummary();
 
 	if (EmuConfig.Achievements.Notifications)
@@ -1133,7 +1133,7 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 
 void Achievements::HandleLeaderboardStartedEvent(const rc_client_event_t* event)
 {
-	DevCon.WriteLn("(Achievements) Leaderboard %u (%s) started", event->leaderboard->id, event->leaderboard->title);
+	DevCon.WriteLn("Achievements: Leaderboard %u (%s) started", event->leaderboard->id, event->leaderboard->title);
 
 	if (EmuConfig.Achievements.LeaderboardNotifications)
 	{
@@ -1152,7 +1152,7 @@ void Achievements::HandleLeaderboardStartedEvent(const rc_client_event_t* event)
 
 void Achievements::HandleLeaderboardFailedEvent(const rc_client_event_t* event)
 {
-	DevCon.WriteLn("(Achievements) Leaderboard %u (%s) failed", event->leaderboard->id, event->leaderboard->title);
+	DevCon.WriteLn("Achievements: Leaderboard %u (%s) failed", event->leaderboard->id, event->leaderboard->title);
 
 	if (EmuConfig.Achievements.LeaderboardNotifications)
 	{
@@ -1171,7 +1171,7 @@ void Achievements::HandleLeaderboardFailedEvent(const rc_client_event_t* event)
 
 void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* event)
 {
-	Console.WriteLn("(Achievements) Leaderboard %u (%s) submitted", event->leaderboard->id, event->leaderboard->title);
+	Console.WriteLn("Achievements: Leaderboard %u (%s) submitted", event->leaderboard->id, event->leaderboard->title);
 
 	if (EmuConfig.Achievements.LeaderboardNotifications)
 	{
@@ -1203,7 +1203,7 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
 
 void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* event)
 {
-	Console.WriteLn("(Achievements) Leaderboard %u scoreboard rank %u of %u", event->leaderboard_scoreboard->leaderboard_id,
+	Console.WriteLn("Achievements: Leaderboard %u scoreboard rank %u of %u", event->leaderboard_scoreboard->leaderboard_id,
 		event->leaderboard_scoreboard->new_rank, event->leaderboard_scoreboard->num_entries);
 
 	if (EmuConfig.Achievements.LeaderboardNotifications)
@@ -1234,7 +1234,7 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
 void Achievements::HandleLeaderboardTrackerShowEvent(const rc_client_event_t* event)
 {
 	DevCon.WriteLn(
-		"(Achievements) Showing leaderboard tracker: %u: %s", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
+		"Achievements: Showing leaderboard tracker: %u: %s", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
 
 	LeaderboardTrackerIndicator indicator;
 	indicator.tracker_id = event->leaderboard_tracker->id;
@@ -1251,7 +1251,7 @@ void Achievements::HandleLeaderboardTrackerHideEvent(const rc_client_event_t* ev
 	if (it == s_active_leaderboard_trackers.end())
 		return;
 
-	DevCon.WriteLn("(Achievements) Hiding leaderboard tracker: %u", id);
+	DevCon.WriteLn("Achievements: Hiding leaderboard tracker: %u", id);
 	it->active = false;
 	it->show_hide_time.Reset();
 }
@@ -1265,7 +1265,7 @@ void Achievements::HandleLeaderboardTrackerUpdateEvent(const rc_client_event_t* 
 		return;
 
 	DevCon.WriteLn(
-		"(Achievements) Updating leaderboard tracker: %u: %s", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
+		"Achievements: Updating leaderboard tracker: %u: %s", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
 
 	it->text = event->leaderboard_tracker->display;
 	it->active = true;
@@ -1288,7 +1288,7 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
 	indicator.active = true;
 	s_active_challenge_indicators.push_back(std::move(indicator));
 
-	DevCon.WriteLn("(Achievements) Show challenge indicator for %u (%s)", event->achievement->id, event->achievement->title);
+	DevCon.WriteLn("Achievements: Show challenge indicator for %u (%s)", event->achievement->id, event->achievement->title);
 }
 
 void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_event_t* event)
@@ -1298,14 +1298,14 @@ void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_
 	if (it == s_active_challenge_indicators.end())
 		return;
 
-	DevCon.WriteLn("(Achievements) Hide challenge indicator for %u (%s)", event->achievement->id, event->achievement->title);
+	DevCon.WriteLn("Achievements: Hide challenge indicator for %u (%s)", event->achievement->id, event->achievement->title);
 	it->show_hide_time.Reset();
 	it->active = false;
 }
 
 void Achievements::HandleAchievementProgressIndicatorShowEvent(const rc_client_event_t* event)
 {
-	DevCon.WriteLn("(Achievements) Showing progress indicator: %u (%s): %s", event->achievement->id, event->achievement->title,
+	DevCon.WriteLn("Achievements: Showing progress indicator: %u (%s): %s", event->achievement->id, event->achievement->title,
 		event->achievement->measured_progress);
 
 	if (!s_active_progress_indicator.has_value())
@@ -1323,14 +1323,14 @@ void Achievements::HandleAchievementProgressIndicatorHideEvent(const rc_client_e
 	if (!s_active_progress_indicator.has_value())
 		return;
 
-	DevCon.WriteLn("(Achievements) Hiding progress indicator");
+	DevCon.WriteLn("Achievements: Hiding progress indicator");
 	s_active_progress_indicator->show_hide_time.Reset();
 	s_active_progress_indicator->active = false;
 }
 
 void Achievements::HandleAchievementProgressIndicatorUpdateEvent(const rc_client_event_t* event)
 {
-	DevCon.WriteLn("(Achievements) Updating progress indicator: %u (%s): %s", event->achievement->id, event->achievement->title,
+	DevCon.WriteLn("Achievements: Updating progress indicator: %u (%s): %s", event->achievement->id, event->achievement->title,
 		event->achievement->measured_progress);
 	s_active_progress_indicator->achievement = event->achievement;
 	s_active_progress_indicator->active = true;
@@ -1341,13 +1341,13 @@ void Achievements::HandleServerErrorEvent(const rc_client_event_t* event)
 	std::string message = fmt::format(TRANSLATE_FS("Achievements", "Server error in {0}:\n{1}"),
 		event->server_error->api ? event->server_error->api : "UNKNOWN",
 		event->server_error->error_message ? event->server_error->error_message : "UNKNOWN");
-	Console.Error("(Achievements) %s", message.c_str());
+	Console.Error("Achievements: %s", message.c_str());
 	Host::AddOSDMessage(std::move(message), Host::OSD_ERROR_DURATION);
 }
 
 void Achievements::HandleServerDisconnectedEvent(const rc_client_event_t* event)
 {
-	Console.Warning("(Achievements) Server disconnected.");
+	Console.Warning("Achievements: Server disconnected.");
 
 	MTGS::RunOnGSThread([]() {
 		if (ImGuiManager::InitializeFullscreenUI())
@@ -1360,7 +1360,7 @@ void Achievements::HandleServerDisconnectedEvent(const rc_client_event_t* event)
 
 void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
 {
-	Console.Warning("(Achievements) Server reconnected.");
+	Console.Warning("Achievements: Server reconnected.");
 
 	MTGS::RunOnGSThread([]() {
 		if (ImGuiManager::InitializeFullscreenUI())
@@ -1385,7 +1385,7 @@ void Achievements::ResetClient()
 	if (!IsActive())
 		return;
 
-	Console.WriteLn("(Achievements) Reset client");
+	Console.WriteLn("Achievements: Reset client");
 	rc_client_reset(s_client);
 }
 
@@ -1811,11 +1811,11 @@ void Achievements::Logout()
 		if (HasActiveGame())
 			ClearGameInfo();
 
-		Console.WriteLn("(Achievements) Logging out...");
+		Console.WriteLn("Achievements: Logging out...");
 		rc_client_logout(s_client);
 	}
 
-	Console.WriteLn("(Achievements) Clearing credentials...");
+	Console.WriteLn("Achievements: Clearing credentials...");
 	Host::RemoveBaseSettingValue("Achievements", "Username");
 	Host::RemoveBaseSettingValue("Achievements", "Token");
 	Host::RemoveBaseSettingValue("Achievements", "LoginTimestamp");
@@ -1955,13 +1955,14 @@ void Achievements::DrawGameOverlays()
 			GSTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(indicator.badge_path.c_str());
 			if (badge)
 			{
-				dl->AddImage(badge->GetNativeHandle(), current_position, current_position + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
+				dl->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()),
+					current_position, current_position + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
 				current_position.x -= x_advance;
 			}
 
 			if (!indicator.active && opacity <= 0.01f)
 			{
-				DevCon.WriteLn("(Achievements) Remove challenge indicator");
+				DevCon.WriteLn("Achievements: Remove challenge indicator");
 				it = s_active_challenge_indicators.erase(it);
 			}
 			else
@@ -1995,7 +1996,8 @@ void Achievements::DrawGameOverlays()
 		if (badge)
 		{
 			const ImVec2 badge_pos = box_min + ImVec2(padding, padding);
-			dl->AddImage(badge->GetNativeHandle(), badge_pos, badge_pos + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
+			dl->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()),
+				badge_pos, badge_pos + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
 		}
 
 		const ImVec2 text_pos = box_min + ImVec2(padding + image_size.x + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
@@ -2004,11 +2006,11 @@ void Achievements::DrawGameOverlays()
 
 		if (!indicator.active && opacity <= 0.01f)
 		{
-			DevCon.WriteLn("(Achievements) Remove progress indicator");
+			DevCon.WriteLn("Achievements: Remove progress indicator");
 			s_active_progress_indicator.reset();
 		}
 
-		position.y -= image_size.y - padding * 3.0f;
+		position.y -= image_size.y + padding * 3.0f;
 	}
 
 	if (!s_active_leaderboard_trackers.empty())
@@ -2046,7 +2048,7 @@ void Achievements::DrawGameOverlays()
 
 			if (!indicator.active && opacity <= 0.01f)
 			{
-				DevCon.WriteLn("(Achievements) Remove tracker indicator");
+				DevCon.WriteLn("Achievements: Remove tracker indicator");
 				it = s_active_leaderboard_trackers.erase(it);
 			}
 			else
@@ -2058,7 +2060,7 @@ void Achievements::DrawGameOverlays()
 		}
 
 		// Uncomment if there are any other overlays above this one.
-		//position.y -= image_size.y - padding * 3.0f;
+		//position.y -= image_size.y + padding * 3.0f;
 	}
 }
 
@@ -2112,7 +2114,7 @@ void Achievements::DrawPauseMenuOverlays()
 			if (!badge)
 				continue;
 
-			dl->AddImage(badge->GetNativeHandle(), position, position + image_size);
+			dl->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()), position, position + image_size);
 
 			const char* achievement_title = indicator.achievement->title;
 			const char* achievement_title_end = achievement_title + std::strlen(indicator.achievement->title);
@@ -2151,7 +2153,7 @@ bool Achievements::PrepareAchievementsWindow()
 		RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS /*RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_LOCK_STATE*/);
 	if (!s_achievement_list)
 	{
-		Console.Error("(Achievements) rc_client_create_achievement_list() returned null");
+		Console.Error("Achievements: rc_client_create_achievement_list() returned null");
 		return false;
 	}
 
@@ -2202,8 +2204,8 @@ void Achievements::DrawAchievementsWindow()
 				GSTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_game_icon.c_str());
 				if (badge)
 				{
-					ImGui::GetWindowDrawList()->AddImage(
-						badge->GetNativeHandle(), icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+					ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()),
+						icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 				}
 			}
 
@@ -2391,8 +2393,8 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 		GSTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(badge_path->c_str());
 		if (badge)
 		{
-			ImGui::GetWindowDrawList()->AddImage(
-				badge->GetNativeHandle(), bb.Min, bb.Min + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+			ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()),
+				bb.Min, bb.Min + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 		}
 	}
 
@@ -2489,7 +2491,7 @@ bool Achievements::PrepareLeaderboardsWindow()
 	s_leaderboard_list = rc_client_create_leaderboard_list(client, RC_CLIENT_LEADERBOARD_LIST_GROUPING_NONE);
 	if (!s_leaderboard_list)
 	{
-		Console.Error("(Achievements) rc_client_create_leaderboard_list() returned null");
+		Console.Error("Achievements: rc_client_create_leaderboard_list() returned null");
 		return false;
 	}
 
@@ -2561,8 +2563,8 @@ void Achievements::DrawLeaderboardsWindow()
 				GSTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_game_icon.c_str());
 				if (badge)
 				{
-					ImGui::GetWindowDrawList()->AddImage(
-						badge->GetNativeHandle(), icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+					ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()),
+						icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 				}
 			}
 
@@ -2854,8 +2856,8 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 	}
 	if (icon_tex)
 	{
-		ImGui::GetWindowDrawList()->AddImage(
-			icon_tex->GetNativeHandle(), icon_bb.Min, icon_bb.Min + ImVec2(icon_size, icon_size));
+		ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(icon_tex->GetNativeHandle()),
+			icon_bb.Min, icon_bb.Min + ImVec2(icon_size, icon_size));
 	}
 
 	const ImRect user_bb(ImVec2(text_start_x + column_spacing + icon_size, bb.Min.y), ImVec2(bb.Max.x, midpoint));
@@ -2920,7 +2922,7 @@ void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
 
 void Achievements::OpenLeaderboard(const rc_client_leaderboard_t* lboard)
 {
-	Console.WriteLn("(Achievements) Opening leaderboard '%s' (%u)", lboard->title, lboard->id);
+	Console.WriteLn("Achievements: Opening leaderboard '%s' (%u)", lboard->title, lboard->id);
 
 	CloseLeaderboard();
 
@@ -2974,7 +2976,7 @@ void Achievements::FetchNextLeaderboardEntries()
 	for (rc_client_leaderboard_entry_list_t* list : s_leaderboard_entry_lists)
 		start += list->num_entries;
 
-	Console.WriteLn("(Achievements) Fetching entries %u to %u", start, start + LEADERBOARD_ALL_FETCH_SIZE);
+	Console.WriteLn("Achievements: Fetching entries %u to %u", start, start + LEADERBOARD_ALL_FETCH_SIZE);
 
 	if (s_leaderboard_fetch_handle)
 		rc_client_abort_async(s_client, s_leaderboard_fetch_handle);
@@ -3039,7 +3041,7 @@ void Achievements::SwitchToRAIntegration()
 
 void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_handle)
 {
-	RA_InitClient((HWND)main_window_handle, "PCSX2", GIT_TAG);
+	RA_InitClient((HWND)main_window_handle, "PCSX2", BuildVersion::GitTag);
 	RA_SetUserAgentDetail(Host::GetHTTPUserAgent().c_str());
 
 	RA_InstallSharedFunctions(RACallbackIsActive, RACallbackCauseUnpause, RACallbackCausePause, RACallbackRebuildMenu,

@@ -206,7 +206,7 @@ GIT_VERSION=$(git tag --points-at HEAD)
 
 if [[ "${GIT_VERSION}" == "" ]]; then
 	# In the odd event that we run this script before the release gets tagged.
-	GIT_VERSION=$(git describe --tags)
+	GIT_VERSION=$(git describe --tags || true)
 	if [[ "${GIT_VERSION}" == "" ]]; then
 		GIT_VERSION=$(git rev-parse HEAD)
 	fi

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Assertions.h"
@@ -482,9 +482,12 @@ bool ATA::HDD_CanAssessOrSetError()
 		regError |= static_cast<u8>(ATA_ERR_ID);
 		if (nsector == -1)
 		{
+			regStatus &= ~ATA_STAT_SEEK;
+			regStatusSeekLock = -1;
 			PostCmdNoData();
 			return false;
 		}
+		regStatusSeekLock = 1;
 	}
 	return true;
 }

@@ -1,9 +1,11 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include "common/Pcsx2Defs.h"
+
+#include <array>
 
 // --------------------------------------------------------------------------------------
 //  EE Bios function name tables.
@@ -160,17 +162,68 @@ struct fpuRegisters {
 	u32 ACCflag;        // an internal accumulator overflow flag
 };
 
+union PageMask_t
+{
+	struct
+	{
+		u32 : 13;
+		u32 Mask : 12;
+		u32 : 7;
+	};
+	u32 UL;
+};
+
+union EntryHi_t
+{
+	struct
+	{
+		u32 ASID:8;
+		u32 : 5;
+		u32 VPN2:19;
+	};
+	u32 UL;
+};
+
+union EntryLo_t
+{
+	struct
+	{
+		u32 G:1;
+		u32 V:1;
+		u32 D:1;
+		u32 C:3;
+		u32 PFN:20;
+		u32 : 5;
+		u32 S : 1; // Only used in EntryLo0
+	};
+	u32 UL;
+
+	constexpr bool isCached() const { return C == 0x3; }
+	constexpr bool isValidCacheMode() const { return C == 0x2 || C == 0x3 || C == 0x7; }
+};
+
 struct tlbs
 {
-	u32 PageMask,EntryHi;
-	u32 EntryLo0,EntryLo1;
-	u32 Mask, nMask;
-	u32 G;
-	u32 ASID;
-	u32 VPN2;
-	u32 PFN0;
-	u32 PFN1;
-	u32 S;
+	PageMask_t PageMask;
+	EntryHi_t EntryHi;
+	EntryLo_t EntryLo0;
+	EntryLo_t EntryLo1;
+
+	// (((cpuRegs.CP0.n.EntryLo0 >> 6) & 0xFFFFF) & (~tlb[i].Mask())) << 12;
+	constexpr u32 PFN0() const { return (EntryLo0.PFN & ~Mask()) << 12; }
+	constexpr u32 PFN1() const { return (EntryLo1.PFN & ~Mask()) << 12; }
+	constexpr u32 VPN2() const {return ((EntryHi.VPN2) & (~Mask())) << 13; }
+	constexpr u32 Mask() const { return PageMask.Mask; }
+	constexpr bool isGlobal() const { return EntryLo0.G && EntryLo1.G; }
+	constexpr bool isSPR() const { return EntryLo0.S; }
+
+	constexpr bool operator==(const tlbs& other) const
+	{
+		return PageMask.UL == other.PageMask.UL &&
+			   EntryHi.UL == other.EntryHi.UL &&
+			   EntryLo0.UL == other.EntryLo0.UL &&
+			   EntryLo1.UL == other.EntryLo1.UL;
+	}
 };
 
 #ifndef _PC_
@@ -210,6 +263,19 @@ struct cpuRegistersPack
 
 alignas(16) extern cpuRegistersPack _cpuRegistersPack;
 alignas(16) extern tlbs tlb[48];
+
+struct cachedTlbs_t
+{
+	u32 count;
+
+	alignas(16) std::array<u32, 48> PageMasks;
+	alignas(16) std::array<u32, 48> PFN1s;
+	alignas(16) std::array<u32, 48> CacheEnabled1;
+	alignas(16) std::array<u32, 48> PFN0s;
+	alignas(16) std::array<u32, 48> CacheEnabled0;
+};
+
+extern cachedTlbs_t cachedTlbs;
 
 static cpuRegisters& cpuRegs = _cpuRegistersPack.cpuRegs;
 static fpuRegisters& fpuRegs = _cpuRegistersPack.fpuRegs;

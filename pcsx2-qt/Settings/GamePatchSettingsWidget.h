@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -22,7 +22,7 @@ class GamePatchDetailsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	GamePatchDetailsWidget(std::string name, const std::string& author, const std::string& description, bool enabled,
+	GamePatchDetailsWidget(std::string name, const std::string& author, const std::string& description, bool tristate, Qt::CheckState checkState,
 		SettingsWindow* dialog, QWidget* parent);
 	~GamePatchDetailsWidget();
 
@@ -50,6 +50,8 @@ private Q_SLOTS:
 private:
 	void reloadList();
 	void setUnlabeledPatchesWarningVisibility(bool visible);
+	void setGlobalWsPatchNoteVisibility(bool visible);
+	void setGlobalNiPatchNoteVisibility(bool visible);
 
 	Ui::GamePatchSettingsWidget m_ui;
 	SettingsWindow* m_dialog;

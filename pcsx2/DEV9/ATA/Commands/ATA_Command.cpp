@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "DEV9/ATA/ATA.h"
@@ -10,6 +10,9 @@ void ATA::IDE_ExecCmd(u16 value)
 	{
 		case 0x00:
 			HDD_Nop();
+			break;
+		case 0x10:
+			HDD_Recalibrate();
 			break;
 		case 0x20:
 			HDD_ReadSectors(false);
@@ -39,7 +42,7 @@ void ATA::IDE_ExecCmd(u16 value)
 			HDD_SeekCmd();
 			break;
 		case 0x90:
-			HDD_ExecuteDeviceDiag();
+			HDD_ExecuteDeviceDiag(true);
 			break;
 		case 0x91:
 			HDD_InitDevParameters();
@@ -49,6 +52,9 @@ void ATA::IDE_ExecCmd(u16 value)
 			break;
 		case 0xC4:
 			HDD_ReadMultiple(false);
+			break;
+		case 0xC6:
+			HDD_SetMultipleMode();
 			break;
 		case 0xC8:
 			HDD_ReadDMA(false);
@@ -135,8 +141,6 @@ bool ATA::PreCmd()
 	regStatus &= ~ATA_STAT_WRERR;
 	regStatus &= ~ATA_STAT_DRQ;
 	regStatus &= ~ATA_STAT_ERR;
-
-	regStatus &= ~ATA_STAT_SEEK;
 
 	regError = 0;
 

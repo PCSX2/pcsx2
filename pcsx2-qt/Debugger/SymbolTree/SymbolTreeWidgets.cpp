@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "SymbolTreeWidgets.h"
@@ -24,17 +24,29 @@ SymbolTreeWidget::SymbolTreeWidget(u32 flags, s32 symbol_address_alignment, Debu
 
 	setupMenu();
 
-	connect(m_ui.refreshButton, &QPushButton::clicked, this, &SymbolTreeWidget::reset);
+	connect(m_ui.refreshButton, &QPushButton::clicked, this, [&]() {
+		m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+			m_cpu.GetSymbolGuardian().UpdateFunctionHashes(database, m_cpu);
+		});
+
+		reset();
+	});
+
 	connect(m_ui.filterBox, &QLineEdit::textEdited, this, &SymbolTreeWidget::reset);
 
 	connect(m_ui.newButton, &QPushButton::clicked, this, &SymbolTreeWidget::onNewButtonPressed);
 	connect(m_ui.deleteButton, &QPushButton::clicked, this, &SymbolTreeWidget::onDeleteButtonPressed);
 
-	connect(m_ui.treeView->verticalScrollBar(), &QScrollBar::valueChanged, this, &SymbolTreeWidget::updateVisibleNodes);
+	connect(m_ui.treeView->verticalScrollBar(), &QScrollBar::valueChanged, this, [&]() {
+		updateVisibleNodes(false);
+	});
 
 	m_ui.treeView->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.treeView, &QTreeView::customContextMenuRequested, this, &SymbolTreeWidget::openMenu);
-	connect(m_ui.treeView, &QTreeView::expanded, this, &SymbolTreeWidget::updateVisibleNodes);
+
+	connect(m_ui.treeView, &QTreeView::expanded, this, [&]() {
+		updateVisibleNodes(true);
+	});
 }
 
 SymbolTreeWidget::~SymbolTreeWidget() = default;
@@ -43,15 +55,15 @@ void SymbolTreeWidget::resizeEvent(QResizeEvent* event)
 {
 	QWidget::resizeEvent(event);
 
-	updateVisibleNodes();
+	updateVisibleNodes(false);
 }
 
 void SymbolTreeWidget::updateModel()
 {
-	if (!m_model || m_model->needsReset())
+	if (needsReset())
 		reset();
-
-	updateVisibleNodes();
+	else
+		updateVisibleNodes(true);
 }
 
 void SymbolTreeWidget::reset()
@@ -60,8 +72,6 @@ void SymbolTreeWidget::reset()
 		setupTree();
 
 	m_ui.treeView->setColumnHidden(SymbolTreeModel::SIZE, !m_show_size_column || !m_show_size_column->isChecked());
-
-	m_cpu.GetSymbolGuardian().UpdateFunctionHashes(m_cpu);
 
 	SymbolFilters filters;
 	std::unique_ptr<SymbolTreeNode> root;
@@ -80,24 +90,38 @@ void SymbolTreeWidget::reset()
 		m_model->reset(std::move(root));
 
 		// Read the initial values for visible nodes.
-		updateVisibleNodes();
+		updateVisibleNodes(true);
 
 		if (!filters.string.isEmpty())
 			expandGroups(QModelIndex());
 	}
 }
 
-void SymbolTreeWidget::updateVisibleNodes()
+void SymbolTreeWidget::updateVisibleNodes(bool update_hashes)
 {
 	if (!m_model)
 		return;
 
+	// Enumerate visible symbol nodes.
+	std::vector<const SymbolTreeNode*> nodes;
 	QModelIndex index = m_ui.treeView->indexAt(m_ui.treeView->rect().topLeft());
 	while (m_ui.treeView->visualRect(index).intersects(m_ui.treeView->viewport()->rect()))
 	{
-		m_model->setData(index, QVariant(), SymbolTreeModel::UPDATE_FROM_MEMORY_ROLE);
+		nodes.emplace_back(m_model->nodeFromIndex(index));
 		index = m_ui.treeView->indexBelow(index);
 	}
+
+	// Hash functions for symbols with visible nodes.
+	if (update_hashes)
+	{
+		m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+			SymbolTreeNode::updateSymbolHashes(nodes, m_cpu, database);
+		});
+	}
+
+	// Update the values of visible nodes from memory.
+	for (const SymbolTreeNode* node : nodes)
+		m_model->setData(m_model->indexFromNode(*node), QVariant(), SymbolTreeModel::UPDATE_FROM_MEMORY_ROLE);
 
 	m_ui.treeView->update();
 }
@@ -445,6 +469,8 @@ void SymbolTreeWidget::setupMenu()
 void SymbolTreeWidget::openMenu(QPoint pos)
 {
 	SymbolTreeNode* node = currentNode();
+	if (!node)
+		return;
 
 	bool node_is_object = node->tag == SymbolTreeNode::OBJECT;
 	bool node_is_symbol = node->symbol.valid();
@@ -461,6 +487,11 @@ void SymbolTreeWidget::openMenu(QPoint pos)
 		m_change_type_temporarily->setEnabled(node_is_object);
 
 	m_context_menu->exec(m_ui.treeView->viewport()->mapToGlobal(pos));
+}
+
+bool SymbolTreeWidget::needsReset() const
+{
+	return !m_model || m_model->needsReset();
 }
 
 void SymbolTreeWidget::onDeleteButtonPressed()
@@ -859,14 +890,43 @@ LocalVariableTreeWidget::LocalVariableTreeWidget(DebugInterface& cpu, QWidget* p
 
 LocalVariableTreeWidget::~LocalVariableTreeWidget() = default;
 
+bool LocalVariableTreeWidget::needsReset() const
+{
+	if (!m_function.valid())
+		return true;
+
+	u32 program_counter = m_cpu.getPC();
+
+	bool left_function = true;
+	m_cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
+		const ccc::Function* function = database.functions.symbol_from_handle(m_function);
+		if (!function || !function->address().valid())
+			return;
+
+		u32 begin = function->address().value;
+		u32 end = function->address().value + function->size();
+
+		left_function = program_counter < begin || program_counter >= end;
+	});
+
+	if (left_function)
+		return true;
+
+	return SymbolTreeWidget::needsReset();
+}
+
 std::vector<SymbolTreeWidget::SymbolWork> LocalVariableTreeWidget::getSymbols(
 	const QString& filter, const ccc::SymbolDatabase& database)
 {
 	u32 program_counter = m_cpu.getPC();
 	const ccc::Function* function = database.functions.symbol_overlapping_address(program_counter);
 	if (!function || !function->local_variables().has_value())
+	{
+		m_function = ccc::FunctionHandle();
 		return std::vector<SymbolWork>();
+	}
 
+	m_function = function->handle();
 	m_caller_stack_pointer = m_cpu.getCallerStackPointer(*function);
 
 	std::vector<SymbolTreeWidget::SymbolWork> symbols;
@@ -955,6 +1015,31 @@ ParameterVariableTreeWidget::ParameterVariableTreeWidget(DebugInterface& cpu, QW
 
 ParameterVariableTreeWidget::~ParameterVariableTreeWidget() = default;
 
+bool ParameterVariableTreeWidget::needsReset() const
+{
+	if (!m_function.valid())
+		return true;
+
+	u32 program_counter = m_cpu.getPC();
+
+	bool left_function = true;
+	m_cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
+		const ccc::Function* function = database.functions.symbol_from_handle(m_function);
+		if (!function || !function->address().valid())
+			return;
+
+		u32 begin = function->address().value;
+		u32 end = function->address().value + function->size();
+
+		left_function = program_counter < begin || program_counter >= end;
+	});
+
+	if (left_function)
+		return true;
+
+	return SymbolTreeWidget::needsReset();
+}
+
 std::vector<SymbolTreeWidget::SymbolWork> ParameterVariableTreeWidget::getSymbols(
 	const QString& filter, const ccc::SymbolDatabase& database)
 {
@@ -963,8 +1048,12 @@ std::vector<SymbolTreeWidget::SymbolWork> ParameterVariableTreeWidget::getSymbol
 	u32 program_counter = m_cpu.getPC();
 	const ccc::Function* function = database.functions.symbol_overlapping_address(program_counter);
 	if (!function || !function->parameter_variables().has_value())
+	{
+		m_function = ccc::FunctionHandle();
 		return std::vector<SymbolWork>();
+	}
 
+	m_function = function->handle();
 	m_caller_stack_pointer = m_cpu.getCallerStackPointer(*function);
 
 	for (const ccc::ParameterVariableHandle parameter_variable_handle : *function->parameter_variables())

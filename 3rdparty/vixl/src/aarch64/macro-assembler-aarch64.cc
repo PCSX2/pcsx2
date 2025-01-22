@@ -24,9 +24,9 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <cctype>
-
 #include "macro-assembler-aarch64.h"
+
+#include <cctype>
 
 namespace vixl {
 namespace aarch64 {
@@ -194,9 +194,8 @@ void VeneerPool::Reset() {
 
 void VeneerPool::Release() {
   if (--monitor_ == 0) {
-    VIXL_ASSERT(IsEmpty() ||
-                masm_->GetCursorOffset() <
-                    unresolved_branches_.GetFirstLimit());
+    VIXL_ASSERT(IsEmpty() || masm_->GetCursorOffset() <
+                                 unresolved_branches_.GetFirstLimit());
   }
 }
 
@@ -313,6 +312,48 @@ void VeneerPool::Emit(EmitOption option, size_t amount) {
 }
 
 
+MacroAssembler::MacroAssembler(PositionIndependentCodeOption pic)
+    : Assembler(pic),
+#ifdef VIXL_DEBUG
+      allow_macro_instructions_(true),
+#endif
+      generate_simulator_code_(VIXL_AARCH64_GENERATE_SIMULATOR_CODE),
+      sp_(sp),
+      tmp_list_(ip0, ip1),
+      v_tmp_list_(d31),
+      p_tmp_list_(CPURegList::Empty(CPURegister::kPRegister)),
+      current_scratch_scope_(NULL),
+      literal_pool_(this),
+      veneer_pool_(this),
+      recommended_checkpoint_(Pool::kNoCheckpointRequired),
+      fp_nan_propagation_(NoFPMacroNaNPropagationSelected) {
+  checkpoint_ = GetNextCheckPoint();
+#ifndef VIXL_DEBUG
+  USE(allow_macro_instructions_);
+#endif
+}
+
+
+MacroAssembler::MacroAssembler(size_t capacity,
+                               PositionIndependentCodeOption pic)
+    : Assembler(capacity, pic),
+#ifdef VIXL_DEBUG
+      allow_macro_instructions_(true),
+#endif
+      generate_simulator_code_(VIXL_AARCH64_GENERATE_SIMULATOR_CODE),
+      sp_(sp),
+      tmp_list_(ip0, ip1),
+      v_tmp_list_(d31),
+      p_tmp_list_(CPURegList::Empty(CPURegister::kPRegister)),
+      current_scratch_scope_(NULL),
+      literal_pool_(this),
+      veneer_pool_(this),
+      recommended_checkpoint_(Pool::kNoCheckpointRequired),
+      fp_nan_propagation_(NoFPMacroNaNPropagationSelected) {
+  checkpoint_ = GetNextCheckPoint();
+}
+
+
 MacroAssembler::MacroAssembler(byte* buffer,
                                size_t capacity,
                                PositionIndependentCodeOption pic)
@@ -363,7 +404,7 @@ void MacroAssembler::FinalizeCode(FinalizeOption option) {
 
 void MacroAssembler::CheckEmitFor(size_t amount) {
   CheckEmitPoolsFor(amount);
-  VIXL_ASSERT(GetBuffer()->HasSpaceFor(amount));
+  GetBuffer()->EnsureSpaceFor(amount);
 }
 
 
@@ -1108,11 +1149,14 @@ void MacroAssembler::Ccmp(const Register& rn,
                           StatusFlags nzcv,
                           Condition cond) {
   VIXL_ASSERT(allow_macro_instructions_);
-  if (operand.IsImmediate() && (operand.GetImmediate() < 0)) {
-    ConditionalCompareMacro(rn, -operand.GetImmediate(), nzcv, cond, CCMN);
-  } else {
-    ConditionalCompareMacro(rn, operand, nzcv, cond, CCMP);
+  if (operand.IsImmediate()) {
+    int64_t imm = operand.GetImmediate();
+    if ((imm < 0) && CanBeNegated(imm)) {
+      ConditionalCompareMacro(rn, -imm, nzcv, cond, CCMN);
+      return;
+    }
   }
+  ConditionalCompareMacro(rn, operand, nzcv, cond, CCMP);
 }
 
 
@@ -1121,11 +1165,14 @@ void MacroAssembler::Ccmn(const Register& rn,
                           StatusFlags nzcv,
                           Condition cond) {
   VIXL_ASSERT(allow_macro_instructions_);
-  if (operand.IsImmediate() && (operand.GetImmediate() < 0)) {
-    ConditionalCompareMacro(rn, -operand.GetImmediate(), nzcv, cond, CCMP);
-  } else {
-    ConditionalCompareMacro(rn, operand, nzcv, cond, CCMN);
+  if (operand.IsImmediate()) {
+    int64_t imm = operand.GetImmediate();
+    if ((imm < 0) && CanBeNegated(imm)) {
+      ConditionalCompareMacro(rn, -imm, nzcv, cond, CCMP);
+      return;
+    }
   }
+  ConditionalCompareMacro(rn, operand, nzcv, cond, CCMN);
 }
 
 
@@ -1359,8 +1406,7 @@ void MacroAssembler::Add(const Register& rd,
   VIXL_ASSERT(allow_macro_instructions_);
   if (operand.IsImmediate()) {
     int64_t imm = operand.GetImmediate();
-    if ((imm < 0) && (imm != std::numeric_limits<int64_t>::min()) &&
-        IsImmAddSub(-imm)) {
+    if ((imm < 0) && CanBeNegated(imm) && IsImmAddSub(-imm)) {
       AddSubMacro(rd, rn, -imm, S, SUB);
       return;
     }
@@ -1447,8 +1493,7 @@ void MacroAssembler::Sub(const Register& rd,
   VIXL_ASSERT(allow_macro_instructions_);
   if (operand.IsImmediate()) {
     int64_t imm = operand.GetImmediate();
-    if ((imm < 0) && (imm != std::numeric_limits<int64_t>::min()) &&
-        IsImmAddSub(-imm)) {
+    if ((imm < 0) && CanBeNegated(imm) && IsImmAddSub(-imm)) {
       AddSubMacro(rd, rn, -imm, S, ADD);
       return;
     }
@@ -1609,7 +1654,7 @@ void MacroAssembler::Fmov(VRegister vd, Float16 imm) {
 
 void MacroAssembler::Neg(const Register& rd, const Operand& operand) {
   VIXL_ASSERT(allow_macro_instructions_);
-  if (operand.IsImmediate()) {
+  if (operand.IsImmediate() && CanBeNegated(operand.GetImmediate())) {
     Mov(rd, -operand.GetImmediate());
   } else {
     Sub(rd, AppropriateZeroRegFor(rd), operand);
@@ -1925,6 +1970,22 @@ void MacroAssembler::Setf16(const Register& wn) {
   setf16(wn);
 }
 
+void MacroAssembler::Chkfeat(const Register& xdn) {
+  VIXL_ASSERT(allow_macro_instructions_);
+  MacroEmissionCheckScope guard(this);
+  if (xdn.Is(x16)) {
+    chkfeat(xdn);
+  } else {
+    UseScratchRegisterScope temps(this);
+    if (temps.TryAcquire(x16)) {
+      Mov(x16, xdn);
+      chkfeat(x16);
+      Mov(xdn, x16);
+    } else {
+      VIXL_ABORT();
+    }
+  }
+}
 
 #define DEFINE_FUNCTION(FN, REGTYPE, REG, OP)                          \
   void MacroAssembler::FN(const REGTYPE REG, const MemOperand& addr) { \

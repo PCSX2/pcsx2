@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -18,16 +18,16 @@ namespace PacketReader::IP::UDP::DNS
 		u16 entryClass;
 
 		DNS_QuestionEntry(const std::string& qName, u16 qType, u16 qClass);
-		DNS_QuestionEntry(u8* buffer, int* offset);
+		DNS_QuestionEntry(const u8* buffer, int* offset);
 
-		virtual int GetLength();
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual int GetLength() const;
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual ~DNS_QuestionEntry(){};
 
 	private:
-		void ReadDNS_String(u8* buffer, int* offset, std::string* value);
-		void WriteDNS_String(u8* buffer, int* offset, const std::string& value);
+		void ReadDNS_String(const u8* buffer, int* offset, std::string* value) const;
+		void WriteDNS_String(u8* buffer, int* offset, const std::string& value) const;
 	};
 
 	class DNS_ResponseEntry : public DNS_QuestionEntry
@@ -37,15 +37,11 @@ namespace PacketReader::IP::UDP::DNS
 		std::vector<u8> data;
 
 		DNS_ResponseEntry(const std::string& rName, u16 rType, u16 rClass, const std::vector<u8>& rData, u32 rTTL);
-		DNS_ResponseEntry(u8* buffer, int* offset);
+		DNS_ResponseEntry(const u8* buffer, int* offset);
 
-		virtual int GetLength();
-		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual int GetLength() const;
+		virtual void WriteBytes(u8* buffer, int* offset) const;
 
 		virtual ~DNS_ResponseEntry(){};
-
-	private:
-		void ReadDNSString(u8* buffer, int* offset, std::string* value);
-		void WriteDNSString(u8* buffer, int* offset, std::string value);
 	};
 } // namespace PacketReader::IP::UDP::DNS

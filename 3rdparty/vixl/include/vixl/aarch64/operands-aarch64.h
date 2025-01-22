@@ -735,7 +735,7 @@ class SVEMemOperand {
 class IntegerOperand {
  public:
 #define VIXL_INT_TYPES(V) \
-  V(char) V(short) V(int) V(long) V(long long)  // NOLINT(runtime/int)
+  V(char) V(short) V(int) V(long) V(long long)  // NOLINT(google-runtime-int)
 #define VIXL_DECL_INT_OVERLOADS(T)                                        \
   /* These are allowed to be implicit constructors because this is a */   \
   /* wrapper class that doesn't normally perform any type conversion. */  \
@@ -993,7 +993,7 @@ class GenericOperand {
   // We only support sizes up to X/D register sizes.
   size_t mem_op_size_;
 };
-}
-}  // namespace vixl::aarch64
+}  // namespace aarch64
+}  // namespace vixl
 
 #endif  // VIXL_AARCH64_OPERANDS_AARCH64_H_

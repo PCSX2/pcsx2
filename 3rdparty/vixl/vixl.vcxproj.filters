@@ -45,6 +45,9 @@
     <ClInclude Include="include\vixl\aarch64\decoder-aarch64.h">
       <Filter>aarch64</Filter>
     </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\debugger-aarch64.h">
+      <Filter>aarch64</Filter>
+    </ClInclude>
     <ClInclude Include="include\vixl\assembler-base-vixl.h" />
     <ClInclude Include="include\vixl\code-buffer-vixl.h" />
     <ClInclude Include="include\vixl\code-generation-scopes-vixl.h" />

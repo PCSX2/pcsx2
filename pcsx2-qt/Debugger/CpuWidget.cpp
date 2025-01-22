@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "CpuWidget.h"
@@ -154,14 +154,15 @@ void CpuWidget::setupSymbolTrees()
 	m_local_variable_tree = new LocalVariableTreeWidget(m_cpu);
 	m_parameter_variable_tree = new ParameterVariableTreeWidget(m_cpu);
 
+	m_function_tree->updateModel();
+	m_global_variable_tree->updateModel();
+	m_local_variable_tree->updateModel();
+	m_parameter_variable_tree->updateModel();
+
 	m_ui.tabFunctions->layout()->addWidget(m_function_tree);
 	m_ui.tabGlobalVariables->layout()->addWidget(m_global_variable_tree);
 	m_ui.tabLocalVariables->layout()->addWidget(m_local_variable_tree);
 	m_ui.tabParameterVariables->layout()->addWidget(m_parameter_variable_tree);
-
-	connect(m_ui.tabWidgetRegFunc, &QTabWidget::currentChanged, m_function_tree, &SymbolTreeWidget::updateModel);
-	connect(m_ui.tabWidget, &QTabWidget::currentChanged, m_global_variable_tree, &SymbolTreeWidget::updateModel);
-	connect(m_ui.tabWidget, &QTabWidget::currentChanged, m_local_variable_tree, &SymbolTreeWidget::updateModel);
 
 	connect(m_function_tree, &SymbolTreeWidget::goToInDisassembly, m_ui.disassemblyWidget, &DisassemblyWidget::gotoAddressAndSetFocus);
 	connect(m_global_variable_tree, &SymbolTreeWidget::goToInDisassembly, m_ui.disassemblyWidget, &DisassemblyWidget::gotoAddressAndSetFocus);
@@ -202,8 +203,10 @@ void CpuWidget::reloadCPUWidgets()
 	m_ui.disassemblyWidget->update();
 	m_ui.memoryviewWidget->update();
 
-	m_local_variable_tree->reset();
-	m_parameter_variable_tree->reset();
+	m_function_tree->updateModel();
+	m_global_variable_tree->updateModel();
+	m_local_variable_tree->updateModel();
+	m_parameter_variable_tree->updateModel();
 }
 
 void CpuWidget::paintEvent(QPaintEvent* event)
@@ -333,7 +336,7 @@ void CpuWidget::onVMPaused()
 	}
 	else
 	{
-		m_ui.disassemblyWidget->gotoAddress(m_cpu.getPC(), false);
+		m_ui.disassemblyWidget->gotoProgramCounterOnPause();
 	}
 
 	reloadCPUWidgets();

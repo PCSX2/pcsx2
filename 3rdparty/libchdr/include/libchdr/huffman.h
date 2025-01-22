@@ -85,6 +85,6 @@ int huffman_build_tree(struct huffman_decoder* decoder, uint32_t totaldata, uint
 enum huffman_error huffman_assign_canonical_codes(struct huffman_decoder* decoder);
 enum huffman_error huffman_compute_tree_from_histo(struct huffman_decoder* decoder);
 
-void huffman_build_lookup_table(struct huffman_decoder* decoder);
+enum huffman_error huffman_build_lookup_table(struct huffman_decoder* decoder);
 
 #endif

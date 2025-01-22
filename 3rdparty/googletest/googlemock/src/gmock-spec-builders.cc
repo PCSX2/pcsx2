@@ -490,6 +490,7 @@ class MockObjectRegistry {
   // failure, unless the user explicitly asked us to ignore it.
   ~MockObjectRegistry() {
     if (!GMOCK_FLAG_GET(catch_leaked_mocks)) return;
+    internal::MutexLock l(&internal::g_gmock_mutex);
 
     int leaked_count = 0;
     for (StateMap::const_iterator it = states_.begin(); it != states_.end();
@@ -530,7 +531,7 @@ class MockObjectRegistry {
 #ifdef GTEST_OS_QURT
       qurt_exception_raise_fatal();
 #else
-      _exit(1);  // We cannot call exit() as it is not reentrant and
+      _Exit(1);  // We cannot call exit() as it is not reentrant and
                  // may already have been called.
 #endif
     }

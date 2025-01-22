@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "DEV9/ATA/ATA.h"
@@ -8,6 +8,7 @@ void ATA::PostCmdNoData()
 {
 	regStatus &= ~ATA_STAT_BUSY;
 
+	pendingInterrupt = true;
 	if (regControlEnableIRQ)
 		_DEV9irq(ATA_INTR_INTRQ, 1);
 }
@@ -18,6 +19,7 @@ void ATA::CmdNoDataAbort()
 
 	regError |= ATA_ERR_ABORT;
 	regStatus |= ATA_STAT_ERR;
+	regStatusSeekLock = (regStatus & ATA_STAT_SEEK) ? 1 : -1;
 	PostCmdNoData();
 }
 
@@ -29,8 +31,14 @@ void ATA::HDD_FlushCache() //Can't when DRQ set
 		return;
 	DevCon.WriteLn("DEV9: HDD_FlushCache");
 
-	awaitFlush = true;
-	Async(-1);
+	if (!writeQueue.IsQueueEmpty())
+	{
+		regStatus |= ATA_STAT_SEEK;
+		awaitFlush = true;
+		Async(-1);
+	}
+	else
+		PostCmdNoData();
 }
 
 void ATA::HDD_InitDevParameters()
@@ -51,7 +59,38 @@ void ATA::HDD_ReadVerifySectors(bool isLBA48)
 
 	IDE_CmdLBA48Transform(isLBA48);
 
+	regStatus &= ~ATA_STAT_SEEK;
+	if (!HDD_CanSeek())
+	{
+		regStatus |= ATA_STAT_ERR;
+		regStatusSeekLock = -1;
+		regError |= ATA_ERR_TRACK0;
+	}
+	else
+		regStatus |= ATA_STAT_SEEK;
+
 	HDD_CanAssessOrSetError();
+
+	PostCmdNoData();
+}
+
+void ATA::HDD_Recalibrate()
+{
+	if (!PreCmd())
+		return;
+	DevCon.WriteLn("DEV9: HDD_Recalibrate");
+
+	lba48 = false;
+	// Report minimum address (LBA 0 or CHS 0/0/1).
+	// SetLBA currently only supports LBA, so set the regs directly.
+	regSelect = regSelect & 0xf0;
+	regHcyl = 0;
+	regLcyl = 0;
+	regSector = (regSelect & 0x40) ? 0 : 1;
+
+	// If recalibrate fails, we would set ATA_STAT_ERR in regStatus and ATA_ERR_TRACK0 in regError.
+	// we will never fail, so set ATA_STAT_SEEK in regStatus to indicate we finished seeking.
+	regStatus |= ATA_STAT_SEEK;
 
 	PostCmdNoData();
 }
@@ -62,11 +101,12 @@ void ATA::HDD_SeekCmd()
 		return;
 	DevCon.WriteLn("DEV9: HDD_SeekCmd");
 
+	lba48 = false;
 	regStatus &= ~ATA_STAT_SEEK;
-
 	if (HDD_CanSeek())
 	{
 		regStatus |= ATA_STAT_ERR;
+		regStatusSeekLock = -1;
 		regError |= ATA_ERR_ID;
 	}
 	else
@@ -161,6 +201,7 @@ void ATA::HDD_Nop()
 	//Always ends in error
 	regError |= ATA_ERR_ABORT;
 	regStatus |= ATA_STAT_ERR;
+	regStatusSeekLock = (regStatus & ATA_STAT_SEEK) ? 1 : -1;
 	PostCmdNoData();
 }
 

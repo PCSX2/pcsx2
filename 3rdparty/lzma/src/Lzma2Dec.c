@@ -1,5 +1,5 @@
 /* Lzma2Dec.c -- LZMA2 Decoder
-2023-03-03 : Igor Pavlov : Public domain */
+2024-03-01 : Igor Pavlov : Public domain */
 
 /* #define SHOW_DEBUG_INFO */
 
@@ -157,8 +157,10 @@ static unsigned Lzma2Dec_UpdateState(CLzma2Dec *p, Byte b)
       p->decoder.prop.lp = (Byte)lp;
       return LZMA2_STATE_DATA;
     }
+    
+    default:
+      return LZMA2_STATE_ERROR;
   }
-  return LZMA2_STATE_ERROR;
 }
 
 static void LzmaDec_UpdateWithUncompressed(CLzmaDec *p, const Byte *src, SizeT size)

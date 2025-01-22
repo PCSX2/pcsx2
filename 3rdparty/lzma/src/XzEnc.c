@@ -1,5 +1,5 @@
 /* XzEnc.c -- Xz Encode
-2023-04-13 : Igor Pavlov : Public domain */
+2024-03-01 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -29,8 +29,9 @@
 
 #define XZ_GET_PAD_SIZE(dataSize) ((4 - ((unsigned)(dataSize) & 3)) & 3)
 
-/* max pack size for LZMA2 block + check-64bytrs: */
-#define XZ_GET_MAX_BLOCK_PACK_SIZE(unpackSize) ((unpackSize) + ((unpackSize) >> 10) + 16 + 64)
+#define XZ_CHECK_SIZE_MAX 64
+/* max pack size for LZMA2 block + pad4 + check_size: */
+#define XZ_GET_MAX_BLOCK_PACK_SIZE(unpackSize) ((unpackSize) + ((unpackSize) >> 10) + 16 + XZ_CHECK_SIZE_MAX)
 
 #define XZ_GET_ESTIMATED_BLOCK_TOTAL_PACK_SIZE(unpackSize) (XZ_BLOCK_HEADER_SIZE_MAX + XZ_GET_MAX_BLOCK_PACK_SIZE(unpackSize))
 
@@ -325,12 +326,13 @@ typedef struct
 
 static const z7_Func_BranchConv g_Funcs_BranchConv_RISC_Enc[] =
 {
-  Z7_BRANCH_CONV_ENC(PPC),
-  Z7_BRANCH_CONV_ENC(IA64),
-  Z7_BRANCH_CONV_ENC(ARM),
-  Z7_BRANCH_CONV_ENC(ARMT),
-  Z7_BRANCH_CONV_ENC(SPARC),
-  Z7_BRANCH_CONV_ENC(ARM64)
+  Z7_BRANCH_CONV_ENC_2 (BranchConv_PPC),
+  Z7_BRANCH_CONV_ENC_2 (BranchConv_IA64),
+  Z7_BRANCH_CONV_ENC_2 (BranchConv_ARM),
+  Z7_BRANCH_CONV_ENC_2 (BranchConv_ARMT),
+  Z7_BRANCH_CONV_ENC_2 (BranchConv_SPARC),
+  Z7_BRANCH_CONV_ENC_2 (BranchConv_ARM64),
+  Z7_BRANCH_CONV_ENC_2 (BranchConv_RISCV)
 };
 
 static SizeT XzBcFilterStateBase_Filter_Enc(CXzBcFilterStateBase *p, Byte *data, SizeT size)
@@ -888,9 +890,9 @@ static SRes Xz_CompressBlock(
     blockSizes->unpackSize = checkInStream.processed;
   }
   {
-    Byte buf[4 + 64];
-    unsigned padSize = XZ_GET_PAD_SIZE(seqSizeOutStream.processed);
-    UInt64 packSize = seqSizeOutStream.processed;
+    Byte buf[4 + XZ_CHECK_SIZE_MAX];
+    const unsigned padSize = XZ_GET_PAD_SIZE(seqSizeOutStream.processed);
+    const UInt64 packSize = seqSizeOutStream.processed;
     
     buf[0] = 0;
     buf[1] = 0;
@@ -898,7 +900,8 @@ static SRes Xz_CompressBlock(
     buf[3] = 0;
     
     SeqCheckInStream_GetDigest(&checkInStream, buf + 4);
-    RINOK(WriteBytes(&seqSizeOutStream.vt, buf + (4 - padSize), padSize + XzFlags_GetCheckSize((CXzStreamFlags)props->checkId)))
+    RINOK(WriteBytes(&seqSizeOutStream.vt, buf + (4 - padSize),
+        padSize + XzFlags_GetCheckSize((CXzStreamFlags)props->checkId)))
     
     blockSizes->totalSize = seqSizeOutStream.processed - padSize;
     
@@ -1083,18 +1086,19 @@ static SRes XzEnc_MtCallback_Code(void *pp, unsigned coderIndex, unsigned outBuf
   CXzEnc *me = (CXzEnc *)pp;
   SRes res;
   CMtProgressThunk progressThunk;
-
-  Byte *dest = me->outBufs[outBufIndex];
-
+  Byte *dest;
   UNUSED_VAR(finished)
-
   {
     CXzEncBlockInfo *bInfo = &me->EncBlocks[outBufIndex];
     bInfo->totalSize = 0;
     bInfo->unpackSize = 0;
     bInfo->headerSize = 0;
+    // v23.02: we don't compress empty blocks
+    // also we must ignore that empty block in XzEnc_MtCallback_Write()
+    if (srcSize == 0)
+      return SZ_OK;
   }
-
+  dest = me->outBufs[outBufIndex];
   if (!dest)
   {
     dest = (Byte *)ISzAlloc_Alloc(me->alloc, me->outBufSize);
@@ -1140,18 +1144,20 @@ static SRes XzEnc_MtCallback_Code(void *pp, unsigned coderIndex, unsigned outBuf
 static SRes XzEnc_MtCallback_Write(void *pp, unsigned outBufIndex)
 {
   CXzEnc *me = (CXzEnc *)pp;
-
   const CXzEncBlockInfo *bInfo = &me->EncBlocks[outBufIndex];
-  const Byte *data = me->outBufs[outBufIndex];
-
-  RINOK(WriteBytes(me->outStream, data, bInfo->headerSize))
-
+  // v23.02: we don't write empty blocks
+  // note: if (bInfo->unpackSize == 0) then there is no compressed data of block
+  if (bInfo->unpackSize == 0)
+    return SZ_OK;
   {
-    UInt64 totalPackFull = bInfo->totalSize + XZ_GET_PAD_SIZE(bInfo->totalSize);
-    RINOK(WriteBytes(me->outStream, data + XZ_BLOCK_HEADER_SIZE_MAX, (size_t)totalPackFull - bInfo->headerSize))
+    const Byte *data = me->outBufs[outBufIndex];
+    RINOK(WriteBytes(me->outStream, data, bInfo->headerSize))
+    {
+      const UInt64 totalPackFull = bInfo->totalSize + XZ_GET_PAD_SIZE(bInfo->totalSize);
+      RINOK(WriteBytes(me->outStream, data + XZ_BLOCK_HEADER_SIZE_MAX, (size_t)totalPackFull - bInfo->headerSize))
+    }
+    return XzEncIndex_AddIndexRecord(&me->xzIndex, bInfo->unpackSize, bInfo->totalSize, me->alloc);
   }
-
-  return XzEncIndex_AddIndexRecord(&me->xzIndex, bInfo->unpackSize, bInfo->totalSize, me->alloc);
 }
 
 #endif

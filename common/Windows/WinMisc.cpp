@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "common/FileSystem.h"
@@ -7,8 +7,6 @@
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
-
-#include "fmt/core.h"
 
 #include <mmsystem.h>
 #include <timeapi.h>

@@ -1,5 +1,5 @@
 /* Xz.h - Xz interface
-2023-04-13 : Igor Pavlov : Public domain */
+2024-01-26 : Igor Pavlov : Public domain */
 
 #ifndef ZIP7_INC_XZ_H
 #define ZIP7_INC_XZ_H
@@ -18,6 +18,7 @@ EXTERN_C_BEGIN
 #define XZ_ID_ARMT  8
 #define XZ_ID_SPARC 9
 #define XZ_ID_ARM64 0xa
+#define XZ_ID_RISCV 0xb
 #define XZ_ID_LZMA2 0x21
 
 unsigned Xz_ReadVarInt(const Byte *p, size_t maxSize, UInt64 *value);
@@ -233,13 +234,13 @@ typedef enum
 typedef struct
 {
   EXzState state;
-  UInt32 pos;
+  unsigned pos;
   unsigned alignPos;
   unsigned indexPreSize;
 
   CXzStreamFlags streamFlags;
   
-  UInt32 blockHeaderSize;
+  unsigned blockHeaderSize;
   UInt64 packSize;
   UInt64 unpackSize;
 

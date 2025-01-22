@@ -46,16 +46,37 @@
 
 #include "gtest/gtest-matchers.h"
 #include "gtest/internal/gtest-internal.h"
+#include "gtest/internal/gtest-port.h"
 
 GTEST_DECLARE_string_(internal_run_death_test);
 
 namespace testing {
 namespace internal {
 
-// Names of the flags (needed for parsing Google Test flags).
-const char kDeathTestStyleFlag[] = "death_test_style";
-const char kDeathTestUseFork[] = "death_test_use_fork";
+// Name of the flag (needed for parsing Google Test flag).
 const char kInternalRunDeathTestFlag[] = "internal_run_death_test";
+
+// A string passed to EXPECT_DEATH (etc.) is caught by one of these overloads
+// and interpreted as a regex (rather than an Eq matcher) for legacy
+// compatibility.
+inline Matcher<const ::std::string&> MakeDeathTestMatcher(
+    ::testing::internal::RE regex) {
+  return ContainsRegex(regex.pattern());
+}
+inline Matcher<const ::std::string&> MakeDeathTestMatcher(const char* regex) {
+  return ContainsRegex(regex);
+}
+inline Matcher<const ::std::string&> MakeDeathTestMatcher(
+    const ::std::string& regex) {
+  return ContainsRegex(regex);
+}
+
+// If a Matcher<const ::std::string&> is passed to EXPECT_DEATH (etc.), it's
+// used directly.
+inline Matcher<const ::std::string&> MakeDeathTestMatcher(
+    Matcher<const ::std::string&> matcher) {
+  return matcher;
+}
 
 #ifdef GTEST_HAS_DEATH_TEST
 
@@ -73,7 +94,7 @@ GTEST_DISABLE_MSC_WARNINGS_PUSH_(4251 \
 //
 // exit status:  The integer exit information in the format specified
 //               by wait(2)
-// exit code:    The integer code passed to exit(3), _exit(2), or
+// exit code:    The integer code passed to exit(3), _Exit(2), or
 //               returned from main()
 class GTEST_API_ DeathTest {
  public:
@@ -169,28 +190,6 @@ class DefaultDeathTestFactory : public DeathTestFactory {
 // Returns true if exit_status describes a process that was terminated
 // by a signal, or exited normally with a nonzero exit code.
 GTEST_API_ bool ExitedUnsuccessfully(int exit_status);
-
-// A string passed to EXPECT_DEATH (etc.) is caught by one of these overloads
-// and interpreted as a regex (rather than an Eq matcher) for legacy
-// compatibility.
-inline Matcher<const ::std::string&> MakeDeathTestMatcher(
-    ::testing::internal::RE regex) {
-  return ContainsRegex(regex.pattern());
-}
-inline Matcher<const ::std::string&> MakeDeathTestMatcher(const char* regex) {
-  return ContainsRegex(regex);
-}
-inline Matcher<const ::std::string&> MakeDeathTestMatcher(
-    const ::std::string& regex) {
-  return ContainsRegex(regex);
-}
-
-// If a Matcher<const ::std::string&> is passed to EXPECT_DEATH (etc.), it's
-// used directly.
-inline Matcher<const ::std::string&> MakeDeathTestMatcher(
-    Matcher<const ::std::string&> matcher) {
-  return matcher;
-}
 
 // Traps C++ exceptions escaping statement and reports them as test
 // failures. Note that trapping SEH exceptions is not implemented here.

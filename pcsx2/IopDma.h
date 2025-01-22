@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -18,6 +18,7 @@ extern void psxDma12(u32 madr, u32 bcr, u32 chcr);
 
 extern int  psxDma4Interrupt();
 extern int  psxDma7Interrupt();
+extern void psxDMA8Interrupt();
 extern void psxDMA11Interrupt();
 extern void psxDMA12Interrupt();
 extern void dev9Interrupt();

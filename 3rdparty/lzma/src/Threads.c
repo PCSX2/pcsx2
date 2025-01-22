@@ -1,5 +1,5 @@
 /* Threads.c -- multithreading library
-2023-03-04 : Igor Pavlov : Public domain */
+2024-03-28 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -195,20 +195,19 @@ WRes CriticalSection_Init(CCriticalSection *p)
 
 // ---------- POSIX ----------
 
-#ifndef __APPLE__
+#if defined(__linux__) && !defined(__APPLE__) && !defined(_AIX) && !defined(__ANDROID__)
 #ifndef Z7_AFFINITY_DISABLE
 // _GNU_SOURCE can be required for pthread_setaffinity_np() / CPU_ZERO / CPU_SET
 // clang < 3.6       : unknown warning group '-Wreserved-id-macro'
 // clang 3.6 - 12.01 : gives warning "macro name is a reserved identifier"
 // clang >= 13       : do not give warning
 #if !defined(_GNU_SOURCE)
-  #if defined(__clang__) && (__clang_major__ >= 4) && (__clang_major__ <= 12)
-    #pragma GCC diagnostic ignored "-Wreserved-id-macro"
-  #endif
-#define _GNU_SOURCE
+Z7_DIAGNOSTIC_IGNORE_BEGIN_RESERVED_MACRO_IDENTIFIER
+// #define _GNU_SOURCE
+Z7_DIAGNOSTIC_IGNORE_END_RESERVED_MACRO_IDENTIFIER
 #endif // !defined(_GNU_SOURCE)
 #endif // Z7_AFFINITY_DISABLE
-#endif // __APPLE__
+#endif // __linux__
 
 #include "Threads.h"
 
@@ -244,8 +243,9 @@ WRes Thread_Create_With_CpuSet(CThread *p, THREAD_FUNC_TYPE func, LPVOID param, 
   {
     if (cpuSet)
     {
-      #ifdef Z7_AFFINITY_SUPPORTED
-      
+      // pthread_attr_setaffinity_np() is not supported for MUSL compile.
+      // so we check for __GLIBC__ here
+#if defined(Z7_AFFINITY_SUPPORTED) && defined( __GLIBC__)
       /*
       printf("\n affinity :");
       unsigned i;
@@ -267,7 +267,7 @@ WRes Thread_Create_With_CpuSet(CThread *p, THREAD_FUNC_TYPE func, LPVOID param, 
       // ret2 =
       pthread_attr_setaffinity_np(&attr, sizeof(*cpuSet), cpuSet);
       // if (ret2) ret = ret2;
-      #endif
+#endif
     }
     
     ret = pthread_create(&p->_tid, &attr, func, param);
@@ -369,13 +369,20 @@ WRes AutoResetEvent_CreateNotSignaled(CAutoResetEvent *p)
   { return AutoResetEvent_Create(p, 0); }
 
 
+#if defined(Z7_LLVM_CLANG_VERSION) && (__clang_major__ == 13)
+// freebsd:
+#pragma GCC diagnostic ignored "-Wthread-safety-analysis"
+#endif
+
 WRes Event_Set(CEvent *p)
 {
   RINOK(pthread_mutex_lock(&p->_mutex))
   p->_state = True;
-  int res1 = pthread_cond_broadcast(&p->_cond);
-  int res2 = pthread_mutex_unlock(&p->_mutex);
-  return (res2 ? res2 : res1);
+  {
+    const int res1 = pthread_cond_broadcast(&p->_cond);
+    const int res2 = pthread_mutex_unlock(&p->_mutex);
+    return (res2 ? res2 : res1);
+  }
 }
 
 WRes Event_Reset(CEvent *p)
@@ -408,8 +415,8 @@ WRes Event_Close(CEvent *p)
     return 0;
   p->_created = 0;
   {
-    int res1 = pthread_mutex_destroy(&p->_mutex);
-    int res2 = pthread_cond_destroy(&p->_cond);
+    const int res1 = pthread_mutex_destroy(&p->_mutex);
+    const int res2 = pthread_cond_destroy(&p->_cond);
     return (res1 ? res1 : res2);
   }
 }
@@ -487,8 +494,8 @@ WRes Semaphore_Close(CSemaphore *p)
     return 0;
   p->_created = 0;
   {
-    int res1 = pthread_mutex_destroy(&p->_mutex);
-    int res2 = pthread_cond_destroy(&p->_cond);
+    const int res1 = pthread_mutex_destroy(&p->_mutex);
+    const int res2 = pthread_cond_destroy(&p->_cond);
     return (res1 ? res1 : res2);
   }
 }
@@ -546,6 +553,18 @@ LONG InterlockedIncrement(LONG volatile *addend)
     #pragma GCC diagnostic ignored "-Watomic-implicit-seq-cst"
   #endif
     return __sync_add_and_fetch(addend, 1);
+  #endif
+}
+
+LONG InterlockedDecrement(LONG volatile *addend)
+{
+  // Print("InterlockedDecrement")
+  #ifdef USE_HACK_UNSAFE_ATOMIC
+    LONG val = *addend - 1;
+    *addend = val;
+    return val;
+  #else
+    return __sync_sub_and_fetch(addend, 1);
   #endif
 }
 

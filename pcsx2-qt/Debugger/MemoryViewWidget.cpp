@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "MemoryViewWidget.h"
@@ -599,9 +599,10 @@ void MemoryViewWidget::contextGoToAddress()
 		return;
 
 	u64 address = 0;
-	if (!m_cpu->evaluateExpression(targetString.toStdString().c_str(), address))
+	std::string error;
+	if (!m_cpu->evaluateExpression(targetString.toStdString().c_str(), address, error))
 	{
-		QMessageBox::warning(this, tr("Cannot Go To"), getExpressionError());
+		QMessageBox::warning(this, tr("Cannot Go To"), QString::fromStdString(error));
 		return;
 	}
 

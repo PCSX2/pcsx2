@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Host.h"
@@ -851,7 +851,9 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	}
 	if (!m_dev.dev)
 	{
-		if (!GSConfig.Adapter.empty())
+		if (GSConfig.Adapter == GetDefaultAdapter())
+			Console.WriteLn("Metal: Using default adapter");
+		else if (!GSConfig.Adapter.empty())
 			Console.Warning("Metal: Couldn't find adapter %s, using default", GSConfig.Adapter.c_str());
 		m_dev = GSMTLDevice(MRCTransfer(MTLCreateSystemDefaultDevice()));
 		if (!m_dev.dev)
@@ -2462,7 +2464,7 @@ void GSDeviceMTL::RenderImGui(ImDrawData* data)
 	simd::float2 fb_size = simd_float(last_scissor.zw);
 	simd::float2 clip_off   = ToSimd(data->DisplayPos);       // (0,0) unless using multi-viewports
 	simd::float2 clip_scale = ToSimd(data->FramebufferScale); // (1,1) unless using retina display which are often (2,2)
-	ImTextureID last_tex = nullptr;
+	ImTextureID last_tex = reinterpret_cast<ImTextureID>(nullptr);
 
 	for (int i = 0; i < data->CmdListsCount; i++)
 	{

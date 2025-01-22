@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -70,11 +70,11 @@ enum struct AdapterOptions : int
 
 constexpr enum AdapterOptions operator|(const enum AdapterOptions selfValue, const enum AdapterOptions inValue)
 {
-	return (enum AdapterOptions)(int(selfValue) | int(inValue));
+	return static_cast<enum AdapterOptions>(static_cast<int>(selfValue) | static_cast<int>(inValue));
 }
 constexpr enum AdapterOptions operator&(const enum AdapterOptions selfValue, const enum AdapterOptions inValue)
 {
-	return (enum AdapterOptions)(int(selfValue) & int(inValue));
+	return static_cast<enum AdapterOptions>(static_cast<int>(selfValue) & static_cast<int>(inValue));
 }
 
 class NetAdapter

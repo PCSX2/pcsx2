@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -38,45 +38,45 @@ namespace PacketReader::IP::TCP
 
 	public:
 		//Flags
-		bool GetNS();
+		bool GetNS() const;
 		void SetNS(bool value);
 
-		bool GetCWR();
+		bool GetCWR() const;
 		void SetCWR(bool value);
 
-		bool GetECE();
+		bool GetECE() const;
 		void SetECE(bool value);
 
-		bool GetURG();
+		bool GetURG() const;
 		void SetURG(bool value);
 
-		bool GetACK();
+		bool GetACK() const;
 		void SetACK(bool value);
 
-		bool GetPSH();
+		bool GetPSH() const;
 		void SetPSH(bool value);
 
-		bool GetRST();
+		bool GetRST() const;
 		void SetRST(bool value);
 
-		bool GetSYN();
+		bool GetSYN() const;
 		void SetSYN(bool value);
 
-		bool GetFIN();
+		bool GetFIN() const;
 		void SetFIN(bool value);
 
 		//Takes ownership of payload
 		TCP_Packet(Payload* data);
-		TCP_Packet(u8* buffer, int bufferSize);
+		TCP_Packet(const u8* buffer, int bufferSize);
 		TCP_Packet(const TCP_Packet&);
 
-		Payload* GetPayload();
+		Payload* GetPayload() const;
 
 		virtual int GetLength();
 		virtual void WriteBytes(u8* buffer, int* offset);
 		virtual TCP_Packet* Clone() const;
 
-		virtual u8 GetProtocol();
+		virtual u8 GetProtocol() const;
 
 		virtual bool VerifyChecksum(IP_Address srcIP, IP_Address dstIP);
 		virtual void CalculateChecksum(IP_Address srcIP, IP_Address dstIP);

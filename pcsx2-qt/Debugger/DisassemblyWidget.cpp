@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "DisassemblyWidget.h"
@@ -170,9 +170,10 @@ void DisassemblyWidget::contextGoToAddress()
 		return;
 
 	u64 address = 0;
-	if (!m_cpu->evaluateExpression(targetString.toStdString().c_str(), address))
+	std::string error;
+	if (!m_cpu->evaluateExpression(targetString.toStdString().c_str(), address, error))
 	{
-		QMessageBox::warning(this, tr("Cannot Go To"), getExpressionError());
+		QMessageBox::warning(this, tr("Cannot Go To"), QString::fromStdString(error));
 		return;
 	}
 
@@ -655,6 +656,12 @@ void DisassemblyWidget::customMenuRequested(QPoint pos)
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextGoToAddress);
 	contextMenu->addAction(action = new QAction(tr("Go to in Memory View"), this));
 	connect(action, &QAction::triggered, this, [this]() { gotoInMemory(m_selectedAddressStart); });
+
+	contextMenu->addAction(action = new QAction(tr("Go to PC on Pause"), this));
+	action->setCheckable(true);
+	action->setChecked(m_goToProgramCounterOnPause);
+	connect(action, &QAction::triggered, this, [this](bool value) { m_goToProgramCounterOnPause = value; });
+
 	contextMenu->addSeparator();
 	contextMenu->addAction(action = new QAction(tr("Add Function"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextAddFunction);
@@ -779,11 +786,16 @@ QColor DisassemblyWidget::GetAddressFunctionColor(u32 address)
 		};
 	}
 
-	ccc::FunctionHandle handle = m_cpu->GetSymbolGuardian().FunctionOverlappingAddress(address).handle;
-	if (!handle.valid())
+	// Use the address to pick the colour since the value of the handle may
+	// change from run to run.
+	ccc::Address function_address =
+		m_cpu->GetSymbolGuardian().FunctionOverlappingAddress(address).address;
+	if (!function_address.valid())
 		return palette().text().color();
 
-	return colors[handle.value % colors.size()];
+	// Chop off the first few bits of the address since functions will be
+	// aligned in memory.
+	return colors[(function_address.value >> 4) % colors.size()];
 }
 
 QString DisassemblyWidget::FetchSelectionInfo(SelectionInfo selInfo)
@@ -814,6 +826,12 @@ QString DisassemblyWidget::FetchSelectionInfo(SelectionInfo selInfo)
 void DisassemblyWidget::gotoAddressAndSetFocus(u32 address)
 {
 	gotoAddress(address, true);
+}
+
+void DisassemblyWidget::gotoProgramCounterOnPause()
+{
+	if (m_goToProgramCounterOnPause)
+		gotoAddress(m_cpu->getPC(), false);
 }
 
 void DisassemblyWidget::gotoAddress(u32 address, bool should_set_focus)

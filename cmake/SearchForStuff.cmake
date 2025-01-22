@@ -105,8 +105,7 @@ disable_compiler_warnings_for_target(cubeb)
 disable_compiler_warnings_for_target(speex)
 
 # Find the Qt components that we need.
-# Should be 6.7.1, but held back on 6.7.0 because of Flatpak.
-find_package(Qt6 6.7.0 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets LinguistTools REQUIRED)
+find_package(Qt6 6.7.2 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets LinguistTools REQUIRED)
 
 if(WIN32)
   add_subdirectory(3rdparty/rainterface EXCLUDE_FROM_ALL)
@@ -126,7 +125,7 @@ elseif(_M_ARM64)
 endif()
 
 # Prevent fmt from being built with exceptions, or being thrown at call sites.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_USE_EXCEPTIONS=0 -DFMT_USE_RTTI=0")
 add_subdirectory(3rdparty/fmt EXCLUDE_FROM_ALL)
 
 # Deliberately at the end. We don't want to set the flag on third-party projects.

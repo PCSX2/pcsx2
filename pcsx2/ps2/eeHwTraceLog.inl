@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #define eeAddrInRange(name, addr) \
 	(addr >= EEMemoryMap::name##_Start && addr < EEMemoryMap::name##_End)
@@ -256,7 +256,7 @@ template< typename T>
 static __ri void eeHwTraceLog( u32 addr, T val, bool mode )
 {
 	if (!IsDevBuild) return;
-	if (!EmuConfig.Trace.Enabled || !EmuConfig.Trace.EE.m_EnableAll || !EmuConfig.Trace.EE.m_EnableRegisters) return;
+	if (!EmuConfig.Trace.Enabled) return;
 	if (!_eelog_enabled(addr)) return;
 
 	std::string labelStr(fmt::format("Hw{}{}", mode ? "Read" : "Write", sizeof(T) * 8));

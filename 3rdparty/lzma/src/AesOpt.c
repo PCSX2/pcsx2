@@ -1,5 +1,5 @@
 /* AesOpt.c -- AES optimized code for x86 AES hardware instructions
-2023-04-02 : Igor Pavlov : Public domain */
+2024-03-01 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -15,8 +15,8 @@
         #define USE_INTEL_VAES
       #endif
     #endif
-  #elif defined(__clang__) && (__clang_major__ > 3 || __clang_major__ == 3 && __clang_minor__ >= 8) \
-       || defined(__GNUC__) && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 4)
+  #elif defined(Z7_CLANG_VERSION) && (Z7_CLANG_VERSION >= 30800) \
+     || defined(Z7_GCC_VERSION)   && (Z7_GCC_VERSION   >= 40400)
         #define USE_INTEL_AES
         #if !defined(__AES__)
           #define ATTRIB_AES __attribute__((__target__("aes")))
@@ -35,25 +35,35 @@
         #define USE_INTEL_VAES
       #endif
     #endif
+    #ifndef USE_INTEL_AES
+      #define Z7_USE_AES_HW_STUB
+    #endif
+    #ifndef USE_INTEL_VAES
+      #define Z7_USE_VAES_HW_STUB
+    #endif
   #endif
 
-#ifndef ATTRIB_AES
-  #define ATTRIB_AES
-#endif
-#ifndef ATTRIB_VAES
-  #define ATTRIB_VAES
-#endif
+    #ifndef USE_INTEL_AES
+      // #define Z7_USE_AES_HW_STUB // for debug
+    #endif
+    #ifndef USE_INTEL_VAES
+      // #define Z7_USE_VAES_HW_STUB // for debug
+    #endif
 
 
 #ifdef USE_INTEL_AES
 
 #include <wmmintrin.h>
 
-#ifndef USE_INTEL_VAES
+#if !defined(USE_INTEL_VAES) && defined(Z7_USE_VAES_HW_STUB)
 #define AES_TYPE_keys UInt32
 #define AES_TYPE_data Byte
 // #define AES_TYPE_keys __m128i
 // #define AES_TYPE_data __m128i
+#endif
+
+#ifndef ATTRIB_AES
+  #define ATTRIB_AES
 #endif
 
 #define AES_FUNC_START(name) \
@@ -69,8 +79,6 @@ AES_FUNC_START (name)
 #define MM_OP_m(op, src)      MM_OP(op, m, src)
 
 #define MM_XOR( dest, src)    MM_OP(_mm_xor_si128,    dest, src)
-#define AVX_XOR(dest, src)    MM_OP(_mm256_xor_si256, dest, src)
-
 
 AES_FUNC_START2 (AesCbc_Encode_HW)
 {
@@ -139,11 +147,6 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
 #define XOR_data_M1(reg, ii)  MM_XOR (reg, data[ii- 1])
 #endif
 
-#define AVX_DECLARE_VAR(reg, ii)  __m256i reg;
-#define AVX_LOAD_data(  reg, ii)  reg = ((const __m256i *)(const void *)data)[ii];
-#define AVX_STORE_data( reg, ii)  ((__m256i *)(void *)data)[ii] = reg;
-#define AVX_XOR_data_M1(reg, ii)  AVX_XOR (reg, (((const __m256i *)(const void *)(data - 1))[ii]))
-
 #define MM_OP_key(op, reg)  MM_OP(op, reg, key);
 
 #define AES_DEC(      reg, ii)   MM_OP_key (_mm_aesdec_si128,     reg)
@@ -152,25 +155,11 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
 #define AES_ENC_LAST( reg, ii)   MM_OP_key (_mm_aesenclast_si128, reg)
 #define AES_XOR(      reg, ii)   MM_OP_key (_mm_xor_si128,        reg)
 
-
-#define AVX_AES_DEC(      reg, ii)   MM_OP_key (_mm256_aesdec_epi128,     reg)
-#define AVX_AES_DEC_LAST( reg, ii)   MM_OP_key (_mm256_aesdeclast_epi128, reg)
-#define AVX_AES_ENC(      reg, ii)   MM_OP_key (_mm256_aesenc_epi128,     reg)
-#define AVX_AES_ENC_LAST( reg, ii)   MM_OP_key (_mm256_aesenclast_epi128, reg)
-#define AVX_AES_XOR(      reg, ii)   MM_OP_key (_mm256_xor_si256,         reg)
-
 #define CTR_START(reg, ii)  MM_OP (_mm_add_epi64, ctr, one)  reg = ctr;
 #define CTR_END(  reg, ii)  MM_XOR (data[ii], reg)
 
-#define AVX_CTR_START(reg, ii)  MM_OP (_mm256_add_epi64, ctr2, two)  reg = _mm256_xor_si256(ctr2, key);
-#define AVX_CTR_END(  reg, ii)  AVX_XOR (((__m256i *)(void *)data)[ii], reg)
-
 #define WOP_KEY(op, n) { \
     const __m128i key = w[n]; \
-    WOP(op); }
-
-#define AVX_WOP_KEY(op, n) { \
-    const __m256i key = w[n]; \
     WOP(op); }
 
 
@@ -189,6 +178,40 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
 #define SINGLE_LOOP  \
     for (; data < dataEnd; data++)
 
+
+
+#ifdef USE_INTEL_VAES
+
+#define AVX_XOR(dest, src)    MM_OP(_mm256_xor_si256, dest, src)
+#define AVX_DECLARE_VAR(reg, ii)  __m256i reg;
+#define AVX_LOAD_data(  reg, ii)  reg = ((const __m256i *)(const void *)data)[ii];
+#define AVX_STORE_data( reg, ii)  ((__m256i *)(void *)data)[ii] = reg;
+/*
+AVX_XOR_data_M1() needs unaligned memory load
+if (we don't use _mm256_loadu_si256() here)
+{
+  Most compilers with enabled optimizations generate fused AVX (LOAD + OP)
+  instruction that can load unaligned data.
+  But GCC and CLANG without -O2 or -O1 optimizations can generate separated
+  LOAD-ALIGNED (vmovdqa) instruction that will fail on execution.
+}
+Note: some compilers generate more instructions, if we use _mm256_loadu_si256() here.
+v23.02: we use _mm256_loadu_si256() here, because we need compatibility with any compiler.
+*/
+#define AVX_XOR_data_M1(reg, ii)  AVX_XOR (reg, _mm256_loadu_si256(&(((const __m256i *)(const void *)(data - 1))[ii])))
+// for debug only: the following code will fail on execution, if compiled by some compilers:
+// #define AVX_XOR_data_M1(reg, ii)  AVX_XOR (reg, (((const __m256i *)(const void *)(data - 1))[ii]))
+
+#define AVX_AES_DEC(      reg, ii)   MM_OP_key (_mm256_aesdec_epi128,     reg)
+#define AVX_AES_DEC_LAST( reg, ii)   MM_OP_key (_mm256_aesdeclast_epi128, reg)
+#define AVX_AES_ENC(      reg, ii)   MM_OP_key (_mm256_aesenc_epi128,     reg)
+#define AVX_AES_ENC_LAST( reg, ii)   MM_OP_key (_mm256_aesenclast_epi128, reg)
+#define AVX_AES_XOR(      reg, ii)   MM_OP_key (_mm256_xor_si256,         reg)
+#define AVX_CTR_START(reg, ii)  MM_OP (_mm256_add_epi64, ctr2, two)  reg = _mm256_xor_si256(ctr2, key);
+#define AVX_CTR_END(  reg, ii)  AVX_XOR (((__m256i *)(void *)data)[ii], reg)
+#define AVX_WOP_KEY(op, n) { \
+    const __m256i key = w[n]; \
+    WOP(op); }
 
 #define NUM_AES_KEYS_MAX 15
 
@@ -213,6 +236,9 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
 
 /* MSVC for x86: If we don't call _mm256_zeroupper(), and -arch:IA32 is not specified,
    MSVC still can insert vzeroupper instruction. */
+
+#endif
+
 
 
 AES_FUNC_START2 (AesCbc_Decode_HW)
@@ -380,6 +406,9 @@ required that <immintrin.h> must be included before <avxintrin.h>.
   #endif
 #endif  // __clang__ && _MSC_VER
 
+#ifndef ATTRIB_VAES
+  #define ATTRIB_VAES
+#endif
 
 #define VAES_FUNC_START2(name) \
 AES_FUNC_START (name); \
@@ -519,10 +548,18 @@ VAES_FUNC_START2 (AesCtr_Code_HW_256)
 
 /* no USE_INTEL_AES */
 
+#if defined(Z7_USE_AES_HW_STUB)
+// We can compile this file with another C compiler,
+// or we can compile asm version.
+// So we can generate real code instead of this stub function.
+// #if defined(_MSC_VER)
 #pragma message("AES  HW_SW stub was used")
+// #endif
 
+#if !defined(USE_INTEL_VAES) && defined(Z7_USE_VAES_HW_STUB)
 #define AES_TYPE_keys UInt32
 #define AES_TYPE_data Byte
+#endif
 
 #define AES_FUNC_START(name) \
     void Z7_FASTCALL name(UInt32 *p, Byte *data, size_t numBlocks) \
@@ -535,13 +572,16 @@ VAES_FUNC_START2 (AesCtr_Code_HW_256)
 AES_COMPAT_STUB (AesCbc_Encode)
 AES_COMPAT_STUB (AesCbc_Decode)
 AES_COMPAT_STUB (AesCtr_Code)
+#endif // Z7_USE_AES_HW_STUB
 
 #endif // USE_INTEL_AES
 
 
 #ifndef USE_INTEL_VAES
-
+#if defined(Z7_USE_VAES_HW_STUB)
+// #if defined(_MSC_VER)
 #pragma message("VAES HW_SW stub was used")
+// #endif
 
 #define VAES_COMPAT_STUB(name) \
     void Z7_FASTCALL name ## _256(UInt32 *p, Byte *data, size_t numBlocks); \
@@ -550,36 +590,59 @@ AES_COMPAT_STUB (AesCtr_Code)
 
 VAES_COMPAT_STUB (AesCbc_Decode_HW)
 VAES_COMPAT_STUB (AesCtr_Code_HW)
-
+#endif
 #endif // ! USE_INTEL_VAES
+
+
 
 
 #elif defined(MY_CPU_ARM_OR_ARM64) && defined(MY_CPU_LE)
 
-  #if defined(__clang__)
-    #if (__clang_major__ >= 8) // fix that check
+  #if   defined(__ARM_FEATURE_AES) \
+     || defined(__ARM_FEATURE_CRYPTO)
+    #define USE_HW_AES
+  #else
+    #if  defined(MY_CPU_ARM64) \
+      || defined(__ARM_ARCH) && (__ARM_ARCH >= 4) \
+      || defined(Z7_MSC_VER_ORIGINAL)
+    #if  defined(__ARM_FP) && \
+          (   defined(Z7_CLANG_VERSION) && (Z7_CLANG_VERSION >= 30800) \
+           || defined(__GNUC__) && (__GNUC__ >= 6) \
+          ) \
+      || defined(Z7_MSC_VER_ORIGINAL) && (_MSC_VER >= 1910)
+    #if  defined(MY_CPU_ARM64) \
+      || !defined(Z7_CLANG_VERSION) \
+      || defined(__ARM_NEON) && \
+          (Z7_CLANG_VERSION < 170000 || \
+           Z7_CLANG_VERSION > 170001)
       #define USE_HW_AES
     #endif
-  #elif defined(__GNUC__)
-    #if (__GNUC__ >= 6) // fix that check
-      #define USE_HW_AES
     #endif
-  #elif defined(_MSC_VER)
-    #if _MSC_VER >= 1910
-      #define USE_HW_AES
     #endif
   #endif
 
 #ifdef USE_HW_AES
 
 // #pragma message("=== AES HW === ")
+// __ARM_FEATURE_CRYPTO macro is deprecated in favor of the finer grained feature macro __ARM_FEATURE_AES
 
 #if defined(__clang__) || defined(__GNUC__)
+#if !defined(__ARM_FEATURE_AES) && \
+    !defined(__ARM_FEATURE_CRYPTO)
   #ifdef MY_CPU_ARM64
-    #define ATTRIB_AES __attribute__((__target__("+crypto,aes")))
+#if defined(__clang__)
+    #define ATTRIB_AES __attribute__((__target__("crypto")))
+#else
+    #define ATTRIB_AES __attribute__((__target__("+crypto")))
+#endif
   #else
+#if defined(__clang__)
+    #define ATTRIB_AES __attribute__((__target__("armv8-a,aes")))
+#else
     #define ATTRIB_AES __attribute__((__target__("fpu=crypto-neon-fp-armv8")))
+#endif
   #endif
+#endif
 #else
   // _MSC_VER
   // for arm32
@@ -590,11 +653,59 @@ VAES_COMPAT_STUB (AesCtr_Code_HW)
   #define ATTRIB_AES
 #endif
 
-#if defined(_MSC_VER) && !defined(__clang__) && defined(MY_CPU_ARM64)
+#if defined(Z7_MSC_VER_ORIGINAL) && defined(MY_CPU_ARM64)
 #include <arm64_neon.h>
 #else
-#include <arm_neon.h>
+/*
+  clang-17.0.1: error : Cannot select: intrinsic %llvm.arm.neon.aese
+  clang
+   3.8.1 : __ARM_NEON             :                    defined(__ARM_FEATURE_CRYPTO)
+   7.0.1 : __ARM_NEON             : __ARM_ARCH >= 8 && defined(__ARM_FEATURE_CRYPTO)
+  11.?.0 : __ARM_NEON && __ARM_FP : __ARM_ARCH >= 8 && defined(__ARM_FEATURE_CRYPTO)
+  13.0.1 : __ARM_NEON && __ARM_FP : __ARM_ARCH >= 8 && defined(__ARM_FEATURE_AES)
+  16     : __ARM_NEON && __ARM_FP : __ARM_ARCH >= 8
+*/
+#if defined(__clang__) && __clang_major__ < 16
+#if !defined(__ARM_FEATURE_AES) && \
+    !defined(__ARM_FEATURE_CRYPTO)
+//     #pragma message("=== we set __ARM_FEATURE_CRYPTO 1 === ")
+    Z7_DIAGNOSTIC_IGNORE_BEGIN_RESERVED_MACRO_IDENTIFIER
+    #define Z7_ARM_FEATURE_CRYPTO_WAS_SET 1
+// #if defined(__clang__) && __clang_major__ < 13
+    #define __ARM_FEATURE_CRYPTO 1
+// #else
+    #define __ARM_FEATURE_AES 1
+// #endif
+    Z7_DIAGNOSTIC_IGNORE_END_RESERVED_MACRO_IDENTIFIER
 #endif
+#endif // clang
+
+#if defined(__clang__)
+
+#if defined(__ARM_ARCH) && __ARM_ARCH < 8
+    Z7_DIAGNOSTIC_IGNORE_BEGIN_RESERVED_MACRO_IDENTIFIER
+//    #pragma message("#define __ARM_ARCH 8")
+    #undef  __ARM_ARCH
+    #define __ARM_ARCH 8
+    Z7_DIAGNOSTIC_IGNORE_END_RESERVED_MACRO_IDENTIFIER
+#endif
+
+#endif // clang
+
+#include <arm_neon.h>
+
+#if defined(Z7_ARM_FEATURE_CRYPTO_WAS_SET) && \
+    defined(__ARM_FEATURE_CRYPTO) && \
+    defined(__ARM_FEATURE_AES)
+Z7_DIAGNOSTIC_IGNORE_BEGIN_RESERVED_MACRO_IDENTIFIER
+    #undef __ARM_FEATURE_CRYPTO
+    #undef __ARM_FEATURE_AES
+    #undef Z7_ARM_FEATURE_CRYPTO_WAS_SET
+Z7_DIAGNOSTIC_IGNORE_END_RESERVED_MACRO_IDENTIFIER
+//    #pragma message("=== we undefine __ARM_FEATURE_CRYPTO === ")
+#endif
+
+#endif // Z7_MSC_VER_ORIGINAL
 
 typedef uint8x16_t v128;
 
@@ -620,7 +731,7 @@ AES_FUNC_START (name)
 
 AES_FUNC_START2 (AesCbc_Encode_HW)
 {
-  v128 *p = (v128*)(void*)ivAes;
+  v128 * const p = (v128*)(void*)ivAes;
   v128 *data = (v128*)(void*)data8;
   v128 m = *p;
   const v128 k0 = p[2];
@@ -639,7 +750,7 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
   const v128 k_z0 = w[2];
   for (; numBlocks != 0; numBlocks--, data++)
   {
-    MM_XOR_m (*data);
+    MM_XOR_m (*data)
     AES_E_MC_m (k0)
     AES_E_MC_m (k1)
     AES_E_MC_m (k2)
@@ -660,7 +771,7 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
       }
     }
     AES_E_m  (k_z1)
-    MM_XOR_m (k_z0);
+    MM_XOR_m (k_z0)
     *data = m;
   }
   *p = m;
@@ -745,7 +856,7 @@ AES_FUNC_START2 (AesCbc_Decode_HW)
     while (w != p);
     WOP_KEY (AES_D,   1)
     WOP_KEY (AES_XOR, 0)
-    MM_XOR (m0, iv);
+    MM_XOR (m0, iv)
     WOP_M1 (XOR_data_M1)
     iv = data[NUM_WAYS - 1];
     WOP (STORE_data)
@@ -759,14 +870,14 @@ AES_FUNC_START2 (AesCbc_Decode_HW)
     AES_D_IMC_m (w[2])
     do
     {
-      AES_D_IMC_m (w[1]);
-      AES_D_IMC_m (w[0]);
+      AES_D_IMC_m (w[1])
+      AES_D_IMC_m (w[0])
       w -= 2;
     }
     while (w != p);
-    AES_D_m  (w[1]);
-    MM_XOR_m (w[0]);
-    MM_XOR_m (iv);
+    AES_D_m  (w[1])
+    MM_XOR_m (w[0])
+    MM_XOR_m (iv)
     iv = *data;
     *data = m;
   }
@@ -783,6 +894,12 @@ AES_FUNC_START2 (AesCtr_Code_HW)
   const v128 *wEnd = p + ((size_t)*(const UInt32 *)(p + 1)) * 2;
   const v128 *dataEnd;
   uint64x2_t one = vdupq_n_u64(0);
+
+// the bug in clang:
+// __builtin_neon_vsetq_lane_i64(__s0, (int8x16_t)__s1, __p2);
+#if defined(__clang__) && (__clang_major__ <= 9)
+#pragma GCC diagnostic ignored "-Wvector-conversion"
+#endif
   one = vsetq_lane_u64(1, one, 0);
   p += 2;
   
@@ -809,11 +926,11 @@ AES_FUNC_START2 (AesCtr_Code_HW)
   {
     const v128 *w = p;
     v128 m;
-    CTR_START (m, 0);
+    CTR_START (m, 0)
     do
     {
-      AES_E_MC_m (w[0]);
-      AES_E_MC_m (w[1]);
+      AES_E_MC_m (w[0])
+      AES_E_MC_m (w[1])
       w += 2;
     }
     while (w != wEnd);

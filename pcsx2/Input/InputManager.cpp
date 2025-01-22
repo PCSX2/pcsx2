@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "ImGui/ImGuiManager.h"
@@ -16,7 +16,7 @@
 
 #include "IconsPromptFont.h"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <array>
 #include <atomic>

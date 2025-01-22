@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
@@ -15,6 +15,8 @@
 
 #include "CDVD/Ps1CD.h"
 #include "CDVD/CDVD.h"
+
+#include "IopDma.h" // for iopIntcIrq
 
 using namespace R5900;
 
@@ -165,7 +167,11 @@ void _hwWrite32( u32 mem, u32 value )
 					psHu32(mem) &= ~value;
 				return;
 
-				mcase(SBUS_F240) :
+				mcase(SBUS_F240):
+					if (value & (1 << 18))
+					{
+						iopIntcIrq(1);
+					}
 					if (value & (1 << 19))
 					{
 						u32 cycle = psxRegs.cycle;

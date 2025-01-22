@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "AutoUpdaterDialog.h"
@@ -10,10 +10,10 @@
 #include "QtProgressCallback.h"
 #include "QtUtils.h"
 #include "SetupWizardDialog.h"
-#include "svnrev.h"
 
 #include "pcsx2/CDVD/CDVDcommon.h"
 #include "pcsx2/Achievements.h"
+#include "pcsx2/BuildVersion.h"
 #include "pcsx2/CDVD/CDVD.h"
 #include "pcsx2/Counters.h"
 #include "pcsx2/DebugTools/Debug.h"
@@ -51,7 +51,7 @@
 #include <QtGui/QClipboard>
 #include <QtGui/QInputMethod>
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <cmath>
 #include <csignal>
@@ -998,8 +998,9 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		QString gs_stat;
 		if (THREAD_VU1)
 		{
-			gs_stat = tr("Slot: %1 | %2 | EE: %3% | VU: %4% | GS: %5%")
+			gs_stat = tr("Slot: %1 | Volume: %2% | %3 | EE: %4% | VU: %5% | GS: %6%")
 						  .arg(SaveStateSelectorUI::GetCurrentSlot())
+						  .arg(SPU2::GetOutputVolume())
 						  .arg(gs_stat_str.c_str())
 						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 						  .arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
@@ -1007,8 +1008,9 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		}
 		else
 		{
-			gs_stat = tr("Slot: %1 | %2 | EE: %3% | GS: %4%")
+			gs_stat = tr("Slot: %1 | Volume: %2% | %3 | EE: %4% | GS: %5%")
 						  .arg(SaveStateSelectorUI::GetCurrentSlot())
+						  .arg(SPU2::GetOutputVolume())
 						  .arg(gs_stat_str.c_str())
 						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 						  .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
@@ -1468,7 +1470,7 @@ bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool 
 
 QString QtHost::GetAppNameAndVersion()
 {
-	return QStringLiteral("PCSX2 " GIT_REV);
+	return QString("PCSX2 %1").arg(BuildVersion::GitRev);
 }
 
 QString QtHost::GetAppConfigSuffix()

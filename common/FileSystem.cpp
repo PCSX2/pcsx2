@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "FileSystem.h"
@@ -453,6 +453,11 @@ std::string Path::RealPath(const std::string_view path)
 			}
 		}
 	}
+
+	// If any relative symlinks were resolved, there may be '.' and '..'
+	// components in the resultant path, which must be removed.
+	realpath = Path::Canonicalize(realpath);
+
 #endif
 
 	return realpath;
@@ -994,6 +999,37 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* 
 #endif
 }
 
+std::FILE* FileSystem::OpenCFileTryIgnoreCase(const char* filename, const char* mode, Error* error)
+{
+#if defined(_WIN32) || defined(__APPLE__)
+	return OpenCFile(filename, mode, error);
+#else
+	std::FILE* fp = std::fopen(filename, mode);
+	const auto cur_errno = errno;
+
+	if (!fp)
+	{
+		const auto dir = std::string(Path::GetDirectory(filename));
+		FindResultsArray files;
+		if (FindFiles(dir.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files))
+		{
+			for (auto& file : files)
+			{
+				if (StringUtil::compareNoCase(file.FileName, filename))
+				{
+					fp = std::fopen(file.FileName.c_str(), mode);
+					break;
+				}
+			}
+		}
+	}
+	if (!fp)
+		Error::SetErrno(error, cur_errno);
+	return fp;
+#endif
+}
+
+
 int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* error)
 {
 #ifdef _WIN32
@@ -1013,6 +1049,11 @@ int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* err
 FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode, Error* error)
 {
 	return ManagedCFilePtr(OpenCFile(filename, mode, error));
+}
+
+FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFileTryIgnoreCase(const char* filename, const char* mode, Error* error)
+{
+	return ManagedCFilePtr(OpenCFileTryIgnoreCase(filename, mode, error));
 }
 
 std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error)
@@ -1189,6 +1230,14 @@ size_t FileSystem::ReadFileWithProgress(std::FILE* fp, void* dst, size_t length,
 {
 	progress->SetProgressRange(100);
 
+	return FileSystem::ReadFileWithPartialProgress(fp, dst, length, progress, 0, 100, error, chunk_size);
+}
+
+size_t FileSystem::ReadFileWithPartialProgress(std::FILE* fp, void* dst, size_t length,
+	ProgressCallback* progress, int startPercent, int endPercent, Error* error, size_t chunk_size)
+{
+	const int deltaPercent = endPercent - startPercent;
+
 	size_t done = 0;
 	while (done < length)
 	{
@@ -1202,7 +1251,7 @@ size_t FileSystem::ReadFileWithProgress(std::FILE* fp, void* dst, size_t length,
 			break;
 		}
 
-		progress->SetProgressValue((done * 100) / length);
+		progress->SetProgressValue(startPercent + (done * deltaPercent) / length);
 		done += read_size;
 	}
 
@@ -1225,7 +1274,12 @@ bool FileSystem::RecursiveDeleteDirectory(const char* path)
 	{
 		for (const FILESYSTEM_FIND_DATA& fd : results)
 		{
-			if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
+			if (IsSymbolicLink(fd.FileName.c_str()))
+			{
+				if (!DeleteSymbolicLink(fd.FileName.c_str()))
+					return false;
+			}
+			else if ((fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
 			{
 				if (!RecursiveDeleteDirectory(fd.FileName.c_str()))
 					return false;
@@ -1650,21 +1704,6 @@ bool FileSystem::DirectoryExists(const char* path)
 		return false;
 }
 
-bool FileSystem::IsRealDirectory(const char* path)
-{
-	// convert to wide string
-	const std::wstring wpath = GetWin32Path(path);
-	if (wpath.empty())
-		return false;
-
-	// determine attributes for the path. if it's a directory, things have to be handled differently..
-	const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
-	if (fileAttributes == INVALID_FILE_ATTRIBUTES)
-		return false;
-
-	return ((fileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT)) != FILE_ATTRIBUTE_DIRECTORY);
-}
-
 bool FileSystem::DirectoryIsEmpty(const char* path)
 {
 	std::wstring wpath = GetWin32Path(path);
@@ -1933,6 +1972,72 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
 
 	CloseHandle(handle);
 	return result;
+}
+
+bool FileSystem::CreateSymLink(const char* link, const char* target)
+{
+	// convert to wide string
+	const std::wstring wlink = GetWin32Path(link);
+	if (wlink.empty())
+		return false;
+
+	const std::wstring wtarget = GetWin32Path(target);
+	if (wtarget.empty())
+		return false;
+
+	// check if it's a directory
+	DWORD flags = 0;
+	if (DirectoryExists(target))
+		flags |= SYMBOLIC_LINK_FLAG_DIRECTORY;
+
+	// create the symbolic link
+	return CreateSymbolicLinkW(wlink.c_str(), wtarget.c_str(), flags) != 0;
+}
+
+bool FileSystem::IsSymbolicLink(const char* path)
+{
+	// convert to wide string
+	const std::wstring wpath = GetWin32Path(path);
+	if (wpath.empty())
+		return false;
+
+	// determine attributes for the path
+	const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
+	if (fileAttributes == INVALID_FILE_ATTRIBUTES)
+		return false;
+
+	return fileAttributes & FILE_ATTRIBUTE_REPARSE_POINT;
+}
+
+bool FileSystem::DeleteSymbolicLink(const char* path, Error* error)
+{
+	// convert to wide string
+	const std::wstring wpath = GetWin32Path(path);
+	if (wpath.empty())
+	{
+		Error::SetStringView(error, "Invalid path.");
+		return false;
+	}
+
+	// delete the symbolic link
+	if (DirectoryExists(path))
+	{
+		if (!RemoveDirectoryW(wpath.c_str()))
+		{
+			Error::SetWin32(error, "RemoveDirectoryW() failed: ", GetLastError());
+			return false;
+		}
+	}
+	else
+	{
+		if (!DeleteFileW(wpath.c_str()))
+		{
+			Error::SetWin32(error, "DeleteFileW() failed: ", GetLastError());
+			return false;
+		}
+	}
+
+	return true;
 }
 
 #else
@@ -2216,15 +2321,6 @@ bool FileSystem::DirectoryExists(const char* path)
 		return false;
 }
 
-bool FileSystem::IsRealDirectory(const char* path)
-{
-	struct stat sysStatData;
-	if (lstat(path, &sysStatData) < 0)
-		return false;
-
-	return (S_ISDIR(sysStatData.st_mode) && !S_ISLNK(sysStatData.st_mode));
-}
-
 bool FileSystem::DirectoryIsEmpty(const char* path)
 {
 	DIR* pDir = opendir(path);
@@ -2476,6 +2572,31 @@ bool FileSystem::SetWorkingDirectory(const char* path)
 bool FileSystem::SetPathCompression(const char* path, bool enable)
 {
 	return false;
+}
+
+bool FileSystem::CreateSymLink(const char* link, const char* target)
+{
+	return symlink(target, link) == 0;
+}
+
+bool FileSystem::IsSymbolicLink(const char* path)
+{
+	struct stat sysStatData;
+	if (lstat(path, &sysStatData) < 0)
+		return false;
+
+	return S_ISLNK(sysStatData.st_mode);
+}
+
+bool FileSystem::DeleteSymbolicLink(const char* path, Error* error)
+{
+	if (unlink(path) != 0)
+	{
+		Error::SetErrno(error, "unlink() failed: ", errno);
+		return false;
+	}
+
+	return true;
 }
 
 FileSystem::POSIXLock::POSIXLock(int fd)

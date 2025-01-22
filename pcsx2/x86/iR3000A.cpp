@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "iR3000A.h"
@@ -25,8 +25,6 @@
 #include "common/Path.h"
 #include "common/Perf.h"
 #include "DebugTools/Breakpoints.h"
-
-#include "fmt/core.h"
 
 // #define DUMP_BLOCKS 1
 // #define TRACE_BLOCKS 1
@@ -155,7 +153,6 @@ static void iopRecRecompile(u32 startpc);
 static const void* iopDispatcherEvent = nullptr;
 static const void* iopDispatcherReg = nullptr;
 static const void* iopJITCompile = nullptr;
-static const void* iopJITCompileInBlock = nullptr;
 static const void* iopEnterRecompiledCode = nullptr;
 static const void* iopExitRecompiledCode = nullptr;
 
@@ -180,13 +177,6 @@ static const void* _DynGen_JITCompile()
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax * wordsize)]);
 	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
 
-	return retval;
-}
-
-static const void* _DynGen_JITCompileInBlock()
-{
-	u8* retval = xGetPtr();
-	xJMP((void*)iopJITCompile);
 	return retval;
 }
 
@@ -244,7 +234,6 @@ static void _DynGen_Dispatchers()
 	iopDispatcherReg = _DynGen_DispatcherReg();
 
 	iopJITCompile = _DynGen_JITCompile();
-	iopJITCompileInBlock = _DynGen_JITCompileInBlock();
 	iopEnterRecompiledCode = _DynGen_EnterRecompiledCode();
 
 	recBlocks.SetJITCompile(iopJITCompile);
@@ -662,14 +651,14 @@ static void psxRecompileIrxImport()
 	const char* funcname = nullptr;
 #endif
 
-	if (!hle && !debug && (!SysTraceActive(IOP.Bios) || !funcname))
+	if (!hle && !debug && (!TraceActive(IOP.Bios) || !funcname))
 		return;
 
 	xMOV(ptr32[&psxRegs.code], psxRegs.code);
 	xMOV(ptr32[&psxRegs.pc], psxpc);
 	_psxFlushCall(FLUSH_NODESTROY);
 
-	if (SysTraceActive(IOP.Bios))
+	if (TraceActive(IOP.Bios))
 	{
 		xMOV64(arg3reg, (uptr)funcname);
 
@@ -1543,7 +1532,7 @@ static void iopRecRecompile(const u32 startpc)
 	// This detects when SYSMEM is called and clears the modules then
 	if(startpc == 0x890)
 	{
-		DevCon.WriteLn(Color_Gray, "[R3000 Debugger] Branch to 0x890 (SYSMEM). Clearing modules.");
+		DevCon.WriteLn(Color_Gray, "R3000 Debugger: Branch to 0x890 (SYSMEM). Clearing modules.");
 		R3000SymbolGuardian.ClearIrxModules();
 	}
 
@@ -1570,7 +1559,7 @@ static void iopRecRecompile(const u32 startpc)
 
 	s_pCurBlock = PSX_GETBLOCK(startpc);
 
-	pxAssert(s_pCurBlock->GetFnptr() == (uptr)iopJITCompile || s_pCurBlock->GetFnptr() == (uptr)iopJITCompileInBlock);
+	pxAssert(s_pCurBlock->GetFnptr() == (uptr)iopJITCompile);
 
 	s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
 
@@ -1607,7 +1596,7 @@ static void iopRecRecompile(const u32 startpc)
 	while (1)
 	{
 		BASEBLOCK* pblock = PSX_GETBLOCK(i);
-		if (i != startpc && pblock->GetFnptr() != (uptr)iopJITCompile && pblock->GetFnptr() != (uptr)iopJITCompileInBlock)
+		if (i != startpc && pblock->GetFnptr() != (uptr)iopJITCompile)
 		{
 			// branch = 3
 			willbranch3 = 1;
@@ -1715,12 +1704,6 @@ StartRecomp:
 
 	pxAssert((psxpc - startpc) >> 2 <= 0xffff);
 	s_pCurBlockEx->size = (psxpc - startpc) >> 2;
-
-	for (i = 1; i < (u32)s_pCurBlockEx->size; ++i)
-	{
-		if (s_pCurBlock[i].GetFnptr() == (uptr)iopJITCompile)
-			s_pCurBlock[i].SetFnptr((uptr)iopJITCompileInBlock);
-	}
 
 	if (!(psxpc & 0x10000000))
 		g_psxMaxRecMem = std::max((psxpc & ~0xa0000000), g_psxMaxRecMem);

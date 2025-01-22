@@ -106,7 +106,7 @@ namespace details
         wistd::is_same<T, int>::value || wistd::is_same<T, unsigned int>::value || wistd::is_same<T, long>::value ||
         wistd::is_same<T, unsigned long>::value || wistd::is_same<T, __int64>::value || wistd::is_same<T, unsigned __int64>::value;
 
-    // True when either type is potentialy variably sized (e.g. size_t, ptrdiff_t)
+    // True when either type is potentially variably sized (e.g. size_t, ptrdiff_t)
     template <typename OldT, typename NewT>
     constexpr bool is_potentially_variably_sized_cast_v =
         is_potentially_variably_sized_type_v<OldT> || is_potentially_variably_sized_type_v<NewT>;

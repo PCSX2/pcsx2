@@ -114,6 +114,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="renameProfile">
+         <property name="text">
+          <string>Rename Profile</string>
+         </property>
+         <property name="icon">
+          <iconset theme="pencil-line"/>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="deleteProfile">
          <property name="text">
           <string>Delete Profile</string>

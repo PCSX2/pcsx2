@@ -1,15 +1,16 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
 
 #include "Pcsx2Defs.h"
 
-#include "fmt/core.h"
+#include "fmt/base.h"
 
 #include <algorithm>
 #include <cstdarg>
 #include <cstring>
+#include <iterator>
 #include <limits>
 #include <string>
 #include <string_view>
@@ -177,7 +178,7 @@ public:
 	__fi const char* end_ptr() const { return m_buffer + m_length; }
 
 	// STL adapters
-	__fi void push_back(value_type&& val) { append(val); }
+	__fi void push_back(value_type val) { append(val); }
 
 	// returns a string view for this string
 	std::string_view view() const;
@@ -413,7 +414,7 @@ __fi void SmallStringBase::format(fmt::format_string<T...> fmt, T&&... args)
 		} \
 \
 		template <typename FormatContext> \
-		auto format(const type& str, FormatContext& ctx) \
+		auto format(const type& str, FormatContext& ctx) const \
 		{ \
 			return fmt::format_to(ctx.out(), "{}", str.view()); \
 		} \

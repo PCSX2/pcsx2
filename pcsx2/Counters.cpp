@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include <time.h>
@@ -403,7 +403,7 @@ void UpdateVSyncRate(bool force)
 		vSyncInfoCalc(&vSyncInfo, frames_per_second, total_scanlines);
 
 		if (video_mode_initialized)
-			Console.WriteLn(Color_Green, "(UpdateVSyncRate) Mode Changed to %s.", ReportVideoMode());
+			Console.WriteLn(Color_Green, "UpdateVSyncRate: Mode Changed to %s.", ReportVideoMode());
 
 		if (custom && video_mode_initialized)
 			Console.WriteLn(Color_StrongGreen, "  ... with user configured refresh rate: %.02f Hz", vertical_frequency);
@@ -499,8 +499,7 @@ static __fi void VSyncStart(u32 sCycle)
 	// Poll input after MTGS frame push, just in case it has to stall to catch up.
 	VMManager::Internal::PollInputOnCPUThread();
 
-	if (EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
-		SysTrace.EE.Counters.Write("    ================  EE COUNTER VSYNC START (frame: %d)  ================", g_FrameCount);
+	EECNT_LOG("    ================  EE COUNTER VSYNC START (frame: %d)  ================", g_FrameCount);
 
 	// Memcard auto ejection - Uses a tick system timed off of real time, decrementing one tick per frame.
 	AutoEject::CountDownTicks();
@@ -564,8 +563,7 @@ static __fi void GSVSync()
 
 static __fi void VSyncEnd(u32 sCycle)
 {
-	if (EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
-		SysTrace.EE.Counters.Write("    ================  EE COUNTER VSYNC END (frame: %d)  ================", g_FrameCount);
+	EECNT_LOG("    ================  EE COUNTER VSYNC END (frame: %d)  ================", g_FrameCount);
 
 	g_FrameCount++;
 	if (!GSSMODE1reg.SINT)

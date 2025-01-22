@@ -47,10 +47,11 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     mipmap: 1
     preloadFrameData: 1
   # The value of the speedhacks is assumed to be an integer,
-  # but at the time of writing speedhacks are effectively booleans (0/1)
   speedHacks:
-    mvuFlagSpeedHack: 0
-    InstantVU1SpeedHack: 0
+    mvuFlag: 0
+    InstantVU1: 0
+    mtvu: 0
+    eeCycleRate: 2
   memcardFilters:
     - "SERIAL-123"
     - "SERIAL-456"
@@ -249,15 +250,17 @@ These values are in a key-value format, where the value is assumed to be an inte
 
 ### Options for SpeedHacks
 
-* `mvuFlagSpeedHack`
+* `mvuFlag`
 * Accepted Values - `0` / `1`
 * Katamari Damacy has a peculiar speed bug when this speed hack is enabled (and it is by default)
-* `MTVUSpeedHack`
+* `mtvu`
 * Accepted Values - `0` / `1`
 * T-bit games dislike MTVU, and some games are incompatible with MTVU.
-* `InstantVU1SpeedHack`
+* `instantVU1`
 * Accepted Values - `0` / `1`
 * Games such as PaRappa the Rapper 2 need VU1 to sync, so you can force sync with this parameter.
+* `eeCycleRate`
+* Accepted Values - `-3` / `3`
 
 ## Memory Card Filter Override
 

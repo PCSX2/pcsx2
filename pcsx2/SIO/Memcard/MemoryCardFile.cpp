@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "SIO/Memcard/MemoryCardFile.h"
@@ -20,9 +20,7 @@
 #include "Host.h"
 #include "IconsPromptFont.h"
 
-#include "svnrev.h"
-
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <map>
 
@@ -159,6 +157,7 @@ class FileMemoryCard
 {
 protected:
 	std::FILE* m_file[8] = {};
+	s64 m_fileSize[8] = {};
 	std::string m_filenames[8] = {};
 	std::vector<u8> m_currentdata;
 	u64 m_chksum[8] = {};
@@ -248,7 +247,13 @@ std::string FileMcd_GetDefaultName(uint slot)
 		return StringUtil::StdStringFromFormat("Mcd%03u.ps2", slot + 1);
 }
 
-FileMemoryCard::FileMemoryCard() = default;
+FileMemoryCard::FileMemoryCard()
+{
+	for (u8 slot = 0; slot < 8; slot++)
+	{
+		m_fileSize[slot] = -1;
+	}
+}
 
 FileMemoryCard::~FileMemoryCard() = default;
 
@@ -287,7 +292,7 @@ void FileMemoryCard::Open()
 			}
 		}
 
-		if (fname.ends_with(".bin"))
+		if (fname.ends_with(".bin") || fname.ends_with(".mc2"))
 		{
 			std::string newname(fname + "x");
 			if (!ConvertNoECCtoRAW(fname.c_str(), newname.c_str()))
@@ -316,12 +321,14 @@ void FileMemoryCard::Open()
 		}
 		else // Load checksum
 		{
+			m_fileSize[slot] = FileSystem::FSize64(m_file[slot]);
+
 			Console.WriteLnFmt(Color_Green, "McdSlot {} [File]: {} [{} MB, {}]", slot, Path::GetFileName(fname),
-				(FileSystem::FSize64(m_file[slot]) + (MCD_SIZE + 1)) / MC2_MBSIZE,
+				(m_fileSize[slot] + (MCD_SIZE + 1)) / MC2_MBSIZE,
 				FileMcd_IsMemoryCardFormatted(m_file[slot]) ? "Formatted" : "UNFORMATTED");
 
 			m_filenames[slot] = std::move(fname);
-			m_ispsx[slot] = FileSystem::FSize64(m_file[slot]) == 0x20000;
+			m_ispsx[slot] = m_fileSize[slot] == 0x20000;
 			m_chkaddr = 0x210;
 
 			if (!m_ispsx[slot] && FileSystem::FSeek64(m_file[slot], m_chkaddr, SEEK_SET) == 0)
@@ -348,7 +355,7 @@ void FileMemoryCard::Close()
 		std::fclose(m_file[slot]);
 		m_file[slot] = nullptr;
 
-		if (m_filenames[slot].ends_with(".bin"))
+		if (m_filenames[slot].ends_with(".bin") || m_filenames[slot].ends_with(".mc2"))
 		{
 			const std::string name_in(m_filenames[slot] + 'x');
 			if (ConvertRAWtoNoECC(name_in.c_str(), m_filenames[slot].c_str()))
@@ -356,30 +363,14 @@ void FileMemoryCard::Close()
 		}
 
 		m_filenames[slot] = {};
+		m_fileSize[slot] = -1;
 	}
 }
 
 // Returns FALSE if the seek failed (is outside the bounds of the file).
 bool FileMemoryCard::Seek(std::FILE* f, u32 adr)
 {
-	const s64 size = FileSystem::FSize64(f);
-
-	// If anyone knows why this filesize logic is here (it appears to be related to legacy PSX
-	// cards, perhaps hacked support for some special emulator-specific memcard formats that
-	// had header info?), then please replace this comment with something useful.  Thanks!  -- air
-
-	u32 offset = 0;
-
-	if (size == MCD_SIZE + 64)
-		offset = 64;
-	else if (size == MCD_SIZE + 3904)
-		offset = 3904;
-	else
-	{
-		// perform sanity checks here?
-	}
-
-	return (FileSystem::FSeek64(f, adr + offset, SEEK_SET) == 0);
+	return (FileSystem::FSeek64(f, adr, SEEK_SET) == 0);
 }
 
 // returns FALSE if an error occurred (either permission denied or disk full)
@@ -417,7 +408,7 @@ void FileMemoryCard::GetSizeInfo(uint slot, McdSizeInfo& outways)
 
 	pxAssert(m_file[slot]);
 	if (m_file[slot])
-		outways.McdSizeInSectors = static_cast<u32>(FileSystem::FSize64(m_file[slot])) / (outways.SectorSize + outways.EraseBlockSizeInSectors);
+		outways.McdSizeInSectors = static_cast<u32>(m_fileSize[slot]) / (outways.SectorSize + outways.EraseBlockSizeInSectors);
 	else
 		outways.McdSizeInSectors = 0x4000;
 
@@ -544,7 +535,7 @@ u64 FileMemoryCard::GetCRC(uint slot)
 		if (!Seek(mcfp, 0))
 			return 0;
 
-		const s64 mcfpsize = FileSystem::FSize64(mcfp);
+		const s64 mcfpsize = m_fileSize[slot];
 		if (mcfpsize < 0)
 			return 0;
 
@@ -788,13 +779,14 @@ int FileMcd_ReIndex(uint port, uint slot, const std::string& filter)
 
 static MemoryCardFileType GetMemoryCardFileTypeFromSize(s64 size)
 {
-	if (size == (8 * MC2_MBSIZE))
+	// Handle both ecc and non ecc versions
+	if (size == (8 * MC2_MBSIZE) || size == _8mb)
 		return MemoryCardFileType::PS2_8MB;
-	else if (size == (16 * MC2_MBSIZE))
+	else if (size == (16 * MC2_MBSIZE) || size == _16mb)
 		return MemoryCardFileType::PS2_16MB;
-	else if (size == (32 * MC2_MBSIZE))
+	else if (size == (32 * MC2_MBSIZE) || size == _32mb)
 		return MemoryCardFileType::PS2_32MB;
-	else if (size == (64 * MC2_MBSIZE))
+	else if (size == (64 * MC2_MBSIZE) || size == _64mb)
 		return MemoryCardFileType::PS2_64MB;
 	else if (size == MCD_SIZE)
 		return MemoryCardFileType::PS1;
@@ -864,7 +856,8 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 
 		// We only want relevant file types.
 		if (!(fd.FileName.ends_with(".ps2") || fd.FileName.ends_with(".mcr") ||
-				fd.FileName.ends_with(".mcd") || fd.FileName.ends_with(".bin")))
+				fd.FileName.ends_with(".mcd") || fd.FileName.ends_with(".bin") ||
+				fd.FileName.ends_with(".mc2")))
 			continue;
 
 		if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)

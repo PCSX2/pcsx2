@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "DebugTools/Debug.h"
@@ -7,7 +7,7 @@
 #include "SIO/Pad/PadDualshock2.h"
 #include "SIO/Sio.h"
 
-#include <fmt/core.h>
+#include "fmt/format.h"
 
 PadData::PadData(const int port, const int slot)
 {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -33,7 +33,7 @@ namespace PacketReader::IP::UDP::DHCP
 		int maxLength = 576;
 
 		DHCP_Packet() {}
-		DHCP_Packet(u8* buffer, int bufferSize);
+		DHCP_Packet(const u8* buffer, int bufferSize);
 		DHCP_Packet(const DHCP_Packet&);
 
 		virtual int GetLength();

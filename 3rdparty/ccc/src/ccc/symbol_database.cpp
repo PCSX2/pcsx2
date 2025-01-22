@@ -753,7 +753,7 @@ void SourceFile::check_functions_match(const SymbolDatabase& database)
 	u32 modified = 0;
 	for(FunctionHandle function_handle : functions()) {
 		const ccc::Function* function = database.functions.symbol_from_handle(function_handle);
-		if(!function || function->original_hash() == 0) {
+		if(!function || function->current_hash() == 0 || function->original_hash() == 0) {
 			continue;
 		}
 		

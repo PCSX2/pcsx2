@@ -1,5 +1,5 @@
 /* Bra.h -- Branch converters for executables
-2023-04-02 : Igor Pavlov : Public domain */
+2024-01-20 : Igor Pavlov : Public domain */
 
 #ifndef ZIP7_INC_BRA_H
 #define ZIP7_INC_BRA_H
@@ -8,8 +8,12 @@
 
 EXTERN_C_BEGIN
 
-#define Z7_BRANCH_CONV_DEC(name)    z7_BranchConv_   ## name ## _Dec
-#define Z7_BRANCH_CONV_ENC(name)    z7_BranchConv_   ## name ## _Enc
+/* #define PPC BAD_PPC_11 // for debug */
+
+#define Z7_BRANCH_CONV_DEC_2(name)  z7_ ## name ## _Dec
+#define Z7_BRANCH_CONV_ENC_2(name)  z7_ ## name ## _Enc
+#define Z7_BRANCH_CONV_DEC(name)    Z7_BRANCH_CONV_DEC_2(BranchConv_ ## name)
+#define Z7_BRANCH_CONV_ENC(name)    Z7_BRANCH_CONV_ENC_2(BranchConv_ ## name)
 #define Z7_BRANCH_CONV_ST_DEC(name) z7_BranchConvSt_ ## name ## _Dec
 #define Z7_BRANCH_CONV_ST_ENC(name) z7_BranchConvSt_ ## name ## _Enc
 
@@ -20,19 +24,20 @@ typedef Z7_BRANCH_CONV_DECL(   (*z7_Func_BranchConv));
 typedef Z7_BRANCH_CONV_ST_DECL((*z7_Func_BranchConvSt));
 
 #define Z7_BRANCH_CONV_ST_X86_STATE_INIT_VAL 0
-Z7_BRANCH_CONV_ST_DECL(Z7_BRANCH_CONV_ST_DEC(X86));
-Z7_BRANCH_CONV_ST_DECL(Z7_BRANCH_CONV_ST_ENC(X86));
+Z7_BRANCH_CONV_ST_DECL (Z7_BRANCH_CONV_ST_DEC(X86));
+Z7_BRANCH_CONV_ST_DECL (Z7_BRANCH_CONV_ST_ENC(X86));
 
 #define Z7_BRANCH_FUNCS_DECL(name) \
-Z7_BRANCH_CONV_DECL(Z7_BRANCH_CONV_DEC(name)); \
-Z7_BRANCH_CONV_DECL(Z7_BRANCH_CONV_ENC(name));
+Z7_BRANCH_CONV_DECL (Z7_BRANCH_CONV_DEC_2(name)); \
+Z7_BRANCH_CONV_DECL (Z7_BRANCH_CONV_ENC_2(name));
 
-Z7_BRANCH_FUNCS_DECL(ARM64)
-Z7_BRANCH_FUNCS_DECL(ARM)
-Z7_BRANCH_FUNCS_DECL(ARMT)
-Z7_BRANCH_FUNCS_DECL(PPC)
-Z7_BRANCH_FUNCS_DECL(SPARC)
-Z7_BRANCH_FUNCS_DECL(IA64)
+Z7_BRANCH_FUNCS_DECL (BranchConv_ARM64)
+Z7_BRANCH_FUNCS_DECL (BranchConv_ARM)
+Z7_BRANCH_FUNCS_DECL (BranchConv_ARMT)
+Z7_BRANCH_FUNCS_DECL (BranchConv_PPC)
+Z7_BRANCH_FUNCS_DECL (BranchConv_SPARC)
+Z7_BRANCH_FUNCS_DECL (BranchConv_IA64)
+Z7_BRANCH_FUNCS_DECL (BranchConv_RISCV)
 
 /*
 These functions convert data that contain CPU instructions.
@@ -49,14 +54,14 @@ and one for decoding (_Enc/_Dec postfixes in function name).
 In params:
   data  : data buffer
   size  : size of data
-  pc    : current virtual Program Counter (Instruction Pinter) value
+  pc    : current virtual Program Counter (Instruction Pointer) value
 In/Out param:
   state : pointer to state variable (for X86 converter only)
 
 Return:
   The pointer to position in (data) buffer after last byte that was processed.
   If the caller calls converter again, it must call it starting with that position.
-  But the caller is allowed to move data in buffer. so pointer to
+  But the caller is allowed to move data in buffer. So pointer to
   current processed position also will be changed for next call.
   Also the caller must increase internal (pc) value for next call.
   
@@ -65,6 +70,7 @@ Each converter has some characteristics: Endian, Alignment, LookAhead.
   
   X86    little      1          4
   ARMT   little      2          2
+  RISCV  little      2          6
   ARM    little      4          0
   ARM64  little      4          0
   PPC     big        4          0

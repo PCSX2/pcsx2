@@ -24,7 +24,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="groupBox_5">
+    <widget class="QGroupBox" name="speedGroup">
      <property name="title">
       <string>Speed Control</string>
      </property>
@@ -195,7 +195,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="basicGroupBox">
+    <widget class="QGroupBox" name="pacingGroup">
      <property name="title">
       <string>Frame Pacing / Latency Control</string>
      </property>
@@ -267,6 +267,26 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="rtcGroup">
+     <property name="title">
+      <string>Real-Time Clock</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutRTC">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="manuallySetRealTimeClock">
+        <property name="text">
+         <string>Manually Set Real-Time Clock</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDateTimeEdit" name="rtcDateTime">
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
   </layout>
  </widget>

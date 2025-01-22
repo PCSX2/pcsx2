@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -75,8 +75,6 @@ protected:
 		const ccc::SymbolDatabase& database);
 
 	static bool nodeHasChildren(const ccc::ast::Node& logical_type, const ccc::SymbolDatabase& database);
-
-	bool symbolMatchesMemory(ccc::MultiSymbolHandle& symbol) const;
 
 	std::unique_ptr<SymbolTreeNode> m_root;
 	QString m_filter;

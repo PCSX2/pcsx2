@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
@@ -402,6 +402,16 @@ namespace R3000A
 		}
 	};
 
+	struct fileHandle
+	{
+		u32 fd_index;
+		std::string full_path;
+		s32 flags;
+		u16 mode;
+	};
+
+	std::vector<fileHandle> handles;
+
 	namespace ioman
 	{
 		const int firstfd = 0x100;
@@ -515,6 +525,7 @@ namespace R3000A
 				if (fds[i])
 					fds[i].close();
 			}
+			handles.clear();
 		}
 
 		bool is_host(const std::string_view path)
@@ -602,6 +613,15 @@ namespace R3000A
 					v0 = allocfd(file);
 					if ((s32)v0 < 0)
 						file->close();
+					else
+					{
+						fileHandle handle;
+						handle.fd_index = v0 - firstfd;
+						handle.flags = flags;
+						handle.full_path = path;
+						handle.mode = mode;
+						handles.push_back(handle);
+					}
 				}
 
 				pc = ra;
@@ -618,6 +638,16 @@ namespace R3000A
 			if (getfd<IOManFile>(fd))
 			{
 				freefd(fd);
+
+				for (size_t i = 0; i < handles.size(); i++)
+				{
+					if (handles[i].fd_index == (u32) fd - firstfd)
+					{
+						handles.erase(handles.begin() + i);
+						break;
+					}
+				}
+
 				v0 = 0;
 				pc = ra;
 				return 1;
@@ -822,8 +852,16 @@ namespace R3000A
 
 				v0 = file->read(buf.get(), count);
 
-				for (s32 i = 0; i < (s32)v0; i++)
-					iopMemWrite8(data + i, buf[i]);
+				[[likely]]
+				if (v0 >= 0 && iopMemSafeWriteBytes(data, buf.get(), v0))
+				{
+					psxCpu->Clear(data, (v0 + 3) / 4);
+				}
+				else
+				{
+					for (s32 i = 0; i < static_cast<s32>(v0); i++)
+						iopMemWrite8(data + i, buf[i]);
+				}
 
 				pc = ra;
 				return 1;
@@ -869,8 +907,12 @@ namespace R3000A
 			{
 				auto buf = std::make_unique<char[]>(count);
 
-				for (u32 i = 0; i < count; i++)
-					buf[i] = iopMemRead8(data + i);
+				[[unlikely]]
+				if (!iopMemSafeReadBytes(data, buf.get(), count))
+				{
+					for (u32 i = 0; i < count; i++)
+						buf[i] = iopMemRead8(data + i);
+				}
 
 				v0 = file->write(buf.get(), count);
 
@@ -906,7 +948,7 @@ namespace R3000A
 			// printf-style formatting processing.  This part can be skipped if the user has the
 			// console disabled.
 
-			if (!SysConsole.iopConsole.IsActive())
+			if (!ConsoleLogging.iopConsole.IsActive())
 				return 1;
 
 			char tmp[1024], tmp2[1024];
@@ -1056,6 +1098,9 @@ namespace R3000A
 
 		void LoadFuncs(u32 a0reg)
 		{
+			if (!EmuConfig.DebuggerAnalysis.GenerateSymbolsForIRXExports)
+				return;
+
 			const std::string modname = iopMemReadString(a0reg + 12, 8);
 			s32 version_major = iopMemRead8(a0reg + 9);
 			s32 version_minor = iopMemRead8(a0reg + 8);
@@ -1387,3 +1432,62 @@ namespace R3000A
 	}
 
 } // end namespace R3000A
+
+bool SaveStateBase::handleFreeze()
+{
+	if (!FreezeTag("hostHandles"))
+		return false;
+
+	if (EmuConfig.HostFs && IsLoading())
+		R3000A::ioman::reset();
+
+	const int firstfd = R3000A::ioman::firstfd;
+	size_t handleCount = EmuConfig.HostFs ? R3000A::handles.size() : 0;
+	Freeze(handleCount);
+
+	if (!EmuConfig.HostFs) //if hostfs isn't enabled, skip loading/saving file handles
+		return IsOkay();
+
+	for (size_t i = 0; i < handleCount; i++)
+	{
+		if (IsLoading())
+		{
+			//load the parameters for opening the file
+			s32 pos;
+			Freeze(pos);
+
+			R3000A::fileHandle handle;
+			Freeze(handle.flags);
+			FreezeString(handle.full_path);
+			Freeze(handle.mode);
+			R3000A::handles.push_back(handle);
+
+			//reopen the file
+			IOManFile* file = NULL;
+			R3000A::HostFile::open(&file, handle.full_path, handle.flags, handle.mode);
+			if (!file)
+			{
+				Console.Warning("Failed to open file: '%s'", handle.full_path.c_str());
+				continue;
+			}
+			R3000A::handles[i].fd_index = R3000A::ioman::allocfd(file) - firstfd;
+
+			//seek file to position when saved
+			file->lseek(pos, SEEK_SET);
+		}
+		else
+		{
+			//save the current file position
+			const u32 fd = R3000A::handles[i].fd_index;
+			IOManFile* file = R3000A::ioman::getfd<IOManFile>(fd + firstfd);
+			s32 pos = file ? file->lseek(0, SEEK_CUR) : 0;
+			Freeze(pos);
+
+			//save the parameters for opening the file
+			Freeze(R3000A::handles[i].flags);
+			FreezeString(R3000A::handles[i].full_path);
+			Freeze(R3000A::handles[i].mode);
+		}
+	}
+	return IsOkay();
+}

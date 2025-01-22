@@ -247,7 +247,8 @@ void cpuinfo_arm_linux_init(void) {
 #endif
 
 #if CPUINFO_ARCH_ARM
-	uint32_t isa_features = 0, isa_features2 = 0;
+	uint32_t isa_features = 0;
+	uint64_t isa_features2 = 0;
 #ifdef __ANDROID__
 	/*
 	 * On Android before API 20, libc.so does not provide getauxval
@@ -299,7 +300,8 @@ void cpuinfo_arm_linux_init(void) {
 		&chipset,
 		&cpuinfo_isa);
 #elif CPUINFO_ARCH_ARM64
-	uint32_t isa_features = 0, isa_features2 = 0;
+	uint32_t isa_features = 0;
+	uint64_t isa_features2 = 0;
 	/* getauxval is always available on ARM64 Android */
 	cpuinfo_arm_linux_hwcap_from_getauxval(&isa_features, &isa_features2);
 	cpuinfo_arm64_linux_decode_isa_from_proc_cpuinfo(
@@ -333,13 +335,47 @@ void cpuinfo_arm_linux_init(void) {
 	}
 
 	/* Propagate topology group IDs among siblings */
+	bool detected_core_siblings_list_node = false;
+	bool detected_cluster_cpus_list_node = false;
 	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
 		if (!bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			continue;
 		}
 
-		if (arm_linux_processors[i].flags & CPUINFO_LINUX_FLAG_PACKAGE_ID) {
+		if (!bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_PACKAGE_ID)) {
+			continue;
+		}
+
+		/* Use the cluster_cpus_list topology node if available. If not
+		 * found, cache the result to avoid repeatedly attempting to
+		 * read the non-existent paths.
+		 * */
+		if (!detected_core_siblings_list_node && !detected_cluster_cpus_list_node) {
+			if (cpuinfo_linux_detect_cluster_cpus(
+				    arm_linux_processors_count,
+				    i,
+				    (cpuinfo_siblings_callback)cluster_siblings_parser,
+				    arm_linux_processors)) {
+				detected_cluster_cpus_list_node = true;
+				continue;
+			} else {
+				detected_core_siblings_list_node = true;
+			}
+		}
+
+		/* The cached result above will guarantee only one of the blocks
+		 * below will execute, with a bias towards cluster_cpus_list.
+		 **/
+		if (detected_core_siblings_list_node) {
 			cpuinfo_linux_detect_core_siblings(
+				arm_linux_processors_count,
+				i,
+				(cpuinfo_siblings_callback)cluster_siblings_parser,
+				arm_linux_processors);
+		}
+
+		if (detected_cluster_cpus_list_node) {
+			cpuinfo_linux_detect_cluster_cpus(
 				arm_linux_processors_count,
 				i,
 				(cpuinfo_siblings_callback)cluster_siblings_parser,

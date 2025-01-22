@@ -56,6 +56,8 @@ target_compile_definitions(vixl PUBLIC
 	VIXL_INCLUDE_TARGET_A64
 )
 
+target_compile_definitions(vixl PRIVATE VIXL_CODE_BUFFER_MALLOC)
+
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	message("Enabling vixl debug assertions")
 	target_compile_definitions(vixl PUBLIC VIXL_DEBUG)

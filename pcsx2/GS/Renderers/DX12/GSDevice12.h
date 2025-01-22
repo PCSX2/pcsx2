@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -144,7 +144,7 @@ private:
 		bool has_timestamp_query = false;
 	};
 
-	bool CreateDevice();
+	bool CreateDevice(u32& vendor_id);
 	bool CreateDescriptorHeaps();
 	bool CreateCommandLists();
 	bool CreateTimestampQuery();
@@ -373,7 +373,7 @@ private:
 	ComPtr<ID3DBlob> GetUtilityVertexShader(const std::string& source, const char* entry_point);
 	ComPtr<ID3DBlob> GetUtilityPixelShader(const std::string& source, const char* entry_point);
 
-	bool CheckFeatures();
+	bool CheckFeatures(const u32& vendor_id);
 	bool CreateNullTexture();
 	bool CreateBuffers();
 	bool CreateRootSignatures();

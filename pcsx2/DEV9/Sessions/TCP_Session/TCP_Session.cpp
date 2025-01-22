@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "TCP_Session.h"
@@ -18,17 +18,17 @@ using namespace PacketReader::IP::TCP;
 
 namespace Sessions
 {
-	void TCP_Session::PushRecvBuff(std::unique_ptr<TCP_Packet> tcp)
+	void TCP_Session::PushRecvBuff(ReceivedPayload tcp)
 	{
 		_recvBuff.Enqueue(std::move(tcp));
 	}
-	std::unique_ptr<TCP_Packet> TCP_Session::PopRecvBuff()
+	std::optional<ReceivedPayload> TCP_Session::PopRecvBuff()
 	{
-		std::unique_ptr<TCP_Packet> ret;
+		ReceivedPayload ret;
 		if (_recvBuff.Dequeue(&ret))
 			return ret;
 		else
-			return nullptr;
+			return std::nullopt;
 	}
 
 	void TCP_Session::IncrementMyNumber(u32 amount)
@@ -159,7 +159,7 @@ namespace Sessions
 		// Clear out _recvBuff
 		while (!_recvBuff.IsQueueEmpty())
 		{
-			std::unique_ptr<TCP_Packet> retPay;
+			ReceivedPayload retPay;
 			if (!_recvBuff.Dequeue(&retPay))
 			{
 				using namespace std::chrono_literals;

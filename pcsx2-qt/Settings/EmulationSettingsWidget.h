@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -25,6 +25,7 @@ private:
 	void handleSpeedComboChange(QComboBox* cb, const char* section, const char* key);
 	void updateOptimalFramePacing();
 	void updateUseVSyncForTimingEnabled();
+	void onManuallySetRealTimeClockChanged();
 
 	SettingsWindow* m_dialog;
 

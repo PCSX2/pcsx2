@@ -83,6 +83,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/ControllerSettingsWindow.h
 	Settings/ControllerSettingsWindow.ui
 	Settings/ControllerSettingWidgetBinder.h
+	Settings/DebugAnalysisSettingsWidget.cpp
+	Settings/DebugAnalysisSettingsWidget.h
+	Settings/DebugAnalysisSettingsWidget.ui
 	Settings/DebugSettingsWidget.cpp
 	Settings/DebugSettingsWidget.h
 	Settings/DebugSettingsWidget.ui
@@ -152,6 +155,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/USBBindingWidget_GunCon2.ui
 	Settings/USBBindingWidget_RyojouhenCon.ui
 	Settings/USBBindingWidget_ShinkansenCon.ui
+	Debugger/AnalysisOptionsDialog.cpp
+	Debugger/AnalysisOptionsDialog.h
+	Debugger/AnalysisOptionsDialog.ui
 	Debugger/CpuWidget.cpp
 	Debugger/CpuWidget.h
 	Debugger/CpuWidget.ui

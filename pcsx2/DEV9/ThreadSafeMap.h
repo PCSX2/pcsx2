@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -37,10 +37,10 @@ public:
 		map[key] = value;
 	}
 
-	void Remove(Key key)
+	bool Remove(Key key)
 	{
 		std::unique_lock modifyLock(accessMutex);
-		map.erase(key);
+		return map.erase(key) == 1;
 	}
 
 	void Clear()

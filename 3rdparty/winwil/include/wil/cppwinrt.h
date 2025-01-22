@@ -255,7 +255,7 @@ namespace details
 {
 #ifndef CPPWINRT_SUPPRESS_STATIC_INITIALIZERS
     WI_ODR_PRAGMA("CPPWINRT_SUPPRESS_STATIC_INITIALIZERS", "0")
-    WI_HEADER_INITITALIZATION_FUNCTION(WilInitialize_CppWinRT, [] {
+    WI_HEADER_INITIALIZATION_FUNCTION(WilInitialize_CppWinRT, [] {
         ::wil::WilInitialize_CppWinRT();
         return 1;
     });

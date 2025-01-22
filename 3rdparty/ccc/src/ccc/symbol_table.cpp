@@ -100,8 +100,9 @@ Result<std::unique_ptr<SymbolTable>> create_elf_symbol_table(
 
 Result<ModuleHandle> import_symbol_tables(
 	SymbolDatabase& database,
-	std::string module_name,
 	const std::vector<std::unique_ptr<SymbolTable>>& symbol_tables,
+	std::string module_name,
+	Address base_address,
 	u32 importer_flags,
 	DemanglerFunctions demangler,
 	const std::atomic_bool* interrupt)
@@ -109,7 +110,8 @@ Result<ModuleHandle> import_symbol_tables(
 	Result<SymbolSourceHandle> module_source = database.get_symbol_source("Symbol Table Importer");
 	CCC_RETURN_IF_ERROR(module_source);
 	
-	Result<Module*> module_symbol = database.modules.create_symbol(std::move(module_name), *module_source, nullptr);
+	Result<Module*> module_symbol = database.modules.create_symbol(
+		std::move(module_name), base_address, *module_source, nullptr);
 	CCC_RETURN_IF_ERROR(module_symbol);
 	
 	ModuleHandle module_handle = (*module_symbol)->handle();

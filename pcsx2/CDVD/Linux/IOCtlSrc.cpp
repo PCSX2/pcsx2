@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "CDVD/CDVDdiscReader.h"
@@ -208,18 +208,8 @@ bool IOCtlSrc::ReadTrackSubQ(cdvdSubQ* subQ) const
 	}
 
 	subQ->adr = osSubQ.cdsc_adr;
-	subQ->ctrl = osSubQ.cdsc_ctrl;
 	subQ->trackNum = osSubQ.cdsc_trk;
 	subQ->trackIndex = osSubQ.cdsc_ind;
-
-	subQ->discM = osSubQ.cdsc_absaddr.msf.minute;
-	subQ->discS = osSubQ.cdsc_absaddr.msf.second;
-	subQ->discF = osSubQ.cdsc_absaddr.msf.frame;
-
-	subQ->trackM = osSubQ.cdsc_reladdr.msf.minute;
-	subQ->trackS = osSubQ.cdsc_reladdr.msf.second;
-	subQ->trackF = osSubQ.cdsc_reladdr.msf.frame;
-
 	return true;
 }
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -287,6 +287,8 @@ namespace usb_pad
 		virtual void SetAutoCenter(int value) = 0;
 		//virtual void SetGain(int gain) = 0;
 		virtual void DisableForce(EffectID force) = 0;
+
+		bool use_ffb_dropout_workaround = false;
 	};
 
 	struct PadState

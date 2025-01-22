@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
@@ -214,7 +214,7 @@ public:
 	void MergeSprite(GSTextureCache::Source* tex);
 	float GetTextureScaleFactor() override;
 	GSVector2i GetValidSize(const GSTextureCache::Source* tex = nullptr);
-	GSVector2i GetTargetSize(const GSTextureCache::Source* tex = nullptr);
+	GSVector2i GetTargetSize(const GSTextureCache::Source* tex = nullptr, const bool can_expand = true);
 
 	void Reset(bool hardware_reset) override;
 	void UpdateSettings(const Pcsx2Config::GSOptions& old_config) override;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "MipsAssembler.h"
@@ -355,11 +355,12 @@ bool MipsCheckImmediate(const char* Source, DebugInterface* cpu, int& dest, int&
 	RetLen = SourceLen;
 
 	PostfixExpression postfix;
-	if (!cpu->initExpression(Buffer,postfix))
+	std::string error;
+	if (!cpu->initExpression(Buffer,postfix,error))
 		return false;
 
 	u64 value;
-	if (!cpu->parseExpression(postfix,value))
+	if (!cpu->parseExpression(postfix,value,error))
 		return false;
 
 	dest = (int) value;
