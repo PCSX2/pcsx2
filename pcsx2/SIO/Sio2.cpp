@@ -105,7 +105,16 @@ void Sio2::Interrupt()
 
 void Sio2::SetCtrl(u32 value)
 {
+	const u32 oldCtrl = this->ctrl;
 	this->ctrl = value;
+
+	// NEEDS HARDWARE TESTING: If Sio2Ctrl::START_TRANSFER is changed to 1,
+	// then at hardware level, ISTAT has bit 12 (zero indexed) set to 1.
+	// Bit 12 is then expected to clear at the end of the transfer.
+	if (!(oldCtrl & Sio2Ctrl::START_TRANSFER) && (this->ctrl & Sio2Ctrl::START_TRANSFER))
+	{
+		this->iStat = Sio2IStat::TRANSFER_STARTED;
+	}
 
 	if (this->ctrl & Sio2Ctrl::START_TRANSFER)
 	{
@@ -407,6 +416,8 @@ void Sio2::Write(u8 data)
 
 	if (send3Complete)
 	{
+		// Transfer is done - clear the bit in ISTAT
+		this->iStat |= ~(Sio2IStat::TRANSFER_STARTED);
 		return;
 	}
 

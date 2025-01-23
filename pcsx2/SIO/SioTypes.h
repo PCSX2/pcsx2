@@ -118,6 +118,11 @@ namespace Sio2Ctrl
 	static constexpr u32 SIO2MAN_RESET = 0x000003bc;
 } // namespace Sio2Ctrl
 
+namespace Sio2IStat
+{
+	static constexpr u32 TRANSFER_STARTED = 0x1000;
+}
+
 // TODO: Remove deprecated options once memcards are no longer using them.
 namespace Recv1
 {
