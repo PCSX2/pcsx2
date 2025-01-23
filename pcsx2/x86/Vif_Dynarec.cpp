@@ -100,13 +100,13 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 
 		if (m5 < 0xf)
 		{
-			xPXOR(xmmTemp, xmmTemp);
 			if (doMode == 3)
 			{
 				mVUmergeRegs(xmmRow, regX, m5);
 			}
 			else
 			{
+				xPXOR(xmmTemp, xmmTemp);
 				mVUmergeRegs(xmmTemp, xmmRow, m5);
 				xPADD.D(regX, xmmTemp);
 				if (doMode == 2)
@@ -254,11 +254,54 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 
 	pxAssume(vCL == 0);
 
+	// Need a zero register for V2_32/V3 unpacks.
+	const bool needXmmZero = (upkNum >= 8 && upkNum <= 10) || upkNum == 4;
+
+#ifdef _WIN32
+	// See SetMasks()
+	const u32 m0 = vB.mask;
+	const u32 m3 = ((m0 & 0xaaaaaaaa) >> 1) & ~m0;
+	const u32 m2 = (m0 & 0x55555555) & (~m0 >> 1);
+	const bool needXmmRow = ((doMask && m2) || doMode);
+	// see doMaskWrite()
+	const u32 m4 = (m0 & ~((m3 << 1) | m2)) & 0x55555555;
+	const u32 m5 = ~(m2 | m3 | m4) & 0x0f0f0f0f;
+	const bool needXmmTemp = doMode && (doMode != 3) && doMask && m5 != 0x0f0f0f0f;
+
+	// Backup non-volatile registers if needed	
+	if (needXmmZero || needXmmRow || needXmmTemp)
+	{
+		int toBackup = 0;
+		if (needXmmRow)
+			toBackup++;
+		if (needXmmTemp)
+			toBackup++;
+		if (needXmmZero)
+			toBackup++;
+
+		xSUB(rsp, 8 + 16 * toBackup);
+
+		int idx = 0;
+		if (needXmmRow)
+		{
+			xMOVAPS(ptr128[rsp], xmmRow); // xmm6
+			idx++;
+		}
+		if (needXmmTemp)
+		{
+			xMOVAPS(ptr128[rsp + 16 * idx], xmmTemp); // xmm7
+			idx++;
+		}
+		if (needXmmZero)
+			xMOVAPS(ptr128[rsp + 16 * idx], zeroReg); // xmm15
+	}
+#endif
+
 	// Value passed determines # of col regs we need to load
 	SetMasks(isFill ? blockSize : cycleSize);
 
-	// Need a zero register for V2_32/V3 unpacks.
-	if ((upkNum >= 8 && upkNum <= 10) || upkNum == 4)
+	
+	if (needXmmZero)
 		xXOR.PS(zeroReg, zeroReg);
 
 	while (vNum)
@@ -306,6 +349,30 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 
 	if (doMode >= 2)
 		writeBackRow();
+
+#ifdef _WIN32
+	// Restore non-volatile registers
+	if (needXmmZero || needXmmRow || needXmmTemp)
+	{
+		int toRestore = 0;
+		if (needXmmRow)
+		{
+			xMOVAPS(xmmRow, ptr128[rsp]); // xmm6
+			toRestore++;
+		}
+		if (needXmmTemp)
+		{
+			xMOVAPS(xmmTemp, ptr128[rsp + 16 * toRestore]); // xmm7
+			toRestore++;
+		}
+		if (needXmmZero)
+		{
+			xMOVAPS(zeroReg, ptr128[rsp + 16 * toRestore]); // xmm15
+			toRestore++;
+		}
+		xADD(rsp, 8 + 16 * toRestore);
+	}
+#endif
 
 	xRET();
 }
