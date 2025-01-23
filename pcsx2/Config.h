@@ -1328,6 +1328,7 @@ struct Pcsx2Config
 	std::string CurrentIRX;
 	std::string CurrentGameArgs;
 	AspectRatioType CurrentAspectRatio = AspectRatioType::RAuto4_3_3_2;
+	bool IsPortableMode = false;
 
 	Pcsx2Config();
 	void LoadSave(SettingsWrapper& wrap);
