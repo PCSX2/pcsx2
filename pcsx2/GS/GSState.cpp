@@ -119,6 +119,10 @@ GSState::~GSState()
 		_aligned_free(m_vertex.buff);
 	if (m_index.buff)
 		_aligned_free(m_index.buff);
+	if (m_draw_vertex.buff)
+		_aligned_free(m_draw_vertex.buff);
+	if (m_draw_index.buff)
+		_aligned_free(m_draw_index.buff);
 }
 
 std::string GSState::GetDrawDumpPath(const char* format, ...)
@@ -850,7 +854,7 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 		// Urban Chaos writes to the memory backing the CLUT in the middle of a shuffle, and
 		// it's unclear whether the CLUT would actually get reloaded in that case.
 		if (TEX0.CBP != m_mem.m_clut.GetCLUTCBP())
-			m_channel_shuffle = false;
+			m_channel_shuffle_abort = true;
 	}
 
 	TEX0.CPSM &= 0xa; // 1010b
@@ -2796,8 +2800,10 @@ void GSState::GrowVertexBuffer()
 	const u32 maxcount = std::max<u32>(m_vertex.maxcount * 3 / 2, 10000);
 
 	GSVertex* vertex = static_cast<GSVertex*>(_aligned_malloc(sizeof(GSVertex) * maxcount, 32));
+	GSVertex* draw_vertex = static_cast<GSVertex*>(_aligned_malloc(sizeof(GSVertex) * maxcount, 32));
 	// Worst case index list is a list of points with vs expansion, 6 indices per point
 	u16* index = static_cast<u16*>(_aligned_malloc(sizeof(u16) * maxcount * 6, 32));
+	u16* draw_index = static_cast<u16*>(_aligned_malloc(sizeof(u16) * maxcount * 6, 32));
 
 	if (!vertex || !index)
 	{
@@ -2823,6 +2829,22 @@ void GSState::GrowVertexBuffer()
 		_aligned_free(m_index.buff);
 	}
 
+	if (m_draw_vertex.buff)
+	{
+		std::memcpy(draw_vertex, m_draw_vertex.buff, sizeof(GSVertex) * m_vertex.tail);
+
+		_aligned_free(m_draw_vertex.buff);
+	}
+
+	if (m_draw_index.buff)
+	{
+		std::memcpy(draw_index, m_draw_index.buff, sizeof(u16) * m_index.tail);
+
+		_aligned_free(m_draw_index.buff);
+	}
+
+	m_draw_vertex.buff = draw_vertex;
+	m_draw_index.buff = draw_index;
 	m_vertex.buff = vertex;
 	m_vertex.maxcount = maxcount - 3; // -3 to have some space at the end of the buffer before DrawingKick can grow it
 	m_index.buff = index;
@@ -3872,7 +3894,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
 		// optimization doesn't work when perspective correction is enabled.
 		// Allowing for quads when the gradiant is 1. It's not guaranteed (would need to check the grandient on each vector), but should be close enough.
-		if ((m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && TrianglesAreQuads(false) && grad.x == 1.0f && grad.y == 1.0f)) && m_primitive_covers_without_gaps != NoGapsType::GapsFound)
+		if (m_primitive_covers_without_gaps != NoGapsType::GapsFound && (m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && grad.x == 1.0f && grad.y == 1.0f && TrianglesAreQuads(false))))
 		{
 			// When coordinates are fractional, GS appears to draw to the right/bottom (effectively
 			// taking the ceiling), not to the top/left (taking the floor).

@@ -1296,7 +1296,21 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					if (!possible_shuffle && frame_fbp != t->m_TEX0.TBP0 && rect_clean && bp == t->m_TEX0.TBP0 && t && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM) && width_match && real_fmt_match)
 					{
 						if (!tex_merge_rt && t->Overlaps(bp, bw, psm, req_rect))
+						{
+							// Resize but be careful of +bilinear in req_rect, as it can screw valid areas.
+							if (psm_s.bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp && !block_boundary_rect.rintersect(t->m_valid).eq(block_boundary_rect))
+							{
+								RGBAMask rgba_mask;
+								rgba_mask.c.a = req_alpha;
+								rgba_mask.c.r = rgba_mask.c.g = rgba_mask.c.b = req_color;
+								if (block_boundary_rect.z > t->m_valid.z)
+									AddDirtyRectTarget(t, GSVector4i(t->m_valid.z, t->m_valid.y, block_boundary_rect.z, std::max(block_boundary_rect.w, t->m_valid.w)), t->m_TEX0.PSM, t->m_TEX0.TBW, rgba_mask);
+								if (block_boundary_rect.w > t->m_valid.w)
+									AddDirtyRectTarget(t, GSVector4i(t->m_valid.x, t->m_valid.w, std::max(block_boundary_rect.z, t->m_valid.z), block_boundary_rect.w), t->m_TEX0.PSM, t->m_TEX0.TBW, rgba_mask);
+							}
+							// Resize including the extra pixel for bilinear.
 							ResizeTarget(t, req_rect, bp, psm, bw);
+						}
 					}
 				}
 
@@ -1800,6 +1814,21 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 			}
 		}
 
+		if (src->m_from_target && src->m_target_direct && src->m_region.HasEither())
+		{
+			if (src->m_from_target->m_TEX0.TBP0 == src->m_TEX0.TBP0)
+			{
+				src->m_region.SetX(std::min(region.GetMinX(), src->m_region.GetMinX()), std::max(region.GetMaxX(), src->m_region.GetMaxX()));
+				src->m_region.SetY(std::min(region.GetMinY(), src->m_region.GetMinY()), std::max(region.GetMaxY(), src->m_region.GetMaxY()));
+			}
+			else if (src->m_TEX0.TBP0 > src->m_from_target->m_TEX0.TBP0)
+			{
+				GSVector4i dst_offset = TranslateAlignedRectByPage(src->m_from_target, src->m_TEX0.TBP0, src->m_TEX0.PSM, src->m_TEX0.TBW, GSVector4i(0, 0, 1, 1), false);
+				src->m_region.SetX(dst_offset.x + region.GetMinX(), dst_offset.x + region.GetMaxX());
+				src->m_region.SetY(dst_offset.y + region.GetMinY(), dst_offset.y + region.GetMaxY());
+			}
+		}
+
 		if (gpu_clut)
 			AttachPaletteToSource(src, gpu_clut);
 		else if (src->m_palette && (!src->m_palette_obj || !src->ClutMatch({clut, psm_s.pal})))
@@ -1830,7 +1859,7 @@ GSVector2i GSTextureCache::ScaleRenderTargetSize(const GSVector2i& sz, float sca
 
 GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
 	bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_rgb, bool preserve_alpha, const GSVector4i draw_rect,
-	bool is_shuffle, bool possible_clear, bool preserve_scale, GSTextureCache::Source* src, int offset)
+	bool is_shuffle, bool possible_clear, bool preserve_scale, GSTextureCache::Source* src, GSTextureCache::Target* ds, int offset)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	const u32 bp = TEX0.TBP0;
@@ -1968,6 +1997,23 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					}
 					else if (t->m_dirty.empty())
 					{
+
+						if (TEX0.TBW == t->m_TEX0.TBW && !is_shuffle && widthpage_offset == 0 && ((min_rect.w + 63)/ 64) > 1)
+						{
+							// Beyond Good and Evil does this awful thing where it puts one framebuffer at 0xf00, with the first row of pages blanked out, and the whole thing goes down to 0x2080
+							// which is a problem, because it then puts the Z buffer at 0x1fc0, then offsets THAT by 1 row of pages, so it starts at, you guessed it, 2080.
+							// So let's check the *real* start.
+							u32 real_start_address = GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, t->m_drawn_since_read);
+							u32 new_end_address = GSLocalMemory::GetEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, min_rect);
+
+							// Not really overlapping.
+							if (real_start_address > new_end_address)
+							{
+								i++;
+								continue;
+							}
+						}
+
 						//DevCon.Warning("Here draw %d wanted %x PSM %x got %x PSM %x offset of %d pages width %d pages draw width %d", GSState::s_n, bp, TEX0.PSM, t->m_TEX0.TBP0, t->m_TEX0.PSM, (bp - t->m_TEX0.TBP0) >> 5, t->m_TEX0.TBW, draw_rect.width());
 						dst = t;
 
@@ -2322,7 +2368,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				continue;
 			}
 			// If the format is completely different, but it's the same location, it's likely just overwriting it, so get rid.
-			if (!is_shuffle && t->m_TEX0.TBW != TEX0.TBW && TEX0.TBW != 1 && !preserve_rgb && min_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y)
+			// Make sure it's not currently in use, that could be bad.
+			if (!is_shuffle && (!ds || (ds != t)) && 
+				t->m_TEX0.TBW != TEX0.TBW && TEX0.TBW != 1 && !preserve_rgb && min_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y)
 			{
 				DevCon.Warning("Deleting Z draw %d", GSState::s_n);
 				InvalidateSourcesFromTarget(t);
@@ -2637,11 +2685,12 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 
 		RGBAMask rgba;
 		rgba._u32 = GSUtil::GetChannelMask(TEX0.PSM);
+
 		dst->UpdateValidity(GSVector4i::loadh(valid_size));
 
 		if (!is_frame && !preload && !(src && src->m_TEX0.TBP0 == dst->m_TEX0.TBP0))
 		{
-			if ((preserve_target || !draw_rect.eq(dst->m_valid)) && GSRendererHW::GetInstance()->m_draw_transfers.size() > 0)
+			if ((preserve_target || !draw_rect.eq(GSVector4i::loadh(valid_size))) && GSRendererHW::GetInstance()->m_draw_transfers.size() > 0)
 			{
 				auto& transfers = GSRendererHW::GetInstance()->m_draw_transfers;
 				const int last_draw = transfers.back().draw;
@@ -2735,8 +2784,6 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				{
 					const GSVector4i save_rect = preserve_target ? newrect : eerect;
 
-					if (!hw_clear)
-						dst->UpdateValidity(save_rect);
 					GL_INS("Preloading the RT DATA from updated GS Memory");
 					AddDirtyRectTarget(dst, save_rect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
 				}
@@ -4878,8 +4925,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_valid_rect = dst->m_valid;
 		src->m_end_block = dst->m_end_block;
 
-		// Do this first as we could be adding in alpha from an upgraded 24bit target.
-		dst->Update();
+		// Do this first as we could be adding in alpha from an upgraded 24bit target. if the rect intersects a dirty area.
+		if (!dst->m_dirty.empty() && !src_range->rintersect(dst->m_dirty.GetTotalRect(dst->m_TEX0, dst->m_unscaled_size)).rempty())
+			dst->Update();
 
 		src->m_valid_alpha_minmax = true;
 		if ((src->m_TEX0.PSM & 0xf) == PSMCT24)
@@ -6596,7 +6644,7 @@ void GSTextureCache::Target::Update(bool cannot_scale)
 		{
 			if (alpha_minmax.second > 128 || (m_TEX0.PSM & 0xf) == PSMCT24)
 				UnscaleRTAlpha();
-			else if (!cannot_scale && total_rect.eq(m_valid))
+			else if (!cannot_scale && total_rect.rintersect(m_valid).eq(m_valid))
 				m_rt_alpha_scale = true;
 		}
 

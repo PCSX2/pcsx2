@@ -1004,6 +1004,10 @@ bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds
 		&& r.m_cached_ctx.FRAME.FBMSK == 0 // No frame buffer masking.
 	)
 	{
+		int mask = (r.m_vt.m_max.p.xyxy() == r.m_vt.m_min.p.xyxy()).mask();
+		if (mask == 0xf)
+			return true;
+
 		const u32 FBP = r.m_cached_ctx.FRAME.Block();
 		const u32 FBW = r.m_cached_ctx.FRAME.FBW;
 		GL_INS("PointListPalette - m_r = <%d, %d => %d, %d>, n_vertices = %u, FBP = 0x%x, FBW = %u", r.m_r.x, r.m_r.y, r.m_r.z, r.m_r.w, n_vertices, FBP, FBW);

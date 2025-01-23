@@ -92,7 +92,7 @@ private:
 	void DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex, const TextureMinMaxResult& tmm);
 
 	void ResetStates();
-	void SetupIA(float target_scale, float sx, float sy);
+	void SetupIA(float target_scale, float sx, float sy, bool req_vert_backup);
 	void EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
 	bool EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only);
 	void EmulateBlending(int rt_alpha_min, int rt_alpha_max, const bool DATE, bool& DATE_PRIMID, bool& DATE_BARRIER, GSTextureCache::Target* rt,
@@ -115,7 +115,7 @@ private:
 	bool IsPossibleChannelShuffle() const;
 	bool IsPageCopy() const;
 	bool NextDrawMatchesShuffle() const;
-	bool IsSplitTextureShuffle(GSTextureCache::Target* rt);
+	bool IsSplitTextureShuffle(GIFRegTEX0& rt_TEX0, GSVector4i& valid_area);
 	GSVector4i GetSplitTextureShuffleDrawRect() const;
 	u32 GetEffectiveTextureShuffleFbmsk() const;
 
@@ -176,6 +176,10 @@ private:
 	u32 m_last_channel_shuffle_fbp = 0;
 	u32 m_last_channel_shuffle_tbp = 0;
 	u32 m_last_channel_shuffle_end_block = 0;
+	u32 m_channel_shuffle_width = 0;
+	bool m_full_screen_shuffle = false;
+
+	GSTextureCache::Target* m_last_rt;
 
 	GIFRegFRAME m_split_clear_start = {};
 	GIFRegZBUF m_split_clear_start_Z = {};
