@@ -5166,7 +5166,7 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="139"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
         <source>Enable Cheats</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5187,25 +5187,25 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="153"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="129"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="137"/>
         <source>Enable Host Filesystem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="160"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="122"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="130"/>
         <source>Enable Fast CDVD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="167"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="132"/>
         <source>Enable CDVD Precaching</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="174"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="115"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="123"/>
         <source>Enable Thread Pinning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5216,7 +5216,7 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="114"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="111"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
         <source>Disabled</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5257,7 +5257,7 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="90"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="108"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="116"/>
         <source>100% (Normal Speed)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5294,221 +5294,249 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="228"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="146"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="154"/>
         <source>Use Host VSync Timing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="235"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="146"/>
         <source>Sync to Host Refresh Rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="242"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="132"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="140"/>
         <source>Optimal Frame Pacing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="249"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="143"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="151"/>
         <source>Vertical Sync (VSync)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="52"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="274"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="159"/>
+        <source>Real-Time Clock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="280"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="157"/>
+        <source>Manually Set Real-Time Clock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="58"/>
         <source>Use Global Setting [%1]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="98"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="106"/>
         <source>Normal Speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="99"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="107"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="102"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="105"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="110"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="113"/>
         <source>User Preference</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="109"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="117"/>
         <source>Higher values may increase internal framerate in games, but will increase CPU requirements substantially. Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="112"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="120"/>
         <source>Makes the emulated Emotion Engine skip cycles. Helps a small subset of games like SOTC. Most of the time it&apos;s harmful to performance.</source>
         <extracomment>SOTC = Shadow of the Colossus. A game&apos;s title, should not be translated unless an official translation exists.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="115"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="122"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="129"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="123"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="130"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="132"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="143"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="137"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="140"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="146"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="151"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="154"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="157"/>
         <source>Unchecked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="123"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="131"/>
         <source>Fast disc access, less loading times. Check HDLoader compatibility lists for known games that have issues with this.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
         <source>Automatically loads and applies cheats on game start.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="130"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
         <source>Allows games and homebrew to access files / folders directly on the host computer.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="102"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="110"/>
         <source>Fast-Forward Speed</source>
         <extracomment>The &quot;User Preference&quot; string will appear after the text &quot;Recommended Value:&quot;</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="98"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="106"/>
         <source>100%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="103"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="111"/>
         <source>Sets the fast-forward speed. This speed will be used when the fast-forward hotkey is pressed/toggled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="105"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="113"/>
         <source>Slow-Motion Speed</source>
         <extracomment>The &quot;User Preference&quot; string will appear after the text &quot;Recommended Value:&quot;</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="106"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="114"/>
         <source>Sets the slow-motion speed. This speed will be used when the slow-motion hotkey is pressed/toggled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="108"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="116"/>
         <source>EE Cycle Rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="111"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
         <source>EE Cycle Skip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="116"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
         <source>Sets the priority for specific threads in a specific order ignoring the system scheduler. May help CPUs with big (P) and little (E) cores (e.g. Intel 12th or newer generation CPUs from Intel or other vendors such as AMD).</source>
         <extracomment>P-Core = Performance Core, E-Core = Efficiency Core. See if Intel has official translations for these terms.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
         <source>Enable Multithreaded VU1 (MTVU1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="120"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
         <source>Generally a speedup on CPUs with 4 or more cores. Safe for most games, but a few are incompatible and may hang.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="125"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="133"/>
         <source>Loads the disc image into RAM before starting the virtual machine. Can reduce stutter on systems with hard drives that have long wake times, but significantly increases boot times.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="133"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="141"/>
         <source>Sets the VSync queue size to 0, making every frame be completed and presented by the GS before input is polled and the next frame begins. Using this setting can reduce input lag at the cost of measurably higher CPU and GPU requirements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="143"/>
         <source>Maximum Frame Latency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="143"/>
         <source>2 Frames</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="144"/>
         <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="139"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="147"/>
         <source>Speeds up emulation so that the guest refresh rate matches the host. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync to Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="144"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="152"/>
         <source>Enable this option to match PCSX2&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (eg. running at non-100% speed).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="147"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="155"/>
         <source>When synchronizing with the host refresh rate, this option disable&apos;s PCSX2&apos;s internal frame timing, and uses the host instead. Can result in smoother frame pacing, &lt;strong&gt;but at the cost of increased input latency&lt;/strong&gt;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="161"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="158"/>
+        <source>Manually set a real-time clock to use for the virtual PlayStation 2 instead of using your OS&apos; system clock.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="159"/>
+        <source>Current date and time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="160"/>
+        <source>Real-time clock (RTC) used by the virtual PlayStation 2. Date format is the same as the one used by your OS. This time is only applied upon booting the PS2; changing it while in-game will have no effect. NOTE: This assumes you have your PS2 set to the default timezone of GMT+0 and default DST of Summer Time. Some games require an RTC date/time set after their release date.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="176"/>
         <source>Use Global Setting [%1%]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="173"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="188"/>
         <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="181"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="196"/>
         <source>Unlimited</source>
         <extracomment>Every case that uses this particular string seems to refer to speeds: Normal Speed/Fast Forward Speed/Slow Motion Speed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="185"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="200"/>
         <source>Custom</source>
         <extracomment>Every case that uses this particular string seems to refer to speeds: Normal Speed/Fast Forward Speed/Slow Motion Speed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="193"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="229"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="208"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="244"/>
         <source>Custom [%1% / %2 FPS (NTSC) / %3 FPS (PAL)]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="214"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="229"/>
         <source>Custom Speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="214"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="229"/>
         <source>Enter Custom Speed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18532,25 +18560,25 @@ If you have any unsaved progress on this save state, you can download the compat
 <context>
     <name>SettingWidgetBinder</name>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="348"/>
-        <location filename="../SettingWidgetBinder.h" line="472"/>
-        <location filename="../SettingWidgetBinder.h" line="600"/>
+        <location filename="../SettingWidgetBinder.h" line="349"/>
+        <location filename="../SettingWidgetBinder.h" line="473"/>
+        <location filename="../SettingWidgetBinder.h" line="601"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="373"/>
-        <location filename="../SettingWidgetBinder.h" line="501"/>
+        <location filename="../SettingWidgetBinder.h" line="374"/>
+        <location filename="../SettingWidgetBinder.h" line="502"/>
         <source>Default: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="1173"/>
+        <location filename="../SettingWidgetBinder.h" line="1194"/>
         <source>Confirm Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="1174"/>
+        <location filename="../SettingWidgetBinder.h" line="1195"/>
         <source>The chosen directory does not currently exist:
 
 %1
@@ -18559,17 +18587,17 @@ Do you want to create this directory?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="1196"/>
+        <location filename="../SettingWidgetBinder.h" line="1217"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="1197"/>
+        <location filename="../SettingWidgetBinder.h" line="1218"/>
         <source>Folder path cannot be empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="1215"/>
+        <location filename="../SettingWidgetBinder.h" line="1236"/>
         <source>Select folder for %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18577,20 +18605,20 @@ Do you want to create this directory?</source>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="120"/>
+        <location filename="../SettingWidgetBinder.h" line="121"/>
         <source>Use Global Setting [Enabled]</source>
         <extracomment>THIS STRING IS SHARED ACROSS MULTIPLE OPTIONS. Be wary about gender/number. Also, ignore Crowdin&apos;s warning regarding [Enabled]: the text must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="122"/>
+        <location filename="../SettingWidgetBinder.h" line="123"/>
         <source>Use Global Setting [Disabled]</source>
         <extracomment>THIS STRING IS SHARED ACROSS MULTIPLE OPTIONS. Be wary about gender/number. Also, ignore Crowdin&apos;s warning regarding [Disabled]: the text must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="130"/>
-        <location filename="../SettingWidgetBinder.h" line="146"/>
+        <location filename="../SettingWidgetBinder.h" line="131"/>
+        <location filename="../SettingWidgetBinder.h" line="147"/>
         <source>Use Global Setting [%1]</source>
         <translation type="unfinished"></translation>
     </message>
