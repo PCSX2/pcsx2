@@ -89,6 +89,16 @@ QString AboutDialog::getThirdPartyLicensesUrl()
 	return GetDocFileUrl("ThirdPartyLicenses.html");
 }
 
+QString AboutDialog::getWikiUrl()
+{
+	return QString::fromUtf8(PCSX2_WIKI_URL);
+}
+
+QString AboutDialog::getDocumentationUrl()
+{
+	return QString::fromUtf8(PCSX2_DOCUMENTATION_URL);
+}
+
 QString AboutDialog::getDiscordServerUrl()
 {
 	return QString::fromUtf8(PCSX2_DISCORD_URL);

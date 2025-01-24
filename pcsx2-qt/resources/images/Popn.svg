@@ -1,111 +1,84 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg id="Musica_pop" data-name="Musica pop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 550">
+<svg viewBox="0 0 840 550">
   <defs>
     <style>
       .cls-1, .cls-2, .cls-3, .cls-4 {
         fill: #fff;
       }
-
       .cls-5 {
         fill: #ffcf1f;
       }
-
       .cls-5, .cls-6, .cls-7, .cls-8, .cls-9, .cls-10, .cls-11, .cls-12, .cls-13, .cls-14, .cls-15, .cls-16, .cls-17 {
         stroke-miterlimit: 10;
       }
-
       .cls-5, .cls-8, .cls-9, .cls-10, .cls-12, .cls-13, .cls-14 {
         stroke: #4d4d4d;
       }
-
       .cls-5, .cls-8, .cls-9, .cls-10, .cls-12, .cls-13, .cls-14, .cls-17 {
         stroke-width: 3px;
       }
-
       .cls-18 {
         letter-spacing: -.02em;
       }
-
       .cls-6 {
         stroke: #ff553f;
       }
-
       .cls-6, .cls-7, .cls-11, .cls-15, .cls-16 {
         stroke-width: 17px;
       }
-
       .cls-6, .cls-7, .cls-11, .cls-15, .cls-16, .cls-17 {
         fill: none;
       }
-
       .cls-19 {
         letter-spacing: -.06em;
       }
-
       .cls-7 {
         stroke: #109400;
       }
-
       .cls-2 {
         opacity: .5;
       }
-
       .cls-8 {
         fill: #f40600;
       }
-
       .cls-3 {
         opacity: .24;
       }
-
       .cls-20 {
         letter-spacing: -.01em;
       }
-
       .cls-10 {
         fill: #0028b4;
       }
-
       .cls-21 {
         fill: #bdbdbd;
       }
-
       .cls-11 {
         stroke: #0052f4;
       }
-
       .cls-12 {
         fill: #f0f0f0;
       }
-
       .cls-22 {
         opacity: .75;
       }
-
       .cls-13 {
         fill: #00741a;
       }
-
       .cls-14 {
         fill: #f5f5f5;
       }
-
       .cls-23 {
         letter-spacing: 0em;
       }
-
       .cls-15 {
         stroke: #ffed9f;
       }
-
       .cls-16 {
         stroke: #f5f5f5;
       }
-
       .cls-24 {
         opacity: .36;
       }
-
       .cls-25 {
         fill: #d1d1d1;
         stroke: #000;
@@ -113,25 +86,20 @@
         stroke-linejoin: round;
         stroke-width: 4px;
       }
-
       .cls-4 {
         opacity: .31;
       }
-
       .cls-26 {
         fill: #7f001c;
       }
-
       .cls-27 {
         font-family: Roboto-Black, Roboto;
         font-size: 13.24px;
         font-weight: 800;
       }
-
       .cls-28 {
         letter-spacing: -.03em;
       }
-
       .cls-17 {
         opacity: .49;
         stroke: #8a8a8a;
@@ -144,7 +112,7 @@
       <path class="cls-21" d="m757.16,177.42l40.52,186.36c8.83,58.35-28.4,86.84-82.82,86.84H125.3c-54.41,0-91.21-34.06-82.82-86.84l40.19-186.36-58.02,205.29c-14.78,57.64,27.99,116.64,84.22,116.64h622.4c56.24,0,99.01-58.99,84.22-116.64l-58.35-205.29Z"/>
       <line class="cls-17" x1="531.04" y1="451.07" x2="308.96" y2="451.07"/>
     </g>
-    <g id="botoes_cores" data-name="botoes cores">
+    <g id="botoes_cores">
       <g id="baixo">
         <ellipse class="cls-13" cx="276.31" cy="363.27" rx="58.13" ry="58.86"/>
         <ellipse class="cls-8" cx="420" cy="363.27" rx="58.13" ry="58.86"/>
@@ -183,7 +151,7 @@
         <ellipse class="cls-2" cx="232.92" cy="243.62" rx="9.35" ry="9.47"/>
       </g>
     </g>
-    <g id="botoes_gota" data-name="botoes gota">
+    <g id="botoes_gota">
       <g id="botao">
         <path id="B" class="cls-9" d="m319.86,101.2c-4.93-3.86-15.2-.94-20.32,6.55-4.61,6.75-7.36,23.1-8.33,29.84-.19,1.33,1.02,2.27,2.16,1.66,5.72-3.04,19.42-10.78,24.03-17.53,4.21-6.15,7.4-16.67,2.47-20.53Z"/>
         <path id="B-2" data-name="B" class="cls-14" d="m317.84,99.05c-4.93-3.86-11.46-3.28-16.58,4.21-4.02,5.88-6.62,19.05-7.87,26.8-.43,2.67,2.02,4.55,4.28,3.3,6.53-3.62,17.43-10.25,21.44-16.12,4.21-6.15,3.66-14.32-1.27-18.18Z"/>

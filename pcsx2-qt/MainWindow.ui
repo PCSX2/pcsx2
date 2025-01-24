@@ -117,6 +117,8 @@
     </property>
     <addaction name="actionGitHubRepository"/>
     <addaction name="actionSupportForums"/>
+    <addaction name="actionWiki"/>
+    <addaction name="actionDocumentation"/>
     <addaction name="actionDiscordServer"/>
     <addaction name="separator"/>
     <addaction name="actionCheckForUpdates"/>
@@ -512,6 +514,22 @@
    </property>
    <property name="text">
     <string>Support &amp;Forums...</string>
+   </property>
+  </action>
+  <action name="actionWiki">
+   <property name="icon">
+    <iconset theme="book"/>
+   </property>
+   <property name="text">
+    <string>PCSX2 &amp;Wiki...</string>
+   </property>
+  </action>
+  <action name="actionDocumentation">
+   <property name="icon">
+    <iconset theme="booklet"/>
+   </property>
+   <property name="text">
+    <string>D&amp;ocumentation...</string>
    </property>
   </action>
   <action name="actionDiscordServer">

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg id="camera_video_-_PCSX2" data-name="camera video - PCSX2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+<svg viewBox="0 0 150 150">
   <defs>
     <style>
       .cls-1 {
@@ -10,7 +9,7 @@
       }
     </style>
   </defs>
-  <g id="By_Maxihplay" data-name="By Maxihplay">
+  <g id="By_Maxihplay">
     <rect class="cls-1" x="9.4" y="33.49" width="90.95" height="83.02" rx="12.96" ry="12.96"/>
     <path class="cls-1" d="m138.43,105.09l-37.81-15.05v-30.07l37.81-15.05c1.03-.41,2.16.3,2.16,1.35v57.48c0,1.05-1.14,1.76-2.16,1.35Z"/>
   </g>
