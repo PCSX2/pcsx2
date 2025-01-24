@@ -6,8 +6,6 @@
 class GSHwHack
 {
 public:
-	static bool GSC_DeathByDegreesTekkenNinaWilliams(GSRendererHW& r, int& skip);
-	static bool GSC_GiTS(GSRendererHW& r, int& skip);
 	static bool GSC_Manhunt2(GSRendererHW& r, int& skip);
 	static bool GSC_SacredBlaze(GSRendererHW& r, int& skip);
 	static bool GSC_GuitarHero(GSRendererHW& r, int& skip);
@@ -31,7 +29,6 @@ public:
 	static bool GSC_NFSUndercover(GSRendererHW& r, int& skip);
 	static bool GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip);
 	static bool GSC_MetalGearSolid3(GSRendererHW& r, int& skip);
-	static bool GSC_BigMuthaTruckers(GSRendererHW& r, int& skip);
 	static bool GSC_HitmanBloodMoney(GSRendererHW& r, int& skip);
 
 	static bool OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
