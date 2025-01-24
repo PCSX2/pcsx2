@@ -10,6 +10,7 @@ public:
 	static bool GSC_GiTS(GSRendererHW& r, int& skip);
 	static bool GSC_Manhunt2(GSRendererHW& r, int& skip);
 	static bool GSC_SacredBlaze(GSRendererHW& r, int& skip);
+	static bool GSC_GuitarHero(GSRendererHW& r, int& skip);
 	static bool GSC_SFEX3(GSRendererHW& r, int& skip);
 	static bool GSC_DTGames(GSRendererHW& r, int& skip);
 	static bool GSC_Tekken5(GSRendererHW& r, int& skip);

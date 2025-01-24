@@ -27286,6 +27286,7 @@ SLES-54962:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLES-54963:
   name: "Tony Hawk's Proving Ground"
   region: "PAL-E"
@@ -27333,6 +27334,7 @@ SLES-54974:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLES-54975:
   name: "George Of The Jungle"
   region: "PAL-E"
@@ -31633,6 +31635,7 @@ SLKA-25414:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLKA-25417:
   name: "Jin Samguk Mussang 4 - Empires"
   region: "NTSC-K"
@@ -59870,6 +59873,7 @@ SLPS-25840:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLPS-25841:
   name: "テイルズ オブ デスティニー ディレクターズカット [プレミアムBOX]"
   name-sort: "ているず おぶ ですてぃにー でぃれくたーずかっと [ぷれみあむBOX]"
@@ -60174,6 +60178,7 @@ SLPS-25890:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLPS-25891:
   name: "乃木坂春香の秘密 こすぷれ、はじめました♥ [限定版]"
   name-sort: "のぎざかはるかのひみつ こすぷれ はじめました [げんていばん]"
@@ -70742,6 +70747,7 @@ SLUS-21672:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLUS-21673:
   name: "College Hoops 2K8"
   region: "NTSC-U"
