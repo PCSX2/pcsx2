@@ -87,7 +87,6 @@ public:
 
 		fprintf(fp, "SCANMSK\n"
 		            "\tMSK:%u\n\n"
-		            "\n"
 		        , SCANMSK.MSK);
 
 		fprintf(fp, "TEXA\n"

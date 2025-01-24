@@ -317,7 +317,7 @@ bool GSTextureCacheSW::Texture::Save(const std::string& fn) const
 	const u32 w = 1 << m_TEX0.TW;
 	const u32 h = 1 << m_TEX0.TH;
 
-	constexpr GSPng::Format format = IsDevBuild ? GSPng::RGB_A_PNG : GSPng::RGB_PNG;
+	const GSPng::Format format = (IsDevBuild || GSConfig.SaveAlpha) ? GSPng::RGB_A_PNG : GSPng::RGB_PNG;
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
 	const u8* RESTRICT src = (u8*)m_buff;
 	const u32 src_pitch = 1u << (m_tw + (psm.pal == 0 ? 2 : 0));

@@ -35,11 +35,8 @@ bool GSTexture::Save(const std::string& fn)
 		return res;
 	}
 
-#ifdef PCSX2_DEVBUILD
-	GSPng::Format format = GSPng::RGB_A_PNG;
-#else
-	GSPng::Format format = GSPng::RGB_PNG;
-#endif
+	GSPng::Format format = (IsDevBuild || GSConfig.SaveAlpha) ? GSPng::RGB_A_PNG : GSPng::RGB_PNG;
+
 	switch (m_format)
 	{
 		case Format::UNorm8:

@@ -203,16 +203,15 @@ void GSDrawingContext::Dump(const std::string& filename)
 		"\tTBW:%u\n"
 		"\tPSM:0x%x\n"
 		"\tTW:%u\n"
+		"\tTH:%u\n"
 		"\tTCC:%u\n"
 		"\tTFX:%u\n"
 		"\tCBP:0x%x\n"
 		"\tCPSM:0x%x\n"
 		"\tCSM:%u\n"
 		"\tCSA:%u\n"
-		"\tCLD:%u\n"
-		"\tTH:%u\n",
-		TEX0.TBP0, TEX0.TBW, TEX0.PSM, TEX0.TW, TEX0.TCC, TEX0.TFX, TEX0.CBP, TEX0.CPSM, TEX0.CSM, TEX0.CSA, TEX0.CLD,
-		static_cast<uint32_t>(TEX0.TH));
+		"\tCLD:%u\n\n",
+		TEX0.TBP0, TEX0.TBW, TEX0.PSM, TEX0.TW, static_cast<uint32_t>(TEX0.TH), TEX0.TCC, TEX0.TFX, TEX0.CBP, TEX0.CPSM, TEX0.CSM, TEX0.CSA, TEX0.CLD);
 
 	fprintf(fp,
 		"TEX1\n"
