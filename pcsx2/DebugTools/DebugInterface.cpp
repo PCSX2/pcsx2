@@ -967,6 +967,7 @@ std::string R3000DebugInterface::disasm(u32 address, bool simplify)
 
 bool R3000DebugInterface::isValidAddress(u32 addr)
 {
+	addr &= 0x1fffffff;
 	if (addr >= 0x1D000000 && addr < 0x1E000000)
 	{
 		return true;
