@@ -840,6 +840,10 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(PNGCompressionLevel) &&
 		OpEqu(SaveN) &&
 		OpEqu(SaveL) &&
+		OpEqu(SaveB) &&
+		OpEqu(SaveNF) &&
+		OpEqu(SaveLF) &&
+		OpEqu(SaveBF) &&
 
 		OpEqu(ExclusiveFullscreenControl) &&
 		OpEqu(ScreenshotSize) &&
@@ -966,6 +970,8 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBoolEx(SaveFrame, "savef");
 	SettingsWrapBitBoolEx(SaveTexture, "savet");
 	SettingsWrapBitBoolEx(SaveDepth, "savez");
+	SettingsWrapBitBoolEx(SaveAlpha, "savea");
+	SettingsWrapBitBoolEx(SaveInfo, "savei");
 	SettingsWrapBitBool(DumpReplaceableTextures);
 	SettingsWrapBitBool(DumpReplaceableMipmaps);
 	SettingsWrapBitBool(DumpTexturesWithFMVActive);
@@ -1026,6 +1032,10 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfieldEx(PNGCompressionLevel, "png_compression_level");
 	SettingsWrapBitfieldEx(SaveN, "saven");
 	SettingsWrapBitfieldEx(SaveL, "savel");
+	SettingsWrapBitfieldEx(SaveB, "saveb");
+	SettingsWrapBitfieldEx(SaveNF, "savenf");
+	SettingsWrapBitfieldEx(SaveLF, "savelf");
+	SettingsWrapBitfieldEx(SaveBF, "savebf");
 
 	SettingsWrapEntryEx(CaptureContainer, "CaptureContainer");
 	SettingsWrapEntryEx(VideoCaptureCodec, "VideoCaptureCodec");
@@ -1108,6 +1118,13 @@ void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 bool Pcsx2Config::GSOptions::UseHardwareRenderer() const
 {
 	return (Renderer != GSRendererType::Null && Renderer != GSRendererType::SW);
+}
+
+bool Pcsx2Config::GSOptions::ShouldDump(int draw, int frame) const
+{
+	return DumpGSData &&
+		(SaveN <= draw) && ((SaveL < 0) || (draw < SaveN + SaveL)) && (draw % SaveB == 0) &&
+		(SaveNF <= frame) && ((SaveLF < 0) || (frame < SaveNF + SaveLF)) && (frame % SaveBF == 0);
 }
 
 static constexpr const std::array s_spu2_sync_mode_names = {
