@@ -35,52 +35,6 @@ static bool s_nativeres;
 // Partial level, broken on all renderers.
 ////////////////////////////////////////////////////////////////////////////////
 
-bool GSHwHack::GSC_DeathByDegreesTekkenNinaWilliams(GSRendererHW& r, int& skip)
-{
-	// Note: Game also has issues with texture shuffle not supported on strange clamp mode.
-	// See https://forums.pcsx2.net/Thread-GSDX-Texture-Cache-Bug-Report-Death-By-Degrees-SLUS-20934-NTSC
-	if (skip == 0)
-	{
-		if (!s_nativeres && RTME && RFBP == 0 && RTBP0 == 0x34a0 && RTPSM == PSMCT32)
-		{
-			// Don't enable hack on native res if crc is below aggressive.
-			// Upscaling issue similar to Tekken 5.
-			skip = 1; // Animation pane
-		}
-#if 0
-		else if (RFBP == 0x3500 && RTPSM == PSMT8 && RFBMSK == 0xFFFF00FF)
-		{
-			// Needs to be further tested so put it on Aggressive for now, likely channel shuffle.
-			skip = 4; // Underwater white fog
-		}
-#endif
-	}
-	else
-	{
-		if (!s_nativeres && RTME && (RFBP | RTBP0 | RFPSM | RTPSM) && RFBMSK == 0x00FFFFFF)
-		{
-			// Needs to be further tested so assume it's related with the upscaling hack.
-			skip = 1; // Animation speed
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::GSC_GiTS(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RTME && RFBP == 0x03000 && RFPSM == PSMCT32 && RTPSM == PSMT8)
-		{
-			// Channel effect not properly supported yet
-			skip = 9;
-		}
-	}
-
-	return true;
-}
-
 // Channel effect not properly supported yet
 bool GSHwHack::GSC_Manhunt2(GSRendererHW& r, int& skip)
 {
@@ -937,44 +891,6 @@ bool GSHwHack::GSC_MetalGearSolid3(GSRendererHW& r, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_BigMuthaTruckers(GSRendererHW& r, int& skip)
-{
-	// Rendering pattern:
-	// CRTC frontbuffer at 0x0 is interlaced (half vertical resolution),
-	// game needs to do a depth effect (so green channel to alpha),
-	// but there is a vram limitation so green is pushed into the alpha channel of the CRCT buffer,
-	// vertical resolution is half so only half is processed at once
-	// We, however, don't have this limitation so we'll replace the draw with a full-screen TS.
-
-	const GIFRegTEX0& Texture = RTEX0;
-
-	GIFRegTEX0 Frame = {};
-	Frame.TBW = RFRAME.FBW;
-	Frame.TBP0 = RFRAME.Block();
-	const int frame_offset_pal = GSLocalMemory::GetEndBlockAddress(0xa00, 10, PSMCT32, GSVector4i(0, 0, 640, 256)) + 1;
-	const int frame_offset_ntsc = GSLocalMemory::GetEndBlockAddress(0xa00, 10, PSMCT32, GSVector4i(0, 0, 640, 224)) + 1;
-	const GSVector4i rect = GSVector4i(r.m_vt.m_min.p.x, r.m_vt.m_min.p.y, r.m_vt.m_max.p.x, r.m_vt.m_max.p.y);
-
-	if (RPRIM->TME && Frame.TBW == 10 && Texture.TBW == 10 && Texture.PSM == PSMCT16 && ((rect.w == 512 && Frame.TBP0 == frame_offset_pal) || (Frame.TBP0 == frame_offset_ntsc && rect.w == 448)))
-	{
-		// 224 ntsc, 256 pal.
-		GL_INS("GSC_BigMuthaTruckers half bottom offset %d", r.m_context->XYOFFSET.OFX >> 4);
-
-		const size_t count = r.m_vertex.next;
-		GSVertex* v = &r.m_vertex.buff[0];
-		const u16 offset = (u16)rect.w * 16;
-
-		for (size_t i = 0; i < count; i++)
-			v[i].XYZ.Y += offset;
-
-		r.m_vt.m_min.p.y += rect.w;
-		r.m_vt.m_max.p.y += rect.w;
-		r.m_cached_ctx.FRAME.FBP = 0x50; // 0xA00 >> 5
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_HitmanBloodMoney(GSRendererHW& r, int& skip)
 {
 	// The game does a stupid thing where it backs up the last 2 pages of the framebuffer with shuffles, uploads a CT32 texture to it
@@ -1565,7 +1481,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_HitmanBloodMoney),
 
 	// Channel Effect
-	CRC_F(GSC_GiTS),
 	CRC_F(GSC_SteambotChronicles),
 
 	// Depth Issue
@@ -1573,10 +1488,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 
 	// Half Screen bottom issue
 	CRC_F(GSC_Tekken5),
-
-	// Texture shuffle
-	CRC_F(GSC_DeathByDegreesTekkenNinaWilliams), // + Upscaling issues
-	CRC_F(GSC_BigMuthaTruckers),
 
 	// Upscaling hacks
 	CRC_F(GSC_UltramanFightingEvolution),
