@@ -257,6 +257,163 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 {
 	const GSVector2i src_page_size = GSLocalMemory::m_psm[spsm].pgs;
 	const GSVector2i dst_page_size = GSLocalMemory::m_psm[tpsm].pgs;
+	const int clamped_sbw = static_cast<int>(std::max(1U, sbw));
+	const int clamped_tbw = static_cast<int>(std::max(1U, tbw));
+	const int src_bw = clamped_sbw * 64;
+	const int dst_bw = clamped_tbw * 64;
+	const GSLocalMemory::psm_t& s_psm = GSLocalMemory::m_psm[spsm];
+	const GSLocalMemory::psm_t& t_psm = GSLocalMemory::m_psm[tpsm];
+	const int src_pgw = std::max(1, src_bw / src_page_size.x);
+	const int dst_pgw = std::max(1, dst_bw / dst_page_size.x);
+	GSVector4i in_rect = src_r;
+
+	if (sbp < tebp && tebp < tbp)
+		sbp += 0x4000;
+	// DST = the target we're trying to fit in to.
+	// SRC = the format being requested, so we want to from SRC to DST.
+	int page_offset = (static_cast<int>(sbp) - static_cast<int>(tbp)) >> 5;
+	int block_offset = (static_cast<int>(sbp) - static_cast<int>(tbp)) & 0x1F;
+
+	if (!(s_psm.bpp == t_psm.bpp))
+	{
+		const int src_bpp = s_psm.bpp;
+
+		if (block_offset)
+			in_rect = in_rect.ralign<Align_Outside>(s_psm.bs);
+		else
+			in_rect = in_rect.ralign<Align_Outside>(s_psm.pgs);
+
+		// Convert rect down in to pages and blocks.
+		const GSVector4i in_pages = GSVector4i(in_rect.x / s_psm.pgs.x, in_rect.y / s_psm.pgs.y, in_rect.z / s_psm.pgs.x, in_rect.w / s_psm.pgs.y);
+		in_rect -= GSVector4i(in_pages.x * s_psm.pgs.x, in_pages.y * s_psm.pgs.y, in_pages.z * s_psm.pgs.x, in_pages.w * s_psm.pgs.y);
+		// Handle a minimum of 1 block, they are a different shape between 16 and 32bit. 8x8 vs 16x8.
+		// FIXME: Block layouts are different between 32bit/8bit and other formats (8x4 instead of 4x8), so this could be a problem if the game invalidates too much.
+		const GSVector4i in_blocks = GSVector4i(in_rect.x / s_psm.bs.x, in_rect.y / s_psm.bs.y, (in_rect.z + (s_psm.bs.x - 1)) / s_psm.bs.x, (in_rect.w + (s_psm.bs.y - 1)) / s_psm.bs.y);
+
+		// Project Snowblind and Tomb Raider access the rect offset by 1 page and use a region to correct it, we need to account for that here.
+		in_rect = GSVector4i(in_pages.x * t_psm.pgs.x, in_pages.y * t_psm.pgs.y, in_pages.z * t_psm.pgs.x, in_pages.w * t_psm.pgs.y);
+		in_rect += GSVector4i(in_blocks.x * t_psm.bs.x, in_blocks.y * t_psm.bs.y, in_blocks.z * t_psm.bs.x, in_blocks.w * t_psm.bs.y);
+
+		if (in_rect.rempty())
+		{
+			DevCon.Warning("Error translating rect");
+			return GSVector4i::zero();
+		}
+	}
+
+	GSVector4i new_rect = GSVector4i::zero();
+
+	if (src_pgw != dst_pgw)
+	{
+		const int horizontal_dst_page_offset = page_offset % clamped_tbw;
+		const bool single_row = ((src_pgw + horizontal_dst_page_offset) <= clamped_tbw) && (in_rect.height() <= dst_page_size.y);
+		const bool single_page = (in_rect.width() <= t_psm.pgs.x) && (in_rect.height() <= t_psm.pgs.y);
+		const int vertical_offset = in_rect.y / t_psm.pgs.y;
+		const int horizontal_offset = in_rect.x / t_psm.pgs.x;
+		const int rect_offset = horizontal_offset + (vertical_offset * src_pgw);
+		const int rect_pages = ((in_rect.width() / t_psm.pgs.x) % src_pgw) + ((in_rect.height() / t_psm.pgs.y) * src_pgw);
+		page_offset += rect_offset;
+		in_rect -= GSVector4i(horizontal_offset * t_psm.pgs.x, vertical_offset * t_psm.pgs.y).xyxy();
+		
+		if (sbw == 0) // Intentionally check this separately
+		{
+			// BW == 0 loops vertically on the first page. So just copy the whole page vertically.
+			if (in_rect.z > dst_page_size.x)
+			{
+				new_rect.x = 0;
+				new_rect.z = (dst_page_size.x);
+			}
+			else
+			{
+				new_rect.x = in_rect.x;
+				new_rect.z = in_rect.z;
+			}
+			if (in_rect.w > dst_page_size.y)
+			{
+				new_rect.y = 0;
+				new_rect.w = dst_page_size.y;
+			}
+			else
+			{
+				new_rect.y = in_rect.y;
+				new_rect.w = in_rect.w;
+			}
+		}
+		else if (src_pgw == 1 && (horizontal_dst_page_offset + rect_pages) <= clamped_tbw) // Intentionally check this separately
+		{
+			new_rect.x = (horizontal_dst_page_offset * t_psm.pgs.x) + in_rect.x;
+			new_rect.z = new_rect.x + (rect_pages * t_psm.pgs.x);
+			new_rect.y = (page_offset / dst_pgw) * t_psm.pgs.y;
+			new_rect.w = new_rect.y + t_psm.pgs.y;
+		}
+		else if (single_row || single_page) // Single page and single row should be handled the same here
+		{
+			//The offsets will move this to the right place
+			const GSVector2i start_page = GSVector2i(page_offset % dst_pgw, page_offset / dst_pgw);
+			new_rect.x = (start_page.x * t_psm.pgs.x) + in_rect.x;
+			new_rect.z = (start_page.x * t_psm.pgs.x) + in_rect.z;
+			new_rect.y = (start_page.y * t_psm.pgs.y) + in_rect.y;
+			new_rect.w = (start_page.y * t_psm.pgs.y) + in_rect.w;
+		}
+		else
+		{
+			
+
+			// Fills full length, so count pages based on the width, adjust rect to fill original rect.
+			// Battle Assault 3 does a move with BW 7 instead of 8 and does 448x512, instead of 512x448. Same result, but confusing for us.
+			if ((in_rect.width() / dst_page_size.x) == src_pgw)
+			{
+				// The width is mismatched to the page.
+				if (!is_invalidation && GSConfig.UserHacks_TextureInsideRt < GSTextureInRtMode::MergeTargets)
+				{
+					DevCon.Warning("Uneven pages mess up sbp %x dbp %x spgw %d dpgw %d src fmt %d dst fmt %d src_rect %d, %d, %d, %d draw %d", sbp, tbp, src_pgw, dst_pgw, spsm, tpsm, in_rect.x, in_rect.y, in_rect.z, in_rect.w, GSState::s_n);
+					return GSVector4i::zero();
+				}
+
+				const GSVector2i start_page = GSVector2i(page_offset % dst_pgw, page_offset / dst_pgw);
+				int page_count = (in_rect.height() / dst_page_size.y) * src_pgw;
+
+				// Round up to a whole row, it's better than the alternative.
+				// Busin 0 - Wizardry Alternative Neo moves with non even rows.
+				const int horizontal_offset = (page_count % dst_pgw);
+				if (horizontal_offset)
+					page_count += dst_pgw - horizontal_offset;
+
+				int new_height = (page_count / dst_pgw) * dst_page_size.y;
+				new_rect.x = 0;
+				new_rect.z = dst_pgw * dst_page_size.x;
+				new_rect.y = start_page.y * dst_page_size.y;
+				new_rect.w = new_rect.y + new_height;
+			}
+			else
+			{
+				//TODO: Maybe control dirty blocks directly and add them page at a time for better granularity.
+				const GSVector2i start_page = GSVector2i((page_offset + rect_offset) % dst_pgw, page_offset / dst_pgw);
+				DevCon.Warning("Fudging start position");
+				// Not easily translatable full pages and make sure the height is rounded upto encompass the half row.
+				new_rect.x = start_page.x * dst_page_size.x;
+				new_rect.z = new_rect.x + in_rect.z;
+				new_rect.y = start_page.y * dst_page_size.y;
+				new_rect.w = new_rect.y + in_rect.w;
+			}
+		}
+	}
+	else // Widths match
+	{
+		const int horizontal_dst_page_offset = page_offset % clamped_tbw;
+		const int vertical_dst_page_offset = page_offset / clamped_tbw;
+		GSVector4i offset_rect(horizontal_dst_page_offset * t_psm.pgs.x, vertical_dst_page_offset * t_psm.pgs.y);
+		new_rect = in_rect + offset_rect.xyxy();
+	}
+
+	return new_rect;
+}
+
+/*
+GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw, u32 tpsm, u32 sbp, u32 spsm, u32 sbw, GSVector4i src_r, bool is_invalidation)
+{
+	const GSVector2i src_page_size = GSLocalMemory::m_psm[spsm].pgs;
+	const GSVector2i dst_page_size = GSLocalMemory::m_psm[tpsm].pgs;
 	const int src_bw = static_cast<int>(std::max(1U, sbw) * 64);
 	const int dst_bw = static_cast<int>(std::max(1U, tbw) * 64);
 	const int src_pgw = std::max(1, src_bw / src_page_size.x);
@@ -410,7 +567,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 	}
 
 	return new_rect;
-}
+}*/
 
 GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 spsm, u32 sbw, GSVector4i src_r, bool is_invalidation)
 {
@@ -860,6 +1017,13 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 	bool inside_target = false;
 	GSVector4i target_rc(r);
 
+	GSVector4i block_boundary_rect = target_rc;
+	block_boundary_rect.x = block_boundary_rect.x & ~(psm_s.bs.x - 1);
+	block_boundary_rect.y = block_boundary_rect.y & ~(psm_s.bs.y - 1);
+	// Round up to the nearst block boundary for lookup to avoid problems due to bilinear and inclusive rects.
+	block_boundary_rect.z = std::max(target_rc.x + 1, (block_boundary_rect.z + (psm_s.bs.x / 2)) & ~(psm_s.bs.x - 1));
+	block_boundary_rect.w = std::max(target_rc.y + 1, (block_boundary_rect.w + (psm_s.bs.y / 2)) & ~(psm_s.bs.y - 1));
+
 	for (auto t : m_dst[DepthStencil])
 	{
 		if (!t->m_used || (!t->m_dirty.empty() && !is_depth))
@@ -887,52 +1051,29 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 			const GSVector2i page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
 			const bool can_translate = CanTranslate(bp, TEX0.TBW, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 			const bool swizzle_match = psm_s.depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
-			GSVector4i new_rect = r;
-
-			if (linear)
-			{
-				new_rect.z -= 1;
-				new_rect.w -= 1;
-			}
+			GSVector4i new_rect = block_boundary_rect;
 
 			if (can_translate)
 			{
 				if (swizzle_match)
 				{
-					target_rc = TranslateAlignedRectByPage(t, bp, psm, TEX0.TBW, new_rect);
+					block_boundary_rect = TranslateAlignedRectByPage(t, bp, psm, TEX0.TBW, new_rect);
 				}
 				else
 				{
-					// If it's not page aligned, grab the whole pages it covers, to be safe.
-					if (psm_s.bpp != GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp)
-					{
-						const GSVector2i dst_page_size = psm_s.pgs;
-						target_rc = GSVector4i(target_rc.x / page_size.x, target_rc.y / page_size.y,
-							(target_rc.z + (page_size.x - 1)) / page_size.x,
-							(target_rc.w + (page_size.y - 1)) / page_size.y);
-						target_rc = GSVector4i(target_rc.x * dst_page_size.x, target_rc.y * dst_page_size.y,
-							target_rc.z * dst_page_size.x, target_rc.w * dst_page_size.y);
-					}
-					else
-					{
-						target_rc.x &= ~(page_size.x - 1);
-						target_rc.y &= ~(page_size.y - 1);
-						target_rc.z = (new_rect.z + (page_size.x - 1)) & ~(page_size.x - 1);
-						target_rc.w = (new_rect.w + (page_size.y - 1)) & ~(page_size.y - 1);
-					}
-					target_rc = TranslateAlignedRectByPage(t, bp & ~((1 << 5) - 1), psm, TEX0.TBW, target_rc);
+					const GSVector2i src_page_size = psm_s.pgs;
+					new_rect.x &= ~(src_page_size.x - 1);
+					new_rect.y &= ~(src_page_size.y - 1);
+					new_rect.z = (new_rect.z + (src_page_size.x - 1)) & ~(src_page_size.x - 1);
+					new_rect.w = (new_rect.w + (src_page_size.y - 1)) & ~(src_page_size.y - 1);
+					block_boundary_rect = TranslateAlignedRectByPage(t, bp & ~((1 << 5) - 1), psm, TEX0.TBW, new_rect);
 				}
 
-				if (!target_rc.rempty())
+				if (!block_boundary_rect.rempty())
 				{
 					dst = t;
 					inside_target = true;
 				}
-			}
-			if (linear)
-			{
-				new_rect.z += 1;
-				new_rect.w += 1;
 			}
 		}
 	}
@@ -1007,8 +1148,8 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 		if (inside_target)
 		{
 			// Need to set it up as a region target.
-			src->m_region.SetX(target_rc.x, target_rc.z);
-			src->m_region.SetY(target_rc.y, target_rc.w);
+			src->m_region.SetX(block_boundary_rect.x, block_boundary_rect.z);
+			src->m_region.SetY(block_boundary_rect.y, block_boundary_rect.w);
 		}
 
 		if (GSRendererHW::GetInstance()->IsTBPFrameOrZ(dst->m_TEX0.TBP0))
@@ -1434,7 +1575,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							}
 							else
 							{
-								if (!t->HasValidBitsForFormat(psm, req_color, req_alpha) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
+								if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, t->m_TEX0.TBW == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
 									continue;
 
 								dst = t;
@@ -1459,7 +1600,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					// Detect half of the render target (fix snow engine game)
 					// Target Page (8KB) have always a width of 64 pixels
 					// Half of the Target is TBW/2 pages * 8KB / (1 block * 256B) = 0x10
-					if (!t->HasValidBitsForFormat(psm, req_color, req_alpha) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
+					if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, t->m_TEX0.TBW == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
 						continue;
 
 					half_right = true;
@@ -1476,10 +1617,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						 (GSLocalMemory::m_psm[color_psm].bpp >= 16 || (/*possible_shuffle &&*/ GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32)) && // Channel shuffles or non indexed lookups.
 					t->m_age <= 1 && (!found_t || t->m_last_draw > dst->m_last_draw) /*&& CanTranslate(bp, bw, psm, block_boundary_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW)*/)
 				{
-
-					if (!t->HasValidBitsForFormat(psm, req_color, req_alpha) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
-						continue;
-
 					u32 horz_page_offset = ((bp - t->m_TEX0.TBP0) >> 5) % t->m_TEX0.TBW;
 					if (GSLocalMemory::m_psm[color_psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32 && bw != 1 && 
 						((t->m_TEX0.TBW < (horz_page_offset + ((block_boundary_rect.z + GSLocalMemory::m_psm[psm].pgs.x - 1) / GSLocalMemory::m_psm[psm].pgs.x)) || 
@@ -1497,7 +1634,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					}
 					// PSM equality needed because CreateSource does not handle PSM conversion.
 					// Only inclusive hit to limit false hits.
-					GSVector4i rect = req_rect;
+					GSVector4i rect = block_boundary_rect;
 					int src_bw = bw;
 					int src_psm = psm;
 
@@ -1521,12 +1658,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					}
 					if (bp > t->m_TEX0.TBP0)
 					{
-						GSVector4i new_rect = (GSLocalMemory::m_psm[color_psm].bpp != GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp) ? block_boundary_rect : rect;
-						if (linear)
-						{
-							new_rect.z -= 1;
-							new_rect.w -= 1;
-						}
+						GSVector4i new_rect = (GSLocalMemory::m_psm[color_psm].bpp != GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp && (psm & 0x7) != PSMCT16) ? block_boundary_rect : rect;
+
 						// Check if it is possible to hit with valid <x,y> offset on the given Target.
 						// Fixes Jak eyes rendering.
 						// Fixes Xenosaga 3 last dungeon graphic bug.
@@ -1578,6 +1711,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 									continue;
 							}
 
+							if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, t->m_TEX0.TBW == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
+								continue;
+
 							x_offset = rect.x;
 							y_offset = rect.y;
 							dst = t;
@@ -1599,6 +1735,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							}
 							if (so.is_valid)
 							{
+								if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, t->m_TEX0.TBW == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
+									continue;
+
 								dst = t;
 								// Offset from Target to Source in Target coords.
 								x_offset = so.b2a_offset.x;
@@ -1635,7 +1774,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							GL_CACHE("TC: Target 0x%x detected in front of TBP 0x%x with %d,%d offset (%d pages)",
 								t->m_TEX0.TBP0, TEX0.TBP0, region.GetMinX(), region.GetMinY(),
 								(region.GetMinY() / page_size.y) * TEX0.TBW + (region.GetMinX() / page_size.x));
-							
+
+							if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, t->m_TEX0.TBW == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
+								continue;
+
 							x_offset = ((((offset_bp - t->m_TEX0.TBP0) >> 5) % bw) * page_size.x) - region.GetMinX();
 							y_offset = ((((offset_bp - t->m_TEX0.TBP0) >> 5) / bw) * page_size.y) - region.GetMinY();
 							dst = t;
@@ -3809,7 +3951,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				// Check exact match first
 				const bool bpp_match = GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[psm].bpp;
 				const u32 page_mask = ((1 << 5) - 1);
-				const bool exact_mem_match = (read_start & ~page_mask) == (t->m_TEX0.TBP0 & ~page_mask) && ((read_end + page_mask) & ~page_mask) == ((t->m_end_block + page_mask) & ~page_mask);
+				const bool exact_mem_match = (read_start & ~page_mask) == (t->m_TEX0.TBP0 & ~page_mask) && ((read_end + (page_mask - 1)) & ~page_mask) <= t->m_end_block;
 				const bool expecting_this_tex = exact_mem_match || (bpp_match && bw == t->m_TEX0.TBW && (((read_start & ~page_mask) == t->m_TEX0.TBP0) || (bp >= t->m_TEX0.TBP0 && ((read_end + page_mask) & ~page_mask) <= ((t->m_end_block + page_mask) & ~page_mask))));
 
 				if (!expecting_this_tex)
@@ -6718,7 +6860,7 @@ void GSTextureCache::Target::UpdateValidChannels(u32 psm, u32 fbmsk)
 	m_valid_rgb |= (psm_s.trbpp >= 24 && (fbmsk & 0x00FFFFFF) != 0x00FFFFFF) || (psm_s.trbpp == 16);
 }
 
-bool GSTextureCache::Target::HasValidBitsForFormat(u32 psm, bool req_color, bool req_alpha)
+bool GSTextureCache::Target::HasValidBitsForFormat(u32 psm, bool req_color, bool req_alpha, bool width_match)
 {
 	// Grab validities..
 	bool alpha_valid = false;
@@ -6741,7 +6883,6 @@ bool GSTextureCache::Target::HasValidBitsForFormat(u32 psm, bool req_color, bool
 
 			if (req_alpha && !alpha_valid && color_valid && (m_TEX0.PSM & 0xF) <= PSMCT24 && (psm & 0xF) == PSMCT32)
 			{
-
 				RGBAMask mask;
 				mask._u32 = 0x8;
 				m_TEX0.PSM &= ~PSMCT24;
