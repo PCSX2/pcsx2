@@ -3614,6 +3614,7 @@ void GSRendererHW::Draw()
 			}
 			if (FRAME_TEX0.TBW != 1 || (m_r.width() > frame_psm.pgs.x || m_r.height() > frame_psm.pgs.y))
 			{
+				FRAME_TEX0.TBP0 = rt->m_TEX0.TBP0;
 				rt->m_TEX0 = FRAME_TEX0;
 
 			}
@@ -3622,7 +3623,10 @@ void GSRendererHW::Draw()
 		if (ds && (!is_possible_mem_clear || ds->m_TEX0.PSM != ZBUF_TEX0.PSM || (rt && ds->m_TEX0.TBW != rt->m_TEX0.TBW)) && !m_in_target_draw)
 		{
 			if (ZBUF_TEX0.TBW != 1 || (m_r.width() > frame_psm.pgs.x || m_r.height() > frame_psm.pgs.y))
+			{
+				ZBUF_TEX0.TBP0 = ds->m_TEX0.TBP0;
 				ds->m_TEX0 = ZBUF_TEX0;
+			}
 		}
 	}
 	else if (!m_texture_shuffle)
