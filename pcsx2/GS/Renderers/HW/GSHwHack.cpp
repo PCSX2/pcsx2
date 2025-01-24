@@ -131,6 +131,22 @@ bool GSHwHack::GSC_SacredBlaze(GSRendererHW& r, int& skip)
 	return true;
 }
 
+bool GSHwHack::GSC_GuitarHero(GSRendererHW& r, int& skip)
+{
+	// Crowd sprite generation is a mess, better done in software.
+	if (skip == 0)
+	{
+		if (RTBW <= 4 && RTME && RFBW <= 4 && (r.m_context->TEX1.MMIN & 1) == 0)
+		{
+			r.ClearGSLocalMemory(r.m_context->offset.zb, r.m_r, 0);
+			r.SwPrimRender(r, RFBP != 0x2DC0, false);
+			skip = 1;
+		}
+	}
+
+	return true;
+}
+
 bool GSHwHack::GSC_SFEX3(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
@@ -1531,6 +1547,7 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_Manhunt2),
 	CRC_F(GSC_MidnightClub3),
 	CRC_F(GSC_SacredBlaze),
+	CRC_F(GSC_GuitarHero),
 	CRC_F(GSC_SakuraWarsSoLongMyLove),
 	CRC_F(GSC_Simple2000Vol114),
 	CRC_F(GSC_SFEX3),
