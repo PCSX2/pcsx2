@@ -179,12 +179,9 @@ GSTexture* GSRendererHW::GetOutput(int i, float& scale, int& y_offset)
 		}
 
 #ifdef ENABLE_OGL_DEBUG
-		if (GSConfig.DumpGSData)
+		if (GSConfig.SaveFrame && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 		{
-			if (GSConfig.SaveFrame && s_n >= GSConfig.SaveN)
-			{
-				t->Save(GetDrawDumpPath("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, static_cast<int>(TEX0.TBP0), psm_str(TEX0.PSM)));
-			}
+			t->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, static_cast<int>(TEX0.TBP0), psm_str(TEX0.PSM)));
 		}
 #endif
 	}
@@ -211,8 +208,8 @@ GSTexture* GSRendererHW::GetFeedbackOutput(float& scale)
 	scale = rt->m_scale;
 
 #ifdef ENABLE_OGL_DEBUG
-	if (GSConfig.DumpGSData && GSConfig.SaveFrame && s_n >= GSConfig.SaveN)
-		t->Save(GetDrawDumpPath("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, static_cast<int>(TEX0.TBP0), psm_str(TEX0.PSM)));
+	if (GSConfig.SaveFrame && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+		t->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, static_cast<int>(TEX0.TBP0), psm_str(TEX0.PSM)));
 #endif
 
 	return t;
@@ -1999,7 +1996,7 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	if (GSConfig.DumpGSData && (s_n >= GSConfig.SaveN))
+	if (GSConfig.SaveInfo && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
 		std::string s;
 
@@ -3308,15 +3305,15 @@ void GSRendererHW::Draw()
 		src->m_texture = src->m_from_target->m_texture;
 	}
 
-	if (GSConfig.DumpGSData)
+	if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
 		const u64 frame = g_perfmon.GetFrame();
 
 		std::string s;
 
-		if (GSConfig.SaveTexture && s_n >= GSConfig.SaveN && src)
+		if (GSConfig.SaveTexture && src)
 		{
-			s = GetDrawDumpPath("%05d_f%lld_itex_%05x_%s_%d%d_%02x_%02x_%02x_%02x.dds",
+			s = GetDrawDumpPath("%05d_f%05lld_itex_%05x_%s_%d%d_%02x_%02x_%02x_%02x.dds",
 				s_n, frame, static_cast<int>(m_cached_ctx.TEX0.TBP0), psm_str(m_cached_ctx.TEX0.PSM),
 				static_cast<int>(m_cached_ctx.CLAMP.WMS), static_cast<int>(m_cached_ctx.CLAMP.WMT),
 				static_cast<int>(m_cached_ctx.CLAMP.MINU), static_cast<int>(m_cached_ctx.CLAMP.MAXU),
@@ -3326,23 +3323,23 @@ void GSRendererHW::Draw()
 
 			if (src->m_palette)
 			{
-				s = GetDrawDumpPath("%05d_f%lld_itpx_%05x_%s.dds", s_n, frame, m_cached_ctx.TEX0.CBP, psm_str(m_cached_ctx.TEX0.CPSM));
+				s = GetDrawDumpPath("%05d_f%05lld_itpx_%05x_%s.dds", s_n, frame, m_cached_ctx.TEX0.CBP, psm_str(m_cached_ctx.TEX0.CPSM));
 
 				src->m_palette->Save(s);
 			}
 		}
 
-		if (rt && GSConfig.SaveRT && s_n >= GSConfig.SaveN)
+		if (rt && GSConfig.SaveRT)
 		{
-			s = GetDrawDumpPath("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, m_cached_ctx.FRAME.Block(), psm_str(m_cached_ctx.FRAME.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rt0_%05x_%s.bmp", s_n, frame, m_cached_ctx.FRAME.Block(), psm_str(m_cached_ctx.FRAME.PSM));
 
 			if (rt->m_texture)
 				rt->m_texture->Save(s);
 		}
 
-		if (ds && GSConfig.SaveDepth && s_n >= GSConfig.SaveN)
+		if (ds && GSConfig.SaveDepth)
 		{
-			s = GetDrawDumpPath("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, m_cached_ctx.ZBUF.Block(), psm_str(m_cached_ctx.ZBUF.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rz0_%05x_%s.bmp", s_n, frame, m_cached_ctx.ZBUF.Block(), psm_str(m_cached_ctx.ZBUF.PSM));
 
 			if (ds->m_texture)
 				ds->m_texture->Save(s);
@@ -3460,7 +3457,7 @@ void GSRendererHW::Draw()
 	
 	//
 
-	if (GSConfig.DumpGSData)
+	if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
 		const bool writeback_HDR_texture = g_gs_device->GetHDRTexture() != nullptr;
 		if (writeback_HDR_texture)
@@ -3474,23 +3471,18 @@ void GSRendererHW::Draw()
 
 		std::string s;
 
-		if (rt && GSConfig.SaveRT && s_n >= GSConfig.SaveN)
+		if (rt && GSConfig.SaveRT)
 		{
-			s = GetDrawDumpPath("%05d_f%lld_rt1_%05x_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.FRAME.Block(), rt->m_TEX0.TBP0, psm_str(m_cached_ctx.FRAME.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rt1_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.FRAME.Block(), psm_str(m_cached_ctx.FRAME.PSM));
 
 			rt->m_texture->Save(s);
 		}
 
-		if (ds && GSConfig.SaveDepth && s_n >= GSConfig.SaveN)
+		if (ds && GSConfig.SaveDepth)
 		{
-			s = GetDrawDumpPath("%05d_f%lld_rz1_%05x_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.ZBUF.Block(), ds->m_TEX0.TBP0, psm_str(m_cached_ctx.ZBUF.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rz1_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.ZBUF.Block(), psm_str(m_cached_ctx.ZBUF.PSM));
 
 			ds->m_texture->Save(s);
-		}
-
-		if (GSConfig.SaveL > 0 && (s_n - GSConfig.SaveN) > GSConfig.SaveL)
-		{
-			GSConfig.DumpGSData = 0;
 		}
 	}
 

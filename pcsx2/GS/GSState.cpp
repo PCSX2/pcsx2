@@ -443,7 +443,7 @@ void GSState::DumpVertices(const std::string& filename)
 	file << std::fixed << std::setprecision(4);
 	for (u32 i = 0; i < count; ++i)
 	{
-		file << "\t" << "v" << i << ": ";
+		file << "\t" << std::dec << "v" << i << ": ";
 		GSVertex v = buffer[m_index.buff[i]];
 
 		const float x = (v.XYZ.X - (int)m_context->XYOFFSET.OFX) / 16.0f;
@@ -461,7 +461,7 @@ void GSState::DumpVertices(const std::string& filename)
 	file << std::fixed << std::setprecision(6);
 	for (u32 i = 0; i < count; ++i)
 	{
-		file << "\t" << "v" << i << ": ";
+		file << "\t" << std::dec << "v" << i << ": ";
 		GSVertex v = buffer[m_index.buff[i]];
 
 		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.R) << DEL;
@@ -479,7 +479,7 @@ void GSState::DumpVertices(const std::string& filename)
 	file << "TEXTURE COORDS (" << qualifier << ")" << std::endl;;
 	for (u32 i = 0; i < count; ++i)
 	{
-		file << "\t" << "v" << i << ": ";
+		file << "\t" << "v" << std::dec << i << ": ";
 		const GSVertex v = buffer[m_index.buff[i]];
 
 		// note
@@ -1994,7 +1994,7 @@ void GSState::InitReadFIFO(u8* mem, int len)
 	// Read the image all in one go.
 	m_mem.ReadImageX(m_tr.x, m_tr.y, m_tr.buff, m_tr.total, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
 
-	if (GSConfig.DumpGSData && GSConfig.SaveRT && s_n >= GSConfig.SaveN)
+	if (GSConfig.SaveRT && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
 		const std::string s(GetDrawDumpPath(
 			"%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
@@ -2742,7 +2742,7 @@ int GSState::Defrost(const freezeData* fd)
 	m_mem.m_clut.Reset();
 	(PRIM->CTXT == 0) ? ApplyTEX0<0>(m_context->TEX0) : ApplyTEX0<1>(m_context->TEX0);
 
-	g_perfmon.SetFrame(5000);
+	g_perfmon.SetFrame(0);
 
 	ResetPCRTC();
 
