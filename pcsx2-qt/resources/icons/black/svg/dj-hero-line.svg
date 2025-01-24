@@ -1,25 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg id="DJ_Hero" data-name="DJ Hero" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+<svg viewBox="0 0 150 150">
   <defs>
     <style>
       .cls-1 {
         stroke-linecap: round;
         stroke-linejoin: bevel;
       }
-
       .cls-1, .cls-2 {
         fill: none;
         stroke: #000;
         stroke-width: 12px;
       }
-
       .cls-2 {
         stroke-miterlimit: 10;
       }
     </style>
   </defs>
-  <g id="By_Maxihplay" data-name="By Maxihplay">
-    <path id="corpo" class="cls-2" d="m122.71,16.1c8.94,0,16.18,7.13,16.18,15.91v85.98c0,8.78-7.25,15.91-16.18,15.91H27.29c-8.94,0-16.18-7.13-16.18-15.91V32.02c0-8.78,7.25-15.91,16.18-15.91h95.43Z"/>
+  <g id="By_Maxihplay">
+    <path class="cls-2" d="m122.71,16.1c8.94,0,16.18,7.13,16.18,15.91v85.98c0,8.78-7.25,15.91-16.18,15.91H27.29c-8.94,0-16.18-7.13-16.18-15.91V32.02c0-8.78,7.25-15.91,16.18-15.91h95.43Z"/>
     <g id="botoes">
       <ellipse id="b" cx="48.19" cy="115.43" rx="6.64" ry="6.52"/>
       <ellipse id="a" cx="31.22" cy="115.43" rx="6.64" ry="6.52"/>

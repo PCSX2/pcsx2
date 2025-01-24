@@ -157,6 +157,8 @@ private Q_SLOTS:
 	void onViewGamePropertiesActionTriggered();
 	void onGitHubRepositoryActionTriggered();
 	void onSupportForumsActionTriggered();
+	void onWikiActionTriggered();
+	void onDocumentationActionTriggered();
 	void onDiscordServerActionTriggered();
 	void onAboutActionTriggered();
 	void onToolsOpenDataDirectoryTriggered();

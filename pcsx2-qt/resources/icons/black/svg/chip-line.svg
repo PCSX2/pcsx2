@@ -1,18 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg id="Bios_-_Pcsx2" data-name="Bios - Pcsx2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+<svg viewBox="0 0 150 150">
   <defs>
     <style>
       .cls-1 {
         stroke-linejoin: round;
       }
-
       .cls-1, .cls-2 {
         fill: none;
         stroke: #000;
         stroke-linecap: round;
         stroke-width: 12px;
       }
-
       .cls-2 {
         stroke-miterlimit: 10;
       }
