@@ -12,39 +12,41 @@
 /*          NEW FLAGS                    */ //By asadr. Thnkx F|RES :p
 /*****************************************/
 
-static __ri u32 VU_MAC_UPDATE(int shift, VURegs* VU, u32 f)
+static __ri u32 VU_MAC_UPDATE(int shift, VURegs* VU, PS2Float f)
 {
-	PS2Float ps2f = PS2Float(f);
-
-	u32 exp = ps2f.Exponent();
-	u32 s = ps2f.raw & PS2Float::SIGNMASK;
+	u32 exp = f.Exponent();
+	u32 s = f.raw & PS2Float::SIGNMASK;
 
 	if (s)
 		VU->macflag |= 0x0010<<shift;
 	else
 		VU->macflag &= ~(0x0010<<shift);
 
-	if (ps2f.IsZero())
+	if (f.IsZero())
 	{
 		VU->macflag = (VU->macflag & ~(0x1100<<shift)) | (0x0001<<shift);
-		return f;
+		return f.raw;
 	}
 
 	switch(exp)
 	{
 		case 0:
-			VU->macflag = (VU->macflag&~(0x1000<<shift)) | (0x0101<<shift);
+			if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) || CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0) || CHECK_VU_SOFT_SQRT((VU == &VU1) ? 1 : 0))
+			{
+				if (f.uf) { VU->macflag = (VU->macflag & ~(0x1000 << shift)) | (0x0101 << shift); }
+			}
+			else
+			{
+				VU->macflag = (VU->macflag & ~(0x1000 << shift)) | (0x0101 << shift);
+			}
+
 			return s;
 		case 255:
 			if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) || CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0) || CHECK_VU_SOFT_SQRT((VU == &VU1) ? 1 : 0))
 			{
-				if (f == PS2Float::MAX_FLOATING_POINT_VALUE || f == PS2Float::MIN_FLOATING_POINT_VALUE)
-				{
-					VU->macflag = (VU->macflag & ~(0x0101 << shift)) | (0x1000 << shift);
-					return f;
-				}
-				else
-					return f;
+				if (f.of) { VU->macflag = (VU->macflag & ~(0x0101 << shift)) | (0x1000 << shift); }
+
+				return f.raw;
 			}
 			else if (CHECK_VU_OVERFLOW((VU == &VU1) ? 1 : 0))
 			{
@@ -54,30 +56,30 @@ static __ri u32 VU_MAC_UPDATE(int shift, VURegs* VU, u32 f)
 			else
 			{
 				VU->macflag = (VU->macflag & ~(0x0101 << shift)) | (0x1000 << shift);
-				return f;
+				return f.raw;
 			}
 		default:
 			VU->macflag = (VU->macflag & ~(0x1101<<shift));
-			return f;
+			return f.raw;
 	}
 }
 
-__fi u32 VU_MACx_UPDATE(VURegs* VU, u32 x)
+__fi u32 VU_MACx_UPDATE(VURegs* VU, PS2Float x)
 {
 	return VU_MAC_UPDATE(3, VU, x);
 }
 
-__fi u32 VU_MACy_UPDATE(VURegs* VU, u32 y)
+__fi u32 VU_MACy_UPDATE(VURegs* VU, PS2Float y)
 {
 	return VU_MAC_UPDATE(2, VU, y);
 }
 
-__fi u32 VU_MACz_UPDATE(VURegs* VU, u32 z)
+__fi u32 VU_MACz_UPDATE(VURegs* VU, PS2Float z)
 {
 	return VU_MAC_UPDATE(1, VU, z);
 }
 
-__fi u32 VU_MACw_UPDATE(VURegs* VU, u32 w)
+__fi u32 VU_MACw_UPDATE(VURegs* VU, PS2Float w)
 {
 	return VU_MAC_UPDATE(0, VU, w);
 }

@@ -273,7 +273,7 @@ u32 PS2Float::Abs()
 
 PS2Float PS2Float::Negate()
 {
-	return PS2Float(raw ^ 0x80000000);
+	return PS2Float(raw ^ SIGNMASK);
 }
 
 s32 PS2Float::CompareToSign(PS2Float other)
@@ -296,8 +296,8 @@ s32 PS2Float::CompareToSign(PS2Float other)
 
 s32 PS2Float::CompareTo(PS2Float other)
 {
-	s32 selfTwoComplementVal = (s32)Abs();
-	s32 otherTwoComplementVal = (s32)other.Abs();
+	u32 selfTwoComplementVal = Abs();
+	u32 otherTwoComplementVal = other.Abs();
 
 	if (selfTwoComplementVal < otherTwoComplementVal)
 		return -1;
