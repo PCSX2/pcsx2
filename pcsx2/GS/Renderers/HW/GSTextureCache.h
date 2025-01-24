@@ -238,7 +238,7 @@ public:
 		static Target* Create(GIFRegTEX0 TEX0, int w, int h, float scale, int type, bool clear);
 
 		__fi bool HasValidAlpha() const { return (m_valid_alpha_low | m_valid_alpha_high); }
-		bool HasValidBitsForFormat(u32 psm, bool req_color, bool req_alpha);
+		bool HasValidBitsForFormat(u32 psm, bool req_color, bool req_alpha, bool width_match);
 
 		void ResizeDrawn(const GSVector4i& rect);
 		void UpdateDrawn(const GSVector4i& rect, bool can_resize = true);
