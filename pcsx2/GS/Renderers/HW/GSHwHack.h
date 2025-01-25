@@ -25,7 +25,6 @@ public:
 	static bool GSC_UrbanReign(GSRendererHW& r, int& skip);
 	static bool GSC_SteambotChronicles(GSRendererHW& r, int& skip);
 	static bool GSC_BlueTongueGames(GSRendererHW& r, int& skip);
-	static bool GSC_Battlefield2(GSRendererHW& r, int& skip);
 	static bool GSC_NFSUndercover(GSRendererHW& r, int& skip);
 	static bool GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip);
 	static bool GSC_MetalGearSolid3(GSRendererHW& r, int& skip);
@@ -37,7 +36,6 @@ public:
 	static bool OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_ArTonelico2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_BurnoutGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	static bool OI_Battlefield2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_HauntingGround(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 
 	static bool MV_Growlanser(GSRendererHW& r);
