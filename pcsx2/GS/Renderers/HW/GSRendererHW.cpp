@@ -1029,6 +1029,12 @@ GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex)
 	// e.g. Burnout 3, God of War II, etc.
 	int height = std::min<int>(m_context->scissor.in.w, m_r.w);
 
+	// We can check if the next draw is doing the same from the next page, and assume it's a per line clear.
+	// Battlefield 2 does this.
+	int pages = ((GSLocalMemory::GetEndBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r) + 1) - m_cached_ctx.FRAME.Block()) >> 5;
+	if (m_cached_ctx.FRAME.FBW > 1 && m_r.height() <= 64 && (pages % m_cached_ctx.FRAME.FBW) == 0 && m_env.CTXT[m_backed_up_ctx].FRAME.FBP == (m_cached_ctx.FRAME.FBP + pages) && NextDrawMatchesShuffle())
+		height = std::max<int>(m_context->scissor.in.w, height);
+
 	// If the draw is less than a page high, FBW=0 is the same as FBW=1.
 	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
 	int width = std::min(std::max<int>(m_cached_ctx.FRAME.FBW, 1) * 64, m_context->scissor.in.z);
