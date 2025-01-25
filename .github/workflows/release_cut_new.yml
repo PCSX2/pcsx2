@@ -178,7 +178,7 @@ jobs:
       # Prepare artifacts, they are all zips from github!
       - name: Prepare Artifacts
         working-directory: ./ci-artifacts/
-        run: for d in *windows*/; do 7z a "${d}asset.7z" ./$d/*; done
+        run: for d in *windows*/; do 7z a -mx9 "${d}asset.7z" ./$d/*; done
 
       - name: Name and Upload the Release Assets
         env:
