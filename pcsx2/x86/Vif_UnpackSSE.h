@@ -102,6 +102,10 @@ protected:
 	const nVifBlock&  vB;  // some pre-collected data from VifStruct
 	int               vCL; // internal copy of vif->cl
 
+	std::array<xRegisterSSE, 4> colRegs;
+	xRegisterSSE rowReg;
+	xRegisterSSE tmpReg;
+
 public:
 	VifUnpackSSE_Dynarec(const nVifStruct& vif_, const nVifBlock& vifBlock_);
 	VifUnpackSSE_Dynarec(const VifUnpackSSE_Dynarec& src) // copy constructor
