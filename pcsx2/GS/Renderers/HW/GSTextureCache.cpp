@@ -3602,36 +3602,40 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 
 	if (!target)
 	{
+		const int pages = (end_bp + ((1<<5)-1) - start_bp) >> 5;
 		// Remove Source that have same BP as the render target (color&dss)
-		// rendering will dirty the copy
-		auto& list = m_src.m_map[bp >> 5];
-		for (auto i = list.begin(); i != list.end();)
+		/// rendering will dirty the copy
+		for (int pgs = 0; pgs < pages; pgs++)
 		{
-			Source* s = *i;
-			++i;
-
-			if ((GSUtil::HasSharedBits(psm, s->m_TEX0.PSM) && (bp >= start_bp && bp < end_bp)) ||
-				(GSUtil::HasSharedBits(bp, psm, s->m_from_target_TEX0.TBP0, s->m_TEX0.PSM) && s->m_target))
-			{
-				m_src.RemoveAt(s);
-			}
-		}
-
-		u32 bbp = bp + bw * 0x10;
-		if (bw >= 16 && bbp < 16384)
-		{
-			// Detect half of the render target (fix snow engine game)
-			// Target Page (8KB) have always a width of 64 pixels
-			// Half of the Target is TBW/2 pages * 8KB / (1 block * 256B) = 0x10
-			auto& list = m_src.m_map[bbp >> 5];
+			auto& list = m_src.m_map[((bp >> 5) + pgs) & 0x1ff];
 			for (auto i = list.begin(); i != list.end();)
 			{
 				Source* s = *i;
 				++i;
 
-				if (GSUtil::HasSharedBits(bbp, psm, s->m_TEX0.TBP0, s->m_TEX0.PSM))
+				if ((GSUtil::HasSharedBits(psm, s->m_TEX0.PSM) && (end_bp > s->m_TEX0.TBP0 && start_bp < s->UnwrappedEndBlock()) && !s->m_target) ||
+					(GSUtil::HasSharedBits(bp, psm, s->m_from_target_TEX0.TBP0, s->m_TEX0.PSM) && s->m_target))
 				{
 					m_src.RemoveAt(s);
+				}
+			}
+
+			u32 bbp = bp + bw * 0x10;
+			if (bw >= 16 && bbp < 16384)
+			{
+				// Detect half of the render target (fix snow engine game)
+				// Target Page (8KB) have always a width of 64 pixels
+				// Half of the Target is TBW/2 pages * 8KB / (1 block * 256B) = 0x10
+				auto& list = m_src.m_map[bbp >> 5];
+				for (auto i = list.begin(); i != list.end();)
+				{
+					Source* s = *i;
+					++i;
+
+					if (GSUtil::HasSharedBits(bbp, psm, s->m_TEX0.TBP0, s->m_TEX0.PSM))
+					{
+						m_src.RemoveAt(s);
+					}
 				}
 			}
 		}
