@@ -1142,43 +1142,6 @@ bool GSHwHack::OI_BurnoutGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GS
 	return false;
 }
 
-bool GSHwHack::GSC_Battlefield2(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RZBP >= RFBP && RFBP >= 0x2000 && RZBP >= 0x2700 && ((RZBP - RFBP) == 0x700))
-		{
-			skip = 7;
-
-			GIFRegTEX0 TEX0 = {};
-			TEX0.TBP0 = RFBP;
-			TEX0.TBW = 8;
-			GSTextureCache::Target* dst = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil);
-			if (dst)
-			{
-				g_gs_device->ClearDepth(dst->m_texture, 0.0f);
-			}
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::OI_Battlefield2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	if (!RPRIM->TME || RFRAME.Block() > 0xD00 || RTEX0.TBP0 > 0x1D00)
-		return true;
-
-	if (rt && t && RFRAME.Block() == 0 && RTEX0.TBP0 == 0x1000)
-	{
-		const GSVector4i rc(0, 0, std::min(rt->GetWidth(), t->m_texture->GetWidth()), std::min(rt->GetHeight(), t->m_texture->GetHeight()));
-		g_gs_device->CopyRect(t->m_texture, rt, rc, 0, 0);
-	}
-
-	g_texture_cache->InvalidateTemporarySource();
-	return false;
-}
-
 bool GSHwHack::OI_HauntingGround(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	// Haunting Ground clears two targets by doing a direct colour write at 0x3000, covering a target at 0x3380.
@@ -1474,7 +1437,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_ZettaiZetsumeiToshi2),
 	CRC_F(GSC_BlackAndBurnoutSky),
 	CRC_F(GSC_BlueTongueGames),
-	CRC_F(GSC_Battlefield2),
 	CRC_F(GSC_NFSUndercover),
 	CRC_F(GSC_PolyphonyDigitalGames),
 	CRC_F(GSC_MetalGearSolid3),
@@ -1500,7 +1462,6 @@ const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] 
 	CRC_F(OI_SonicUnleashed),
 	CRC_F(OI_ArTonelico2),
 	CRC_F(OI_BurnoutGames),
-	CRC_F(OI_Battlefield2),
 	CRC_F(OI_HauntingGround),
 };
 
