@@ -1481,6 +1481,7 @@ SCAJ-20041:
   name: "Energy Airforce - Aim Strike!"
   region: "NTSC-Unk"
   gsHWFixes:
+    recommendedBlendingLevel: 5 # Alleviates color banding.
     autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SCAJ-20043:
   name: "Chain Dive"
@@ -14697,6 +14698,10 @@ SLES-50396:
 SLES-50397:
   name: "Prisoner of War"
   region: "PAL-M5"
+  speedHacks:
+    instantVU1: 0 # Fixes NPCs getting stuck in place.
+  gsHWFixes:
+    recommendedBlendingLevel: 5 # Fixes shading and shadow definition.
 SLES-50398:
   name: "UEFA Champions League"
   region: "PAL-M5"
@@ -16553,6 +16558,7 @@ SLES-51203:
     - EETimingHack # Fixes various VIF errors.
   gsHWFixes:
     minimumBlendingLevel: 2 # Improves banding.
+    recommendedBlendingLevel: 4 # Fixes missing text brightness.
 SLES-51208:
   name: "Rocky"
   region: "PAL-M5"
@@ -17970,7 +17976,8 @@ SLES-51824:
   name: "Colin McRae Rally '04"
   region: "PAL-M5"
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 4 # Fixes vertical lines and depth lines.
+    autoFlush: 2 # Fixes sun intensity.
 SLES-51825:
   name: "Pop Idol"
   region: "PAL-E"
@@ -18281,6 +18288,7 @@ SLES-51918:
   gsHWFixes:
     autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 4 # Reduces post-processing misalignment.
+    nativeScaling: 2 # Fixes post effects.
 SLES-51924:
   name: "World War Zero - Ironstorm"
   region: "PAL-M5"
@@ -18987,16 +18995,19 @@ SLES-52265:
   name: "Energy Airforce - Aim Strike!"
   region: "PAL-E"
   gsHWFixes:
+    recommendedBlendingLevel: 5 # Alleviates color banding.
     autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SLES-52266:
   name: "Energy Airforce - Aim Strike!"
   region: "PAL-F"
   gsHWFixes:
+    recommendedBlendingLevel: 5 # Alleviates color banding.
     autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SLES-52267:
   name: "Energy Airforce - Aim Strike!"
   region: "PAL-I"
   gsHWFixes:
+    recommendedBlendingLevel: 5 # Alleviates color banding.
     autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SLES-52275:
   name: "Way of the Samurai 2"
@@ -19263,6 +19274,7 @@ SLES-52372:
   name: "Spider-Man 2"
   region: "PAL-M5"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing water sheen.
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
@@ -19446,6 +19458,7 @@ SLES-52447:
   name: "Spider-Man 2"
   region: "PAL-I"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing water sheen.
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
@@ -19563,6 +19576,7 @@ SLES-52493:
   name: "Spider-Man 2"
   region: "PAL-E"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing water sheen.
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
@@ -22626,6 +22640,7 @@ SLES-53523:
     minimumBlendingLevel: 3 # Fixes broken light and shadow rendering.
     halfPixelOffset: 2 # Fixes misaligned bloom and character shadows.
     autoFlush: 1 # Fixes missing bloom intensity and alignment.
+    nativeScaling: 2 # Helps fix offset blur and bloom on shadows and the UI.
 SLES-53524:
   name: "Mortal Kombat - Shaolin Monks"
   region: "PAL-M5"
@@ -23172,6 +23187,7 @@ SLES-53647:
     minimumBlendingLevel: 3 # Fixes broken light and shadow rendering.
     halfPixelOffset: 2 # Fixes misaligned bloom and character shadows.
     autoFlush: 1 # Fixes missing bloom intensity and alignment.
+    nativeScaling: 2 # Helps fix offset blur and bloom on shadows and the UI.
 SLES-53651:
   name: "WWII - Soldier"
   region: "PAL-E"
@@ -24613,13 +24629,13 @@ SLES-54159:
   region: "PAL-M5"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes post processing misalignment.
-    recommendedBlendingLevel: 3 # Improves reflection quality.
+    recommendedBlendingLevel: 4 # Improves reflection quality and terrain lighting.
 SLES-54160:
   name: "Eragon"
   region: "PAL-R"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes post processing misalignment.
-    recommendedBlendingLevel: 3 # Improves reflection quality.
+    recommendedBlendingLevel: 4 # Improves reflection quality and terrain lighting.
 SLES-54161:
   name: "Super Dragon Ball Z"
   region: "PAL-E"
@@ -25933,6 +25949,9 @@ SLES-54590:
   name: "Hard Knock High"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns post effects.
+    nativeScaling: 1 # Fixes post effects.
 SLES-54591:
   name: "Special Forces"
   region: "PAL-E"
@@ -25976,8 +25995,11 @@ SLES-54615:
 SLES-54616:
   name: "Fantastic Four - Rise of the Silver Surfer"
   region: "PAL-M5"
+  speedHacks:
+    eeCycleRate: 1 # Helps alleviate FPS drops during FMVs.
   gsHWFixes:
     roundSprite: 2 # Fixes edge depth bleeding during power attacks and misaligned bloom.
+    nativeScaling: 1 # Fixes Post effect.
 SLES-54617:
   name: "Action Man A.T.O.M. - Alpha Teens on Machines"
   region: "PAL-M9"
@@ -26497,8 +26519,11 @@ SLES-54774:
 SLES-54776:
   name: "Fantastic Four - Rise of the Silver Surfer"
   region: "PAL-E-I"
+  speedHacks:
+    eeCycleRate: 1 # Helps alleviate FPS drops during FMVs.
   gsHWFixes:
     roundSprite: 2 # Fixes edge depth bleeding during power attacks and misaligned bloom.
+    nativeScaling: 1 # Fixes Post effect.
 SLES-54778:
   name: "Harry Potter and the Order of the Phoenix"
   region: "PAL-E"
@@ -28177,6 +28202,9 @@ SLES-55345:
   name: "007 - Quantum of Solace"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces bloom misalignment and fixes depth lines.
+    nativeScaling: 2 # Fixes bloom intensity.
 SLES-55346:
   name: "Rugby League 2 - World Cup Edition"
   region: "PAL-E"
@@ -29580,6 +29608,7 @@ SLKA-25032:
     - EETimingHack # Fixes various VIF errors.
   gsHWFixes:
     minimumBlendingLevel: 2 # Improves banding.
+    recommendedBlendingLevel: 4 # Fixes missing text brightness.
 SLKA-25033:
   name: "Gregory Horror Show"
   region: "NTSC-K"
@@ -30147,9 +30176,10 @@ SLKA-25180:
     halfPixelOffset: 4 # Aligns post effects.
     nativeScaling: 2 # Fixes post effects.
 SLKA-25181:
-  name: "Energy Airforce Aim Strike"
+  name: "Energy Airforce Aim Strike!"
   region: "NTSC-K"
   gsHWFixes:
+    recommendedBlendingLevel: 5 # Alleviates color banding.
     autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SLKA-25182:
   name: "Hajime no Ippo2 Victorious Road"
@@ -31310,6 +31340,9 @@ SLKA-25441:
 SLKA-25442:
   name: "007 - Quantum of Solace"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces bloom misalignment and fixes depth lines.
+    nativeScaling: 2 # Fixes bloom intensity.
 SLKA-25443:
   name: "Musou Orochi Maou Sairin"
   region: "NTSC-K"
@@ -32278,6 +32311,9 @@ SLPM-55148:
   name-sort: "007 なぐさめのほうしゅう"
   name-en: "007 - Nagusame no Houshuu"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces bloom misalignment and fixes depth lines.
+    nativeScaling: 2 # Fixes bloom intensity.
 SLPM-55149:
   name: "ラブルートゼロ KissKiss☆ラビリンス [通常版]"
   name-sort: "らぶるーとぜろ きすきすらびりんす [つうじょうばん]"
@@ -40879,6 +40915,7 @@ SLPM-65374:
     instantVU1: 0 # Fixes hanging while going ingame.
     mtvu: 0
   gsHWFixes:
+    recommendedBlendingLevel: 5 # Alleviates color banding.
     autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SLPM-65375:
   name: "真・三國無双3 & 真・三國無双3 猛将伝 [ディスク 1] [プレミアムパック]"
@@ -42473,6 +42510,7 @@ SLPM-65662:
   name-en: "Spider-Man 2"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing water sheen.
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
@@ -45210,6 +45248,7 @@ SLPM-66121:
   name: "Spider-Man 2 [TAITO BEST]"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing water sheen.
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
@@ -54171,6 +54210,9 @@ SLPS-20474:
   name-sort: "しんぷる2000しりーず Vol.107 THE ほのおのかくとうばんちょう"
   name-en: "Simple 2000 Series Vol. 107 - The Honoo no Kakutou Banchou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns post effects.
+    nativeScaling: 1 # Fixes post effects.
 SLPS-20475:
   name: "山佐DigiワールドSP ジャイアントパルサー"
   name-sort: "やまさでじわーるどSP じゃいあんとぱるさー"
@@ -55863,6 +55905,7 @@ SLPS-25254:
     - EETimingHack # Fixes various VIF errors.
   gsHWFixes:
     minimumBlendingLevel: 2 # Improves banding.
+    recommendedBlendingLevel: 4 # Fixes missing text brightness.
 SLPS-25255:
   name: "サイドワインダーV フライトBOX [特別限定版]"
   name-sort: "さいどわいんだーV ふらいとBOX [とくべつげんていばん]"
@@ -63150,6 +63193,7 @@ SLUS-20454:
     - EETimingHack # Fixes various VIF errors.
   gsHWFixes:
     minimumBlendingLevel: 2 # Improves banding.
+    recommendedBlendingLevel: 4 # Fixes missing text brightness.
 SLUS-20455:
   name: "F1 2002"
   region: "NTSC-U"
@@ -64887,6 +64931,7 @@ SLUS-20776:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing water sheen.
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
@@ -66978,6 +67023,7 @@ SLUS-21139:
     minimumBlendingLevel: 3 # Fixes broken light and shadow rendering.
     halfPixelOffset: 2 # Fixes misaligned bloom and character shadows.
     autoFlush: 1 # Fixes missing bloom intensity and alignment.
+    nativeScaling: 2 # Helps fix offset blur and bloom on shadows and the UI.
 SLUS-21140:
   name: "Mobile Suit Gundam Seed - Never Ending Tomorrow"
   region: "NTSC-U"
@@ -68207,7 +68253,7 @@ SLUS-21322:
     vuClampMode: 3 # Fixes SPS and spawn issues.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes post processing misalignment.
-    recommendedBlendingLevel: 3 # Improves reflection quality.
+    recommendedBlendingLevel: 4 # Improves reflection quality and terrain lighting.
 SLUS-21323:
   name: "Rampage - Total Destruction"
   region: "NTSC-U"
@@ -69433,8 +69479,11 @@ SLUS-21544:
   name: "Fantastic 4 - Rise of Silver Surfer"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    eeCycleRate: 1 # Helps alleviate FPS drops during FMVs.
   gsHWFixes:
     roundSprite: 2 # Fixes edge depth bleeding during power attacks and misaligned bloom.
+    nativeScaling: 1 # Fixes Post effect.
 SLUS-21545:
   name: "Pirates of the Caribbean - At World's End"
   region: "NTSC-U"
@@ -70933,6 +70982,9 @@ SLUS-21813:
   name: "007 - Quantum of Solace"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces bloom misalignment and fixes depth lines.
+    nativeScaling: 2 # Fixes bloom intensity.
 SLUS-21814:
   name: "Disney - Think Fast"
   region: "NTSC-U"
@@ -72724,6 +72776,17 @@ TCPS-10068:
   name-sort: "でんしゃでごー りょじょうへん [こんとろーらどうこんせっと]"
   name-en: "Densha de Go! Ryojou-hen [with Controller]"
   region: "NTSC-J"
+TCPS-10073:
+  name: "エナジーエアフォース エイムストライク！"
+  name-sort: "えなじーえあふぉーす えいむすとらいく！"
+  name-en: "Energy Airforce - Aim Strike! [TAITO 2002]"
+  region: "NTSC-J"
+  speedHacks:
+    instantVU1: 0 # Fixes hanging while going ingame.
+    mtvu: 0
+  gsHWFixes:
+    recommendedBlendingLevel: 5 # Alleviates color banding.
+    autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 TCPS-10074:
   name: "スペースインベーダー アニバーサリー [筐体型コントローラ同梱セット]"
   name-sort: "すぺーすいんべーだー あにばーさりー [きょうたいけいこんとろーらどうこんせっと]"
@@ -72760,6 +72823,7 @@ TCPS-10092:
   name-en: "Spider-Man 2"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing water sheen.
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
@@ -72835,6 +72899,7 @@ TCPS-10127:
   name: "Spider-Man 2 [TAITO BEST]"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing water sheen.
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
