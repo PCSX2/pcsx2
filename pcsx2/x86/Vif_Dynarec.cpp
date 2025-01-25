@@ -51,18 +51,18 @@ __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const
 
 	if ((doMask && m2) || doMode)
 	{
-		xMOVAPS(xmmRow, ptr128[&vif.MaskRow]);
+		xMOVAPS(rowReg, ptr128[&vif.MaskRow]);
 		MSKPATH3_LOG("Moving row");
 	}
 
 	if (doMask && m3)
 	{
 		VIF_LOG("Merging Cols");
-		xMOVAPS(xmmCol0, ptr128[&vif.MaskCol]);
-		if ((cS >= 2) && (m3 & 0x0000ff00)) xPSHUF.D(xmmCol1, xmmCol0, _v1);
-		if ((cS >= 3) && (m3 & 0x00ff0000)) xPSHUF.D(xmmCol2, xmmCol0, _v2);
-		if ((cS >= 4) && (m3 & 0xff000000)) xPSHUF.D(xmmCol3, xmmCol0, _v3);
-		if ((cS >= 1) && (m3 & 0x000000ff)) xPSHUF.D(xmmCol0, xmmCol0, _v0);
+		xMOVAPS(colRegs[0], ptr128[&vif.MaskCol]);
+		if ((cS >= 2) && (m3 & 0x0000ff00)) xPSHUF.D(colRegs[1], colRegs[0], _v1);
+		if ((cS >= 3) && (m3 & 0x00ff0000)) xPSHUF.D(colRegs[2], colRegs[0], _v2);
+		if ((cS >= 4) && (m3 & 0xff000000)) xPSHUF.D(colRegs[3], colRegs[0], _v3);
+		if ((cS >= 1) && (m3 & 0x000000ff)) xPSHUF.D(colRegs[0], colRegs[0], _v0);
 	}
 	//if (doMask||doMode) loadRowCol((nVifStruct&)v);
 }
@@ -83,12 +83,12 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 
 	if (doMask && m2) // Merge MaskRow
 	{
-		mVUmergeRegs(regX, xmmRow, m2);
+		mVUmergeRegs(regX, rowReg, m2);
 	}
 
 	if (doMask && m3) // Merge MaskCol
 	{
-		mVUmergeRegs(regX, xRegisterSSE(xmmCol0.Id + cc), m3);
+		mVUmergeRegs(regX, colRegs[cc], m3);
 	}
 	
 	if (doMode)
@@ -102,28 +102,28 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 		{
 			if (doMode == 3)
 			{
-				mVUmergeRegs(xmmRow, regX, m5);
+				mVUmergeRegs(rowReg, regX, m5);
 			}
 			else
 			{
-				xPXOR(xmmTemp, xmmTemp);
-				mVUmergeRegs(xmmTemp, xmmRow, m5);
-				xPADD.D(regX, xmmTemp);
+				xPXOR(tmpReg, tmpReg);
+				mVUmergeRegs(tmpReg, rowReg, m5);
+				xPADD.D(regX, tmpReg);
 				if (doMode == 2)
-					mVUmergeRegs(xmmRow, regX, m5);
+					mVUmergeRegs(rowReg, regX, m5);
 			}
 		}
 		else
 		{
 			if (doMode == 3)
 			{
-				xMOVAPS(xmmRow, regX);
+				xMOVAPS(rowReg, regX);
 			}
 			else
 			{
-				xPADD.D(regX, xmmRow);
+				xPADD.D(regX, rowReg);
 				if (doMode == 2)
-					xMOVAPS(xmmRow, regX);
+					xMOVAPS(rowReg, regX);
 			}
 		}
 	}
@@ -137,7 +137,7 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 void VifUnpackSSE_Dynarec::writeBackRow() const
 {
 	const int idx = v.idx;
-	xMOVAPS(ptr128[&(MTVU_VifX.MaskRow)], xmmRow);
+	xMOVAPS(ptr128[&(MTVU_VifX.MaskRow)], rowReg);
 
 	VIF_LOG("nVif: writing back row reg! [doMode = %d]", doMode);
 }
@@ -262,39 +262,69 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 	const u32 m0 = vB.mask;
 	const u32 m3 = ((m0 & 0xaaaaaaaa) >> 1) & ~m0;
 	const u32 m2 = (m0 & 0x55555555) & (~m0 >> 1);
-	const bool needXmmRow = ((doMask && m2) || doMode);
 	// see doMaskWrite()
 	const u32 m4 = (m0 & ~((m3 << 1) | m2)) & 0x55555555;
 	const u32 m5 = ~(m2 | m3 | m4) & 0x0f0f0f0f;
-	const bool needXmmTemp = doMode && (doMode != 3) && doMask && m5 != 0x0f0f0f0f;
 
-	// Backup non-volatile registers if needed	
-	if (needXmmZero || needXmmRow || needXmmTemp)
+	int regsUsed = 2;
+	// Allocate column registers
+	if (doMask && m3)
 	{
-		int toBackup = 0;
-		if (needXmmRow)
-			toBackup++;
-		if (needXmmTemp)
-			toBackup++;
-		if (needXmmZero)
-			toBackup++;
+		colRegs[0] = xRegisterSSE(regsUsed++);
 
-		xSUB(rsp, 8 + 16 * toBackup);
-
-		int idx = 0;
-		if (needXmmRow)
-		{
-			xMOVAPS(ptr128[rsp], xmmRow); // xmm6
-			idx++;
-		}
-		if (needXmmTemp)
-		{
-			xMOVAPS(ptr128[rsp + 16 * idx], xmmTemp); // xmm7
-			idx++;
-		}
-		if (needXmmZero)
-			xMOVAPS(ptr128[rsp + 16 * idx], zeroReg); // xmm15
+		const int cS = isFill ? blockSize : cycleSize;
+		if ((cS >= 2) && (m3 & 0x0000ff00))
+			colRegs[1] = xRegisterSSE(regsUsed++);
+		if ((cS >= 3) && (m3 & 0x00ff0000))
+			colRegs[2] = xRegisterSSE(regsUsed++);
+		if ((cS >= 4) && (m3 & 0xff000000))
+			colRegs[3] = xRegisterSSE(regsUsed++);
+		// Column 0 already accounted for
 	}
+
+	std::array<xRegisterSSE, 3> nonVolatileRegs;
+
+	// Allocate row register
+	if ((doMask && m2) || doMode)
+	{
+		if (regsUsed - 6 >= 0)
+			nonVolatileRegs[regsUsed - 6] = rowReg;
+		rowReg = xRegisterSSE(regsUsed++);
+	}
+
+	// Allocate temp register
+	if (doMode && (doMode != 3) &&
+		doMask && m5 != 0x0f0f0f0f)
+	{
+		if (regsUsed - 6 >= 0)
+			nonVolatileRegs[regsUsed - 6] = tmpReg;
+		tmpReg = xRegisterSSE(regsUsed++);
+	}
+
+	// Allocate zero register
+	if (needXmmZero)
+	{
+		if (regsUsed - 6 >= 0)
+			nonVolatileRegs[regsUsed - 6] = zeroReg;
+		zeroReg = xRegisterSSE(regsUsed++);
+	}
+	
+	regsUsed -= 6;
+	// Backup non-volatile registers if needed
+	if (regsUsed > 0)
+	{
+		xSUB(rsp, 8 + 16 * regsUsed);
+		for (int i = 0; i < regsUsed; i++)
+			xMOVAPS(ptr128[rsp + 16 * i], nonVolatileRegs[i]);
+	}
+#else
+	colRegs[0] = xmm2;
+	colRegs[1] = xmm3;
+	colRegs[2] = xmm4;
+	colRegs[3] = xmm5;
+	rowReg = xmm6;
+	tmpReg = xmm7;
+	// zeroReg already set;
 #endif
 
 	// Value passed determines # of col regs we need to load
@@ -352,25 +382,11 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 
 #ifdef _WIN32
 	// Restore non-volatile registers
-	if (needXmmZero || needXmmRow || needXmmTemp)
+	if (regsUsed > 0)
 	{
-		int toRestore = 0;
-		if (needXmmRow)
-		{
-			xMOVAPS(xmmRow, ptr128[rsp]); // xmm6
-			toRestore++;
-		}
-		if (needXmmTemp)
-		{
-			xMOVAPS(xmmTemp, ptr128[rsp + 16 * toRestore]); // xmm7
-			toRestore++;
-		}
-		if (needXmmZero)
-		{
-			xMOVAPS(zeroReg, ptr128[rsp + 16 * toRestore]); // xmm15
-			toRestore++;
-		}
-		xADD(rsp, 8 + 16 * toRestore);
+		for (int i = 0; i < regsUsed; i++)
+			xMOVAPS(nonVolatileRegs[i], ptr128[rsp + 16 * i]);
+		xADD(rsp, 8 + 16 * regsUsed);
 	}
 #endif
 
