@@ -107,6 +107,7 @@ MainWindow::MainWindow()
 #if !defined(_WIN32) && !defined(__APPLE__)
 	s_use_central_widget = DisplayContainer::isRunningOnWayland();
 #endif
+	createCheckMousePositionTimer();
 }
 
 MainWindow::~MainWindow()
@@ -1067,6 +1068,21 @@ bool MainWindow::shouldHideMainWindow() const
 	return (Host::GetBoolSettingValue("UI", "HideMainWindowWhenRunning", false) && !g_emu_thread->shouldRenderToMain()) ||
 		   (g_emu_thread->shouldRenderToMain() && (isRenderingFullscreen() || m_is_temporarily_windowed)) ||
 		   QtHost::InNoGUIMode();
+}
+
+bool MainWindow::shouldMouseGrab() const
+{
+	if (!s_vm_valid || s_vm_paused)
+		return false;
+
+	if (!Host::GetBoolSettingValue("EmuCore", "EnableMouseGrab", false))
+		return false;
+
+	bool windowsHidden = (!m_debugger_window || m_debugger_window->isHidden()) &&
+						 (!m_controller_settings_window || m_controller_settings_window->isHidden()) &&
+						 (!m_settings_window || m_settings_window->isHidden());
+
+	return windowsHidden && (isActiveWindow() || isRenderingFullscreen());
 }
 
 bool MainWindow::shouldAbortForMemcardBusy(const VMLock& lock)
@@ -2528,6 +2544,35 @@ QWidget* MainWindow::getDisplayContainer() const
 {
 	return (m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget));
 }
+
+void MainWindow::createCheckMousePositionTimer()
+{
+	m_mouse_check_timer = new QTimer(this);
+	connect(m_mouse_check_timer, &QTimer::timeout, this, &MainWindow::checkMousePosition);
+	m_mouse_check_timer->start(16);
+}
+
+void MainWindow::checkMousePosition()
+{
+	if (!shouldMouseGrab())
+		return;
+
+	QPoint globalCursorPos = QCursor::pos();
+	const QRect& windowBounds = isRenderingFullscreen() ? screen()->geometry() : geometry();
+
+	if (windowBounds.contains(globalCursorPos))
+		return;
+
+	QCursor::setPos(
+		std::clamp(globalCursorPos.x(), windowBounds.left(), windowBounds.right()),
+		std::clamp(globalCursorPos.y(), windowBounds.top(), windowBounds.bottom()));
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent* event)
+{
+	QWidget::mouseMoveEvent(event);
+}
+
 
 void MainWindow::saveDisplayWindowGeometryToConfig()
 {
