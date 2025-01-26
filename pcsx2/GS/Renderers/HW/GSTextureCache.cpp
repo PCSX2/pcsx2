@@ -1189,7 +1189,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 	const u32* const clut = g_gs_renderer->m_mem.m_clut;
 	GSTexture* const gpu_clut = (psm_s.pal > 0) ? g_gs_renderer->m_mem.m_clut.GetGPUTexture() : nullptr;
 
-	const SourceRegion region = SourceRegion::Create(TEX0, CLAMP);
+	SourceRegion region = SourceRegion::Create(TEX0, CLAMP);
 
 	// Prevent everything going to rubbish if a game somehow sends a TW/TH above 10, and region isn't being used.
 	if ((TEX0.TW > 10 && !region.HasX()) || (TEX0.TH > 10 && !region.HasY()))
@@ -1816,6 +1816,29 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 								break;
 							else
 								continue;
+						}
+						// Else read it back, might be our only choice. Ridge Racer writes to the right side of 0x1a40 for headlights, then tries to access it with the base of 0x9a0
+						// naturally, it misses here. But let's make sure the formats match well enough.
+						else if (bw == t->m_TEX0.TBW && GSLocalMemory::m_psm[psm].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp && t->Inside(bp, bw, psm, r))
+						{
+							if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, true))
+								continue;
+
+							GIFRegCLAMP fake_CLAMP;
+							fake_CLAMP.WMS = CLAMP_REGION_CLAMP;
+							fake_CLAMP.WMT = CLAMP_REGION_CLAMP;
+							fake_CLAMP.MINU = 0;
+							fake_CLAMP.MINV = 0;
+							fake_CLAMP.MAXV = std::min(static_cast<u32>(1u << TEX0.TH), 1022u);
+							fake_CLAMP.MAXU = std::min(static_cast<u32>(1u << TEX0.TW), 1022u);
+							region = SourceRegion::Create(TEX0, fake_CLAMP);
+
+							const GSVector4i custom_offset_rect = TranslateAlignedRectByPage(t, bp, psm, bw, block_boundary_rect);
+							x_offset = custom_offset_rect.x;
+							y_offset = custom_offset_rect.y;
+							dst = t;
+							tex_merge_rt = false;
+							found_t = true;
 						}
 					}
 				}
