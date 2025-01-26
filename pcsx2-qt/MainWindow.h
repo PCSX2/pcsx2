@@ -60,8 +60,8 @@ public:
 		/// Returns the parent widget, which can be used for any popup dialogs.
 		__fi QWidget* getDialogParent() const { return m_dialog_parent; }
 
-		/// Cancels any pending unpause/fullscreen transition.
-		/// Call when you're going to destroy the VM anyway.
+        /// Cancels any pending unpause/fullscreen transition.
+        /// Call when you're going to destroy the VM anyway.
 		void cancelResume();
 
 	private:
@@ -128,7 +128,7 @@ private Q_SLOTS:
 	void mouseModeRequested(bool relative_mode, bool hide_cursor);
 	void releaseRenderWindow();
 	void focusDisplayWidget();
-
+    void createCheckMousePositionTimer();
 	void onGameListRefreshComplete();
 	void onGameListRefreshProgress(const QString& status, int current, int total);
 	void onGameListSelectionChanged();
@@ -180,12 +180,13 @@ private Q_SLOTS:
 	void onInputRecPlayActionTriggered();
 	void onInputRecStopActionTriggered();
 	void onInputRecOpenViewer();
-
 	void onVMStarting();
 	void onVMStarted();
 	void onVMPaused();
 	void onVMResumed();
 	void onVMStopped();
+
+    void checkMousePosition();
 
 	void onGameChanged(const QString& title, const QString& elf_override, const QString& disc_path,
 		const QString& serial, quint32 disc_crc, quint32 crc);
@@ -204,6 +205,7 @@ protected:
 	void dropEvent(QDropEvent* event) override;
 	void moveEvent(QMoveEvent* event) override;
 	void resizeEvent(QResizeEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
 
 #ifdef _WIN32
 	bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
@@ -238,6 +240,7 @@ private:
 	bool isRenderingToMain() const;
 	bool shouldHideMouseCursor() const;
 	bool shouldHideMainWindow() const;
+    bool shouldMouseGrab() const;
 	void switchToGameListView();
 	void switchToEmulationView();
 
@@ -307,8 +310,10 @@ private:
 	bool m_was_disc_change_request = false;
 	bool m_is_closing = false;
 	bool m_is_temporarily_windowed = false;
-
+    
 	QString m_last_fps_status;
+
+    QTimer* m_mouse_check_timer = nullptr;
 
 #ifdef _WIN32
 	void* m_device_notification_handle = nullptr;
