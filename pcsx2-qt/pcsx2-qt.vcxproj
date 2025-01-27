@@ -47,9 +47,10 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\fast_float\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\demangler\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\ccc\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidjson\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)pcsx2</AdditionalIncludeDirectories>
       <!-- Needed for moc pch -->
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\Tools\InputRecording;$(ProjectDir)\Debugger;$(ProjectDir)\Debugger\Breakpoints;$(ProjectDir)\Debugger\Memory;$(ProjectDir)\Debugger\SymbolTree</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\Tools\InputRecording;$(ProjectDir)\Debugger;$(ProjectDir)\Debugger\Breakpoints;$(ProjectDir)\Debugger\Docking;$(ProjectDir)\Debugger\Memory;$(ProjectDir)\Debugger\SymbolTree</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
@@ -113,7 +114,6 @@
     <ClCompile Include="Debugger\DebuggerWidget.cpp" />
     <ClCompile Include="Debugger\DebuggerWindow.cpp" />
     <ClCompile Include="Debugger\DisassemblyWidget.cpp" />
-    <ClCompile Include="Debugger\DockManager.cpp" />
     <ClCompile Include="Debugger\RegisterWidget.cpp" />
     <ClCompile Include="Debugger\DebuggerSettingsManager.cpp" />
     <ClCompile Include="Debugger\StackModel.cpp" />
@@ -123,6 +123,13 @@
     <ClCompile Include="Debugger\Breakpoints\BreakpointDialog.cpp" />
     <ClCompile Include="Debugger\Breakpoints\BreakpointModel.cpp" />
     <ClCompile Include="Debugger\Breakpoints\BreakpointWidget.cpp" />
+    <ClCompile Include="Debugger\Docking\DockLayout.cpp" />
+    <ClCompile Include="Debugger\Docking\DockManager.cpp" />
+    <ClCompile Include="Debugger\Docking\DockTables.cpp" />
+    <ClCompile Include="Debugger\Docking\DockUtils.cpp" />
+    <ClCompile Include="Debugger\Docking\DockViews.cpp" />
+    <ClCompile Include="Debugger\Docking\LayoutEditorDialog.cpp" />
+    <ClCompile Include="Debugger\Docking\NoLayoutsWidget.cpp" />
     <ClCompile Include="Debugger\Memory\MemorySearchWidget.cpp" />
     <ClCompile Include="Debugger\Memory\MemoryViewWidget.cpp" />
     <ClCompile Include="Debugger\Memory\SavedAddressesModel.cpp" />
@@ -220,7 +227,6 @@
     <QtMoc Include="Debugger\DebuggerWidget.h" />
     <QtMoc Include="Debugger\DebuggerWindow.h" />
     <QtMoc Include="Debugger\DisassemblyWidget.h" />
-    <QtMoc Include="Debugger\DockManager.h" />
     <QtMoc Include="Debugger\RegisterWidget.h" />
     <QtMoc Include="Debugger\StackModel.h" />
     <QtMoc Include="Debugger\StackWidget.h" />
@@ -230,6 +236,13 @@
     <QtMoc Include="Debugger\Breakpoints\BreakpointDialog.h" />
     <QtMoc Include="Debugger\Breakpoints\BreakpointModel.h" />
     <QtMoc Include="Debugger\Breakpoints\BreakpointWidget.h" />
+    <QtMoc Include="Debugger\Docking\DockLayout.h" />
+    <QtMoc Include="Debugger\Docking\DockManager.h" />
+    <QtMoc Include="Debugger\Docking\DockTables.h" />
+    <QtMoc Include="Debugger\Docking\DockUtils.h" />
+    <QtMoc Include="Debugger\Docking\DockViews.h" />
+    <QtMoc Include="Debugger\Docking\LayoutEditorDialog.h" />
+    <QtMoc Include="Debugger\Docking\NoLayoutsWidget.h" />
     <QtMoc Include="Debugger\Memory\MemorySearchWidget.h" />
     <QtMoc Include="Debugger\Memory\MemoryViewWidget.h" />
     <QtMoc Include="Debugger\Memory\SavedAddressesModel.h" />
@@ -285,7 +298,6 @@
     <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWindow.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_DisassemblyWidget.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_DockManager.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_RegisterWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_StackModel.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_StackWidget.cpp" />
@@ -294,6 +306,10 @@
     <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointDialog.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointModel.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockManager.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockViews.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_LayoutEditorDialog.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_NoLayoutsWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Memory\moc_MemorySearchWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Memory\moc_MemoryViewWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Memory\moc_SavedAddressesModel.cpp" />
@@ -431,6 +447,12 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Debugger\Breakpoints\BreakpointWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Debugger\Docking\LayoutEditorDialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Debugger\Docking\NoLayoutsWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Debugger\Memory\MemorySearchWidget.ui">

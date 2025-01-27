@@ -77,16 +77,18 @@
      <string>Windows</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menuLayouts">
-    <property name="title">
-     <string>Layouts</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>View</string>
     </property>
     <addaction name="actionOnTop"/>
+   </widget>
+   <widget class="QMenu" name="menuLayouts">
+    <property name="title">
+     <string>Layouts</string>
+    </property>
+    <addaction name="actionResetAllLayouts"/>
+    <addaction name="actionResetDefaultLayouts"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -167,6 +169,21 @@
    </property>
    <property name="text">
     <string>Analyze</string>
+   </property>
+  </action>
+  <action name="actionResetAllLayouts">
+   <property name="text">
+    <string>Reset All Layouts</string>
+   </property>
+  </action>
+  <action name="actionResetDefaultLayouts">
+   <property name="text">
+    <string>Reset Default Layouts</string>
+   </property>
+  </action>
+  <action name="actionResetSplitterPositions">
+   <property name="text">
+    <string>Reset Splitter Positions</string>
    </property>
   </action>
  </widget>

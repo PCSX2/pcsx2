@@ -260,8 +260,6 @@ private:
 	InputRecordingViewer* getInputRecordingViewer();
 	void updateInputRecordingActions(bool started);
 
-	DebuggerWindow* getDebuggerWindow();
-
 	void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
 
 	QString getDiscDevicePath(const QString& title);
@@ -290,8 +288,6 @@ private:
 	ControllerSettingsWindow* m_controller_settings_window = nullptr;
 	InputRecordingViewer* m_input_recording_viewer = nullptr;
 	AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
-
-	DebuggerWindow* m_debugger_window = nullptr;
 
 	QProgressBar* m_status_progress_widget = nullptr;
 	QLabel* m_status_verbose_widget = nullptr;
