@@ -1,0 +1,172 @@
+// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
+
+#include "DockTables.h"
+
+#include "Debugger/DisassemblyWidget.h"
+#include "Debugger/RegisterWidget.h"
+#include "Debugger/StackWidget.h"
+#include "Debugger/ThreadWidget.h"
+#include "Debugger/Breakpoints/BreakpointWidget.h"
+#include "Debugger/Memory/MemorySearchWidget.h"
+#include "Debugger/Memory/MemoryViewWidget.h"
+#include "Debugger/Memory/SavedAddressesWidget.h"
+#include "Debugger/SymbolTree/SymbolTreeWidgets.h"
+
+#include "common/MD5Digest.h"
+
+#include "fmt/format.h"
+
+using namespace DockUtils;
+
+#define DEBUGGER_WIDGET(type, title, preferred_location) \
+	{ \
+		#type, \
+		{ \
+			[](DebugInterface& cpu) -> DebuggerWidget* { return new type(cpu); }, \
+				title, \
+				preferred_location \
+		} \
+	}
+
+const std::map<QString, DockTables::DebuggerWidgetDescription> DockTables::DEBUGGER_WIDGETS = {
+	DEBUGGER_WIDGET(BreakpointWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Breakpoints"), BOTTOM_MIDDLE),
+	DEBUGGER_WIDGET(DisassemblyWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Disassembly"), TOP_RIGHT),
+	DEBUGGER_WIDGET(FunctionTreeWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Functions"), TOP_LEFT),
+	DEBUGGER_WIDGET(GlobalVariableTreeWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Globals"), BOTTOM_MIDDLE),
+	DEBUGGER_WIDGET(LocalVariableTreeWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Locals"), BOTTOM_MIDDLE),
+	DEBUGGER_WIDGET(MemorySearchWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Memory Search"), TOP_LEFT),
+	DEBUGGER_WIDGET(MemoryViewWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Memory"), BOTTOM_MIDDLE),
+	DEBUGGER_WIDGET(ParameterVariableTreeWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Parameters"), BOTTOM_MIDDLE),
+	DEBUGGER_WIDGET(RegisterWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Registers"), TOP_LEFT),
+	DEBUGGER_WIDGET(SavedAddressesWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Saved Addresses"), BOTTOM_MIDDLE),
+	DEBUGGER_WIDGET(StackWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Stack"), BOTTOM_MIDDLE),
+	DEBUGGER_WIDGET(ThreadWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Threads"), BOTTOM_MIDDLE),
+};
+
+#undef DEBUGGER_WIDGET
+
+const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUTS = {
+	{
+		QT_TRANSLATE_NOOP("DebuggerLayout", "R5900"),
+		BREAKPOINT_EE,
+		{
+			/* [DefaultDockGroup::TOP_RIGHT] = */ {KDDockWidgets::Location_OnRight, DefaultDockGroup::ROOT},
+			/* [DefaultDockGroup::BOTTOM]    = */ {KDDockWidgets::Location_OnBottom, DefaultDockGroup::TOP_RIGHT},
+			/* [DefaultDockGroup::TOP_LEFT]  = */ {KDDockWidgets::Location_OnLeft, DefaultDockGroup::TOP_RIGHT},
+		},
+		{
+			/* DefaultDockGroup::TOP_RIGHT */
+			{"DisassemblyWidget", DefaultDockGroup::TOP_RIGHT},
+			/* DefaultDockGroup::BOTTOM */
+			{"MemoryViewWidget", DefaultDockGroup::BOTTOM},
+			{"BreakpointWidget", DefaultDockGroup::BOTTOM},
+			{"ThreadWidget", DefaultDockGroup::BOTTOM},
+			{"StackWidget", DefaultDockGroup::BOTTOM},
+			{"SavedAddressesWidget", DefaultDockGroup::BOTTOM},
+			{"GlobalVariableTreeWidget", DefaultDockGroup::BOTTOM},
+			{"LocalVariableTreeWidget", DefaultDockGroup::BOTTOM},
+			{"ParameterVariableTreeWidget", DefaultDockGroup::BOTTOM},
+			/* DefaultDockGroup::TOP_LEFT */
+			{"RegisterWidget", DefaultDockGroup::TOP_LEFT},
+			{"FunctionTreeWidget", DefaultDockGroup::TOP_LEFT},
+			{"MemorySearchWidget", DefaultDockGroup::TOP_LEFT},
+		},
+	},
+	{
+		QT_TRANSLATE_NOOP("DebuggerLayout", "R3000"),
+		BREAKPOINT_IOP,
+		{
+			/* [DefaultDockGroup::TOP_RIGHT] = */ {KDDockWidgets::Location_OnRight, DefaultDockGroup::ROOT},
+			/* [DefaultDockGroup::BOTTOM]    = */ {KDDockWidgets::Location_OnBottom, DefaultDockGroup::TOP_RIGHT},
+			/* [DefaultDockGroup::TOP_LEFT]  = */ {KDDockWidgets::Location_OnLeft, DefaultDockGroup::TOP_RIGHT},
+		},
+		{
+			/* DefaultDockGroup::TOP_RIGHT */
+			{"DisassemblyWidget", DefaultDockGroup::TOP_RIGHT},
+			/* DefaultDockGroup::BOTTOM */
+			{"MemoryViewWidget", DefaultDockGroup::BOTTOM},
+			{"BreakpointWidget", DefaultDockGroup::BOTTOM},
+			{"ThreadWidget", DefaultDockGroup::BOTTOM},
+			{"StackWidget", DefaultDockGroup::BOTTOM},
+			{"SavedAddressesWidget", DefaultDockGroup::BOTTOM},
+			{"GlobalVariableTreeWidget", DefaultDockGroup::BOTTOM},
+			{"LocalVariableTreeWidget", DefaultDockGroup::BOTTOM},
+			{"ParameterVariableTreeWidget", DefaultDockGroup::BOTTOM},
+			/* DefaultDockGroup::TOP_LEFT */
+			{"RegisterWidget", DefaultDockGroup::TOP_LEFT},
+			{"FunctionTreeWidget", DefaultDockGroup::TOP_LEFT},
+			{"MemorySearchWidget", DefaultDockGroup::TOP_LEFT},
+		},
+	},
+};
+
+const std::string& DockTables::hashDefaultLayouts()
+{
+	static std::string hash;
+	if (!hash.empty())
+		return hash;
+
+	MD5Digest md5;
+
+	size_t layout_count = DEFAULT_DOCK_LAYOUTS.size();
+	md5.Update(&layout_count, sizeof(layout_count));
+
+	for (const DefaultDockLayout& layout : DEFAULT_DOCK_LAYOUTS)
+		hashDefaultLayout(layout, md5);
+
+	u8 digest[16];
+	md5.Final(digest);
+	hash = fmt::format(
+		"{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+		digest[0], digest[1], digest[2], digest[3], digest[4], digest[5], digest[6], digest[7],
+		digest[8], digest[9], digest[10], digest[11], digest[12], digest[13], digest[14], digest[15]);
+
+	return hash;
+}
+
+void DockTables::hashDefaultLayout(const DefaultDockLayout& layout, MD5Digest& md5)
+{
+	size_t layout_name_size = layout.name.size();
+	md5.Update(&layout_name_size, sizeof(layout_name_size));
+	md5.Update(layout.name.c_str(), layout.name.size());
+
+	const char* cpu_name = DebugInterface::cpuName(layout.cpu);
+	size_t cpu_name_size = strlen(cpu_name);
+	md5.Update(&cpu_name_size, sizeof(cpu_name_size));
+	md5.Update(cpu_name, cpu_name_size);
+
+	size_t group_count = layout.groups.size();
+	md5.Update(&group_count, sizeof(group_count));
+
+	for (const DefaultDockGroupDescription& group : layout.groups)
+		hashDefaultGroup(group, md5);
+
+	size_t widget_count = layout.widgets.size();
+	md5.Update(&widget_count, sizeof(widget_count));
+
+	for (const DefaultDockWidgetDescription& widget : layout.widgets)
+		hashDefaultDockWidget(widget, md5);
+}
+
+void DockTables::hashDefaultGroup(const DefaultDockGroupDescription& group, MD5Digest& md5)
+{
+	const char* location = DockUtils::locationToString(group.location);
+	size_t location_size = strlen(location);
+	md5.Update(&location_size, sizeof(location_size));
+	md5.Update(location, location_size);
+
+	u32 parent = static_cast<u32>(group.parent);
+	md5.Update(&parent, sizeof(parent));
+}
+
+void DockTables::hashDefaultDockWidget(const DefaultDockWidgetDescription& widget, MD5Digest& md5)
+{
+	std::string type = widget.type.toStdString();
+	size_t type_size = type.size();
+	md5.Update(&type_size, sizeof(type_size));
+	md5.Update(type.c_str(), type_size);
+
+	u32 group = static_cast<u32>(widget.group);
+	md5.Update(&group, sizeof(group));
+}

@@ -3,6 +3,8 @@
 
 #include "DebuggerWindow.h"
 
+#include "Debugger/Docking/DockManager.h"
+
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
 #include "DebugTools/SymbolImporter.h"
@@ -11,11 +13,19 @@
 #include "MainWindow.h"
 #include "AnalysisOptionsDialog.h"
 
+#include <QtWidgets/QMessageBox>
+
+DebuggerWindow* g_debugger_window = nullptr;
+
 DebuggerWindow::DebuggerWindow(QWidget* parent)
 	: KDDockWidgets::QtWidgets::MainWindow(QStringLiteral("DebuggerWindow"), {}, parent)
-	, m_dock_manager(this)
+	, m_dock_manager(new DockManager(this))
 {
 	m_ui.setupUi(this);
+
+	g_debugger_window = this;
+
+	m_dock_manager->loadLayouts();
 
 	connect(m_ui.actionRun, &QAction::triggered, this, &DebuggerWindow::onRunPause);
 	connect(m_ui.actionStepInto, &QAction::triggered, this, &DebuggerWindow::onStepInto);
@@ -24,27 +34,73 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	connect(m_ui.actionAnalyse, &QAction::triggered, this, &DebuggerWindow::onAnalyse);
 	connect(m_ui.actionOnTop, &QAction::triggered, [this] { this->setWindowFlags(this->windowFlags() ^ Qt::WindowStaysOnTopHint); this->show(); });
 
+	connect(m_ui.menuWindows, &QMenu::aboutToShow, this, [this]() {
+		m_dock_manager->createWindowsMenu(m_ui.menuWindows);
+	});
+
+	connect(m_ui.actionResetAllLayouts, &QAction::triggered, [this]() {
+		QMessageBox::StandardButton result = QMessageBox::question(
+			g_debugger_window, tr("Confirmation"), tr("Are you sure you want to reset all layouts?"));
+
+		if (result == QMessageBox::Yes)
+			m_dock_manager->resetAllLayouts();
+	});
+
+	connect(m_ui.actionResetDefaultLayouts, &QAction::triggered, [this]() {
+		QMessageBox::StandardButton result = QMessageBox::question(
+			g_debugger_window, tr("Confirmation"), tr("Are you sure you want to reset all default layouts?"));
+
+		if (result == QMessageBox::Yes)
+			m_dock_manager->resetDefaultLayouts();
+	});
+
 	connect(g_emu_thread, &EmuThread::onVMPaused, this, &DebuggerWindow::onVMStateChanged);
 	connect(g_emu_thread, &EmuThread::onVMResumed, this, &DebuggerWindow::onVMStateChanged);
 
 	onVMStateChanged(); // If we missed a state change while we weren't loaded
 
-	// We can't do this in the designer, but we want to right align the actionOnTop action in the toolbar
-	//QWidget* spacer = new QWidget(this);
-	//spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	//m_ui.toolBar->insertWidget(m_ui.actionAnalyse, spacer);
+	m_dock_manager->switchToLayout(0);
 
-	//m_ui.cpuTabs->addTab(m_cpuWidget_r5900, "R5900");
-	//m_ui.cpuTabs->addTab(m_cpuWidget_r3000, "R3000");
+	QMenuBar* menu_bar = menuBar();
 
-	m_dock_manager.switchToLayout(0);
+	setMenuWidget(m_dock_manager->createLayoutSwitcher(menu_bar));
 
-	//QTabBar* tabs = new QTabBar();
-	//tabs->addTab("Test");
-	//m_ui.menuBar->layout()->addWidget(tabs);
+	Host::RunOnCPUThread([]() {
+		R5900SymbolImporter.OnDebuggerOpened();
+	});
 }
 
 DebuggerWindow::~DebuggerWindow() = default;
+
+DebuggerWindow* DebuggerWindow::getInstance()
+{
+	if (!g_debugger_window)
+		createInstance();
+
+	return g_debugger_window;
+}
+
+DebuggerWindow* DebuggerWindow::createInstance()
+{
+	// Setup KDDockWidgets.
+	DockManager::configureDockingSystem();
+
+	if (g_debugger_window)
+		destroyInstance();
+
+	return new DebuggerWindow(nullptr);
+}
+
+void DebuggerWindow::destroyInstance()
+{
+	if (g_debugger_window)
+		g_debugger_window->close();
+}
+
+DockManager& DebuggerWindow::dockManager()
+{
+	return *m_dock_manager;
+}
 
 // There is no straightforward way to set the tab text to bold in Qt
 // Sorry colour blind people, but this is the best we can do for now
@@ -131,18 +187,16 @@ void DebuggerWindow::onAnalyse()
 	dialog->show();
 }
 
-void DebuggerWindow::showEvent(QShowEvent* event)
+void DebuggerWindow::closeEvent(QCloseEvent* event)
 {
-	Host::RunOnCPUThread([]() {
-		R5900SymbolImporter.OnDebuggerOpened();
-	});
-	QMainWindow::showEvent(event);
-}
+	dockManager().saveCurrentLayout();
 
-void DebuggerWindow::hideEvent(QHideEvent* event)
-{
 	Host::RunOnCPUThread([]() {
 		R5900SymbolImporter.OnDebuggerClosed();
 	});
-	QMainWindow::hideEvent(event);
+
+	KDDockWidgets::QtWidgets::MainWindow::closeEvent(event);
+
+	g_debugger_window = nullptr;
+	deleteLater();
 }
