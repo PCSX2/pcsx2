@@ -7,7 +7,6 @@
 #include "Config.h"
 
 #include <QtGui/QStandardItemModel>
-#include <QtWidgets/QDialog>
 
 class SettingsWindow;
 

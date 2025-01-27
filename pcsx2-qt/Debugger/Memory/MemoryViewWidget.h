@@ -29,7 +29,6 @@ enum class MemoryViewType
 class MemoryViewTable
 {
 	QWidget* parent;
-	DebugInterface* m_cpu;
 	MemoryViewType displayType = MemoryViewType::BYTE;
 	bool littleEndian = true;
 	u32 rowCount;
@@ -46,7 +45,7 @@ class MemoryViewTable
 
 	bool selectedNibbleHI = false;
 
-	void InsertIntoSelectedHexView(u8 value);
+	void InsertIntoSelectedHexView(u8 value, DebugInterface& cpu);
 
 	template <class T>
 	T convertEndian(T in)
@@ -66,24 +65,23 @@ class MemoryViewTable
 
 public:
 	MemoryViewTable(QWidget* parent)
-		: parent(parent){};
+		: parent(parent)
+	{
+	}
+
 	u32 startAddress;
 	u32 selectedAddress;
 
-	void SetCpu(DebugInterface* cpu)
-	{
-		m_cpu = cpu;
-	}
 	void UpdateStartAddress(u32 start);
 	void UpdateSelectedAddress(u32 selected, bool page = false);
-	void DrawTable(QPainter& painter, const QPalette& palette, s32 height);
+	void DrawTable(QPainter& painter, const QPalette& palette, s32 height, DebugInterface& cpu);
 	void SelectAt(QPoint pos);
-	u128 GetSelectedSegment();
-	void InsertAtCurrentSelection(const QString& text);
+	u128 GetSelectedSegment(DebugInterface& cpu);
+	void InsertAtCurrentSelection(const QString& text, DebugInterface& cpu);
 	void ForwardSelection();
 	void BackwardSelection();
 	// Returns true if the keypress was handled
-	bool KeyPress(int key, QChar keychar);
+	bool KeyPress(int key, QChar keychar, DebugInterface& cpu);
 
 	MemoryViewType GetViewType()
 	{
@@ -105,7 +103,6 @@ public:
 		littleEndian = le;
 	}
 };
-
 
 class MemoryViewWidget final : public DebuggerWidget
 {
