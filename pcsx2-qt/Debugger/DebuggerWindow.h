@@ -5,7 +5,7 @@
 
 #include "ui_DebuggerWindow.h"
 
-#include "DockManager.h"
+#include "Docking/DockManager.h"
 
 #include <kddockwidgets/MainWindow.h>
 

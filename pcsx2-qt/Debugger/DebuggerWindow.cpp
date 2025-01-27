@@ -42,6 +42,14 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	//QTabBar* tabs = new QTabBar();
 	//tabs->addTab("Test");
 	//m_ui.menuBar->layout()->addWidget(tabs);
+
+	QMenuBar* menu_bar = menuBar();
+
+	setMenuWidget(m_dock_manager.createLayoutSwitcher(menu_bar));
+
+	connect(m_ui.menuWindows, &QMenu::aboutToShow, this, [this]() {
+		m_dock_manager.createWindowsMenu(m_ui.menuWindows);
+	});
 }
 
 DebuggerWindow::~DebuggerWindow() = default;

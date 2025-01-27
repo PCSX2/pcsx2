@@ -2605,7 +2605,7 @@ DebuggerWindow* MainWindow::getDebuggerWindow()
 	if (!m_debugger_window)
 	{
 		// Setup KDDockWidgets.
-		DockManager::configure_docking_system();
+		DockManager::configureDockingSystem();
 
 		// Don't pass us (this) as the parent, otherwise the window is always on top of the mainwindow (on windows at least)
 		m_debugger_window = new DebuggerWindow(nullptr);

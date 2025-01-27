@@ -168,8 +168,7 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/DisassemblyWidget.cpp
 	Debugger/DisassemblyWidget.h
 	Debugger/DisassemblyWidget.ui
-	Debugger/DockManager.cpp
-	Debugger/DockManager.h
+	Debugger/JsonValueWrapper.h
 	Debugger/RegisterWidget.cpp
 	Debugger/RegisterWidget.h
 	Debugger/RegisterWidget.ui
@@ -189,6 +188,13 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/Breakpoints/BreakpointWidget.cpp
 	Debugger/Breakpoints/BreakpointWidget.h
 	Debugger/Breakpoints/BreakpointWidget.ui
+	Debugger/Docking/DockManager.cpp
+	Debugger/Docking/DockManager.h
+	Debugger/Docking/DockViews.cpp
+	Debugger/Docking/DockViews.h
+	Debugger/Docking/LayoutEditorDialog.cpp
+	Debugger/Docking/LayoutEditorDialog.h
+	Debugger/Docking/LayoutEditorDialog.ui
 	Debugger/Memory/MemorySearchWidget.cpp
 	Debugger/Memory/MemorySearchWidget.h
 	Debugger/Memory/MemorySearchWidget.ui

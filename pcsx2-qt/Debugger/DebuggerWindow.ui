@@ -77,11 +77,6 @@
      <string>Windows</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menuLayouts">
-    <property name="title">
-     <string>Layouts</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>View</string>
@@ -92,7 +87,6 @@
    <addaction name="menuView"/>
    <addaction name="menuDebug"/>
    <addaction name="menuWindows"/>
-   <addaction name="menuLayouts"/>
   </widget>
   <widget class="QToolBar" name="viewToolBar">
    <property name="windowTitle">
