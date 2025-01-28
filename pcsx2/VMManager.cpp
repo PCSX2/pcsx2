@@ -216,16 +216,6 @@ bool VMManager::PerformEarlyHardwareChecks(const char** error)
 			"such as 1.6.0.\n\n" COMMON_DOWNLOAD_MESSAGE;
 		return false;
 	}
-
-#if _M_SSE >= 0x0501
-	if (!cpuinfo_has_x86_avx2())
-	{
-		*error = "This build of PCSX2 requires the Advanced Vector Extensions 2 instruction set, which your CPU does "
-				 "not support.\n\n"
-				 "You should download and run the SSE4.1 build of PCSX2 instead, or upgrade to a CPU that supports "
-				 "AVX2 to use this build.\n\n" COMMON_DOWNLOAD_MESSAGE;
-		return false;
-	}
 #endif
 #elif defined(_M_ARM64)
 	// Check page size. If it doesn't match, it is a fatal error.
