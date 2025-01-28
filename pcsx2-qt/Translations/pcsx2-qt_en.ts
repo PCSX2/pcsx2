@@ -5544,12 +5544,12 @@ Do you want to overwrite?</source>
 <context>
     <name>ExpressionParser</name>
     <message>
-        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1296"/>
+        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1297"/>
         <source>Invalid memory access size %d.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1302"/>
+        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1303"/>
         <source>Invalid memory access (unaligned).</source>
         <translation type="unfinished"></translation>
     </message>
