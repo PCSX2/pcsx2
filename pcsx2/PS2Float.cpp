@@ -540,6 +540,40 @@ s32 PS2Float::Ftoi(s32 complement, u32 f1)
 	return (s32)result;
 }
 
+u8 PS2Float::Clip(u32 f1, u32 f2, bool& cplus, bool& cminus)
+{
+	bool resultPlus = false;
+	bool resultMinus = false;
+	u32 a;
+
+	if ((f1 & 0x7F800000) == 0)
+	{
+		f1 &= 0xFF800000;
+	}
+
+	a = f1;
+
+	if ((f2 & 0x7F800000) == 0)
+	{
+		f2 &= 0xFF800000;
+	}
+
+	f1 = f1 & MAX_FLOATING_POINT_VALUE;
+	f2 = f2 & MAX_FLOATING_POINT_VALUE;
+
+	if ((-1 < (int)a) && (f2 < f1))
+		resultPlus = true;
+
+	cplus = resultPlus;
+
+	if (((int)a < 0) && (f2 < f1))
+		resultMinus = true;
+
+	cminus = resultMinus;
+
+	return 0;
+}
+
 bool PS2Float::DetermineMultiplicationDivisionOperationSign(PS2Float a, PS2Float b)
 {
 	return a.Sign() ^ b.Sign();

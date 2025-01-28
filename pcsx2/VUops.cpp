@@ -1805,15 +1805,22 @@ static __fi void _vuCLIP(VURegs* VU)
 {
 	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) || CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0) || CHECK_VU_SOFT_SQRT((VU == &VU1) ? 1 : 0))
 	{
-		double value = PS2Float(PS2Float(VU->VF[_Ft_].i.w).Abs()).ToDouble();
+		bool cplus = false;
+		bool cminus = false;
+		u32 value = PS2Float(VU->VF[_Ft_].i.w).Abs();
 
 		VU->clipflag <<= 6;
-		if (PS2Float(VU->VF[_Fs_].i.x).ToDouble() > +value) VU->clipflag |= 0x01;
-		if (PS2Float(VU->VF[_Fs_].i.x).ToDouble() < -value) VU->clipflag |= 0x02;
-		if (PS2Float(VU->VF[_Fs_].i.y).ToDouble() > +value) VU->clipflag |= 0x04;
-		if (PS2Float(VU->VF[_Fs_].i.y).ToDouble() < -value) VU->clipflag |= 0x08;
-		if (PS2Float(VU->VF[_Fs_].i.z).ToDouble() > +value) VU->clipflag |= 0x10;
-		if (PS2Float(VU->VF[_Fs_].i.z).ToDouble() < -value) VU->clipflag |= 0x20;
+		PS2Float::Clip(VU->VF[_Fs_].i.x, value, cplus, cminus);
+		if (cplus) VU->clipflag |= 0x01;
+		if (cminus) VU->clipflag |= 0x02;
+
+		PS2Float::Clip(VU->VF[_Fs_].i.y, value, cplus, cminus);
+		if (cplus) VU->clipflag |= 0x04;
+		if (cminus) VU->clipflag |= 0x08;
+
+		PS2Float::Clip(VU->VF[_Fs_].i.z, value, cplus, cminus);
+		if (cplus) VU->clipflag |= 0x10;
+		if (cminus) VU->clipflag |= 0x20;
 	}
 	else
 	{

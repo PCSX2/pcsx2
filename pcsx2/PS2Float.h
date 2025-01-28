@@ -72,6 +72,8 @@ public:
 
     static s32 Ftoi(s32 complement, u32 f1);
 
+    static u8 Clip(u32 f1, u32 f2, bool& cplus, bool& cminus);
+
     PS2Float Add(PS2Float addend);
 
     PS2Float Sub(PS2Float subtrahend);
