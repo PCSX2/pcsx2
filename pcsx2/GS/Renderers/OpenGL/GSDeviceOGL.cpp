@@ -2414,6 +2414,45 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
 
 	GSTexture* primid_texture = nullptr;
+	GSTexture* hdr_rt = g_gs_device->GetHDRTexture();
+
+	if (hdr_rt)
+	{
+		if (config.hdr_mode == GSHWDrawConfig::HDRMode::EarlyResolve)
+		{
+			const GSVector2i size = config.rt->GetSize();
+			const GSVector4 dRect(config.hdr_update_area);
+			const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
+			StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::HDR_RESOLVE, false);
+
+			Recycle(hdr_rt);
+
+			g_gs_device->SetHDRTexture(nullptr);
+
+			hdr_rt = nullptr;
+		}
+		else
+		{
+			config.ps.hdr = 1;
+		}
+	}
+
+	if (config.ps.hdr)
+	{
+		if (!hdr_rt)
+		{
+			config.hdr_update_area = config.drawarea;
+
+			hdr_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor, false);
+			OMSetRenderTargets(hdr_rt, config.ds, nullptr);
+
+			g_gs_device->SetHDRTexture(hdr_rt);
+
+			const GSVector4 dRect = GSVector4((config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
+			const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
+			StretchRect(config.rt, sRect, hdr_rt, dRect, ShaderConvert::HDR_INIT, false);
+		}
+	}
 
 	// Destination Alpha Setup
 	switch (config.destination_alpha)
@@ -2422,7 +2461,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		case GSHWDrawConfig::DestinationAlphaMode::Full:
 			break; // No setup
 		case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking:
-			primid_texture = InitPrimDateTexture(config.rt, config.drawarea, config.datm);
+			primid_texture = InitPrimDateTexture(hdr_rt ? hdr_rt : config.rt, config.drawarea, config.datm);
 			break;
 		case GSHWDrawConfig::DestinationAlphaMode::StencilOne:
 			if (m_features.texture_barrier)
@@ -2442,29 +2481,20 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 				{GSVector4(dst.x, dst.w, 0.0f, 0.0f), GSVector2(src.x, src.w)},
 				{GSVector4(dst.z, dst.w, 0.0f, 0.0f), GSVector2(src.z, src.w)},
 			};
-			SetupDATE(config.rt, config.ds, vertices, config.datm);
+			SetupDATE(hdr_rt ? hdr_rt : config.rt, config.ds, vertices, config.datm);
 		}
 	}
 
-	GSTexture* hdr_rt = nullptr;
 	GSTexture* draw_rt_clone = nullptr;
-	if (config.ps.hdr)
-	{
-		hdr_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor, false);
-		OMSetRenderTargets(hdr_rt, config.ds, &config.scissor);
 
-		GSVector4 dRect(config.drawarea);
-		const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-		StretchRect(config.rt, sRect, hdr_rt, dRect, ShaderConvert::HDR_INIT, false);
-	}
-	else if (config.require_one_barrier && !m_features.texture_barrier)
+	if (config.require_one_barrier && !m_features.texture_barrier)
 	{
 		// Requires a copy of the RT
-		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, GSTexture::Format::Color, true);
+		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, hdr_rt ? GSTexture::Format::HDRColor : GSTexture::Format::Color, true);
 		GL_PUSH("Copy RT to temp texture for fbmask {%d,%d %dx%d}",
 			config.drawarea.left, config.drawarea.top,
 			config.drawarea.width(), config.drawarea.height());
-		CopyRect(config.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+		CopyRect(hdr_rt ? hdr_rt : config.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
 	}
 	else if (config.tex && config.tex == config.ds)
 	{
@@ -2510,7 +2540,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	if (draw_rt_clone)
 		PSSetShaderResource(2, draw_rt_clone);
 	else if (config.require_one_barrier || config.require_full_barrier)
-		PSSetShaderResource(2, config.rt);
+		PSSetShaderResource(2, hdr_rt ? hdr_rt : config.rt);
 
 	SetupSampler(config.sampler);
 
@@ -2669,12 +2699,19 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	if (hdr_rt)
 	{
-		GSVector2i size = config.rt->GetSize();
-		GSVector4 dRect(config.drawarea);
-		const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
-		StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::HDR_RESOLVE, false);
+		config.hdr_update_area = config.hdr_update_area.runion(config.drawarea);
 
-		Recycle(hdr_rt);
+		if ((config.hdr_mode == GSHWDrawConfig::HDRMode::ResolveOnly || config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertAndResolve))
+		{
+			const GSVector2i size = config.rt->GetSize();
+			const GSVector4 dRect(config.hdr_update_area);
+			const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
+			StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::HDR_RESOLVE, false);
+
+			Recycle(hdr_rt);
+
+			g_gs_device->SetHDRTexture(nullptr);
+		}
 	}
 }
 

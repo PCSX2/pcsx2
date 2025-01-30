@@ -2135,6 +2135,64 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	GSTexture* stencil = nullptr;
 	GSTexture* primid_tex = nullptr;
 	GSTexture* rt = config.rt;
+	GSTexture* hdr_rt = g_gs_device->GetHDRTexture();
+	
+	if (hdr_rt)
+	{
+		if (config.hdr_mode == GSHWDrawConfig::HDRMode::EarlyResolve)
+		{
+			BeginRenderPass(@"HDR Resolve", config.rt, MTLLoadActionLoad, nullptr, MTLLoadActionDontCare);
+			RenderCopy(hdr_rt, m_hdr_resolve_pipeline, config.hdr_update_area);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+			Recycle(hdr_rt);
+			
+			g_gs_device->SetHDRTexture(nullptr);
+			
+			hdr_rt = nullptr;
+		}
+		else
+			config.ps.hdr = 1;
+	}
+	
+	if (config.ps.hdr)
+	{
+		if (!hdr_rt)
+		{
+			config.hdr_update_area = config.drawarea;
+			
+			GSVector2i size = config.rt->GetSize();
+			rt = hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::HDRColor, false);
+			
+			g_gs_device->SetHDRTexture(hdr_rt);
+			
+			const GSVector4i copy_rect = (config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertOnly) ? GSVector4i::loadh(size) : config.drawarea;
+			
+			switch (config.rt->GetState())
+			{
+				case GSTexture::State::Dirty:
+					BeginRenderPass(@"HDR Init", hdr_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
+					RenderCopy(config.rt, m_hdr_init_pipeline, copy_rect);
+					g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+					break;
+
+				case GSTexture::State::Cleared:
+				{
+					BeginRenderPass(@"HDR Clear", hdr_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
+					GSVector4 color = GSVector4::rgba32(config.rt->GetClearColor()) / GSVector4::cxpr(65535, 65535, 65535, 255);
+					[m_current_render.encoder setFragmentBytes:&color length:sizeof(color) atIndex:GSMTLBufferIndexUniforms];
+					RenderCopy(nullptr, m_hdr_clear_pipeline, copy_rect);
+					break;
+				}
+
+				case GSTexture::State::Invalidated:
+					break;
+			}
+		}
+
+		rt = hdr_rt;
+	}
+	
 	switch (config.destination_alpha)
 	{
 		case GSHWDrawConfig::DestinationAlphaMode::Off:
@@ -2142,18 +2200,18 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			break; // No setup
 		case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking:
 		{
-			FlushClears(config.rt);
-			GSVector2i size = config.rt->GetSize();
+			FlushClears(rt);
+			GSVector2i size = rt->GetSize();
 			primid_tex = CreateRenderTarget(size.x, size.y, GSTexture::Format::PrimID);
 			DepthStencilSelector dsel = config.depth;
 			dsel.zwe = 0;
 			GSTexture* depth = dsel.key == DepthStencilSelector::NoDepth().key ? nullptr : config.ds;
 			BeginRenderPass(@"PrimID Destination Alpha Init", primid_tex, MTLLoadActionDontCare, depth, MTLLoadActionLoad);
-			RenderCopy(config.rt, m_primid_init_pipeline[static_cast<bool>(depth)][static_cast<u8>(config.datm)], config.drawarea);
+			RenderCopy(rt, m_primid_init_pipeline[static_cast<bool>(depth)][static_cast<u8>(config.datm)], config.drawarea);
 			MRESetDSS(dsel);
 			pxAssert(config.ps.date == 1 || config.ps.date == 2);
 			if (config.ps.tex_is_fb)
-				MRESetTexture(config.rt, GSMTLTextureIndexRenderTarget);
+				MRESetTexture(rt, GSMTLTextureIndexRenderTarget);
 			config.require_one_barrier = false; // Ending render pass is our barrier
 			pxAssert(config.require_full_barrier == false && config.drawlist == nullptr);
 			MRESetHWPipelineState(config.vs, config.ps, {}, {});
@@ -2170,36 +2228,9 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			stencil = config.ds;
 			break;
 		case GSHWDrawConfig::DestinationAlphaMode::Stencil:
-			SetupDestinationAlpha(config.rt, config.ds, config.drawarea, config.datm);
+			SetupDestinationAlpha(rt, config.ds, config.drawarea, config.datm);
 			stencil = config.ds;
 			break;
-	}
-
-	GSTexture* hdr_rt = nullptr;
-	if (config.ps.hdr)
-	{
-		GSVector2i size = config.rt->GetSize();
-		rt = hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::HDRColor, false);
-		switch (config.rt->GetState())
-		{
-			case GSTexture::State::Dirty:
-				BeginRenderPass(@"HDR Init", hdr_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
-				RenderCopy(config.rt, m_hdr_init_pipeline, config.drawarea);
-				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
-				break;
-
-			case GSTexture::State::Cleared:
-			{
-				BeginRenderPass(@"HDR Clear", hdr_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
-				GSVector4 color = GSVector4::rgba32(config.rt->GetClearColor()) / GSVector4::cxpr(65535, 65535, 65535, 255);
-				[m_current_render.encoder setFragmentBytes:&color length:sizeof(color) atIndex:GSMTLBufferIndexUniforms];
-				RenderCopy(nullptr, m_hdr_clear_pipeline, config.drawarea);
-				break;
-			}
-
-			case GSTexture::State::Invalidated:
-				break;
-		}
 	}
 
 	// Try to reduce render pass restarts
@@ -2224,7 +2255,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		[mtlenc setStencilReferenceValue:1];
 	MREInitHWDraw(config, allocation);
 	if (config.require_one_barrier || config.require_full_barrier)
-		MRESetTexture(config.rt, GSMTLTextureIndexRenderTarget);
+		MRESetTexture(rt, GSMTLTextureIndexRenderTarget);
 	if (primid_tex)
 		MRESetTexture(primid_tex, GSMTLTextureIndexPrimIDs);
 	if (config.blend.constant_enable)
@@ -2248,11 +2279,18 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 
 	if (hdr_rt)
 	{
-		BeginRenderPass(@"HDR Resolve", config.rt, MTLLoadActionLoad, nullptr, MTLLoadActionDontCare);
-		RenderCopy(hdr_rt, m_hdr_resolve_pipeline, config.drawarea);
-		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+		config.hdr_update_area = config.hdr_update_area.runion(config.drawarea);
 
-		Recycle(hdr_rt);
+		if ((config.hdr_mode == GSHWDrawConfig::HDRMode::ResolveOnly || config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertAndResolve))
+		{
+			BeginRenderPass(@"HDR Resolve", config.rt, MTLLoadActionLoad, nullptr, MTLLoadActionDontCare);
+			RenderCopy(hdr_rt, m_hdr_resolve_pipeline, config.hdr_update_area);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+			Recycle(hdr_rt);
+			
+			g_gs_device->SetHDRTexture(nullptr);
+		}
 	}
 
 	if (primid_tex)

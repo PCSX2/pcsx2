@@ -856,7 +856,10 @@ struct PSMain
 	void ps_fbmask(thread float4& C)
 	{
 		if (PS_FBMASK)
-			C = float4((uint4(int4(C)) & (cb.fbmask ^ 0xff)) | (uint4(current_color * 255.5) & cb.fbmask));
+		{
+			float multi = PS_HDR ? 65535.0 : 255.5;
+			C = float4((uint4(int4(C)) & (cb.fbmask ^ 0xff)) | (uint4(current_color * float4(multi, multi, multi, 255)) & cb.fbmask));
+		}
 	}
 
 	void ps_dither(thread float4& C, float As)
@@ -956,8 +959,8 @@ struct PSMain
 					current_color.a = float(denorm_rt.g & 0x80);
 				}
 			}
-
-			float3 Cd = trunc(current_color.rgb * 255.5f);
+			float multi = PS_HDR ? 65535.0 : 255.5;
+			float3 Cd = trunc(current_color.rgb * multi);
 			float3 Cs = Color.rgb;
 
 			float3 A = pick(PS_BLEND_A, Cs, Cd, float3(0.f));
