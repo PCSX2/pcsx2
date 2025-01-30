@@ -1086,11 +1086,8 @@ void ps_main()
 			C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
 	#elif PS_SHUFFLE_ACROSS
 		#if(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
-			C.rb = C.br;
-			float g_temp = C.g;
-			
-			C.g = C.a;
-			C.a = g_temp;
+			C.br = C.rb;				
+			C.ag = C.ga;
 		#elif(PS_PROCESS_BA & SHUFFLE_READ)
 			C.rb = C.bb;
 			C.ga = C.aa;
