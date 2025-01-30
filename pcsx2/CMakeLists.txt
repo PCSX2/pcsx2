@@ -1347,6 +1347,7 @@ function(setup_main_executable target)
 		set_target_properties(${target} PROPERTIES
 			MACOSX_BUNDLE true
 			MACOSX_BUNDLE_INFO_PLIST "${PCSX2_SOURCE_DIR}/Resources/Info.plist.in"
+			XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${PCSX2_SOURCE_DIR}/Resources/PCSX2.entitlements"
 			OUTPUT_NAME PCSX2
 			# Fixes complaints when Xcode tries to sign for running locally about MoltenVK not being signed
 			XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS --deep
