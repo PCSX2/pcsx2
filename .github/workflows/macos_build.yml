@@ -147,11 +147,14 @@ jobs:
         run: make -j$(getconf _NPROCESSORS_ONLN) unittests
 
       - name: Prepare Build Artifacts
-        run: mv build/pcsx2*/PCSX2.app Build.app
+        run: |
+          echo "The current pwd is: $(pwd)"
+          mv build/pcsx2*/PCSX2.app Build.app
+          echo "This dir contains: $(ls)"
 
       - name: Sign binary
         if: ${{ inputs.sign }}
-        uses: lando/code-sign-action@v2
+        uses: lando/code-sign-action@v3
         with:
           file: "Build.app"
           certificate-data: ${{ secrets.APPLE_CERT_DATA }}
