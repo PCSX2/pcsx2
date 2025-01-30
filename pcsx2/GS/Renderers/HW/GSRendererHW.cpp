@@ -3109,8 +3109,8 @@ void GSRendererHW::Draw()
 		// Normally we would use 1024 here to match the clear above, but The Godfather does a 1023x1023 draw instead
 		// (very close to 1024x1024, but apparently the GS rounds down..). So, catch that here, we don't want to
 		// create that target, because the clear isn't black, it'll hang around and never get invalidated.
-		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && m_primitive_covers_without_gaps == NoGapsType::FullCover;
-		const bool is_clear = is_possible_mem_clear && is_square;
+		const bool is_large_rect = (t_size.y >= t_size.x) && m_r.w >= 1023 && m_primitive_covers_without_gaps == NoGapsType::FullCover;
+		const bool is_clear = is_possible_mem_clear && is_large_rect;
 
 		// Preserve downscaled target when copying directly from a downscaled target, or it's a normal draw using a downscaled target. Clears that are drawing to the target can also preserve size.
 		// Of course if this size is different (in width) or this is a shuffle happening, this will be bypassed.
@@ -3119,7 +3119,7 @@ void GSRendererHW::Draw()
 		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, ((src && src->m_scale != 1) && GSConfig.UserHacks_NativeScaling == GSNativeScaling::Normal && !possible_shuffle) ? GetTextureScaleFactor() : target_scale, GSTextureCache::RenderTarget, true,
 			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, lookup_rect, possible_shuffle, is_possible_mem_clear && FRAME_TEX0.TBP0 != m_cached_ctx.ZBUF.Block(),
 			GSConfig.UserHacks_NativeScaling != GSNativeScaling::Off && preserve_downscale_draw && is_possible_mem_clear != ClearType::NormalClear, src, ds, (no_ds || !ds) ? -1 : (m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0));
-		 
+
 		// Draw skipped because it was a clear and there was no target.
 		if (!rt)
 		{
@@ -3785,6 +3785,7 @@ void GSRendererHW::Draw()
 			// Limit to 2x the vertical height of the resolution (for double buffering)
 			rt->UpdateValidity(update_rect, !frame_masked && (rt_update || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle)));
 			rt->UpdateDrawn(update_rect, !frame_masked && (rt_update || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle)));
+
 			// Probably changing to double buffering, so invalidate any old target that was next to it.
 			// This resolves an issue where the PCRTC will find the old target in FMV's causing flashing.
 			// Grandia Xtreme, Onimusha Warlord.
@@ -3833,7 +3834,7 @@ void GSRendererHW::Draw()
 			const bool z_masked = m_cached_ctx.ZBUF.ZMSK;
 
 			ds->UpdateValidity(m_r, !z_masked && (can_update_size || m_r.w <= (resolution.y * 2)));
-			ds->UpdateDrawn(m_r,  !z_masked && (can_update_size || m_r.w <= (resolution.y * 2)));
+			ds->UpdateDrawn(m_r, !z_masked && (can_update_size || m_r.w <= (resolution.y * 2)));
 
 			if (!new_rect && new_height && old_end_block != ds->m_end_block)
 			{
