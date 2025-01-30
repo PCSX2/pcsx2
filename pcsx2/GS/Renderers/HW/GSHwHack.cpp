@@ -936,7 +936,7 @@ bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds
 		&& r.m_cached_ctx.FRAME.FBMSK == 0 // No frame buffer masking.
 	)
 	{
-		int mask = (r.m_vt.m_max.p.xyxy() == r.m_vt.m_min.p.xyxy()).mask();
+		const int mask = (r.m_vt.m_max.p.xyxy() == r.m_vt.m_min.p.xyxy()).mask();
 		if (mask == 0xf)
 			return true;
 
