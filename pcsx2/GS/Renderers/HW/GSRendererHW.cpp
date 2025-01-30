@@ -1031,7 +1031,7 @@ GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex)
 
 	// We can check if the next draw is doing the same from the next page, and assume it's a per line clear.
 	// Battlefield 2 does this.
-	int pages = ((GSLocalMemory::GetEndBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r) + 1) - m_cached_ctx.FRAME.Block()) >> 5;
+	const int pages = ((GSLocalMemory::GetEndBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r) + 1) - m_cached_ctx.FRAME.Block()) >> 5;
 	if (m_cached_ctx.FRAME.FBW > 1 && m_r.height() <= 64 && (pages % m_cached_ctx.FRAME.FBW) == 0 && m_env.CTXT[m_backed_up_ctx].FRAME.FBP == (m_cached_ctx.FRAME.FBP + pages) && NextDrawMatchesShuffle())
 		height = std::max<int>(m_context->scissor.in.w, height);
 
@@ -3178,7 +3178,7 @@ void GSRendererHW::Draw()
 				rt->m_TEX0.TBP0 = m_cached_ctx.FRAME.Block();
 				GSVector2i new_size = rt->m_unscaled_size;
 				// Make sure to use the original format for the offset.
-				int new_offset = std::abs((vertical_offset / frame_psm.pgs.y) * GSLocalMemory::m_psm[rt->m_TEX0.PSM].pgs.y);
+				const int new_offset = std::abs((vertical_offset / frame_psm.pgs.y) * GSLocalMemory::m_psm[rt->m_TEX0.PSM].pgs.y);
 				texture_offset = new_offset;
 
 				new_size.y += new_offset;
@@ -3210,11 +3210,10 @@ void GSRendererHW::Draw()
 			if (ds && vertical_offset && (m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) != (m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0))
 			{
 				
-				int z_vertical_offset = ((static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) / 32) / std::max(rt->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y;
-				int z_offset = vertical_offset;
-				GL_CACHE("RT in RT Z copy on draw %d z_vert_offset %d z_offset %d", s_n, z_vertical_offset, z_offset);
-				GSVector4i dRect = GSVector4i(0, z_offset * ds->m_scale, ds->m_unscaled_size.x * ds->m_scale, std::min(z_offset + m_r.w + 1, z_offset + ds->m_unscaled_size.y) * ds->m_scale);
-				int new_height = std::max(static_cast<int>(ds->m_unscaled_size.y * ds->m_scale), dRect.w);
+				const int z_vertical_offset = ((static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) / 32) / std::max(rt->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y;
+				GL_CACHE("RT in RT Z copy on draw %d z_vert_offset %d z_offset %d", s_n, z_vertical_offset, vertical_offset);
+				GSVector4i dRect = GSVector4i(0, vertical_offset * ds->m_scale, ds->m_unscaled_size.x * ds->m_scale, std::min(vertical_offset + m_r.w + 1, vertical_offset + ds->m_unscaled_size.y) * ds->m_scale);
+				const int new_height = std::max(static_cast<int>(ds->m_unscaled_size.y * ds->m_scale), dRect.w);
 				GSTexture* tex = g_gs_device->CreateDepthStencil(ds->m_unscaled_size.x * ds->m_scale, new_height, GSTexture::Format::DepthStencil, true);
 				g_gs_device->StretchRect(ds->m_texture, GSVector4(0.0f, z_vertical_offset / static_cast<float>(ds->m_unscaled_size.y), 1.0f, std::min(z_vertical_offset + m_r.w + 1, ds->m_unscaled_size.y) / static_cast<float>(ds->m_unscaled_size.y)), tex, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
 
@@ -3269,11 +3268,11 @@ void GSRendererHW::Draw()
 			{
 				if (m_r.w > rt->m_unscaled_size.y || m_r.z > rt->m_unscaled_size.x)
 				{
-					u32 new_height = std::max(m_r.w, rt->m_unscaled_size.y);
-					u32 new_width = std::max(m_r.z, rt->m_unscaled_size.x);
+					const u32 new_height = std::max(m_r.w, rt->m_unscaled_size.y);
+					const u32 new_width = std::max(m_r.z, rt->m_unscaled_size.x);
 
 					//DevCon.Warning("Resizing texture %d x %d draw %d", rt->m_unscaled_size.x, new_height, s_n);
-					rt->ResizeTexture(new_height, new_height);
+					rt->ResizeTexture(new_width, new_height);
 
 					const bool frame_masked = ((m_cached_ctx.FRAME.FBMSK & frame_psm.fmsk) == frame_psm.fmsk) || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_NEVER && !(m_cached_ctx.TEST.AFAIL & AFAIL_FB_ONLY));
 			
@@ -3712,9 +3711,7 @@ void GSRendererHW::Draw()
 		// Ignore single page/0 page stuff, that's just gonna get silly
 		else if (buffer_width > 64 && update_rect.z > buffer_width)
 		{
-			float multifactor = static_cast<float>(update_rect.z) / static_cast<float>(buffer_width);
-
-			update_rect.w *= multifactor;
+			update_rect.w *= static_cast<float>(update_rect.z) / static_cast<float>(buffer_width);
 			update_rect.z = buffer_width;
 		}
 
@@ -4056,10 +4053,11 @@ void GSRendererHW::Draw()
 			{
 				const int vertical_offset = ((static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) / 32) / std::max(static_cast<int>(rt->m_TEX0.TBW), 1)) * frame_psm.pgs.y;
 				const int z_vertical_offset = ((static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) / 32) / std::max(rt->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y;
-				const int z_offset = vertical_offset;
-				GL_CACHE("RT in RT Z copy back draw %d z_vert_offset %d z_offset %d", s_n, z_vertical_offset, z_offset);
-				GSVector4i dRect = GSVector4i(0, z_vertical_offset * ds->m_scale, ds->m_unscaled_size.x * ds->m_scale, std::min(z_vertical_offset + m_r.w + 1 - vertical_offset, ds->m_unscaled_size.y) * ds->m_scale);
-				g_gs_device->StretchRect(g_texture_cache->GetTemporaryZ(), GSVector4(0.0f, z_offset / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()), 1.0f, std::min(real_rect.w + 1, ds->m_unscaled_size.y + z_offset) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight())), ds->m_texture, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
+				const GSVector4i dRect = GSVector4i(0, z_vertical_offset * ds->m_scale, ds->m_unscaled_size.x * ds->m_scale, std::min(z_vertical_offset + m_r.w + 1 - vertical_offset, ds->m_unscaled_size.y) * ds->m_scale);
+
+				GL_CACHE("RT in RT Z copy back draw %d z_vert_offset %d z_offset %d", s_n, z_vertical_offset, vertical_offset);
+				g_gs_device->StretchRect(g_texture_cache->GetTemporaryZ(), GSVector4(0.0f, vertical_offset / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()), 1.0f,
+					std::min(real_rect.w + 1, ds->m_unscaled_size.y + vertical_offset) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight())), ds->m_texture, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
 			}
 		}
 	}
@@ -6104,9 +6102,9 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		if (m_channel_shuffle && (tex_diff || frame_diff))
 		{
 
-			u32 page_offset = (m_cached_ctx.TEX0.TBP0 - src_target->m_TEX0.TBP0) >> 5;
-			u32 vertical_offset = (page_offset / src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.y;
-			u32 horizontal_offset = (page_offset % src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.x;
+			const u32 page_offset = (m_cached_ctx.TEX0.TBP0 - src_target->m_TEX0.TBP0) >> 5;
+			const u32 vertical_offset = (page_offset / src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.y;
+			const u32 horizontal_offset = (page_offset % src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.x;
 
 			copy_range.y += vertical_offset;
 			copy_range.x += horizontal_offset;
