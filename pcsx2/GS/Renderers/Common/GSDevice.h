@@ -8,6 +8,7 @@
 #include "GS/GS.h"
 #include "GS/Renderers/Common/GSFastList.h"
 #include "GS/Renderers/Common/GSTexture.h"
+#include "GS/Renderers/Vulkan/GSTextureVK.h"
 #include "GS/Renderers/Common/GSVertex.h"
 #include "GS/GSAlignedClass.h"
 #include "GS/GSExtra.h"
@@ -674,6 +675,15 @@ struct alignas(16) GSHWDrawConfig
 		Full,           ///< Full emulation (using barriers / ROV)
 	};
 
+	enum class HDRMode : u8
+	{
+		NoModify = 0,
+		ConvertOnly = 1,
+		ResolveOnly = 2,
+		ConvertAndResolve = 3,
+		EarlyResolve = 4
+	};
+
 	GSTexture* rt;        ///< Render target
 	GSTexture* ds;        ///< Depth stencil
 	GSTexture* tex;       ///< Source texture
@@ -730,6 +740,11 @@ struct alignas(16) GSHWDrawConfig
 
 	VSConstantBuffer cb_vs;
 	PSConstantBuffer cb_ps;
+	
+	// These are here as they need to be preserved between draws, and the state clear only does up to the constant buffers.
+	HDRMode hdr_mode;
+	GIFRegFRAME hdr_frame;
+	GSVector4i hdr_update_area; ///< Area in the framebuffer which HDR will modify;
 };
 
 class GSDevice : public GSAlignedClass<32>
@@ -850,6 +865,7 @@ protected:
 	GSTexture* m_target_tmp = nullptr;
 	GSTexture* m_current = nullptr;
 	GSTexture* m_cas = nullptr;
+	GSTexture* m_hdr_rt = nullptr; ///< Temp HDR texture
 
 	bool AcquireWindow(bool recreate_window);
 
@@ -873,6 +889,10 @@ public:
 
 	/// Returns a string containing current adapter in use.
 	const std::string& GetName() const { return m_name; }
+
+	GSTexture* GetHDRTexture() const { return m_hdr_rt; }
+		
+	void SetHDRTexture(GSTexture* tex) { m_hdr_rt = tex; }
 
 	/// Returns a string representing the specified API.
 	static const char* RenderAPIToString(RenderAPI api);

@@ -9,6 +9,7 @@
 #include "GS/Renderers/Vulkan/VKBuilders.h"
 #include "GS/Renderers/Vulkan/VKShaderCache.h"
 #include "GS/Renderers/Vulkan/VKSwapChain.h"
+#include "GS/Renderers/Common/GSDevice.h"
 
 #include "BuildVersion.h"
 #include "Host.h"
@@ -5589,28 +5590,12 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 
 void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 {
-	// Destination Alpha Setup
-	switch (config.destination_alpha)
-	{
-		case GSHWDrawConfig::DestinationAlphaMode::Off: // No setup
-		case GSHWDrawConfig::DestinationAlphaMode::Full: // No setup
-		case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking: // Setup is done below
-			break;
-		case GSHWDrawConfig::DestinationAlphaMode::StencilOne: // setup is done below
-		{
-			// we only need to do the setup here if we don't have barriers, in which case do full DATE.
-			if (!m_features.texture_barrier)
-			{
-				SetupDATE(config.rt, config.ds, config.datm, config.drawarea);
-				config.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
-			}
-		}
-		break;
 
-		case GSHWDrawConfig::DestinationAlphaMode::Stencil:
-			SetupDATE(config.rt, config.ds, config.datm, config.drawarea);
-			break;
-	}
+	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
+	GSTextureVK* draw_rt = static_cast<GSTextureVK*>(config.rt);
+	GSTextureVK* draw_ds = static_cast<GSTextureVK*>(config.ds);
+	GSTextureVK* draw_rt_clone = nullptr;
+	GSTextureVK* hdr_rt = static_cast<GSTextureVK*>(g_gs_device->GetHDRTexture());
 
 	// stream buffer in first, in case we need to exec
 	SetVSConstantBuffer(config.cb_vs);
@@ -5632,68 +5617,112 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		SetLineWidth(config.line_expand ? config.cb_ps.ScaleFactor.z : 1.0f);
 
 	// Primitive ID tracking DATE setup.
+	// Needs to be done before
 	GSTextureVK* date_image = nullptr;
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 	{
+		// If we have a HDR in progress, we need to use the HDR texture, but we can't check this later as there's a chicken/egg problem with the pipe setup.
+		GSTexture* backup_rt = config.rt;
+
+		if(hdr_rt)
+			config.rt = hdr_rt;
+
 		date_image = SetupPrimitiveTrackingDATE(config);
 		if (!date_image)
 		{
 			Console.WriteLn("Failed to allocate DATE image, aborting draw.");
 			return;
 		}
+
+		config.rt = backup_rt;
 	}
 
 	// figure out the pipeline
 	PipelineSelector& pipe = m_pipeline_selector;
 	UpdateHWPipelineSelector(config, pipe);
 
-	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
-	GSTextureVK* draw_rt = static_cast<GSTextureVK*>(config.rt);
-	GSTextureVK* draw_ds = static_cast<GSTextureVK*>(config.ds);
-	GSTextureVK* draw_rt_clone = nullptr;
-	GSTextureVK* hdr_rt = nullptr;
-
-	// Switch to hdr target for colclip rendering
-	if (pipe.ps.hdr)
+	// now blit the hdr texture back to the original target
+	if (hdr_rt)
 	{
-		EndRenderPass();
-
-		hdr_rt = static_cast<GSTextureVK*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor, false));
-		if (!hdr_rt)
+		if (config.hdr_mode == GSHWDrawConfig::HDRMode::EarlyResolve)
 		{
-			Console.WriteLn("Failed to allocate HDR render target, aborting draw.");
-			if (date_image)
-				Recycle(date_image);
-			GL_POP();
-			return;
-		}
+			GL_PUSH("Blit HDR back to RT");
 
-		// propagate clear value through if the hdr render is the first
-		if (draw_rt->GetState() == GSTexture::State::Cleared)
+			EndRenderPass();
+			hdr_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
+
+			draw_rt = static_cast<GSTextureVK*>(config.rt);
+			OMSetRenderTargets(draw_rt, draw_ds, GSVector4i::loadh(rtsize), static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
+
+			// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
+			if (draw_rt->GetState() == GSTexture::State::Cleared)
+			{
+				alignas(16) VkClearValue cvs[2];
+				u32 cv_count = 0;
+				GSVector4::store<true>(&cvs[cv_count++].color, draw_rt->GetUNormClearColor());
+				if (draw_ds)
+					cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 1};
+
+				BeginClearRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
+										 pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR,
+										 pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+					draw_rt->GetRect(), cvs, cv_count);
+				draw_rt->SetState(GSTexture::State::Dirty);
+			}
+			else
+			{
+				BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
+									pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_LOAD,
+									pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+					draw_rt->GetRect());
+			}
+
+			const GSVector4 drawareaf = GSVector4(config.hdr_update_area);
+			const GSVector4 sRect(drawareaf / GSVector4(rtsize).xyxy());
+			SetPipeline(m_hdr_finish_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
+			SetUtilityTexture(hdr_rt, m_point_sampler);
+			DrawStretchRect(sRect, drawareaf, rtsize);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+			Recycle(hdr_rt);
+			g_gs_device->SetHDRTexture(nullptr);
+
+			hdr_rt = nullptr;
+		}
+		else
 		{
-			hdr_rt->SetState(GSTexture::State::Cleared);
-			hdr_rt->SetClearColor(draw_rt->GetClearColor());
-
-			// If depth is cleared, we need to commit it, because we're only going to draw to the active part of the FB.
-			if (draw_ds && draw_ds->GetState() == GSTexture::State::Cleared && !config.drawarea.eq(GSVector4i::loadh(rtsize)))
-				draw_ds->CommitClear(m_current_command_buffer);
+			pipe.ps.hdr = 1;
+			draw_rt = hdr_rt;
 		}
-		else if (draw_rt->GetState() == GSTexture::State::Dirty)
-		{
-			GL_PUSH_("HDR Render Target Setup");
-			draw_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
-		}
-
-		// we're not drawing to the RT, so we can use it as a source
-		if (config.require_one_barrier && !m_features.texture_barrier)
-			PSSetShaderResource(2, draw_rt, true);
-
-		draw_rt = hdr_rt;
 	}
-	else if (config.require_one_barrier && !m_features.texture_barrier)
+
+	// Destination Alpha Setup
+	switch (config.destination_alpha)
+	{
+		case GSHWDrawConfig::DestinationAlphaMode::Off: // No setup
+		case GSHWDrawConfig::DestinationAlphaMode::Full: // No setup
+		case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking: // Setup is done below
+			break;
+		case GSHWDrawConfig::DestinationAlphaMode::StencilOne: // setup is done below
+		{
+			// we only need to do the setup here if we don't have barriers, in which case do full DATE.
+			if (!m_features.texture_barrier)
+			{
+				SetupDATE(draw_rt, config.ds, config.datm, config.drawarea);
+				config.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
+			}
+		}
+		break;
+
+		case GSHWDrawConfig::DestinationAlphaMode::Stencil:
+			SetupDATE(draw_rt, config.ds, config.datm, config.drawarea);
+			break;
+	}
+
+	if (config.require_one_barrier && !m_features.texture_barrier)
 	{
 		// requires a copy of the RT
-		draw_rt_clone = static_cast<GSTextureVK*>(CreateTexture(rtsize.x, rtsize.y, 1, GSTexture::Format::Color, true));
+		draw_rt_clone = static_cast<GSTextureVK*>(CreateTexture(rtsize.x, rtsize.y, 1, hdr_rt ? GSTexture::Format::HDRColor : GSTexture::Format::Color, true));
 		if (draw_rt_clone)
 		{
 			EndRenderPass();
@@ -5706,6 +5735,49 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
+	// Switch to hdr target for colclip rendering
+	if (pipe.ps.hdr)
+	{
+		if (!hdr_rt)
+		{
+			config.hdr_update_area = config.drawarea;
+			EndRenderPass();
+			hdr_rt = static_cast<GSTextureVK*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor, false));
+			if (!hdr_rt)
+			{
+				Console.WriteLn("Failed to allocate HDR render target, aborting draw.");
+
+				if (date_image)
+					Recycle(date_image);
+
+				GL_POP();
+				return;
+			}
+			g_gs_device->SetHDRTexture(static_cast<GSTexture*>(hdr_rt));
+
+			// propagate clear value through if the hdr render is the first
+			if (draw_rt->GetState() == GSTexture::State::Cleared)
+			{
+				hdr_rt->SetState(GSTexture::State::Cleared);
+				hdr_rt->SetClearColor(draw_rt->GetClearColor());
+
+				// If depth is cleared, we need to commit it, because we're only going to draw to the active part of the FB.
+				if (draw_ds && draw_ds->GetState() == GSTexture::State::Cleared && !config.drawarea.eq(GSVector4i::loadh(rtsize)))
+					draw_ds->CommitClear(m_current_command_buffer);
+			}
+			else if (draw_rt->GetState() == GSTexture::State::Dirty)
+			{
+				GL_PUSH_("HDR Render Target Setup");
+				draw_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
+			}
+
+			// we're not drawing to the RT, so we can use it as a source
+			if (config.require_one_barrier && !m_features.texture_barrier)
+				PSSetShaderResource(2, draw_rt, true);
+		}
+		draw_rt = hdr_rt;
+	}
+
 	// clear texture binding when it's bound to RT or DS.
 	if (!config.tex && ((config.rt && static_cast<GSTextureVK*>(config.rt) == m_tfx_textures[0]) ||
 						   (config.ds && static_cast<GSTextureVK*>(config.ds) == m_tfx_textures[0])))
@@ -5714,7 +5786,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// render pass restart optimizations
-	if (hdr_rt)
+	if (hdr_rt && (config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertAndResolve || config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertOnly))
 	{
 		// HDR requires blitting.
 		EndRenderPass();
@@ -5774,7 +5846,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 		// Only draw to the active area of the HDR target. Except when depth is cleared, we need to use the full
 		// buffer size, otherwise it'll only clear the draw part of the depth buffer.
-		const GSVector4i render_area = (pipe.ps.hdr && ds_op != VK_ATTACHMENT_LOAD_OP_CLEAR) ? config.drawarea :
+		const GSVector4i render_area = (pipe.ps.hdr && (config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertAndResolve) && ds_op != VK_ATTACHMENT_LOAD_OP_CLEAR) ? config.drawarea :
 																							   GSVector4i::loadh(rtsize);
 
 		if (is_clearing_rt)
@@ -5813,17 +5885,19 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// rt -> hdr blit if enabled
-	if (hdr_rt && config.rt->GetState() == GSTexture::State::Dirty)
+	if (hdr_rt && (config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertOnly || config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertAndResolve) && config.rt->GetState() == GSTexture::State::Dirty)
 	{
+		OMSetRenderTargets(draw_rt, draw_ds, GSVector4i::loadh(rtsize), static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
 		SetUtilityTexture(static_cast<GSTextureVK*>(config.rt), m_point_sampler);
 		SetPipeline(m_hdr_setup_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
 
-		const GSVector4 drawareaf = GSVector4(config.drawarea);
+		const GSVector4 drawareaf = GSVector4((config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
 		const GSVector4 sRect(drawareaf / GSVector4(rtsize).xyxy());
 		DrawStretchRect(sRect, drawareaf, rtsize);
 		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 		GL_POP();
+		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
 	}
 
 	// VB/IB upload, if we did DATE setup and it's not HDR this has already been done
@@ -5880,46 +5954,55 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// now blit the hdr texture back to the original target
 	if (hdr_rt)
 	{
-		GL_PUSH("Blit HDR back to RT");
+		config.hdr_update_area = config.hdr_update_area.runion(config.drawarea);
 
-		EndRenderPass();
-		hdr_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
-
-		draw_rt = static_cast<GSTextureVK*>(config.rt);
-		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
-
-		// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
-		if (draw_rt->GetState() == GSTexture::State::Cleared)
+		if ((config.hdr_mode == GSHWDrawConfig::HDRMode::ResolveOnly || config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertAndResolve))
 		{
-			alignas(16) VkClearValue cvs[2];
-			u32 cv_count = 0;
-			GSVector4::store<true>(&cvs[cv_count++].color, draw_rt->GetUNormClearColor());
-			if (draw_ds)
-				cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 1};
+			GL_PUSH("Blit HDR back to RT");
 
-			BeginClearRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
-									 pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR,
-									 pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
-				draw_rt->GetRect(), cvs, cv_count);
-			draw_rt->SetState(GSTexture::State::Dirty);
+			EndRenderPass();
+
+			hdr_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
+
+			draw_rt = static_cast<GSTextureVK*>(config.rt);
+			OMSetRenderTargets(draw_rt, draw_ds, (config.hdr_mode == GSHWDrawConfig::HDRMode::ResolveOnly) ? GSVector4i::loadh(rtsize) : config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
+
+			// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
+			if (draw_rt->GetState() == GSTexture::State::Cleared)
+			{
+				alignas(16) VkClearValue cvs[2];
+				u32 cv_count = 0;
+				GSVector4::store<true>(&cvs[cv_count++].color, draw_rt->GetUNormClearColor());
+				if (draw_ds)
+					cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 1};
+
+				BeginClearRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
+										 pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR,
+										 pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+					draw_rt->GetRect(), cvs, cv_count);
+				draw_rt->SetState(GSTexture::State::Dirty);
+			}
+			else
+			{
+				BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
+									pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_LOAD,
+									pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+					draw_rt->GetRect());
+			}
+
+			const GSVector4 drawareaf = GSVector4(config.hdr_update_area);
+			const GSVector4 sRect(drawareaf / GSVector4(rtsize).xyxy());
+			SetPipeline(m_hdr_finish_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
+			SetUtilityTexture(hdr_rt, m_point_sampler);
+			DrawStretchRect(sRect, drawareaf, rtsize);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+			Recycle(hdr_rt);
+			g_gs_device->SetHDRTexture(nullptr);
 		}
-		else
-		{
-			BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
-								pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_LOAD,
-								pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
-				draw_rt->GetRect());
-		}
-
-		const GSVector4 drawareaf = GSVector4(config.drawarea);
-		const GSVector4 sRect(drawareaf / GSVector4(rtsize).xyxy());
-		SetPipeline(m_hdr_finish_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
-		SetUtilityTexture(hdr_rt, m_point_sampler);
-		DrawStretchRect(sRect, drawareaf, rtsize);
-		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
-
-		Recycle(hdr_rt);
 	}
+
+	config.hdr_mode = GSHWDrawConfig::HDRMode::NoModify;
 }
 
 void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe)

@@ -799,7 +799,8 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 {
 	if (PS_FBMASK)
 	{
-		float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
+		float multi = PS_HDR ? 65535.0f : 255.0f;
+		float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * multi + 0.1f);
 		C = (float4)(((uint4)C & ~FbMask) | ((uint4)RT & FbMask));
 	}
 }
@@ -895,7 +896,8 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		}
 		
 		float Ad = PS_RTA_CORRECTION ? trunc(RT.a * 128.0f + 0.1f) / 128.0f : trunc(RT.a * 255.0f + 0.1f) / 128.0f;
-		float3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
+		float color_multi = PS_HDR ? 65535.0f : 255.0f;
+		float3 Cd = trunc(RT.rgb * color_multi + 0.1f);
 		float3 Cs = Color.rgb;
 
 		float3 A = (PS_BLEND_A == 0) ? Cs : ((PS_BLEND_A == 1) ? Cd : (float3)0.0f);

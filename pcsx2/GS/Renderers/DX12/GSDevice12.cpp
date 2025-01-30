@@ -3816,18 +3816,64 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	// Destination Alpha Setup
 	const bool stencil_DATE = (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
 							   config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne);
+
+	GSTexture12* hdr_rt = static_cast<GSTexture12*>(g_gs_device->GetHDRTexture());
+	GSTexture12* draw_rt = static_cast<GSTexture12*>(config.rt);
+	GSTexture12* draw_ds = static_cast<GSTexture12*>(config.ds);
+	GSTexture12* draw_rt_clone = nullptr;
+
+	// Align the render area to 128x128, hopefully avoiding render pass restarts for small render area changes (e.g. Ratchet and Clank).
+	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
+
+	PipelineSelector& pipe = m_pipeline_selector;
+
+	// figure out the pipeline
+	UpdateHWPipelineSelector(config);
+
+	// now blit the hdr texture back to the original target
+	if (hdr_rt)
+	{
+		if (config.hdr_mode == GSHWDrawConfig::HDRMode::EarlyResolve)
+		{
+			GL_PUSH("Blit HDR back to RT");
+
+			EndRenderPass();
+			hdr_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+			draw_rt = static_cast<GSTexture12*>(config.rt);
+			OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
+
+			// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
+			BeginRenderPass(GetLoadOpForTexture(draw_rt), D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+				GetLoadOpForTexture(draw_ds),
+				draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+				D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+				draw_rt->GetUNormClearColor(), 0.0f, 0);
+
+			const GSVector4 sRect(GSVector4(config.hdr_update_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
+			SetPipeline(m_hdr_finish_pipelines[pipe.ds].get());
+			SetUtilityTexture(hdr_rt, m_point_sampler_cpu);
+			DrawStretchRect(sRect, GSVector4(config.hdr_update_area), rtsize);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+			Recycle(hdr_rt);
+			g_gs_device->SetHDRTexture(nullptr);
+		}
+		else
+		{
+			draw_rt = hdr_rt;
+			pipe.ps.hdr = 1;
+		}
+	}
+
 	if (stencil_DATE)
-		SetupDATE(config.rt, config.ds, config.datm, config.drawarea);
+		SetupDATE(draw_rt, config.ds, config.datm, config.drawarea);
 
 	// stream buffer in first, in case we need to exec
 	SetVSConstantBuffer(config.cb_vs);
 	SetPSConstantBuffer(config.cb_ps);
 
-	// figure out the pipeline
-	UpdateHWPipelineSelector(config);
-
 	// bind textures before checking the render pass, in case we need to transition them
-	PipelineSelector& pipe = m_pipeline_selector;
 	if (config.tex)
 	{
 		PSSetShaderResource(0, config.tex, config.tex != config.rt);
@@ -3843,7 +3889,10 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	GSTexture12* date_image = nullptr;
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 	{
+		GSTexture* backup_rt = config.rt;
+		config.rt = draw_rt;
 		date_image = SetupPrimitiveTrackingDATE(config, pipe);
+		config.rt = backup_rt;
 		if (!date_image)
 		{
 			Console.WriteLn("D3D12: Failed to allocate DATE image, aborting draw.");
@@ -3851,57 +3900,10 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	// Align the render area to 128x128, hopefully avoiding render pass restarts for small render area changes (e.g. Ratchet and Clank).
-	const int render_area_alignment = 128 * GSConfig.UpscaleMultiplier;
-	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
-	const GSVector4i render_area(
-		config.ps.hdr ? config.drawarea :
-						GSVector4i(Common::AlignDownPow2(config.scissor.left, render_area_alignment),
-							Common::AlignDownPow2(config.scissor.top, render_area_alignment),
-							std::min(Common::AlignUpPow2(config.scissor.right, render_area_alignment), rtsize.x),
-							std::min(Common::AlignUpPow2(config.scissor.bottom, render_area_alignment), rtsize.y)));
-
-	GSTexture12* draw_rt = static_cast<GSTexture12*>(config.rt);
-	GSTexture12* draw_ds = static_cast<GSTexture12*>(config.ds);
-	GSTexture12* draw_rt_clone = nullptr;
-	GSTexture12* hdr_rt = nullptr;
-
-	// Switch to hdr target for colclip rendering
-	if (pipe.ps.hdr)
-	{
-		EndRenderPass();
-
-		hdr_rt = static_cast<GSTexture12*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor, false));
-		if (!hdr_rt)
-		{
-			Console.WriteLn("D3D12: Failed to allocate HDR render target, aborting draw.");
-			if (date_image)
-				Recycle(date_image);
-			return;
-		}
-
-		// propagate clear value through if the hdr render is the first
-		if (draw_rt->GetState() == GSTexture::State::Cleared)
-		{
-			hdr_rt->SetState(GSTexture::State::Cleared);
-			hdr_rt->SetClearColor(draw_rt->GetClearColor());
-		}
-		else if (draw_rt->GetState() == GSTexture::State::Dirty)
-		{
-			GL_PUSH_("HDR Render Target Setup");
-			draw_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		}
-
-		// we're not drawing to the RT, so we can use it as a source
-		if (config.require_one_barrier)
-			PSSetShaderResource(2, draw_rt, true);
-
-		draw_rt = hdr_rt;
-	}
-	else if (config.require_one_barrier)
+	if (config.require_one_barrier)
 	{
 		// requires a copy of the RT
-		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, GSTexture::Format::Color, true));
+		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, hdr_rt ? GSTexture::Format::HDRColor : GSTexture::Format::Color, true));
 		if (draw_rt_clone)
 		{
 			EndRenderPass();
@@ -3915,8 +3917,50 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
+	// Switch to hdr target for colclip rendering
+	if (pipe.ps.hdr)
+	{
+		if (!hdr_rt)
+		{
+			config.hdr_update_area = config.drawarea;
+
+			EndRenderPass();
+
+			hdr_rt = static_cast<GSTexture12*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor, false));
+			if (!hdr_rt)
+			{
+				Console.WriteLn("D3D12: Failed to allocate HDR render target, aborting draw.");
+
+				if (date_image)
+					Recycle(date_image);
+
+				return;
+			}
+
+			g_gs_device->SetHDRTexture(static_cast<GSTexture*>(hdr_rt));
+
+			// propagate clear value through if the hdr render is the first
+			if (draw_rt->GetState() == GSTexture::State::Cleared)
+			{
+				hdr_rt->SetState(GSTexture::State::Cleared);
+				hdr_rt->SetClearColor(draw_rt->GetClearColor());
+			}
+			else if (draw_rt->GetState() == GSTexture::State::Dirty)
+			{
+				GL_PUSH_("HDR Render Target Setup");
+				draw_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			}
+
+			// we're not drawing to the RT, so we can use it as a source
+			if (config.require_one_barrier)
+				PSSetShaderResource(2, draw_rt, true);
+		}
+
+		draw_rt = hdr_rt;
+	}
+
 	// clear texture binding when it's bound to RT or DS
-	if (((config.rt && static_cast<GSTexture12*>(config.rt)->GetSRVDescriptor() == m_tfx_textures[0]) ||
+	if (((draw_rt && static_cast<GSTexture12*>(draw_rt)->GetSRVDescriptor() == m_tfx_textures[0]) ||
 			(config.ds && static_cast<GSTexture12*>(config.ds)->GetSRVDescriptor() == m_tfx_textures[0])))
 	{
 		PSSetShaderResource(0, nullptr, false);
@@ -3964,13 +4008,14 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// rt -> hdr blit if enabled
-	if (hdr_rt && config.rt->GetState() == GSTexture::State::Dirty)
+	if (hdr_rt && (config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertOnly || config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertAndResolve) && config.rt->GetState() == GSTexture::State::Dirty)
 	{
 		SetUtilityTexture(static_cast<GSTexture12*>(config.rt), m_point_sampler_cpu);
 		SetPipeline(m_hdr_setup_pipelines[pipe.ds].get());
 
-		const GSVector4 sRect(GSVector4(render_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
-		DrawStretchRect(sRect, GSVector4(render_area), rtsize);
+		const GSVector4 drawareaf = GSVector4((config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
+		const GSVector4 sRect(drawareaf / GSVector4(rtsize.x, rtsize.y).xyxy());
+		DrawStretchRect(sRect, GSVector4(drawareaf), rtsize);
 		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 		GL_POP();
@@ -4025,28 +4070,34 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	// now blit the hdr texture back to the original target
 	if (hdr_rt)
 	{
-		GL_PUSH("Blit HDR back to RT");
+		config.hdr_update_area = config.hdr_update_area.runion(config.drawarea);
 
-		EndRenderPass();
-		hdr_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		if ((config.hdr_mode == GSHWDrawConfig::HDRMode::ResolveOnly || config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertAndResolve))
+		{
+			GL_PUSH("Blit HDR back to RT");
 
-		draw_rt = static_cast<GSTexture12*>(config.rt);
-		OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
+			EndRenderPass();
+			hdr_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-		// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
-		BeginRenderPass(GetLoadOpForTexture(draw_rt), D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
-			GetLoadOpForTexture(draw_ds),
-			draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			draw_rt->GetUNormClearColor(), 0.0f, 0);
+			draw_rt = static_cast<GSTexture12*>(config.rt);
+			OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
 
-		const GSVector4 sRect(GSVector4(render_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
-		SetPipeline(m_hdr_finish_pipelines[pipe.ds].get());
-		SetUtilityTexture(hdr_rt, m_point_sampler_cpu);
-		DrawStretchRect(sRect, GSVector4(render_area), rtsize);
-		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+			// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
+			BeginRenderPass(GetLoadOpForTexture(draw_rt), D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+				GetLoadOpForTexture(draw_ds),
+				draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+				D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+				draw_rt->GetUNormClearColor(), 0.0f, 0);
 
-		Recycle(hdr_rt);
+			const GSVector4 sRect(GSVector4(config.hdr_update_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
+			SetPipeline(m_hdr_finish_pipelines[pipe.ds].get());
+			SetUtilityTexture(hdr_rt, m_point_sampler_cpu);
+			DrawStretchRect(sRect, GSVector4(config.hdr_update_area), rtsize);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+			Recycle(hdr_rt);
+			g_gs_device->SetHDRTexture(nullptr);
+		}
 	}
 }
 

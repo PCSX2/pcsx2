@@ -111,7 +111,7 @@ private:
 	void EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool pass_2);
 
 	void SetTCOffset();
-
+	bool NextDrawHDR() const;
 	bool IsPossibleChannelShuffle() const;
 	bool NextDrawMatchesShuffle() const;
 	bool IsSplitTextureShuffle(GSTextureCache::Target* rt);

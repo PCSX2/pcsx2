@@ -972,7 +972,12 @@ vec4 ps_color()
 void ps_fbmask(inout vec4 C)
 {
 	#if PS_FBMASK
-		vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
+		
+		#if PS_HDR == 1
+			vec4 RT = trunc(sample_from_rt() * 65535.0f);
+		#else
+			vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
+		#endif
 		C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
 	#endif
 }
@@ -1090,7 +1095,11 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 		#endif
 
 			// Let the compiler do its jobs !
+			#if PS_HDR == 1
+			vec3 Cd = trunc(RT.rgb * 65535.0f);
+			#else
 			vec3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
+			#endif
 			vec3 Cs = Color.rgb;
 
 		#if PS_BLEND_A == 0

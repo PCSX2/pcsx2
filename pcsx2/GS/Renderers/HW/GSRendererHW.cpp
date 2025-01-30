@@ -970,6 +970,21 @@ GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex, const 
 	return g_texture_cache->GetTargetSize(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, valid_size.x, valid_size.y, can_expand);
 }
 
+bool GSRendererHW::NextDrawHDR() const
+{
+	const int get_next_ctx = (m_state_flush_reason == CONTEXTCHANGE) ? m_env.PRIM.CTXT : m_backed_up_ctx;
+	const GSDrawingContext& next_ctx = m_env.CTXT[get_next_ctx];
+
+	// If it wasn't a context change we can't guarantee the next draw is going to be set up
+	if (m_state_flush_reason != GSFlushReason::CONTEXTCHANGE || m_env.COLCLAMP.CLAMP != 0 || m_env.PRIM.ABE == 0 ||
+		(m_context->FRAME.U64 ^ next_ctx.FRAME.U64) != 0 || (m_env.PRIM.TME && next_ctx.TEX0.TBP0 == m_context->FRAME.Block()))
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool GSRendererHW::IsPossibleChannelShuffle() const
 {
 	if (!PRIM->TME || m_cached_ctx.TEX0.PSM != PSMT8 || // 8-bit texture draw
@@ -2148,6 +2163,35 @@ void GSRendererHW::Draw()
 	{
 		GL_CACHE("Skipping draw with no color nor depth output.");
 		return;
+	}
+
+	// I hate that I have to do this, but some games (like Pac-Man World Rally) troll us by causing a flush with degenerate triangles, so we don't have all available information about the next draw.
+	// So we have to check when the next draw happens if our frame has changed or if it's become recursive.
+	const bool has_HDR_texture = g_gs_device->GetHDRTexture() != nullptr;
+	if (!no_rt && has_HDR_texture && (m_conf.hdr_frame.FBP != m_cached_ctx.FRAME.FBP || m_conf.hdr_frame.Block() == m_cached_ctx.TEX0.TBP0))
+	{
+		GIFRegTEX0 FRAME;
+		FRAME.TBP0 = m_conf.hdr_frame.Block();
+		FRAME.TBW = m_conf.hdr_frame.FBW;
+		FRAME.PSM = m_conf.hdr_frame.PSM;
+
+		GSTextureCache::Target* old_rt = g_texture_cache->LookupTarget(FRAME, GSVector2i(1, 1), GetTextureScaleFactor(), GSTextureCache::RenderTarget, true,
+			fm, false, false, true, true, GSVector4i(0, 0, 1, 1), true, false, false);
+
+		if (old_rt)
+		{
+			GL_CACHE("Pre-draw resolve of HDR! Address: %x", FRAME.TBP0);
+			GSTexture* hdr_texture = g_gs_device->GetHDRTexture();
+			g_gs_device->StretchRect(hdr_texture, GSVector4(m_conf.hdr_update_area) / GSVector4(GSVector4i(hdr_texture->GetSize()).xyxy()), old_rt->m_texture, GSVector4(m_conf.hdr_update_area),
+				ShaderConvert::HDR_RESOLVE, false);
+
+			g_gs_device->Recycle(hdr_texture);
+
+			g_gs_device->SetHDRTexture(nullptr);
+
+		}
+		else
+			DevCon.Warning("Error resolving HDR texture for pre-draw resolve");
 	}
 
 	const bool draw_sprite_tex = PRIM->TME && (m_vt.m_primclass == GS_SPRITE_CLASS);
@@ -3413,10 +3457,19 @@ void GSRendererHW::Draw()
 			GSTextureCache::RenderTarget, m_cached_ctx.ZBUF.Block(), m_cached_ctx.ZBUF.PSM, zm);
 	}
 
+	
 	//
 
 	if (GSConfig.DumpGSData)
 	{
+		const bool writeback_HDR_texture = g_gs_device->GetHDRTexture() != nullptr;
+		if (writeback_HDR_texture)
+		{
+			GSTexture* hdr_texture = g_gs_device->GetHDRTexture();
+			g_gs_device->StretchRect(hdr_texture, GSVector4(m_conf.hdr_update_area) / GSVector4(GSVector4i(hdr_texture->GetSize()).xyxy()), rt->m_texture, GSVector4(m_conf.hdr_update_area),
+				ShaderConvert::HDR_RESOLVE, false);
+		}
+
 		const u64 frame = g_perfmon.GetFrame();
 
 		std::string s;
@@ -4404,14 +4457,36 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	// Color clip
 	if (COLCLAMP.CLAMP == 0)
 	{
-		const bool free_colclip = features.framebuffer_fetch || no_prim_overlap || blend_non_recursive;
+		bool has_HDR_texture = g_gs_device->GetHDRTexture() != nullptr;
 
+		// Don't know any game that resizes the RT mid HDR, but gotta be careful.
+		if (has_HDR_texture)
+		{
+			GSTexture* hdr_texture = g_gs_device->GetHDRTexture();
+
+			if (hdr_texture->GetSize() != rt->m_texture->GetSize())
+			{
+
+				GL_CACHE("Pre-Blend resolve of HDR due to size change! Address: %x", rt->m_TEX0.TBP0);
+				g_gs_device->StretchRect(hdr_texture, GSVector4(m_conf.hdr_update_area) / GSVector4(GSVector4i(hdr_texture->GetSize()).xyxy()), rt->m_texture, GSVector4(m_conf.hdr_update_area),
+					ShaderConvert::HDR_RESOLVE, false);
+
+				g_gs_device->Recycle(hdr_texture);
+
+				g_gs_device->SetHDRTexture(nullptr);
+
+				has_HDR_texture = false;
+			}
+		}
+
+		const bool free_colclip = !has_HDR_texture && (features.framebuffer_fetch || no_prim_overlap || blend_non_recursive);
 		GL_DBG("COLCLIP Info (Blending: %u/%u/%u/%u, OVERLAP: %d)", m_conf.ps.blend_a, m_conf.ps.blend_b, m_conf.ps.blend_c, m_conf.ps.blend_d, m_prim_overlap);
 		if (color_dest_blend || color_dest_blend2 || blend_zero_to_one_range)
 		{
 			// No overflow, disable colclip.
 			GL_INS("COLCLIP mode DISABLED");
 			sw_blending = false;
+			m_conf.hdr_mode = (has_HDR_texture && !NextDrawHDR()) ? GSHWDrawConfig::HDRMode::ResolveOnly : GSHWDrawConfig::HDRMode::NoModify;
 		}
 		else if (free_colclip)
 		{
@@ -4422,6 +4497,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			// Disable the HDR algo
 			accumulation_blend = false;
 			blend_mix          = false;
+			m_conf.hdr_mode = (has_HDR_texture && !NextDrawHDR()) ? GSHWDrawConfig::HDRMode::ResolveOnly : GSHWDrawConfig::HDRMode::NoModify;
 		}
 		else if (accumulation_blend)
 		{
@@ -4429,18 +4505,24 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			GL_INS("COLCLIP Fast HDR mode ENABLED");
 			m_conf.ps.hdr = 1;
 			sw_blending = true; // Enable sw blending for the HDR algo
+
+			m_conf.hdr_mode = has_HDR_texture ? (NextDrawHDR() ? GSHWDrawConfig::HDRMode::NoModify : GSHWDrawConfig::HDRMode::ResolveOnly) : (NextDrawHDR() ? GSHWDrawConfig::HDRMode::ConvertOnly : GSHWDrawConfig::HDRMode::ConvertAndResolve);
 		}
 		else if (sw_blending)
 		{
 			// A slow algo that could requires several passes (barely used)
 			GL_INS("COLCLIP SW mode ENABLED");
 			m_conf.ps.colclip = 1;
+			m_conf.hdr_mode = (has_HDR_texture && !NextDrawHDR()) ? GSHWDrawConfig::HDRMode::ResolveOnly : GSHWDrawConfig::HDRMode::NoModify;
 		}
 		else
 		{
 			GL_INS("COLCLIP HDR mode ENABLED");
 			m_conf.ps.hdr = 1;
+			m_conf.hdr_mode = has_HDR_texture ? (NextDrawHDR() ? GSHWDrawConfig::HDRMode::NoModify : GSHWDrawConfig::HDRMode::ResolveOnly) : (NextDrawHDR() ? GSHWDrawConfig::HDRMode::ConvertOnly : GSHWDrawConfig::HDRMode::ConvertAndResolve);
 		}
+
+		m_conf.hdr_frame = m_cached_ctx.FRAME;
 	}
 
 	// Per pixel alpha blending
@@ -4474,8 +4556,10 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 				// HDR mode should be disabled when doing sw blend, swap with sw colclip.
 				if (m_conf.ps.hdr)
 				{
+					bool has_HDR_texture = g_gs_device->GetHDRTexture() != nullptr;
 					m_conf.ps.hdr     = 0;
 					m_conf.ps.colclip = 1;
+					m_conf.hdr_mode = has_HDR_texture ? GSHWDrawConfig::HDRMode::EarlyResolve : GSHWDrawConfig::HDRMode::NoModify;
 				}
 			}
 			else
