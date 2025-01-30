@@ -16,4 +16,5 @@ jobs:
     with:
       jobName: "MacOS Build"
       artifactPrefixName: "PCSX2-macos-Qt"
+      sign: true # testing 
     secrets: inherit
