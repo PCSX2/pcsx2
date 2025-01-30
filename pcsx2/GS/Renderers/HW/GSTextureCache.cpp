@@ -379,7 +379,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 				if (horizontal_offset)
 					page_count += dst_pgw - horizontal_offset;
 
-				int new_height = (page_count / dst_pgw) * dst_page_size.y;
+				const int new_height = (page_count / dst_pgw) * dst_page_size.y;
 				new_rect.x = 0;
 				new_rect.z = dst_pgw * dst_page_size.x;
 				new_rect.y = start_page.y * dst_page_size.y;
@@ -3653,7 +3653,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 				}
 			}
 
-			u32 bbp = bp + bw * 0x10;
+			const u32 bbp = bp + bw * 0x10;
 			if (bw >= 16 && bbp < 16384)
 			{
 				// Detect half of the render target (fix snow engine game)
@@ -4223,7 +4223,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 		dst = GetExactTarget(DBP, DBW, dpsm_s.depth ? DepthStencil : RenderTarget, DBP);
 	}
-	
+
 	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
 	// We use dx/dy == 0 and the TBW check as a safeguard to make sure these go through to local memory.
 	// We can also recreate the target if it's previously been created in the height cache with a valid size.
@@ -7578,7 +7578,7 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 			{
 				// Palette is unused
 				it = map.erase(it); // Erase element from map
-					// The palette object should now be gone as the shared pointer to the object in the map is deleted
+				// The palette object should now be gone as the shared pointer to the object in the map is deleted
 			}
 			else
 			{
