@@ -148,6 +148,7 @@ jobs:
       artifactPrefixName: "PCSX2-macos-Qt"
       fetchTags: true
       stableBuild: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prelease == 'false' }}
+      sign_and_notarize: true
     secrets: inherit
 
   # Upload the Artifacts
