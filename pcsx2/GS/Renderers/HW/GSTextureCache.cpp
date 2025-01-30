@@ -1714,6 +1714,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, t->m_TEX0.TBW == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
 								continue;
 
+							if (!t->Inside(bp, bw, psm, block_boundary_rect))
+								continue;
+
 							x_offset = rect.x;
 							y_offset = rect.y;
 							dst = t;
