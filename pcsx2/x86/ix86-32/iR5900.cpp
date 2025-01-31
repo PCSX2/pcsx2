@@ -594,6 +594,9 @@ static void recResetRaw()
 
 	g_branch = 0;
 	g_resetEeScalingStats = true;
+
+	memset(manual_page, 0, sizeof(manual_page));
+	memset(manual_counter, 0, sizeof(manual_counter));
 }
 
 void recShutdown()
