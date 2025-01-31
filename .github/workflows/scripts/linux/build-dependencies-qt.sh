@@ -20,7 +20,7 @@ LIBPNG=1.6.45
 LIBWEBP=1.5.0
 LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
 SDL=SDL2-2.30.12
-QT=6.8.1
+QT=6.8.2
 ZSTD=1.5.6
 
 SHADERC=2024.1
@@ -39,12 +39,12 @@ fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.
 0728800155f3ed0a0c87e03addbd30ecbe374f7b080678bbca1506051d50dec3  $LZ4.tar.gz
 ac356ea55e8b9dd0b2d1fa27da40ef7e238267ccf9324704850d5d47375b48ea  $SDL.tar.gz
 8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1  zstd-$ZSTD.tar.gz
-40b14562ef3bd779bc0e0418ea2ae08fa28235f8ea6e8c0cb3bce1d6ad58dcaf  qtbase-everywhere-src-$QT.tar.xz
-138cc2909aa98f5ff7283e36eb3936eb5e625d3ca3b4febae2ca21d8903dd237  qtimageformats-everywhere-src-$QT.tar.xz
-3d0de73596e36b2daa7c48d77c4426bb091752856912fba720215f756c560dd0  qtsvg-everywhere-src-$QT.tar.xz
-9d43d409be08b8681a0155a9c65114b69c9a3fc11aef6487bb7fdc5b283c432d  qttools-everywhere-src-$QT.tar.xz
-635a6093e99152243b807de51077485ceadd4786d4acb135b9340b2303035a4a  qttranslations-everywhere-src-$QT.tar.xz
-2226fbde4e2ddd12f8bf4b239c8f38fd706a54e789e63467dfddc77129eca203  qtwayland-everywhere-src-$QT.tar.xz
+012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05  qtbase-everywhere-src-$QT.tar.xz
+d2a1bbb84707b8a0aec29227b170be00f04383fbf2361943596d09e7e443c8e1  qtimageformats-everywhere-src-$QT.tar.xz
+aa2579f21ca66d19cbcf31d87e9067e07932635d36869c8239d4decd0a9dc1fa  qtsvg-everywhere-src-$QT.tar.xz
+326381b7d43f07913612f291abc298ae79bd95382e2233abce982cff2b53d2c0  qttools-everywhere-src-$QT.tar.xz
+d2106e8a580bfd77702c4c1840299288d344902b0e2c758ca813ea04c6d6a3d1  qttranslations-everywhere-src-$QT.tar.xz
+5e46157908295f2bf924462d8c0855b0508ba338ced9e810891fefa295dc9647  qtwayland-everywhere-src-$QT.tar.xz
 eb3b5f0c16313d34f208d90c2fa1e588a23283eed63b101edd5422be6165d528  shaderc-$SHADERC.tar.gz
 aa27e4454ce631c5a17924ce0624eac736da19fc6f5a2ab15a6c58da7b36950f  shaderc-glslang-$SHADERC_GLSLANG.tar.gz
 5d866ce34a4b6908e262e5ebfffc0a5e11dd411640b5f24c85a80ad44c0d4697  shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz
