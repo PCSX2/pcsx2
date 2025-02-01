@@ -5213,7 +5213,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 {
 	// Detect framebuffer read that will need special handling
 	const GSTextureCache::Target* src_target = nullptr;
-	if (m_conf.tex == m_conf.rt)
+	if (rt && m_conf.tex == m_conf.rt)
 	{
 		// Can we read the framebuffer directly? (i.e. sample location matches up).
 		if (CanUseTexIsFB(rt, tex, tmm))
@@ -5233,7 +5233,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		GL_CACHE("Source is render target, taking copy.");
 		src_target = rt;
 	}
-	else if (m_conf.tex == m_conf.ds)
+	else if (ds && m_conf.tex == m_conf.ds)
 	{
 		// GL, Vulkan (in General layout), not DirectX!
 		const bool can_read_current_depth_buffer = g_gs_device->Features().test_and_sample_depth;
