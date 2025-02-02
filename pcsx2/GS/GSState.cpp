@@ -1639,13 +1639,6 @@ inline bool GSState::TestDrawChanged()
 	return false;
 }
 
-u32 GSState::CalcMask(int exp, int max_exp)
-{
-	const int amount = 9 + (max_exp - exp);
-
-	return (1 << std::min(amount, 23)) - 1;
-}
-
 void GSState::FlushPrim()
 {
 	if (m_index.tail > 0)
@@ -1720,50 +1713,19 @@ void GSState::FlushPrim()
 #endif
 		// Update scissor, it may have been modified by a previous draw
 		m_env.CTXT[PRIM->CTXT].UpdateScissor();
+
 		m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
-
-		// Texel coordinate rounding
-		// Helps Manhunt (lights shining through objects).
-		// Can help with some alignment issues when upscaling too, and is for both Software and Hardware renderers.
-		// Sometimes hardware doesn't get affected, likely due to the difference in how GPU's handle textures (Persona minimap).
-		if (PRIM->TME && (GSUtil::GetPrimClass(PRIM->PRIM) == GS_PRIM_CLASS::GS_SPRITE_CLASS || m_vt.m_eq.z))
+		
+		// Fix huge or nan ST coordinates
+		if (PRIM->TME && !PRIM->FST)
 		{
-			if (!PRIM->FST) // STQ's
-			{
-				const bool is_sprite = GSUtil::GetPrimClass(PRIM->PRIM) == GS_PRIM_CLASS::GS_SPRITE_CLASS;
-				// ST's have the lowest 9 bits (or greater depending on exponent difference) rounding down (from hardware tests).
-				for (int i = m_index.tail - 1; i >= 0; i--)
-				{
-					GSVertex* v = &m_vertex.buff[m_index.buff[i]];
+			FixHugeSTCoords();	
+		}
 
-					// Only Q on the second vertex is valid
-					if (!(i & 1) && is_sprite)
-						v->RGBAQ.Q = m_vertex.buff[m_index.buff[i + 1]].RGBAQ.Q;
-
-					int T = std::bit_cast<int>(v->ST.T);
-					int Q = std::bit_cast<int>(v->RGBAQ.Q);
-					int S = std::bit_cast<int>(v->ST.S);
-					const int expS = (S >> 23) & 0xff;
-					const int expT = (T >> 23) & 0xff;
-					const int expQ = (Q >> 23) & 0xff;
-					int max_exp = std::max(expS, expQ);
-
-					u32 mask = CalcMask(expS, max_exp);
-					S &= ~mask;
-					v->ST.S = std::bit_cast<float>(S);
-					max_exp = std::max(expT, expQ);
-					mask = CalcMask(expT, max_exp);
-					T &= ~mask;
-					v->ST.T = std::bit_cast<float>(T);
-					Q &= ~0xff;
-
-					if (!is_sprite || (i & 1))
-						v->RGBAQ.Q = std::bit_cast<float>(Q);
-
-					m_vt.m_min.t.x = std::min(m_vt.m_min.t.x, (v->ST.S / v->RGBAQ.Q) * (1 << m_context->TEX0.TW));
-					m_vt.m_min.t.y = std::min(m_vt.m_min.t.y, (v->ST.T / v->RGBAQ.Q) * (1 << m_context->TEX0.TH));
-				}
-			}
+		// Round fractional parts of ST coords
+		if (PRIM->TME && !PRIM->FST && (GSUtil::GetPrimClass(PRIM->PRIM) == GS_PRIM_CLASS::GS_SPRITE_CLASS || m_vt.m_eq.z))
+		{
+			RoundSTCoords();
 		}
 
 		// Skip draw if Z test is enabled, but set to fail all pixels.
@@ -4016,8 +3978,8 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 
 	u8 uses_border = 0;
 
-	if (m_vt.m_max.t.x >= FLT_MAX || m_vt.m_min.t.x <= -FLT_MAX ||
-		m_vt.m_max.t.y >= FLT_MAX || m_vt.m_min.t.y <= -FLT_MAX)
+	if (m_vt.m_max.t.x >= 2047.0f || m_vt.m_min.t.x <= -2047.0f ||
+		m_vt.m_max.t.y >= 2047.0f || m_vt.m_min.t.y <= -2047.0f)
 	{
 		// If any of the min/max values are +-FLT_MAX we can't rely on them
 		// so just assume full texture.
@@ -4224,6 +4186,268 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 	}
 
 	return { vr, uses_border };
+}
+
+// ST coordinate rounding
+// Helps Manhunt (lights shining through objects).
+// Can help with some alignment issues when upscaling too, and is for both Software and Hardware renderers.
+// Sometimes hardware doesn't get affected, likely due to the difference in how GPU's handle textures (Persona minimap).
+void GSState::RoundSTCoords()
+{
+	const bool is_sprite = GSUtil::GetPrimClass(PRIM->PRIM) == GS_PRIM_CLASS::GS_SPRITE_CLASS;
+	
+	// ST's have the lowest 9 bits (or greater depending on exponent difference) rounded down (from hardware tests).
+	// This gives the bitmask for the lower 9 (or more) bits.
+	auto LowerBitsMask = [](int exp, int max_exp)
+	{
+		const int amount = 9 + (max_exp - exp);
+		return (1 << std::min(amount, 23)) - 1;
+	};
+
+	for (int i = m_index.tail - 1; i >= 0; i--)
+	{
+		GSVertex* v = &m_vertex.buff[m_index.buff[i]];
+
+		// Only Q on the second vertex is valid
+		if (!(i & 1) && is_sprite)
+			v->RGBAQ.Q = m_vertex.buff[m_index.buff[i + 1]].RGBAQ.Q;
+
+		int S = std::bit_cast<int>(v->ST.S);
+		int T = std::bit_cast<int>(v->ST.T);
+		int Q = std::bit_cast<int>(v->RGBAQ.Q);
+		
+		const int expS = (S >> 23) & 0xff;
+		const int expT = (T >> 23) & 0xff;
+		const int expQ = (Q >> 23) & 0xff;
+		
+		S &= ~LowerBitsMask(expS, std::max(expS, expQ));
+		T &= ~LowerBitsMask(expT, std::max(expT, expQ));
+		Q &= ~0xff; // Q gets truncated less than ST by hardware tests
+
+		v->ST.S = std::bit_cast<float>(S);
+		v->ST.T = std::bit_cast<float>(T);
+
+		if (!is_sprite || (i & 1))
+			v->RGBAQ.Q = std::bit_cast<float>(Q);
+
+		const float U = (v->ST.S / v->RGBAQ.Q) * (1 << m_context->TEX0.TW);
+		const float V = (v->ST.T / v->RGBAQ.Q) * (1 << m_context->TEX0.TH);
+		const float Qf = std::bit_cast<float>(Q);
+
+		const GSVector4 uvq(U, V, Qf, Qf);
+
+		// Do min/max with only those values that are not NaN
+		m_vt.m_min.t = m_vt.m_min.t.blend32(m_vt.m_min.t.min(uvq), uvq.notnan());
+		m_vt.m_max.t = m_vt.m_max.t.blend32(m_vt.m_max.t.max(uvq), uvq.notnan());
+	}
+
+	// Clamp the min/max UV values to the min/max valid UV values.
+	m_vt.m_min.t = m_vt.m_min.t.min(GSVector4(2047.0f)).max(GSVector4(-2047.0f)).xyzw(m_vt.m_min.t);
+	m_vt.m_max.t = m_vt.m_max.t.min(GSVector4(2047.0f)).max(GSVector4(-2047.0f)).xyzw(m_vt.m_max.t);
+}
+
+// Handle the huge ST coords in by culling primitives with NaN coords and
+// replacing the primitives with huge coords with a new one that has the huge coordinate replaced with +/- 2047.
+// This is based on hardware test that show that seem to show that ST coordinate get clamped to +/- 2047
+// (perhaps before applying repeat or region repeat).
+// Note that the huge texture coords may be a symptom of floating point issues upstream in the EE and
+// it would be better to have them fixed there; this is a bandaid.
+void GSState::FixHugeSTCoords()
+{
+	bool sprite = GSUtil::GetPrimClass(PRIM->PRIM) == GS_SPRITE_CLASS;
+	switch (GSUtil::GetClassVertexCount(GSUtil::GetPrimClass(PRIM->PRIM)))
+	{
+		case 1:
+			if (sprite)
+				FixHugeSTCoordsImpl<1, true>();
+			else
+				FixHugeSTCoordsImpl<1, false>();
+			break;
+		case 2:
+			if (sprite)
+				FixHugeSTCoordsImpl<2, true>();
+			else
+				FixHugeSTCoordsImpl<2, false>();
+			break;
+		case 3:
+			if (sprite)
+				FixHugeSTCoordsImpl<3, true>();
+			else
+				FixHugeSTCoordsImpl<3, false>();
+			break;
+		default:
+			pxFail("Impossible");
+	}
+}
+
+template <u32 n, bool sprite> void GSState::FixHugeSTCoordsImpl()
+{
+	GSVertex* const vertex = m_vertex.buff;
+	u16* const index = m_index.buff;
+
+	u32 new_index_tail = 0;
+
+	constexpr float huge = 1e10f; // arbitrary large value
+
+	const float tex_width = 1 << m_context->TEX0.TW;
+	const float tex_height = 1 << m_context->TEX0.TH;
+
+	bool new_prims = false; // Did we generate new primitives?
+
+	for (u32 i = 0; i < m_index.tail; i += n)
+	{
+		bool nan_s = false;
+		bool nan_t = false;
+		bool huge_s_pos = false;
+		bool huge_s_neg = false;
+		bool huge_t_pos = false;
+		bool huge_t_neg = false;
+
+		if (sprite)
+		{
+			// Sprites behave as if both Qs are same as the second one
+			const float s0 = vertex[index[i + 0]].ST.S / vertex[index[i + 1]].RGBAQ.Q;
+			const float t0 = vertex[index[i + 0]].ST.T / vertex[index[i + 1]].RGBAQ.Q;
+			const float s1 = vertex[index[i + 1]].ST.S / vertex[index[i + 1]].RGBAQ.Q;
+			const float t1 = vertex[index[i + 1]].ST.T / vertex[index[i + 1]].RGBAQ.Q;
+			nan_s = std::isnan(s0) || std::isnan(s1);
+			nan_t = std::isnan(t0) || std::isnan(t1);
+			huge_s_pos = s0 > huge || s1 > huge;
+			huge_s_neg = s0 < -huge || s1 < -huge;
+			huge_t_pos = t0 > huge || t1 > huge;
+			huge_t_neg = t0 < -huge || t1 < -huge;
+		}
+		else
+		{
+			for (u32 j = 0; j < n; j++)
+			{
+				const float s = vertex[index[i + j]].ST.S / vertex[index[i + j]].RGBAQ.Q;
+				const float t = vertex[index[i + j]].ST.T / vertex[index[i + j]].RGBAQ.Q;
+				nan_s |= std::isnan(s);
+				nan_t |= std::isnan(t);
+				huge_s_pos |= s > huge;
+				huge_t_pos |= t > huge;
+				huge_s_neg |= s < -huge;
+				huge_t_neg |= t < -huge;
+			}
+		}
+
+		// ambiguous = true would probably result in NaN in the SW rasterizer or something undefined in HW.
+		// PS2 does not have NaN so there is no really accurate way to emulate this.
+		// huge = true and ambiguous = false seems to have well-defined behavior on the PS2:
+		// it clamps huge values to +/-2047 in UV coordinates space. We try to approximate this by
+		// giving ST the values that would result in exactly +/-2047 across the primitive.
+		const bool ambiguous = nan_s || nan_t || (huge_s_pos && huge_s_neg) || (huge_s_pos && huge_s_neg);
+		const bool huge = huge_s_pos || huge_t_pos || huge_s_neg || huge_t_neg;
+
+		if (ambiguous)
+		{
+			// Cull the primitive by not saving the indices
+			continue;
+		}
+
+		if (huge)
+		{
+			// Add new vertices to replace the primitive with another primitive with clamped values.
+			new_prims = true;
+
+			if (sprite)
+			{
+				// Handle sprite separately since it uses the second Q for both vertices
+				GSVertex v_new0 = vertex[index[i + 0]];
+				GSVertex v_new1 = vertex[index[i + 1]];
+
+				// Try to set values so that we get constant UV +/-2047 across the entire triangle after interpolation
+				// Sprites behave as if both Qs are same as the second one
+				if (huge_s_pos)
+				{
+					v_new1.ST.S = v_new0.ST.S = 2047.0f * v_new1.RGBAQ.Q / tex_width;
+				}
+				else if (huge_s_neg)
+				{
+					v_new1.ST.S = v_new0.ST.S = -2047.0f * v_new1.RGBAQ.Q / tex_width;
+				}
+
+				if (huge_t_pos)
+				{
+					v_new1.ST.T = v_new0.ST.T = 2047.0f * v_new1.RGBAQ.Q / tex_height;
+				}
+				else if (huge_t_neg)
+				{
+					v_new1.ST.T = v_new0.ST.T = -2047.0f * v_new1.RGBAQ.Q / tex_height;
+				}
+
+				// Copy old values to tail of vertex buffer.
+				// The vertex buffer is allocated so that there is always at least room for 3 new vertices at the end.
+				vertex[m_vertex.tail + 0] = v_new0;
+				vertex[m_vertex.tail + 1] = v_new1;
+
+				// Make new indices point to new vertices
+				index[new_index_tail + 0] = m_vertex.tail + 0;
+				index[new_index_tail + 1] = m_vertex.tail + 1;
+			}
+			else
+			{
+				// Copy old values to tail of vertex buffer.
+				// The vertex buffer is allocated so that there is always at least room for 3 new vertices at the end.
+				for (u32 j = 0; j < n; j++)
+					vertex[m_vertex.tail + j] = vertex[index[i + j]];
+
+				// Try to set values so that we get constant UV +/-2047 across the entire primitive after interpolation
+				if (huge_s_pos)
+				{
+					for (u32 j = 0; j < n; j++)
+						vertex[m_vertex.tail + j].ST.S = 2047.0f * vertex[m_vertex.tail + j].RGBAQ.Q / tex_width;
+				}
+				else if (huge_s_neg)
+				{
+					for (u32 j = 0; j < n; j++)
+						vertex[m_vertex.tail + j].ST.S = -2047.0f * vertex[m_vertex.tail + j].RGBAQ.Q / tex_width;
+				}
+
+				if (huge_t_pos)
+				{
+					for (int j = 0; j < n; j++)
+						vertex[m_vertex.tail + j].ST.T = 2047.0f * vertex[m_vertex.tail + j].RGBAQ.Q / tex_height;
+				}
+				else if (huge_t_neg)
+				{
+					for (u32 j = 0; j < n; j++)
+						vertex[m_vertex.tail + j].ST.T = -2047.0f * vertex[m_vertex.tail + j].RGBAQ.Q / tex_height;
+				}
+
+				// Make new indices point to new vertices
+				for (u32 j = 0; j < n; j++)
+				{
+					index[new_index_tail + j] = m_vertex.tail + j;
+				}
+			}
+
+			// Advance tail since we pushed new vertices
+			m_vertex.tail += n;
+
+			if (m_vertex.tail >= m_vertex.maxcount)
+			{
+				GrowVertexBuffer();
+			}
+		}
+		else if (new_index_tail < i) // If new_index_tail == i, don't update indices since no primitives have been culled
+		{
+			// Keep the same primitive so shift indices down
+			for (u32 j = 0; j < n; j++)
+				index[new_index_tail + j] = index[i + j];
+		}
+
+		new_index_tail += n;
+	}
+
+	m_index.tail = new_index_tail;
+
+	if (new_prims)
+	{
+		// We indexed new primitives at the end of the buffer so update head and next also
+		m_vertex.head = m_vertex.next = m_vertex.tail;
+	}
 }
 
 void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)

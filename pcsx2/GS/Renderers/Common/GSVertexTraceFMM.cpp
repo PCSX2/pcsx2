@@ -138,9 +138,12 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 
 				stq0 = st.xyww(primclass == GS_SPRITE_CLASS ? stq1 : stq0);
 				stq1 = st.zwww(stq1);
-
-				tmin = tmin.min(stq0.min(stq1));
-				tmax = tmax.max(stq0.max(stq1));
+				
+				// Only update entries that are not NaN
+				tmin = tmin.blend32(tmin.min(stq0), stq0.notnan());
+				tmin = tmin.blend32(tmin.min(stq1), stq1.notnan());
+				tmax = tmax.blend32(tmax.max(stq0), stq0.notnan());
+				tmax = tmax.blend32(tmax.max(stq1), stq1.notnan());
 			}
 			else
 			{
@@ -246,6 +249,12 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 
 		vt.m_min.t = tmin * s;
 		vt.m_max.t = tmax * s;
+
+		// Clamp the min/max UV values to the min/max valid UV values.
+		// This is needed in certain cases where buggy GS input results
+		// in huge floating points values for ST.
+		vt.m_min.t = vt.m_min.t.min(GSVector4(2047.0f)).max(GSVector4(-2047.0f)).xyzw(vt.m_min.t);
+		vt.m_max.t = vt.m_max.t.min(GSVector4(2047.0f)).max(GSVector4(-2047.0f)).xyzw(vt.m_max.t);
 	}
 	else
 	{

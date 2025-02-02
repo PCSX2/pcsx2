@@ -241,6 +241,16 @@ public:
 		return GSVector4(vrndpq_f32(v4s));
 	}
 
+	__forceinline GSVector4 notnan() const
+	{
+		return *this == *this;
+	}
+	
+	__forceinline GSVector4 isnan() const
+	{
+		return *this != *this;
+	}
+
 	// http://jrfonseca.blogspot.com/2008/09/fast-sse2-pow-tables-or-polynomials.html
 
 #define LOG_POLY0(x, c0) GSVector4(c0)
@@ -558,6 +568,11 @@ public:
 	__forceinline GSVector4 operator-() const
 	{
 		return neg();
+	}
+
+	__forceinline GSVector4 operator~() const
+	{
+		return cast(~GSVector4i::cast(*this));
 	}
 
 	__forceinline void operator+=(const GSVector4& v)
