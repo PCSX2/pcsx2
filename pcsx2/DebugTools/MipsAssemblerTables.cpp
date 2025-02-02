@@ -304,6 +304,52 @@ const tMipsOpcode MipsOpcodes[] = {
 	{ "mtsab",	"s,i",		MIPS_REGIMM(0x18),				MA_PS2,	0 },
 	{ "mtsah",	"s,i",		MIPS_REGIMM(0x19),				MA_PS2,	0 },
 
+//     31---------26------------------------------------------5--------0
+//     |=       MMI|                                         | function|
+//     ------6---------------------5------------------------------------
+//     |--000--|--001--|--010--|--011--|--100--|--101--|--110--|--111--| lo
+// 000 | MADD  | MADDU |  ---  |  ---  | PLZCW |  ---  |  ---  |  ---  | 00-07
+// 001 | MMI0  | MMI2  |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  | 08-0F
+// 010 | MFHI1 | MTHI1 | MFLO1 | MTLO1 |  ---  |  ---  |  ---  |  ---  | 10-17
+// 011 | MULT1 | MULTU1| DIV1  | DIVU1 |  ---  |  ---  |  ---  |  ---  | 18-1F
+// 100 | MADD1 | MADDU1|  ---  |  ---  |  ---  |  ---  |  ---  |  ---  | 20..27
+// 101 | MMI1  | MMI3  |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  | 28..2F
+// 110 | PMFHL | PMTHL |  ---  |  ---  | PSLLH |  ---  |  ---  | PSRAH | 30..37
+// 111 |  ---  |  ---  |  ---  |  ---  | PSLLW |  ---  | PSRLW | PSRAW | 38..3F
+//  hi |-------|-------|-------|-------|-------|-------|-------|-------|
+	{ "madd",	"d,s,t",	MIPS_MMI(0x00),				MA_PS2,		0 },
+	{ "madd",	"s,t",		MIPS_MMI(0x00),				MA_PS2,		MO_RSD },
+	{ "maddu",	"d,s,t",	MIPS_MMI(0x01),				MA_PS2,		0 },
+	{ "maddu",	"s,t",		MIPS_MMI(0x01),				MA_PS2,		MO_RSD },
+	{ "plzcw",	"d,s",		MIPS_MMI(0x04),				MA_PS2,		0 },
+	{ "mfhi1",	"d",		MIPS_MMI(0x10),				MA_PS2,		0 },
+	{ "mthi1",	"s",		MIPS_MMI(0x11),				MA_PS2,		0 },
+	{ "mflo1",	"d",		MIPS_MMI(0x12),				MA_PS2,		0 },
+	{ "mtlo1",	"s",		MIPS_MMI(0x13),				MA_PS2,		0 },
+	{ "mult1",	"d,s,t",	MIPS_MMI(0x18),				MA_PS2,		0 },
+	{ "mult1",	"s,t",		MIPS_MMI(0x18),				MA_PS2,		MO_RSD },
+	{ "multu1",	"d,s,t",	MIPS_MMI(0x19),				MA_PS2,		0 },
+	{ "multu1",	"s,t",		MIPS_MMI(0x19),				MA_PS2,		MO_RSD },
+	{ "div1",	"s,t",		MIPS_MMI(0x1A),				MA_PS2,		0 },
+	{ "divu1",	"s,t",		MIPS_MMI(0x1B),				MA_PS2,		0 },
+	{ "madd1",	"d,s,t",	MIPS_MMI(0x20),				MA_PS2,		0 },
+	{ "madd1",	"s,t",		MIPS_MMI(0x20),				MA_PS2,		MO_RSD },
+	{ "maddu1",	"d,s,t",	MIPS_MMI(0x21),				MA_PS2,		0 },
+	{ "maddu1",	"s,t",		MIPS_MMI(0x21),				MA_PS2,		MO_RSD },
+	{ "pmfhl",		"d",	MIPS_PMFHL(0),				MA_PS2,		0 },
+	{ "pmfhl.lw",	"d",	MIPS_PMFHL(0),				MA_PS2,		0 },
+	{ "pmfhl.uw",	"d",	MIPS_PMFHL(1),				MA_PS2,		0 },
+	{ "pmfhl.slw",	"d",	MIPS_PMFHL(2),				MA_PS2,		0 },
+	{ "pmfhl.lh",	"d",	MIPS_PMFHL(3),				MA_PS2,		0 },
+	{ "pmfhl.sh",	"d",	MIPS_PMFHL(4),				MA_PS2,		0 },
+	{ "pmthl.lw",	"s",	MIPS_PMTHL(0),				MA_PS2,		0 },
+	{ "pmthl",		"s",	MIPS_PMTHL(0),				MA_PS2,		0 },
+	{ "psllh",	"d,t,a",	MIPS_MMI(0x34),				MA_PS2,		0 },
+	{ "psrah",	"d,t,a",	MIPS_MMI(0x37),				MA_PS2,		0 },
+	{ "psllw",	"d,t,a",	MIPS_MMI(0x3C),				MA_PS2,		0 },
+	{ "psrlw",	"d,t,a",	MIPS_MMI(0x3E),				MA_PS2,		0 },
+	{ "psraw",	"d,t,a",	MIPS_MMI(0x3F),				MA_PS2,		0 },
+
 //     31-------26------21---------------------------------------------0
 //     |=    COP1|  rs  |                                              |
 //     -----6-------5---------------------------------------------------

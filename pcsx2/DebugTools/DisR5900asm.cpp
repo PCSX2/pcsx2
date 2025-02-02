@@ -1073,11 +1073,11 @@ void MTSAH( std::string& output )   { _sap("mtsah\t%s, 0x%04X") GPR_REG[DECODE_R
 //***************************SPECIAL 2 CPU OPCODES*******************
 const char* pmfhl_sub[] = {"lw", "uw", "slw", "lh", "sh", "??", "??", "??"};
 
-void MADD( std::string& output )    { _sap("madd\t%s, %s %s")        GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void MADDU( std::string& output )   { _sap("maddu\t%s, %s %s")       GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);}
+void MADD( std::string& output )    { _sap("madd\t%s, %s, %s")        GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
+void MADDU( std::string& output )   { _sap("maddu\t%s, %s, %s")       GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);}
 void PLZCW( std::string& output )   { _sap("plzcw\t%s, %s")          GPR_REG[DECODE_RD], GPR_REG[DECODE_RS]); }
-void MADD1( std::string& output )   { _sap("madd1\t%s, %s %s")       GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void MADDU1( std::string& output )  { _sap("maddu1\t%s, %s %s")      GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
+void MADD1( std::string& output )   { _sap("madd1\t%s, %s, %s")       GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
+void MADDU1( std::string& output )  { _sap("maddu1\t%s, %s, %s")      GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void MFHI1( std::string& output )   { _sap("mfhi1\t%s")          GPR_REG[DECODE_RD]); }
 void MTHI1( std::string& output )   { _sap("mthi1\t%s")          GPR_REG[DECODE_RS]); }
 void MFLO1( std::string& output )   { _sap("mflo1\t%s")          GPR_REG[DECODE_RD]); }
