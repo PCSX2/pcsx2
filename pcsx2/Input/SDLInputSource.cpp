@@ -247,6 +247,14 @@ u32 SDLInputSource::ParseRGBForPlayerId(const std::string_view str, u32 player_i
 	return color;
 }
 
+void SDLInputSource::ResetRGBForAllPlayers(SettingsInterface& si)
+{
+	for (u32 player_id = 0; player_id < MAX_LED_COLORS; player_id++)
+	{
+		si.DeleteValue("SDLExtra", fmt::format("Player{}LED", player_id).c_str());
+	}
+}
+
 void SDLInputSource::SetHints()
 {
 	if (const std::string upath = Path::Combine(EmuFolders::DataRoot, CONTROLLER_DB_FILENAME); FileSystem::FileExists(upath.c_str()))
