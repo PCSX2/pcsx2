@@ -50,6 +50,13 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="mouseGrab">
+        <property name="text">
+         <string>Enable Mouse Grab</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1">
        <widget class="QCheckBox" name="pauseOnStart">
         <property name="text">
