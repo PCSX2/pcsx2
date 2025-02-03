@@ -1125,11 +1125,11 @@ void PEXT5( std::string& output ) { _sap( "pext5\t%s, %s")      GPR_REG[DECODE_R
 void PPAC5( std::string& output ) { _sap( "ppac5\t%s, %s")      GPR_REG[DECODE_RD], GPR_REG[DECODE_RT]); }
 //**********END OF MMI0 OPCODES*********************************
 //**********MMI1 OPCODES**************************************
-void PABSW( std::string& output ){  _sap( "pabsw%s, %s")      GPR_REG[DECODE_RD], GPR_REG[DECODE_RT]); }
+void PABSW( std::string& output ){  _sap( "pabsw\t%s, %s")      GPR_REG[DECODE_RD], GPR_REG[DECODE_RT]); }
 void PCEQW( std::string& output ){  _sap( "pceqw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PMINW( std::string& output ){  _sap( "pminw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PADSBH( std::string& output ){ _sap( "padsbh\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void PABSH( std::string& output ){  _sap( "pabsh%s, %s")      GPR_REG[DECODE_RD], GPR_REG[DECODE_RT]); }
+void PABSH( std::string& output ){  _sap( "pabsh\t%s, %s")      GPR_REG[DECODE_RD], GPR_REG[DECODE_RT]); }
 void PCEQH( std::string& output ){  _sap( "pceqh\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PMINH( std::string& output ){  _sap( "pminh\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PCEQB( std::string& output ){  _sap( "pceqb\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
