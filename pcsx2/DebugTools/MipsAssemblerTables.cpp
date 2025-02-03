@@ -549,6 +549,30 @@ const tMipsOpcode MipsOpcodes[] = {
 	{ "pcpyh",	"s,t",		MIPS_MMI3(0x1B),			MA_PS2,	MO_RSD },
 	{ "pexcw",	"d,t",		MIPS_MMI3(0x1E),			MA_PS2,	0 },
 
+// COP2 (VU0 Macro Mode)
+// Incomplete, only field type 11 supported (top bit of opcode is unset)
+//     31-------26---------21----------------------------------------1-0
+//     |=    COP2|  opcode  |                                        |I|
+//     -----6---------5-----------------------------------------------1-
+//     |--000--|--001--|--010--|--011--|--100--|--101--|--110--|--111--| lo
+//  00 |  ---  | QMFC2 |  CFC2 |  ---  |  ---  | QMTC2 |  CTC2 |  ---  | 00..07
+//  01 |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  | 08..0F
+//  10 |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  | 10..17
+//  11 |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  | 18..1F
+//  hi |-------|-------|-------|-------|-------|-------|-------|-------|
+	{ "qmfc2",		"t,Vs",	MIPS_COP2_NI(0x01),				MA_PS2,	0 },
+	{ "qmfc2.ni",	"t,Vs",	MIPS_COP2_NI(0x01),				MA_PS2,	0 },
+	{ "qmfc2.i",	"t,Vs",	MIPS_COP2_I(0x01),				MA_PS2,	0 },
+	{ "cfc2",		"t,Vis",MIPS_COP2_NI(0x02),				MA_PS2,	0 },
+	{ "cfc2.ni",	"t,Vis",MIPS_COP2_NI(0x02),				MA_PS2,	0 },
+	{ "cfc2.i",		"t,Vis",MIPS_COP2_I(0x02),				MA_PS2,	0 },
+	{ "qmtc2",		"t,Vs",	MIPS_COP2_NI(0x05),				MA_PS2,	0 },
+	{ "qmtc2.ni",	"t,Vs",	MIPS_COP2_NI(0x05),				MA_PS2,	0 },
+	{ "qmtc2.i",	"t,Vs",	MIPS_COP2_I(0x05),				MA_PS2,	0 },
+	{ "ctc2",		"t,Vis",MIPS_COP2_NI(0x06),				MA_PS2,	0 },
+	{ "ctc2.ni",	"t,Vis",MIPS_COP2_NI(0x06),				MA_PS2,	0 },
+	{ "ctc2.i",		"t,Vis",MIPS_COP2_I(0x06),				MA_PS2,	0 },
+
 //     31-------26------21---------------------------------------------0
 //     |=    COP1|  rs  |                                              |
 //     -----6-------5---------------------------------------------------
@@ -562,7 +586,7 @@ const tMipsOpcode MipsOpcodes[] = {
 	{ "cfc1",	"t,S",		MIPS_COP1(0x02),				MA_MIPS2,	0 },
 	{ "mtc1",	"t,S",		MIPS_COP1(0x04),				MA_MIPS2,	0 },
 	{ "ctc1",	"t,S",		MIPS_COP1(0x06),				MA_MIPS2,	0 },
-
+	
 //     31---------21-------16------------------------------------------0
 //     |=    COP1BC|  rt   |                                           |
 //     ------11---------5-----------------------------------------------

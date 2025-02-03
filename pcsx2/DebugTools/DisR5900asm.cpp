@@ -1247,10 +1247,10 @@ void CVT_S( std::string& output ){  _sap("cvt.s.w\t%s, %s")   COP1_REG_FP[DECODE
 //****************************************************************************
 //** COP2 - (VU0)                                                           **
 //****************************************************************************
-void P_QMFC2( std::string& output ){   _sap("qmfc2\t%s, %s")      GPR_REG[DECODE_RT], COP2_REG_FP[DECODE_FS]);  }
-void P_CFC2( std::string& output ){    _sap("cfc2\t%s, %s")      GPR_REG[DECODE_RT], COP2_REG_CTL[DECODE_FS]); }
-void P_QMTC2( std::string& output ){   _sap("qmtc2\t%s, %s")      GPR_REG[DECODE_RT], COP2_REG_FP[DECODE_FS]); }
-void P_CTC2( std::string& output ){    _sap("ctc2\t%s, %s")      GPR_REG[DECODE_RT], COP2_REG_CTL[DECODE_FS]); }
+void P_QMFC2( std::string& output ){   _sap("qmfc2%s\t%s, %s")  DECODE_ILOCK ? ".i" : "", GPR_REG[DECODE_RT], COP2_REG_FP[DECODE_FS]); }
+void P_CFC2( std::string& output ){    _sap("cfc2%s\t%s, %s")     DECODE_ILOCK ? ".i" : "", GPR_REG[DECODE_RT], COP2_REG_CTL[DECODE_FS]); }
+void P_QMTC2( std::string& output ){   _sap("qmtc2%s\t%s, %s")    DECODE_ILOCK ? ".i" : "", GPR_REG[DECODE_RT], COP2_REG_FP[DECODE_FS]); }
+void P_CTC2( std::string& output ){    _sap("ctc2%s\t%s, %s")     DECODE_ILOCK ? ".i" : "", GPR_REG[DECODE_RT], COP2_REG_CTL[DECODE_FS]); }
 void P_BC2F( std::string& output ){    output += "bc2f\t";      offset_decode(output); }
 void P_BC2T( std::string& output ){    output += "bc2t\t";      offset_decode(output); }
 void P_BC2FL( std::string& output ){   output += "bc2fl\t";     offset_decode(output); }

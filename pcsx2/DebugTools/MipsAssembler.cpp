@@ -152,6 +152,35 @@ const tMipsRegister MipsPs2Cop2FpRegister[] = {
 	{ "vf31", 31, 4},	{ "$vf31", 31, 5 }
 };
 
+const tMipsRegister MipsPs2Cop2IRegister[] = {
+	{ "vi0", 0, 3},		{ "$vi0", 0, 4 },
+	{ "vi1", 1, 3},		{ "$vi1", 1, 4 },
+	{ "vi2", 2, 3},		{ "$vi2", 2, 4 },
+	{ "vi3", 3, 3},		{ "$vi3", 3, 4 },
+	{ "vi4", 4, 3},		{ "$vi4", 4, 4 },
+	{ "vi5", 5, 3},		{ "$vi5", 5, 4 },
+	{ "vi6", 6, 3},		{ "$vi6", 6, 4 },
+	{ "vi7", 7, 3},		{ "$vi7", 7, 4 },
+	{ "vi8", 8, 3},		{ "$vi8", 8, 4 },
+	{ "vi9", 9, 3},		{ "$vi9", 9, 4 },
+	{ "vi00", 0, 4},	{ "$vi00", 0, 5 },
+	{ "vi01", 1, 4},	{ "$vi01", 1, 5 },
+	{ "vi02", 2, 4},	{ "$vi02", 2, 5 },
+	{ "vi03", 3, 4},	{ "$vi03", 3, 5 },
+	{ "vi04", 4, 4},	{ "$vi04", 4, 5 },
+	{ "vi05", 5, 4},	{ "$vi05", 5, 5 },
+	{ "vi06", 6, 4},	{ "$vi06", 6, 5 },
+	{ "vi07", 7, 4},	{ "$vi07", 7, 5 },
+	{ "vi08", 8, 4},	{ "$vi08", 8, 5 },
+	{ "vi09", 9, 4},	{ "$vi09", 9, 5 },
+	{ "vi10", 10, 4},	{ "$vi10", 10, 5 },
+	{ "vi11", 11, 4},	{ "$vi11", 11, 5 },
+	{ "vi12", 12, 4},	{ "$vi12", 12, 5 },
+	{ "vi13", 13, 4},	{ "$vi13", 13, 5 },
+	{ "vi14", 14, 4},	{ "$vi14", 14, 5 },
+	{ "vi15", 15, 4},	{ "$vi15", 15, 5 },
+};
+
 void SplitLine(const char* Line, char* Name, char* Arguments)
 {
 	while (*Line == ' ' || *Line == '\t') Line++;
@@ -262,9 +291,11 @@ bool MipsGetFloatRegister(const char* source, int& RetLen, MipsRegisterInfo& Res
 	return false;
 }
 
-bool MipsGetPs2VectorRegister(const char* source, int& RetLen, MipsRegisterInfo& Result)
+bool MipsGetPs2COP2FRegister(const char* source, int& RetLen, MipsRegisterInfo& Result)
 {
-	for (int z = 0; MipsPs2Cop2FpRegister[z].name != NULL; z++)
+	// Traverse backwards because of how we deal with string sizes $vf1 will match with
+	// $vf10, $vf11, $vf12 etc
+	for (int z = 83; z >= 0; z--)
 	{
 		int len = MipsPs2Cop2FpRegister[z].len;
 		if (strncmp(MipsPs2Cop2FpRegister[z].name,source,len) == 0)	// okay so far
@@ -275,6 +306,29 @@ bool MipsGetPs2VectorRegister(const char* source, int& RetLen, MipsRegisterInfo&
 				memcpy(Result.name,source,len);
 				Result.name[len] = 0;
 				Result.num = MipsPs2Cop2FpRegister[z].num;
+				RetLen = len;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool MipsGetPs2COP2IRegister(const char* source, int& RetLen, MipsRegisterInfo& Result)
+{
+	// Traverse backwards because of how we deal with string sizes $vi1 will match with
+	// $vi10, $vi11, $vi12 etc
+	for (int z = 51; z >= 0; z--)
+	{
+		int len = MipsPs2Cop2IRegister[z].len;
+		if (strncmp(MipsPs2Cop2IRegister[z].name,source,len) == 0)	// okay so far
+		{
+			if (source[len] == ',' || source[len] == '\n'  || source[len] == 0
+				|| source[len] == ')'  || source[len] == '(' || source[len] == '-')	// one of these has to come after a register
+			{
+				memcpy(Result.name,source,len);
+				Result.name[len] = 0;
+				Result.num = MipsPs2Cop2IRegister[z].num;
 				RetLen = len;
 				return true;
 			}
@@ -521,16 +575,34 @@ bool CMipsInstruction::LoadEncoding(const tMipsOpcode& SourceOpcode, const char*
 				switch (*(SourceEncoding+1))
 				{
 				case 's':
-					if (!MipsGetPs2VectorRegister(Line,RetLen,registers.ps2vrs)) return false;
+					if (!MipsGetPs2COP2FRegister(Line,RetLen,registers.ps2vrs)) return false;
 					Line += RetLen;
 					break;
 				case 't':
-					if (!MipsGetPs2VectorRegister(Line,RetLen,registers.ps2vrt)) return false;
+					if (!MipsGetPs2COP2FRegister(Line,RetLen,registers.ps2vrt)) return false;
 					Line += RetLen;
 					break;
 				case 'd':
-					if (!MipsGetPs2VectorRegister(Line,RetLen,registers.ps2vrd)) return false;
+					if (!MipsGetPs2COP2FRegister(Line,RetLen,registers.ps2vrd)) return false;
 					Line += RetLen;
+					break;
+				case 'i':
+					switch(*(SourceEncoding+2))
+					{
+						case 's':
+							if (!MipsGetPs2COP2IRegister(Line,RetLen,registers.ps2vrs)) return false;
+							Line += RetLen;
+							break;
+						case 't':
+							if (!MipsGetPs2COP2IRegister(Line,RetLen,registers.ps2vrt)) return false;
+							Line += RetLen;
+							break;
+						case 'd':
+							if (!MipsGetPs2COP2IRegister(Line,RetLen,registers.ps2vrd)) return false;
+							Line += RetLen;
+							break;
+					}
+					SourceEncoding += 1;
 					break;
 				default:
 					return false;
@@ -685,7 +757,7 @@ void CMipsInstruction::encodeNormal()
 	if (registers.frd.num != -1) encoding |= MIPS_FD(registers.frd.num);	// float dest reg
 
 	if (registers.ps2vrt.num != -1) encoding |= (registers.ps2vrt.num << 16);	// ps2 vector target reg
-	if (registers.ps2vrs.num != -1) encoding |= (registers.ps2vrs.num << 21);	// ps2 vector source reg
+	if (registers.ps2vrs.num != -1) encoding |= (registers.ps2vrs.num << 11);	// ps2 vector source reg
 	if (registers.ps2vrd.num != -1) encoding |= (registers.ps2vrd.num << 6);	// ps2 vector dest reg
 
 	switch (immediateType)
