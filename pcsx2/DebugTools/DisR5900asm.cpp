@@ -1073,11 +1073,11 @@ void MTSAH( std::string& output )   { _sap("mtsah\t%s, 0x%04X") GPR_REG[DECODE_R
 //***************************SPECIAL 2 CPU OPCODES*******************
 const char* pmfhl_sub[] = {"lw", "uw", "slw", "lh", "sh", "??", "??", "??"};
 
-void MADD( std::string& output )    { _sap("madd\t%s, %s %s")        GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void MADDU( std::string& output )   { _sap("maddu\t%s, %s %s")       GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);}
+void MADD( std::string& output )    { _sap("madd\t%s, %s, %s")        GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
+void MADDU( std::string& output )   { _sap("maddu\t%s, %s, %s")       GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);}
 void PLZCW( std::string& output )   { _sap("plzcw\t%s, %s")          GPR_REG[DECODE_RD], GPR_REG[DECODE_RS]); }
-void MADD1( std::string& output )   { _sap("madd1\t%s, %s %s")       GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void MADDU1( std::string& output )  { _sap("maddu1\t%s, %s %s")      GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
+void MADD1( std::string& output )   { _sap("madd1\t%s, %s, %s")       GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
+void MADDU1( std::string& output )  { _sap("maddu1\t%s, %s, %s")      GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void MFHI1( std::string& output )   { _sap("mfhi1\t%s")          GPR_REG[DECODE_RD]); }
 void MTHI1( std::string& output )   { _sap("mthi1\t%s")          GPR_REG[DECODE_RS]); }
 void MFLO1( std::string& output )   { _sap("mflo1\t%s")          GPR_REG[DECODE_RD]); }
@@ -1125,11 +1125,11 @@ void PEXT5( std::string& output ) { _sap( "pext5\t%s, %s")      GPR_REG[DECODE_R
 void PPAC5( std::string& output ) { _sap( "ppac5\t%s, %s")      GPR_REG[DECODE_RD], GPR_REG[DECODE_RT]); }
 //**********END OF MMI0 OPCODES*********************************
 //**********MMI1 OPCODES**************************************
-void PABSW( std::string& output ){  _sap( "pabsw%s, %s")      GPR_REG[DECODE_RD], GPR_REG[DECODE_RT]); }
+void PABSW( std::string& output ){  _sap( "pabsw\t%s, %s")      GPR_REG[DECODE_RD], GPR_REG[DECODE_RT]); }
 void PCEQW( std::string& output ){  _sap( "pceqw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PMINW( std::string& output ){  _sap( "pminw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PADSBH( std::string& output ){ _sap( "padsbh\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void PABSH( std::string& output ){  _sap( "pabsh%s, %s")      GPR_REG[DECODE_RD], GPR_REG[DECODE_RT]); }
+void PABSH( std::string& output ){  _sap( "pabsh\t%s, %s")      GPR_REG[DECODE_RD], GPR_REG[DECODE_RT]); }
 void PCEQH( std::string& output ){  _sap( "pceqh\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PMINH( std::string& output ){  _sap( "pminh\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PCEQB( std::string& output ){  _sap( "pceqb\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
@@ -1148,7 +1148,7 @@ void QFSRV( std::string& output ) { _sap( "qfsrv\t%s, %s, %s")   GPR_REG[DECODE_
 void PMADDW( std::string& output ){ _sap( "pmaddw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PSLLVW( std::string& output ){ _sap( "psllvw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PSRLVW( std::string& output ){ _sap( "psrlvw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void PMSUBW( std::string& output ){ _sap( "msubw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
+void PMSUBW( std::string& output ){ _sap( "pmsubw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PMFHI( std::string& output ){  _sap( "pmfhi\t%s")          GPR_REG[DECODE_RD]); }
 void PMFLO( std::string& output ){  _sap( "pmflo\t%s")          GPR_REG[DECODE_RD]); }
 void PINTH( std::string& output ){  _sap( "pinth\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
@@ -1247,10 +1247,10 @@ void CVT_S( std::string& output ){  _sap("cvt.s.w\t%s, %s")   COP1_REG_FP[DECODE
 //****************************************************************************
 //** COP2 - (VU0)                                                           **
 //****************************************************************************
-void P_QMFC2( std::string& output ){   _sap("qmfc2\t%s, %s")      GPR_REG[DECODE_RT], COP2_REG_FP[DECODE_FS]);  }
-void P_CFC2( std::string& output ){    _sap("cfc2\t%s, %s")      GPR_REG[DECODE_RT], COP2_REG_CTL[DECODE_FS]); }
-void P_QMTC2( std::string& output ){   _sap("qmtc2\t%s, %s")      GPR_REG[DECODE_RT], COP2_REG_FP[DECODE_FS]); }
-void P_CTC2( std::string& output ){    _sap("ctc2\t%s, %s")      GPR_REG[DECODE_RT], COP2_REG_CTL[DECODE_FS]); }
+void P_QMFC2( std::string& output ){   _sap("qmfc2%s\t%s, %s")  DECODE_ILOCK ? ".i" : "", GPR_REG[DECODE_RT], COP2_REG_FP[DECODE_FS]); }
+void P_CFC2( std::string& output ){    _sap("cfc2%s\t%s, %s")     DECODE_ILOCK ? ".i" : "", GPR_REG[DECODE_RT], COP2_REG_CTL[DECODE_FS]); }
+void P_QMTC2( std::string& output ){   _sap("qmtc2%s\t%s, %s")    DECODE_ILOCK ? ".i" : "", GPR_REG[DECODE_RT], COP2_REG_FP[DECODE_FS]); }
+void P_CTC2( std::string& output ){    _sap("ctc2%s\t%s, %s")     DECODE_ILOCK ? ".i" : "", GPR_REG[DECODE_RT], COP2_REG_CTL[DECODE_FS]); }
 void P_BC2F( std::string& output ){    output += "bc2f\t";      offset_decode(output); }
 void P_BC2T( std::string& output ){    output += "bc2t\t";      offset_decode(output); }
 void P_BC2FL( std::string& output ){   output += "bc2fl\t";     offset_decode(output); }
