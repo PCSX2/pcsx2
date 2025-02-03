@@ -514,6 +514,41 @@ const tMipsOpcode MipsOpcodes[] = {
 	{ "pexew",	"d,t",		MIPS_MMI2(0x1E),			MA_PS2,	0 },
 	{ "prot3w",	"d,t",		MIPS_MMI2(0x1F),			MA_PS2,	0 },
 
+//     31---------26--------------------------------10--------6-5-------0
+//     |=      MMI|                                 | function |  MMI3  |
+//     -----6--------------------------------------------5---------6-----
+//     |---00---|---01---|---10---|---11---| lo
+// 000 | PMADDUW|  ----  |  ----  | PSRAVW | 00..03
+// 001 |  ----  |  ----  |  ----  |  ----  | 04..07
+// 010 |  PMTHI |  PMTLO | PINTEH |  ----  | 08..0B
+// 011 | PMULTUW| PDIVUW | PCPYUD |  ----  | 0C..0F
+// 100 |  ----  |  ----  |   POR  |  PNOR  | 10..13
+// 101 |  ----  |  ----  |  ----  |  ----  | 14..17
+// 110 |  ----  |  ----  |  PEXCH |  PCPYH | 18..1B
+// 111 |  ----  |  ----  |  PEXCW |  ----  | 1C..1F
+//  hi |--------|--------|--------|--------|
+	{ "pmadduw","d,s,t",	MIPS_MMI3(0x00),			MA_PS2,	0 },
+	{ "pmadduw","s,t",		MIPS_MMI3(0x00),			MA_PS2,	MO_RSD },
+	{ "psravw",	"d,s,t",	MIPS_MMI3(0x03),			MA_PS2,	0 },
+	{ "psravw",	"s,t",		MIPS_MMI3(0x03),			MA_PS2,	MO_RSD },
+	{ "pmthi",	"s",		MIPS_MMI3(0x08),			MA_PS2,	0 },
+	{ "pmtlo",	"s",		MIPS_MMI3(0x09),			MA_PS2,	0 },
+	{ "pinteh",	"d,s,t",	MIPS_MMI3(0x0A),			MA_PS2,	0 },
+	{ "pinteh",	"s,t",		MIPS_MMI3(0x0A),			MA_PS2,	MO_RSD },
+	{ "pmultuw","d,s,t",	MIPS_MMI3(0x0C),			MA_PS2,	0 },
+	{ "pmultuw","s,t",		MIPS_MMI3(0x0C),			MA_PS2,	MO_RSD },
+	{ "pdivuw",	"s,t",		MIPS_MMI3(0x0D),			MA_PS2,	0 },
+	{ "pcpyud",	"d,s,t",	MIPS_MMI3(0x0E),			MA_PS2,	0 },
+	{ "pcpyud",	"s,t",		MIPS_MMI3(0x0E),			MA_PS2,	MO_RSD },
+	{ "por",	"d,s,t",	MIPS_MMI3(0x12),			MA_PS2,	0 },
+	{ "por",	"s,t",		MIPS_MMI3(0x12),			MA_PS2,	MO_RSD },
+	{ "pnor",	"d,s,t",	MIPS_MMI3(0x13),			MA_PS2,	0 },
+	{ "pnor",	"s,t",		MIPS_MMI3(0x13),			MA_PS2,	MO_RSD },
+	{ "pexch",	"d,t",		MIPS_MMI3(0x1A),			MA_PS2,	0 },
+	{ "pcpyh",	"d,s,t",	MIPS_MMI3(0x1B),			MA_PS2,	0 },
+	{ "pcpyh",	"s,t",		MIPS_MMI3(0x1B),			MA_PS2,	MO_RSD },
+	{ "pexcw",	"d,t",		MIPS_MMI3(0x1E),			MA_PS2,	0 },
+
 //     31-------26------21---------------------------------------------0
 //     |=    COP1|  rs  |                                              |
 //     -----6-------5---------------------------------------------------
