@@ -12,6 +12,8 @@
 #include "SIO/Pad/PadNotConnected.h"
 #include "SIO/Sio.h"
 
+#include "Input/SDLInputSource.h"
+
 #include "IconsFontAwesome5.h"
 
 #include "VMManager.h"
@@ -167,6 +169,7 @@ void Pad::SetDefaultControllerConfig(SettingsInterface& si)
 	si.SetBoolValue("Pad", "MultitapPort2", false);
 	si.SetFloatValue("Pad", "PointerXScale", 8.0f);
 	si.SetFloatValue("Pad", "PointerYScale", 8.0f);
+	SDLInputSource::ResetRGBForAllPlayers(si);
 
 	// PCSX2 Controller Settings - Default pad types and parameters.
 	for (u32 i = 0; i < Pad::NUM_CONTROLLER_PORTS; i++)
