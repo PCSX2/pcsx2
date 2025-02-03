@@ -179,12 +179,9 @@ GSTexture* GSRendererSW::GetOutput(int i, float& scale, int& y_offset)
 
 		m_texture[index]->Update(out_r, m_output, pitch);
 
-		if (GSConfig.DumpGSData)
+		if (GSConfig.SaveFrame && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 		{
-			if (GSConfig.SaveFrame && s_n >= GSConfig.SaveN)
-			{
-				m_texture[index]->Save(GetDrawDumpPath("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)curFramebuffer.Block(), psm_str(curFramebuffer.PSM)));
-			}
+			m_texture[index]->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)curFramebuffer.Block(), psm_str(curFramebuffer.PSM)));
 		}
 	}
 
@@ -312,22 +309,19 @@ void GSRendererSW::Draw()
 {
 	const GSDrawingContext* context = m_context;
 
-	if (GSConfig.DumpGSData)
+	if (GSConfig.SaveInfo && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
 		std::string s;
 
-		if (s_n >= GSConfig.SaveN)
-		{
-			// Dump Register state
-			s = GetDrawDumpPath("%05d_context.txt", s_n);
+		// Dump Register state
+		s = GetDrawDumpPath("%05d_context.txt", s_n);
 
-			m_draw_env->Dump(s);
-			m_context->Dump(s);
+		m_draw_env->Dump(s);
+		m_context->Dump(s);
 
-			// Dump vertices
-			s = GetDrawDumpPath("%05d_vertex.txt", s_n);
-			DumpVertices(s);
-		}
+		// Dump vertices
+		s = GetDrawDumpPath("%05d_vertex.txt", s_n);
+		DumpVertices(s);
 	}
 
 	auto data = m_vertex_heap.make_shared<SharedData>().cast<GSRasterizerData>();
@@ -431,9 +425,7 @@ void GSRendererSW::Draw()
 
 	sd->UsePages(fb_pages, m_context->offset.fb.psm(), zb_pages, m_context->offset.zb.psm());
 
-	//
-
-	if (GSConfig.DumpGSData)
+	if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
 		Sync(2);
 
@@ -444,36 +436,36 @@ void GSRendererSW::Draw()
 		// It will breaks the few games that really uses 16 bits RT
 		bool texture_shuffle = ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS));
 
-		if (GSConfig.SaveTexture && s_n >= GSConfig.SaveN && PRIM->TME)
+		if (GSConfig.SaveTexture && PRIM->TME)
 		{
 			if (texture_shuffle)
 			{
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
-				s = GetDrawDumpPath("%05d_f%lld_itexraw_%05x_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
+				s = GetDrawDumpPath("%05d_f%05lld_itexraw_%05x_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
 				m_mem.SaveBMP(s, m_context->TEX0.TBP0, m_context->TEX0.TBW, 0, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
 			}
 
-			s = GetDrawDumpPath("%05d_f%lld_itexraw_%05x_%s.bmp", s_n, frame, (int)m_context->TEX0.TBP0, psm_str(m_context->TEX0.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_itexraw_%05x_%s.bmp", s_n, frame, (int)m_context->TEX0.TBP0, psm_str(m_context->TEX0.PSM));
 			m_mem.SaveBMP(s, m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
 		}
 
-		if (GSConfig.SaveRT && s_n >= GSConfig.SaveN)
+		if (GSConfig.SaveRT)
 		{
 
 			if (texture_shuffle)
 			{
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
-				s = GetDrawDumpPath("%05d_f%lld_rt0_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
+				s = GetDrawDumpPath("%05d_f%05lld_rt0_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
 				m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, r.z, r.w);
 			}
 
-			s = GetDrawDumpPath("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rt0_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
 			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, r.z, r.w);
 		}
 
-		if (GSConfig.SaveDepth && s_n >= GSConfig.SaveN)
+		if (GSConfig.SaveDepth)
 		{
-			s = GetDrawDumpPath("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rz0_%05x_%s.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
 
 			m_mem.SaveBMP(s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, r.z, r.w);
 		}
@@ -482,29 +474,24 @@ void GSRendererSW::Draw()
 
 		Sync(3);
 
-		if (GSConfig.SaveRT && s_n >= GSConfig.SaveN)
+		if (GSConfig.SaveRT)
 		{
 			if (texture_shuffle)
 			{
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
-				s = GetDrawDumpPath("%05d_f%lld_rt1_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
+				s = GetDrawDumpPath("%05d_f%05lld_rt1_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
 				m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, r.z, r.w);
 			}
 
-			s = GetDrawDumpPath("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rt1_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
 			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, r.z, r.w);
 		}
 
-		if (GSConfig.SaveDepth && s_n >= GSConfig.SaveN)
+		if (GSConfig.SaveDepth)
 		{
-			s = GetDrawDumpPath("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rz1_%05x_%s.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
 
 			m_mem.SaveBMP(s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, r.z, r.w);
-		}
-
-		if (GSConfig.SaveL > 0 && (s_n - GSConfig.SaveN) > GSConfig.SaveL)
-		{
-			GSConfig.DumpGSData = 0;
 		}
 	}
 	else
@@ -585,14 +572,14 @@ void GSRendererSW::Sync(int reason)
 
 		if (GSConfig.SaveRT)
 		{
-			s = GetDrawDumpPath("%05d_f%lld_rt1_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rt1_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
 
 			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, PCRTCDisplays.GetFramebufferRect(-1).width(), 512);
 		}
 
 		if (GSConfig.SaveDepth)
 		{
-			s = GetDrawDumpPath("%05d_f%lld_zb1_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_zb1_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
 
 			m_mem.SaveBMP(s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, PCRTCDisplays.GetFramebufferRect(-1).width(), 512);
 		}
@@ -1546,30 +1533,25 @@ void GSRendererSW::SharedData::UpdateSource()
 		}
 	}
 
-	// TODO
-
-	if (GSConfig.DumpGSData)
+	if (GSConfig.SaveTexture && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
 		const u64 frame = g_perfmon.GetFrame();
 
 		std::string s;
 
-		if (GSConfig.SaveTexture && g_gs_renderer->s_n >= GSConfig.SaveN)
+		for (size_t i = 0; m_tex[i].t; i++)
 		{
-			for (size_t i = 0; m_tex[i].t; i++)
-			{
-				const GIFRegTEX0& TEX0 = g_gs_renderer->GetTex0Layer(i);
+			const GIFRegTEX0& TEX0 = g_gs_renderer->GetTex0Layer(i);
 
-				s = GetDrawDumpPath("%05d_f%lld_itex%d_%05x_%s.bmp", g_gs_renderer->s_n, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_itex%d_%05x_%s.bmp", g_gs_renderer->s_n, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
 
-				m_tex[i].t->Save(s);
-			}
+			m_tex[i].t->Save(s);
+		}
 
-			if (global.clut)
-			{
-				s = GetDrawDumpPath("%05d_f%lld_itexp_%05x_%s.bmp", g_gs_renderer->s_n, frame, (int)g_gs_renderer->m_context->TEX0.CBP, psm_str(g_gs_renderer->m_context->TEX0.CPSM));
-				GSPng::Save(IsDevBuild ? GSPng::RGB_A_PNG : GSPng::RGB_PNG, s, reinterpret_cast<const u8*>(global.clut), 256, 1, sizeof(u32) * 256, GSConfig.PNGCompressionLevel, false);
-			}
+		if (global.clut)
+		{
+			s = GetDrawDumpPath("%05d_f%05lld_itexp_%05x_%s.bmp", g_gs_renderer->s_n, frame, (int)g_gs_renderer->m_context->TEX0.CBP, psm_str(g_gs_renderer->m_context->TEX0.CPSM));
+			GSPng::Save((IsDevBuild || GSConfig.SaveAlpha) ? GSPng::RGB_A_PNG : GSPng::RGB_PNG, s, reinterpret_cast<const u8*>(global.clut), 256, 1, sizeof(u32) * 256, GSConfig.PNGCompressionLevel, false);
 		}
 	}
 }

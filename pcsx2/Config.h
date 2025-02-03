@@ -745,6 +745,8 @@ struct Pcsx2Config
 					SaveFrame : 1,
 					SaveTexture : 1,
 					SaveDepth : 1,
+					SaveAlpha : 1,
+					SaveInfo : 1,
 					DumpReplaceableTextures : 1,
 					DumpReplaceableMipmaps : 1,
 					DumpTexturesWithFMVActive : 1,
@@ -822,6 +824,10 @@ struct Pcsx2Config
 
 		int SaveN = 0;
 		int SaveL = 5000;
+		int SaveB = 1;
+		int SaveNF = 0;
+		int SaveLF = -1;
+		int SaveBF = 1;
 
 		s8 ExclusiveFullscreenControl = -1;
 		GSScreenshotSize ScreenshotSize = GSScreenshotSize::WindowResolution;
@@ -865,6 +871,9 @@ struct Pcsx2Config
 
 		bool operator==(const GSOptions& right) const;
 		bool operator!=(const GSOptions& right) const;
+
+		// Should we dump this draw/frame?
+		bool ShouldDump(int draw, int frame) const;
 	};
 
 	struct SPU2Options
