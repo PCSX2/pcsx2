@@ -1148,7 +1148,7 @@ void QFSRV( std::string& output ) { _sap( "qfsrv\t%s, %s, %s")   GPR_REG[DECODE_
 void PMADDW( std::string& output ){ _sap( "pmaddw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PSLLVW( std::string& output ){ _sap( "psllvw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PSRLVW( std::string& output ){ _sap( "psrlvw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void PMSUBW( std::string& output ){ _sap( "msubw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
+void PMSUBW( std::string& output ){ _sap( "pmsubw\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void PMFHI( std::string& output ){  _sap( "pmfhi\t%s")          GPR_REG[DECODE_RD]); }
 void PMFLO( std::string& output ){  _sap( "pmflo\t%s")          GPR_REG[DECODE_RD]); }
 void PINTH( std::string& output ){  _sap( "pinth\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
