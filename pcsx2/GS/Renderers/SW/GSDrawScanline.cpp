@@ -10,8 +10,21 @@
 
 #include <fstream>
 
+#include "debug.h"
+#if MY_DEBUG == 1
+#include <algorithm>
+
+extern bool savePoints;
+extern std::map<int, std::tuple<int, int, int, int>> pointsCalcRange;
+extern std::map<int, std::tuple<int, int, int, int>> pointsSWRange;
+extern std::vector<std::tuple<int, int, int, int, int>> pointsCalcDebug;
+extern std::vector<std::tuple<int, int, int, int, int>> pointsSWDebug;
+extern int s_n_debug;
+extern int* primIDSW;
+#else
 // Comment to disable all dynamic code generation.
 #define ENABLE_JIT_RASTERIZER
+#endif
 
 #if MULTI_ISA_COMPILE_ONCE
 // Lack of a better home
@@ -627,8 +640,14 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 		}
 	}
 
+#if MY_DEBUG == 1
+	int x = left - 4;
+#endif
 	while (1)
 	{
+#if MY_DEBUG == 1
+		x += 4;
+#endif
 		do
 		{
 			int fa = 0, za = 0;
@@ -711,6 +730,33 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 						case ZTST_GEQUAL:  test |= zso <  zdo; break;
 						case ZTST_GREATER: test |= zso <= zdo; break;
 					}
+
+#if MY_DEBUG == 1
+					if (savePoints)
+					{
+						for (int i = 0; i < 4; i++)
+						{
+							if (!pointsSWRange.contains(global.s_n))
+							{
+								pointsSWRange[global.s_n] = {10000, 10000, -10000, -10000};
+							}
+							if (global.s_n == s_n_debug)
+							{
+								if (sel.ltf)
+								{
+									pointsSWDebug.push_back({*primIDSW - 1, x + i, top, -1, -1});
+									pointsSWDebug.push_back({*primIDSW - 1, x + i, top, -1, -1});
+									pointsSWDebug.push_back({*primIDSW - 1, x + i, top, -1, -1});
+									pointsSWDebug.push_back({*primIDSW - 1, x + i, top, -1, -1});
+								}
+								else
+								{
+									pointsSWDebug.push_back({*primIDSW - 1, x + i, top, -1, -1});
+								}
+							}
+						}
+					}
+#endif
 
 					if (test.alltrue())
 						continue;
@@ -1118,6 +1164,48 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 
 						uv1 = clamp.blend8(repeat, VectorI::broadcast128(global.t.mask));
 					}
+
+#if MY_DEBUG == 1
+					if (savePoints)
+					{
+						for (int i = 0; i < 4; i++)
+						{
+					 		if (test.U32[i] == 0 || sel.notest)
+					 		{
+					 			if (!pointsSWRange.contains(global.s_n))
+					 			{
+					 				pointsSWRange[global.s_n] = {10000, 10000, -10000, -10000};
+					 			}
+					 			std::get<0>(pointsSWRange[global.s_n]) = std::min(std::get<0>(pointsSWRange[global.s_n]), (int)uv0.U16[i]);
+					 			std::get<1>(pointsSWRange[global.s_n]) = std::min(std::get<1>(pointsSWRange[global.s_n]), (int)uv0.U16[i + 4]);
+					 			std::get<2>(pointsSWRange[global.s_n]) = std::max(std::get<2>(pointsSWRange[global.s_n]), (int)uv0.U16[i]);
+					 			std::get<3>(pointsSWRange[global.s_n]) = std::max(std::get<3>(pointsSWRange[global.s_n]), (int)uv0.U16[i + 4]);
+					 			if (sel.ltf)
+					 			{
+					 				std::get<0>(pointsSWRange[global.s_n]) = std::min(std::get<0>(pointsSWRange[global.s_n]), (int)uv1.U16[i]);
+					 				std::get<1>(pointsSWRange[global.s_n]) = std::min(std::get<1>(pointsSWRange[global.s_n]), (int)uv1.U16[i + 4]);
+					 				std::get<2>(pointsSWRange[global.s_n]) = std::max(std::get<2>(pointsSWRange[global.s_n]), (int)uv1.U16[i]);
+					 				std::get<3>(pointsSWRange[global.s_n]) = std::max(std::get<3>(pointsSWRange[global.s_n]), (int)uv1.U16[i + 4]);
+					 			}
+								if (global.s_n == s_n_debug)
+								{
+									if (sel.ltf)
+									{
+										pointsSWDebug.push_back({*primIDSW - 1, x + i, top, (int)uv0.U16[i], (int)uv0.U16[i + 4]});
+										pointsSWDebug.push_back({*primIDSW - 1, x + i, top, (int)uv0.U16[i], (int)uv1.U16[i + 4]});
+										pointsSWDebug.push_back({*primIDSW - 1, x + i, top, (int)uv1.U16[i], (int)uv0.U16[i + 4]});
+										pointsSWDebug.push_back({*primIDSW - 1, x + i, top, (int)uv1.U16[i], (int)uv1.U16[i + 4]});
+									}
+									else
+									{
+										pointsSWDebug.push_back({*primIDSW - 1, x + i, top, (int)uv0.U16[i], (int)uv0.U16[i + 4]});
+									}
+								}
+
+					 		}
+						}
+					}
+#endif
 
 					VectorI y0 = uv0.uph16() << (sel.tw + 3);
 					VectorI x0 = uv0.upl16();
