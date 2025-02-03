@@ -1347,10 +1347,23 @@ function(setup_main_executable target)
 		set_target_properties(${target} PROPERTIES
 			MACOSX_BUNDLE true
 			MACOSX_BUNDLE_INFO_PLIST "${PCSX2_SOURCE_DIR}/Resources/Info.plist.in"
+			XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${PCSX2_SOURCE_DIR}/Resources/PCSX2.entitlements"
 			OUTPUT_NAME PCSX2
 			# Fixes complaints when Xcode tries to sign for running locally about MoltenVK not being signed
 			XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS --deep
 		)
+
+		if(MACOS_SIGN_APP)
+			if(NOT DEFINED ENV{DEVELOPMENT_TEAM})
+				message(FATAL_ERROR "You must set the DEVELOPMENT_TEAM environment variable to sign the app.")
+			endif()
+			set_target_properties(${target} PROPERTIES
+				# The "Organizational Unit" field in the certificate
+				# _not_ the ID in the certificate name
+				XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "$ENV{DEVELOPMENT_TEAM}"
+				XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
+			)
+		endif()
 
 		pcsx2_resource(${target} ${PCSX2_SOURCE_DIR}/Resources/PCSX2.icns ${PCSX2_SOURCE_DIR}/Resources)
 
