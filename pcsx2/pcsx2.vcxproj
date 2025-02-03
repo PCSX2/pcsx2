@@ -201,6 +201,7 @@
     <ClCompile Include="DEV9\sockets.cpp" />
     <ClCompile Include="DEV9\net.cpp" />
     <ClCompile Include="DEV9\Win32\tap-win32.cpp" />
+    <ClCompile Include="FpgaDiv.cpp" />
     <ClCompile Include="GameList.cpp" />
     <ClCompile Include="GS\Renderers\DX11\D3D11ShaderCache.cpp" />
     <ClCompile Include="GS\Renderers\DX12\D3D12Builders.cpp" />
@@ -281,6 +282,7 @@
     <ClCompile Include="PINE.cpp" />
     <ClCompile Include="FW.cpp" />
     <ClCompile Include="PerformanceMetrics.cpp" />
+    <ClCompile Include="PS2Float.cpp" />
     <ClCompile Include="Recording\InputRecording.cpp" />
     <ClCompile Include="Recording\InputRecordingControls.cpp" />
     <ClCompile Include="Recording\InputRecordingFile.cpp" />
@@ -645,6 +647,7 @@
     <ClInclude Include="DEV9\ThreadSafeMap.h" />
     <ClInclude Include="DEV9\Win32\pcap_io_win32_funcs.h" />
     <ClInclude Include="DEV9\Win32\tap.h" />
+    <ClInclude Include="FpgaDiv.h" />
     <ClInclude Include="GameList.h" />
     <ClInclude Include="GS\GSVector4i_arm64.h" />
     <ClInclude Include="GS\GSVector4_arm64.h" />
@@ -726,6 +729,7 @@
     <ClInclude Include="PINE.h" />
     <ClInclude Include="FW.h" />
     <ClInclude Include="PerformanceMetrics.h" />
+    <ClInclude Include="PS2Float.h" />
     <ClInclude Include="Recording\InputRecording.h" />
     <ClInclude Include="Recording\InputRecordingControls.h" />
     <ClInclude Include="Recording\InputRecordingFile.h" />

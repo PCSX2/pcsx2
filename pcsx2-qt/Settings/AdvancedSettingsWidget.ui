@@ -34,7 +34,7 @@
         <x>0</x>
         <y>-447</y>
         <width>790</width>
-        <height>1049</height>
+        <height>1283</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -94,10 +94,10 @@
             </item>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="eeDivRoundingLabel">
+          <item row="2" column="0">
+           <widget class="QLabel" name="eeClampLabel">
             <property name="text">
-             <string extracomment="Rounding refers here to the mathematical term.">Division Rounding Mode:</string>
+             <string extracomment="Clamping: Forcing out of bounds things in bounds by changing them to the closest possible value.  In this case, this refers to clamping large PS2 floating point values (which map to infinity or NaN in PCs' IEEE754 floats) to non-infinite ones.">Clamping Mode:</string>
             </property>
            </widget>
           </item>
@@ -125,38 +125,7 @@
             </item>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="eeClampLabel">
-            <property name="text">
-             <string extracomment="Clamping: Forcing out of bounds things in bounds by changing them to the closest possible value.  In this case, this refers to clamping large PS2 floating point values (which map to infinity or NaN in PCs' IEEE754 floats) to non-infinite ones.">Clamping Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="eeClampMode">
-            <item>
-             <property name="text">
-              <string comment="ClampMode">None</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Normal (Default)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string extracomment="Sign: refers here to the mathematical meaning (plus/minus).">Extra + Preserve Sign</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Full</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="3" column="0" colspan="2">
+          <item row="4" column="0" colspan="2">
            <layout class="QGridLayout" name="eeSettingsMisc">
             <item row="1" column="0">
              <widget class="QCheckBox" name="eeWaitLoopDetection">
@@ -209,6 +178,67 @@
             </item>
            </layout>
           </item>
+		  <item row="2" column="1">
+           <widget class="QComboBox" name="eeClampMode">
+            <item>
+             <property name="text">
+              <string comment="ClampMode">None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Normal (Default)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string extracomment="Sign: refers here to the mathematical meaning (plus/minus).">Extra + Preserve Sign</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Full</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="eeDivRoundingLabel">
+            <property name="text">
+             <string extracomment="Rounding refers here to the mathematical term.">Division Rounding Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QGroupBox" name="eeSoftFloat">
+            <property name="title">
+             <string>Software Float</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_4">
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="eeSoftMulDiv">
+               <property name="text">
+                <string>Multiplication/Division</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QCheckBox" name="eeSoftAddSub">
+               <property name="text">
+                <string>Addition/Subtraction</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QCheckBox" name="eeSoftSqrt">
+               <property name="text">
+                <string>Square Root</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -218,7 +248,7 @@
           <string extracomment="Vector Unit/VU: refers to two of PS2's processors. Do not translate the full text or do so as a comment. Leave the acronym as-is.">Vector Units (VU)</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="vu1RoundingLabel">
             <property name="text">
              <string>VU1 Rounding Mode:</string>
@@ -249,7 +279,129 @@
             </item>
            </widget>
           </item>
-          <item row="4" column="0" colspan="2">
+          <item row="4" column="0">
+           <widget class="QLabel" name="vu1ClampLabel">
+            <property name="text">
+             <string>VU1 Clamping Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="vu0RoundingLabel">
+            <property name="text">
+             <string>VU0 Rounding Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="QGroupBox" name="vu1SoftFloat">
+            <property name="title">
+             <string>VU1 Software Float</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_8">
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="vu1SoftMulDiv">
+               <property name="text">
+                <string>Multiplication/Division</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QCheckBox" name="vu1SoftAddSub">
+               <property name="text">
+                <string>Addition/Subtraction</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QCheckBox" name="vu1SoftSqrt">
+               <property name="text">
+                <string>Float Square Root</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QGroupBox" name="vu0SoftFloat">
+            <property name="title">
+             <string>VU0 Software Float</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_6">
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="vu0SoftMulDiv">
+               <property name="text">
+                <string>Multiplication/Division</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QCheckBox" name="vu0SoftAddSub">
+               <property name="text">
+                <string>Addition/Subtraction</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QCheckBox" name="vu0SoftSqrt">
+               <property name="text">
+                <string>Square Root</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="vu1RoundingMode">
+            <item>
+             <property name="text">
+              <string>Nearest</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Negative</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Positive</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Chop/Zero (Default)</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="vu0ClampMode">
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Normal (Default)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Extra</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Extra + Preserve Sign</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="6" column="0" colspan="2">
            <layout class="QGridLayout" name="vuSettingsLayout">
             <item row="1" column="0">
              <widget class="QCheckBox" name="vuFlagHack">
@@ -281,30 +433,6 @@
             </item>
            </layout>
           </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="vu0ClampMode">
-            <item>
-             <property name="text">
-              <string>None</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Normal (Default)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Extra</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Extra + Preserve Sign</string>
-             </property>
-            </item>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="vu0ClampLabel">
             <property name="text">
@@ -312,45 +440,7 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="vu0RoundingLabel">
-            <property name="text">
-             <string>VU0 Rounding Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="vu1ClampLabel">
-            <property name="text">
-             <string>VU1 Clamping Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="vu1RoundingMode">
-            <item>
-             <property name="text">
-              <string>Nearest</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Negative</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Positive</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Chop/Zero (Default)</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QComboBox" name="vu1ClampMode">
             <item>
              <property name="text">
