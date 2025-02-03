@@ -264,6 +264,12 @@ bool ThreadedFileReader::Precache2(ProgressCallback* progress, Error* error)
 	return false;
 }
 
+std::vector<toc_entry> ThreadedFileReader::ReadTOC()
+{
+	return {};
+}
+
+
 bool ThreadedFileReader::CheckAvailableMemoryForPrecaching(u64 required_size, Error* error)
 {
 	// Don't allow precaching to use more than 50% of system memory.
