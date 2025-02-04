@@ -4627,7 +4627,7 @@ GSTextureCache::Target* GSTextureCache::GetTargetWithSharedBits(u32 BP, u32 PSM)
 	{
 		Target* t = *it;
 		const u32 t_psm = (t->HasValidAlpha()) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
-		if (GSUtil::HasSharedBits(BP, PSM, t->m_TEX0.TBP0, t_psm))
+		if (GSUtil::HasSharedBits(PSM, t_psm) && (t->m_TEX0.TBP0 == BP || (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->m_TEX0.TBP0 < BP && t->UnwrappedEndBlock() > BP)))
 			return t;
 	}
 

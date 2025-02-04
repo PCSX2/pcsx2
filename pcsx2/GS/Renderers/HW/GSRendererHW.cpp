@@ -7460,12 +7460,29 @@ bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_t
 	if (level < 2 && (IsMipMapActive() || !IsOpaque()))
 		return false;
 
+	// Middle of a shuffle, don't SW it.
+	if (m_split_texture_shuffle_pages)
+		return false;
+
 	// Make sure this isn't something we've actually rendered to (e.g. a texture shuffle).
 	if (PRIM->TME)
 	{
 		GSTextureCache::Target* src_target = g_texture_cache->GetTargetWithSharedBits(m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.PSM);
 		if (src_target)
 		{
+			// If we also have the destination target and it's all valid data and it needs blending, then we can't SW render it as we will nuke valid information.
+			if (!IsOpaque())
+			{
+				GSTextureCache::Target* dst_target = g_texture_cache->GetTargetWithSharedBits(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.PSM);
+
+				if (dst_target && dst_target->m_dirty.empty() && ((!(GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x7)) || dst_target->m_valid_rgb) && 
+					((!(GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8)) || (dst_target->m_valid_alpha_low && dst_target->m_valid_alpha_high)))
+					return false;
+			}
+
+			if (((GSUtil::GetChannelMask(m_cached_ctx.TEX0.PSM) & 0x7) && !src_target->m_valid_rgb) || ((GSUtil::GetChannelMask(m_cached_ctx.TEX0.PSM) & 0x8) && (!src_target->m_valid_alpha_low || !src_target->m_valid_alpha_high)))
+				return true;
+
 			// If the EE has written over our sample area, we're fine to do this on the CPU, despite the target.
 			if (!src_target->m_dirty.empty())
 			{
