@@ -1851,7 +1851,7 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 		Console.WriteLn(fmt::format("Creating save state backup {}...", backup_filename));
 		if (!FileSystem::RenamePath(filename, backup_filename.c_str()))
 		{
-			Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
+			Host::AddIconOSDMessage(osd_key, ICON_FA_EXCLAMATION_TRIANGLE,
 				fmt::format(
 					TRANSLATE_FS("VMManager", "Failed to back up old save state {}."), Path::GetFileName(filename)),
 				Host::OSD_ERROR_DURATION);
@@ -2234,7 +2234,7 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 
 	CDVDsys_ChangeSource(source);
 	if (!path.empty())
-		CDVDsys_SetFile(source, std::move(path));
+		CDVDsys_SetFile(source, path);
 
 	Error error;
 	const bool result = DoCDVDopen(&error);
