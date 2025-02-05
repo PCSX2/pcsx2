@@ -2254,6 +2254,8 @@ void GSRendererHW::Draw()
 					m_conf.scissor.w = m_conf.scissor.y + (((num_skipped_channel_shuffle_draws + 1 + (m_channel_shuffle_width - 1)) / std::max(1U, m_channel_shuffle_width)) * 32) * m_conf.cb_ps.ScaleFactor.z;
 					if (width_pages)
 						m_conf.scissor.z = m_conf.scissor.x + (((num_skipped_channel_shuffle_draws + 1) % std::max(1U, m_channel_shuffle_width) % std::max(1U, m_channel_shuffle_width)) * 64) * m_conf.cb_ps.ScaleFactor.z;
+
+					m_last_rt->UpdateValidity(GSVector4i::loadh(m_last_rt->m_unscaled_size).rintersect(GSVector4i(GSVector4(m_conf.scissor) / m_conf.cb_ps.ScaleFactor.z)), true);
 				}
 				g_gs_device->RenderHW(m_conf);
 
@@ -3715,13 +3717,13 @@ void GSRendererHW::Draw()
 			update_rect.z = buffer_width;
 		}
 
-		if (m_in_target_draw && src && m_channel_shuffle && src->m_from_target && src->m_from_target == rt && m_cached_ctx.TEX0.TBP0 == src->m_from_target->m_TEX0.TBP0)
+		/*if (m_in_target_draw && src && m_channel_shuffle && src->m_from_target && src->m_from_target == rt && m_cached_ctx.TEX0.TBP0 == src->m_from_target->m_TEX0.TBP0)
 		{
-			new_size.y = std::max(new_size.y, static_cast<int>((((m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) >> 5) / rt->m_TEX0.TBW) * frame_psm.pgs.y) * 2);
+			new_size.y = std::max(new_size.y, static_cast<int>((((m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) >> 5) / rt->m_TEX0.TBW) * frame_psm.pgs.y));
 			GSVector4i new_valid = rt->m_valid;
-			new_valid.w = new_size.y;
+			new_valid.w = std::max(new_valid.w, static_cast<int>((((m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) >> 5) / rt->m_TEX0.TBW) * frame_psm.pgs.y) + frame_psm.pgs.y);
 			rt->UpdateValidity(new_valid, true);
-		}
+		}*/
 
 		// We still need to make sure the dimensions of the targets match.
 		// Limit new size to 2048, the GS can't address more than this so may avoid some bugs/crashes.
@@ -4056,8 +4058,8 @@ void GSRendererHW::Draw()
 				const GSVector4i dRect = GSVector4i(0, z_vertical_offset * ds->m_scale, ds->m_unscaled_size.x * ds->m_scale, std::min(z_vertical_offset + m_r.w + 1 - vertical_offset, ds->m_unscaled_size.y) * ds->m_scale);
 
 				GL_CACHE("RT in RT Z copy back draw %d z_vert_offset %d z_offset %d", s_n, z_vertical_offset, vertical_offset);
-				g_gs_device->StretchRect(g_texture_cache->GetTemporaryZ(), GSVector4(0.0f, vertical_offset / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()), 1.0f,
-					std::min(real_rect.w + 1, ds->m_unscaled_size.y + vertical_offset) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight())), ds->m_texture, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
+				g_gs_device->StretchRect(g_texture_cache->GetTemporaryZ(), GSVector4(0.0f, (static_cast<float>(vertical_offset) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()), 1.0f,
+					floor(static_cast<float>(std::min(real_rect.w + 1, ds->m_unscaled_size.y + vertical_offset)) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight())), ds->m_texture, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
 			}
 		}
 	}
