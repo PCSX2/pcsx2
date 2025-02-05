@@ -178,12 +178,10 @@ GSTexture* GSRendererHW::GetOutput(int i, float& scale, int& y_offset)
 			GL_CACHE("Frame y offset %d pixels, unit %d", y_offset, i);
 		}
 
-#ifdef ENABLE_OGL_DEBUG
 		if (GSConfig.SaveFrame && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 		{
 			t->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, static_cast<int>(TEX0.TBP0), psm_str(TEX0.PSM)));
 		}
-#endif
 	}
 
 	return t;
@@ -207,10 +205,8 @@ GSTexture* GSRendererHW::GetFeedbackOutput(float& scale)
 	GSTexture* t = rt->m_texture;
 	scale = rt->m_scale;
 
-#ifdef ENABLE_OGL_DEBUG
 	if (GSConfig.SaveFrame && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 		t->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, static_cast<int>(TEX0.TBP0), psm_str(TEX0.PSM)));
-#endif
 
 	return t;
 }
@@ -3454,9 +3450,6 @@ void GSRendererHW::Draw()
 			GSTextureCache::RenderTarget, m_cached_ctx.ZBUF.Block(), m_cached_ctx.ZBUF.PSM, zm);
 	}
 
-	
-	//
-
 	if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
 		const bool writeback_HDR_texture = g_gs_device->GetHDRTexture() != nullptr;
@@ -3473,14 +3466,14 @@ void GSRendererHW::Draw()
 
 		if (rt && GSConfig.SaveRT)
 		{
-			s = GetDrawDumpPath("%05d_f%05lld_rt1_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.FRAME.Block(), psm_str(m_cached_ctx.FRAME.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rt1_%05x_%s.bmp", s_n, frame, m_cached_ctx.FRAME.Block(), psm_str(m_cached_ctx.FRAME.PSM));
 
 			rt->m_texture->Save(s);
 		}
 
 		if (ds && GSConfig.SaveDepth)
 		{
-			s = GetDrawDumpPath("%05d_f%05lld_rz1_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.ZBUF.Block(), psm_str(m_cached_ctx.ZBUF.PSM));
+			s = GetDrawDumpPath("%05d_f%05lld_rz1_%05x_%s.bmp", s_n, frame, m_cached_ctx.ZBUF.Block(), psm_str(m_cached_ctx.ZBUF.PSM));
 
 			ds->m_texture->Save(s);
 		}
