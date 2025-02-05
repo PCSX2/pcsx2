@@ -40,6 +40,7 @@ MemorySearchWidget::MemorySearchWidget(QWidget* parent)
 	connect(m_ui.listSearchResults->verticalScrollBar(), &QScrollBar::valueChanged, this, &MemorySearchWidget::onSearchResultsListScroll);
 	connect(m_ui.listSearchResults, &QListView::customContextMenuRequested, this, &MemorySearchWidget::onListSearchResultsContextMenu);
 	connect(m_ui.cmbSearchType, &QComboBox::currentIndexChanged, this, &MemorySearchWidget::onSearchTypeChanged);
+	connect(m_ui.cmbSearchComparison, &QComboBox::currentIndexChanged, this, &MemorySearchWidget::onSearchComparisonChanged);
 
 	// Ensures we don't retrigger the load results function unintentionally
 	m_resultsLoadTimer.setInterval(100);
@@ -249,7 +250,6 @@ bool handleSearchComparison(SearchComparison searchComparison, u32 searchAddress
 		}
 		case SearchComparison::IncreasedBy:
 		{
-
 			const T priorValue = priorResult->getValue<T>();
 			const T expectedIncrease = searchValue + priorValue;
 			return memoryValueComparator(SearchComparison::Equals, readValue, expectedIncrease);
@@ -281,6 +281,10 @@ bool handleSearchComparison(SearchComparison searchComparison, u32 searchAddress
 			const T expectedIncrease = searchValue + priorValue;
 			const T expectedDecrease = priorValue - searchValue;
 			return memoryValueComparator(SearchComparison::Equals, readValue, expectedIncrease) || memoryValueComparator(SearchComparison::Equals, readValue, expectedDecrease);
+		}
+		case SearchComparison::UnknownValue:
+		{
+			return true;
 		}
 		default:
 			Console.Error("Debugger: Unknown type when doing memory search!");
@@ -506,63 +510,66 @@ void MemorySearchWidget::onSearchButtonClicked()
 	const bool isFilterSearch = sender() == m_ui.btnFilterSearch;
 	unsigned long long value;
 
-	switch (searchType)
+	if(searchComparison != SearchComparison::UnknownValue)
 	{
-		case SearchType::ByteType:
-		case SearchType::Int16Type:
-		case SearchType::Int32Type:
-		case SearchType::Int64Type:
-			value = searchValue.toULongLong(&ok, searchHex ? 16 : 10);
-			break;
-		case SearchType::FloatType:
-		case SearchType::DoubleType:
-			searchValue.toDouble(&ok);
-			break;
-		case SearchType::StringType:
-			ok = !searchValue.isEmpty();
-			break;
-		case SearchType::ArrayType:
-			ok = !searchValue.trimmed().isEmpty();
-			break;
-	}
-
-	if (!ok)
-	{
-		QMessageBox::critical(this, tr("Debugger"), tr("Invalid search value"));
-		return;
-	}
-
-	switch (searchType)
-	{
-		case SearchType::ArrayType:
-		case SearchType::StringType:
-		case SearchType::DoubleType:
-		case SearchType::FloatType:
-			break;
-		case SearchType::Int64Type:
-			if (value <= std::numeric_limits<unsigned long long>::max())
+		switch (searchType)
+		{
+			case SearchType::ByteType:
+			case SearchType::Int16Type:
+			case SearchType::Int32Type:
+			case SearchType::Int64Type:
+				value = searchValue.toULongLong(&ok, searchHex ? 16 : 10);
 				break;
-		case SearchType::Int32Type:
-			if (value <= std::numeric_limits<unsigned long>::max())
+			case SearchType::FloatType:
+			case SearchType::DoubleType:
+				searchValue.toDouble(&ok);
 				break;
-		case SearchType::Int16Type:
-			if (value <= std::numeric_limits<unsigned short>::max())
+			case SearchType::StringType:
+				ok = !searchValue.isEmpty();
 				break;
-		case SearchType::ByteType:
-			if (value <= std::numeric_limits<unsigned char>::max())
+			case SearchType::ArrayType:
+				ok = !searchValue.trimmed().isEmpty();
 				break;
-		default:
-			QMessageBox::critical(this, tr("Debugger"), tr("Value is larger than type"));
+		}
+		
+		if (!ok)
+		{
+			QMessageBox::critical(this, tr("Debugger"), tr("Invalid search value"));
 			return;
-	}
-
-	if (!isFilterSearch && (searchComparison == SearchComparison::Changed || searchComparison == SearchComparison::ChangedBy
-		|| searchComparison == SearchComparison::Decreased || searchComparison == SearchComparison::DecreasedBy
-		|| searchComparison == SearchComparison::Increased || searchComparison == SearchComparison::IncreasedBy
-		|| searchComparison == SearchComparison::NotChanged))
-	{
-		QMessageBox::critical(this, tr("Debugger"), tr("This search comparison can only be used with filter searches."));
-		return;
+		}
+		
+		switch (searchType)
+		{
+			case SearchType::ArrayType:
+			case SearchType::StringType:
+			case SearchType::DoubleType:
+			case SearchType::FloatType:
+				break;
+			case SearchType::Int64Type:
+				if (value <= std::numeric_limits<unsigned long long>::max())
+					break;
+			case SearchType::Int32Type:
+				if (value <= std::numeric_limits<unsigned long>::max())
+					break;
+			case SearchType::Int16Type:
+				if (value <= std::numeric_limits<unsigned short>::max())
+					break;
+			case SearchType::ByteType:
+				if (value <= std::numeric_limits<unsigned char>::max())
+					break;
+			default:
+				QMessageBox::critical(this, tr("Debugger"), tr("Value is larger than type"));
+				return;
+		}
+		
+		if (!isFilterSearch && (searchComparison == SearchComparison::Changed || searchComparison == SearchComparison::ChangedBy
+								|| searchComparison == SearchComparison::Decreased || searchComparison == SearchComparison::DecreasedBy
+								|| searchComparison == SearchComparison::Increased || searchComparison == SearchComparison::IncreasedBy
+								|| searchComparison == SearchComparison::NotChanged))
+		{
+			QMessageBox::critical(this, tr("Debugger"), tr("This search comparison can only be used with filter searches."));
+			return;
+		}
 	}
 
 	QFutureWatcher<std::vector<SearchResult>>* workerWatcher = new QFutureWatcher<std::vector<SearchResult>>();
@@ -654,6 +661,11 @@ void MemorySearchWidget::onSearchTypeChanged(int newIndex)
 	updateSearchComparisonSelections();
 }
 
+void MemorySearchWidget::onSearchComparisonChanged(int newValue)
+{
+	m_ui.txtSearchValue->setEnabled(getCurrentSearchComparison() != SearchComparison::UnknownValue);
+}
+
 void MemorySearchWidget::updateSearchComparisonSelections()
 {
 	const QString selectedComparisonLabel = m_ui.cmbSearchComparison->currentText();
@@ -704,5 +716,11 @@ std::vector<SearchComparison> MemorySearchWidget::getValidSearchComparisonsForSt
 		comparisons.push_back(SearchComparison::ChangedBy);
 		comparisons.push_back(SearchComparison::NotChanged);
 	}
+	
+	if(!hasResults)
+	{
+		comparisons.push_back(SearchComparison::UnknownValue);
+	}
+
 	return comparisons;
 }
