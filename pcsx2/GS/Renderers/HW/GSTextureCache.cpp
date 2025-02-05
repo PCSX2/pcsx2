@@ -2369,15 +2369,14 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			{
 				if (scale_down)
 				{
-					if ((new_size.y * 2) < 1024)
-					{
-						new_scaled_size.y *= 2;
-						new_size.y *= 2;
-						dst->m_valid.y *= 2;
-						dst->m_valid.w *= 2;
-					}
+					new_scaled_size.y *= 2;
+					dst->m_valid.y *= 2;
+					dst->m_valid.w *= 2;
 					dRect.y *= 2;
 					dRect.w *= 2;
+
+					new_size.y *= 2;
+					new_size.y = std::max(dst->m_valid.w, new_size.y);
 				}
 				else
 				{
@@ -2387,6 +2386,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					dRect.w /= 2;
 					dst->m_valid.y /= 2;
 					dst->m_valid.w /= 2;
+					new_size.y = std::max(dst->m_valid.w, new_size.y);
 				}
 			}
 			if (!is_shuffle)
@@ -2627,7 +2627,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			dst->m_valid = dst_match->m_valid;
 			dst->m_valid_alpha_low = dst_match->m_valid_alpha_low; //&& psm_s.trbpp != 24;
 			dst->m_valid_alpha_high = dst_match->m_valid_alpha_high; //&& psm_s.trbpp != 24;
-			dst->m_valid_rgb = dst_match->m_valid_rgb;
+			dst->m_valid_rgb = dst_match->m_valid_rgb && (dst->m_TEX0.TBW == TEX0.TBW || min_rect.w <= GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].pgs.y);
 			dst->m_was_dst_matched = true;
 			dst_match->m_was_dst_matched = true;
 			dst_match->m_valid_rgb = preserve_rgb;
