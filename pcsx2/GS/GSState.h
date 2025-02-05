@@ -211,7 +211,8 @@ protected:
 	void CorrectATEAlphaMinMax(const u32 atst, const int aref);
 	void RoundSTCoords();
 	void FixHugeSTCoords();
-	template <u32 n, bool sprite> void FixHugeSTCoordsImpl();
+	template <u32 n, bool cull>
+	void FixHugeSTCoordsImpl();
 
 public:
 	struct GSUploadQueue

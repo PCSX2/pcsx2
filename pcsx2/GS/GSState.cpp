@@ -4194,8 +4194,6 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 // Sometimes hardware doesn't get affected, likely due to the difference in how GPU's handle textures (Persona minimap).
 void GSState::RoundSTCoords()
 {
-	const bool is_sprite = GSUtil::GetPrimClass(PRIM->PRIM) == GS_PRIM_CLASS::GS_SPRITE_CLASS;
-	
 	// ST's have the lowest 9 bits (or greater depending on exponent difference) rounded down (from hardware tests).
 	// This gives the bitmask for the lower 9 (or more) bits.
 	auto LowerBitsMask = [](int exp, int max_exp)
@@ -4208,9 +4206,11 @@ void GSState::RoundSTCoords()
 	{
 		GSVertex* v = &m_vertex.buff[m_index.buff[i]];
 
-		// Only Q on the second vertex is valid
-		if (!(i & 1) && is_sprite)
-			v->RGBAQ.Q = m_vertex.buff[m_index.buff[i + 1]].RGBAQ.Q;
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && (i & 1))
+		{
+			// FIXME: Remove this once done debugging
+			pxAssertMsg(m_vertex.buff[m_index.buff[i]].RGBAQ.Q == m_vertex.buff[m_index.buff[i - 1]].RGBAQ.Q, "Sprite Qs different");
+		}
 
 		int S = std::bit_cast<int>(v->ST.S);
 		int T = std::bit_cast<int>(v->ST.T);
@@ -4226,9 +4226,6 @@ void GSState::RoundSTCoords()
 
 		v->ST.S = std::bit_cast<float>(S);
 		v->ST.T = std::bit_cast<float>(T);
-
-		if (!is_sprite || (i & 1))
-			v->RGBAQ.Q = std::bit_cast<float>(Q);
 
 		const float U = (v->ST.S / v->RGBAQ.Q) * (1 << m_context->TEX0.TW);
 		const float V = (v->ST.T / v->RGBAQ.Q) * (1 << m_context->TEX0.TH);
@@ -4246,48 +4243,39 @@ void GSState::RoundSTCoords()
 	m_vt.m_max.t = m_vt.m_max.t.min(GSVector4(2047.0f)).max(GSVector4(-2047.0f)).xyzw(m_vt.m_max.t);
 }
 
-// Handle the huge ST coords in by culling primitives with NaN coords and
-// replacing the primitives with huge coords with a new one that has the huge coordinate replaced with +/- 2047.
+// Handle the huge or NaN ST coords culling primitives or replacing
+// replacing the primitives with valid coordinates.
 // This is based on hardware test that show that seem to show that ST coordinate get clamped to +/- 2047
-// (perhaps before applying repeat or region repeat).
-// Note that the huge texture coords may be a symptom of floating point issues upstream in the EE and
-// it would be better to have them fixed there; this is a bandaid.
+// before applying repeat or region repeat.
+// Note that the huge texture coords may be a symptom of floating point issues in the EE and
+// it would be better to have them fixed there.
 void GSState::FixHugeSTCoords()
 {
-	bool sprite = GSUtil::GetPrimClass(PRIM->PRIM) == GS_SPRITE_CLASS;
 	switch (GSUtil::GetClassVertexCount(GSUtil::GetPrimClass(PRIM->PRIM)))
 	{
 		case 1:
-			if (sprite)
-				FixHugeSTCoordsImpl<1, true>();
-			else
-				FixHugeSTCoordsImpl<1, false>();
+			FixHugeSTCoordsImpl<1, false>();
 			break;
 		case 2:
-			if (sprite)
-				FixHugeSTCoordsImpl<2, true>();
-			else
-				FixHugeSTCoordsImpl<2, false>();
+			FixHugeSTCoordsImpl<2, false>();
 			break;
 		case 3:
-			if (sprite)
-				FixHugeSTCoordsImpl<3, true>();
-			else
-				FixHugeSTCoordsImpl<3, false>();
+			FixHugeSTCoordsImpl<3, false>();
 			break;
 		default:
 			pxFail("Impossible");
 	}
 }
 
-template <u32 n, bool sprite> void GSState::FixHugeSTCoordsImpl()
+template <u32 n, bool cull>
+void GSState::FixHugeSTCoordsImpl()
 {
 	GSVertex* const vertex = m_vertex.buff;
 	u16* const index = m_index.buff;
 
 	u32 new_index_tail = 0;
 
-	constexpr float huge = 1e10f; // arbitrary large value
+	constexpr float huge = 1e10f; // Arbitrary large value
 
 	const float tex_width = 1 << m_context->TEX0.TW;
 	const float tex_height = 1 << m_context->TEX0.TH;
@@ -4298,38 +4286,27 @@ template <u32 n, bool sprite> void GSState::FixHugeSTCoordsImpl()
 	{
 		bool nan_s = false;
 		bool nan_t = false;
-		bool huge_s_pos = false;
-		bool huge_s_neg = false;
-		bool huge_t_pos = false;
-		bool huge_t_neg = false;
+		bool huge_pos_s = false;
+		bool huge_neg_s = false;
+		bool huge_pos_t = false;
+		bool huge_neg_t = false;
 
-		if (sprite)
+		if (m_vt.m_primclass == GS_SPRITE_CLASS)
 		{
-			// Sprites behave as if both Qs are same as the second one
-			const float s0 = vertex[index[i + 0]].ST.S / vertex[index[i + 1]].RGBAQ.Q;
-			const float t0 = vertex[index[i + 0]].ST.T / vertex[index[i + 1]].RGBAQ.Q;
-			const float s1 = vertex[index[i + 1]].ST.S / vertex[index[i + 1]].RGBAQ.Q;
-			const float t1 = vertex[index[i + 1]].ST.T / vertex[index[i + 1]].RGBAQ.Q;
-			nan_s = std::isnan(s0) || std::isnan(s1);
-			nan_t = std::isnan(t0) || std::isnan(t1);
-			huge_s_pos = s0 > huge || s1 > huge;
-			huge_s_neg = s0 < -huge || s1 < -huge;
-			huge_t_pos = t0 > huge || t1 > huge;
-			huge_t_neg = t0 < -huge || t1 < -huge;
+			// FIXME: Remove this once done debugging
+			pxAssertMsg(vertex[index[i + 0]].RGBAQ.Q == vertex[index[i + 1]].RGBAQ.Q, "Sprite Qs different");
 		}
-		else
+
+		for (u32 j = 0; j < n; j++)
 		{
-			for (u32 j = 0; j < n; j++)
-			{
-				const float s = vertex[index[i + j]].ST.S / vertex[index[i + j]].RGBAQ.Q;
-				const float t = vertex[index[i + j]].ST.T / vertex[index[i + j]].RGBAQ.Q;
-				nan_s |= std::isnan(s);
-				nan_t |= std::isnan(t);
-				huge_s_pos |= s > huge;
-				huge_t_pos |= t > huge;
-				huge_s_neg |= s < -huge;
-				huge_t_neg |= t < -huge;
-			}
+			const float s = vertex[index[i + j]].ST.S / vertex[index[i + j]].RGBAQ.Q;
+			const float t = vertex[index[i + j]].ST.T / vertex[index[i + j]].RGBAQ.Q;
+			nan_s |= std::isnan(s);
+			nan_t |= std::isnan(t);
+			huge_pos_s |= s > huge;
+			huge_pos_t |= t > huge;
+			huge_neg_s |= s < -huge;
+			huge_neg_t |= t < -huge;
 		}
 
 		// ambiguous = true would probably result in NaN in the SW rasterizer or something undefined in HW.
@@ -4337,99 +4314,64 @@ template <u32 n, bool sprite> void GSState::FixHugeSTCoordsImpl()
 		// huge = true and ambiguous = false seems to have well-defined behavior on the PS2:
 		// it clamps huge values to +/-2047 in UV coordinates space. We try to approximate this by
 		// giving ST the values that would result in exactly +/-2047 across the primitive.
-		const bool ambiguous = nan_s || nan_t || (huge_s_pos && huge_s_neg) || (huge_s_pos && huge_s_neg);
-		const bool huge = huge_s_pos || huge_t_pos || huge_s_neg || huge_t_neg;
+		// For ambiguous values either cull the primitive or replace coordinates by 0.
+		const bool ambiguous_s = nan_s || (huge_pos_s && huge_neg_s);
+		const bool ambiguous_t = nan_t || (huge_pos_t && huge_neg_t);
 
-		if (ambiguous)
+		if ((ambiguous_s || ambiguous_t) && cull)
 		{
 			// Cull the primitive by not saving the indices
 			continue;
 		}
 
-		if (huge)
+		if (huge_pos_s || huge_pos_t || huge_neg_s || huge_neg_t || ambiguous_s || ambiguous_t)
 		{
 			// Add new vertices to replace the primitive with another primitive with clamped values.
 			new_prims = true;
+			
+			// Copy old values to tail of vertex buffer.
+			// The vertex buffer is allocated so that there is always at least room for 3 new vertices at the end.
+			for (u32 j = 0; j < n; j++)
+				vertex[m_vertex.tail + j] = vertex[index[i + j]];
 
-			if (sprite)
+			const float new_u_val = ambiguous_s ? 0.0f :
+									huge_pos_s  ? 2047.0f :
+									huge_neg_s  ? -2047.0f :
+												  NAN;
+			const float new_v_val = ambiguous_t ? 0.0f :
+									huge_pos_t  ? 2047.0f :
+									huge_neg_t  ? -2047.0f :
+												  NAN;
+
+			// If we are replacing both S and T, replace Q by 1.0f
+			if (!std::isnan(new_u_val) && !std::isnan(new_v_val))
 			{
-				// Handle sprite separately since it uses the second Q for both vertices
-				GSVertex v_new0 = vertex[index[i + 0]];
-				GSVertex v_new1 = vertex[index[i + 1]];
-
-				// Try to set values so that we get constant UV +/-2047 across the entire triangle after interpolation
-				// Sprites behave as if both Qs are same as the second one
-				if (huge_s_pos)
-				{
-					v_new1.ST.S = v_new0.ST.S = 2047.0f * v_new1.RGBAQ.Q / tex_width;
-				}
-				else if (huge_s_neg)
-				{
-					v_new1.ST.S = v_new0.ST.S = -2047.0f * v_new1.RGBAQ.Q / tex_width;
-				}
-
-				if (huge_t_pos)
-				{
-					v_new1.ST.T = v_new0.ST.T = 2047.0f * v_new1.RGBAQ.Q / tex_height;
-				}
-				else if (huge_t_neg)
-				{
-					v_new1.ST.T = v_new0.ST.T = -2047.0f * v_new1.RGBAQ.Q / tex_height;
-				}
-
-				// Copy old values to tail of vertex buffer.
-				// The vertex buffer is allocated so that there is always at least room for 3 new vertices at the end.
-				vertex[m_vertex.tail + 0] = v_new0;
-				vertex[m_vertex.tail + 1] = v_new1;
-
-				// Make new indices point to new vertices
-				index[new_index_tail + 0] = m_vertex.tail + 0;
-				index[new_index_tail + 1] = m_vertex.tail + 1;
+				for (u32 j = 0; j < n; j++)
+					vertex[m_vertex.tail + j].RGBAQ.Q = 1.0f;
 			}
-			else
+
+			// Try to replace huge/ambiguous values so that we get constant U or V across the entire primitive after interpolation
+			if (!std::isnan(new_u_val))
 			{
-				// Copy old values to tail of vertex buffer.
-				// The vertex buffer is allocated so that there is always at least room for 3 new vertices at the end.
 				for (u32 j = 0; j < n; j++)
-					vertex[m_vertex.tail + j] = vertex[index[i + j]];
-
-				// Try to set values so that we get constant UV +/-2047 across the entire primitive after interpolation
-				if (huge_s_pos)
-				{
-					for (u32 j = 0; j < n; j++)
-						vertex[m_vertex.tail + j].ST.S = 2047.0f * vertex[m_vertex.tail + j].RGBAQ.Q / tex_width;
-				}
-				else if (huge_s_neg)
-				{
-					for (u32 j = 0; j < n; j++)
-						vertex[m_vertex.tail + j].ST.S = -2047.0f * vertex[m_vertex.tail + j].RGBAQ.Q / tex_width;
-				}
-
-				if (huge_t_pos)
-				{
-					for (int j = 0; j < n; j++)
-						vertex[m_vertex.tail + j].ST.T = 2047.0f * vertex[m_vertex.tail + j].RGBAQ.Q / tex_height;
-				}
-				else if (huge_t_neg)
-				{
-					for (u32 j = 0; j < n; j++)
-						vertex[m_vertex.tail + j].ST.T = -2047.0f * vertex[m_vertex.tail + j].RGBAQ.Q / tex_height;
-				}
-
-				// Make new indices point to new vertices
-				for (u32 j = 0; j < n; j++)
-				{
-					index[new_index_tail + j] = m_vertex.tail + j;
-				}
+					vertex[m_vertex.tail + j].ST.S = new_u_val * vertex[m_vertex.tail + j].RGBAQ.Q / tex_width;
 			}
+
+			if (!std::isnan(new_v_val))
+			{
+				for (u32 j = 0; j < n; j++)
+					vertex[m_vertex.tail + j].ST.T = new_v_val * vertex[m_vertex.tail + j].RGBAQ.Q / tex_width;
+			}
+
+			// Make new indices point to new vertices
+			for (u32 j = 0; j < n; j++)
+				index[new_index_tail + j] = m_vertex.tail + j;
 
 			// Advance tail since we pushed new vertices
 			m_vertex.tail += n;
 
 			if (m_vertex.tail >= m_vertex.maxcount)
-			{
 				GrowVertexBuffer();
-			}
 		}
 		else if (new_index_tail < i) // If new_index_tail == i, don't update indices since no primitives have been culled
 		{
@@ -4443,11 +4385,9 @@ template <u32 n, bool sprite> void GSState::FixHugeSTCoordsImpl()
 
 	m_index.tail = new_index_tail;
 
+	// If indexed new primitives at the end of the buffer, update head and next also
 	if (new_prims)
-	{
-		// We indexed new primitives at the end of the buffer so update head and next also
 		m_vertex.head = m_vertex.next = m_vertex.tail;
-	}
 }
 
 void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
