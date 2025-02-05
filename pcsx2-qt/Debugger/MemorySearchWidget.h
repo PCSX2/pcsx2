@@ -48,6 +48,7 @@ public:
 		Changed,
 		ChangedBy,
 		NotChanged,
+		UnknownValue,
 		Invalid
 	};
 
@@ -69,6 +70,7 @@ public:
 			insert(SearchComparison::Changed, tr("Changed"));
 			insert(SearchComparison::ChangedBy, tr("Changed By"));
 			insert(SearchComparison::NotChanged, tr("Not Changed"));
+			insert(SearchComparison::UnknownValue, tr("Unknown Initial Value"));
 			insert(SearchComparison::Invalid, "");
 		}
 		SearchComparison labelToEnum(QString comparisonLabel)
@@ -120,6 +122,7 @@ public slots:
 	void onSearchButtonClicked();
 	void onSearchResultsListScroll(u32 value);
 	void onSearchTypeChanged(int newIndex);
+	void onSearchComparisonChanged(int newIndex);
 	void loadSearchResults();
 	void contextSearchResultGoToDisassembly();
 	void contextRemoveSearchResult();
