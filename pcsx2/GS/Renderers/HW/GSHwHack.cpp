@@ -232,7 +232,7 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 			else
 			{
 				// Fixes the alignment of the two halves for the heat haze on the temple stage.
-				for (int i = 0; i < r.m_index.tail; i+=2)
+				for (u32 i = 0; i < r.m_index.tail; i+=2)
 				{
 					v[i].XYZ.Y -= 0x8;
 				}
@@ -1060,12 +1060,27 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 		return true;
 
 	const GSVector2i src_size(src->m_texture->GetSize());
+
+	GSTextureCache::Target* rt_again = g_texture_cache->LookupTarget(Frame, src_size, src->m_scale, GSTextureCache::RenderTarget);
+	if ((rt_again->m_TEX0.PSM & 0x3) == PSMCT16)
+	{
+		GSVector4i dRect = rt_again->m_valid;
+
+		dRect = GSVector4i(GSVector4(GSVector4i::loadh(rt_again->m_unscaled_size)) * rt_again->m_scale);
+		dRect.y /= 2;
+		dRect.w /= 2;
+		rt_again->m_valid.y /= 2;
+		rt_again->m_valid.w /= 2;
+		rt_again->m_TEX0.PSM = PSMCT32;
+		rt_again->ResizeTexture(rt_again->m_unscaled_size.x, rt_again->m_unscaled_size.y / 2, true, true, dRect, false);
+		rt = rt_again->m_texture;
+	}
+	
 	GSVector2i rt_size(rt->GetSize());
 
 	// This is awful, but so is the CRC hack... it's a texture shuffle split horizontally instead of vertically.
 	if (rt_size.x < src_size.x || rt_size.y < src_size.y)
 	{
-		GSTextureCache::Target* rt_again = g_texture_cache->LookupTarget(Frame, src_size, src->m_scale, GSTextureCache::RenderTarget);
 		if (rt_again->m_unscaled_size.x < src->m_unscaled_size.x || rt_again->m_unscaled_size.y < src->m_unscaled_size.y)
 		{
 			GSVector2i new_size = GSVector2i(std::max(rt_again->m_unscaled_size.x, src->m_unscaled_size.x),
@@ -1076,6 +1091,7 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 			rt_again->UpdateDrawn(GSVector4i::loadh(new_size));
 		}
 	}
+	
 
 	const GSVector2i copy_size(std::min(rt_size.x, src_size.x), std::min(rt_size.y, src_size.y));
 
