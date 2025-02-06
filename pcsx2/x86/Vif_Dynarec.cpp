@@ -39,6 +39,13 @@ __fi void makeMergeMask(u32& x)
 	x = ((x & 0x40) >> 6) | ((x & 0x10) >> 3) | (x & 4) | ((x & 1) << 3);
 }
 
+#ifdef _WIN32
+__fi void makeMergeMaskAllColumns(u32& x)
+{
+	x = ((x & 0x40404040) >> 6) | ((x & 0x10101010) >> 3) | (x & 0x04040404) | ((x & 0x01010101) << 3);
+}
+#endif
+
 __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const
 {
 	const int idx = v.idx;
@@ -260,11 +267,8 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 #ifdef _WIN32
 	// See SetMasks()
 	const u32 m0 = vB.mask;
-	const u32 m3 = ((m0 & 0xaaaaaaaa) >> 1) & ~m0;
-	const u32 m2 = (m0 & 0x55555555) & (~m0 >> 1);
-	// see doMaskWrite()
-	const u32 m4 = (m0 & ~((m3 << 1) | m2)) & 0x55555555;
-	const u32 m5 = ~(m2 | m3 | m4) & 0x0f0f0f0f;
+	u32 m3 = ((m0 & 0xaaaaaaaa) >> 1) & ~m0;
+	u32 m2 = (m0 & 0x55555555) & (~m0 >> 1);
 
 	int regsUsed = 2;
 	// Allocate column registers
@@ -287,26 +291,36 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 	// Allocate row register
 	if ((doMask && m2) || doMode)
 	{
+		rowReg = xRegisterSSE(regsUsed);
 		if (regsUsed - 6 >= 0)
 			nonVolatileRegs[regsUsed - 6] = rowReg;
-		rowReg = xRegisterSSE(regsUsed++);
+		regsUsed++;
 	}
+
+	// see doMaskWrite()
+	u32 m4 = (m0 & ~((m3 << 1) | m2)) & 0x55555555;
+	makeMergeMaskAllColumns(m2);
+	makeMergeMaskAllColumns(m3);
+	makeMergeMaskAllColumns(m4);
+	const u32 m5 = ~(m2 | m3 | m4) & 0x0f0f0f0f;
 
 	// Allocate temp register
 	if (doMode && (doMode != 3) &&
 		doMask && m5 != 0x0f0f0f0f)
 	{
+		tmpReg = xRegisterSSE(regsUsed);
 		if (regsUsed - 6 >= 0)
 			nonVolatileRegs[regsUsed - 6] = tmpReg;
-		tmpReg = xRegisterSSE(regsUsed++);
+		regsUsed++;
 	}
 
 	// Allocate zero register
 	if (needXmmZero)
 	{
+		zeroReg = xRegisterSSE(regsUsed);
 		if (regsUsed - 6 >= 0)
 			nonVolatileRegs[regsUsed - 6] = zeroReg;
-		zeroReg = xRegisterSSE(regsUsed++);
+		regsUsed++;
 	}
 	
 	regsUsed -= 6;
