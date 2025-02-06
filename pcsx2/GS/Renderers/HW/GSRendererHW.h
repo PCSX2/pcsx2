@@ -177,6 +177,7 @@ private:
 	u32 m_last_channel_shuffle_tbp = 0;
 	u32 m_last_channel_shuffle_end_block = 0;
 	u32 m_channel_shuffle_width = 0;
+	GSVector4i m_channel_shuffle_src_valid = GSVector4i::zero();
 	bool m_full_screen_shuffle = false;
 
 	GSTextureCache::Target* m_last_rt;
@@ -206,6 +207,7 @@ public:
 
 	__fi static GSRendererHW* GetInstance() { return static_cast<GSRendererHW*>(g_gs_renderer.get()); }
 	__fi HWCachedCtx* GetCachedCtx() { return &m_cached_ctx; }
+	__fi u32 GetLastChannelShuffleFBP() { return m_last_channel_shuffle_fbp; }
 	void Destroy() override;
 
 	void UpdateRenderFixes() override;
