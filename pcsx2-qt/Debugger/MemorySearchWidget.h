@@ -149,4 +149,5 @@ private:
 	std::vector<SearchComparison> getValidSearchComparisonsForState(SearchType type, std::vector<SearchResult> &existingResults);
 	SearchType getCurrentSearchType();
 	SearchComparison getCurrentSearchComparison();
+	bool doesSearchComparisonTakeInput(SearchComparison comparison);
 };

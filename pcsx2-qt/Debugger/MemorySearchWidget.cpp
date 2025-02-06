@@ -512,56 +512,59 @@ void MemorySearchWidget::onSearchButtonClicked()
 
 	if(searchComparison != SearchComparison::UnknownValue)
 	{
-		switch (searchType)
+		if(doesSearchComparisonTakeInput(searchComparison))
 		{
-			case SearchType::ByteType:
-			case SearchType::Int16Type:
-			case SearchType::Int32Type:
-			case SearchType::Int64Type:
-				value = searchValue.toULongLong(&ok, searchHex ? 16 : 10);
-				break;
-			case SearchType::FloatType:
-			case SearchType::DoubleType:
-				searchValue.toDouble(&ok);
-				break;
-			case SearchType::StringType:
-				ok = !searchValue.isEmpty();
-				break;
-			case SearchType::ArrayType:
-				ok = !searchValue.trimmed().isEmpty();
-				break;
-		}
-		
-		if (!ok)
-		{
-			QMessageBox::critical(this, tr("Debugger"), tr("Invalid search value"));
-			return;
-		}
-		
-		switch (searchType)
-		{
-			case SearchType::ArrayType:
-			case SearchType::StringType:
-			case SearchType::DoubleType:
-			case SearchType::FloatType:
-				break;
-			case SearchType::Int64Type:
-				if (value <= std::numeric_limits<unsigned long long>::max())
+			switch (searchType)
+			{
+				case SearchType::ByteType:
+				case SearchType::Int16Type:
+				case SearchType::Int32Type:
+				case SearchType::Int64Type:
+					value = searchValue.toULongLong(&ok, searchHex ? 16 : 10);
 					break;
-			case SearchType::Int32Type:
-				if (value <= std::numeric_limits<unsigned long>::max())
+				case SearchType::FloatType:
+				case SearchType::DoubleType:
+					searchValue.toDouble(&ok);
 					break;
-			case SearchType::Int16Type:
-				if (value <= std::numeric_limits<unsigned short>::max())
+				case SearchType::StringType:
+					ok = !searchValue.isEmpty();
 					break;
-			case SearchType::ByteType:
-				if (value <= std::numeric_limits<unsigned char>::max())
+				case SearchType::ArrayType:
+					ok = !searchValue.trimmed().isEmpty();
 					break;
-			default:
-				QMessageBox::critical(this, tr("Debugger"), tr("Value is larger than type"));
+			}
+
+			if (!ok)
+			{
+				QMessageBox::critical(this, tr("Debugger"), tr("Invalid search value"));
 				return;
+			}
+
+			switch (searchType)
+			{
+				case SearchType::ArrayType:
+				case SearchType::StringType:
+				case SearchType::DoubleType:
+				case SearchType::FloatType:
+					break;
+				case SearchType::Int64Type:
+					if (value <= std::numeric_limits<unsigned long long>::max())
+						break;
+				case SearchType::Int32Type:
+					if (value <= std::numeric_limits<unsigned long>::max())
+						break;
+				case SearchType::Int16Type:
+					if (value <= std::numeric_limits<unsigned short>::max())
+						break;
+				case SearchType::ByteType:
+					if (value <= std::numeric_limits<unsigned char>::max())
+						break;
+				default:
+					QMessageBox::critical(this, tr("Debugger"), tr("Value is larger than type"));
+					return;
+			}
 		}
-		
+
 		if (!isFilterSearch && (searchComparison == SearchComparison::Changed || searchComparison == SearchComparison::ChangedBy
 								|| searchComparison == SearchComparison::Decreased || searchComparison == SearchComparison::DecreasedBy
 								|| searchComparison == SearchComparison::Increased || searchComparison == SearchComparison::IncreasedBy
@@ -642,6 +645,23 @@ SearchComparison MemorySearchWidget::getCurrentSearchComparison()
 {
 	// Note: The index can't be converted directly to the enum value since we change what comparisons are shown.
 	return m_searchComparisonLabelMap.labelToEnum(m_ui.cmbSearchComparison->currentText());
+}
+
+bool MemorySearchWidget::doesSearchComparisonTakeInput(const SearchComparison comparison)
+{
+	switch (comparison) {
+		case SearchComparison::Equals:
+		case SearchComparison::NotEquals:
+		case SearchComparison::GreaterThan:
+		case SearchComparison::GreaterThanOrEqual:
+		case SearchComparison::LessThan:
+		case SearchComparison::LessThanOrEqual:
+		case SearchComparison::IncreasedBy:
+		case SearchComparison::DecreasedBy:
+			return true;
+		default:
+			return false;
+	}
 }
 
 void MemorySearchWidget::onSearchTypeChanged(int newIndex)
