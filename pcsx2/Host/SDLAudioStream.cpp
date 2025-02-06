@@ -7,7 +7,7 @@
 #include "common/Console.h"
 #include "common/Error.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace
 {
@@ -105,7 +105,7 @@ bool SDLAudioStream::OpenDevice(bool stretch_enabled, Error* error)
 	SDL_AudioSpec spec = {};
 	spec.freq = m_sample_rate;
 	spec.channels = m_output_channels;
-	spec.format = AUDIO_S16;
+	spec.format = SDL_AUDIO_S16LE;
 	spec.samples = static_cast<Uint16>(GetBufferSizeForMS(
 		m_sample_rate, (m_parameters.minimal_output_latency) ? m_parameters.buffer_ms : m_parameters.output_latency_ms));
 	spec.callback = AudioCallback;
@@ -122,7 +122,7 @@ bool SDLAudioStream::OpenDevice(bool stretch_enabled, Error* error)
 	DEV_LOG("Requested {} frame buffer, got {} frame buffer", spec.samples, obtained_spec.samples);
 
 	BaseInitialize(sample_readers[static_cast<size_t>(m_parameters.expansion_mode)], stretch_enabled);
-	SDL_PauseAudioDevice(m_device_id, 0);
+	SDL_ResumeAudioDevice(m_device_id);
 
 	return true;
 }
@@ -131,8 +131,12 @@ void SDLAudioStream::SetPaused(bool paused)
 {
 	if (m_paused == paused)
 		return;
+	
+	if (paused)
+		SDL_PauseAudioDevice(m_device_id);
+	else
+		SDL_ResumeAudioDevice(m_device_id);
 
-	SDL_PauseAudioDevice(m_device_id, paused ? 1 : 0);
 	m_paused = paused;
 }
 

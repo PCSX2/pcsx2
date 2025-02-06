@@ -4,7 +4,7 @@
   <ItemDefinitionGroup>
     <Link>
       <AdditionalLibraryDirectories>$(DepsLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;libjpeg.lib;libpng16.lib;libwebp.lib;lz4.lib;SDL2.lib;zlib.lib;zstd.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;libjpeg.lib;libpng16.lib;libwebp.lib;lz4.lib;SDL3.lib;zlib.lib;zstd.lib</AdditionalDependencies>
    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -15,7 +15,7 @@
     <DepsDLLs Include="$(DepsBinDir)libsharpyuv.dll" />
     <DepsDLLs Include="$(DepsBinDir)libwebp.dll" />
     <DepsDLLs Include="$(DepsBinDir)lz4.dll" />
-    <DepsDLLs Include="$(DepsBinDir)SDL2.dll" />
+    <DepsDLLs Include="$(DepsBinDir)SDL3.dll" />
     <DepsDLLs Include="$(DepsBinDir)shaderc_shared.dll" />
     <DepsDLLs Include="$(DepsBinDir)zlib1.dll" />
     <DepsDLLs Include="$(DepsBinDir)zstd.dll" />
