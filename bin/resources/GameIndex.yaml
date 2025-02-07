@@ -332,8 +332,9 @@ PAPX-90230:
   name-en: "Arc the Lad - Seirei no Tasogare - Premiere Disc [ShopDemo]"
   region: "NTSC-J"
   gsHWFixes:
-    textureInsideRT: 1 # Fixes on screen garbage.
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 PAPX-90231:
   name: "怪盗 スライ・クーパー [体験版]"
   name-sort: "かいとう すらいくーぱー [たいけんばん]"
@@ -917,8 +918,9 @@ PCPX-96330:
   name-en: "Arc the Lad - Seirei no Tasogare - Premiere Disc [ShopTrial]"
   region: "NTSC-J"
   gsHWFixes:
-    textureInsideRT: 1 # Fixes on screen garbage.
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 PCPX-96554:
   name: "Games of Our Style - Tokyo Game Show 2003 Disc"
   name-sort: "げーむず おぶ あわー すたいる - とうきょう げーむしょう 2003 でぃすく"
@@ -1379,8 +1381,9 @@ SCAJ-20019:
   name-en: "Arc the Lad - Twilight of the Spirits"
   region: "NTSC-J"
   gsHWFixes:
-    textureInsideRT: 1 # Fixes on screen garbage.
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 SCAJ-20020:
   name: "Drag-on Dragoon"
   region: "NTSC-C-J"
@@ -1465,11 +1468,12 @@ SCAJ-20037:
   gsHWFixes:
     halfPixelOffset: 1 # Corrects shadow misalignment.
 SCAJ-20038:
-  name: "Arc the Lad - Twilight of the Spirits"
-  region: "NTSC-Unk"
+  name: "Arc the Lad - Jing Ling Zhi Huang Hun"
+  region: "NTSC-C"
   gsHWFixes:
-    textureInsideRT: 1 # Fixes on screen garbage.
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 SCAJ-20039:
   name: "Sidewinder V"
   region: "NTSC-Unk"
@@ -1841,6 +1845,8 @@ SCAJ-20108:
   region: "NTSC-Unk"
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 SCAJ-20109:
   name: "Ratchet & Clank 3 - Up Your Arsenal"
   region: "NTSC-Unk"
@@ -2661,8 +2667,9 @@ SCCS-40007:
   name-en: "Arc the Lad - Seirei no Tasogare"
   region: "NTSC-C"
   gsHWFixes:
-    textureInsideRT: 1 # Fixes on screen garbage.
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 SCCS-40009:
   name: "龙珠二世"
   name-sort: "Longzhu Ershi"
@@ -5330,8 +5337,9 @@ SCES-51910:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 1 # Fixes on screen garbage.
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 SCES-51920:
   name: "Forbidden Siren"
   region: "PAL-E"
@@ -6949,8 +6957,9 @@ SCKA-20012:
   name: "Arc the Lad - Jeongryeongui Hwanghon"
   region: "NTSC-K"
   gsHWFixes:
-    textureInsideRT: 1 # Fixes on screen garbage.
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 SCKA-20013:
   name: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-K"
@@ -8428,16 +8437,18 @@ SCPS-15040:
   name-en: "Arc the Lad - Twilight of the Spirits [Limited Edition]"
   region: "NTSC-J"
   gsHWFixes:
-    textureInsideRT: 1 # Fixes on screen garbage.
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 SCPS-15041:
   name: "アークザラッド 精霊の黄昏"
   name-sort: "あーくざらっど せいれいのたそがれ"
   name-en: "Arc the Lad - Twilight of the Spirits"
   region: "NTSC-J"
   gsHWFixes:
-    textureInsideRT: 1 # Fixes on screen garbage.
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 SCPS-15042:
   name: "デカボイス [マイク同梱版]"
   name-sort: "でかぼいす [まいくどうこんばん]"
@@ -8571,6 +8582,8 @@ SCPS-15058:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 SCPS-15059:
   name: "みんなのGOLF 4"
   name-sort: "みんなのごるふ 4"
@@ -10993,8 +11006,9 @@ SCUS-97231:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 1 # Fixes on screen garbage.
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 SCUS-97232:
   name: "The Getaway [Demo]"
   name-sort: "Getaway, The [Demo]"
@@ -11211,8 +11225,9 @@ SCUS-97282:
   name: "Arc the Lad - Twilight of the Spirits [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    textureInsideRT: 1 # Fixes on screen garbage.
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 SCUS-97292:
   name: "Amplitude [Demo]"
   region: "NTSC-U"
@@ -18762,6 +18777,8 @@ SLES-52132:
     autoFlush: 1 # Fixes bloom rendering.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
+  speedHacks:
+    instantVU1: 0 # Lowers overall system load.
 SLES-52133:
   name: "Hitman - Contracts"
   region: "PAL-F"
@@ -18770,6 +18787,8 @@ SLES-52133:
     autoFlush: 1 # Fixes bloom rendering.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
+  speedHacks:
+    instantVU1: 0 # Lowers overall system load.
 SLES-52134:
   name: "Hitman - Contracts"
   region: "PAL-I"
@@ -18779,6 +18798,8 @@ SLES-52134:
     autoFlush: 1 # Fixes bloom rendering.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
+  speedHacks:
+    instantVU1: 0 # Lowers overall system load.
 SLES-52135:
   name: "Hitman - Contracts"
   region: "PAL-G"
@@ -18787,6 +18808,8 @@ SLES-52135:
     autoFlush: 1 # Fixes bloom rendering.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
+  speedHacks:
+    instantVU1: 0 # Lowers overall system load.
 SLES-52136:
   name: "Hitman - Contracts"
   region: "PAL-S"
@@ -18795,6 +18818,8 @@ SLES-52136:
     autoFlush: 1 # Fixes bloom rendering.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
+  speedHacks:
+    instantVU1: 0 # Lowers overall system load.
 SLES-52143:
   name: "Carmen Sandiego - The Secret of the Stolen Drums"
   region: "PAL-M4"
@@ -24793,6 +24818,8 @@ SLES-54187:
 SLES-54188:
   name: "Nickelodeon Avatar - The Legend of Aang"
   region: "PAL-M4"
+  gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes missing lighting and skin color.
 SLES-54193:
   name: "Carol Vorderman's Sudoku"
   region: "PAL-E"
@@ -26003,6 +26030,8 @@ SLES-54616:
 SLES-54617:
   name: "Action Man A.T.O.M. - Alpha Teens on Machines"
   region: "PAL-M9"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes depth line.
 SLES-54619:
   name: "Pinocchio"
   region: "PAL-M3"
@@ -27739,6 +27768,7 @@ SLES-55184:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns Post Effect.
     nativeScaling: 2 # Fixes Post effect.
+    autoFlush: 1 # Fixes post lighting.
 SLES-55185:
   name: "Disney/Pixar WALL-E"
   region: "PAL-UK"
@@ -27747,6 +27777,7 @@ SLES-55185:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns Post Effect.
     nativeScaling: 2 # Fixes Post effect.
+    autoFlush: 1 # Fixes post lighting.
 SLES-55186:
   name: "Disney/Pixar WALL-E"
   region: "PAL-S-P"
@@ -27755,6 +27786,7 @@ SLES-55186:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns Post Effect.
     nativeScaling: 2 # Fixes Post effect.
+    autoFlush: 1 # Fixes post lighting.
 SLES-55187:
   name: "Disney/Pixar WALL-E"
   region: "PAL-F-G"
@@ -27763,6 +27795,7 @@ SLES-55187:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns Post Effect.
     nativeScaling: 2 # Fixes Post effect.
+    autoFlush: 1 # Fixes post lighting.
 SLES-55188:
   name: "Disney/Pixar WALL-E"
   region: "PAL-G"
@@ -27771,6 +27804,7 @@ SLES-55188:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns Post Effect.
     nativeScaling: 2 # Fixes Post effect.
+    autoFlush: 1 # Fixes post lighting.
 SLES-55189:
   name: "Nick Jr. Go Diego Go! Safari Rescue"
   region: "PAL-E-F"
@@ -27798,6 +27832,7 @@ SLES-55193:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns Post Effect.
     nativeScaling: 2 # Fixes Post effect.
+    autoFlush: 1 # Fixes post lighting.
 SLES-55194:
   name: "Disney/Pixar WALL-E"
   region: "PAL-SC"
@@ -27806,6 +27841,7 @@ SLES-55194:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns Post Effect.
     nativeScaling: 2 # Fixes Post effect.
+    autoFlush: 1 # Fixes post lighting.
 SLES-55195:
   name: "Disney/Pixar WALL-E"
   region: "PAL-GR-I"
@@ -27814,6 +27850,7 @@ SLES-55195:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns Post Effect.
     nativeScaling: 2 # Fixes Post effect.
+    autoFlush: 1 # Fixes post lighting.
 SLES-55196:
   name: "Disney/Pixar WALL-E"
   region: "PAL-PL-CR"
@@ -27822,6 +27859,7 @@ SLES-55196:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns Post Effect.
     nativeScaling: 2 # Fixes Post effect.
+    autoFlush: 1 # Fixes post lighting.
 SLES-55197:
   name: "Dancing Stage SuperNOVA 2"
   region: "PAL-M5"
@@ -30353,6 +30391,8 @@ SLKA-25218:
     autoFlush: 1 # Fixes bloom rendering.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
+  speedHacks:
+    instantVU1: 0 # Lowers overall system load.
 SLKA-25219:
   name: "Monster Hunter G"
   region: "NTSC-K"
@@ -56801,6 +56841,8 @@ SLPS-25406:
     autoFlush: 1 # Fixes bloom rendering.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
+  speedHacks:
+    instantVU1: 0 # Lowers overall system load.
 SLPS-25407:
   name: "THE KING OF FIGHTERS 2003"
   name-sort: "ざ きんぐ おぶ ふぁいたーず2003"
@@ -57702,6 +57744,8 @@ SLPS-25563:
     autoFlush: 1 # Fixes bloom rendering.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
+  speedHacks:
+    instantVU1: 0 # Lowers overall system load.
 SLPS-25564:
   name: "Gallop Racer 8 - Live Horse Racing -"
   name-sort: "ぎゃろっぷ れーさー 8 らいゔほーすれーしんぐ"
@@ -65468,6 +65512,8 @@ SLUS-20882:
     autoFlush: 1 # Fixes bloom rendering.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
+  speedHacks:
+    instantVU1: 0 # Lowers overall system load.
 SLUS-20883:
   name: "Tom Clancy's Rainbow Six 3"
   region: "NTSC-U"
@@ -67158,6 +67204,8 @@ SLUS-21165:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 4 # Fixes post processing alignment.
+    nativeScaling: 1 # Fixes depth blur intensity.
+    textureInsideRT: 1 # Fixes on screen garbage.
 SLUS-21166:
   name: "Full Metal Alchemist 2 - Curse of the Crimson Elixir"
   region: "NTSC-U"
@@ -68763,6 +68811,8 @@ SLUS-21395:
   name: "Avatar - The Last Airbender"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes missing lighting and skin color.
 SLUS-21396:
   name: "Star Trek - Encounters"
   region: "NTSC-U"
@@ -70556,6 +70606,7 @@ SLUS-21736:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns Post Effect.
     nativeScaling: 2 # Fixes Post effect.
+    autoFlush: 1 # Fixes post lighting.
 SLUS-21737:
   name: "Riding Star"
   region: "NTSC-U"
