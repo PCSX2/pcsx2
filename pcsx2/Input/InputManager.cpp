@@ -92,7 +92,6 @@ namespace InputManager
 	static std::optional<InputBindingKey> ParseHostKeyboardKey(const std::string_view source, const std::string_view sub_binding);
 	static std::optional<InputBindingKey> ParsePointerKey(const std::string_view source, const std::string_view sub_binding);
 
-	static std::vector<std::string_view> SplitChord(const std::string_view binding);
 	static bool SplitBinding(const std::string_view binding, std::string_view* source, std::string_view* sub_binding);
 	static void PrettifyInputBindingPart(const std::string_view binding, SmallString& ret, bool& changed);
 	static void AddBinding(const std::string_view binding, const InputEventHandler& handler);
@@ -752,7 +751,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index)
 					const float sensitivity = si.GetFloatValue(section.c_str(), fmt::format("{}Scale", bi.name).c_str(), 1.0f);
 					const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("{}Deadzone", bi.name).c_str(), 0.0f);
 					AddBindings(
-						bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index, sensitivity, deadzone](float value) {
+						bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index, sensitivity, deadzone](InputBindingKey key, float value) {
 							Pad::SetControllerState(pad_index, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
 						}});
 				}
@@ -772,9 +771,9 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index)
 		if (!bindings.empty())
 		{
 			const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("Macro{}Deadzone", macro_button_index + 1).c_str(), 0.0f);
-			AddBindings(bindings, InputAxisEventHandler{[pad_index, macro_button_index, deadzone](float value) {
+			AddBindings(bindings, InputAxisEventHandler{[pad_index, macro_button_index, deadzone](InputBindingKey key, float value) {
 				const bool state = (value > deadzone);
-				Pad::SetMacroButtonState(pad_index, macro_button_index, state);
+				Pad::SetMacroButtonState(key, pad_index, macro_button_index, state);
 			}});
 		}
 	}
@@ -836,7 +835,7 @@ void InputManager::AddUSBBindings(SettingsInterface& si, u32 port)
 				{
 					const float sensitivity = si.GetFloatValue(section.c_str(), fmt::format("{}Scale", bi.name).c_str(), 1.0f);
 					const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("{}Deadzone", bi.name).c_str(), 0.0f);
-					AddBindings(bindings, InputAxisEventHandler{[port, bind_index = bi.bind_index, sensitivity, deadzone](float value) {
+					AddBindings(bindings, InputAxisEventHandler{[port, bind_index = bi.bind_index, sensitivity, deadzone](InputBindingKey key, float value) {
 						USB::SetDeviceBindValue(port, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
 					}});
 				}
@@ -977,7 +976,7 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 			if (IsAxisHandler(binding->handler))
 			{
 				if (value_to_pass >= 0.0f && (!skip_button_handlers || value_to_pass == 0.0f))
-					std::get<InputAxisEventHandler>(binding->handler)(value_to_pass);
+					std::get<InputAxisEventHandler>(binding->handler)(key, value_to_pass);
 			}
 			else if (binding->num_keys >= min_num_keys)
 			{
@@ -1056,7 +1055,7 @@ void InputManager::ClearBindStateFromSource(InputBindingKey key)
 			if (binding->keys[i].MaskDirection() != match_key)
 				continue;
 
-			std::get<InputAxisEventHandler>(binding->handler)(0.0f);
+			std::get<InputAxisEventHandler>(binding->handler)(key, 0.0f);
 			break;
 		}
 	}
