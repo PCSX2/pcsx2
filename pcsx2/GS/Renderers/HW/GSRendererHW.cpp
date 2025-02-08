@@ -952,7 +952,7 @@ GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex)
 	// Make sure sizes are within max limit of 2048,
 	// this shouldn't happen but if it does it needs to be addressed,
 	// clamp the size so at least it doesn't cause a crash.
-	constexpr int valid_max_size = 2048;
+	constexpr int valid_max_size = 2047;
 	if ((width > valid_max_size) || (height > valid_max_size))
 	{
 		Console.Warning("Warning: GetValidSize out of bounds, X:%d Y:%d", width, height);
