@@ -17162,162 +17162,168 @@ This action cannot be reversed, and you will lose any saves on the card.</source
     </message>
     <message>
         <location filename="../Debugger/MemorySearchWidget.ui" line="123"/>
-        <location filename="../Debugger/MemorySearchWidget.h" line="59"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="60"/>
         <source>Equals</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Debugger/MemorySearchWidget.ui" line="128"/>
-        <location filename="../Debugger/MemorySearchWidget.h" line="60"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="61"/>
         <source>Not Equals</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Debugger/MemorySearchWidget.ui" line="133"/>
-        <location filename="../Debugger/MemorySearchWidget.h" line="61"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="62"/>
         <source>Greater Than</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Debugger/MemorySearchWidget.ui" line="138"/>
-        <location filename="../Debugger/MemorySearchWidget.h" line="62"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="63"/>
         <source>Greater Than Or Equal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Debugger/MemorySearchWidget.ui" line="143"/>
-        <location filename="../Debugger/MemorySearchWidget.h" line="63"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="64"/>
         <source>Less Than</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Debugger/MemorySearchWidget.ui" line="148"/>
-        <location filename="../Debugger/MemorySearchWidget.h" line="64"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="65"/>
         <source>Less Than Or Equal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.ui" line="156"/>
+        <location filename="../Debugger/MemorySearchWidget.ui" line="153"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="73"/>
+        <source>Unknown Initial Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/MemorySearchWidget.ui" line="161"/>
         <source>Comparison</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.ui" line="167"/>
+        <location filename="../Debugger/MemorySearchWidget.ui" line="172"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.ui" line="181"/>
+        <location filename="../Debugger/MemorySearchWidget.ui" line="186"/>
         <source>End</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="94"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="95"/>
         <source>Search Results List Context Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="100"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="101"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="104"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="105"/>
         <source>Go to in Disassembly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="108"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="109"/>
         <source>Add to Saved Memory Addresses</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="115"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="116"/>
         <source>Remove Result</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="486"/>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="494"/>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="500"/>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="531"/>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="555"/>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="564"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="490"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="498"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="504"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="539"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="563"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="573"/>
         <source>Debugger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="486"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="490"/>
         <source>Invalid start address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="494"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="498"/>
         <source>Invalid end address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="500"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="504"/>
         <source>Start address can&apos;t be equal to or greater than the end address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="531"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="539"/>
         <source>Invalid search value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="555"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="563"/>
         <source>Value is larger than type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="564"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="573"/>
         <source>This search comparison can only be used with filter searches.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="577"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="587"/>
         <source>%0 results found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.cpp" line="594"/>
+        <location filename="../Debugger/MemorySearchWidget.cpp" line="604"/>
         <source>Searching...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.h" line="65"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="66"/>
         <source>Increased</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.h" line="66"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="67"/>
         <source>Increased By</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.h" line="67"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="68"/>
         <source>Decreased</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.h" line="68"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="69"/>
         <source>Decreased By</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.h" line="69"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="70"/>
         <source>Changed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.h" line="70"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="71"/>
         <source>Changed By</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/MemorySearchWidget.h" line="71"/>
+        <location filename="../Debugger/MemorySearchWidget.h" line="72"/>
         <source>Not Changed</source>
         <translation type="unfinished"></translation>
     </message>
