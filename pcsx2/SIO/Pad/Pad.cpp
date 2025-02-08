@@ -28,11 +28,15 @@
 
 #include <vector>
 
+//Map of actively pressed keys so that chords work
+using KeyMap = std::unordered_multimap<u64, bool>;
+
 namespace Pad
 {
 	struct MacroButton
 	{
 		std::vector<u32> buttons; ///< Buttons to activate.
+		KeyMap active_buttons; ///< Currently active buttons.
 		float pressure; ///< Pressure to apply when macro is active.
 		u16 toggle_frequency; ///< Interval at which the buttons will be toggled, if not 0.
 		u16 toggle_counter; ///< When this counter reaches zero, buttons will be toggled.
@@ -670,8 +674,12 @@ void Pad::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const Cont
 	}
 }
 
-void Pad::SetMacroButtonState(u32 pad, u32 index, bool state)
+void Pad::SetMacroButtonState(InputBindingKey& key, u32 pad, u32 index, bool state)
 {
+	//0 appears for some reason and breaks mb.active_buttons.size() != binding_count
+	if (key.bits == 0)
+		return;
+
 	if (pad >= Pad::NUM_CONTROLLER_PORTS || index >= NUM_MACRO_BUTTONS_PER_CONTROLLER)
 		return;
 
@@ -679,6 +687,30 @@ void Pad::SetMacroButtonState(u32 pad, u32 index, bool state)
 	if (mb.buttons.empty())
 		return;
 
+	SettingsInterface& sif = *Host::GetSettingsInterface();
+	std::vector<std::string> data = sif.GetStringList(fmt::format("Pad{}", pad+1).c_str(), fmt::format("Macro{}", index+1).c_str());
+	size_t binding_count = 0;
+	//just in case there's more than one index
+	for (std::string bind : data)
+	{
+		binding_count += InputManager::SplitChord(bind).size();
+	}
+	if (mb.active_buttons.find(key.bits) != mb.active_buttons.end())
+		mb.active_buttons.erase(key.bits);
+	
+	mb.active_buttons.emplace(key.bits, state);
+
+	if (mb.active_buttons.size() != binding_count)
+		return;
+
+	if (mb.active_buttons.size() > 1 && state)
+	{
+		for (auto it = mb.active_buttons.begin(); it != mb.active_buttons.end(); ++it)
+		{
+			if (!it->second)
+				return;
+		}
+	}
 	const bool trigger_state = (mb.trigger_toggle ? (state ? !mb.trigger_state : mb.trigger_state) : state);
 	if (mb.trigger_state == trigger_state)
 		return;
