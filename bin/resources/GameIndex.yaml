@@ -10378,9 +10378,14 @@ SCPS-56016:
   gameFixes:
     - GIFFIFOHack
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes post processing position.
+    nativeScaling: 2 # Fixes post effects.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
     autoFlush: 1 # Corrects shadows (Currently still broken even with this).
+    recommendedBlendingLevel: 4 # Fixes car shadows but addeds about 5000 barriers, might impact slower machines.
+    gpuTargetCLUT: 2 # Fixes light flicker.
+    getSkipCount: "GSC_DTGames"
 SCPS-72001:
   name: "GRAN TURISMO3 A-spec [MEGA HITS!]"
   name-sort: "ぐらんつーりすも3 A-spec [MEGA HITS!]"
@@ -23994,9 +23999,13 @@ SLES-53904:
   clampModes:
     vuClampMode: 0 # Fixes black artifacts on tracks
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes post processing position.
+    nativeScaling: 2 # Fixes post effects.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
     autoFlush: 1 # Corrects shadows (Currently still broken even with this).
+    gpuTargetCLUT: 2 # Fixes light flicker.
+    getSkipCount: "GSC_DTGames"
 SLES-53906:
   name: "50 Cent - Bulletproof"
   region: "PAL-F"
@@ -66800,9 +66809,13 @@ SLUS-21095:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes post processing position.
+    nativeScaling: 2 # Fixes post effects.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
     autoFlush: 1 # Corrects shadows (Currently still broken even with this).
+    gpuTargetCLUT: 2 # Fixes light flicker.
+    getSkipCount: "GSC_DTGames"
 SLUS-21096:
   name: "Ape Escape - Pumped & Primed"
   region: "NTSC-U"
@@ -70924,10 +70937,12 @@ SLUS-21793:
   compat: 3
   gsHWFixes:
     halfPixelOffset: 2 # Fixes post processing position.
-    nativeScaling: 1 # Fixes post effects.
+    nativeScaling: 2 # Fixes post effects.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
     autoFlush: 1 # Corrects shadows (Currently still broken even with this).
+    gpuTargetCLUT: 2 # Fixes light flicker.
+    getSkipCount: "GSC_DTGames"
 SLUS-21794:
   name: "Go, Diego, Go! Great Dinosaur Rescue"
   region: "NTSC-U"

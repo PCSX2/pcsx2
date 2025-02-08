@@ -154,6 +154,60 @@ bool GSHwHack::GSC_SFEX3(GSRendererHW& r, int& skip)
 	return true;
 }
 
+bool GSHwHack::GSC_DTGames(GSRendererHW& r, int& skip)
+{
+	if (skip == 0)
+	{
+		// The game does a shuffle based on the result of a copy from the depth buffer, which ends up looking bizzare so PCSX2 doesn't know how to deal with it.
+		// What they're actually doing is copying the red/green channel of the result (kind of a shadow stencil) to the alpha channel.
+		// The further problem to this is the limitation of alpha we can save on an RT as they copy in 255, so I can cheese it here pretending it's RTA'd
+		if (RTME && RFPSM == PSMCT32 && RTBP0 == RFBP && RTPSM == PSMCT16 && RTEST.ATE && RTEST.ATST == ATST_NEVER && RTEST.AFAIL == AFAIL_FB_ONLY && RFBMSK == 0xFFFFFF)
+		{
+			GSTextureCache::Target* rt = g_texture_cache->LookupTarget(GIFRegTEX0::Create(RTBP0, RFBW, RFPSM),
+				GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
+
+			if (!rt)
+				return false;
+
+			// Clear down the alpha first.
+			GSHWDrawConfig& clear = r.BeginHLEHardwareDraw(
+				rt->GetTexture(), nullptr, rt->GetScale(), nullptr, rt->GetScale(), rt->GetUnscaledRect());
+			clear.colormask.wrgba = 0;
+			clear.colormask.wa = 1;
+			r.EndHLEHardwareDraw(false);
+
+			// Shuffle the green channel in to alpha.
+			GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
+				rt->GetTexture(), nullptr, rt->GetScale(), rt->GetTexture(), rt->GetScale(), rt->GetUnscaledRect());
+			config.ps.shuffle = 1;
+			config.ps.dst_fmt = GSLocalMemory::PSM_FMT_32;
+			config.ps.write_rg = 0;
+			config.ps.shuffle_same = 0;
+			config.ps.real16src = 0;
+			config.ps.shuffle_across = 1;
+			config.ps.process_rg = r.SHUFFLE_READ;
+			config.ps.process_ba = r.SHUFFLE_WRITE;
+			config.colormask.wrgba = 0;
+			config.colormask.wa = 1;
+			config.ps.rta_correction = 1;
+			config.ps.tfx = TFX_DECAL;
+			config.ps.tcc = true;
+			r.EndHLEHardwareDraw(true);
+
+			rt->m_alpha_min = 0;
+			rt->m_alpha_max = 255;
+			skip = 69;
+		}
+	}
+	else
+	{
+		if (RTPSM != PSMCT16)
+			skip = 0;
+	}
+
+	return true;
+}
+
 bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
@@ -1471,6 +1525,7 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_SakuraWarsSoLongMyLove),
 	CRC_F(GSC_Simple2000Vol114),
 	CRC_F(GSC_SFEX3),
+	CRC_F(GSC_DTGames),
 	CRC_F(GSC_TalesOfLegendia),
 	CRC_F(GSC_TalesofSymphonia),
 	CRC_F(GSC_UrbanReign),
