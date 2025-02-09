@@ -212,6 +212,11 @@ if [[ "${GIT_VERSION}" == "" ]]; then
 	fi
 fi
 
+# Changes WM_CLASS name to the correct one instead of AppRun.wrapped (helps GNOME)
+sed 's/Exec=AppRun.wrapped/Exec=net.pcsx2.PCSX2/g' $OUTDIR/usr/share/applications/net.pcsx2.PCSX2.desktop
+
 rm -f "$NAME.AppImage"
 ARCH=x86_64 VERSION="${GIT_VERSION}" "$APPIMAGETOOL" -s "$OUTDIR" && mv ./*.AppImage "$NAME.AppImage"
 
+# Changes WM_CLASS name to the correct one instead of AppRun.Wrapped (helps GNOME)
+sed 's/Exec=AppRun.wrapped/Exec=net.pcsx2.PCSX2/g' $OUTDIR/usr/share/applications/net.pcsx2.PCSX2.desktop
