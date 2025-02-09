@@ -80,6 +80,14 @@ public:
 
     PS2Float Mul(PS2Float mulend);
 
+    PS2Float MulAdd(PS2Float opsend, PS2Float optend);
+
+    PS2Float MulAddAcc(PS2Float opsend, PS2Float optend);
+
+    PS2Float MulSub(PS2Float opsend, PS2Float optend);
+
+    PS2Float MulSubAcc(PS2Float opsend, PS2Float optend);
+
     PS2Float Div(PS2Float divend);
 
     PS2Float Sqrt();
@@ -117,4 +125,6 @@ private:
     static bool DetermineAdditionOperationSign(PS2Float a, PS2Float b);
 
     static bool DetermineSubtractionOperationSign(PS2Float a, PS2Float b);
+
+	static u8 DetermineMacException(u8 mode, u32 acc, bool acc_oflw, bool moflw, s32 msign, u32& addsubres, bool& oflw, bool& uflw);
 };

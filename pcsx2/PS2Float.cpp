@@ -204,6 +204,66 @@ PS2Float PS2Float::Mul(PS2Float mulend)
 	return DoMul(mulend);
 }
 
+PS2Float PS2Float::MulAdd(PS2Float opsend, PS2Float optend)
+{
+	PS2Float mulres = opsend.Mul(optend);
+	PS2Float addres = Add(mulres);
+	u32 rawres = addres.raw;
+	bool oflw = addres.of;
+	bool uflw = addres.uf;
+	DetermineMacException(3, raw, of, mulres.of, mulres.Sign() ? 1 : 0, rawres, oflw, uflw);
+	PS2Float result = PS2Float(rawres);
+	result.of = oflw;
+	result.uf = uflw;
+	return result;
+}
+
+PS2Float PS2Float::MulAddAcc(PS2Float opsend, PS2Float optend)
+{
+	PS2Float mulres = opsend.Mul(optend);
+	PS2Float addres = Add(mulres);
+	u32 rawres = addres.raw;
+	bool oflw = addres.of;
+	bool uflw = addres.uf;
+	DetermineMacException(8, raw, of, mulres.of, mulres.Sign() ? 1 : 0, rawres, oflw, uflw);
+	raw = rawres;
+	of = oflw;
+	PS2Float result = PS2Float(rawres);
+	result.of = oflw;
+	result.uf = uflw;
+	return result;
+}
+
+PS2Float PS2Float::MulSub(PS2Float opsend, PS2Float optend)
+{
+	PS2Float mulres = opsend.Mul(optend);
+	PS2Float subres = Sub(mulres);
+	u32 rawres = subres.raw;
+	bool oflw = subres.of;
+	bool uflw = subres.uf;
+	DetermineMacException(4, raw, of, mulres.of, mulres.Sign() ? 1 : 0, rawres, oflw, uflw);
+	PS2Float result = PS2Float(rawres);
+	result.of = oflw;
+	result.uf = uflw;
+	return result;
+}
+
+PS2Float PS2Float::MulSubAcc(PS2Float opsend, PS2Float optend)
+{
+	PS2Float mulres = opsend.Mul(optend);
+	PS2Float subres = Sub(mulres);
+	u32 rawres = subres.raw;
+	bool oflw = subres.of;
+	bool uflw = subres.uf;
+	DetermineMacException(9, raw, of, mulres.of, mulres.Sign() ? 1 : 0, rawres, oflw, uflw);
+	raw = rawres;
+	of = oflw;
+	PS2Float result = PS2Float(rawres);
+	result.of = oflw;
+	result.uf = uflw;
+	return result;
+}
+
 PS2Float PS2Float::Div(PS2Float divend)
 {
 	FpgaDiv fpga = FpgaDiv(true, raw, divend.raw);
@@ -607,4 +667,61 @@ bool PS2Float::DetermineSubtractionOperationSign(PS2Float a, PS2Float b)
 	}
 
 	return a.CompareTo(b) >= 0 ? a.Sign() : !b.Sign();
+}
+
+u8 PS2Float::DetermineMacException(u8 mode, u32 acc, bool acc_oflw, bool moflw, s32 msign, u32& addsubres, bool& oflw, bool& uflw)
+{
+	bool roundToMax;
+
+	if ((mode == 3) || (mode == 8))
+		roundToMax = msign == 0;
+	else
+	{
+		if ((mode != 4) && (mode != 9))
+		{
+			Console.Error("Unhandled MacFlag operation flags");
+			return 1;
+		}
+
+		roundToMax = msign != 0;
+	}
+
+	if (!acc_oflw)
+	{
+		if (moflw)
+		{
+			if (roundToMax)
+			{
+				addsubres = MAX_FLOATING_POINT_VALUE;
+				uflw = false;
+				oflw = true;
+			}
+			else
+			{
+				addsubres = MIN_FLOATING_POINT_VALUE;
+				uflw = false;
+				oflw = true;
+			}
+		}
+	}
+	else if (!moflw)
+	{
+		addsubres = acc;
+		uflw = false;
+		oflw = true;
+	}
+	else if (roundToMax)
+	{
+		addsubres = MAX_FLOATING_POINT_VALUE;
+		uflw = false;
+		oflw = true;
+	}
+	else
+	{
+		addsubres = MIN_FLOATING_POINT_VALUE;
+		uflw = false;
+		oflw = true;
+	}
+
+	return 0;
 }
