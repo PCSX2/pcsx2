@@ -446,13 +446,14 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  -dump [rt|tex|z|f|a|i]: Enabling dumping of render target, texture, z buffer, frame, "
 		"alphas, and info (context, vertices), respectively, per draw. Generates lots of data.\n");
 	std::fprintf(stderr, "  -dumprange N[,L,B]: Start dumping from draw N (base 0), stops after L draws, and only "
-		"those draws that are multiples of B (intersection of -dumprange and -dumrangef used)."
-		"Defaults to N=0,L=-1,B=1 (all draws). Only used if -dump used.\n");
+		"those draws that are multiples of B (intersection of -dumprange and -dumprangef used)."
+		"Defaults to 0,-1,1 (all draws). Only used if -dump used.\n");
 	std::fprintf(stderr, "  -dumprangef NF[,LF,BF]: Start dumping from frame NF (base 0), stops after LF frames, "
-		"and only those frames that are multiples of BF (intersection of -dumprange and -dumrangef used).\n"
-		"Defaults to NF=0,LF=-1,BF=1 (all frames). Only used if -dump is used.\n");
+		"and only those frames that are multiples of BF (intersection of -dumprange and -dumprangef used).\n"
+		"Defaults to 0,-1,1 (all frames). Only used if -dump is used.\n");
 	std::fprintf(stderr, "  -loop <count>: Loops dump playback N times. Defaults to 1. 0 will loop infinitely.\n");
 	std::fprintf(stderr, "  -renderer <renderer>: Sets the graphics renderer. Defaults to Auto.\n");
+	std::fprintf(stderr, "  -swthreads <threads>: Sets the number of threads for the software renderer.\n");
 	std::fprintf(stderr, "  -window: Forces a window to be displayed.\n");
 	std::fprintf(stderr, "  -surfaceless: Disables showing a window.\n");
 	std::fprintf(stderr, "  -logfile <filename>: Writes emu log to filename.\n");
