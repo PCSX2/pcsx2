@@ -1158,7 +1158,7 @@ bool GSRendererHW::IsSplitTextureShuffle(GIFRegTEX0& rt_TEX0, GSVector4i& valid_
 	const GSVector4i tex_rc = GSVector4i(m_vt.m_min.t.upld(m_vt.m_max.t));
 
 	// Width/height should match.
-	if (std::abs(pos_rc.width() - tex_rc.width()) > 8 || pos_rc.height() != tex_rc.height())
+	if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets || std::abs(pos_rc.width() - tex_rc.width()) > 8 || pos_rc.height() != tex_rc.height())
 		return false;
 
 	// X might be offset by up to -8/+8, but either the position or UV should be aligned.
