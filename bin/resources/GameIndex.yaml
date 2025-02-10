@@ -12956,6 +12956,7 @@ SLED-50117:
   region: "PAL-E"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -14672,6 +14673,7 @@ SLES-50383:
   compat: 5
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -14681,6 +14683,7 @@ SLES-50384:
   region: "PAL-I"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -14690,6 +14693,7 @@ SLES-50385:
   region: "PAL-S"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -26252,9 +26256,9 @@ SLES-54674:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1 # Needed for post processing effects.
-    halfPixelOffset: 4 # Fixes offset post processing.
+    halfPixelOffset: 2 # Fixes offset post processing.
     autoFlush: 1 # Fixes bloom intensity.
-    nativeScaling: 1 # Fixes post processing.
+    nativeScaling: 2 # Fixes post processing.
 SLES-54675:
   name: "Street Warrior"
   region: "PAL-E"
@@ -27274,6 +27278,8 @@ SLES-54997:
   gameFixes:
     - EETimingHack # Flickery textures.
   gsHWFixes:
+    minimumBlendingLevel: 2 # General lighting improvement over basic blend.
+    recommendedBlendingLevel: 4 # Further improves lighting on things like plants.
     nativeScaling: 1 # Fixes post lighting.
 SLES-54998:
   name: "Mercenaries 2 - L'enfer des Favelas"
@@ -27281,6 +27287,8 @@ SLES-54998:
   gameFixes:
     - EETimingHack # Flickery textures.
   gsHWFixes:
+    minimumBlendingLevel: 2 # General lighting improvement over basic blend.
+    recommendedBlendingLevel: 4 # Further improves lighting on things like plants.
     nativeScaling: 1 # Fixes post lighting.
 SLES-54999:
   name: "Mercenaries 2 - Inferno di Fuoco"
@@ -27288,6 +27296,8 @@ SLES-54999:
   gameFixes:
     - EETimingHack # Flickery textures.
   gsHWFixes:
+    minimumBlendingLevel: 2 # General lighting improvement over basic blend.
+    recommendedBlendingLevel: 4 # Further improves lighting on things like plants.
     nativeScaling: 1 # Fixes post lighting.
 SLES-55000:
   name: "Mercenaries 2 - World in Flames"
@@ -27295,6 +27305,8 @@ SLES-55000:
   gameFixes:
     - EETimingHack # Flickery textures.
   gsHWFixes:
+    minimumBlendingLevel: 2 # General lighting improvement over basic blend.
+    recommendedBlendingLevel: 4 # Further improves lighting on things like plants.
     nativeScaling: 1 # Fixes post lighting.
 SLES-55001:
   name: "Mercenaries 2 - World in Flames"
@@ -27302,6 +27314,8 @@ SLES-55001:
   gameFixes:
     - EETimingHack # Flickery textures.
   gsHWFixes:
+    minimumBlendingLevel: 2 # General lighting improvement over basic blend.
+    recommendedBlendingLevel: 4 # Further improves lighting on things like plants.
     nativeScaling: 1 # Fixes post lighting.
 SLES-55002:
   name: "Need for Speed - ProStreet"
@@ -29085,6 +29099,7 @@ SLES-82009:
   compat: 5
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -31544,6 +31559,7 @@ SLKA-35001:
   compat: 5
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -32167,6 +32183,8 @@ SLPM-55110:
   name-en: "Mercenaries 2 - World in Flames"
   region: "NTSC-J"
   gsHWFixes:
+    minimumBlendingLevel: 2 # General lighting improvement over basic blend.
+    recommendedBlendingLevel: 4 # Further improves lighting on things like plants.
     nativeScaling: 1 # Fixes post lighting.
 SLPM-55112:
   name: "三國志11 with パワーアップキット"
@@ -32747,6 +32765,8 @@ SLPM-55230:
   name-en: "Mercenaries 2 - World in Flames [EA:SY! 1980]"
   region: "NTSC-J"
   gsHWFixes:
+    minimumBlendingLevel: 2 # General lighting improvement over basic blend.
+    recommendedBlendingLevel: 4 # Further improves lighting on things like plants.
     nativeScaling: 1 # Fixes post lighting.
 SLPM-55231:
   name: "サイレントヒル シャッタードメモリーズ"
@@ -34970,6 +34990,7 @@ SLPM-62043:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -39278,6 +39299,7 @@ SLPM-65077:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -39292,6 +39314,7 @@ SLPM-65078:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -43108,6 +43131,7 @@ SLPM-65754:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -47742,6 +47766,7 @@ SLPM-66503:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -49507,6 +49532,7 @@ SLPM-66792:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -49518,6 +49544,7 @@ SLPM-66793:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -50648,6 +50675,7 @@ SLPM-67002:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -50692,6 +50720,7 @@ SLPM-67008:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -50833,6 +50862,7 @@ SLPM-67515:
   region: "NTSC-K"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -51066,6 +51096,7 @@ SLPM-68503:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -51615,6 +51646,7 @@ SLPM-74255:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -51626,6 +51658,7 @@ SLPM-74256:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -51928,6 +51961,7 @@ SLPM-74901:
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -59550,9 +59584,9 @@ SLPS-25856:
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1 # Needed for post processing effects.
-    halfPixelOffset: 4 # Fixes offset post processing.
+    halfPixelOffset: 2 # Fixes offset post processing.
     autoFlush: 1 # Fixes bloom intensity.
-    nativeScaling: 1 # Fixes post processing.
+    nativeScaling: 2 # Fixes post processing.
 SLPS-25858:
   name: "灼眼のシャナ [電撃SP]"
   name-sort: "しゃくがんのしゃな [でんげきSP]"
@@ -60057,9 +60091,9 @@ SLPS-25946:
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1 # Needed for post processing effects.
-    halfPixelOffset: 4 # Fixes offset post processing.
+    halfPixelOffset: 2 # Fixes offset post processing.
     autoFlush: 1 # Fixes bloom intensity.
-    nativeScaling: 1 # Fixes post processing.
+    nativeScaling: 2 # Fixes post processing.
 SLPS-25947:
   name: "サモンナイトグランテーゼ 滅びの剣と約束の騎士"
   name-sort: "さもんないとぐらんてーぜ ほろびのけんとやくそくのきし"
@@ -61738,6 +61772,7 @@ SLUS-20144:
   compat: 5
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -63767,6 +63802,7 @@ SLUS-20554:
   compat: 5
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
@@ -69609,9 +69645,9 @@ SLUS-21555:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1 # Needed for post processing effects.
-    halfPixelOffset: 4 # Fixes offset post processing.
+    halfPixelOffset: 2 # Fixes offset post processing.
     autoFlush: 1 # Fixes bloom intensity.
-    nativeScaling: 1 # Fixes post processing.
+    nativeScaling: 2 # Fixes post processing.
 SLUS-21556:
   name: "Konami Kids Playground - Dinosaur Shapes & Colors"
   region: "NTSC-U"
@@ -70184,6 +70220,8 @@ SLUS-21650:
   gameFixes:
     - EETimingHack # Flickery textures.
   gsHWFixes:
+    minimumBlendingLevel: 2 # General lighting improvement over basic blend.
+    recommendedBlendingLevel: 4 # Further improves lighting on things like plants.
     nativeScaling: 1 # Fixes post lighting.
 SLUS-21651:
   name: "Noddy and the Magic Book"
@@ -71934,6 +71972,7 @@ SLUS-29003:
   compat: 5
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
     autoFlush: 1 # Fixes motion blur effect.
