@@ -1160,8 +1160,8 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 		if (inside_target)
 		{
 			// Need to set it up as a region target.
-			src->m_region.SetX(block_boundary_rect.x, block_boundary_rect.z);
-			src->m_region.SetY(block_boundary_rect.y, block_boundary_rect.w);
+			src->m_region.SetX(block_boundary_rect.x, src->m_from_target->m_valid.z);
+			src->m_region.SetY(block_boundary_rect.y, src->m_from_target->m_valid.w);
 		}
 
 		if (GSRendererHW::GetInstance()->IsTBPFrameOrZ(dst->m_TEX0.TBP0))
