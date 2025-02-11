@@ -121,7 +121,7 @@ bool MemoryCardConvertWorker::ConvertToFolder(const std::string& srcFileName, co
 	// Set progress bar to the literal number of bytes in the memcard.
 	// Plus two because there is a lag period after the Save calls complete
 	// where the progress bar stalls out; this lets us stop the progress bar
-	// just shy of 50 and 100% so it seems like its still doing some work.
+	// just shy of 50 and 100% so it seems like it's still doing some work.
 	this->SetProgressRange((sourceBuffer.size() * 2) + 2);
 	this->SetProgressValue(0);
 
@@ -160,6 +160,8 @@ bool MemoryCardConvertWorker::ConvertToFolder(const std::string& srcFileName, co
 
 		this->IncrementProgressValue();
 	}
+
+	this->IncrementProgressValue();
 
 	return true;
 }
