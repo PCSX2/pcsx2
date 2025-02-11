@@ -509,7 +509,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 					// width_diff will be zero is both are BW == 1, so be careful of that.
 					const bool same_width = width_diff > 0 || (m_cached_ctx.FRAME.FBW == 1 && width_diff == 0);
 					// Draw is double width and the draw is twice the width of the next draws texture.
-					if (!same_width && max_tex_draw_width >= (m_cached_ctx.FRAME.FBW * 64))
+					if ((!same_width && max_tex_draw_width >= (m_cached_ctx.FRAME.FBW * 64)) || (single_direction_doubled && (m_vt.m_max.p.x >= (rt->m_valid.z * 2))))
 					{
 						half_bottom_uv = false;
 						half_bottom_vert = false;
@@ -7566,6 +7566,7 @@ bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_t
 			if ((req_color && !src_target->m_valid_rgb) || (req_alpha && (!src_target->m_valid_alpha_low || !src_target->m_valid_alpha_high)))
 				return true;
 
+			bool req_readback = false;
 			// If the EE has written over our sample area, we're fine to do this on the CPU, despite the target.
 			if (!src_target->m_dirty.empty())
 			{
@@ -7591,11 +7592,22 @@ bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_t
 					}
 				}
 			}
+			else
+			{
+				// If the target isn't dirty we might have valid data, so let's check their areas overlap, if so we need to read it back for SW.
+				GSVector4i src_rect = GSVector4i(m_vt.m_min.t.x, m_vt.m_min.t.y, m_vt.m_max.t.x, m_vt.m_max.t.x);
+				GSVector4i area = g_texture_cache->TranslateAlignedRectByPage(src_target, m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.PSM, m_cached_ctx.TEX0.TBW, src_rect, false);
+				req_readback = !area.rintersect(src_target->m_drawn_since_read).eq(GSVector4i::zero());
+			}
 			// Make sure it actually makes sense to use this target as a source, given the formats, and it wouldn't just sample as garbage.
 			// We can't rely exclusively on the dirty rect check above, because sometimes the targets are from older frames and too large.
 			if (!GSUtil::HasSameSwizzleBits(m_cached_ctx.TEX0.PSM, src_target->m_TEX0.PSM) &&
 				(!src_target->m_32_bits_fmt || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp != 16))
-					return true;
+			{
+				if (req_readback)
+					g_texture_cache->Read(src_target, src_target->m_drawn_since_read);
+				return true;
+			}
 
 			return false;
 		}
