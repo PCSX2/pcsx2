@@ -23209,6 +23209,9 @@ SLES-53645:
   name: "Knights of the Temple II"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shadow quality.
+    autoFlush: 1 # Fixes light leaking and fire bloom intensity.
 SLES-53646:
   name: "World Racing 2"
   region: "PAL-M5"
