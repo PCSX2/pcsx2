@@ -41,7 +41,7 @@ static bool InitializeSDLAudio(Error* error)
 	SDL_SetHint("SDL_AUDIO_DEVICE_APP_NAME", "PCSX2");
 
 	// May as well keep it alive until the process exits.
-	if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0)
+	if (!SDL_InitSubSystem(SDL_INIT_AUDIO))
 	{
 		Error::SetStringFmt(error, "SDL_InitSubSystem(SDL_INIT_AUDIO) failed: {}", SDL_GetError());
 		return false;

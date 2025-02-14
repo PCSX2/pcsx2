@@ -296,7 +296,7 @@ void SDLInputSource::SetHints()
 
 bool SDLInputSource::InitializeSubsystem()
 {
-	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC) < 0)
+	if (!SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC))
 	{
 		Console.Error("SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC) failed");
 		return false;
@@ -738,7 +738,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 			SDL_GetNumJoystickAxes(joystick), SDL_GetNumJoystickButtons(joystick), num_hats);
 	}
 
-	cd.use_game_controller_rumble = (gcontroller && SDL_RumbleGamepad(gcontroller, 0, 0, 0) == 0);
+	cd.use_game_controller_rumble = (gcontroller && SDL_RumbleGamepad(gcontroller, 0, 0, 0));
 	if (cd.use_game_controller_rumble)
 	{
 		INFO_LOG("SDLInputSource: Rumble is supported on '{}' via gamecontroller", name);
@@ -761,7 +761,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 			else
 			{
 				ERROR_LOG("SDLInputSource: Failed to create haptic left/right effect: {}", SDL_GetError());
-				if (SDL_HapticRumbleSupported(haptic) && SDL_InitHapticRumble(haptic) != 0)
+				if (SDL_HapticRumbleSupported(haptic) && SDL_InitHapticRumble(haptic))
 				{
 					cd.haptic = haptic;
 				}
