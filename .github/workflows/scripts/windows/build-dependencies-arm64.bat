@@ -49,7 +49,7 @@ set LIBPNG=1645
 set LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
 set QT=6.8.2
 set QTMINOR=6.8
-set SDL=SDL2-2.30.12
+set SDL=SDL3-3.2.6
 set WEBP=1.5.0
 set ZLIB=1.3.1
 set ZLIBSHORT=131
@@ -66,7 +66,7 @@ call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lp
 call :downloadfile "jpegsr%LIBJPEG%.zip" https://ijg.org/files/jpegsr%LIBJPEG%.zip 6255da8c89e09d694e6800688c76145eb6870a76ac0d36c74fccd61b3940aafa || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" 7d6fab70cf844bf6769077bd5d7a74893f8ffd4dfb42861745750c63c2a5c92c || goto error
 call :downloadfile "lz4-%LZ4%.zip" "https://github.com/lz4/lz4/archive/%LZ4%.zip" 0c33119688d6b180c7e760b0acd70059222389cfd581632623784bee27e51a31 || goto error
-call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" aa2808d0f2dc6b383c6689bf6d166e2de62db4d58be989e4b052acb31df0fba3 || goto error
+call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 665e5aa2a613affe099a38d61257ecc5ef4bf38b109d915147aa8b005399d68a || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 44087aec0caa4aa81437e787917d29d97536484a682a5d51ec035878e57c0b5c || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 83c72b5dfad04854acf61d592e3f9cdc2ed894779aab8d0470d966715266caaf || goto error
 call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 144d55e4d199793a76c53f19872633a79aec0314039f6f99b6a10b5be7a78fbf || goto error
@@ -179,7 +179,7 @@ cd "%SDL%" || goto error
 cmake -B build %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release %FORCEPDB% -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
-copy build\SDL2.pdb "%INSTALLDIR%\bin" || goto error
+copy build\SDL3.pdb "%INSTALLDIR%\bin" || goto error
 cd .. || goto error
 
 if %DEBUG%==1 (
