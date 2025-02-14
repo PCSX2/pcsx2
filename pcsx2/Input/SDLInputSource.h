@@ -54,7 +54,7 @@ private:
 		SDL_Joystick* joystick;
 		u16 rumble_intensity[2];
 		int haptic_left_right_effect;
-		int joystick_id;
+		SDL_JoystickID joystick_id;
 		int player_id;
 		bool use_gamepad_rumble;
 
