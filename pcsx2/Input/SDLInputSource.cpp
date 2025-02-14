@@ -688,7 +688,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamepad)
 		return false;
 	}
 
-	const int joystick_id = SDL_GetJoystickID(joystick);
+	const SDL_JoystickID joystick_id = SDL_GetJoystickID(joystick);
 	int player_id = gamepad ? SDL_GetGamepadPlayerIndex(gamepad) : SDL_GetJoystickPlayerIndex(joystick);
 	for (auto it = m_controllers.begin(); it != m_controllers.end(); ++it)
 	{
