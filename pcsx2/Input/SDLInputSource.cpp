@@ -321,7 +321,17 @@ bool SDLInputSource::InitializeSubsystem()
 
 	// we should open the controllers as the connected events come in, so no need to do any more here
 	m_sdl_subsystem_initialized = true;
-	Console.WriteLn(Color_StrongGreen, fmt::format("SDLInputSource: {} controller mappings are loaded.", SDL_GameControllerNumMappings()));
+
+	int count;
+	char** mappings = SDL_GetGamepadMappings(&count);
+	if (mappings != nullptr)
+	{
+		SDL_free(mappings);
+		Console.WriteLnFmt(Color_StrongGreen, "SDLInputSource: {} gamepad mappings are loaded.", count);
+	}
+	else
+		Console.Error("SDL_GetGamepadMappings() failed {}", SDL_GetError());
+
 	return true;
 }
 
@@ -720,29 +730,37 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 
 	if (gcontroller)
 	{
-		const int num_axes = SDL_GetNumJoystickAxes(joystick);
-		const int num_buttons = SDL_GetNumJoystickButtons(joystick);
-		cd.joy_axis_used_in_gc.resize(num_axes, false);
-		cd.joy_button_used_in_gc.resize(num_buttons, false);
-		auto mark_bind = [&](SDL_GameControllerButtonBind bind) {
-			if (bind.bindType == SDL_GAMEPAD_BINDTYPE_AXIS && bind.value.axis < num_axes)
-				cd.joy_axis_used_in_gc[bind.value.axis] = true;
-			if (bind.bindType == SDL_GAMEPAD_BINDTYPE_BUTTON && bind.value.button < num_buttons)
-				cd.joy_button_used_in_gc[bind.value.button] = true;
-		};
-		for (size_t i = 0; i < std::size(s_sdl_axis_names); i++)
-			mark_bind(SDL_GetGamepadBindings(gcontroller, static_cast<SDL_GamepadAxis>(i)));
-		for (size_t i = 0; i < std::size(s_sdl_button_names); i++)
-			mark_bind(SDL_GameControllerGetBindForButton(gcontroller, static_cast<SDL_GamepadButton>(i)));
+		int binding_count;
+		SDL_GamepadBinding** bindings = SDL_GetGamepadBindings(gcontroller, &binding_count);
+		if (bindings)
+		{
+			const int num_axes = SDL_GetNumJoystickAxes(joystick);
+			const int num_buttons = SDL_GetNumJoystickButtons(joystick);
+			cd.joy_axis_used_in_gc.resize(num_axes, false);
+			cd.joy_button_used_in_gc.resize(num_buttons, false);
+			auto mark_bind = [&](SDL_GamepadBinding* bind) {
+				if (bind->input_type == SDL_GAMEPAD_BINDTYPE_AXIS && bind->input.axis.axis < num_axes)
+					cd.joy_axis_used_in_gc[bind->input.axis.axis] = true;
+				if (bind->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON && bind->input.button < num_buttons)
+					cd.joy_button_used_in_gc[bind->input.button] = true;
+			};
 
-		INFO_LOG("SDLInputSource: Controller {} has {} axes and {} buttons", player_id, num_axes, num_buttons);
+			for (int i = 0; i < binding_count; i++)
+				mark_bind(bindings[i]);
+
+			SDL_free(bindings);
+
+			INFO_LOG("SDLInputSource: Gamepad {} has {} axes and {} buttons", player_id, num_axes, num_buttons);
+		}
+		else
+			ERROR_LOG("SDLInputSource: Failed to get gamepad bindings {}", SDL_GetError());
 	}
 	else
 	{
 		// GC doesn't have the concept of hats, so we only need to do this for joysticks.
 		const int num_hats = SDL_GetNumJoystickHats(joystick);
 		if (num_hats > 0)
-			cd.last_hat_state.resize(static_cast<size_t>(num_hats), u8(0));
+			cd.last_hat_state.resize(static_cast<size_t>(num_hats), u8{0});
 
 		INFO_LOG("SDLInputSource: Joystick {} has {} axes, {} buttons and {} hats", player_id,
 			SDL_GetNumJoystickAxes(joystick), SDL_GetNumJoystickButtons(joystick), num_hats);
