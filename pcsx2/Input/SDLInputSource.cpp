@@ -125,9 +125,9 @@ static constexpr const char* s_sdl_default_led_colors[] = {
 	"808000", // SDL-3
 };
 
-static void SetControllerRGBLED(SDL_Gamepad* gc, u32 color)
+static void SetGamepadRGBLED(SDL_Gamepad* pad, u32 color)
 {
-	SDL_SetGamepadLED(gc, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff);
+	SDL_SetGamepadLED(pad, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff);
 }
 
 static void SDLLogCallback(void* userdata, int category, SDL_LogPriority priority, const char* message)
@@ -157,9 +157,9 @@ bool SDLInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mut
 
 void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-	const bool old_controller_enhanced_mode = m_controller_enhanced_mode;
-	const bool old_controller_ps5_player_led = m_controller_ps5_player_led;
-	const bool old_controller_raw_mode = m_controller_raw_mode;
+	const bool old_enable_enhanced_reports = m_enable_enhanced_reports;
+	const bool old_enable_ps5_player_leds = m_enable_ps5_player_leds;
+	const bool old_use_raw_input = m_use_raw_input;
 
 #ifdef __APPLE__
 	const bool old_enable_iokit_driver = m_enable_iokit_driver;
@@ -175,9 +175,9 @@ void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std:
 	constexpr bool drivers_changed = false;
 #endif
 
-	if (m_controller_enhanced_mode != old_controller_enhanced_mode ||
-		m_controller_ps5_player_led != old_controller_ps5_player_led ||
-		m_controller_raw_mode != old_controller_raw_mode ||
+	if (m_enable_enhanced_reports != old_enable_enhanced_reports ||
+		m_enable_ps5_player_leds != old_enable_ps5_player_leds ||
+		m_use_raw_input != old_use_raw_input ||
 		drivers_changed)
 	{
 		settings_lock.unlock();
@@ -190,7 +190,7 @@ void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std:
 
 bool SDLInputSource::ReloadDevices()
 {
-	// We'll get a GC added/removed event here.
+	// We'll get a device added/removed event here.
 	PollEvents();
 	return false;
 }
@@ -211,10 +211,10 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
 		m_led_colors[i] = color;
 
 		const auto it = GetControllerDataForPlayerId(i);
-		if (it == m_controllers.end() || !it->game_controller)
+		if (it == m_controllers.end() || !it->gamepad)
 			continue;
 
-		const SDL_PropertiesID props = SDL_GetGamepadProperties(it->game_controller);
+		const SDL_PropertiesID props = SDL_GetGamepadProperties(it->gamepad);
 		if (props == 0)
 		{
 			ERROR_LOG("SDLInputSource: SDL_GetGamepadProperties() failed");
@@ -224,14 +224,14 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
 		if (!SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN, false))
 			continue;
 
-		SetControllerRGBLED(it->game_controller, color);
+		SetGamepadRGBLED(it->gamepad, color);
 	}
 
 	m_sdl_hints = si.GetKeyValueList("SDLHints");
 
-	m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
-	m_controller_ps5_player_led = si.GetBoolValue("InputSources", "SDLPS5PlayerLED", false);
-	m_controller_raw_mode = si.GetBoolValue("InputSources", "SDLRawInput", false);
+	m_enable_enhanced_reports = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
+	m_enable_ps5_player_leds = si.GetBoolValue("InputSources", "SDLPS5PlayerLED", false);
+	m_use_raw_input = si.GetBoolValue("InputSources", "SDLRawInput", false);
 
 #ifdef __APPLE__
 	m_enable_iokit_driver = si.GetBoolValue("InputSources", "SDLIOKitDriver", true);
@@ -282,10 +282,9 @@ void SDLInputSource::SetHints()
 		Console.Error(fmt::format("SDLInputSource: Controller DB not found, it should be named '{}'", CONTROLLER_DB_FILENAME));
 	}
 
-	SDL_SetHint(SDL_HINT_JOYSTICK_RAWINPUT, m_controller_raw_mode ? "1" : "0");
-	SDL_SetHint(SDL_HINT_JOYSTICK_ENHANCED_REPORTS, m_controller_enhanced_mode ? "1" : "0");
-	SDL_SetHint(SDL_HINT_JOYSTICK_ENHANCED_REPORTS, m_controller_enhanced_mode ? "1" : "0");
-	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED, m_controller_ps5_player_led ? "1" : "0");
+	SDL_SetHint(SDL_HINT_JOYSTICK_RAWINPUT, m_use_raw_input ? "1" : "0");
+	SDL_SetHint(SDL_HINT_JOYSTICK_ENHANCED_REPORTS, m_enable_enhanced_reports ? "1" : "0"); // PS4/PS5 Rumble
+	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED, m_enable_ps5_player_leds ? "1" : "0");
 	// Enable Wii U Pro Controller support
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII, "1");
 #ifndef _WIN32
@@ -367,7 +366,7 @@ std::vector<std::pair<std::string, std::string>> SDLInputSource::EnumerateDevice
 	{
 		std::string id(StringUtil::StdStringFromFormat("SDL-%d", cd.player_id));
 
-		const char* name = cd.game_controller ? SDL_GetGamepadName(cd.game_controller) : SDL_GetJoystickName(cd.joystick);
+		const char* name = cd.gamepad ? SDL_GetGamepadName(cd.gamepad) : SDL_GetJoystickName(cd.joystick);
 		if (name)
 			ret.emplace_back(std::move(id), name);
 		else
@@ -568,21 +567,21 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
 	{
 		case SDL_EVENT_GAMEPAD_ADDED:
 		{
-			Console.WriteLn("SDLInputSource: Controller %d inserted", event->cdevice.which);
+			Console.WriteLn("SDLInputSource: Gamepad %d inserted", event->cdevice.which);
 			OpenDevice(event->cdevice.which, true);
 			return true;
 		}
 
 		case SDL_EVENT_GAMEPAD_REMOVED:
 		{
-			Console.WriteLn("SDLInputSource: Controller %d removed", event->cdevice.which);
+			Console.WriteLn("SDLInputSource: Gamepad %d removed", event->cdevice.which);
 			CloseDevice(event->cdevice.which);
 			return true;
 		}
 
 		case SDL_EVENT_JOYSTICK_ADDED:
 		{
-			// Let game controller handle.. well.. game controllers.
+			// Let gamepad handle.. well.. gamepads.
 			if (SDL_IsGamepad(event->jdevice.which))
 				return false;
 
@@ -594,7 +593,7 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
 
 		case SDL_EVENT_JOYSTICK_REMOVED:
 		{
-			if (auto it = GetControllerDataForJoystickId(event->cdevice.which); it != m_controllers.end() && it->game_controller)
+			if (auto it = GetControllerDataForJoystickId(event->cdevice.which); it != m_controllers.end() && it->gamepad)
 				return false;
 
 			Console.WriteLn("SDLInputSource: Joystick %d removed", event->jdevice.which);
@@ -603,11 +602,11 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
 		}
 
 		case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-			return HandleControllerAxisEvent(&event->gaxis);
+			return HandleGamepadAxisEvent(&event->gaxis);
 
 		case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
 		case SDL_EVENT_GAMEPAD_BUTTON_UP:
-			return HandleControllerButtonEvent(&event->gbutton);
+			return HandleGamepadButtonEvent(&event->gbutton);
 
 		case SDL_EVENT_JOYSTICK_AXIS_MOTION:
 			return HandleJoystickAxisEvent(&event->jaxis);
@@ -667,37 +666,37 @@ int SDLInputSource::GetFreePlayerId() const
 	return 0;
 }
 
-bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
+bool SDLInputSource::OpenDevice(int index, bool is_gamepad)
 {
-	SDL_Gamepad* gcontroller;
+	SDL_Gamepad* gamepad;
 	SDL_Joystick* joystick;
 
-	if (is_gamecontroller)
+	if (is_gamepad)
 	{
-		gcontroller = SDL_OpenGamepad(index);
-		joystick = gcontroller ? SDL_GetGamepadJoystick(gcontroller) : nullptr;
+		gamepad = SDL_OpenGamepad(index);
+		joystick = gamepad ? SDL_GetGamepadJoystick(gamepad) : nullptr;
 	}
 	else
 	{
-		gcontroller = nullptr;
+		gamepad = nullptr;
 		joystick = SDL_OpenJoystick(index);
 	}
 
-	if (!gcontroller && !joystick)
+	if (!gamepad && !joystick)
 	{
 		ERROR_LOG("SDLInputSource: Failed to open controller {}", index);
 		return false;
 	}
 
 	const int joystick_id = SDL_GetJoystickID(joystick);
-	int player_id = gcontroller ? SDL_GetGamepadPlayerIndex(gcontroller) : SDL_GetJoystickPlayerIndex(joystick);
+	int player_id = gamepad ? SDL_GetGamepadPlayerIndex(gamepad) : SDL_GetJoystickPlayerIndex(joystick);
 	for (auto it = m_controllers.begin(); it != m_controllers.end(); ++it)
 	{
 		if (it->joystick_id == joystick_id)
 		{
 			ERROR_LOG("SDLInputSource: Controller {}, instance {}, player {} already connected, ignoring.", index, joystick_id, player_id);
-			if (gcontroller)
-				SDL_CloseGamepad(gcontroller);
+			if (gamepad)
+				SDL_CloseGamepad(gamepad);
 			else
 				SDL_CloseJoystick(joystick);
 
@@ -714,35 +713,35 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 		player_id = free_player_id;
 	}
 
-	const char* name = gcontroller ? SDL_GetGamepadName(gcontroller) : SDL_GetJoystickName(joystick);
+	const char* name = gamepad ? SDL_GetGamepadName(gamepad) : SDL_GetJoystickName(joystick);
 	if (!name)
 		name = "Unknown Device";
 
-	INFO_LOG("SDLInputSource: Opened {} {} (instance id {}, player id {}): {}", is_gamecontroller ? "game controller" : "joystick",
+	INFO_LOG("SDLInputSource: Opened {} {} (instance id {}, player id {}): {}", is_gamepad ? "gamepad" : "joystick",
 		index, joystick_id, player_id, name);
 
 	ControllerData cd = {};
 	cd.player_id = player_id;
 	cd.joystick_id = joystick_id;
 	cd.haptic_left_right_effect = -1;
-	cd.game_controller = gcontroller;
+	cd.gamepad = gamepad;
 	cd.joystick = joystick;
 
-	if (gcontroller)
+	if (gamepad)
 	{
 		int binding_count;
-		SDL_GamepadBinding** bindings = SDL_GetGamepadBindings(gcontroller, &binding_count);
+		SDL_GamepadBinding** bindings = SDL_GetGamepadBindings(gamepad, &binding_count);
 		if (bindings)
 		{
 			const int num_axes = SDL_GetNumJoystickAxes(joystick);
 			const int num_buttons = SDL_GetNumJoystickButtons(joystick);
-			cd.joy_axis_used_in_gc.resize(num_axes, false);
-			cd.joy_button_used_in_gc.resize(num_buttons, false);
+			cd.joy_axis_used_in_pad.resize(num_axes, false);
+			cd.joy_button_used_in_pad.resize(num_buttons, false);
 			auto mark_bind = [&](SDL_GamepadBinding* bind) {
 				if (bind->input_type == SDL_GAMEPAD_BINDTYPE_AXIS && bind->input.axis.axis < num_axes)
-					cd.joy_axis_used_in_gc[bind->input.axis.axis] = true;
+					cd.joy_axis_used_in_pad[bind->input.axis.axis] = true;
 				if (bind->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON && bind->input.button < num_buttons)
-					cd.joy_button_used_in_gc[bind->input.button] = true;
+					cd.joy_button_used_in_pad[bind->input.button] = true;
 			};
 
 			for (int i = 0; i < binding_count; i++)
@@ -757,7 +756,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 	}
 	else
 	{
-		// GC doesn't have the concept of hats, so we only need to do this for joysticks.
+		// Gamepad doesn't have the concept of hats, so we only need to do this for joysticks.
 		const int num_hats = SDL_GetNumJoystickHats(joystick);
 		if (num_hats > 0)
 			cd.last_hat_state.resize(static_cast<size_t>(num_hats), u8{0});
@@ -766,10 +765,10 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 			SDL_GetNumJoystickAxes(joystick), SDL_GetNumJoystickButtons(joystick), num_hats);
 	}
 
-	cd.use_game_controller_rumble = (gcontroller && SDL_RumbleGamepad(gcontroller, 0, 0, 0));
-	if (cd.use_game_controller_rumble)
+	cd.use_gamepad_rumble = (gamepad && SDL_RumbleGamepad(gamepad, 0, 0, 0));
+	if (cd.use_gamepad_rumble)
 	{
-		INFO_LOG("SDLInputSource: Rumble is supported on '{}' via gamecontroller", name);
+		INFO_LOG("SDLInputSource: Rumble is supported on '{}' via gamepad", name);
 	}
 	else
 	{
@@ -805,12 +804,12 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 			INFO_LOG("SDLInputSource: Rumble is supported on '{}' via haptic", name);
 	}
 
-	if (!cd.haptic && !cd.use_game_controller_rumble)
+	if (!cd.haptic && !cd.use_gamepad_rumble)
 		WARNING_LOG("SDLInputSource: Rumble is not supported on '{}'", name);
 
-	if (gcontroller)
+	if (gamepad)
 	{
-		const SDL_PropertiesID props = SDL_GetGamepadProperties(gcontroller);
+		const SDL_PropertiesID props = SDL_GetGamepadProperties(gamepad);
 		bool hasLED = false;
 		if (props == 0)
 			ERROR_LOG("SDLInputSource: SDL_GetGamepadProperties() failed");
@@ -819,7 +818,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 
 		if (player_id >= 0 && static_cast<u32>(player_id) < MAX_LED_COLORS && hasLED)
 		{
-			SetGamepadRGBLED(gcontroller, m_led_colors[player_id]);
+			SetGamepadRGBLED(gamepad, m_led_colors[player_id]);
 		}
 	}
 
@@ -842,8 +841,8 @@ bool SDLInputSource::CloseDevice(int joystick_index)
 	if (it->haptic)
 		SDL_CloseHaptic(it->haptic);
 
-	if (it->game_controller)
-		SDL_CloseGamepad(it->game_controller);
+	if (it->gamepad)
+		SDL_CloseGamepad(it->gamepad);
 	else
 		SDL_CloseJoystick(it->joystick);
 
@@ -856,7 +855,7 @@ static float NormalizeS16(s16 value)
 	return static_cast<float>(value) / (value < 0 ? 32768.0f : 32767.0f);
 }
 
-bool SDLInputSource::HandleControllerAxisEvent(const SDL_GamepadAxisEvent* ev)
+bool SDLInputSource::HandleGamepadAxisEvent(const SDL_GamepadAxisEvent* ev)
 {
 	auto it = GetControllerDataForJoystickId(ev->which);
 	if (it == m_controllers.end())
@@ -867,7 +866,7 @@ bool SDLInputSource::HandleControllerAxisEvent(const SDL_GamepadAxisEvent* ev)
 	return true;
 }
 
-bool SDLInputSource::HandleControllerButtonEvent(const SDL_GamepadButtonEvent* ev)
+bool SDLInputSource::HandleGamepadButtonEvent(const SDL_GamepadButtonEvent* ev)
 {
 	auto it = GetControllerDataForJoystickId(ev->which);
 	if (it == m_controllers.end())
@@ -886,9 +885,9 @@ bool SDLInputSource::HandleJoystickAxisEvent(const SDL_JoyAxisEvent* ev)
 	auto it = GetControllerDataForJoystickId(ev->which);
 	if (it == m_controllers.end())
 		return false;
-	if (ev->axis < it->joy_axis_used_in_gc.size() && it->joy_axis_used_in_gc[ev->axis])
-		return false; // Will get handled by GC event
-	const u32 axis = ev->axis + std::size(s_sdl_axis_names); // Ensure we don't conflict with GC axes
+	if (ev->axis < it->joy_axis_used_in_pad.size() && it->joy_axis_used_in_pad[ev->axis])
+		return false; // Will get handled by Gamepad event
+	const u32 axis = ev->axis + std::size(s_sdl_axis_names); // Ensure we don't conflict with Gamepad axes
 	const InputBindingKey key(MakeGenericControllerAxisKey(InputSourceType::SDL, it->player_id, axis));
 	InputManager::InvokeEvents(key, NormalizeS16(ev->value));
 	return true;
@@ -899,9 +898,9 @@ bool SDLInputSource::HandleJoystickButtonEvent(const SDL_JoyButtonEvent* ev)
 	auto it = GetControllerDataForJoystickId(ev->which);
 	if (it == m_controllers.end())
 		return false;
-	if (ev->button < it->joy_button_used_in_gc.size() && it->joy_button_used_in_gc[ev->button])
-		return false; // Will get handled by GC event
-	const u32 button = ev->button + std::size(s_sdl_button_names); // Ensure we don't conflict with GC buttons
+	if (ev->button < it->joy_button_used_in_pad.size() && it->joy_button_used_in_pad[ev->button])
+		return false; // Will get handled by Gamepad event
+	const u32 button = ev->button + std::size(s_sdl_button_names); // Ensure we don't conflict with Gamepad buttons
 	const InputBindingKey key(MakeGenericControllerButtonKey(InputSourceType::SDL, it->player_id, button));
 	InputManager::InvokeEvents(key, static_cast<float>(ev->down));
 	return true;
@@ -942,7 +941,7 @@ std::vector<InputBindingKey> SDLInputSource::EnumerateMotors()
 	{
 		key.source_index = cd.player_id;
 
-		if (cd.use_game_controller_rumble || cd.haptic_left_right_effect)
+		if (cd.use_gamepad_rumble || cd.haptic_left_right_effect)
 		{
 			// two motors
 			key.source_subtype = InputSubclass::ControllerMotor;
@@ -976,7 +975,7 @@ bool SDLInputSource::GetGenericBindingMapping(const std::string_view device, Inp
 	if (it == m_controllers.end())
 		return false;
 
-	if (it->game_controller)
+	if (it->gamepad)
 	{
 		// assume all buttons are present.
 		const s32 pid = player_id.value();
@@ -997,7 +996,7 @@ bool SDLInputSource::GetGenericBindingMapping(const std::string_view device, Inp
 				mapping->emplace_back(binding, fmt::format("SDL-{}/{}", pid, s_sdl_button_names[i]));
 		}
 
-		if (it->use_game_controller_rumble || it->haptic_left_right_effect)
+		if (it->use_gamepad_rumble || it->haptic_left_right_effect)
 		{
 			mapping->emplace_back(GenericInputBinding::SmallMotor, fmt::format("SDL-{}/SmallMotor", pid));
 			mapping->emplace_back(GenericInputBinding::LargeMotor, fmt::format("SDL-{}/LargeMotor", pid));
@@ -1055,9 +1054,9 @@ void SDLInputSource::SendRumbleUpdate(ControllerData* cd)
 	// we'll update before this duration is elapsed
 	static constexpr u32 DURATION = 65535; // SDL_MAX_RUMBLE_DURATION_MS
 
-	if (cd->use_game_controller_rumble)
+	if (cd->use_gamepad_rumble)
 	{
-		SDL_RumbleGamepad(cd->game_controller, cd->rumble_intensity[0], cd->rumble_intensity[1], DURATION);
+		SDL_RumbleGamepad(cd->gamepad, cd->rumble_intensity[0], cd->rumble_intensity[1], DURATION);
 		return;
 	}
 
