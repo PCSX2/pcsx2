@@ -24,6 +24,7 @@
 #include <sstream>
 #include <mutex>
 #include <optional>
+#include <chrono>
 
 // A helper function to parse the YAML file
 static std::optional<ryml::Tree> loadYamlFile(const char* filePath)
