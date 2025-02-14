@@ -199,7 +199,7 @@ namespace usb_pad
 		if (m_constant_effect.constant.level != new_level)
 		{
 			m_constant_effect.constant.level = new_level;
-			if (SDL_UpdateHapticEffect(m_haptic, m_constant_effect_id, &m_constant_effect) != 0)
+			if (!SDL_UpdateHapticEffect(m_haptic, m_constant_effect_id, &m_constant_effect))
 				Console.Warning("SDL_UpdateHapticEffect() for constant failed: %s", SDL_GetError());
 		}
 
@@ -217,7 +217,7 @@ namespace usb_pad
 		//                     This is the reason for use_ffb_dropout_workaround.
 		if (!m_constant_effect_running || use_ffb_dropout_workaround)
 		{
-			if (SDL_RunHapticEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
+			if (SDL_RunHapticEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY))
 				m_constant_effect_running = true;
 			else
 				Console.Error("SDL_RunHapticEffect() for constant failed: %s", SDL_GetError());
@@ -248,12 +248,12 @@ namespace usb_pad
 		m_spring_effect.condition.deadband[0] = ClampU16(ff.u.condition.deadband);
 		m_spring_effect.condition.center[0] = ClampS16(ff.u.condition.center);
 
-		if (SDL_UpdateHapticEffect(m_haptic, m_spring_effect_id, &m_spring_effect) != 0)
+		if (!SDL_UpdateHapticEffect(m_haptic, m_spring_effect_id, &m_spring_effect))
 			Console.Warning("SDL_UpdateHapticEffect() for spring failed: %s", SDL_GetError());
 
 		if (!m_spring_effect_running)
 		{
-			if (SDL_RunHapticEffect(m_haptic, m_spring_effect_id, SDL_HAPTIC_INFINITY) == 0)
+			if (SDL_RunHapticEffect(m_haptic, m_spring_effect_id, SDL_HAPTIC_INFINITY))
 				m_spring_effect_running = true;
 			else
 				Console.Error("SDL_RunHapticEffect() for spring failed: %s", SDL_GetError());
@@ -272,12 +272,12 @@ namespace usb_pad
 		m_damper_effect.condition.deadband[0] = ClampU16(ff.u.condition.deadband);
 		m_damper_effect.condition.center[0] = ClampS16(ff.u.condition.center);
 
-		if (SDL_UpdateHapticEffect(m_haptic, m_damper_effect_id, &m_damper_effect) != 0)
+		if (!SDL_UpdateHapticEffect(m_haptic, m_damper_effect_id, &m_damper_effect))
 			Console.Warning("SDL_UpdateHapticEffect() for damper failed: %s", SDL_GetError());
 
 		if (!m_damper_effect_running)
 		{
-			if (SDL_RunHapticEffect(m_haptic, m_damper_effect_id, SDL_HAPTIC_INFINITY) == 0)
+			if (SDL_RunHapticEffect(m_haptic, m_damper_effect_id, SDL_HAPTIC_INFINITY))
 				m_damper_effect_running = true;
 			else
 				Console.Error("SDL_RunHapticEffect() for damper failed: %s", SDL_GetError());
@@ -296,9 +296,9 @@ namespace usb_pad
 		m_friction_effect.condition.deadband[0] = ClampU16(ff.u.condition.deadband);
 		m_friction_effect.condition.center[0] = ClampS16(ff.u.condition.center);
 
-		if (SDL_UpdateHapticEffect(m_haptic, m_friction_effect_id, &m_friction_effect) != 0)
+		if (!SDL_UpdateHapticEffect(m_haptic, m_friction_effect_id, &m_friction_effect))
 		{
-			if (!m_friction_effect_running && SDL_RunHapticEffect(m_haptic, m_friction_effect_id, SDL_HAPTIC_INFINITY) == 0)
+			if (!m_friction_effect_running && SDL_RunHapticEffect(m_haptic, m_friction_effect_id, SDL_HAPTIC_INFINITY))
 				m_friction_effect_running = true;
 			else
 				Console.Error("SDL_UpdateHapticEffect() for friction failed: %s", SDL_GetError());
@@ -309,7 +309,7 @@ namespace usb_pad
 	{
 		if (m_autocenter_supported)
 		{
-			if (SDL_SetHapticAutocenter(m_haptic, value) != 0)
+			if (!SDL_SetHapticAutocenter(m_haptic, value))
 				Console.Warning("SDL_SetHapticAutocenter() failed: %s", SDL_GetError());
 		}
 	}
