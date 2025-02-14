@@ -211,7 +211,17 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
 		m_led_colors[i] = color;
 
 		const auto it = GetControllerDataForPlayerId(i);
-		if (it == m_controllers.end() || !it->game_controller || !SDL_GameControllerHasLED(it->game_controller))
+		if (it == m_controllers.end() || !it->game_controller)
+			continue;
+
+		const SDL_PropertiesID props = SDL_GetGamepadProperties(it->game_controller);
+		if (props == 0)
+		{
+			ERROR_LOG("SDLInputSource: SDL_GetGamepadProperties() failed");
+			continue;
+		}
+
+		if (!SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN, false))
 			continue;
 
 		SetControllerRGBLED(it->game_controller, color);
@@ -780,9 +790,19 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 	if (!cd.haptic && !cd.use_game_controller_rumble)
 		WARNING_LOG("SDLInputSource: Rumble is not supported on '{}'", name);
 
-	if (player_id >= 0 && static_cast<u32>(player_id) < MAX_LED_COLORS && gcontroller && SDL_GameControllerHasLED(gcontroller))
+	if (gcontroller)
 	{
-		SetControllerRGBLED(gcontroller, m_led_colors[player_id]);
+		const SDL_PropertiesID props = SDL_GetGamepadProperties(gcontroller);
+		bool hasLED = false;
+		if (props == 0)
+			ERROR_LOG("SDLInputSource: SDL_GetGamepadProperties() failed");
+		else
+			hasLED = SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN, false);
+
+		if (player_id >= 0 && static_cast<u32>(player_id) < MAX_LED_COLORS && hasLED)
+		{
+			SetGamepadRGBLED(gcontroller, m_led_colors[player_id]);
+		}
 	}
 
 	m_controllers.push_back(std::move(cd));
