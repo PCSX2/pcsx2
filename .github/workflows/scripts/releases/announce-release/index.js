@@ -2,6 +2,7 @@ import { MessageEmbed, WebhookClient } from "discord.js";
 import { Octokit } from "@octokit/rest";
 import { throttling } from "@octokit/plugin-throttling";
 import { retry } from "@octokit/plugin-retry";
+import { fetch } from "node-fetch";
 
 let owner = process.env.OWNER;
 let repo = process.env.REPO;
@@ -16,6 +17,9 @@ const octokit = new Octokit({
     info: () => { },
     warn: console.warn,
     error: console.error
+  },
+  request: {
+    fetch: fetch,
   },
   throttle: {
     onRateLimit: (retryAfter, options) => {
