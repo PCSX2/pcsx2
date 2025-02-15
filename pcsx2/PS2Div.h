@@ -6,8 +6,22 @@
 #include <vector>
 #include <array>
 
-class FpgaDiv
+class PS2Div
 {
+	struct CSAResult
+	{
+		uint32_t sum;
+		uint32_t carry;
+	};
+
+	static struct CSAResult CSA(uint32_t a, uint32_t b, uint32_t c)
+	{
+		uint32_t u = a ^ b;
+		uint32_t h = (a & b) | (u & c);
+		uint32_t l = u ^ c;
+		return {l, h << 1};
+	}
+
 public:
 
 	bool dz = false;
@@ -17,7 +31,7 @@ public:
 
 	u32 floatResult;
 
-	FpgaDiv(bool divMode, u32 f1, u32 f2);
+	PS2Div(bool divMode, u32 f1, u32 f2);
 
 protected:
 
@@ -38,6 +52,14 @@ private:
 	s32 SubSum = 0;
 	s32 SubSum0 = 0;
 	s32 SubMult = 0;
+
+	static s32 quotientSelect(CSAResult current);
+
+	static u32 mantissa(u32 x);
+
+	static u32 exponent(u32 x);
+
+	u32 fastdiv(u32 a, u32 b);
 
 	bool SignCalc(s32 Dvdtsign, s32 Dvsrsign);
 

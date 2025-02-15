@@ -1,13 +1,14 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include "FpgaDiv.h"
+#include "common/Pcsx2Defs.h"
+#include "PS2Div.h"
 #include "PS2Float.h"
 #include "Common.h"
 
-FpgaDiv::FpgaDiv(bool divMode, u32 f1, u32 f2)
+PS2Div::PS2Div(bool divMode, u32 f1, u32 f2)
 {
-	FpgaDiv::divMode = divMode;
+	PS2Div::divMode = divMode;
 
 	if (divMode)
 	{
@@ -34,6 +35,9 @@ FpgaDiv::FpgaDiv(bool divMode, u32 f1, u32 f2)
 			floatResult |= (u32)(((s32)(f2 >> 31) != (s32)(f1 >> 31)) ? 1 : 0 & 1) << 31;
 			return;
 		}
+
+		floatResult = fastdiv(f1, f2);
+		return;
 	}
 	else if ((f2 & 0x7F800000) == 0)
 	{
@@ -42,24 +46,15 @@ FpgaDiv::FpgaDiv(bool divMode, u32 f1, u32 f2)
 		return;
 	}
 
-	u32 floatDivisor, floatDividend;
-	s32 i, j, csaRes;
+	u32 floatDivisor = f1;
+	u32 floatDividend = f2;
+
+	s32 i, csaRes;
 	s32 man = 0;
 	s32 QuotientValueDomain = 1;
 
 	Product[0] = 1;
 	Carry[25] = 1;
-
-	if (divMode)
-	{
-		floatDividend = f1;
-		floatDivisor = f2;
-	}
-	else
-	{
-		floatDividend = f2;
-		floatDivisor = f1;
-	}
 
 	u8 Dvdtexp = (u8)((floatDividend >> 23) & 0xFF);
 	u8 Dvsrexp = (u8)((floatDivisor >> 23) & 0xFF);
@@ -120,7 +115,7 @@ FpgaDiv::FpgaDiv(bool divMode, u32 f1, u32 f2)
 	Divisor[24] = 0;
 	Divisor[25] = 0;
 
-	if (!divMode && Dvdtexp % 2 == 1)
+	if (Dvdtexp % 2 == 1)
 	{
 		for (i = 0; i <= 24; i++)
 		{
@@ -141,90 +136,22 @@ FpgaDiv::FpgaDiv(bool divMode, u32 f1, u32 f2)
 	s32 sign = SignCalc(Dvdtsign, Dvsrsign) ? 1 : 0;
 	s32 exp = ExpCalc(Dvdtexp, Dvsrexp);
 
-	if (divMode && (Quotient[0] == 0))
-		exp--;
-
-	if (divMode)
+	if (Dvdtexp == 0)
 	{
-		if ((Dvdtexp == 0) && (Dvsrexp == 0))
+		sign = 0;
+		exp = 0;
+		for (i = 0; i < 25; i++)
 		{
-			iv = true;
-			exp = 255;
-			for (i = 0; i < 25; i++)
-			{
-				Quotient[i] = 1;
-			}
-		}
-		else if ((Dvdtexp == 0) || (Dvsrexp != 0))
-		{
-			if ((Dvdtexp == 0) && (Dvsrexp != 0))
-			{
-				exp = 0;
-				for (i = 0; i < 25; i++)
-				{
-					Quotient[i] = 0;
-				}
-			}
-		}
-		else
-		{
-			dz = true;
-			exp = 255;
-			for (i = 0; i < 25; i++)
-			{
-				Quotient[i] = 1;
-			}
+			Quotient[i] = 0;
 		}
 	}
-	else
+	if (Dvdtsign == 1)
 	{
-		if (Dvdtexp == 0)
-		{
-			sign = 0;
-			exp = 0;
-			for (i = 0; i < 25; i++)
-			{
-				Quotient[i] = 0;
-			}
-		}
-		if (Dvdtsign == 1)
-		{
-			iv = true;
-			sign = 0;
-		}
+		iv = true;
+		sign = 0;
 	}
 
-	if (divMode)
-	{
-		if (exp < 256)
-		{
-			if (exp < 1)
-			{
-				uf = true;
-				exp = 0;
-				for (i = 0; i < 25; i++)
-				{
-					Quotient[i] = 0;
-				}
-			}
-		}
-		else
-		{
-			of = true;
-			exp = 255;
-			for (i = 0; i < 25; i++)
-			{
-				Quotient[i] = 1;
-			}
-		}
-	}
-
-	if (divMode)
-		j = 2 - Quotient[0];
-	else
-		j = 1;
-
-	for (i = j; i < j + 23; i++)
+	for (i = 1; i < 24; i++)
 	{
 		man = man * 2 + Quotient[i];
 	}
@@ -238,17 +165,103 @@ FpgaDiv::FpgaDiv(bool divMode, u32 f1, u32 f2)
 	floatResult |= (u32)man & 0x7FFFFF;
 }
 
-bool FpgaDiv::SignCalc(s32 Dvdtsign, s32 Dvsrsign)
+s32 PS2Div::quotientSelect(CSAResult current)
+{
+	// Note: Decimal point is between bits 24 and 25
+	u32 mask = (1 << 24) - 1; // Bit 23 needs to be or'd in instead of added
+	s32 test = ((current.sum & ~mask) + current.carry) | (current.sum & mask);
+	if (test >= 1 << 23)
+	{ // test >= 0.25
+		return 1;
+	}
+	else if (test < static_cast<s32>(~0u << 24))
+	{ // test < -0.5
+		return -1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+u32 PS2Div::mantissa(u32 x)
+{
+	return (x & 0x7fffff) | 0x800000;
+}
+
+u32 PS2Div::exponent(u32 x)
+{
+	return (x >> 23) & 0xff;
+}
+
+u32 PS2Div::fastdiv(u32 a, u32 b)
+{
+	u32 am = mantissa(a) << 2;
+	u32 bm = mantissa(b) << 2;
+	CSAResult current = {am, 0};
+	u32 quotient = 0;
+	s32 quotientBit = 1;
+	for (s32 i = 0; i < 25; i++)
+	{
+		quotient = (quotient << 1) + quotientBit;
+		u32 add = quotientBit > 0 ? ~bm : quotientBit < 0 ? bm :
+																 0;
+		current.carry += quotientBit > 0;
+		CSAResult csa = CSA(current.sum, current.carry, add);
+		quotientBit = quotientSelect(quotientBit ? csa : current);
+		current.sum = csa.sum << 1;
+		current.carry = csa.carry << 1;
+	}
+	u32 sign = ((a ^ b) & PS2Float::SIGNMASK);
+	u32 Dvdtexp = exponent(a);
+	u32 Dvsrexp = exponent(b);
+	s32 cexp = Dvdtexp - Dvsrexp + 126;
+	if (quotient >= (1 << 24))
+	{
+		cexp += 1;
+		quotient >>= 1;
+	}
+	if (Dvdtexp == 0 && Dvsrexp == 0)
+	{
+		iv = true;
+		return sign | PS2Float::MAX_FLOATING_POINT_VALUE;
+	}
+	else if (Dvdtexp == 0 || Dvsrexp != 0)
+	{
+		if (Dvdtexp == 0 && Dvsrexp != 0)
+		{
+			return sign;
+		}
+	}
+	else
+	{
+		dz = true;
+		return sign | PS2Float::MAX_FLOATING_POINT_VALUE;
+	}
+	if (cexp > 255)
+	{
+		of = true;
+		return sign | PS2Float::MAX_FLOATING_POINT_VALUE;
+	}
+	else if (cexp < 1)
+	{
+		uf = true;
+		return sign;
+	}
+	return (quotient & 0x7fffff) | (cexp << 23) | sign;
+}
+
+bool PS2Div::SignCalc(s32 Dvdtsign, s32 Dvsrsign)
 {
 	return divMode && Dvsrsign != Dvdtsign;
 }
 
-bool FpgaDiv::BitInvert(s32 val)
+bool PS2Div::BitInvert(s32 val)
 {
 	return val < 1;
 }
 
-s32 FpgaDiv::ExpCalc(s32 Dvdtexp, s32 Dvsrexp)
+s32 PS2Div::ExpCalc(s32 Dvdtexp, s32 Dvsrexp)
 {
 	s32 result;
 
@@ -261,7 +274,7 @@ s32 FpgaDiv::ExpCalc(s32 Dvdtexp, s32 Dvsrexp)
 	return result + 127;
 }
 
-s32 FpgaDiv::CSAQSLAdder(s32 QuotientValueDomain)
+s32 PS2Div::CSAQSLAdder(s32 QuotientValueDomain)
 {
 	s32 CarryArray[4];
 	s32 SumArray[4];
@@ -312,7 +325,7 @@ s32 FpgaDiv::CSAQSLAdder(s32 QuotientValueDomain)
 	return QSLAdder(SumArray, CarryArray);
 }
 
-s32 FpgaDiv::QSLAdder(s32 SumArray[], s32 CarryArray[])
+s32 PS2Div::QSLAdder(s32 SumArray[], s32 CarryArray[])
 {
 	s32 specialCondition = 0;
 	s32 result;
@@ -349,7 +362,7 @@ s32 FpgaDiv::QSLAdder(s32 SumArray[], s32 CarryArray[])
 	return result;
 }
 
-s32 FpgaDiv::ProductQuotientRestTransformation(s32 increment, s32 QuotientValueDomain)
+s32 PS2Div::ProductQuotientRestTransformation(s32 increment, s32 QuotientValueDomain)
 {
 	s32 i;
 
@@ -380,7 +393,7 @@ s32 FpgaDiv::ProductQuotientRestTransformation(s32 increment, s32 QuotientValueD
 	return 0;
 }
 
-s32 FpgaDiv::CSAAdder(s32 sum, s32 carry, s32 mult, s32& resSum, s32& resCarry)
+s32 PS2Div::CSAAdder(s32 sum, s32 carry, s32 mult, s32& resSum, s32& resCarry)
 {
 	s32 addResult = carry + sum + mult;
 	resCarry = 0;
@@ -398,12 +411,12 @@ s32 FpgaDiv::CSAAdder(s32 sum, s32 carry, s32 mult, s32& resSum, s32& resCarry)
 	return 0;
 }
 
-s32 FpgaDiv::CLAAdder(s32 SumArray[], s32 CarryArray[])
+s32 PS2Div::CLAAdder(s32 SumArray[], s32 CarryArray[])
 {
 	return (2 * CarryArray[1] + 4 * CarryArray[0] + CarryArray[2] + 2 * SumArray[1] + 4 * SumArray[0] + SumArray[2]) % 8;
 }
 
-s32 FpgaDiv::MultipleFormation(s32 QuotientValueDomain)
+s32 PS2Div::MultipleFormation(s32 QuotientValueDomain)
 {
 	s32 i;
 
@@ -421,7 +434,7 @@ s32 FpgaDiv::MultipleFormation(s32 QuotientValueDomain)
 	return 0;
 }
 
-s32 FpgaDiv::DivideModeFormation(s32 QuotientValueDomain)
+s32 PS2Div::DivideModeFormation(s32 QuotientValueDomain)
 {
 	s32 i;
 
@@ -441,7 +454,7 @@ s32 FpgaDiv::DivideModeFormation(s32 QuotientValueDomain)
 	return 0;
 }
 
-s32 FpgaDiv::RootModeFormation(s32 QuotientValueDomain)
+s32 PS2Div::RootModeFormation(s32 QuotientValueDomain)
 {
 	s32 i;
 

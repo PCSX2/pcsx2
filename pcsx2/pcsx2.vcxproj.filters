@@ -1449,7 +1449,7 @@
     <ClCompile Include="PS2Float.cpp">
       <Filter>System\Ps2\EmotionEngine\Shared</Filter>
     </ClCompile>
-    <ClCompile Include="FpgaDiv.cpp">
+    <ClCompile Include="PS2Div.cpp">
       <Filter>System\Ps2\EmotionEngine\Shared</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2411,7 +2411,7 @@
     <ClInclude Include="PS2Float.h">
       <Filter>System\Ps2\EmotionEngine\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="FpgaDiv.h">
+    <ClInclude Include="PS2Div.h">
       <Filter>System\Ps2\EmotionEngine\Shared</Filter>
     </ClInclude>
   </ItemGroup>

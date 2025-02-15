@@ -10,7 +10,7 @@
 #include <bit>
 #include "common/Pcsx2Defs.h"
 #include "common/BitUtils.h"
-#include "FpgaDiv.h"
+#include "PS2Div.h"
 #include "PS2Float.h"
 #include "Common.h"
 
@@ -266,33 +266,33 @@ PS2Float PS2Float::MulSubAcc(PS2Float opsend, PS2Float optend)
 
 PS2Float PS2Float::Div(PS2Float divend)
 {
-	FpgaDiv fpga = FpgaDiv(true, raw, divend.raw);
-	PS2Float result = PS2Float(fpga.floatResult);
-	result.dz = fpga.dz;
-	result.iv = fpga.iv;
-	result.of = fpga.of;
-	result.uf = fpga.uf;
+	PS2Div div = PS2Div(true, raw, divend.raw);
+	PS2Float result = PS2Float(div.floatResult);
+	result.dz = div.dz;
+	result.iv = div.iv;
+	result.of = div.of;
+	result.uf = div.uf;
 	return result;
 }
 
 PS2Float PS2Float::Sqrt()
 {
-	FpgaDiv fpga = FpgaDiv(false, 0, PS2Float(false, Exponent(), Mantissa()).raw);
-	PS2Float result = PS2Float(fpga.floatResult);
-	result.dz = fpga.dz;
-	result.iv = fpga.iv;
+	PS2Div sqrt = PS2Div(false, 0, PS2Float(false, Exponent(), Mantissa()).raw);
+	PS2Float result = PS2Float(sqrt.floatResult);
+	result.dz = sqrt.dz;
+	result.iv = sqrt.iv;
 	return result;
 }
 
 PS2Float PS2Float::Rsqrt(PS2Float other)
 {
-	FpgaDiv fpgaSqrt = FpgaDiv(false, 0, PS2Float(false, other.Exponent(), other.Mantissa()).raw);
-	FpgaDiv fpgaDiv = FpgaDiv(true, raw, fpgaSqrt.floatResult);
-	PS2Float result = PS2Float(fpgaDiv.floatResult);
-	result.dz = fpgaSqrt.dz || fpgaDiv.dz;
-	result.iv = fpgaSqrt.iv || fpgaDiv.iv;
-	result.of = fpgaDiv.of;
-	result.uf = fpgaDiv.uf;
+	PS2Div sqrt = PS2Div(false, 0, PS2Float(false, other.Exponent(), other.Mantissa()).raw);
+	PS2Div div = PS2Div(true, raw, sqrt.floatResult);
+	PS2Float result = PS2Float(div.floatResult);
+	result.dz = sqrt.dz || div.dz;
+	result.iv = sqrt.iv || div.iv;
+	result.of = div.of;
+	result.uf = div.uf;
 	return result;
 }
 
