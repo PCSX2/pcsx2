@@ -224,8 +224,21 @@ bool CocoaTools::DelayedLaunch(std::string_view file)
 bool CocoaTools::ShowInFinder(std::string_view file)
 {
 	return [[NSWorkspace sharedWorkspace] selectFile:NSStringFromStringView(file)
-	                        inFileViewerRootedAtPath:nil];
+	                        inFileViewerRootedAtPath:@""];
 }
+
+std::optional<std::string> CocoaTools::GetResourcePath()
+{ @autoreleasepool {
+	if (NSBundle* bundle = [NSBundle mainBundle])
+	{
+		NSString* rsrc = [bundle resourcePath];
+		NSString* root = [bundle bundlePath];
+		if ([rsrc isEqualToString:root])
+			rsrc = [rsrc stringByAppendingString:@"/resources"];
+		return [rsrc UTF8String];
+	}
+	return std::nullopt;
+}}
 
 // MARK: - GSRunner
 
