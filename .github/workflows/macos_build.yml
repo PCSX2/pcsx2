@@ -43,6 +43,8 @@ jobs:
       CCACHE_COMPRESS: true
       CCACHE_COMPRESSLEVEL: 9
       CCACHE_MAXSIZE: 500M
+      # Only way to use a secret in an if statement
+      SIGN_KEY: ${{ secrets.APPLE_SIGN_P12_B64 }}
 
     steps:
       - name: Checkout Repository
@@ -151,13 +153,13 @@ jobs:
           mv build/pcsx2*/PCSX2.app PCSX2.app
 
       - name: Pull the Signing Keys and Notarization Credentials
-        if: ${{ inputs.sign_and_notarize == true }}
+        if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
         run: |
           echo "${{ secrets.APPLE_SIGN_P12_B64 }}" | base64 -d > cert.p12
           echo "${{ secrets.APPLE_APPSTORECONNECT_CFG }}" | base64 -d > key.json
 
       - name: Sign the Application
-        if: ${{ inputs.sign_and_notarize == true }}
+        if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
         uses: indygreg/apple-code-sign-action@v1.1
         with:
           input_path: 'PCSX2.app'
