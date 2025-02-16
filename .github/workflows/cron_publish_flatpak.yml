@@ -10,6 +10,7 @@ jobs:
     if: github.repository == 'PCSX2/pcsx2'
     name: "Check if release is needed"
     runs-on: ubuntu-latest
+    timeout-minutes: 180
     outputs:
       PCSX2_RELEASE: ${{ steps.getinfo.outputs.PCSX2_RELEASE }}
       FLATHUB_RELEASE: ${{ steps.getinfo.outputs.FLATHUB_RELEASE }}
