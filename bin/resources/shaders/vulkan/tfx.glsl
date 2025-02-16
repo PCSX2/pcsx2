@@ -954,7 +954,7 @@ vec4 ps_color()
 			T.a = float(denorm_c_before.a & 0x80u);
 		#else
 			T.r = float((denorm_c_before.r << 3) & 0xF8u);
-			T.g = float(((denorm_c_before.r >> 2) & 0x38) | ((denorm_c_before.g << 6) & 0xC0u));
+			T.g = float(((denorm_c_before.r >> 2) & 0x38u) | ((denorm_c_before.g << 6) & 0xC0u));
 			T.b = float((denorm_c_before.g << 1) & 0xF8u);
 			T.a = float(denorm_c_before.g & 0x80u);
 		#endif
