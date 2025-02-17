@@ -23,6 +23,11 @@ StackWidget::StackWidget(DebugInterface& cpu, QWidget* parent)
 		m_ui.stackList->horizontalHeader()->setSectionResizeMode(i, mode);
 		i++;
 	}
+
+	receiveEvent<DebuggerEvents::VMUpdate>([this](const DebuggerEvents::VMUpdate& event) -> bool {
+		m_model.refreshData();
+		return true;
+	});
 }
 
 void StackWidget::onContextMenu(QPoint pos)
@@ -39,7 +44,7 @@ void StackWidget::onContextMenu(QPoint pos)
 		if (!selModel->hasSelection())
 			return;
 
-		QGuiApplication::clipboard()->setText(m_ui.stackList->model()->data(selModel->currentIndex()).toString());
+		QGuiApplication::clipboard()->setText(m_model.data(selModel->currentIndex()).toString());
 	});
 	contextMenu->addAction(actionCopy);
 
@@ -60,17 +65,21 @@ void StackWidget::onDoubleClick(const QModelIndex& index)
 	{
 		case StackModel::StackModel::ENTRY:
 		case StackModel::StackModel::ENTRY_LABEL:
-			//m_ui.disassemblyWidget->gotoAddressAndSetFocus(m_ui.stackList->model()->data(m_ui.stackList->model()->index(index.row(), StackModel::StackColumns::ENTRY), Qt::UserRole).toUInt());
-			not_yet_implemented();
+		{
+			QModelIndex entry_index = m_model.index(index.row(), StackModel::StackColumns::ENTRY);
+			goToInPrimaryDisassembler(m_model.data(entry_index, Qt::UserRole).toUInt());
 			break;
+		}
 		case StackModel::StackModel::SP:
-			//m_ui.memoryviewWidget->gotoAddress(m_ui.stackList->model()->data(index, Qt::UserRole).toUInt());
-			//m_ui.tabWidget->setCurrentWidget(m_ui.tab_memory);
-			not_yet_implemented();
+		{
+			goToInPrimaryMemoryView(m_model.data(index, Qt::UserRole).toUInt(), DebuggerEvents::SWITCH_TO_RECEIVER);
 			break;
+		}
 		default: // Default to PC
-			//m_ui.disassemblyWidget->gotoAddressAndSetFocus(m_ui.stackList->model()->data(m_ui.stackList->model()->index(index.row(), StackModel::StackColumns::PC), Qt::UserRole).toUInt());
-			not_yet_implemented();
+		{
+			QModelIndex pc_index = m_model.index(index.row(), StackModel::StackColumns::PC);
+			goToInPrimaryDisassembler(m_model.data(pc_index, Qt::UserRole).toUInt());
 			break;
+		}
 	}
 }

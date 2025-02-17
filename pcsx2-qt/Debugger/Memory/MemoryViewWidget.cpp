@@ -462,6 +462,20 @@ MemoryViewWidget::MemoryViewWidget(DebugInterface& cpu, QWidget* parent)
 	m_table.UpdateStartAddress(0x480000);
 
 	applyMonospaceFont();
+
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		update();
+		return true;
+	});
+
+	receiveEvent<DebuggerEvents::GoToAddress>([this](const DebuggerEvents::GoToAddress& event) -> bool {
+		if (event.filter != DebuggerEvents::GoToAddress::NONE &&
+			event.filter != DebuggerEvents::GoToAddress::MEMORY_VIEW)
+			return false;
+
+		gotoAddress(event.address);
+		return true;
+	});
 }
 
 MemoryViewWidget::~MemoryViewWidget() = default;
@@ -502,7 +516,9 @@ void MemoryViewWidget::customMenuRequested(QPoint pos)
 
 		action = new QAction(tr("Go to in Disassembly"));
 		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { emit gotoInDisasm(m_table.selectedAddress); });
+		connect(action, &QAction::triggered, this, [this]() {
+			goToInPrimaryDisassembler(m_table.selectedAddress);
+		});
 
 		action = new QAction(tr("Go to address"));
 		m_contextMenu->addAction(action);
@@ -540,7 +556,11 @@ void MemoryViewWidget::customMenuRequested(QPoint pos)
 
 		action = new QAction((tr("Add to Saved Memory Addresses")));
 		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { emit addToSavedAddresses(m_table.selectedAddress); });
+		connect(action, &QAction::triggered, this, [this]() {
+			DebuggerEvents::AddToSavedAddresses event;
+			event.address = m_table.selectedAddress;
+			DebuggerWidget::sendEvent(std::move(event));
+		});
 
 		action = new QAction(tr("Copy Byte"));
 		m_contextMenu->addAction(action);
@@ -647,7 +667,7 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
 		}
 	}
 	this->repaint();
-	VMUpdate();
+	DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
 }
 
 void MemoryViewWidget::gotoAddress(u32 address)

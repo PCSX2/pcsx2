@@ -27,15 +27,17 @@ BreakpointWidget::BreakpointWidget(DebugInterface& cpu, QWidget* parent)
 	}
 
 	connect(&m_model, &BreakpointModel::dataChanged, &m_model, &BreakpointModel::refreshData);
+
+	receiveEvent<DebuggerEvents::BreakpointsChanged>([this](const DebuggerEvents::BreakpointsChanged& event) -> bool {
+		m_model.refreshData();
+		return true;
+	});
 }
 
 void BreakpointWidget::onDoubleClicked(const QModelIndex& index)
 {
 	if (index.isValid() && index.column() == BreakpointModel::OFFSET)
-	{
-		not_yet_implemented();
-		//m_ui.disassemblyWidget->gotoAddressAndSetFocus(m_model.data(index, BreakpointModel::DataRole).toUInt());
-	}
+		goToInPrimaryDisassembler(m_model.data(index, BreakpointModel::DataRole).toUInt());
 }
 
 void BreakpointWidget::onContextMenu(QPoint pos)

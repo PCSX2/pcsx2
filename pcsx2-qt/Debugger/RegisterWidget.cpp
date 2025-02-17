@@ -39,6 +39,11 @@ RegisterWidget::RegisterWidget(DebugInterface& cpu, QWidget* parent)
 	connect(ui.registerTabs, &QTabBar::currentChanged, [this]() { this->repaint(); });
 
 	applyMonospaceFont();
+
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		update();
+		return true;
+	});
 }
 
 RegisterWidget::~RegisterWidget()
@@ -277,11 +282,11 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 
 	m_contextMenu->addSeparator();
 
-	m_contextMenu->addAction(action = new QAction(tr("Go to in Disassembly"), this));
-	connect(action, &QAction::triggered, this, &RegisterWidget::contextGotoDisasm);
-
-	m_contextMenu->addAction(action = new QAction(tr("Go to in Memory View"), this));
-	connect(action, &QAction::triggered, this, &RegisterWidget::contextGotoMemory);
+	createEventActions<DebuggerEvents::GoToAddress>(
+		m_contextMenu,
+		[this]() -> std::optional<DebuggerEvents::GoToAddress> {
+			return contextCreateGotoEvent();
+		});
 
 	m_contextMenu->popup(this->mapToGlobal(pos));
 }
@@ -371,7 +376,7 @@ void RegisterWidget::contextChangeValue()
 	if (contextFetchNewValue(newVal, cpu().getRegister(categoryIndex, m_selectedRow).lo))
 	{
 		cpu().setRegister(categoryIndex, m_selectedRow, u128::From64(newVal));
-		VMUpdate();
+		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
 	}
 }
 
@@ -383,7 +388,7 @@ void RegisterWidget::contextChangeTop()
 	{
 		oldVal.hi = newVal;
 		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
-		VMUpdate();
+		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
 	}
 }
 
@@ -395,7 +400,7 @@ void RegisterWidget::contextChangeBottom()
 	{
 		oldVal.lo = newVal;
 		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
-		VMUpdate();
+		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
 	}
 }
 
@@ -407,11 +412,11 @@ void RegisterWidget::contextChangeSegment()
 	{
 		oldVal._u32[3 - m_selected128Field] = (u32)newVal;
 		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
-		VMUpdate();
+		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
 	}
 }
 
-void RegisterWidget::contextGotoDisasm()
+std::optional<DebuggerEvents::GoToAddress> RegisterWidget::contextCreateGotoEvent()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	u128 regVal = cpu().getRegister(categoryIndex, m_selectedRow);
@@ -422,22 +427,16 @@ void RegisterWidget::contextGotoDisasm()
 	else
 		addr = regVal._u32[0];
 
-	if (cpu().isValidAddress(addr))
-		gotoInDisasm(addr);
-	else
-		QMessageBox::warning(this, tr("Invalid target address"), ("This register holds an invalid address."));
-}
+	if (!cpu().isValidAddress(addr))
+	{
+		QMessageBox::warning(
+			this,
+			tr("Invalid target address"),
+			tr("This register holds an invalid address."));
+		return std::nullopt;
+	}
 
-void RegisterWidget::contextGotoMemory()
-{
-	const int categoryIndex = ui.registerTabs->currentIndex();
-	u128 regVal = cpu().getRegister(categoryIndex, m_selectedRow);
-	u32 addr = 0;
-
-	if (cpu().getRegisterSize(categoryIndex) == 128)
-		addr = regVal._u32[3 - m_selected128Field];
-	else
-		addr = regVal._u32[0];
-
-	gotoInMemory(addr);
+	DebuggerEvents::GoToAddress event;
+	event.address = addr;
+	return event;
 }

@@ -24,12 +24,6 @@ public:
 	void updateVisibleNodes(bool update_hashes);
 	void expandGroups(QModelIndex index);
 
-signals:
-	void goToInDisassembly(u32 address);
-	void goToInMemoryView(u32 address);
-	void nameColumnClicked(u32 address);
-	void locationColumnClicked(u32 address);
-
 protected:
 	struct SymbolWork
 	{
@@ -93,8 +87,6 @@ protected:
 	void onCopyMangledName();
 	void onCopyLocation();
 	void onRenameSymbol();
-	void onGoToInDisassembly();
-	void onGoToInMemoryView();
 	void onResetChildren();
 	void onChangeTypeTemporarily();
 
@@ -109,8 +101,7 @@ protected:
 
 	QMenu* m_context_menu = nullptr;
 	QAction* m_rename_symbol = nullptr;
-	QAction* m_go_to_in_disassembly = nullptr;
-	QAction* m_m_go_to_in_memory_view = nullptr;
+	std::vector<QAction*> m_go_to_actions;
 	QAction* m_show_size_column = nullptr;
 	QAction* m_group_by_module = nullptr;
 	QAction* m_group_by_section = nullptr;
@@ -125,7 +116,8 @@ protected:
 		ALLOW_GROUPING = 1 << 0,
 		ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN = 1 << 1,
 		ALLOW_TYPE_ACTIONS = 1 << 2,
-		ALLOW_MANGLED_NAME_ACTIONS = 1 << 3
+		ALLOW_MANGLED_NAME_ACTIONS = 1 << 3,
+		CLICK_TO_GO_TO_IN_DISASSEMBLER = 1 << 4
 	};
 
 	u32 m_flags;

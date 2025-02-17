@@ -281,24 +281,17 @@ void DockLayout::retranslateDockWidget(KDDockWidgets::Core::DockWidget* dock_wid
 	DebuggerWidget* widget = widget_iterator->second.get();
 	if (!widget)
 		return;
-
-	auto description_iterator = DockTables::DEBUGGER_WIDGETS.find(widget->metaObject()->className());
-	if (description_iterator == DockTables::DEBUGGER_WIDGETS.end())
-		return;
-
-	const DockTables::DebuggerWidgetDescription& description = description_iterator->second;
-
-	QString translated_title = QCoreApplication::translate("DebuggerWidget", description.title);
+	;
 	std::optional<BreakPointCpu> cpu_override = widget->cpuOverride();
 
 	if (cpu_override.has_value())
 	{
 		const char* cpu_name = DebugInterface::cpuName(*cpu_override);
-		dock_widget->setTitle(QString("%1 (%2)").arg(translated_title).arg(cpu_name));
+		dock_widget->setTitle(QString("%1 (%2)").arg(widget->displayName()).arg(cpu_name));
 	}
 	else
 	{
-		dock_widget->setTitle(std::move(translated_title));
+		dock_widget->setTitle(std::move(widget->displayName()));
 	}
 }
 
@@ -315,6 +308,11 @@ void DockLayout::dockWidgetClosed(KDDockWidgets::Core::DockWidget* dock_widget)
 
 	m_widgets.erase(debugger_widget_iterator);
 	dock_widget->deleteLater();
+}
+
+const std::map<QString, QPointer<DebuggerWidget>>& DockLayout::debuggerWidgets()
+{
+	return m_widgets;
 }
 
 bool DockLayout::hasDebuggerWidget(QString unique_name)

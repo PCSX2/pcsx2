@@ -129,11 +129,6 @@ public slots:
 	void contextPaste();
 	void gotoAddress(u32 address);
 
-signals:
-	void gotoInDisasm(u32 address, bool should_set_focus = true);
-	void addToSavedAddresses(u32 address);
-	void VMUpdate();
-
 private:
 	Ui::MemoryViewWidget ui;
 

@@ -27,6 +27,11 @@ ThreadWidget::ThreadWidget(DebugInterface& cpu, QWidget* parent)
 		m_ui.threadList->horizontalHeader()->setSectionResizeMode(i, mode);
 		i++;
 	}
+
+	receiveEvent<DebuggerEvents::VMUpdate>([this](const DebuggerEvents::VMUpdate& event) -> bool {
+		m_model.refreshData();
+		return true;
+	});
 }
 
 void ThreadWidget::onContextMenu(QPoint pos)
@@ -43,7 +48,7 @@ void ThreadWidget::onContextMenu(QPoint pos)
 		if (!selModel->hasSelection())
 			return;
 
-		QGuiApplication::clipboard()->setText(m_ui.threadList->model()->data(selModel->currentIndex()).toString());
+		QGuiApplication::clipboard()->setText(m_model.data(selModel->currentIndex()).toString());
 	});
 	contextMenu->addAction(actionCopy);
 
@@ -63,13 +68,15 @@ void ThreadWidget::onDoubleClick(const QModelIndex& index)
 	switch (index.column())
 	{
 		case ThreadModel::ThreadColumns::ENTRY:
-			not_yet_implemented();
-			//m_ui.memoryviewWidget->gotoAddress(m_ui.threadList->model()->data(index, Qt::UserRole).toUInt());
-			//m_ui.tabWidget->setCurrentWidget(m_ui.tab_memory);
+		{
+			goToInPrimaryMemoryView(m_model.data(index, Qt::UserRole).toUInt(), DebuggerEvents::SWITCH_TO_RECEIVER);
 			break;
+		}
 		default: // Default to PC
-			not_yet_implemented();
-			//m_ui.disassemblyWidget->gotoAddressAndSetFocus(m_ui.threadList->model()->data(m_ui.threadList->model()->index(index.row(), ThreadModel::ThreadColumns::PC), Qt::UserRole).toUInt());
+		{
+			QModelIndex pc_index = m_model.index(index.row(), ThreadModel::ThreadColumns::PC);
+			goToInPrimaryDisassembler(m_model.data(pc_index, Qt::UserRole).toUInt());
 			break;
+		}
 	}
 }

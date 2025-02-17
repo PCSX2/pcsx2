@@ -134,12 +134,6 @@ public slots:
 	void contextCopySearchResultAddress();
 	void onListSearchResultsContextMenu(QPoint pos);
 
-signals:
-	void addAddressToSavedAddressesList(u32 address);
-	void goToAddressInDisassemblyView(u32 address);
-	void goToAddressInMemoryView(u32 address);
-	void switchToMemoryViewTab();
-
 private:
 	std::vector<SearchResult> m_searchResults;
 	SearchComparisonLabelMap m_searchComparisonLabelMap;
