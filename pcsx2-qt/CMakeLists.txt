@@ -160,6 +160,7 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/AnalysisOptionsDialog.ui
 	Debugger/DebuggerSettingsManager.cpp
 	Debugger/DebuggerSettingsManager.h
+	Debugger/DebuggerEvents.h
 	Debugger/DebuggerWidget.cpp
 	Debugger/DebuggerWidget.h
 	Debugger/DebuggerWindow.cpp

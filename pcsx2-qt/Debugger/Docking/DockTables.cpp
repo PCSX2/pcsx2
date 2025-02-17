@@ -3,6 +3,7 @@
 
 #include "DockTables.h"
 
+#include "Debugger/DebuggerEvents.h"
 #include "Debugger/DisassemblyWidget.h"
 #include "Debugger/RegisterWidget.h"
 #include "Debugger/StackWidget.h"
@@ -19,12 +20,16 @@
 
 using namespace DockUtils;
 
-#define DEBUGGER_WIDGET(type, title, preferred_location) \
+#define DEBUGGER_WIDGET(type, display_name, preferred_location) \
 	{ \
 		#type, \
 		{ \
-			[](DebugInterface& cpu) -> DebuggerWidget* { return new type(cpu); }, \
-				title, \
+			[](const DebuggerWidgetParameters& parameters) -> DebuggerWidget* { \
+				DebuggerWidget* widget = new type(parameters); \
+				widget->handleEvent(DebuggerEvents::Refresh()); \
+				return widget; \
+			}, \
+				display_name, \
 				preferred_location \
 		} \
 	}

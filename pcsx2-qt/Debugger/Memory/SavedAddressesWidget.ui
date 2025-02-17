@@ -30,11 +30,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QTableWidget" name="savedAddressesList">
-     <property name="contextMenuPolicy">
-      <enum>Qt::CustomContextMenu</enum>
-     </property>
-    </widget>
+    <widget class="QTableView" name="savedAddressesList"/>
    </item>
   </layout>
  </widget>

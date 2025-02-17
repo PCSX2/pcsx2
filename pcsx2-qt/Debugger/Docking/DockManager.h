@@ -74,7 +74,9 @@ public:
 	void retranslateDockWidget(KDDockWidgets::Core::DockWidget* dock_widget);
 	void dockWidgetClosed(KDDockWidgets::Core::DockWidget* dock_widget);
 
+	const std::map<QString, QPointer<DebuggerWidget>>& debuggerWidgets();
 	void recreateDebuggerWidget(QString unique_name);
+	void switchToDebuggerWidget(DebuggerWidget* widget);
 
 	bool isLayoutLocked();
 	void setLayoutLocked(bool locked);

@@ -13,15 +13,14 @@
 #include <QtWidgets/QProxyStyle>
 #include <QtWidgets/QMessageBox>
 
-#include <algorithm>
 #include <bit>
 
 #define CAT_SHOW_FLOAT (categoryIndex == EECAT_FPR && m_showFPRFloat) || (categoryIndex == EECAT_VU0F && m_showVU0FFloat)
 
 using namespace QtUtils;
 
-RegisterWidget::RegisterWidget(DebugInterface& cpu, QWidget* parent)
-	: DebuggerWidget(&cpu)
+RegisterWidget::RegisterWidget(const DebuggerWidgetParameters& parameters)
+	: DebuggerWidget(parameters)
 {
 	this->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 
@@ -31,14 +30,19 @@ RegisterWidget::RegisterWidget(DebugInterface& cpu, QWidget* parent)
 	connect(this, &RegisterWidget::customContextMenuRequested, this, &RegisterWidget::customMenuRequested);
 	connect(ui.registerTabs, &QTabBar::currentChanged, this, &RegisterWidget::tabCurrentChanged);
 
-	for (int i = 0; i < cpu.getRegisterCategoryCount(); i++)
+	for (int i = 0; i < cpu().getRegisterCategoryCount(); i++)
 	{
-		ui.registerTabs->addTab(cpu.getRegisterCategoryName(i));
+		ui.registerTabs->addTab(cpu().getRegisterCategoryName(i));
 	}
 
 	connect(ui.registerTabs, &QTabBar::currentChanged, [this]() { this->repaint(); });
 
 	applyMonospaceFont();
+
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		update();
+		return true;
+	});
 }
 
 RegisterWidget::~RegisterWidget()
@@ -218,72 +222,66 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 	if (m_selectedRow > m_rowEnd) // Unsigned underflow; selectedRow will be > m_rowEnd (technically negative)
 		return;
 
-	// Unlike the disassembly widget, we need to create a new context menu every time
-	// we show it. Because some register groups are special
-	if (!m_contextMenu)
-		m_contextMenu = new QMenu(this);
-	else
-		m_contextMenu->clear();
+	QMenu* menu = new QMenu(this);
+	menu->setAttribute(Qt::WA_DeleteOnClose);
 
 	const int categoryIndex = ui.registerTabs->currentIndex();
 
-	QAction* action = 0;
-
 	if (categoryIndex == EECAT_FPR)
 	{
-		m_contextMenu->addAction(action = new QAction(m_showFPRFloat ? tr("View as hex") : tr("View as float")));
+		QAction* action = menu->addAction(tr("Show as Float"));
+		action->setCheckable(true);
+		action->setChecked(m_showFPRFloat);
 		connect(action, &QAction::triggered, this, [this]() { m_showFPRFloat = !m_showFPRFloat; });
-		m_contextMenu->addSeparator();
+
+		menu->addSeparator();
 	}
 
 	if (categoryIndex == EECAT_VU0F)
 	{
-		m_contextMenu->addAction(action = new QAction(m_showVU0FFloat ? tr("View as hex") : tr("View as float")));
+		QAction* action = menu->addAction(tr("Show as Float"));
+		action->setCheckable(true);
+		action->setChecked(m_showVU0FFloat);
 		connect(action, &QAction::triggered, this, [this]() { m_showVU0FFloat = !m_showVU0FFloat; });
-		m_contextMenu->addSeparator();
+
+		menu->addSeparator();
 	}
 
 	if (cpu().getRegisterSize(categoryIndex) == 128)
 	{
-		m_contextMenu->addAction(action = new QAction(tr("Copy Top Half"), this));
-		connect(action, &QAction::triggered, this, &RegisterWidget::contextCopyTop);
-		m_contextMenu->addAction(action = new QAction(tr("Copy Bottom Half"), this));
-		connect(action, &QAction::triggered, this, &RegisterWidget::contextCopyBottom);
-		m_contextMenu->addAction(action = new QAction(tr("Copy Segment"), this));
-		connect(action, &QAction::triggered, this, &RegisterWidget::contextCopySegment);
+		connect(menu->addAction(tr("Copy Top Half")), &QAction::triggered, this, &RegisterWidget::contextCopyTop);
+		connect(menu->addAction(tr("Copy Bottom Half")), &QAction::triggered, this, &RegisterWidget::contextCopyBottom);
+		connect(menu->addAction(tr("Copy Segment")), &QAction::triggered, this, &RegisterWidget::contextCopySegment);
 	}
 	else
 	{
-		m_contextMenu->addAction(action = new QAction(tr("Copy Value"), this));
-		connect(action, &QAction::triggered, this, &RegisterWidget::contextCopyValue);
+		connect(menu->addAction(tr("Copy Value")), &QAction::triggered, this, &RegisterWidget::contextCopyValue);
 	}
 
-	m_contextMenu->addSeparator();
+	menu->addSeparator();
 
 	if (cpu().getRegisterSize(categoryIndex) == 128)
 	{
-		m_contextMenu->addAction(action = new QAction(tr("Change Top Half"), this));
-		connect(action, &QAction::triggered, this, &RegisterWidget::contextChangeTop);
-		m_contextMenu->addAction(action = new QAction(tr("Change Bottom Half"), this));
-		connect(action, &QAction::triggered, this, &RegisterWidget::contextChangeBottom);
-		m_contextMenu->addAction(action = new QAction(tr("Change Segment"), this));
-		connect(action, &QAction::triggered, this, &RegisterWidget::contextChangeSegment);
+		connect(menu->addAction(tr("Change Top Half")), &QAction::triggered,
+			this, &RegisterWidget::contextChangeTop);
+		connect(menu->addAction(tr("Change Bottom Half")), &QAction::triggered,
+			this, &RegisterWidget::contextChangeBottom);
+		connect(menu->addAction(tr("Change Segment")), &QAction::triggered,
+			this, &RegisterWidget::contextChangeSegment);
 	}
 	else
 	{
-		m_contextMenu->addAction(action = new QAction(tr("Change Value"), this));
-		connect(action, &QAction::triggered, this, &RegisterWidget::contextChangeValue);
+		connect(menu->addAction(tr("Change Value")), &QAction::triggered,
+			this, &RegisterWidget::contextChangeValue);
 	}
 
-	m_contextMenu->addSeparator();
+	menu->addSeparator();
 
-	m_contextMenu->addAction(action = new QAction(tr("Go to in Disassembly"), this));
-	connect(action, &QAction::triggered, this, &RegisterWidget::contextGotoDisasm);
+	createEventActions<DebuggerEvents::GoToAddress>(menu, [this]() {
+		return contextCreateGotoEvent();
+	});
 
-	m_contextMenu->addAction(action = new QAction(tr("Go to in Memory View"), this));
-	connect(action, &QAction::triggered, this, &RegisterWidget::contextGotoMemory);
-
-	m_contextMenu->popup(this->mapToGlobal(pos));
+	menu->popup(this->mapToGlobal(pos));
 }
 
 
@@ -371,7 +369,7 @@ void RegisterWidget::contextChangeValue()
 	if (contextFetchNewValue(newVal, cpu().getRegister(categoryIndex, m_selectedRow).lo))
 	{
 		cpu().setRegister(categoryIndex, m_selectedRow, u128::From64(newVal));
-		VMUpdate();
+		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
 	}
 }
 
@@ -383,7 +381,7 @@ void RegisterWidget::contextChangeTop()
 	{
 		oldVal.hi = newVal;
 		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
-		VMUpdate();
+		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
 	}
 }
 
@@ -395,7 +393,7 @@ void RegisterWidget::contextChangeBottom()
 	{
 		oldVal.lo = newVal;
 		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
-		VMUpdate();
+		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
 	}
 }
 
@@ -407,11 +405,11 @@ void RegisterWidget::contextChangeSegment()
 	{
 		oldVal._u32[3 - m_selected128Field] = (u32)newVal;
 		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
-		VMUpdate();
+		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
 	}
 }
 
-void RegisterWidget::contextGotoDisasm()
+std::optional<DebuggerEvents::GoToAddress> RegisterWidget::contextCreateGotoEvent()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	u128 regVal = cpu().getRegister(categoryIndex, m_selectedRow);
@@ -422,22 +420,16 @@ void RegisterWidget::contextGotoDisasm()
 	else
 		addr = regVal._u32[0];
 
-	if (cpu().isValidAddress(addr))
-		gotoInDisasm(addr);
-	else
-		QMessageBox::warning(this, tr("Invalid target address"), ("This register holds an invalid address."));
-}
+	if (!cpu().isValidAddress(addr))
+	{
+		QMessageBox::warning(
+			this,
+			tr("Invalid target address"),
+			tr("This register holds an invalid address."));
+		return std::nullopt;
+	}
 
-void RegisterWidget::contextGotoMemory()
-{
-	const int categoryIndex = ui.registerTabs->currentIndex();
-	u128 regVal = cpu().getRegister(categoryIndex, m_selectedRow);
-	u32 addr = 0;
-
-	if (cpu().getRegisterSize(categoryIndex) == 128)
-		addr = regVal._u32[3 - m_selected128Field];
-	else
-		addr = regVal._u32[0];
-
-	gotoInMemory(addr);
+	DebuggerEvents::GoToAddress event;
+	event.address = addr;
+	return event;
 }

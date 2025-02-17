@@ -62,9 +62,9 @@ void LayoutEditorDialog::setupInputWidgets(BreakPointCpu cpu, bool can_clone_cur
 
 	for (BreakPointCpu cpu : DEBUG_CPUS)
 	{
-		const char* cpu_name = DebugInterface::cpuName(cpu);
 		const char* long_cpu_name = DebugInterface::longCpuName(cpu);
-		QString text = QString("%1 (%2)").arg(cpu_name).arg(long_cpu_name);
+		const char* cpu_name = DebugInterface::cpuName(cpu);
+		QString text = QString("%1 (%2)").arg(long_cpu_name).arg(cpu_name);
 		m_ui.cpuEditor->addItem(text, cpu);
 	}
 

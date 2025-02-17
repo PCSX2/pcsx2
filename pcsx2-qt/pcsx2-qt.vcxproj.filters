@@ -598,6 +598,9 @@
     <QtMoc Include="Debugger\AnalysisOptionsDialog.h">
       <Filter>Debugger</Filter>
     </QtMoc>
+    <QtMoc Include="Debugger\DebuggerEvents.h">
+      <Filter>Debugger</Filter>
+    </QtMoc>
     <QtMoc Include="Debugger\DebuggerWidget.h">
       <Filter>Debugger</Filter>
     </QtMoc>

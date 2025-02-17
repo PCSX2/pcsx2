@@ -14,9 +14,9 @@ class SavedAddressesWidget : public DebuggerWidget
 	Q_OBJECT
 
 public:
-	SavedAddressesWidget(DebugInterface& cpu, QWidget* parent = nullptr);
+	SavedAddressesWidget(const DebuggerWidgetParameters& parameters);
 
-	void onContextMenu(QPoint pos);
+	void openContextMenu(QPoint pos);
 	void contextPasteCSV();
 	void contextNew();
 	void addAddress(u32 address);
@@ -25,5 +25,5 @@ public:
 private:
 	Ui::SavedAddressesWidget m_ui;
 
-	SavedAddressesModel m_model;
+	SavedAddressesModel* m_model;
 };

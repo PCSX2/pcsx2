@@ -24,16 +24,20 @@ int StackModel::columnCount(const QModelIndex&) const
 
 QVariant StackModel::data(const QModelIndex& index, int role) const
 {
+	size_t row = static_cast<size_t>(index.row());
+	if (row >= m_stackFrames.size())
+		return QVariant();
+
+	const auto& stackFrame = m_stackFrames[row];
+
 	if (role == Qt::DisplayRole)
 	{
-		const auto& stackFrame = m_stackFrames.at(index.row());
-
 		switch (index.column())
 		{
 			case StackModel::ENTRY:
 				return QtUtils::FilledQStringFromValue(stackFrame.entry, 16);
 			case StackModel::ENTRY_LABEL:
-					return QString::fromStdString(m_cpu.GetSymbolGuardian().FunctionStartingAtAddress(stackFrame.entry).name);
+				return QString::fromStdString(m_cpu.GetSymbolGuardian().FunctionStartingAtAddress(stackFrame.entry).name);
 			case StackModel::PC:
 				return QtUtils::FilledQStringFromValue(stackFrame.pc, 16);
 			case StackModel::PC_OPCODE:
@@ -63,6 +67,7 @@ QVariant StackModel::data(const QModelIndex& index, int role) const
 				return stackFrame.stackSize;
 		}
 	}
+
 	return QVariant();
 }
 
