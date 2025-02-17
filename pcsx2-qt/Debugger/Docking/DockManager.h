@@ -59,6 +59,7 @@ public:
 	void resetAllLayouts();
 	void resetDefaultLayouts();
 
+	void createToolsMenu(QMenu* menu);
 	void createWindowsMenu(QMenu* menu);
 
 	QWidget* createLayoutSwitcher(QWidget* menu_bar);
@@ -76,6 +77,7 @@ public:
 
 	bool isLayoutLocked();
 	void setLayoutLocked(bool locked);
+	void updateToolBarLockState();
 
 private:
 	static KDDockWidgets::Core::DockWidget* dockWidgetFactory(const QString& name);

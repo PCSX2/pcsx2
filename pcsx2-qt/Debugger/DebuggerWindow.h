@@ -24,6 +24,8 @@ public:
 
 	DockManager& dockManager();
 
+	void clearToolBarState();
+
 public slots:
 	void onVMStateChanged();
 	void onRunPause();
@@ -36,6 +38,8 @@ protected:
 	void closeEvent(QCloseEvent* event);
 
 private:
+	void setupDefaultToolBarState();
+
 	Ui::DebuggerWindow m_ui;
 	QAction* m_actionRunPause;
 	QAction* m_actionStepInto;
@@ -43,6 +47,8 @@ private:
 	QAction* m_actionStepOut;
 
 	DockManager* m_dock_manager;
+
+	QByteArray m_default_toolbar_state;
 
 	void setTabActiveStyle(BreakPointCpu toggledCPU);
 };
