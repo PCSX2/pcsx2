@@ -39,6 +39,8 @@ protected:
 	void closeEvent(QCloseEvent* event);
 
 private:
+	DebugInterface* currentCPU();
+
 	void setupDefaultToolBarState();
 
 	Ui::DebuggerWindow m_ui;
@@ -50,8 +52,6 @@ private:
 	DockManager* m_dock_manager;
 
 	QByteArray m_default_toolbar_state;
-
-	void setTabActiveStyle(BreakPointCpu toggledCPU);
 };
 
 extern DebuggerWindow* g_debugger_window;

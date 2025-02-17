@@ -7,8 +7,9 @@
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
+#include "DebugTools/MIPSAnalyst.h"
+#include "DebugTools/MipsStackWalk.h"
 #include "DebugTools/SymbolImporter.h"
-#include "VMManager.h"
 #include "QtHost.h"
 #include "MainWindow.h"
 #include "AnalysisOptionsDialog.h"
@@ -113,14 +114,6 @@ void DebuggerWindow::clearToolBarState()
 	restoreState(m_default_toolbar_state);
 }
 
-// There is no straightforward way to set the tab text to bold in Qt
-// Sorry colour blind people, but this is the best we can do for now
-void DebuggerWindow::setTabActiveStyle(BreakPointCpu enabledCpu)
-{
-	//m_ui.cpuTabs->tabBar()->setTabTextColor(m_ui.cpuTabs->indexOf(m_cpuWidget_r5900), (enabledCpu == BREAKPOINT_EE) ? Qt::red : this->palette().text().color());
-	//m_ui.cpuTabs->tabBar()->setTabTextColor(m_ui.cpuTabs->indexOf(m_cpuWidget_r3000), (enabledCpu == BREAKPOINT_IOP) ? Qt::red : this->palette().text().color());
-}
-
 void DebuggerWindow::onVMStateChanged()
 {
 	if (!QtHost::IsVMPaused())
@@ -130,7 +123,6 @@ void DebuggerWindow::onVMStateChanged()
 		m_ui.actionStepInto->setEnabled(false);
 		m_ui.actionStepOver->setEnabled(false);
 		m_ui.actionStepOut->setEnabled(false);
-		setTabActiveStyle(BREAKPOINT_IOP_AND_EE);
 	}
 	else
 	{
@@ -144,18 +136,7 @@ void DebuggerWindow::onVMStateChanged()
 		if (CBreakPoints::GetBreakpointTriggered())
 		{
 			const BreakPointCpu triggeredCpu = CBreakPoints::GetBreakpointTriggeredCpu();
-			setTabActiveStyle(triggeredCpu);
-			switch (triggeredCpu)
-			{
-				case BREAKPOINT_EE:
-					//m_ui.cpuTabs->setCurrentWidget(m_cpuWidget_r5900);
-					break;
-				case BREAKPOINT_IOP:
-					//m_ui.cpuTabs->setCurrentWidget(m_cpuWidget_r3000);
-					break;
-				default:
-					break;
-			}
+			m_dock_manager->switchToLayoutWithCPU(triggeredCpu);
 			Host::RunOnCPUThread([] {
 				CBreakPoints::ClearTemporaryBreakPoints();
 				CBreakPoints::SetBreakpointTriggered(false, BREAKPOINT_IOP_AND_EE);
@@ -176,20 +157,140 @@ void DebuggerWindow::onRunPause()
 
 void DebuggerWindow::onStepInto()
 {
-	//CpuWidget* currentCpu = static_cast<CpuWidget*>(m_ui.cpuTabs->currentWidget());
-	//currentCpu->onStepInto();
+	DebugInterface* cpu = currentCPU();
+	if (!cpu)
+		return;
+
+	if (!cpu->isAlive() || !cpu->isCpuPaused())
+		return;
+
+	// Allow the cpu to skip this pc if it is a breakpoint
+	CBreakPoints::SetSkipFirst(cpu->getCpuType(), cpu->getPC());
+
+	const u32 pc = cpu->getPC();
+	const MIPSAnalyst::MipsOpcodeInfo info = MIPSAnalyst::GetOpcodeInfo(cpu, pc);
+
+	u32 bpAddr = pc + 0x4; // Default to the next instruction
+
+	if (info.isBranch)
+	{
+		if (!info.isConditional)
+		{
+			bpAddr = info.branchTarget;
+		}
+		else
+		{
+			if (info.conditionMet)
+			{
+				bpAddr = info.branchTarget;
+			}
+			else
+			{
+				bpAddr = pc + (2 * 4); // Skip branch delay slot
+			}
+		}
+	}
+
+	if (info.isSyscall)
+		bpAddr = info.branchTarget; // Syscalls are always taken
+
+	Host::RunOnCPUThread([cpu, bpAddr] {
+		CBreakPoints::AddBreakPoint(cpu->getCpuType(), bpAddr, true);
+		cpu->resumeCpu();
+	});
+
+	repaint();
 }
 
 void DebuggerWindow::onStepOver()
 {
-	//CpuWidget* currentCpu = static_cast<CpuWidget*>(m_ui.cpuTabs->currentWidget());
-	//currentCpu->onStepOver();
+	DebugInterface* cpu = currentCPU();
+	if (!cpu)
+		return;
+
+	if (!cpu->isAlive() || !cpu->isCpuPaused())
+		return;
+
+	const u32 pc = cpu->getPC();
+	const MIPSAnalyst::MipsOpcodeInfo info = MIPSAnalyst::GetOpcodeInfo(cpu, pc);
+
+	u32 bpAddr = pc + 0x4; // Default to the next instruction
+
+	if (info.isBranch)
+	{
+		if (!info.isConditional)
+		{
+			if (info.isLinkedBranch) // jal, jalr
+			{
+				// it's a function call with a delay slot - skip that too
+				bpAddr += 4;
+			}
+			else // j, ...
+			{
+				// in case of absolute branches, set the breakpoint at the branch target
+				bpAddr = info.branchTarget;
+			}
+		}
+		else // beq, ...
+		{
+			if (info.conditionMet)
+			{
+				bpAddr = info.branchTarget;
+			}
+			else
+			{
+				bpAddr = pc + (2 * 4); // Skip branch delay slot
+			}
+		}
+	}
+
+	Host::RunOnCPUThread([cpu, bpAddr] {
+		CBreakPoints::AddBreakPoint(cpu->getCpuType(), bpAddr, true);
+		cpu->resumeCpu();
+	});
+
+	this->repaint();
 }
 
 void DebuggerWindow::onStepOut()
 {
-	//CpuWidget* currentCpu = static_cast<CpuWidget*>(m_ui.cpuTabs->currentWidget());
-	//currentCpu->onStepOut();
+	DebugInterface* cpu = currentCPU();
+	if (!cpu)
+		return;
+
+	if (!cpu->isAlive() || !cpu->isCpuPaused())
+		return;
+
+	// Allow the cpu to skip this pc if it is a breakpoint
+	CBreakPoints::SetSkipFirst(cpu->getCpuType(), cpu->getPC());
+
+	std::vector<MipsStackWalk::StackFrame> stack_frames;
+	for (const auto& thread : cpu->GetThreadList())
+	{
+		if (thread->Status() == ThreadStatus::THS_RUN)
+		{
+			stack_frames = MipsStackWalk::Walk(
+				cpu,
+				cpu->getPC(),
+				cpu->getRegister(0, 31),
+				cpu->getRegister(0, 29),
+				thread->EntryPoint(),
+				thread->StackTop());
+			break;
+		}
+	}
+
+	if (stack_frames.size() < 2)
+		return;
+
+	u32 breakpoint_pc = stack_frames.at(1).pc;
+
+	Host::RunOnCPUThread([cpu, breakpoint_pc] {
+		CBreakPoints::AddBreakPoint(cpu->getCpuType(), breakpoint_pc, true);
+		cpu->resumeCpu();
+	});
+
+	this->repaint();
 }
 
 void DebuggerWindow::onAnalyse()
@@ -210,6 +311,15 @@ void DebuggerWindow::closeEvent(QCloseEvent* event)
 
 	g_debugger_window = nullptr;
 	deleteLater();
+}
+
+DebugInterface* DebuggerWindow::currentCPU()
+{
+	std::optional<BreakPointCpu> maybe_cpu = m_dock_manager->cpu();
+	if (!maybe_cpu.has_value())
+		return nullptr;
+
+	return &DebugInterface::get(*maybe_cpu);
 }
 
 void DebuggerWindow::setupDefaultToolBarState()
