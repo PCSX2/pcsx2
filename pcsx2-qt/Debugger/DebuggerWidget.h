@@ -3,16 +3,22 @@
 
 #pragma once
 
+#include "QtHost.h"
+#include "Debugger/DebuggerEvents.h"
+
 #include "DebugTools/DebugInterface.h"
 
 #include <QtWidgets/QWidget>
 
-inline void not_yet_implemented()
-{
-	abort();
-}
-
 class JsonValueWrapper;
+
+// Container for variables to be passed to the constructor of DebuggerWidget.
+struct DebuggerWidgetParameters
+{
+	DebugInterface* cpu = nullptr;
+	std::optional<BreakPointCpu> cpu_override;
+	QWidget* parent = nullptr;
+};
 
 // The base class for the contents of the dock widgets in the debugger.
 class DebuggerWidget : public QWidget
@@ -20,6 +26,9 @@ class DebuggerWidget : public QWidget
 	Q_OBJECT
 
 public:
+	// Get the translated name that should be displayed for this widget.
+	QString displayName();
+
 	// Get the effective debug interface associated with this particular widget
 	// if it's set, otherwise return the one associated with the layout that
 	// contains this widget.
@@ -36,15 +45,111 @@ public:
 	// returned, we have to recreate the object.
 	bool setCpuOverride(std::optional<BreakPointCpu> new_cpu);
 
+	// Send each open debugger widget an event in turn, until one handles it.
+	template <typename Event>
+	static void sendEvent(Event event)
+	{
+		if (!QtHost::IsOnUIThread())
+		{
+			QtHost::RunOnUIThread([event = std::move(event)]() {
+				DebuggerWidget::sendEventImplementation(event);
+			});
+			return;
+		}
+
+		sendEventImplementation(event);
+	}
+
+	// Send all open debugger widgets an event.
+	template <typename Event>
+	static void broadcastEvent(Event event)
+	{
+		if (!QtHost::IsOnUIThread())
+		{
+			QtHost::RunOnUIThread([event = std::move(event)]() {
+				DebuggerWidget::broadcastEventImplementation(event);
+			});
+			return;
+		}
+
+		broadcastEventImplementation(event);
+	}
+
+	// Register a handler callback for the specified type of event.
+	template <typename Event>
+	void receiveEvent(std::function<bool(const Event&)> callback)
+	{
+		m_event_handlers.emplace(
+			typeid(Event).name(),
+			[callback](const DebuggerEvents::Event& event) -> bool {
+				return callback(static_cast<const Event&>(event));
+			});
+	}
+
+	// Register a handler member function for the specified type of event.
+	template <typename Event, typename SubClass>
+	void receiveEvent(bool (SubClass::*function)(const Event& event))
+	{
+		m_event_handlers.emplace(
+			typeid(Event).name(),
+			[this, function](const DebuggerEvents::Event& event) -> bool {
+				return (*static_cast<SubClass*>(this).*function)(static_cast<const Event&>(event));
+			});
+	}
+
+	// Call the handler callback for the specified event.
+	bool handleEvent(const DebuggerEvents::Event& event);
+
+	// Check if this debugger widget can receive the specified type of event.
+	bool acceptsEventType(const char* event_type);
+
+	// Generates context menu actions to send an event to each debugger widget
+	// that can receive it. A submenu is generated if the number of possible
+	// receivers exceeds max_top_level_actions. If skip_self is true, actions
+	// are only generated if the sender and receiver aren't the same object.
+	template <typename Event>
+	std::vector<QAction*> createEventActions(
+		QMenu* menu,
+		std::function<std::optional<Event>()> event_func,
+		bool skip_self = true,
+		u32 max_top_level_actions = 5)
+	{
+		return createEventActionsImplementation(
+			menu, max_top_level_actions, skip_self, typeid(Event).name(), Event::TEXT,
+			[event_func]() -> DebuggerEvents::Event* {
+				static std::optional<Event> event;
+				event = event_func();
+				if (!event.has_value())
+					return nullptr;
+
+				return static_cast<DebuggerEvents::Event*>(&(*event));
+			});
+	}
+
+	static void goToInDisassembler(u32 address, u32 flags = DebuggerEvents::NO_FLAGS);
+	static void goToInMemoryView(u32 address, u32 flags = DebuggerEvents::NO_FLAGS);
+
 	virtual void toJson(JsonValueWrapper& json);
 	virtual bool fromJson(JsonValueWrapper& json);
 
 	void applyMonospaceFont();
 
 protected:
-	DebuggerWidget(DebugInterface* cpu, QWidget* parent = nullptr);
+	DebuggerWidget(const DebuggerWidgetParameters& parameters);
 
 private:
+	static void sendEventImplementation(const DebuggerEvents::Event& event);
+	static void broadcastEventImplementation(const DebuggerEvents::Event& event);
+
+	std::vector<QAction*> createEventActionsImplementation(
+		QMenu* menu,
+		u32 max_top_level_actions,
+		bool skip_self,
+		const char* event_type,
+		const char* event_text,
+		std::function<const DebuggerEvents::Event*()> event_func);
+
 	DebugInterface* m_cpu;
 	std::optional<BreakPointCpu> m_cpu_override;
+	std::multimap<std::string, std::function<bool(const DebuggerEvents::Event&)>> m_event_handlers;
 };

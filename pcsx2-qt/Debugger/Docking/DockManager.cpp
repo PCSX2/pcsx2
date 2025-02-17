@@ -3,6 +3,7 @@
 
 #include "DockManager.h"
 
+#include "Debugger/DebuggerWidget.h"
 #include "Debugger/DebuggerWindow.h"
 #include "Debugger/Docking/DockTables.h"
 #include "Debugger/Docking/DockViews.h"
@@ -76,7 +77,7 @@ bool DockManager::deleteLayout(DockLayout::Index layout_index)
 	if (m_current_layout > layout_index && m_current_layout != DockLayout::INVALID_INDEX)
 		m_current_layout--;
 
-	if (m_layouts.empty())
+	if (m_layouts.empty() && g_debugger_window)
 	{
 		NoLayoutsWidget* widget = new NoLayoutsWidget;
 		connect(widget->createDefaultLayoutsButton(), &QPushButton::clicked, this, &DockManager::resetAllLayouts);
@@ -104,7 +105,8 @@ void DockManager::switchToLayout(DockLayout::Index layout_index)
 
 	// Clear out the existing positions of toolbars so they don't affect where
 	// new toolbars appear for other layouts.
-	g_debugger_window->clearToolBarState();
+	if (g_debugger_window)
+		g_debugger_window->clearToolBarState();
 	updateToolBarLockState();
 
 	m_current_layout = layout_index;
@@ -280,12 +282,12 @@ void DockManager::createToolsMenu(QMenu* menu)
 {
 	menu->clear();
 
-	if (m_current_layout == DockLayout::INVALID_INDEX)
+	if (m_current_layout == DockLayout::INVALID_INDEX || !g_debugger_window)
 		return;
 
 	for (QToolBar* widget : g_debugger_window->findChildren<QToolBar*>())
 	{
-		QAction* action = new QAction(menu);
+		QAction* action = menu->addAction(widget->windowTitle());
 		action->setText(widget->windowTitle());
 		action->setCheckable(true);
 		action->setChecked(widget->isVisible());
@@ -308,7 +310,7 @@ void DockManager::createWindowsMenu(QMenu* menu)
 	for (const auto& [type, desc] : DockTables::DEBUGGER_WIDGETS)
 	{
 		QAction* action = new QAction(menu);
-		action->setText(QCoreApplication::translate("DebuggerWidget", desc.title));
+		action->setText(QCoreApplication::translate("DebuggerWidget", desc.display_name));
 		action->setCheckable(true);
 		action->setChecked(layout.hasDebuggerWidget(type));
 		connect(action, &QAction::triggered, this, [&layout, type]() {
@@ -494,9 +496,10 @@ void DockManager::layoutSwitcherContextMenu(QPoint pos)
 	if (tab_index < 0 || tab_index >= m_plus_tab_index)
 		return;
 
-	QMenu* menu = new QMenu(tr("Layout Switcher Context Menu"), m_switcher);
+	QMenu* menu = new QMenu(m_switcher);
+	menu->setAttribute(Qt::WA_DeleteOnClose);
 
-	QAction* edit_action = new QAction(tr("Edit Layout"), menu);
+	QAction* edit_action = menu->addAction(tr("Edit Layout"));
 	connect(edit_action, &QAction::triggered, [this, tab_index]() {
 		DockLayout::Index layout_index = static_cast<DockLayout::Index>(tab_index);
 		if (layout_index >= m_layouts.size())
@@ -521,9 +524,8 @@ void DockManager::layoutSwitcherContextMenu(QPoint pos)
 			updateLayoutSwitcher();
 		}
 	});
-	menu->addAction(edit_action);
 
-	QAction* delete_action = new QAction(tr("Delete Layout"), menu);
+	QAction* delete_action = menu->addAction(tr("Delete Layout"));
 	connect(delete_action, &QAction::triggered, [this, tab_index]() {
 		DockLayout::Index layout_index = static_cast<DockLayout::Index>(tab_index);
 		if (layout_index >= m_layouts.size())
@@ -532,7 +534,6 @@ void DockManager::layoutSwitcherContextMenu(QPoint pos)
 		deleteLayout(layout_index);
 		updateLayoutSwitcher();
 	});
-	menu->addAction(delete_action);
 
 	menu->popup(m_switcher->mapToGlobal(pos));
 }
@@ -563,12 +564,37 @@ void DockManager::dockWidgetClosed(KDDockWidgets::Core::DockWidget* dock_widget)
 	m_layouts.at(m_current_layout).dockWidgetClosed(dock_widget);
 }
 
+const std::map<QString, QPointer<DebuggerWidget>>& DockManager::debuggerWidgets()
+{
+	static std::map<QString, QPointer<DebuggerWidget>> dummy;
+	if (m_current_layout == DockLayout::INVALID_INDEX)
+		return dummy;
+
+	return m_layouts.at(m_current_layout).debuggerWidgets();
+}
+
 void DockManager::recreateDebuggerWidget(QString unique_name)
 {
 	if (m_current_layout == DockLayout::INVALID_INDEX)
 		return;
 
 	m_layouts.at(m_current_layout).recreateDebuggerWidget(unique_name);
+}
+
+void DockManager::switchToDebuggerWidget(DebuggerWidget* widget)
+{
+	if (m_current_layout == DockLayout::INVALID_INDEX)
+		return;
+
+	for (const auto& [unique_name, test_widget] : m_layouts.at(m_current_layout).debuggerWidgets())
+	{
+		if (widget == test_widget)
+		{
+			auto [controller, view] = DockUtils::dockWidgetFromName(unique_name);
+			controller->setAsCurrentTab();
+			break;
+		}
+	}
 }
 
 bool DockManager::isLayoutLocked()
@@ -595,6 +621,9 @@ void DockManager::setLayoutLocked(bool locked)
 
 void DockManager::updateToolBarLockState()
 {
+	if (!g_debugger_window)
+		return;
+
 	for (QToolBar* toolbar : g_debugger_window->findChildren<QToolBar*>())
 		toolbar->setMovable(!m_layout_locked || toolbar->isFloating());
 }

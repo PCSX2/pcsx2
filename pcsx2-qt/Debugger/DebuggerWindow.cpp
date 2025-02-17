@@ -3,6 +3,7 @@
 
 #include "DebuggerWindow.h"
 
+#include "Debugger/DebuggerWidget.h"
 #include "Debugger/Docking/DockManager.h"
 
 #include "DebugTools/DebugInterface.h"
@@ -61,6 +62,10 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 			m_dock_manager->resetDefaultLayouts();
 	});
 
+	connect(g_emu_thread, &EmuThread::onVMPaused, this, []() {
+		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+	});
+
 	connect(g_emu_thread, &EmuThread::onVMPaused, this, &DebuggerWindow::onVMStateChanged);
 	connect(g_emu_thread, &EmuThread::onVMResumed, this, &DebuggerWindow::onVMStateChanged);
 
@@ -75,6 +80,12 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	Host::RunOnCPUThread([]() {
 		R5900SymbolImporter.OnDebuggerOpened();
 	});
+
+	QTimer* refresh_timer = new QTimer(this);
+	connect(refresh_timer, &QTimer::timeout, this, []() {
+		DebuggerWidget::broadcastEvent(DebuggerEvents::Refresh());
+	});
+	refresh_timer->start(1000);
 }
 
 DebuggerWindow::~DebuggerWindow() = default;
@@ -331,7 +342,6 @@ void DebuggerWindow::setupDefaultToolBarState()
 		toolbar->hide();
 
 	m_default_toolbar_state = saveState();
-
 
 	for (QToolBar* toolbar : findChildren<QToolBar*>())
 		connect(toolbar, &QToolBar::topLevelChanged, m_dock_manager, &DockManager::updateToolBarLockState);

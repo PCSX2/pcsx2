@@ -23,8 +23,13 @@ int ThreadModel::columnCount(const QModelIndex&) const
 
 QVariant ThreadModel::data(const QModelIndex& index, int role) const
 {
-	const auto threads = m_cpu.GetThreadList();
-	auto* const thread = threads.at(index.row()).get();
+	const std::vector<std::unique_ptr<BiosThread>> threads = m_cpu.GetThreadList();
+
+	size_t row = static_cast<size_t>(index.row());
+	if (row >= threads.size())
+		return QVariant();
+
+	const BiosThread* thread = threads[row].get();
 
 	if (role == Qt::DisplayRole)
 	{

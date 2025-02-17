@@ -24,12 +24,6 @@ public:
 	void updateVisibleNodes(bool update_hashes);
 	void expandGroups(QModelIndex index);
 
-signals:
-	void goToInDisassembly(u32 address);
-	void goToInMemoryView(u32 address);
-	void nameColumnClicked(u32 address);
-	void locationColumnClicked(u32 address);
-
 protected:
 	struct SymbolWork
 	{
@@ -44,8 +38,7 @@ protected:
 	SymbolTreeWidget(
 		u32 flags,
 		s32 symbol_address_alignment,
-		DebugInterface& cpu,
-		QWidget* parent = nullptr);
+		const DebuggerWidgetParameters& parameters);
 
 	void resizeEvent(QResizeEvent* event) override;
 
@@ -73,8 +66,7 @@ protected:
 		const SymbolWork*& prev_work,
 		const SymbolFilters& filters);
 
-	void setupMenu();
-	void openMenu(QPoint pos);
+	void openContextMenu(QPoint pos);
 
 	virtual bool needsReset() const;
 
@@ -93,8 +85,6 @@ protected:
 	void onCopyMangledName();
 	void onCopyLocation();
 	void onRenameSymbol();
-	void onGoToInDisassembly();
-	void onGoToInMemoryView();
 	void onResetChildren();
 	void onChangeTypeTemporarily();
 
@@ -104,20 +94,13 @@ protected:
 
 	Ui::SymbolTreeWidget m_ui;
 
-	DebugInterface& m_cpu;
 	SymbolTreeModel* m_model = nullptr;
 
-	QMenu* m_context_menu = nullptr;
-	QAction* m_rename_symbol = nullptr;
-	QAction* m_go_to_in_disassembly = nullptr;
-	QAction* m_m_go_to_in_memory_view = nullptr;
 	QAction* m_show_size_column = nullptr;
 	QAction* m_group_by_module = nullptr;
 	QAction* m_group_by_section = nullptr;
 	QAction* m_group_by_source_file = nullptr;
 	QAction* m_sort_by_if_type_is_known = nullptr;
-	QAction* m_reset_children = nullptr;
-	QAction* m_change_type_temporarily = nullptr;
 
 	enum Flags
 	{
@@ -125,7 +108,8 @@ protected:
 		ALLOW_GROUPING = 1 << 0,
 		ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN = 1 << 1,
 		ALLOW_TYPE_ACTIONS = 1 << 2,
-		ALLOW_MANGLED_NAME_ACTIONS = 1 << 3
+		ALLOW_MANGLED_NAME_ACTIONS = 1 << 3,
+		CLICK_TO_GO_TO_IN_DISASSEMBLER = 1 << 4
 	};
 
 	u32 m_flags;
@@ -136,7 +120,7 @@ class FunctionTreeWidget : public SymbolTreeWidget
 {
 	Q_OBJECT
 public:
-	explicit FunctionTreeWidget(DebugInterface& cpu, QWidget* parent = nullptr);
+	explicit FunctionTreeWidget(const DebuggerWidgetParameters& parameters);
 	virtual ~FunctionTreeWidget();
 
 protected:
@@ -155,7 +139,7 @@ class GlobalVariableTreeWidget : public SymbolTreeWidget
 {
 	Q_OBJECT
 public:
-	explicit GlobalVariableTreeWidget(DebugInterface& cpu, QWidget* parent = nullptr);
+	explicit GlobalVariableTreeWidget(const DebuggerWidgetParameters& parameters);
 	virtual ~GlobalVariableTreeWidget();
 
 protected:
@@ -174,7 +158,7 @@ class LocalVariableTreeWidget : public SymbolTreeWidget
 {
 	Q_OBJECT
 public:
-	explicit LocalVariableTreeWidget(DebugInterface& cpu, QWidget* parent = nullptr);
+	explicit LocalVariableTreeWidget(const DebuggerWidgetParameters& parameters);
 	virtual ~LocalVariableTreeWidget();
 
 protected:
@@ -198,7 +182,7 @@ class ParameterVariableTreeWidget : public SymbolTreeWidget
 {
 	Q_OBJECT
 public:
-	explicit ParameterVariableTreeWidget(DebugInterface& cpu, QWidget* parent = nullptr);
+	explicit ParameterVariableTreeWidget(const DebuggerWidgetParameters& parameters);
 	virtual ~ParameterVariableTreeWidget();
 
 protected:

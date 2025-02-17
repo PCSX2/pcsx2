@@ -21,10 +21,10 @@ class BreakpointWidget : public DebuggerWidget
 	Q_OBJECT
 
 public:
-	BreakpointWidget(DebugInterface& cpu, QWidget* parent = nullptr);
+	BreakpointWidget(const DebuggerWidgetParameters& parameters);
 
 	void onDoubleClicked(const QModelIndex& index);
-	void onContextMenu(QPoint pos);
+	void openContextMenu(QPoint pos);
 
 	void contextCopy();
 	void contextDelete();
@@ -37,5 +37,5 @@ public:
 private:
 	Ui::BreakpointWidget m_ui;
 
-	BreakpointModel m_model;
+	BreakpointModel* m_model;
 };

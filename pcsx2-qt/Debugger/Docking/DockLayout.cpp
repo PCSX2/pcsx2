@@ -48,15 +48,15 @@ DockLayout::DockLayout(
 	, m_is_default(is_default)
 	, m_base_layout(default_layout.name)
 {
-	DebugInterface& debug_interface = DebugInterface::get(cpu);
-
 	for (size_t i = 0; i < default_layout.widgets.size(); i++)
 	{
 		auto iterator = DockTables::DEBUGGER_WIDGETS.find(QString::fromStdString(default_layout.widgets[i].type));
 		pxAssertRel(iterator != DockTables::DEBUGGER_WIDGETS.end(), "Invalid default layout.");
 		const DockTables::DebuggerWidgetDescription& dock_description = iterator->second;
 
-		DebuggerWidget* widget = dock_description.create_widget(debug_interface);
+		DebuggerWidgetParameters parameters;
+		parameters.cpu = &DebugInterface::get(cpu);
+		DebuggerWidget* widget = dock_description.create_widget(parameters);
 		m_widgets.emplace(QString::fromStdString(default_layout.widgets[i].type), widget);
 	}
 
@@ -94,7 +94,10 @@ DockLayout::DockLayout(
 		if (widget_description == DockTables::DEBUGGER_WIDGETS.end())
 			continue;
 
-		DebuggerWidget* new_widget = widget_description->second.create_widget(DebugInterface::get(cpu));
+		DebuggerWidgetParameters parameters;
+		parameters.cpu = &DebugInterface::get(cpu);
+		parameters.cpu_override = widget_to_clone->cpuOverride();
+		DebuggerWidget* new_widget = widget_description->second.create_widget(parameters);
 		m_widgets.emplace(unique_name, new_widget);
 	}
 
@@ -158,7 +161,8 @@ void DockLayout::freeze()
 	pxAssert(!m_is_frozen);
 	m_is_frozen = true;
 
-	m_toolbars = g_debugger_window->saveState();
+	if (g_debugger_window)
+		m_toolbars = g_debugger_window->saveState();
 
 	// Store the geometry of all the dock widgets as JSON.
 	KDDockWidgets::LayoutSaver saver(KDDockWidgets::RestoreOption_RelativeToMainWindow);
@@ -179,6 +183,9 @@ void DockLayout::thaw()
 {
 	pxAssert(m_is_frozen);
 	m_is_frozen = false;
+
+	if (!g_debugger_window)
+		return;
 
 	// Restore the state of the toolbars.
 	if (m_toolbars.isEmpty())
@@ -281,24 +288,17 @@ void DockLayout::retranslateDockWidget(KDDockWidgets::Core::DockWidget* dock_wid
 	DebuggerWidget* widget = widget_iterator->second.get();
 	if (!widget)
 		return;
-
-	auto description_iterator = DockTables::DEBUGGER_WIDGETS.find(widget->metaObject()->className());
-	if (description_iterator == DockTables::DEBUGGER_WIDGETS.end())
-		return;
-
-	const DockTables::DebuggerWidgetDescription& description = description_iterator->second;
-
-	QString translated_title = QCoreApplication::translate("DebuggerWidget", description.title);
+	;
 	std::optional<BreakPointCpu> cpu_override = widget->cpuOverride();
 
 	if (cpu_override.has_value())
 	{
 		const char* cpu_name = DebugInterface::cpuName(*cpu_override);
-		dock_widget->setTitle(QString("%1 (%2)").arg(translated_title).arg(cpu_name));
+		dock_widget->setTitle(QString("%1 (%2)").arg(widget->displayName()).arg(cpu_name));
 	}
 	else
 	{
-		dock_widget->setTitle(std::move(translated_title));
+		dock_widget->setTitle(std::move(widget->displayName()));
 	}
 }
 
@@ -317,6 +317,11 @@ void DockLayout::dockWidgetClosed(KDDockWidgets::Core::DockWidget* dock_widget)
 	dock_widget->deleteLater();
 }
 
+const std::map<QString, QPointer<DebuggerWidget>>& DockLayout::debuggerWidgets()
+{
+	return m_widgets;
+}
+
 bool DockLayout::hasDebuggerWidget(QString unique_name)
 {
 	return m_widgets.find(unique_name) != m_widgets.end();
@@ -325,6 +330,9 @@ bool DockLayout::hasDebuggerWidget(QString unique_name)
 void DockLayout::toggleDebuggerWidget(QString unique_name)
 {
 	pxAssert(!m_is_frozen);
+
+	if (!g_debugger_window)
+		return;
 
 	auto debugger_widget_iterator = m_widgets.find(unique_name);
 	auto [controller, view] = DockUtils::dockWidgetFromName(unique_name);
@@ -341,7 +349,9 @@ void DockLayout::toggleDebuggerWidget(QString unique_name)
 
 		const DockTables::DebuggerWidgetDescription& description = description_iterator->second;
 
-		DebuggerWidget* widget = description.create_widget(DebugInterface::get(m_cpu));
+		DebuggerWidgetParameters parameters;
+		parameters.cpu = &DebugInterface::get(m_cpu);
+		DebuggerWidget* widget = description.create_widget(parameters);
 		m_widgets.emplace(unique_name, widget);
 
 		auto view = static_cast<KDDockWidgets::QtWidgets::DockWidget*>(
@@ -390,8 +400,10 @@ void DockLayout::recreateDebuggerWidget(QString unique_name)
 
 	const DockTables::DebuggerWidgetDescription& description = description_iterator->second;
 
-	DebuggerWidget* new_debugger_widget = description.create_widget(DebugInterface::get(m_cpu));
-	new_debugger_widget->setCpuOverride(old_debugger_widget->cpuOverride());
+	DebuggerWidgetParameters parameters;
+	parameters.cpu = &DebugInterface::get(m_cpu);
+	parameters.cpu_override = old_debugger_widget->cpuOverride();
+	DebuggerWidget* new_debugger_widget = description.create_widget(parameters);
 	debugger_widget_iterator->second = new_debugger_widget;
 
 	view->setWidget(new_debugger_widget);
@@ -409,6 +421,9 @@ void DockLayout::deleteFile()
 }
 bool DockLayout::save(DockLayout::Index layout_index)
 {
+	if (!g_debugger_window)
+		return false;
+
 	if (!m_is_frozen)
 	{
 		m_toolbars = g_debugger_window->saveState();
@@ -471,6 +486,15 @@ bool DockLayout::save(DockLayout::Index layout_index)
 		rapidjson::Value type;
 		type.SetString(type_str, strlen(type_str), json.GetAllocator());
 		object.AddMember("type", type, json.GetAllocator());
+
+		if (widget->cpuOverride().has_value())
+		{
+			const char* cpu_name = DebugInterface::cpuName(*widget->cpuOverride());
+
+			rapidjson::Value target;
+			target.SetString(cpu_name, strlen(cpu_name));
+			object.AddMember("target", target, json.GetAllocator());
+		}
 
 		JsonValueWrapper wrapper(object, json.GetAllocator());
 		widget->toJson(wrapper);
@@ -638,7 +662,20 @@ void DockLayout::load(
 			if (description == DockTables::DEBUGGER_WIDGETS.end())
 				continue;
 
-			DebuggerWidget* widget = description->second.create_widget(DebugInterface::get(m_cpu));
+			std::optional<BreakPointCpu> cpu_override;
+
+			auto target = object.FindMember("target");
+			if (target != object.MemberEnd() && target->value.IsString())
+			{
+				for (BreakPointCpu cpu : DEBUG_CPUS)
+					if (strcmp(DebugInterface::cpuName(cpu), target->value.GetString()) == 0)
+						cpu_override = cpu;
+			}
+
+			DebuggerWidgetParameters parameters;
+			parameters.cpu = &DebugInterface::get(m_cpu);
+			parameters.cpu_override = cpu_override;
+			DebuggerWidget* widget = description->second.create_widget(parameters);
 
 			JsonValueWrapper wrapper(object, json.GetAllocator());
 			if (!widget->fromJson(wrapper))
@@ -668,7 +705,7 @@ void DockLayout::setupDefaultLayout()
 {
 	pxAssert(!m_is_frozen);
 
-	if (m_base_layout.empty())
+	if (m_base_layout.empty() || !g_debugger_window)
 		return;
 
 	const DockTables::DefaultDockLayout* base_layout = DockTables::defaultLayout(m_base_layout);

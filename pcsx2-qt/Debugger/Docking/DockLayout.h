@@ -99,6 +99,7 @@ public:
 	void retranslateDockWidget(KDDockWidgets::Core::DockWidget* dock_widget);
 	void dockWidgetClosed(KDDockWidgets::Core::DockWidget* dock_widget);
 
+	const std::map<QString, QPointer<DebuggerWidget>>& debuggerWidgets();
 	bool hasDebuggerWidget(QString unique_name);
 	void toggleDebuggerWidget(QString unique_name);
 	void recreateDebuggerWidget(QString unique_name);
