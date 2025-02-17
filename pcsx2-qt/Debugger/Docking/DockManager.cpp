@@ -118,6 +118,20 @@ void DockManager::switchToLayout(DockLayout::Index layout_index)
 	}
 }
 
+bool DockManager::switchToLayoutWithCPU(BreakPointCpu cpu)
+{
+	for (DockLayout::Index i = 0; i < m_layouts.size(); i++)
+	{
+		if (m_layouts[i].cpu() == cpu)
+		{
+			switchToLayout(i);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void DockManager::loadLayouts()
 {
 	m_layouts.clear();
@@ -599,6 +613,14 @@ void DockManager::updateToolBarLockState()
 {
 	for (QToolBar* toolbar : g_debugger_window->findChildren<QToolBar*>())
 		toolbar->setMovable(!m_layout_locked || toolbar->isFloating());
+}
+
+std::optional<BreakPointCpu> DockManager::cpu()
+{
+	if (m_current_layout == DockLayout::INVALID_INDEX)
+		return std::nullopt;
+
+	return m_layouts.at(m_current_layout).cpu();
 }
 
 KDDockWidgets::Core::DockWidget* DockManager::dockWidgetFactory(const QString& name)
