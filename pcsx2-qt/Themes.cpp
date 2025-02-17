@@ -280,7 +280,7 @@ void QtHost::SetStyleFromSettings()
 		pizzaPalette.setColor(QPalette::Link, highlight.darker());
 		pizzaPalette.setColor(QPalette::Highlight, highlight);
 		pizzaPalette.setColor(QPalette::HighlightedText, Qt::white);
-		
+
 		pizzaPalette.setColor(QPalette::Active, QPalette::Button, extr);
 		pizzaPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray.darker());
 		pizzaPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray.darker());
@@ -426,6 +426,42 @@ void QtHost::SetStyleFromSettings()
 		cobaltSkyPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
 		qApp->setPalette(cobaltSkyPalette);
+		qApp->setStyleSheet(QString());
+	}
+	else if (theme == "AMOLED")
+	{
+		// Custom palette by KamFretoZ, A pure concentrated darkness
+		// of a theme designed for maximum eye comfort and benefits
+		// OLED screens.
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+
+		const QColor black(0, 0, 0);
+		const QColor gray(25, 25, 25);
+		const QColor lighterGray(75, 75, 75);
+		const QColor blue(198, 238, 255);
+
+		QPalette AMOLEDPalette;
+		AMOLEDPalette.setColor(QPalette::Window, black);
+		AMOLEDPalette.setColor(QPalette::WindowText, Qt::white);
+		AMOLEDPalette.setColor(QPalette::Base, gray);
+		AMOLEDPalette.setColor(QPalette::AlternateBase, black);
+		AMOLEDPalette.setColor(QPalette::ToolTipBase, gray);
+		AMOLEDPalette.setColor(QPalette::ToolTipText, Qt::white);
+		AMOLEDPalette.setColor(QPalette::Text, Qt::white);
+		AMOLEDPalette.setColor(QPalette::Button, gray);
+		AMOLEDPalette.setColor(QPalette::ButtonText, Qt::white);
+		AMOLEDPalette.setColor(QPalette::Link, blue);
+		AMOLEDPalette.setColor(QPalette::Highlight, lighterGray);
+		AMOLEDPalette.setColor(QPalette::HighlightedText, Qt::white);
+		AMOLEDPalette.setColor(QPalette::PlaceholderText, QColor(Qt::white).darker());
+
+		AMOLEDPalette.setColor(QPalette::Active, QPalette::Button, gray);
+		AMOLEDPalette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(Qt::white).darker());
+		AMOLEDPalette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(Qt::white).darker());
+		AMOLEDPalette.setColor(QPalette::Disabled, QPalette::Text, QColor(Qt::white).darker());
+		AMOLEDPalette.setColor(QPalette::Disabled, QPalette::Light, QColor(Qt::white).darker());
+
+		qApp->setPalette(AMOLEDPalette);
 		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "Ruby")
