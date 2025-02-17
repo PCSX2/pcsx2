@@ -18,9 +18,12 @@
     <normalon>:/icons/AppIcon64.png</normalon>
    </iconset>
   </property>
-  <widget class="QToolBar" name="debugToolBar">
+  <widget class="QToolBar" name="toolBarDebug">
    <property name="contextMenuPolicy">
     <enum>Qt::PreventContextMenu</enum>
+   </property>
+   <property name="windowTitle">
+    <string>Debug</string>
    </property>
    <property name="movable">
     <bool>true</bool>
@@ -90,15 +93,21 @@
     <addaction name="actionResetAllLayouts"/>
     <addaction name="actionResetDefaultLayouts"/>
    </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
    <addaction name="menuDebug"/>
+   <addaction name="menuTools"/>
    <addaction name="menuWindows"/>
    <addaction name="menuLayouts"/>
   </widget>
-  <widget class="QToolBar" name="viewToolBar">
+  <widget class="QToolBar" name="toolBarView">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>View</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
