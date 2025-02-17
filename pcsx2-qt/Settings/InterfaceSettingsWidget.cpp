@@ -173,13 +173,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 		m_ui.discordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
 		tr("Shows the game you are currently playing as part of your profile in Discord."));
 	dialog->registerWidgetHelp(
-<<<<<<< Updated upstream
-		m_ui.mouseGrab, tr("Enable Mouse Grab"), tr("Unchecked"),
-		tr("Locks the mouse cursor to the windows when PCSX2 is in focus."));
-=======
 		m_ui.mouseLock, tr("Enable Mouse Lock"), tr("Unchecked"),
 		tr("Locks the mouse cursor to the windows when PCSX2 is in focus and all other windows are closed.<br><b>Unavailable on Linux Wayland.</b><br><b>Requires accessibility permissions on macOS.</b>"));
->>>>>>> Stashed changes
 	dialog->registerWidgetHelp(
 		m_ui.doubleClickTogglesFullscreen, tr("Double-Click Toggles Fullscreen"), tr("Checked"),
 		tr("Allows switching in and out of fullscreen mode by double-clicking the game window."));
