@@ -28,7 +28,7 @@ public:
 	virtual void PollEvents() = 0;
 
 	virtual std::optional<InputBindingKey> ParseKeyString(const std::string_view device, const std::string_view binding) = 0;
-	virtual TinyString ConvertKeyToString(InputBindingKey key) = 0;
+	virtual TinyString ConvertKeyToString(InputBindingKey key, bool migration = false) = 0;
 	virtual TinyString ConvertKeyToIcon(InputBindingKey key) = 0;
 
 	/// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.
