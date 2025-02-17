@@ -168,6 +168,7 @@ else()
 		${DBUS_LINK_LIBRARIES}
 		X11::X11
 		X11::Xrandr
+		X11::Xi
 	)
 	if(USE_BACKTRACE)
 		target_compile_definitions(common PRIVATE "HAS_LIBBACKTRACE=1")

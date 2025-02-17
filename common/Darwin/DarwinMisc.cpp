@@ -27,6 +27,7 @@
 #include <mach/task.h>
 #include <mach/vm_map.h>
 #include <mutex>
+#include <ApplicationServices/ApplicationServices.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
 // Darwin (OSX) is a bit different from Linux when requesting properties of
@@ -125,6 +126,69 @@ bool Common::InhibitScreensaver(bool inhibit)
 		IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleDisplaySleep, kIOPMAssertionLevelOn, CFSTR("Playing a game"), &s_pm_assertion);
 
 	return true;
+}
+
+void Common::SetMousePosition(int x, int y)
+{
+	// Little bit ugly but;
+	// Creating mouse move events and posting them wasn't very reliable.
+	// Calling CGWarpMouseCursorPosition without CGAssociateMouseAndMouseCursorPosition(false)
+	// ends up with the cursor feeling "sticky".
+	CGAssociateMouseAndMouseCursorPosition(false);
+	CGWarpMouseCursorPosition(CGPointMake(x, y));
+	CGAssociateMouseAndMouseCursorPosition(true); // The default state
+	return;
+}
+
+CFMachPortRef mouseEventTap = nullptr;
+CFRunLoopSourceRef mouseRunLoopSource = nullptr;
+
+static std::function<void(int, int)> fnMouseMoveCb;
+CGEventRef mouseMoveCallback(CGEventTapProxy, CGEventType type, CGEventRef event, void* arg)
+{
+	if (type == kCGEventMouseMoved)
+	{
+		const CGPoint location = CGEventGetLocation(event);
+		fnMouseMoveCb(location.x, location.y);
+	}
+	return event;
+}
+
+bool Common::AttachMousePositionCb(std::function<void(int, int)> cb)
+{
+	if (!AXIsProcessTrusted())
+	{
+		Console.Warning("Process isn't trusted with accessibility permissions. Mouse tracking will not work!");
+	}
+
+	fnMouseMoveCb = cb;
+	mouseEventTap = CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, kCGEventTapOptionDefault,
+		CGEventMaskBit(kCGEventMouseMoved), mouseMoveCallback, nullptr);
+	if (!mouseEventTap)
+	{
+		Console.Warning("Unable to create mouse moved event tap. Mouse tracking will not work!");
+		return false;
+	}
+
+	mouseRunLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, mouseEventTap, 0);
+	CFRunLoopAddSource(CFRunLoopGetCurrent(), mouseRunLoopSource, kCFRunLoopCommonModes);
+
+	return true;
+}
+
+void Common::DetachMousePositionCb()
+{
+	if (mouseRunLoopSource)
+	{
+		CFRunLoopRemoveSource(CFRunLoopGetCurrent(), mouseRunLoopSource, kCFRunLoopCommonModes);
+		CFRelease(mouseRunLoopSource);
+	}
+	if (mouseEventTap)
+	{
+		CFRelease(mouseEventTap);
+	}
+	mouseRunLoopSource = nullptr;
+	mouseEventTap = nullptr;
 }
 
 void Threading::Sleep(int ms)

@@ -104,7 +104,7 @@ public:
 	void rescanFile(const std::string& path);
 
 	void openDebugger();
-
+	void checkMousePosition(int x, int y);
 public Q_SLOTS:
 	void checkForUpdates(bool display_message, bool force_check);
 	void refreshGameList(bool invalidate_cache);
@@ -128,7 +128,7 @@ private Q_SLOTS:
 	void mouseModeRequested(bool relative_mode, bool hide_cursor);
 	void releaseRenderWindow();
 	void focusDisplayWidget();
-	void createCheckMousePositionTimer();
+	void setupMouseMoveHandler();
 	void onGameListRefreshComplete();
 	void onGameListRefreshProgress(const QString& status, int current, int total);
 	void onGameListSelectionChanged();
@@ -188,8 +188,6 @@ private Q_SLOTS:
 	void onVMResumed();
 	void onVMStopped();
 
-	void checkMousePosition();
-
 	void onGameChanged(const QString& title, const QString& elf_override, const QString& disc_path,
 		const QString& serial, quint32 disc_crc, quint32 crc);
 
@@ -207,7 +205,6 @@ protected:
 	void dropEvent(QDropEvent* event) override;
 	void moveEvent(QMoveEvent* event) override;
 	void resizeEvent(QResizeEvent* event) override;
-	void mouseMoveEvent(QMouseEvent* event) override;
 
 #ifdef _WIN32
 	bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
@@ -242,7 +239,7 @@ private:
 	bool isRenderingToMain() const;
 	bool shouldHideMouseCursor() const;
 	bool shouldHideMainWindow() const;
-	bool shouldMouseGrab() const;
+	bool shouldMouseLock() const;
 	void switchToGameListView();
 	void switchToEmulationView();
 
@@ -314,8 +311,6 @@ private:
 	bool m_is_temporarily_windowed = false;
 
 	QString m_last_fps_status;
-
-	QTimer* m_mouse_check_timer = nullptr;
 
 #ifdef _WIN32
 	void* m_device_notification_handle = nullptr;
