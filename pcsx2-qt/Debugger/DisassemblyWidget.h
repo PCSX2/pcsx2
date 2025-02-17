@@ -18,7 +18,7 @@ class DisassemblyWidget final : public DebuggerWidget
 	Q_OBJECT
 
 public:
-	DisassemblyWidget(DebugInterface& cpu, QWidget* parent = nullptr);
+	DisassemblyWidget(const DebuggerWidgetParameters& parameters);
 	~DisassemblyWidget();
 
 	// Required for the breakpoint list (ugh wtf)
@@ -32,7 +32,7 @@ protected:
 	void keyPressEvent(QKeyEvent* event);
 
 public slots:
-	void customMenuRequested(QPoint pos);
+	void openContextMenu(QPoint pos);
 
 	// Context menu actions
 	// When called, m_selectedAddressStart will be the 'selected' instruction
@@ -60,12 +60,6 @@ public slots:
 	void gotoProgramCounterOnPause();
 	void gotoAddress(u32 address, bool should_set_focus);
 
-	void setDemangle(bool demangle) { m_demangleFunctions = demangle; };
-signals:
-	void gotoInMemory(u32 address);
-	void breakpointsChanged();
-	void VMUpdate();
-
 private:
 	Ui::DisassemblyWidget m_ui;
 
@@ -78,7 +72,6 @@ private:
 	std::map<u32, u32> m_nopedInstructions;
 	std::map<u32, std::tuple<u32, u32>> m_stubbedFunctions;
 
-	bool m_demangleFunctions = true;
 	bool m_showInstructionOpcode = true;
 	bool m_goToProgramCounterOnPause = true;
 	DisassemblyManager m_disassemblyManager;

@@ -451,17 +451,38 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar, DebugInterface& cpu)
 /*
 	MemoryViewWidget
 */
-MemoryViewWidget::MemoryViewWidget(DebugInterface& cpu, QWidget* parent)
-	: DebuggerWidget(&cpu)
+MemoryViewWidget::MemoryViewWidget(const DebuggerWidgetParameters& parameters)
+	: DebuggerWidget(parameters)
 	, m_table(this)
 {
 	ui.setupUi(this);
-	this->setFocusPolicy(Qt::FocusPolicy::ClickFocus);
-	connect(this, &MemoryViewWidget::customContextMenuRequested, this, &MemoryViewWidget::customMenuRequested);
+
+	setFocusPolicy(Qt::FocusPolicy::ClickFocus);
+
+	setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(this, &MemoryViewWidget::customContextMenuRequested, this, &MemoryViewWidget::openContextMenu);
 
 	m_table.UpdateStartAddress(0x480000);
 
 	applyMonospaceFont();
+
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		update();
+		return true;
+	});
+
+	receiveEvent<DebuggerEvents::GoToAddress>([this](const DebuggerEvents::GoToAddress& event) -> bool {
+		if (event.filter != DebuggerEvents::GoToAddress::NONE &&
+			event.filter != DebuggerEvents::GoToAddress::MEMORY_VIEW)
+			return false;
+
+		gotoAddress(event.address);
+
+		if (event.switch_to_tab)
+			switchToThisTab();
+
+		return true;
+	});
 }
 
 MemoryViewWidget::~MemoryViewWidget() = default;
@@ -487,86 +508,74 @@ void MemoryViewWidget::mousePressEvent(QMouseEvent* event)
 	repaint();
 }
 
-void MemoryViewWidget::customMenuRequested(QPoint pos)
+void MemoryViewWidget::openContextMenu(QPoint pos)
 {
 	if (!cpu().isAlive())
 		return;
 
-	if (!m_contextMenu)
-	{
-		m_contextMenu = new QMenu(this);
+	QMenu* menu = new QMenu(this);
+	menu->setAttribute(Qt::WA_DeleteOnClose);
 
-		QAction* action = new QAction(tr("Copy Address"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { QApplication::clipboard()->setText(QString::number(m_table.selectedAddress, 16).toUpper()); });
+	QAction* copy_action = menu->addAction(tr("Copy Address"));
+	connect(copy_action, &QAction::triggered, this, [this]() {
+		QApplication::clipboard()->setText(QString::number(m_table.selectedAddress, 16).toUpper());
+	});
 
-		action = new QAction(tr("Go to in Disassembly"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { emit gotoInDisasm(m_table.selectedAddress); });
+	createEventActions<DebuggerEvents::GoToAddress>(menu, [this]() {
+		DebuggerEvents::GoToAddress event;
+		event.address = m_table.selectedAddress;
+		return std::optional(event);
+	});
 
-		action = new QAction(tr("Go to address"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { contextGoToAddress(); });
+	QAction* go_to_address_action = menu->addAction(tr("Go to address"));
+	connect(go_to_address_action, &QAction::triggered, this, [this]() { contextGoToAddress(); });
 
-		m_contextMenu->addSeparator();
+	menu->addSeparator();
 
-		m_actionLittleEndian = new QAction(tr("Show as Little Endian"));
-		m_actionLittleEndian->setCheckable(true);
-		m_contextMenu->addAction(m_actionLittleEndian);
-		connect(m_actionLittleEndian, &QAction::triggered, this, [this]() { m_table.SetLittleEndian(m_actionLittleEndian->isChecked()); });
+	QAction* endian_action = menu->addAction(tr("Show as Little Endian"));
+	endian_action->setCheckable(true);
+	endian_action->setChecked(m_table.GetLittleEndian());
+	connect(endian_action, &QAction::triggered, this, [this, endian_action]() {
+		m_table.SetLittleEndian(endian_action->isChecked());
+	});
 
-		// View Types
-		m_actionBYTE = new QAction(tr("Show as 1 byte"));
-		m_actionBYTE->setCheckable(true);
-		m_contextMenu->addAction(m_actionBYTE);
-		connect(m_actionBYTE, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::BYTE); });
+	const MemoryViewType current_view_type = m_table.GetViewType();
 
-		m_actionBYTEHW = new QAction(tr("Show as 2 bytes"));
-		m_actionBYTEHW->setCheckable(true);
-		m_contextMenu->addAction(m_actionBYTEHW);
-		connect(m_actionBYTEHW, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::BYTEHW); });
+	// View Types
+	QAction* byte_action = menu->addAction(tr("Show as 1 byte"));
+	byte_action->setCheckable(true);
+	byte_action->setChecked(current_view_type == MemoryViewType::BYTE);
+	connect(byte_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::BYTE); });
 
-		m_actionWORD = new QAction(tr("Show as 4 bytes"));
-		m_actionWORD->setCheckable(true);
-		m_contextMenu->addAction(m_actionWORD);
-		connect(m_actionWORD, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::WORD); });
+	QAction* bytehw_action = menu->addAction(tr("Show as 2 bytes"));
+	bytehw_action->setCheckable(true);
+	bytehw_action->setChecked(current_view_type == MemoryViewType::BYTEHW);
+	connect(bytehw_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::BYTEHW); });
 
-		m_actionDWORD = new QAction(tr("Show as 8 bytes"));
-		m_actionDWORD->setCheckable(true);
-		m_contextMenu->addAction(m_actionDWORD);
-		connect(m_actionDWORD, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::DWORD); });
+	QAction* word_action = menu->addAction(tr("Show as 4 bytes"));
+	word_action->setCheckable(true);
+	word_action->setChecked(current_view_type == MemoryViewType::WORD);
+	connect(word_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::WORD); });
 
-		m_contextMenu->addSeparator();
+	QAction* dword_action = menu->addAction(tr("Show as 8 bytes"));
+	dword_action->setCheckable(true);
+	dword_action->setChecked(current_view_type == MemoryViewType::DWORD);
+	connect(dword_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::DWORD); });
 
-		action = new QAction((tr("Add to Saved Memory Addresses")));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { emit addToSavedAddresses(m_table.selectedAddress); });
+	menu->addSeparator();
 
-		action = new QAction(tr("Copy Byte"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { contextCopyByte(); });
+	createEventActions<DebuggerEvents::AddToSavedAddresses>(menu, [this]() {
+		DebuggerEvents::AddToSavedAddresses event;
+		event.address = m_table.selectedAddress;
+		return std::optional(event);
+	});
 
-		action = new QAction(tr("Copy Segment"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { contextCopySegment(); });
+	connect(menu->addAction(tr("Copy Byte")), &QAction::triggered, this, &MemoryViewWidget::contextCopyByte);
+	connect(menu->addAction(tr("Copy Segment")), &QAction::triggered, this, &MemoryViewWidget::contextCopySegment);
+	connect(menu->addAction(tr("Copy Character")), &QAction::triggered, this, &MemoryViewWidget::contextCopyCharacter);
+	connect(menu->addAction(tr("Paste")), &QAction::triggered, this, &MemoryViewWidget::contextPaste);
 
-		action = new QAction(tr("Copy Character"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { contextCopyCharacter(); });
-
-		action = new QAction(tr("Paste"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { contextPaste(); });
-	}
-	m_actionLittleEndian->setChecked(m_table.GetLittleEndian());
-
-	const MemoryViewType currentViewType = m_table.GetViewType();
-
-	m_actionBYTE->setChecked(currentViewType == MemoryViewType::BYTE);
-	m_actionBYTEHW->setChecked(currentViewType == MemoryViewType::BYTEHW);
-	m_actionWORD->setChecked(currentViewType == MemoryViewType::WORD);
-	m_actionDWORD->setChecked(currentViewType == MemoryViewType::DWORD);
-	m_contextMenu->popup(this->mapToGlobal(pos));
+	menu->popup(this->mapToGlobal(pos));
 
 	this->repaint();
 	return;
@@ -647,7 +656,7 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
 		}
 	}
 	this->repaint();
-	VMUpdate();
+	DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
 }
 
 void MemoryViewWidget::gotoAddress(u32 address)

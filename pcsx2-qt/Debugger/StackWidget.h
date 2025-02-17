@@ -14,13 +14,13 @@ class StackWidget final : public DebuggerWidget
 	Q_OBJECT
 
 public:
-	StackWidget(DebugInterface& cpu, QWidget* parent = nullptr);
+	StackWidget(const DebuggerWidgetParameters& parameters);
 
-	void onContextMenu(QPoint pos);
+	void openContextMenu(QPoint pos);
 	void onDoubleClick(const QModelIndex& index);
 
 private:
 	Ui::StackWidget m_ui;
 
-	StackModel m_model;
+	StackModel* m_model;
 };

@@ -32,10 +32,14 @@ int BreakpointModel::columnCount(const QModelIndex&) const
 
 QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 {
+	size_t row = static_cast<size_t>(index.row());
+	if (row >= m_breakpoints.size())
+		return QVariant();
+
+	BreakpointMemcheck bp_mc = m_breakpoints[row];
+
 	if (role == Qt::DisplayRole)
 	{
-		auto bp_mc = m_breakpoints.at(index.row());
-
 		if (const auto* bp = std::get_if<BreakPoint>(&bp_mc))
 		{
 			switch (index.column())
@@ -87,8 +91,6 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 	}
 	else if (role == BreakpointModel::DataRole)
 	{
-		auto bp_mc = m_breakpoints.at(index.row());
-
 		if (const auto* bp = std::get_if<BreakPoint>(&bp_mc))
 		{
 			switch (index.column())
@@ -133,8 +135,6 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 	}
 	else if (role == BreakpointModel::ExportRole)
 	{
-		auto bp_mc = m_breakpoints.at(index.row());
-
 		if (const auto* bp = std::get_if<BreakPoint>(&bp_mc))
 		{
 			switch (index.column())
@@ -181,8 +181,6 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 	{
 		if (index.column() == 0)
 		{
-			auto bp_mc = m_breakpoints.at(index.row());
-
 			if (const auto* bp = std::get_if<BreakPoint>(&bp_mc))
 			{
 				return bp->enabled ? Qt::CheckState::Checked : Qt::CheckState::Unchecked;
