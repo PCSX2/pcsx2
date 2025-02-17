@@ -50,7 +50,7 @@ namespace DockTables
 
 	struct DefaultDockWidgetDescription
 	{
-		QString type;
+		std::string type;
 		DefaultDockGroup group;
 	};
 
@@ -60,9 +60,12 @@ namespace DockTables
 		BreakPointCpu cpu;
 		std::vector<DefaultDockGroupDescription> groups;
 		std::vector<DefaultDockWidgetDescription> widgets;
+		std::set<std::string> toolbars;
 	};
 
 	extern const std::vector<DefaultDockLayout> DEFAULT_DOCK_LAYOUTS;
+
+	const DefaultDockLayout* defaultLayout(const std::string& name);
 
 	// This is used to determine if the user has updated and we need to recreate
 	// the default layouts.

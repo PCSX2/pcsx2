@@ -52,12 +52,12 @@ DockLayout::DockLayout(
 
 	for (size_t i = 0; i < default_layout.widgets.size(); i++)
 	{
-		auto iterator = DockTables::DEBUGGER_WIDGETS.find(default_layout.widgets[i].type);
+		auto iterator = DockTables::DEBUGGER_WIDGETS.find(QString::fromStdString(default_layout.widgets[i].type));
 		pxAssertRel(iterator != DockTables::DEBUGGER_WIDGETS.end(), "Invalid default layout.");
 		const DockTables::DebuggerWidgetDescription& dock_description = iterator->second;
 
 		DebuggerWidget* widget = dock_description.create_widget(debug_interface);
-		m_widgets.emplace(default_layout.widgets[i].type, widget);
+		m_widgets.emplace(QString::fromStdString(default_layout.widgets[i].type), widget);
 	}
 
 	save(index);
@@ -85,6 +85,7 @@ DockLayout::DockLayout(
 	, m_cpu(cpu)
 	, m_is_default(is_default)
 	, m_base_layout(layout_to_clone.m_base_layout)
+	, m_toolbars(layout_to_clone.m_toolbars)
 	, m_geometry(layout_to_clone.m_geometry)
 {
 	for (const auto& [unique_name, widget_to_clone] : layout_to_clone.m_widgets)
@@ -157,6 +158,8 @@ void DockLayout::freeze()
 	pxAssert(!m_is_frozen);
 	m_is_frozen = true;
 
+	m_toolbars = g_debugger_window->saveState();
+
 	// Store the geometry of all the dock widgets as JSON.
 	KDDockWidgets::LayoutSaver saver(KDDockWidgets::RestoreOption_RelativeToMainWindow);
 	m_geometry = saver.serializeLayout();
@@ -172,21 +175,36 @@ void DockLayout::freeze()
 	}
 }
 
-void DockLayout::thaw(DebuggerWindow* window)
+void DockLayout::thaw()
 {
 	pxAssert(m_is_frozen);
 	m_is_frozen = false;
 
-	KDDockWidgets::LayoutSaver saver(KDDockWidgets::RestoreOption_RelativeToMainWindow);
+	// Restore the state of the toolbars.
+	if (m_toolbars.isEmpty())
+	{
+		const DockTables::DefaultDockLayout* base_layout = DockTables::defaultLayout(m_base_layout);
+		if (base_layout)
+		{
+			for (QToolBar* toolbar : g_debugger_window->findChildren<QToolBar*>())
+				if (base_layout->toolbars.contains(toolbar->objectName().toStdString()))
+					toolbar->show();
+		}
+	}
+	else
+	{
+		g_debugger_window->restoreState(m_toolbars);
+	}
 
 	if (m_geometry.isEmpty())
 	{
 		// This is a newly created layout with no geometry information.
-		setupDefaultLayout(window);
+		setupDefaultLayout();
 		return;
 	}
 
 	// Restore the geometry of the dock widgets we just recreated.
+	KDDockWidgets::LayoutSaver saver(KDDockWidgets::RestoreOption_RelativeToMainWindow);
 	if (!saver.restoreLayout(m_geometry))
 	{
 		// We've failed to restore the geometry, so just tear down whatever dock
@@ -200,7 +218,7 @@ void DockLayout::thaw(DebuggerWindow* window)
 			delete dock;
 		}
 
-		setupDefaultLayout(window);
+		setupDefaultLayout();
 		return;
 	}
 
@@ -304,7 +322,7 @@ bool DockLayout::hasDebuggerWidget(QString unique_name)
 	return m_widgets.find(unique_name) != m_widgets.end();
 }
 
-void DockLayout::toggleDebuggerWidget(QString unique_name, DebuggerWindow* window)
+void DockLayout::toggleDebuggerWidget(QString unique_name)
 {
 	pxAssert(!m_is_frozen);
 
@@ -337,7 +355,7 @@ void DockLayout::toggleDebuggerWidget(QString unique_name, DebuggerWindow* windo
 			return;
 		}
 
-		DockUtils::insertDockWidgetAtPreferredLocation(controller, description.preferred_location, window);
+		DockUtils::insertDockWidgetAtPreferredLocation(controller, description.preferred_location, g_debugger_window);
 		retranslateDockWidget(controller);
 	}
 	else
@@ -389,11 +407,12 @@ void DockLayout::deleteFile()
 	if (!FileSystem::DeleteFilePath(m_layout_file_path.c_str()))
 		Console.Error("Debugger: Failed to delete layout file '%s'.", m_layout_file_path.c_str());
 }
-
 bool DockLayout::save(DockLayout::Index layout_index)
 {
 	if (!m_is_frozen)
 	{
+		m_toolbars = g_debugger_window->saveState();
+
 		// Store the geometry of all the dock widgets as JSON.
 		KDDockWidgets::LayoutSaver saver(KDDockWidgets::RestoreOption_RelativeToMainWindow);
 		m_geometry = saver.serializeLayout();
@@ -426,6 +445,14 @@ bool DockLayout::save(DockLayout::Index layout_index)
 		rapidjson::Value base_layout;
 		base_layout.SetString(m_base_layout.c_str(), m_base_layout.size());
 		json.AddMember("baseLayout", base_layout, json.GetAllocator());
+	}
+
+	if (!m_toolbars.isEmpty())
+	{
+		std::string toolbars_str = m_toolbars.toBase64().toStdString();
+		rapidjson::Value toolbars;
+		toolbars.SetString(toolbars_str.data(), toolbars_str.size(), json.GetAllocator());
+		json.AddMember("toolbars", toolbars, json.GetAllocator());
 	}
 
 	rapidjson::Value widgets(rapidjson::kArrayType);
@@ -590,6 +617,10 @@ void DockLayout::load(
 	if (base_layout != json.MemberEnd() && base_layout->value.IsString())
 		m_base_layout = base_layout->value.GetString();
 
+	auto toolbars = json.FindMember("toolbars");
+	if (toolbars != json.MemberEnd() && toolbars->value.IsString())
+		m_toolbars = QByteArray::fromBase64(toolbars->value.GetString());
+
 	auto widgets = json.FindMember("widgets");
 	if (widgets != json.MemberEnd() && widgets->value.IsArray())
 	{
@@ -633,28 +664,25 @@ void DockLayout::load(
 	m_layout_file_path = path;
 }
 
-void DockLayout::setupDefaultLayout(DebuggerWindow* window)
+void DockLayout::setupDefaultLayout()
 {
 	pxAssert(!m_is_frozen);
 
 	if (m_base_layout.empty())
 		return;
 
-	const DockTables::DefaultDockLayout* layout = nullptr;
-	for (const DockTables::DefaultDockLayout& default_layout : DockTables::DEFAULT_DOCK_LAYOUTS)
-		if (default_layout.name == m_base_layout)
-			layout = &default_layout;
-
-	if (!layout)
+	const DockTables::DefaultDockLayout* base_layout = DockTables::defaultLayout(m_base_layout);
+	if (!base_layout)
 		return;
 
-	std::vector<KDDockWidgets::QtWidgets::DockWidget*> groups(layout->groups.size(), nullptr);
+	std::vector<KDDockWidgets::QtWidgets::DockWidget*> groups(base_layout->groups.size(), nullptr);
 
-	for (const DockTables::DefaultDockWidgetDescription& dock_description : layout->widgets)
+	for (const DockTables::DefaultDockWidgetDescription& dock_description : base_layout->widgets)
 	{
-		const DockTables::DefaultDockGroupDescription& group = layout->groups[static_cast<u32>(dock_description.group)];
+		const DockTables::DefaultDockGroupDescription& group =
+			base_layout->groups[static_cast<u32>(dock_description.group)];
 
-		auto widget_iterator = m_widgets.find(dock_description.type);
+		auto widget_iterator = m_widgets.find(QString::fromStdString(dock_description.type));
 		if (widget_iterator == m_widgets.end())
 			continue;
 
@@ -671,7 +699,7 @@ void DockLayout::setupDefaultLayout(DebuggerWindow* window)
 			if (group.parent != DockTables::DefaultDockGroup::ROOT)
 				parent = groups[static_cast<u32>(group.parent)];
 
-			window->addDockWidget(view, group.location, parent);
+			g_debugger_window->addDockWidget(view, group.location, parent);
 
 			groups[static_cast<u32>(dock_description.group)] = view;
 		}

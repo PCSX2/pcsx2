@@ -25,6 +25,8 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 	g_debugger_window = this;
 
+	setupDefaultToolBarState();
+
 	m_dock_manager->loadLayouts();
 
 	connect(m_ui.actionRun, &QAction::triggered, this, &DebuggerWindow::onRunPause);
@@ -33,6 +35,10 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	connect(m_ui.actionStepOut, &QAction::triggered, this, &DebuggerWindow::onStepOut);
 	connect(m_ui.actionAnalyse, &QAction::triggered, this, &DebuggerWindow::onAnalyse);
 	connect(m_ui.actionOnTop, &QAction::triggered, [this] { this->setWindowFlags(this->windowFlags() ^ Qt::WindowStaysOnTopHint); this->show(); });
+
+	connect(m_ui.menuTools, &QMenu::aboutToShow, this, [this]() {
+		m_dock_manager->createToolsMenu(m_ui.menuTools);
+	});
 
 	connect(m_ui.menuWindows, &QMenu::aboutToShow, this, [this]() {
 		m_dock_manager->createWindowsMenu(m_ui.menuWindows);
@@ -100,6 +106,11 @@ void DebuggerWindow::destroyInstance()
 DockManager& DebuggerWindow::dockManager()
 {
 	return *m_dock_manager;
+}
+
+void DebuggerWindow::clearToolBarState()
+{
+	restoreState(m_default_toolbar_state);
 }
 
 // There is no straightforward way to set the tab text to bold in Qt
@@ -199,4 +210,19 @@ void DebuggerWindow::closeEvent(QCloseEvent* event)
 
 	g_debugger_window = nullptr;
 	deleteLater();
+}
+
+void DebuggerWindow::setupDefaultToolBarState()
+{
+	// Hiding all the toolbars lets us save the default state of the window with
+	// all the toolbars hidden. The DockManager will show the appropriate ones
+	// later anyway.
+	for (QToolBar* toolbar : findChildren<QToolBar*>())
+		toolbar->hide();
+
+	m_default_toolbar_state = saveState();
+
+
+	for (QToolBar* toolbar : findChildren<QToolBar*>())
+		connect(toolbar, &QToolBar::topLevelChanged, m_dock_manager, &DockManager::updateToolBarLockState);
 }

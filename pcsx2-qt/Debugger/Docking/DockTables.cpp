@@ -48,14 +48,14 @@ const std::map<QString, DockTables::DebuggerWidgetDescription> DockTables::DEBUG
 
 const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUTS = {
 	{
-		QT_TRANSLATE_NOOP("DebuggerLayout", "R5900"),
-		BREAKPOINT_EE,
-		{
+		.name = QT_TRANSLATE_NOOP("DebuggerLayout", "R5900"),
+		.cpu = BREAKPOINT_EE,
+		.groups = {
 			/* [DefaultDockGroup::TOP_RIGHT] = */ {KDDockWidgets::Location_OnRight, DefaultDockGroup::ROOT},
 			/* [DefaultDockGroup::BOTTOM]    = */ {KDDockWidgets::Location_OnBottom, DefaultDockGroup::TOP_RIGHT},
 			/* [DefaultDockGroup::TOP_LEFT]  = */ {KDDockWidgets::Location_OnLeft, DefaultDockGroup::TOP_RIGHT},
 		},
-		{
+		.widgets = {
 			/* DefaultDockGroup::TOP_RIGHT */
 			{"DisassemblyWidget", DefaultDockGroup::TOP_RIGHT},
 			/* DefaultDockGroup::BOTTOM */
@@ -71,17 +71,20 @@ const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUT
 			{"RegisterWidget", DefaultDockGroup::TOP_LEFT},
 			{"FunctionTreeWidget", DefaultDockGroup::TOP_LEFT},
 			{"MemorySearchWidget", DefaultDockGroup::TOP_LEFT},
+		},
+		.toolbars = {
+			"toolBarDebug",
 		},
 	},
 	{
-		QT_TRANSLATE_NOOP("DebuggerLayout", "R3000"),
-		BREAKPOINT_IOP,
-		{
+		.name = QT_TRANSLATE_NOOP("DebuggerLayout", "R3000"),
+		.cpu = BREAKPOINT_IOP,
+		.groups = {
 			/* [DefaultDockGroup::TOP_RIGHT] = */ {KDDockWidgets::Location_OnRight, DefaultDockGroup::ROOT},
 			/* [DefaultDockGroup::BOTTOM]    = */ {KDDockWidgets::Location_OnBottom, DefaultDockGroup::TOP_RIGHT},
 			/* [DefaultDockGroup::TOP_LEFT]  = */ {KDDockWidgets::Location_OnLeft, DefaultDockGroup::TOP_RIGHT},
 		},
-		{
+		.widgets = {
 			/* DefaultDockGroup::TOP_RIGHT */
 			{"DisassemblyWidget", DefaultDockGroup::TOP_RIGHT},
 			/* DefaultDockGroup::BOTTOM */
@@ -98,8 +101,20 @@ const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUT
 			{"FunctionTreeWidget", DefaultDockGroup::TOP_LEFT},
 			{"MemorySearchWidget", DefaultDockGroup::TOP_LEFT},
 		},
+		.toolbars = {
+			"toolBarDebug",
+		},
 	},
 };
+
+const DockTables::DefaultDockLayout* DockTables::defaultLayout(const std::string& name)
+{
+	for (const DockTables::DefaultDockLayout& default_layout : DockTables::DEFAULT_DOCK_LAYOUTS)
+		if (default_layout.name == name)
+			return &default_layout;
+
+	return nullptr;
+}
 
 const std::string& DockTables::hashDefaultLayouts()
 {
@@ -109,7 +124,7 @@ const std::string& DockTables::hashDefaultLayouts()
 
 	MD5Digest md5;
 
-	size_t layout_count = DEFAULT_DOCK_LAYOUTS.size();
+	u32 layout_count = static_cast<u32>(DEFAULT_DOCK_LAYOUTS.size());
 	md5.Update(&layout_count, sizeof(layout_count));
 
 	for (const DefaultDockLayout& layout : DEFAULT_DOCK_LAYOUTS)
@@ -127,32 +142,41 @@ const std::string& DockTables::hashDefaultLayouts()
 
 void DockTables::hashDefaultLayout(const DefaultDockLayout& layout, MD5Digest& md5)
 {
-	size_t layout_name_size = layout.name.size();
+	u32 layout_name_size = static_cast<u32>(layout.name.size());
 	md5.Update(&layout_name_size, sizeof(layout_name_size));
-	md5.Update(layout.name.c_str(), layout.name.size());
+	md5.Update(layout.name.data(), layout_name_size);
 
 	const char* cpu_name = DebugInterface::cpuName(layout.cpu);
-	size_t cpu_name_size = strlen(cpu_name);
+	u32 cpu_name_size = static_cast<u32>(strlen(cpu_name));
 	md5.Update(&cpu_name_size, sizeof(cpu_name_size));
 	md5.Update(cpu_name, cpu_name_size);
 
-	size_t group_count = layout.groups.size();
+	u32 group_count = static_cast<u32>(layout.groups.size());
 	md5.Update(&group_count, sizeof(group_count));
 
 	for (const DefaultDockGroupDescription& group : layout.groups)
 		hashDefaultGroup(group, md5);
 
-	size_t widget_count = layout.widgets.size();
+	u32 widget_count = static_cast<u32>(layout.widgets.size());
 	md5.Update(&widget_count, sizeof(widget_count));
 
 	for (const DefaultDockWidgetDescription& widget : layout.widgets)
 		hashDefaultDockWidget(widget, md5);
+
+	u32 toolbar_count = static_cast<u32>(layout.toolbars.size());
+	md5.Update(&toolbar_count, sizeof(toolbar_count));
+	for (const std::string& toolbar : layout.toolbars)
+	{
+		u32 toolbar_size = toolbar.size();
+		md5.Update(&toolbar_size, sizeof(toolbar_size));
+		md5.Update(toolbar.data(), toolbar.size());
+	}
 }
 
 void DockTables::hashDefaultGroup(const DefaultDockGroupDescription& group, MD5Digest& md5)
 {
 	const char* location = DockUtils::locationToString(group.location);
-	size_t location_size = strlen(location);
+	u32 location_size = static_cast<u32>(strlen(location));
 	md5.Update(&location_size, sizeof(location_size));
 	md5.Update(location, location_size);
 
@@ -162,10 +186,9 @@ void DockTables::hashDefaultGroup(const DefaultDockGroupDescription& group, MD5D
 
 void DockTables::hashDefaultDockWidget(const DefaultDockWidgetDescription& widget, MD5Digest& md5)
 {
-	std::string type = widget.type.toStdString();
-	size_t type_size = type.size();
+	u32 type_size = static_cast<u32>(widget.type.size());
 	md5.Update(&type_size, sizeof(type_size));
-	md5.Update(type.c_str(), type_size);
+	md5.Update(widget.type.data(), type_size);
 
 	u32 group = static_cast<u32>(widget.group);
 	md5.Update(&group, sizeof(group));
