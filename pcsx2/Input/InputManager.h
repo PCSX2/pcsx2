@@ -63,7 +63,8 @@ union InputBindingKey
 		InputSubclass source_subtype : 3; ///< if 1, binding is for an axis and not a button (used for controllers)
 		InputModifier modifier : 2;
 		u32 invert : 1; ///< if 1, value is inverted prior to being sent to the sink
-		u32 unused : 14;
+		u32 needs_migration : 1; //< Used for SDL2-3 Migration, binding should be saved to complete migration
+		u32 unused : 13;
 		u32 data;
 	};
 
@@ -80,6 +81,7 @@ union InputBindingKey
 		r.bits = bits;
 		r.modifier = InputModifier::None;
 		r.invert = 0;
+		r.needs_migration = false;
 		return r;
 	}
 };

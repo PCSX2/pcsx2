@@ -505,6 +505,50 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 	key.source_type = InputSourceType::SDL;
 	key.source_index = static_cast<u32>(player_id.value());
 
+	// SDL2-SDL3 Migrations
+	if (binding.starts_with("+Axis") || binding.starts_with("-Axis"))
+	{
+		const std::string_view axis_name(binding.substr(1));
+
+		std::string_view end;
+		if (auto value = StringUtil::FromChars<u32>(axis_name.substr(4), 10, &end))
+		{
+			key.source_subtype = InputSubclass::ControllerAxis;
+			key.data = *value - 6 + std::size(s_sdl_axis_names);
+			key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
+			key.invert = (end == "~");
+
+			key.needs_migration = true;
+			return key;
+		}
+	}
+	else if (binding.starts_with("FullAxis"))
+	{
+		std::string_view end;
+		if (auto value = StringUtil::FromChars<u32>(binding.substr(8), 10, &end))
+		{
+			key.source_subtype = InputSubclass::ControllerAxis;
+			key.data = *value - 6 + std::size(s_sdl_axis_names);
+			key.modifier = InputModifier::FullAxis;
+			key.invert = (end == "~");
+
+			key.needs_migration = true;
+			return key;
+		}
+	}
+	else if (binding.starts_with("Button"))
+	{
+		if (auto value = StringUtil::FromChars<u32>(binding.substr(6)))
+		{
+			key.source_subtype = InputSubclass::ControllerButton;
+			key.data = *value - 21 + std::size(s_sdl_button_names);
+
+			key.needs_migration = true;
+			return key;
+		}
+	}
+	// End Migrations
+
 	if (binding.ends_with("Motor"))
 	{
 		key.source_subtype = InputSubclass::ControllerMotor;
