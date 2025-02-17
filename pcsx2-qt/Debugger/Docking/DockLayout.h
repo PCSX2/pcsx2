@@ -89,7 +89,7 @@ public:
 	void freeze();
 
 	// Restore the state of all the dock widgets from this layout.
-	void thaw(DebuggerWindow* window);
+	void thaw();
 
 	KDDockWidgets::Core::DockWidget* createDockWidget(const QString& name);
 	void retranslateDockWidgets();
@@ -97,7 +97,7 @@ public:
 	void dockWidgetClosed(KDDockWidgets::Core::DockWidget* dock_widget);
 
 	bool hasDebuggerWidget(QString unique_name);
-	void toggleDebuggerWidget(QString unique_name, DebuggerWindow* window);
+	void toggleDebuggerWidget(QString unique_name);
 	void recreateDebuggerWidget(QString unique_name);
 
 	void deleteFile();
@@ -110,7 +110,7 @@ private:
 		DockLayout::LoadResult& result,
 		DockLayout::Index& index_last_session);
 
-	void setupDefaultLayout(DebuggerWindow* window);
+	void setupDefaultLayout();
 
 	// The name displayed in the user interface. Also used to determine the
 	// file name for the layout file.
@@ -126,6 +126,10 @@ private:
 	// The name of the default layout which this layout was based on. This will
 	// be used if the m_geometry variable above is empty.
 	std::string m_base_layout;
+
+	// The state of all the toolbars, saved and restored using
+	// QMainWindow::saveState and QMainWindow::restoreState respectively.
+	QByteArray m_toolbars;
 
 	// All the dock widgets currently open in this layout. If this is the active
 	// layout then these will be owned by the docking system, otherwise they

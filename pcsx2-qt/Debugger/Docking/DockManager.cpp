@@ -104,12 +104,17 @@ void DockManager::switchToLayout(DockLayout::Index layout_index)
 		layout.save(m_current_layout);
 	}
 
+	// Clear out the existing positions of toolbars so they don't affect where
+	// new toolbars appear for other layouts.
+	g_debugger_window->clearToolBarState();
+	updateToolBarLockState();
+
 	m_current_layout = layout_index;
 
 	if (m_current_layout != DockLayout::INVALID_INDEX)
 	{
 		DockLayout& layout = m_layouts.at(m_current_layout);
-		layout.thaw(g_debugger_window);
+		layout.thaw();
 	}
 }
 
@@ -265,6 +270,26 @@ void DockManager::resetDefaultLayouts()
 	saveLayouts();
 }
 
+void DockManager::createToolsMenu(QMenu* menu)
+{
+	menu->clear();
+
+	if (m_current_layout == DockLayout::INVALID_INDEX)
+		return;
+
+	for (QToolBar* widget : g_debugger_window->findChildren<QToolBar*>())
+	{
+		QAction* action = new QAction(menu);
+		action->setText(widget->windowTitle());
+		action->setCheckable(true);
+		action->setChecked(widget->isVisible());
+		connect(action, &QAction::triggered, this, [widget]() {
+			widget->setVisible(!widget->isVisible());
+		});
+		menu->addAction(action);
+	}
+}
+
 void DockManager::createWindowsMenu(QMenu* menu)
 {
 	menu->clear();
@@ -281,7 +306,7 @@ void DockManager::createWindowsMenu(QMenu* menu)
 		action->setCheckable(true);
 		action->setChecked(layout.hasDebuggerWidget(type));
 		connect(action, &QAction::triggered, this, [&layout, type]() {
-			layout.toggleDebuggerWidget(type, g_debugger_window);
+			layout.toggleDebuggerWidget(type);
 		});
 		menu->addAction(action);
 	}
@@ -557,6 +582,8 @@ void DockManager::setLayoutLocked(bool locked)
 {
 	m_layout_locked = locked;
 
+	updateToolBarLockState();
+
 	for (KDDockWidgets::Core::Group* group : KDDockWidgets::DockRegistry::self()->groups())
 	{
 		auto stack = static_cast<KDDockWidgets::QtWidgets::Stack*>(group->stack()->view());
@@ -566,6 +593,12 @@ void DockManager::setLayoutLocked(bool locked)
 		if (stack->tabBar()->count() > 0)
 			stack->tabBar()->setTabText(0, stack->tabBar()->tabText(0));
 	}
+}
+
+void DockManager::updateToolBarLockState()
+{
+	for (QToolBar* toolbar : g_debugger_window->findChildren<QToolBar*>())
+		toolbar->setMovable(!m_layout_locked || toolbar->isFloating());
 }
 
 KDDockWidgets::Core::DockWidget* DockManager::dockWidgetFactory(const QString& name)
