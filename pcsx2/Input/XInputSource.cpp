@@ -317,7 +317,7 @@ std::optional<InputBindingKey> XInputSource::ParseKeyString(const std::string_vi
 	return std::nullopt;
 }
 
-TinyString XInputSource::ConvertKeyToString(InputBindingKey key)
+TinyString XInputSource::ConvertKeyToString(InputBindingKey key, bool migration)
 {
 	TinyString ret;
 

@@ -8,6 +8,7 @@
 #include "SIO/Sio.h"
 #include "USB/USB.h"
 #include "VMManager.h"
+#include "LayeredSettingsInterface.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -94,8 +95,10 @@ namespace InputManager
 
 	static bool SplitBinding(const std::string_view binding, std::string_view* source, std::string_view* sub_binding);
 	static void PrettifyInputBindingPart(const std::string_view binding, SmallString& ret, bool& changed);
-	static void AddBinding(const std::string_view binding, const InputEventHandler& handler);
-	static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler);
+	static std::shared_ptr<InputBinding> AddBinding(const std::string_view binding, const InputEventHandler& handler);
+	// Will also apply SDL2-SDL3 migrations and update the provided section & key
+	static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler,
+		InputBindingInfo::Type binding_type, SettingsInterface& si, const char* section, const char* key);
 	static bool ParseBindingAndGetSource(const std::string_view binding, InputBindingKey* key, InputSource** source);
 
 	static bool IsAxisHandler(const InputEventHandler& handler);
@@ -267,7 +270,7 @@ bool InputManager::ParseBindingAndGetSource(const std::string_view binding, Inpu
 	return false;
 }
 
-std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
+std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key, bool migration)
 {
 	if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::Device)
 	{
@@ -315,27 +318,27 @@ std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type 
 		}
 		else if (key.source_type < InputSourceType::Count && s_input_sources[static_cast<u32>(key.source_type)])
 		{
-			return std::string(s_input_sources[static_cast<u32>(key.source_type)]->ConvertKeyToString(key));
+			return std::string(s_input_sources[static_cast<u32>(key.source_type)]->ConvertKeyToString(key, migration));
 		}
 	}
 
 	return {};
 }
 
-std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type, const InputBindingKey* keys, size_t num_keys)
+std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type, const InputBindingKey* keys, size_t num_keys, bool migration)
 {
 	// can't have a chord of devices/pointers
 	if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::Device)
 	{
 		// so only take the first
 		if (num_keys > 0)
-			return ConvertInputBindingKeyToString(binding_type, keys[0]);
+			return ConvertInputBindingKeyToString(binding_type, keys[0], migration);
 	}
 
 	std::stringstream ss;
 	for (size_t i = 0; i < num_keys; i++)
 	{
-		const std::string keystr(ConvertInputBindingKeyToString(binding_type, keys[i]));
+		const std::string keystr(ConvertInputBindingKeyToString(binding_type, keys[i], migration));
 		if (keystr.empty())
 			return std::string();
 
@@ -459,7 +462,7 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
 }
 
 
-void InputManager::AddBinding(const std::string_view binding, const InputEventHandler& handler)
+std::shared_ptr<InputBinding> InputManager::AddBinding(const std::string_view binding, const InputEventHandler& handler)
 {
 	std::shared_ptr<InputBinding> ibinding;
 	const std::vector<std::string_view> chord_bindings(SplitChord(binding));
@@ -493,17 +496,65 @@ void InputManager::AddBinding(const std::string_view binding, const InputEventHa
 	}
 
 	if (!ibinding)
-		return;
+		return nullptr;
 
 	// plop it in the input map for all the keys
 	for (u32 i = 0; i < ibinding->num_keys; i++)
 		s_binding_map.emplace(ibinding->keys[i].MaskDirection(), ibinding);
+
+	return ibinding;
 }
 
-void InputManager::AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler)
+void InputManager::AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler,
+	InputBindingInfo::Type binding_type, SettingsInterface& si, const char* section, const char* key)
 {
+	std::vector<std::shared_ptr<InputBinding>> ibindings;
+
+	bool migrate = false;
 	for (const std::string& binding : bindings)
-		AddBinding(binding, handler);
+	{
+		std::shared_ptr<InputBinding> ibinding = AddBinding(binding, handler);
+		ibindings.push_back(ibinding);
+
+		if (ibinding)
+		{
+			// Check for SDL2-3 migrations
+			for (u32 i = 0; i < ibinding->num_keys; i++)
+			{
+				if (ibinding->keys[i].needs_migration)
+					migrate = true;
+			}
+		}
+	}
+
+	// Save migrations
+	if (migrate)
+	{
+		std::vector<std::string> new_bindings;
+		new_bindings.reserve(bindings.size());
+
+		for (int i = 0; i < bindings.size(); i++)
+		{
+			if (ibindings[i])
+				new_bindings.push_back(ConvertInputBindingKeysToString(binding_type, ibindings[i]->keys, ibindings[i]->num_keys, true));
+			else
+				// Retain invalid bindings as is
+				new_bindings.push_back(bindings[i]);
+		}
+
+		// Need to find where our binding came from
+		LayeredSettingsInterface& lsi = static_cast<LayeredSettingsInterface&>(si);
+		for (int i = 0; i < LayeredSettingsInterface::NUM_LAYERS; i++)
+		{
+			SettingsInterface* layer = lsi.GetLayer(static_cast<LayeredSettingsInterface::Layer>(i));
+			if (layer && layer->GetStringList(section, key) == bindings)
+			{
+				// Layer found, update settings
+				layer->SetStringList(section, key, new_bindings);
+				layer->Save();
+			}
+		}
+	}
 }
 
 // ------------------------------------------------------------------------
@@ -711,7 +762,7 @@ void InputManager::AddHotkeyBindings(SettingsInterface& si)
 			if (bindings.empty())
 				continue;
 
-			AddBindings(bindings, InputButtonEventHandler{hotkey->handler});
+			AddBindings(bindings, InputButtonEventHandler{hotkey->handler}, InputBindingInfo::Type::Unknown, si, "Hotkeys", hotkey->name);
 		}
 	}
 }
@@ -753,7 +804,8 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index)
 					AddBindings(
 						bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index, sensitivity, deadzone](InputBindingKey key, float value) {
 							Pad::SetControllerState(pad_index, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
-						}});
+						}},
+						bi.bind_type, si, section.c_str(), bi.name);
 				}
 			}
 			break;
@@ -771,10 +823,12 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index)
 		if (!bindings.empty())
 		{
 			const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("Macro{}Deadzone", macro_button_index + 1).c_str(), 0.0f);
-			AddBindings(bindings, InputAxisEventHandler{[pad_index, macro_button_index, deadzone](InputBindingKey key, float value) {
-				const bool state = (value > deadzone);
-				Pad::SetMacroButtonState(key, pad_index, macro_button_index, state);
-			}});
+			AddBindings(
+				bindings, InputAxisEventHandler{[pad_index, macro_button_index, deadzone](InputBindingKey key, float value) {
+					const bool state = (value > deadzone);
+					Pad::SetMacroButtonState(key, pad_index, macro_button_index, state);
+				}},
+				InputBindingInfo::Type::Macro, si, section.c_str(), fmt::format("Macro{}", macro_button_index + 1).c_str());
 		}
 	}
 
@@ -835,9 +889,11 @@ void InputManager::AddUSBBindings(SettingsInterface& si, u32 port)
 				{
 					const float sensitivity = si.GetFloatValue(section.c_str(), fmt::format("{}Scale", bi.name).c_str(), 1.0f);
 					const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("{}Deadzone", bi.name).c_str(), 0.0f);
-					AddBindings(bindings, InputAxisEventHandler{[port, bind_index = bi.bind_index, sensitivity, deadzone](InputBindingKey key, float value) {
-						USB::SetDeviceBindValue(port, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
-					}});
+					AddBindings(
+						bindings, InputAxisEventHandler{[port, bind_index = bi.bind_index, sensitivity, deadzone](InputBindingKey key, float value) {
+							USB::SetDeviceBindValue(port, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
+						}},
+						bi.bind_type, si, section.c_str(), bind_name.c_str());
 				}
 			}
 			break;
