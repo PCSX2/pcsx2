@@ -109,7 +109,7 @@ class MemoryViewWidget final : public DebuggerWidget
 	Q_OBJECT
 
 public:
-	MemoryViewWidget(DebugInterface& cpu, QWidget* parent = nullptr);
+	MemoryViewWidget(const DebuggerWidgetParameters& parameters);
 	~MemoryViewWidget();
 
 protected:
@@ -120,7 +120,7 @@ protected:
 	void keyPressEvent(QKeyEvent* event);
 
 public slots:
-	void customMenuRequested(QPoint pos);
+	void openContextMenu(QPoint pos);
 
 	void contextGoToAddress();
 	void contextCopyByte();
@@ -129,20 +129,8 @@ public slots:
 	void contextPaste();
 	void gotoAddress(u32 address);
 
-signals:
-	void gotoInDisasm(u32 address, bool should_set_focus = true);
-	void addToSavedAddresses(u32 address);
-	void VMUpdate();
-
 private:
 	Ui::MemoryViewWidget ui;
-
-	QMenu* m_contextMenu = 0x0;
-	QAction* m_actionLittleEndian;
-	QAction* m_actionBYTE;
-	QAction* m_actionBYTEHW;
-	QAction* m_actionWORD;
-	QAction* m_actionDWORD;
 
 	MemoryViewTable m_table;
 };

@@ -224,6 +224,7 @@
     <QtMoc Include="Tools\InputRecording\InputRecordingViewer.h" />
     <ClInclude Include="QtUtils.h" />
     <QtMoc Include="Debugger\AnalysisOptionsDialog.h" />
+    <QtMoc Include="Debugger\DebuggerEvents.h" />
     <QtMoc Include="Debugger\DebuggerWidget.h" />
     <QtMoc Include="Debugger\DebuggerWindow.h" />
     <QtMoc Include="Debugger\DisassemblyWidget.h" />
