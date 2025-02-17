@@ -36,6 +36,8 @@ const char* InterfaceSettingsWidget::THEME_NAMES[] = {
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Cobalt Sky (Blue) [Dark]"),
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "AMOLED (Black) [Dark]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Ruby (Black/Red) [Dark]"),
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Sapphire (Black/Blue) [Dark]"),
@@ -61,6 +63,7 @@ const char* InterfaceSettingsWidget::THEME_VALUES[] = {
 	"ScarletDevilRed",
 	"VioletAngelPurple",
 	"CobaltSky",
+	"AMOLED",
 	"Ruby",
 	"Sapphire",
 	"Emerald",
