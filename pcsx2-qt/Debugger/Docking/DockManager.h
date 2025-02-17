@@ -51,6 +51,7 @@ public:
 	bool deleteLayout(DockLayout::Index layout_index);
 
 	void switchToLayout(DockLayout::Index layout_index);
+	bool switchToLayoutWithCPU(BreakPointCpu cpu);
 
 	void loadLayouts();
 	bool saveLayouts();
@@ -78,6 +79,8 @@ public:
 	bool isLayoutLocked();
 	void setLayoutLocked(bool locked);
 	void updateToolBarLockState();
+
+	std::optional<BreakPointCpu> cpu();
 
 private:
 	static KDDockWidgets::Core::DockWidget* dockWidgetFactory(const QString& name);
