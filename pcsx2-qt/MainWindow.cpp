@@ -107,7 +107,6 @@ MainWindow::MainWindow()
 #if !defined(_WIN32) && !defined(__APPLE__)
 	s_use_central_widget = DisplayContainer::isRunningOnWayland();
 #endif
-	createCheckMousePositionTimer();
 }
 
 MainWindow::~MainWindow()
@@ -115,6 +114,8 @@ MainWindow::~MainWindow()
 	// make sure the game list isn't refreshing, because it's on a separate thread
 	cancelGameListRefresh();
 	destroySubWindows();
+
+	Common::DetachMousePositionCb();
 
 	// we compare here, since recreate destroys the window later
 	if (g_main_window == this)
@@ -151,6 +152,9 @@ void MainWindow::initialize()
 #ifdef _WIN32
 	registerForDeviceNotifications();
 #endif
+
+	if (Host::GetBoolSettingValue("EmuCore", "EnableMouseLock", false))
+		setupMouseMoveHandler();
 }
 
 // TODO: Figure out how to set this in the .ui file
@@ -1070,12 +1074,12 @@ bool MainWindow::shouldHideMainWindow() const
 		   QtHost::InNoGUIMode();
 }
 
-bool MainWindow::shouldMouseGrab() const
+bool MainWindow::shouldMouseLock() const
 {
 	if (!s_vm_valid || s_vm_paused)
 		return false;
 
-	if (!Host::GetBoolSettingValue("EmuCore", "EnableMouseGrab", false))
+	if (!Host::GetBoolSettingValue("EmuCore", "EnableMouseLock", false))
 		return false;
 
 	bool windowsHidden = (!m_debugger_window || m_debugger_window->isHidden()) &&
@@ -2238,6 +2242,15 @@ void MainWindow::registerForDeviceNotifications()
 	DEV_BROADCAST_DEVICEINTERFACE_W filter = {sizeof(DEV_BROADCAST_DEVICEINTERFACE_W), DBT_DEVTYP_DEVICEINTERFACE};
 	m_device_notification_handle =
 		RegisterDeviceNotificationW((HANDLE)winId(), &filter, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
+
+	// Set up the raw input device for mouse grabbing
+	RAWINPUTDEVICE rid;
+	rid.usUsagePage = 0x01; // Generic desktop controls
+	rid.usUsage = 0x02; // Mouse
+	rid.dwFlags = RIDEV_INPUTSINK;
+	rid.hwndTarget = (HWND)winId();
+
+	RegisterRawInputDevices(&rid, 1, sizeof(RAWINPUTDEVICE));
 #endif
 }
 
@@ -2265,6 +2278,26 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr
 			g_emu_thread->reloadInputDevices();
 			*result = 1;
 			return true;
+		}
+
+		if (msg->message == WM_INPUT)
+		{
+			UINT dwSize = 40;
+			static BYTE lpb[40];
+			if (GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)))
+			{
+				const RAWINPUT* raw = (RAWINPUT*)lpb;
+				if (raw->header.dwType == RIM_TYPEMOUSE)
+				{
+					const RAWMOUSE& mouse = raw->data.mouse;
+					if (mouse.usFlags == MOUSE_MOVE_ABSOLUTE || mouse.usFlags == MOUSE_MOVE_RELATIVE)
+					{
+						POINT cursorPos;
+						GetCursorPos(&cursorPos);
+						checkMousePosition(cursorPos.x, cursorPos.y);
+					}
+				}
+			}
 		}
 	}
 
@@ -2545,34 +2578,52 @@ QWidget* MainWindow::getDisplayContainer() const
 	return (m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget));
 }
 
-void MainWindow::createCheckMousePositionTimer()
+void MainWindow::setupMouseMoveHandler()
 {
-	m_mouse_check_timer = new QTimer(this);
-	connect(m_mouse_check_timer, &QTimer::timeout, this, &MainWindow::checkMousePosition);
-	m_mouse_check_timer->start(16);
+	auto mouse_cb_fn = [](int x, int y)
+	{
+		if(g_main_window)
+			g_main_window->checkMousePosition(x, y);
+	};
+	
+	if(!Common::AttachMousePositionCb(mouse_cb_fn))
+	{
+		Console.Warning("Unable to setup mouse position cb!");
+	}
+
+	return;
 }
 
-void MainWindow::checkMousePosition()
+void MainWindow::checkMousePosition(int x, int y)
 {
-	if (!shouldMouseGrab())
+	if (!shouldMouseLock())
 		return;
 
-	QPoint globalCursorPos = QCursor::pos();
-	const QRect& windowBounds = isRenderingFullscreen() ? screen()->geometry() : geometry();
-
+	const QPoint globalCursorPos = {x, y};
+	QRect windowBounds = isRenderingFullscreen() ? screen()->geometry() : geometry();
 	if (windowBounds.contains(globalCursorPos))
 		return;
 
-	QCursor::setPos(
+	Common::SetMousePosition(
 		std::clamp(globalCursorPos.x(), windowBounds.left(), windowBounds.right()),
 		std::clamp(globalCursorPos.y(), windowBounds.top(), windowBounds.bottom()));
-}
 
-void MainWindow::mouseMoveEvent(QMouseEvent* event)
-{
-	QWidget::mouseMoveEvent(event);
+	/*
+		Provided below is how we would handle this if we were using low level hooks (What is used in Common::AttachMouseCb)
+		We currently use rawmouse on Windows, so Common::SetMousePosition called directly works fine.
+	*/
+#if 0
+		// We are currently in a low level hook. SetCursorPos here (what is in Common::SetMousePosition) will not work!
+		// Let's (a)buse Qt's event loop to dispatch the call at a later time, outside of the hook.
+		QMetaObject::invokeMethod(
+			this, [=]() {
+				Common::SetMousePosition(
+					std::clamp(globalCursorPos.x(), windowBounds.left(), windowBounds.right()),
+					std::clamp(globalCursorPos.y(), windowBounds.top(), windowBounds.bottom()));
+			},
+			Qt::QueuedConnection);
+#endif
 }
-
 
 void MainWindow::saveDisplayWindowGeometryToConfig()
 {

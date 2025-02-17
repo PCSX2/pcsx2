@@ -6,6 +6,7 @@
 #include "common/Pcsx2Defs.h"
 
 #include <atomic>
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -198,4 +199,8 @@ namespace Common
 	/// Abstracts platform-specific code for asynchronously playing a sound.
 	/// On Windows, this will use PlaySound(). On Linux, it will shell out to aplay. On MacOS, it uses NSSound.
 	bool PlaySoundAsync(const char* path);
+
+	void SetMousePosition(int x, int y);
+	bool AttachMousePositionCb(std::function<void(int,int)> cb);
+	void DetachMousePositionCb();
 } // namespace Common

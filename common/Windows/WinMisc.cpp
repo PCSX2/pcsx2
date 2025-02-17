@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/HostSys.h"
 #include "common/RedtapeWindows.h"
@@ -84,6 +85,61 @@ bool Common::InhibitScreensaver(bool inhibit)
 		flags |= ES_DISPLAY_REQUIRED;
 	SetThreadExecutionState(flags);
 	return true;
+}
+
+void Common::SetMousePosition(int x, int y)
+{
+	SetCursorPos(x, y);
+}
+
+/*
+static HHOOK mouseHook = nullptr;
+static std::function<void(int, int)> fnMouseMoveCb;
+LRESULT CALLBACK Mousecb(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	if (nCode >= 0 && wParam == WM_MOUSEMOVE)
+	{
+		MSLLHOOKSTRUCT* mouse = (MSLLHOOKSTRUCT*)lParam;
+		fnMouseMoveCb(mouse->pt.x, mouse->pt.y);
+	}
+	return CallNextHookEx(mouseHook, nCode, wParam, lParam);
+}
+*/
+
+// This (and the above) works, but is not recommended on Windows and is only here for consistency.
+// Defer to using raw input instead.
+bool Common::AttachMousePositionCb(std::function<void(int, int)> cb)
+{
+	/*
+		if (mouseHook)
+			Common::DetachMousePositionCb();
+
+		fnMouseMoveCb = cb;
+		mouseHook = SetWindowsHookEx(WH_MOUSE_LL, Mousecb, GetModuleHandle(NULL), 0);
+		if (!mouseHook)
+		{
+			Console.Warning("Failed to set mouse hook: %d", GetLastError());
+			return false;
+		}
+
+		#if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
+			static bool warned = false;
+			if (!warned)
+			{
+				Console.Warning("Mouse hooks are enabled, and this isn't a release build! Using a debugger, or loading symbols, _will_ stall the hook and cause global mouse lag.");
+				warned = true;
+			}
+		#endif
+	*/
+	return true;
+}
+
+void Common::DetachMousePositionCb()
+{
+	/*
+		UnhookWindowsHookEx(mouseHook);
+		mouseHook = nullptr;
+	*/
 }
 
 bool Common::PlaySoundAsync(const char* path)

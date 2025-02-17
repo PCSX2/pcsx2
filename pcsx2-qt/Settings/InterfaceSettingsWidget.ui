@@ -51,9 +51,9 @@
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QCheckBox" name="mouseGrab">
+       <widget class="QCheckBox" name="mouseLock">
         <property name="text">
-         <string>Enable Mouse Grab</string>
+         <string>Enable Mouse Lock</string>
         </property>
        </widget>
       </item>
