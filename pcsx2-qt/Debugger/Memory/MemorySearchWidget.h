@@ -18,7 +18,7 @@ class MemorySearchWidget final : public DebuggerWidget
 	Q_OBJECT
 
 public:
-	MemorySearchWidget(DebugInterface& cpu, QWidget* parent = nullptr);
+	MemorySearchWidget(const DebuggerWidgetParameters& parameters);
 	~MemorySearchWidget() = default;
 
 	enum class SearchType
@@ -129,16 +129,9 @@ public slots:
 	void onSearchTypeChanged(int newIndex);
 	void onSearchComparisonChanged(int newIndex);
 	void loadSearchResults();
-	void contextSearchResultGoToDisassembly();
 	void contextRemoveSearchResult();
 	void contextCopySearchResultAddress();
 	void onListSearchResultsContextMenu(QPoint pos);
-
-signals:
-	void addAddressToSavedAddressesList(u32 address);
-	void goToAddressInDisassemblyView(u32 address);
-	void goToAddressInMemoryView(u32 address);
-	void switchToMemoryViewTab();
 
 private:
 	std::vector<SearchResult> m_searchResults;

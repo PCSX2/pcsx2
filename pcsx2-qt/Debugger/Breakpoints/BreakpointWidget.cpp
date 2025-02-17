@@ -8,99 +8,110 @@
 #include "BreakpointDialog.h"
 #include "BreakpointModel.h"
 
-#include <QClipboard>
+#include <QtGui/QClipboard>
 
-BreakpointWidget::BreakpointWidget(DebugInterface& cpu, QWidget* parent)
-	: DebuggerWidget(&cpu, parent)
-	, m_model(cpu)
+BreakpointWidget::BreakpointWidget(const DebuggerWidgetParameters& parameters)
+	: DebuggerWidget(parameters)
+	, m_model(new BreakpointModel(cpu()))
 {
 	m_ui.setupUi(this);
 
-	connect(m_ui.breakpointList, &QTableView::customContextMenuRequested, this, &BreakpointWidget::onContextMenu);
+	if (cpu().getCpuType() == BREAKPOINT_EE)
+	{
+		connect(g_emu_thread, &EmuThread::onGameChanged, this, [this](const QString& title) {
+			if (title.isEmpty())
+				return;
+
+			if (m_model->rowCount() == 0)
+				DebuggerSettingsManager::loadGameSettings(m_model);
+		});
+
+		DebuggerSettingsManager::loadGameSettings(m_model);
+	}
+
+	m_ui.breakpointList->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(m_ui.breakpointList, &QTableView::customContextMenuRequested, this, &BreakpointWidget::openContextMenu);
 	connect(m_ui.breakpointList, &QTableView::doubleClicked, this, &BreakpointWidget::onDoubleClicked);
 
-	m_ui.breakpointList->setModel(&m_model);
+	m_ui.breakpointList->setModel(m_model);
 	for (std::size_t i = 0; auto mode : BreakpointModel::HeaderResizeModes)
 	{
 		m_ui.breakpointList->horizontalHeader()->setSectionResizeMode(i, mode);
 		i++;
 	}
 
-	connect(&m_model, &BreakpointModel::dataChanged, &m_model, &BreakpointModel::refreshData);
+	connect(m_model, &BreakpointModel::dataChanged, m_model, &BreakpointModel::refreshData);
+
+	receiveEvent<DebuggerEvents::BreakpointsChanged>([this](const DebuggerEvents::BreakpointsChanged& event) -> bool {
+		m_model->refreshData();
+		return true;
+	});
 }
 
 void BreakpointWidget::onDoubleClicked(const QModelIndex& index)
 {
 	if (index.isValid() && index.column() == BreakpointModel::OFFSET)
-	{
-		not_yet_implemented();
-		//m_ui.disassemblyWidget->gotoAddressAndSetFocus(m_model.data(index, BreakpointModel::DataRole).toUInt());
-	}
+		goToInDisassembler(m_model->data(index, BreakpointModel::DataRole).toUInt(), true);
 }
 
-void BreakpointWidget::onContextMenu(QPoint pos)
+void BreakpointWidget::openContextMenu(QPoint pos)
 {
-	QMenu* contextMenu = new QMenu(tr("Breakpoint List Context Menu"), m_ui.breakpointList);
+	QMenu* menu = new QMenu(m_ui.breakpointList);
+	menu->setAttribute(Qt::WA_DeleteOnClose);
+
 	if (cpu().isAlive())
 	{
-
-		QAction* newAction = new QAction(tr("New"), m_ui.breakpointList);
+		QAction* newAction = menu->addAction(tr("New"));
 		connect(newAction, &QAction::triggered, this, &BreakpointWidget::contextNew);
-		contextMenu->addAction(newAction);
 
 		const QItemSelectionModel* selModel = m_ui.breakpointList->selectionModel();
 
 		if (selModel->hasSelection())
 		{
-			QAction* editAction = new QAction(tr("Edit"), m_ui.breakpointList);
+			QAction* editAction = menu->addAction(tr("Edit"));
 			connect(editAction, &QAction::triggered, this, &BreakpointWidget::contextEdit);
-			contextMenu->addAction(editAction);
 
 			if (selModel->selectedIndexes().count() == 1)
 			{
-				QAction* copyAction = new QAction(tr("Copy"), m_ui.breakpointList);
+				QAction* copyAction = menu->addAction(tr("Copy"));
 				connect(copyAction, &QAction::triggered, this, &BreakpointWidget::contextCopy);
-				contextMenu->addAction(copyAction);
 			}
 
-			QAction* deleteAction = new QAction(tr("Delete"), m_ui.breakpointList);
+			QAction* deleteAction = menu->addAction(tr("Delete"));
 			connect(deleteAction, &QAction::triggered, this, &BreakpointWidget::contextDelete);
-			contextMenu->addAction(deleteAction);
 		}
 	}
 
-	contextMenu->addSeparator();
-	if (m_model.rowCount() > 0)
+	menu->addSeparator();
+	if (m_model->rowCount() > 0)
 	{
-		QAction* actionExport = new QAction(tr("Copy all as CSV"), m_ui.breakpointList);
+		QAction* actionExport = menu->addAction(tr("Copy all as CSV"));
 		connect(actionExport, &QAction::triggered, [this]() {
 			// It's important to use the Export Role here to allow pasting to be translation agnostic
 			QGuiApplication::clipboard()->setText(
-				QtUtils::AbstractItemModelToCSV(m_ui.breakpointList->model(),
-					BreakpointModel::ExportRole, true));
+				QtUtils::AbstractItemModelToCSV(m_model, BreakpointModel::ExportRole, true));
 		});
-		contextMenu->addAction(actionExport);
 	}
 
 	if (cpu().isAlive())
 	{
-		QAction* actionImport = new QAction(tr("Paste from CSV"), m_ui.breakpointList);
+		QAction* actionImport = menu->addAction(tr("Paste from CSV"));
 		connect(actionImport, &QAction::triggered, this, &BreakpointWidget::contextPasteCSV);
-		contextMenu->addAction(actionImport);
 
-		QAction* actionLoad = new QAction(tr("Load from Settings"), m_ui.breakpointList);
-		connect(actionLoad, &QAction::triggered, [this]() {
-			m_model.clear();
-			DebuggerSettingsManager::loadGameSettings(&m_model);
-		});
-		contextMenu->addAction(actionLoad);
+		if (cpu().getCpuType() == BREAKPOINT_EE)
+		{
+			QAction* actionLoad = menu->addAction(tr("Load from Settings"));
+			connect(actionLoad, &QAction::triggered, [this]() {
+				m_model->clear();
+				DebuggerSettingsManager::loadGameSettings(m_model);
+			});
 
-		QAction* actionSave = new QAction(tr("Save to Settings"), m_ui.breakpointList);
-		connect(actionSave, &QAction::triggered, this, &BreakpointWidget::saveBreakpointsToDebuggerSettings);
-		contextMenu->addAction(actionSave);
+			QAction* actionSave = menu->addAction(tr("Save to Settings"));
+			connect(actionSave, &QAction::triggered, this, &BreakpointWidget::saveBreakpointsToDebuggerSettings);
+		}
 	}
 
-	contextMenu->popup(m_ui.breakpointList->viewport()->mapToGlobal(pos));
+	menu->popup(m_ui.breakpointList->viewport()->mapToGlobal(pos));
 }
 
 void BreakpointWidget::contextCopy()
@@ -110,7 +121,7 @@ void BreakpointWidget::contextCopy()
 	if (!selModel->hasSelection())
 		return;
 
-	QGuiApplication::clipboard()->setText(m_model.data(selModel->currentIndex()).toString());
+	QGuiApplication::clipboard()->setText(m_model->data(selModel->currentIndex()).toString());
 }
 
 void BreakpointWidget::contextDelete()
@@ -128,13 +139,13 @@ void BreakpointWidget::contextDelete()
 
 	for (const QModelIndex& index : rows)
 	{
-		m_model.removeRows(index.row(), 1);
+		m_model->removeRows(index.row(), 1);
 	}
 }
 
 void BreakpointWidget::contextNew()
 {
-	BreakpointDialog* bpDialog = new BreakpointDialog(this, &cpu(), m_model);
+	BreakpointDialog* bpDialog = new BreakpointDialog(this, &cpu(), *m_model);
 	bpDialog->show();
 }
 
@@ -147,9 +158,9 @@ void BreakpointWidget::contextEdit()
 
 	const int selectedRow = selModel->selectedIndexes().first().row();
 
-	auto bpObject = m_model.at(selectedRow);
+	auto bpObject = m_model->at(selectedRow);
 
-	BreakpointDialog* bpDialog = new BreakpointDialog(this, &cpu(), m_model, bpObject, selectedRow);
+	BreakpointDialog* bpDialog = new BreakpointDialog(this, &cpu(), *m_model, bpObject, selectedRow);
 	bpDialog->show();
 }
 
@@ -173,11 +184,11 @@ void BreakpointWidget::contextPasteCSV()
 			QString matchedValue = match.captured(0);
 			fields << matchedValue.mid(1, matchedValue.length() - 2);
 		}
-		m_model.loadBreakpointFromFieldList(fields);
+		m_model->loadBreakpointFromFieldList(fields);
 	}
 }
 
 void BreakpointWidget::saveBreakpointsToDebuggerSettings()
 {
-	DebuggerSettingsManager::saveGameSettings(&m_model);
+	DebuggerSettingsManager::saveGameSettings(m_model);
 }

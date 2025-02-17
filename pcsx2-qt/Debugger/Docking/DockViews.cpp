@@ -133,9 +133,9 @@ void DockTabBar::contextMenu(QPoint pos)
 
 	for (BreakPointCpu cpu : DEBUG_CPUS)
 	{
-		const char* cpu_name = DebugInterface::cpuName(cpu);
 		const char* long_cpu_name = DebugInterface::longCpuName(cpu);
-		QString text = QString("%1 (%2)").arg(cpu_name).arg(long_cpu_name);
+		const char* cpu_name = DebugInterface::cpuName(cpu);
+		QString text = QString("%1 (%2)").arg(long_cpu_name).arg(cpu_name);
 		QAction* action = new QAction(text, menu);
 		connect(action, &QAction::triggered, this, [tab_bar, tab_index, cpu]() {
 			KDDockWidgets::Core::TabBar* tab_bar_controller = tab_bar->asController<KDDockWidgets::Core::TabBar>();

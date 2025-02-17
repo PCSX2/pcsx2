@@ -19,7 +19,7 @@ class RegisterWidget final : public DebuggerWidget
 	Q_OBJECT
 
 public:
-	RegisterWidget(DebugInterface& cpu, QWidget* parent = nullptr);
+	RegisterWidget(const DebuggerWidgetParameters& parameters);
 	~RegisterWidget();
 
 protected:
@@ -39,20 +39,12 @@ public slots:
 	void contextChangeBottom();
 	void contextChangeSegment();
 
-	void contextGotoDisasm();
-	void contextGotoMemory();
+	std::optional<DebuggerEvents::GoToAddress> contextCreateGotoEvent();
 
 	void tabCurrentChanged(int cur);
 
-signals:
-	void gotoInDisasm(u32 address, bool should_set_focus = true);
-	void gotoInMemory(u32 address);
-	void VMUpdate();
-
 private:
 	Ui::RegisterWidget ui;
-
-	QMenu* m_contextMenu = 0x0;
 
 	// Returns true on success
 	bool contextFetchNewValue(u64& out, u64 currentValue, bool segment = false);
@@ -61,14 +53,14 @@ private:
 	// because we share a widget
 	QPoint m_renderStart;
 
-	s32 m_rowStart = 0;         // Index, 0 -> VF00, 1 -> VF01 etc
-	s32 m_rowEnd;               // Index, what register is the last one drawn
-	s32 m_rowHeight;            // The height of each register row
+	s32 m_rowStart = 0; // Index, 0 -> VF00, 1 -> VF01 etc
+	s32 m_rowEnd; // Index, what register is the last one drawn
+	s32 m_rowHeight; // The height of each register row
 	// Used for mouse clicks
-	s32 m_fieldStartX[4];       // Where the register segments start
-	s32 m_fieldWidth;           // How wide the register segments are
+	s32 m_fieldStartX[4]; // Where the register segments start
+	s32 m_fieldWidth; // How wide the register segments are
 
-	s32 m_selectedRow = 0;      // Index
+	s32 m_selectedRow = 0; // Index
 	s32 m_selected128Field = 0; // Values are from 0 to 3
 
 	// TODO: Save this configuration ??

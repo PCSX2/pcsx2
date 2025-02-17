@@ -6,107 +6,116 @@
 #include "QtUtils.h"
 #include "Debugger/DebuggerSettingsManager.h"
 
-#include <QClipboard>
-#include <QMenu>
+#include <QtGui/QClipboard>
+#include <QtWidgets/QMenu>
 
-SavedAddressesWidget::SavedAddressesWidget(DebugInterface& cpu, QWidget* parent)
-	: DebuggerWidget(&cpu, parent)
-	, m_model(cpu)
+SavedAddressesWidget::SavedAddressesWidget(const DebuggerWidgetParameters& parameters)
+	: DebuggerWidget(parameters)
+	, m_model(new SavedAddressesModel(cpu(), this))
 {
-	//m_ui.savedAddressesList->setModel(&m_model);
-	//m_ui.savedAddressesList->setContextMenuPolicy(Qt::CustomContextMenu);
-	//connect(m_ui.savedAddressesList, &QTableView::customContextMenuRequested, this, &CpuWidget::onSavedAddressesListContextMenu);
-	//for (std::size_t i = 0; auto mode : SavedAddressesModel::HeaderResizeModes)
-	//{
-	//	m_ui.savedAddressesList->horizontalHeader()->setSectionResizeMode(i++, mode);
-	//}
-	//QTableView* savedAddressesTableView = m_ui.savedAddressesList;
-	//connect(m_ui.savedAddressesList->model(), &QAbstractItemModel::dataChanged, [savedAddressesTableView](const QModelIndex& topLeft) {
-	//	savedAddressesTableView->resizeColumnToContents(topLeft.column());
-	//});
+	m_ui.setupUi(this);
+
+	m_ui.savedAddressesList->setModel(m_model);
+
+	m_ui.savedAddressesList->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(
+		m_ui.savedAddressesList,
+		&QTableView::customContextMenuRequested,
+		this,
+		&SavedAddressesWidget::openContextMenu);
+
+	connect(g_emu_thread, &EmuThread::onGameChanged, this, [this](const QString& title) {
+		if (title.isEmpty())
+			return;
+
+		if (m_model->rowCount() == 0)
+			DebuggerSettingsManager::loadGameSettings(m_model);
+	});
+
+	DebuggerSettingsManager::loadGameSettings(m_model);
+
+
+
+	for (std::size_t i = 0; auto mode : SavedAddressesModel::HeaderResizeModes)
+	{
+		m_ui.savedAddressesList->horizontalHeader()->setSectionResizeMode(i++, mode);
+	}
+	QTableView* savedAddressesTableView = m_ui.savedAddressesList;
+	connect(m_model, &QAbstractItemModel::dataChanged, [savedAddressesTableView](const QModelIndex& topLeft) {
+		savedAddressesTableView->resizeColumnToContents(topLeft.column());
+	});
+
+	receiveEvent<DebuggerEvents::AddToSavedAddresses>([this](const DebuggerEvents::AddToSavedAddresses& event) {
+		addAddress(event.address);
+
+		if (event.switch_to_tab)
+			switchToThisTab();
+
+		return true;
+	});
 }
 
-void SavedAddressesWidget::onContextMenu(QPoint pos)
+void SavedAddressesWidget::openContextMenu(QPoint pos)
 {
-	QMenu* contextMenu = new QMenu("Saved Addresses List Context Menu", m_ui.savedAddressesList);
+	QMenu* menu = new QMenu(this);
+	menu->setAttribute(Qt::WA_DeleteOnClose);
 
-	QAction* newAction = new QAction(tr("New"), m_ui.savedAddressesList);
-	connect(newAction, &QAction::triggered, this, &SavedAddressesWidget::contextNew);
-	contextMenu->addAction(newAction);
+	QAction* new_action = menu->addAction(tr("New"));
+	connect(new_action, &QAction::triggered, this, &SavedAddressesWidget::contextNew);
 
-	const QModelIndex indexAtPos = m_ui.savedAddressesList->indexAt(pos);
-	const bool isIndexValid = indexAtPos.isValid();
+	const QModelIndex index_at_pos = m_ui.savedAddressesList->indexAt(pos);
+	const bool is_index_valid = index_at_pos.isValid();
+	bool is_cpu_alive = cpu().isAlive();
 
-	if (isIndexValid)
-	{
-		if (cpu().isAlive())
-		{
-			QAction* goToAddressMemViewAction = new QAction(tr("Go to in Memory View"), m_ui.savedAddressesList);
-			connect(goToAddressMemViewAction, &QAction::triggered, this, [this, indexAtPos]() {
-				const QModelIndex rowAddressIndex = m_ui.savedAddressesList->model()->index(indexAtPos.row(), 0, QModelIndex());
-				//m_ui.memoryviewWidget->gotoAddress(m_ui.savedAddressesList->model()->data(rowAddressIndex, Qt::UserRole).toUInt());
-				//m_ui.tabWidget->setCurrentWidget(m_ui.tab_memory);
-				not_yet_implemented();
-			});
-			contextMenu->addAction(goToAddressMemViewAction);
+	std::vector<QAction*> go_to_actions = createEventActions<DebuggerEvents::GoToAddress>(
+		menu, [this, index_at_pos]() {
+			const QModelIndex rowAddressIndex = m_model->index(index_at_pos.row(), 0, QModelIndex());
 
-			QAction* goToAddressDisassemblyAction = new QAction(tr("Go to in Disassembly"), m_ui.savedAddressesList);
-			connect(goToAddressDisassemblyAction, &QAction::triggered, this, [this, indexAtPos]() {
-				const QModelIndex rowAddressIndex =
-					m_ui.savedAddressesList->model()->index(indexAtPos.row(), 0, QModelIndex());
-				//m_ui.disassemblyWidget->gotoAddressAndSetFocus(
-				//	m_ui.savedAddressesList->model()->data(rowAddressIndex, Qt::UserRole).toUInt());
-				not_yet_implemented();
-			});
-			contextMenu->addAction(goToAddressDisassemblyAction);
-		}
-
-		QAction* copyAction = new QAction(indexAtPos.column() == 0 ? tr("Copy Address") : tr("Copy Text"), m_ui.savedAddressesList);
-		connect(copyAction, &QAction::triggered, [this, indexAtPos]() {
-			QGuiApplication::clipboard()->setText(
-				m_ui.savedAddressesList->model()->data(indexAtPos, Qt::DisplayRole).toString());
+			DebuggerEvents::GoToAddress event;
+			event.address = m_model->data(rowAddressIndex, Qt::UserRole).toUInt();
+			return std::optional(event);
 		});
-		contextMenu->addAction(copyAction);
-	}
 
-	if (m_ui.savedAddressesList->model()->rowCount() > 0)
+	for (QAction* go_to_action : go_to_actions)
+		go_to_action->setEnabled(is_index_valid);
+
+	QAction* copy_action = menu->addAction(index_at_pos.column() == 0 ? tr("Copy Address") : tr("Copy Text"));
+	copy_action->setEnabled(is_index_valid);
+	connect(copy_action, &QAction::triggered, [this, index_at_pos]() {
+		QGuiApplication::clipboard()->setText(
+			m_model->data(index_at_pos, Qt::DisplayRole).toString());
+	});
+
+	if (m_model->rowCount() > 0)
 	{
-		QAction* actionExportCSV = new QAction(tr("Copy all as CSV"), m_ui.savedAddressesList);
-		connect(actionExportCSV, &QAction::triggered, [this]() {
+		QAction* copy_all_as_csv_action = menu->addAction(tr("Copy all as CSV"));
+		connect(copy_all_as_csv_action, &QAction::triggered, [this]() {
 			QGuiApplication::clipboard()->setText(
 				QtUtils::AbstractItemModelToCSV(m_ui.savedAddressesList->model(), Qt::DisplayRole, true));
 		});
-		contextMenu->addAction(actionExportCSV);
 	}
 
-	QAction* actionImportCSV = new QAction(tr("Paste from CSV"), m_ui.savedAddressesList);
-	connect(actionImportCSV, &QAction::triggered, this, &SavedAddressesWidget::contextPasteCSV);
-	contextMenu->addAction(actionImportCSV);
+	QAction* paste_from_csv_action = menu->addAction(tr("Paste from CSV"));
+	connect(paste_from_csv_action, &QAction::triggered, this, &SavedAddressesWidget::contextPasteCSV);
 
-	if (cpu().isAlive())
-	{
-		QAction* actionLoad = new QAction(tr("Load from Settings"), m_ui.savedAddressesList);
-		connect(actionLoad, &QAction::triggered, [this]() {
-			m_model.clear();
-			DebuggerSettingsManager::loadGameSettings(&m_model);
-		});
-		contextMenu->addAction(actionLoad);
+	QAction* load_action = menu->addAction(tr("Load from Settings"));
+	load_action->setEnabled(is_cpu_alive);
+	connect(load_action, &QAction::triggered, [this]() {
+		m_model->clear();
+		DebuggerSettingsManager::loadGameSettings(m_model);
+	});
 
-		QAction* actionSave = new QAction(tr("Save to Settings"), m_ui.savedAddressesList);
-		connect(actionSave, &QAction::triggered, this, &SavedAddressesWidget::saveToDebuggerSettings);
-		contextMenu->addAction(actionSave);
-	}
+	QAction* save_action = menu->addAction(tr("Save to Settings"));
+	save_action->setEnabled(is_cpu_alive);
+	connect(save_action, &QAction::triggered, this, &SavedAddressesWidget::saveToDebuggerSettings);
 
-	if (isIndexValid)
-	{
-		QAction* deleteAction = new QAction(tr("Delete"), m_ui.savedAddressesList);
-		connect(deleteAction, &QAction::triggered, this, [this, indexAtPos]() {
-			m_ui.savedAddressesList->model()->removeRows(indexAtPos.row(), 1);
-		});
-		contextMenu->addAction(deleteAction);
-	}
+	QAction* delete_action = menu->addAction(tr("Delete"));
+	connect(delete_action, &QAction::triggered, this, [this, index_at_pos]() {
+		m_model->removeRows(index_at_pos.row(), 1);
+	});
+	delete_action->setEnabled(is_index_valid);
 
-	contextMenu->popup(m_ui.savedAddressesList->viewport()->mapToGlobal(pos));
+	menu->popup(m_ui.savedAddressesList->viewport()->mapToGlobal(pos));
 }
 
 void SavedAddressesWidget::contextPasteCSV()
@@ -121,38 +130,36 @@ void SavedAddressesWidget::contextPasteCSV()
 		// In order to handle text with commas in them we must wrap values in quotes to mark
 		// where a value starts and end so that text commas aren't identified as delimiters.
 		// So matches each quote pair, parse it out, and removes the quotes to get the value.
-		QRegularExpression eachQuotePair(R"("([^"]|\\.)*")");
-		QRegularExpressionMatchIterator it = eachQuotePair.globalMatch(line);
+		QRegularExpression each_quote_pair(R"("([^"]|\\.)*")");
+		QRegularExpressionMatchIterator it = each_quote_pair.globalMatch(line);
 		while (it.hasNext())
 		{
 			QRegularExpressionMatch match = it.next();
-			QString matchedValue = match.captured(0);
-			fields << matchedValue.mid(1, matchedValue.length() - 2);
+			QString matched_value = match.captured(0);
+			fields << matched_value.mid(1, matched_value.length() - 2);
 		}
 
-		m_model.loadSavedAddressFromFieldList(fields);
+		m_model->loadSavedAddressFromFieldList(fields);
 	}
 }
 
 void SavedAddressesWidget::contextNew()
 {
 	qobject_cast<SavedAddressesModel*>(m_ui.savedAddressesList->model())->addRow();
-	const u32 rowCount = m_ui.savedAddressesList->model()->rowCount();
-	m_ui.savedAddressesList->edit(m_ui.savedAddressesList->model()->index(rowCount - 1, 0));
+	const u32 row_count = m_model->rowCount();
+	m_ui.savedAddressesList->edit(m_model->index(row_count - 1, 0));
 }
 
 void SavedAddressesWidget::addAddress(u32 address)
 {
 	qobject_cast<SavedAddressesModel*>(m_ui.savedAddressesList->model())->addRow();
-	const u32 rowCount = m_ui.savedAddressesList->model()->rowCount();
-	const QModelIndex addressIndex = m_ui.savedAddressesList->model()->index(rowCount - 1, 0);
-	//m_ui.tabWidget->setCurrentWidget(m_ui.tab_savedaddresses);
-	not_yet_implemented();
-	m_ui.savedAddressesList->model()->setData(addressIndex, address, Qt::UserRole);
-	m_ui.savedAddressesList->edit(m_ui.savedAddressesList->model()->index(rowCount - 1, 1));
+	const u32 row_count = m_model->rowCount();
+	const QModelIndex address_index = m_model->index(row_count - 1, 0);
+	m_model->setData(address_index, address, Qt::UserRole);
+	m_ui.savedAddressesList->edit(m_model->index(row_count - 1, 1));
 }
 
 void SavedAddressesWidget::saveToDebuggerSettings()
 {
-	DebuggerSettingsManager::saveGameSettings(&m_model);
+	DebuggerSettingsManager::saveGameSettings(m_model);
 }

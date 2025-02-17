@@ -23,8 +23,8 @@ using SearchResult = MemorySearchWidget::SearchResult;
 
 using namespace QtUtils;
 
-MemorySearchWidget::MemorySearchWidget(DebugInterface& cpu, QWidget* parent)
-	: DebuggerWidget(&cpu, parent)
+MemorySearchWidget::MemorySearchWidget(const DebuggerWidgetParameters& parameters)
+	: DebuggerWidget(parameters)
 {
 	m_ui.setupUi(this);
 	this->repaint();
@@ -32,9 +32,8 @@ MemorySearchWidget::MemorySearchWidget(DebugInterface& cpu, QWidget* parent)
 	m_ui.listSearchResults->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.btnSearch, &QPushButton::clicked, this, &MemorySearchWidget::onSearchButtonClicked);
 	connect(m_ui.btnFilterSearch, &QPushButton::clicked, this, &MemorySearchWidget::onSearchButtonClicked);
-	connect(m_ui.listSearchResults, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item) {
-		emit switchToMemoryViewTab();
-		emit goToAddressInMemoryView(item->text().toUInt(nullptr, 16));
+	connect(m_ui.listSearchResults, &QListWidget::itemDoubleClicked, [](QListWidgetItem* item) {
+		goToInMemoryView(item->text().toUInt(nullptr, 16), true);
 	});
 	connect(m_ui.listSearchResults->verticalScrollBar(), &QScrollBar::valueChanged, this, &MemorySearchWidget::onSearchResultsListScroll);
 	connect(m_ui.listSearchResults, &QListView::customContextMenuRequested, this, &MemorySearchWidget::onListSearchResultsContextMenu);
@@ -45,16 +44,11 @@ MemorySearchWidget::MemorySearchWidget(DebugInterface& cpu, QWidget* parent)
 	m_resultsLoadTimer.setInterval(100);
 	m_resultsLoadTimer.setSingleShot(true);
 	connect(&m_resultsLoadTimer, &QTimer::timeout, this, &MemorySearchWidget::loadSearchResults);
-}
 
-void MemorySearchWidget::contextSearchResultGoToDisassembly()
-{
-	const QItemSelectionModel* selModel = m_ui.listSearchResults->selectionModel();
-	if (!selModel->hasSelection())
-		return;
-
-	u32 selectedAddress = m_ui.listSearchResults->selectedItems().first()->data(Qt::UserRole).toUInt();
-	emit goToAddressInDisassemblyView(selectedAddress);
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		update();
+		return true;
+	});
 }
 
 void MemorySearchWidget::contextRemoveSearchResult()
@@ -86,33 +80,36 @@ void MemorySearchWidget::contextCopySearchResultAddress()
 
 void MemorySearchWidget::onListSearchResultsContextMenu(QPoint pos)
 {
-	QMenu* contextMenu = new QMenu(tr("Search Results List Context Menu"), m_ui.listSearchResults);
-	const QItemSelectionModel* selModel = m_ui.listSearchResults->selectionModel();
-	const auto listSearchResults = m_ui.listSearchResults;
+	const QItemSelectionModel* selection_model = m_ui.listSearchResults->selectionModel();
+	const QListWidget* list_search_results = m_ui.listSearchResults;
 
-	if (selModel->hasSelection())
+	QMenu* menu = new QMenu(this);
+	menu->setAttribute(Qt::WA_DeleteOnClose);
+
+	if (selection_model->hasSelection())
 	{
-		QAction* copyAddressAction = new QAction(tr("Copy Address"), m_ui.listSearchResults);
-		connect(copyAddressAction, &QAction::triggered, this, &MemorySearchWidget::contextCopySearchResultAddress);
-		contextMenu->addAction(copyAddressAction);
+		connect(menu->addAction(tr("Copy Address")), &QAction::triggered,
+			this, &MemorySearchWidget::contextCopySearchResultAddress);
 
-		QAction* goToDisassemblyAction = new QAction(tr("Go to in Disassembly"), m_ui.listSearchResults);
-		connect(goToDisassemblyAction, &QAction::triggered, this, &MemorySearchWidget::contextSearchResultGoToDisassembly);
-		contextMenu->addAction(goToDisassemblyAction);
-
-		QAction* addToSavedAddressesAction = new QAction(tr("Add to Saved Memory Addresses"), m_ui.listSearchResults);
-		connect(addToSavedAddressesAction, &QAction::triggered, this, [this, listSearchResults]() {
-			u32 selectedAddress = listSearchResults->selectedItems().first()->data(Qt::UserRole).toUInt();
-			emit addAddressToSavedAddressesList(selectedAddress);
+		createEventActions<DebuggerEvents::GoToAddress>(menu, [list_search_results]() {
+			u32 selected_address = list_search_results->selectedItems().first()->data(Qt::UserRole).toUInt();
+			DebuggerEvents::GoToAddress event;
+			event.address = selected_address;
+			return std::optional(event);
 		});
-		contextMenu->addAction(addToSavedAddressesAction);
 
-		QAction* removeResultAction = new QAction(tr("Remove Result"), m_ui.listSearchResults);
-		connect(removeResultAction, &QAction::triggered, this, &MemorySearchWidget::contextRemoveSearchResult);
-		contextMenu->addAction(removeResultAction);
+		createEventActions<DebuggerEvents::AddToSavedAddresses>(menu, [list_search_results]() {
+			u32 selected_address = list_search_results->selectedItems().first()->data(Qt::UserRole).toUInt();
+			DebuggerEvents::AddToSavedAddresses event;
+			event.address = selected_address;
+			return std::optional(event);
+		});
+
+		connect(menu->addAction(tr("Remove Result")), &QAction::triggered,
+			this, &MemorySearchWidget::contextRemoveSearchResult);
 	}
 
-	contextMenu->popup(m_ui.listSearchResults->viewport()->mapToGlobal(pos));
+	menu->popup(m_ui.listSearchResults->viewport()->mapToGlobal(pos));
 }
 
 template <typename T>
@@ -504,9 +501,9 @@ void MemorySearchWidget::onSearchButtonClicked()
 	const bool isFilterSearch = sender() == m_ui.btnFilterSearch;
 	unsigned long long value;
 
-	if(searchComparison != SearchComparison::UnknownValue)
+	if (searchComparison != SearchComparison::UnknownValue)
 	{
-		if(doesSearchComparisonTakeInput(searchComparison))
+		if (doesSearchComparisonTakeInput(searchComparison))
 		{
 			switch (searchType)
 			{
@@ -559,17 +556,27 @@ void MemorySearchWidget::onSearchButtonClicked()
 			}
 		}
 
-		if (!isFilterSearch && (searchComparison == SearchComparison::Changed || searchComparison == SearchComparison::ChangedBy
-								|| searchComparison == SearchComparison::Decreased || searchComparison == SearchComparison::DecreasedBy
-								|| searchComparison == SearchComparison::Increased || searchComparison == SearchComparison::IncreasedBy
-								|| searchComparison == SearchComparison::NotChanged))
+		if (!isFilterSearch &&
+			(searchComparison == SearchComparison::Changed ||
+				searchComparison == SearchComparison::ChangedBy ||
+				searchComparison == SearchComparison::Decreased ||
+				searchComparison == SearchComparison::DecreasedBy ||
+				searchComparison == SearchComparison::Increased ||
+				searchComparison == SearchComparison::IncreasedBy ||
+				searchComparison == SearchComparison::NotChanged))
 		{
 			QMessageBox::critical(this, tr("Debugger"), tr("This search comparison can only be used with filter searches."));
 			return;
 		}
 	}
 
-	if (!isFilterSearch && (searchComparison == SearchComparison::Changed || searchComparison == SearchComparison::ChangedBy || searchComparison == SearchComparison::Decreased || searchComparison == SearchComparison::DecreasedBy || searchComparison == SearchComparison::Increased || searchComparison == SearchComparison::IncreasedBy || searchComparison == SearchComparison::NotChanged))
+	if (!isFilterSearch && (searchComparison == SearchComparison::Changed ||
+							   searchComparison == SearchComparison::ChangedBy ||
+							   searchComparison == SearchComparison::Decreased ||
+							   searchComparison == SearchComparison::DecreasedBy ||
+							   searchComparison == SearchComparison::Increased ||
+							   searchComparison == SearchComparison::IncreasedBy ||
+							   searchComparison == SearchComparison::NotChanged))
 	{
 		QMessageBox::critical(this, tr("Debugger"), tr("This search comparison can only be used with filter searches."));
 		return;
@@ -649,7 +656,8 @@ SearchComparison MemorySearchWidget::getCurrentSearchComparison()
 
 bool MemorySearchWidget::doesSearchComparisonTakeInput(const SearchComparison comparison)
 {
-	switch (comparison) {
+	switch (comparison)
+	{
 		case SearchComparison::Equals:
 		case SearchComparison::NotEquals:
 		case SearchComparison::GreaterThan:
@@ -736,8 +744,8 @@ std::vector<SearchComparison> MemorySearchWidget::getValidSearchComparisonsForSt
 		comparisons.push_back(SearchComparison::ChangedBy);
 		comparisons.push_back(SearchComparison::NotChanged);
 	}
-	
-	if(!hasResults)
+
+	if (!hasResults)
 	{
 		comparisons.push_back(SearchComparison::UnknownValue);
 	}
