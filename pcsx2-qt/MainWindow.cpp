@@ -99,6 +99,9 @@ static QString s_current_disc_serial;
 static quint32 s_current_disc_crc;
 static quint32 s_current_running_crc;
 
+static bool s_record_on_start = false;
+static QString s_path_to_recording_for_record_on_start;
+
 MainWindow::MainWindow()
 {
 	pxAssert(!g_main_window);
@@ -738,7 +741,48 @@ void MainWindow::updateAdvancedSettingsVisibility()
 void MainWindow::onVideoCaptureToggled(bool checked)
 {
 	if (!s_vm_valid)
+	{
+		if (!s_record_on_start)
+		{
+			QMessageBox msgbox(this);
+			msgbox.setIcon(QMessageBox::Question);
+			msgbox.setWindowIcon(QtHost::GetAppIcon());
+			msgbox.setWindowTitle(tr("Record On Boot"));
+			msgbox.setWindowModality(Qt::WindowModal);
+			msgbox.setText(tr("Did you want to start recording on boot?"));
+			msgbox.addButton(QMessageBox::Yes);
+			msgbox.addButton(QMessageBox::No);
+			msgbox.setDefaultButton(QMessageBox::Yes);
+			if (msgbox.exec() == QMessageBox::Yes)
+			{
+				const QString container(QString::fromStdString(
+					Host::GetStringSettingValue("EmuCore/GS", "CaptureContainer", Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER)));
+				const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper()).arg(container));
+
+				QString temp(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
+				temp = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Video Capture"), temp, filter));
+				s_path_to_recording_for_record_on_start = temp;
+				if (s_path_to_recording_for_record_on_start.isEmpty())
+					return;
+				s_record_on_start = true;
+			}
+		}
+		else
+		{
+			QMessageBox msgbox(this);
+			msgbox.setIcon(QMessageBox::Question);
+			msgbox.setWindowIcon(QtHost::GetAppIcon());
+			msgbox.setWindowTitle(tr("Record On Boot"));
+			msgbox.setWindowModality(Qt::WindowModal);
+			msgbox.setText(tr("Did you want to cancel recording on boot?"));
+			msgbox.addButton(QMessageBox::Yes);
+			msgbox.addButton(QMessageBox::No);
+			msgbox.setDefaultButton(QMessageBox::Yes);
+			if (msgbox.exec() == QMessageBox::Yes)
+				s_record_on_start = false;
+		}
 		return;
+	}
 
 	// Reset the checked state, we'll get updated by the GS thread.
 	QSignalBlocker sb(m_ui.actionVideoCapture);
@@ -750,16 +794,26 @@ void MainWindow::onVideoCaptureToggled(bool checked)
 		return;
 	}
 
-	const QString container(QString::fromStdString(
-		Host::GetStringSettingValue("EmuCore/GS", "CaptureContainer", Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER)));
-	const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper()).arg(container));
+	if (s_record_on_start && !s_path_to_recording_for_record_on_start.isEmpty()) 
+	{
+		// We can't start recording immediately, this is called before full GS init (specifically the fps amount)
+		// and GSCapture ends up unhappy.
+		// TODO: Pass some sort of flag or callback to the GS thread to start recording on frame 0.
+		Host::AddOSDMessage(tr("Recording will start in a moment").toStdString(), 3.0f);
+		QTimer::singleShot(2000, []() { g_emu_thread->beginCapture(s_path_to_recording_for_record_on_start); });
+	}
+	else
+	{
+		const QString container(QString::fromStdString(
+			Host::GetStringSettingValue("EmuCore/GS", "CaptureContainer", Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER)));
+		const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper()).arg(container));
 
-	QString path(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
-	path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Video Capture"), path, filter));
-	if (path.isEmpty())
-		return;
-
-	g_emu_thread->beginCapture(path);
+		QString path(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
+		path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Video Capture"), path, filter));
+		if (path.isEmpty())
+			return;
+		g_emu_thread->beginCapture(path);
+	}
 }
 
 void MainWindow::onCaptureStarted(const QString& filename)
@@ -904,8 +958,6 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 	m_ui.actionToolbarSaveState->setEnabled(running);
 
 	m_ui.actionViewGameProperties->setEnabled(running);
-
-	m_ui.actionVideoCapture->setEnabled(running);
 	if (!running && m_ui.actionVideoCapture->isChecked())
 	{
 		QSignalBlocker sb(m_ui.actionVideoCapture);
@@ -1991,6 +2043,11 @@ void MainWindow::onVMStarted()
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
 	updateInputRecordingActions(true);
+	if (s_record_on_start)
+	{
+		m_ui.actionVideoCapture->setChecked(true);
+		s_record_on_start = false;
+	}
 }
 
 void MainWindow::onVMPaused()
