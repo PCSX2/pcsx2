@@ -279,6 +279,11 @@ bool SDLInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mut
 	return result;
 }
 
+bool SDLInputSource::IsInitialized()
+{
+	return m_sdl_subsystem_initialized;
+}
+
 void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 	const bool old_enable_enhanced_reports = m_enable_enhanced_reports;
@@ -665,7 +670,7 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 	return std::nullopt;
 }
 
-TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key, bool migration)
+TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key, bool display, bool migration)
 {
 	TinyString ret;
 

@@ -16,13 +16,14 @@
 #include <bit>
 
 InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
-	std::string key_name, std::vector<std::string> bindings, QWidget* parent)
+	std::string key_name, std::vector<std::string> bindings_settings, std::vector<std::string> bindings_ui, QWidget* parent)
 	: QDialog(parent)
 	, m_sif(sif)
 	, m_bind_type(bind_type)
 	, m_section_name(std::move(section_name))
 	, m_key_name(std::move(key_name))
-	, m_bindings(std::move(bindings))
+	, m_bindings_settings(std::move(bindings_settings))
+	, m_bindings_ui(std::move(bindings_ui))
 {
 	m_ui.setupUi(this);
 	m_ui.title->setText(tr("Bindings for %1 %2").arg(QString::fromStdString(m_section_name)).arg(QString::fromStdString(m_key_name)));
@@ -32,6 +33,8 @@ InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo:
 	connect(m_ui.removeBinding, &QPushButton::clicked, this, &InputBindingDialog::onRemoveBindingButtonClicked);
 	connect(m_ui.clearBindings, &QPushButton::clicked, this, &InputBindingDialog::onClearBindingsButtonClicked);
 	connect(m_ui.buttonBox, &QDialogButtonBox::rejected, [this]() { done(0); });
+	connect(g_emu_thread, &EmuThread::onInputDeviceConnected, this, &InputBindingDialog::onInputDeviceConnected);
+	connect(g_emu_thread, &EmuThread::onInputDeviceDisconnected, this, &InputBindingDialog::onInputDeviceDisconnected);
 	updateList();
 
 	// Only show the sensitivity controls for binds where it's applicable.
@@ -210,11 +213,17 @@ void InputBindingDialog::addNewBinding()
 	const std::string new_binding(InputManager::ConvertInputBindingKeysToString(m_bind_type, m_new_bindings.data(), m_new_bindings.size()));
 	if (!new_binding.empty())
 	{
-		if (std::find(m_bindings.begin(), m_bindings.end(), new_binding) != m_bindings.end())
+		if (std::find(m_bindings_settings.begin(), m_bindings_settings.end(), new_binding) != m_bindings_settings.end())
 			return;
 
-		m_ui.bindingList->addItem(QString::fromStdString(new_binding));
-		m_bindings.push_back(std::move(new_binding));
+		m_bindings_settings.push_back(std::move(new_binding));
+
+		SmallString new_binding_temp{std::string_view{new_binding}};
+		InputManager::PrettifyInputBinding(new_binding_temp, false);
+		std::string new_binding_ui{new_binding_temp};
+
+		m_bindings_ui.push_back(new_binding_ui);
+		m_ui.bindingList->addItem(QString::fromStdString(new_binding_ui));
 		saveListToSettings();
 	}
 }
@@ -230,17 +239,19 @@ void InputBindingDialog::onAddBindingButtonClicked()
 void InputBindingDialog::onRemoveBindingButtonClicked()
 {
 	const int row = m_ui.bindingList->currentRow();
-	if (row < 0 || static_cast<size_t>(row) >= m_bindings.size())
+	if (row < 0 || static_cast<size_t>(row) >= m_bindings_ui.size())
 		return;
 
-	m_bindings.erase(m_bindings.begin() + row);
+	m_bindings_settings.erase(m_bindings_settings.begin() + row);
+	m_bindings_ui.erase(m_bindings_ui.begin() + row);
 	delete m_ui.bindingList->takeItem(row);
 	saveListToSettings();
 }
 
 void InputBindingDialog::onClearBindingsButtonClicked()
 {
-	m_bindings.clear();
+	m_bindings_settings.clear();
+	m_bindings_ui.clear();
 	m_ui.bindingList->clear();
 	saveListToSettings();
 }
@@ -248,7 +259,7 @@ void InputBindingDialog::onClearBindingsButtonClicked()
 void InputBindingDialog::updateList()
 {
 	m_ui.bindingList->clear();
-	for (const std::string& binding : m_bindings)
+	for (const std::string& binding : m_bindings_ui)
 		m_ui.bindingList->addItem(QString::fromStdString(binding));
 }
 
@@ -256,8 +267,8 @@ void InputBindingDialog::saveListToSettings()
 {
 	if (m_sif)
 	{
-		if (!m_bindings.empty())
-			m_sif->SetStringList(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
+		if (!m_bindings_settings.empty())
+			m_sif->SetStringList(m_section_name.c_str(), m_key_name.c_str(), m_bindings_settings);
 		else
 			m_sif->DeleteValue(m_section_name.c_str(), m_key_name.c_str());
 		m_sif->Save();
@@ -265,8 +276,8 @@ void InputBindingDialog::saveListToSettings()
 	}
 	else
 	{
-		if (!m_bindings.empty())
-			Host::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
+		if (!m_bindings_settings.empty())
+			Host::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings_settings);
 		else
 			Host::RemoveBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
 		Host::CommitBaseSettingChanges();
@@ -337,6 +348,16 @@ void InputBindingDialog::onDeadzoneChanged(int value)
 	m_ui.deadzoneValue->setText(tr("%1%").arg(value));
 }
 
+void InputBindingDialog::onInputDeviceConnected(const QString& identifier, const QString& device_name)
+{
+	ReloadBindNames();
+}
+
+void InputBindingDialog::onInputDeviceDisconnected(const QString& identifier)
+{
+	ReloadBindNames();
+}
+
 void InputBindingDialog::hookInputManager()
 {
 	InputManager::SetHook([this](InputBindingKey key, float value) {
@@ -348,4 +369,18 @@ void InputBindingDialog::hookInputManager()
 void InputBindingDialog::unhookInputManager()
 {
 	InputManager::RemoveHook();
+}
+
+void InputBindingDialog::ReloadBindNames()
+{
+	m_bindings_ui.clear();
+	m_bindings_ui.reserve(m_bindings_settings.size());
+	for (int i = 0; i < m_bindings_settings.size(); i++)
+	{
+		SmallString binding{std::string_view{m_bindings_settings[i]}};
+		InputManager::PrettifyInputBinding(binding, false);
+		m_bindings_ui.push_back(std::string{binding});
+	}
+
+	updateList();
 }

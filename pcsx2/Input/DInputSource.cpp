@@ -150,6 +150,15 @@ void DInputSource::Shutdown()
 			GetDeviceIdentifier(index));
 		m_controllers.pop_back();
 	}
+
+	m_toplevel_window = nullptr;
+	m_dinput.reset();
+	m_dinput_module.reset();
+}
+
+bool DInputSource::IsInitialized()
+{
+	return m_toplevel_window;
 }
 
 bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
@@ -379,7 +388,7 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 	return std::nullopt;
 }
 
-TinyString DInputSource::ConvertKeyToString(InputBindingKey key, bool migration)
+TinyString DInputSource::ConvertKeyToString(InputBindingKey key, bool display, bool migration)
 {
 	TinyString ret;
 
