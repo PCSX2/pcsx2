@@ -148,6 +148,7 @@ jobs:
       artifactPrefixName: "PCSX2-macos-Qt"
       fetchTags: true
       stableBuild: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prelease == 'false' }}
+      sign_and_notarize: true
     secrets: inherit
 
   # Upload the Artifacts
@@ -204,7 +205,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 22
 
       - name: Announce Release
         env:

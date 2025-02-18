@@ -25,6 +25,10 @@ on:
         required: false
         type: boolean
         default: false
+      sign_and_notarize:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build_macos:
@@ -38,7 +42,9 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CCACHE_COMPRESS: true
       CCACHE_COMPRESSLEVEL: 9
-      CCACHE_MAXSIZE: 100M
+      CCACHE_MAXSIZE: 500M
+      # Only way to use a secret in an if statement
+      SIGN_KEY: ${{ secrets.APPLE_SIGN_P12_B64 }}
 
     steps:
       - name: Checkout Repository
@@ -144,13 +150,45 @@ jobs:
 
       - name: Prepare Build Artifacts
         run: |
+          mv build/pcsx2*/PCSX2.app PCSX2.app
+
+      - name: Pull the Signing Keys and Notarization Credentials
+        if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
+        run: |
+          echo "${{ secrets.APPLE_SIGN_P12_B64 }}" | base64 -d > cert.p12
+          echo "${{ secrets.APPLE_APPSTORECONNECT_CFG }}" | base64 -d > key.json
+
+      - name: Sign the Application
+        if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
+        uses: indygreg/apple-code-sign-action@v1.1
+        with:
+          input_path: 'PCSX2.app'
+          p12_file: cert.p12
+          p12_password: "${{ secrets.APPLE_SIGN_P12_PASS }}"
+          sign_args: |
+            --for-notarization
+            --code-signature-flags=runtime
+            --entitlements-xml-file=pcsx2/Resources/PCSX2.entitlements
+          notarize: true
+          # max_wait_seconds is only present on my fork located at F0bes/apple-code-sign-action@demo4
+          # If we are timing out we should switch to the newest upstream (if I get it upstreamed)
+          # or use my fork.
+          # max_wait_seconds: '2000'
+          staple: true
+          # Generated using rcodesign
+          # Despite what the docs say, I found that this file is required and I had 0 luck
+          # passing the issuer id, key, etc through arguments.
+          app_store_connect_api_key_json_file: 'key.json'
+
+      - name: Zip Build Artifacts
+        run: |
           TAG="$(git tag --points-at HEAD)"
           if [ -z "$TAG" ]; then
             APPNAME="${{ steps.artifact-metadata.outputs.artifact-name }}"
           else
             APPNAME="PCSX2-$TAG"
           fi
-          mv build/pcsx2*/PCSX2.app "$APPNAME.app"
+          mv PCSX2.app "$APPNAME.app"
           tar --options xz:compression-level=9 -cvJf "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" "$APPNAME.app"
           mkdir ci-artifacts
           cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" ci-artifacts/macOS.tar.xz

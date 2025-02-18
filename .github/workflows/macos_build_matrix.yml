@@ -16,4 +16,5 @@ jobs:
     with:
       jobName: "MacOS Build"
       artifactPrefixName: "PCSX2-macos-Qt"
+      sign_and_notarize: true # If we find that notarization takes a long time we should disable that on PR builds
     secrets: inherit
