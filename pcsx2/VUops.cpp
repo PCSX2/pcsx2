@@ -1619,98 +1619,40 @@ static __fi void _vuNOP(VURegs* VU)
 {
 }
 
-static __fi s32 float_to_int(float value)
+template <u32 Offset>
+static __fi u32 floatToInt(u32 uvalue)
 {
-	if (value >= 2147483647.0)
-		return 2147483647LL;
-	if (value <= -2147483648.0)
-		return -2147483648LL;
-	return value;
+	float fvalue = std::bit_cast<float>(uvalue);
+	if (Offset)
+		fvalue *= std::bit_cast<float>(0x3f800000 + (Offset << 23));
+	s32 svalue = std::bit_cast<s32>(fvalue);
+
+	if (svalue >= static_cast<s32>(0x4f000000))
+		return 0x7fffffff;
+	else if (svalue <= static_cast<s32>(0xcf000000))
+		return 0x80000000;
+	else
+		return static_cast<u32>(static_cast<s32>(fvalue));
 }
 
-static __fi void _vuFTOI0(VURegs*  VU) {
-	if (_Ft_ == 0) return;
+static __fi void _vuFTOI0 (VURegs* VU) { applyUnaryFunction<floatToInt< 0>>(VU); }
+static __fi void _vuFTOI4 (VURegs* VU) { applyUnaryFunction<floatToInt< 4>>(VU); }
+static __fi void _vuFTOI12(VURegs* VU) { applyUnaryFunction<floatToInt<12>>(VU); }
+static __fi void _vuFTOI15(VURegs* VU) { applyUnaryFunction<floatToInt<15>>(VU); }
 
-	if (_X) VU->VF[_Ft_].SL[0] = float_to_int(vuDouble(VU->VF[_Fs_].i.x));
-	if (_Y) VU->VF[_Ft_].SL[1] = float_to_int(vuDouble(VU->VF[_Fs_].i.y));
-	if (_Z) VU->VF[_Ft_].SL[2] = float_to_int(vuDouble(VU->VF[_Fs_].i.z));
-	if (_W) VU->VF[_Ft_].SL[3] = float_to_int(vuDouble(VU->VF[_Fs_].i.w));
-}
-
-static __fi void _vuFTOI4(VURegs*  VU) {
-	if (_Ft_ == 0) return;
-
-	if (_X) VU->VF[_Ft_].SL[0] = float_to_int(float_to_int4(vuDouble(VU->VF[_Fs_].i.x)));
-	if (_Y) VU->VF[_Ft_].SL[1] = float_to_int(float_to_int4(vuDouble(VU->VF[_Fs_].i.y)));
-	if (_Z) VU->VF[_Ft_].SL[2] = float_to_int(float_to_int4(vuDouble(VU->VF[_Fs_].i.z)));
-	if (_W) VU->VF[_Ft_].SL[3] = float_to_int(float_to_int4(vuDouble(VU->VF[_Fs_].i.w)));
-}
-
-static __fi void _vuFTOI12(VURegs* VU)
+template <u32 Offset>
+static __fi u32 intToFloat(u32 uvalue)
 {
-	if (_Ft_ == 0)
-		return;
-
-	if (_X) VU->VF[_Ft_].SL[0] = float_to_int(float_to_int12(vuDouble(VU->VF[_Fs_].i.x)));
-	if (_Y) VU->VF[_Ft_].SL[1] = float_to_int(float_to_int12(vuDouble(VU->VF[_Fs_].i.y)));
-	if (_Z) VU->VF[_Ft_].SL[2] = float_to_int(float_to_int12(vuDouble(VU->VF[_Fs_].i.z)));
-	if (_W) VU->VF[_Ft_].SL[3] = float_to_int(float_to_int12(vuDouble(VU->VF[_Fs_].i.w)));
+	float fvalue = static_cast<float>(static_cast<s32>(uvalue));
+	if (Offset)
+		fvalue *= std::bit_cast<float>(0x3f800000 - (Offset << 23));
+	return std::bit_cast<u32>(fvalue);
 }
 
-static __fi void _vuFTOI15(VURegs* VU)
-{
-	if (_Ft_ == 0)
-		return;
-
-	if (_X) VU->VF[_Ft_].SL[0] = float_to_int(float_to_int15(vuDouble(VU->VF[_Fs_].i.x)));
-	if (_Y) VU->VF[_Ft_].SL[1] = float_to_int(float_to_int15(vuDouble(VU->VF[_Fs_].i.y)));
-	if (_Z) VU->VF[_Ft_].SL[2] = float_to_int(float_to_int15(vuDouble(VU->VF[_Fs_].i.z)));
-	if (_W) VU->VF[_Ft_].SL[3] = float_to_int(float_to_int15(vuDouble(VU->VF[_Fs_].i.w)));
-}
-
-static __fi void _vuITOF0(VURegs* VU)
-{
-	if (_Ft_ == 0)
-		return;
-
-	if (_X) VU->VF[_Ft_].f.x = (float)VU->VF[_Fs_].SL[0];
-	if (_Y) VU->VF[_Ft_].f.y = (float)VU->VF[_Fs_].SL[1];
-	if (_Z) VU->VF[_Ft_].f.z = (float)VU->VF[_Fs_].SL[2];
-	if (_W) VU->VF[_Ft_].f.w = (float)VU->VF[_Fs_].SL[3];
-}
-
-static __fi void _vuITOF4(VURegs* VU)
-{
-	if (_Ft_ == 0)
-		return;
-
-	if (_X) VU->VF[_Ft_].f.x = int4_to_float(VU->VF[_Fs_].SL[0]);
-	if (_Y) VU->VF[_Ft_].f.y = int4_to_float(VU->VF[_Fs_].SL[1]);
-	if (_Z) VU->VF[_Ft_].f.z = int4_to_float(VU->VF[_Fs_].SL[2]);
-	if (_W) VU->VF[_Ft_].f.w = int4_to_float(VU->VF[_Fs_].SL[3]);
-}
-
-static __fi void _vuITOF12(VURegs* VU)
-{
-	if (_Ft_ == 0)
-		return;
-
-	if (_X) VU->VF[_Ft_].f.x = int12_to_float(VU->VF[_Fs_].SL[0]);
-	if (_Y) VU->VF[_Ft_].f.y = int12_to_float(VU->VF[_Fs_].SL[1]);
-	if (_Z) VU->VF[_Ft_].f.z = int12_to_float(VU->VF[_Fs_].SL[2]);
-	if (_W) VU->VF[_Ft_].f.w = int12_to_float(VU->VF[_Fs_].SL[3]);
-}
-
-static __fi void _vuITOF15(VURegs* VU)
-{
-	if (_Ft_ == 0)
-		return;
-
-	if (_X) VU->VF[_Ft_].f.x = int15_to_float(VU->VF[_Fs_].SL[0]);
-	if (_Y) VU->VF[_Ft_].f.y = int15_to_float(VU->VF[_Fs_].SL[1]);
-	if (_Z) VU->VF[_Ft_].f.z = int15_to_float(VU->VF[_Fs_].SL[2]);
-	if (_W) VU->VF[_Ft_].f.w = int15_to_float(VU->VF[_Fs_].SL[3]);
-}
+static __fi void _vuITOF0 (VURegs* VU) { applyUnaryFunction<intToFloat< 0>>(VU); }
+static __fi void _vuITOF4 (VURegs* VU) { applyUnaryFunction<intToFloat< 4>>(VU); }
+static __fi void _vuITOF12(VURegs* VU) { applyUnaryFunction<intToFloat<12>>(VU); }
+static __fi void _vuITOF15(VURegs* VU) { applyUnaryFunction<intToFloat<15>>(VU); }
 
 static __fi void _vuCLIP(VURegs* VU)
 {
