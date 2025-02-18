@@ -99,9 +99,8 @@ static QString s_current_disc_serial;
 static quint32 s_current_disc_crc;
 static quint32 s_current_running_crc;
 
-static bool record_on_start = false;
-static bool filename_set = false;
-static QString path_to_recording_for_record_on_start;
+static bool s_record_on_start = false;
+static QString s_path_to_recording_for_record_on_start;
 
 
 MainWindow::MainWindow()
@@ -730,7 +729,7 @@ void MainWindow::onVideoCaptureToggled(bool checked)
 {
 	if (!s_vm_valid)
 	{
-		if (!record_on_start)
+		if (!s_record_on_start)
 		{
 			QMessageBox msgbox(this);
 			msgbox.setIcon(QMessageBox::Question);
@@ -749,10 +748,10 @@ void MainWindow::onVideoCaptureToggled(bool checked)
 
 				QString temp(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
 				temp = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Video Capture"), temp, filter));
-				path_to_recording_for_record_on_start = temp;
-				if (path_to_recording_for_record_on_start.isEmpty())
+				s_path_to_recording_for_record_on_start = temp;
+				if (s_path_to_recording_for_record_on_start.isEmpty())
 					return;
-				record_on_start = true;
+				s_record_on_start = true;
 			}
 
 		}
@@ -768,7 +767,7 @@ void MainWindow::onVideoCaptureToggled(bool checked)
 			msgbox.addButton(QMessageBox::No);
 			msgbox.setDefaultButton(QMessageBox::Yes);
 			if (msgbox.exec() == QMessageBox::Yes)
-				record_on_start = false;
+				s_record_on_start = false;
 		}
 		return;
 	}
@@ -783,7 +782,7 @@ void MainWindow::onVideoCaptureToggled(bool checked)
 		return;
 	}
 
-	if (record_on_start && !path_to_recording_for_record_on_start.isEmpty()) 
+	if (s_record_on_start && !s_path_to_recording_for_record_on_start.isEmpty()) 
 	{	
 		QMessageBox msgbox2(this);
 		msgbox2.setIcon(QMessageBox::Question);
@@ -793,7 +792,7 @@ void MainWindow::onVideoCaptureToggled(bool checked)
 		msgbox2.setStandardButtons(QMessageBox::NoButton);
 		QTimer::singleShot(2000, &msgbox2, &QMessageBox::accept);
 		msgbox2.exec();
-		g_emu_thread->beginCapture(path_to_recording_for_record_on_start);
+		g_emu_thread->beginCapture(s_path_to_recording_for_record_on_start);
 	}
 	else
 	{
@@ -2022,11 +2021,11 @@ void MainWindow::onVMStarted()
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
 	updateInputRecordingActions(true);
-	if (record_on_start)
+	if (s_record_on_start)
 	{
 		m_ui.actionVideoCapture->setEnabled(true);
 		m_ui.actionVideoCapture->setChecked(true);
-		record_on_start = false;
+		s_record_on_start = false;
 	}
 }
 
