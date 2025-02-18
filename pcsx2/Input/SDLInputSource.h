@@ -89,8 +89,8 @@ private:
 
 	ControllerDataVector m_controllers;
 
-	// ConvertKeyToIcon can inspect the currently connected gamepad
-	// to provide labels matching the connected gamepad
+	// ConvertKeyToString and ConvertKeyToIcon can inspect the
+	// currently connected gamepad to provide matching labels
 	// Those functions can be called on the main thread, while
 	// gamepad addition/removal is done on the CPU thread
 	std::mutex m_controllers_key_mutex;
