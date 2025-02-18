@@ -792,147 +792,51 @@ static __fi u32 fp_min(u32 a, u32 b)
 	return ((s32)a < 0 && (s32)b < 0) ? std::max<s32>(a, b) : std::min<s32>(a, b);
 }
 
+template <u32(*Fn)(u32, u32)>
+static __fi void applyMinMax(VURegs* VU)
+{
+	if (_Fd_ == 0)
+		return;
+
+	if (_X) VU->VF[_Fd_].i.x = Fn(VU->VF[_Fs_].i.x, VU->VF[_Ft_].i.x);
+	if (_Y) VU->VF[_Fd_].i.y = Fn(VU->VF[_Fs_].i.y, VU->VF[_Ft_].i.y);
+	if (_Z) VU->VF[_Fd_].i.z = Fn(VU->VF[_Fs_].i.z, VU->VF[_Ft_].i.z);
+	if (_W) VU->VF[_Fd_].i.w = Fn(VU->VF[_Fs_].i.w, VU->VF[_Ft_].i.w);
+}
+
+template <u32(*Fn)(u32, u32)>
+static __fi void applyMinMaxBroadcast(VURegs* VU, u32 bc)
+{
+	if (_Fd_ == 0)
+		return;
+
+	if (_X) VU->VF[_Fd_].i.x = Fn(VU->VF[_Fs_].i.x, bc);
+	if (_Y) VU->VF[_Fd_].i.y = Fn(VU->VF[_Fs_].i.y, bc);
+	if (_Z) VU->VF[_Fd_].i.z = Fn(VU->VF[_Fs_].i.z, bc);
+	if (_W) VU->VF[_Fd_].i.w = Fn(VU->VF[_Fs_].i.w, bc);
+}
+
 static __fi void _vuMAX(VURegs* VU)
 {
-	if (_Fd_ == 0)
-		return;
-
-	if (_X) VU->VF[_Fd_].i.x = fp_max(VU->VF[_Fs_].i.x, VU->VF[_Ft_].i.x);
-	if (_Y) VU->VF[_Fd_].i.y = fp_max(VU->VF[_Fs_].i.y, VU->VF[_Ft_].i.y);
-	if (_Z) VU->VF[_Fd_].i.z = fp_max(VU->VF[_Fs_].i.z, VU->VF[_Ft_].i.z);
-	if (_W) VU->VF[_Fd_].i.w = fp_max(VU->VF[_Fs_].i.w, VU->VF[_Ft_].i.w);
+	applyMinMax<fp_max>(VU);
 }
 
-static __fi void _vuMAXi(VURegs* VU)
-{
-	if (_Fd_ == 0)
-		return;
-
-	if (_X) VU->VF[_Fd_].i.x = fp_max(VU->VF[_Fs_].i.x, VU->VI[REG_I].UL);
-	if (_Y) VU->VF[_Fd_].i.y = fp_max(VU->VF[_Fs_].i.y, VU->VI[REG_I].UL);
-	if (_Z) VU->VF[_Fd_].i.z = fp_max(VU->VF[_Fs_].i.z, VU->VI[REG_I].UL);
-	if (_W) VU->VF[_Fd_].i.w = fp_max(VU->VF[_Fs_].i.w, VU->VI[REG_I].UL);
-}
-
-static __fi void _vuMAXx(VURegs* VU)
-{
-	if (_Fd_ == 0)
-		return;
-
-	u32 ftx = VU->VF[_Ft_].i.x;
-	if (_X) VU->VF[_Fd_].i.x = fp_max(VU->VF[_Fs_].i.x, ftx);
-	if (_Y) VU->VF[_Fd_].i.y = fp_max(VU->VF[_Fs_].i.y, ftx);
-	if (_Z) VU->VF[_Fd_].i.z = fp_max(VU->VF[_Fs_].i.z, ftx);
-	if (_W) VU->VF[_Fd_].i.w = fp_max(VU->VF[_Fs_].i.w, ftx);
-}
-
-static __fi void _vuMAXy(VURegs* VU)
-{
-	if (_Fd_ == 0)
-		return;
-
-	u32 fty = VU->VF[_Ft_].i.y;
-	if (_X) VU->VF[_Fd_].i.x = fp_max(VU->VF[_Fs_].i.x, fty);
-	if (_Y) VU->VF[_Fd_].i.y = fp_max(VU->VF[_Fs_].i.y, fty);
-	if (_Z) VU->VF[_Fd_].i.z = fp_max(VU->VF[_Fs_].i.z, fty);
-	if (_W) VU->VF[_Fd_].i.w = fp_max(VU->VF[_Fs_].i.w, fty);
-}
-
-static __fi void _vuMAXz(VURegs* VU)
-{
-	if (_Fd_ == 0)
-		return;
-
-	u32 ftz = VU->VF[_Ft_].i.z;
-	if (_X) VU->VF[_Fd_].i.x = fp_max(VU->VF[_Fs_].i.x, ftz);
-	if (_Y) VU->VF[_Fd_].i.y = fp_max(VU->VF[_Fs_].i.y, ftz);
-	if (_Z) VU->VF[_Fd_].i.z = fp_max(VU->VF[_Fs_].i.z, ftz);
-	if (_W) VU->VF[_Fd_].i.w = fp_max(VU->VF[_Fs_].i.w, ftz);
-}
-
-static __fi void _vuMAXw(VURegs* VU)
-{
-	if (_Fd_ == 0)
-		return;
-
-	u32 ftw = VU->VF[_Ft_].i.w;
-	if (_X) VU->VF[_Fd_].i.x = fp_max(VU->VF[_Fs_].i.x, ftw);
-	if (_Y) VU->VF[_Fd_].i.y = fp_max(VU->VF[_Fs_].i.y, ftw);
-	if (_Z) VU->VF[_Fd_].i.z = fp_max(VU->VF[_Fs_].i.z, ftw);
-	if (_W) VU->VF[_Fd_].i.w = fp_max(VU->VF[_Fs_].i.w, ftw);
-}
+static __fi void _vuMAXi(VURegs* VU) { applyMinMaxBroadcast<fp_max>(VU, VU->VI[REG_I].UL); }
+static __fi void _vuMAXx(VURegs* VU) { applyMinMaxBroadcast<fp_max>(VU, VU->VF[_Ft_].i.x); }
+static __fi void _vuMAXy(VURegs* VU) { applyMinMaxBroadcast<fp_max>(VU, VU->VF[_Ft_].i.y); }
+static __fi void _vuMAXz(VURegs* VU) { applyMinMaxBroadcast<fp_max>(VU, VU->VF[_Ft_].i.z); }
+static __fi void _vuMAXw(VURegs* VU) { applyMinMaxBroadcast<fp_max>(VU, VU->VF[_Ft_].i.w); }
 
 static __fi void _vuMINI(VURegs* VU)
 {
-	if (_Fd_ == 0)
-		return;
-
-	/* ft is bc */
-	if (_X) VU->VF[_Fd_].i.x = fp_min(VU->VF[_Fs_].i.x, VU->VF[_Ft_].i.x);
-	if (_Y) VU->VF[_Fd_].i.y = fp_min(VU->VF[_Fs_].i.y, VU->VF[_Ft_].i.y);
-	if (_Z) VU->VF[_Fd_].i.z = fp_min(VU->VF[_Fs_].i.z, VU->VF[_Ft_].i.z);
-	if (_W) VU->VF[_Fd_].i.w = fp_min(VU->VF[_Fs_].i.w, VU->VF[_Ft_].i.w);
+	applyMinMax<fp_min>(VU);
 }
 
-static __fi void _vuMINIi(VURegs* VU)
-{
-	if (_Fd_ == 0)
-		return;
-
-	/* ft is bc */
-	if (_X) VU->VF[_Fd_].i.x = fp_min(VU->VF[_Fs_].i.x, VU->VI[REG_I].UL);
-	if (_Y) VU->VF[_Fd_].i.y = fp_min(VU->VF[_Fs_].i.y, VU->VI[REG_I].UL);
-	if (_Z) VU->VF[_Fd_].i.z = fp_min(VU->VF[_Fs_].i.z, VU->VI[REG_I].UL);
-	if (_W) VU->VF[_Fd_].i.w = fp_min(VU->VF[_Fs_].i.w, VU->VI[REG_I].UL);
-}
-
-static __fi void _vuMINIx(VURegs* VU)
-{
-	if (_Fd_ == 0)
-		return;
-
-	u32 ftx = VU->VF[_Ft_].i.x;
-	if (_X) VU->VF[_Fd_].i.x = fp_min(VU->VF[_Fs_].i.x, ftx);
-	if (_Y) VU->VF[_Fd_].i.y = fp_min(VU->VF[_Fs_].i.y, ftx);
-	if (_Z) VU->VF[_Fd_].i.z = fp_min(VU->VF[_Fs_].i.z, ftx);
-	if (_W) VU->VF[_Fd_].i.w = fp_min(VU->VF[_Fs_].i.w, ftx);
-}
-
-static __fi void _vuMINIy(VURegs* VU)
-{
-	if (_Fd_ == 0)
-		return;
-
-	u32 fty = VU->VF[_Ft_].i.y;
-	if (_X) VU->VF[_Fd_].i.x = fp_min(VU->VF[_Fs_].i.x, fty);
-	if (_Y) VU->VF[_Fd_].i.y = fp_min(VU->VF[_Fs_].i.y, fty);
-	if (_Z) VU->VF[_Fd_].i.z = fp_min(VU->VF[_Fs_].i.z, fty);
-	if (_W) VU->VF[_Fd_].i.w = fp_min(VU->VF[_Fs_].i.w, fty);
-}
-
-static __fi void _vuMINIz(VURegs* VU)
-{
-	if (_Fd_ == 0)
-		return;
-
-	u32 ftz = VU->VF[_Ft_].i.z;
-	if (_X) VU->VF[_Fd_].i.x = fp_min(VU->VF[_Fs_].i.x, ftz);
-	if (_Y) VU->VF[_Fd_].i.y = fp_min(VU->VF[_Fs_].i.y, ftz);
-	if (_Z) VU->VF[_Fd_].i.z = fp_min(VU->VF[_Fs_].i.z, ftz);
-	if (_W) VU->VF[_Fd_].i.w = fp_min(VU->VF[_Fs_].i.w, ftz);
-}
-
-static __fi void _vuMINIw(VURegs* VU)
-{
-	if (_Fd_ == 0)
-		return;
-
-	u32 ftw = VU->VF[_Ft_].i.w;
-	if (_X) VU->VF[_Fd_].i.x = fp_min(VU->VF[_Fs_].i.x, ftw);
-	if (_Y) VU->VF[_Fd_].i.y = fp_min(VU->VF[_Fs_].i.y, ftw);
-	if (_Z) VU->VF[_Fd_].i.z = fp_min(VU->VF[_Fs_].i.z, ftw);
-	if (_W) VU->VF[_Fd_].i.w = fp_min(VU->VF[_Fs_].i.w, ftw);
-}
+static __fi void _vuMINIi(VURegs* VU) { applyMinMaxBroadcast<fp_min>(VU, VU->VI[REG_I].UL); }
+static __fi void _vuMINIx(VURegs* VU) { applyMinMaxBroadcast<fp_min>(VU, VU->VF[_Ft_].i.x); }
+static __fi void _vuMINIy(VURegs* VU) { applyMinMaxBroadcast<fp_min>(VU, VU->VF[_Ft_].i.y); }
+static __fi void _vuMINIz(VURegs* VU) { applyMinMaxBroadcast<fp_min>(VU, VU->VF[_Ft_].i.z); }
+static __fi void _vuMINIw(VURegs* VU) { applyMinMaxBroadcast<fp_min>(VU, VU->VF[_Ft_].i.w); }
 
 static __fi void _vuOPMULA(VURegs* VU)
 {
