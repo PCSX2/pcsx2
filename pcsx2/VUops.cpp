@@ -492,15 +492,26 @@ static __fi float vuADD_TriAceHack(u32 a, u32 b)
 	return ret;
 }
 
-void _vuABS(VURegs* VU)
+template <u32(*Fn)(u32)>
+void __fi applyUnaryFunction(VURegs* VU)
 {
 	if (_Ft_ == 0)
 		return;
 
-	if (_X){ VU->VF[_Ft_].f.x = fabs(vuDouble(VU->VF[_Fs_].i.x)); }
-	if (_Y){ VU->VF[_Ft_].f.y = fabs(vuDouble(VU->VF[_Fs_].i.y)); }
-	if (_Z){ VU->VF[_Ft_].f.z = fabs(vuDouble(VU->VF[_Fs_].i.z)); }
-	if (_W){ VU->VF[_Ft_].f.w = fabs(vuDouble(VU->VF[_Fs_].i.w)); }
+	if (_X) { VU->VF[_Ft_].i.x = Fn(VU->VF[_Fs_].i.x); }
+	if (_Y) { VU->VF[_Ft_].i.y = Fn(VU->VF[_Fs_].i.y); }
+	if (_Z) { VU->VF[_Ft_].i.z = Fn(VU->VF[_Fs_].i.z); }
+	if (_W) { VU->VF[_Ft_].i.w = Fn(VU->VF[_Fs_].i.w); }
+}
+
+u32 __fi vuOpABS(u32 fs)
+{
+	return fs & 0x7fffffff;
+}
+
+void __fi _vuABS(VURegs* VU)
+{
+	return applyUnaryFunction<vuOpABS>(VU);
 }
 
 
