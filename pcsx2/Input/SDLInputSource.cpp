@@ -28,6 +28,8 @@ static constexpr const char* s_sdl_axis_names[] = {
 	"LeftTrigger", // SDL_GAMEPAD_AXIS_LEFT_TRIGGER
 	"RightTrigger", // SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
 };
+static_assert(std::size(s_sdl_axis_names) == SDL_GAMEPAD_AXIS_COUNT);
+
 static constexpr const char* s_sdl_axis_icons[][2] = {
 	{ICON_PF_LEFT_ANALOG_LEFT, ICON_PF_LEFT_ANALOG_RIGHT}, // SDL_GAMEPAD_AXIS_LEFTX
 	{ICON_PF_LEFT_ANALOG_UP, ICON_PF_LEFT_ANALOG_DOWN}, // SDL_GAMEPAD_AXIS_LEFTY
@@ -86,7 +88,13 @@ static constexpr const char* s_sdl_button_names[] = {
 	"Paddle3", // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2
 	"Paddle4", // SDL_GAMEPAD_BUTTON_LEFT_PADDLE2
 	"Touchpad", // SDL_GAMEPAD_BUTTON_TOUCHPAD
+	"Misc2", // SDL_GAMEPAD_BUTTON_MISC2
+	"Misc3", // SDL_GAMEPAD_BUTTON_MISC3
+	"Misc4", // SDL_GAMEPAD_BUTTON_MISC4
+	"Misc5", // SDL_GAMEPAD_BUTTON_MISC5
+	"Misc6", // SDL_GAMEPAD_BUTTON_MISC6
 };
+static_assert(std::size(s_sdl_button_names) == SDL_GAMEPAD_BUTTON_COUNT);
 
 static constexpr const char* s_sdl_face_button_icons[] = {
 	nullptr, // SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN
