@@ -1587,7 +1587,9 @@ void FullscreenUI::DrawInputBindingButton(
 		return;
 
 	if (oneline)
-		InputManager::PrettifyInputBinding(value);
+		InputManager::PrettifyInputBinding(value, true);
+	else
+		InputManager::PrettifyInputBinding(value, false);
 
 	if (show_type)
 	{

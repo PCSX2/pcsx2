@@ -133,6 +133,8 @@ bool XInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 	if (!m_xinput_get_state || !m_xinput_set_state || !m_xinput_get_capabilities)
 	{
 		Console.Error("Failed to get XInput function pointers.");
+		FreeLibrary(m_xinput_module);
+		m_xinput_module = nullptr;
 		return false;
 	}
 
@@ -194,6 +196,11 @@ void XInputSource::Shutdown()
 	m_xinput_set_state = nullptr;
 	m_xinput_get_capabilities = nullptr;
 	m_xinput_get_extended = nullptr;
+}
+
+bool XInputSource::IsInitialized()
+{
+	return m_xinput_module;
 }
 
 void XInputSource::PollEvents()
@@ -317,7 +324,7 @@ std::optional<InputBindingKey> XInputSource::ParseKeyString(const std::string_vi
 	return std::nullopt;
 }
 
-TinyString XInputSource::ConvertKeyToString(InputBindingKey key, bool migration)
+TinyString XInputSource::ConvertKeyToString(InputBindingKey key, bool display, bool migration)
 {
 	TinyString ret;
 

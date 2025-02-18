@@ -94,7 +94,7 @@ namespace InputManager
 	static std::optional<InputBindingKey> ParsePointerKey(const std::string_view source, const std::string_view sub_binding);
 
 	static bool SplitBinding(const std::string_view binding, std::string_view* source, std::string_view* sub_binding);
-	static void PrettifyInputBindingPart(const std::string_view binding, SmallString& ret, bool& changed);
+	static void PrettifyInputBindingPart(const std::string_view binding, SmallString& ret, bool& changed, bool use_icons);
 	static std::shared_ptr<InputBinding> AddBinding(const std::string_view binding, const InputEventHandler& handler);
 	// Will also apply SDL2-SDL3 migrations and update the provided section & key
 	static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler,
@@ -235,7 +235,7 @@ std::optional<InputBindingKey> InputManager::ParseInputBindingKey(const std::str
 	{
 		for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
 		{
-			if (s_input_sources[i])
+			if (s_input_sources[i]->IsInitialized())
 			{
 				std::optional<InputBindingKey> key = s_input_sources[i]->ParseKeyString(source, sub_binding);
 				if (key.has_value())
@@ -255,7 +255,7 @@ bool InputManager::ParseBindingAndGetSource(const std::string_view binding, Inpu
 
 	for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
 	{
-		if (s_input_sources[i])
+		if (s_input_sources[i]->IsInitialized())
 		{
 			std::optional<InputBindingKey> parsed_key = s_input_sources[i]->ParseKeyString(source_string, sub_binding);
 			if (parsed_key.has_value())
@@ -318,7 +318,7 @@ std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type 
 		}
 		else if (key.source_type < InputSourceType::Count && s_input_sources[static_cast<u32>(key.source_type)])
 		{
-			return std::string(s_input_sources[static_cast<u32>(key.source_type)]->ConvertKeyToString(key, migration));
+			return std::string(s_input_sources[static_cast<u32>(key.source_type)]->ConvertKeyToString(key, false, migration));
 		}
 	}
 
@@ -351,7 +351,7 @@ std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
 	return ss.str();
 }
 
-bool InputManager::PrettifyInputBinding(SmallStringBase& binding)
+bool InputManager::PrettifyInputBinding(SmallStringBase& binding, bool use_icons)
 {
 	if (binding.empty())
 		return false;
@@ -372,7 +372,7 @@ bool InputManager::PrettifyInputBinding(SmallStringBase& binding)
 			{
 				if (!ret.empty())
 					ret.append(" + ");
-				PrettifyInputBindingPart(part, ret, changed);
+				PrettifyInputBindingPart(part, ret, changed, use_icons);
 			}
 		}
 		last = next + 1;
@@ -384,7 +384,7 @@ bool InputManager::PrettifyInputBinding(SmallStringBase& binding)
 		{
 			if (!ret.empty())
 				ret.append(" + ");
-			PrettifyInputBindingPart(part, ret, changed);
+			PrettifyInputBindingPart(part, ret, changed, use_icons);
 		}
 	}
 
@@ -394,7 +394,7 @@ bool InputManager::PrettifyInputBinding(SmallStringBase& binding)
 	return changed;
 }
 
-void InputManager::PrettifyInputBindingPart(const std::string_view binding, SmallString& ret, bool& changed)
+void InputManager::PrettifyInputBindingPart(const std::string_view binding, SmallString& ret, bool& changed, bool use_icons)
 {
 	std::string_view source, sub_binding;
 	if (!SplitBinding(binding, &source, &sub_binding))
@@ -439,20 +439,26 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
 	{
 		for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
 		{
+			// We call ConvertKeyToIcon/String() even on disabled sources
+			// This ensures consistant appearance between enabled and disabled sources
 			if (s_input_sources[i])
 			{
 				std::optional<InputBindingKey> key = s_input_sources[i]->ParseKeyString(source, sub_binding);
 				if (key.has_value())
 				{
-					const TinyString icon = s_input_sources[i]->ConvertKeyToIcon(key.value());
-					if (!icon.empty())
+					if (use_icons)
 					{
-						ret.append(icon);
-						changed = true;
-						return;
+						const TinyString icon = s_input_sources[i]->ConvertKeyToIcon(key.value());
+						if (!icon.empty())
+							ret.append(icon);
+						else
+							ret.append(s_input_sources[i]->ConvertKeyToString(key.value(), true));
 					}
+					else
+						ret.append(s_input_sources[i]->ConvertKeyToString(key.value(), true));
 
-					break;
+					changed = true;
+					return;
 				}
 			}
 		}
@@ -1517,7 +1523,7 @@ bool InputManager::ReloadDevices()
 
 	for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
 	{
-		if (s_input_sources[i])
+		if (s_input_sources[i]->IsInitialized())
 			changed |= s_input_sources[i]->ReloadDevices();
 	}
 
@@ -1528,11 +1534,11 @@ void InputManager::CloseSources()
 {
 	for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
 	{
-		if (s_input_sources[i])
+		if (s_input_sources[i]->IsInitialized())
 		{
 			s_input_sources[i]->Shutdown();
-			s_input_sources[i].reset();
 		}
+		s_input_sources[i].reset();
 	}
 }
 
@@ -1540,7 +1546,7 @@ void InputManager::PollSources()
 {
 	for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
 	{
-		if (s_input_sources[i])
+		if (s_input_sources[i]->IsInitialized())
 			s_input_sources[i]->PollEvents();
 	}
 
@@ -1560,7 +1566,7 @@ std::vector<std::pair<std::string, std::string>> InputManager::EnumerateDevices(
 
 	for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
 	{
-		if (s_input_sources[i])
+		if (s_input_sources[i]->IsInitialized())
 		{
 			std::vector<std::pair<std::string, std::string>> devs(s_input_sources[i]->EnumerateDevices());
 			if (ret.empty())
@@ -1579,7 +1585,7 @@ std::vector<InputBindingKey> InputManager::EnumerateMotors()
 
 	for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
 	{
-		if (s_input_sources[i])
+		if (s_input_sources[i]->IsInitialized())
 		{
 			std::vector<InputBindingKey> devs(s_input_sources[i]->EnumerateMotors());
 			if (ret.empty())
@@ -1639,7 +1645,7 @@ InputManager::GenericInputBindingMapping InputManager::GetGenericBindingMapping(
 	{
 		for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
 		{
-			if (s_input_sources[i] && s_input_sources[i]->GetGenericBindingMapping(device, &mapping))
+			if (s_input_sources[i]->IsInitialized() && s_input_sources[i]->GetGenericBindingMapping(device, &mapping))
 				break;
 		}
 	}
@@ -1655,34 +1661,34 @@ bool InputManager::IsInputSourceEnabled(SettingsInterface& si, InputSourceType t
 template <typename T>
 void InputManager::UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock, InputSourceType type)
 {
+	if (!s_input_sources[static_cast<u32>(type)])
+	{
+		std::unique_ptr<InputSource> source = std::make_unique<T>();
+		if (!source->Initialize(si, settings_lock))
+			Console.Error("(InputManager) Source '%s' failed to initialize.", InputSourceToString(type));
+
+		s_input_sources[static_cast<u32>(type)] = std::move(source);
+	}
+
 	const bool enabled = IsInputSourceEnabled(si, type);
 	if (enabled)
 	{
-		if (s_input_sources[static_cast<u32>(type)])
+		if (s_input_sources[static_cast<u32>(type)]->IsInitialized())
 		{
 			s_input_sources[static_cast<u32>(type)]->UpdateSettings(si, settings_lock);
 		}
-		else
+		else if (!s_input_sources[static_cast<u32>(type)]->Initialize(si, settings_lock))
 		{
-			std::unique_ptr<InputSource> source = std::make_unique<T>();
-			if (!source->Initialize(si, settings_lock))
-			{
-				Console.Error("(InputManager) Source '%s' failed to initialize.", InputSourceToString(type));
-				return;
-			}
-
-			s_input_sources[static_cast<u32>(type)] = std::move(source);
+			Console.Error("(InputManager) Source '%s' failed to initialize.", InputSourceToString(type));
 		}
 	}
 	else
 	{
-		if (s_input_sources[static_cast<u32>(type)])
+		if (s_input_sources[static_cast<u32>(type)]->IsInitialized())
 		{
 			settings_lock.unlock();
 			s_input_sources[static_cast<u32>(type)]->Shutdown();
 			settings_lock.lock();
-
-			s_input_sources[static_cast<u32>(type)].reset();
 		}
 	}
 }

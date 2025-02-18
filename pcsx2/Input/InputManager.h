@@ -211,7 +211,7 @@ namespace InputManager
 	std::string ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type, const InputBindingKey* keys, size_t num_keys, bool migration = false);
 
 	/// Represents a binding with icon fonts, if available.
-	bool PrettifyInputBinding(SmallStringBase& binding);
+	bool PrettifyInputBinding(SmallStringBase& binding, bool use_icons = true);
 
 	/// Splits a chord into individual bindings.
 	std::vector<std::string_view> SplitChord(const std::string_view binding);
