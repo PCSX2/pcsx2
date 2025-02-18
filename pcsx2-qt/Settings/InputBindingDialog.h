@@ -22,7 +22,7 @@ class InputBindingDialog : public QDialog
 
 public:
 	InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name, std::string key_name,
-		std::vector<std::string> bindings, QWidget* parent);
+		std::vector<std::string> bindings_settings, std::vector<std::string> bindings_ui, QWidget* parent);
 	~InputBindingDialog();
 
 protected Q_SLOTS:
@@ -34,6 +34,9 @@ protected Q_SLOTS:
 
 	void onSensitivityChanged(int value);
 	void onDeadzoneChanged(int value);
+
+	void onInputDeviceConnected(const QString& identifier, const QString& device_name);
+	void onInputDeviceDisconnected(const QString& identifier);
 
 protected:
 	enum : u32
@@ -55,13 +58,16 @@ protected:
 	void hookInputManager();
 	void unhookInputManager();
 
+	void ReloadBindNames();
+
 	Ui::InputBindingDialog m_ui;
 
 	SettingsInterface* m_sif;
 	InputBindingInfo::Type m_bind_type;
 	std::string m_section_name;
 	std::string m_key_name;
-	std::vector<std::string> m_bindings;
+	std::vector<std::string> m_bindings_settings;
+	std::vector<std::string> m_bindings_ui;
 	std::vector<InputBindingKey> m_new_bindings;
 	std::vector<std::pair<InputBindingKey, std::pair<float, float>>> m_value_ranges;
 
