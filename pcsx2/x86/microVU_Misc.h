@@ -21,6 +21,7 @@ struct mVU_Globals
 	u32   signbit [4] = __four(0x80000000);
 	u32   minvals [4] = __four(0xff7fffff);
 	u32   maxvals [4] = __four(0x7f7fffff);
+	u32   exponent[4] = __four(0x7f800000);
 	u32   one     [4] = __four(0x3f800000);
 	u32   Pi4     [4] = __four(0x3f490fdb);
 	u32   T1      [4] = __four(0x3f7ffff5);
