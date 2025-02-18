@@ -556,12 +556,18 @@ namespace x86Emitter
 	const xImplSimd_MovHL_RtoR xMOVLH = {0x16};
 	const xImplSimd_MovHL_RtoR xMOVHL = {0x12};
 
+	const xImplSimd_PBlend xPBLEND =
+	{
+		{0x66, 0x0e3a}, // W
+		{0x66, 0x1038}, // VB
+	};
+
 	const xImplSimd_Blend xBLEND =
-		{
-			{0x66, 0x0c3a}, // PS
-			{0x66, 0x0d3a}, // PD
-			{0x66, 0x1438}, // VPS
-			{0x66, 0x1538}, // VPD
+	{
+		{0x66, 0x0c3a}, // PS
+		{0x66, 0x0d3a}, // PD
+		{0x66, 0x1438}, // VPS
+		{0x66, 0x1538}, // VPD
 	};
 
 	const xImplSimd_PMove xPMOVSX = {0x2038};
