@@ -136,6 +136,7 @@ $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt
 
 echo "Copying resources into AppDir..."
 cp -a "$BUILDDIR/bin/resources" "$OUTDIR/usr/bin"
+cp "$OUTDIR/PCSX2.png" "$OUTDIR/.DirIcon"
 
 # LinuxDeploy's Qt plugin doesn't include Wayland support. So manually copy in the additional Wayland libraries.
 echo "Copying Qt Wayland libraries..."
