@@ -206,6 +206,12 @@ public:
 		bool operator()(const PaletteKey& lhs, const PaletteKey& rhs) const;
 	};
 
+	struct TempZAddress
+	{
+		u32 ZBP;
+		u32 offset;
+	};
+
 	class Target : public Surface
 	{
 	public:
@@ -428,6 +434,7 @@ protected:
 
 	Source* m_temporary_source = nullptr; // invalidated after the draw
 	GSTexture* m_temporary_z = nullptr; // invalidated after the draw
+	TempZAddress m_temporary_z_info;
 
 	std::unique_ptr<GSDownloadTexture> m_color_download_texture;
 	std::unique_ptr<GSDownloadTexture> m_uint16_download_texture;
@@ -554,7 +561,8 @@ public:
 	void InvalidateTemporarySource();
 	void SetTemporaryZ(GSTexture* temp_z);
 	GSTexture* GetTemporaryZ();
-
+	TempZAddress GetTemporaryZInfo();
+	void SetTemporaryZInfo(u32 address, u32 offset);
 	/// Invalidates a temporary Z, a partial copy only created from the current DS for the current draw when Z is not offset but RT is
 	void InvalidateTemporaryZ();
 
