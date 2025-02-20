@@ -183,6 +183,16 @@ QString MemoryCardSettingsWidget::getSelectedCard() const
 	return ret;
 }
 
+bool MemoryCardSettingsWidget::isSelectedCardFormatted() const
+{
+	QString ret;
+
+	const QList<QTreeWidgetItem*> selection(m_ui.cardList->selectedItems());
+	if (!selection.empty())
+		return selection[0]->data(0, Qt::UserRole).toBool();
+	return false;
+}
+
 void MemoryCardSettingsWidget::updateCardActions()
 {
 	QString selectedCard = getSelectedCard();
@@ -262,6 +272,13 @@ void MemoryCardSettingsWidget::convertCard()
 
 	if (selectedCard.isEmpty())
 		return;
+
+	if (!isSelectedCardFormatted())
+	{
+		QMessageBox::critical(this, tr("Error"), tr("Cannot convert an unformatted memory card."));
+		return;
+	}
+
 
 	MemoryCardConvertDialog dialog(QtUtils::GetRootWidget(this), selectedCard);
 
@@ -442,6 +459,10 @@ void MemoryCardListWidget::refresh(SettingsWindow* dialog)
 		item->setText(1, getSizeSummary(mcd));
 		item->setText(2, mcd.formatted ? tr("Yes") : tr("No"));
 		item->setText(3, mtime.toString(QLocale::system().dateTimeFormat(QLocale::ShortFormat)));
+
+		// store formatted metadata
+		item->setData(0, Qt::UserRole, mcd.formatted);
+
 		addTopLevelItem(item);
 	}
 }

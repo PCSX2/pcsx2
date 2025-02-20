@@ -97,6 +97,7 @@ private:
 	void createCard();
 
 	QString getSelectedCard() const;
+	bool isSelectedCardFormatted() const;
 	void updateCardActions();
 	void deleteCard();
 	void renameCard();
