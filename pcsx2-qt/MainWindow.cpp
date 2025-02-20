@@ -104,6 +104,15 @@ MainWindow::MainWindow()
 	pxAssert(!g_main_window);
 	g_main_window = this;
 
+	//  Native window rendering is broken in wayland.
+	//  Let's work around it by disabling it for every widget besides
+	//  DisplayWidget.
+	//  Additionally, alien widget rendering is much more performant, so we
+	//  should have a nice responsiveness boost in our UI :)
+	//  QTBUG-133919, reported upstream by govanify 
+	QGuiApplication::setAttribute(Qt::AA_NativeWindows, false);
+	QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
+
 #if !defined(_WIN32) && !defined(__APPLE__)
 	s_use_central_widget = DisplayContainer::isRunningOnWayland();
 #endif
