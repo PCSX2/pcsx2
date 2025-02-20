@@ -185,8 +185,6 @@ QString MemoryCardSettingsWidget::getSelectedCard() const
 
 bool MemoryCardSettingsWidget::isSelectedCardFormatted() const
 {
-	QString ret;
-
 	const QList<QTreeWidgetItem*> selection(m_ui.cardList->selectedItems());
 	if (!selection.empty())
 		return selection[0]->data(0, Qt::UserRole).toBool();
@@ -278,7 +276,6 @@ void MemoryCardSettingsWidget::convertCard()
 		QMessageBox::critical(this, tr("Error"), tr("Cannot convert an unformatted memory card."));
 		return;
 	}
-
 
 	MemoryCardConvertDialog dialog(QtUtils::GetRootWidget(this), selectedCard);
 
