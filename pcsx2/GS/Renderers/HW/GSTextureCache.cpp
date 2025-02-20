@@ -3893,6 +3893,12 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						GL_CACHE("TC: Dirty Target(%s) (0x%x) r(%d,%d,%d,%d)", to_string(type),
 							t->m_TEX0.TBP0, r.x, r.y, r.z, r.w);
 
+						if (t->m_type == DepthStencil && GetTemporaryZ() != nullptr)
+						{
+							if (GetTemporaryZInfo().ZBP == t->m_TEX0.TBP0)
+								InvalidateTemporaryZ();
+						}
+
 						if (GSLocalMemory::m_psm[psm].depth)
 							DirtyRectByPage(bp, psm, bw, t, r);
 						else
@@ -7005,6 +7011,22 @@ void GSTextureCache::Target::Update(bool cannot_scale)
 		m_alpha_range |= alpha_minmax.first != alpha_minmax.second;
 	}
 	g_gs_device->Recycle(t);
+
+	if (m_type == DepthStencil && g_texture_cache->GetTemporaryZ() != nullptr)
+	{
+		if (g_texture_cache->GetTemporaryZInfo().ZBP == m_TEX0.TBP0)
+		{
+			GSTextureCache::TempZAddress z_address_info = g_texture_cache->GetTemporaryZInfo();
+			if (m_TEX0.TBP0 == z_address_info.ZBP)
+			{
+				//GL_CACHE("RT in RT Updating Z copy on draw %d z_offset %d", s_n, z_address_info.offset);
+				GSVector4i dRect = GSVector4i(total_rect.x * m_scale, (z_address_info.offset + total_rect.y) * m_scale, (total_rect.z + (1.0f / m_scale)) * m_scale, (z_address_info.offset + total_rect.w + (1.0f / m_scale)) * m_scale);
+				g_gs_device->StretchRect(m_texture, GSVector4(total_rect.x / static_cast<float>(m_unscaled_size.x), total_rect.y / static_cast<float>(m_unscaled_size.y), (total_rect.z + (1.0f / m_scale)) / static_cast<float>(m_unscaled_size.x), (total_rect.w + (1.0f / m_scale)) / static_cast<float>(m_unscaled_size.y)), g_texture_cache->GetTemporaryZ(), GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
+				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+			}
+		}
+	}
+
 	m_dirty.clear();
 }
 
@@ -7512,6 +7534,17 @@ void GSTextureCache::InvalidateTemporarySource()
 
 	delete m_temporary_source;
 	m_temporary_source = nullptr;
+}
+
+GSTextureCache::TempZAddress GSTextureCache::GetTemporaryZInfo()
+{
+	return m_temporary_z_info;
+}
+
+void GSTextureCache::SetTemporaryZInfo(u32 address, u32 offset)
+{
+	m_temporary_z_info.ZBP = address;
+	m_temporary_z_info.offset = offset;
 }
 
 void GSTextureCache::SetTemporaryZ(GSTexture* temp_z)
