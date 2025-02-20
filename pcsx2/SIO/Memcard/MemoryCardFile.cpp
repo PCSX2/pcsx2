@@ -10,6 +10,7 @@
 #include "common/Console.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
+#include "common/HostSys.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
@@ -157,12 +158,17 @@ class FileMemoryCard
 {
 protected:
 	std::FILE* m_file[8] = {};
+	u8* m_mappings[8] = {};
+	void* m_mapping_handles[8] = {};
+
 	s64 m_fileSize[8] = {};
 	std::string m_filenames[8] = {};
 	std::vector<u8> m_currentdata;
 	u64 m_chksum[8] = {};
 	bool m_ispsx[8] = {};
 	u32 m_chkaddr = 0;
+
+	std::chrono::time_point<std::chrono::system_clock> m_lastSaveTime = std::chrono::system_clock::now();
 
 public:
 	FileMemoryCard();
@@ -319,9 +325,21 @@ void FileMemoryCard::Open()
 													   "Close any other instances of PCSX2, or restart your computer.\n"),
 					fname));
 		}
-		else // Load checksum
+		else // Load memory map and checksum
 		{
 			m_fileSize[slot] = FileSystem::FSize64(m_file[slot]);
+
+			m_mapping_handles[slot] = HostSys::CreateMappingFromFile(m_file[slot]);
+			if (!m_mapping_handles[slot])
+			{
+				Console.Warning("CreateMappingFromFile failed!");
+			}
+
+			m_mappings[slot] = static_cast<u8*>(HostSys::MapMapping(m_mapping_handles[slot], m_fileSize[slot], PageAccess_ReadWrite()));
+			if (!m_mappings[slot])
+			{
+				Console.Warning("MapSharedMemory failed! %d. %s", errno, strerror(errno));
+			}
 
 			Console.WriteLnFmt(Color_Green, "McdSlot {} [File]: {} [{} MB, {}]", slot, Path::GetFileName(fname),
 				(m_fileSize[slot] + (MCD_SIZE + 1)) / MC2_MBSIZE,
@@ -331,11 +349,9 @@ void FileMemoryCard::Open()
 			m_ispsx[slot] = m_fileSize[slot] == 0x20000;
 			m_chkaddr = 0x210;
 
-			if (!m_ispsx[slot] && FileSystem::FSeek64(m_file[slot], m_chkaddr, SEEK_SET) == 0)
+			if (!m_ispsx[slot])
 			{
-				const size_t read_result = std::fread(&m_chksum[slot], sizeof(m_chksum[slot]), 1, m_file[slot]);
-				if (read_result == 0)
-					Host::ReportErrorAsync("Memory Card Read Failed", "Error reading memory card.");
+				std::memcpy(&m_chksum[slot], m_mappings[slot] + m_chkaddr, sizeof(m_chksum[slot]));
 			}
 		}
 	}
@@ -349,8 +365,8 @@ void FileMemoryCard::Close()
 			continue;
 
 		// Store checksum
-		if (!m_ispsx[slot] && FileSystem::FSeek64(m_file[slot], m_chkaddr, SEEK_SET) == 0)
-			std::fwrite(&m_chksum[slot], sizeof(m_chksum[slot]), 1, m_file[slot]);
+		if (!m_ispsx[slot])
+			std::memcpy(m_mappings[slot] + m_chkaddr, &m_chksum[slot], sizeof(m_chksum[slot]));
 
 		std::fclose(m_file[slot]);
 		m_file[slot] = nullptr;
@@ -360,6 +376,13 @@ void FileMemoryCard::Close()
 			const std::string name_in(m_filenames[slot] + 'x');
 			if (ConvertRAWtoNoECC(name_in.c_str(), m_filenames[slot].c_str()))
 				FileSystem::DeleteFilePath(name_in.c_str());
+		}
+
+		if (m_mappings[slot])
+		{
+			HostSys::UnmapSharedMemory(m_mappings[slot], m_fileSize[slot]);
+			HostSys::DestroyMapping(m_mapping_handles[slot]);
+			m_mappings[slot] = nullptr;
 		}
 
 		m_filenames[slot] = {};
@@ -430,13 +453,21 @@ s32 FileMemoryCard::Read(uint slot, u8* dest, u32 adr, int size)
 		memset(dest, 0, size);
 		return 1;
 	}
-	if (!Seek(mcfp, adr))
-		return 0;
-	return std::fread(dest, size, 1, mcfp) == 1;
+
+	if (adr + size > static_cast<u32>(m_fileSize[slot]))
+	{
+		Console.Warning("(FileMcd) Warning: read past end of file. (%d) [%08X]", slot, adr);
+	}
+
+	std::memcpy(dest, m_mappings[slot] + adr, size);
+	return 1;
 }
 
 s32 FileMemoryCard::Save(uint slot, const u8* src, u32 adr, int size)
 {
+	if (adr + size > static_cast<u32>(m_fileSize[slot]))
+		return 0;
+
 	std::FILE* mcfp = m_file[slot];
 
 	if (!mcfp)
@@ -454,14 +485,10 @@ s32 FileMemoryCard::Save(uint slot, const u8* src, u32 adr, int size)
 	}
 	else
 	{
-		if (!Seek(mcfp, adr))
-			return 0;
 		if (static_cast<int>(m_currentdata.size()) < size)
 			m_currentdata.resize(size);
 
-		const size_t read_result = std::fread(m_currentdata.data(), size, 1, mcfp);
-		if (read_result == 0)
-			Host::ReportErrorAsync("Memory Card Read Failed", "Error reading memory card.");
+		std::memcpy(m_currentdata.data(), m_mappings[slot] + adr, size);
 
 		for (int i = 0; i < size; i++)
 		{
@@ -483,26 +510,18 @@ s32 FileMemoryCard::Save(uint slot, const u8* src, u32 adr, int size)
 		}
 	}
 
-	if (!Seek(mcfp, adr))
-		return 0;
+	std::memcpy(m_mappings[slot] + adr, src, size);
 
-	if (std::fwrite(m_currentdata.data(), size, 1, mcfp) == 1)
+	std::chrono::duration<float> elapsed = std::chrono::system_clock::now() - m_lastSaveTime;
+	if (elapsed > std::chrono::seconds(5))
 	{
-		static auto last = std::chrono::time_point<std::chrono::system_clock>();
-
-		std::chrono::duration<float> elapsed = std::chrono::system_clock::now() - last;
-		if (elapsed > std::chrono::seconds(5))
-		{
-			Host::AddIconOSDMessage(fmt::format("MemoryCardSave{}", slot), ICON_PF_MEMORY_CARD,
-				fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card '{}' was saved to storage."),
-					Path::GetFileName(m_filenames[slot])),
-				Host::OSD_INFO_DURATION);
-			last = std::chrono::system_clock::now();
-		}
-		return 1;
+		Host::AddIconOSDMessage(fmt::format("MemoryCardSave{}", slot), ICON_PF_MEMORY_CARD,
+			fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card '{}' was saved to storage."),
+				Path::GetFileName(m_filenames[slot])),
+			Host::OSD_INFO_DURATION);
+		m_lastSaveTime = std::chrono::system_clock::now();
 	}
-
-	return 0;
+	return 1;
 }
 
 s32 FileMemoryCard::EraseBlock(uint slot, u32 adr)
@@ -517,9 +536,9 @@ s32 FileMemoryCard::EraseBlock(uint slot, u32 adr)
 	if (!Seek(mcfp, adr))
 		return 0;
 
-	u8 buf[MC2_ERASE_SIZE];
-	std::memset(buf, 0xff, sizeof(buf));
-	return std::fwrite(buf, sizeof(buf), 1, mcfp) == 1;
+	std::memset(m_mappings[slot] + adr, 0xff, MC2_ERASE_SIZE);
+
+	return 1;
 }
 
 u64 FileMemoryCard::GetCRC(uint slot)
@@ -532,9 +551,6 @@ u64 FileMemoryCard::GetCRC(uint slot)
 
 	if (m_ispsx[slot])
 	{
-		if (!Seek(mcfp, 0))
-			return 0;
-
 		const s64 mcfpsize = m_fileSize[slot];
 		if (mcfpsize < 0)
 			return 0;
@@ -546,8 +562,7 @@ u64 FileMemoryCard::GetCRC(uint slot)
 		const uint filesize = static_cast<uint>(mcfpsize) / sizeof(buffer);
 		for (uint i = filesize; i; --i)
 		{
-			if (std::fread(buffer, sizeof(buffer), 1, mcfp) != 1)
-				return 0;
+			std::memcpy(buffer, m_mappings[slot], sizeof(buffer));
 
 			for (uint t = 0; t < std::size(buffer); ++t)
 				retval ^= buffer[t];
