@@ -153,6 +153,8 @@ TEST(CodegenTests, SSETest)
 	CODEGEN_TEST(xMOVAPS(ptr128[rax+r9], xmm8), "46 0f 29 04 08");
 	CODEGEN_TEST(xBLEND.PS(xmm0, xmm1, 0x55), "66 0f 3a 0c c1 55");
 	CODEGEN_TEST(xBLEND.PD(xmm8, xmm9, 0xaa), "66 45 0f 3a 0d c1 aa");
+	CODEGEN_TEST(xPBLEND.W(xmm0, xmm1, 0x55), "66 0f 3a 0e c1 55");
+	CODEGEN_TEST(xPBLEND.VB(xmm1, xmm2), "66 0f 38 10 ca");
 	CODEGEN_TEST(xEXTRACTPS(ptr32[base], xmm1, 2), "66 0f 3a 17 0d f6 ff ff ff 02");
 	CODEGEN_TEST(xMOVD(eax, xmm1), "66 0f 7e c8");
 	CODEGEN_TEST(xMOVD(eax, xmm10), "66 44 0f 7e d0");
