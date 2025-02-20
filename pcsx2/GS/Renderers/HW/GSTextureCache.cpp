@@ -3880,6 +3880,12 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						GL_CACHE("TC: Dirty Target(%s) (0x%x) r(%d,%d,%d,%d)", to_string(type),
 							t->m_TEX0.TBP0, r.x, r.y, r.z, r.w);
 
+						if (t->m_type == DepthStencil && GetTemporaryZ() != nullptr)
+						{
+							if (GetTemporaryZInfo().ZBP == t->m_TEX0.TBP0)
+								InvalidateTemporaryZ();
+						}
+
 						if (GSLocalMemory::m_psm[psm].depth)
 							DirtyRectByPage(bp, psm, bw, t, r);
 						else
@@ -3900,6 +3906,12 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 
 				if (t->Overlaps(bp, bw, psm, r))
 				{
+					if (t->m_type == DepthStencil && GetTemporaryZ() != nullptr)
+					{
+						if (GetTemporaryZInfo().ZBP == t->m_TEX0.TBP0)
+							InvalidateTemporaryZ();
+					}
+
 					// Try the hard way for partial invalidation.
 					DirtyRectByPage(bp, psm, bw, t, r);
 
@@ -7498,6 +7510,17 @@ void GSTextureCache::InvalidateTemporarySource()
 
 	delete m_temporary_source;
 	m_temporary_source = nullptr;
+}
+
+GSTextureCache::TempZAddress GSTextureCache::GetTemporaryZInfo()
+{
+	return m_temporary_z_info;
+}
+
+void GSTextureCache::SetTemporaryZInfo(u32 address, u32 offset)
+{
+	m_temporary_z_info.ZBP = address;
+	m_temporary_z_info.offset = offset;
 }
 
 void GSTextureCache::SetTemporaryZ(GSTexture* temp_z)
