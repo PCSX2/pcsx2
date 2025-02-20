@@ -4467,7 +4467,7 @@ bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
 	{
 		if (len > packet_size)
 		{
-#if defined(PCSX2_DEVBUILD) || defined(_DEBUG)
+#if defined(_DEBUG)
 			Console.Warning("GS transfer buffer overflow len %d remaining %d, tex_size %d tw %d th %d bpp %d", len, remaining, tex_size, tw, th, bpp);
 #endif
 		}

@@ -26,6 +26,7 @@ public:
 	static bool GSC_SteambotChronicles(GSRendererHW& r, int& skip);
 	static bool GSC_BlueTongueGames(GSRendererHW& r, int& skip);
 	static bool GSC_NFSUndercover(GSRendererHW& r, int& skip);
+	static bool GSC_Battlefield2(GSRendererHW& r, int& skip);
 	static bool GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip);
 	static bool GSC_MetalGearSolid3(GSRendererHW& r, int& skip);
 	static bool GSC_HitmanBloodMoney(GSRendererHW& r, int& skip);
