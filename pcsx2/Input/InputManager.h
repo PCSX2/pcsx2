@@ -95,7 +95,7 @@ struct InputBindingKeyHash
 using InputButtonEventHandler = std::function<void(s32 value)>;
 
 /// Callback types for a normalized event. Usually used for pads.
-using InputAxisEventHandler = std::function<void(float value)>;
+using InputAxisEventHandler = std::function<void(InputBindingKey key, float value)>;
 
 /// Input monitoring for external access.
 struct InputInterceptHook
@@ -210,6 +210,9 @@ namespace InputManager
 
 	/// Represents a binding with icon fonts, if available.
 	bool PrettifyInputBinding(SmallStringBase& binding);
+
+	/// Splits a chord into individual bindings.
+	std::vector<std::string_view> SplitChord(const std::string_view binding);
 
 	/// Returns a list of all hotkeys.
 	std::vector<const HotkeyInfo*> GetHotkeyList();
