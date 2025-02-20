@@ -865,8 +865,15 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 			if (!IsMemoryCardFolder(fd.FileName))
 				continue;
 
+			FolderMemoryCard sourceFolderMemoryCard;
+			Pcsx2Config::McdOptions config;
+			config.Enabled = true;
+			config.Type = MemoryCardType::Folder;
+			sourceFolderMemoryCard.Open(fd.FileName, config, (8 * 1024 * 1024) / FolderMemoryCard::ClusterSize, false, "");
+
 			mcds.push_back({std::move(basename), std::move(fd.FileName), fd.ModificationTime,
-				MemoryCardType::Folder, MemoryCardFileType::Unknown, 0u, true});
+				MemoryCardType::Folder, MemoryCardFileType::Unknown, 0u, sourceFolderMemoryCard.IsFormatted()});
+			sourceFolderMemoryCard.Close(false);
 		}
 		else
 		{
