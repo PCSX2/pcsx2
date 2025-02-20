@@ -2565,6 +2565,7 @@ void GSRendererHW::Draw()
 	m_texture_shuffle = false;
 	m_copy_16bit_to_target_shuffle = false;
 	m_same_group_texture_shuffle = false;
+	m_using_temp_z = false;
 
 	const bool is_split_texture_shuffle = (m_split_texture_shuffle_pages > 0);
 	if (is_split_texture_shuffle)
@@ -2676,6 +2677,12 @@ void GSRendererHW::Draw()
 					(tgt = g_texture_cache->GetExactTarget(m_cached_ctx.ZBUF.Block(), m_cached_ctx.FRAME.FBW,
 						 GSTextureCache::DepthStencil, ds_end_bp)) == nullptr ||
 					m_r.rintersect(tgt->m_valid).eq(tgt->m_valid));
+
+			if (g_texture_cache->GetTemporaryZ() != nullptr && (m_cached_ctx.FRAME.Block() == g_texture_cache->GetTemporaryZInfo().ZBP || m_cached_ctx.ZBUF.Block() == g_texture_cache->GetTemporaryZInfo().ZBP))
+			{
+				g_texture_cache->InvalidateTemporaryZ();
+			}
+
 
 			if (overwriting_whole_rt && overwriting_whole_ds &&
 				TryGSMemClear(no_rt, preserve_rt_color, is_zero_color_clear, rt_end_bp,
@@ -3262,15 +3269,29 @@ void GSRendererHW::Draw()
 				// Z isn't offset but RT is, so we need a temp Z to align it, hopefully nothing will ever write to the Z too, right??
 				if (ds && vertical_offset && (m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) != (m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0))
 				{
-				
 					const int z_vertical_offset = ((static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) / 32) / std::max(rt->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y;
-					GL_CACHE("RT in RT Z copy on draw %d z_vert_offset %d z_offset %d", s_n, z_vertical_offset, vertical_offset);
-					GSVector4i dRect = GSVector4i(0, vertical_offset * ds->m_scale, ds->m_unscaled_size.x * ds->m_scale, std::min(vertical_offset + m_r.w + 1, vertical_offset + ds->m_unscaled_size.y) * ds->m_scale);
-					const int new_height = std::max(static_cast<int>(ds->m_unscaled_size.y * ds->m_scale), dRect.w);
-					GSTexture* tex = g_gs_device->CreateDepthStencil(ds->m_unscaled_size.x * ds->m_scale, new_height, GSTexture::Format::DepthStencil, true);
-					g_gs_device->StretchRect(ds->m_texture, GSVector4(0.0f, z_vertical_offset / static_cast<float>(ds->m_unscaled_size.y), 1.0f, std::min(z_vertical_offset + m_r.w + 1, ds->m_unscaled_size.y) / static_cast<float>(ds->m_unscaled_size.y)), tex, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
+					if (g_texture_cache->GetTemporaryZ() != nullptr)
+					{
+						GSTextureCache::TempZAddress z_address_info = g_texture_cache->GetTemporaryZInfo();
 
-					g_texture_cache->SetTemporaryZ(tex);
+						if (ds->m_TEX0.TBP0 != z_address_info.ZBP || z_address_info.offset != (vertical_offset - z_vertical_offset))
+							g_texture_cache->InvalidateTemporaryZ();
+					}
+
+					if (g_texture_cache->GetTemporaryZ() == nullptr)
+					{
+						m_temp_z_full_copy = false;
+						u32 vertical_size = std::max(rt->m_unscaled_size.y, ds->m_unscaled_size.y);
+						GL_CACHE("RT in RT Z copy on draw %d z_vert_offset %d z_offset %d", s_n, z_vertical_offset, vertical_offset);
+						GSVector4i dRect = GSVector4i(0, vertical_offset * ds->m_scale, ds->m_unscaled_size.x * ds->m_scale, (vertical_offset + ds->m_unscaled_size.y - z_vertical_offset) * ds->m_scale);
+						const int new_height = std::max(static_cast<int>(vertical_size * ds->m_scale), dRect.w);
+						GSTexture* tex = g_gs_device->CreateDepthStencil(ds->m_unscaled_size.x * ds->m_scale, new_height, GSTexture::Format::DepthStencil, true);
+						g_gs_device->StretchRect(ds->m_texture, GSVector4(0.0f, z_vertical_offset / static_cast<float>(ds->m_unscaled_size.y), 1.0f, (ds->m_unscaled_size.y - z_vertical_offset) / static_cast<float>(ds->m_unscaled_size.y)), tex, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
+						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+						g_texture_cache->SetTemporaryZ(tex);
+						g_texture_cache->SetTemporaryZInfo(ds->m_TEX0.TBP0, vertical_offset - z_vertical_offset);
+					}
+					m_using_temp_z = true;
 				}
 
 				GSVertex* v = &m_vertex.buff[0];
@@ -4020,7 +4041,7 @@ void GSRendererHW::Draw()
 		{
 			s = GetDrawDumpPath("%05d_f%05lld_rz0_%05x_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.ZBUF.Block(), ds->m_TEX0.TBP0, psm_str(m_cached_ctx.ZBUF.PSM));
 
-			if (g_texture_cache->GetTemporaryZ())
+			if (m_using_temp_z)
 				g_texture_cache->GetTemporaryZ()->Save(s);
 			else if (ds->m_texture)
 				ds->m_texture->Save(s);
@@ -4120,6 +4141,13 @@ void GSRendererHW::Draw()
 		// Remove overwritten Zs at the FBP.
 		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, m_cached_ctx.FRAME.Block(),
 			m_cached_ctx.FRAME.PSM, m_texture_shuffle ? GetEffectiveTextureShuffleFbmsk() : fm);
+
+		if (!m_using_temp_z && g_texture_cache->GetTemporaryZ() != nullptr)
+		{
+			GSTextureCache::TempZAddress temp_z_info = g_texture_cache->GetTemporaryZInfo();
+			if (GSLocalMemory::GetStartBlockAddress(rt->m_TEX0.TBP0, rt->m_TEX0.TBW, rt->m_TEX0.PSM, real_rect) <= temp_z_info.ZBP && GSLocalMemory::GetEndBlockAddress(rt->m_TEX0.TBP0, rt->m_TEX0.TBW, rt->m_TEX0.PSM, real_rect) > temp_z_info.ZBP)
+				g_texture_cache->InvalidateTemporaryZ();
+		}
 	}
 
 	if (zm != 0xffffffff && ds)
@@ -4136,18 +4164,53 @@ void GSRendererHW::Draw()
 		g_texture_cache->InvalidateVideoMemType(
 			GSTextureCache::RenderTarget, m_cached_ctx.ZBUF.Block(), m_cached_ctx.ZBUF.PSM, zm);
 
-		
-		if (ds && g_texture_cache->GetTemporaryZ())
+		if (m_using_temp_z)
 		{
 			if (m_cached_ctx.DepthWrite())
 			{
-				const int vertical_offset = ((static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) / 32) / std::max(static_cast<int>(rt->m_TEX0.TBW), 1)) * frame_psm.pgs.y;
-				const int z_vertical_offset = ((static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) / 32) / std::max(rt->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y;
-				const GSVector4i dRect = GSVector4i(0, z_vertical_offset * ds->m_scale, ds->m_unscaled_size.x * ds->m_scale, std::min(z_vertical_offset + m_r.w + 1 - vertical_offset, ds->m_unscaled_size.y) * ds->m_scale);
+				const int get_next_ctx = m_env.PRIM.CTXT;
+				const GSDrawingContext& next_ctx = m_env.CTXT[get_next_ctx];
+				if ((m_state_flush_reason != CONTEXTCHANGE) || next_ctx.ZBUF.ZBP == m_context->ZBUF.ZBP && next_ctx.FRAME.FBP == m_context->FRAME.FBP)
+				{
+					m_temp_z_full_copy = true;
+				}
+				else
+				{
+					const int vertical_offset = ((static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) / 32) / std::max(static_cast<int>(rt->m_TEX0.TBW), 1)) * frame_psm.pgs.y;
+					const int z_vertical_offset = ((static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) / 32) / std::max(rt->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y;
+					
+					if (!m_temp_z_full_copy)
+					{
+						const GSVector4i dRect = GSVector4i(real_rect.x * ds->m_scale, (z_vertical_offset + (real_rect.y - vertical_offset)) * ds->m_scale, (real_rect.z + (1.0f / ds->m_scale)) * ds->m_scale, (z_vertical_offset + (real_rect.w + (1.0f / ds->m_scale) - vertical_offset)) * ds->m_scale);
+						const GSVector4 sRect = GSVector4((real_rect.x * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetWidth()), static_cast<float>(real_rect.y * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()), ((real_rect.z + (1.0f / ds->m_scale)) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetWidth()),
+							static_cast<float>((real_rect.w + (1.0f / ds->m_scale)) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()));
+						GL_CACHE("RT in RT Z copy back draw %d z_vert_offset %d z_offset %d", s_n, z_vertical_offset, vertical_offset);
+						g_gs_device->StretchRect(g_texture_cache->GetTemporaryZ(), sRect, ds->m_texture, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
+						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+					}
+					else
+					{
+						const GSVector4i dRect = GSVector4i(0, ds->m_valid.y * ds->m_scale, ds->m_valid.z * ds->m_scale, ds->m_valid.w * ds->m_scale);
+						const GSVector4 sRect = GSVector4((ds->m_valid.x * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetWidth()), static_cast<float>((ds->m_valid.y + vertical_offset) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()), ((ds->m_valid.z + (1.0f / ds->m_scale)) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetWidth()),
+							static_cast<float>(((ds->m_valid.w + vertical_offset) + (1.0f / ds->m_scale)) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()));
+						GL_CACHE("RT in RT Z copy back draw %d z_vert_offset %d z_offset %d", s_n, z_vertical_offset, vertical_offset);
+						g_gs_device->StretchRect(g_texture_cache->GetTemporaryZ(), sRect, ds->m_texture, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
+						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+					}
 
-				GL_CACHE("RT in RT Z copy back draw %d z_vert_offset %d z_offset %d", s_n, z_vertical_offset, vertical_offset);
-				g_gs_device->StretchRect(g_texture_cache->GetTemporaryZ(), GSVector4(0.0f, (static_cast<float>(vertical_offset) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()), 1.0f,
-					floor(static_cast<float>(std::min(real_rect.w + 1, ds->m_unscaled_size.y + vertical_offset)) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight())), ds->m_texture, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
+					m_temp_z_full_copy = false;
+				}
+			}
+		}
+		else if (m_cached_ctx.DepthWrite() && g_texture_cache->GetTemporaryZ() != nullptr)
+		{
+			GSTextureCache::TempZAddress z_address_info = g_texture_cache->GetTemporaryZInfo();
+			if (ds->m_TEX0.TBP0 == z_address_info.ZBP)
+			{
+				GL_CACHE("RT in RT Updating Z copy on draw %d z_offset %d", s_n, z_address_info.offset);
+				GSVector4i dRect = GSVector4i(real_rect.x * ds->m_scale, (z_address_info.offset + real_rect.y) * ds->m_scale, (real_rect.z + (1.0f / ds->m_scale)) * ds->m_scale, (z_address_info.offset + real_rect.w + (1.0f / ds->m_scale)) * ds->m_scale);
+				g_gs_device->StretchRect(ds->m_texture, GSVector4(real_rect.x / static_cast<float>(ds->m_unscaled_size.x), real_rect.y / static_cast<float>(ds->m_unscaled_size.y), (real_rect.z + (1.0f / ds->m_scale)) / static_cast<float>(ds->m_unscaled_size.x), (real_rect.w + (1.0f / ds->m_scale)) / static_cast<float>(ds->m_unscaled_size.y)), g_texture_cache->GetTemporaryZ(), GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
+				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 			}
 		}
 	}
@@ -6549,8 +6612,6 @@ void GSRendererHW::CleanupDraw(bool invalidate_temp_src)
 	// Remove any RT source.
 	if (invalidate_temp_src)
 		g_texture_cache->InvalidateTemporarySource();
-
-	g_texture_cache->InvalidateTemporaryZ();
 	// Restore Scissor.
 	m_context->UpdateScissor();
 
@@ -6590,7 +6651,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	m_conf.cb_vs.texture_offset = {};
 	m_conf.ps.scanmsk = env.SCANMSK.MSK;
 	m_conf.rt = rt ? rt->m_texture : nullptr;
-	m_conf.ds = ds ? (g_texture_cache->GetTemporaryZ() ? g_texture_cache->GetTemporaryZ() : ds->m_texture) : nullptr;
+	m_conf.ds = ds ? (m_using_temp_z ? g_texture_cache->GetTemporaryZ() : ds->m_texture) : nullptr;
 	
 	pxAssert(!ds || !rt || (ds->m_texture->GetSize().x == rt->m_texture->GetSize().x && ds->m_texture->GetSize().y == rt->m_texture->GetSize().y));
 
