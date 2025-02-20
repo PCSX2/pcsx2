@@ -43,7 +43,6 @@ Q_DECLARE_METATYPE(std::optional<bool>);
 Q_DECLARE_METATYPE(GSRendererType);
 Q_DECLARE_METATYPE(InputBindingKey);
 Q_DECLARE_METATYPE(CDVD_SourceType);
-Q_DECLARE_METATYPE(Achievements::LoginRequestReason);
 
 class EmuThread : public QThread
 {
@@ -114,7 +113,7 @@ public Q_SLOTS:
 	void endCapture();
 	void setAudioOutputVolume(int volume, int fast_forward_volume);
 	void setAudioOutputMuted(bool muted);
-	
+
 Q_SIGNALS:
 	bool messageConfirmed(const QString& title, const QString& message);
 	void statusMessage(const QString& message);

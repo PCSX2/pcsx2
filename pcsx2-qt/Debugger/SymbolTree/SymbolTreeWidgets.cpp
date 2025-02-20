@@ -14,15 +14,17 @@
 
 static bool testName(const QString& name, const QString& filter);
 
-SymbolTreeWidget::SymbolTreeWidget(u32 flags, s32 symbol_address_alignment, DebugInterface& cpu, QWidget* parent)
-	: QWidget(parent)
+SymbolTreeWidget::SymbolTreeWidget(
+	u32 flags,
+	s32 symbol_address_alignment,
+	DebugInterface& cpu,
+	QWidget* parent)
+	: DebuggerWidget(&cpu, parent)
 	, m_cpu(cpu)
 	, m_flags(flags)
 	, m_symbol_address_alignment(symbol_address_alignment)
 {
 	m_ui.setupUi(this);
-
-	setupMenu();
 
 	connect(m_ui.refreshButton, &QPushButton::clicked, this, [&]() {
 		m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
@@ -46,6 +48,11 @@ SymbolTreeWidget::SymbolTreeWidget(u32 flags, s32 symbol_address_alignment, Debu
 
 	connect(m_ui.treeView, &QTreeView::expanded, this, [&]() {
 		updateVisibleNodes(true);
+	});
+
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		updateModel();
+		return true;
 	});
 }
 
@@ -380,6 +387,8 @@ std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::groupByModule(
 
 void SymbolTreeWidget::setupMenu()
 {
+	delete m_context_menu;
+
 	m_context_menu = new QMenu(this);
 
 	QAction* copy_name = new QAction(tr("Copy Name"), this);
@@ -405,13 +414,17 @@ void SymbolTreeWidget::setupMenu()
 
 	m_context_menu->addSeparator();
 
-	m_go_to_in_disassembly = new QAction(tr("Go to in Disassembly"), this);
-	connect(m_go_to_in_disassembly, &QAction::triggered, this, &SymbolTreeWidget::onGoToInDisassembly);
-	m_context_menu->addAction(m_go_to_in_disassembly);
+	m_go_to_actions = createEventActions<DebuggerEvents::GoToAddress>(
+		m_context_menu,
+		[this]() -> std::optional<DebuggerEvents::GoToAddress> {
+			SymbolTreeNode* node = currentNode();
+			if (!node)
+				return std::nullopt;
 
-	m_m_go_to_in_memory_view = new QAction(tr("Go to in Memory View"), this);
-	connect(m_m_go_to_in_memory_view, &QAction::triggered, this, &SymbolTreeWidget::onGoToInMemoryView);
-	m_context_menu->addAction(m_m_go_to_in_memory_view);
+			DebuggerEvents::GoToAddress event;
+			event.address = node->location.address;
+			return event;
+		});
 
 	m_show_size_column = new QAction(tr("Show Size Column"), this);
 	m_show_size_column->setCheckable(true);
@@ -468,6 +481,8 @@ void SymbolTreeWidget::setupMenu()
 
 void SymbolTreeWidget::openMenu(QPoint pos)
 {
+	setupMenu();
+
 	SymbolTreeNode* node = currentNode();
 	if (!node)
 		return;
@@ -477,8 +492,8 @@ void SymbolTreeWidget::openMenu(QPoint pos)
 	bool node_is_memory = node->location.type == SymbolTreeLocation::MEMORY;
 
 	m_rename_symbol->setEnabled(node_is_symbol);
-	m_go_to_in_disassembly->setEnabled(node_is_memory);
-	m_m_go_to_in_memory_view->setEnabled(node_is_memory);
+	for (QAction* action : m_go_to_actions)
+		action->setEnabled(node_is_memory);
 
 	if (m_reset_children)
 		m_reset_children->setEnabled(node_is_object);
@@ -571,24 +586,6 @@ void SymbolTreeWidget::onRenameSymbol()
 	});
 }
 
-void SymbolTreeWidget::onGoToInDisassembly()
-{
-	SymbolTreeNode* node = currentNode();
-	if (!node)
-		return;
-
-	emit goToInDisassembly(node->location.address);
-}
-
-void SymbolTreeWidget::onGoToInMemoryView()
-{
-	SymbolTreeNode* node = currentNode();
-	if (!node)
-		return;
-
-	emit goToInMemoryView(node->location.address);
-}
-
 void SymbolTreeWidget::onResetChildren()
 {
 	if (!m_model)
@@ -631,22 +628,14 @@ void SymbolTreeWidget::onChangeTypeTemporarily()
 
 void SymbolTreeWidget::onTreeViewClicked(const QModelIndex& index)
 {
-	if (!index.isValid())
+	if (!index.isValid() || (m_flags & CLICK_TO_GO_TO_IN_DISASSEMBLER) == 0)
 		return;
 
 	SymbolTreeNode* node = m_model->nodeFromIndex(index);
-	if (!node)
+	if (!node || node->location.type != SymbolTreeLocation::MEMORY)
 		return;
 
-	switch (index.column())
-	{
-		case SymbolTreeModel::NAME:
-			emit nameColumnClicked(node->location.address);
-			break;
-		case SymbolTreeModel::LOCATION:
-			emit locationColumnClicked(node->location.address);
-			break;
-	}
+	goToInPrimaryDisassembler(node->location.address);
 }
 
 SymbolTreeNode* SymbolTreeWidget::currentNode()
@@ -661,7 +650,11 @@ SymbolTreeNode* SymbolTreeWidget::currentNode()
 // *****************************************************************************
 
 FunctionTreeWidget::FunctionTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_GROUPING | ALLOW_MANGLED_NAME_ACTIONS, 4, cpu, parent)
+	: SymbolTreeWidget(
+		  ALLOW_GROUPING | ALLOW_MANGLED_NAME_ACTIONS | CLICK_TO_GO_TO_IN_DISASSEMBLER,
+		  4,
+		  cpu,
+		  parent)
 {
 }
 
@@ -745,7 +738,11 @@ void FunctionTreeWidget::onNewButtonPressed()
 // *****************************************************************************
 
 GlobalVariableTreeWidget::GlobalVariableTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_GROUPING | ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN | ALLOW_TYPE_ACTIONS | ALLOW_MANGLED_NAME_ACTIONS, 1, cpu, parent)
+	: SymbolTreeWidget(
+		  ALLOW_GROUPING | ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN | ALLOW_TYPE_ACTIONS | ALLOW_MANGLED_NAME_ACTIONS,
+		  1,
+		  cpu,
+		  parent)
 {
 }
 
@@ -884,7 +881,11 @@ void GlobalVariableTreeWidget::onNewButtonPressed()
 // *****************************************************************************
 
 LocalVariableTreeWidget::LocalVariableTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_TYPE_ACTIONS, 1, cpu, parent)
+	: SymbolTreeWidget(
+		  ALLOW_TYPE_ACTIONS,
+		  1,
+		  cpu,
+		  parent)
 {
 }
 
@@ -1009,7 +1010,11 @@ void LocalVariableTreeWidget::onNewButtonPressed()
 // *****************************************************************************
 
 ParameterVariableTreeWidget::ParameterVariableTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_TYPE_ACTIONS, 1, cpu, parent)
+	: SymbolTreeWidget(
+		  ALLOW_TYPE_ACTIONS,
+		  1,
+		  cpu,
+		  parent)
 {
 }
 

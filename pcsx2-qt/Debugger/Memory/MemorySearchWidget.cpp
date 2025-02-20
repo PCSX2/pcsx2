@@ -23,8 +23,8 @@ using SearchResult = MemorySearchWidget::SearchResult;
 
 using namespace QtUtils;
 
-MemorySearchWidget::MemorySearchWidget(QWidget* parent)
-    : QWidget(parent)
+MemorySearchWidget::MemorySearchWidget(DebugInterface& cpu, QWidget* parent)
+	: DebuggerWidget(&cpu, parent)
 {
 	m_ui.setupUi(this);
 	this->repaint();
@@ -32,10 +32,8 @@ MemorySearchWidget::MemorySearchWidget(QWidget* parent)
 	m_ui.listSearchResults->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.btnSearch, &QPushButton::clicked, this, &MemorySearchWidget::onSearchButtonClicked);
 	connect(m_ui.btnFilterSearch, &QPushButton::clicked, this, &MemorySearchWidget::onSearchButtonClicked);
-	connect(m_ui.listSearchResults, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item)
-	{
-		emit switchToMemoryViewTab();
-		emit goToAddressInMemoryView(item->text().toUInt(nullptr, 16));
+	connect(m_ui.listSearchResults, &QListWidget::itemDoubleClicked, [](QListWidgetItem* item) {
+		goToInPrimaryMemoryView(item->text().toUInt(nullptr, 16), DebuggerEvents::SWITCH_TO_RECEIVER);
 	});
 	connect(m_ui.listSearchResults->verticalScrollBar(), &QScrollBar::valueChanged, this, &MemorySearchWidget::onSearchResultsListScroll);
 	connect(m_ui.listSearchResults, &QListView::customContextMenuRequested, this, &MemorySearchWidget::onListSearchResultsContextMenu);
@@ -46,11 +44,11 @@ MemorySearchWidget::MemorySearchWidget(QWidget* parent)
 	m_resultsLoadTimer.setInterval(100);
 	m_resultsLoadTimer.setSingleShot(true);
 	connect(&m_resultsLoadTimer, &QTimer::timeout, this, &MemorySearchWidget::loadSearchResults);
-}
 
-void MemorySearchWidget::setCpu(DebugInterface* cpu)
-{
-	m_cpu = cpu;
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		update();
+		return true;
+	});
 }
 
 void MemorySearchWidget::contextSearchResultGoToDisassembly()
@@ -60,7 +58,7 @@ void MemorySearchWidget::contextSearchResultGoToDisassembly()
 		return;
 
 	u32 selectedAddress = m_ui.listSearchResults->selectedItems().first()->data(Qt::UserRole).toUInt();
-	emit goToAddressInDisassemblyView(selectedAddress);
+	goToInPrimaryDisassembler(selectedAddress);
 }
 
 void MemorySearchWidget::contextRemoveSearchResult()
@@ -107,9 +105,12 @@ void MemorySearchWidget::onListSearchResultsContextMenu(QPoint pos)
 		contextMenu->addAction(goToDisassemblyAction);
 
 		QAction* addToSavedAddressesAction = new QAction(tr("Add to Saved Memory Addresses"), m_ui.listSearchResults);
-		connect(addToSavedAddressesAction, &QAction::triggered, this, [this, listSearchResults]() {
+		connect(addToSavedAddressesAction, &QAction::triggered, this, [listSearchResults]() {
 			u32 selectedAddress = listSearchResults->selectedItems().first()->data(Qt::UserRole).toUInt();
-			emit addAddressToSavedAddressesList(selectedAddress);
+			DebuggerEvents::AddToSavedAddresses event;
+			event.address = selectedAddress;
+			event.flags = DebuggerEvents::SWITCH_TO_RECEIVER;
+			DebuggerWidget::sendEvent(std::move(event));
 		});
 		contextMenu->addAction(addToSavedAddressesAction);
 
@@ -121,15 +122,15 @@ void MemorySearchWidget::onListSearchResultsContextMenu(QPoint pos)
 	contextMenu->popup(m_ui.listSearchResults->viewport()->mapToGlobal(pos));
 }
 
-template<typename T>
+template <typename T>
 T readValueAtAddress(DebugInterface* cpu, u32 addr);
-template<>
+template <>
 float readValueAtAddress<float>(DebugInterface* cpu, u32 addr)
 {
 	return std::bit_cast<float>(cpu->read32(addr));
 }
 
-template<>
+template <>
 double readValueAtAddress<double>(DebugInterface* cpu, u32 addr)
 {
 	return std::bit_cast<double>(cpu->read64(addr));
@@ -230,7 +231,7 @@ template <typename T>
 bool handleSearchComparison(SearchComparison searchComparison, u32 searchAddress, const SearchResult* priorResult, T searchValue, T readValue)
 {
 	const bool isNotOperator = searchComparison == SearchComparison::NotEquals || searchComparison == SearchComparison::NotChanged;
-	switch (searchComparison) 
+	switch (searchComparison)
 	{
 		case SearchComparison::Equals:
 		case SearchComparison::NotEquals:
@@ -302,7 +303,7 @@ void searchWorker(DebugInterface* cpu, std::vector<SearchResult>& searchResults,
 		{
 			if (!cpu->isValidAddress(addr))
 				continue;
-			
+
 			T readValue = readValueAtAddress<T>(cpu, addr);
 			if (handleSearchComparison(searchComparison, addr, nullptr, searchValue, readValue))
 			{
@@ -315,7 +316,7 @@ void searchWorker(DebugInterface* cpu, std::vector<SearchResult>& searchResults,
 		auto removeIt = std::remove_if(searchResults.begin(), searchResults.end(), [cpu, searchType, searchComparison, searchValue](SearchResult& searchResult) -> bool {
 			const u32 addr = searchResult.getAddress();
 			if (!cpu->isValidAddress(addr))
-					 return true;
+				return true;
 
 			const auto readValue = readValueAtAddress<T>(cpu, addr);
 
@@ -415,7 +416,7 @@ static void searchWorkerByteArray(DebugInterface* cpu, SearchType searchType, Se
 	}
 	else
 	{
-		auto removeIt = std::remove_if(searchResults.begin(), searchResults.end(), [ searchComparison, searchType, searchValue, cpu ](SearchResult& searchResult) -> bool {
+		auto removeIt = std::remove_if(searchResults.begin(), searchResults.end(), [searchComparison, searchType, searchValue, cpu](SearchResult& searchResult) -> bool {
 			const u32 addr = searchResult.getAddress();
 			if (!cpu->isValidAddress(addr))
 				return true;
@@ -476,7 +477,7 @@ std::vector<SearchResult> startWorker(DebugInterface* cpu, const SearchType type
 
 void MemorySearchWidget::onSearchButtonClicked()
 {
-	if (!m_cpu->isAlive())
+	if (!cpu().isAlive())
 		return;
 
 	const SearchType searchType = getCurrentSearchType();
@@ -510,9 +511,9 @@ void MemorySearchWidget::onSearchButtonClicked()
 	const bool isFilterSearch = sender() == m_ui.btnFilterSearch;
 	unsigned long long value;
 
-	if(searchComparison != SearchComparison::UnknownValue)
+	if (searchComparison != SearchComparison::UnknownValue)
 	{
-		if(doesSearchComparisonTakeInput(searchComparison))
+		if (doesSearchComparisonTakeInput(searchComparison))
 		{
 			switch (searchType)
 			{
@@ -565,14 +566,30 @@ void MemorySearchWidget::onSearchButtonClicked()
 			}
 		}
 
-		if (!isFilterSearch && (searchComparison == SearchComparison::Changed || searchComparison == SearchComparison::ChangedBy
-								|| searchComparison == SearchComparison::Decreased || searchComparison == SearchComparison::DecreasedBy
-								|| searchComparison == SearchComparison::Increased || searchComparison == SearchComparison::IncreasedBy
-								|| searchComparison == SearchComparison::NotChanged))
+		if (!isFilterSearch &&
+			(searchComparison == SearchComparison::Changed ||
+				searchComparison == SearchComparison::ChangedBy ||
+				searchComparison == SearchComparison::Decreased ||
+				searchComparison == SearchComparison::DecreasedBy ||
+				searchComparison == SearchComparison::Increased ||
+				searchComparison == SearchComparison::IncreasedBy ||
+				searchComparison == SearchComparison::NotChanged))
 		{
 			QMessageBox::critical(this, tr("Debugger"), tr("This search comparison can only be used with filter searches."));
 			return;
 		}
+	}
+
+	if (!isFilterSearch && (searchComparison == SearchComparison::Changed ||
+							   searchComparison == SearchComparison::ChangedBy ||
+							   searchComparison == SearchComparison::Decreased ||
+							   searchComparison == SearchComparison::DecreasedBy ||
+							   searchComparison == SearchComparison::Increased ||
+							   searchComparison == SearchComparison::IncreasedBy ||
+							   searchComparison == SearchComparison::NotChanged))
+	{
+		QMessageBox::critical(this, tr("Debugger"), tr("This search comparison can only be used with filter searches."));
+		return;
 	}
 
 	QFutureWatcher<std::vector<SearchResult>>* workerWatcher = new QFutureWatcher<std::vector<SearchResult>>();
@@ -597,7 +614,7 @@ void MemorySearchWidget::onSearchButtonClicked()
 		m_searchResults.clear();
 	}
 
-	QFuture<std::vector<SearchResult>> workerFuture = QtConcurrent::run(startWorker, m_cpu, searchType, searchComparison, std::move(m_searchResults), searchStart, searchEnd, searchValue, searchHex ? 16 : 10);
+	QFuture<std::vector<SearchResult>> workerFuture = QtConcurrent::run(startWorker, &cpu(), searchType, searchComparison, std::move(m_searchResults), searchStart, searchEnd, searchValue, searchHex ? 16 : 10);
 	workerWatcher->setFuture(workerFuture);
 	connect(workerWatcher, &QFutureWatcher<std::vector<SearchResult>>::finished, onSearchFinished);
 	m_searchResults.clear();
@@ -649,7 +666,8 @@ SearchComparison MemorySearchWidget::getCurrentSearchComparison()
 
 bool MemorySearchWidget::doesSearchComparisonTakeInput(const SearchComparison comparison)
 {
-	switch (comparison) {
+	switch (comparison)
+	{
 		case SearchComparison::Equals:
 		case SearchComparison::NotEquals:
 		case SearchComparison::GreaterThan:
@@ -708,7 +726,7 @@ void MemorySearchWidget::updateSearchComparisonSelections()
 std::vector<SearchComparison> MemorySearchWidget::getValidSearchComparisonsForState(SearchType type, std::vector<SearchResult>& existingResults)
 {
 	const bool hasResults = existingResults.size() > 0;
-	std::vector<SearchComparison> comparisons = { SearchComparison::Equals };
+	std::vector<SearchComparison> comparisons = {SearchComparison::Equals};
 
 	if (type == SearchType::ArrayType || type == SearchType::StringType)
 	{
@@ -736,8 +754,8 @@ std::vector<SearchComparison> MemorySearchWidget::getValidSearchComparisonsForSt
 		comparisons.push_back(SearchComparison::ChangedBy);
 		comparisons.push_back(SearchComparison::NotChanged);
 	}
-	
-	if(!hasResults)
+
+	if (!hasResults)
 	{
 		comparisons.push_back(SearchComparison::UnknownValue);
 	}
