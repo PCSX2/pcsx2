@@ -6207,38 +6207,55 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 	// Restricting it also breaks Tom and Jerry...
 	if (m_downscale_source || m_channel_shuffle || tex->m_texture->GetType() == GSTexture::Type::DepthStencil)
 	{
-		copy_range = src_bounds;
-		copy_size = src_unscaled_size;
+		if (m_channel_shuffle)
+		{
+			// Just make it the size of the RT, since it will be making a new target every draw (most likely) it saves making 130 new targets and drown
+			copy_size.x = rt->m_unscaled_size.x;
+			copy_size.y = rt->m_unscaled_size.y;
+			copy_range.x = copy_range.y = 0;
+			copy_range.z = std::min(m_r.width(), copy_size.x);
+			copy_range.w = std::min(m_r.height(), copy_size.y);
+		}
+		else
+		{
+			copy_range = src_bounds;
+			copy_size = src_unscaled_size;
+		}
 
 		GSVector4i::storel(&copy_dst_offset, copy_range);
 		if (m_channel_shuffle && (tex_diff || frame_diff))
 		{
 
 			const u32 page_offset = (m_cached_ctx.TEX0.TBP0 - src_target->m_TEX0.TBP0) >> 5;
-			const u32 vertical_offset = (page_offset / src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.y;
 			const u32 horizontal_offset = (page_offset % src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.x;
+			const u32 vertical_offset = (page_offset / src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.y;
 
-			copy_range.y += vertical_offset;
 			copy_range.x += horizontal_offset;
-			copy_size.y -= vertical_offset;
-			copy_size.x -= horizontal_offset;
+			copy_range.y += vertical_offset;
+			copy_range.z += horizontal_offset;
+			copy_range.w += vertical_offset;
+
+			if (!m_channel_shuffle)
+			{
+				copy_size.y -= vertical_offset;
+				copy_size.x -= horizontal_offset;
+			}
 			target_region = false;
 			source_region.bits = 0;
 			//copied_rt = tex->m_from_target != nullptr;
 			if (m_in_target_draw && (page_offset || frame_diff))
 			{
-				copy_size.x = m_r.width();
-				copy_size.y = m_r.height();
-				copy_range.w = copy_range.y + copy_size.y;
-				copy_range.z = copy_range.x + copy_size.x;
+				copy_range.z = copy_range.x + m_r.width();
+				copy_range.w = copy_range.y + m_r.height();
 
 				if (tex_diff != frame_diff)
 				{
 					GSVector4i::storel(&copy_dst_offset, m_r);
-					copy_size.x += copy_dst_offset.x;
-					copy_size.y += copy_dst_offset.y;
 				}
 			}
+
+			copy_range.z = std::min(copy_range.z, copy_size.x);
+			copy_range.w = std::min(copy_range.w, copy_size.y);
 		}
 	}
 	else
