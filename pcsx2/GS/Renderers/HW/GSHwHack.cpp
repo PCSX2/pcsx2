@@ -742,7 +742,7 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 
 		for (u32 channel = 0; channel < 3; channel++)
 		{
-			const GIFRegTEX0 TEX0 = GIFRegTEX0::Create(base + channel * page_offset, RTEX0.TBW, PSMCT32);
+			const GIFRegTEX0 TEX0 = GIFRegTEX0::Create(base + channel * page_offset, 10, PSMCT32);
 			GSTextureCache::Target* dst = g_texture_cache->LookupTarget(TEX0, src->GetUnscaledSize(), src->GetScale(), GSTextureCache::RenderTarget, true, fbmsk);
 			if (!dst)
 			{
@@ -773,6 +773,35 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 
 		return true;
 	}
+}
+
+
+bool GSHwHack::GSC_Battlefield2(GSRendererHW& r, int& skip)
+{
+	if (skip == 0)
+	{
+		if (RZBP >= RFBP && RFBP >= 0x2000 && RZBP >= 0x2700 && ((RZBP - RFBP) == 0x700))
+		{
+			skip = 7;
+
+			GIFRegTEX0 TEX0 = {};
+			TEX0.TBP0 = RFBP;
+			TEX0.TBW = 8;
+			GSTextureCache::Target* dst = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil);
+
+			if (!dst)
+				dst = g_texture_cache->CreateTarget(TEX0, r.GetTargetSize(), r.GetValidSize(nullptr), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil,
+					true, 0, false, false, false, GSVector4i(0,0,1,1), nullptr);
+
+			if (dst)
+			{
+				float dc = r.m_vertex.buff[1].XYZ.Z;
+				g_gs_device->ClearDepth(dst->m_texture, dc * std::exp2(-32.0f));
+			}
+		}
+	}
+
+	return true;
 }
 
 bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
@@ -1064,16 +1093,29 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 	GSTextureCache::Target* rt_again = g_texture_cache->LookupTarget(Frame, src_size, src->m_scale, GSTextureCache::RenderTarget);
 	if ((rt_again->m_TEX0.PSM & 0x3) == PSMCT16)
 	{
-		GSVector4i dRect = rt_again->m_valid;
+		GSVector4 dRect;
 
-		dRect = GSVector4i(GSVector4(GSVector4i::loadh(rt_again->m_unscaled_size)) * rt_again->m_scale);
+		GSVector4 source_rect = GSVector4(static_cast<float>(rt_again->m_valid.x) / static_cast<float>(rt_again->m_unscaled_size.x), static_cast<float>(rt_again->m_valid.y) / static_cast<float>(rt_again->m_unscaled_size.y),
+			static_cast<float>(rt_again->m_valid.z) / static_cast<float>(rt_again->m_unscaled_size.x), static_cast<float>(rt_again->m_valid.w) / static_cast<float>(rt_again->m_unscaled_size.y));
+
+		dRect = GSVector4(rt_again->m_valid) * rt_again->m_scale;
 		dRect.y /= 2;
 		dRect.w /= 2;
 		rt_again->m_valid.y /= 2;
 		rt_again->m_valid.w /= 2;
 		rt_again->m_TEX0.PSM = PSMCT32;
-		rt_again->ResizeTexture(rt_again->m_unscaled_size.x, rt_again->m_unscaled_size.y / 2, true, true, dRect, false);
-		rt = rt_again->m_texture;
+		GSTexture* tex = g_gs_device->CreateRenderTarget(rt_again->m_unscaled_size.x * rt_again->m_scale, rt_again->m_unscaled_size.y * rt_again->m_scale, GSTexture::Format::Color, false);
+
+		if (!tex)
+			return false;
+
+
+		g_gs_device->StretchRect(rt_again->m_texture, source_rect, tex, dRect, ShaderConvert::COPY, false);
+
+
+		g_gs_device->Recycle(rt_again->m_texture);
+		rt_again->m_texture = tex;
+		rt = tex;
 	}
 	
 	GSVector2i rt_size(rt->GetSize());
@@ -1457,6 +1499,7 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_PolyphonyDigitalGames),
 	CRC_F(GSC_MetalGearSolid3),
 	CRC_F(GSC_HitmanBloodMoney),
+	CRC_F(GSC_Battlefield2),
 
 	// Channel Effect
 	CRC_F(GSC_SteambotChronicles),

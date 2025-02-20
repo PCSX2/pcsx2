@@ -13614,6 +13614,7 @@ SLED-53731:
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
     textureInsideRT: 1 # Fixes per line drawing.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
 SLED-53732:
   name: "Spartan - Total Warrior [Demo]"
   region: "PAL"
@@ -23612,6 +23613,7 @@ SLES-53729:
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
     textureInsideRT: 1 # Fixes per line drawing.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
 SLES-53730:
   name: "Battlefield 2 - Modern Combat"
   region: "PAL-M3"
@@ -23621,6 +23623,7 @@ SLES-53730:
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
     textureInsideRT: 1 # Fixes per line drawing.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
 SLES-53734:
   name: "50 Cent - Bulletproof"
   region: "PAL-E"
@@ -31295,6 +31298,7 @@ SLKA-25330:
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
     textureInsideRT: 1 # Fixes per line drawing.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
 SLKA-25331:
   name: "Marc Ecko's Getting Up - Contents Under Pressure"
   region: "NTSC-K"
@@ -32183,6 +32187,7 @@ SLPM-55034:
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
     textureInsideRT: 1 # Fixes per line drawing.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
 SLPM-55035:
   name: "ファイトナイト ラウンド2 [EA:SY! 1980]"
   name-sort: "ふぁいとないと らうんど2 [EA:SY! 1980]"
@@ -46292,6 +46297,7 @@ SLPM-66206:
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
     textureInsideRT: 1 # Fixes per line drawing.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
 SLPM-66207:
   name: "どろろ [SEGA THE BEST 2800]"
   name-sort: "どろろ [SEGA THE BEST 2800]"
@@ -49083,6 +49089,7 @@ SLPM-66651:
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
     textureInsideRT: 1 # Fixes per line drawing.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
 SLPM-66652:
   name: "バーンアウト リベンジ [EA BEST HITS]"
   name-sort: "ばーんあうと りべんじ [EA BEST HITS]"
@@ -66971,6 +66978,7 @@ SLUS-21026:
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
     textureInsideRT: 1 # Fixes per line drawing.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
 SLUS-21027:
   name: "The Lord of the Rings - The Third Age"
   name-sort: "Lord of the Rings, The - The Third Age"
@@ -72923,6 +72931,7 @@ SLUS-29117:
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
     textureInsideRT: 1 # Fixes per line drawing.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
 SLUS-29118:
   name: "Need for Speed - Underground 2 [Demo]"
   region: "NTSC-U"
@@ -73075,6 +73084,7 @@ SLUS-29152:
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
     textureInsideRT: 1 # Fixes per line drawing.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
 SLUS-29153:
   name: "Burnout Revenge [Demo]"
   region: "NTSC-U"
@@ -73190,6 +73200,7 @@ SLUS-29172:
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
     textureInsideRT: 1 # Fixes per line drawing.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
 SLUS-29173:
   name: "The Sims 2 [Demo]"
   name-sort: "Sims 2, The [Demo]"
