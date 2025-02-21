@@ -56,6 +56,10 @@ namespace Host
 	void ClearOSDMessages();
 
 	/// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
+	void ReportInfoAsync(const std::string_view title, const std::string_view message);
+	void ReportFormattedInfoAsync(const std::string_view title, const char* format, ...);
+
+	/// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
 	void ReportErrorAsync(const std::string_view title, const std::string_view message);
 	void ReportFormattedErrorAsync(const std::string_view title, const char* format, ...);
 
