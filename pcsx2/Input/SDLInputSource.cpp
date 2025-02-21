@@ -682,6 +682,7 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 				auto it = GetControllerDataForPlayerId(key.source_index);
 				if (it != m_controllers.end() && it->gamepad)
 				{
+					static bool shown_prompt = false;
 					for (u32 pos = 0; pos < std::size(face_button_pos); pos++)
 					{
 						// A/B/X/Y are equal to 1/2/3/4 in SDL_GamepadButtonLabel
@@ -690,7 +691,18 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 						const SDL_GamepadButtonLabel label = SDL_GetGamepadButtonLabel(it->gamepad, face_button_pos[pos]);
 						if (key.data == (label - 1))
 						{
-							key.data = pos;
+							if (key.data != pos)
+							{
+								if (!shown_prompt)
+								{
+									shown_prompt = true;
+									Host::ReportInfoAsync(TRANSLATE("SDLInputSource", "SDL3 Migration"),
+										TRANSLATE("SDLInputSource", "As part of our upgrade to SDL3, we've had to migrate your binds\n"
+																	"Your controller did not match the Xbox layout and may need rebinding\n"
+																	"Please verify your controller settings and amend if required"));
+								}
+								key.data = pos;
+							}
 							break;
 						}
 					}
