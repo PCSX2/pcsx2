@@ -17,6 +17,7 @@
 
 #include <bit>
 #include <cmath>
+#include <VMManager.h>
 
 static constexpr const char* CONTROLLER_DB_FILENAME = "game_controller_db.txt";
 
@@ -651,6 +652,63 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 	key.source_index = static_cast<u32>(player_id.value());
 
 	// SDL2-SDL3 migrations
+	static constexpr const char* sdl_button_legacy_names[] = {
+		"A", // SDL_CONTROLLER_BUTTON_A
+		"B", // SDL_CONTROLLER_BUTTON_B
+		"X", // SDL_CONTROLLER_BUTTON_X
+		"Y", // SDL_CONTROLLER_BUTTON_Y
+	};
+
+	for (u32 i = 0; i < std::size(sdl_button_legacy_names); i++)
+	{
+		if (binding == sdl_button_legacy_names[i])
+		{
+			key.source_subtype = InputSubclass::ControllerButton;
+			key.data = i;
+
+			// SDL2 would map A/B/X/Y based on the button's label
+			// We need to convert this to a positional binding for SDL3
+			static constexpr SDL_GamepadButton face_button_pos[] = {
+				SDL_GAMEPAD_BUTTON_SOUTH,
+				SDL_GAMEPAD_BUTTON_EAST,
+				SDL_GAMEPAD_BUTTON_WEST,
+				SDL_GAMEPAD_BUTTON_NORTH,
+			};
+
+			// This migrations needs to inspect the controller
+			{
+				std::lock_guard lock(m_controllers_key_mutex);
+
+				auto it = GetControllerDataForPlayerId(key.source_index);
+				if (it != m_controllers.end() && it->gamepad)
+				{
+					for (u32 pos = 0; pos < std::size(face_button_pos); pos++)
+					{
+						// A/B/X/Y are equal to 1/2/3/4 in SDL_GamepadButtonLabel
+						// PS controllers have positional A/B/X/Y, so don't need adjusting
+						// Controllers with unknown labels are assumed to have positional A/B/X/Y
+						const SDL_GamepadButtonLabel label = SDL_GetGamepadButtonLabel(it->gamepad, face_button_pos[pos]);
+						if (key.data == (label - 1))
+						{
+							key.data = pos;
+							break;
+						}
+					}
+
+					key.needs_migration = true;
+					return key;
+				}
+				else if (std::find(m_gamepads_needing_migration.begin(), m_gamepads_needing_migration.end(), key.source_index) ==
+						 m_gamepads_needing_migration.end())
+				{
+					// flag the device to migrate later
+					m_gamepads_needing_migration.push_back(key.source_index);
+					return std::nullopt;
+				}
+			}
+		}
+	}
+
 	if (binding.starts_with("+Axis") || binding.starts_with("-Axis"))
 	{
 		const std::string_view axis_name(binding.substr(1));
@@ -1235,6 +1293,22 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamepad)
 	{
 		std::unique_lock lock(m_controllers_key_mutex);
 		m_controllers.push_back(std::move(cd));
+
+		if (gamepad)
+		{
+			// Perform SDL2-SDL3 migrations that require inspecting the gamepad
+			auto idx = std::find(m_gamepads_needing_migration.begin(), m_gamepads_needing_migration.end(), player_id);
+			if (idx != m_gamepads_needing_migration.end())
+			{
+				m_gamepads_needing_migration.erase(idx);
+
+				// ParseKeyString will need the lock when migrating
+				// unlock here so we don't deadlock reloading binds
+				lock.unlock();
+				// Reload bindings to perform migration
+				VMManager::ReloadInputBindings(true);
+			}
+		}
 	}
 
 	InputManager::OnInputDeviceConnected(fmt::format("SDL-{}", player_id), name);
