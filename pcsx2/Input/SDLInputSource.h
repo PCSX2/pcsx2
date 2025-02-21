@@ -91,9 +91,12 @@ private:
 
 	// ConvertKeyToString and ConvertKeyToIcon can inspect the
 	// currently connected gamepad to provide matching labels
+	// ParseKeyString can also inspect the gamepad for migrations
 	// Those functions can be called on the main thread, while
 	// gamepad addition/removal is done on the CPU thread
 	std::mutex m_controllers_key_mutex;
+
+	std::vector<u32> m_gamepads_needing_migration;
 
 	std::array<u32, MAX_LED_COLORS> m_led_colors{};
 	std::vector<std::pair<std::string, std::string>> m_sdl_hints;
