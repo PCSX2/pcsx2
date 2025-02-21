@@ -637,14 +637,14 @@ bool CMipsInstruction::Validate()
 			immediate.value = (immediate.value >> 2) & 0x3FFFFFF;
 		} else if (Opcode.flags & MO_IPCR)	// relative 16 bit value
 		{
-			int num = (immediate.value-RamPos-4);
+			const int num = (immediate.value-RamPos-4) >> 2;
 
-			if (num > 0x20000 || num < (-0x20000))
+			if (num > std::numeric_limits<short>::max() || num < std::numeric_limits<short>::min())
 			{
 				Logger::queueError(Logger::Error,L"Branch target %08X out of range",immediate.value);
 				return false;
 			}
-			immediate.value = num >> 2;
+			immediate.value = num;
 		}
 
 		int immediateBits = getImmediateBits(immediateType);
