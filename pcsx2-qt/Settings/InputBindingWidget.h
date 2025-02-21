@@ -39,6 +39,9 @@ protected Q_SLOTS:
 	void onInputListenTimerTimeout();
 	void inputManagerHookCallback(InputBindingKey key, float value);
 
+	void onInputDeviceConnected(const QString& identifier, const QString& device_name);
+	void onInputDeviceDisconnected(const QString& identifier);
+
 protected:
 	enum : u32
 	{
