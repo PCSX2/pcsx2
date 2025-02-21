@@ -93,6 +93,9 @@ namespace InputManager
 	static std::optional<InputBindingKey> ParseHostKeyboardKey(const std::string_view source, const std::string_view sub_binding);
 	static std::optional<InputBindingKey> ParsePointerKey(const std::string_view source, const std::string_view sub_binding);
 
+	static TinyString ConvertKeyboardKeyToString(InputBindingKey key, bool display = false);
+	static TinyString ConvertPointerKeyToString(InputBindingKey key, bool display = false);
+
 	static bool SplitBinding(const std::string_view binding, std::string_view* source, std::string_view* sub_binding);
 	static void PrettifyInputBindingPart(const std::string_view binding, SmallString& ret, bool& changed, bool use_icons);
 	static std::shared_ptr<InputBinding> AddBinding(const std::string_view binding, const InputEventHandler& handler);
@@ -145,9 +148,12 @@ static const HotkeyInfo* const s_hotkey_list[] = {g_common_hotkeys, g_gs_hotkeys
 // Tracking host mouse movement and turning into relative events
 // 4 axes: pointer left/right, wheel vertical/horizontal. Last/Next/Normalized.
 // ------------------------------------------------------------------------
-static constexpr const std::array<const char*, static_cast<u8>(InputPointerAxis::Count)> s_pointer_axis_names = {
+static constexpr const std::array<const char*, static_cast<u8>(InputPointerAxis::Count)> s_pointer_axis_setting_names = {
 	{"X", "Y", "WheelX", "WheelY"}};
-static constexpr const std::array<const char*, 3> s_pointer_button_names = {{"LeftButton", "RightButton", "MiddleButton"}};
+static constexpr const std::array<const char*, static_cast<u8>(InputPointerAxis::Count)> s_pointer_axis_names = {
+	{"X", "Y", "Wheel X", "Wheel Y"}};
+static constexpr const std::array<const char*, 3> s_pointer_button_setting_names = {{"LeftButton", "RightButton", "MiddleButton"}};
+static constexpr const std::array<const char*, 3> s_pointer_button_names = {{"Left Button", "Right Button", "Middle Button"}};
 
 struct PointerAxisState
 {
@@ -270,6 +276,61 @@ bool InputManager::ParseBindingAndGetSource(const std::string_view binding, Inpu
 	return false;
 }
 
+TinyString InputManager::ConvertKeyboardKeyToString(InputBindingKey key, bool display)
+{
+	TinyString ret;
+
+	if (key.source_type == InputSourceType::Keyboard)
+	{
+		const std::optional<std::string> str(ConvertHostKeyboardCodeToString(key.data));
+		if (str.has_value() && !str->empty())
+			if (display)
+				// Keyboard keys arn't spaced out for display yet
+				ret.format("Keyboard {}", str->c_str());
+			else
+				ret.format("Keyboard/{}", str->c_str());
+	}
+
+	return ret;
+}
+
+TinyString InputManager::ConvertPointerKeyToString(InputBindingKey key, bool display)
+{
+	TinyString ret;
+
+	if (key.source_type == InputSourceType::Pointer)
+	{
+		if (key.source_subtype == InputSubclass::PointerButton)
+		{
+			if (display)
+			{
+				if (key.data < s_pointer_button_setting_names.size())
+					ret.format("Pointer-{} {}", u32{key.source_index}, s_pointer_button_names[key.data]);
+				else
+					ret.format("Pointer-{} Button{}", u32{key.source_index}, key.data + 1);
+			}
+			else
+			{
+				if (key.data < s_pointer_button_setting_names.size())
+					ret.format("Pointer-{}/{}", u32{key.source_index}, s_pointer_button_setting_names[key.data]);
+				else
+					ret.format("Pointer-{}/Button{}", u32{key.source_index}, key.data);
+			}
+		}
+		else if (key.source_subtype == InputSubclass::PointerAxis)
+		{
+			if (display)
+				ret.format("Pointer-{} {}{:c}", u32{key.source_index}, s_pointer_axis_setting_names[key.data],
+					key.modifier == InputModifier::Negate ? '-' : '+');
+			else
+				ret.format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_setting_names[key.data],
+					key.modifier == InputModifier::Negate ? '-' : '+');
+		}
+	}
+
+	return ret;
+}
+
 std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key, bool migration)
 {
 	if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::Device)
@@ -297,24 +358,11 @@ std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type 
 	{
 		if (key.source_type == InputSourceType::Keyboard)
 		{
-			const std::optional<std::string> str(ConvertHostKeyboardCodeToString(key.data));
-			if (str.has_value() && !str->empty())
-				return fmt::format("Keyboard/{}", str->c_str());
+			return std::string(ConvertKeyboardKeyToString(key));
 		}
 		else if (key.source_type == InputSourceType::Pointer)
 		{
-			if (key.source_subtype == InputSubclass::PointerButton)
-			{
-				if (key.data < s_pointer_button_names.size())
-					return fmt::format("Pointer-{}/{}", u32{key.source_index}, s_pointer_button_names[key.data]);
-				else
-					return fmt::format("Pointer-{}/Button{}", u32{key.source_index}, key.data);
-			}
-			else if (key.source_subtype == InputSubclass::PointerAxis)
-			{
-				return fmt::format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_names[key.data],
-					key.modifier == InputModifier::Negate ? '-' : '+');
-			}
+			return std::string(ConvertPointerKeyToString(key));
 		}
 		else if (key.source_type < InputSourceType::Count && s_input_sources[static_cast<u32>(key.source_type)])
 		{
@@ -404,12 +452,30 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
 	if (source.starts_with("Keyboard"))
 	{
 		std::optional<InputBindingKey> key = ParseHostKeyboardKey(source, sub_binding);
-		const char* icon = key.has_value() ? ConvertHostKeyboardCodeToIcon(key->data) : nullptr;
-		if (icon)
+		if (key.has_value())
 		{
-			ret.append(icon);
-			changed = true;
-			return;
+			if (use_icons)
+			{
+				const char* icon = ConvertHostKeyboardCodeToIcon(key->data);
+				if (icon)
+				{
+					ret.append(icon);
+					changed = true;
+					return;
+				}
+				else
+				{
+					ret.append(ConvertKeyboardKeyToString(key.value(), true));
+					changed = true;
+					return;
+				}
+			}
+			else
+			{
+				ret.append(ConvertKeyboardKeyToString(key.value(), true));
+				changed = true;
+				return;
+			}
 		}
 	}
 	else if (source.starts_with("Pointer"))
@@ -417,7 +483,7 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
 		const std::optional<InputBindingKey> key = ParsePointerKey(source, sub_binding);
 		if (key.has_value())
 		{
-			if (key->source_subtype == InputSubclass::PointerButton)
+			if (use_icons && key->source_subtype == InputSubclass::PointerButton)
 			{
 				static constexpr const char* button_icons[] = {
 					ICON_PF_MOUSE_BUTTON_1,
@@ -427,12 +493,15 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
 					ICON_PF_MOUSE_BUTTON_5,
 				};
 				if (key->data < std::size(button_icons))
-				{
 					ret.append(button_icons[key->data]);
-					changed = true;
-					return;
-				}
+				else
+					ret.append(ConvertPointerKeyToString(key.value(), true));
 			}
+			else
+				ret.append(ConvertPointerKeyToString(key.value(), true));
+
+			changed = true;
+			return;
 		}
 	}
 	else
@@ -688,14 +757,14 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_v
 		return key;
 	}
 
-	for (u32 i = 0; i < s_pointer_axis_names.size(); i++)
+	for (u32 i = 0; i < s_pointer_axis_setting_names.size(); i++)
 	{
-		if (sub_binding.starts_with(s_pointer_axis_names[i]))
+		if (sub_binding.starts_with(s_pointer_axis_setting_names[i]))
 		{
 			key.source_subtype = InputSubclass::PointerAxis;
 			key.data = i;
 
-			const std::string_view dir_part(sub_binding.substr(std::strlen(s_pointer_axis_names[i])));
+			const std::string_view dir_part(sub_binding.substr(std::strlen(s_pointer_axis_setting_names[i])));
 			if (dir_part == "+")
 				key.modifier = InputModifier::None;
 			else if (dir_part == "-")
@@ -707,9 +776,9 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_v
 		}
 	}
 
-	for (u32 i = 0; i < s_pointer_button_names.size(); i++)
+	for (u32 i = 0; i < s_pointer_button_setting_names.size(); i++)
 	{
-		if (sub_binding == s_pointer_button_names[i])
+		if (sub_binding == s_pointer_button_setting_names[i])
 		{
 			key.source_subtype = InputSubclass::PointerButton;
 			key.data = i;
@@ -768,7 +837,7 @@ void InputManager::AddHotkeyBindings(SettingsInterface& si)
 			if (bindings.empty())
 				continue;
 
-			AddBindings(bindings, InputButtonEventHandler{hotkey->handler}, InputBindingInfo::Type::Unknown, si, "Hotkeys", hotkey->name);
+			AddBindings(bindings, InputButtonEventHandler{hotkey->handler}, InputBindingInfo::Type::Button, si, "Hotkeys", hotkey->name);
 		}
 	}
 }
@@ -1476,10 +1545,10 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	constexpr float pointer_sensitivity = 0.05f;
 	for (u32 axis = 0; axis <= static_cast<u32>(InputPointerAxis::Y); axis++)
 	{
-		s_pointer_axis_speed[axis] = si.GetFloatValue("Pad", fmt::format("Pointer{}Speed", s_pointer_axis_names[axis]).c_str(), 40.0f) /
+		s_pointer_axis_speed[axis] = si.GetFloatValue("Pad", fmt::format("Pointer{}Speed", s_pointer_axis_setting_names[axis]).c_str(), 40.0f) /
 									 ui_ctrl_range * pointer_sensitivity;
 		s_pointer_axis_dead_zone[axis] = std::min(
-			si.GetFloatValue("Pad", fmt::format("Pointer{}DeadZone", s_pointer_axis_names[axis]).c_str(), 20.0f) / ui_ctrl_range, 1.0f);
+			si.GetFloatValue("Pad", fmt::format("Pointer{}DeadZone", s_pointer_axis_setting_names[axis]).c_str(), 20.0f) / ui_ctrl_range, 1.0f);
 		s_pointer_axis_range[axis] = 1.0f - s_pointer_axis_dead_zone[axis];
 	}
 	s_pointer_inertia = si.GetFloatValue("Pad", "PointerInertia", 10.0f) / ui_ctrl_range;
