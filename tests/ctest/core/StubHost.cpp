@@ -39,6 +39,10 @@ std::unique_ptr<ProgressCallback> Host::CreateHostProgressCallback()
 	return ProgressCallback::CreateNullProgressCallback();
 }
 
+void Host::ReportInfoAsync(const std::string_view title, const std::string_view message)
+{
+}
+
 void Host::ReportErrorAsync(const std::string_view title, const std::string_view message)
 {
 }
