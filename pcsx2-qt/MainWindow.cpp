@@ -1221,6 +1221,11 @@ void MainWindow::cancelGameListRefresh()
 	m_game_list_widget->cancelRefresh();
 }
 
+void MainWindow::reportInfo(const QString& title, const QString& message)
+{
+	QMessageBox::information(this, title, message);
+}
+
 void MainWindow::reportError(const QString& title, const QString& message)
 {
 	QMessageBox::critical(this, title, message);
