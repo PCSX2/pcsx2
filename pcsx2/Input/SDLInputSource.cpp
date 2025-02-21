@@ -94,10 +94,10 @@ static constexpr const GenericInputBinding s_sdl_generic_binding_axis_mapping[][
 };
 
 static constexpr const char* s_sdl_button_setting_names[] = {
-	"A", // SDL_GAMEPAD_BUTTON_SOUTH
-	"B", // SDL_GAMEPAD_BUTTON_EAST
-	"X", // SDL_GAMEPAD_BUTTON_WEST
-	"Y", // SDL_GAMEPAD_BUTTON_NORTH
+	"FaceSouth", // SDL_GAMEPAD_BUTTON_SOUTH
+	"FaceEast", // SDL_GAMEPAD_BUTTON_EAST
+	"FaceWest", // SDL_GAMEPAD_BUTTON_WEST
+	"FaceNorth", // SDL_GAMEPAD_BUTTON_NORTH
 	"Back", // SDL_GAMEPAD_BUTTON_BACK
 	"Guide", // SDL_GAMEPAD_BUTTON_GUIDE
 	"Start", // SDL_GAMEPAD_BUTTON_START
