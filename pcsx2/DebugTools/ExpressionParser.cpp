@@ -599,7 +599,11 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 		}
 	}
 
-	if (valueStack.size() != 1) return false;
+	if (valueStack.size() != 1)
+	{
+		error = TRANSLATE("ExpressionParser", "Invalid expression (Too many constants?)");
+		return false;
+	}
 	dest = valueStack[0];
 	return true;
 }

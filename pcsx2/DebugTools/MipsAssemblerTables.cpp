@@ -596,10 +596,10 @@ const tMipsOpcode MipsOpcodes[] = {
 //  10 |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  | 10..17
 //  11 |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  |  ---  | 18..1F
 //  hi |-------|-------|-------|-------|-------|-------|-------|-------|
-	{ "bc1f",	"I",		MIPS_COP1BC(0x00),				MA_MIPS2,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
-	{ "bc1t",	"I",		MIPS_COP1BC(0x01),				MA_MIPS2,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
-	{ "bc1fl",	"I",		MIPS_COP1BC(0x02),				MA_MIPS2,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
-	{ "bc1tl",	"I",		MIPS_COP1BC(0x03),				MA_MIPS2,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
+	{ "bc1f",	"i",		MIPS_COP1BC(0x00),				MA_MIPS2,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
+	{ "bc1t",	"i",		MIPS_COP1BC(0x01),				MA_MIPS2,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
+	{ "bc1fl",	"i",		MIPS_COP1BC(0x02),				MA_MIPS2,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
+	{ "bc1tl",	"i",		MIPS_COP1BC(0x03),				MA_MIPS2,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
 
 //     31---------21------------------------------------------5--------0
 //     |=  COP1S  |                                          | function|
