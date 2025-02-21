@@ -23,6 +23,8 @@ InputBindingWidget::InputBindingWidget(QWidget* parent)
 	: QPushButton(parent)
 {
 	connect(this, &QPushButton::clicked, this, &InputBindingWidget::onClicked);
+	connect(g_emu_thread, &EmuThread::onInputDeviceConnected, this, &InputBindingWidget::onInputDeviceConnected);
+	connect(g_emu_thread, &EmuThread::onInputDeviceDisconnected, this, &InputBindingWidget::onInputDeviceDisconnected);
 }
 
 InputBindingWidget::InputBindingWidget(
@@ -33,6 +35,8 @@ InputBindingWidget::InputBindingWidget(
 	setMaximumWidth(225);
 
 	connect(this, &QPushButton::clicked, this, &InputBindingWidget::onClicked);
+	connect(g_emu_thread, &EmuThread::onInputDeviceConnected, this, &InputBindingWidget::onInputDeviceConnected);
+	connect(g_emu_thread, &EmuThread::onInputDeviceDisconnected, this, &InputBindingWidget::onInputDeviceDisconnected);
 
 	initialize(sif, bind_type, std::move(section_name), std::move(key_name));
 }
@@ -383,6 +387,16 @@ void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float val
 		key_to_add.invert = reverse_threshold;
 		m_new_bindings.push_back(key_to_add);
 	}
+}
+
+void InputBindingWidget::onInputDeviceConnected(const QString& identifier, const QString& device_name)
+{
+	reloadBinding();
+}
+
+void InputBindingWidget::onInputDeviceDisconnected(const QString& identifier)
+{
+	reloadBinding();
 }
 
 void InputBindingWidget::hookInputManager()
