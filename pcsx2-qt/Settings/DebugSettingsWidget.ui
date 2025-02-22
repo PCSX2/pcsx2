@@ -161,7 +161,7 @@
           <item row="0" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout">
             <item row="0" column="0">
-             <widget class="QCheckBox" name="dumpGSDraws">
+             <widget class="QCheckBox" name="dumpGSData">
               <property name="text">
                <string>Dump GS Draws</string>
               </property>
@@ -214,12 +214,12 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_1">
             <property name="text">
-             <string>Start Draw Number:</string>
+             <string>Save Draw Start:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QSpinBox" name="startDraw">
+           <widget class="QSpinBox" name="saveDrawStart">
             <property name="maximum">
              <number>99999999</number>
             </property>
@@ -228,12 +228,12 @@
           <item row="2" column="0">
            <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>Draw Dump Count:</string>
+             <string>Save Draw Count:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QSpinBox" name="drawDumpCount">
+           <widget class="QSpinBox" name="saveDrawCount">
             <property name="minimum">
              <number>1</number>
             </property>
@@ -245,12 +245,12 @@
           <item row="3" column="0">
            <widget class="QLabel" name="label_3">
             <property name="text">
-             <string>Start Frame Number:</string>
+             <string>Save Frame Start:</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QSpinBox" name="startFrame">
+           <widget class="QSpinBox" name="saveFrameStart">
             <property name="maximum">
              <number>99999999</number>
             </property>
@@ -259,12 +259,12 @@
           <item row="4" column="0">
            <widget class="QLabel" name="label_4">
             <property name="text">
-             <string>Frame Dump Count:</string>
+             <string>Save Frame Count:</string>
             </property>
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QSpinBox" name="frameDumpCount">
+           <widget class="QSpinBox" name="saveFrameCount">
             <property name="minimum">
              <number>1</number>
             </property>
