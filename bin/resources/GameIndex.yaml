@@ -10418,15 +10418,6 @@ SCUS-21295:
     recommendedBlendingLevel: 3 # Fixes water and grass textures.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
-SCUS-21494:
-  name: "Need for Speed - Carbon Collector's Edition"
-  region: "NTSC-U"
-  compat: 5
-  clampModes:
-    eeClampMode: 3 # Fixes game hang after opening intro.
-  gsHWFixes:
-    halfPixelOffset: 2 # Fixes blurriness.
-    roundSprite: 2 # Fixes blurriness.
 SCUS-90174:
   name: "Disney/Pixar Toy Story 3 [PlayStation 2 Bundle]"
   region: "NTSC-U"
@@ -69491,6 +69482,7 @@ SLUS-21493:
 SLUS-21494:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "NTSC-U"
+  compat: 5
   clampModes:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
