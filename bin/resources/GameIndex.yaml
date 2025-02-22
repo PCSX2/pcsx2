@@ -27402,26 +27402,132 @@ SLES-55002:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLES-55002"
+    - "SLES-55003"
+    - "SLES-55004"
+    - "SLES-55005"
+    - "SLES-55006"
+    # Carbon save grants extra money.
+    - "SLES-54321"
+    - "SLES-54322"
+    - "SLES-54323"
+    - "SLES-54324"
+    - "SLES-54402"
+    - "SLES-54492"
+    - "SLES-54493"
+    # Most Wanted save grants extra money.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857" # Black Edition detection is bugged by default, can be fixed with a patch.
+    # UG2 saves can be detected, but the code is unused.
+    - "SLES-52725"
 SLES-55003:
   name: "Need for Speed - ProStreet"
   region: "PAL-F-G"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLES-55002"
+    - "SLES-55003"
+    - "SLES-55004"
+    - "SLES-55005"
+    - "SLES-55006"
+    # Carbon save grants extra money.
+    - "SLES-54321"
+    - "SLES-54322"
+    - "SLES-54323"
+    - "SLES-54324"
+    - "SLES-54402"
+    - "SLES-54492"
+    - "SLES-54493"
+    # Most Wanted save grants extra money.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857" # Black Edition detection is bugged by default, can be fixed with a patch.
+    # UG2 saves can be detected, but the code is unused.
+    - "SLES-52725"
 SLES-55004:
   name: "Need for Speed - ProStreet"
   region: "PAL-I-S"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLES-55002"
+    - "SLES-55003"
+    - "SLES-55004"
+    - "SLES-55005"
+    - "SLES-55006"
+    # Carbon save grants extra money.
+    - "SLES-54321"
+    - "SLES-54322"
+    - "SLES-54323"
+    - "SLES-54324"
+    - "SLES-54402"
+    - "SLES-54492"
+    - "SLES-54493"
+    # Most Wanted save grants extra money.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857" # Black Edition detection is bugged by default, can be fixed with a patch.
+    # UG2 saves can be detected, but the code is unused.
+    - "SLES-52725"
 SLES-55005:
   name: "Need for Speed - ProStreet"
   region: "PAL-M8"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLES-55002"
+    - "SLES-55003"
+    - "SLES-55004"
+    - "SLES-55005"
+    - "SLES-55006"
+    # Carbon save grants extra money.
+    - "SLES-54321"
+    - "SLES-54322"
+    - "SLES-54323"
+    - "SLES-54324"
+    - "SLES-54402"
+    - "SLES-54492"
+    - "SLES-54493"
+    # Most Wanted save grants extra money.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857" # Black Edition detection is bugged by default, can be fixed with a patch.
+    # UG2 saves can be detected, but the code is unused.
+    - "SLES-52725"
 SLES-55006:
   name: "Need for Speed - ProStreet"
   region: "PAL-R"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLES-55002"
+    - "SLES-55003"
+    - "SLES-55004"
+    - "SLES-55005"
+    - "SLES-55006"
+    # Carbon save grants extra money. Detection is bugged by default, can be fixed with a patch.
+    - "SLES-54321"
+    - "SLES-54322"
+    - "SLES-54323"
+    - "SLES-54324"
+    - "SLES-54402"
+    - "SLES-54492"
+    - "SLES-54493"
+    # Most Wanted save grants extra money. Detection is bugged by default, can be fixed with a patch.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857"
+    - "SLUS-21267" # Original wrong Most Wanted serial.
+    # UG2 saves can be detected, but the code is unused.
+    - "SLES-52725"
 SLES-55007:
   name: "Boogie"
   region: "PAL-M7"
@@ -31393,6 +31499,11 @@ SLKA-25411:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLKA-25411"
+    - "SLKA-25185" # Carbon save grants extra money.
+    - "SLKA-25334" # Most Wanted save grants extra money.
+    - "SLKA-25241" # UG2 saves can be detected, but the code is unused.
 SLKA-25412:
   name: "Sengoku Basara 2 - Heroes"
   region: "NTSC-K"
@@ -32496,6 +32607,16 @@ SLPM-55151:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLPM-55151"
+    # Carbon save grants extra money.
+    - "SLPM-55061"
+    - "SLPM-66617"
+    - "SLPM-66869"
+    # Most Wanted save grants extra money.
+    - "SLPM-66232"
+    - "SLPM-66562"
+    - "SLPM-65766" # UG2 saves can be detected, but the code is unused.
 SLPM-55152:
   name: "スロッターUPコア11 巨人の星Ⅳ 青春群像編"
   name-sort: "すろったーUPこあ11 きょじんのほし4 せいしゅんぐんぞうへん"
@@ -50430,6 +50551,16 @@ SLPM-66932:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLPM-66932"
+    # Carbon save grants extra money.
+    - "SLPM-55061"
+    - "SLPM-66617"
+    - "SLPM-66869"
+    # Most Wanted save grants extra money.
+    - "SLPM-66232"
+    - "SLPM-66562"
+    - "SLPM-65766" # UG2 saves can be detected, but the code is unused.
 SLPM-66933:
   name: "君が主で執事が俺で～お仕え日記～ [初回限定版]"
   name-sort: "きみがあるじでしつじがおれで おつかえにっき [しょかいげんていばん]"
@@ -70382,6 +70513,15 @@ SLUS-21658:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLUS-21658"
+    # Carbon save grants extra money.
+    - "SLUS-21493"
+    - "SLUS-21494"
+    # Most Wanted save grants extra money.
+    - "SLUS-21267"
+    - "SLUS-21351"
+    - "SLUS-21065" # UG2 saves can be detected, but the code is unused.
 SLUS-21660:
   name: "Disney Princess - Enchanted Journey"
   region: "NTSC-U"
