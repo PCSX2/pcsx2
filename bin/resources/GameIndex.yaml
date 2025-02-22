@@ -20077,7 +20077,7 @@ SLES-52636:
     autoFlush: 1 # Fixes incorrect colors.
     alignSprite: 1 # Fixes vertical lines such as in FMVs.
 SLES-52637:
-  name: "TOCA Racer Driver 2"
+  name: "TOCA Race Driver 2"
   region: "PAL-M5"
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
@@ -21520,6 +21520,9 @@ SLES-53087:
     skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+  memcardFilters:
+    - "SLES-53087"
+    - "SLES-52637" # Race Driver 2 save unlocks 'Class A 4WD Track Challenge' in career early.
 SLES-53088:
   name: "DTM Race Driver 3"
   region: "PAL-M5"
@@ -21530,6 +21533,9 @@ SLES-53088:
     skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+  memcardFilters:
+    - "SLES-53088"
+    - "SLES-52638" # Race Driver 2 save unlocks 'Class A 4WD Track Challenge' in career early.
 SLES-53089:
   name: "V8 Supercars Australia 3"
   region: "PAL-E"
@@ -21540,6 +21546,9 @@ SLES-53089:
     skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+  memcardFilters:
+    - "SLES-53089"
+    - "SLES-52639" # Race Driver 2 save unlocks 'Class A 4WD Track Challenge' in career early.
 SLES-53090:
   name: "Circuit Blasters"
   region: "PAL-M5"
@@ -32138,6 +32147,9 @@ SLPM-55046:
     skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+  memcardFilters:
+    - "SLPM-55046"
+    - "SLPM-66498" # Race Driver 2 save unlocks 'Class A 4WD Track Challenge' in career early.
 SLPM-55047:
   name: "Sugar+Spice！ ～あの子のステキな何もかも～"
   name-sort: "しゅがーすぱいす あのこのすてきななにもかも"
@@ -50352,6 +50364,9 @@ SLPM-66881:
     skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+  memcardFilters:
+    - "SLPM-66881"
+    - "SLPM-66498" # Race Driver 2 save unlocks 'Class A 4WD Track Challenge' in career early.
 SLPM-66882:
   name: "はかれなはーと ～君がために輝きを～ [限定版・サントラボイスCD付]"
   name-sort: "はかれなはーと きみがためにかがやきを [げんていばん さんとらぼいすCDつき]"
@@ -67674,6 +67689,9 @@ SLUS-21182:
     skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+  memcardFilters:
+    - "SLUS-21182"
+    - "SLUS-21039" # Race Driver 2 save unlocks 'Class A 4WD Track Challenge' in career early.
 SLUS-21183:
   name: "Teen Titans"
   region: "NTSC-U"
