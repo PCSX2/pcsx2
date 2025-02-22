@@ -28472,6 +28472,18 @@ SLES-55349:
     gpuTargetCLUT: 1 # Fixes sun penetration.
     nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
+  memcardFilters:
+    - "SLES-55349"
+    - "SLES-55350"
+    - "SLES-55351"
+    - "SLES-55352"
+    - "SLES-55353"
+    # Checks from Carbon are left in the code, unused.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857"
+    - "SLES-52725"
 SLES-55350:
   name: "Need for Speed - Undercover"
   region: "PAL-F-G"
@@ -28482,6 +28494,18 @@ SLES-55350:
     gpuTargetCLUT: 1 # Fixes sun penetration.
     nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
+  memcardFilters:
+    - "SLES-55349"
+    - "SLES-55350"
+    - "SLES-55351"
+    - "SLES-55352"
+    - "SLES-55353"
+    # Checks from Carbon are left in the code, unused.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857"
+    - "SLES-52725"
 SLES-55351:
   name: "Need for Speed - Undercover"
   region: "PAL-I-S"
@@ -28492,6 +28516,18 @@ SLES-55351:
     gpuTargetCLUT: 1 # Fixes sun penetration.
     nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
+  memcardFilters:
+    - "SLES-55349"
+    - "SLES-55350"
+    - "SLES-55351"
+    - "SLES-55352"
+    - "SLES-55353"
+    # Checks from Carbon are left in the code, unused.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857"
+    - "SLES-52725"
 SLES-55352:
   name: "Need for Speed - Undercover"
   region: "PAL-SC"
@@ -28503,6 +28539,18 @@ SLES-55352:
     gpuTargetCLUT: 1 # Fixes sun penetration.
     nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
+  memcardFilters:
+    - "SLES-55349"
+    - "SLES-55350"
+    - "SLES-55351"
+    - "SLES-55352"
+    - "SLES-55353"
+    # Checks from Carbon are left in the code, unused.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857"
+    - "SLES-52725"
 SLES-55353:
   name: "Need for Speed - Undercover"
   region: "PAL-M6"
@@ -28513,6 +28561,18 @@ SLES-55353:
     gpuTargetCLUT: 1 # Fixes sun penetration.
     nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
+  memcardFilters:
+    - "SLES-55349"
+    - "SLES-55350"
+    - "SLES-55351"
+    - "SLES-55352"
+    - "SLES-55353"
+    # Checks from Carbon are left in the code, unused.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857"
+    - "SLES-52725"
 SLES-55354:
   name: "Shin Megami Tensei - Persona 3 FES"
   region: "PAL-E"
@@ -31620,6 +31680,13 @@ SLKA-25446:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
     getSkipCount: "GSC_NFSUndercover"
+  memcardFilters:
+    - "SLKA-25446"
+    # Checks from Carbon are left in the code, unused.
+    - "SLKA-25185"
+    - "SLKA-25334"
+    - "SLAJ-25075"
+    - "SLKA-25241"
 SLKA-25447:
   name: "FIFA 09"
   region: "NTSC-K"
@@ -32470,6 +32537,13 @@ SLPM-55127:
     gpuTargetCLUT: 1 # Fixes sun penetration.
     nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
+  memcardFilters:
+    - "SLPM-55127"
+    # Checks from Carbon are left in the code, unused.
+    - "SLPM-66232"
+    - "SLPM-66562"
+    - "SLAJ-25075"
+    - "SLPM-65766"
 SLPM-55128:
   name: "ラグビー08 [英語版] [EA:SY! 1980]"
   name-sort: "らぐびー08 [えいごばん] [EA:SY! 1980]"
@@ -33058,6 +33132,13 @@ SLPM-55244:
     gpuTargetCLUT: 1 # Fixes sun penetration.
     nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
+  memcardFilters:
+    - "SLPM-55244"
+    # Checks from Carbon are left in the code, unused.
+    - "SLPM-66232"
+    - "SLPM-66562"
+    - "SLAJ-25075"
+    - "SLPM-65766"
 SLPM-55245:
   name: "ひまわり -Pebble in the Sky-"
   name-sort: "ひまわり -Pebble in the Sky-"
@@ -71300,6 +71381,13 @@ SLUS-21801:
     gpuTargetCLUT: 1 # Fixes sun penetration.
     nativeScaling: 2 # Fixes post alignment.
     getSkipCount: "GSC_NFSUndercover"
+  memcardFilters:
+    - "SLUS-21801"
+    # Checks from Carbon are left in the code, unused.
+    - "SLUS-21267"
+    - "SLUS-21351"
+    - "SLAJ-25075"
+    - "SLUS-21065"
 SLUS-21802:
   name: "Naked Brothers Band - The Video Game"
   region: "NTSC-U"
