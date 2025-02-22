@@ -12795,9 +12795,7 @@ SLAJ-25075:
     - "SLAJ-25075"
     - "SLPM-66232"
     - "SLPM-66562"
-    - "SLPM-65766"
-    - "SLPM-66051"
-    - "SLPM-66960"
+    - "SLAJ-25054" # Underground 2 save grants extra money.
 SLAJ-25076:
   name: "Harry Potter and the Goblet of Fire"
   region: "NTSC-Unk"
@@ -22909,12 +22907,12 @@ SLES-53557:
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
-  memcardFilters: # Reads Underground 2 save for extra money.
+  memcardFilters:
     - "SLES-53557"
     - "SLES-53558"
     - "SLES-53559"
     - "SLES-53857"
-    - "SLES-52725"
+    - "SLES-52725" # Underground 2 save grants extra money.
 SLES-53558:
   name: "Need for Speed - Most Wanted"
   region: "PAL-M8"
@@ -22928,7 +22926,7 @@ SLES-53558:
     - "SLES-53558"
     - "SLES-53559"
     - "SLES-53857"
-    - "SLES-52725"
+    - "SLES-52725" # Underground 2 save grants extra money.
 SLES-53559:
   name: "Need for Speed - Most Wanted"
   region: "PAL-M7"
@@ -22942,7 +22940,7 @@ SLES-53559:
     - "SLES-53558"
     - "SLES-53559"
     - "SLES-53857"
-    - "SLES-52725"
+    - "SLES-52725" # Underground 2 save grants extra money.
 SLES-53560:
   name: "Sonic Riders"
   region: "PAL-M5"
@@ -23880,7 +23878,7 @@ SLES-53857:
     - "SLES-53558"
     - "SLES-53559"
     - "SLES-53857"
-    - "SLES-52725"
+    - "SLES-52725" # Underground 2 save grants extra money.
 SLES-53860:
   name: "Dynasty Warriors 5 - Xtreme Legends"
   region: "PAL-E"
@@ -30931,6 +30929,9 @@ SLKA-25334:
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+  memcardFilters:
+    - "SLKA-25334"
+    - "SLKA-25241" # Underground 2 save grants extra money.
 SLKA-25335:
   name: "Shadow the Hedgehog"
   region: "NTSC-K"
@@ -31603,6 +31604,9 @@ SLPM-55003:
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+  memcardFilters:
+    - "SLPM-55003"
+    - "SLPM-65766" # Underground 2 save grants extra money.
 SLPM-55004:
   name: "バーンアウト リベンジ [EA:SY! 1980]"
   name-sort: "ばーんあうと りべんじ [EA:SY! 1980])"
@@ -46044,7 +46048,8 @@ SLPM-66232:
     - "SLAJ-25075"
     - "SLPM-66232"
     - "SLPM-66562"
-    - "SLPM-65766"
+    - "SLPM-65766" # Underground 2 save grants extra money.
+    # Unconfirmed UG2 serials.
     - "SLPM-66051"
     - "SLPM-66960"
 SLPM-66233:
@@ -48075,7 +48080,8 @@ SLPM-66562:
     - "SLAJ-25075"
     - "SLPM-66232"
     - "SLPM-66562"
-    - "SLPM-65766"
+    - "SLPM-65766" # Underground 2 save grants extra money.
+    # Unconfirmed UG2 serials.
     - "SLPM-66051"
     - "SLPM-66960"
 SLPM-66563:
@@ -67849,6 +67855,9 @@ SLUS-21257:
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+  memcardFilters:
+    - "SLUS-21257"
+    - "SLUS-21065" # Underground 2 save grants extra money.
 SLUS-21258:
   name: ".hack//G.U. Vol.1 - Rebirth"
   region: "NTSC-U"
@@ -67935,7 +67944,7 @@ SLUS-21267:
   memcardFilters:
     - "SLUS-21267"
     - "SLUS-21351"
-    - "SLUS-21065"
+    - "SLUS-21065" # Underground 2 save grants extra money.
 SLUS-21268:
   name: "24 - The Game"
   region: "NTSC-U"
@@ -68524,7 +68533,7 @@ SLUS-21351:
   memcardFilters:
     - "SLUS-21267"
     - "SLUS-21351"
-    - "SLUS-21065"
+    - "SLUS-21065" # Underground 2 save grants extra money.
 SLUS-21352:
   name: "Dai Senryaku VII Exceed"
   region: "NTSC-U"
