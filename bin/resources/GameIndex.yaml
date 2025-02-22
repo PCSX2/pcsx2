@@ -2015,7 +2015,6 @@ SCAJ-20132:
     eeClampMode: 2 # Fixes wrong color on some characters and breakable objects.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes ghosting characters.
-    mergeSprite: 1 # Align sprite fixes FMVs but not garbage in-game, so needs merge sprite instead.
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
 SCAJ-20133:
   name: "Kagero 2 - Dark Illusion"
@@ -13630,7 +13629,7 @@ SLED-53954:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
     roundSprite: 1 # Reduces misaligned bloom.
-    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
+    nativeScaling: 1 # Fixes post processing smoothness and position.
 SLED-53977:
   name: "Dragon Quest - The Journey of the Cursed King"
   region: "PAL-E"
@@ -15351,7 +15350,6 @@ SLES-50723:
   name: "TOCA Race Driver"
   region: "PAL-M3"
   gsHWFixes:
-    mergeSprite: 1 # Fixes lighting.
     halfPixelOffset: 1 # Fixes vertical lines
 SLES-50725:
   name: "V-Rally 3"
@@ -15449,7 +15447,6 @@ SLES-50767:
   name: "V8 Supercars Australia - Race Driver"
   region: "PAL-A"
   gsHWFixes:
-    mergeSprite: 1 # Fixes lighting.
     halfPixelOffset: 1 # Fixes vertical lines
 SLES-50768:
   name: "Rally Championship"
@@ -15616,13 +15613,11 @@ SLES-50816:
   region: "PAL-M3"
   compat: 5
   gsHWFixes:
-    mergeSprite: 1 # Fixes lighting.
     halfPixelOffset: 1 # Fixes vertical lines
 SLES-50818:
   name: "Pro Race Driver"
   region: "PAL-I"
   gsHWFixes:
-    mergeSprite: 1 # Fixes lighting.
     halfPixelOffset: 1 # Fixes vertical lines
 SLES-50820:
   name: "Micro Machines"
@@ -18283,7 +18278,7 @@ SLES-51914:
     - "SLES-51914"
   gsHWFixes:
     halfPixelOffset: 4 # Mostly aligns post processing.
-    nativeScaling: 2 # Fixes post processing smoothness and position.
+    nativeScaling: 1 # Fixes post processing smoothness and position.
     disablePartialInvalidation: 1 # Fixes textureless graphics ingame.
     bilinearUpscale: 2 # Gets rid of center vertical line when upscaling.
 SLES-51915:
@@ -22913,7 +22908,7 @@ SLES-53556:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
     roundSprite: 1 # Reduces misaligned bloom.
-    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
+    nativeScaling: 1 # Fixes post processing smoothness and position.
 SLES-53557:
   name: "Need for Speed - Most Wanted"
   region: "PAL-E"
@@ -23703,7 +23698,6 @@ SLES-53794:
   gsHWFixes:
     halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
-    mergeSprite: 1 # Align sprite fixes FMVs but not garbage in-game, so needs merge sprite instead.
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
 SLES-53796:
   name: "FIFA Street 2"
@@ -24385,7 +24379,7 @@ SLES-54027:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
     roundSprite: 1 # Reduces misaligned bloom.
-    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
+    nativeScaling: 1 # Fixes post processing smoothness and position.
 SLES-54030:
   name: "Black"
   region: "PAL-E"
@@ -25141,7 +25135,7 @@ SLES-54317:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    mergeSprite: 1 # Fixes alignment on fire effects.
+    halfPixelOffset: 4 # Fixes alignment on fire effects.
 SLES-54319:
   name: "Biker Mice from Mars"
   region: "PAL-M5"
@@ -25713,7 +25707,6 @@ SLES-54483:
   compat: 5
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes car reflections.
-    mergeSprite: 1 # Fixes bluriness.
     halfPixelOffset: 4 # Fixes bluriness.
     nativeScaling: 2 # Fixes post lighting.
     autoFlush: 1 # Fixes post alignment.
@@ -29913,7 +29906,7 @@ SLKA-25093:
     - "SLKA-25093"
   gsHWFixes:
     halfPixelOffset: 4 # Mostly aligns post processing.
-    nativeScaling: 2 # Fixes post processing smoothness and position.
+    nativeScaling: 1 # Fixes post processing smoothness and position.
     disablePartialInvalidation: 1 # Fixes textureless graphics ingame.
     bilinearUpscale: 2 # Gets rid of center vertical line when upscaling.
 SLKA-25095:
@@ -30986,7 +30979,7 @@ SLKA-25341:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
     roundSprite: 1 # Reduces misaligned bloom.
-    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
+    nativeScaling: 1 # Fixes post processing smoothness and position.
 SLKA-25342:
   name: "Ryu ga Gotoku"
   region: "NTSC-K"
@@ -32048,7 +32041,6 @@ SLPM-55081:
     eeClampMode: 2 # Fixes wrong color on some characters and breakable objects.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes ghosting characters.
-    mergeSprite: 1 # Align sprite fixes FMVs but not garbage in-game, so needs merge sprite instead.
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
 SLPM-55082:
   name: "真・三國無双5 Special [ディスク 1]"
@@ -34510,7 +34502,6 @@ SLPM-61120:
     eeClampMode: 2 # Fixes wrong color on some characters and breakable objects.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes ghosting characters.
-    mergeSprite: 1 # Align sprite fixes FMVs but not garbage in-game, so needs merge sprite instead.
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
 SLPM-61121:
   name: "KAIDO ～峠の伝説～ [体験版]"
@@ -41214,7 +41205,7 @@ SLPM-65413:
     - "SLPM-65413"
   gsHWFixes:
     halfPixelOffset: 4 # Mostly aligns post processing.
-    nativeScaling: 2 # Fixes post processing smoothness and position.
+    nativeScaling: 1 # Fixes post processing smoothness and position.
     disablePartialInvalidation: 1 # Fixes textureless graphics ingame.
     bilinearUpscale: 2 # Gets rid of center vertical line when upscaling.
 SLPM-65414:
@@ -44547,7 +44538,6 @@ SLPM-65999:
     eeClampMode: 2 # Fixes wrong color on some characters and breakable objects.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes ghosting characters.
-    mergeSprite: 1 # Align sprite fixes FMVs but not garbage in-game, so needs merge sprite instead.
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
 SLPM-66000:
   name: "コンフリクトデルタⅡ ～湾岸戦争1991～"
@@ -48135,7 +48125,7 @@ SLPM-66567:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
     roundSprite: 1 # Reduces misaligned bloom.
-    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
+    nativeScaling: 1 # Fixes post processing smoothness and position.
 SLPM-66568:
   name: "ブラザー イン アームズ ロード トゥ ヒル サーティ [UBISOFT BEST]"
   name-sort: "ぶらざー いん あーむず ろーど とぅ ひる さーてぃ [UBISOFT BEST]"
@@ -62650,7 +62640,6 @@ SLUS-20329:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mergeSprite: 1 # Fixes lighting.
     halfPixelOffset: 1 # Fixes vertical lines
 SLUS-20330:
   name: "NBA 2K2 - Sega Sports"
@@ -64556,7 +64545,7 @@ SLUS-20694:
     - "SLUS-20710"
   gsHWFixes:
     halfPixelOffset: 4 # Mostly aligns post processing.
-    nativeScaling: 2 # Fixes post processing smoothness and position.
+    nativeScaling: 1 # Fixes post processing smoothness and position.
     disablePartialInvalidation: 1 # Fixes textureless graphics ingame.
     bilinearUpscale: 2 # Gets rid of center vertical line when upscaling.
 SLUS-20695:
@@ -67988,7 +67977,7 @@ SLUS-21271:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
     roundSprite: 1 # Reduces misaligned bloom.
-    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
+    nativeScaling: 1 # Fixes post processing smoothness and position.
 SLUS-21272:
   name: "Super Monkey Ball Adventure"
   region: "NTSC-U"
@@ -68244,7 +68233,7 @@ SLUS-21306:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mergeSprite: 1 # Fixes alignment on fire effects.
+    halfPixelOffset: 4 # Fixes alignment on fire effects.
 SLUS-21307:
   name: "Ice Age 2 - The Meltdown"
   region: "NTSC-U"
@@ -68706,7 +68695,6 @@ SLUS-21373:
   gsHWFixes:
     halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
-    mergeSprite: 1 # Align sprite fixes FMVs but not garbage in-game, so needs merge sprite instead.
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
 SLUS-21374:
   name: "Marvel - Ultimate Alliance"
@@ -68886,7 +68874,7 @@ SLUS-21399:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
     roundSprite: 1 # Reduces misaligned bloom.
-    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
+    nativeScaling: 1 # Fixes post processing smoothness and position.
 SLUS-21400:
   name: "Monster House"
   region: "NTSC-U"
@@ -69212,7 +69200,6 @@ SLUS-21449:
   compat: 5
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes car reflections.
-    mergeSprite: 1 # Fixes bluriness.
     halfPixelOffset: 4 # Fixes bluriness.
     nativeScaling: 2 # Fixes post lighting.
     autoFlush: 1 # Fixes post alignment.
@@ -72687,7 +72674,7 @@ SLUS-29185:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
     roundSprite: 1 # Reduces misaligned bloom.
-    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
+    nativeScaling: 1 # Fixes post processing smoothness and position.
 SLUS-29188:
   name: "Steambot Chronicles [Regular Demo]"
   region: "NTSC-U"
