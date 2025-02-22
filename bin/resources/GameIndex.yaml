@@ -12867,6 +12867,13 @@ SLAJ-25091:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLAJ-25091"
+    # Most Wanted save grants extra money.
+    - "SLAJ-25075"
+    - "SLPM-66232"
+    # UG2 saves can be detected, but the code is unused.
+    - "SLAJ-25054"
 SLAJ-25092:
   name: "Shin Sangoku Musou 4 [PlayStation2 the Best]"
   region: "NTSC-Unk"
@@ -25142,6 +25149,18 @@ SLES-54321:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLES-54321"
+    - "SLES-54322"
+    - "SLES-54323"
+    - "SLES-54324"
+    # Most Wanted save grants extra money.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857" # Black Edition detection is bugged by default, can be fixed with a patch.
+    # UG2 saves can be detected, but the code is unused.
+    - "SLES-52725"
 SLES-54322:
   name: "Need for Speed - Carbon"
   region: "PAL-M8"
@@ -25150,6 +25169,18 @@ SLES-54322:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLES-54321"
+    - "SLES-54322"
+    - "SLES-54323"
+    - "SLES-54324"
+    # Most Wanted save grants extra money.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857" # Black Edition detection is bugged by default, can be fixed with a patch.
+    # UG2 saves can be detected, but the code is unused.
+    - "SLES-52725"
 SLES-54323:
   name: "Need for Speed - Carbon"
   region: "PAL-I-S"
@@ -25158,6 +25189,18 @@ SLES-54323:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLES-54321"
+    - "SLES-54322"
+    - "SLES-54323"
+    - "SLES-54324"
+    # Most Wanted save grants extra money.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857" # Black Edition detection is bugged by default, can be fixed with a patch.
+    # UG2 saves can be detected, but the code is unused.
+    - "SLES-52725"
 SLES-54324:
   name: "Need for Speed - Carbon"
   region: "PAL-R"
@@ -25166,6 +25209,18 @@ SLES-54324:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLES-54321"
+    - "SLES-54322"
+    - "SLES-54323"
+    - "SLES-54324"
+    # Most Wanted save grants extra money.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857" # Black Edition detection is bugged by default, can be fixed with a patch.
+    # UG2 saves can be detected, but the code is unused.
+    - "SLES-52725"
 SLES-54326:
   name: "Raceway - Drag Stock Racing"
   region: "PAL-E"
@@ -25440,6 +25495,17 @@ SLES-54402:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLES-54402"
+    - "SLES-54492"
+    - "SLES-54493"
+    # Most Wanted save grants extra money.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857" # Black Edition detection is bugged by default, can be fixed with a patch.
+    # UG2 saves can be detected, but the code is unused.
+    - "SLES-52725"
 SLES-54410:
   name: "Monster Trux Arenas - Special Edition"
   region: "PAL-Unk"
@@ -25736,6 +25802,17 @@ SLES-54492:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLES-54402"
+    - "SLES-54492"
+    - "SLES-54493"
+    # Most Wanted save grants extra money.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857" # Black Edition detection is bugged by default, can be fixed with a patch.
+    # UG2 saves can be detected, but the code is unused.
+    - "SLES-52725"
 SLES-54493:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "PAL-F-G"
@@ -25744,6 +25821,17 @@ SLES-54493:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLES-54402"
+    - "SLES-54492"
+    - "SLES-54493"
+    # Most Wanted save grants extra money.
+    - "SLES-53557"
+    - "SLES-53558"
+    - "SLES-53559"
+    - "SLES-53857" # Black Edition detection is bugged by default, can be fixed with a patch.
+    # UG2 saves can be detected, but the code is unused.
+    - "SLES-52725"
 SLES-54494:
   name: "Little Britain - The Video Game"
   region: "PAL-E"
@@ -30243,6 +30331,11 @@ SLKA-25185:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
     roundSprite: 2 # Fixes blurriness.
+  memcardFilters:
+    - "SLKA-25185"
+    - "SLKA-25334" # Most Wanted save grants extra money.
+    - "SLAJ-25075" # Original wrong Black Edition serial.
+    - "SLKA-25241" # UG2 saves can be detected, but the code is unused.
 SLKA-25186:
   name: "The King of Fighters - Maximum Impact [Limited Edition]"
   name-sort: "King of Fighters, The - Maximum Impact [Limited Edition]"
@@ -31934,6 +32027,13 @@ SLPM-55061:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLPM-55061"
+    # Most Wanted save grants extra money.
+    - "SLPM-66232"
+    - "SLPM-66562"
+    - "SLAJ-25075" # Original wrong Black Edition serial.
+    - "SLPM-65766" # UG2 saves can be detected, but the code is unused.
 SLPM-55062:
   name: "実況パワフルメジャーリーグ 3"
   name-sort: "じっきょうぱわふるめじゃーりーぐ 3"
@@ -48430,6 +48530,13 @@ SLPM-66617:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLPM-66617"
+    # Most Wanted save grants extra money.
+    - "SLPM-66232"
+    - "SLPM-66562"
+    - "SLAJ-25075" # Original wrong Black Edition serial.
+    - "SLPM-65766" # UG2 saves can be detected, but the code is unused.
 SLPM-66618:
   name: "夢見師 [初回限定版]"
   name-sort: "ゆめみし [しょかいげんていばん]"
@@ -49958,6 +50065,13 @@ SLPM-66869:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLPM-66869"
+    # Most Wanted save grants extra money.
+    - "SLPM-66232"
+    - "SLPM-66562"
+    - "SLAJ-25075" # Original wrong Black Edition serial.
+    - "SLPM-65766" # UG2 saves can be detected, but the code is unused.
 SLPM-66870:
   name: "星色のおくりもの [初回スペシャル限定版]"
   name-sort: "ほしいろのおくりもの [しょかいすぺしゃるげんていばん]"
@@ -69475,6 +69589,13 @@ SLUS-21493:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLUS-21493"
+    # Most Wanted save grants extra money.
+    - "SLUS-21267"
+    - "SLUS-21351" # Black Edition detection is bugged by default, can be fixed with a patch.
+    - "SLAJ-25075" # Original wrong Black Edition serial.
+    - "SLUS-21065" # UG2 saves can be detected, but the code is unused.
 SLUS-21494:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "NTSC-U"
@@ -69484,6 +69605,13 @@ SLUS-21494:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes car headlights.
     halfPixelOffset: 2 # Fixes depth line.
+  memcardFilters:
+    - "SLUS-21494"
+    # Most Wanted save grants extra money.
+    - "SLUS-21267"
+    - "SLUS-21351" # Black Edition detection is bugged by default, can be fixed with a patch.
+    - "SLAJ-25075" # Original wrong Black Edition serial.
+    - "SLUS-21065" # UG2 saves can be detected, but the code is unused.
 SLUS-21495:
   name: "Sudoku, Carol Vorderman's"
   region: "NTSC-U"
