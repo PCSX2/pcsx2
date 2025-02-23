@@ -10,7 +10,7 @@
 #include <QtWidgets/QMenu>
 
 SavedAddressesWidget::SavedAddressesWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters)
+	: DebuggerWidget(parameters, DISALLOW_MULTIPLE_INSTANCES)
 	, m_model(new SavedAddressesModel(cpu(), this))
 {
 	m_ui.setupUi(this);
