@@ -9,6 +9,9 @@
 #include <kddockwidgets/qtwidgets/views/TitleBar.h>
 #include <kddockwidgets/qtwidgets/views/TabBar.h>
 
+#include "DebugTools/DebugInterface.h"
+
+class DebuggerWidget;
 class DockManager;
 
 class DockViewFactory : public KDDockWidgets::QtWidgets::ViewFactory
@@ -82,8 +85,17 @@ public:
 	DockTabBar(KDDockWidgets::Core::TabBar* controller, QWidget* parent = nullptr);
 
 protected:
-	void contextMenu(QPoint pos);
-	bool hasDebuggerWidget(int tab_index);
+	void openContextMenu(QPoint pos);
+
+	struct WidgetsFromTabIndexResult
+	{
+		DebuggerWidget* debugger_widget = nullptr;
+		KDDockWidgets::Core::DockWidget* controller = nullptr;
+		KDDockWidgets::QtWidgets::DockWidget* view = nullptr;
+	};
+
+	void setCpuOverrideForTab(int tab_index, std::optional<BreakPointCpu> cpu_override);
+	WidgetsFromTabIndexResult widgetsFromTabIndex(int tab_index);
 
 	void mouseDoubleClickEvent(QMouseEvent* ev) override;
 };

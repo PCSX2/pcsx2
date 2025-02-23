@@ -452,7 +452,7 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar, DebugInterface& cpu)
 	MemoryViewWidget
 */
 MemoryViewWidget::MemoryViewWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters)
+	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
 	, m_table(this)
 {
 	ui.setupUi(this);

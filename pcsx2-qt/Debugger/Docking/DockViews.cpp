@@ -12,7 +12,9 @@
 #include <kddockwidgets/core/TabBar.h>
 #include <kddockwidgets/qtwidgets/views/DockWidget.h>
 
-#include <QMenu>
+#include <QtGui/QActionGroup>
+#include <QtWidgets/QInputDialog>
+#include <QtWidgets/QMenu>
 
 KDDockWidgets::Core::View* DockViewFactory::createDockWidget(
 	const QString& unique_name,
@@ -58,14 +60,13 @@ DockWidget::DockWidget(
 
 void DockWidget::openStateChanged(bool open)
 {
-	auto view = static_cast<KDDockWidgets::QtWidgets::DockWidget*>(sender());
-
-	KDDockWidgets::Core::DockWidget* controller = view->asController<KDDockWidgets::Core::DockWidget>();
-	if (!controller)
+	// The LayoutSaver class will close a bunch of dock widgets. We only want to
+	// delete the dock widgets when they're being closed by the user.
+	if (KDDockWidgets::LayoutSaver::restoreInProgress())
 		return;
 
 	if (!open && g_debugger_window)
-		g_debugger_window->dockManager().dockWidgetClosed(controller);
+		g_debugger_window->dockManager().destroyDebuggerWidget(uniqueName());
 }
 
 // *****************************************************************************
@@ -115,104 +116,151 @@ DockTabBar::DockTabBar(KDDockWidgets::Core::TabBar* controller, QWidget* parent)
 	: KDDockWidgets::QtWidgets::TabBar(controller, parent)
 {
 	setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(this, &DockTabBar::customContextMenuRequested, this, &DockTabBar::contextMenu);
+	connect(this, &DockTabBar::customContextMenuRequested, this, &DockTabBar::openContextMenu);
 }
 
-void DockTabBar::contextMenu(QPoint pos)
+void DockTabBar::openContextMenu(QPoint pos)
 {
-	auto tab_bar = qobject_cast<KDDockWidgets::QtWidgets::TabBar*>(sender());
-	int tab_index = tab_bar->tabAt(pos);
-
-	// Filter out the placeholder widget displayed when there are no layouts.
-	if (!hasDebuggerWidget(tab_index))
+	if (!g_debugger_window)
 		return;
 
-	QMenu* menu = new QMenu(tr("Dock Widget Menu"), tab_bar);
+	int tab_index = tabAt(pos);
+
+	// Filter out the placeholder widget displayed when there are no layouts.
+	auto [widget, controller, view] = widgetsFromTabIndex(tab_index);
+	if (!widget)
+		return;
+
+	size_t dock_widgets_of_type = g_debugger_window->dockManager().countDebuggerWidgetsOfType(
+		widget->metaObject()->className());
+
+	QMenu* menu = new QMenu(tr("Dock Widget Context Menu"), this);
+	menu->setAttribute(Qt::WA_DeleteOnClose);
+
+	QAction* rename_action = menu->addAction(tr("Rename"));
+	connect(rename_action, &QAction::triggered, this, [this, tab_index]() {
+		if (!g_debugger_window)
+			return;
+
+		auto [widget, controller, view] = widgetsFromTabIndex(tab_index);
+		if (!widget)
+			return;
+
+		bool ok;
+		QString new_name = QInputDialog::getText(
+			this, tr("Rename Window"), tr("New name:"), QLineEdit::Normal, widget->displayNameWithoutSuffix(), &ok);
+		if (!ok)
+			return;
+
+		widget->setCustomDisplayName(new_name);
+		g_debugger_window->dockManager().updateDockWidgetTitles();
+	});
+
+	QAction* reset_name_action = menu->addAction(tr("Reset Name"));
+	reset_name_action->setEnabled(!widget->customDisplayName().isEmpty());
+	connect(reset_name_action, &QAction::triggered, this, [this, tab_index] {
+		if (!g_debugger_window)
+			return;
+
+		auto [widget, controller, view] = widgetsFromTabIndex(tab_index);
+		if (!widget)
+			return;
+
+		widget->setCustomDisplayName(QString());
+		g_debugger_window->dockManager().updateDockWidgetTitles();
+	});
+
+	QAction* primary_action = menu->addAction(tr("Primary"));
+	primary_action->setCheckable(true);
+	primary_action->setChecked(widget->isPrimary());
+	primary_action->setEnabled(dock_widgets_of_type > 1);
+	connect(primary_action, &QAction::triggered, this, [this, tab_index](bool checked) {
+		if (!g_debugger_window)
+			return;
+
+		auto [widget, controller, view] = widgetsFromTabIndex(tab_index);
+		if (!widget)
+			return;
+
+		g_debugger_window->dockManager().setPrimaryDebuggerWidget(widget, checked);
+	});
 
 	QMenu* set_target_menu = menu->addMenu(tr("Set Target"));
+	QActionGroup* set_target_group = new QActionGroup(menu);
+	set_target_group->setExclusive(true);
 
 	for (BreakPointCpu cpu : DEBUG_CPUS)
 	{
 		const char* long_cpu_name = DebugInterface::longCpuName(cpu);
 		const char* cpu_name = DebugInterface::cpuName(cpu);
 		QString text = QString("%1 (%2)").arg(long_cpu_name).arg(cpu_name);
-		QAction* action = new QAction(text, menu);
-		connect(action, &QAction::triggered, this, [tab_bar, tab_index, cpu]() {
-			KDDockWidgets::Core::TabBar* tab_bar_controller = tab_bar->asController<KDDockWidgets::Core::TabBar>();
-			if (!tab_bar_controller)
-				return;
 
-			KDDockWidgets::Core::DockWidget* dock_controller = tab_bar_controller->dockWidgetAt(tab_index);
-			if (!dock_controller)
-				return;
-
-			KDDockWidgets::QtWidgets::DockWidget* dock_view =
-				static_cast<KDDockWidgets::QtWidgets::DockWidget*>(dock_controller->view());
-
-			DebuggerWidget* widget = qobject_cast<DebuggerWidget*>(dock_view->widget());
-			if (!widget)
-				return;
-
-			if (!g_debugger_window)
-				return;
-
-			if (!widget->setCpuOverride(cpu))
-				g_debugger_window->dockManager().recreateDebuggerWidget(dock_view->uniqueName());
-
-			g_debugger_window->dockManager().retranslateDockWidget(dock_controller);
+		QAction* cpu_action = set_target_menu->addAction(text);
+		cpu_action->setCheckable(true);
+		cpu_action->setChecked(widget->cpuOverride().has_value() && *widget->cpuOverride() == cpu);
+		connect(cpu_action, &QAction::triggered, this, [this, tab_index, cpu]() {
+			setCpuOverrideForTab(tab_index, cpu);
 		});
-		set_target_menu->addAction(action);
+		set_target_group->addAction(cpu_action);
 	}
 
 	set_target_menu->addSeparator();
 
-	QAction* inherit_action = new QAction(tr("Inherit From Layout"), menu);
-	connect(inherit_action, &QAction::triggered, this, [tab_bar, tab_index]() {
-		KDDockWidgets::Core::TabBar* tab_bar_controller = tab_bar->asController<KDDockWidgets::Core::TabBar>();
-		if (!tab_bar_controller)
-			return;
+	QAction* inherit_action = set_target_menu->addAction(tr("Inherit From Layout"));
+	inherit_action->setCheckable(true);
+	inherit_action->setChecked(!widget->cpuOverride().has_value());
+	connect(inherit_action, &QAction::triggered, this, [this, tab_index]() {
+		setCpuOverrideForTab(tab_index, std::nullopt);
+	});
+	set_target_group->addAction(inherit_action);
 
-		KDDockWidgets::Core::DockWidget* dock_controller = tab_bar_controller->dockWidgetAt(tab_index);
-		if (!dock_controller)
-			return;
-
-		KDDockWidgets::QtWidgets::DockWidget* dock_view =
-			static_cast<KDDockWidgets::QtWidgets::DockWidget*>(dock_controller->view());
-
-		DebuggerWidget* widget = qobject_cast<DebuggerWidget*>(dock_view->widget());
-		if (!widget)
-			return;
-
+	QAction* close_action = menu->addAction(tr("Close"));
+	connect(close_action, &QAction::triggered, this, [this, tab_index]() {
 		if (!g_debugger_window)
 			return;
 
-		if (!widget->setCpuOverride(std::nullopt))
-			g_debugger_window->dockManager().recreateDebuggerWidget(dock_view->uniqueName());
+		auto [widget, controller, view] = widgetsFromTabIndex(tab_index);
+		if (!widget)
+			return;
 
-		g_debugger_window->dockManager().retranslateDockWidget(dock_controller);
+		g_debugger_window->dockManager().destroyDebuggerWidget(widget->uniqueName());
 	});
-	set_target_menu->addAction(inherit_action);
 
-	menu->popup(tab_bar->mapToGlobal(pos));
+	menu->popup(mapToGlobal(pos));
 }
 
-bool DockTabBar::hasDebuggerWidget(int tab_index)
+void DockTabBar::setCpuOverrideForTab(int tab_index, std::optional<BreakPointCpu> cpu_override)
+{
+	if (!g_debugger_window)
+		return;
+
+	auto [widget, controller, view] = widgetsFromTabIndex(tab_index);
+	if (!widget)
+		return;
+
+	if (!widget->setCpuOverride(cpu_override))
+		g_debugger_window->dockManager().recreateDebuggerWidget(view->uniqueName());
+
+	g_debugger_window->dockManager().updateDockWidgetTitles();
+}
+
+DockTabBar::WidgetsFromTabIndexResult DockTabBar::widgetsFromTabIndex(int tab_index)
 {
 	KDDockWidgets::Core::TabBar* tab_bar_controller = asController<KDDockWidgets::Core::TabBar>();
 	if (!tab_bar_controller)
-		return false;
+		return {};
 
 	KDDockWidgets::Core::DockWidget* dock_controller = tab_bar_controller->dockWidgetAt(tab_index);
 	if (!dock_controller)
-		return false;
+		return {};
 
 	auto dock_view = static_cast<KDDockWidgets::QtWidgets::DockWidget*>(dock_controller->view());
 
 	DebuggerWidget* widget = qobject_cast<DebuggerWidget*>(dock_view->widget());
 	if (!widget)
-		return false;
+		return {};
 
-	return true;
+	return {widget, dock_controller, dock_view};
 }
 
 void DockTabBar::mouseDoubleClickEvent(QMouseEvent* ev)

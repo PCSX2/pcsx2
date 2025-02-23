@@ -21,6 +21,8 @@ class DockManager : public QObject
 public:
 	DockManager(QObject* parent = nullptr);
 
+	~DockManager();
+
 	DockManager(const DockManager& rhs) = delete;
 	DockManager& operator=(const DockManager& rhs) = delete;
 
@@ -71,11 +73,13 @@ public:
 
 	bool hasNameConflict(const std::string& name, DockLayout::Index layout_index);
 
-	void retranslateDockWidget(KDDockWidgets::Core::DockWidget* dock_widget);
-	void dockWidgetClosed(KDDockWidgets::Core::DockWidget* dock_widget);
+	void updateDockWidgetTitles();
 
 	const std::map<QString, QPointer<DebuggerWidget>>& debuggerWidgets();
-	void recreateDebuggerWidget(QString unique_name);
+	size_t countDebuggerWidgetsOfType(const char* type);
+	void recreateDebuggerWidget(const QString& unique_name);
+	void destroyDebuggerWidget(const QString& unique_name);
+	void setPrimaryDebuggerWidget(DebuggerWidget* widget, bool is_primary);
 	void switchToDebuggerWidget(DebuggerWidget* widget);
 
 	bool isLayoutLocked();

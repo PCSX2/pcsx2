@@ -24,7 +24,7 @@ using SearchResult = MemorySearchWidget::SearchResult;
 using namespace QtUtils;
 
 MemorySearchWidget::MemorySearchWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters)
+	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
 {
 	m_ui.setupUi(this);
 	this->repaint();
