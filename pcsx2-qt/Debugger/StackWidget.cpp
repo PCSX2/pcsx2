@@ -9,7 +9,7 @@
 #include <QtWidgets/QMenu>
 
 StackWidget::StackWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters)
+	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
 	, m_model(new StackModel(cpu()))
 {
 	m_ui.setupUi(this);

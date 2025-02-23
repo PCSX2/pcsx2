@@ -15,7 +15,7 @@ namespace DockUtils
 		KDDockWidgets::QtWidgets::DockWidget* view = nullptr;
 	};
 
-	DockWidgetPair dockWidgetFromName(QString unique_name);
+	DockWidgetPair dockWidgetFromName(const QString& unique_name);
 
 	enum PreferredLocation
 	{

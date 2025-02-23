@@ -9,7 +9,7 @@
 #include <QtWidgets/QMenu>
 
 ThreadWidget::ThreadWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters)
+	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
 	, m_model(new ThreadModel(cpu()))
 	, m_proxy_model(new QSortFilterProxyModel())
 {

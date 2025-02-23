@@ -28,7 +28,7 @@ namespace DockTables
 		DockUtils::PreferredLocation preferred_location;
 	};
 
-	extern const std::map<QString, DebuggerWidgetDescription> DEBUGGER_WIDGETS;
+	extern const std::map<std::string, DebuggerWidgetDescription> DEBUGGER_WIDGETS;
 
 	enum class DefaultDockGroup
 	{
