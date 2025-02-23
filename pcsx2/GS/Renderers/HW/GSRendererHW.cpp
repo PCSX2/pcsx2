@@ -826,20 +826,34 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 			// Tested on Tekken 5.
 			const GSVertex* v = &m_vertex.buff[0];
 			bool is_paving = true;
+			bool is_paving_h = true;
+			bool is_paving_v = true;
 			// SSE optimization: shuffle m[1] to have (4*32 bits) X, Y, U, V
 			const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
 			const int first_dpU = v[1].U - v[0].U;
+			const int first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
+			const int first_dpV = v[1].V - v[0].V;
 			for (u32 i = 0; i < m_vertex.next; i += 2)
 			{
 				const int dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
 				const int dpU = v[i + 1].U - v[i].U;
+
+				const int dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
+				const int dpV = v[i + 1].V - v[i].V;
 				if (dpX != first_dpX || dpU != first_dpU)
 				{
-					is_paving = false;
-					break;
+					is_paving_h = false;
 				}
-			}
 
+				if (dpY != first_dpY || dpV != first_dpV)
+				{
+					is_paving_v = false;
+				}
+
+				if (!is_paving_h && !is_paving_v)
+					break;
+			}
+			is_paving = is_paving_h || is_paving_v;
 #if 0
 			const GSVector4 delta_p = m_vt.m_max.p - m_vt.m_min.p;
 			const GSVector4 delta_t = m_vt.m_max.t - m_vt.m_min.t;
@@ -850,20 +864,92 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 			if (is_paving)
 			{
 				// Replace all sprite with a single fullscreen sprite.
+				u32 unique_verts = 2;
 				GSVertex* s = &m_vertex.buff[0];
+				if (is_paving_h)
+				{
+					s[0].XYZ.X = static_cast<u16>((16.0f * m_vt.m_min.p.x) + m_context->XYOFFSET.OFX);
+					s[1].XYZ.X = static_cast<u16>((16.0f * m_vt.m_max.p.x) + m_context->XYOFFSET.OFX);
 
-				s[0].XYZ.X = static_cast<u16>((16.0f * m_vt.m_min.p.x) + m_context->XYOFFSET.OFX);
-				s[1].XYZ.X = static_cast<u16>((16.0f * m_vt.m_max.p.x) + m_context->XYOFFSET.OFX);
-				s[0].XYZ.Y = static_cast<u16>((16.0f * m_vt.m_min.p.y) + m_context->XYOFFSET.OFY);
-				s[1].XYZ.Y = static_cast<u16>((16.0f * m_vt.m_max.p.y) + m_context->XYOFFSET.OFY);
+					s[0].U = static_cast<u16>(16.0f * m_vt.m_min.t.x);
+					s[1].U = static_cast<u16>(16.0f * m_vt.m_max.t.x);
+				}
+				else
+				{
+					for (u32 i = 2; i < (m_vertex.tail & ~1); i++)
+					{
+						bool unique_found = false;
 
-				s[0].U = static_cast<u16>(16.0f * m_vt.m_min.t.x);
-				s[0].V = static_cast<u16>(16.0f * m_vt.m_min.t.y);
-				s[1].U = static_cast<u16>(16.0f * m_vt.m_max.t.x);
-				s[1].V = static_cast<u16>(16.0f * m_vt.m_max.t.y);
+						for (u32 j = i & 1; j < unique_verts; i += 2)
+						{
+							if (s[i].XYZ.X != s[j].XYZ.X)
+							{
+								unique_found = true;
+								break;
+							}
+						}
+						if (unique_found)
+						{
+							unique_verts += 2;
+							s[unique_verts - 2].XYZ.X = s[i & ~1].XYZ.X;
+							s[unique_verts - 1].XYZ.X = s[i | 1].XYZ.X;
+							s[unique_verts - 2].U = s[i & ~1].U;
+							s[unique_verts - 1].U = s[i | 1].U;
 
-				m_vertex.head = m_vertex.tail = m_vertex.next = 2;
-				m_index.tail = 2;
+							s[unique_verts - 2].XYZ.Y = static_cast<u16>((16.0f * m_vt.m_min.p.y) + m_context->XYOFFSET.OFY);
+							s[unique_verts - 1].XYZ.Y = static_cast<u16>((16.0f * m_vt.m_max.p.y) + m_context->XYOFFSET.OFY);
+
+							s[unique_verts - 2].V = static_cast<u16>(16.0f * m_vt.m_min.t.y);
+							s[unique_verts - 1].V = static_cast<u16>(16.0f * m_vt.m_max.t.y);
+
+							i |= 1;
+						}
+					}
+				}
+
+				if (is_paving_v)
+				{
+					s[0].XYZ.Y = static_cast<u16>((16.0f * m_vt.m_min.p.y) + m_context->XYOFFSET.OFY);
+					s[1].XYZ.Y = static_cast<u16>((16.0f * m_vt.m_max.p.y) + m_context->XYOFFSET.OFY);
+
+					s[0].V = static_cast<u16>(16.0f * m_vt.m_min.t.y);
+					s[1].V = static_cast<u16>(16.0f * m_vt.m_max.t.y);
+				}
+				else
+				{
+					for (u32 i = 2; i < (m_vertex.tail & ~1); i++)
+					{
+						bool unique_found = false;
+
+						for (u32 j = i & 1; j < unique_verts; i+=2)
+						{
+							if (s[i].XYZ.Y != s[j].XYZ.Y)
+							{
+								unique_found = true;
+								break;
+							}
+						}
+						if (unique_found)
+						{
+							unique_verts += 2;
+							s[unique_verts - 2].XYZ.Y = s[i & ~1].XYZ.Y;
+							s[unique_verts - 1].XYZ.Y = s[i | 1].XYZ.Y;
+							s[unique_verts - 2].V = s[i & ~1].V;
+							s[unique_verts - 1].V = s[i | 1].V;
+
+							s[unique_verts - 2].XYZ.X = static_cast<u16>((16.0f * m_vt.m_min.p.x) + m_context->XYOFFSET.OFX);
+							s[unique_verts - 1].XYZ.X = static_cast<u16>((16.0f * m_vt.m_max.p.x) + m_context->XYOFFSET.OFX);
+
+							s[unique_verts - 2].U = static_cast<u16>(16.0f * m_vt.m_min.t.x);
+							s[unique_verts - 1].U = static_cast<u16>(16.0f * m_vt.m_max.t.x);
+
+							i |= 1;
+						}
+					}
+				}
+
+				m_vertex.head = m_vertex.tail = m_vertex.next = unique_verts;
+				m_index.tail = unique_verts;
 			}
 		}
 	}
