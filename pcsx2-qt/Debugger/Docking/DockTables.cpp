@@ -34,7 +34,7 @@ using namespace DockUtils;
 		} \
 	}
 
-const std::map<QString, DockTables::DebuggerWidgetDescription> DockTables::DEBUGGER_WIDGETS = {
+const std::map<std::string, DockTables::DebuggerWidgetDescription> DockTables::DEBUGGER_WIDGETS = {
 	DEBUGGER_WIDGET(BreakpointWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Breakpoints"), BOTTOM_MIDDLE),
 	DEBUGGER_WIDGET(DisassemblyWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Disassembly"), TOP_RIGHT),
 	DEBUGGER_WIDGET(FunctionTreeWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Functions"), TOP_LEFT),

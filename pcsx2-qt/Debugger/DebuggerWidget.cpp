@@ -21,13 +21,49 @@ DebugInterface& DebuggerWidget::cpu() const
 	return *m_cpu;
 }
 
-QString DebuggerWidget::displayName()
+QString DebuggerWidget::uniqueName() const
 {
-	auto description = DockTables::DEBUGGER_WIDGETS.find(metaObject()->className());
-	if (description == DockTables::DEBUGGER_WIDGETS.end())
-		return QString();
+	return m_unique_name;
+}
 
-	return QCoreApplication::translate("DebuggerWidget", description->second.display_name);
+QString DebuggerWidget::displayName() const
+{
+	QString name = displayNameWithoutSuffix();
+
+	// If there are multiple debugger widgets of the same name, append a number
+	// to the display name.
+	if (m_display_name_suffix_number.has_value())
+		name = tr("%1 #%2").arg(name).arg(*m_display_name_suffix_number);
+
+	if (m_cpu_override)
+		name = tr("%1 (%2)").arg(name).arg(DebugInterface::cpuName(*m_cpu_override));
+
+	return name;
+}
+
+QString DebuggerWidget::displayNameWithoutSuffix() const
+{
+	return m_translated_display_name;
+}
+
+QString DebuggerWidget::customDisplayName() const
+{
+	return m_custom_display_name;
+}
+
+void DebuggerWidget::setCustomDisplayName(QString display_name)
+{
+	m_custom_display_name = display_name;
+}
+
+bool DebuggerWidget::isPrimary() const
+{
+	return m_is_primary;
+}
+
+void DebuggerWidget::setPrimary(bool is_primary)
+{
+	m_is_primary = is_primary;
 }
 
 bool DebuggerWidget::setCpu(DebugInterface& new_cpu)
@@ -93,10 +129,24 @@ void DebuggerWidget::goToInMemoryView(u32 address, u32 flags)
 
 void DebuggerWidget::toJson(JsonValueWrapper& json)
 {
+	std::string custom_display_name_str = m_custom_display_name.toStdString();
+	rapidjson::Value custom_display_name;
+	custom_display_name.SetString(custom_display_name_str.c_str(), custom_display_name_str.size(), json.allocator());
+	json.value().AddMember("customDisplayName", custom_display_name, json.allocator());
+
+	json.value().AddMember("isPrimary", m_is_primary, json.allocator());
 }
 
 bool DebuggerWidget::fromJson(JsonValueWrapper& json)
 {
+	auto custom_display_name = json.value().FindMember("customDisplayName");
+	if (custom_display_name != json.value().MemberEnd() && custom_display_name->value.IsString())
+		m_custom_display_name = QString(custom_display_name->value.GetString());
+
+	auto is_primary = json.value().FindMember("isPrimary");
+	if (is_primary != json.value().MemberEnd() && is_primary->value.IsBool())
+		m_is_primary = is_primary->value.GetBool();
+
 	return true;
 }
 
@@ -113,10 +163,38 @@ void DebuggerWidget::applyMonospaceFont()
 #endif
 }
 
-DebuggerWidget::DebuggerWidget(const DebuggerWidgetParameters& parameters)
+bool DebuggerWidget::supportsMultipleInstances()
+{
+	return !(m_flags & DISALLOW_MULTIPLE_INSTANCES);
+}
+
+void DebuggerWidget::retranslateDisplayName()
+{
+	if (!m_custom_display_name.isEmpty())
+	{
+		m_translated_display_name = m_custom_display_name;
+	}
+	else
+	{
+		auto description = DockTables::DEBUGGER_WIDGETS.find(metaObject()->className());
+		if (description != DockTables::DEBUGGER_WIDGETS.end())
+			m_translated_display_name = QCoreApplication::translate("DebuggerWidget", description->second.display_name);
+		else
+			m_translated_display_name = QString();
+	}
+}
+
+void DebuggerWidget::setDisplayNameSuffixNumber(std::optional<int> suffix_number)
+{
+	m_display_name_suffix_number = suffix_number;
+}
+
+DebuggerWidget::DebuggerWidget(const DebuggerWidgetParameters& parameters, u32 flags)
 	: QWidget(parameters.parent)
+	, m_unique_name(parameters.unique_name)
 	, m_cpu(parameters.cpu)
 	, m_cpu_override(parameters.cpu_override)
+	, m_flags(flags)
 {
 }
 
@@ -126,7 +204,11 @@ void DebuggerWidget::sendEventImplementation(const DebuggerEvents::Event& event)
 		return;
 
 	for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerWidgets())
-		if (widget->handleEvent(event))
+		if (widget->isPrimary() && widget->handleEvent(event))
+			return;
+
+	for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerWidgets())
+		if (!widget->isPrimary() && widget->handleEvent(event))
 			return;
 }
 
@@ -154,6 +236,10 @@ std::vector<QAction*> DebuggerWidget::createEventActionsImplementation(
 	for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerWidgets())
 		if ((!skip_self || widget != this) && widget->acceptsEventType(event_type))
 			receivers.emplace_back(widget);
+
+	std::sort(receivers.begin(), receivers.end(), [&](const DebuggerWidget* lhs, const DebuggerWidget* rhs) {
+		return lhs->displayName() < rhs->displayName();
+	});
 
 	QMenu* submenu = nullptr;
 	if (receivers.size() > max_top_level_actions)

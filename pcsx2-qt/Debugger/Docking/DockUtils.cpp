@@ -8,7 +8,7 @@
 #include <kddockwidgets/qtwidgets/DockWidget.h>
 #include <kddockwidgets/qtwidgets/Group.h>
 
-DockUtils::DockWidgetPair DockUtils::dockWidgetFromName(QString unique_name)
+DockUtils::DockWidgetPair DockUtils::dockWidgetFromName(const QString& unique_name)
 {
 	KDDockWidgets::Vector<QString> names{unique_name};
 	KDDockWidgets::Vector<KDDockWidgets::Core::DockWidget*> dock_widgets =

@@ -159,7 +159,7 @@ void DockManager::loadLayouts()
 		DockLayout& layout = m_layouts.at(index);
 		const std::string& name = layout.name();
 		std::string new_name = name;
-		for (int i = 2; hasNameConflict(new_name, index) && i < 100; i++)
+		for (int i = 2; hasNameConflict(new_name, index); i++)
 		{
 			if (i == 99)
 			{
@@ -307,17 +307,91 @@ void DockManager::createWindowsMenu(QMenu* menu)
 
 	DockLayout& layout = m_layouts.at(m_current_layout);
 
-	for (const auto& [type, desc] : DockTables::DEBUGGER_WIDGETS)
+	// Create a menu that allows for multiple dock widgets of the same type to
+	// be opened.
+	QMenu* add_another_menu = menu->addMenu(tr("Add Another..."));
+
+	std::vector<QAction*> add_another_actions;
+	std::set<std::string> add_another_action_types;
+	for (const auto& [unique_name, widget] : layout.debuggerWidgets())
+	{
+		std::string type = widget->metaObject()->className();
+
+		if (widget->supportsMultipleInstances() && !add_another_action_types.contains(type))
+		{
+			QAction* action = new QAction(add_another_menu);
+			action->setText(widget->displayNameWithoutSuffix());
+			connect(action, &QAction::triggered, this, [this, type]() {
+				if (m_current_layout == DockLayout::INVALID_INDEX)
+					return;
+
+				m_layouts.at(m_current_layout).createDebuggerWidget(type);
+			});
+
+			add_another_actions.emplace_back(action);
+			add_another_action_types.emplace(type);
+		}
+	}
+
+	std::sort(add_another_actions.begin(), add_another_actions.end(),
+		[](const QAction* lhs, const QAction* rhs) {
+			return lhs->text() < rhs->text();
+		});
+
+	for (QAction* action : add_another_actions)
+		add_another_menu->addAction(action);
+
+	if (add_another_actions.empty())
+		add_another_menu->setDisabled(true);
+
+	menu->addSeparator();
+
+	std::vector<QAction*> actions;
+	std::set<std::string> action_types;
+
+	// Create a menu item for each open debugger widget.
+	for (const auto& [unique_name, widget] : layout.debuggerWidgets())
 	{
 		QAction* action = new QAction(menu);
-		action->setText(QCoreApplication::translate("DebuggerWidget", desc.display_name));
+		action->setText(widget->displayName());
 		action->setCheckable(true);
-		action->setChecked(layout.hasDebuggerWidget(type));
-		connect(action, &QAction::triggered, this, [&layout, type]() {
-			layout.toggleDebuggerWidget(type);
+		action->setChecked(true);
+		connect(action, &QAction::triggered, this, [this, unique_name]() {
+			if (m_current_layout == DockLayout::INVALID_INDEX)
+				return;
+
+			m_layouts.at(m_current_layout).destroyDebuggerWidget(unique_name);
 		});
-		menu->addAction(action);
+		actions.emplace_back(action);
+		action_types.emplace(widget->metaObject()->className());
 	}
+
+	// Create menu items to open debugger widgets without any open instances.
+	for (const auto& [type, desc] : DockTables::DEBUGGER_WIDGETS)
+	{
+		if (!action_types.contains(type))
+		{
+			QAction* action = new QAction(menu);
+			action->setText(QCoreApplication::translate("DebuggerWidget", desc.display_name));
+			action->setCheckable(true);
+			action->setChecked(false);
+			connect(action, &QAction::triggered, this, [this, type]() {
+				if (m_current_layout == DockLayout::INVALID_INDEX)
+					return;
+
+				m_layouts.at(m_current_layout).createDebuggerWidget(type);
+			});
+			actions.emplace_back(action);
+		}
+	}
+
+	std::sort(actions.begin(), actions.end(),
+		[](const QAction* lhs, const QAction* rhs) {
+			return lhs->text() < rhs->text();
+		});
+
+	for (QAction* action : actions)
+		menu->addAction(action);
 }
 
 QWidget* DockManager::createLayoutSwitcher(QWidget* menu_bar)
@@ -550,20 +624,12 @@ bool DockManager::hasNameConflict(const std::string& name, DockLayout::Index lay
 	return false;
 }
 
-void DockManager::retranslateDockWidget(KDDockWidgets::Core::DockWidget* dock_widget)
+void DockManager::updateDockWidgetTitles()
 {
 	if (m_current_layout == DockLayout::INVALID_INDEX)
 		return;
 
-	m_layouts.at(m_current_layout).retranslateDockWidget(dock_widget);
-}
-
-void DockManager::dockWidgetClosed(KDDockWidgets::Core::DockWidget* dock_widget)
-{
-	if (m_current_layout == DockLayout::INVALID_INDEX)
-		return;
-
-	m_layouts.at(m_current_layout).dockWidgetClosed(dock_widget);
+	m_layouts.at(m_current_layout).updateDockWidgetTitles();
 }
 
 const std::map<QString, QPointer<DebuggerWidget>>& DockManager::debuggerWidgets()
@@ -575,12 +641,36 @@ const std::map<QString, QPointer<DebuggerWidget>>& DockManager::debuggerWidgets(
 	return m_layouts.at(m_current_layout).debuggerWidgets();
 }
 
-void DockManager::recreateDebuggerWidget(QString unique_name)
+size_t DockManager::countDebuggerWidgetsOfType(const char* type)
+{
+	if (m_current_layout == DockLayout::INVALID_INDEX)
+		return 0;
+
+	return m_layouts.at(m_current_layout).countDebuggerWidgetsOfType(type);
+}
+
+void DockManager::recreateDebuggerWidget(const QString& unique_name)
 {
 	if (m_current_layout == DockLayout::INVALID_INDEX)
 		return;
 
 	m_layouts.at(m_current_layout).recreateDebuggerWidget(unique_name);
+}
+
+void DockManager::destroyDebuggerWidget(const QString& unique_name)
+{
+	if (m_current_layout == DockLayout::INVALID_INDEX)
+		return;
+
+	m_layouts.at(m_current_layout).destroyDebuggerWidget(unique_name);
+}
+
+void DockManager::setPrimaryDebuggerWidget(DebuggerWidget* widget, bool is_primary)
+{
+	if (m_current_layout == DockLayout::INVALID_INDEX)
+		return;
+
+	m_layouts.at(m_current_layout).setPrimaryDebuggerWidget(widget, is_primary);
 }
 
 void DockManager::switchToDebuggerWidget(DebuggerWidget* widget)
@@ -598,6 +688,7 @@ void DockManager::switchToDebuggerWidget(DebuggerWidget* widget)
 		}
 	}
 }
+
 
 bool DockManager::isLayoutLocked()
 {
