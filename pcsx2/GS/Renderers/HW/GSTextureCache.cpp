@@ -2132,8 +2132,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				// And invalidate the target, we're drawing over it so we don't care what's there.
 				// We can't do this when upscaling, because of the vertex offset, the top/left rows often aren't drawn.
 				GL_INS("TC: Invalidating%s target %s[%x] because it's completely overwritten.", to_string(type),
-					(scale > 1.0f && GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::Native) ? "[clearing] " : "", dst->m_TEX0.TBP0);
-				if (scale > 1.0f && GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native)
+					(scale > 1.0f && GSConfig.UserHacks_HalfPixelOffset >= GSHalfPixelOffset::Native) ? "[clearing] " : "", dst->m_TEX0.TBP0);
+				if (scale > 1.0f && GSConfig.UserHacks_HalfPixelOffset < GSHalfPixelOffset::Native)
 				{
 					if (dst->m_type == RenderTarget)
 						g_gs_device->ClearRenderTarget(dst->m_texture, 0);
