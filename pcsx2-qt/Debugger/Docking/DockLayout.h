@@ -92,14 +92,15 @@ public:
 	void thaw();
 
 	KDDockWidgets::Core::DockWidget* createDockWidget(const QString& name);
-	void retranslateDockWidgets();
-	void retranslateDockWidget(KDDockWidgets::Core::DockWidget* dock_widget);
-	void dockWidgetClosed(KDDockWidgets::Core::DockWidget* dock_widget);
+	void updateDockWidgetTitles();
 
 	const std::map<QString, QPointer<DebuggerWidget>>& debuggerWidgets();
-	bool hasDebuggerWidget(QString unique_name);
-	void toggleDebuggerWidget(QString unique_name);
-	void recreateDebuggerWidget(QString unique_name);
+	bool hasDebuggerWidget(const QString& unique_name);
+	size_t countDebuggerWidgetsOfType(const char* type);
+	void createDebuggerWidget(const std::string& type);
+	void recreateDebuggerWidget(const QString& unique_name);
+	void destroyDebuggerWidget(const QString& unique_name);
+	void setPrimaryDebuggerWidget(DebuggerWidget* widget, bool is_primary);
 
 	void deleteFile();
 
@@ -111,7 +112,12 @@ private:
 		DockLayout::LoadResult& result,
 		DockLayout::Index& index_last_session);
 
+	// Make sure there is only a single primary debugger widget of each type.
+	void validatePrimaryDebuggerWidgets();
+
 	void setupDefaultLayout();
+
+	QString generateNewUniqueName(const char* type);
 
 	// The name displayed in the user interface. Also used to determine the
 	// file name for the layout file.
@@ -123,6 +129,9 @@ private:
 
 	// Is this one of the default layouts?
 	bool m_is_default = false;
+
+	// A counter used to generate new unique names for dock widgets.
+	int m_next_unique_name = 0;
 
 	// The name of the default layout which this layout was based on. This will
 	// be used if the m_geometry variable above is empty.
@@ -145,7 +154,7 @@ private:
 	// exists exists on disk, or empty if no such file exists.
 	std::string m_layout_file_path;
 
-	// If this layout is the currently selected layout this will be false,
-	// otherwise it will be true.
-	bool m_is_frozen = true;
+	// If this layout is the currently selected layout this will be true,
+	// otherwise it will be false.
+	bool m_is_active = false;
 };

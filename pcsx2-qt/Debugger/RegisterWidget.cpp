@@ -20,7 +20,7 @@
 using namespace QtUtils;
 
 RegisterWidget::RegisterWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters)
+	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
 {
 	this->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 

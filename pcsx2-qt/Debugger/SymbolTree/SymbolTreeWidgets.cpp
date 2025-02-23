@@ -18,7 +18,7 @@ SymbolTreeWidget::SymbolTreeWidget(
 	u32 flags,
 	s32 symbol_address_alignment,
 	const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters)
+	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
 	, m_flags(flags)
 	, m_symbol_address_alignment(symbol_address_alignment)
 	, m_group_by_module(cpu().getCpuType() == BREAKPOINT_IOP)

@@ -15,6 +15,7 @@ class JsonValueWrapper;
 // Container for variables to be passed to the constructor of DebuggerWidget.
 struct DebuggerWidgetParameters
 {
+	QString unique_name;
 	DebugInterface* cpu = nullptr;
 	std::optional<BreakPointCpu> cpu_override;
 	QWidget* parent = nullptr;
@@ -26,8 +27,17 @@ class DebuggerWidget : public QWidget
 	Q_OBJECT
 
 public:
+	QString uniqueName() const;
+
 	// Get the translated name that should be displayed for this widget.
-	QString displayName();
+	QString displayName() const;
+	QString displayNameWithoutSuffix() const;
+
+	QString customDisplayName() const;
+	void setCustomDisplayName(QString display_name);
+
+	bool isPrimary() const;
+	void setPrimary(bool is_primary);
 
 	// Get the effective debug interface associated with this particular widget
 	// if it's set, otherwise return the one associated with the layout that
@@ -133,11 +143,25 @@ public:
 
 	void switchToThisTab();
 
+	bool supportsMultipleInstances();
+
+	void retranslateDisplayName();
+
+	std::optional<int> displayNameSuffixNumber() const;
+	void setDisplayNameSuffixNumber(std::optional<int> suffix_number);
+
 	static void goToInDisassembler(u32 address, bool switch_to_tab);
 	static void goToInMemoryView(u32 address, bool switch_to_tab);
 
 protected:
-	DebuggerWidget(const DebuggerWidgetParameters& parameters);
+	enum Flags
+	{
+		NO_DEBUGGER_FLAGS = 0,
+		// Prevent the user from opening multiple dock widgets of this type.
+		DISALLOW_MULTIPLE_INSTANCES = 1 << 0
+	};
+
+	DebuggerWidget(const DebuggerWidgetParameters& parameters, u32 flags);
 
 private:
 	static void sendEventImplementation(const DebuggerEvents::Event& event);
@@ -151,7 +175,22 @@ private:
 		const char* action_prefix,
 		std::function<const DebuggerEvents::Event*()> event_func);
 
+	QString m_unique_name;
+
+	// A user-defined name, or an empty string if no name was specified so that
+	// the default names can be retranslated on the fly.
+	QString m_custom_display_name;
+
+	QString m_translated_display_name;
+	std::optional<int> m_display_name_suffix_number;
+
+	// Primary debugger widgets will be chosen to handle events first. For
+	// example, clicking on an address to go to it in the primary memory view.
+	bool m_is_primary = false;
+
 	DebugInterface* m_cpu;
 	std::optional<BreakPointCpu> m_cpu_override;
+	u32 m_flags;
+
 	std::multimap<std::string, std::function<bool(const DebuggerEvents::Event&)>> m_event_handlers;
 };
