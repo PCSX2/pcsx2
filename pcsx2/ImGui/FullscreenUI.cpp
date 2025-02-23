@@ -641,7 +641,7 @@ bool FullscreenUI::Initialize()
 	if (s_tried_to_initialize)
 		return false;
 
-	ImGuiFullscreen::SetTheme(Host::GetBaseBoolSettingValue("UI", "UseLightFullscreenUITheme", false));
+	ImGuiFullscreen::SetTheme(Host::GetBaseStringSettingValue("UI", "FullscreenUITheme", "Dark"));
 	ImGuiFullscreen::UpdateLayoutScale();
 	ApplyConfirmSetting();
 
@@ -694,6 +694,8 @@ void FullscreenUI::CheckForConfigChanges(const Pcsx2Config& old_config)
 {
 	if (!IsInitialized())
 		return;
+
+	ImGuiFullscreen::SetTheme(Host::GetBaseStringSettingValue("UI", "FullscreenUITheme", "Dark"));
 
 	// If achievements got disabled, we might have the menu open...
 	// That means we're going to be reaching achievement state.
@@ -999,7 +1001,7 @@ bool FullscreenUI::LoadResources()
 	s_fallback_exe_texture = LoadTexture("fullscreenui/applications-system.png");
 
 	for (u32 i = static_cast<u32>(GameDatabaseSchema::Compatibility::Nothing);
-		 i <= static_cast<u32>(GameDatabaseSchema::Compatibility::Perfect); i++)
+		i <= static_cast<u32>(GameDatabaseSchema::Compatibility::Perfect); i++)
 	{
 		s_game_compatibility_textures[i - 1] = LoadTexture(fmt::format("icons/star-{}.png", i - 1).c_str());
 	}
@@ -3209,17 +3211,50 @@ void FullscreenUI::DrawSummarySettingsPage()
 
 void FullscreenUI::DrawInterfaceSettingsPage()
 {
+	static constexpr const char* s_theme_name[] = {
+		FSUI_NSTR("Dark"),
+		FSUI_NSTR("Light"),
+		FSUI_NSTR("Grey Matter"),
+		FSUI_NSTR("Untouched Lagoon"),
+		FSUI_NSTR("Baby Pastel"),
+		FSUI_NSTR("Pizza Time!"),
+		FSUI_NSTR("PCSX2 Blue"),
+		FSUI_NSTR("Scarlet Devil"),
+		FSUI_NSTR("Violet Angel"),
+		FSUI_NSTR("Cobalt Sky"),
+		FSUI_NSTR("AMOLED"),
+	};
+
+	static constexpr const char* s_theme_value[] = {
+		"Dark",
+		"Light",
+		"GreyMatter",
+		"UntouchedLagoon",
+		"BabyPastel",
+		"PizzaBrown",
+		"PCSX2Blue",
+		"ScarletDevil",
+		"VioletAngel",
+		"CobaltSky",
+		"AMOLED",
+	};
+
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 
 	BeginMenuButtons();
 
-	MenuHeading(FSUI_CSTR("Behaviour"));
+	MenuHeading(FSUI_CSTR("Appearance"));
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Theme"),
+		FSUI_CSTR("Selects the color style to be used for Big Picture Mode."),
+		"UI", "FullscreenUITheme", "Dark", s_theme_name, s_theme_value, std::size(s_theme_name), true);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_INFO_CIRCLE, "Use Save State Selector"),
+		FSUI_CSTR("Show a save state selector UI when switching slots instead of showing a notification bubble."),
+		"EmuCore", "UseSavestateSelector", true);
 
+	MenuHeading(FSUI_CSTR("Behaviour"));
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_SNOOZE, "Inhibit Screensaver"),
 		FSUI_CSTR("Prevents the screen saver from activating and the host from sleeping while emulation is running."), "EmuCore",
 		"InhibitScreensaver", true);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_USER_CIRCLE, "Enable Discord Presence"),
-		FSUI_CSTR("Shows the game you are currently playing as part of your profile on Discord."), "UI", "DiscordPresence", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PAUSE, "Pause On Start"), FSUI_CSTR("Pauses the emulator when a game is started."), "UI",
 		"StartPaused", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EYE, "Pause On Focus Loss"),
@@ -3239,15 +3274,6 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ARCHIVE, "Create Save State Backups"),
 		FSUI_CSTR("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix"),
 		"EmuCore", "BackupSavestate", true);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_INFO_CIRCLE, "Use Save State Selector"),
-		FSUI_CSTR("Show a save state selector UI when switching slots instead of showing a notification bubble."),
-		"EmuCore", "UseSavestateSelector", true);
-	if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Use Light Theme"),
-			FSUI_CSTR("Uses a light coloured theme instead of the default dark theme."), "UI", "UseLightFullscreenUITheme", false))
-	{
-		ImGuiFullscreen::SetTheme(bsi->GetBoolValue("UI", "UseLightFullscreenUITheme", false));
-	}
-
 	// DrawStringListSetting dosn't have a callback for applying settings
 	const SmallString swap_mode = bsi->GetSmallStringValue("UI", "SwapOKFullscreenUI", "auto");
 	static constexpr const char* swap_names[] = {
@@ -3293,6 +3319,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 			CloseChoiceDialog();
 		});
 	}
+
+	MenuHeading(FSUI_CSTR("Integration"));
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_USER_CIRCLE, "Enable Discord Presence"),
+		FSUI_CSTR("Shows the game you are currently playing as part of your profile on Discord."), "UI", "DiscordPresence", false);
 
 	MenuHeading(FSUI_CSTR("Game Display"));
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "Start Fullscreen"),

@@ -86,7 +86,6 @@ namespace ImGuiFullscreen
 	static u32 s_menu_button_index = 0;
 	static u32 s_close_button_state = 0;
 	static FocusResetType s_focus_reset_queued = FocusResetType::None;
-	static bool s_light_theme = false;
 
 	static LRUCache<std::string, std::shared_ptr<GSTexture>> s_texture_cache(128, true);
 	static std::shared_ptr<GSTexture> s_placeholder_texture;
@@ -2668,10 +2667,10 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 	ImFont* const title_font = ImGuiFullscreen::g_large_font;
 	ImFont* const text_font = ImGuiFullscreen::g_medium_font;
 
-	const u32 toast_background_color = s_light_theme ? IM_COL32(241, 241, 241, 255) : IM_COL32(0x21, 0x21, 0x21, 255);
-	const u32 toast_border_color = s_light_theme ? IM_COL32(0x88, 0x88, 0x88, 255) : IM_COL32(0x48, 0x48, 0x48, 255);
-	const u32 toast_title_color = s_light_theme ? IM_COL32(1, 1, 1, 255) : IM_COL32(0xff, 0xff, 0xff, 255);
-	const u32 toast_text_color = s_light_theme ? IM_COL32(0, 0, 0, 255) : IM_COL32(0xff, 0xff, 0xff, 255);
+	const u32 toast_background_color = IM_COL32(0x21, 0x21, 0x21, 255);
+	const u32 toast_border_color = IM_COL32(0x48, 0x48, 0x48, 255);
+	const u32 toast_title_color = IM_COL32(0xff, 0xff, 0xff, 255);
+	const u32 toast_text_color = IM_COL32(0xff, 0xff, 0xff, 255);
 
 	for (u32 index = 0; index < static_cast<u32>(s_notifications.size());)
 	{
@@ -2839,13 +2838,10 @@ void ImGuiFullscreen::DrawToast()
 	}
 }
 
-void ImGuiFullscreen::SetTheme(bool light)
+void ImGuiFullscreen::SetTheme(std::string_view theme)
 {
-	s_light_theme = light;
-
-	if (!light)
+	if (theme == "Dark")
 	{
-		// dark
 		UIBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xff);
 		UIBackgroundTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
 		UIBackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
@@ -2863,9 +2859,8 @@ void ImGuiFullscreen::SetTheme(bool light)
 		UISecondaryWeakColor = HEX_TO_IMVEC4(0x002171, 0xff);
 		UISecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
 	}
-	else
+	else if (theme == "Light")
 	{
-		// light
 		UIBackgroundColor = HEX_TO_IMVEC4(0xc8c8c8, 0xff);
 		UIBackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
 		UIBackgroundLineColor = HEX_TO_IMVEC4(0xe1e2e1, 0xff);
@@ -2881,6 +2876,177 @@ void ImGuiFullscreen::SetTheme(bool light)
 		UISecondaryColor = HEX_TO_IMVEC4(0x2a3e78, 0xff);
 		UISecondaryStrongColor = HEX_TO_IMVEC4(0x464db1, 0xff);
 		UISecondaryWeakColor = HEX_TO_IMVEC4(0xc0cfff, 0xff);
+		UISecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+	}
+	else if (theme == "AMOLED")
+	{
+		UIBackgroundColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIBackgroundTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UIBackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
+		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0x0c0c0c, 0xff);
+		UIPopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
+		UIPrimaryColor = HEX_TO_IMVEC4(0x0a0a0a, 0xff);
+		UIPrimaryLightColor = HEX_TO_IMVEC4(0xb5b5b5, 0xff);
+		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIPrimaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UIDisabledColor = HEX_TO_IMVEC4(0x8d8d8d, 0xff);
+		UITextHighlightColor = HEX_TO_IMVEC4(0x676767, 0xff);
+		UIPrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UISecondaryColor = HEX_TO_IMVEC4(0x969696, 0xff);
+		UISecondaryStrongColor = HEX_TO_IMVEC4(0x191919, 0xff);
+		UISecondaryWeakColor = HEX_TO_IMVEC4(0x474747, 0xff);
+		UISecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+	}
+	else if (theme == "CobaltSky")
+	{
+		UIBackgroundColor = HEX_TO_IMVEC4(0x2b3760, 0xff);
+		UIBackgroundTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UIBackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
+		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0x3b54ac, 0xff);
+		UIPopupBackgroundColor = HEX_TO_IMVEC4(0x2b3760, 0xf2);
+		UIPrimaryColor = HEX_TO_IMVEC4(0x202e5a, 0xff);
+		UIPrimaryLightColor = HEX_TO_IMVEC4(0xb5b5b5, 0xff);
+		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x222c4d, 0xff);
+		UIPrimaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UIDisabledColor = HEX_TO_IMVEC4(0x8d8d8d, 0xff);
+		UITextHighlightColor = HEX_TO_IMVEC4(0x676767, 0xff);
+		UIPrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UISecondaryColor = HEX_TO_IMVEC4(0x969696, 0xff);
+		UISecondaryStrongColor = HEX_TO_IMVEC4(0x245dda, 0xff);
+		UISecondaryWeakColor = HEX_TO_IMVEC4(0x3a3d7b, 0xff);
+		UISecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+	}
+	else if (theme == "GreyMatter")
+	{
+		UIBackgroundColor = HEX_TO_IMVEC4(0x353944, 0xff);
+		UIBackgroundTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UIBackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
+		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0x484d57, 0xff);
+		UIPopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
+		UIPrimaryColor = HEX_TO_IMVEC4(0x292d35, 0xff);
+		UIPrimaryLightColor = HEX_TO_IMVEC4(0xb5b5b5, 0xff);
+		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x212121, 0xff);
+		UIPrimaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UIDisabledColor = HEX_TO_IMVEC4(0x8d8d8d, 0xff);
+		UITextHighlightColor = HEX_TO_IMVEC4(0x676767, 0xff);
+		UIPrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UISecondaryColor = HEX_TO_IMVEC4(0x969696, 0xff);
+		UISecondaryStrongColor = HEX_TO_IMVEC4(0x191919, 0xff);
+		UISecondaryWeakColor = HEX_TO_IMVEC4(0x2a2e36, 0xff);
+		UISecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+	}
+	else if (theme == "UntouchedLagoon")
+	{
+		UIBackgroundColor = HEX_TO_IMVEC4(0x9db1bb, 0xff);
+		UIBackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIBackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
+		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0x1b7f7f, 0xff);
+		UIPopupBackgroundColor = HEX_TO_IMVEC4(0x488c8c, 0xf2);
+		UIPrimaryColor = HEX_TO_IMVEC4(0xa2c2bc, 0xff);
+		UIPrimaryLightColor = HEX_TO_IMVEC4(0xadcfc8, 0xff);
+		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x488c8c, 0xff);
+		UIPrimaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIDisabledColor = HEX_TO_IMVEC4(0x4b4b4b, 0xff);
+		UITextHighlightColor = HEX_TO_IMVEC4(0x676767, 0xff);
+		UIPrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UISecondaryColor = HEX_TO_IMVEC4(0x969696, 0xff);
+		UISecondaryStrongColor = HEX_TO_IMVEC4(0x2a5151, 0xff);
+		UISecondaryWeakColor = HEX_TO_IMVEC4(0x475055, 0xff);
+		UISecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+	}
+	else if (theme == "BabyPastel")
+	{
+		UIBackgroundColor = HEX_TO_IMVEC4(0xf1d9ee, 0xff);
+		UIBackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIBackgroundLineColor = HEX_TO_IMVEC4(0xe05885, 0xff);
+		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0xe05885, 0xff);
+		UIPopupBackgroundColor = HEX_TO_IMVEC4(0xeba0b9, 0xf2);
+		UIPrimaryColor = HEX_TO_IMVEC4(0xffaec9, 0xff);
+		UIPrimaryLightColor = HEX_TO_IMVEC4(0xe05885, 0xff);
+		UIPrimaryDarkColor = HEX_TO_IMVEC4(0xc3859a, 0xff);
+		UIPrimaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIDisabledColor = HEX_TO_IMVEC4(0x4b4b4b, 0xff);
+		UITextHighlightColor = HEX_TO_IMVEC4(0xeba0b9, 0xff);
+		UIPrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UISecondaryColor = HEX_TO_IMVEC4(0xe05885, 0xff);
+		UISecondaryStrongColor = HEX_TO_IMVEC4(0xdc6c68, 0xff);
+		UISecondaryWeakColor = HEX_TO_IMVEC4(0xab5451, 0xff);
+		UISecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+	}
+	else if (theme == "PizzaBrown")
+	{
+		UIBackgroundColor = HEX_TO_IMVEC4(0xd9c9ba, 0xff);
+		UIBackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIBackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
+		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0xaa5a36, 0xff);
+		UIPopupBackgroundColor = HEX_TO_IMVEC4(0xefad42, 0xf2);
+		UIPrimaryColor = HEX_TO_IMVEC4(0xe9bb93, 0xff);
+		UIPrimaryLightColor = HEX_TO_IMVEC4(0xf9e7ac, 0xff);
+		UIPrimaryDarkColor = HEX_TO_IMVEC4(0xefad42, 0xff);
+		UIPrimaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIDisabledColor = HEX_TO_IMVEC4(0x4b4b4b, 0xff);
+		UITextHighlightColor = HEX_TO_IMVEC4(0x676767, 0xff);
+		UIPrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UISecondaryColor = HEX_TO_IMVEC4(0x969696, 0xff);
+		UISecondaryStrongColor = HEX_TO_IMVEC4(0xaf1c2f, 0xff);
+		UISecondaryWeakColor = HEX_TO_IMVEC4(0xab5451, 0xff);
+		UISecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+	}
+	else if (theme == "ScarletDevil")
+	{
+		UIBackgroundColor = HEX_TO_IMVEC4(0x782c44, 0xff);
+		UIBackgroundTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UIBackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
+		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0xa73e5f, 0xff);
+		UIPopupBackgroundColor = HEX_TO_IMVEC4(0x88475d, 0xf2);
+		UIPrimaryColor = HEX_TO_IMVEC4(0x4f2c44, 0xff);
+		UIPrimaryLightColor = HEX_TO_IMVEC4(0xb5b5b5, 0xff);
+		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x632438, 0xff);
+		UIPrimaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UIDisabledColor = HEX_TO_IMVEC4(0x969696, 0xff);
+		UITextHighlightColor = HEX_TO_IMVEC4(0x676767, 0xff);
+		UIPrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UISecondaryColor = HEX_TO_IMVEC4(0x969696, 0xff);
+		UISecondaryStrongColor = HEX_TO_IMVEC4(0xc80000, 0xff);
+		UISecondaryWeakColor = HEX_TO_IMVEC4(0x8a334e, 0xff);
+		UISecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+	}
+	else if (theme == "VioletAngel")
+	{
+		UIBackgroundColor = HEX_TO_IMVEC4(0x6e1e7d, 0xff);
+		UIBackgroundTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UIBackgroundLineColor = HEX_TO_IMVEC4(0x862c9c, 0xff);
+		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0x862c9c, 0xff);
+		UIPopupBackgroundColor = HEX_TO_IMVEC4(0x502657, 0xf2);
+		UIPrimaryColor = HEX_TO_IMVEC4(0x321846, 0xff);
+		UIPrimaryLightColor = HEX_TO_IMVEC4(0x9833d6, 0xff);
+		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x70269e, 0xff);
+		UIPrimaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UIDisabledColor = HEX_TO_IMVEC4(0x969696, 0xff);
+		UITextHighlightColor = HEX_TO_IMVEC4(0x676767, 0xff);
+		UIPrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UISecondaryColor = HEX_TO_IMVEC4(0xe200cb, 0xff);
+		UISecondaryStrongColor = HEX_TO_IMVEC4(0xff00e6, 0xff);
+		UISecondaryWeakColor = HEX_TO_IMVEC4(0x561d79, 0xff);
+		UISecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+	}
+	else if (theme == "PCSX2Blue")
+	{
+		UIBackgroundColor = HEX_TO_IMVEC4(0x819af0, 0xff);
+		UIBackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIBackgroundLineColor = HEX_TO_IMVEC4(0x89a5ff, 0xff);
+		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0xfefffe, 0xff);
+		UIPopupBackgroundColor = HEX_TO_IMVEC4(0xb4cffe, 0xf2);
+		UIPrimaryColor = HEX_TO_IMVEC4(0x92b6fe, 0xff);
+		UIPrimaryLightColor = HEX_TO_IMVEC4(0x89a5ff, 0xff);
+		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x7c8ef3, 0xff);
+		UIPrimaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIDisabledColor = HEX_TO_IMVEC4(0x4b4b4b, 0xff);
+		UITextHighlightColor = HEX_TO_IMVEC4(0x676767, 0xff);
+		UIPrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UISecondaryColor = HEX_TO_IMVEC4(0x92b6fe, 0xff);
+		UISecondaryStrongColor = HEX_TO_IMVEC4(0x0c53c5, 0xff);
+		UISecondaryWeakColor = HEX_TO_IMVEC4(0x819af0, 0xff);
 		UISecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
 	}
 }
