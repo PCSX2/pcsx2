@@ -315,17 +315,119 @@ void DockManager::createWindowsMenu(QMenu* menu)
 
 	DockLayout& layout = m_layouts.at(m_current_layout);
 
-	for (const auto& [type, desc] : DockTables::DEBUGGER_WIDGETS)
+	// Create a menu that allows for multiple dock widgets of the same type to
+	// be opened.
+	QMenu* add_another_menu = menu->addMenu(tr("Add Another..."));
+
+	std::vector<DebuggerWidget*> add_another_widgets;
+	std::set<std::string> add_another_types;
+	for (const auto& [unique_name, widget] : layout.debuggerWidgets())
+	{
+		std::string type = widget->metaObject()->className();
+
+		if (widget->supportsMultipleInstances() && !add_another_types.contains(type))
+		{
+			add_another_widgets.emplace_back(widget);
+			add_another_types.emplace(type);
+		}
+	}
+
+	std::sort(add_another_widgets.begin(), add_another_widgets.end(),
+		[](const DebuggerWidget* lhs, const DebuggerWidget* rhs) {
+			if (lhs->displayNameWithoutSuffix() == rhs->displayNameWithoutSuffix())
+				return lhs->displayNameSuffixNumber() < rhs->displayNameSuffixNumber();
+
+			return lhs->displayNameWithoutSuffix() < rhs->displayNameWithoutSuffix();
+		});
+
+	for (DebuggerWidget* widget : add_another_widgets)
+	{
+		const char* type = widget->metaObject()->className();
+
+		const auto description_iterator = DockTables::DEBUGGER_WIDGETS.find(type);
+		pxAssert(description_iterator != DockTables::DEBUGGER_WIDGETS.end());
+
+		QAction* action = add_another_menu->addAction(description_iterator->second.display_name);
+		connect(action, &QAction::triggered, this, [this, type]() {
+			if (m_current_layout == DockLayout::INVALID_INDEX)
+				return;
+
+			m_layouts.at(m_current_layout).createDebuggerWidget(type);
+		});
+	}
+
+	if (add_another_widgets.empty())
+		add_another_menu->setDisabled(true);
+
+	menu->addSeparator();
+
+	struct DebuggerWidgetToggle
+	{
+		QString display_name;
+		std::optional<int> suffix_number;
+		QAction* action;
+	};
+
+	std::vector<DebuggerWidgetToggle> toggles;
+	std::set<std::string> toggle_types;
+
+	// Create a menu item for each open debugger widget.
+	for (const auto& [unique_name, widget] : layout.debuggerWidgets())
 	{
 		QAction* action = new QAction(menu);
-		action->setText(QCoreApplication::translate("DebuggerWidget", desc.display_name));
+		action->setText(widget->displayName());
 		action->setCheckable(true);
-		action->setChecked(layout.hasDebuggerWidget(type));
-		connect(action, &QAction::triggered, this, [&layout, type]() {
-			layout.toggleDebuggerWidget(type);
+		action->setChecked(true);
+		connect(action, &QAction::triggered, this, [this, unique_name]() {
+			if (m_current_layout == DockLayout::INVALID_INDEX)
+				return;
+
+			m_layouts.at(m_current_layout).destroyDebuggerWidget(unique_name);
 		});
-		menu->addAction(action);
+
+		DebuggerWidgetToggle& toggle = toggles.emplace_back();
+		toggle.display_name = widget->displayNameWithoutSuffix();
+		toggle.suffix_number = widget->displayNameSuffixNumber();
+		toggle.action = action;
+
+		toggle_types.emplace(widget->metaObject()->className());
 	}
+
+	// Create menu items to open debugger widgets without any open instances.
+	for (const auto& [type, desc] : DockTables::DEBUGGER_WIDGETS)
+	{
+		if (!toggle_types.contains(type))
+		{
+			QString display_name = QCoreApplication::translate("DebuggerWidget", desc.display_name);
+
+			QAction* action = new QAction(menu);
+			action->setText(display_name);
+			action->setCheckable(true);
+			action->setChecked(false);
+			connect(action, &QAction::triggered, this, [this, type]() {
+				if (m_current_layout == DockLayout::INVALID_INDEX)
+					return;
+
+				m_layouts.at(m_current_layout).createDebuggerWidget(type);
+			});
+
+			DebuggerWidgetToggle& toggle = toggles.emplace_back();
+			toggle.display_name = display_name;
+			toggle.suffix_number = std::nullopt;
+			toggle.action = action;
+		}
+	}
+
+	std::sort(toggles.begin(), toggles.end(),
+		[](const DebuggerWidgetToggle& lhs, const DebuggerWidgetToggle& rhs) {
+			if (lhs.display_name == rhs.display_name)
+				return lhs.suffix_number < rhs.suffix_number;
+
+			return lhs.display_name < rhs.display_name;
+		});
+
+	for (const DebuggerWidgetToggle& toggle : toggles)
+		menu->addAction(toggle.action);
 }
 
 QWidget* DockManager::createLayoutSwitcher(QWidget* menu_bar)
@@ -564,20 +666,12 @@ bool DockManager::hasNameConflict(const std::string& name, DockLayout::Index lay
 	return false;
 }
 
-void DockManager::retranslateDockWidget(KDDockWidgets::Core::DockWidget* dock_widget)
+void DockManager::updateDockWidgetTitles()
 {
 	if (m_current_layout == DockLayout::INVALID_INDEX)
 		return;
 
-	m_layouts.at(m_current_layout).retranslateDockWidget(dock_widget);
-}
-
-void DockManager::dockWidgetClosed(KDDockWidgets::Core::DockWidget* dock_widget)
-{
-	if (m_current_layout == DockLayout::INVALID_INDEX)
-		return;
-
-	m_layouts.at(m_current_layout).dockWidgetClosed(dock_widget);
+	m_layouts.at(m_current_layout).updateDockWidgetTitles();
 }
 
 const std::map<QString, QPointer<DebuggerWidget>>& DockManager::debuggerWidgets()
@@ -589,12 +683,36 @@ const std::map<QString, QPointer<DebuggerWidget>>& DockManager::debuggerWidgets(
 	return m_layouts.at(m_current_layout).debuggerWidgets();
 }
 
-void DockManager::recreateDebuggerWidget(QString unique_name)
+size_t DockManager::countDebuggerWidgetsOfType(const char* type)
+{
+	if (m_current_layout == DockLayout::INVALID_INDEX)
+		return 0;
+
+	return m_layouts.at(m_current_layout).countDebuggerWidgetsOfType(type);
+}
+
+void DockManager::recreateDebuggerWidget(const QString& unique_name)
 {
 	if (m_current_layout == DockLayout::INVALID_INDEX)
 		return;
 
 	m_layouts.at(m_current_layout).recreateDebuggerWidget(unique_name);
+}
+
+void DockManager::destroyDebuggerWidget(const QString& unique_name)
+{
+	if (m_current_layout == DockLayout::INVALID_INDEX)
+		return;
+
+	m_layouts.at(m_current_layout).destroyDebuggerWidget(unique_name);
+}
+
+void DockManager::setPrimaryDebuggerWidget(DebuggerWidget* widget, bool is_primary)
+{
+	if (m_current_layout == DockLayout::INVALID_INDEX)
+		return;
+
+	m_layouts.at(m_current_layout).setPrimaryDebuggerWidget(widget, is_primary);
 }
 
 void DockManager::switchToDebuggerWidget(DebuggerWidget* widget)
@@ -612,6 +730,7 @@ void DockManager::switchToDebuggerWidget(DebuggerWidget* widget)
 		}
 	}
 }
+
 
 bool DockManager::isLayoutLocked()
 {

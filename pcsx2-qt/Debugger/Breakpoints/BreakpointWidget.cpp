@@ -11,7 +11,7 @@
 #include <QtGui/QClipboard>
 
 BreakpointWidget::BreakpointWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters)
+	: DebuggerWidget(parameters, DISALLOW_MULTIPLE_INSTANCES)
 	, m_model(new BreakpointModel(cpu()))
 {
 	m_ui.setupUi(this);

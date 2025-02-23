@@ -33,7 +33,7 @@ enum BreakPointCpu
 	BREAKPOINT_IOP_AND_EE = 0x03
 };
 
-inline std::vector<BreakPointCpu> DEBUG_CPUS = {
+inline const std::array<BreakPointCpu, 2> DEBUG_CPUS = {
 	BREAKPOINT_EE,
 	BREAKPOINT_IOP,
 };
