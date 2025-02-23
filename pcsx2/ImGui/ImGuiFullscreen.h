@@ -91,7 +91,7 @@ namespace ImGuiFullscreen
 	/// Initializes, setting up any state.
 	bool Initialize(const char* placeholder_image_path);
 
-	void SetTheme(bool light);
+	void SetTheme(std::string_view theme);
 	void SetFonts(ImFont* standard_font, ImFont* medium_font, ImFont* large_font);
 	bool UpdateLayoutScale();
 
