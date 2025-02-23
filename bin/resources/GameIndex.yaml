@@ -1270,6 +1270,7 @@ SCAJ-10015:
   region: "NTSC-Unk"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
 SCAJ-20001:
   name: "Ratchet & Clank"
   region: "NTSC-Unk"
@@ -54688,6 +54689,7 @@ SLPS-20485:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
 SLPS-20486:
   name: "太鼓の達人 ドカッ！と大盛り七代目 [ソフト単体]"
   name-sort: "たいこのたつじん どかっ！とおおもりななだいめ [そふとたんたい]"
@@ -54695,6 +54697,7 @@ SLPS-20486:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
 SLPS-20487:
   name: "パチスロキング！ 科学忍者隊ガッチャマン"
   name-sort: "ぱちすろきんぐ！ かがくにんじゃたいがっちゃまん"
