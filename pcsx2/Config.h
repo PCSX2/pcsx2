@@ -440,6 +440,7 @@ enum class GSHalfPixelOffset : u8
 	Special,
 	SpecialAggressive,
 	Native,
+	NativeWTexOffset,
 	MaxCount
 };
 

@@ -1055,7 +1055,12 @@
          </item>
          <item>
           <property name="text">
-           <string>Align To Native</string>
+           <string>Align to Native</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Align to Native - with Texture Offset</string>
           </property>
          </item>
         </widget>
