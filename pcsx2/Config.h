@@ -822,12 +822,12 @@ struct Pcsx2Config
 		u16 SWExtraThreads = 2;
 		u16 SWExtraThreadsHeight = 4;
 
-		int SaveN = 0;
-		int SaveL = 5000;
-		int SaveB = 1;
-		int SaveNF = 0;
-		int SaveLF = -1;
-		int SaveBF = 1;
+		int SaveDrawStart = 0;
+		int SaveDrawCount = 5000;
+		int SaveDrawBy = 1;
+		int SaveFrameStart = 0;
+		int SaveFrameCount = -1;
+		int SaveFrameBy = 1;
 
 		s8 ExclusiveFullscreenControl = -1;
 		GSScreenshotSize ScreenshotSize = GSScreenshotSize::WindowResolution;

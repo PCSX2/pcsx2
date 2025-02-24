@@ -838,12 +838,12 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(ShadeBoost_Contrast) &&
 		OpEqu(ShadeBoost_Saturation) &&
 		OpEqu(PNGCompressionLevel) &&
-		OpEqu(SaveN) &&
-		OpEqu(SaveL) &&
-		OpEqu(SaveB) &&
-		OpEqu(SaveNF) &&
-		OpEqu(SaveLF) &&
-		OpEqu(SaveBF) &&
+		OpEqu(SaveDrawStart) &&
+		OpEqu(SaveDrawCount) &&
+		OpEqu(SaveDrawBy) &&
+		OpEqu(SaveFrameStart) &&
+		OpEqu(SaveFrameCount) &&
+		OpEqu(SaveFrameBy) &&
 
 		OpEqu(ExclusiveFullscreenControl) &&
 		OpEqu(ScreenshotSize) &&
@@ -965,13 +965,13 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBoolEx(UserHacks_EstimateTextureRegion, "UserHacks_EstimateTextureRegion");
 	SettingsWrapBitBoolEx(FXAA, "fxaa");
 	SettingsWrapBitBool(ShadeBoost);
-	SettingsWrapBitBoolEx(DumpGSData, "dump");
-	SettingsWrapBitBoolEx(SaveRT, "save");
-	SettingsWrapBitBoolEx(SaveFrame, "savef");
-	SettingsWrapBitBoolEx(SaveTexture, "savet");
-	SettingsWrapBitBoolEx(SaveDepth, "savez");
-	SettingsWrapBitBoolEx(SaveAlpha, "savea");
-	SettingsWrapBitBoolEx(SaveInfo, "savei");
+	SettingsWrapBitBoolEx(DumpGSData, "DumpGSData");
+	SettingsWrapBitBoolEx(SaveRT, "SaveRT");
+	SettingsWrapBitBoolEx(SaveFrame, "SaveFrame");
+	SettingsWrapBitBoolEx(SaveTexture, "SaveTexture");
+	SettingsWrapBitBoolEx(SaveDepth, "SaveDepth");
+	SettingsWrapBitBoolEx(SaveAlpha, "SaveAlpha");
+	SettingsWrapBitBoolEx(SaveInfo, "SaveInfo");
 	SettingsWrapBitBool(DumpReplaceableTextures);
 	SettingsWrapBitBool(DumpReplaceableMipmaps);
 	SettingsWrapBitBool(DumpTexturesWithFMVActive);
@@ -1030,12 +1030,12 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfield(ShadeBoost_Saturation);
 	SettingsWrapBitfield(ExclusiveFullscreenControl);
 	SettingsWrapBitfieldEx(PNGCompressionLevel, "png_compression_level");
-	SettingsWrapBitfieldEx(SaveN, "saven");
-	SettingsWrapBitfieldEx(SaveL, "savel");
-	SettingsWrapBitfieldEx(SaveB, "saveb");
-	SettingsWrapBitfieldEx(SaveNF, "savenf");
-	SettingsWrapBitfieldEx(SaveLF, "savelf");
-	SettingsWrapBitfieldEx(SaveBF, "savebf");
+	SettingsWrapBitfieldEx(SaveDrawStart, "SaveDrawStart");
+	SettingsWrapBitfieldEx(SaveDrawCount, "SaveDrawCount");
+	SettingsWrapBitfieldEx(SaveDrawBy, "SaveDrawBy");
+	SettingsWrapBitfieldEx(SaveFrameStart, "SaveFrameStart");
+	SettingsWrapBitfieldEx(SaveFrameCount, "SaveFrameCount");
+	SettingsWrapBitfieldEx(SaveFrameBy, "SaveFrameBy");
 
 	SettingsWrapEntryEx(CaptureContainer, "CaptureContainer");
 	SettingsWrapEntryEx(VideoCaptureCodec, "VideoCaptureCodec");
@@ -1122,9 +1122,11 @@ bool Pcsx2Config::GSOptions::UseHardwareRenderer() const
 
 bool Pcsx2Config::GSOptions::ShouldDump(int draw, int frame) const
 {
+	int drawOffset = draw - SaveDrawStart;
+	int frameOffset = frame - SaveFrameStart;
 	return DumpGSData &&
-		(SaveN <= draw) && ((SaveL < 0) || (draw < SaveN + SaveL)) && (draw % SaveB == 0) &&
-		(SaveNF <= frame) && ((SaveLF < 0) || (frame < SaveNF + SaveLF)) && (frame % SaveBF == 0);
+		   (drawOffset >= 0) && ((SaveDrawCount < 0) || (drawOffset < SaveDrawCount)) && (drawOffset % SaveDrawBy == 0) &&
+		   (frameOffset >= 0) && ((SaveFrameCount < 0) || (frameOffset < SaveFrameCount)) && (frameOffset % SaveFrameBy == 0);
 }
 
 static constexpr const std::array s_spu2_sync_mode_names = {
