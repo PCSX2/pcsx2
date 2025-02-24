@@ -60,16 +60,16 @@ else()
 	target_sources(core_test PRIVATE ${multi_isa_sources})
 endif()
 
-if(WIN32 AND TARGET SDL2::SDL2)
-	# Copy SDL2 DLL to binary directory.
+if(WIN32 AND TARGET SDL3::SDL3)
+	# Copy SDL3 DLL to binary directory.
 	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		get_property(SDL2_DLL_PATH TARGET SDL2::SDL2 PROPERTY IMPORTED_LOCATION_DEBUG)
+		get_property(SDL3_DLL_PATH TARGET SDL3::SDL3 PROPERTY IMPORTED_LOCATION_DEBUG)
 	else()
-		get_property(SDL2_DLL_PATH TARGET SDL2::SDL2 PROPERTY IMPORTED_LOCATION_RELEASE)
+		get_property(SDL3_DLL_PATH TARGET SDL3::SDL3 PROPERTY IMPORTED_LOCATION_RELEASE)
 	endif()
-	if(SDL2_DLL_PATH)
+	if(SDL3_DLL_PATH)
 		add_custom_command(TARGET core_test POST_BUILD
 			COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:core_test>"
-			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${SDL2_DLL_PATH}" "$<TARGET_FILE_DIR:core_test>")
+			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${SDL3_DLL_PATH}" "$<TARGET_FILE_DIR:core_test>")
 	endif()
 endif()

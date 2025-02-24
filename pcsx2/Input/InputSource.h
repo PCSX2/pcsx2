@@ -24,11 +24,13 @@ public:
 	virtual void UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
 	virtual bool ReloadDevices() = 0;
 	virtual void Shutdown() = 0;
+	virtual bool IsInitialized() = 0;
 
 	virtual void PollEvents() = 0;
 
+	/// InputBinding functions can be called while uninitialized
 	virtual std::optional<InputBindingKey> ParseKeyString(const std::string_view device, const std::string_view binding) = 0;
-	virtual TinyString ConvertKeyToString(InputBindingKey key) = 0;
+	virtual TinyString ConvertKeyToString(InputBindingKey key, bool display = false, bool migration = false) = 0;
 	virtual TinyString ConvertKeyToIcon(InputBindingKey key) = 0;
 
 	/// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.
