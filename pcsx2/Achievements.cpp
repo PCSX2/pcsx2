@@ -1268,7 +1268,6 @@ void Achievements::HandleLeaderboardTrackerUpdateEvent(const rc_client_event_t* 
 		"Achievements: Updating leaderboard tracker: %u: %s", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
 
 	it->text = event->leaderboard_tracker->display;
-	it->active = true;
 }
 
 void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_event_t* event)
