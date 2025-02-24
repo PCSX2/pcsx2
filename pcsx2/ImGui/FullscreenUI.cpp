@@ -3810,6 +3810,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 				FSUI_NSTR("Special (Texture)"),
 				FSUI_NSTR("Special (Texture - Aggressive)"),
 				FSUI_NSTR("Align To Native"),
+				FSUI_NSTR("Align to Native - With Texture Offset"),
 			};
 			static constexpr const char* s_native_scaling_options[] = {
 				FSUI_NSTR("Normal (Default)"),
