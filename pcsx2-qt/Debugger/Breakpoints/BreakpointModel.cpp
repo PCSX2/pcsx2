@@ -32,6 +32,9 @@ int BreakpointModel::columnCount(const QModelIndex&) const
 
 QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 {
+	if (index.row() >= static_cast<int>(m_breakpoints.size()))
+		return QVariant();
+
 	if (role == Qt::DisplayRole)
 	{
 		auto bp_mc = m_breakpoints.at(index.row());

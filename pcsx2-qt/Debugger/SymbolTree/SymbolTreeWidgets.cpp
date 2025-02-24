@@ -14,19 +14,19 @@
 
 static bool testName(const QString& name, const QString& filter);
 
-SymbolTreeWidget::SymbolTreeWidget(u32 flags, s32 symbol_address_alignment, DebugInterface& cpu, QWidget* parent)
-	: QWidget(parent)
-	, m_cpu(cpu)
+SymbolTreeWidget::SymbolTreeWidget(
+	u32 flags,
+	s32 symbol_address_alignment,
+	const DebuggerWidgetParameters& parameters)
+	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
 	, m_flags(flags)
 	, m_symbol_address_alignment(symbol_address_alignment)
 {
 	m_ui.setupUi(this);
 
-	setupMenu();
-
 	connect(m_ui.refreshButton, &QPushButton::clicked, this, [&]() {
-		m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
-			m_cpu.GetSymbolGuardian().UpdateFunctionHashes(database, m_cpu);
+		cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+			cpu().GetSymbolGuardian().UpdateFunctionHashes(database, cpu());
 		});
 
 		reset();
@@ -42,10 +42,15 @@ SymbolTreeWidget::SymbolTreeWidget(u32 flags, s32 symbol_address_alignment, Debu
 	});
 
 	m_ui.treeView->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(m_ui.treeView, &QTreeView::customContextMenuRequested, this, &SymbolTreeWidget::openMenu);
+	connect(m_ui.treeView, &QTreeView::customContextMenuRequested, this, &SymbolTreeWidget::openContextMenu);
 
 	connect(m_ui.treeView, &QTreeView::expanded, this, [&]() {
 		updateVisibleNodes(true);
+	});
+
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		updateModel();
+		return true;
 	});
 }
 
@@ -75,7 +80,7 @@ void SymbolTreeWidget::reset()
 
 	SymbolFilters filters;
 	std::unique_ptr<SymbolTreeNode> root;
-	m_cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) -> void {
+	cpu().GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) -> void {
 		filters.group_by_module = m_group_by_module && m_group_by_module->isChecked();
 		filters.group_by_section = m_group_by_section && m_group_by_section->isChecked();
 		filters.group_by_source_file = m_group_by_source_file && m_group_by_source_file->isChecked();
@@ -114,8 +119,8 @@ void SymbolTreeWidget::updateVisibleNodes(bool update_hashes)
 	// Hash functions for symbols with visible nodes.
 	if (update_hashes)
 	{
-		m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
-			SymbolTreeNode::updateSymbolHashes(nodes, m_cpu, database);
+		cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+			SymbolTreeNode::updateSymbolHashes(nodes, cpu(), database);
 		});
 	}
 
@@ -147,16 +152,16 @@ void SymbolTreeWidget::expandGroups(QModelIndex index)
 
 void SymbolTreeWidget::setupTree()
 {
-	m_model = new SymbolTreeModel(m_cpu, this);
+	m_model = new SymbolTreeModel(cpu(), this);
 	m_ui.treeView->setModel(m_model);
 
-	auto location_delegate = new SymbolTreeLocationDelegate(m_cpu, m_symbol_address_alignment, this);
+	auto location_delegate = new SymbolTreeLocationDelegate(cpu(), m_symbol_address_alignment, this);
 	m_ui.treeView->setItemDelegateForColumn(SymbolTreeModel::LOCATION, location_delegate);
 
-	auto type_delegate = new SymbolTreeTypeDelegate(m_cpu, this);
+	auto type_delegate = new SymbolTreeTypeDelegate(cpu(), this);
 	m_ui.treeView->setItemDelegateForColumn(SymbolTreeModel::TYPE, type_delegate);
 
-	auto value_delegate = new SymbolTreeValueDelegate(m_cpu, this);
+	auto value_delegate = new SymbolTreeValueDelegate(cpu(), this);
 	m_ui.treeView->setItemDelegateForColumn(SymbolTreeModel::VALUE, value_delegate);
 
 	m_ui.treeView->setAlternatingRowColors(true);
@@ -378,95 +383,7 @@ std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::groupByModule(
 	return child;
 }
 
-void SymbolTreeWidget::setupMenu()
-{
-	m_context_menu = new QMenu(this);
-
-	QAction* copy_name = new QAction(tr("Copy Name"), this);
-	connect(copy_name, &QAction::triggered, this, &SymbolTreeWidget::onCopyName);
-	m_context_menu->addAction(copy_name);
-
-	if (m_flags & ALLOW_MANGLED_NAME_ACTIONS)
-	{
-		QAction* copy_mangled_name = new QAction(tr("Copy Mangled Name"), this);
-		connect(copy_mangled_name, &QAction::triggered, this, &SymbolTreeWidget::onCopyMangledName);
-		m_context_menu->addAction(copy_mangled_name);
-	}
-
-	QAction* copy_location = new QAction(tr("Copy Location"), this);
-	connect(copy_location, &QAction::triggered, this, &SymbolTreeWidget::onCopyLocation);
-	m_context_menu->addAction(copy_location);
-
-	m_context_menu->addSeparator();
-
-	m_rename_symbol = new QAction(tr("Rename Symbol"), this);
-	connect(m_rename_symbol, &QAction::triggered, this, &SymbolTreeWidget::onRenameSymbol);
-	m_context_menu->addAction(m_rename_symbol);
-
-	m_context_menu->addSeparator();
-
-	m_go_to_in_disassembly = new QAction(tr("Go to in Disassembly"), this);
-	connect(m_go_to_in_disassembly, &QAction::triggered, this, &SymbolTreeWidget::onGoToInDisassembly);
-	m_context_menu->addAction(m_go_to_in_disassembly);
-
-	m_m_go_to_in_memory_view = new QAction(tr("Go to in Memory View"), this);
-	connect(m_m_go_to_in_memory_view, &QAction::triggered, this, &SymbolTreeWidget::onGoToInMemoryView);
-	m_context_menu->addAction(m_m_go_to_in_memory_view);
-
-	m_show_size_column = new QAction(tr("Show Size Column"), this);
-	m_show_size_column->setCheckable(true);
-	connect(m_show_size_column, &QAction::triggered, this, &SymbolTreeWidget::reset);
-	m_context_menu->addAction(m_show_size_column);
-
-	if (m_flags & ALLOW_GROUPING)
-	{
-		m_context_menu->addSeparator();
-
-		m_group_by_module = new QAction(tr("Group by Module"), this);
-		m_group_by_module->setCheckable(true);
-		if (m_cpu.getCpuType() == BREAKPOINT_IOP)
-			m_group_by_module->setChecked(true);
-		connect(m_group_by_module, &QAction::toggled, this, &SymbolTreeWidget::reset);
-		m_context_menu->addAction(m_group_by_module);
-
-		m_group_by_section = new QAction(tr("Group by Section"), this);
-		m_group_by_section->setCheckable(true);
-		connect(m_group_by_section, &QAction::toggled, this, &SymbolTreeWidget::reset);
-		m_context_menu->addAction(m_group_by_section);
-
-		m_group_by_source_file = new QAction(tr("Group by Source File"), this);
-		m_group_by_source_file->setCheckable(true);
-		connect(m_group_by_source_file, &QAction::toggled, this, &SymbolTreeWidget::reset);
-		m_context_menu->addAction(m_group_by_source_file);
-	}
-
-	if (m_flags & ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN)
-	{
-		m_context_menu->addSeparator();
-
-		m_sort_by_if_type_is_known = new QAction(tr("Sort by if type is known"), this);
-		m_sort_by_if_type_is_known->setCheckable(true);
-		m_context_menu->addAction(m_sort_by_if_type_is_known);
-
-		connect(m_sort_by_if_type_is_known, &QAction::toggled, this, &SymbolTreeWidget::reset);
-	}
-
-	if (m_flags & ALLOW_TYPE_ACTIONS)
-	{
-		m_context_menu->addSeparator();
-
-		m_reset_children = new QAction(tr("Reset children"), this);
-		m_context_menu->addAction(m_reset_children);
-
-		m_change_type_temporarily = new QAction(tr("Change type temporarily"), this);
-		m_context_menu->addAction(m_change_type_temporarily);
-
-		connect(m_reset_children, &QAction::triggered, this, &SymbolTreeWidget::onResetChildren);
-		connect(m_change_type_temporarily, &QAction::triggered, this, &SymbolTreeWidget::onChangeTypeTemporarily);
-	}
-}
-
-void SymbolTreeWidget::openMenu(QPoint pos)
+void SymbolTreeWidget::openContextMenu(QPoint pos)
 {
 	SymbolTreeNode* node = currentNode();
 	if (!node)
@@ -476,17 +393,115 @@ void SymbolTreeWidget::openMenu(QPoint pos)
 	bool node_is_symbol = node->symbol.valid();
 	bool node_is_memory = node->location.type == SymbolTreeLocation::MEMORY;
 
-	m_rename_symbol->setEnabled(node_is_symbol);
-	m_go_to_in_disassembly->setEnabled(node_is_memory);
-	m_m_go_to_in_memory_view->setEnabled(node_is_memory);
+	QMenu* menu = new QMenu(tr("Symbol Tree Context Menu"), this);
+	menu->setAttribute(Qt::WA_DeleteOnClose);
 
-	if (m_reset_children)
-		m_reset_children->setEnabled(node_is_object);
+	QAction* copy_name = new QAction(tr("Copy Name"), this);
+	connect(copy_name, &QAction::triggered, this, &SymbolTreeWidget::onCopyName);
+	menu->addAction(copy_name);
 
-	if (m_change_type_temporarily)
-		m_change_type_temporarily->setEnabled(node_is_object);
+	if (m_flags & ALLOW_MANGLED_NAME_ACTIONS)
+	{
+		QAction* copy_mangled_name = new QAction(tr("Copy Mangled Name"), this);
+		connect(copy_mangled_name, &QAction::triggered, this, &SymbolTreeWidget::onCopyMangledName);
+		menu->addAction(copy_mangled_name);
+	}
 
-	m_context_menu->exec(m_ui.treeView->viewport()->mapToGlobal(pos));
+	QAction* copy_location = new QAction(tr("Copy Location"), this);
+	connect(copy_location, &QAction::triggered, this, &SymbolTreeWidget::onCopyLocation);
+	menu->addAction(copy_location);
+
+	menu->addSeparator();
+
+	QAction* rename_symbol = new QAction(tr("Rename Symbol"), this);
+	rename_symbol->setEnabled(node_is_symbol);
+	connect(rename_symbol, &QAction::triggered, this, &SymbolTreeWidget::onRenameSymbol);
+	menu->addAction(rename_symbol);
+
+	menu->addSeparator();
+
+	std::vector<QAction*> go_to_actions = createEventActions<DebuggerEvents::GoToAddress>(
+		menu, [this]() -> std::optional<DebuggerEvents::GoToAddress> {
+			SymbolTreeNode* node = currentNode();
+			if (!node)
+				return std::nullopt;
+
+			DebuggerEvents::GoToAddress event;
+			event.address = node->location.address;
+			return event;
+		});
+
+	for (QAction* action : go_to_actions)
+		action->setEnabled(node_is_memory);
+
+	if (!m_show_size_column)
+	{
+		m_show_size_column = new QAction(tr("Show Size Column"), this);
+		m_show_size_column->setCheckable(true);
+		connect(m_show_size_column, &QAction::triggered, this, &SymbolTreeWidget::reset);
+	}
+	menu->addAction(m_show_size_column);
+
+	if (m_flags & ALLOW_GROUPING)
+	{
+		menu->addSeparator();
+
+		if (!m_group_by_module)
+		{
+			m_group_by_module = new QAction(tr("Group by Module"), this);
+			m_group_by_module->setCheckable(true);
+			if (cpu().getCpuType() == BREAKPOINT_IOP)
+				m_group_by_module->setChecked(true);
+			connect(m_group_by_module, &QAction::toggled, this, &SymbolTreeWidget::reset);
+		}
+		menu->addAction(m_group_by_module);
+
+		if (!m_group_by_section)
+		{
+			m_group_by_section = new QAction(tr("Group by Section"), this);
+			m_group_by_section->setCheckable(true);
+			connect(m_group_by_section, &QAction::toggled, this, &SymbolTreeWidget::reset);
+		}
+		menu->addAction(m_group_by_section);
+
+		if (!m_group_by_source_file)
+		{
+			m_group_by_source_file = new QAction(tr("Group by Source File"), this);
+			m_group_by_source_file->setCheckable(true);
+			connect(m_group_by_source_file, &QAction::toggled, this, &SymbolTreeWidget::reset);
+		}
+		menu->addAction(m_group_by_source_file);
+	}
+
+	if (m_flags & ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN)
+	{
+		menu->addSeparator();
+
+		if (!m_sort_by_if_type_is_known)
+		{
+			m_sort_by_if_type_is_known = new QAction(tr("Sort by if type is known"), this);
+			m_sort_by_if_type_is_known->setCheckable(true);
+			connect(m_sort_by_if_type_is_known, &QAction::toggled, this, &SymbolTreeWidget::reset);
+		}
+		menu->addAction(m_sort_by_if_type_is_known);
+	}
+
+	if (m_flags & ALLOW_TYPE_ACTIONS)
+	{
+		menu->addSeparator();
+
+		QAction* reset_children = new QAction(tr("Reset Children"), this);
+		reset_children->setEnabled(node_is_object);
+		connect(reset_children, &QAction::triggered, this, &SymbolTreeWidget::onResetChildren);
+		menu->addAction(reset_children);
+
+		QAction* change_type_temporarily = new QAction(tr("Change Type Temporarily"), this);
+		change_type_temporarily->setEnabled(node_is_object);
+		connect(change_type_temporarily, &QAction::triggered, this, &SymbolTreeWidget::onChangeTypeTemporarily);
+		menu->addAction(change_type_temporarily);
+	}
+
+	menu->popup(m_ui.treeView->viewport()->mapToGlobal(pos));
 }
 
 bool SymbolTreeWidget::needsReset() const
@@ -506,7 +521,7 @@ void SymbolTreeWidget::onDeleteButtonPressed()
 	if (QMessageBox::question(this, tr("Confirm Deletion"), tr("Delete '%1'?").arg(node->name)) != QMessageBox::Yes)
 		return;
 
-	m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+	cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
 		node->symbol.destroy_symbol(database, true);
 	});
 
@@ -540,7 +555,7 @@ void SymbolTreeWidget::onCopyLocation()
 	if (!node)
 		return;
 
-	QApplication::clipboard()->setText(node->location.toString(m_cpu));
+	QApplication::clipboard()->setText(node->location.toString(cpu()));
 }
 
 void SymbolTreeWidget::onRenameSymbol()
@@ -553,7 +568,7 @@ void SymbolTreeWidget::onRenameSymbol()
 	QString label = tr("Name:");
 
 	QString text;
-	m_cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
+	cpu().GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
 		const ccc::Symbol* symbol = node->symbol.lookup_symbol(database);
 		if (!symbol || !symbol->address().valid())
 			return;
@@ -566,27 +581,9 @@ void SymbolTreeWidget::onRenameSymbol()
 	if (!ok)
 		return;
 
-	m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+	cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
 		node->symbol.rename_symbol(name, database);
 	});
-}
-
-void SymbolTreeWidget::onGoToInDisassembly()
-{
-	SymbolTreeNode* node = currentNode();
-	if (!node)
-		return;
-
-	emit goToInDisassembly(node->location.address);
-}
-
-void SymbolTreeWidget::onGoToInMemoryView()
-{
-	SymbolTreeNode* node = currentNode();
-	if (!node)
-		return;
-
-	emit goToInMemoryView(node->location.address);
 }
 
 void SymbolTreeWidget::onResetChildren()
@@ -631,22 +628,14 @@ void SymbolTreeWidget::onChangeTypeTemporarily()
 
 void SymbolTreeWidget::onTreeViewClicked(const QModelIndex& index)
 {
-	if (!index.isValid())
+	if (!index.isValid() || (m_flags & CLICK_TO_GO_TO_IN_DISASSEMBLER) == 0)
 		return;
 
 	SymbolTreeNode* node = m_model->nodeFromIndex(index);
-	if (!node)
+	if (!node || node->location.type != SymbolTreeLocation::MEMORY)
 		return;
 
-	switch (index.column())
-	{
-		case SymbolTreeModel::NAME:
-			emit nameColumnClicked(node->location.address);
-			break;
-		case SymbolTreeModel::LOCATION:
-			emit locationColumnClicked(node->location.address);
-			break;
-	}
+	goToInDisassembler(node->location.address);
 }
 
 SymbolTreeNode* SymbolTreeWidget::currentNode()
@@ -660,8 +649,11 @@ SymbolTreeNode* SymbolTreeWidget::currentNode()
 
 // *****************************************************************************
 
-FunctionTreeWidget::FunctionTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_GROUPING | ALLOW_MANGLED_NAME_ACTIONS, 4, cpu, parent)
+FunctionTreeWidget::FunctionTreeWidget(const DebuggerWidgetParameters& parameters)
+	: SymbolTreeWidget(
+		  ALLOW_GROUPING | ALLOW_MANGLED_NAME_ACTIONS | CLICK_TO_GO_TO_IN_DISASSEMBLER,
+		  4,
+		  parameters)
 {
 }
 
@@ -737,15 +729,18 @@ void FunctionTreeWidget::configureColumns()
 
 void FunctionTreeWidget::onNewButtonPressed()
 {
-	NewFunctionDialog* dialog = new NewFunctionDialog(m_cpu, this);
+	NewFunctionDialog* dialog = new NewFunctionDialog(cpu(), this);
 	if (dialog->exec() == QDialog::Accepted)
 		reset();
 }
 
 // *****************************************************************************
 
-GlobalVariableTreeWidget::GlobalVariableTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_GROUPING | ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN | ALLOW_TYPE_ACTIONS | ALLOW_MANGLED_NAME_ACTIONS, 1, cpu, parent)
+GlobalVariableTreeWidget::GlobalVariableTreeWidget(const DebuggerWidgetParameters& parameters)
+	: SymbolTreeWidget(
+		  ALLOW_GROUPING | ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN | ALLOW_TYPE_ACTIONS | ALLOW_MANGLED_NAME_ACTIONS,
+		  1,
+		  parameters)
 {
 }
 
@@ -876,15 +871,18 @@ void GlobalVariableTreeWidget::configureColumns()
 
 void GlobalVariableTreeWidget::onNewButtonPressed()
 {
-	NewGlobalVariableDialog* dialog = new NewGlobalVariableDialog(m_cpu, this);
+	NewGlobalVariableDialog* dialog = new NewGlobalVariableDialog(cpu(), this);
 	if (dialog->exec() == QDialog::Accepted)
 		reset();
 }
 
 // *****************************************************************************
 
-LocalVariableTreeWidget::LocalVariableTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_TYPE_ACTIONS, 1, cpu, parent)
+LocalVariableTreeWidget::LocalVariableTreeWidget(const DebuggerWidgetParameters& parameters)
+	: SymbolTreeWidget(
+		  ALLOW_TYPE_ACTIONS,
+		  1,
+		  parameters)
 {
 }
 
@@ -895,10 +893,10 @@ bool LocalVariableTreeWidget::needsReset() const
 	if (!m_function.valid())
 		return true;
 
-	u32 program_counter = m_cpu.getPC();
+	u32 program_counter = cpu().getPC();
 
 	bool left_function = true;
-	m_cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
+	cpu().GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
 		const ccc::Function* function = database.functions.symbol_from_handle(m_function);
 		if (!function || !function->address().valid())
 			return;
@@ -918,7 +916,7 @@ bool LocalVariableTreeWidget::needsReset() const
 std::vector<SymbolTreeWidget::SymbolWork> LocalVariableTreeWidget::getSymbols(
 	const QString& filter, const ccc::SymbolDatabase& database)
 {
-	u32 program_counter = m_cpu.getPC();
+	u32 program_counter = cpu().getPC();
 	const ccc::Function* function = database.functions.symbol_overlapping_address(program_counter);
 	if (!function || !function->local_variables().has_value())
 	{
@@ -927,7 +925,7 @@ std::vector<SymbolTreeWidget::SymbolWork> LocalVariableTreeWidget::getSymbols(
 	}
 
 	m_function = function->handle();
-	m_caller_stack_pointer = m_cpu.getCallerStackPointer(*function);
+	m_caller_stack_pointer = cpu().getCallerStackPointer(*function);
 
 	std::vector<SymbolTreeWidget::SymbolWork> symbols;
 
@@ -1001,15 +999,18 @@ void LocalVariableTreeWidget::configureColumns()
 
 void LocalVariableTreeWidget::onNewButtonPressed()
 {
-	NewLocalVariableDialog* dialog = new NewLocalVariableDialog(m_cpu, this);
+	NewLocalVariableDialog* dialog = new NewLocalVariableDialog(cpu(), this);
 	if (dialog->exec() == QDialog::Accepted)
 		reset();
 }
 
 // *****************************************************************************
 
-ParameterVariableTreeWidget::ParameterVariableTreeWidget(DebugInterface& cpu, QWidget* parent)
-	: SymbolTreeWidget(ALLOW_TYPE_ACTIONS, 1, cpu, parent)
+ParameterVariableTreeWidget::ParameterVariableTreeWidget(const DebuggerWidgetParameters& parameters)
+	: SymbolTreeWidget(
+		  ALLOW_TYPE_ACTIONS,
+		  1,
+		  parameters)
 {
 }
 
@@ -1020,10 +1021,10 @@ bool ParameterVariableTreeWidget::needsReset() const
 	if (!m_function.valid())
 		return true;
 
-	u32 program_counter = m_cpu.getPC();
+	u32 program_counter = cpu().getPC();
 
 	bool left_function = true;
-	m_cpu.GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
+	cpu().GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) {
 		const ccc::Function* function = database.functions.symbol_from_handle(m_function);
 		if (!function || !function->address().valid())
 			return;
@@ -1045,7 +1046,7 @@ std::vector<SymbolTreeWidget::SymbolWork> ParameterVariableTreeWidget::getSymbol
 {
 	std::vector<SymbolTreeWidget::SymbolWork> symbols;
 
-	u32 program_counter = m_cpu.getPC();
+	u32 program_counter = cpu().getPC();
 	const ccc::Function* function = database.functions.symbol_overlapping_address(program_counter);
 	if (!function || !function->parameter_variables().has_value())
 	{
@@ -1054,7 +1055,7 @@ std::vector<SymbolTreeWidget::SymbolWork> ParameterVariableTreeWidget::getSymbol
 	}
 
 	m_function = function->handle();
-	m_caller_stack_pointer = m_cpu.getCallerStackPointer(*function);
+	m_caller_stack_pointer = cpu().getCallerStackPointer(*function);
 
 	for (const ccc::ParameterVariableHandle parameter_variable_handle : *function->parameter_variables())
 	{
@@ -1124,7 +1125,7 @@ void ParameterVariableTreeWidget::configureColumns()
 
 void ParameterVariableTreeWidget::onNewButtonPressed()
 {
-	NewParameterVariableDialog* dialog = new NewParameterVariableDialog(m_cpu, this);
+	NewParameterVariableDialog* dialog = new NewParameterVariableDialog(cpu(), this);
 	if (dialog->exec() == QDialog::Accepted)
 		reset();
 }

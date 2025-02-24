@@ -3,17 +3,29 @@
 
 #pragma once
 
-#include "CpuWidget.h"
-
 #include "ui_DebuggerWindow.h"
 
-class DebuggerWindow : public QMainWindow
+#include "DebugTools/DebugInterface.h"
+
+#include <kddockwidgets/MainWindow.h>
+
+class DockManager;
+
+class DebuggerWindow : public KDDockWidgets::QtWidgets::MainWindow
 {
 	Q_OBJECT
 
 public:
 	DebuggerWindow(QWidget* parent);
 	~DebuggerWindow();
+
+	static DebuggerWindow* getInstance();
+	static DebuggerWindow* createInstance();
+	static void destroyInstance();
+
+	DockManager& dockManager();
+
+	void clearToolBarState();
 
 public slots:
 	void onVMStateChanged();
@@ -24,18 +36,22 @@ public slots:
 	void onAnalyse();
 
 protected:
-	void showEvent(QShowEvent* event);
-	void hideEvent(QHideEvent *event);
+	void closeEvent(QCloseEvent* event);
 
 private:
+	DebugInterface* currentCPU();
+
+	void setupDefaultToolBarState();
+
 	Ui::DebuggerWindow m_ui;
 	QAction* m_actionRunPause;
 	QAction* m_actionStepInto;
 	QAction* m_actionStepOver;
 	QAction* m_actionStepOut;
 
-	CpuWidget* m_cpuWidget_r5900;
-	CpuWidget* m_cpuWidget_r3000;
+	DockManager* m_dock_manager;
 
-	void setTabActiveStyle(BreakPointCpu toggledCPU);
+	QByteArray m_default_toolbar_state;
 };
+
+extern DebuggerWindow* g_debugger_window;
