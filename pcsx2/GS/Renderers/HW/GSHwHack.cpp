@@ -212,10 +212,8 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (r.IsPossibleChannelShuffle())
+		if (r.IsPossibleChannelShuffle() && (RTBP0 & 31))
 		{
-			pxAssertMsg((RTBP0 & 31) == 0, "TEX0 should be page aligned");
-
 			GSVertex* v = &r.m_vertex.buff[0];
 
 			// Make sure we're detecting the right effect.
