@@ -1703,15 +1703,19 @@ static __fi void _vuITOF15(VURegs* VU)
 
 static __fi void _vuCLIP(VURegs* VU)
 {
-	float value = fabs(vuDouble(VU->VF[_Ft_].i.w));
+	s32 value = VU->VF[_Ft_].i.w;
+	// If denormal, set to the highest possible denormal value so only non-denormals compare higher
+	value = (value & 0x7f800000) ? value & 0x7fffffff : 0x007fffff;
+	const u32 pos = 0x00000000;
+	const u32 neg = 0x80000000;
 
 	VU->clipflag <<= 6;
-	if ( vuDouble(VU->VF[_Fs_].i.x) > +value ) VU->clipflag|= 0x01;
-	if ( vuDouble(VU->VF[_Fs_].i.x) < -value ) VU->clipflag|= 0x02;
-	if ( vuDouble(VU->VF[_Fs_].i.y) > +value ) VU->clipflag|= 0x04;
-	if ( vuDouble(VU->VF[_Fs_].i.y) < -value ) VU->clipflag|= 0x08;
-	if ( vuDouble(VU->VF[_Fs_].i.z) > +value ) VU->clipflag|= 0x10;
-	if ( vuDouble(VU->VF[_Fs_].i.z) < -value ) VU->clipflag|= 0x20;
+	if (static_cast<s32>(VU->VF[_Fs_].i.x ^ pos) > value) VU->clipflag |= 0x01;
+	if (static_cast<s32>(VU->VF[_Fs_].i.x ^ neg) > value) VU->clipflag |= 0x02;
+	if (static_cast<s32>(VU->VF[_Fs_].i.y ^ pos) > value) VU->clipflag |= 0x04;
+	if (static_cast<s32>(VU->VF[_Fs_].i.y ^ neg) > value) VU->clipflag |= 0x08;
+	if (static_cast<s32>(VU->VF[_Fs_].i.z ^ pos) > value) VU->clipflag |= 0x10;
+	if (static_cast<s32>(VU->VF[_Fs_].i.z ^ neg) > value) VU->clipflag |= 0x20;
 	VU->clipflag = VU->clipflag & 0xFFFFFF;
 }
 
