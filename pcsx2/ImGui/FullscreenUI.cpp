@@ -3186,7 +3186,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		ImGuiFullscreen::SetTheme(bsi->GetBoolValue("UI", "UseLightFullscreenUITheme", false));
 	}
 	SmallStackString<256> SwapSummery;
-	SwapSummery.format(FSUI_FSTR("Uses {} as confirm as confirm when using a controller"), ICON_PF_BUTTON_CIRCLE);
+	SwapSummery.format(FSUI_FSTR("Uses {} as confirm when using a controller"), ICON_PF_BUTTON_CIRCLE);
 	if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Swap OK/Cancel in Big Picture Mode"),
 			SwapSummery.c_str(), "UI", "SwapOKFullscreenUI", false))
 	{
@@ -7402,7 +7402,7 @@ TRANSLATE_NOOP("FullscreenUI", "Automatic mapping completed for {}.");
 TRANSLATE_NOOP("FullscreenUI", "Automatic mapping failed for {}.");
 TRANSLATE_NOOP("FullscreenUI", "Game settings initialized with global settings for '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Game settings have been cleared for '{}'.");
-TRANSLATE_NOOP("FullscreenUI", "Uses {} as confirm as confirm when using a controller");
+TRANSLATE_NOOP("FullscreenUI", "Uses {} as confirm when using a controller");
 TRANSLATE_NOOP("FullscreenUI", "Slot {}");
 TRANSLATE_NOOP("FullscreenUI", "{} (Current)");
 TRANSLATE_NOOP("FullscreenUI", "{} (Folder)");
