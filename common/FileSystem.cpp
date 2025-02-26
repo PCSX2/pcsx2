@@ -1354,7 +1354,7 @@ static u32 TranslateWin32Attributes(u32 Win32Attributes)
 }
 
 static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, const char* path, const char* pattern,
-	u32 flags, FileSystem::FindResultsArray* results, std::vector<std::string>& visited)
+	u32 flags, FileSystem::FindResultsArray* results, std::vector<std::string>& visited, ProgressCallback* cancel)
 {
 	std::string search_dir;
 	if (path)
@@ -1376,6 +1376,9 @@ static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, 
 
 	const HANDLE hFind = FindFirstFileW(FileSystem::GetWin32Path(search_dir).c_str(), &wfd);
 	if (hFind == INVALID_HANDLE_VALUE)
+		return 0;
+
+	if (cancel && cancel->IsCancelled())
 		return 0;
 
 	// small speed optimization for '*' case
@@ -1427,11 +1430,11 @@ static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, 
 					if (parent_path)
 					{
 						const std::string recurse_dir = fmt::format("{}\\{}", parent_path, path);
-						nFiles += RecursiveFindFiles(origin_path, recurse_dir.c_str(), utf8_filename.c_str(), pattern, flags, results, visited);
+						nFiles += RecursiveFindFiles(origin_path, recurse_dir.c_str(), utf8_filename.c_str(), pattern, flags, results, visited, cancel);
 					}
 					else
 					{
-						nFiles += RecursiveFindFiles(origin_path, path, utf8_filename.c_str(), pattern, flags, results, visited);
+						nFiles += RecursiveFindFiles(origin_path, path, utf8_filename.c_str(), pattern, flags, results, visited, cancel);
 					}
 				}
 			}
@@ -1494,7 +1497,7 @@ static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, 
 	return nFiles;
 }
 
-bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* results)
+bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* results, ProgressCallback* cancel)
 {
 	// has a path
 	if (path[0] == '\0')
@@ -1514,7 +1517,7 @@ bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, Fin
 	}
 
 	// enter the recursive function
-	if (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) == 0)
+	if (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited, cancel) == 0)
 		return false;
 
 	if (flags & FILESYSTEM_FIND_SORT_BY_NAME)
@@ -2046,7 +2049,7 @@ bool FileSystem::DeleteSymbolicLink(const char* path, Error* error)
 static_assert(sizeof(off_t) == sizeof(s64));
 
 static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, const char* Path, const char* Pattern,
-	u32 Flags, FileSystem::FindResultsArray* pResults, std::vector<std::string>& visited)
+	u32 Flags, FileSystem::FindResultsArray* pResults, std::vector<std::string>& visited, ProgressCallback* cancel)
 {
 	std::string tempStr;
 	if (Path)
@@ -2063,6 +2066,9 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
 
 	DIR* pDir = opendir(tempStr.c_str());
 	if (!pDir)
+		return 0;
+
+	if (cancel && cancel->IsCancelled())
 		return 0;
 
 	// small speed optimization for '*' case
@@ -2118,11 +2124,11 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
 					if (ParentPath)
 					{
 						const std::string recursive_dir = fmt::format("{}/{}", ParentPath, Path);
-						nFiles += RecursiveFindFiles(OriginPath, recursive_dir.c_str(), pDirEnt->d_name, Pattern, Flags, pResults, visited);
+						nFiles += RecursiveFindFiles(OriginPath, recursive_dir.c_str(), pDirEnt->d_name, Pattern, Flags, pResults, visited, cancel);
 					}
 					else
 					{
-						nFiles += RecursiveFindFiles(OriginPath, Path, pDirEnt->d_name, Pattern, Flags, pResults, visited);
+						nFiles += RecursiveFindFiles(OriginPath, Path, pDirEnt->d_name, Pattern, Flags, pResults, visited, cancel);
 					}
 				}
 			}
@@ -2177,7 +2183,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
 	return nFiles;
 }
 
-bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* results)
+bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* results, ProgressCallback* cancel)
 {
 	// has a path
 	if (path[0] == '\0')
@@ -2197,7 +2203,7 @@ bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, Fin
 	}
 
 	// enter the recursive function
-	if (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) == 0)
+	if (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited, cancel) == 0)
 		return false;
 
 	if (flags & FILESYSTEM_FIND_SORT_BY_NAME)
