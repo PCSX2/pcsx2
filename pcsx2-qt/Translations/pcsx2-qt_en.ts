@@ -7160,11 +7160,6 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</sour
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7405"/>
-        <source>Uses {} as confirm as confirm when using a controller</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7406"/>
         <source>Slot {}</source>
         <translation type="unfinished"></translation>
@@ -8461,6 +8456,11 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7404"/>
         <source>Game settings have been cleared for &apos;{}&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7405"/>
+        <source>Uses {} as confirm when using a controller</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
