@@ -732,7 +732,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Source* tex)
 {
 	if (GSConfig.UserHacks_HalfPixelOffset <= GSHalfPixelOffset::Normal ||
-		GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::Native ||
+		GSConfig.UserHacks_HalfPixelOffset >= GSHalfPixelOffset::Native ||
 		GetUpscaleMultiplier() == 1.0f || m_downscale_source || tex->GetScale() == 1.0f)
 	{
 		return GSVector4(0.0f);
@@ -5160,6 +5160,28 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 
 		const GSVector4 half_pixel = RealignTargetTextureCoordinate(tex);
 		m_conf.cb_vs.texture_offset = GSVector2(half_pixel.x, half_pixel.y);
+
+		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
+		{
+			if (!m_downscale_source && tex->m_scale > 1.0f)
+			{
+				if (PRIM->FST)
+				{
+					m_conf.cb_vs.texture_offset.x = 6.0f + (0.25f * tex->m_scale);
+					m_conf.cb_vs.texture_offset.y = 6.0f + (0.25f * tex->m_scale);
+				}
+				else
+				{
+					const GSVertex* v = &m_vertex.buff[0];
+					const float tw = static_cast<float>(1 << m_cached_ctx.TEX0.TW);
+					const float th = static_cast<float>(1 << m_cached_ctx.TEX0.TH);
+					const float q = v[0].RGBAQ.Q;
+
+					m_conf.cb_vs.texture_offset.x = 0.5f * q / tw;
+					m_conf.cb_vs.texture_offset.y = 0.5f * q / th;
+				}
+			}
+		}
 	}
 	else if (tex->m_target)
 	{
@@ -5210,6 +5232,28 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 
 		const GSVector4 half_pixel = RealignTargetTextureCoordinate(tex);
 		m_conf.cb_vs.texture_offset = GSVector2(half_pixel.x, half_pixel.y);
+
+		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
+		{
+			if (!m_downscale_source && tex->m_scale > 1.0f)
+			{
+				if (PRIM->FST)
+				{
+					m_conf.cb_vs.texture_offset.x = 6.0f + (0.25f * tex->m_scale);
+					m_conf.cb_vs.texture_offset.y = 6.0f + (0.25f * tex->m_scale);
+				}
+				else
+				{
+					const GSVertex* v = &m_vertex.buff[0];
+					const float tw = static_cast<float>(1 << m_cached_ctx.TEX0.TW);
+					const float th = static_cast<float>(1 << m_cached_ctx.TEX0.TH);
+					const float q = v[0].RGBAQ.Q;
+
+					m_conf.cb_vs.texture_offset.x = 0.5f * q / tw;
+					m_conf.cb_vs.texture_offset.y = 0.5f * q / th;
+				}
+			}
+		}
 
 		if (m_vt.m_primclass == GS_SPRITE_CLASS && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pal > 0 && m_index.tail >= 4)
 		{
@@ -5540,7 +5584,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			// When using native HPO, the top-left column/row of pixels are often not drawn. Clamp these away to avoid sampling black,
 			// causing bleeding into the edges of the downsampled texture.
 			const u32 downsample_factor = static_cast<u32>(src_target->GetScale());
-			const GSVector2i clamp_min = (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native) ?
+			const GSVector2i clamp_min = (GSConfig.UserHacks_HalfPixelOffset < GSHalfPixelOffset::Native) ?
 											 GSVector2i(0, 0) :
 											 GSVector2i(downsample_factor, downsample_factor);
 			GSVector4i copy_rect = tmm.coverage;
@@ -6272,7 +6316,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	float sx, sy, ox2, oy2;
 	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
 	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
-	if (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native && rtscale > 1.0f)
+
+	if ((GSConfig.UserHacks_HalfPixelOffset < GSHalfPixelOffset::Native || m_channel_shuffle) && rtscale > 1.0f)
 	{
 		sx = 2.0f * rtscale / (rtsize.x << 4);
 		sy = 2.0f * rtscale / (rtsize.y << 4);
@@ -6301,8 +6346,16 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		const int unscaled_y = rt_or_ds ? rt_or_ds->GetUnscaledHeight() : 0;
 		sx = 2.0f / (unscaled_x << 4);
 		sy = 2.0f / (unscaled_y << 4);
-		ox2 = -1.0f / unscaled_x;
-		oy2 = -1.0f / unscaled_y;
+		if ((!tex || !tex->m_from_target || tex->m_scale > 1.0f) && GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
+		{
+			ox2 = (-1.0f / (unscaled_x * rtscale));
+			oy2 = (-1.0f / (unscaled_y * rtscale));
+		}
+		else
+		{
+			ox2 = -1.0f / unscaled_x;
+			oy2 = -1.0f / unscaled_y;
+		}
 	}
 
 	m_conf.cb_vs.vertex_scale = GSVector2(sx, sy);
