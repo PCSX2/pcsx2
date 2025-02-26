@@ -3,6 +3,8 @@
 
 #include "DisassemblyWidget.h"
 
+#include "Debugger/JsonValueWrapper.h"
+
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
 #include "DebugTools/Breakpoints.h"
@@ -20,7 +22,7 @@
 using namespace QtUtils;
 
 DisassemblyWidget::DisassemblyWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
+	: DebuggerWidget(parameters, MONOSPACE_FONT)
 {
 	m_ui.setupUi(this);
 
@@ -30,8 +32,6 @@ DisassemblyWidget::DisassemblyWidget(const DebuggerWidgetParameters& parameters)
 
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &DisassemblyWidget::customContextMenuRequested, this, &DisassemblyWidget::openContextMenu);
-
-	applyMonospaceFont();
 
 	connect(g_emu_thread, &EmuThread::onVMPaused, this, &DisassemblyWidget::gotoProgramCounterOnPause);
 
@@ -55,6 +55,37 @@ DisassemblyWidget::DisassemblyWidget(const DebuggerWidgetParameters& parameters)
 }
 
 DisassemblyWidget::~DisassemblyWidget() = default;
+
+void DisassemblyWidget::toJson(JsonValueWrapper& json)
+{
+	DebuggerWidget::toJson(json);
+
+	json.value().AddMember("startAddress", m_visibleStart, json.allocator());
+	json.value().AddMember("goToPCOnPause", m_goToProgramCounterOnPause, json.allocator());
+	json.value().AddMember("showInstructionBytes", m_showInstructionBytes, json.allocator());
+}
+
+bool DisassemblyWidget::fromJson(const JsonValueWrapper& json)
+{
+	if (!DebuggerWidget::fromJson(json))
+		return false;
+
+	auto start_address = json.value().FindMember("startAddress");
+	if (start_address != json.value().MemberEnd() && start_address->value.IsUint())
+		m_visibleStart = start_address->value.GetUint() & ~3;
+
+	auto go_to_pc_on_pause = json.value().FindMember("goToPCOnPause");
+	if (go_to_pc_on_pause != json.value().MemberEnd() && go_to_pc_on_pause->value.IsBool())
+		m_goToProgramCounterOnPause = go_to_pc_on_pause->value.GetBool();
+
+	auto show_instruction_bytes = json.value().FindMember("showInstructionBytes");
+	if (show_instruction_bytes != json.value().MemberEnd() && show_instruction_bytes->value.IsBool())
+		m_showInstructionBytes = show_instruction_bytes->value.GetBool();
+
+	repaint();
+
+	return true;
+}
 
 void DisassemblyWidget::contextCopyAddress()
 {
@@ -210,6 +241,7 @@ void DisassemblyWidget::contextGoToAddress()
 void DisassemblyWidget::contextAddFunction()
 {
 	NewFunctionDialog* dialog = new NewFunctionDialog(cpu(), this);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
 	dialog->setName(QString("func_%1").arg(m_selectedAddressStart, 8, 16, QChar('0')));
 	dialog->setAddress(m_selectedAddressStart);
 	if (m_selectedAddressEnd != m_selectedAddressStart)
@@ -307,9 +339,9 @@ void DisassemblyWidget::contextRestoreFunction()
 	}
 }
 
-void DisassemblyWidget::contextShowOpcode()
+void DisassemblyWidget::contextShowInstructionBytes()
 {
-	m_showInstructionOpcode = !m_showInstructionOpcode;
+	m_showInstructionBytes = !m_showInstructionBytes;
 	this->repaint();
 }
 
@@ -392,7 +424,7 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 	s32 branchCount = 0;
 	for (const auto& branchLine : branchLines)
 	{
-		if (branchCount == (m_showInstructionOpcode ? 3 : 5))
+		if (branchCount == (m_showInstructionBytes ? 3 : 5))
 			break;
 		const int winBottom = this->height();
 
@@ -621,8 +653,8 @@ void DisassemblyWidget::keyPressEvent(QKeyEvent* event)
 		case Qt::Key_Left:
 			gotoAddressAndSetFocus(cpu().getPC());
 			break;
-		case Qt::Key_O:
-			m_showInstructionOpcode = !m_showInstructionOpcode;
+		case Qt::Key_I:
+			m_showInstructionBytes = !m_showInstructionBytes;
 			break;
 	}
 
@@ -727,11 +759,11 @@ void DisassemblyWidget::openContextMenu(QPoint pos)
 
 	menu->addSeparator();
 
-	QAction* show_opcode_action = menu->addAction(tr("Show &Opcode"));
-	show_opcode_action->setShortcut(QKeySequence(Qt::Key_O));
-	show_opcode_action->setCheckable(true);
-	show_opcode_action->setChecked(m_showInstructionOpcode);
-	connect(show_opcode_action, &QAction::triggered, this, &DisassemblyWidget::contextShowOpcode);
+	QAction* show_instruction_bytes_action = menu->addAction(tr("Show &Instruction Bytes"));
+	show_instruction_bytes_action->setShortcut(QKeySequence(Qt::Key_I));
+	show_instruction_bytes_action->setCheckable(true);
+	show_instruction_bytes_action->setChecked(m_showInstructionBytes);
+	connect(show_instruction_bytes_action, &QAction::triggered, this, &DisassemblyWidget::contextShowInstructionBytes);
 
 	menu->popup(this->mapToGlobal(pos));
 }
@@ -751,7 +783,7 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 
 	FunctionInfo function = cpu().GetSymbolGuardian().FunctionStartingAtAddress(address);
 	SymbolInfo symbol = cpu().GetSymbolGuardian().SymbolStartingAtAddress(address);
-	const bool showOpcode = m_showInstructionOpcode && cpu().isAlive();
+	const bool showOpcode = m_showInstructionBytes && cpu().isAlive();
 
 	QString lineString;
 	if (showOpcode)

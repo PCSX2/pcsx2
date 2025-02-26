@@ -113,7 +113,7 @@ MainWindow::MainWindow()
 	//  DisplayWidget.
 	//  Additionally, alien widget rendering is much more performant, so we
 	//  should have a nice responsiveness boost in our UI :)
-	//  QTBUG-133919, reported upstream by govanify 
+	//  QTBUG-133919, reported upstream by govanify
 	QGuiApplication::setAttribute(Qt::AA_NativeWindows, false);
 	QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
 
@@ -790,7 +790,7 @@ void MainWindow::onVideoCaptureToggled(bool checked)
 		return;
 	}
 
-	if (s_record_on_start && !s_path_to_recording_for_record_on_start.isEmpty()) 
+	if (s_record_on_start && !s_path_to_recording_for_record_on_start.isEmpty())
 	{
 		// We can't start recording immediately, this is called before full GS init (specifically the fps amount)
 		// and GSCapture ends up unhappy.
@@ -1427,7 +1427,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		{
 			connect(action, &QAction::triggered, [entry]() {
 				SettingsWindow::openGamePropertiesDialog(entry,
-					entry->title, entry->serial, entry->crc, entry->type == GameList::EntryType::ELF);
+					entry->title, entry->serial, entry->crc, entry->type == GameList::EntryType::ELF, nullptr);
 			});
 		}
 
@@ -1631,41 +1631,7 @@ void MainWindow::onViewSystemDisplayTriggered()
 
 void MainWindow::onViewGamePropertiesActionTriggered()
 {
-	if (!s_vm_valid)
-		return;
-
-	// prefer to use a game list entry, if we have one, that way the summary is populated
-	if (!s_current_disc_path.isEmpty() || !s_current_elf_override.isEmpty())
-	{
-		auto lock = GameList::GetLock();
-		const QString& path = (s_current_elf_override.isEmpty() ? s_current_disc_path : s_current_elf_override);
-		const GameList::Entry* entry = GameList::GetEntryForPath(path.toUtf8().constData());
-		if (entry)
-		{
-			SettingsWindow::openGamePropertiesDialog(
-				entry, entry->title, entry->serial, entry->crc, !s_current_elf_override.isEmpty());
-			return;
-		}
-	}
-
-	// open properties for the current running file (isn't in the game list)
-	if (s_current_disc_crc == 0)
-	{
-		QMessageBox::critical(this, tr("Game Properties"), tr("Game properties is unavailable for the current game."));
-		return;
-	}
-
-	// can't use serial for ELFs, because they might have a disc set
-	if (s_current_elf_override.isEmpty())
-	{
-		SettingsWindow::openGamePropertiesDialog(
-			nullptr, s_current_title.toStdString(), s_current_disc_serial.toStdString(), s_current_disc_crc, false);
-	}
-	else
-	{
-		SettingsWindow::openGamePropertiesDialog(
-			nullptr, s_current_title.toStdString(), std::string(), s_current_disc_crc, true);
-	}
+	doGameSettings(nullptr);
 }
 
 void MainWindow::onGitHubRepositoryActionTriggered()
@@ -1811,35 +1777,11 @@ void MainWindow::onCreateMemoryCardOpenRequested()
 
 void MainWindow::updateTheme()
 {
-	// The debugger hates theme changes.
-	// We have unfortunately to destroy it and recreate it.
-	const bool debugger_is_open = g_debugger_window ? g_debugger_window->isVisible() : false;
-	const QSize debugger_size = g_debugger_window ? g_debugger_window->size() : QSize();
-	const QPoint debugger_pos = g_debugger_window ? g_debugger_window->pos() : QPoint();
-	if (g_debugger_window)
-	{
-		if (QMessageBox::question(this, tr("Theme Change"),
-				tr("Changing the theme will close the debugger window. Any unsaved data will be lost. Do you want to continue?"),
-				QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
-		{
-			return;
-		}
-	}
-
 	QtHost::UpdateApplicationTheme();
 	reloadThemeSpecificImages();
 
 	if (g_debugger_window)
-	{
-		DebuggerWindow::destroyInstance();
-		DebuggerWindow::createInstance();
-		g_debugger_window->resize(debugger_size);
-		g_debugger_window->move(debugger_pos);
-		if (debugger_is_open)
-		{
-			g_debugger_window->show();
-		}
-	}
+		g_debugger_window->updateStyleSheets();
 }
 
 void MainWindow::reloadThemeSpecificImages()
@@ -2654,13 +2596,12 @@ QWidget* MainWindow::getDisplayContainer() const
 
 void MainWindow::setupMouseMoveHandler()
 {
-	auto mouse_cb_fn = [](int x, int y)
-	{
-		if(g_main_window)
+	auto mouse_cb_fn = [](int x, int y) {
+		if (g_main_window)
 			g_main_window->checkMousePosition(x, y);
 	};
-	
-	if(!Common::AttachMousePositionCb(mouse_cb_fn))
+
+	if (!Common::AttachMousePositionCb(mouse_cb_fn))
 	{
 		Console.Warning("Unable to setup mouse position cb!");
 	}
@@ -2768,6 +2709,45 @@ void MainWindow::doSettings(const char* category /* = nullptr */)
 
 	if (category)
 		dlg->setCategory(category);
+}
+
+void MainWindow::doGameSettings(const char* category)
+{
+	if (!s_vm_valid)
+		return;
+
+	// prefer to use a game list entry, if we have one, that way the summary is populated
+	if (!s_current_disc_path.isEmpty() || !s_current_elf_override.isEmpty())
+	{
+		auto lock = GameList::GetLock();
+		const QString& path = (s_current_elf_override.isEmpty() ? s_current_disc_path : s_current_elf_override);
+		const GameList::Entry* entry = GameList::GetEntryForPath(path.toUtf8().constData());
+		if (entry)
+		{
+			SettingsWindow::openGamePropertiesDialog(
+				entry, entry->title, entry->serial, entry->crc, !s_current_elf_override.isEmpty(), category);
+			return;
+		}
+	}
+
+	// open properties for the current running file (isn't in the game list)
+	if (s_current_disc_crc == 0)
+	{
+		QMessageBox::critical(this, tr("Game Properties"), tr("Game properties is unavailable for the current game."));
+		return;
+	}
+
+	// can't use serial for ELFs, because they might have a disc set
+	if (s_current_elf_override.isEmpty())
+	{
+		SettingsWindow::openGamePropertiesDialog(
+			nullptr, s_current_title.toStdString(), s_current_disc_serial.toStdString(), s_current_disc_crc, false, category);
+	}
+	else
+	{
+		SettingsWindow::openGamePropertiesDialog(
+			nullptr, s_current_title.toStdString(), std::string(), s_current_disc_crc, true, category);
+	}
 }
 
 void MainWindow::openDebugger()

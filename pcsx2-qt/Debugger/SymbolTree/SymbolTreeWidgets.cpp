@@ -3,14 +3,15 @@
 
 #include "SymbolTreeWidgets.h"
 
+#include "Debugger/JsonValueWrapper.h"
+#include "Debugger/SymbolTree/NewSymbolDialogs.h"
+#include "Debugger/SymbolTree/SymbolTreeDelegates.h"
+
 #include <QtGui/QClipboard>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
-
-#include "NewSymbolDialogs.h"
-#include "SymbolTreeDelegates.h"
 
 static bool testName(const QString& name, const QString& filter);
 
@@ -18,7 +19,7 @@ SymbolTreeWidget::SymbolTreeWidget(
 	u32 flags,
 	s32 symbol_address_alignment,
 	const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
+	: DebuggerWidget(parameters, MONOSPACE_FONT)
 	, m_flags(flags)
 	, m_symbol_address_alignment(symbol_address_alignment)
 	, m_group_by_module(cpu().getCpuType() == BREAKPOINT_IOP)
@@ -64,6 +65,78 @@ void SymbolTreeWidget::resizeEvent(QResizeEvent* event)
 	updateVisibleNodes(false);
 }
 
+void SymbolTreeWidget::toJson(JsonValueWrapper& json)
+{
+	DebuggerWidget::toJson(json);
+
+	json.value().AddMember("showSizeColumn", m_show_size_column, json.allocator());
+	if (m_flags & ALLOW_GROUPING)
+	{
+		json.value().AddMember("groupByModule", m_group_by_module, json.allocator());
+		json.value().AddMember("groupBySection", m_group_by_section, json.allocator());
+		json.value().AddMember("groupBySourceFile", m_group_by_source_file, json.allocator());
+	}
+
+	if (m_flags & ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN)
+	{
+		json.value().AddMember("sortByIfTypeIsKnown", m_sort_by_if_type_is_known, json.allocator());
+	}
+}
+
+bool SymbolTreeWidget::fromJson(const JsonValueWrapper& json)
+{
+	if (!DebuggerWidget::fromJson(json))
+		return false;
+
+	bool needs_reset = false;
+
+	auto show_size_column = json.value().FindMember("showSizeColumn");
+	if (show_size_column != json.value().MemberEnd() && show_size_column->value.IsBool())
+	{
+		needs_reset |= show_size_column->value.GetBool() != m_show_size_column;
+		m_show_size_column = show_size_column->value.GetBool();
+	}
+
+	if (m_flags & ALLOW_GROUPING)
+	{
+		auto group_by_module = json.value().FindMember("groupByModule");
+		if (group_by_module != json.value().MemberEnd() && group_by_module->value.IsBool())
+		{
+			needs_reset |= group_by_module->value.GetBool() != m_group_by_module;
+			m_group_by_module = group_by_module->value.GetBool();
+		}
+
+		auto group_by_section = json.value().FindMember("groupBySection");
+		if (group_by_section != json.value().MemberEnd() && group_by_section->value.IsBool())
+		{
+			needs_reset |= group_by_section->value.GetBool() != m_group_by_section;
+			m_group_by_section = group_by_section->value.GetBool();
+		}
+
+		auto group_by_source_file = json.value().FindMember("groupBySourceFile");
+		if (group_by_source_file != json.value().MemberEnd() && group_by_source_file->value.IsBool())
+		{
+			needs_reset |= group_by_source_file->value.GetBool() != m_group_by_source_file;
+			m_group_by_source_file = group_by_source_file->value.GetBool();
+		}
+	}
+
+	if (m_flags & ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN)
+	{
+		auto sort_by_if_type_is_known = json.value().FindMember("sortByIfTypeIsKnown");
+		if (sort_by_if_type_is_known != json.value().MemberEnd() && sort_by_if_type_is_known->value.IsBool())
+		{
+			needs_reset |= sort_by_if_type_is_known->value.GetBool() != m_sort_by_if_type_is_known;
+			m_sort_by_if_type_is_known = sort_by_if_type_is_known->value.GetBool();
+		}
+	}
+
+	if (needs_reset)
+		reset();
+
+	return true;
+}
+
 void SymbolTreeWidget::updateModel()
 {
 	if (needsReset())
@@ -79,15 +152,9 @@ void SymbolTreeWidget::reset()
 
 	m_ui.treeView->setColumnHidden(SymbolTreeModel::SIZE, !m_show_size_column);
 
-	SymbolFilters filters;
 	std::unique_ptr<SymbolTreeNode> root;
 	cpu().GetSymbolGuardian().Read([&](const ccc::SymbolDatabase& database) -> void {
-		filters.group_by_module = m_group_by_module;
-		filters.group_by_section = m_group_by_section;
-		filters.group_by_source_file = m_group_by_source_file;
-		filters.string = m_ui.filterBox->text();
-
-		root = buildTree(filters, database);
+		root = buildTree(database);
 	});
 
 	if (root)
@@ -98,7 +165,7 @@ void SymbolTreeWidget::reset()
 		// Read the initial values for visible nodes.
 		updateVisibleNodes(true);
 
-		if (!filters.string.isEmpty())
+		if (!m_ui.filterBox->text().isEmpty())
 			expandGroups(QModelIndex());
 	}
 }
@@ -173,9 +240,9 @@ void SymbolTreeWidget::setupTree()
 	connect(m_ui.treeView, &QTreeView::pressed, this, &SymbolTreeWidget::onTreeViewClicked);
 }
 
-std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::buildTree(const SymbolFilters& filters, const ccc::SymbolDatabase& database)
+std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::buildTree(const ccc::SymbolDatabase& database)
 {
-	std::vector<SymbolWork> symbols = getSymbols(filters.string, database);
+	std::vector<SymbolWork> symbols = getSymbols(m_ui.filterBox->text(), database);
 
 	auto source_file_comparator = [](const SymbolWork& lhs, const SymbolWork& rhs) -> bool {
 		if (lhs.source_file)
@@ -200,13 +267,13 @@ std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::buildTree(const SymbolFilters&
 
 	// Sort all of the symbols so that we can iterate over them in order and
 	// build a tree.
-	if (filters.group_by_source_file)
+	if (m_group_by_source_file)
 		std::stable_sort(symbols.begin(), symbols.end(), source_file_comparator);
 
-	if (filters.group_by_section)
+	if (m_group_by_section)
 		std::stable_sort(symbols.begin(), symbols.end(), section_comparator);
 
-	if (filters.group_by_module)
+	if (m_group_by_module)
 		std::stable_sort(symbols.begin(), symbols.end(), module_comparator);
 
 	std::unique_ptr<SymbolTreeNode> root = std::make_unique<SymbolTreeNode>();
@@ -227,23 +294,23 @@ std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::buildTree(const SymbolFilters&
 	{
 		std::unique_ptr<SymbolTreeNode> node = buildNode(work, database);
 
-		if (filters.group_by_source_file)
+		if (m_group_by_source_file)
 		{
-			node = groupBySourceFile(std::move(node), work, source_file_node, source_file_work, filters);
+			node = groupBySourceFile(std::move(node), work, source_file_node, source_file_work);
 			if (!node)
 				continue;
 		}
 
-		if (filters.group_by_section)
+		if (m_group_by_section)
 		{
-			node = groupBySection(std::move(node), work, section_node, section_work, filters);
+			node = groupBySection(std::move(node), work, section_node, section_work);
 			if (!node)
 				continue;
 		}
 
-		if (filters.group_by_module)
+		if (m_group_by_module)
 		{
-			node = groupByModule(std::move(node), work, module_node, module_work, filters);
+			node = groupByModule(std::move(node), work, module_node, module_work);
 			if (!node)
 				continue;
 		}
@@ -258,14 +325,13 @@ std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::groupBySourceFile(
 	std::unique_ptr<SymbolTreeNode> child,
 	const SymbolWork& child_work,
 	SymbolTreeNode*& prev_group,
-	const SymbolWork*& prev_work,
-	const SymbolFilters& filters)
+	const SymbolWork*& prev_work)
 {
 	bool group_exists =
 		prev_group &&
 		child_work.source_file == prev_work->source_file &&
-		(!filters.group_by_section || child_work.section == prev_work->section) &&
-		(!filters.group_by_module || child_work.module_symbol == prev_work->module_symbol);
+		(!m_group_by_section || child_work.section == prev_work->section) &&
+		(!m_group_by_module || child_work.module_symbol == prev_work->module_symbol);
 	if (group_exists)
 	{
 		prev_group->emplaceChild(std::move(child));
@@ -302,13 +368,12 @@ std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::groupBySection(
 	std::unique_ptr<SymbolTreeNode> child,
 	const SymbolWork& child_work,
 	SymbolTreeNode*& prev_group,
-	const SymbolWork*& prev_work,
-	const SymbolFilters& filters)
+	const SymbolWork*& prev_work)
 {
 	bool group_exists =
 		prev_group &&
 		child_work.section == prev_work->section &&
-		(!filters.group_by_module || child_work.module_symbol == prev_work->module_symbol);
+		(!m_group_by_module || child_work.module_symbol == prev_work->module_symbol);
 	if (group_exists)
 	{
 		prev_group->emplaceChild(std::move(child));
@@ -342,8 +407,7 @@ std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::groupByModule(
 	std::unique_ptr<SymbolTreeNode> child,
 	const SymbolWork& child_work,
 	SymbolTreeNode*& prev_group,
-	const SymbolWork*& prev_work,
-	const SymbolFilters& filters)
+	const SymbolWork*& prev_work)
 {
 	bool group_exists =
 		prev_group &&
@@ -621,7 +685,13 @@ void SymbolTreeWidget::onChangeTypeTemporarily()
 
 void SymbolTreeWidget::onTreeViewClicked(const QModelIndex& index)
 {
-	if (!index.isValid() || (m_flags & CLICK_TO_GO_TO_IN_DISASSEMBLER) == 0)
+	if (!index.isValid())
+		return;
+
+	if ((m_flags & CLICK_TO_GO_TO_IN_DISASSEMBLER) == 0)
+		return;
+
+	if ((QGuiApplication::mouseButtons() & Qt::LeftButton) == 0)
 		return;
 
 	SymbolTreeNode* node = m_model->nodeFromIndex(index);
@@ -723,6 +793,7 @@ void FunctionTreeWidget::configureColumns()
 void FunctionTreeWidget::onNewButtonPressed()
 {
 	NewFunctionDialog* dialog = new NewFunctionDialog(cpu(), this);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
 	if (dialog->exec() == QDialog::Accepted)
 		reset();
 }
@@ -865,6 +936,7 @@ void GlobalVariableTreeWidget::configureColumns()
 void GlobalVariableTreeWidget::onNewButtonPressed()
 {
 	NewGlobalVariableDialog* dialog = new NewGlobalVariableDialog(cpu(), this);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
 	if (dialog->exec() == QDialog::Accepted)
 		reset();
 }
@@ -993,6 +1065,7 @@ void LocalVariableTreeWidget::configureColumns()
 void LocalVariableTreeWidget::onNewButtonPressed()
 {
 	NewLocalVariableDialog* dialog = new NewLocalVariableDialog(cpu(), this);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
 	if (dialog->exec() == QDialog::Accepted)
 		reset();
 }
@@ -1119,6 +1192,7 @@ void ParameterVariableTreeWidget::configureColumns()
 void ParameterVariableTreeWidget::onNewButtonPressed()
 {
 	NewParameterVariableDialog* dialog = new NewParameterVariableDialog(cpu(), this);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
 	if (dialog->exec() == QDialog::Accepted)
 		reset();
 }

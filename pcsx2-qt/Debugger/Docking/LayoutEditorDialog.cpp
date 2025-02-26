@@ -23,7 +23,7 @@ LayoutEditorDialog::LayoutEditorDialog(NameValidator name_validator, bool can_cl
 }
 
 LayoutEditorDialog::LayoutEditorDialog(
-	const std::string& name, BreakPointCpu cpu, NameValidator name_validator, QWidget* parent)
+	const QString& name, BreakPointCpu cpu, NameValidator name_validator, QWidget* parent)
 	: QDialog(parent)
 	, m_name_validator(name_validator)
 {
@@ -31,7 +31,7 @@ LayoutEditorDialog::LayoutEditorDialog(
 
 	setWindowTitle(tr("Edit Layout"));
 
-	m_ui.nameEditor->setText(QString::fromStdString(name));
+	m_ui.nameEditor->setText(name);
 
 	setupInputWidgets(cpu, {});
 
@@ -41,9 +41,9 @@ LayoutEditorDialog::LayoutEditorDialog(
 	onNameChanged();
 }
 
-std::string LayoutEditorDialog::name()
+QString LayoutEditorDialog::name()
 {
-	return m_ui.nameEditor->text().toStdString();
+	return m_ui.nameEditor->text();
 }
 
 BreakPointCpu LayoutEditorDialog::cpu()
@@ -51,7 +51,7 @@ BreakPointCpu LayoutEditorDialog::cpu()
 	return static_cast<BreakPointCpu>(m_ui.cpuEditor->currentData().toInt());
 }
 
-LayoutEditorDialog::InitialState LayoutEditorDialog::initial_state()
+LayoutEditorDialog::InitialState LayoutEditorDialog::initialState()
 {
 	return m_ui.initialStateEditor->currentData().value<InitialState>();
 }
@@ -93,7 +93,11 @@ void LayoutEditorDialog::onNameChanged()
 	{
 		error_message = tr("Name is empty.");
 	}
-	else if (!m_name_validator(m_ui.nameEditor->text().toStdString()))
+	else if (m_ui.nameEditor->text().size() > DockUtils::MAX_LAYOUT_NAME_SIZE)
+	{
+		error_message = tr("Name too long.");
+	}
+	else if (!m_name_validator(m_ui.nameEditor->text()))
 	{
 		error_message = tr("A layout with that name already exists.");
 	}

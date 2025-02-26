@@ -3,6 +3,8 @@
 
 #include "RegisterWidget.h"
 
+#include "Debugger/JsonValueWrapper.h"
+
 #include "QtUtils.h"
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QTabBar>
@@ -20,7 +22,7 @@
 using namespace QtUtils;
 
 RegisterWidget::RegisterWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
+	: DebuggerWidget(parameters, MONOSPACE_FONT)
 {
 	this->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 
@@ -37,8 +39,6 @@ RegisterWidget::RegisterWidget(const DebuggerWidgetParameters& parameters)
 
 	connect(ui.registerTabs, &QTabBar::currentChanged, [this]() { this->repaint(); });
 
-	applyMonospaceFont();
-
 	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
 		update();
 		return true;
@@ -47,6 +47,32 @@ RegisterWidget::RegisterWidget(const DebuggerWidgetParameters& parameters)
 
 RegisterWidget::~RegisterWidget()
 {
+}
+
+void RegisterWidget::toJson(JsonValueWrapper& json)
+{
+	DebuggerWidget::toJson(json);
+
+	json.value().AddMember("showVU0FFloat", m_showVU0FFloat, json.allocator());
+	json.value().AddMember("showFPRFloat", m_showFPRFloat, json.allocator());
+}
+
+bool RegisterWidget::fromJson(const JsonValueWrapper& json)
+{
+	if (!DebuggerWidget::fromJson(json))
+		return false;
+
+	auto show_vu0f_float = json.value().FindMember("showVU0FFloat");
+	if (show_vu0f_float != json.value().MemberEnd() && show_vu0f_float->value.IsBool())
+		m_showVU0FFloat = show_vu0f_float->value.GetBool();
+
+	auto show_fpr_float = json.value().FindMember("showFPRFloat");
+	if (show_fpr_float != json.value().MemberEnd() && show_fpr_float->value.IsBool())
+		m_showFPRFloat = show_fpr_float->value.GetBool();
+
+	repaint();
+
+	return true;
 }
 
 void RegisterWidget::tabCurrentChanged(int cur)
@@ -232,7 +258,10 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 		QAction* action = menu->addAction(tr("Show as Float"));
 		action->setCheckable(true);
 		action->setChecked(m_showFPRFloat);
-		connect(action, &QAction::triggered, this, [this]() { m_showFPRFloat = !m_showFPRFloat; });
+		connect(action, &QAction::triggered, this, [this]() {
+			m_showFPRFloat = !m_showFPRFloat;
+			repaint();
+		});
 
 		menu->addSeparator();
 	}
@@ -242,7 +271,10 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 		QAction* action = menu->addAction(tr("Show as Float"));
 		action->setCheckable(true);
 		action->setChecked(m_showVU0FFloat);
-		connect(action, &QAction::triggered, this, [this]() { m_showVU0FFloat = !m_showVU0FFloat; });
+		connect(action, &QAction::triggered, this, [this]() {
+			m_showVU0FFloat = !m_showVU0FFloat;
+			repaint();
+		});
 
 		menu->addSeparator();
 	}

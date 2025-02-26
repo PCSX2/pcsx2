@@ -18,11 +18,8 @@ SavedAddressesWidget::SavedAddressesWidget(const DebuggerWidgetParameters& param
 	m_ui.savedAddressesList->setModel(m_model);
 
 	m_ui.savedAddressesList->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(
-		m_ui.savedAddressesList,
-		&QTableView::customContextMenuRequested,
-		this,
-		&SavedAddressesWidget::openContextMenu);
+	connect(m_ui.savedAddressesList, &QTableView::customContextMenuRequested,
+		this, &SavedAddressesWidget::openContextMenu);
 
 	connect(g_emu_thread, &EmuThread::onGameChanged, this, [this](const QString& title) {
 		if (title.isEmpty())
@@ -34,12 +31,11 @@ SavedAddressesWidget::SavedAddressesWidget(const DebuggerWidgetParameters& param
 
 	DebuggerSettingsManager::loadGameSettings(m_model);
 
-
-
 	for (std::size_t i = 0; auto mode : SavedAddressesModel::HeaderResizeModes)
 	{
 		m_ui.savedAddressesList->horizontalHeader()->setSectionResizeMode(i++, mode);
 	}
+
 	QTableView* savedAddressesTableView = m_ui.savedAddressesList;
 	connect(m_model, &QAbstractItemModel::dataChanged, [savedAddressesTableView](const QModelIndex& topLeft) {
 		savedAddressesTableView->resizeColumnToContents(topLeft.column());

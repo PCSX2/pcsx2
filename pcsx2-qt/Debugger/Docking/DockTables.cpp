@@ -79,6 +79,7 @@ const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUT
 		},
 		.toolbars = {
 			"toolBarDebug",
+			"toolBarFile",
 		},
 	},
 	{
@@ -108,6 +109,7 @@ const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUT
 		},
 		.toolbars = {
 			"toolBarDebug",
+			"toolBarFile",
 		},
 	},
 };
@@ -183,7 +185,28 @@ void DockTables::hashDefaultLayout(const DefaultDockLayout& layout, MD5Digest& m
 
 void DockTables::hashDefaultGroup(const DefaultDockGroupDescription& group, MD5Digest& md5)
 {
-	const char* location = DockUtils::locationToString(group.location);
+	// This is inline here so that it's obvious that changing it will affect the
+	// result of the hash.
+	const char* location = "";
+	switch (group.location)
+	{
+		case KDDockWidgets::Location_None:
+			location = "none";
+			break;
+		case KDDockWidgets::Location_OnLeft:
+			location = "left";
+			break;
+		case KDDockWidgets::Location_OnTop:
+			location = "top";
+			break;
+		case KDDockWidgets::Location_OnRight:
+			location = "right";
+			break;
+		case KDDockWidgets::Location_OnBottom:
+			location = "bottom";
+			break;
+	}
+
 	u32 location_size = static_cast<u32>(strlen(location));
 	md5.Update(&location_size, sizeof(location_size));
 	md5.Update(location, location_size);

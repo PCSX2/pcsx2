@@ -41,22 +41,22 @@ public:
 
 	// Create a layout based on a default layout.
 	DockLayout(
-		std::string name,
+		QString name,
 		BreakPointCpu cpu,
 		bool is_default,
-		const DockTables::DefaultDockLayout& default_layout,
+		const std::string& base_name,
 		DockLayout::Index index);
 
 	// Create a new blank layout.
 	DockLayout(
-		std::string name,
+		QString name,
 		BreakPointCpu cpu,
 		bool is_default,
 		DockLayout::Index index);
 
 	// Clone an existing layout.
 	DockLayout(
-		std::string name,
+		QString name,
 		BreakPointCpu cpu,
 		bool is_default,
 		const DockLayout& layout_to_clone,
@@ -77,8 +77,8 @@ public:
 	DockLayout(DockLayout&& rhs) = default;
 	DockLayout& operator=(DockLayout&&) = default;
 
-	const std::string& name() const;
-	void setName(std::string name);
+	const QString& name() const;
+	void setName(QString name);
 
 	BreakPointCpu cpu() const;
 	void setCpu(BreakPointCpu cpu);
@@ -90,6 +90,9 @@ public:
 
 	// Restore the state of all the dock widgets from this layout.
 	void thaw();
+
+	bool canReset();
+	void reset();
 
 	KDDockWidgets::Core::DockWidget* createDockWidget(const QString& name);
 	void updateDockWidgetTitles();
@@ -121,7 +124,7 @@ private:
 
 	// The name displayed in the user interface. Also used to determine the
 	// file name for the layout file.
-	std::string m_name;
+	QString m_name;
 
 	// The default target for dock widgets in this layout. This can be
 	// overriden on a per-widget basis.

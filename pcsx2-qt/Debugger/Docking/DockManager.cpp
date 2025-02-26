@@ -25,14 +25,15 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 
-#include "fmt/format.h"
-
 DockManager::DockManager(QObject* parent)
 	: QObject(parent)
 {
 	QTimer* autosave_timer = new QTimer(this);
 	connect(autosave_timer, &QTimer::timeout, this, &DockManager::saveCurrentLayout);
 	autosave_timer->start(60 * 1000);
+
+	m_blink_timer = new QTimer(this);
+	connect(m_blink_timer, &QTimer::timeout, this, &DockManager::layoutSwitcherUpdateBlink);
 }
 
 void DockManager::configureDockingSystem()
@@ -40,6 +41,8 @@ void DockManager::configureDockingSystem()
 	static bool done = false;
 	if (done)
 		return;
+
+	KDDockWidgets::initFrontend(KDDockWidgets::FrontendType::QtWidgets);
 
 	KDDockWidgets::Config::self().setFlags(
 		KDDockWidgets::Config::Flag_HideTitleBarWhenTabsVisible |
@@ -93,40 +96,59 @@ bool DockManager::deleteLayout(DockLayout::Index layout_index)
 	return true;
 }
 
-void DockManager::switchToLayout(DockLayout::Index layout_index)
+void DockManager::switchToLayout(DockLayout::Index layout_index, bool blink_tab)
 {
-	if (layout_index == m_current_layout)
-		return;
-
-	if (m_current_layout != DockLayout::INVALID_INDEX)
+	if (layout_index != m_current_layout)
 	{
-		DockLayout& layout = m_layouts.at(m_current_layout);
-		layout.freeze();
-		layout.save(m_current_layout);
+		if (m_current_layout != DockLayout::INVALID_INDEX)
+		{
+			DockLayout& layout = m_layouts.at(m_current_layout);
+			layout.freeze();
+			layout.save(m_current_layout);
+		}
+
+		// Clear out the existing positions of toolbars so they don't affect
+		// where new toolbars appear for other layouts.
+		if (g_debugger_window)
+			g_debugger_window->clearToolBarState();
+
+		updateToolBarLockState();
+
+		m_current_layout = layout_index;
+
+		if (m_current_layout != DockLayout::INVALID_INDEX)
+		{
+			DockLayout& layout = m_layouts.at(m_current_layout);
+			layout.thaw();
+
+			int tab_index = static_cast<int>(layout_index);
+			if (m_switcher && tab_index >= 0 && tab_index < m_plus_tab_index)
+			{
+				m_ignore_current_tab_changed = true;
+				m_switcher->setCurrentIndex(tab_index);
+				m_ignore_current_tab_changed = false;
+			}
+		}
 	}
 
-	// Clear out the existing positions of toolbars so they don't affect where
-	// new toolbars appear for other layouts.
-	if (g_debugger_window)
-		g_debugger_window->clearToolBarState();
-	updateToolBarLockState();
-
-	m_current_layout = layout_index;
-
-	if (m_current_layout != DockLayout::INVALID_INDEX)
-	{
-		DockLayout& layout = m_layouts.at(m_current_layout);
-		layout.thaw();
-	}
+	if (blink_tab)
+		layoutSwitcherStartBlink();
 }
 
-bool DockManager::switchToLayoutWithCPU(BreakPointCpu cpu)
+bool DockManager::switchToLayoutWithCPU(BreakPointCpu cpu, bool blink_tab)
 {
+	// Don't interrupt the user if the current layout already has the right CPU.
+	if (m_current_layout != DockLayout::INVALID_INDEX && m_layouts.at(m_current_layout).cpu() == cpu)
+	{
+		switchToLayout(m_current_layout, blink_tab);
+		return true;
+	}
+
 	for (DockLayout::Index i = 0; i < m_layouts.size(); i++)
 	{
 		if (m_layouts[i].cpu() == cpu)
 		{
-			switchToLayout(i);
+			switchToLayout(i, blink_tab);
 			return true;
 		}
 	}
@@ -160,8 +182,8 @@ void DockManager::loadLayouts()
 		DockLayout& layout = m_layouts.at(index);
 
 		// Try to make sure the layout has a unique name.
-		const std::string& name = layout.name();
-		std::string new_name = name;
+		const QString& name = layout.name();
+		QString new_name = name;
 		if (result == DockLayout::SUCCESS || result == DockLayout::DEFAULT_LAYOUT_HASH_MISMATCH)
 		{
 			for (int i = 2; hasNameConflict(new_name, index) && i < 100; i++)
@@ -172,7 +194,7 @@ void DockManager::loadLayouts()
 					break;
 				}
 
-				new_name = fmt::format("{} #{}", name, i);
+				new_name = QString("%1 #%2").arg(name).arg(i);
 			}
 		}
 
@@ -181,10 +203,12 @@ void DockManager::loadLayouts()
 		if (result != DockLayout::SUCCESS && result != DockLayout::DEFAULT_LAYOUT_HASH_MISMATCH)
 		{
 			deleteLayout(index);
+
 			// Only delete the file if we've identified that it's actually a
 			// layout file.
 			if (result == DockLayout::MAJOR_VERSION_MISMATCH || result == DockLayout::CONFLICTING_NAME)
 				FileSystem::DeleteFilePath(ffd.FileName.c_str());
+
 			continue;
 		}
 
@@ -258,7 +282,7 @@ void DockManager::resetAllLayouts()
 	m_layouts.clear();
 
 	for (const DockTables::DefaultDockLayout& layout : DockTables::DEFAULT_DOCK_LAYOUTS)
-		createLayout(tr(layout.name.c_str()).toStdString(), layout.cpu, true, layout);
+		createLayout(tr(layout.name.c_str()), layout.cpu, true, layout.name);
 
 	switchToLayout(0);
 	updateLayoutSwitcher();
@@ -273,7 +297,7 @@ void DockManager::resetDefaultLayouts()
 	m_layouts = std::vector<DockLayout>();
 
 	for (const DockTables::DefaultDockLayout& layout : DockTables::DEFAULT_DOCK_LAYOUTS)
-		createLayout(tr(layout.name.c_str()).toStdString(), layout.cpu, true, layout);
+		createLayout(tr(layout.name.c_str()), layout.cpu, true, layout.name);
 
 	for (DockLayout& layout : old_layouts)
 		if (!layout.isDefault())
@@ -464,18 +488,18 @@ QWidget* DockManager::createLayoutSwitcher(QWidget* menu_bar)
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	layout->addWidget(spacer);
 
+	bool layout_locked = Host::GetBaseBoolSettingValue("Debugger/UserInterface", "LayoutLocked", true);
+
 	QPushButton* lock_layout_toggle = new QPushButton;
-	connect(lock_layout_toggle, &QPushButton::toggled, this, [this, lock_layout_toggle](bool checked) {
-		setLayoutLocked(checked);
-		if (m_layout_locked)
-			lock_layout_toggle->setText(tr("Layout Locked"));
-		else
-			lock_layout_toggle->setText(tr("Layout Unlocked"));
-	});
 	lock_layout_toggle->setCheckable(true);
-	lock_layout_toggle->setChecked(m_layout_locked);
+	lock_layout_toggle->setChecked(layout_locked);
 	lock_layout_toggle->setFlat(true);
+	connect(lock_layout_toggle, &QPushButton::toggled, this, [this, lock_layout_toggle](bool checked) {
+		setLayoutLocked(checked, lock_layout_toggle, true);
+	});
 	layout->addWidget(lock_layout_toggle);
+
+	setLayoutLocked(layout_locked, lock_layout_toggle, false);
 
 	return container;
 }
@@ -493,7 +517,7 @@ void DockManager::updateLayoutSwitcher()
 	for (DockLayout& layout : m_layouts)
 	{
 		const char* cpu_name = DebugInterface::cpuName(layout.cpu());
-		QString tab_name = QString("%1 (%2)").arg(layout.name().c_str()).arg(cpu_name);
+		QString tab_name = QString("%1 (%2)").arg(layout.name()).arg(cpu_name);
 		m_switcher->addTab(tab_name);
 	}
 
@@ -509,33 +533,45 @@ void DockManager::updateLayoutSwitcher()
 		m_tab_connection = connect(m_switcher, &QTabBar::currentChanged, this, &DockManager::layoutSwitcherTabChanged);
 	else
 		m_tab_connection = connect(m_switcher, &QTabBar::tabBarClicked, this, &DockManager::layoutSwitcherTabChanged);
+
+	layoutSwitcherStopBlink();
 }
 
 void DockManager::layoutSwitcherTabChanged(int index)
 {
+	// Prevent recursion.
+	if (m_ignore_current_tab_changed)
+		return;
+
 	if (index == m_plus_tab_index)
 	{
 		if (m_current_tab_index >= 0 && m_current_tab_index < m_plus_tab_index)
+		{
+			m_ignore_current_tab_changed = true;
 			m_switcher->setCurrentIndex(m_current_tab_index);
+			m_ignore_current_tab_changed = false;
+		}
 
-		auto name_validator = [this](const std::string& name) {
+		auto name_validator = [this](const QString& name) {
 			return !hasNameConflict(name, DockLayout::INVALID_INDEX);
 		};
 
 		bool can_clone_current_layout = m_current_layout != DockLayout::INVALID_INDEX;
-		LayoutEditorDialog* dialog = new LayoutEditorDialog(
+
+		QPointer<LayoutEditorDialog> dialog = new LayoutEditorDialog(
 			name_validator, can_clone_current_layout, g_debugger_window);
+
 		if (dialog->exec() == QDialog::Accepted && name_validator(dialog->name()))
 		{
 			DockLayout::Index new_layout = DockLayout::INVALID_INDEX;
 
-			const auto [mode, index] = dialog->initial_state();
+			const auto [mode, index] = dialog->initialState();
 			switch (mode)
 			{
 				case LayoutEditorDialog::DEFAULT_LAYOUT:
 				{
 					const DockTables::DefaultDockLayout& default_layout = DockTables::DEFAULT_DOCK_LAYOUTS.at(index);
-					new_layout = createLayout(dialog->name(), dialog->cpu(), false, default_layout);
+					new_layout = createLayout(dialog->name(), dialog->cpu(), false, default_layout.name);
 					break;
 				}
 				case LayoutEditorDialog::BLANK_LAYOUT:
@@ -558,9 +594,11 @@ void DockManager::layoutSwitcherTabChanged(int index)
 				}
 			}
 
-			switchToLayout(new_layout);
 			updateLayoutSwitcher();
+			switchToLayout(new_layout);
 		}
+
+		delete dialog.get();
 	}
 	else
 	{
@@ -602,66 +640,142 @@ void DockManager::layoutSwitcherTabMoved(int from, int to)
 
 void DockManager::layoutSwitcherContextMenu(QPoint pos)
 {
-	int tab_index = m_switcher->tabAt(pos);
-	if (tab_index < 0 || tab_index >= m_plus_tab_index)
+	DockLayout::Index layout_index = static_cast<DockLayout::Index>(m_switcher->tabAt(pos));
+	if (layout_index >= m_layouts.size())
 		return;
+
+	DockLayout& layout = m_layouts[layout_index];
 
 	QMenu* menu = new QMenu(m_switcher);
 	menu->setAttribute(Qt::WA_DeleteOnClose);
 
 	QAction* edit_action = menu->addAction(tr("Edit Layout"));
-	connect(edit_action, &QAction::triggered, [this, tab_index]() {
-		DockLayout::Index layout_index = static_cast<DockLayout::Index>(tab_index);
+	connect(edit_action, &QAction::triggered, [this, layout_index]() {
 		if (layout_index >= m_layouts.size())
 			return;
 
 		DockLayout& layout = m_layouts[layout_index];
 
-		auto name_validator = [this, layout_index](const std::string& name) {
+		auto name_validator = [this, layout_index](const QString& name) {
 			return !hasNameConflict(name, layout_index);
 		};
 
-		LayoutEditorDialog* dialog = new LayoutEditorDialog(
+		QPointer<LayoutEditorDialog> dialog = new LayoutEditorDialog(
 			layout.name(), layout.cpu(), name_validator, g_debugger_window);
 
-		if (dialog->exec() == QDialog::Accepted && name_validator(dialog->name()))
-		{
-			layout.setName(dialog->name());
-			layout.setCpu(dialog->cpu());
+		if (dialog->exec() != QDialog::Accepted || !name_validator(dialog->name()))
+			return;
 
-			layout.save(layout_index);
+		layout.setName(dialog->name());
+		layout.setCpu(dialog->cpu());
 
-			updateLayoutSwitcher();
-		}
+		layout.save(layout_index);
+
+		delete dialog.get();
+
+		updateLayoutSwitcher();
+	});
+
+	QAction* reset_action = menu->addAction(tr("Reset Layout"));
+	reset_action->setEnabled(layout.canReset());
+	reset_action->connect(reset_action, &QAction::triggered, [this, layout_index]() {
+		if (layout_index >= m_layouts.size())
+			return;
+
+		DockLayout& layout = m_layouts[layout_index];
+		if (!layout.canReset())
+			return;
+
+		QString text = tr("Are you sure you want to reset layout '%1'?").arg(layout.name());
+		if (QMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
+			return;
+
+		bool current_layout = layout_index == m_current_layout;
+
+		if (current_layout)
+			switchToLayout(DockLayout::INVALID_INDEX);
+
+		layout.reset();
+		layout.save(layout_index);
+
+		if (current_layout)
+			switchToLayout(layout_index);
 	});
 
 	QAction* delete_action = menu->addAction(tr("Delete Layout"));
-	connect(delete_action, &QAction::triggered, [this, tab_index]() {
-		DockLayout::Index layout_index = static_cast<DockLayout::Index>(tab_index);
+	connect(delete_action, &QAction::triggered, [this, layout_index]() {
 		if (layout_index >= m_layouts.size())
 			return;
 
 		DockLayout& layout = m_layouts[layout_index];
 
-		QString text = tr("Are you sure you want to delete layout '%1'?").arg(layout.name().c_str());
-		QMessageBox::StandardButton result = QMessageBox::question(g_debugger_window, tr("Confirmation"), text);
+		QString text = tr("Are you sure you want to delete layout '%1'?").arg(layout.name());
+		if (QMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
+			return;
 
-		if (result == QMessageBox::Yes)
-		{
-			deleteLayout(layout_index);
-			updateLayoutSwitcher();
-		}
+		deleteLayout(layout_index);
+		updateLayoutSwitcher();
 	});
 
 	menu->popup(m_switcher->mapToGlobal(pos));
 }
 
-bool DockManager::hasNameConflict(const std::string& name, DockLayout::Index layout_index)
+void DockManager::layoutSwitcherStartBlink()
 {
-	std::string safe_name = Path::SanitizeFileName(name);
+	if (!m_switcher)
+		return;
+
+	layoutSwitcherStopBlink();
+
+	if (m_current_layout == DockLayout::INVALID_INDEX)
+		return;
+
+	m_blink_tab = m_current_layout;
+	m_blink_stage = 0;
+	m_blink_timer->start(500);
+
+	layoutSwitcherUpdateBlink();
+}
+
+void DockManager::layoutSwitcherUpdateBlink()
+{
+	if (!m_switcher)
+		return;
+
+	if (m_blink_tab < m_switcher->count())
+	{
+		if (m_blink_stage % 2 == 0)
+			m_switcher->setTabTextColor(m_blink_tab, Qt::red);
+		else
+			m_switcher->setTabTextColor(m_blink_tab, m_switcher->palette().text().color());
+	}
+
+	m_blink_stage++;
+
+	if (m_blink_stage > 7)
+		m_blink_timer->stop();
+}
+
+void DockManager::layoutSwitcherStopBlink()
+{
+	if (m_blink_timer->isActive())
+	{
+		if (m_blink_tab < m_switcher->count())
+			m_switcher->setTabTextColor(m_blink_tab, m_switcher->palette().text().color());
+
+		m_blink_timer->stop();
+	}
+}
+
+bool DockManager::hasNameConflict(const QString& name, DockLayout::Index layout_index)
+{
+	std::string safe_name = Path::SanitizeFileName(name.toStdString());
 	for (DockLayout::Index i = 0; i < m_layouts.size(); i++)
-		if (i != layout_index && StringUtil::compareNoCase(m_layouts[i].name(), safe_name))
+	{
+		std::string other_safe_name = Path::SanitizeFileName(m_layouts[i].name().toStdString());
+		if (i != layout_index && StringUtil::compareNoCase(other_safe_name, safe_name))
 			return true;
+	}
 
 	return false;
 }
@@ -731,15 +845,35 @@ void DockManager::switchToDebuggerWidget(DebuggerWidget* widget)
 	}
 }
 
+void DockManager::updateStyleSheets()
+{
+	for (DockLayout& layout : m_layouts)
+		for (const auto& [unique_name, widget] : layout.debuggerWidgets())
+			widget->updateStyleSheet();
+}
 
 bool DockManager::isLayoutLocked()
 {
 	return m_layout_locked;
 }
 
-void DockManager::setLayoutLocked(bool locked)
+void DockManager::setLayoutLocked(bool locked, QPushButton* lock_layout_toggle, bool write_back)
 {
 	m_layout_locked = locked;
+
+	if (lock_layout_toggle)
+	{
+		if (m_layout_locked)
+		{
+			lock_layout_toggle->setText(tr("Layout Locked"));
+			lock_layout_toggle->setIcon(QIcon::fromTheme(QString::fromUtf8("padlock-lock")));
+		}
+		else
+		{
+			lock_layout_toggle->setText(tr("Layout Unlocked"));
+			lock_layout_toggle->setIcon(QIcon::fromTheme(QString::fromUtf8("padlock-unlock")));
+		}
+	}
 
 	updateToolBarLockState();
 
@@ -751,6 +885,12 @@ void DockManager::setLayoutLocked(bool locked)
 		// HACK: Make sure the sizes of the tabs get updated.
 		if (stack->tabBar()->count() > 0)
 			stack->tabBar()->setTabText(0, stack->tabBar()->tabText(0));
+	}
+
+	if (write_back)
+	{
+		Host::SetBaseBoolSettingValue("Debugger/UserInterface", "LayoutLocked", m_layout_locked);
+		Host::CommitBaseSettingChanges();
 	}
 }
 
