@@ -19,7 +19,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	SettingsInterface* sif = dialog->getProfileSettingsInterface();
 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
-	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", true);
 	connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
 	connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
 
@@ -146,7 +146,7 @@ ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, Contro
 
 	SettingsInterface* sif = dialog->getProfileSettingsInterface();
 
-	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5PlayerLED, "InputSources", "SDLPS5PlayerLED", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5PlayerLED, "InputSources", "SDLPS5PlayerLED", true);
 	connect(m_ui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &QDialog::accept);
 }
 
