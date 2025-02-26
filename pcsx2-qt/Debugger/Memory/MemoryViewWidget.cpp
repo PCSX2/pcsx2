@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "MemoryViewWidget.h"
-#include "common/Console.h"
+
+#include "Debugger/JsonValueWrapper.h"
 
 #include "QtHost.h"
 #include "QtUtils.h"
@@ -452,7 +453,7 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar, DebugInterface& cpu)
 	MemoryViewWidget
 */
 MemoryViewWidget::MemoryViewWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
+	: DebuggerWidget(parameters, MONOSPACE_FONT)
 	, m_table(this)
 {
 	ui.setupUi(this);
@@ -462,9 +463,7 @@ MemoryViewWidget::MemoryViewWidget(const DebuggerWidgetParameters& parameters)
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &MemoryViewWidget::customContextMenuRequested, this, &MemoryViewWidget::openContextMenu);
 
-	m_table.UpdateStartAddress(0x480000);
-
-	applyMonospaceFont();
+	m_table.UpdateStartAddress(0x100000);
 
 	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
 		update();
@@ -486,6 +485,25 @@ MemoryViewWidget::MemoryViewWidget(const DebuggerWidgetParameters& parameters)
 }
 
 MemoryViewWidget::~MemoryViewWidget() = default;
+
+void MemoryViewWidget::toJson(JsonValueWrapper& json)
+{
+	DebuggerWidget::toJson(json);
+
+	json.value().AddMember("startAddress", m_table.startAddress, json.allocator());
+}
+
+bool MemoryViewWidget::fromJson(const JsonValueWrapper& json)
+{
+	if (!DebuggerWidget::fromJson(json))
+		return false;
+
+	auto start_address = json.value().FindMember("startAddress");
+	if (start_address != json.value().MemberEnd() && start_address->value.IsUint())
+		m_table.UpdateStartAddress(start_address->value.GetUint());
+
+	return true;
+}
 
 void MemoryViewWidget::paintEvent(QPaintEvent* event)
 {

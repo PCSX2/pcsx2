@@ -71,6 +71,10 @@
      <string>View</string>
     </property>
     <addaction name="actionOnTop"/>
+    <addaction name="separator"/>
+    <addaction name="actionIncreaseFontSize"/>
+    <addaction name="actionDecreaseFontSize"/>
+    <addaction name="actionResetFontSize"/>
    </widget>
    <widget class="QMenu" name="menuLayouts">
     <property name="title">
@@ -105,6 +109,9 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOnTop"/>
+   <addaction name="actionIncreaseFontSize"/>
+   <addaction name="actionDecreaseFontSize"/>
+   <addaction name="actionResetFontSize"/>
   </widget>
   <widget class="QToolBar" name="toolBarSystem">
    <property name="windowTitle">
@@ -224,10 +231,46 @@
   </action>
   <action name="actionClose">
    <property name="icon">
-    <iconset theme="door-open-line"/>
+    <iconset theme="close-line"/>
    </property>
    <property name="text">
     <string>Close</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionIncreaseFontSize">
+   <property name="icon">
+    <iconset theme="zoom-in-line"/>
+   </property>
+   <property name="text">
+    <string>Increase Font Size</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionDecreaseFontSize">
+   <property name="icon">
+    <iconset theme="zoom-out-line"/>
+   </property>
+   <property name="text">
+    <string>Decrease Font Size</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionResetFontSize">
+   <property name="icon">
+    <iconset theme="refresh-line"/>
+   </property>
+   <property name="text">
+    <string>Reset Font Size</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>
