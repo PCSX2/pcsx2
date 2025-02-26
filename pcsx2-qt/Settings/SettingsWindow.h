@@ -45,7 +45,7 @@ public:
 		u32 disc_crc, QString filename = QString());
 	~SettingsWindow();
 
-	static void openGamePropertiesDialog(const GameList::Entry* game, const std::string_view title, std::string serial, u32 disc_crc, bool is_elf);
+	static void openGamePropertiesDialog(const GameList::Entry* game, const std::string_view title, std::string serial, u32 disc_crc, bool is_elf, const char* category);
 	static void closeGamePropertiesDialogs();
 
 	SettingsInterface* getSettingsInterface() const;

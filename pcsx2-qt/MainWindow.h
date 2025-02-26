@@ -103,6 +103,9 @@ public:
 	/// Rescans a single file. NOTE: Happens on UI thread.
 	void rescanFile(const std::string& path);
 
+	void doSettings(const char* category = nullptr);
+	void doGameSettings(const char* category = nullptr);
+
 	void openDebugger();
 	void checkMousePosition(int x, int y);
 public Q_SLOTS:
@@ -255,7 +258,6 @@ private:
 	void updateDisplayWidgetCursor();
 
 	SettingsWindow* getSettingsWindow();
-	void doSettings(const char* category = nullptr);
 
 	InputRecordingViewer* getInputRecordingViewer();
 	void updateInputRecordingActions(bool started);

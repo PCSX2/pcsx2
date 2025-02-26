@@ -2,15 +2,17 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "MemoryViewWidget.h"
-#include "common/Console.h"
+
+#include "Debugger/JsonValueWrapper.h"
 
 #include "QtHost.h"
 #include "QtUtils.h"
-#include <QtGui/QMouseEvent>
 #include <QtCore/QObject>
+#include <QtGui/QActionGroup>
+#include <QtGui/QClipboard>
+#include <QtGui/QMouseEvent>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
-#include <QtGui/QClipboard>
 
 using namespace QtUtils;
 
@@ -452,7 +454,7 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar, DebugInterface& cpu)
 	MemoryViewWidget
 */
 MemoryViewWidget::MemoryViewWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
+	: DebuggerWidget(parameters, MONOSPACE_FONT)
 	, m_table(this)
 {
 	ui.setupUi(this);
@@ -462,9 +464,7 @@ MemoryViewWidget::MemoryViewWidget(const DebuggerWidgetParameters& parameters)
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &MemoryViewWidget::customContextMenuRequested, this, &MemoryViewWidget::openContextMenu);
 
-	m_table.UpdateStartAddress(0x480000);
-
-	applyMonospaceFont();
+	m_table.UpdateStartAddress(0x100000);
 
 	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
 		update();
@@ -486,6 +486,44 @@ MemoryViewWidget::MemoryViewWidget(const DebuggerWidgetParameters& parameters)
 }
 
 MemoryViewWidget::~MemoryViewWidget() = default;
+
+void MemoryViewWidget::toJson(JsonValueWrapper& json)
+{
+	DebuggerWidget::toJson(json);
+
+	json.value().AddMember("startAddress", m_table.startAddress, json.allocator());
+	json.value().AddMember("viewType", static_cast<int>(m_table.GetViewType()), json.allocator());
+	json.value().AddMember("littleEndian", m_table.GetLittleEndian(), json.allocator());
+}
+
+bool MemoryViewWidget::fromJson(const JsonValueWrapper& json)
+{
+	if (!DebuggerWidget::fromJson(json))
+		return false;
+
+	auto start_address = json.value().FindMember("startAddress");
+	if (start_address != json.value().MemberEnd() && start_address->value.IsUint())
+		m_table.UpdateStartAddress(start_address->value.GetUint());
+
+	auto view_type = json.value().FindMember("viewType");
+	if (view_type != json.value().MemberEnd() && view_type->value.IsInt())
+	{
+		MemoryViewType type = static_cast<MemoryViewType>(view_type->value.GetInt());
+		if (type == MemoryViewType::BYTE ||
+			type == MemoryViewType::BYTEHW ||
+			type == MemoryViewType::WORD ||
+			type == MemoryViewType::DWORD)
+			m_table.SetViewType(type);
+	}
+
+	auto little_endian = json.value().FindMember("littleEndian");
+	if (little_endian != json.value().MemberEnd() && little_endian->value.IsBool())
+		m_table.SetLittleEndian(little_endian->value.GetBool());
+
+	repaint();
+
+	return true;
+}
 
 void MemoryViewWidget::paintEvent(QPaintEvent* event)
 {
@@ -542,25 +580,32 @@ void MemoryViewWidget::openContextMenu(QPoint pos)
 	const MemoryViewType current_view_type = m_table.GetViewType();
 
 	// View Types
+	QActionGroup* view_type_group = new QActionGroup(menu);
+	view_type_group->setExclusive(true);
+
 	QAction* byte_action = menu->addAction(tr("Show as 1 byte"));
 	byte_action->setCheckable(true);
 	byte_action->setChecked(current_view_type == MemoryViewType::BYTE);
 	connect(byte_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::BYTE); });
+	view_type_group->addAction(byte_action);
 
 	QAction* bytehw_action = menu->addAction(tr("Show as 2 bytes"));
 	bytehw_action->setCheckable(true);
 	bytehw_action->setChecked(current_view_type == MemoryViewType::BYTEHW);
 	connect(bytehw_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::BYTEHW); });
+	view_type_group->addAction(bytehw_action);
 
 	QAction* word_action = menu->addAction(tr("Show as 4 bytes"));
 	word_action->setCheckable(true);
 	word_action->setChecked(current_view_type == MemoryViewType::WORD);
 	connect(word_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::WORD); });
+	view_type_group->addAction(word_action);
 
 	QAction* dword_action = menu->addAction(tr("Show as 8 bytes"));
 	dword_action->setCheckable(true);
 	dword_action->setChecked(current_view_type == MemoryViewType::DWORD);
 	connect(dword_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::DWORD); });
+	view_type_group->addAction(dword_action);
 
 	menu->addSeparator();
 

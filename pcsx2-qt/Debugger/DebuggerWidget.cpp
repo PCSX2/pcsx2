@@ -11,7 +11,6 @@
 #include "DebugTools/DebugInterface.h"
 
 #include "common/Assertions.h"
-#include "common/Console.h"
 
 DebuggerWidget::DebuggerWidget(const DebuggerWidgetParameters& parameters, u32 flags)
 	: QWidget(parameters.parent)
@@ -20,6 +19,7 @@ DebuggerWidget::DebuggerWidget(const DebuggerWidgetParameters& parameters, u32 f
 	, m_cpu_override(parameters.cpu_override)
 	, m_flags(flags)
 {
+	updateStyleSheet();
 }
 
 DebugInterface& DebuggerWidget::cpu() const
@@ -61,9 +61,13 @@ QString DebuggerWidget::customDisplayName() const
 	return m_custom_display_name;
 }
 
-void DebuggerWidget::setCustomDisplayName(QString display_name)
+bool DebuggerWidget::setCustomDisplayName(QString display_name)
 {
+	if (display_name.size() > DockUtils::MAX_DOCK_WIDGET_NAME_SIZE)
+		return false;
+
 	m_custom_display_name = display_name;
+	return true;
 }
 
 bool DebuggerWidget::isPrimary() const
@@ -102,9 +106,7 @@ bool DebuggerWidget::handleEvent(const DebuggerEvents::Event& event)
 	auto [begin, end] = m_event_handlers.equal_range(typeid(event).name());
 	for (auto handler = begin; handler != end; handler++)
 		if (handler->second(event))
-		{
 			return true;
-		}
 
 	return false;
 }
@@ -126,30 +128,20 @@ void DebuggerWidget::toJson(JsonValueWrapper& json)
 	json.value().AddMember("isPrimary", m_is_primary, json.allocator());
 }
 
-bool DebuggerWidget::fromJson(JsonValueWrapper& json)
+bool DebuggerWidget::fromJson(const JsonValueWrapper& json)
 {
 	auto custom_display_name = json.value().FindMember("customDisplayName");
 	if (custom_display_name != json.value().MemberEnd() && custom_display_name->value.IsString())
+	{
 		m_custom_display_name = QString(custom_display_name->value.GetString());
+		m_custom_display_name.truncate(DockUtils::MAX_DOCK_WIDGET_NAME_SIZE);
+	}
 
 	auto is_primary = json.value().FindMember("isPrimary");
 	if (is_primary != json.value().MemberEnd() && is_primary->value.IsBool())
 		m_is_primary = is_primary->value.GetBool();
 
 	return true;
-}
-
-void DebuggerWidget::applyMonospaceFont()
-{
-	// Easiest way to handle cross platform monospace fonts
-	// There are issues related to TabWidget -> Children font inheritance otherwise
-#if defined(WIN32)
-	setStyleSheet(QStringLiteral("font: 10pt 'Lucida Console'"));
-#elif defined(__APPLE__)
-	setStyleSheet(QStringLiteral("font: 10pt 'Monaco'"));
-#else
-	setStyleSheet(QStringLiteral("font: 10pt 'Monospace'"));
-#endif
 }
 
 void DebuggerWidget::switchToThisTab()
@@ -186,6 +178,31 @@ std::optional<int> DebuggerWidget::displayNameSuffixNumber() const
 void DebuggerWidget::setDisplayNameSuffixNumber(std::optional<int> suffix_number)
 {
 	m_display_name_suffix_number = suffix_number;
+}
+
+void DebuggerWidget::updateStyleSheet()
+{
+	QString stylesheet;
+
+	if (m_flags & MONOSPACE_FONT)
+	{
+		// Easiest way to handle cross platform monospace fonts
+		// There are issues related to TabWidget -> Children font inheritance otherwise
+#if defined(WIN32)
+		stylesheet += QStringLiteral("font-family: 'Lucida Console';");
+#elif defined(__APPLE__)
+		stylesheet += QStringLiteral("font-family: 'Monaco';");
+#else
+		stylesheet += QStringLiteral("font-family: 'Monospace';");
+#endif
+	}
+
+	// HACK: Make the font size smaller without applying a stylesheet to the
+	// whole window (which would impact performance).
+	if (g_debugger_window)
+		stylesheet += QString("font-size: %1pt;").arg(g_debugger_window->fontSize());
+
+	setStyleSheet(stylesheet);
 }
 
 void DebuggerWidget::goToInDisassembler(u32 address, bool switch_to_tab)

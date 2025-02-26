@@ -24,15 +24,30 @@ public:
 
 	DockManager& dockManager();
 
+	void setupDefaultToolBarState();
 	void clearToolBarState();
+	void setupFonts();
+	void updateFontActions();
+	void saveFontSize();
+	int fontSize();
+	void updateStyleSheets();
+
+	void saveWindowGeometry();
+	void restoreWindowGeometry();
 
 public slots:
-	void onVMStateChanged();
+	void onVMStarting();
+	void onVMPaused();
+	void onVMResumed();
+	void onVMStopped();
+
+	void onAnalyse();
+	void onSettings();
+	void onGameSettings();
 	void onRunPause();
 	void onStepInto();
 	void onStepOver();
 	void onStepOut();
-	void onAnalyse();
 
 protected:
 	void closeEvent(QCloseEvent* event);
@@ -40,13 +55,16 @@ protected:
 private:
 	DebugInterface* currentCPU();
 
-	void setupDefaultToolBarState();
-
 	Ui::DebuggerWindow m_ui;
 
 	DockManager* m_dock_manager;
 
 	QByteArray m_default_toolbar_state;
+
+	int m_font_size;
+	static const constexpr int DEFAULT_FONT_SIZE = 10;
+	static const constexpr int MINIMUM_FONT_SIZE = 5;
+	static const constexpr int MAXIMUM_FONT_SIZE = 30;
 };
 
 extern DebuggerWindow* g_debugger_window;

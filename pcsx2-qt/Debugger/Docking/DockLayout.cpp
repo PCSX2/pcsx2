@@ -35,39 +35,22 @@ const u32 DEBUGGER_LAYOUT_FILE_VERSION_MAJOR = 1;
 const u32 DEBUGGER_LAYOUT_FILE_VERSION_MINOR = 0;
 
 DockLayout::DockLayout(
-	std::string name,
+	QString name,
 	BreakPointCpu cpu,
 	bool is_default,
-	const DockTables::DefaultDockLayout& default_layout,
+	const std::string& base_name,
 	DockLayout::Index index)
 	: m_name(name)
 	, m_cpu(cpu)
 	, m_is_default(is_default)
-	, m_base_layout(default_layout.name)
+	, m_base_layout(base_name)
 {
-	for (size_t i = 0; i < default_layout.widgets.size(); i++)
-	{
-		auto iterator = DockTables::DEBUGGER_WIDGETS.find(default_layout.widgets[i].type);
-		pxAssertRel(iterator != DockTables::DEBUGGER_WIDGETS.end(), "Invalid default layout.");
-		const DockTables::DebuggerWidgetDescription& dock_description = iterator->second;
-
-		DebuggerWidgetParameters parameters;
-		parameters.unique_name = generateNewUniqueName(default_layout.widgets[i].type.c_str());
-		parameters.cpu = &DebugInterface::get(cpu);
-
-		if (parameters.unique_name.isEmpty())
-			continue;
-
-		DebuggerWidget* widget = dock_description.create_widget(parameters);
-		widget->setPrimary(true);
-		m_widgets.emplace(parameters.unique_name, widget);
-	}
-
+	reset();
 	save(index);
 }
 
 DockLayout::DockLayout(
-	std::string name,
+	QString name,
 	BreakPointCpu cpu,
 	bool is_default,
 	DockLayout::Index index)
@@ -79,7 +62,7 @@ DockLayout::DockLayout(
 }
 
 DockLayout::DockLayout(
-	std::string name,
+	QString name,
 	BreakPointCpu cpu,
 	bool is_default,
 	const DockLayout& layout_to_clone,
@@ -131,12 +114,12 @@ DockLayout::~DockLayout()
 	}
 }
 
-const std::string& DockLayout::name() const
+const QString& DockLayout::name() const
 {
 	return m_name;
 }
 
-void DockLayout::setName(std::string name)
+void DockLayout::setName(QString name)
 {
 	m_name = std::move(name);
 }
@@ -263,6 +246,50 @@ void DockLayout::thaw()
 	updateDockWidgetTitles();
 }
 
+bool DockLayout::canReset()
+{
+	return DockTables::defaultLayout(m_base_layout) != nullptr;
+}
+
+void DockLayout::reset()
+{
+	pxAssert(!m_is_active);
+
+	for (auto& [unique_name, widget] : m_widgets)
+	{
+		pxAssert(widget.get());
+
+		delete widget;
+	}
+
+	m_next_unique_name = 0;
+	m_toolbars.clear();
+	m_widgets.clear();
+	m_geometry.clear();
+
+	const DockTables::DefaultDockLayout* base_layout = DockTables::defaultLayout(m_base_layout);
+	if (!base_layout)
+		return;
+
+	for (size_t i = 0; i < base_layout->widgets.size(); i++)
+	{
+		auto iterator = DockTables::DEBUGGER_WIDGETS.find(base_layout->widgets[i].type);
+		pxAssertRel(iterator != DockTables::DEBUGGER_WIDGETS.end(), "Invalid default layout.");
+		const DockTables::DebuggerWidgetDescription& dock_description = iterator->second;
+
+		DebuggerWidgetParameters parameters;
+		parameters.unique_name = generateNewUniqueName(base_layout->widgets[i].type.c_str());
+		parameters.cpu = &DebugInterface::get(m_cpu);
+
+		if (parameters.unique_name.isEmpty())
+			continue;
+
+		DebuggerWidget* widget = dock_description.create_widget(parameters);
+		widget->setPrimary(true);
+		m_widgets.emplace(parameters.unique_name, widget);
+	}
+}
+
 KDDockWidgets::Core::DockWidget* DockLayout::createDockWidget(const QString& name)
 {
 	pxAssert(m_is_active);
@@ -273,7 +300,9 @@ KDDockWidgets::Core::DockWidget* DockLayout::createDockWidget(const QString& nam
 		return nullptr;
 
 	DebuggerWidget* widget = widget_iterator->second;
-	pxAssert(widget);
+	if (!widget)
+		return nullptr;
+
 	pxAssert(widget->uniqueName() == name);
 
 	auto view = static_cast<KDDockWidgets::QtWidgets::DockWidget*>(
@@ -384,17 +413,13 @@ void DockLayout::createDebuggerWidget(const std::string& type)
 
 void DockLayout::recreateDebuggerWidget(const QString& unique_name)
 {
-	pxAssert(m_is_active);
-
-	auto [controller, view] = DockUtils::dockWidgetFromName(unique_name);
-	pxAssert(controller);
-	pxAssert(view);
+	if (!g_debugger_window)
+		return;
 
 	auto debugger_widget_iterator = m_widgets.find(unique_name);
 	pxAssert(debugger_widget_iterator != m_widgets.end());
 
 	DebuggerWidget* old_debugger_widget = debugger_widget_iterator->second;
-	pxAssert(old_debugger_widget == view->widget());
 
 	auto description_iterator = DockTables::DEBUGGER_WIDGETS.find(old_debugger_widget->metaObject()->className());
 	pxAssert(description_iterator != DockTables::DEBUGGER_WIDGETS.end());
@@ -411,7 +436,12 @@ void DockLayout::recreateDebuggerWidget(const QString& unique_name)
 	new_debugger_widget->setPrimary(old_debugger_widget->isPrimary());
 	debugger_widget_iterator->second = new_debugger_widget;
 
-	view->setWidget(new_debugger_widget);
+	if (m_is_active)
+	{
+		auto [controller, view] = DockUtils::dockWidgetFromName(unique_name);
+		if (view)
+			view->setWidget(new_debugger_widget);
+	}
 
 	delete old_debugger_widget;
 }
@@ -527,7 +557,8 @@ bool DockLayout::save(DockLayout::Index layout_index)
 	version_hash.SetString(default_layouts_hash.c_str(), default_layouts_hash.size());
 	json.AddMember("version_hash", version_hash, json.GetAllocator());
 
-	json.AddMember("name", rapidjson::Value().SetString(m_name.c_str(), m_name.size()), json.GetAllocator());
+	std::string name_str = m_name.toStdString();
+	json.AddMember("name", rapidjson::Value().SetString(name_str.c_str(), name_str.size()), json.GetAllocator());
 	json.AddMember("target", rapidjson::Value().SetString(cpu_name, strlen(cpu_name)), json.GetAllocator());
 	json.AddMember("index", static_cast<int>(layout_index), json.GetAllocator());
 	json.AddMember("isDefault", m_is_default, json.GetAllocator());
@@ -588,7 +619,7 @@ bool DockLayout::save(DockLayout::Index layout_index)
 	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(string_buffer);
 	json.Accept(writer);
 
-	std::string safe_name = Path::SanitizeFileName(m_name);
+	std::string safe_name = Path::SanitizeFileName(m_name.toStdString());
 
 	// Create a temporary file first so that we don't corrupt an existing file
 	// in the case that we succeed in opening the file but fail to write our
@@ -693,7 +724,9 @@ void DockLayout::load(
 	if (name != json.MemberEnd() && name->value.IsString())
 		m_name = name->value.GetString();
 	else
-		m_name = QCoreApplication::translate("DockLayout", "Unnamed").toStdString();
+		m_name = QCoreApplication::translate("DockLayout", "Unnamed");
+
+	m_name.truncate(DockUtils::MAX_LAYOUT_NAME_SIZE);
 
 	auto target = json.FindMember("target");
 	m_cpu = BREAKPOINT_EE;
