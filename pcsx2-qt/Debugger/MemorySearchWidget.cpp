@@ -453,7 +453,7 @@ std::vector<SearchResult> startWorker(DebugInterface* cpu, const SearchType type
 			isSigned ? searchWorker<s32>(cpu, searchResults, type, comparison, start, end, value.toInt(nullptr, base)) : searchWorker<u32>(cpu, searchResults, type, comparison, start, end, value.toUInt(nullptr, base));
 			break;
 		case SearchType::Int64Type:
-			isSigned ? searchWorker<s64>(cpu, searchResults, type, comparison, start, end, value.toLong(nullptr, base)) : searchWorker<s64>(cpu, searchResults, type, comparison, start, end, value.toULongLong(nullptr, base));
+			isSigned ? searchWorker<s64>(cpu, searchResults, type, comparison, start, end, value.toLongLong(nullptr, base)) : searchWorker<u64>(cpu, searchResults, type, comparison, start, end, value.toULongLong(nullptr, base));
 			break;
 		case SearchType::FloatType:
 			searchWorker<float>(cpu, searchResults, type, comparison, start, end, value.toFloat());
