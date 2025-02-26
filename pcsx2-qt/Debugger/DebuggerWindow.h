@@ -43,10 +43,6 @@ private:
 	void setupDefaultToolBarState();
 
 	Ui::DebuggerWindow m_ui;
-	QAction* m_actionRunPause;
-	QAction* m_actionStepInto;
-	QAction* m_actionStepOver;
-	QAction* m_actionStepOut;
 
 	DockManager* m_dock_manager;
 
