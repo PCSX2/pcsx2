@@ -7,8 +7,8 @@
 		<file>icons/black/svg/artboard-2-line.svg</file>
 		<file>icons/black/svg/at.svg</file>
 		<file>icons/black/svg/band-aid-line.svg</file>
-		<file>icons/black/svg/book.svg</file>
 		<file>icons/black/svg/booklet.svg</file>
+		<file>icons/black/svg/book.svg</file>
 		<file>icons/black/svg/brush-line.svg</file>
 		<file>icons/black/svg/buzz-controller-line.svg</file>
 		<file>icons/black/svg/camera-video.svg</file>
@@ -72,6 +72,8 @@
 		<file>icons/black/svg/mouse-line.svg</file>
 		<file>icons/black/svg/msd-line.svg</file>
 		<file>icons/black/svg/negcon-line.svg</file>
+		<file>icons/black/svg/padlock-lock.svg</file>
+		<file>icons/black/svg/padlock-unlock.svg</file>
 		<file>icons/black/svg/pause-line.svg</file>
 		<file>icons/black/svg/pencil-line.svg</file>
 		<file>icons/black/svg/pin-filled.svg</file>
@@ -113,8 +115,8 @@
 		<file>icons/white/svg/artboard-2-line.svg</file>
 		<file>icons/white/svg/at.svg</file>
 		<file>icons/white/svg/band-aid-line.svg</file>
-		<file>icons/white/svg/book.svg</file>
 		<file>icons/white/svg/booklet.svg</file>
+		<file>icons/white/svg/book.svg</file>
 		<file>icons/white/svg/brush-line.svg</file>
 		<file>icons/white/svg/buzz-controller-line.svg</file>
 		<file>icons/white/svg/camera-video.svg</file>
@@ -178,6 +180,8 @@
 		<file>icons/white/svg/mouse-line.svg</file>
 		<file>icons/white/svg/msd-line.svg</file>
 		<file>icons/white/svg/negcon-line.svg</file>
+		<file>icons/white/svg/padlock-lock.svg</file>
+		<file>icons/white/svg/padlock-unlock.svg</file>
 		<file>icons/white/svg/pause-line.svg</file>
 		<file>icons/white/svg/pencil-line.svg</file>
 		<file>icons/white/svg/pin-filled.svg</file>

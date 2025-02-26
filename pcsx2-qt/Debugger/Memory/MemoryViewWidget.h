@@ -112,12 +112,15 @@ public:
 	MemoryViewWidget(const DebuggerWidgetParameters& parameters);
 	~MemoryViewWidget();
 
+	void toJson(JsonValueWrapper& json) override;
+	bool fromJson(const JsonValueWrapper& json) override;
+
 protected:
-	void paintEvent(QPaintEvent* event);
-	void mousePressEvent(QMouseEvent* event);
-	void mouseDoubleClickEvent(QMouseEvent* event);
-	void wheelEvent(QWheelEvent* event);
-	void keyPressEvent(QKeyEvent* event);
+	void paintEvent(QPaintEvent* event) override;
+	void mousePressEvent(QMouseEvent* event) override;
+	void mouseDoubleClickEvent(QMouseEvent* event) override;
+	void wheelEvent(QWheelEvent* event) override;
+	void keyPressEvent(QKeyEvent* event) override;
 
 public slots:
 	void openContextMenu(QPoint pos);

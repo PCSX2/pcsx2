@@ -146,6 +146,7 @@ void BreakpointWidget::contextDelete()
 void BreakpointWidget::contextNew()
 {
 	BreakpointDialog* bpDialog = new BreakpointDialog(this, &cpu(), *m_model);
+	bpDialog->setAttribute(Qt::WA_DeleteOnClose);
 	bpDialog->show();
 }
 
@@ -161,6 +162,7 @@ void BreakpointWidget::contextEdit()
 	auto bpObject = m_model->at(selectedRow);
 
 	BreakpointDialog* bpDialog = new BreakpointDialog(this, &cpu(), *m_model, bpObject, selectedRow);
+	bpDialog->setAttribute(Qt::WA_DeleteOnClose);
 	bpDialog->show();
 }
 

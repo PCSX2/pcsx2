@@ -10,11 +10,6 @@
     <height>300</height>
    </rect>
   </property>
-  <property name="font">
-   <font>
-    <family>Monospace</family>
-   </font>
-  </property>
   <property name="windowTitle">
    <string/>
   </property>

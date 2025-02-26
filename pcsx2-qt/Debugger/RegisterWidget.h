@@ -22,11 +22,14 @@ public:
 	RegisterWidget(const DebuggerWidgetParameters& parameters);
 	~RegisterWidget();
 
+	void toJson(JsonValueWrapper& json) override;
+	bool fromJson(const JsonValueWrapper& json) override;
+
 protected:
-	void paintEvent(QPaintEvent* event);
-	void mousePressEvent(QMouseEvent* event);
-	void mouseDoubleClickEvent(QMouseEvent* event);
-	void wheelEvent(QWheelEvent* event);
+	void paintEvent(QPaintEvent* event) override;
+	void mousePressEvent(QMouseEvent* event) override;
+	void mouseDoubleClickEvent(QMouseEvent* event) override;
+	void wheelEvent(QWheelEvent* event) override;
 
 public slots:
 	void customMenuRequested(QPoint pos);
@@ -63,7 +66,6 @@ private:
 	s32 m_selectedRow = 0; // Index
 	s32 m_selected128Field = 0; // Values are from 0 to 3
 
-	// TODO: Save this configuration ??
 	bool m_showVU0FFloat = false;
 	bool m_showFPRFloat = false;
 };

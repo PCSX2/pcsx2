@@ -34,7 +34,7 @@ public:
 	QString displayNameWithoutSuffix() const;
 
 	QString customDisplayName() const;
-	void setCustomDisplayName(QString display_name);
+	bool setCustomDisplayName(QString display_name);
 
 	bool isPrimary() const;
 	void setPrimary(bool is_primary);
@@ -137,9 +137,7 @@ public:
 	}
 
 	virtual void toJson(JsonValueWrapper& json);
-	virtual bool fromJson(JsonValueWrapper& json);
-
-	void applyMonospaceFont();
+	virtual bool fromJson(const JsonValueWrapper& json);
 
 	void switchToThisTab();
 
@@ -150,6 +148,8 @@ public:
 	std::optional<int> displayNameSuffixNumber() const;
 	void setDisplayNameSuffixNumber(std::optional<int> suffix_number);
 
+	void updateStyleSheet();
+
 	static void goToInDisassembler(u32 address, bool switch_to_tab);
 	static void goToInMemoryView(u32 address, bool switch_to_tab);
 
@@ -158,7 +158,9 @@ protected:
 	{
 		NO_DEBUGGER_FLAGS = 0,
 		// Prevent the user from opening multiple dock widgets of this type.
-		DISALLOW_MULTIPLE_INSTANCES = 1 << 0
+		DISALLOW_MULTIPLE_INSTANCES = 1 << 0,
+		// Apply a stylesheet that gives all the text a monospace font.
+		MONOSPACE_FONT = 1 << 1
 	};
 
 	DebuggerWidget(const DebuggerWidgetParameters& parameters, u32 flags);

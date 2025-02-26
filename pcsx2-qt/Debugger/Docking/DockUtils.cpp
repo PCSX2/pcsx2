@@ -95,22 +95,3 @@ void DockUtils::insertDockWidgetAtPreferredLocation(
 		window->addDockWidget(dock_view, KDDockWidgets::Location_OnTop);
 	}
 }
-
-const char* DockUtils::locationToString(KDDockWidgets::Location location)
-{
-	switch (location)
-	{
-		case KDDockWidgets::Location_None:
-			return "none";
-		case KDDockWidgets::Location_OnLeft:
-			return "left";
-		case KDDockWidgets::Location_OnTop:
-			return "top";
-		case KDDockWidgets::Location_OnRight:
-			return "right";
-		case KDDockWidgets::Location_OnBottom:
-			return "bottom";
-	}
-
-	return "";
-}
