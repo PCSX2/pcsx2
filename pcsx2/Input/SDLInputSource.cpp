@@ -17,96 +17,353 @@
 
 #include <bit>
 #include <cmath>
+#include <VMManager.h>
 
 static constexpr const char* CONTROLLER_DB_FILENAME = "game_controller_db.txt";
 
+static constexpr const char* s_sdl_axis_setting_names[] = {
+	"LeftX", // SDL_GAMEPAD_AXIS_LEFTX
+	"LeftY", // SDL_GAMEPAD_AXIS_LEFTY
+	"RightX", // SDL_GAMEPAD_AXIS_RIGHTX
+	"RightY", // SDL_GAMEPAD_AXIS_RIGHTY
+	"LeftTrigger", // SDL_GAMEPAD_AXIS_LEFT_TRIGGER
+	"RightTrigger", // SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
+};
+static_assert(std::size(s_sdl_axis_setting_names) == SDL_GAMEPAD_AXIS_COUNT);
+
 static constexpr const char* s_sdl_axis_names[] = {
-	"LeftX", // SDL_CONTROLLER_AXIS_LEFTX
-	"LeftY", // SDL_CONTROLLER_AXIS_LEFTY
-	"RightX", // SDL_CONTROLLER_AXIS_RIGHTX
-	"RightY", // SDL_CONTROLLER_AXIS_RIGHTY
-	"LeftTrigger", // SDL_CONTROLLER_AXIS_TRIGGERLEFT
-	"RightTrigger", // SDL_CONTROLLER_AXIS_TRIGGERRIGHT
-};
-static constexpr const char* s_sdl_axis_icons[][2] = {
-	{ICON_PF_LEFT_ANALOG_LEFT, ICON_PF_LEFT_ANALOG_RIGHT}, // SDL_CONTROLLER_AXIS_LEFTX
-	{ICON_PF_LEFT_ANALOG_UP, ICON_PF_LEFT_ANALOG_DOWN}, // SDL_CONTROLLER_AXIS_LEFTY
-	{ICON_PF_RIGHT_ANALOG_LEFT, ICON_PF_RIGHT_ANALOG_RIGHT}, // SDL_CONTROLLER_AXIS_RIGHTX
-	{ICON_PF_RIGHT_ANALOG_UP, ICON_PF_RIGHT_ANALOG_DOWN}, // SDL_CONTROLLER_AXIS_RIGHTY
-	{nullptr, ICON_PF_LEFT_TRIGGER_PULL}, // SDL_CONTROLLER_AXIS_TRIGGERLEFT
-	{nullptr, ICON_PF_RIGHT_TRIGGER_PULL}, // SDL_CONTROLLER_AXIS_TRIGGERRIGHT
-};
-static constexpr const GenericInputBinding s_sdl_generic_binding_axis_mapping[][2] = {
-	{GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight}, // SDL_CONTROLLER_AXIS_LEFTX
-	{GenericInputBinding::LeftStickUp, GenericInputBinding::LeftStickDown}, // SDL_CONTROLLER_AXIS_LEFTY
-	{GenericInputBinding::RightStickLeft, GenericInputBinding::RightStickRight}, // SDL_CONTROLLER_AXIS_RIGHTX
-	{GenericInputBinding::RightStickUp, GenericInputBinding::RightStickDown}, // SDL_CONTROLLER_AXIS_RIGHTY
-	{GenericInputBinding::Unknown, GenericInputBinding::L2}, // SDL_CONTROLLER_AXIS_TRIGGERLEFT
-	{GenericInputBinding::Unknown, GenericInputBinding::R2}, // SDL_CONTROLLER_AXIS_TRIGGERRIGHT
+	"Left X", // SDL_GAMEPAD_AXIS_LEFTX
+	"Left Y", // SDL_GAMEPAD_AXIS_LEFTY
+	"Right X", // SDL_GAMEPAD_AXIS_RIGHTX
+	"Right Y", // SDL_GAMEPAD_AXIS_RIGHTY
 };
 
+static constexpr const char* s_sdl_trigger_names[] = {
+	"Left Trigger", // SDL_GAMEPAD_AXIS_LEFT_TRIGGER
+	"Right Trigger", // SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
+};
+static constexpr const char* s_sdl_trigger_ps_names[] = {
+	"L2", // SDL_GAMEPAD_AXIS_LEFT_TRIGGER
+	"R2", // SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
+};
+
+static const char* const* s_sdl_trigger_names_list[] = {
+	s_sdl_trigger_names, // SDL_GAMEPAD_TYPE_UNKNOWN
+	s_sdl_trigger_names, // SDL_GAMEPAD_TYPE_STANDARD
+	s_sdl_trigger_names, // SDL_GAMEPAD_TYPE_XBOX360
+	s_sdl_trigger_names, // SDL_GAMEPAD_TYPE_XBOXONE
+	s_sdl_trigger_ps_names, // SDL_GAMEPAD_TYPE_PS3
+	s_sdl_trigger_ps_names, // SDL_GAMEPAD_TYPE_PS4
+	s_sdl_trigger_ps_names, // SDL_GAMEPAD_TYPE_PS5
+	// Switch
+};
+
+static constexpr const char* s_sdl_axis_icons[][2] = {
+	{ICON_PF_LEFT_ANALOG_LEFT, ICON_PF_LEFT_ANALOG_RIGHT}, // SDL_GAMEPAD_AXIS_LEFTX
+	{ICON_PF_LEFT_ANALOG_UP, ICON_PF_LEFT_ANALOG_DOWN}, // SDL_GAMEPAD_AXIS_LEFTY
+	{ICON_PF_RIGHT_ANALOG_LEFT, ICON_PF_RIGHT_ANALOG_RIGHT}, // SDL_GAMEPAD_AXIS_RIGHTX
+	{ICON_PF_RIGHT_ANALOG_UP, ICON_PF_RIGHT_ANALOG_DOWN}, // SDL_GAMEPAD_AXIS_RIGHTY
+};
+
+static constexpr const char* s_sdl_trigger_icons[] = {
+	ICON_PF_LEFT_TRIGGER_PULL, // SDL_GAMEPAD_AXIS_LEFT_TRIGGER
+	ICON_PF_RIGHT_TRIGGER_PULL, // SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
+};
+static constexpr const char* s_sdl_trigger_ps_icons[] = {
+	ICON_PF_LEFT_TRIGGER_L2, // SDL_GAMEPAD_AXIS_LEFT_TRIGGER
+	ICON_PF_RIGHT_TRIGGER_R2, // SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
+};
+
+static const char* const* s_sdl_trigger_icons_list[] = {
+	s_sdl_trigger_icons, // SDL_GAMEPAD_TYPE_UNKNOWN
+	s_sdl_trigger_icons, // SDL_GAMEPAD_TYPE_STANDARD
+	s_sdl_trigger_icons, // SDL_GAMEPAD_TYPE_XBOX360
+	s_sdl_trigger_icons, // SDL_GAMEPAD_TYPE_XBOXONE
+	s_sdl_trigger_ps_icons, // SDL_GAMEPAD_TYPE_PS3
+	s_sdl_trigger_ps_icons, // SDL_GAMEPAD_TYPE_PS4
+	s_sdl_trigger_ps_icons, // SDL_GAMEPAD_TYPE_PS5
+	// Switch
+};
+
+static constexpr const GenericInputBinding s_sdl_generic_binding_axis_mapping[][2] = {
+	{GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight}, // SDL_GAMEPAD_AXIS_LEFTX
+	{GenericInputBinding::LeftStickUp, GenericInputBinding::LeftStickDown}, // SDL_GAMEPAD_AXIS_LEFTY
+	{GenericInputBinding::RightStickLeft, GenericInputBinding::RightStickRight}, // SDL_GAMEPAD_AXIS_RIGHTX
+	{GenericInputBinding::RightStickUp, GenericInputBinding::RightStickDown}, // SDL_GAMEPAD_AXIS_RIGHTY
+	{GenericInputBinding::Unknown, GenericInputBinding::L2}, // SDL_GAMEPAD_AXIS_LEFT_TRIGGER
+	{GenericInputBinding::Unknown, GenericInputBinding::R2}, // SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
+};
+
+static constexpr const char* s_sdl_button_setting_names[] = {
+	"FaceSouth", // SDL_GAMEPAD_BUTTON_SOUTH
+	"FaceEast", // SDL_GAMEPAD_BUTTON_EAST
+	"FaceWest", // SDL_GAMEPAD_BUTTON_WEST
+	"FaceNorth", // SDL_GAMEPAD_BUTTON_NORTH
+	"Back", // SDL_GAMEPAD_BUTTON_BACK
+	"Guide", // SDL_GAMEPAD_BUTTON_GUIDE
+	"Start", // SDL_GAMEPAD_BUTTON_START
+	"LeftStick", // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	"RightStick", // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	"LeftShoulder", // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	"RightShoulder", // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+	"DPadUp", // SDL_GAMEPAD_BUTTON_DPAD_UP
+	"DPadDown", // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+	"DPadLeft", // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+	"DPadRight", // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+	"Misc1", // SDL_GAMEPAD_BUTTON_MISC1
+	"Paddle1", // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1
+	"Paddle2", // SDL_GAMEPAD_BUTTON_LEFT_PADDLE1
+	"Paddle3", // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2
+	"Paddle4", // SDL_GAMEPAD_BUTTON_LEFT_PADDLE2
+	"Touchpad", // SDL_GAMEPAD_BUTTON_TOUCHPAD
+	"Misc2", // SDL_GAMEPAD_BUTTON_MISC2
+	"Misc3", // SDL_GAMEPAD_BUTTON_MISC3
+	"Misc4", // SDL_GAMEPAD_BUTTON_MISC4
+	"Misc5", // SDL_GAMEPAD_BUTTON_MISC5
+	"Misc6", // SDL_GAMEPAD_BUTTON_MISC6
+};
+static_assert(std::size(s_sdl_button_setting_names) == SDL_GAMEPAD_BUTTON_COUNT);
+
+static constexpr const char* s_sdl_face_button_names[] = {
+	nullptr, // SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN
+	"A", // SDL_GAMEPAD_BUTTON_LABEL_A
+	"B", // SDL_GAMEPAD_BUTTON_LABEL_B
+	"X", // SDL_GAMEPAD_BUTTON_LABEL_X
+	"Y", // SDL_GAMEPAD_BUTTON_LABEL_Y
+	"Cross", // SDL_GAMEPAD_BUTTON_LABEL_CROSS
+	"Circle", // SDL_GAMEPAD_BUTTON_LABEL_CIRCLE
+	"Square", // SDL_GAMEPAD_BUTTON_LABEL_SQUARE
+	"Triangle", // SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE
+};
 static constexpr const char* s_sdl_button_names[] = {
-	"A", // SDL_CONTROLLER_BUTTON_A
-	"B", // SDL_CONTROLLER_BUTTON_B
-	"X", // SDL_CONTROLLER_BUTTON_X
-	"Y", // SDL_CONTROLLER_BUTTON_Y
-	"Back", // SDL_CONTROLLER_BUTTON_BACK
-	"Guide", // SDL_CONTROLLER_BUTTON_GUIDE
-	"Start", // SDL_CONTROLLER_BUTTON_START
-	"LeftStick", // SDL_CONTROLLER_BUTTON_LEFTSTICK
-	"RightStick", // SDL_CONTROLLER_BUTTON_RIGHTSTICK
-	"LeftShoulder", // SDL_CONTROLLER_BUTTON_LEFTSHOULDER
-	"RightShoulder", // SDL_CONTROLLER_BUTTON_RIGHTSHOULDER
-	"DPadUp", // SDL_CONTROLLER_BUTTON_DPAD_UP
-	"DPadDown", // SDL_CONTROLLER_BUTTON_DPAD_DOWN
-	"DPadLeft", // SDL_CONTROLLER_BUTTON_DPAD_LEFT
-	"DPadRight", // SDL_CONTROLLER_BUTTON_DPAD_RIGHT
-	"Misc1", // SDL_CONTROLLER_BUTTON_MISC1
-	"Paddle1", // SDL_CONTROLLER_BUTTON_PADDLE1
-	"Paddle2", // SDL_CONTROLLER_BUTTON_PADDLE2
-	"Paddle3", // SDL_CONTROLLER_BUTTON_PADDLE3
-	"Paddle4", // SDL_CONTROLLER_BUTTON_PADDLE4
-	"Touchpad", // SDL_CONTROLLER_BUTTON_TOUCHPAD
+	"Face South", // SDL_GAMEPAD_BUTTON_SOUTH
+	"Face East", // SDL_GAMEPAD_BUTTON_EAST
+	"Face West", // SDL_GAMEPAD_BUTTON_WEST
+	"Face North", // SDL_GAMEPAD_BUTTON_NORTH
+	"Back", // SDL_GAMEPAD_BUTTON_BACK
+	"Guide", // SDL_GAMEPAD_BUTTON_GUIDE
+	"Start", // SDL_GAMEPAD_BUTTON_START
+	"Left Stick", // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	"Right Stick", // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	"Left Shoulder", // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	"Right Shoulder", // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+	"D-Pad Up", // SDL_GAMEPAD_BUTTON_DPAD_UP
+	"D-Pad Down", // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+	"D-Pad Left", // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+	"D-Pad Right", // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+	"Misc 1", // SDL_GAMEPAD_BUTTON_MISC1
+	"Paddle 1", // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1
+	"Paddle 2", // SDL_GAMEPAD_BUTTON_LEFT_PADDLE1
+	"Paddle 3", // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2
+	"Paddle 4", // SDL_GAMEPAD_BUTTON_LEFT_PADDLE2
+	"Touchpad", // SDL_GAMEPAD_BUTTON_TOUCHPAD
+	"Misc 2", // SDL_GAMEPAD_BUTTON_MISC2
+	"Misc 3", // SDL_GAMEPAD_BUTTON_MISC3
+	"Misc 4", // SDL_GAMEPAD_BUTTON_MISC4
+	"Misc 5", // SDL_GAMEPAD_BUTTON_MISC5
+	"Misc 6", // SDL_GAMEPAD_BUTTON_MISC6
+};
+static constexpr const char* s_sdl_button_ps3_names[] = {
+	"Cross", // SDL_GAMEPAD_BUTTON_SOUTH
+	"Circle", // SDL_GAMEPAD_BUTTON_EAST
+	"Square", // SDL_GAMEPAD_BUTTON_WEST
+	"Triangle", // SDL_GAMEPAD_BUTTON_NORTH
+	"Select", // SDL_GAMEPAD_BUTTON_BACK
+	"PS", // SDL_GAMEPAD_BUTTON_GUIDE
+	"Start", // SDL_GAMEPAD_BUTTON_START
+	"Left Stick", // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	"Right Stick", // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	"L1", // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	"R1", // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+};
+static constexpr const char* s_sdl_button_ps4_names[] = {
+	"Cross", // SDL_GAMEPAD_BUTTON_SOUTH
+	"Circle", // SDL_GAMEPAD_BUTTON_EAST
+	"Square", // SDL_GAMEPAD_BUTTON_WEST
+	"Triangle", // SDL_GAMEPAD_BUTTON_NORTH
+	"Share", // SDL_GAMEPAD_BUTTON_BACK
+	"PS", // SDL_GAMEPAD_BUTTON_GUIDE
+	"Options", // SDL_GAMEPAD_BUTTON_START
+	"Left Stick", // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	"Right Stick", // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	"L1", // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	"R1", // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+};
+static constexpr const char* s_sdl_button_ps5_names[] = {
+	"Cross", // SDL_GAMEPAD_BUTTON_SOUTH
+	"Circle", // SDL_GAMEPAD_BUTTON_EAST
+	"Square", // SDL_GAMEPAD_BUTTON_WEST
+	"Triangle", // SDL_GAMEPAD_BUTTON_NORTH
+	"Create", // SDL_GAMEPAD_BUTTON_BACK
+	"PS", // SDL_GAMEPAD_BUTTON_GUIDE
+	"Options", // SDL_GAMEPAD_BUTTON_START
+	"Left Stick", // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	"Right Stick", // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	"L1", // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	"R1", // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+	nullptr, // SDL_GAMEPAD_BUTTON_DPAD_UP
+	nullptr, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+	nullptr, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+	nullptr, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+	"Mute", // SDL_GAMEPAD_BUTTON_MISC1
+};
+
+static constexpr const char* const* s_sdl_button_names_list[] = {
+	s_sdl_button_names, // SDL_GAMEPAD_TYPE_UNKNOWN
+	s_sdl_button_names, // SDL_GAMEPAD_TYPE_STANDARD
+	s_sdl_button_names, // SDL_GAMEPAD_TYPE_XBOX360
+	s_sdl_button_names, // SDL_GAMEPAD_TYPE_XBOXONE
+	s_sdl_button_ps3_names, // SDL_GAMEPAD_TYPE_PS3
+	s_sdl_button_ps4_names, // SDL_GAMEPAD_TYPE_PS4
+	s_sdl_button_ps5_names, // SDL_GAMEPAD_TYPE_PS5
+	// Switch
+};
+static constexpr size_t s_sdl_button_namesize_list[] = {
+	std::size(s_sdl_button_names), // SDL_GAMEPAD_TYPE_UNKNOWN
+	std::size(s_sdl_button_names), // SDL_GAMEPAD_TYPE_STANDARD
+	std::size(s_sdl_button_names), // SDL_GAMEPAD_TYPE_XBOX360
+	std::size(s_sdl_button_names), // SDL_GAMEPAD_TYPE_XBOXONE
+	std::size(s_sdl_button_ps3_names), // SDL_GAMEPAD_TYPE_PS3
+	std::size(s_sdl_button_ps4_names), // SDL_GAMEPAD_TYPE_PS4
+	std::size(s_sdl_button_ps5_names), // SDL_GAMEPAD_TYPE_PS5
+	// Switch
+};
+
+static constexpr const char* s_sdl_face_button_icons[] = {
+	nullptr, // SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN
+	ICON_PF_BUTTON_A, // SDL_GAMEPAD_BUTTON_LABEL_A
+	ICON_PF_BUTTON_B, // SDL_GAMEPAD_BUTTON_LABEL_B
+	ICON_PF_BUTTON_X, // SDL_GAMEPAD_BUTTON_LABEL_X
+	ICON_PF_BUTTON_Y, // SDL_GAMEPAD_BUTTON_LABEL_Y
+	ICON_PF_BUTTON_CROSS, // SDL_GAMEPAD_BUTTON_LABEL_CROSS
+	ICON_PF_BUTTON_CIRCLE, // SDL_GAMEPAD_BUTTON_LABEL_CIRCLE
+	ICON_PF_BUTTON_SQUARE, // SDL_GAMEPAD_BUTTON_LABEL_SQUARE
+	ICON_PF_BUTTON_TRIANGLE, // SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE
 };
 static constexpr const char* s_sdl_button_icons[] = {
-	ICON_PF_BUTTON_A, // SDL_CONTROLLER_BUTTON_A
-	ICON_PF_BUTTON_B, // SDL_CONTROLLER_BUTTON_B
-	ICON_PF_BUTTON_X, // SDL_CONTROLLER_BUTTON_X
-	ICON_PF_BUTTON_Y, // SDL_CONTROLLER_BUTTON_Y
-	ICON_PF_SHARE_CAPTURE, // SDL_CONTROLLER_BUTTON_BACK
-	ICON_PF_XBOX, // SDL_CONTROLLER_BUTTON_GUIDE
-	ICON_PF_BURGER_MENU, // SDL_CONTROLLER_BUTTON_START
-	ICON_PF_LEFT_ANALOG_CLICK, // SDL_CONTROLLER_BUTTON_LEFTSTICK
-	ICON_PF_RIGHT_ANALOG_CLICK, // SDL_CONTROLLER_BUTTON_RIGHTSTICK
-	ICON_PF_LEFT_SHOULDER_LB, // SDL_CONTROLLER_BUTTON_LEFTSHOULDER
-	ICON_PF_RIGHT_SHOULDER_RB, // SDL_CONTROLLER_BUTTON_RIGHTSHOULDER
-	ICON_PF_XBOX_DPAD_UP, // SDL_CONTROLLER_BUTTON_DPAD_UP
-	ICON_PF_XBOX_DPAD_DOWN, // SDL_CONTROLLER_BUTTON_DPAD_DOWN
-	ICON_PF_XBOX_DPAD_LEFT, // SDL_CONTROLLER_BUTTON_DPAD_LEFT
-	ICON_PF_XBOX_DPAD_RIGHT, // SDL_CONTROLLER_BUTTON_DPAD_RIGHT
+	ICON_PF_BUTTON_DOWN_A, // SDL_GAMEPAD_BUTTON_SOUTH
+	ICON_PF_BUTTON_RIGHT_B, // SDL_GAMEPAD_BUTTON_EAST
+	ICON_PF_BUTTON_LEFT_X, // SDL_GAMEPAD_BUTTON_WEST
+	ICON_PF_BUTTON_UP_Y, // SDL_GAMEPAD_BUTTON_NORTH
+	ICON_PF_SHARE_CAPTURE, // SDL_GAMEPAD_BUTTON_BACK
+	ICON_PF_XBOX, // SDL_GAMEPAD_BUTTON_GUIDE
+	ICON_PF_BURGER_MENU, // SDL_GAMEPAD_BUTTON_START
+	ICON_PF_LEFT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	ICON_PF_RIGHT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	ICON_PF_LEFT_SHOULDER_LB, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	ICON_PF_RIGHT_SHOULDER_RB, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+	ICON_PF_XBOX_DPAD_UP, // SDL_GAMEPAD_BUTTON_DPAD_UP
+	ICON_PF_XBOX_DPAD_DOWN, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+	ICON_PF_XBOX_DPAD_LEFT, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+	ICON_PF_XBOX_DPAD_RIGHT, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
 };
+static constexpr const char* s_sdl_button_ps3_icons[] = {
+	ICON_PF_BUTTON_CROSS, // SDL_GAMEPAD_BUTTON_SOUTH
+	ICON_PF_BUTTON_CIRCLE, // SDL_GAMEPAD_BUTTON_EAST
+	ICON_PF_BUTTON_SQUARE, // SDL_GAMEPAD_BUTTON_WEST
+	ICON_PF_BUTTON_TRIANGLE, // SDL_GAMEPAD_BUTTON_NORTH
+	ICON_PF_SELECT_SHARE, // SDL_GAMEPAD_BUTTON_BACK
+	ICON_PF_XBOX, // SDL_GAMEPAD_BUTTON_GUIDE
+	ICON_PF_START, // SDL_GAMEPAD_BUTTON_START
+	ICON_PF_LEFT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	ICON_PF_RIGHT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	ICON_PF_LEFT_SHOULDER_L1, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	ICON_PF_RIGHT_SHOULDER_R1, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+	ICON_PF_DPAD_UP, // SDL_GAMEPAD_BUTTON_DPAD_UP
+	ICON_PF_DPAD_DOWN, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+	ICON_PF_DPAD_LEFT, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+	ICON_PF_DPAD_RIGHT, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+};
+static constexpr const char* s_sdl_button_ps4_icons[] = {
+	ICON_PF_BUTTON_CROSS, // SDL_GAMEPAD_BUTTON_SOUTH
+	ICON_PF_BUTTON_CIRCLE, // SDL_GAMEPAD_BUTTON_EAST
+	ICON_PF_BUTTON_SQUARE, // SDL_GAMEPAD_BUTTON_WEST
+	ICON_PF_BUTTON_TRIANGLE, // SDL_GAMEPAD_BUTTON_NORTH
+	ICON_PF_DUALSHOCK_SHARE, // SDL_GAMEPAD_BUTTON_BACK
+	ICON_PF_PLAYSTATION, // SDL_GAMEPAD_BUTTON_GUIDE
+	ICON_PF_DUALSHOCK_OPTIONS, // SDL_GAMEPAD_BUTTON_START
+	ICON_PF_LEFT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	ICON_PF_RIGHT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	ICON_PF_LEFT_SHOULDER_L1, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	ICON_PF_RIGHT_SHOULDER_R1, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+	ICON_PF_DPAD_UP, // SDL_GAMEPAD_BUTTON_DPAD_UP
+	ICON_PF_DPAD_DOWN, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+	ICON_PF_DPAD_LEFT, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+	ICON_PF_DPAD_RIGHT, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+	nullptr, // SDL_GAMEPAD_BUTTON_MISC1
+	nullptr, // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1
+	nullptr, // SDL_GAMEPAD_BUTTON_LEFT_PADDLE1
+	nullptr, // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2
+	nullptr, // SDL_GAMEPAD_BUTTON_LEFT_PADDLE2
+	ICON_PF_DUALSHOCK_TOUCHPAD, // SDL_GAMEPAD_BUTTON_TOUCHPAD
+};
+static constexpr const char* s_sdl_button_ps5_icons[] = {
+	ICON_PF_BUTTON_CROSS, // SDL_GAMEPAD_BUTTON_SOUTH
+	ICON_PF_BUTTON_CIRCLE, // SDL_GAMEPAD_BUTTON_EAST
+	ICON_PF_BUTTON_SQUARE, // SDL_GAMEPAD_BUTTON_WEST
+	ICON_PF_BUTTON_TRIANGLE, // SDL_GAMEPAD_BUTTON_NORTH
+	ICON_PF_DUALSENSE_SHARE, // SDL_GAMEPAD_BUTTON_BACK
+	ICON_PF_PLAYSTATION, // SDL_GAMEPAD_BUTTON_GUIDE
+	ICON_PF_DUALSENSE_OPTIONS, // SDL_GAMEPAD_BUTTON_START
+	ICON_PF_LEFT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	ICON_PF_RIGHT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	ICON_PF_LEFT_SHOULDER_L1, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	ICON_PF_RIGHT_SHOULDER_R1, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+	ICON_PF_DPAD_UP, // SDL_GAMEPAD_BUTTON_DPAD_UP
+	ICON_PF_DPAD_DOWN, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+	ICON_PF_DPAD_LEFT, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+	ICON_PF_DPAD_RIGHT, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+	nullptr, // SDL_GAMEPAD_BUTTON_MISC1
+	nullptr, // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1
+	nullptr, // SDL_GAMEPAD_BUTTON_LEFT_PADDLE1
+	nullptr, // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2
+	nullptr, // SDL_GAMEPAD_BUTTON_LEFT_PADDLE2
+	ICON_PF_DUALSENSE_TOUCHPAD, // SDL_GAMEPAD_BUTTON_TOUCHPAD
+};
+
+static constexpr const char* const* s_sdl_button_icons_list[] = {
+	s_sdl_button_icons, // SDL_GAMEPAD_TYPE_UNKNOWN
+	s_sdl_button_icons, // SDL_GAMEPAD_TYPE_STANDARD
+	s_sdl_button_icons, // SDL_GAMEPAD_TYPE_XBOX360
+	s_sdl_button_icons, // SDL_GAMEPAD_TYPE_XBOXONE
+	s_sdl_button_ps3_icons, // SDL_GAMEPAD_TYPE_PS3
+	s_sdl_button_ps4_icons, // SDL_GAMEPAD_TYPE_PS4
+	s_sdl_button_ps5_icons, // SDL_GAMEPAD_TYPE_PS5
+	// Switch
+};
+static constexpr size_t s_sdl_button_iconsize_list[] = {
+	std::size(s_sdl_button_icons), // SDL_GAMEPAD_TYPE_UNKNOWN
+	std::size(s_sdl_button_icons), // SDL_GAMEPAD_TYPE_STANDARD
+	std::size(s_sdl_button_icons), // SDL_GAMEPAD_TYPE_XBOX360
+	std::size(s_sdl_button_icons), // SDL_GAMEPAD_TYPE_XBOXONE
+	std::size(s_sdl_button_ps3_icons), // SDL_GAMEPAD_TYPE_PS3
+	std::size(s_sdl_button_ps4_icons), // SDL_GAMEPAD_TYPE_PS4
+	std::size(s_sdl_button_ps5_icons), // SDL_GAMEPAD_TYPE_PS5
+	// Switch
+};
+
 static constexpr const GenericInputBinding s_sdl_generic_binding_button_mapping[] = {
-	GenericInputBinding::Cross, // SDL_CONTROLLER_BUTTON_A
-	GenericInputBinding::Circle, // SDL_CONTROLLER_BUTTON_B
-	GenericInputBinding::Square, // SDL_CONTROLLER_BUTTON_X
-	GenericInputBinding::Triangle, // SDL_CONTROLLER_BUTTON_Y
-	GenericInputBinding::Select, // SDL_CONTROLLER_BUTTON_BACK
-	GenericInputBinding::System, // SDL_CONTROLLER_BUTTON_GUIDE
-	GenericInputBinding::Start, // SDL_CONTROLLER_BUTTON_START
-	GenericInputBinding::L3, // SDL_CONTROLLER_BUTTON_LEFTSTICK
-	GenericInputBinding::R3, // SDL_CONTROLLER_BUTTON_RIGHTSTICK
-	GenericInputBinding::L1, // SDL_CONTROLLER_BUTTON_LEFTSHOULDER
-	GenericInputBinding::R1, // SDL_CONTROLLER_BUTTON_RIGHTSHOULDER
-	GenericInputBinding::DPadUp, // SDL_CONTROLLER_BUTTON_DPAD_UP
-	GenericInputBinding::DPadDown, // SDL_CONTROLLER_BUTTON_DPAD_DOWN
-	GenericInputBinding::DPadLeft, // SDL_CONTROLLER_BUTTON_DPAD_LEFT
-	GenericInputBinding::DPadRight, // SDL_CONTROLLER_BUTTON_DPAD_RIGHT
-	GenericInputBinding::Unknown, // SDL_CONTROLLER_BUTTON_MISC1
-	GenericInputBinding::Unknown, // SDL_CONTROLLER_BUTTON_PADDLE1
-	GenericInputBinding::Unknown, // SDL_CONTROLLER_BUTTON_PADDLE2
-	GenericInputBinding::Unknown, // SDL_CONTROLLER_BUTTON_PADDLE3
-	GenericInputBinding::Unknown, // SDL_CONTROLLER_BUTTON_PADDLE4
-	GenericInputBinding::Unknown, // SDL_CONTROLLER_BUTTON_TOUCHPAD
+	GenericInputBinding::Cross, // SDL_GAMEPAD_BUTTON_SOUTH
+	GenericInputBinding::Circle, // SDL_GAMEPAD_BUTTON_EAST
+	GenericInputBinding::Square, // SDL_GAMEPAD_BUTTON_WEST
+	GenericInputBinding::Triangle, // SDL_GAMEPAD_BUTTON_NORTH
+	GenericInputBinding::Select, // SDL_GAMEPAD_BUTTON_BACK
+	GenericInputBinding::System, // SDL_GAMEPAD_BUTTON_GUIDE
+	GenericInputBinding::Start, // SDL_GAMEPAD_BUTTON_START
+	GenericInputBinding::L3, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	GenericInputBinding::R3, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	GenericInputBinding::L1, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	GenericInputBinding::R1, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+	GenericInputBinding::DPadUp, // SDL_GAMEPAD_BUTTON_DPAD_UP
+	GenericInputBinding::DPadDown, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+	GenericInputBinding::DPadLeft, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+	GenericInputBinding::DPadRight, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_MISC1
+	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1
+	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_LEFT_PADDLE1
+	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2
+	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_LEFT_PADDLE2
+	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_TOUCHPAD
 };
 
 static constexpr const char* s_sdl_hat_direction_names[] = {
@@ -125,9 +382,9 @@ static constexpr const char* s_sdl_default_led_colors[] = {
 	"808000", // SDL-3
 };
 
-static void SetControllerRGBLED(SDL_GameController* gc, u32 color)
+static void SetGamepadRGBLED(SDL_Gamepad* pad, u32 color)
 {
-	SDL_GameControllerSetLED(gc, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff);
+	SDL_SetGamepadLED(pad, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff);
 }
 
 static void SDLLogCallback(void* userdata, int category, SDL_LogPriority priority, const char* message)
@@ -155,11 +412,16 @@ bool SDLInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mut
 	return result;
 }
 
+bool SDLInputSource::IsInitialized()
+{
+	return m_sdl_subsystem_initialized;
+}
+
 void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-	const bool old_controller_enhanced_mode = m_controller_enhanced_mode;
-	const bool old_controller_ps5_player_led = m_controller_ps5_player_led;
-	const bool old_controller_raw_mode = m_controller_raw_mode;
+	const bool old_enable_enhanced_reports = m_enable_enhanced_reports;
+	const bool old_enable_ps5_player_leds = m_enable_ps5_player_leds;
+	const bool old_use_raw_input = m_use_raw_input;
 
 #ifdef __APPLE__
 	const bool old_enable_iokit_driver = m_enable_iokit_driver;
@@ -175,9 +437,9 @@ void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std:
 	constexpr bool drivers_changed = false;
 #endif
 
-	if (m_controller_enhanced_mode != old_controller_enhanced_mode ||
-		m_controller_ps5_player_led != old_controller_ps5_player_led ||
-		m_controller_raw_mode != old_controller_raw_mode ||
+	if (m_enable_enhanced_reports != old_enable_enhanced_reports ||
+		m_enable_ps5_player_leds != old_enable_ps5_player_leds ||
+		m_use_raw_input != old_use_raw_input ||
 		drivers_changed)
 	{
 		settings_lock.unlock();
@@ -190,7 +452,7 @@ void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std:
 
 bool SDLInputSource::ReloadDevices()
 {
-	// We'll get a GC added/removed event here.
+	// We'll get a device added/removed event here.
 	PollEvents();
 	return false;
 }
@@ -211,17 +473,27 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
 		m_led_colors[i] = color;
 
 		const auto it = GetControllerDataForPlayerId(i);
-		if (it == m_controllers.end() || !it->game_controller || !SDL_GameControllerHasLED(it->game_controller))
+		if (it == m_controllers.end() || !it->gamepad)
 			continue;
 
-		SetControllerRGBLED(it->game_controller, color);
+		const SDL_PropertiesID props = SDL_GetGamepadProperties(it->gamepad);
+		if (props == 0)
+		{
+			ERROR_LOG("SDLInputSource: SDL_GetGamepadProperties() failed");
+			continue;
+		}
+
+		if (!SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN, false))
+			continue;
+
+		SetGamepadRGBLED(it->gamepad, color);
 	}
 
 	m_sdl_hints = si.GetKeyValueList("SDLHints");
 
-	m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
-	m_controller_ps5_player_led = si.GetBoolValue("InputSources", "SDLPS5PlayerLED", false);
-	m_controller_raw_mode = si.GetBoolValue("InputSources", "SDLRawInput", false);
+	m_enable_enhanced_reports = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", true);
+	m_enable_ps5_player_leds = si.GetBoolValue("InputSources", "SDLPS5PlayerLED", true);
+	m_use_raw_input = si.GetBoolValue("InputSources", "SDLRawInput", false);
 
 #ifdef __APPLE__
 	m_enable_iokit_driver = si.GetBoolValue("InputSources", "SDLIOKitDriver", true);
@@ -272,10 +544,9 @@ void SDLInputSource::SetHints()
 		Console.Error(fmt::format("SDLInputSource: Controller DB not found, it should be named '{}'", CONTROLLER_DB_FILENAME));
 	}
 
-	SDL_SetHint(SDL_HINT_JOYSTICK_RAWINPUT, m_controller_raw_mode ? "1" : "0");
-	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
-	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
-	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED, m_controller_ps5_player_led ? "1" : "0");
+	SDL_SetHint(SDL_HINT_JOYSTICK_RAWINPUT, m_use_raw_input ? "1" : "0");
+	SDL_SetHint(SDL_HINT_JOYSTICK_ENHANCED_REPORTS, m_enable_enhanced_reports ? "auto" : "0"); // PS4/PS5 Rumble
+	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED, m_enable_ps5_player_leds ? "1" : "0");
 	// Enable Wii U Pro Controller support
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII, "1");
 #ifndef _WIN32
@@ -296,22 +567,32 @@ void SDLInputSource::SetHints()
 
 bool SDLInputSource::InitializeSubsystem()
 {
-	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
+	if (!SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC))
 	{
-		Console.Error("SDL_InitSubSystem(SDL_INIT_JOYSTICK |SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) failed");
+		Console.Error("SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC) failed");
 		return false;
 	}
 
-	SDL_LogSetOutputFunction(SDLLogCallback, nullptr);
+	SDL_SetLogOutputFunction(SDLLogCallback, nullptr);
 #ifdef PCSX2_DEVBUILD
-	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+	SDL_SetLogPriorities(SDL_LOG_PRIORITY_VERBOSE);
 #else
-	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_INFO);
+	SDL_SetLogPriorities(SDL_LOG_PRIORITY_INFO);
 #endif
 
 	// we should open the controllers as the connected events come in, so no need to do any more here
 	m_sdl_subsystem_initialized = true;
-	Console.WriteLn(Color_StrongGreen, fmt::format("SDLInputSource: {} controller mappings are loaded.", SDL_GameControllerNumMappings()));
+
+	int count;
+	char** mappings = SDL_GetGamepadMappings(&count);
+	if (mappings != nullptr)
+	{
+		SDL_free(mappings);
+		Console.WriteLnFmt(Color_StrongGreen, "SDLInputSource: {} gamepad mappings are loaded.", count);
+	}
+	else
+		Console.Error("SDL_GetGamepadMappings() failed {}", SDL_GetError());
+
 	return true;
 }
 
@@ -322,7 +603,7 @@ void SDLInputSource::ShutdownSubsystem()
 
 	if (m_sdl_subsystem_initialized)
 	{
-		SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
+		SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
 		m_sdl_subsystem_initialized = false;
 	}
 }
@@ -347,7 +628,7 @@ std::vector<std::pair<std::string, std::string>> SDLInputSource::EnumerateDevice
 	{
 		std::string id(StringUtil::StdStringFromFormat("SDL-%d", cd.player_id));
 
-		const char* name = cd.game_controller ? SDL_GameControllerName(cd.game_controller) : SDL_JoystickName(cd.joystick);
+		const char* name = cd.gamepad ? SDL_GetGamepadName(cd.gamepad) : SDL_GetJoystickName(cd.joystick);
 		if (name)
 			ret.emplace_back(std::move(id), name);
 		else
@@ -369,6 +650,119 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 	InputBindingKey key = {};
 	key.source_type = InputSourceType::SDL;
 	key.source_index = static_cast<u32>(player_id.value());
+
+	// SDL2-SDL3 migrations
+	static constexpr const char* sdl_button_legacy_names[] = {
+		"A", // SDL_CONTROLLER_BUTTON_A
+		"B", // SDL_CONTROLLER_BUTTON_B
+		"X", // SDL_CONTROLLER_BUTTON_X
+		"Y", // SDL_CONTROLLER_BUTTON_Y
+	};
+
+	for (u32 i = 0; i < std::size(sdl_button_legacy_names); i++)
+	{
+		if (binding == sdl_button_legacy_names[i])
+		{
+			key.source_subtype = InputSubclass::ControllerButton;
+			key.data = i;
+
+			// SDL2 would map A/B/X/Y based on the button's label
+			// We need to convert this to a positional binding for SDL3
+			static constexpr SDL_GamepadButton face_button_pos[] = {
+				SDL_GAMEPAD_BUTTON_SOUTH,
+				SDL_GAMEPAD_BUTTON_EAST,
+				SDL_GAMEPAD_BUTTON_WEST,
+				SDL_GAMEPAD_BUTTON_NORTH,
+			};
+
+			// This migrations needs to inspect the controller
+			{
+				std::lock_guard lock(m_controllers_key_mutex);
+
+				auto it = GetControllerDataForPlayerId(key.source_index);
+				if (it != m_controllers.end() && it->gamepad)
+				{
+					static bool shown_prompt = false;
+					for (u32 pos = 0; pos < std::size(face_button_pos); pos++)
+					{
+						// A/B/X/Y are equal to 1/2/3/4 in SDL_GamepadButtonLabel
+						// PS controllers have positional A/B/X/Y, so don't need adjusting
+						// Controllers with unknown labels are assumed to have positional A/B/X/Y
+						const SDL_GamepadButtonLabel label = SDL_GetGamepadButtonLabel(it->gamepad, face_button_pos[pos]);
+						if (key.data == (label - 1))
+						{
+							if (key.data != pos)
+							{
+								if (!shown_prompt)
+								{
+									shown_prompt = true;
+									Host::ReportInfoAsync(TRANSLATE("SDLInputSource", "SDL3 Migration"),
+										TRANSLATE("SDLInputSource", "As part of our upgrade to SDL3, we've had to migrate your binds\n"
+																	"Your controller did not match the Xbox layout and may need rebinding\n"
+																	"Please verify your controller settings and amend if required"));
+								}
+								key.data = pos;
+							}
+							break;
+						}
+					}
+
+					key.needs_migration = true;
+					return key;
+				}
+				else if (std::find(m_gamepads_needing_migration.begin(), m_gamepads_needing_migration.end(), key.source_index) ==
+						 m_gamepads_needing_migration.end())
+				{
+					// flag the device to migrate later
+					m_gamepads_needing_migration.push_back(key.source_index);
+					return std::nullopt;
+				}
+			}
+		}
+	}
+
+	if (binding.starts_with("+Axis") || binding.starts_with("-Axis"))
+	{
+		const std::string_view axis_name(binding.substr(1));
+
+		std::string_view end;
+		if (auto value = StringUtil::FromChars<u32>(axis_name.substr(4), 10, &end))
+		{
+			key.source_subtype = InputSubclass::ControllerAxis;
+			key.data = *value - 6 + std::size(s_sdl_axis_setting_names);
+			key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
+			key.invert = (end == "~");
+
+			key.needs_migration = true;
+			return key;
+		}
+	}
+	else if (binding.starts_with("FullAxis"))
+	{
+		std::string_view end;
+		if (auto value = StringUtil::FromChars<u32>(binding.substr(8), 10, &end))
+		{
+			key.source_subtype = InputSubclass::ControllerAxis;
+			key.data = *value - 6 + std::size(s_sdl_axis_setting_names);
+			key.modifier = InputModifier::FullAxis;
+			key.invert = (end == "~");
+
+			key.needs_migration = true;
+			return key;
+		}
+	}
+	else if (binding.starts_with("Button"))
+	{
+		if (auto value = StringUtil::FromChars<u32>(binding.substr(6)))
+		{
+			key.source_subtype = InputSubclass::ControllerButton;
+			key.data = *value - 21 + std::size(s_sdl_button_setting_names);
+
+			key.needs_migration = true;
+			return key;
+		}
+	}
+	// End Migrations
 
 	if (binding.ends_with("Motor"))
 	{
@@ -399,21 +793,21 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 		// likely an axis
 		const std::string_view axis_name(binding.substr(1));
 
-		if (axis_name.starts_with("Axis"))
+		if (axis_name.starts_with("JoyAxis"))
 		{
 			std::string_view end;
-			if (auto value = StringUtil::FromChars<u32>(axis_name.substr(4), 10, &end))
+			if (auto value = StringUtil::FromChars<u32>(axis_name.substr(7), 10, &end))
 			{
 				key.source_subtype = InputSubclass::ControllerAxis;
-				key.data = *value;
+				key.data = *value + std::size(s_sdl_axis_setting_names);
 				key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
 				key.invert = (end == "~");
 				return key;
 			}
 		}
-		for (u32 i = 0; i < std::size(s_sdl_axis_names); i++)
+		for (u32 i = 0; i < std::size(s_sdl_axis_setting_names); i++)
 		{
-			if (axis_name == s_sdl_axis_names[i])
+			if (axis_name == s_sdl_axis_setting_names[i])
 			{
 				// found an axis!
 				key.source_subtype = InputSubclass::ControllerAxis;
@@ -423,13 +817,13 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 			}
 		}
 	}
-	else if (binding.starts_with("FullAxis"))
+	else if (binding.starts_with("FullJoyAxis"))
 	{
 		std::string_view end;
-		if (auto value = StringUtil::FromChars<u32>(binding.substr(8), 10, &end))
+		if (auto value = StringUtil::FromChars<u32>(binding.substr(11), 10, &end))
 		{
 			key.source_subtype = InputSubclass::ControllerAxis;
-			key.data = *value;
+			key.data = *value + std::size(s_sdl_axis_setting_names);
 			key.modifier = InputModifier::FullAxis;
 			key.invert = (end == "~");
 			return key;
@@ -454,18 +848,18 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 	else
 	{
 		// must be a button
-		if (binding.starts_with("Button"))
+		if (binding.starts_with("JoyButton"))
 		{
-			if (auto value = StringUtil::FromChars<u32>(binding.substr(6)))
+			if (auto value = StringUtil::FromChars<u32>(binding.substr(9)))
 			{
 				key.source_subtype = InputSubclass::ControllerButton;
-				key.data = *value;
+				key.data = *value + std::size(s_sdl_button_setting_names);
 				return key;
 			}
 		}
-		for (u32 i = 0; i < std::size(s_sdl_button_names); i++)
+		for (u32 i = 0; i < std::size(s_sdl_button_setting_names); i++)
 		{
-			if (binding == s_sdl_button_names[i])
+			if (binding == s_sdl_button_setting_names[i])
 			{
 				key.source_subtype = InputSubclass::ControllerButton;
 				key.data = i;
@@ -478,7 +872,7 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 	return std::nullopt;
 }
 
-TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
+TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key, bool display, bool migration)
 {
 	TinyString ret;
 
@@ -486,32 +880,102 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
 	{
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
-			const char* modifier = (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
-			if (key.data < std::size(s_sdl_axis_names))
-				ret.format("SDL-{}/{}{}", static_cast<u32>(key.source_index), modifier, s_sdl_axis_names[key.data]);
+			const char* modifier = (key.modifier == InputModifier::FullAxis ? (display ? "Full " : "Full") : (key.modifier == InputModifier::Negate ? "-" : "+"));
+			if (display)
+			{
+				std::lock_guard lock(m_controllers_key_mutex);
+
+				SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
+				auto it = GetControllerDataForPlayerId(key.source_index);
+				if (it != m_controllers.end())
+					type = SDL_GetRealGamepadType(it->gamepad);
+
+				if (key.data < std::size(s_sdl_axis_names))
+				{
+					ret.format("SDL-{} {}{}", static_cast<u32>(key.source_index), modifier, s_sdl_axis_names[key.data]);
+				}
+				else if (key.data - std::size(s_sdl_axis_names) < std::size(s_sdl_trigger_names))
+				{
+					const u32 trigger_index = key.data - std::size(s_sdl_axis_names);
+
+					if (type < std::size(s_sdl_trigger_names_list))
+						ret.format("SDL-{} {}", static_cast<u32>(key.source_index), s_sdl_trigger_names_list[type][trigger_index]);
+					else
+						ret.format("SDL-{} {}", static_cast<u32>(key.source_index), s_sdl_trigger_names[trigger_index]);
+				}
+				else
+					ret.format("SDL-{} {}Axis {}{}", static_cast<u32>(key.source_index), modifier, key.data - std::size(s_sdl_axis_setting_names) + 1, key.invert ? "~" : "");
+			}
 			else
-				ret.format("SDL-{}/{}Axis{}{}", static_cast<u32>(key.source_index), modifier, key.data, (key.invert && !ShouldIgnoreInversion()) ? "~" : "");
+			{
+				if (key.data < std::size(s_sdl_axis_setting_names))
+					ret.format("SDL-{}/{}{}", static_cast<u32>(key.source_index), modifier, s_sdl_axis_setting_names[key.data]);
+				else
+					ret.format("SDL-{}/{}JoyAxis{}{}", static_cast<u32>(key.source_index), modifier, key.data - std::size(s_sdl_axis_setting_names), (key.invert && (migration || !ShouldIgnoreInversion())) ? "~" : "");
+			}
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton)
 		{
-			if (key.data < std::size(s_sdl_button_names))
-				ret.format("SDL-{}/{}", static_cast<u32>(key.source_index), s_sdl_button_names[key.data]);
+			if (display)
+			{
+				std::lock_guard lock(m_controllers_key_mutex);
+
+				SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
+				auto it = GetControllerDataForPlayerId(key.source_index);
+				if (it != m_controllers.end())
+					type = SDL_GetRealGamepadType(it->gamepad);
+
+				if (type > SDL_GAMEPAD_TYPE_STANDARD && type < std::size(s_sdl_button_names_list) &&
+					key.data < s_sdl_button_namesize_list[type] && s_sdl_button_names_list[type][key.data] != nullptr)
+				{
+					ret.format("SDL-{} {}", static_cast<u32>(key.source_index), s_sdl_button_names_list[type][key.data]);
+				}
+				else if (key.data < 4)
+				{
+					SDL_GamepadButtonLabel label = SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN;
+					if (it != m_controllers.end() && it->gamepad)
+						label = SDL_GetGamepadButtonLabel(it->gamepad, static_cast<SDL_GamepadButton>(key.data));
+
+					if (label > SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN && label < std::size(s_sdl_face_button_names))
+						ret.format("SDL-{} {}", static_cast<u32>(key.source_index), s_sdl_face_button_names[label]);
+					else
+						ret.format("SDL-{} {}", static_cast<u32>(key.source_index), s_sdl_button_names[key.data]);
+				}
+				else if (key.data < std::size(s_sdl_button_names))
+					ret.format("SDL-{} {}", static_cast<u32>(key.source_index), s_sdl_button_names[key.data]);
+				else
+					ret.format("SDL-{} Button {}", static_cast<u32>(key.source_index), key.data - std::size(s_sdl_button_setting_names) + 1);
+			}
 			else
-				ret.format("SDL-{}/Button{}", static_cast<u32>(key.source_index), key.data);
+			{
+				if (key.data < std::size(s_sdl_button_setting_names))
+					ret.format("SDL-{}/{}", static_cast<u32>(key.source_index), s_sdl_button_setting_names[key.data]);
+				else
+					ret.format("SDL-{}/JoyButton{}", static_cast<u32>(key.source_index), key.data - std::size(s_sdl_button_setting_names));
+			}
 		}
 		else if (key.source_subtype == InputSubclass::ControllerHat)
 		{
 			const u32 hat_index = key.data / static_cast<u32>(std::size(s_sdl_hat_direction_names));
 			const u32 hat_direction = key.data % static_cast<u32>(std::size(s_sdl_hat_direction_names));
-			ret.format("SDL-{}/Hat{}{}", static_cast<u32>(key.source_index), hat_index, s_sdl_hat_direction_names[hat_direction]);
+			if (display)
+				ret.format("SDL-{} Hat {} {}", static_cast<u32>(key.source_index), hat_index + 1, s_sdl_hat_direction_names[hat_direction]);
+			else
+				ret.format("SDL-{}/Hat{}{}", static_cast<u32>(key.source_index), hat_index, s_sdl_hat_direction_names[hat_direction]);
 		}
 		else if (key.source_subtype == InputSubclass::ControllerMotor)
 		{
-			ret.format("SDL-{}/{}Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
+			if (display)
+				ret.format("SDL-{} {} Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
+			else
+				ret.format("SDL-{}/{}Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
 		}
 		else if (key.source_subtype == InputSubclass::ControllerHaptic)
 		{
-			ret.format("SDL-{}/Haptic", static_cast<u32>(key.source_index));
+			if (display)
+				ret.format("SDL-{} Haptic", static_cast<u32>(key.source_index));
+			else
+				ret.format("SDL-{}/Haptic", static_cast<u32>(key.source_index));
 		}
 	}
 
@@ -524,17 +988,52 @@ TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key)
 
 	if (key.source_type == InputSourceType::SDL)
 	{
+		std::lock_guard lock(m_controllers_key_mutex);
+
+		SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
+		auto it = GetControllerDataForPlayerId(key.source_index);
+		if (it != m_controllers.end())
+			type = SDL_GetRealGamepadType(it->gamepad);
+
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
-			if (key.data < std::size(s_sdl_axis_icons) && key.modifier != InputModifier::FullAxis)
+			if (key.modifier != InputModifier::FullAxis)
 			{
-				ret.format("SDL-{}  {}", static_cast<u32>(key.source_index),
-					s_sdl_axis_icons[key.data][key.modifier == InputModifier::None]);
+				if (key.data < std::size(s_sdl_axis_icons))
+				{
+					ret.format("SDL-{}  {}", static_cast<u32>(key.source_index),
+						s_sdl_axis_icons[key.data][key.modifier == InputModifier::None]);
+				}
+				else if (key.data - std::size(s_sdl_axis_icons) < std::size(s_sdl_trigger_icons))
+				{
+					const u32 trigger_index = key.data - std::size(s_sdl_axis_icons);
+
+					if (type < std::size(s_sdl_trigger_icons_list))
+						ret.format("SDL-{}  {}", static_cast<u32>(key.source_index), s_sdl_trigger_icons_list[type][trigger_index]);
+					else
+						ret.format("SDL-{}  {}", static_cast<u32>(key.source_index), s_sdl_trigger_icons[trigger_index]);
+				}
 			}
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton)
 		{
-			if (key.data < std::size(s_sdl_button_icons))
+			if (type > SDL_GAMEPAD_TYPE_STANDARD && type < std::size(s_sdl_button_icons_list) &&
+				key.data < s_sdl_button_iconsize_list[type] && s_sdl_button_icons_list[type][key.data] != nullptr)
+			{
+				ret.format("SDL-{}  {}", static_cast<u32>(key.source_index), s_sdl_button_icons_list[type][key.data]);
+			}
+			else if (key.data < 4)
+			{
+				SDL_GamepadButtonLabel label = SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN;
+				if (it != m_controllers.end() && it->gamepad)
+					label = SDL_GetGamepadButtonLabel(it->gamepad, static_cast<SDL_GamepadButton>(key.data));
+
+				if (label > SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN && label < std::size(s_sdl_face_button_icons))
+					ret.format("SDL-{}  {}", static_cast<u32>(key.source_index), s_sdl_face_button_icons[label]);
+				else
+					ret.format("SDL-{}  {}", static_cast<u32>(key.source_index), s_sdl_button_icons[key.data]);
+			}
+			else if (key.data < std::size(s_sdl_button_icons))
 				ret.format("SDL-{}  {}", static_cast<u32>(key.source_index), s_sdl_button_icons[key.data]);
 		}
 	}
@@ -546,24 +1045,24 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
 {
 	switch (event->type)
 	{
-		case SDL_CONTROLLERDEVICEADDED:
+		case SDL_EVENT_GAMEPAD_ADDED:
 		{
-			Console.WriteLn("SDLInputSource: Controller %d inserted", event->cdevice.which);
+			Console.WriteLn("SDLInputSource: Gamepad %d inserted", event->cdevice.which);
 			OpenDevice(event->cdevice.which, true);
 			return true;
 		}
 
-		case SDL_CONTROLLERDEVICEREMOVED:
+		case SDL_EVENT_GAMEPAD_REMOVED:
 		{
-			Console.WriteLn("SDLInputSource: Controller %d removed", event->cdevice.which);
+			Console.WriteLn("SDLInputSource: Gamepad %d removed", event->cdevice.which);
 			CloseDevice(event->cdevice.which);
 			return true;
 		}
 
-		case SDL_JOYDEVICEADDED:
+		case SDL_EVENT_JOYSTICK_ADDED:
 		{
-			// Let game controller handle.. well.. game controllers.
-			if (SDL_IsGameController(event->jdevice.which))
+			// Let gamepad handle.. well.. gamepads.
+			if (SDL_IsGamepad(event->jdevice.which))
 				return false;
 
 			Console.WriteLn("SDLInputSource: Joystick %d inserted", event->jdevice.which);
@@ -572,9 +1071,9 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
 		}
 		break;
 
-		case SDL_JOYDEVICEREMOVED:
+		case SDL_EVENT_JOYSTICK_REMOVED:
 		{
-			if (auto it = GetControllerDataForJoystickId(event->cdevice.which); it != m_controllers.end() && it->game_controller)
+			if (auto it = GetControllerDataForJoystickId(event->cdevice.which); it != m_controllers.end() && it->gamepad)
 				return false;
 
 			Console.WriteLn("SDLInputSource: Joystick %d removed", event->jdevice.which);
@@ -582,21 +1081,21 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
 			return true;
 		}
 
-		case SDL_CONTROLLERAXISMOTION:
-			return HandleControllerAxisEvent(&event->caxis);
+		case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+			return HandleGamepadAxisEvent(&event->gaxis);
 
-		case SDL_CONTROLLERBUTTONDOWN:
-		case SDL_CONTROLLERBUTTONUP:
-			return HandleControllerButtonEvent(&event->cbutton);
+		case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+		case SDL_EVENT_GAMEPAD_BUTTON_UP:
+			return HandleGamepadButtonEvent(&event->gbutton);
 
-		case SDL_JOYAXISMOTION:
+		case SDL_EVENT_JOYSTICK_AXIS_MOTION:
 			return HandleJoystickAxisEvent(&event->jaxis);
 
-		case SDL_JOYBUTTONDOWN:
-		case SDL_JOYBUTTONUP:
+		case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+		case SDL_EVENT_JOYSTICK_BUTTON_UP:
 			return HandleJoystickButtonEvent(&event->jbutton);
 
-		case SDL_JOYHATMOTION:
+		case SDL_EVENT_JOYSTICK_HAT_MOTION:
 			return HandleJoystickHatEvent(&event->jhat);
 
 		default:
@@ -647,39 +1146,39 @@ int SDLInputSource::GetFreePlayerId() const
 	return 0;
 }
 
-bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
+bool SDLInputSource::OpenDevice(int index, bool is_gamepad)
 {
-	SDL_GameController* gcontroller;
+	SDL_Gamepad* gamepad;
 	SDL_Joystick* joystick;
 
-	if (is_gamecontroller)
+	if (is_gamepad)
 	{
-		gcontroller = SDL_GameControllerOpen(index);
-		joystick = gcontroller ? SDL_GameControllerGetJoystick(gcontroller) : nullptr;
+		gamepad = SDL_OpenGamepad(index);
+		joystick = gamepad ? SDL_GetGamepadJoystick(gamepad) : nullptr;
 	}
 	else
 	{
-		gcontroller = nullptr;
-		joystick = SDL_JoystickOpen(index);
+		gamepad = nullptr;
+		joystick = SDL_OpenJoystick(index);
 	}
 
-	if (!gcontroller && !joystick)
+	if (!gamepad && !joystick)
 	{
 		ERROR_LOG("SDLInputSource: Failed to open controller {}", index);
 		return false;
 	}
 
-	const int joystick_id = SDL_JoystickInstanceID(joystick);
-	int player_id = gcontroller ? SDL_GameControllerGetPlayerIndex(gcontroller) : SDL_JoystickGetPlayerIndex(joystick);
+	const SDL_JoystickID joystick_id = SDL_GetJoystickID(joystick);
+	int player_id = gamepad ? SDL_GetGamepadPlayerIndex(gamepad) : SDL_GetJoystickPlayerIndex(joystick);
 	for (auto it = m_controllers.begin(); it != m_controllers.end(); ++it)
 	{
 		if (it->joystick_id == joystick_id)
 		{
 			ERROR_LOG("SDLInputSource: Controller {}, instance {}, player {} already connected, ignoring.", index, joystick_id, player_id);
-			if (gcontroller)
-				SDL_GameControllerClose(gcontroller);
+			if (gamepad)
+				SDL_CloseGamepad(gamepad);
 			else
-				SDL_JoystickClose(joystick);
+				SDL_CloseJoystick(joystick);
 
 			return false;
 		}
@@ -694,65 +1193,73 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 		player_id = free_player_id;
 	}
 
-	const char* name = gcontroller ? SDL_GameControllerName(gcontroller) : SDL_JoystickName(joystick);
+	const char* name = gamepad ? SDL_GetGamepadName(gamepad) : SDL_GetJoystickName(joystick);
 	if (!name)
 		name = "Unknown Device";
 
-	INFO_LOG("SDLInputSource: Opened {} {} (instance id {}, player id {}): {}", is_gamecontroller ? "game controller" : "joystick",
+	INFO_LOG("SDLInputSource: Opened {} {} (instance id {}, player id {}): {}", is_gamepad ? "gamepad" : "joystick",
 		index, joystick_id, player_id, name);
 
 	ControllerData cd = {};
 	cd.player_id = player_id;
 	cd.joystick_id = joystick_id;
 	cd.haptic_left_right_effect = -1;
-	cd.game_controller = gcontroller;
+	cd.gamepad = gamepad;
 	cd.joystick = joystick;
 
-	if (gcontroller)
+	if (gamepad)
 	{
-		const int num_axes = SDL_JoystickNumAxes(joystick);
-		const int num_buttons = SDL_JoystickNumButtons(joystick);
-		cd.joy_axis_used_in_gc.resize(num_axes, false);
-		cd.joy_button_used_in_gc.resize(num_buttons, false);
-		auto mark_bind = [&](SDL_GameControllerButtonBind bind) {
-			if (bind.bindType == SDL_CONTROLLER_BINDTYPE_AXIS && bind.value.axis < num_axes)
-				cd.joy_axis_used_in_gc[bind.value.axis] = true;
-			if (bind.bindType == SDL_CONTROLLER_BINDTYPE_BUTTON && bind.value.button < num_buttons)
-				cd.joy_button_used_in_gc[bind.value.button] = true;
-		};
-		for (size_t i = 0; i < std::size(s_sdl_axis_names); i++)
-			mark_bind(SDL_GameControllerGetBindForAxis(gcontroller, static_cast<SDL_GameControllerAxis>(i)));
-		for (size_t i = 0; i < std::size(s_sdl_button_names); i++)
-			mark_bind(SDL_GameControllerGetBindForButton(gcontroller, static_cast<SDL_GameControllerButton>(i)));
+		int binding_count;
+		SDL_GamepadBinding** bindings = SDL_GetGamepadBindings(gamepad, &binding_count);
+		if (bindings)
+		{
+			const int num_axes = SDL_GetNumJoystickAxes(joystick);
+			const int num_buttons = SDL_GetNumJoystickButtons(joystick);
+			cd.joy_axis_used_in_pad.resize(num_axes, false);
+			cd.joy_button_used_in_pad.resize(num_buttons, false);
+			auto mark_bind = [&](SDL_GamepadBinding* bind) {
+				if (bind->input_type == SDL_GAMEPAD_BINDTYPE_AXIS && bind->input.axis.axis < num_axes)
+					cd.joy_axis_used_in_pad[bind->input.axis.axis] = true;
+				if (bind->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON && bind->input.button < num_buttons)
+					cd.joy_button_used_in_pad[bind->input.button] = true;
+			};
 
-		INFO_LOG("SDLInputSource: Controller {} has {} axes and {} buttons", player_id, num_axes, num_buttons);
+			for (int i = 0; i < binding_count; i++)
+				mark_bind(bindings[i]);
+
+			SDL_free(bindings);
+
+			INFO_LOG("SDLInputSource: Gamepad {} has {} axes and {} buttons", player_id, num_axes, num_buttons);
+		}
+		else
+			ERROR_LOG("SDLInputSource: Failed to get gamepad bindings {}", SDL_GetError());
 	}
 	else
 	{
-		// GC doesn't have the concept of hats, so we only need to do this for joysticks.
-		const int num_hats = SDL_JoystickNumHats(joystick);
+		// Gamepad doesn't have the concept of hats, so we only need to do this for joysticks.
+		const int num_hats = SDL_GetNumJoystickHats(joystick);
 		if (num_hats > 0)
-			cd.last_hat_state.resize(static_cast<size_t>(num_hats), u8(0));
+			cd.last_hat_state.resize(static_cast<size_t>(num_hats), u8{0});
 
 		INFO_LOG("SDLInputSource: Joystick {} has {} axes, {} buttons and {} hats", player_id,
-			SDL_JoystickNumAxes(joystick), SDL_JoystickNumButtons(joystick), num_hats);
+			SDL_GetNumJoystickAxes(joystick), SDL_GetNumJoystickButtons(joystick), num_hats);
 	}
 
-	cd.use_game_controller_rumble = (gcontroller && SDL_GameControllerRumble(gcontroller, 0, 0, 0) == 0);
-	if (cd.use_game_controller_rumble)
+	cd.use_gamepad_rumble = (gamepad && SDL_RumbleGamepad(gamepad, 0, 0, 0));
+	if (cd.use_gamepad_rumble)
 	{
-		INFO_LOG("SDLInputSource: Rumble is supported on '{}' via gamecontroller", name);
+		INFO_LOG("SDLInputSource: Rumble is supported on '{}' via gamepad", name);
 	}
 	else
 	{
-		SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
+		SDL_Haptic* haptic = SDL_OpenHapticFromJoystick(joystick);
 		if (haptic)
 		{
 			SDL_HapticEffect ef = {};
 			ef.leftright.type = SDL_HAPTIC_LEFTRIGHT;
 			ef.leftright.length = 1000;
 
-			int ef_id = SDL_HapticNewEffect(haptic, &ef);
+			int ef_id = SDL_CreateHapticEffect(haptic, &ef);
 			if (ef_id >= 0)
 			{
 				cd.haptic = haptic;
@@ -761,14 +1268,14 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 			else
 			{
 				ERROR_LOG("SDLInputSource: Failed to create haptic left/right effect: {}", SDL_GetError());
-				if (SDL_HapticRumbleSupported(haptic) && SDL_HapticRumbleInit(haptic) != 0)
+				if (SDL_HapticRumbleSupported(haptic) && SDL_InitHapticRumble(haptic))
 				{
 					cd.haptic = haptic;
 				}
 				else
 				{
 					ERROR_LOG("SDLInputSource: No haptic rumble supported: {}", SDL_GetError());
-					SDL_HapticClose(haptic);
+					SDL_CloseHaptic(haptic);
 				}
 			}
 		}
@@ -777,15 +1284,44 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 			INFO_LOG("SDLInputSource: Rumble is supported on '{}' via haptic", name);
 	}
 
-	if (!cd.haptic && !cd.use_game_controller_rumble)
+	if (!cd.haptic && !cd.use_gamepad_rumble)
 		WARNING_LOG("SDLInputSource: Rumble is not supported on '{}'", name);
 
-	if (player_id >= 0 && static_cast<u32>(player_id) < MAX_LED_COLORS && gcontroller && SDL_GameControllerHasLED(gcontroller))
+	if (gamepad)
 	{
-		SetControllerRGBLED(gcontroller, m_led_colors[player_id]);
+		const SDL_PropertiesID props = SDL_GetGamepadProperties(gamepad);
+		bool hasLED = false;
+		if (props == 0)
+			ERROR_LOG("SDLInputSource: SDL_GetGamepadProperties() failed");
+		else
+			hasLED = SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN, false);
+
+		if (player_id >= 0 && static_cast<u32>(player_id) < MAX_LED_COLORS && hasLED)
+		{
+			SetGamepadRGBLED(gamepad, m_led_colors[player_id]);
+		}
 	}
 
-	m_controllers.push_back(std::move(cd));
+	{
+		std::unique_lock lock(m_controllers_key_mutex);
+		m_controllers.push_back(std::move(cd));
+
+		if (gamepad)
+		{
+			// Perform SDL2-SDL3 migrations that require inspecting the gamepad
+			auto idx = std::find(m_gamepads_needing_migration.begin(), m_gamepads_needing_migration.end(), player_id);
+			if (idx != m_gamepads_needing_migration.end())
+			{
+				m_gamepads_needing_migration.erase(idx);
+
+				// ParseKeyString will need the lock when migrating
+				// unlock here so we don't deadlock reloading binds
+				lock.unlock();
+				// Reload bindings to perform migration
+				VMManager::ReloadInputBindings(true);
+			}
+		}
+	}
 
 	InputManager::OnInputDeviceConnected(fmt::format("SDL-{}", player_id), name);
 	return true;
@@ -797,19 +1333,23 @@ bool SDLInputSource::CloseDevice(int joystick_index)
 	if (it == m_controllers.end())
 		return false;
 
-	InputManager::OnInputDeviceDisconnected(
-		{InputBindingKey{.source_type = InputSourceType::SDL, .source_index = static_cast<u32>(it->player_id)}},
-		fmt::format("SDL-{}", it->player_id));
+	{
+		std::lock_guard lock(m_controllers_key_mutex);
+		InputManager::OnInputDeviceDisconnected(
+			{InputBindingKey{.source_type = InputSourceType::SDL, .source_index = static_cast<u32>(it->player_id)}},
+			fmt::format("SDL-{}", it->player_id));
 
-	if (it->haptic)
-		SDL_HapticClose(it->haptic);
+		if (it->haptic)
+			SDL_CloseHaptic(it->haptic);
 
-	if (it->game_controller)
-		SDL_GameControllerClose(it->game_controller);
-	else
-		SDL_JoystickClose(it->joystick);
+		if (it->gamepad)
+			SDL_CloseGamepad(it->gamepad);
+		else
+			SDL_CloseJoystick(it->joystick);
 
-	m_controllers.erase(it);
+		m_controllers.erase(it);
+	}
+
 	return true;
 }
 
@@ -818,7 +1358,7 @@ static float NormalizeS16(s16 value)
 	return static_cast<float>(value) / (value < 0 ? 32768.0f : 32767.0f);
 }
 
-bool SDLInputSource::HandleControllerAxisEvent(const SDL_ControllerAxisEvent* ev)
+bool SDLInputSource::HandleGamepadAxisEvent(const SDL_GamepadAxisEvent* ev)
 {
 	auto it = GetControllerDataForJoystickId(ev->which);
 	if (it == m_controllers.end())
@@ -829,7 +1369,7 @@ bool SDLInputSource::HandleControllerAxisEvent(const SDL_ControllerAxisEvent* ev
 	return true;
 }
 
-bool SDLInputSource::HandleControllerButtonEvent(const SDL_ControllerButtonEvent* ev)
+bool SDLInputSource::HandleGamepadButtonEvent(const SDL_GamepadButtonEvent* ev)
 {
 	auto it = GetControllerDataForJoystickId(ev->which);
 	if (it == m_controllers.end())
@@ -839,7 +1379,7 @@ bool SDLInputSource::HandleControllerButtonEvent(const SDL_ControllerButtonEvent
 	const GenericInputBinding generic_key = (ev->button < std::size(s_sdl_generic_binding_button_mapping)) ?
 												s_sdl_generic_binding_button_mapping[ev->button] :
 												GenericInputBinding::Unknown;
-	InputManager::InvokeEvents(key, (ev->state == SDL_PRESSED) ? 1.0f : 0.0f, generic_key);
+	InputManager::InvokeEvents(key, static_cast<float>(ev->down), generic_key);
 	return true;
 }
 
@@ -848,9 +1388,9 @@ bool SDLInputSource::HandleJoystickAxisEvent(const SDL_JoyAxisEvent* ev)
 	auto it = GetControllerDataForJoystickId(ev->which);
 	if (it == m_controllers.end())
 		return false;
-	if (ev->axis < it->joy_axis_used_in_gc.size() && it->joy_axis_used_in_gc[ev->axis])
-		return false; // Will get handled by GC event
-	const u32 axis = ev->axis + std::size(s_sdl_axis_names); // Ensure we don't conflict with GC axes
+	if (ev->axis < it->joy_axis_used_in_pad.size() && it->joy_axis_used_in_pad[ev->axis])
+		return false; // Will get handled by Gamepad event
+	const u32 axis = ev->axis + std::size(s_sdl_axis_setting_names); // Ensure we don't conflict with Gamepad axes
 	const InputBindingKey key(MakeGenericControllerAxisKey(InputSourceType::SDL, it->player_id, axis));
 	InputManager::InvokeEvents(key, NormalizeS16(ev->value));
 	return true;
@@ -861,11 +1401,11 @@ bool SDLInputSource::HandleJoystickButtonEvent(const SDL_JoyButtonEvent* ev)
 	auto it = GetControllerDataForJoystickId(ev->which);
 	if (it == m_controllers.end())
 		return false;
-	if (ev->button < it->joy_button_used_in_gc.size() && it->joy_button_used_in_gc[ev->button])
-		return false; // Will get handled by GC event
-	const u32 button = ev->button + std::size(s_sdl_button_names); // Ensure we don't conflict with GC buttons
+	if (ev->button < it->joy_button_used_in_pad.size() && it->joy_button_used_in_pad[ev->button])
+		return false; // Will get handled by Gamepad event
+	const u32 button = ev->button + std::size(s_sdl_button_setting_names); // Ensure we don't conflict with Gamepad buttons
 	const InputBindingKey key(MakeGenericControllerButtonKey(InputSourceType::SDL, it->player_id, button));
-	InputManager::InvokeEvents(key, (ev->state == SDL_PRESSED) ? 1.0f : 0.0f);
+	InputManager::InvokeEvents(key, static_cast<float>(ev->down));
 	return true;
 }
 
@@ -904,7 +1444,7 @@ std::vector<InputBindingKey> SDLInputSource::EnumerateMotors()
 	{
 		key.source_index = cd.player_id;
 
-		if (cd.use_game_controller_rumble || cd.haptic_left_right_effect)
+		if (cd.use_gamepad_rumble || cd.haptic_left_right_effect)
 		{
 			// two motors
 			key.source_subtype = InputSubclass::ControllerMotor;
@@ -938,7 +1478,7 @@ bool SDLInputSource::GetGenericBindingMapping(const std::string_view device, Inp
 	if (it == m_controllers.end())
 		return false;
 
-	if (it->game_controller)
+	if (it->gamepad)
 	{
 		// assume all buttons are present.
 		const s32 pid = player_id.value();
@@ -947,19 +1487,19 @@ bool SDLInputSource::GetGenericBindingMapping(const std::string_view device, Inp
 			const GenericInputBinding negative = s_sdl_generic_binding_axis_mapping[i][0];
 			const GenericInputBinding positive = s_sdl_generic_binding_axis_mapping[i][1];
 			if (negative != GenericInputBinding::Unknown)
-				mapping->emplace_back(negative, fmt::format("SDL-{}/-{}", pid, s_sdl_axis_names[i]));
+				mapping->emplace_back(negative, fmt::format("SDL-{}/-{}", pid, s_sdl_axis_setting_names[i]));
 
 			if (positive != GenericInputBinding::Unknown)
-				mapping->emplace_back(positive, fmt::format("SDL-{}/+{}", pid, s_sdl_axis_names[i]));
+				mapping->emplace_back(positive, fmt::format("SDL-{}/+{}", pid, s_sdl_axis_setting_names[i]));
 		}
 		for (u32 i = 0; i < std::size(s_sdl_generic_binding_button_mapping); i++)
 		{
 			const GenericInputBinding binding = s_sdl_generic_binding_button_mapping[i];
 			if (binding != GenericInputBinding::Unknown)
-				mapping->emplace_back(binding, fmt::format("SDL-{}/{}", pid, s_sdl_button_names[i]));
+				mapping->emplace_back(binding, fmt::format("SDL-{}/{}", pid, s_sdl_button_setting_names[i]));
 		}
 
-		if (it->use_game_controller_rumble || it->haptic_left_right_effect)
+		if (it->use_gamepad_rumble || it->haptic_left_right_effect)
 		{
 			mapping->emplace_back(GenericInputBinding::SmallMotor, fmt::format("SDL-{}/SmallMotor", pid));
 			mapping->emplace_back(GenericInputBinding::LargeMotor, fmt::format("SDL-{}/LargeMotor", pid));
@@ -1017,9 +1557,9 @@ void SDLInputSource::SendRumbleUpdate(ControllerData* cd)
 	// we'll update before this duration is elapsed
 	static constexpr u32 DURATION = 65535; // SDL_MAX_RUMBLE_DURATION_MS
 
-	if (cd->use_game_controller_rumble)
+	if (cd->use_gamepad_rumble)
 	{
-		SDL_GameControllerRumble(cd->game_controller, cd->rumble_intensity[0], cd->rumble_intensity[1], DURATION);
+		SDL_RumbleGamepad(cd->gamepad, cd->rumble_intensity[0], cd->rumble_intensity[1], DURATION);
 		return;
 	}
 
@@ -1032,20 +1572,20 @@ void SDLInputSource::SendRumbleUpdate(ControllerData* cd)
 			ef.leftright.large_magnitude = cd->rumble_intensity[0];
 			ef.leftright.small_magnitude = cd->rumble_intensity[1];
 			ef.leftright.length = DURATION;
-			SDL_HapticUpdateEffect(cd->haptic, cd->haptic_left_right_effect, &ef);
-			SDL_HapticRunEffect(cd->haptic, cd->haptic_left_right_effect, SDL_HAPTIC_INFINITY);
+			SDL_UpdateHapticEffect(cd->haptic, cd->haptic_left_right_effect, &ef);
+			SDL_RunHapticEffect(cd->haptic, cd->haptic_left_right_effect, SDL_HAPTIC_INFINITY);
 		}
 		else
 		{
-			SDL_HapticStopEffect(cd->haptic, cd->haptic_left_right_effect);
+			SDL_StopHapticEffect(cd->haptic, cd->haptic_left_right_effect);
 		}
 	}
 	else
 	{
 		const float strength = static_cast<float>(std::max(cd->rumble_intensity[0], cd->rumble_intensity[1])) * (1.0f / 65535.0f);
 		if (strength > 0.0f)
-			SDL_HapticRumblePlay(cd->haptic, strength, DURATION);
+			SDL_PlayHapticRumble(cd->haptic, strength, DURATION);
 		else
-			SDL_HapticRumbleStop(cd->haptic);
+			SDL_StopHapticRumble(cd->haptic);
 	}
 }

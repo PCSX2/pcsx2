@@ -7,7 +7,7 @@
 #include "common/Console.h"
 #include "common/Error.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace
 {
@@ -23,11 +23,11 @@ namespace
 		void CloseDevice();
 
 	protected:
-		__fi bool IsOpen() const { return (m_device_id != 0); }
+		__fi bool IsOpen() const { return (m_stream != nullptr); }
 
-		static void AudioCallback(void* userdata, uint8_t* stream, int len);
+		static void AudioCallback(void* userdata, SDL_AudioStream* stream, int additional_amount, int total_amount);
 
-		u32 m_device_id = 0;
+		SDL_AudioStream* m_stream = nullptr;
 	};
 } // namespace
 
@@ -41,7 +41,7 @@ static bool InitializeSDLAudio(Error* error)
 	SDL_SetHint("SDL_AUDIO_DEVICE_APP_NAME", "PCSX2");
 
 	// May as well keep it alive until the process exits.
-	if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0)
+	if (!SDL_InitSubSystem(SDL_INIT_AUDIO))
 	{
 		Error::SetStringFmt(error, "SDL_InitSubSystem(SDL_INIT_AUDIO) failed: {}", SDL_GetError());
 		return false;
@@ -102,27 +102,24 @@ bool SDLAudioStream::OpenDevice(bool stretch_enabled, Error* error)
 			READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>,
 	}};
 
-	SDL_AudioSpec spec = {};
-	spec.freq = m_sample_rate;
-	spec.channels = m_output_channels;
-	spec.format = AUDIO_S16;
-	spec.samples = static_cast<Uint16>(GetBufferSizeForMS(
-		m_sample_rate, (m_parameters.minimal_output_latency) ? m_parameters.buffer_ms : m_parameters.output_latency_ms));
-	spec.callback = AudioCallback;
-	spec.userdata = static_cast<void*>(this);
+	uint samples = GetBufferSizeForMS(
+		m_sample_rate, (m_parameters.minimal_output_latency) ? m_parameters.buffer_ms : m_parameters.output_latency_ms);
+
+	SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, fmt::format("{}", samples).c_str());
+
+	const SDL_AudioSpec spec = {SDL_AUDIO_S16LE, m_output_channels, static_cast<int>(m_sample_rate)};
+	m_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, AudioCallback, static_cast<void*>(this));
 
 	SDL_AudioSpec obtained_spec = {};
-	m_device_id = SDL_OpenAudioDevice(nullptr, 0, &spec, &obtained_spec, SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
-	if (m_device_id == 0)
-	{
-		Error::SetStringFmt(error, "SDL_OpenAudioDevice() failed: {}", SDL_GetError());
-		return false;
-	}
+	int obtained_samples = 0;
 
-	DEV_LOG("Requested {} frame buffer, got {} frame buffer", spec.samples, obtained_spec.samples);
+	if (SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &obtained_spec, &obtained_samples))
+		DEV_LOG("Requested {} frame buffer, got {} frame buffer", samples, obtained_samples);
+	else
+		DEV_LOG("SDL_GetAudioDeviceFormat() failed {}", SDL_GetError());
 
 	BaseInitialize(sample_readers[static_cast<size_t>(m_parameters.expansion_mode)], stretch_enabled);
-	SDL_PauseAudioDevice(m_device_id, 0);
+	SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(m_stream));
 
 	return true;
 }
@@ -132,20 +129,33 @@ void SDLAudioStream::SetPaused(bool paused)
 	if (m_paused == paused)
 		return;
 
-	SDL_PauseAudioDevice(m_device_id, paused ? 1 : 0);
+	if (paused)
+		SDL_PauseAudioDevice(SDL_GetAudioStreamDevice(m_stream));
+	else
+		SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(m_stream));
+
 	m_paused = paused;
 }
 
 void SDLAudioStream::CloseDevice()
 {
-	SDL_CloseAudioDevice(m_device_id);
-	m_device_id = 0;
+	SDL_DestroyAudioStream(m_stream);
+	m_stream = nullptr;
 }
 
-void SDLAudioStream::AudioCallback(void* userdata, uint8_t* stream, int len)
+void SDLAudioStream::AudioCallback(void* userdata, SDL_AudioStream* stream, int additional_amount, int total_amount)
 {
-	SDLAudioStream* const this_ptr = static_cast<SDLAudioStream*>(userdata);
-	const u32 num_frames = len / sizeof(SampleType) / this_ptr->m_output_channels;
+	if (additional_amount > 0)
+	{
+		SDLAudioStream* const this_ptr = static_cast<SDLAudioStream*>(userdata);
 
-	this_ptr->ReadFrames(reinterpret_cast<SampleType*>(stream), num_frames);
+		const u32 num_frames = additional_amount / sizeof(SampleType) / this_ptr->m_output_channels;
+		SampleType* buffer = SDL_stack_alloc(SampleType, additional_amount / sizeof(SampleType));
+		if (buffer)
+		{
+			this_ptr->ReadFrames(buffer, num_frames);
+			SDL_PutAudioStreamData(stream, buffer, additional_amount);
+			SDL_stack_free(buffer);
+		}
+	}
 }

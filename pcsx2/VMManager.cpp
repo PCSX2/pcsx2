@@ -624,10 +624,10 @@ void VMManager::ReloadInputSources()
 		LoadInputBindings(*si, lock);
 }
 
-void VMManager::ReloadInputBindings()
+void VMManager::ReloadInputBindings(bool force)
 {
 	// skip loading bindings if we're not running, since it'll get done on startup anyway
-	if (!HasValidVM())
+	if (!force && !HasValidVM())
 		return;
 
 	FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
