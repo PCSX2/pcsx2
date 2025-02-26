@@ -491,8 +491,8 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
 
 	m_sdl_hints = si.GetKeyValueList("SDLHints");
 
-	m_enable_enhanced_reports = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
-	m_enable_ps5_player_leds = si.GetBoolValue("InputSources", "SDLPS5PlayerLED", false);
+	m_enable_enhanced_reports = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", true);
+	m_enable_ps5_player_leds = si.GetBoolValue("InputSources", "SDLPS5PlayerLED", true);
 	m_use_raw_input = si.GetBoolValue("InputSources", "SDLRawInput", false);
 
 #ifdef __APPLE__
@@ -545,7 +545,7 @@ void SDLInputSource::SetHints()
 	}
 
 	SDL_SetHint(SDL_HINT_JOYSTICK_RAWINPUT, m_use_raw_input ? "1" : "0");
-	SDL_SetHint(SDL_HINT_JOYSTICK_ENHANCED_REPORTS, m_enable_enhanced_reports ? "1" : "0"); // PS4/PS5 Rumble
+	SDL_SetHint(SDL_HINT_JOYSTICK_ENHANCED_REPORTS, m_enable_enhanced_reports ? "auto" : "0"); // PS4/PS5 Rumble
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED, m_enable_ps5_player_leds ? "1" : "0");
 	// Enable Wii U Pro Controller support
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII, "1");
