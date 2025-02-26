@@ -67,7 +67,7 @@ namespace FileSystem
 	std::vector<std::string> GetRootDirectoryList();
 
 	/// Search for files
-	bool FindFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* results);
+	bool FindFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* results, ProgressCallback* cancel = nullptr);
 
 	/// Stat file
 	bool StatFile(const char* path, struct stat* st);
