@@ -31,12 +31,19 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 	m_dock_manager->loadLayouts();
 
+	connect(m_ui.actionShutDown, &QAction::triggered, []() { g_emu_thread->shutdownVM(false); });
+	connect(m_ui.actionReset, &QAction::triggered, []() { g_emu_thread->resetVM(); });
+	connect(m_ui.actionClose, &QAction::triggered, this, &DebuggerWindow::close);
+
 	connect(m_ui.actionRun, &QAction::triggered, this, &DebuggerWindow::onRunPause);
 	connect(m_ui.actionStepInto, &QAction::triggered, this, &DebuggerWindow::onStepInto);
 	connect(m_ui.actionStepOver, &QAction::triggered, this, &DebuggerWindow::onStepOver);
 	connect(m_ui.actionStepOut, &QAction::triggered, this, &DebuggerWindow::onStepOut);
 	connect(m_ui.actionAnalyse, &QAction::triggered, this, &DebuggerWindow::onAnalyse);
-	connect(m_ui.actionOnTop, &QAction::triggered, [this] { this->setWindowFlags(this->windowFlags() ^ Qt::WindowStaysOnTopHint); this->show(); });
+	connect(m_ui.actionOnTop, &QAction::triggered, this, [this] {
+		setWindowFlags(this->windowFlags() ^ Qt::WindowStaysOnTopHint);
+		show();
+	});
 
 	connect(m_ui.menuTools, &QMenu::aboutToShow, this, [this]() {
 		m_dock_manager->createToolsMenu(m_ui.menuTools);
