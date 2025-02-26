@@ -3,6 +3,8 @@
 
 #include "DisassemblyWidget.h"
 
+#include "Debugger/JsonValueWrapper.h"
+
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
 #include "DebugTools/Breakpoints.h"
@@ -20,7 +22,7 @@
 using namespace QtUtils;
 
 DisassemblyWidget::DisassemblyWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
+	: DebuggerWidget(parameters, MONOSPACE_FONT)
 {
 	m_ui.setupUi(this);
 
@@ -30,8 +32,6 @@ DisassemblyWidget::DisassemblyWidget(const DebuggerWidgetParameters& parameters)
 
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &DisassemblyWidget::customContextMenuRequested, this, &DisassemblyWidget::openContextMenu);
-
-	applyMonospaceFont();
 
 	connect(g_emu_thread, &EmuThread::onVMPaused, this, &DisassemblyWidget::gotoProgramCounterOnPause);
 
@@ -55,6 +55,28 @@ DisassemblyWidget::DisassemblyWidget(const DebuggerWidgetParameters& parameters)
 }
 
 DisassemblyWidget::~DisassemblyWidget() = default;
+
+void DisassemblyWidget::toJson(JsonValueWrapper& json)
+{
+	DebuggerWidget::toJson(json);
+
+	json.value().AddMember("startAddress", m_visibleStart, json.allocator());
+}
+
+bool DisassemblyWidget::fromJson(const JsonValueWrapper& json)
+{
+	if (!DebuggerWidget::fromJson(json))
+		return false;
+
+	auto start_address = json.value().FindMember("startAddress");
+	if (start_address != json.value().MemberEnd() && start_address->value.IsUint())
+	{
+		m_visibleStart = start_address->value.GetUint() & ~3;
+		repaint();
+	}
+
+	return true;
+}
 
 void DisassemblyWidget::contextCopyAddress()
 {

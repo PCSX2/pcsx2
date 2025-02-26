@@ -7,7 +7,6 @@
 
 #include "DebuggerWidget.h"
 
-#include "pcsx2/DebugTools/DebugInterface.h"
 #include "pcsx2/DebugTools/DisassemblyManager.h"
 
 #include <QtWidgets/QMenu>
@@ -21,15 +20,18 @@ public:
 	DisassemblyWidget(const DebuggerWidgetParameters& parameters);
 	~DisassemblyWidget();
 
+	void toJson(JsonValueWrapper& json) override;
+	bool fromJson(const JsonValueWrapper& json) override;
+
 	// Required for the breakpoint list (ugh wtf)
 	QString GetLineDisasm(u32 address);
 
 protected:
-	void paintEvent(QPaintEvent* event);
-	void mousePressEvent(QMouseEvent* event);
-	void mouseDoubleClickEvent(QMouseEvent* event);
-	void wheelEvent(QWheelEvent* event);
-	void keyPressEvent(QKeyEvent* event);
+	void paintEvent(QPaintEvent* event) override;
+	void mousePressEvent(QMouseEvent* event) override;
+	void mouseDoubleClickEvent(QMouseEvent* event) override;
+	void wheelEvent(QWheelEvent* event) override;
+	void keyPressEvent(QKeyEvent* event) override;
 
 public slots:
 	void openContextMenu(QPoint pos);
@@ -63,7 +65,7 @@ public slots:
 private:
 	Ui::DisassemblyWidget m_ui;
 
-	u32 m_visibleStart = 0x00336318; // The address of the first opcode shown(row 0)
+	u32 m_visibleStart = 0x100000; // The address of the first opcode shown(row 0)
 	u32 m_visibleRows;
 	u32 m_selectedAddressStart = 0;
 	u32 m_selectedAddressEnd = 0;

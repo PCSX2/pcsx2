@@ -33,6 +33,9 @@ DockManager::DockManager(QObject* parent)
 	QTimer* autosave_timer = new QTimer(this);
 	connect(autosave_timer, &QTimer::timeout, this, &DockManager::saveCurrentLayout);
 	autosave_timer->start(60 * 1000);
+
+	m_blink_timer = new QTimer(this);
+	connect(m_blink_timer, &QTimer::timeout, this, &DockManager::layoutSwitcherUpdateBlink);
 }
 
 void DockManager::configureDockingSystem()
@@ -93,40 +96,46 @@ bool DockManager::deleteLayout(DockLayout::Index layout_index)
 	return true;
 }
 
-void DockManager::switchToLayout(DockLayout::Index layout_index)
+void DockManager::switchToLayout(DockLayout::Index layout_index, bool blink_tab)
 {
-	if (layout_index == m_current_layout)
-		return;
-
-	if (m_current_layout != DockLayout::INVALID_INDEX)
+	if (layout_index != m_current_layout)
 	{
-		DockLayout& layout = m_layouts.at(m_current_layout);
-		layout.freeze();
-		layout.save(m_current_layout);
+		if (m_current_layout != DockLayout::INVALID_INDEX)
+		{
+			DockLayout& layout = m_layouts.at(m_current_layout);
+			layout.freeze();
+			layout.save(m_current_layout);
+		}
+
+		// Clear out the existing positions of toolbars so they don't affect where
+		// new toolbars appear for other layouts.
+		if (g_debugger_window)
+			g_debugger_window->clearToolBarState();
+		updateToolBarLockState();
+
+		m_current_layout = layout_index;
+
+		if (m_current_layout != DockLayout::INVALID_INDEX)
+		{
+			DockLayout& layout = m_layouts.at(m_current_layout);
+			layout.thaw();
+
+			if (m_switcher && static_cast<int>(layout_index) < m_switcher->count())
+				m_switcher->setCurrentIndex(static_cast<int>(layout_index));
+		}
 	}
 
-	// Clear out the existing positions of toolbars so they don't affect where
-	// new toolbars appear for other layouts.
-	if (g_debugger_window)
-		g_debugger_window->clearToolBarState();
-	updateToolBarLockState();
-
-	m_current_layout = layout_index;
-
-	if (m_current_layout != DockLayout::INVALID_INDEX)
-	{
-		DockLayout& layout = m_layouts.at(m_current_layout);
-		layout.thaw();
-	}
+	if (blink_tab)
+		layoutSwitcherStartBlink();
 }
 
-bool DockManager::switchToLayoutWithCPU(BreakPointCpu cpu)
+bool DockManager::switchToLayoutWithCPU(BreakPointCpu cpu, bool blink_tab)
 {
 	for (DockLayout::Index i = 0; i < m_layouts.size(); i++)
 	{
 		if (m_layouts[i].cpu() == cpu)
 		{
-			switchToLayout(i);
+			switchToLayout(i, blink_tab);
 			return true;
 		}
 	}
@@ -464,18 +473,18 @@ QWidget* DockManager::createLayoutSwitcher(QWidget* menu_bar)
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	layout->addWidget(spacer);
 
+	bool layout_locked = Host::GetBaseBoolSettingValue("Debugger/UserInterface", "LayoutLocked", true);
+
 	QPushButton* lock_layout_toggle = new QPushButton;
-	connect(lock_layout_toggle, &QPushButton::toggled, this, [this, lock_layout_toggle](bool checked) {
-		setLayoutLocked(checked);
-		if (m_layout_locked)
-			lock_layout_toggle->setText(tr("Layout Locked"));
-		else
-			lock_layout_toggle->setText(tr("Layout Unlocked"));
-	});
 	lock_layout_toggle->setCheckable(true);
-	lock_layout_toggle->setChecked(m_layout_locked);
+	lock_layout_toggle->setChecked(layout_locked);
 	lock_layout_toggle->setFlat(true);
+	connect(lock_layout_toggle, &QPushButton::toggled, this, [this, lock_layout_toggle](bool checked) {
+		setLayoutLocked(checked, lock_layout_toggle, true);
+	});
 	layout->addWidget(lock_layout_toggle);
+
+	setLayoutLocked(layout_locked, lock_layout_toggle, false);
 
 	return container;
 }
@@ -509,6 +518,8 @@ void DockManager::updateLayoutSwitcher()
 		m_tab_connection = connect(m_switcher, &QTabBar::currentChanged, this, &DockManager::layoutSwitcherTabChanged);
 	else
 		m_tab_connection = connect(m_switcher, &QTabBar::tabBarClicked, this, &DockManager::layoutSwitcherTabChanged);
+
+	layoutSwitcherStopBlink();
 }
 
 void DockManager::layoutSwitcherTabChanged(int index)
@@ -656,6 +667,51 @@ void DockManager::layoutSwitcherContextMenu(QPoint pos)
 	menu->popup(m_switcher->mapToGlobal(pos));
 }
 
+void DockManager::layoutSwitcherStartBlink()
+{
+	if (!m_switcher)
+		return;
+
+	layoutSwitcherStopBlink();
+
+	if (m_current_layout == DockLayout::INVALID_INDEX)
+		return;
+
+	m_blink_tab = m_current_layout;
+	m_blink_stage = 0;
+	m_blink_timer->start(500);
+
+	layoutSwitcherUpdateBlink();
+}
+
+void DockManager::layoutSwitcherUpdateBlink()
+{
+	if (!m_switcher)
+		return;
+
+	if (m_blink_tab < m_switcher->count())
+		if (m_blink_stage % 2 == 0)
+			m_switcher->setTabTextColor(m_blink_tab, Qt::red);
+		else
+			m_switcher->setTabTextColor(m_blink_tab, m_switcher->palette().text().color());
+
+	m_blink_stage++;
+
+	if (m_blink_stage > 7)
+		m_blink_timer->stop();
+}
+
+void DockManager::layoutSwitcherStopBlink()
+{
+	if (m_blink_timer->isActive())
+	{
+		if (m_blink_tab < m_switcher->count())
+			m_switcher->setTabTextColor(m_blink_tab, m_switcher->palette().text().color());
+
+		m_blink_timer->stop();
+	}
+}
+
 bool DockManager::hasNameConflict(const std::string& name, DockLayout::Index layout_index)
 {
 	std::string safe_name = Path::SanitizeFileName(name);
@@ -731,15 +787,35 @@ void DockManager::switchToDebuggerWidget(DebuggerWidget* widget)
 	}
 }
 
+void DockManager::updateStyleSheets()
+{
+	for (DockLayout& layout : m_layouts)
+		for (const auto& [unique_name, widget] : layout.debuggerWidgets())
+			widget->updateStyleSheet();
+}
 
 bool DockManager::isLayoutLocked()
 {
 	return m_layout_locked;
 }
 
-void DockManager::setLayoutLocked(bool locked)
+void DockManager::setLayoutLocked(bool locked, QPushButton* lock_layout_toggle, bool write_back)
 {
 	m_layout_locked = locked;
+
+	if (lock_layout_toggle)
+	{
+		if (m_layout_locked)
+		{
+			lock_layout_toggle->setText(tr("Layout Locked"));
+			lock_layout_toggle->setIcon(QIcon::fromTheme(QString::fromUtf8("padlock-lock")));
+		}
+		else
+		{
+			lock_layout_toggle->setText(tr("Layout Unlocked"));
+			lock_layout_toggle->setIcon(QIcon::fromTheme(QString::fromUtf8("padlock-unlock")));
+		}
+	}
 
 	updateToolBarLockState();
 
@@ -751,6 +827,14 @@ void DockManager::setLayoutLocked(bool locked)
 		// HACK: Make sure the sizes of the tabs get updated.
 		if (stack->tabBar()->count() > 0)
 			stack->tabBar()->setTabText(0, stack->tabBar()->tabText(0));
+	}
+
+	if (write_back)
+	{
+		Host::SetBaseBoolSettingValue("Debugger/UserInterface", "LayoutLocked", m_layout_locked);
+
+		Host::CommitBaseSettingChanges();
+		g_emu_thread->applySettings();
 	}
 }
 

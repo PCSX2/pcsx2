@@ -28,21 +28,34 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	g_debugger_window = this;
 
 	setupDefaultToolBarState();
+	setupFonts();
+	restoreWindowGeometry();
 
 	m_dock_manager->loadLayouts();
 
-	connect(m_ui.actionShutDown, &QAction::triggered, []() { g_emu_thread->shutdownVM(false); });
-	connect(m_ui.actionReset, &QAction::triggered, []() { g_emu_thread->resetVM(); });
+	connect(m_ui.actionAnalyse, &QAction::triggered, this, &DebuggerWindow::onAnalyse);
 	connect(m_ui.actionClose, &QAction::triggered, this, &DebuggerWindow::close);
+
+	connect(m_ui.actionOnTop, &QAction::triggered, this, [this](bool checked) {
+		if (checked)
+			setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+		else
+			setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
+		show();
+	});
 
 	connect(m_ui.actionRun, &QAction::triggered, this, &DebuggerWindow::onRunPause);
 	connect(m_ui.actionStepInto, &QAction::triggered, this, &DebuggerWindow::onStepInto);
 	connect(m_ui.actionStepOver, &QAction::triggered, this, &DebuggerWindow::onStepOver);
 	connect(m_ui.actionStepOut, &QAction::triggered, this, &DebuggerWindow::onStepOut);
-	connect(m_ui.actionAnalyse, &QAction::triggered, this, &DebuggerWindow::onAnalyse);
-	connect(m_ui.actionOnTop, &QAction::triggered, this, [this] {
-		setWindowFlags(this->windowFlags() ^ Qt::WindowStaysOnTopHint);
-		show();
+
+	connect(m_ui.actionShutDown, &QAction::triggered, [this]() {
+		if (currentCPU() && currentCPU()->isAlive())
+			g_emu_thread->shutdownVM(false);
+	});
+	connect(m_ui.actionReset, &QAction::triggered, [this]() {
+		if (currentCPU() && currentCPU()->isAlive())
+			g_emu_thread->resetVM();
 	});
 
 	connect(m_ui.menuTools, &QMenu::aboutToShow, this, [this]() {
@@ -53,7 +66,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 		m_dock_manager->createWindowsMenu(m_ui.menuWindows);
 	});
 
-	connect(m_ui.actionResetAllLayouts, &QAction::triggered, [this]() {
+	connect(m_ui.actionResetAllLayouts, &QAction::triggered, this, [this]() {
 		QMessageBox::StandardButton result = QMessageBox::question(
 			g_debugger_window, tr("Confirmation"), tr("Are you sure you want to reset all layouts?"));
 
@@ -61,7 +74,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 			m_dock_manager->resetAllLayouts();
 	});
 
-	connect(m_ui.actionResetDefaultLayouts, &QAction::triggered, [this]() {
+	connect(m_ui.actionResetDefaultLayouts, &QAction::triggered, this, [this]() {
 		QMessageBox::StandardButton result = QMessageBox::question(
 			g_debugger_window, tr("Confirmation"), tr("Are you sure you want to reset the default layouts?"));
 
@@ -125,9 +138,116 @@ DockManager& DebuggerWindow::dockManager()
 	return *m_dock_manager;
 }
 
+void DebuggerWindow::setupDefaultToolBarState()
+{
+	// Hiding all the toolbars lets us save the default state of the window with
+	// all the toolbars hidden. The DockManager will show the appropriate ones
+	// later anyway.
+	for (QToolBar* toolbar : findChildren<QToolBar*>())
+		toolbar->hide();
+
+	m_default_toolbar_state = saveState();
+
+	for (QToolBar* toolbar : findChildren<QToolBar*>())
+		connect(toolbar, &QToolBar::topLevelChanged, m_dock_manager, &DockManager::updateToolBarLockState);
+}
+
 void DebuggerWindow::clearToolBarState()
 {
 	restoreState(m_default_toolbar_state);
+}
+
+void DebuggerWindow::setupFonts()
+{
+	m_font_size = Host::GetBaseIntSettingValue("Debugger/UserInterface", "FontSize", DEFAULT_FONT_SIZE);
+	if (m_font_size < MINIMUM_FONT_SIZE || m_font_size > MAXIMUM_FONT_SIZE)
+		m_font_size = DEFAULT_FONT_SIZE;
+
+	m_ui.actionIncreaseFontSize->setShortcuts(QKeySequence::ZoomIn);
+	connect(m_ui.actionIncreaseFontSize, &QAction::triggered, this, [this]() {
+		if (m_font_size >= MAXIMUM_FONT_SIZE)
+			return;
+
+		m_font_size++;
+
+		updateFontActions();
+		updateStyleSheets();
+		saveFontSize();
+	});
+
+	m_ui.actionDecreaseFontSize->setShortcut(QKeySequence::ZoomOut);
+	connect(m_ui.actionDecreaseFontSize, &QAction::triggered, this, [this]() {
+		if (m_font_size <= MINIMUM_FONT_SIZE)
+			return;
+
+		m_font_size--;
+
+		updateFontActions();
+		updateStyleSheets();
+		saveFontSize();
+	});
+
+	connect(m_ui.actionResetFontSize, &QAction::triggered, this, [this]() {
+		m_font_size = DEFAULT_FONT_SIZE;
+
+		updateFontActions();
+		updateStyleSheets();
+		saveFontSize();
+	});
+
+	updateFontActions();
+	updateStyleSheets();
+}
+
+void DebuggerWindow::updateFontActions()
+{
+	m_ui.actionIncreaseFontSize->setEnabled(m_font_size < MAXIMUM_FONT_SIZE);
+	m_ui.actionDecreaseFontSize->setEnabled(m_font_size > MINIMUM_FONT_SIZE);
+	m_ui.actionResetFontSize->setEnabled(m_font_size != DEFAULT_FONT_SIZE);
+}
+
+void DebuggerWindow::saveFontSize()
+{
+	Host::SetBaseIntSettingValue("Debugger/UserInterface", "FontSize", m_font_size);
+	Host::CommitBaseSettingChanges();
+}
+
+int DebuggerWindow::fontSize()
+{
+	return m_font_size;
+}
+
+void DebuggerWindow::updateStyleSheets()
+{
+	// TODO: Migrate away from stylesheets to improve performance.
+	if (m_font_size != DEFAULT_FONT_SIZE)
+	{
+		int size = m_font_size + QApplication::font().pointSize() - DEFAULT_FONT_SIZE;
+		setStyleSheet(QString("* { font-size: %1pt; } QTabBar { font-size: %2pt; }").arg(size).arg(size + 1));
+	}
+	else
+	{
+		setStyleSheet(QString());
+	}
+
+	dockManager().updateStyleSheets();
+}
+
+void DebuggerWindow::saveWindowGeometry()
+{
+	std::string old_geometry = Host::GetBaseStringSettingValue("Debugger/UserInterface", "WindowGeometry");
+	std::string geometry = saveGeometry().toBase64().toStdString();
+	if (geometry != old_geometry)
+	{
+		Host::SetBaseStringSettingValue("Debugger/UserInterface", "WindowGeometry", geometry.c_str());
+		Host::CommitBaseSettingChanges();
+	}
+}
+
+void DebuggerWindow::restoreWindowGeometry()
+{
+	std::string geometry = Host::GetBaseStringSettingValue("Debugger/UserInterface", "WindowGeometry");
+	restoreGeometry(QByteArray::fromBase64(QByteArray::fromStdString(geometry)));
 }
 
 void DebuggerWindow::onVMStateChanged()
@@ -147,17 +267,17 @@ void DebuggerWindow::onVMStateChanged()
 		m_ui.actionStepInto->setEnabled(true);
 		m_ui.actionStepOver->setEnabled(true);
 		m_ui.actionStepOut->setEnabled(true);
-		// Switch to the CPU tab that triggered the breakpoint
-		// Also bold the tab text to indicate that a breakpoint was triggered
+		// Switch to the CPU tab that triggered the breakpoint.
+		// Also blink the tab text to indicate that a breakpoint was triggered.
 		if (CBreakPoints::GetBreakpointTriggered())
 		{
 			const BreakPointCpu triggeredCpu = CBreakPoints::GetBreakpointTriggeredCpu();
-			m_dock_manager->switchToLayoutWithCPU(triggeredCpu);
+			m_dock_manager->switchToLayoutWithCPU(triggeredCpu, true);
 			Host::RunOnCPUThread([] {
 				CBreakPoints::ClearTemporaryBreakPoints();
 				CBreakPoints::SetBreakpointTriggered(false, BREAKPOINT_IOP_AND_EE);
 				// Our current PC is on a breakpoint.
-				// When we run the core again, we want to skip this breakpoint and run
+				// When we run the core again, we want to skip this breakpoint and run.
 				CBreakPoints::SetSkipFirst(BREAKPOINT_EE, r5900Debug.getPC());
 				CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
 			});
@@ -318,6 +438,7 @@ void DebuggerWindow::onAnalyse()
 void DebuggerWindow::closeEvent(QCloseEvent* event)
 {
 	dockManager().saveCurrentLayout();
+	saveWindowGeometry();
 
 	Host::RunOnCPUThread([]() {
 		R5900SymbolImporter.OnDebuggerClosed();
@@ -336,18 +457,4 @@ DebugInterface* DebuggerWindow::currentCPU()
 		return nullptr;
 
 	return &DebugInterface::get(*maybe_cpu);
-}
-
-void DebuggerWindow::setupDefaultToolBarState()
-{
-	// Hiding all the toolbars lets us save the default state of the window with
-	// all the toolbars hidden. The DockManager will show the appropriate ones
-	// later anyway.
-	for (QToolBar* toolbar : findChildren<QToolBar*>())
-		toolbar->hide();
-
-	m_default_toolbar_state = saveState();
-
-	for (QToolBar* toolbar : findChildren<QToolBar*>())
-		connect(toolbar, &QToolBar::topLevelChanged, m_dock_manager, &DockManager::updateToolBarLockState);
 }

@@ -110,7 +110,7 @@ MainWindow::MainWindow()
 	//  DisplayWidget.
 	//  Additionally, alien widget rendering is much more performant, so we
 	//  should have a nice responsiveness boost in our UI :)
-	//  QTBUG-133919, reported upstream by govanify 
+	//  QTBUG-133919, reported upstream by govanify
 	QGuiApplication::setAttribute(Qt::AA_NativeWindows, false);
 	QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
 
@@ -1754,35 +1754,11 @@ void MainWindow::onCreateMemoryCardOpenRequested()
 
 void MainWindow::updateTheme()
 {
-	// The debugger hates theme changes.
-	// We have unfortunately to destroy it and recreate it.
-	const bool debugger_is_open = g_debugger_window ? g_debugger_window->isVisible() : false;
-	const QSize debugger_size = g_debugger_window ? g_debugger_window->size() : QSize();
-	const QPoint debugger_pos = g_debugger_window ? g_debugger_window->pos() : QPoint();
-	if (g_debugger_window)
-	{
-		if (QMessageBox::question(this, tr("Theme Change"),
-				tr("Changing the theme will close the debugger window. Any unsaved data will be lost. Do you want to continue?"),
-				QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
-		{
-			return;
-		}
-	}
-
 	QtHost::UpdateApplicationTheme();
 	reloadThemeSpecificImages();
 
 	if (g_debugger_window)
-	{
-		DebuggerWindow::destroyInstance();
-		DebuggerWindow::createInstance();
-		g_debugger_window->resize(debugger_size);
-		g_debugger_window->move(debugger_pos);
-		if (debugger_is_open)
-		{
-			g_debugger_window->show();
-		}
-	}
+		g_debugger_window->updateStyleSheets();
 }
 
 void MainWindow::reloadThemeSpecificImages()
@@ -2592,13 +2568,12 @@ QWidget* MainWindow::getDisplayContainer() const
 
 void MainWindow::setupMouseMoveHandler()
 {
-	auto mouse_cb_fn = [](int x, int y)
-	{
-		if(g_main_window)
+	auto mouse_cb_fn = [](int x, int y) {
+		if (g_main_window)
 			g_main_window->checkMousePosition(x, y);
 	};
-	
-	if(!Common::AttachMousePositionCb(mouse_cb_fn))
+
+	if (!Common::AttachMousePositionCb(mouse_cb_fn))
 	{
 		Console.Warning("Unable to setup mouse position cb!");
 	}

@@ -12,6 +12,7 @@
 #include <kddockwidgets/core/Draggable_p.h>
 
 #include <QtCore/QPointer>
+#include <QtWidgets/QPushButton>
 #include <QtWidgets/QTabBar>
 
 class DockManager : public QObject
@@ -50,8 +51,8 @@ public:
 
 	bool deleteLayout(DockLayout::Index layout_index);
 
-	void switchToLayout(DockLayout::Index layout_index);
-	bool switchToLayoutWithCPU(BreakPointCpu cpu);
+	void switchToLayout(DockLayout::Index layout_index, bool blink_tab = false);
+	bool switchToLayoutWithCPU(BreakPointCpu cpu, bool blink_tab = false);
 
 	void loadLayouts();
 	bool saveLayouts();
@@ -68,6 +69,9 @@ public:
 	void layoutSwitcherTabChanged(int index);
 	void layoutSwitcherTabMoved(int from, int to);
 	void layoutSwitcherContextMenu(QPoint pos);
+	void layoutSwitcherStartBlink();
+	void layoutSwitcherUpdateBlink();
+	void layoutSwitcherStopBlink();
 
 	bool hasNameConflict(const std::string& name, DockLayout::Index layout_index);
 
@@ -80,8 +84,10 @@ public:
 	void setPrimaryDebuggerWidget(DebuggerWidget* widget, bool is_primary);
 	void switchToDebuggerWidget(DebuggerWidget* widget);
 
+	void updateStyleSheets();
+
 	bool isLayoutLocked();
-	void setLayoutLocked(bool locked);
+	void setLayoutLocked(bool locked, QPushButton* lock_layout_toggle, bool write_back);
 	void updateToolBarLockState();
 
 	std::optional<BreakPointCpu> cpu();
@@ -100,4 +106,8 @@ private:
 	QMetaObject::Connection m_tab_connection;
 
 	bool m_layout_locked = true;
+
+	QTimer* m_blink_timer = nullptr;
+	int m_blink_tab = 0;
+	int m_blink_stage = 0;
 };
