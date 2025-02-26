@@ -14,6 +14,7 @@
 
 #include <QtGui/QActionGroup>
 #include <QtWidgets/QInputDialog>
+#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QMenu>
 
 KDDockWidgets::Core::View* DockViewFactory::createDockWidget(
@@ -152,7 +153,12 @@ void DockTabBar::openContextMenu(QPoint pos)
 		if (!ok)
 			return;
 
-		widget->setCustomDisplayName(new_name);
+		if (!widget->setCustomDisplayName(new_name))
+		{
+			QMessageBox::warning(this, tr("Invalid Name"), tr("The specified name is too long."));
+			return;
+		}
+
 		g_debugger_window->dockManager().updateDockWidgetTitles();
 	});
 

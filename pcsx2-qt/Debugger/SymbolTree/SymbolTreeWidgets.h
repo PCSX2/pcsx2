@@ -3,12 +3,10 @@
 
 #pragma once
 
-#include "Debugger/DebuggerWidget.h"
-#include "SymbolTreeModel.h"
-
 #include "ui_SymbolTreeWidget.h"
 
-struct SymbolFilters;
+#include "Debugger/DebuggerWidget.h"
+#include "Debugger/SymbolTree/SymbolTreeModel.h"
 
 // A symbol tree widget with its associated refresh button, filter box and
 // right-click menu. Supports grouping, sorting and various other settings.
@@ -42,29 +40,29 @@ protected:
 
 	void resizeEvent(QResizeEvent* event) override;
 
+	void toJson(JsonValueWrapper& json) override;
+	bool fromJson(const JsonValueWrapper& json) override;
+
 	void setupTree();
-	std::unique_ptr<SymbolTreeNode> buildTree(const SymbolFilters& filters, const ccc::SymbolDatabase& database);
+	std::unique_ptr<SymbolTreeNode> buildTree(const ccc::SymbolDatabase& database);
 
 	std::unique_ptr<SymbolTreeNode> groupBySourceFile(
 		std::unique_ptr<SymbolTreeNode> child,
 		const SymbolWork& child_work,
 		SymbolTreeNode*& prev_group,
-		const SymbolWork*& prev_work,
-		const SymbolFilters& filters);
+		const SymbolWork*& prev_work);
 
 	std::unique_ptr<SymbolTreeNode> groupBySection(
 		std::unique_ptr<SymbolTreeNode> child,
 		const SymbolWork& child_work,
 		SymbolTreeNode*& prev_group,
-		const SymbolWork*& prev_work,
-		const SymbolFilters& filters);
+		const SymbolWork*& prev_work);
 
 	std::unique_ptr<SymbolTreeNode> groupByModule(
 		std::unique_ptr<SymbolTreeNode> child,
 		const SymbolWork& child_work,
 		SymbolTreeNode*& prev_group,
-		const SymbolWork*& prev_work,
-		const SymbolFilters& filters);
+		const SymbolWork*& prev_work);
 
 	void openContextMenu(QPoint pos);
 
@@ -200,12 +198,4 @@ protected:
 
 	ccc::FunctionHandle m_function;
 	std::optional<u32> m_caller_stack_pointer;
-};
-
-struct SymbolFilters
-{
-	bool group_by_module = false;
-	bool group_by_section = false;
-	bool group_by_source_file = false;
-	QString string;
 };

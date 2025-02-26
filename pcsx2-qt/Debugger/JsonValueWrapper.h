@@ -23,6 +23,11 @@ public:
 		return m_value;
 	}
 
+	const rapidjson::Value& value() const
+	{
+		return m_value;
+	}
+
 	rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>& allocator()
 	{
 		return m_allocator;

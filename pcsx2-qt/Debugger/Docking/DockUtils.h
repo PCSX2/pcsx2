@@ -9,6 +9,9 @@
 
 namespace DockUtils
 {
+	inline const constexpr int MAX_LAYOUT_NAME_SIZE = 40;
+	inline const constexpr int MAX_DOCK_WIDGET_NAME_SIZE = 40;
+
 	struct DockWidgetPair
 	{
 		KDDockWidgets::Core::DockWidget* controller = nullptr;

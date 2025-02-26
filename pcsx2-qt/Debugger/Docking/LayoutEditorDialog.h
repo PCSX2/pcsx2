@@ -14,7 +14,7 @@ class LayoutEditorDialog : public QDialog
 	Q_OBJECT
 
 public:
-	using NameValidator = std::function<bool(const std::string&)>;
+	using NameValidator = std::function<bool(const QString&)>;
 
 	enum CreationMode
 	{
@@ -30,11 +30,11 @@ public:
 	LayoutEditorDialog(NameValidator name_validator, bool can_clone_current_layout, QWidget* parent = nullptr);
 
 	// Create a "Edit Layout" dialog.
-	LayoutEditorDialog(const std::string& name, BreakPointCpu cpu, NameValidator name_validator, QWidget* parent = nullptr);
+	LayoutEditorDialog(const QString& name, BreakPointCpu cpu, NameValidator name_validator, QWidget* parent = nullptr);
 
-	std::string name();
+	QString name();
 	BreakPointCpu cpu();
-	InitialState initial_state();
+	InitialState initialState();
 
 private:
 	void setupInputWidgets(BreakPointCpu cpu, bool can_clone_current_layout);
