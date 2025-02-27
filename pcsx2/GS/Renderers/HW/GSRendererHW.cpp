@@ -5161,24 +5161,22 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		const GSVector4 half_pixel = RealignTargetTextureCoordinate(tex);
 		m_conf.cb_vs.texture_offset = GSVector2(half_pixel.x, half_pixel.y);
 
+		// Can be seen with the cabin part of the ship in God of War, offsets are required when using FST.
+		// ST uses a normalized position so doesn't need an offset here, will break Bionicle Heroes.
 		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
 		{
 			if (!m_downscale_source && tex->m_scale > 1.0f)
 			{
+				const GSVertex* v = &m_vertex.buff[0];
 				if (PRIM->FST)
 				{
-					m_conf.cb_vs.texture_offset.x = 6.0f + (0.25f * tex->m_scale);
-					m_conf.cb_vs.texture_offset.y = 6.0f + (0.25f * tex->m_scale);
-				}
-				else
-				{
-					const GSVertex* v = &m_vertex.buff[0];
-					const float tw = static_cast<float>(1 << m_cached_ctx.TEX0.TW);
-					const float th = static_cast<float>(1 << m_cached_ctx.TEX0.TH);
-					const float q = v[0].RGBAQ.Q;
+					const int x1_frac = ((v[1].XYZ.X - m_context->XYOFFSET.OFX) & 0xf);
+					const int y1_frac = ((v[1].XYZ.Y - m_context->XYOFFSET.OFY) & 0xf);
 
-					m_conf.cb_vs.texture_offset.x = 0.5f * q / tw;
-					m_conf.cb_vs.texture_offset.y = 0.5f * q / th;
+					if (!(x1_frac & 8))
+						m_conf.cb_vs.texture_offset.x = 6.0f + (0.25f * tex->m_scale);
+					if (!(y1_frac & 8))
+						m_conf.cb_vs.texture_offset.y = 6.0f + (0.25f * tex->m_scale);
 				}
 			}
 		}
@@ -5237,14 +5235,19 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		{
 			if (!m_downscale_source && tex->m_scale > 1.0f)
 			{
+				const GSVertex* v = &m_vertex.buff[0];
 				if (PRIM->FST)
 				{
-					m_conf.cb_vs.texture_offset.x = 6.0f + (0.25f * tex->m_scale);
-					m_conf.cb_vs.texture_offset.y = 6.0f + (0.25f * tex->m_scale);
+					const int x1_frac = ((v[1].XYZ.X - m_context->XYOFFSET.OFX) & 0xf);
+					const int y1_frac = ((v[1].XYZ.Y - m_context->XYOFFSET.OFY) & 0xf);
+
+					if (!(x1_frac & 8))
+						m_conf.cb_vs.texture_offset.x = 6.0f + (0.25f * tex->m_scale);
+					if (!(y1_frac & 8))
+						m_conf.cb_vs.texture_offset.y = 6.0f + (0.25f * tex->m_scale);
 				}
 				else
 				{
-					const GSVertex* v = &m_vertex.buff[0];
 					const float tw = static_cast<float>(1 << m_cached_ctx.TEX0.TW);
 					const float th = static_cast<float>(1 << m_cached_ctx.TEX0.TH);
 					const float q = v[0].RGBAQ.Q;
@@ -6346,10 +6349,25 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		const int unscaled_y = rt_or_ds ? rt_or_ds->GetUnscaledHeight() : 0;
 		sx = 2.0f / (unscaled_x << 4);
 		sy = 2.0f / (unscaled_y << 4);
-		if ((!tex || !tex->m_from_target || tex->m_scale > 1.0f) && GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
+		
+		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
 		{
 			ox2 = (-1.0f / (unscaled_x * rtscale));
 			oy2 = (-1.0f / (unscaled_y * rtscale));
+			
+			// Having the vertex negatively offset is a common thing for copying sprites but this causes problems when upscaling, so we need to further adjust the offset.
+			// This kinda screws things up when using ST, so let's not.
+			if (m_vt.m_primclass == GS_SPRITE_CLASS && rtscale > 1.0f && (!tex || PRIM->FST))
+			{
+				const GSVertex* v = &m_vertex.buff[0];
+				const int x1_frac = ((v[1].XYZ.X - m_context->XYOFFSET.OFX) & 0xf);
+				const int y1_frac = ((v[1].XYZ.Y - m_context->XYOFFSET.OFY) & 0xf);
+				if (x1_frac & 8)
+					ox2 *= 1.0f + ((static_cast<float>(16 - x1_frac) / 8.0f) * rtscale);
+
+				if (y1_frac & 8)
+					oy2 *= 1.0f + ((static_cast<float>(16 - y1_frac) / 8.0f) * rtscale);
+			}
 		}
 		else
 		{
