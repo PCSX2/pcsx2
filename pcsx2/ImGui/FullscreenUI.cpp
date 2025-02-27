@@ -1383,8 +1383,7 @@ void FullscreenUI::DrawLandingWindow()
 			std::make_pair(ICON_PF_BUTTON_TRIANGLE, FSUI_VSTR("Game List")),
 			std::make_pair(ICON_PF_BUTTON_SQUARE, FSUI_VSTR("Toggle Fullscreen")),
 			std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, FSUI_VSTR("Select")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Exit"))
-		});
+			std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Exit"))});
 	}
 	else
 	{
@@ -1394,8 +1393,7 @@ void FullscreenUI::DrawLandingWindow()
 			std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR("Navigate")),
 			std::make_pair(ICON_PF_SPACE, FSUI_VSTR("Game List")),
 			std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
-			std::make_pair(ICON_PF_ESC, FSUI_VSTR("Exit"))
-		});
+			std::make_pair(ICON_PF_ESC, FSUI_VSTR("Exit"))});
 	}
 }
 
@@ -1506,16 +1504,14 @@ void FullscreenUI::DrawExitWindow()
 		SetFullscreenFooterText(std::array{
 			std::make_pair(ICON_PF_DPAD_LEFT_RIGHT, FSUI_VSTR("Navigate")),
 			std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, FSUI_VSTR("Select")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Back"))}
-		);
+			std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Back"))});
 	}
 	else
 	{
 		SetFullscreenFooterText(std::array{
 			std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR("Navigate")),
 			std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
-			std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back"))}
-		);
+			std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back"))});
 	}
 }
 
@@ -4098,8 +4094,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	static constexpr const char* s_gsdump_compression[] = {
 		FSUI_NSTR("Uncompressed"),
 		FSUI_NSTR("LZMA (xz)"),
-		FSUI_NSTR("Zstandard (zst)")
-		};
+		FSUI_NSTR("Zstandard (zst)")};
 
 	if (show_advanced_settings)
 	{
@@ -4889,15 +4884,13 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 		FSUI_NSTR("Uncompressed"),
 		FSUI_NSTR("Deflate64"),
 		FSUI_NSTR("Zstandard"),
-		FSUI_NSTR("LZMA2")
-	};
+		FSUI_NSTR("LZMA2")};
 
 	static constexpr const char* s_savestate_compression_ratio[] = {
 		FSUI_NSTR("Low (Fast)"),
 		FSUI_NSTR("Medium (Recommended)"),
 		FSUI_NSTR("High"),
-		FSUI_NSTR("Very High (Slow, Not Recommended)")
-	};
+		FSUI_NSTR("Very High (Slow, Not Recommended)")};
 
 	if (show_advanced_settings)
 	{
