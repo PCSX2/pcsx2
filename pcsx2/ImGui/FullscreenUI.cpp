@@ -237,6 +237,7 @@ namespace FullscreenUI
 	static void DrawAboutWindow();
 	static void OpenAboutWindow();
 	static void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel);
+	static void ApplyConfirmSetting(const SettingsInterface* bsi = nullptr);
 
 	static MainWindowType s_current_main_window = MainWindowType::None;
 	static PauseSubMenu s_current_pause_submenu = PauseSubMenu::None;
@@ -570,6 +571,64 @@ void ImGuiFullscreen::GetInputDialogHelpText(SmallStringBase& dest)
 	}
 }
 
+void FullscreenUI::ApplyConfirmSetting(const SettingsInterface* bsi)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	SmallString swap_mode;
+	if (bsi)
+		swap_mode = bsi->GetSmallStringValue("UI", "SwapOKFullscreenUI", "auto");
+	else
+		swap_mode = Host::GetBaseSmallStringSettingValue("UI", "SwapOKFullscreenUI", "auto");
+
+	if (swap_mode == "true")
+		io.ConfigNavSwapGamepadButtons = true;
+	else if (swap_mode == "false")
+		io.ConfigNavSwapGamepadButtons = false;
+	else if (swap_mode == "auto")
+	{
+		// Check language
+		if (Host::LocaleCircleConfirm())
+		{
+			io.ConfigNavSwapGamepadButtons = true;
+			return;
+		}
+
+		// Check BIOS
+		SmallString bios_selection;
+		if (bsi)
+			bios_selection = bsi->GetSmallStringValue("Filenames", "BIOS", "");
+		else
+			bios_selection = Host::GetBaseSmallStringSettingValue("Filenames", "BIOS", "");
+
+		if (bios_selection != "")
+		{
+			u32 bios_version, bios_region;
+			std::string bios_description, bios_zone;
+			if (IsBIOS(Path::Combine(EmuFolders::Bios, bios_selection).c_str(), bios_version, bios_description, bios_region, bios_zone))
+			{
+				// Japan, Asia, China
+				if (bios_region == 0 || bios_region == 4 || bios_region == 6)
+				{
+					io.ConfigNavSwapGamepadButtons = true;
+					return;
+				}
+			}
+		}
+
+		// X is confirm
+		io.ConfigNavSwapGamepadButtons = false;
+		return;
+	}
+	// Invalid setting
+	else
+		io.ConfigNavSwapGamepadButtons = false;
+}
+
+void FullscreenUI::LocaleChanged()
+{
+	ApplyConfirmSetting();
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
@@ -584,7 +643,7 @@ bool FullscreenUI::Initialize()
 
 	ImGuiFullscreen::SetTheme(Host::GetBaseBoolSettingValue("UI", "UseLightFullscreenUITheme", false));
 	ImGuiFullscreen::UpdateLayoutScale();
-	ImGui::GetIO().ConfigNavSwapGamepadButtons = Host::GetBaseBoolSettingValue("UI", "SwapOKFullscreenUI");
+	ApplyConfirmSetting();
 
 	if (!ImGuiManager::AddFullscreenFontsIfMissing() || !ImGuiFullscreen::Initialize("fullscreenui/placeholder.png") || !LoadResources())
 	{
@@ -648,6 +707,13 @@ void FullscreenUI::CheckForConfigChanges(const Pcsx2Config& old_config)
 			}
 		});
 		MTGS::WaitGS(false, false, false);
+	}
+
+	if (old_config.FullpathToBios() != EmuConfig.FullpathToBios())
+	{
+		MTGS::RunOnGSThread([]() {
+			ApplyConfirmSetting();
+		});
 	}
 }
 
@@ -3185,12 +3251,51 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	{
 		ImGuiFullscreen::SetTheme(bsi->GetBoolValue("UI", "UseLightFullscreenUITheme", false));
 	}
-	SmallStackString<256> SwapSummery;
-	SwapSummery.format(FSUI_FSTR("Uses {} as confirm when using a controller"), ICON_PF_BUTTON_CIRCLE);
-	if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Swap OK/Cancel in Big Picture Mode"),
-			SwapSummery.c_str(), "UI", "SwapOKFullscreenUI", false))
+
+	// DrawStringListSetting dosn't have a callback for applying settings
+	const SmallString swap_mode = bsi->GetSmallStringValue("UI", "SwapOKFullscreenUI", "auto");
+	static constexpr const char* swap_names[] = {
+		FSUI_NSTR("Automatic"),
+		FSUI_NSTR("Enabled"),
+		FSUI_NSTR("Disabled"),
+	};
+	static constexpr const char* swap_values[] = {
+		"auto",
+		"true",
+		"false",
+	};
+	size_t swap_index = std::size(swap_values);
+	for (size_t i = 0; i < std::size(swap_values); i++)
 	{
-		ImGui::GetIO().ConfigNavSwapGamepadButtons = bsi->GetBoolValue("UI", "SwapOKFullscreenUI", false);
+		if (swap_mode == swap_values[i])
+		{
+			swap_index = i;
+			break;
+		}
+	}
+
+	SmallStackString<256> swap_summery;
+	swap_summery.format(FSUI_FSTR("Uses {} as confirm when using a controller"), ICON_PF_BUTTON_CIRCLE);
+	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Swap OK/Cancel in Big Picture Mode"), swap_summery.c_str(),
+			(swap_index < std::size(swap_values)) ? Host::TranslateToCString(TR_CONTEXT, swap_names[swap_index]) : FSUI_CSTR("Unknown")))
+	{
+		ImGuiFullscreen::ChoiceDialogOptions cd_options;
+		cd_options.reserve(std::size(swap_values));
+		for (size_t i = 0; i < std::size(swap_values); i++)
+			cd_options.emplace_back(Host::TranslateToString(TR_CONTEXT, swap_names[i]), i == static_cast<size_t>(swap_index));
+
+		OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Swap OK/Cancel in Big Picture Mode"), false, std::move(cd_options), [](s32 index, const std::string& title, bool checked) {
+			if (index >= 0)
+			{
+				auto lock = Host::GetSettingsLock();
+				SettingsInterface* bsi = GetEditingSettingsInterface(false);
+				bsi->SetStringValue("UI", "SwapOKFullscreenUI", swap_values[index]);
+				SetSettingsChanged(bsi);
+				ApplyConfirmSetting(bsi);
+			}
+
+			CloseChoiceDialog();
+		});
 	}
 
 	MenuHeading(FSUI_CSTR("Game Display"));
@@ -3306,6 +3411,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
 				SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
 				bsi->SetStringValue("Filenames", "BIOS", values[index].c_str());
 				SetSettingsChanged(bsi);
+				ApplyConfirmSetting(bsi);
 				CloseChoiceDialog();
 			});
 	}

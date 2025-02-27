@@ -238,6 +238,11 @@ void Host::OnCreateMemoryCardOpenRequested()
 {
 }
 
+bool Host::LocaleCircleConfirm()
+{
+	return false;
+}
+
 bool Host::ShouldPreferHostFileSelector()
 {
 	return false;
