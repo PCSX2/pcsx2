@@ -11,6 +11,7 @@
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
 
+#include "pcsx2/ImGui/FullscreenUI.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/MTGS.h"
 
@@ -191,6 +192,13 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 	}
 
 	UpdateGlyphRangesAndClearCache(dialog_parent, language.toStdString());
+
+	if (FullscreenUI::IsInitialized())
+	{
+		MTGS::RunOnGSThread([]() mutable {
+			FullscreenUI::LocaleChanged();
+		});
+	}
 }
 
 const char* QtHost::GetDefaultLanguage()
@@ -218,6 +226,12 @@ s32 Host::Internal::GetTranslatedStringImpl(
 std::string Host::TranslatePluralToString(const char* context, const char* msg, const char* disambiguation, int count)
 {
 	return qApp->translate(context, msg, disambiguation, count).toStdString();
+}
+
+bool Host::LocaleCircleConfirm()
+{
+	QLocale& loc = QtHost::s_current_locale;
+	return (loc.language() == QLocale::Japanese) || (loc.language() == QLocale::Chinese) || (loc.language() == QLocale::Korean);
 }
 
 std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
