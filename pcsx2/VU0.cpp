@@ -198,6 +198,8 @@ void CTC2() {
 			vu1Finish(true);
 			vu1ExecMicro(cpuRegs.GPR.r[_Rt_].US[0]);	// Execute VU1 Micro SubRoutine
 			break;
+		case REG_CLIP_FLAG:
+			VU0.clipflag = cpuRegs.GPR.r[_Rt_].UL[0];
 		default:
 			VU0.VI[_Fs_].UL = cpuRegs.GPR.r[_Rt_].UL[0];
 			break;
