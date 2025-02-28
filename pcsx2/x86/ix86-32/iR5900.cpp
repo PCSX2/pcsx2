@@ -227,7 +227,7 @@ void _eeFlushAllDirty()
 	_flushX86regs();
 
 	// flush constants, do them all at once for slightly better codegen
-	_flushConstRegs();
+	_flushConstRegs(false);
 }
 
 void _eeMoveGPRtoR(const xRegister32& to, int fromgpr, bool allow_preload)
@@ -1225,7 +1225,7 @@ void iFlushCall(int flushtype)
 		_flushXMMregs();
 
 	if (flushtype & FLUSH_CONSTANT_REGS)
-		_flushConstRegs();
+		_flushConstRegs(true);
 
 	if ((flushtype & FLUSH_PC) && !g_cpuFlushedPC)
 	{
