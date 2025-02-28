@@ -105,7 +105,7 @@ void _flushConstReg(int reg)
 	}
 }
 
-void _flushConstRegs()
+void _flushConstRegs(bool delete_const)
 {
 	int zero_reg_count = 0;
 	int minusone_reg_count = 0;
@@ -134,6 +134,8 @@ void _flushConstRegs()
 			{
 				xMOV(ptr64[&cpuRegs.GPR.r[i].UD[0]], rax);
 				g_cpuFlushedConstReg |= 1u << i;
+				if (delete_const)
+					g_cpuHasConstReg &= ~(1u << i);
 			}
 		}
 		rax_is_zero = true;
@@ -154,6 +156,8 @@ void _flushConstRegs()
 			{
 				xMOV(ptr64[&cpuRegs.GPR.r[i].UD[0]], rax);
 				g_cpuFlushedConstReg |= 1u << i;
+				if (delete_const)
+					g_cpuHasConstReg &= ~(1u << i);
 			}
 		}
 	}
@@ -166,6 +170,8 @@ void _flushConstRegs()
 
 		xWriteImm64ToMem(&cpuRegs.GPR.r[i].UD[0], rax, g_cpuConstRegs[i].UD[0]);
 		g_cpuFlushedConstReg |= 1u << i;
+		if (delete_const)
+			g_cpuHasConstReg &= ~(1u << i);
 	}
 }
 
