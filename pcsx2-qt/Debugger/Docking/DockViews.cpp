@@ -10,9 +10,12 @@
 #include "DebugTools/DebugInterface.h"
 
 #include <kddockwidgets/core/TabBar.h>
+#include <kddockwidgets/core/indicators/SegmentedDropIndicatorOverlay.h>
 #include <kddockwidgets/qtwidgets/views/DockWidget.h>
 
 #include <QtGui/QActionGroup>
+#include <QtGui/QPainter>
+#include <QtGui/QPalette>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenu>
 
@@ -46,6 +49,13 @@ KDDockWidgets::Core::View* DockViewFactory::createTabBar(
 	return new DockTabBar(tabBar, KDDockWidgets::QtCommon::View_qt::asQWidget(parent));
 }
 
+KDDockWidgets::Core::View* DockViewFactory::createSegmentedDropIndicatorOverlayView(
+	KDDockWidgets::Core::SegmentedDropIndicatorOverlay* controller,
+	KDDockWidgets::Core::View* parent) const
+{
+	return new DockDropIndicator(controller, KDDockWidgets::QtCommon::View_qt::asQWidget(parent));
+}
+
 // *****************************************************************************
 
 DockWidget::DockWidget(
@@ -76,12 +86,12 @@ DockTitleBar::DockTitleBar(KDDockWidgets::Core::TitleBar* controller, KDDockWidg
 {
 }
 
-void DockTitleBar::mouseDoubleClickEvent(QMouseEvent* ev)
+void DockTitleBar::mouseDoubleClickEvent(QMouseEvent* event)
 {
 	if (g_debugger_window && !g_debugger_window->dockManager().isLayoutLocked())
-		KDDockWidgets::QtWidgets::TitleBar::mouseDoubleClickEvent(ev);
+		KDDockWidgets::QtWidgets::TitleBar::mouseDoubleClickEvent(event);
 	else
-		ev->ignore();
+		event->ignore();
 }
 
 // *****************************************************************************
@@ -263,10 +273,93 @@ DockTabBar::WidgetsFromTabIndexResult DockTabBar::widgetsFromTabIndex(int tab_in
 	return {widget, dock_controller, dock_view};
 }
 
-void DockTabBar::mouseDoubleClickEvent(QMouseEvent* ev)
+void DockTabBar::mouseDoubleClickEvent(QMouseEvent* event)
 {
 	if (g_debugger_window && !g_debugger_window->dockManager().isLayoutLocked())
-		KDDockWidgets::QtWidgets::TabBar::mouseDoubleClickEvent(ev);
+		KDDockWidgets::QtWidgets::TabBar::mouseDoubleClickEvent(event);
 	else
-		ev->ignore();
+		event->ignore();
+}
+
+// *****************************************************************************
+
+DockDropIndicator::DockDropIndicator(KDDockWidgets::Core::SegmentedDropIndicatorOverlay* controller, QWidget* parent)
+	: KDDockWidgets::QtWidgets::SegmentedDropIndicatorOverlay(controller, parent)
+{
+}
+
+void DockDropIndicator::paintEvent(QPaintEvent* event)
+{
+	QPainter painter(this);
+	painter.setRenderHint(QPainter::Antialiasing, true);
+
+	KDDockWidgets::Core::SegmentedDropIndicatorOverlay* controller =
+		asController<KDDockWidgets::Core::SegmentedDropIndicatorOverlay>();
+
+	const std::unordered_map<KDDockWidgets::DropLocation, QPolygon>& segments = controller->segments();
+
+	for (KDDockWidgets::DropLocation location :
+		{KDDockWidgets::DropLocation_Left,
+			KDDockWidgets::DropLocation_Top,
+			KDDockWidgets::DropLocation_Right,
+			KDDockWidgets::DropLocation_Bottom,
+			KDDockWidgets::DropLocation_Center,
+			KDDockWidgets::DropLocation_OutterLeft,
+			KDDockWidgets::DropLocation_OutterTop,
+			KDDockWidgets::DropLocation_OutterRight,
+			KDDockWidgets::DropLocation_OutterBottom})
+	{
+		auto segment = segments.find(location);
+		if (segment == segments.end() || segment->second.size() < 2)
+			continue;
+
+		// Pick some nice colours.
+		QColor fill = palette().highlight().color().lighter(150);
+		QColor outline = palette().highlight().color().lighter(150);
+		fill.setAlpha(150);
+		outline.setAlpha(255);
+
+		if (!segment->second.containsPoint(controller->hoveredPt(), Qt::OddEvenFill))
+		{
+			fill.setAlpha(fill.alpha() / 2);
+			outline.setAlpha(outline.alpha() / 2);
+		}
+
+		painter.setBrush(fill);
+
+		QPen pen(outline);
+		pen.setWidth(1);
+		painter.setPen(pen);
+
+		int margin = KDDockWidgets::Core::SegmentedDropIndicatorOverlay::s_segmentGirth * 2;
+
+		// Make sure the rectangles don't intersect with each other.
+		QRect rect;
+		switch (location)
+		{
+			case KDDockWidgets::DropLocation_Top:
+			case KDDockWidgets::DropLocation_Bottom:
+			case KDDockWidgets::DropLocation_OutterTop:
+			case KDDockWidgets::DropLocation_OutterBottom:
+			{
+				rect = segment->second.boundingRect().marginsRemoved(QMargins(margin, 4, margin, 4));
+				break;
+			}
+			case KDDockWidgets::DropLocation_Left:
+			case KDDockWidgets::DropLocation_Right:
+			case KDDockWidgets::DropLocation_OutterLeft:
+			case KDDockWidgets::DropLocation_OutterRight:
+			{
+				rect = segment->second.boundingRect().marginsRemoved(QMargins(4, margin, 4, margin));
+				break;
+			}
+			default:
+			{
+				rect = segment->second.boundingRect().marginsRemoved(QMargins(4, 4, 4, 4));
+				break;
+			}
+		}
+
+		painter.drawRoundedRect(rect, 2, 2);
+	}
 }

@@ -18,6 +18,7 @@
 #include <kddockwidgets/Config.h>
 #include <kddockwidgets/core/Group.h>
 #include <kddockwidgets/core/Stack.h>
+#include <kddockwidgets/core/indicators/SegmentedDropIndicatorOverlay.h>
 #include <kddockwidgets/qtwidgets/Stack.h>
 
 #include <QtCore/QTimer>
@@ -54,6 +55,8 @@ void DockManager::configureDockingSystem()
 	KDDockWidgets::Config::self().setViewFactory(new DockViewFactory());
 	KDDockWidgets::Config::self().setDragAboutToStartFunc(&DockManager::dragAboutToStart);
 	KDDockWidgets::Config::self().setStartDragDistance(std::max(QApplication::startDragDistance(), 32));
+
+	KDDockWidgets::Core::ViewFactory::s_dropIndicatorType = KDDockWidgets::DropIndicatorType::Segmented;
 
 	done = true;
 }

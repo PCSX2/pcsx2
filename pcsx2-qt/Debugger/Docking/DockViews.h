@@ -5,6 +5,7 @@
 
 #include <kddockwidgets/qtwidgets/ViewFactory.h>
 #include <kddockwidgets/qtwidgets/views/DockWidget.h>
+#include <kddockwidgets/qtwidgets/views/SegmentedDropIndicatorOverlay.h>
 #include <kddockwidgets/qtwidgets/views/Stack.h>
 #include <kddockwidgets/qtwidgets/views/TitleBar.h>
 #include <kddockwidgets/qtwidgets/views/TabBar.h>
@@ -36,6 +37,10 @@ public:
 	KDDockWidgets::Core::View* createTabBar(
 		KDDockWidgets::Core::TabBar* tabBar,
 		KDDockWidgets::Core::View* parent) const override;
+
+	KDDockWidgets::Core::View* createSegmentedDropIndicatorOverlayView(
+		KDDockWidgets::Core::SegmentedDropIndicatorOverlay* controller,
+		KDDockWidgets::Core::View* parent) const override;
 };
 
 class DockWidget : public KDDockWidgets::QtWidgets::DockWidget
@@ -61,7 +66,7 @@ public:
 	DockTitleBar(KDDockWidgets::Core::TitleBar* controller, KDDockWidgets::Core::View* parent = nullptr);
 
 protected:
-	void mouseDoubleClickEvent(QMouseEvent* ev) override;
+	void mouseDoubleClickEvent(QMouseEvent* event) override;
 };
 
 class DockStack : public KDDockWidgets::QtWidgets::Stack
@@ -74,7 +79,7 @@ public:
 	void init() override;
 
 protected:
-	void mouseDoubleClickEvent(QMouseEvent* ev) override;
+	void mouseDoubleClickEvent(QMouseEvent* event) override;
 };
 
 class DockTabBar : public KDDockWidgets::QtWidgets::TabBar
@@ -97,5 +102,15 @@ protected:
 	void setCpuOverrideForTab(int tab_index, std::optional<BreakPointCpu> cpu_override);
 	WidgetsFromTabIndexResult widgetsFromTabIndex(int tab_index);
 
-	void mouseDoubleClickEvent(QMouseEvent* ev) override;
+	void mouseDoubleClickEvent(QMouseEvent* event) override;
+};
+
+class DockDropIndicator : public KDDockWidgets::QtWidgets::SegmentedDropIndicatorOverlay
+{
+	Q_OBJECT
+
+public:
+	DockDropIndicator(KDDockWidgets::Core::SegmentedDropIndicatorOverlay* controller, QWidget* parent = nullptr);
+
+	void paintEvent(QPaintEvent* event) override;
 };
