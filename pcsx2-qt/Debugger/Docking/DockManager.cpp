@@ -41,6 +41,13 @@ DockManager::DockManager(QObject* parent)
 
 void DockManager::configureDockingSystem()
 {
+	DockDropIndicator::s_indicator_style =
+		Host::GetStringSettingValue("Debugger/UserInterface", "DropIndicatorStyle", "Classic");
+	if (DockDropIndicator::s_indicator_style == "Segmented" || DockDropIndicator::s_indicator_style == "Minimalistic")
+		KDDockWidgets::Core::ViewFactory::s_dropIndicatorType = KDDockWidgets::DropIndicatorType::Segmented;
+	else
+		KDDockWidgets::Core::ViewFactory::s_dropIndicatorType = KDDockWidgets::DropIndicatorType::Classic;
+
 	static bool done = false;
 	if (done)
 		return;
@@ -55,8 +62,6 @@ void DockManager::configureDockingSystem()
 	KDDockWidgets::Config::self().setViewFactory(new DockViewFactory());
 	KDDockWidgets::Config::self().setDragAboutToStartFunc(&DockManager::dragAboutToStart);
 	KDDockWidgets::Config::self().setStartDragDistance(std::max(QApplication::startDragDistance(), 32));
-
-	KDDockWidgets::Core::ViewFactory::s_dropIndicatorType = KDDockWidgets::DropIndicatorType::Segmented;
 
 	done = true;
 }

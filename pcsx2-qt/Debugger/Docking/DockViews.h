@@ -113,4 +113,10 @@ public:
 	DockDropIndicator(KDDockWidgets::Core::SegmentedDropIndicatorOverlay* controller, QWidget* parent = nullptr);
 
 	void paintEvent(QPaintEvent* event) override;
+	void drawSegmented();
+	void drawMinimalistic();
+
+	std::pair<QColor, QColor> pickColours(const QPolygon& segment);
+
+	static std::string s_indicator_style;
 };

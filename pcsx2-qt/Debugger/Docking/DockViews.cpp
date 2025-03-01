@@ -283,12 +283,22 @@ void DockTabBar::mouseDoubleClickEvent(QMouseEvent* event)
 
 // *****************************************************************************
 
+std::string DockDropIndicator::s_indicator_style;
+
 DockDropIndicator::DockDropIndicator(KDDockWidgets::Core::SegmentedDropIndicatorOverlay* controller, QWidget* parent)
 	: KDDockWidgets::QtWidgets::SegmentedDropIndicatorOverlay(controller, parent)
 {
 }
 
 void DockDropIndicator::paintEvent(QPaintEvent* event)
+{
+	if (s_indicator_style == "Minimalistic")
+		drawMinimalistic();
+	else
+		drawSegmented();
+}
+
+void DockDropIndicator::drawSegmented()
 {
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing, true);
@@ -313,17 +323,7 @@ void DockDropIndicator::paintEvent(QPaintEvent* event)
 		if (segment == segments.end() || segment->second.size() < 2)
 			continue;
 
-		// Pick some nice colours.
-		QColor fill = palette().highlight().color().lighter(150);
-		QColor outline = palette().highlight().color().lighter(150);
-		fill.setAlpha(150);
-		outline.setAlpha(255);
-
-		if (!segment->second.containsPoint(controller->hoveredPt(), Qt::OddEvenFill))
-		{
-			fill.setAlpha(fill.alpha() / 2);
-			outline.setAlpha(outline.alpha() / 2);
-		}
+		auto [fill, outline] = pickColours(segment->second);
 
 		painter.setBrush(fill);
 
@@ -360,6 +360,65 @@ void DockDropIndicator::paintEvent(QPaintEvent* event)
 			}
 		}
 
-		painter.drawRoundedRect(rect, 2, 2);
+		painter.drawRect(rect);
 	}
+}
+
+void DockDropIndicator::drawMinimalistic()
+{
+	QPainter painter(this);
+	painter.setRenderHint(QPainter::Antialiasing, true);
+
+	KDDockWidgets::Core::SegmentedDropIndicatorOverlay* controller =
+		asController<KDDockWidgets::Core::SegmentedDropIndicatorOverlay>();
+
+	const std::unordered_map<KDDockWidgets::DropLocation, QPolygon>& segments = controller->segments();
+
+	for (KDDockWidgets::DropLocation location :
+		{KDDockWidgets::DropLocation_Left,
+			KDDockWidgets::DropLocation_Top,
+			KDDockWidgets::DropLocation_Right,
+			KDDockWidgets::DropLocation_Bottom,
+			KDDockWidgets::DropLocation_Center,
+			KDDockWidgets::DropLocation_OutterLeft,
+			KDDockWidgets::DropLocation_OutterTop,
+			KDDockWidgets::DropLocation_OutterRight,
+			KDDockWidgets::DropLocation_OutterBottom})
+	{
+		auto segment = segments.find(location);
+		if (segment == segments.end() || segment->second.size() < 2)
+			continue;
+
+		if (!segment->second.containsPoint(controller->hoveredPt(), Qt::OddEvenFill))
+			continue;
+
+		auto [fill, outline] = pickColours(segment->second);
+
+		painter.setBrush(fill);
+
+		QPen pen(outline);
+		pen.setWidth(1);
+		painter.setPen(pen);
+
+		painter.drawRect(segment->second.boundingRect());
+	}
+}
+
+std::pair<QColor, QColor> DockDropIndicator::pickColours(const QPolygon& segment)
+{
+	KDDockWidgets::Core::SegmentedDropIndicatorOverlay* controller =
+		asController<KDDockWidgets::Core::SegmentedDropIndicatorOverlay>();
+
+	QColor fill = palette().highlight().color().lighter(150);
+	QColor outline = palette().highlight().color().lighter(150);
+	fill.setAlpha(150);
+	outline.setAlpha(255);
+
+	if (!segment.containsPoint(controller->hoveredPt(), Qt::OddEvenFill))
+	{
+		fill.setAlpha(fill.alpha() / 2);
+		outline.setAlpha(outline.alpha() / 2);
+	}
+
+	return {fill, outline};
 }
