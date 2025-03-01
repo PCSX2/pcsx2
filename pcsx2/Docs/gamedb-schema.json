@@ -237,7 +237,7 @@
             "halfPixelOffset": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 4
+              "maximum": 5
             },
             "nativeScaling": {
               "type": "integer",
