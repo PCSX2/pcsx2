@@ -18173,7 +18173,7 @@ This action cannot be reversed, and you will lose any saves on the card.</source
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/SIO/Pad/Pad.cpp" line="579"/>
+        <location filename="../../pcsx2/SIO/Pad/Pad.cpp" line="583"/>
         <source>Controller port {0}, slot {1} has a {2} connected, but the save state has a {3}.
 Ejecting {3} and replacing it with {2}.</source>
         <translation type="unfinished"></translation>
