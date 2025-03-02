@@ -536,14 +536,27 @@ void Pcsx2Config::RecompilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(vu0ExtraOverflow);
 	SettingsWrapBitBool(vu0SignOverflow);
 	SettingsWrapBitBool(vu0Underflow);
+	
+	SettingsWrapBitBool(vu0SoftAddSub);
+	SettingsWrapBitBool(vu0SoftMulDiv);
+	SettingsWrapBitBool(vu0SoftSqrt);
+	
 	SettingsWrapBitBool(vu1Overflow);
 	SettingsWrapBitBool(vu1ExtraOverflow);
 	SettingsWrapBitBool(vu1SignOverflow);
 	SettingsWrapBitBool(vu1Underflow);
+	
+	SettingsWrapBitBool(vu1SoftAddSub);
+	SettingsWrapBitBool(vu1SoftMulDiv);
+	SettingsWrapBitBool(vu1SoftSqrt);
 
 	SettingsWrapBitBool(fpuOverflow);
 	SettingsWrapBitBool(fpuExtraOverflow);
 	SettingsWrapBitBool(fpuFullMode);
+	
+	SettingsWrapBitBool(fpuSoftAddSub);
+	SettingsWrapBitBool(fpuSoftMulDiv);
+	SettingsWrapBitBool(fpuSoftSqrt);
 }
 
 u32 Pcsx2Config::RecompilerOptions::GetEEClampMode() const
