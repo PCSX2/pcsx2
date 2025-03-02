@@ -3,6 +3,7 @@
 
 #include "DebugSettingsWidget.h"
 
+#include "DebugUserInterfaceSettingsWidget.h"
 #include "DebugAnalysisSettingsWidget.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -19,6 +20,20 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* dialog, QWidget* parent
 	SettingsInterface* sif = dialog->getSettingsInterface();
 
 	m_ui.setupUi(this);
+
+	//////////////////////////////////////////////////////////////////////////
+	// User Interface Settings
+	//////////////////////////////////////////////////////////////////////////
+	if (!dialog->isPerGameSettings())
+	{
+		m_user_interface_settings = new DebugUserInterfaceSettingsWidget(dialog);
+		m_ui.userInterfaceTabWidget->setLayout(new QVBoxLayout());
+		m_ui.userInterfaceTabWidget->layout()->addWidget(m_user_interface_settings);
+	}
+	else
+	{
+		m_ui.debugTabs->removeTab(m_ui.debugTabs->indexOf(m_ui.userInterfaceTabWidget));
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Analysis Settings
@@ -141,9 +156,9 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* dialog, QWidget* parent
 	connect(m_ui.chkEnable, &QCheckBox::checkStateChanged, this, &DebugSettingsWidget::onLoggingEnableChanged);
 	onLoggingEnableChanged();
 
-	#else
-		m_ui.debugTabs->removeTab(m_ui.debugTabs->indexOf(m_ui.traceLogTabWidget));
-	#endif
+#else
+	m_ui.debugTabs->removeTab(m_ui.debugTabs->indexOf(m_ui.traceLogTabWidget));
+#endif
 }
 
 DebugSettingsWidget::~DebugSettingsWidget() = default;
