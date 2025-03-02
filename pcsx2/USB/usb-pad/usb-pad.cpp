@@ -166,6 +166,9 @@ namespace usb_pad
 					"Off", nullptr, nullptr, nullptr, nullptr, SteeringCurveExponentOptions},
 				{SettingInfo::Type::Boolean, "FfbDropoutWorkaround", TRANSLATE_NOOP("USB", "Workaround for Intermittent FFB Loss"),
 					TRANSLATE_NOOP("USB", "Works around bugs in some wheels' firmware that result in brief interruptions in force. Leave this disabled unless you need it, as it has negative side effects on many wheels."),
+					"false"},
+				{SettingInfo::Type::Boolean, "FfbDirectInputHack", TRANSLATE_NOOP("USB", "HACK: Bypass SDL for FFB updates on Windows"),
+					TRANSLATE_NOOP("USB", "Forgive me, SDL. It's not you, it's me. (It's you). Has no effect on non-Windows platforms."),
 					"false"}
 			};
 
@@ -233,6 +236,11 @@ namespace usb_pad
 			{
 				const bool use_ffb_dropout_workaround = USB::GetConfigBool(si, port, devname, "FfbDropoutWorkaround", false);
 				mFFdev->use_ffb_dropout_workaround = use_ffb_dropout_workaround;
+			}
+			if (mFFdev != NULL)
+			{
+				const bool bypass_sdl_when_updating = USB::GetConfigBool(si, port, devname, "FfbDirectInputHack", false);
+				mFFdev->bypass_sdl_when_updating = bypass_sdl_when_updating;
 			}
 		}
 	}
