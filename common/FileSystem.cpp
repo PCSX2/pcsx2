@@ -1356,6 +1356,9 @@ static u32 TranslateWin32Attributes(u32 Win32Attributes)
 static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, const char* path, const char* pattern,
 	u32 flags, FileSystem::FindResultsArray* results, std::vector<std::string>& visited, ProgressCallback* cancel)
 {
+	if (cancel && cancel->IsCancelled())
+		return 0;
+
 	std::string search_dir;
 	if (path)
 	{
@@ -1376,9 +1379,6 @@ static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, 
 
 	const HANDLE hFind = FindFirstFileW(FileSystem::GetWin32Path(search_dir).c_str(), &wfd);
 	if (hFind == INVALID_HANDLE_VALUE)
-		return 0;
-
-	if (cancel && cancel->IsCancelled())
 		return 0;
 
 	// small speed optimization for '*' case
@@ -2051,6 +2051,9 @@ static_assert(sizeof(off_t) == sizeof(s64));
 static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, const char* Path, const char* Pattern,
 	u32 Flags, FileSystem::FindResultsArray* pResults, std::vector<std::string>& visited, ProgressCallback* cancel)
 {
+	if (cancel && cancel->IsCancelled())
+		return 0;
+
 	std::string tempStr;
 	if (Path)
 	{
@@ -2066,9 +2069,6 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
 
 	DIR* pDir = opendir(tempStr.c_str());
 	if (!pDir)
-		return 0;
-
-	if (cancel && cancel->IsCancelled())
 		return 0;
 
 	// small speed optimization for '*' case
