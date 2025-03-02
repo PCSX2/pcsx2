@@ -27,7 +27,7 @@ namespace usb_pad
 		{
 			DestroyEffects();
 
-			SDL_HapticClose(m_haptic);
+			SDL_CloseHaptic(m_haptic);
 			m_haptic = nullptr;
 		}
 	}
@@ -45,7 +45,7 @@ namespace usb_pad
 			return nullptr;
 		}
 
-		SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
+		SDL_Haptic* haptic = SDL_OpenHapticFromJoystick(joystick);
 		if (!haptic)
 		{
 			Console.Error(fmt::format("Haptic is not supported on {}.", device));
@@ -77,16 +77,16 @@ namespace usb_pad
 		//   - Simagic Alpha Mini: Does NOT implement infinite durations (stops after some time, seeking hard numbers)
 		constexpr u32 length = SDL_HAPTIC_INFINITY;
 
-		const unsigned int supported = SDL_HapticQuery(m_haptic);
+		const unsigned int supported = SDL_GetHapticFeatures(m_haptic);
 		if (supported & SDL_HAPTIC_CONSTANT)
 		{
 			m_constant_effect.type = SDL_HAPTIC_CONSTANT;
 			m_constant_effect.constant.direction.type = SDL_HAPTIC_STEERING_AXIS;
 			m_constant_effect.constant.length = length;
 
-			m_constant_effect_id = SDL_HapticNewEffect(m_haptic, &m_constant_effect);
+			m_constant_effect_id = SDL_CreateHapticEffect(m_haptic, &m_constant_effect);
 			if (m_constant_effect_id < 0)
-				Console.Error("SDL_HapticNewEffect() for constant failed: %s", SDL_GetError());
+				Console.Error("SDL_CreateHapticEffect() for constant failed: %s", SDL_GetError());
 		}
 		else
 		{
@@ -99,9 +99,9 @@ namespace usb_pad
 			m_spring_effect.condition.direction.type = SDL_HAPTIC_STEERING_AXIS;
 			m_spring_effect.condition.length = length;
 
-			m_spring_effect_id = SDL_HapticNewEffect(m_haptic, &m_spring_effect);
+			m_spring_effect_id = SDL_CreateHapticEffect(m_haptic, &m_spring_effect);
 			if (m_spring_effect_id < 0)
-				Console.Error("SDL_HapticNewEffect() for spring failed: %s", SDL_GetError());
+				Console.Error("SDL_CreateHapticEffect() for spring failed: %s", SDL_GetError());
 		}
 		else
 		{
@@ -114,9 +114,9 @@ namespace usb_pad
 			m_damper_effect.condition.direction.type = SDL_HAPTIC_STEERING_AXIS;
 			m_damper_effect.condition.length = length;
 
-			m_damper_effect_id = SDL_HapticNewEffect(m_haptic, &m_damper_effect);
+			m_damper_effect_id = SDL_CreateHapticEffect(m_haptic, &m_damper_effect);
 			if (m_damper_effect_id < 0)
-				Console.Error("SDL_HapticNewEffect() for damper failed: %s", SDL_GetError());
+				Console.Error("SDL_CreateHapticEffect() for damper failed: %s", SDL_GetError());
 		}
 		else
 		{
@@ -129,9 +129,9 @@ namespace usb_pad
 			m_friction_effect.condition.direction.type = SDL_HAPTIC_STEERING_AXIS;
 			m_friction_effect.condition.length = length;
 
-			m_friction_effect_id = SDL_HapticNewEffect(m_haptic, &m_friction_effect);
+			m_friction_effect_id = SDL_CreateHapticEffect(m_haptic, &m_friction_effect);
 			if (m_friction_effect_id < 0)
-				Console.Error("SDL_HapticNewEffect() for friction failed: %s", SDL_GetError());
+				Console.Error("SDL_CreateHapticEffect() for friction failed: %s", SDL_GetError());
 		}
 		else
 		{
@@ -149,10 +149,10 @@ namespace usb_pad
 		{
 			if (m_friction_effect_running)
 			{
-				SDL_HapticStopEffect(m_haptic, m_friction_effect_id);
+				SDL_StopHapticEffect(m_haptic, m_friction_effect_id);
 				m_friction_effect_running = false;
 			}
-			SDL_HapticDestroyEffect(m_haptic, m_friction_effect_id);
+			SDL_DestroyHapticEffect(m_haptic, m_friction_effect_id);
 			m_friction_effect_id = -1;
 		}
 
@@ -160,10 +160,10 @@ namespace usb_pad
 		{
 			if (m_damper_effect_running)
 			{
-				SDL_HapticStopEffect(m_haptic, m_damper_effect_id);
+				SDL_StopHapticEffect(m_haptic, m_damper_effect_id);
 				m_damper_effect_running = false;
 			}
-			SDL_HapticDestroyEffect(m_haptic, m_damper_effect_id);
+			SDL_DestroyHapticEffect(m_haptic, m_damper_effect_id);
 			m_damper_effect_id = -1;
 		}
 
@@ -171,10 +171,10 @@ namespace usb_pad
 		{
 			if (m_spring_effect_running)
 			{
-				SDL_HapticStopEffect(m_haptic, m_spring_effect_id);
+				SDL_StopHapticEffect(m_haptic, m_spring_effect_id);
 				m_spring_effect_running = false;
 			}
-			SDL_HapticDestroyEffect(m_haptic, m_spring_effect_id);
+			SDL_DestroyHapticEffect(m_haptic, m_spring_effect_id);
 			m_spring_effect_id = -1;
 		}
 
@@ -182,10 +182,10 @@ namespace usb_pad
 		{
 			if (m_constant_effect_running)
 			{
-				SDL_HapticStopEffect(m_haptic, m_constant_effect_id);
+				SDL_StopHapticEffect(m_haptic, m_constant_effect_id);
 				m_constant_effect_running = false;
 			}
-			SDL_HapticDestroyEffect(m_haptic, m_constant_effect_id);
+			SDL_DestroyHapticEffect(m_haptic, m_constant_effect_id);
 			m_constant_effect_id = -1;
 		}
 	}
@@ -199,8 +199,8 @@ namespace usb_pad
 		if (m_constant_effect.constant.level != new_level)
 		{
 			m_constant_effect.constant.level = new_level;
-			if (SDL_HapticUpdateEffect(m_haptic, m_constant_effect_id, &m_constant_effect) != 0)
-				Console.Warning("SDL_HapticUpdateEffect() for constant failed: %s", SDL_GetError());
+			if (!SDL_UpdateHapticEffect(m_haptic, m_constant_effect_id, &m_constant_effect))
+				Console.Warning("SDL_UpdateHapticEffect() for constant failed: %s", SDL_GetError());
 		}
 
 		// Avoid re-running already-running effects by default. Re-running a running effect
@@ -217,10 +217,10 @@ namespace usb_pad
 		//                     This is the reason for use_ffb_dropout_workaround.
 		if (!m_constant_effect_running || use_ffb_dropout_workaround)
 		{
-			if (SDL_HapticRunEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
+			if (SDL_RunHapticEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY))
 				m_constant_effect_running = true;
 			else
-				Console.Error("SDL_HapticRunEffect() for constant failed: %s", SDL_GetError());
+				Console.Error("SDL_RunHapticEffect() for constant failed: %s", SDL_GetError());
 		}
 	}
 
@@ -248,15 +248,15 @@ namespace usb_pad
 		m_spring_effect.condition.deadband[0] = ClampU16(ff.u.condition.deadband);
 		m_spring_effect.condition.center[0] = ClampS16(ff.u.condition.center);
 
-		if (SDL_HapticUpdateEffect(m_haptic, m_spring_effect_id, &m_spring_effect) != 0)
-			Console.Warning("SDL_HapticUpdateEffect() for spring failed: %s", SDL_GetError());
+		if (!SDL_UpdateHapticEffect(m_haptic, m_spring_effect_id, &m_spring_effect))
+			Console.Warning("SDL_UpdateHapticEffect() for spring failed: %s", SDL_GetError());
 
 		if (!m_spring_effect_running)
 		{
-			if (SDL_HapticRunEffect(m_haptic, m_spring_effect_id, SDL_HAPTIC_INFINITY) == 0)
+			if (SDL_RunHapticEffect(m_haptic, m_spring_effect_id, SDL_HAPTIC_INFINITY))
 				m_spring_effect_running = true;
 			else
-				Console.Error("SDL_HapticRunEffect() for spring failed: %s", SDL_GetError());
+				Console.Error("SDL_RunHapticEffect() for spring failed: %s", SDL_GetError());
 		}
 	}
 
@@ -272,15 +272,15 @@ namespace usb_pad
 		m_damper_effect.condition.deadband[0] = ClampU16(ff.u.condition.deadband);
 		m_damper_effect.condition.center[0] = ClampS16(ff.u.condition.center);
 
-		if (SDL_HapticUpdateEffect(m_haptic, m_damper_effect_id, &m_damper_effect) != 0)
-			Console.Warning("SDL_HapticUpdateEffect() for damper failed: %s", SDL_GetError());
+		if (!SDL_UpdateHapticEffect(m_haptic, m_damper_effect_id, &m_damper_effect))
+			Console.Warning("SDL_UpdateHapticEffect() for damper failed: %s", SDL_GetError());
 
 		if (!m_damper_effect_running)
 		{
-			if (SDL_HapticRunEffect(m_haptic, m_damper_effect_id, SDL_HAPTIC_INFINITY) == 0)
+			if (SDL_RunHapticEffect(m_haptic, m_damper_effect_id, SDL_HAPTIC_INFINITY))
 				m_damper_effect_running = true;
 			else
-				Console.Error("SDL_HapticRunEffect() for damper failed: %s", SDL_GetError());
+				Console.Error("SDL_RunHapticEffect() for damper failed: %s", SDL_GetError());
 		}
 	}
 
@@ -296,12 +296,12 @@ namespace usb_pad
 		m_friction_effect.condition.deadband[0] = ClampU16(ff.u.condition.deadband);
 		m_friction_effect.condition.center[0] = ClampS16(ff.u.condition.center);
 
-		if (SDL_HapticUpdateEffect(m_haptic, m_friction_effect_id, &m_friction_effect) != 0)
+		if (!SDL_UpdateHapticEffect(m_haptic, m_friction_effect_id, &m_friction_effect))
 		{
-			if (!m_friction_effect_running && SDL_HapticRunEffect(m_haptic, m_friction_effect_id, SDL_HAPTIC_INFINITY) == 0)
+			if (!m_friction_effect_running && SDL_RunHapticEffect(m_haptic, m_friction_effect_id, SDL_HAPTIC_INFINITY))
 				m_friction_effect_running = true;
 			else
-				Console.Error("SDL_HapticUpdateEffect() for friction failed: %s", SDL_GetError());
+				Console.Error("SDL_UpdateHapticEffect() for friction failed: %s", SDL_GetError());
 		}
 	}
 
@@ -309,8 +309,8 @@ namespace usb_pad
 	{
 		if (m_autocenter_supported)
 		{
-			if (SDL_HapticSetAutocenter(m_haptic, value) != 0)
-				Console.Warning("SDL_HapticSetAutocenter() failed: %s", SDL_GetError());
+			if (!SDL_SetHapticAutocenter(m_haptic, value))
+				Console.Warning("SDL_SetHapticAutocenter() failed: %s", SDL_GetError());
 		}
 	}
 
@@ -322,7 +322,7 @@ namespace usb_pad
 			{
 				if (m_constant_effect_running)
 				{
-					SDL_HapticStopEffect(m_haptic, m_constant_effect_id);
+					SDL_StopHapticEffect(m_haptic, m_constant_effect_id);
 					m_constant_effect_running = false;
 				}
 			}
@@ -332,7 +332,7 @@ namespace usb_pad
 			{
 				if (m_spring_effect_running)
 				{
-					SDL_HapticStopEffect(m_haptic, m_spring_effect_id);
+					SDL_StopHapticEffect(m_haptic, m_spring_effect_id);
 					m_spring_effect_running = false;
 				}
 			}
@@ -342,7 +342,7 @@ namespace usb_pad
 			{
 				if (m_damper_effect_running)
 				{
-					SDL_HapticStopEffect(m_haptic, m_damper_effect_id);
+					SDL_StopHapticEffect(m_haptic, m_damper_effect_id);
 					m_damper_effect_running = false;
 				}
 			}
@@ -352,7 +352,7 @@ namespace usb_pad
 			{
 				if (m_friction_effect_running)
 				{
-					SDL_HapticStopEffect(m_haptic, m_friction_effect_id);
+					SDL_StopHapticEffect(m_haptic, m_friction_effect_id);
 					m_friction_effect_running = false;
 				}
 			}

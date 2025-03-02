@@ -138,6 +138,15 @@ void Host::ClearTranslationCache()
 	s_translation_string_mutex.unlock();
 }
 
+void Host::ReportFormattedInfoAsync(const std::string_view title, const char* format, ...)
+{
+	std::va_list ap;
+	va_start(ap, format);
+	std::string message(StringUtil::StdStringFromFormatV(format, ap));
+	va_end(ap);
+	ReportInfoAsync(title, message);
+}
+
 void Host::ReportFormattedErrorAsync(const std::string_view title, const char* format, ...)
 {
 	std::va_list ap;

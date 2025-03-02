@@ -39,6 +39,9 @@ protected Q_SLOTS:
 	void onInputListenTimerTimeout();
 	void inputManagerHookCallback(InputBindingKey key, float value);
 
+	void onInputDeviceConnected(const QString& identifier, const QString& device_name);
+	void onInputDeviceDisconnected(const QString& identifier);
+
 protected:
 	enum : u32
 	{
@@ -65,7 +68,8 @@ protected:
 	InputBindingInfo::Type m_bind_type = InputBindingInfo::Type::Unknown;
 	std::string m_section_name;
 	std::string m_key_name;
-	std::vector<std::string> m_bindings;
+	std::vector<std::string> m_bindings_settings;
+	std::vector<std::string> m_bindings_ui;
 	std::vector<InputBindingKey> m_new_bindings;
 	std::vector<std::pair<InputBindingKey, std::pair<float, float>>> m_value_ranges;
 	QTimer* m_input_listen_timer = nullptr;

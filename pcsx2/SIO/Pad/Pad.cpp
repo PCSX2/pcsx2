@@ -167,8 +167,8 @@ void Pad::SetDefaultControllerConfig(SettingsInterface& si)
 			InputManager::InputSourceToString(static_cast<InputSourceType>(i)),
 			InputManager::GetInputSourceDefaultEnabled(static_cast<InputSourceType>(i)));
 	}
-	si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
-	si.SetBoolValue("InputSources", "SDLPS5PlayerLED", false);
+	si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", true);
+	si.SetBoolValue("InputSources", "SDLPS5PlayerLED", true);
 	si.SetBoolValue("Pad", "MultitapPort1", false);
 	si.SetBoolValue("Pad", "MultitapPort2", false);
 	si.SetFloatValue("Pad", "PointerXScale", 8.0f);

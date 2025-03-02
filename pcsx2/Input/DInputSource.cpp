@@ -45,6 +45,17 @@ std::string DInputSource::GetDeviceIdentifier(u32 index)
 	return fmt::format("DInput-{}", index);
 }
 
+static constexpr const char* s_dinput_axis_names[] = {
+	"X Axis",
+	"Y Axis",
+	"Z Axis",
+	"Z Rotation",
+	"X Rotation",
+	"Y Rotation",
+	"Slider 1",
+	"Slider 2",
+};
+
 static constexpr std::array<const char*, DInputSource::NUM_HAT_DIRECTIONS> s_hat_directions = {{"Up", "Down", "Left", "Right"}};
 
 bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
@@ -150,6 +161,15 @@ void DInputSource::Shutdown()
 			GetDeviceIdentifier(index));
 		m_controllers.pop_back();
 	}
+
+	m_toplevel_window = nullptr;
+	m_dinput.reset();
+	m_dinput_module.reset();
+}
+
+bool DInputSource::IsInitialized()
+{
+	return m_toplevel_window;
 }
 
 bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
@@ -379,7 +399,7 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 	return std::nullopt;
 }
 
-TinyString DInputSource::ConvertKeyToString(InputBindingKey key)
+TinyString DInputSource::ConvertKeyToString(InputBindingKey key, bool display, bool migration)
 {
 	TinyString ret;
 
@@ -387,18 +407,33 @@ TinyString DInputSource::ConvertKeyToString(InputBindingKey key)
 	{
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
-			const char* modifier = (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
-			ret.format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), (key.invert && !ShouldIgnoreInversion()) ? "~" : "");
+			const char* modifier = (key.modifier == InputModifier::FullAxis ? (display ? "Full " : "Full") : (key.modifier == InputModifier::Negate ? "-" : "+"));
+			if (display)
+			{
+				if (key.data < std::size(s_dinput_axis_names))
+					ret.format("DInput-{} {}{}{}", u32(key.source_index), modifier, s_dinput_axis_names[key.data], key.invert ? "~" : "");
+				else
+					ret.format("DInput-{} {}Axis {}{}", u32(key.source_index), modifier, u32(key.data) + 1, key.invert ? "~" : "");
+			}
+			else
+				ret.format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), (key.invert && (migration || !ShouldIgnoreInversion())) ? "~" : "");
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton && key.data >= MAX_NUM_BUTTONS)
 		{
+			// Note, hats currently get mapped to buttons
 			const u32 hat_num = (key.data - MAX_NUM_BUTTONS) / NUM_HAT_DIRECTIONS;
 			const u32 hat_dir = (key.data - MAX_NUM_BUTTONS) % NUM_HAT_DIRECTIONS;
-			ret.format("DInput-{}/Hat{}{}", u32(key.source_index), hat_num, s_hat_directions[hat_dir]);
+			if (display)
+				ret.format("DInput-{} Hat {} {}", u32(key.source_index), hat_num + 1, s_hat_directions[hat_dir]);
+			else
+				ret.format("DInput-{}/Hat{}{}", u32(key.source_index), hat_num, s_hat_directions[hat_dir]);
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton)
 		{
-			ret.format("DInput-{}/Button{}", u32(key.source_index), u32(key.data));
+			if (display)
+				ret.format("DInput-{} Button {}", u32(key.source_index), u32(key.data) + 1);
+			else
+				ret.format("DInput-{}/Button{}", u32(key.source_index), u32(key.data));
 		}
 	}
 

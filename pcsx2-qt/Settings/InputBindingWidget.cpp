@@ -23,6 +23,8 @@ InputBindingWidget::InputBindingWidget(QWidget* parent)
 	: QPushButton(parent)
 {
 	connect(this, &QPushButton::clicked, this, &InputBindingWidget::onClicked);
+	connect(g_emu_thread, &EmuThread::onInputDeviceConnected, this, &InputBindingWidget::onInputDeviceConnected);
+	connect(g_emu_thread, &EmuThread::onInputDeviceDisconnected, this, &InputBindingWidget::onInputDeviceDisconnected);
 }
 
 InputBindingWidget::InputBindingWidget(
@@ -33,6 +35,8 @@ InputBindingWidget::InputBindingWidget(
 	setMaximumWidth(225);
 
 	connect(this, &QPushButton::clicked, this, &InputBindingWidget::onClicked);
+	connect(g_emu_thread, &EmuThread::onInputDeviceConnected, this, &InputBindingWidget::onInputDeviceConnected);
+	connect(g_emu_thread, &EmuThread::onInputDeviceDisconnected, this, &InputBindingWidget::onInputDeviceDisconnected);
 
 	initialize(sif, bind_type, std::move(section_name), std::move(key_name));
 }
@@ -62,20 +66,20 @@ void InputBindingWidget::updateText()
 	const QString binding_tip(tr("\n\nLeft click to assign a new button\nShift + left click for additional bindings"));
 	const QString binding_clear_tip(tr("\nRight click to clear binding"));
 
-	if (m_bindings.empty())
+	if (m_bindings_ui.empty())
 	{
 		setText(QString());
 
 		setToolTip(tr("No bindings registered") + binding_tip);
 	}
-	else if (m_bindings.size() > 1)
+	else if (m_bindings_ui.size() > 1)
 	{
-		setText(tr("%n bindings", "", static_cast<int>(m_bindings.size())));
+		setText(tr("%n bindings", "", static_cast<int>(m_bindings_ui.size())));
 
 		// keep the full thing for the tooltip
 		std::stringstream ss;
 		bool first = true;
-		for (const std::string& binding : m_bindings)
+		for (const std::string& binding : m_bindings_ui)
 		{
 			if (first)
 				first = false;
@@ -87,7 +91,7 @@ void InputBindingWidget::updateText()
 	}
 	else
 	{
-		QString binding_text(QString::fromStdString(m_bindings[0]));
+		QString binding_text(QString::fromStdString(m_bindings_ui[0]));
 		setToolTip(binding_text + binding_tip + binding_clear_tip);
 
 		// fix up accelerators, and if it's too long, ellipsise it
@@ -232,13 +236,12 @@ void InputBindingWidget::setNewBinding()
 		}
 	}
 
-	m_bindings.clear();
-	m_bindings.push_back(std::move(new_binding));
+	m_bindings_ui.clear();
+	m_bindings_ui.push_back(std::move(new_binding));
 }
 
 void InputBindingWidget::clearBinding()
 {
-	m_bindings.clear();
 	if (m_sif)
 	{
 		m_sif->DeleteValue(m_section_name.c_str(), m_key_name.c_str());
@@ -256,14 +259,24 @@ void InputBindingWidget::clearBinding()
 
 void InputBindingWidget::reloadBinding()
 {
-	m_bindings = m_sif ? m_sif->GetStringList(m_section_name.c_str(), m_key_name.c_str()) :
-                         Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
+	m_bindings_settings = m_sif ? m_sif->GetStringList(m_section_name.c_str(), m_key_name.c_str()) :
+								  Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
+
+	m_bindings_ui.clear();
+	m_bindings_ui.reserve(m_bindings_settings.size());
+	for (int i = 0; i < m_bindings_settings.size(); i++)
+	{
+		SmallString binding{std::string_view{m_bindings_settings[i]}};
+		InputManager::PrettifyInputBinding(binding, false);
+		m_bindings_ui.push_back(std::string{binding});
+	}
+
 	updateText();
 }
 
 void InputBindingWidget::onClicked()
 {
-	if (m_bindings.size() > 1)
+	if (m_bindings_ui.size() > 1)
 	{
 		openDialog();
 		return;
@@ -376,6 +389,16 @@ void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float val
 	}
 }
 
+void InputBindingWidget::onInputDeviceConnected(const QString& identifier, const QString& device_name)
+{
+	reloadBinding();
+}
+
+void InputBindingWidget::onInputDeviceDisconnected(const QString& identifier)
+{
+	reloadBinding();
+}
+
 void InputBindingWidget::hookInputManager()
 {
 	InputManager::SetHook([this](InputBindingKey key, float value) {
@@ -391,7 +414,7 @@ void InputBindingWidget::unhookInputManager()
 
 void InputBindingWidget::openDialog()
 {
-	InputBindingDialog binding_dialog(m_sif, m_bind_type, m_section_name, m_key_name, m_bindings, QtUtils::GetRootWidget(this));
+	InputBindingDialog binding_dialog(m_sif, m_bind_type, m_section_name, m_key_name, m_bindings_settings, m_bindings_ui, QtUtils::GetRootWidget(this));
 	binding_dialog.exec();
 	reloadBinding();
 }
@@ -422,6 +445,12 @@ void InputVibrationBindingWidget::setKey(ControllerSettingsWindow* dialog, std::
 	m_section_name = std::move(section_name);
 	m_key_name = std::move(key_name);
 	m_binding = Host::GetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str());
+
+	SmallString binding{std::string_view{m_binding}};
+
+	if (InputManager::PrettifyInputBinding(binding, false))
+		m_binding = binding;
+
 	setText(QString::fromStdString(m_binding));
 }
 
@@ -440,12 +469,22 @@ void InputVibrationBindingWidget::onClicked()
 
 	const QString full_key(QStringLiteral("%1/%2").arg(QString::fromStdString(m_section_name)).arg(QString::fromStdString(m_key_name)));
 	const QString current(QString::fromStdString(m_binding));
-	QStringList input_options(m_dialog->getVibrationMotors());
-	if (!current.isEmpty() && input_options.indexOf(current) < 0)
+	QStringList input_setting_options(m_dialog->getVibrationMotors());
+	QStringList input_ui_options;
+	input_ui_options.reserve(input_setting_options.count());
+
+	for (QString motor : input_setting_options)
 	{
-		input_options.append(current);
+		SmallStringBase motor_ui(motor.toStdString());
+		InputManager::PrettifyInputBinding(motor_ui, false);
+		input_ui_options.push_back(QString(motor_ui));
 	}
-	else if (input_options.isEmpty())
+
+	if (!current.isEmpty() && input_ui_options.indexOf(current) < 0)
+	{
+		input_setting_options.append(current);
+	}
+	else if (input_setting_options.isEmpty())
 	{
 		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), tr("No devices with vibration motors were detected."));
 		return;
@@ -457,16 +496,25 @@ void InputVibrationBindingWidget::onClicked()
 	input_dialog.setInputMode(QInputDialog::TextInput);
 	input_dialog.setOptions(QInputDialog::UseListViewForComboBoxItems);
 	input_dialog.setComboBoxEditable(false);
-	input_dialog.setComboBoxItems(std::move(input_options));
+	input_dialog.setComboBoxItems(std::move(input_ui_options));
 	input_dialog.setTextValue(current);
 	if (input_dialog.exec() == 0)
 		return;
 
-	const QString new_value(input_dialog.textValue());
-	m_binding = new_value.toStdString();
-	Host::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_binding.c_str());
-	Host::CommitBaseSettingChanges();
-	setText(new_value);
+	// If a controller is unplugged, we won't have the setting string to save
+	// Skip saving if selected is an existing bind from an unplugged controller
+	const int selected = input_setting_options.indexOf(input_dialog.textValue());
+	if (selected >= 0)
+	{
+		// Update config
+		const std::string new_setting_value(input_setting_options[selected].toStdString());
+		Host::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), new_setting_value.c_str());
+		Host::CommitBaseSettingChanges();
+		// Update ui
+		const QString new_ui_value(input_dialog.textValue());
+		m_binding = new_ui_value.toStdString();
+		setText(new_ui_value);
+	}
 }
 
 void InputVibrationBindingWidget::mouseReleaseEvent(QMouseEvent* e)
