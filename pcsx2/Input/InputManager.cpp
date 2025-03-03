@@ -101,15 +101,15 @@ namespace InputManager
 	static std::shared_ptr<InputBinding> AddBinding(const std::string_view binding, const InputEventHandler& handler);
 	// Will also apply SDL2-SDL3 migrations and update the provided section & key
 	static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler,
-		InputBindingInfo::Type binding_type, SettingsInterface& si, const char* section, const char* key);
+		InputBindingInfo::Type binding_type, SettingsInterface& si, const char* section, const char* key, bool is_profile);
 	static bool ParseBindingAndGetSource(const std::string_view binding, InputBindingKey* key, InputSource** source);
 
 	static bool IsAxisHandler(const InputEventHandler& handler);
 	static float ApplySingleBindingScale(float sensitivity, float deadzone, float value);
 
-	static void AddHotkeyBindings(SettingsInterface& si);
-	static void AddPadBindings(SettingsInterface& si, u32 pad);
-	static void AddUSBBindings(SettingsInterface& si, u32 port);
+	static void AddHotkeyBindings(SettingsInterface& si, bool is_profile);
+	static void AddPadBindings(SettingsInterface& si, u32 pad, bool is_profile);
+	static void AddUSBBindings(SettingsInterface& si, u32 port, bool is_profile);
 	static void UpdateContinuedVibration();
 	static void GenerateRelativeMouseEvents();
 
@@ -581,7 +581,7 @@ std::shared_ptr<InputBinding> InputManager::AddBinding(const std::string_view bi
 }
 
 void InputManager::AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler,
-	InputBindingInfo::Type binding_type, SettingsInterface& si, const char* section, const char* key)
+	InputBindingInfo::Type binding_type, SettingsInterface& si, const char* section, const char* key, bool is_profile)
 {
 	std::vector<std::shared_ptr<InputBinding>> ibindings;
 
@@ -617,16 +617,25 @@ void InputManager::AddBindings(const std::vector<std::string>& bindings, const I
 				new_bindings.push_back(bindings[i]);
 		}
 
-		// Need to find where our binding came from
-		LayeredSettingsInterface& lsi = static_cast<LayeredSettingsInterface&>(si);
-		for (int i = 0; i < LayeredSettingsInterface::NUM_LAYERS; i++)
+		if (is_profile)
 		{
-			SettingsInterface* layer = lsi.GetLayer(static_cast<LayeredSettingsInterface::Layer>(i));
-			if (layer && layer->GetStringList(section, key) == bindings)
+			// INISettingsInterface, can just update directly
+			si.SetStringList(section, key, new_bindings);
+			si.Save();
+		} 
+		else
+		{
+			// LayeredSettingsInterface, Need to find which layer our binding came from
+			LayeredSettingsInterface& lsi = static_cast<LayeredSettingsInterface&>(si);
+			for (int i = 0; i < LayeredSettingsInterface::NUM_LAYERS; i++)
 			{
-				// Layer found, update settings
-				layer->SetStringList(section, key, new_bindings);
-				layer->Save();
+				SettingsInterface* layer = lsi.GetLayer(static_cast<LayeredSettingsInterface::Layer>(i));
+				if (layer && layer->GetStringList(section, key) == bindings)
+				{
+					// Layer found, update settings
+					layer->SetStringList(section, key, new_bindings);
+					layer->Save();
+				}
 			}
 		}
 	}
@@ -827,7 +836,7 @@ std::vector<const HotkeyInfo*> InputManager::GetHotkeyList()
 	return ret;
 }
 
-void InputManager::AddHotkeyBindings(SettingsInterface& si)
+void InputManager::AddHotkeyBindings(SettingsInterface& si, bool is_profile)
 {
 	for (const HotkeyInfo* hotkey_list : s_hotkey_list)
 	{
@@ -837,12 +846,12 @@ void InputManager::AddHotkeyBindings(SettingsInterface& si)
 			if (bindings.empty())
 				continue;
 
-			AddBindings(bindings, InputButtonEventHandler{hotkey->handler}, InputBindingInfo::Type::Button, si, "Hotkeys", hotkey->name);
+			AddBindings(bindings, InputButtonEventHandler{hotkey->handler}, InputBindingInfo::Type::Button, si, "Hotkeys", hotkey->name, is_profile);
 		}
 	}
 }
 
-void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index)
+void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, bool is_profile)
 {
 	const Pad::ControllerType type = EmuConfig.Pad.Ports[pad_index].Type;
 
@@ -880,7 +889,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index)
 						bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index, sensitivity, deadzone](InputBindingKey key, float value) {
 							Pad::SetControllerState(pad_index, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
 						}},
-						bi.bind_type, si, section.c_str(), bi.name);
+						bi.bind_type, si, section.c_str(), bi.name, is_profile);
 				}
 			}
 			break;
@@ -903,7 +912,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index)
 					const bool state = (value > deadzone);
 					Pad::SetMacroButtonState(key, pad_index, macro_button_index, state);
 				}},
-				InputBindingInfo::Type::Macro, si, section.c_str(), fmt::format("Macro{}", macro_button_index + 1).c_str());
+				InputBindingInfo::Type::Macro, si, section.c_str(), fmt::format("Macro{}", macro_button_index + 1).c_str(), is_profile);
 		}
 	}
 
@@ -940,7 +949,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index)
 	}
 }
 
-void InputManager::AddUSBBindings(SettingsInterface& si, u32 port)
+void InputManager::AddUSBBindings(SettingsInterface& si, u32 port, bool is_profile)
 {
 	const std::string device(USB::GetConfigDevice(si, port));
 	if (device.empty() || device == "None")
@@ -968,7 +977,7 @@ void InputManager::AddUSBBindings(SettingsInterface& si, u32 port)
 						bindings, InputAxisEventHandler{[port, bind_index = bi.bind_index, sensitivity, deadzone](InputBindingKey key, float value) {
 							USB::SetDeviceBindValue(port, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
 						}},
-						bi.bind_type, si, section.c_str(), bind_name.c_str());
+						bi.bind_type, si, section.c_str(), bind_name.c_str(), is_profile);
 				}
 			}
 			break;
@@ -1522,7 +1531,7 @@ bool InputManager::DoEventHook(InputBindingKey key, float value)
 // Binding Updater
 // ------------------------------------------------------------------------
 
-void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si, SettingsInterface& hotkey_binding_si)
+void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si, SettingsInterface& hotkey_binding_si, bool is_binding_profile, bool is_hotkey_profile)
 {
 	PauseVibration();
 
@@ -1534,12 +1543,12 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	s_pointer_move_callbacks.clear();
 
 	// Hotkeys use the base configuration, except if the custom hotkeys option is enabled.
-	AddHotkeyBindings(hotkey_binding_si);
+	AddHotkeyBindings(hotkey_binding_si, is_hotkey_profile);
 
 	// If there's an input profile, we load pad bindings from it alone, rather than
 	// falling back to the base configuration.
 	for (u32 pad = 0; pad < Pad::NUM_CONTROLLER_PORTS; pad++)
-		AddPadBindings(binding_si, pad);
+		AddPadBindings(binding_si, pad, is_binding_profile);
 
 	constexpr float ui_ctrl_range = 100.0f;
 	constexpr float pointer_sensitivity = 0.05f;
@@ -1555,7 +1564,7 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	s_pointer_pos = {};
 
 	for (u32 port = 0; port < USB::NUM_PORTS; port++)
-		AddUSBBindings(binding_si, port);
+		AddUSBBindings(binding_si, port, is_binding_profile);
 
 	UpdateHostMouseMode();
 }
