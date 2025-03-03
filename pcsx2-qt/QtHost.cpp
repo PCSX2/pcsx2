@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "AutoUpdaterDialog.h"
+#include "Debugger/DebuggerWindow.h"
 #include "DisplayWidget.h"
 #include "GameList/GameListWidget.h"
 #include "LogWindow.h"
@@ -1064,12 +1065,12 @@ void EmuThread::updatePerformanceMetrics(bool force)
 				Q_ARG(const QString&, tr("VPS: %1 ").arg(vfps, 0, 'f', 0)));
 			m_last_video_fps = vfps;
 
-		if (speed != m_last_speed || force)
-		{
-			QMetaObject::invokeMethod(g_main_window->getStatusSpeedWidget(), "setText", Qt::QueuedConnection,
-				Q_ARG(const QString&, tr("Speed: %1% ").arg(speed, 0, 'f', 0)));
-			m_last_speed = speed;
-		}
+			if (speed != m_last_speed || force)
+			{
+				QMetaObject::invokeMethod(g_main_window->getStatusSpeedWidget(), "setText", Qt::QueuedConnection,
+					Q_ARG(const QString&, tr("Speed: %1% ").arg(speed, 0, 'f', 0)));
+				m_last_speed = speed;
+			}
 		}
 	}
 }
@@ -1724,57 +1725,58 @@ void Host::SetMouseMode(bool relative_mode, bool hide_cursor)
 	emit g_emu_thread->onMouseModeRequested(relative_mode, hide_cursor);
 }
 
-namespace {
-class QtHostProgressCallback final : public BaseProgressCallback
+namespace
 {
-public:
-	QtHostProgressCallback();
-	~QtHostProgressCallback() override;
-
-	__fi const std::string& GetName() const { return m_name; }
-
-	void PushState() override;
-	void PopState() override;
-
-	bool IsCancelled() const override;
-
-	void SetCancellable(bool cancellable) override;
-	void SetTitle(const char* title) override;
-	void SetStatusText(const char* text) override;
-	void SetProgressRange(u32 range) override;
-	void SetProgressValue(u32 value) override;
-
-	void DisplayError(const char* message) override;
-	void DisplayWarning(const char* message) override;
-	void DisplayInformation(const char* message) override;
-	void DisplayDebugMessage(const char* message) override;
-
-	void ModalError(const char* message) override;
-	bool ModalConfirmation(const char* message) override;
-	void ModalInformation(const char* message) override;
-
-	void SetCancelled();
-
-private:
-	struct SharedData
+	class QtHostProgressCallback final : public BaseProgressCallback
 	{
-		QProgressDialog* dialog = nullptr;
-		QString init_title;
-		QString init_status_text;
-		std::atomic_bool cancelled{false};
-		bool cancellable = true;
-		bool was_fullscreen = false;
+	public:
+		QtHostProgressCallback();
+		~QtHostProgressCallback() override;
+
+		__fi const std::string& GetName() const { return m_name; }
+
+		void PushState() override;
+		void PopState() override;
+
+		bool IsCancelled() const override;
+
+		void SetCancellable(bool cancellable) override;
+		void SetTitle(const char* title) override;
+		void SetStatusText(const char* text) override;
+		void SetProgressRange(u32 range) override;
+		void SetProgressValue(u32 value) override;
+
+		void DisplayError(const char* message) override;
+		void DisplayWarning(const char* message) override;
+		void DisplayInformation(const char* message) override;
+		void DisplayDebugMessage(const char* message) override;
+
+		void ModalError(const char* message) override;
+		bool ModalConfirmation(const char* message) override;
+		void ModalInformation(const char* message) override;
+
+		void SetCancelled();
+
+	private:
+		struct SharedData
+		{
+			QProgressDialog* dialog = nullptr;
+			QString init_title;
+			QString init_status_text;
+			std::atomic_bool cancelled{false};
+			bool cancellable = true;
+			bool was_fullscreen = false;
+		};
+
+		void EnsureHasData();
+		static void EnsureDialogVisible(const std::shared_ptr<SharedData>& data);
+		void Redraw(bool force);
+
+		std::string m_name;
+		std::shared_ptr<SharedData> m_data;
+		int m_last_progress_percent = -1;
 	};
-
-	void EnsureHasData();
-	static void EnsureDialogVisible(const std::shared_ptr<SharedData>& data);
-	void Redraw(bool force);
-
-	std::string m_name;
-	std::shared_ptr<SharedData> m_data;
-	int m_last_progress_percent = -1;
-};
-}
+} // namespace
 
 QtHostProgressCallback::QtHostProgressCallback()
 	: BaseProgressCallback()
@@ -1829,7 +1831,7 @@ void QtHostProgressCallback::SetTitle(const char* title)
 void QtHostProgressCallback::SetStatusText(const char* text)
 {
 	BaseProgressCallback::SetStatusText(text);
-	
+
 	EnsureHasData();
 	QtHost::RunOnUIThread([data = m_data, text = QString::fromUtf8(text)]() {
 		if (data->dialog)
@@ -2384,9 +2386,9 @@ int main(int argc, char* argv[])
 	if (s_start_fullscreen_ui)
 		g_emu_thread->startFullscreenUI(s_start_fullscreen_ui_fullscreen);
 
-	if (s_boot_and_debug)
+	if (s_boot_and_debug || DebuggerWindow::shouldShowOnStartup())
 	{
-		DebugInterface::setPauseOnEntry(true);
+		DebugInterface::setPauseOnEntry(s_boot_and_debug);
 		g_main_window->openDebugger();
 	}
 

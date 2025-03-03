@@ -1071,29 +1071,6 @@ struct Pcsx2Config
 		static std::optional<SpeedHack> ParseSpeedHackName(const std::string_view name);
 	};
 
-	struct DebugOptions
-	{
-		BITFIELD32()
-		bool
-			ShowDebuggerOnStart : 1;
-		bool
-			AlignMemoryWindowStart : 1;
-		BITFIELD_END
-
-		u8 FontWidth;
-		u8 FontHeight;
-		u32 WindowWidth;
-		u32 WindowHeight;
-		u32 MemoryViewBytesPerRow;
-
-
-		DebugOptions();
-		void LoadSave(SettingsWrapper& wrap);
-
-		bool operator==(const DebugOptions& right) const;
-		bool operator!=(const DebugOptions& right) const;
-	};
-
 	// ------------------------------------------------------------------------
 	struct DebugAnalysisOptions
 	{
@@ -1304,7 +1281,6 @@ struct Pcsx2Config
 	SpeedhackOptions Speedhacks;
 	GamefixOptions Gamefixes;
 	ProfilerOptions Profiler;
-	DebugOptions Debugger;
 	DebugAnalysisOptions DebuggerAnalysis;
 	EmulationSpeedOptions EmulationSpeed;
 	SavestateOptions Savestate;
