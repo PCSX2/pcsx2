@@ -17,6 +17,10 @@
       "tag": "v2.2.1",
       "commit": "3aaccddc00a11a643e0959a24677838993de15ac",
       "disable-submodules": true
+    },
+    {
+      "type": "patch",
+      "path": "../../../common/kddockwidgets-dodgy-include.patch"
     }
   ],
   "cleanup": [

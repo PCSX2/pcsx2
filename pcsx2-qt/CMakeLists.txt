@@ -86,6 +86,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/DebugAnalysisSettingsWidget.cpp
 	Settings/DebugAnalysisSettingsWidget.h
 	Settings/DebugAnalysisSettingsWidget.ui
+	Settings/DebugUserInterfaceSettingsWidget.cpp
+	Settings/DebugUserInterfaceSettingsWidget.h
+	Settings/DebugUserInterfaceSettingsWidget.ui
 	Settings/DebugSettingsWidget.cpp
 	Settings/DebugSettingsWidget.h
 	Settings/DebugSettingsWidget.ui
@@ -199,6 +202,8 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/Docking/DockUtils.h
 	Debugger/Docking/DockViews.cpp
 	Debugger/Docking/DockViews.h
+	Debugger/Docking/DropIndicators.cpp
+	Debugger/Docking/DropIndicators.h
 	Debugger/Docking/LayoutEditorDialog.cpp
 	Debugger/Docking/LayoutEditorDialog.h
 	Debugger/Docking/LayoutEditorDialog.ui

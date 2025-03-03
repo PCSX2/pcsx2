@@ -3,16 +3,20 @@
 
 #include "DockViews.h"
 
+#include "QtUtils.h"
 #include "Debugger/DebuggerWidget.h"
 #include "Debugger/DebuggerWindow.h"
 #include "Debugger/Docking/DockManager.h"
+#include "Debugger/Docking/DropIndicators.h"
 
 #include "DebugTools/DebugInterface.h"
 
+#include <kddockwidgets/Config.h>
 #include <kddockwidgets/core/TabBar.h>
 #include <kddockwidgets/qtwidgets/views/DockWidget.h>
 
 #include <QtGui/QActionGroup>
+#include <QtGui/QPalette>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QMenu>
@@ -47,6 +51,27 @@ KDDockWidgets::Core::View* DockViewFactory::createTabBar(
 	return new DockTabBar(tabBar, KDDockWidgets::QtCommon::View_qt::asQWidget(parent));
 }
 
+KDDockWidgets::Core::ClassicIndicatorWindowViewInterface* DockViewFactory::createClassicIndicatorWindow(
+	KDDockWidgets::Core::ClassicDropIndicatorOverlay* classic_indicators,
+	KDDockWidgets::Core::View* parent) const
+{
+	return new DockDropIndicatorProxy(classic_indicators);
+}
+
+KDDockWidgets::Core::ClassicIndicatorWindowViewInterface* DockViewFactory::createFallbackClassicIndicatorWindow(
+	KDDockWidgets::Core::ClassicDropIndicatorOverlay* classic_indicators,
+	KDDockWidgets::Core::View* parent) const
+{
+	return KDDockWidgets::QtWidgets::ViewFactory::createClassicIndicatorWindow(classic_indicators, parent);
+}
+
+KDDockWidgets::Core::View* DockViewFactory::createSegmentedDropIndicatorOverlayView(
+	KDDockWidgets::Core::SegmentedDropIndicatorOverlay* controller,
+	KDDockWidgets::Core::View* parent) const
+{
+	return new DockSegmentedDropIndicatorOverlay(controller, KDDockWidgets::QtCommon::View_qt::asQWidget(parent));
+}
+
 // *****************************************************************************
 
 DockWidget::DockWidget(
@@ -77,12 +102,12 @@ DockTitleBar::DockTitleBar(KDDockWidgets::Core::TitleBar* controller, KDDockWidg
 {
 }
 
-void DockTitleBar::mouseDoubleClickEvent(QMouseEvent* ev)
+void DockTitleBar::mouseDoubleClickEvent(QMouseEvent* event)
 {
 	if (g_debugger_window && !g_debugger_window->dockManager().isLayoutLocked())
-		KDDockWidgets::QtWidgets::TitleBar::mouseDoubleClickEvent(ev);
+		KDDockWidgets::QtWidgets::TitleBar::mouseDoubleClickEvent(event);
 	else
-		ev->ignore();
+		event->ignore();
 }
 
 // *****************************************************************************
@@ -269,10 +294,10 @@ DockTabBar::WidgetsFromTabIndexResult DockTabBar::widgetsFromTabIndex(int tab_in
 	return {widget, dock_controller, dock_view};
 }
 
-void DockTabBar::mouseDoubleClickEvent(QMouseEvent* ev)
+void DockTabBar::mouseDoubleClickEvent(QMouseEvent* event)
 {
 	if (g_debugger_window && !g_debugger_window->dockManager().isLayoutLocked())
-		KDDockWidgets::QtWidgets::TabBar::mouseDoubleClickEvent(ev);
+		KDDockWidgets::QtWidgets::TabBar::mouseDoubleClickEvent(event);
 	else
-		ev->ignore();
+		event->ignore();
 }
