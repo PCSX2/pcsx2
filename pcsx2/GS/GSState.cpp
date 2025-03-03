@@ -1683,7 +1683,96 @@ void GSState::FlushPrim()
 		// Sometimes hardware doesn't get affected, likely due to the difference in how GPU's handle textures (Persona minimap).
 		if (PRIM->TME && (GSUtil::GetPrimClass(PRIM->PRIM) == GS_PRIM_CLASS::GS_SPRITE_CLASS || m_vt.m_eq.z))
 		{
-			if (!PRIM->FST) // STQ's
+			if (PRIM->FST && GSConfig.PreRoundSprites) // UV's
+			{
+				// UV's on sprites only alter the final UV, I believe the problem is we're drawing too much (drawing stops earlier than we do)
+				// But this fixes Beyond Good adn Evil water and Dark Cloud 2's UI
+				if (GSUtil::GetPrimClass(PRIM->PRIM) == GS_PRIM_CLASS::GS_SPRITE_CLASS)
+				{
+					for (u32 i = 0; i < m_index.tail; i += 2)
+					{
+						GSVertex* v1 = &m_vertex.buff[m_index.buff[i]];
+						GSVertex* v2 = &m_vertex.buff[m_index.buff[i + 1]];
+
+						GSVertex* vu1;
+						GSVertex* vu2;
+						GSVertex* vv1;
+						GSVertex* vv2;
+						if (v1->U > v2->U)
+						{
+							vu2 = v1;
+							vu1 = v2;
+						}
+						else
+						{
+							vu2 = v2;
+							vu1 = v1;
+						}
+
+						if (v1->V > v2->V)
+						{
+							vv2 = v1;
+							vv1 = v2;
+						}
+						else
+						{
+							vv2 = v2;
+							vv1 = v1;
+						}
+
+						GSVector2 pos_range(vu2->XYZ.X - vu1->XYZ.X, vv2->XYZ.Y - vv1->XYZ.Y);
+						const GSVector2 uv_range(vu2->U - vu1->U, vv2->V - vv1->V);
+						if (pos_range.x == 0)
+							pos_range.x = 1;
+						if (pos_range.y == 0)
+							pos_range.y = 1;
+						const GSVector2 grad(uv_range / pos_range);
+						bool isclamp_w = m_context->CLAMP.WMS > 0 && m_context->CLAMP.WMS < 3;
+						bool isclamp_h = m_context->CLAMP.WMT > 0 && m_context->CLAMP.WMT < 3;
+						int max_w = (m_context->CLAMP.WMS == 2) ? m_context->CLAMP.MAXU : ((1 << m_context->TEX0.TW) - 1);
+						int max_h = (m_context->CLAMP.WMT == 2) ? m_context->CLAMP.MAXV : ((1 << m_context->TEX0.TH) - 1);
+						int width = vu2->U >> 4;
+						int height = vv2->V >> 4;
+
+						if (m_context->CLAMP.WMS == 3)
+							width = (width & m_context->CLAMP.MINU) | m_context->CLAMP.MAXU;
+
+						if (m_context->CLAMP.WMT == 3)
+							height = (height & m_context->CLAMP.MINV) | m_context->CLAMP.MAXV;
+
+						if ((isclamp_w && width <= max_w && grad.x != 1.0f) || !isclamp_w)
+						{
+							if (vu2->U >= 0x1 && (!(vu2->U & 0xf) || grad.x <= 1.0f))
+							{
+								vu2->U = (vu2->U - 1);
+								/*if (!isclamp_w && ((vu2->XYZ.X - m_context->XYOFFSET.OFX) >> 4) < m_context->scissor.in.z)
+									vu2->XYZ.X -= 1;*/
+							}
+						}
+						else
+							vu2->U &= ~0xf;
+
+						// Dark Cloud 2 tries to address wider than the TBW when in CLAMP mode (maybe some weird behaviour in HW?)
+						if ((vu2->U >> 4) > (int)(m_context->TEX0.TBW * 64) && isclamp_w && (vu2->U >> 4) - 8 <= (int)(m_context->TEX0.TBW * 64))
+						{
+							vu2->U = (m_context->TEX0.TBW * 64) << 4;
+						}
+
+						if ((isclamp_h && height <= max_h && grad.y != 1.0f) || !isclamp_h)
+						{
+							if (vv2->V >= 0x1 && (!(vv2->V & 0xf) || grad.y <= 1.0f))
+							{
+								vv2->V = (vv2->V - 1);
+								/*if (!isclamp_h && ((vv2->XYZ.Y - m_context->XYOFFSET.OFY) >> 4) < m_context->scissor.in.w)
+									vv2->XYZ.Y -= 1;*/
+							}
+						}
+						else
+							vv2->V &= ~0xf;
+					}
+				}
+			}
+			else if (!PRIM->FST) // STQ's
 			{
 				const bool is_sprite = GSUtil::GetPrimClass(PRIM->PRIM) == GS_PRIM_CLASS::GS_SPRITE_CLASS;
 				// ST's have the lowest 9 bits (or greater depending on exponent difference) rounding down (from hardware tests).
@@ -1736,7 +1825,6 @@ void GSState::FlushPrim()
 		if (unused > 0)
 		{
 			memcpy(m_vertex.buff, buff, sizeof(GSVertex) * unused);
-
 			m_vertex.tail = unused;
 			m_vertex.next = next > head ? next - head : 0;
 
@@ -3486,7 +3574,6 @@ __forceinline void GSState::VertexKick(u32 skip)
 	const GSVector4i new_v1(m_v.m[1]);
 
 	GSVector4i* RESTRICT tailptr = (GSVector4i*)&m_vertex.buff[tail];
-
 	tailptr[0] = new_v0;
 	tailptr[1] = new_v1;
 
