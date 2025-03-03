@@ -1532,45 +1532,6 @@ void Pcsx2Config::GamefixOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(FullVU0SyncHack);
 }
 
-Pcsx2Config::DebugOptions::DebugOptions()
-{
-	ShowDebuggerOnStart = false;
-	AlignMemoryWindowStart = true;
-	FontWidth = 8;
-	FontHeight = 12;
-	WindowWidth = 0;
-	WindowHeight = 0;
-	MemoryViewBytesPerRow = 16;
-}
-
-void Pcsx2Config::DebugOptions::LoadSave(SettingsWrapper& wrap)
-{
-	SettingsWrapSection("EmuCore/Debugger");
-
-	SettingsWrapBitBool(ShowDebuggerOnStart);
-	SettingsWrapBitBool(AlignMemoryWindowStart);
-	SettingsWrapBitfield(FontWidth);
-	SettingsWrapBitfield(FontHeight);
-	SettingsWrapBitfield(WindowWidth);
-	SettingsWrapBitfield(WindowHeight);
-	SettingsWrapBitfield(MemoryViewBytesPerRow);
-}
-
-bool Pcsx2Config::DebugOptions::operator!=(const DebugOptions& right) const
-{
-	return !this->operator==(right);
-}
-
-bool Pcsx2Config::DebugOptions::operator==(const DebugOptions& right) const
-{
-	return OpEqu(bitset) &&
-		   OpEqu(FontWidth) &&
-		   OpEqu(FontHeight) &&
-		   OpEqu(WindowWidth) &&
-		   OpEqu(WindowHeight) &&
-		   OpEqu(MemoryViewBytesPerRow);
-}
-
 const char* Pcsx2Config::DebugAnalysisOptions::RunConditionNames[] = {
 	"Always",
 	"If Debugger Is Open",
@@ -1980,7 +1941,6 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	Profiler.LoadSave(wrap);
 	Savestate.LoadSave(wrap);
 
-	Debugger.LoadSave(wrap);
 	DebuggerAnalysis.LoadSave(wrap);
 	Trace.LoadSave(wrap);
 
@@ -2208,16 +2168,16 @@ bool EmuFolders::SetDataDirectory(Error* error)
 	if (DataRoot.empty())
 	{
 #if defined(__linux__)
-	// special check if we're on appimage
-	// always make sure that DataRoot
-	// is adjacent next to the appimage
-	if (getenv("APPIMAGE"))
-	{
-		std::string_view appimage_path = Path::GetDirectory(getenv("APPIMAGE"));
-		DataRoot = Path::RealPath(Path::Combine(appimage_path, "PCSX2"));
-	}
-	else
-		DataRoot = Path::Combine(AppRoot, GetPortableModePath());
+		// special check if we're on appimage
+		// always make sure that DataRoot
+		// is adjacent next to the appimage
+		if (getenv("APPIMAGE"))
+		{
+			std::string_view appimage_path = Path::GetDirectory(getenv("APPIMAGE"));
+			DataRoot = Path::RealPath(Path::Combine(appimage_path, "PCSX2"));
+		}
+		else
+			DataRoot = Path::Combine(AppRoot, GetPortableModePath());
 #else
 		DataRoot = Path::Combine(AppRoot, GetPortableModePath());
 #endif

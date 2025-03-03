@@ -146,6 +146,11 @@ void DebuggerWindow::destroyInstance()
 		g_debugger_window->close();
 }
 
+bool DebuggerWindow::shouldShowOnStartup()
+{
+	return Host::GetBaseBoolSettingValue("Debugger/UserInterface", "ShowOnStartup", false);
+}
+
 DockManager& DebuggerWindow::dockManager()
 {
 	return *m_dock_manager;
@@ -249,7 +254,11 @@ void DebuggerWindow::updateStyleSheets()
 void DebuggerWindow::saveWindowGeometry()
 {
 	std::string old_geometry = Host::GetBaseStringSettingValue("Debugger/UserInterface", "WindowGeometry");
-	std::string geometry = saveGeometry().toBase64().toStdString();
+
+	std::string geometry;
+	if (shouldSaveWindowGeometry())
+		geometry = saveGeometry().toBase64().toStdString();
+
 	if (geometry != old_geometry)
 	{
 		Host::SetBaseStringSettingValue("Debugger/UserInterface", "WindowGeometry", geometry.c_str());
@@ -259,8 +268,16 @@ void DebuggerWindow::saveWindowGeometry()
 
 void DebuggerWindow::restoreWindowGeometry()
 {
+	if (!shouldSaveWindowGeometry())
+		return;
+
 	std::string geometry = Host::GetBaseStringSettingValue("Debugger/UserInterface", "WindowGeometry");
 	restoreGeometry(QByteArray::fromBase64(QByteArray::fromStdString(geometry)));
+}
+
+bool DebuggerWindow::shouldSaveWindowGeometry()
+{
+	return Host::GetBaseBoolSettingValue("Debugger/UserInterface", "SaveWindowGeometry", true);
 }
 
 void DebuggerWindow::onVMStateChanged()

@@ -260,7 +260,13 @@
     <ClCompile Include="Settings\DebugAnalysisSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
+    <ClCompile Include="Settings\DebugUserInterfaceSettingsWidget.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
     <ClCompile Include="$(IntDir)Settings\moc_DebugAnalysisSettingsWidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Settings\moc_DebugUserInterfaceSettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="Settings\DebugSettingsWidget.cpp">
@@ -318,6 +324,9 @@
       <Filter>Debugger\Docking</Filter>
     </ClCompile>
     <ClCompile Include="Debugger\Docking\DockViews.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DropIndicators.cpp">
       <Filter>Debugger\Docking</Filter>
     </ClCompile>
     <ClCompile Include="Debugger\Docking\LayoutEditorDialog.cpp">
@@ -378,6 +387,9 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockViews.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DropIndicators.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\Docking\moc_LayoutEditorDialog.cpp">
@@ -592,6 +604,9 @@
     <QtMoc Include="Settings\DebugAnalysisSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
+    <QtMoc Include="Settings\DebugUserInterfaceSettingsWidget.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
     <QtMoc Include="Settings\DebugSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
@@ -647,6 +662,9 @@
       <Filter>Debugger\Docking</Filter>
     </QtMoc>
     <QtMoc Include="Debugger\Docking\DockViews.h">
+      <Filter>Debugger\Docking</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Docking\DropIndicators.h">
       <Filter>Debugger\Docking</Filter>
     </QtMoc>
     <QtMoc Include="Debugger\Docking\LayoutEditorDialog.h">
@@ -777,6 +795,9 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\DebugAnalysisSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\DebugUserInterfaceSettingsWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\DebugSettingsWidget.ui">
