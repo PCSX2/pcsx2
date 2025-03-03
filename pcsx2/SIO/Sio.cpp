@@ -156,7 +156,6 @@ void MemcardBusy::ClearBusy()
 	sioLastFrameMcdBusy = 0;
 }
 
-#include "common/Console.h"
 void MemcardBusy::CheckSaveStateDependency()
 {
 	if (g_FrameCount - sioLastFrameMcdBusy > NUM_FRAMES_BEFORE_SAVESTATE_DEPENDENCY_WARNING)
