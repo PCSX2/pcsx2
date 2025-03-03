@@ -7,6 +7,7 @@
 #include "Debugger/DebuggerWindow.h"
 #include "Debugger/Docking/DockTables.h"
 #include "Debugger/Docking/DockViews.h"
+#include "Debugger/Docking/DropIndicators.h"
 #include "Debugger/Docking/LayoutEditorDialog.h"
 #include "Debugger/Docking/NoLayoutsWidget.h"
 
@@ -18,6 +19,7 @@
 #include <kddockwidgets/Config.h>
 #include <kddockwidgets/core/Group.h>
 #include <kddockwidgets/core/Stack.h>
+#include <kddockwidgets/core/indicators/SegmentedDropIndicatorOverlay.h>
 #include <kddockwidgets/qtwidgets/Stack.h>
 
 #include <QtCore/QTimer>
@@ -38,22 +40,42 @@ DockManager::DockManager(QObject* parent)
 
 void DockManager::configureDockingSystem()
 {
+	std::string indicator_style = Host::GetBaseStringSettingValue(
+		"Debugger/UserInterface", "DropIndicatorStyle", "Classic");
+
+	if (indicator_style == "Segmented" || indicator_style == "Minimalistic")
+	{
+		KDDockWidgets::Core::ViewFactory::s_dropIndicatorType = KDDockWidgets::DropIndicatorType::Segmented;
+		DockSegmentedDropIndicatorOverlay::s_indicator_style = indicator_style;
+	}
+	else
+	{
+		KDDockWidgets::Core::ViewFactory::s_dropIndicatorType = KDDockWidgets::DropIndicatorType::Classic;
+	}
+
 	static bool done = false;
 	if (done)
 		return;
 
 	KDDockWidgets::initFrontend(KDDockWidgets::FrontendType::QtWidgets);
 
-	KDDockWidgets::Config::self().setFlags(
+	KDDockWidgets::Config& config = KDDockWidgets::Config::self();
+
+	config.setFlags(
 		KDDockWidgets::Config::Flag_HideTitleBarWhenTabsVisible |
 		KDDockWidgets::Config::Flag_AlwaysShowTabs |
 		KDDockWidgets::Config::Flag_AllowReorderTabs |
 		KDDockWidgets::Config::Flag_TitleBarIsFocusable);
 
-	KDDockWidgets::Config::self().setDockWidgetFactoryFunc(&DockManager::dockWidgetFactory);
-	KDDockWidgets::Config::self().setViewFactory(new DockViewFactory());
-	KDDockWidgets::Config::self().setDragAboutToStartFunc(&DockManager::dragAboutToStart);
-	KDDockWidgets::Config::self().setStartDragDistance(std::max(QApplication::startDragDistance(), 32));
+	// We set this flag regardless of whether or not the windowing system
+	// supports compositing since it's only used by the built-in docking
+	// indicator, and we only fall back to that if compositing is disabled.
+	config.setInternalFlags(KDDockWidgets::Config::InternalFlag_DisableTranslucency);
+
+	config.setDockWidgetFactoryFunc(&DockManager::dockWidgetFactory);
+	config.setViewFactory(new DockViewFactory());
+	config.setDragAboutToStartFunc(&DockManager::dragAboutToStart);
+	config.setStartDragDistance(std::max(QApplication::startDragDistance(), 32));
 
 	done = true;
 }

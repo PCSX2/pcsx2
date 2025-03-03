@@ -247,6 +247,7 @@ echo "Building KDDockWidgets..."
 rmdir /S /Q "KDDockWidgets-%KDDOCKWIDGETS%"
 %SEVENZIP% x "KDDockWidgets-%KDDOCKWIDGETS%.zip" || goto error
 cd "KDDockWidgets-%KDDOCKWIDGETS%" || goto error
+%PATCH% -p1 < "%SCRIPTDIR%\..\common\kddockwidgets-dodgy-include.patch" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DKDDockWidgets_QT6=true -DKDDockWidgets_EXAMPLES=false -DKDDockWidgets_FRONTENDS=qtwidgets -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error

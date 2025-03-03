@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>527</width>
+    <width>647</width>
     <height>501</height>
    </rect>
   </property>
@@ -31,6 +31,11 @@
      <property name="documentMode">
       <bool>true</bool>
      </property>
+     <widget class="QWidget" name="userInterfaceTabWidget">
+      <attribute name="title">
+       <string>User Interface</string>
+      </attribute>
+     </widget>
      <widget class="QWidget" name="analysisTabWidget">
       <attribute name="title">
        <string>Analysis</string>
@@ -58,8 +63,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>523</width>
-            <height>464</height>
+            <width>645</width>
+            <height>469</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -196,18 +201,18 @@
              </widget>
             </item>
             <item row="3" column="0">
-              <widget class="QCheckBox" name="saveAlpha">
-                <property name="text">
-                 <string>Save Alpha</string>
-                </property>
-              </widget>
+             <widget class="QCheckBox" name="saveAlpha">
+              <property name="text">
+               <string>Save Alpha</string>
+              </property>
+             </widget>
             </item>
             <item row="3" column="1">
-              <widget class="QCheckBox" name="saveInfo">
-                <property name="text">
-                 <string>Save Info</string>
-                </property>
-              </widget>
+             <widget class="QCheckBox" name="saveInfo">
+              <property name="text">
+               <string>Save Info</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

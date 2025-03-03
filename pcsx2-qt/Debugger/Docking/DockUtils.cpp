@@ -3,6 +3,7 @@
 
 #include "DockUtils.h"
 
+#include <kddockwidgets/Config.h>
 #include <kddockwidgets/core/DockRegistry.h>
 #include <kddockwidgets/core/Group.h>
 #include <kddockwidgets/qtwidgets/DockWidget.h>

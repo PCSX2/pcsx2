@@ -5,6 +5,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFileInfo>
+#include <QtCore/QtGlobal>
 #include <QtCore/QMetaObject>
 #include <QtGui/QAction>
 #include <QtGui/QGuiApplication>
@@ -24,6 +25,10 @@
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QTreeView>
+
+#ifdef Q_OS_LINUX
+#include <QtGui/private/qtx11extras_p.h>
+#endif
 
 #include <algorithm>
 #include <array>
@@ -350,5 +355,23 @@ namespace QtUtils
 			csv += "\n";
 		}
 		return csv;
+	}
+
+	bool IsLightTheme(const QPalette& palette)
+	{
+		return palette.text().color().lightnessF() < 0.5;
+	}
+
+	bool IsCompositorManagerRunning()
+	{
+		if (qEnvironmentVariableIsSet("PCSX2_NO_COMPOSITING"))
+			return false;
+
+#ifdef Q_OS_LINUX
+		if (QX11Info::isPlatformX11() && !QX11Info::isCompositingManagerRunning())
+			return false;
+#endif
+
+		return true;
 	}
 } // namespace QtUtils

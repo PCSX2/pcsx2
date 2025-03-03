@@ -331,6 +331,7 @@ echo "Building KDDockWidgets..."
 rm -fr "KDDockWidgets-$KDDOCKWIDGETS"
 tar xf "KDDockWidgets-$KDDOCKWIDGETS.tar.gz"
 cd "KDDockWidgets-$KDDOCKWIDGETS"
+patch -p1 < "$SCRIPTDIR/../common/kddockwidgets-dodgy-include.patch"
 cmake "${CMAKE_COMMON[@]}" -DKDDockWidgets_QT6=true -DKDDockWidgets_EXAMPLES=false -DKDDockWidgets_FRONTENDS=qtwidgets -B build
 cmake --build build --parallel
 cmake --install build

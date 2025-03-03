@@ -240,6 +240,7 @@ echo "Building KDDockWidgets..."
 rm -fr "KDDockWidgets-$KDDOCKWIDGETS"
 tar xf "KDDockWidgets-$KDDOCKWIDGETS.tar.gz"
 cd "KDDockWidgets-$KDDOCKWIDGETS"
+patch -p1 < "$SCRIPTDIR/../common/kddockwidgets-dodgy-include.patch"
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DKDDockWidgets_QT6=true -DKDDockWidgets_EXAMPLES=false -DKDDockWidgets_FRONTENDS=qtwidgets -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
