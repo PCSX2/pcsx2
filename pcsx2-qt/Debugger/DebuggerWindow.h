@@ -21,6 +21,7 @@ public:
 	static DebuggerWindow* getInstance();
 	static DebuggerWindow* createInstance();
 	static void destroyInstance();
+	static bool shouldShowOnStartup();
 
 	DockManager& dockManager();
 
@@ -34,6 +35,7 @@ public:
 
 	void saveWindowGeometry();
 	void restoreWindowGeometry();
+	bool shouldSaveWindowGeometry();
 
 public slots:
 	void onVMStarting();

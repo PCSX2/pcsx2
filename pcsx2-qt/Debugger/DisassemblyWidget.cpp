@@ -831,16 +831,8 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 
 QColor DisassemblyWidget::GetAddressFunctionColor(u32 address)
 {
-	// This is an attempt to figure out if the current palette is dark or light
-	// We calculate the luminance of the alternateBase colour
-	// and swap between our darker and lighter function colours
-
 	std::array<QColor, 6> colors;
-	const QColor base = this->palette().alternateBase().color();
-
-	const auto Y = (base.redF() * 0.33) + (0.5 * base.greenF()) + (0.16 * base.blueF());
-
-	if (Y > 0.5)
+	if (QtUtils::IsLightTheme(palette()))
 	{
 		colors = {
 			QColor::fromRgba(0xFFFA3434),

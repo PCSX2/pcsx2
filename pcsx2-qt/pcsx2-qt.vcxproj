@@ -101,6 +101,7 @@
     <ClCompile Include="LogWindow.cpp" />
     <ClCompile Include="QtProgressCallback.cpp" />
     <ClCompile Include="Settings\DebugAnalysisSettingsWidget.cpp" />
+    <ClCompile Include="Settings\DebugUserInterfaceSettingsWidget.cpp" />
     <ClCompile Include="Settings\DebugSettingsWidget.cpp" />
     <ClCompile Include="Settings\FolderSettingsWidget.cpp" />
     <ClCompile Include="Settings\GameCheatSettingsWidget.cpp" />
@@ -128,6 +129,7 @@
     <ClCompile Include="Debugger\Docking\DockTables.cpp" />
     <ClCompile Include="Debugger\Docking\DockUtils.cpp" />
     <ClCompile Include="Debugger\Docking\DockViews.cpp" />
+    <ClCompile Include="Debugger\Docking\DropIndicators.cpp" />
     <ClCompile Include="Debugger\Docking\LayoutEditorDialog.cpp" />
     <ClCompile Include="Debugger\Docking\NoLayoutsWidget.cpp" />
     <ClCompile Include="Debugger\Memory\MemorySearchWidget.cpp" />
@@ -209,6 +211,7 @@
     <ClInclude Include="Settings\ControllerSettingWidgetBinder.h" />
     <QtMoc Include="Settings\FolderSettingsWidget.h" />
     <QtMoc Include="Settings\DebugAnalysisSettingsWidget.h" />
+    <QtMoc Include="Settings\DebugUserInterfaceSettingsWidget.h" />
     <QtMoc Include="Settings\DebugSettingsWidget.h" />
     <QtMoc Include="Settings\GameCheatSettingsWidget.h" />
     <QtMoc Include="Settings\GamePatchSettingsWidget.h" />
@@ -242,6 +245,7 @@
     <QtMoc Include="Debugger\Docking\DockTables.h" />
     <QtMoc Include="Debugger\Docking\DockUtils.h" />
     <QtMoc Include="Debugger\Docking\DockViews.h" />
+    <QtMoc Include="Debugger\Docking\DropIndicators.h" />
     <QtMoc Include="Debugger\Docking\LayoutEditorDialog.h" />
     <QtMoc Include="Debugger\Docking\NoLayoutsWidget.h" />
     <QtMoc Include="Debugger\Memory\MemorySearchWidget.h" />
@@ -294,6 +298,7 @@
     <ClCompile Include="$(IntDir)Settings\moc_AchievementLoginDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_AchievementSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_DebugAnalysisSettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_DebugUserInterfaceSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_DebugSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_AnalysisOptionsDialog.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWidget.cpp" />
@@ -309,6 +314,7 @@
     <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockManager.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockViews.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DropIndicators.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Docking\moc_LayoutEditorDialog.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Docking\moc_NoLayoutsWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Memory\moc_MemorySearchWidget.cpp" />
@@ -474,6 +480,9 @@
       <FileType>Document</FileType>
     </QtTs>
     <QtUi Include="Settings\DebugAnalysisSettingsWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\DebugUserInterfaceSettingsWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\DebugSettingsWidget.ui">
