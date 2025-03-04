@@ -169,6 +169,12 @@ void Host::SetDefaultUISettings(SettingsInterface& si)
 	// nothing
 }
 
+bool Host::LocaleCircleConfirm()
+{
+	// not running any UI, so no settings requests will come in
+	return false;
+}
+
 std::unique_ptr<ProgressCallback> Host::CreateHostProgressCallback()
 {
 	return ProgressCallback::CreateNullProgressCallback();
