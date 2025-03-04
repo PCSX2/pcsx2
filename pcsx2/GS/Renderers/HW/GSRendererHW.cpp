@@ -2639,18 +2639,18 @@ void GSRendererHW::Draw()
 
 		// Try to fix large single-page-wide draws.
 		bool height_invalid = m_r.w >= 1024;
+		const GSVector2i& pgs = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs;
 		if (height_invalid && m_cached_ctx.FRAME.FBW <= 1 &&
 			TryToResolveSinglePageFramebuffer(m_cached_ctx.FRAME, true))
 		{
-			const GSVector2i& pgs = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs;
 			ReplaceVerticesWithSprite(
 				GetDrawRectForPages(m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, (m_r.w + (pgs.y - 1)) / pgs.y),
 				GSVector2i(1, 1));
 			height_invalid = false;
 		}
-
-		const bool is_zero_color_clear = (GetConstantDirectWriteMemClearColor() == 0 && !preserve_rt_color);
-		const bool is_zero_depth_clear = (GetConstantDirectWriteMemClearDepth() == 0 && !preserve_depth);
+		const bool page_aligned = (m_r.w % pgs.y) <= 1;
+		const bool is_zero_color_clear = (GetConstantDirectWriteMemClearColor() == 0 && !preserve_rt_color && page_aligned);
+		const bool is_zero_depth_clear = (GetConstantDirectWriteMemClearDepth() == 0 && !preserve_depth && page_aligned);
 
 		// If it's an invalid-sized draw, do the mem clear on the CPU, we don't want to create huge targets.
 		// If clearing to zero, don't bother creating the target. Games tend to clear more than they use, wasting VRAM/bandwidth.
@@ -3262,34 +3262,6 @@ void GSRendererHW::Draw()
 
 			if (vertical_offset || horizontal_offset)
 			{
-				// Z isn't offset but RT is, so we need a temp Z to align it, hopefully nothing will ever write to the Z too, right??
-				if (ds && vertical_offset && (m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) != (m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0))
-				{
-					const int z_vertical_offset = ((static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) / 32) / std::max(rt->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y;
-					if (g_texture_cache->GetTemporaryZ() != nullptr)
-					{
-						GSTextureCache::TempZAddress z_address_info = g_texture_cache->GetTemporaryZInfo();
-
-						if (ds->m_TEX0.TBP0 != z_address_info.ZBP || z_address_info.offset != (vertical_offset - z_vertical_offset))
-							g_texture_cache->InvalidateTemporaryZ();
-					}
-
-					if (g_texture_cache->GetTemporaryZ() == nullptr)
-					{
-						m_temp_z_full_copy = false;
-						u32 vertical_size = std::max(rt->m_unscaled_size.y, ds->m_unscaled_size.y);
-						GL_CACHE("RT in RT Z copy on draw %d z_vert_offset %d z_offset %d", s_n, z_vertical_offset, vertical_offset);
-						GSVector4i dRect = GSVector4i(0, vertical_offset * ds->m_scale, ds->m_unscaled_size.x * ds->m_scale, (vertical_offset + ds->m_unscaled_size.y - z_vertical_offset) * ds->m_scale);
-						const int new_height = std::max(static_cast<int>(vertical_size * ds->m_scale), dRect.w);
-						GSTexture* tex = g_gs_device->CreateDepthStencil(ds->m_unscaled_size.x * ds->m_scale, new_height, GSTexture::Format::DepthStencil, true);
-						g_gs_device->StretchRect(ds->m_texture, GSVector4(0.0f, z_vertical_offset / static_cast<float>(ds->m_unscaled_size.y), 1.0f, (ds->m_unscaled_size.y - z_vertical_offset) / static_cast<float>(ds->m_unscaled_size.y)), tex, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
-						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
-						g_texture_cache->SetTemporaryZ(tex);
-						g_texture_cache->SetTemporaryZInfo(ds->m_TEX0.TBP0, vertical_offset - z_vertical_offset);
-					}
-					m_using_temp_z = true;
-				}
-
 				GSVertex* v = &m_vertex.buff[0];
 
 				for (u32 i = 0; i < m_vertex.tail; i++)
@@ -3332,6 +3304,36 @@ void GSRendererHW::Draw()
 
 				t_size.x = rt->m_unscaled_size.x - horizontal_offset;
 				t_size.y = rt->m_unscaled_size.y - vertical_offset;
+
+				// Z isn't offset but RT is, so we need a temp Z to align it, hopefully nothing will ever write to the Z too, right??
+				if (ds && vertical_offset && (m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) != (m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0))
+				{
+					const int z_vertical_offset = ((static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) / 32) / std::max(rt->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y;
+					if (g_texture_cache->GetTemporaryZ() != nullptr)
+					{
+						GSTextureCache::TempZAddress z_address_info = g_texture_cache->GetTemporaryZInfo();
+
+						if (ds->m_TEX0.TBP0 != z_address_info.ZBP || z_address_info.offset != (vertical_offset - z_vertical_offset))
+							g_texture_cache->InvalidateTemporaryZ();
+					}
+
+					if (g_texture_cache->GetTemporaryZ() == nullptr)
+					{
+						m_temp_z_full_copy = false;
+						u32 vertical_size = std::max(rt->m_unscaled_size.y, ds->m_unscaled_size.y);
+						GL_CACHE("RT in RT Z copy on draw %d z_vert_offset %d z_offset %d", s_n, z_vertical_offset, vertical_offset);
+						GSVector4i dRect = GSVector4i(0, vertical_offset * ds->m_scale, ds->m_unscaled_size.x * ds->m_scale, (vertical_offset + ds->m_unscaled_size.y - z_vertical_offset) * ds->m_scale);
+						const int new_height = std::max(static_cast<int>(vertical_size * ds->m_scale), dRect.w);
+						GSTexture* tex = g_gs_device->CreateDepthStencil(ds->m_unscaled_size.x * ds->m_scale, new_height, GSTexture::Format::DepthStencil, true);
+						g_gs_device->StretchRect(ds->m_texture, GSVector4(0.0f, z_vertical_offset / static_cast<float>(ds->m_unscaled_size.y), 1.0f, (ds->m_unscaled_size.y - z_vertical_offset) / static_cast<float>(ds->m_unscaled_size.y)), tex, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
+						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+						g_texture_cache->SetTemporaryZ(tex);
+						g_texture_cache->SetTemporaryZInfo(ds->m_TEX0.TBP0, vertical_offset - z_vertical_offset);
+						t_size.y = std::max(new_height, t_size.y);
+					}
+					m_using_temp_z = true;
+
+				}
 			}
 			// Don't resize if the BPP don't match.
 			if (frame_psm.bpp == GSLocalMemory::m_psm[rt->m_TEX0.PSM].bpp)
@@ -3817,8 +3819,10 @@ void GSRendererHW::Draw()
 
 		// We still need to make sure the dimensions of the targets match.
 		// Limit new size to 2048, the GS can't address more than this so may avoid some bugs/crashes.
-		const int new_w = std::min(2048, std::max(new_size.x, std::max(rt ? rt->m_unscaled_size.x : 0, ds ? ds->m_unscaled_size.x : 0)));
-		const int new_h = std::min(2048, std::max(new_size.y, std::max(rt ? rt->m_unscaled_size.y : 0, ds ? ds->m_unscaled_size.y : 0)));
+		GSVector2i ds_size = m_using_temp_z ? GSVector2i(g_texture_cache->GetTemporaryZ()->GetSize() / ds->m_scale) : (ds ? ds->m_unscaled_size : GSVector2i(0,0));
+
+		const int new_w = std::min(2048, std::max(new_size.x, std::max(rt ? rt->m_unscaled_size.x : 0, ds ? ds_size.x : 0)));
+		const int new_h = std::min(2048, std::max(new_size.y, std::max(rt ? rt->m_unscaled_size.y : 0, ds ? ds_size.y : 0)));
 		if (rt)
 		{
 			const u32 old_end_block = rt->m_end_block;
@@ -3911,6 +3915,17 @@ void GSRendererHW::Draw()
 
 			ds->ResizeTexture(new_w, new_h);
 
+
+			if (m_using_temp_z)
+			{
+				GSVector4i dRect = GSVector4i(0, 0, g_texture_cache->GetTemporaryZ()->GetWidth(), g_texture_cache->GetTemporaryZ()->GetHeight());
+
+				GSTexture* tex = g_gs_device->CreateDepthStencil(new_w * ds->m_scale, new_h * ds->m_scale, GSTexture::Format::DepthStencil, true);
+				g_gs_device->StretchRect(g_texture_cache->GetTemporaryZ(), GSVector4(0.0f, 0.0f, 1.0f, 1.0f), tex, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
+				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+				g_texture_cache->InvalidateTemporaryZ();
+				g_texture_cache->SetTemporaryZ(tex);
+			}
 			if (!m_texture_shuffle && !m_channel_shuffle)
 			{
 				ds->ResizeValidity(ds->GetUnscaledRect());
@@ -6661,7 +6676,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	m_conf.rt = rt ? rt->m_texture : nullptr;
 	m_conf.ds = ds ? (m_using_temp_z ? g_texture_cache->GetTemporaryZ() : ds->m_texture) : nullptr;
 	
-	pxAssert(!ds || !rt || (ds->m_texture->GetSize().x == rt->m_texture->GetSize().x && ds->m_texture->GetSize().y == rt->m_texture->GetSize().y));
+	pxAssert(!ds || !rt || (m_conf.ds->GetSize().x == m_conf.rt->GetSize().x && m_conf.ds->GetSize().y == m_conf.rt->GetSize().y));
 
 	// Z setup has to come before channel shuffle
 	EmulateZbuffer(ds);
