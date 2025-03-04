@@ -563,7 +563,7 @@ public:
 	GSTexture* GetTemporaryZ();
 	TempZAddress GetTemporaryZInfo();
 	void SetTemporaryZInfo(u32 address, u32 offset);
-	/// Invalidates a temporary Z, a partial copy only created from the current DS for the current draw when Z is not offset but RT is
+	/// Invalidates a temporary Z, a partial copy only created from the current DS for the current draw when Z is not offset but RT is.
 	void InvalidateTemporaryZ();
 
 	/// Injects a texture into the hash cache, by using GSTexture::Swap(), transitively applying to all sources. Ownership of tex is transferred.

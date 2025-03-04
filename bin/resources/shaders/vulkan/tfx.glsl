@@ -1343,8 +1343,6 @@ void main()
 			#endif
 		#endif
 
-		
-		
 		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 		#if PS_SHUFFLE_SAME
 			#if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1362,7 +1360,7 @@ void main()
 		// Write RB part. Mask will take care of the correct destination
 		#elif PS_SHUFFLE_ACROSS
 			#if(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
-				C.br = C.rb;				
+				C.br = C.rb;
 				C.ag = C.ga;
 			#elif(PS_PROCESS_BA & SHUFFLE_READ)
 				C.rb = C.bb;
