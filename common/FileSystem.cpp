@@ -288,8 +288,14 @@ std::string Path::RealPath(const std::string_view path)
 {
 	// Resolve non-absolute paths first.
 	std::vector<std::string_view> components;
+	// We need to keep the full combined path in scope
+	// as SplitNativePath() returns string_views to it.
+	std::string buf;
 	if (!IsAbsolute(path))
-		components = Path::SplitNativePath(Path::Combine(FileSystem::GetWorkingDirectory(), path));
+	{
+		buf = Path::Combine(FileSystem::GetWorkingDirectory(), path);
+		components = Path::SplitNativePath(buf);
+	}
 	else
 		components = Path::SplitNativePath(path);
 
