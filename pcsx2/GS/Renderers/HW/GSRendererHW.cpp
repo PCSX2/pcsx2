@@ -3353,9 +3353,23 @@ void GSRendererHW::Draw()
 					rt->UpdateValidity(m_r, !frame_masked);
 					rt->UpdateDrawn(m_r, !frame_masked);
 				}
-				else if (IsPageCopy() && m_cached_ctx.FRAME.FBW == 1)
+				else if ((IsPageCopy() || is_possible_mem_clear) && m_r.width() <= frame_psm.pgs.x && m_r.height() <= frame_psm.pgs.y)
 				{
-					rt->UpdateValidity(GSVector4i::loadh(GSVector2i(GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x, GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y + vertical_offset)), true);
+					const int get_next_ctx = m_env.PRIM.CTXT;
+					const GSDrawingContext& next_ctx = m_env.CTXT[get_next_ctx];
+					GSVector4i update_valid = GSVector4i::loadh(GSVector2i(horizontal_offset + GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x, GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y + vertical_offset));
+					rt->UpdateValidity(update_valid, true);
+					if (is_possible_mem_clear)
+					{
+						if ((horizontal_offset + GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x) >= static_cast<int>(rt->m_TEX0.TBW * 64) && next_ctx.FRAME.Block() == (m_cached_ctx.FRAME.Block() + 0x20))
+						{
+							update_valid.x = 0;
+							update_valid.z = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x;
+							update_valid.y += GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y;
+							update_valid.w += GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y;
+							rt->UpdateValidity(update_valid, true);
+						}
+					}
 				}
 			}
 		}
