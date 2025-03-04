@@ -51,6 +51,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionRun"/>
+   <addaction name="actionReset"/>
    <addaction name="actionStepInto"/>
    <addaction name="actionStepOver"/>
    <addaction name="actionStepOut"/>
@@ -63,6 +64,14 @@
    </property>
    <property name="text">
     <string>Run</string>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="icon">
+    <iconset theme="restart-line"/>
+   </property>
+   <property name="text">
+    <string>Reset</string>
    </property>
   </action>
   <action name="actionStepInto">
