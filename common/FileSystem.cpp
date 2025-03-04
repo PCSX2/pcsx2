@@ -968,7 +968,7 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* 
 {
 #ifdef _WIN32
 	const std::wstring wfilename = GetWin32Path(filename);
-	const std::wstring wmode = GetWin32Path(mode);
+	const std::wstring wmode = StringUtil::UTF8StringToWideString(mode);
 	if (!wfilename.empty() && !wmode.empty())
 	{
 		std::FILE* fp;
@@ -1060,7 +1060,7 @@ std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, F
 {
 #ifdef _WIN32
 	const std::wstring wfilename = GetWin32Path(filename);
-	const std::wstring wmode = GetWin32Path(mode);
+	const std::wstring wmode = StringUtil::UTF8StringToWideString(mode);
 	if (wfilename.empty() || wmode.empty())
 		return nullptr;
 
