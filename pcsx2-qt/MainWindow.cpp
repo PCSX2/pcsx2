@@ -12,6 +12,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
+#include "Debugger/Docking/DockManager.h"
 #include "Settings/AchievementLoginDialog.h"
 #include "Settings/ControllerSettingsWindow.h"
 #include "Settings/GameListSettingsWidget.h"
@@ -112,7 +113,7 @@ MainWindow::MainWindow()
 	//  DisplayWidget.
 	//  Additionally, alien widget rendering is much more performant, so we
 	//  should have a nice responsiveness boost in our UI :)
-	//  QTBUG-133919, reported upstream by govanify 
+	//  QTBUG-133919, reported upstream by govanify
 	QGuiApplication::setAttribute(Qt::AA_NativeWindows, false);
 	QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
 
@@ -620,12 +621,7 @@ void MainWindow::quit()
 
 void MainWindow::destroySubWindows()
 {
-	if (m_debugger_window)
-	{
-		m_debugger_window->close();
-		m_debugger_window->deleteLater();
-		m_debugger_window = nullptr;
-	}
+	DebuggerWindow::destroyInstance();
 
 	if (m_controller_settings_window)
 	{
@@ -850,12 +846,8 @@ void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
 	{
 		// If PauseOnEntry is enabled, we prompt the user to disable Hardcore Mode
 		// or cancel the action later, so we should keep the debugger around
-		if (m_debugger_window && !DebugInterface::getPauseOnEntry())
-		{
-			m_debugger_window->close();
-			m_debugger_window->deleteLater();
-			m_debugger_window = nullptr;
-		}
+		if (g_debugger_window && !DebugInterface::getPauseOnEntry())
+			DebuggerWindow::destroyInstance();
 	}
 }
 
@@ -1145,7 +1137,7 @@ bool MainWindow::shouldMouseLock() const
 	if (!Host::GetBoolSettingValue("EmuCore", "EnableMouseLock", false))
 		return false;
 
-	bool windowsHidden = (!m_debugger_window || m_debugger_window->isHidden()) &&
+	bool windowsHidden = (!g_debugger_window || g_debugger_window->isHidden()) &&
 						 (!m_controller_settings_window || m_controller_settings_window->isHidden()) &&
 						 (!m_settings_window || m_settings_window->isHidden());
 
@@ -1481,7 +1473,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 				connect(action, &QAction::triggered, [this, entry]() {
 					DebugInterface::setPauseOnEntry(true);
 					startGameListEntry(entry);
-					getDebuggerWindow()->show();
+					DebuggerWindow::getInstance()->show();
 				});
 			}
 
@@ -1819,36 +1811,11 @@ void MainWindow::onCreateMemoryCardOpenRequested()
 
 void MainWindow::updateTheme()
 {
-	// The debugger hates theme changes.
-	// We have unfortunately to destroy it and recreate it.
-	const bool debugger_is_open = m_debugger_window ? m_debugger_window->isVisible() : false;
-	const QSize debugger_size = m_debugger_window ? m_debugger_window->size() : QSize();
-	const QPoint debugger_pos = m_debugger_window ? m_debugger_window->pos() : QPoint();
-	if (m_debugger_window)
-	{
-		if (QMessageBox::question(this, tr("Theme Change"),
-				tr("Changing the theme will close the debugger window. Any unsaved data will be lost. Do you want to continue?"),
-				QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
-		{
-			return;
-		}
-	}
-
 	QtHost::UpdateApplicationTheme();
 	reloadThemeSpecificImages();
 
-	if (m_debugger_window)
-	{
-		m_debugger_window->deleteLater();
-		m_debugger_window = nullptr;
-		getDebuggerWindow(); // populates m_debugger_window
-		m_debugger_window->resize(debugger_size);
-		m_debugger_window->move(debugger_pos);
-		if (debugger_is_open)
-		{
-			m_debugger_window->show();
-		}
-	}
+	if (g_debugger_window)
+		g_debugger_window->updateStyleSheets();
 }
 
 void MainWindow::reloadThemeSpecificImages()
@@ -2663,13 +2630,12 @@ QWidget* MainWindow::getDisplayContainer() const
 
 void MainWindow::setupMouseMoveHandler()
 {
-	auto mouse_cb_fn = [](int x, int y)
-	{
-		if(g_main_window)
+	auto mouse_cb_fn = [](int x, int y) {
+		if (g_main_window)
 			g_main_window->checkMousePosition(x, y);
 	};
-	
-	if(!Common::AttachMousePositionCb(mouse_cb_fn))
+
+	if (!Common::AttachMousePositionCb(mouse_cb_fn))
 	{
 		Console.Warning("Unable to setup mouse position cb!");
 	}
@@ -2779,18 +2745,9 @@ void MainWindow::doSettings(const char* category /* = nullptr */)
 		dlg->setCategory(category);
 }
 
-DebuggerWindow* MainWindow::getDebuggerWindow()
-{
-	if (!m_debugger_window)
-		// Don't pass us (this) as the parent, otherwise the window is always on top of the mainwindow (on windows at least)
-		m_debugger_window = new DebuggerWindow(nullptr);
-
-	return m_debugger_window;
-}
-
 void MainWindow::openDebugger()
 {
-	DebuggerWindow* dwnd = getDebuggerWindow();
+	DebuggerWindow* dwnd = DebuggerWindow::getInstance();
 	dwnd->isVisible() ? dwnd->activateWindow() : dwnd->show();
 }
 
