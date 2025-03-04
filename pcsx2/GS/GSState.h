@@ -323,6 +323,8 @@ public:
 			int FBP;
 			int FBW;
 			int PSM;
+			int DBY;
+			int DBX;
 			GSRegDISPFB prevFramebufferReg;
 			GSVector2i prevDisplayOffset;
 			GSVector2i displayOffset;
