@@ -288,8 +288,14 @@ std::string Path::RealPath(const std::string_view path)
 {
 	// Resolve non-absolute paths first.
 	std::vector<std::string_view> components;
+	// We need to keep the full combined path in scope
+	// as SplitNativePath() returns string_views to it.
+	std::string buf;
 	if (!IsAbsolute(path))
-		components = Path::SplitNativePath(Path::Combine(FileSystem::GetWorkingDirectory(), path));
+	{
+		buf = Path::Combine(FileSystem::GetWorkingDirectory(), path);
+		components = Path::SplitNativePath(buf);
+	}
 	else
 		components = Path::SplitNativePath(path);
 
@@ -968,7 +974,7 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* 
 {
 #ifdef _WIN32
 	const std::wstring wfilename = GetWin32Path(filename);
-	const std::wstring wmode = GetWin32Path(mode);
+	const std::wstring wmode = StringUtil::UTF8StringToWideString(mode);
 	if (!wfilename.empty() && !wmode.empty())
 	{
 		std::FILE* fp;
@@ -1060,7 +1066,7 @@ std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, F
 {
 #ifdef _WIN32
 	const std::wstring wfilename = GetWin32Path(filename);
-	const std::wstring wmode = GetWin32Path(mode);
+	const std::wstring wmode = StringUtil::UTF8StringToWideString(mode);
 	if (wfilename.empty() || wmode.empty())
 		return nullptr;
 
