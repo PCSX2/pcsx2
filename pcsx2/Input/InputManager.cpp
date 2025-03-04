@@ -284,11 +284,13 @@ TinyString InputManager::ConvertKeyboardKeyToString(InputBindingKey key, bool di
 	{
 		const std::optional<std::string> str(ConvertHostKeyboardCodeToString(key.data));
 		if (str.has_value() && !str->empty())
+		{
 			if (display)
 				// Keyboard keys arn't spaced out for display yet
 				ret.format("Keyboard {}", str->c_str());
 			else
 				ret.format("Keyboard/{}", str->c_str());
+		}
 	}
 
 	return ret;
@@ -320,7 +322,7 @@ TinyString InputManager::ConvertPointerKeyToString(InputBindingKey key, bool dis
 		else if (key.source_subtype == InputSubclass::PointerAxis)
 		{
 			if (display)
-				ret.format("Pointer-{} {}{:c}", u32{key.source_index}, s_pointer_axis_setting_names[key.data],
+				ret.format("Pointer-{} {}{:c}", u32{key.source_index}, s_pointer_axis_names[key.data],
 					key.modifier == InputModifier::Negate ? '-' : '+');
 			else
 				ret.format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_setting_names[key.data],
@@ -608,7 +610,7 @@ void InputManager::AddBindings(const std::vector<std::string>& bindings, const I
 		std::vector<std::string> new_bindings;
 		new_bindings.reserve(bindings.size());
 
-		for (int i = 0; i < bindings.size(); i++)
+		for (size_t i = 0; i < bindings.size(); i++)
 		{
 			if (ibindings[i])
 				new_bindings.push_back(ConvertInputBindingKeysToString(binding_type, ibindings[i]->keys, ibindings[i]->num_keys, true));
@@ -627,7 +629,7 @@ void InputManager::AddBindings(const std::vector<std::string>& bindings, const I
 		{
 			// LayeredSettingsInterface, Need to find which layer our binding came from
 			LayeredSettingsInterface& lsi = static_cast<LayeredSettingsInterface&>(si);
-			for (int i = 0; i < LayeredSettingsInterface::NUM_LAYERS; i++)
+			for (u32 i = 0; i < LayeredSettingsInterface::NUM_LAYERS; i++)
 			{
 				SettingsInterface* layer = lsi.GetLayer(static_cast<LayeredSettingsInterface::Layer>(i));
 				if (layer && layer->GetStringList(section, key) == bindings)
