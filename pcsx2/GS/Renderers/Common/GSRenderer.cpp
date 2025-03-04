@@ -87,10 +87,6 @@ bool GSRenderer::Merge(int field)
 	int y_offset[3] = { 0, 0, 0 };
 	const bool feedback_merge = m_regs->EXTWRITE.WRITE == 1;
 
-	PCRTCDisplays.SetVideoMode(GetVideoMode());
-	PCRTCDisplays.EnableDisplays(m_regs->PMODE, m_regs->SMODE2, isReallyInterlaced());
-	PCRTCDisplays.CheckSameSource();
-
 	if (!PCRTCDisplays.PCRTCDisplays[0].enabled && !PCRTCDisplays.PCRTCDisplays[1].enabled)
 	{
 		m_real_size = GSVector2i(0, 0);
@@ -100,11 +96,6 @@ bool GSRenderer::Merge(int field)
 	// Need to do this here, if the user has Anti-Blur enabled, these offsets can get wiped out/changed.
 	const bool game_deinterlacing = (m_regs->DISP[0].DISPFB.DBY != PCRTCDisplays.PCRTCDisplays[0].prevFramebufferReg.DBY) !=
 									(m_regs->DISP[1].DISPFB.DBY != PCRTCDisplays.PCRTCDisplays[1].prevFramebufferReg.DBY);
-
-	PCRTCDisplays.SetRects(0, m_regs->DISP[0].DISPLAY, m_regs->DISP[0].DISPFB);
-	PCRTCDisplays.SetRects(1, m_regs->DISP[1].DISPLAY, m_regs->DISP[1].DISPFB);
-	PCRTCDisplays.CalculateDisplayOffset(m_scanmask_used);
-	PCRTCDisplays.CalculateFramebufferOffset(m_scanmask_used);
 
 	// Only need to check the right/bottom on software renderer, hardware always gets the full texture then cuts a bit out later.
 	if (PCRTCDisplays.FrameRectMatch() && !PCRTCDisplays.FrameWrap() && !feedback_merge)

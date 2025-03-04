@@ -1477,6 +1477,35 @@ void GSState::Flush(GSFlushReason reason)
 
 	if (m_index.tail > 0)
 	{
+		// Unless Vsync really needs the pending draw, don't do it when VSync happens as it can really screw up our heuristics when looking ahead.
+		if (reason == VSYNC)
+		{
+			GSDrawingContext* draw_ctx = &m_prev_env.CTXT[m_prev_env.PRIM.CTXT];
+			const u32 start_bp = GSLocalMemory::GetStartBlockAddress(draw_ctx->FRAME.Block(), draw_ctx->FRAME.FBW, draw_ctx->FRAME.PSM, temp_draw_rect);
+			const u32 end_bp = GSLocalMemory::GetEndBlockAddress(draw_ctx->FRAME.Block(), draw_ctx->FRAME.FBW, draw_ctx->FRAME.PSM, temp_draw_rect);
+			bool needs_flush[2] = {PCRTCDisplays.PCRTCDisplays[0].enabled, PCRTCDisplays.PCRTCDisplays[1].enabled};
+
+			if (PCRTCDisplays.PCRTCDisplays[1].enabled)
+			{
+				const u32 out_start_bp = GSLocalMemory::GetStartBlockAddress(PCRTCDisplays.PCRTCDisplays[1].Block(), PCRTCDisplays.PCRTCDisplays[1].FBW, PCRTCDisplays.PCRTCDisplays[1].PSM, PCRTCDisplays.PCRTCDisplays[1].framebufferRect);
+				const u32 out_end_bp = GSLocalMemory::GetEndBlockAddress(PCRTCDisplays.PCRTCDisplays[1].Block(), PCRTCDisplays.PCRTCDisplays[1].FBW, PCRTCDisplays.PCRTCDisplays[1].PSM, PCRTCDisplays.PCRTCDisplays[1].framebufferRect);
+
+				if (out_start_bp > end_bp || out_end_bp < start_bp)
+					needs_flush[1] = false;
+			}
+			
+			if (PCRTCDisplays.PCRTCDisplays[0].enabled)
+			{
+				const u32 out_start_bp = GSLocalMemory::GetStartBlockAddress(PCRTCDisplays.PCRTCDisplays[0].Block(), PCRTCDisplays.PCRTCDisplays[0].FBW, PCRTCDisplays.PCRTCDisplays[0].PSM, PCRTCDisplays.PCRTCDisplays[0].framebufferRect);
+				const u32 out_end_bp = GSLocalMemory::GetEndBlockAddress(PCRTCDisplays.PCRTCDisplays[0].Block(), PCRTCDisplays.PCRTCDisplays[0].FBW, PCRTCDisplays.PCRTCDisplays[0].PSM, PCRTCDisplays.PCRTCDisplays[0].framebufferRect);
+
+				if (out_start_bp > end_bp || out_end_bp < start_bp)
+					needs_flush[0] = false;
+			}
+
+			if (!needs_flush[0] && !needs_flush[1])
+				return;
+		}
 		m_state_flush_reason = reason;
 
 		// Used to prompt the current draw that it's modifying its own CLUT.
@@ -1942,10 +1971,10 @@ void GSState::Write(const u8* mem, int len)
 			m_draw_transfers.push_back(new_transfer);
 		}
 
-		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)", s_transfer_n,
+		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d) draw %d", s_transfer_n,
 				blit.DBP, blit.DBW, psm_str(blit.DPSM),
 				m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
-				m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
+				m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h, s_n);
 
 		if (len >= m_tr.total)
 		{
@@ -3093,7 +3122,7 @@ void GSState::CalculatePrimitiveCoversWithoutGaps()
 	}
 	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
 	{
-		m_primitive_covers_without_gaps = ((m_index.tail % 6) == 0 && TrianglesAreQuads()) ? m_primitive_covers_without_gaps : GapsFound;
+		m_primitive_covers_without_gaps = ((m_index.tail == 6 || ((m_index.tail % 6) == 0 && m_primitive_covers_without_gaps == FullCover)) && TrianglesAreQuads()) ? m_primitive_covers_without_gaps : GapsFound;
 		return;
 	}
 	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
@@ -3123,7 +3152,7 @@ __forceinline bool GSState::IsAutoFlushDraw(u32 prim)
 	{
 		// Pretty confident here...
 		GSVertex* buffer = &m_vertex.buff[0];
-		const bool const_spacing = std::abs(buffer[m_index.buff[0]].U - buffer[m_index.buff[0]].XYZ.X) == std::abs(m_v.U - m_v.XYZ.X) && std::abs(buffer[m_index.buff[1]].XYZ.X - buffer[m_index.buff[0]].XYZ.X) < 64;
+		const bool const_spacing = std::abs(buffer[m_index.buff[0]].U - buffer[m_index.buff[0]].XYZ.X) == std::abs(m_v.U - m_v.XYZ.X) && std::abs(buffer[m_index.buff[1]].XYZ.X - buffer[m_index.buff[0]].XYZ.X) <= 256; // Lequal to 16 pixels apart.
 
 		if (const_spacing)
 			return false;
@@ -4728,10 +4757,16 @@ GSVector2i GSState::GSPCRTCRegs::GetFramebufferSize(int display)
 void GSState::GSPCRTCRegs::SetRects(int display, GSRegDISPLAY displayReg, GSRegDISPFB framebufferReg)
 {
 	// Save framebuffer information first, while we're here.
+	PCRTCDisplays[display].prevFramebufferReg.FBP = PCRTCDisplays[display].FBP;
+	PCRTCDisplays[display].prevFramebufferReg.FBW = PCRTCDisplays[display].FBW;
+	PCRTCDisplays[display].prevFramebufferReg.PSM = PCRTCDisplays[display].PSM;
+	PCRTCDisplays[display].prevFramebufferReg.DBX = PCRTCDisplays[display].DBX;
+	PCRTCDisplays[display].prevFramebufferReg.DBY = PCRTCDisplays[display].DBY;
 	PCRTCDisplays[display].FBP = framebufferReg.FBP;
 	PCRTCDisplays[display].FBW = framebufferReg.FBW;
 	PCRTCDisplays[display].PSM = framebufferReg.PSM;
-	PCRTCDisplays[display].prevFramebufferReg = framebufferReg;
+	PCRTCDisplays[display].DBX = framebufferReg.DBX;
+	PCRTCDisplays[display].DBY = framebufferReg.DBY;
 	// Probably not really enabled but will cause a mess.
 	// Q-Ball Billiards enables both circuits but doesn't set one of them up.
 	if (PCRTCDisplays[display].FBW == 0 && displayReg.DW == 0 && displayReg.DH == 0 && displayReg.MAGH == 0)

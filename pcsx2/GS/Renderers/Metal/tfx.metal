@@ -1175,7 +1175,7 @@ struct PSMain
 			{
 				if (PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 				{
-					C.br = C.rb;				
+					C.br = C.rb;
 					C.ag = C.ga;
 				}
 				else if(PS_PROCESS_BA & SHUFFLE_READ)
@@ -1190,7 +1190,7 @@ struct PSMain
 				}
 			}
 		}
-		
+
 		ps_dither(C, alpha_blend.a);
 
 		// Color clamp/wrap needs to be done after sw blending and dithering
