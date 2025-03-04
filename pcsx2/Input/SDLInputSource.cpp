@@ -1047,15 +1047,15 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
 	{
 		case SDL_EVENT_GAMEPAD_ADDED:
 		{
-			Console.WriteLn("SDLInputSource: Gamepad %d inserted", event->cdevice.which);
-			OpenDevice(event->cdevice.which, true);
+			Console.WriteLn("SDLInputSource: Gamepad %d inserted", event->gdevice.which);
+			OpenDevice(event->gdevice.which, true);
 			return true;
 		}
 
 		case SDL_EVENT_GAMEPAD_REMOVED:
 		{
-			Console.WriteLn("SDLInputSource: Gamepad %d removed", event->cdevice.which);
-			CloseDevice(event->cdevice.which);
+			Console.WriteLn("SDLInputSource: Gamepad %d removed", event->gdevice.which);
+			CloseDevice(event->gdevice.which);
 			return true;
 		}
 
@@ -1066,18 +1066,18 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
 				return false;
 
 			Console.WriteLn("SDLInputSource: Joystick %d inserted", event->jdevice.which);
-			OpenDevice(event->cdevice.which, false);
+			OpenDevice(event->jdevice.which, false);
 			return true;
 		}
 		break;
 
 		case SDL_EVENT_JOYSTICK_REMOVED:
 		{
-			if (auto it = GetControllerDataForJoystickId(event->cdevice.which); it != m_controllers.end() && it->gamepad)
+			if (auto it = GetControllerDataForJoystickId(event->jdevice.which); it != m_controllers.end() && it->gamepad)
 				return false;
 
 			Console.WriteLn("SDLInputSource: Joystick %d removed", event->jdevice.which);
-			CloseDevice(event->cdevice.which);
+			CloseDevice(event->jdevice.which);
 			return true;
 		}
 
@@ -1119,7 +1119,7 @@ SDL_Joystick* SDLInputSource::GetJoystickForDevice(const std::string_view device
 	return it->joystick;
 }
 
-SDLInputSource::ControllerDataVector::iterator SDLInputSource::GetControllerDataForJoystickId(int id)
+SDLInputSource::ControllerDataVector::iterator SDLInputSource::GetControllerDataForJoystickId(SDL_JoystickID id)
 {
 	return std::find_if(m_controllers.begin(), m_controllers.end(), [id](const ControllerData& cd) { return cd.joystick_id == id; });
 }
@@ -1146,7 +1146,7 @@ int SDLInputSource::GetFreePlayerId() const
 	return 0;
 }
 
-bool SDLInputSource::OpenDevice(int index, bool is_gamepad)
+bool SDLInputSource::OpenDevice(SDL_JoystickID index, bool is_gamepad)
 {
 	SDL_Gamepad* gamepad;
 	SDL_Joystick* joystick;
@@ -1327,7 +1327,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamepad)
 	return true;
 }
 
-bool SDLInputSource::CloseDevice(int joystick_index)
+bool SDLInputSource::CloseDevice(SDL_JoystickID joystick_index)
 {
 	auto it = GetControllerDataForJoystickId(joystick_index);
 	if (it == m_controllers.end())

@@ -74,12 +74,12 @@ private:
 	void LoadSettings(SettingsInterface& si);
 	void SetHints();
 
-	ControllerDataVector::iterator GetControllerDataForJoystickId(int id);
+	ControllerDataVector::iterator GetControllerDataForJoystickId(SDL_JoystickID id);
 	ControllerDataVector::iterator GetControllerDataForPlayerId(int id);
 	int GetFreePlayerId() const;
 
-	bool OpenDevice(int index, bool is_gamepad);
-	bool CloseDevice(int joystick_index);
+	bool OpenDevice(SDL_JoystickID index, bool is_gamepad);
+	bool CloseDevice(SDL_JoystickID joystick_index);
 	bool HandleGamepadAxisEvent(const SDL_GamepadAxisEvent* ev);
 	bool HandleGamepadButtonEvent(const SDL_GamepadButtonEvent* ev);
 	bool HandleJoystickAxisEvent(const SDL_JoyAxisEvent* ev);
