@@ -2019,14 +2019,16 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 		{
 			if (src->m_from_target->m_TEX0.TBP0 == src->m_TEX0.TBP0)
 			{
-				src->m_region.SetX(std::min(region.GetMinX(), src->m_region.GetMinX()), std::max(region.GetMaxX(), src->m_region.GetMaxX()));
-				src->m_region.SetY(std::min(region.GetMinY(), src->m_region.GetMinY()), std::max(region.GetMaxY(), src->m_region.GetMaxY()));
+				src->m_region.bits = 0;
+				src->m_region.SetX(0, region.HasX() ? region.GetMaxX() : (1 << TEX0.TW));
+				src->m_region.SetY(0, region.HasY() ? region.GetMaxY() : (1 << TEX0.TH));
 			}
 			else if (src->m_TEX0.TBP0 > src->m_from_target->m_TEX0.TBP0)
 			{
 				GSVector4i dst_offset = TranslateAlignedRectByPage(src->m_from_target, src->m_TEX0.TBP0, src->m_TEX0.PSM, src->m_TEX0.TBW, GSVector4i(0, 0, 1, 1), false);
-				src->m_region.SetX(dst_offset.x + region.GetMinX(), dst_offset.x + region.GetMaxX());
-				src->m_region.SetY(dst_offset.y + region.GetMinY(), dst_offset.y + region.GetMaxY());
+				src->m_region.bits = 0;
+				src->m_region.SetX(dst_offset.x, dst_offset.x + (region.HasX() ? std::min(region.GetMaxX(), (1 << TEX0.TW)) : (1 << TEX0.TW)));
+				src->m_region.SetY(dst_offset.y, dst_offset.y + (region.HasY() ? std::min(region.GetMaxY(), (1 << TEX0.TH)) : (1 << TEX0.TH)));
 			}
 		}
 
@@ -2090,7 +2092,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		for (auto i = list.begin(); i != list.end();)
 		{
 			Target* t = *i;
-
 			if (bp == t->m_TEX0.TBP0)
 			{
 				bool can_use = true;
