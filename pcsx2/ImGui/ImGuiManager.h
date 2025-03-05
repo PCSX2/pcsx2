@@ -12,6 +12,7 @@ struct ImFont;
 
 union InputBindingKey;
 enum class GenericInputBinding : u8;
+enum class InputLayout : u8;
 
 namespace ImGuiManager
 {
@@ -94,7 +95,7 @@ namespace ImGuiManager
 	bool ProcessHostKeyEvent(InputBindingKey key, float value);
 
 	/// Called on the CPU thread when any input event fires. Allows imgui to take over controller navigation.
-	bool ProcessGenericInputEvent(GenericInputBinding key, float value);
+	bool ProcessGenericInputEvent(GenericInputBinding key, InputLayout layout, float value);
 
 	/// Sets an image and scale for a software cursor. Software cursors can be used for things like crosshairs.
 	void SetSoftwareCursor(u32 index, std::string image_path, float image_scale, u32 multiply_color = 0xFFFFFF);

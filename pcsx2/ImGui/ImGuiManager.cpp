@@ -921,7 +921,7 @@ bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
 	return s_imgui_wants_keyboard.load(std::memory_order_acquire);
 }
 
-bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value)
+bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, InputLayout layout, float value)
 {
 	static constexpr ImGuiKey key_map[] = {
 		ImGuiKey_None, // Unknown,
@@ -959,7 +959,10 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
 		return false;
 
 	MTGS::RunOnGSThread(
-		[key = key_map[static_cast<u32>(key)], value]() { ImGui::GetIO().AddKeyAnalogEvent(key, (value > 0.0f), value); });
+		[key = key_map[static_cast<u32>(key)], value, layout]() {
+			ImGuiFullscreen::ReportGamepadLayout(layout);
+			ImGui::GetIO().AddKeyAnalogEvent(key, (value > 0.0f), value);
+		});
 
 	return s_imgui_wants_keyboard.load(std::memory_order_acquire);
 }

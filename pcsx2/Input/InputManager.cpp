@@ -1263,7 +1263,8 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 	}
 	else if (generic_key != GenericInputBinding::Unknown)
 	{
-		if (ImGuiManager::ProcessGenericInputEvent(generic_key, value) && value != 0.0f)
+		InputLayout layout = s_input_sources[static_cast<u32>(InputSourceType::SDL)]->GetControllerLayout(key.source_index);
+		if (ImGuiManager::ProcessGenericInputEvent(generic_key, layout, value) && value != 0.0f)
 			return true;
 	}
 
