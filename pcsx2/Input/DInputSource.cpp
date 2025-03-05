@@ -315,6 +315,11 @@ bool DInputSource::GetGenericBindingMapping(const std::string_view device, Input
 	return {};
 }
 
+InputLayout DInputSource::GetControllerLayout(u32 index)
+{
+	return InputLayout::Unknown;
+}
+
 void DInputSource::UpdateMotorState(InputBindingKey key, float intensity)
 {
 	// not supported

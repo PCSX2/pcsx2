@@ -1519,6 +1519,25 @@ bool SDLInputSource::GetGenericBindingMapping(const std::string_view device, Inp
 	}
 }
 
+InputLayout SDLInputSource::GetControllerLayout(u32 index)
+{
+	auto it = GetControllerDataForPlayerId(index);
+	if (it == m_controllers.end())
+		return InputLayout::Unknown;
+
+	// Infer layout based on face button label to avoid having
+	// to maintain a long switch statement of gamepad types
+	// clang-format off
+	switch (SDL_GetGamepadButtonLabel(it->gamepad, SDL_GAMEPAD_BUTTON_EAST))
+	{
+		case SDL_GAMEPAD_BUTTON_LABEL_B:      return InputLayout::Xbox;
+		case SDL_GAMEPAD_BUTTON_LABEL_A:      return InputLayout::Nintendo;
+		case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE: return InputLayout::Playstation;
+		default:                              return InputLayout::Unknown;
+	}
+	// clang-format on
+}
+
 void SDLInputSource::UpdateMotorState(InputBindingKey key, float intensity)
 {
 	if (key.source_subtype != InputSubclass::ControllerMotor && key.source_subtype != InputSubclass::ControllerHaptic)

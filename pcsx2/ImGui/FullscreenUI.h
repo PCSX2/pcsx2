@@ -33,6 +33,7 @@ namespace FullscreenUI
 	void ReturnToMainWindow();
 	void SetStandardSelectionFooterText(bool back_instead_of_cancel);
 	void LocaleChanged();
+	void GamepadLayoutChanged();
 
 	void Shutdown(bool clear_state);
 	void Render();
