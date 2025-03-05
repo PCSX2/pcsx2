@@ -7,9 +7,11 @@
 #include "Host.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/Common/GSTexture.h"
+#include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiAnimated.h"
 #include "ImGui/ImGuiFullscreen.h"
 #include "ImGui/ImGuiManager.h"
+#include "Input/InputManager.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -192,6 +194,8 @@ namespace ImGuiFullscreen
 
 	static std::vector<BackgroundProgressDialogData> s_background_progress_dialogs;
 	static std::mutex s_background_progress_lock;
+
+	static InputLayout s_gamepad_layout = InputLayout::Unknown;
 } // namespace ImGuiFullscreen
 
 void ImGuiFullscreen::SetFonts(ImFont* standard_font, ImFont* medium_font, ImFont* large_font)
@@ -736,6 +740,20 @@ void ImGuiFullscreen::EndFullscreenWindow()
 bool ImGuiFullscreen::IsGamepadInputSource()
 {
 	return (ImGui::GetCurrentContext()->NavInputSource == ImGuiInputSource_Gamepad);
+}
+
+void ImGuiFullscreen::ReportGamepadLayout(InputLayout layout)
+{
+	if (s_gamepad_layout == layout)
+		return;
+
+	s_gamepad_layout = layout;
+	FullscreenUI::GamepadLayoutChanged();
+}
+
+InputLayout ImGuiFullscreen::GetGamepadLayout()
+{
+	return s_gamepad_layout;
 }
 
 void ImGuiFullscreen::CreateFooterTextString(SmallStringBase& dest,

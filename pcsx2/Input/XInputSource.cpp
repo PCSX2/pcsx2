@@ -466,6 +466,11 @@ bool XInputSource::GetGenericBindingMapping(const std::string_view device, Input
 	return true;
 }
 
+InputLayout XInputSource::GetControllerLayout(u32 index)
+{
+	return InputLayout::Xbox;
+}
+
 void XInputSource::HandleControllerConnection(u32 index)
 {
 	INFO_LOG("XInput controller {} connected.", index);

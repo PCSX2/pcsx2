@@ -18,6 +18,7 @@
 #include <vector>
 
 class GSTexture;
+enum class InputLayout : u8;
 
 namespace ImGuiFullscreen
 {
@@ -149,6 +150,8 @@ namespace ImGuiFullscreen
 	void EndFullscreenWindow();
 
 	bool IsGamepadInputSource();
+	void ReportGamepadLayout(InputLayout layout);
+	InputLayout GetGamepadLayout();
 	void CreateFooterTextString(SmallStringBase& dest, std::span<const std::pair<const char*, std::string_view>> items);
 	void SetFullscreenFooterText(std::string_view text);
 	void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);

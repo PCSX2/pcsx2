@@ -43,6 +43,9 @@ public:
 	/// Returns false if it's not one of our devices.
 	virtual bool GetGenericBindingMapping(const std::string_view device, InputManager::GenericInputBindingMapping* mapping) = 0;
 
+	/// Gets the layout of the controller connected at index.
+	virtual InputLayout GetControllerLayout(u32 index) = 0;
+
 	/// Informs the source of a new vibration motor state. Changes may not take effect until the next PollEvents() call.
 	virtual void UpdateMotorState(InputBindingKey key, float intensity) = 0;
 

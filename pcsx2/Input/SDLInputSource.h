@@ -32,6 +32,7 @@ public:
 	std::vector<std::pair<std::string, std::string>> EnumerateDevices() override;
 	std::vector<InputBindingKey> EnumerateMotors() override;
 	bool GetGenericBindingMapping(const std::string_view device, InputManager::GenericInputBindingMapping* mapping) override;
+	InputLayout GetControllerLayout(u32 index) override;
 	void UpdateMotorState(InputBindingKey key, float intensity) override;
 	void UpdateMotorState(InputBindingKey large_key, InputBindingKey small_key, float large_intensity, float small_intensity) override;
 
@@ -94,6 +95,7 @@ private:
 	// ParseKeyString can also inspect the gamepad for migrations
 	// Those functions can be called on the main thread, while
 	// gamepad addition/removal is done on the CPU thread
+	// FSUI also calls GetControllerLayout from the GS thread
 	std::mutex m_controllers_key_mutex;
 
 	std::vector<u32> m_gamepads_needing_migration;
