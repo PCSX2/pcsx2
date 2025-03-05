@@ -3,7 +3,9 @@
 
 #pragma once
 
-#include "ui_RegisterWidget.h"
+#include "ui_MemoryViewWidget.h"
+
+#include "Debugger/DebuggerWidget.h"
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
@@ -27,7 +29,6 @@ enum class MemoryViewType
 class MemoryViewTable
 {
 	QWidget* parent;
-	DebugInterface* m_cpu;
 	MemoryViewType displayType = MemoryViewType::BYTE;
 	bool littleEndian = true;
 	u32 rowCount;
@@ -44,7 +45,7 @@ class MemoryViewTable
 
 	bool selectedNibbleHI = false;
 
-	void InsertIntoSelectedHexView(u8 value);
+	void InsertIntoSelectedHexView(u8 value, DebugInterface& cpu);
 
 	template <class T>
 	T convertEndian(T in)
@@ -64,24 +65,23 @@ class MemoryViewTable
 
 public:
 	MemoryViewTable(QWidget* parent)
-		: parent(parent){};
+		: parent(parent)
+	{
+	}
+
 	u32 startAddress;
 	u32 selectedAddress;
 
-	void SetCpu(DebugInterface* cpu)
-	{
-		m_cpu = cpu;
-	}
 	void UpdateStartAddress(u32 start);
 	void UpdateSelectedAddress(u32 selected, bool page = false);
-	void DrawTable(QPainter& painter, const QPalette& palette, s32 height);
+	void DrawTable(QPainter& painter, const QPalette& palette, s32 height, DebugInterface& cpu);
 	void SelectAt(QPoint pos);
-	u128 GetSelectedSegment();
-	void InsertAtCurrentSelection(const QString& text);
+	u128 GetSelectedSegment(DebugInterface& cpu);
+	void InsertAtCurrentSelection(const QString& text, DebugInterface& cpu);
 	void ForwardSelection();
 	void BackwardSelection();
 	// Returns true if the keypress was handled
-	bool KeyPress(int key, QChar keychar);
+	bool KeyPress(int key, QChar keychar, DebugInterface& cpu);
 
 	MemoryViewType GetViewType()
 	{
@@ -104,26 +104,26 @@ public:
 	}
 };
 
-
-class MemoryViewWidget final : public QWidget
+class MemoryViewWidget final : public DebuggerWidget
 {
 	Q_OBJECT
 
 public:
-	MemoryViewWidget(QWidget* parent);
+	MemoryViewWidget(const DebuggerWidgetParameters& parameters);
 	~MemoryViewWidget();
 
-	void SetCpu(DebugInterface* cpu);
+	void toJson(JsonValueWrapper& json) override;
+	bool fromJson(const JsonValueWrapper& json) override;
 
 protected:
-	void paintEvent(QPaintEvent* event);
-	void mousePressEvent(QMouseEvent* event);
-	void mouseDoubleClickEvent(QMouseEvent* event);
-	void wheelEvent(QWheelEvent* event);
-	void keyPressEvent(QKeyEvent* event);
+	void paintEvent(QPaintEvent* event) override;
+	void mousePressEvent(QMouseEvent* event) override;
+	void mouseDoubleClickEvent(QMouseEvent* event) override;
+	void wheelEvent(QWheelEvent* event) override;
+	void keyPressEvent(QKeyEvent* event) override;
 
 public slots:
-	void customMenuRequested(QPoint pos);
+	void openContextMenu(QPoint pos);
 
 	void contextGoToAddress();
 	void contextCopyByte();
@@ -132,21 +132,8 @@ public slots:
 	void contextPaste();
 	void gotoAddress(u32 address);
 
-signals:
-	void gotoInDisasm(u32 address, bool should_set_focus = true);
-	void addToSavedAddresses(u32 address);
-	void VMUpdate();
-
 private:
-	Ui::RegisterWidget ui;
+	Ui::MemoryViewWidget ui;
 
-	QMenu* m_contextMenu = 0x0;
-	QAction* m_actionLittleEndian;
-	QAction* m_actionBYTE;
-	QAction* m_actionBYTEHW;
-	QAction* m_actionWORD;
-	QAction* m_actionDWORD;
-
-	DebugInterface* m_cpu;
 	MemoryViewTable m_table;
 };

@@ -260,7 +260,13 @@
     <ClCompile Include="Settings\DebugAnalysisSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
+    <ClCompile Include="Settings\DebugUserInterfaceSettingsWidget.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
     <ClCompile Include="$(IntDir)Settings\moc_DebugAnalysisSettingsWidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Settings\moc_DebugUserInterfaceSettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="Settings\DebugSettingsWidget.cpp">
@@ -272,43 +278,79 @@
     <ClCompile Include="Debugger\AnalysisOptionsDialog.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger\DebuggerWidget.cpp">
+      <Filter>Debugger</Filter>
+    </ClCompile>
     <ClCompile Include="Debugger\DebuggerWindow.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
     <ClCompile Include="Debugger\DisassemblyWidget.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
-    <ClCompile Include="Debugger\CpuWidget.cpp">
-      <Filter>Debugger</Filter>
-    </ClCompile>
     <ClCompile Include="Debugger\RegisterWidget.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
-    <ClCompile Include="Debugger\MemorySearchWidget.cpp">
+    <ClCompile Include="Debugger\StackModel.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
-    <ClCompile Include="Debugger\MemoryViewWidget.cpp">
+    <ClCompile Include="Debugger\StackWidget.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
-    <ClCompile Include="Debugger\BreakpointDialog.cpp">
+    <ClCompile Include="Debugger\ThreadModel.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
-    <ClCompile Include="Debugger\Models\BreakpointModel.cpp">
-      <Filter>Debugger\Models</Filter>
+    <ClCompile Include="Debugger\ThreadWidget.cpp">
+      <Filter>Debugger</Filter>
     </ClCompile>
-    <ClCompile Include="Debugger\Models\ThreadModel.cpp">
-      <Filter>Debugger\Models</Filter>
+    <ClCompile Include="Debugger\Breakpoints\BreakpointDialog.cpp">
+      <Filter>Debugger\Breakpoints</Filter>
     </ClCompile>
-    <ClCompile Include="Debugger\Models\StackModel.cpp">
-      <Filter>Debugger\Models</Filter>
+    <ClCompile Include="Debugger\Breakpoints\BreakpointModel.cpp">
+      <Filter>Debugger\Breakpoints</Filter>
     </ClCompile>
-    <ClCompile Include="Debugger\Models\SavedAddressesModel.cpp">
-      <Filter>Debugger\Models</Filter>
+    <ClCompile Include="Debugger\Breakpoints\BreakpointWidget.cpp">
+      <Filter>Debugger\Breakpoints</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DockLayout.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DockManager.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DockTables.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DockUtils.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DockViews.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DropIndicators.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\LayoutEditorDialog.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\NoLayoutsWidget.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Memory\MemorySearchWidget.cpp">
+      <Filter>Debugger\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Memory\MemoryViewWidget.cpp">
+      <Filter>Debugger\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Memory\SavedAddressesModel.cpp">
+      <Filter>Debugger\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Memory\SavedAddressesWidget.cpp">
+      <Filter>Debugger\Memory</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_AnalysisOptionsDialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_CpuWidget.cpp">
+    <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWindow.cpp">
@@ -320,25 +362,52 @@
     <ClCompile Include="$(IntDir)Debugger\moc_RegisterWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_MemorySearchWidget.cpp">
+    <ClCompile Include="$(IntDir)Debugger\moc_StackModel.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_MemoryViewWidget.cpp">
+    <ClCompile Include="$(IntDir)Debugger\moc_StackWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_BreakpointDialog.cpp">
+    <ClCompile Include="$(IntDir)Debugger\moc_ThreadModel.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Models\moc_BreakpointModel.cpp">
+    <ClCompile Include="$(IntDir)Debugger\moc_ThreadWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Models\moc_ThreadModel.cpp">
+    <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointDialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Models\moc_StackModel.cpp">
+    <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointModel.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Models\moc_SavedAddressesModel.cpp">
+    <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointWidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockManager.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockViews.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DropIndicators.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_LayoutEditorDialog.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_NoLayoutsWidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Memory\moc_MemorySearchWidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Memory\moc_MemoryViewWidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Memory\moc_SavedAddressesModel.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Memory\moc_SavedAddressesWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="ColorPickerButton.cpp" />
@@ -535,10 +604,19 @@
     <QtMoc Include="Settings\DebugAnalysisSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
+    <QtMoc Include="Settings\DebugUserInterfaceSettingsWidget.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
     <QtMoc Include="Settings\DebugSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Debugger\AnalysisOptionsDialog.h">
+      <Filter>Debugger</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\DebuggerEvents.h">
+      <Filter>Debugger</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\DebuggerWidget.h">
       <Filter>Debugger</Filter>
     </QtMoc>
     <QtMoc Include="Debugger\DebuggerWindow.h">
@@ -547,32 +625,65 @@
     <QtMoc Include="Debugger\DisassemblyWidget.h">
       <Filter>Debugger</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\CpuWidget.h">
-      <Filter>Debugger</Filter>
-    </QtMoc>
     <QtMoc Include="Debugger\RegisterWidget.h">
       <Filter>Debugger</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\MemorySearchWidget.h">
+    <QtMoc Include="Debugger\StackModel.h">
       <Filter>Debugger</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\MemoryViewWidget.h">
+    <QtMoc Include="Debugger\StackWidget.h">
       <Filter>Debugger</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\BreakpointDialog.h">
+    <QtMoc Include="Debugger\ThreadModel.h">
       <Filter>Debugger</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\Models\BreakpointModel.h">
-      <Filter>Debugger\Models</Filter>
+    <QtMoc Include="Debugger\ThreadWidget.h">
+      <Filter>Debugger</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\Models\ThreadModel.h">
-      <Filter>Debugger\Models</Filter>
+    <QtMoc Include="Debugger\Breakpoints\BreakpointDialog.h">
+      <Filter>Debugger\Breakpoints</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\Models\StackModel.h">
-      <Filter>Debugger\Models</Filter>
+    <QtMoc Include="Debugger\Breakpoints\BreakpointModel.h">
+      <Filter>Debugger\Breakpoints</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\Models\SavedAddressesModel.h">
-      <Filter>Debugger\Models</Filter>
+    <QtMoc Include="Debugger\Breakpoints\BreakpointWidget.h">
+      <Filter>Debugger\Breakpoints</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Docking\DockLayout.h">
+      <Filter>Debugger\Docking</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Docking\DockManager.h">
+      <Filter>Debugger\Docking</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Docking\DockTables.h">
+      <Filter>Debugger\Docking</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Docking\DockUtils.h">
+      <Filter>Debugger\Docking</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Docking\DockViews.h">
+      <Filter>Debugger\Docking</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Docking\DropIndicators.h">
+      <Filter>Debugger\Docking</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Docking\LayoutEditorDialog.h">
+      <Filter>Debugger\Docking</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Docking\NoLayoutsWidget.h">
+      <Filter>Debugger\Docking</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Memory\MemorySearchWidget.h">
+      <Filter>Debugger\Memory</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Memory\MemoryViewWidget.h">
+      <Filter>Debugger\Memory</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Memory\SavedAddressesModel.h">
+      <Filter>Debugger\Memory</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Memory\SavedAddressesWidget.h">
+      <Filter>Debugger\Memory</Filter>
     </QtMoc>
     <QtMoc Include="ColorPickerButton.h" />
     <QtMoc Include="SetupWizardDialog.h" />
@@ -686,6 +797,9 @@
     <QtUi Include="Settings\DebugAnalysisSettingsWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
+    <QtUi Include="Settings\DebugUserInterfaceSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
     <QtUi Include="Settings\DebugSettingsWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
@@ -698,20 +812,29 @@
     <QtUi Include="Debugger\DisassemblyWidget.ui">
       <Filter>Debugger</Filter>
     </QtUi>
-    <QtUi Include="Debugger\CpuWidget.ui">
-      <Filter>Debugger</Filter>
-    </QtUi>
     <QtUi Include="Debugger\RegisterWidget.ui">
       <Filter>Debugger</Filter>
     </QtUi>
-    <QtUi Include="Debugger\MemorySearchWidget.ui">
-      <Filter>Debugger</Filter>
+    <QtUi Include="Debugger\Breakpoints\BreakpointDialog.ui">
+      <Filter>Debugger\Breakpoints</Filter>
     </QtUi>
-    <QtUi Include="Debugger\MemoryViewWidget.ui">
-      <Filter>Debugger</Filter>
+    <QtUi Include="Debugger\Breakpoints\BreakpointWidget.ui">
+      <Filter>Debugger\Breakpoints</Filter>
     </QtUi>
-    <QtUi Include="Debugger\BreakpointDialog.ui">
-      <Filter>Debugger</Filter>
+    <QtUi Include="Debugger\Docking\LayoutEditorDialog.ui">
+      <Filter>Debugger\Docking</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\Docking\NoLayoutsWidget.ui">
+      <Filter>Debugger\Docking</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\Memory\MemorySearchWidget.ui">
+      <Filter>Debugger\Memory</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\Memory\MemoryViewWidget.ui">
+      <Filter>Debugger\Memory</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\Memory\SavedAddressesWidget.ui">
+      <Filter>Debugger\Memory</Filter>
     </QtUi>
     <QtUi Include="Settings\ControllerLEDSettingsDialog.ui">
       <Filter>Settings</Filter>

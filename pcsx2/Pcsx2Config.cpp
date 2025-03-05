@@ -152,6 +152,7 @@ namespace EmuFolders
 	std::string AppRoot;
 	std::string DataRoot;
 	std::string Settings;
+	std::string DebuggerLayouts;
 	std::string DebuggerSettings;
 	std::string Bios;
 	std::string Snapshots;
@@ -1531,45 +1532,6 @@ void Pcsx2Config::GamefixOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(FullVU0SyncHack);
 }
 
-Pcsx2Config::DebugOptions::DebugOptions()
-{
-	ShowDebuggerOnStart = false;
-	AlignMemoryWindowStart = true;
-	FontWidth = 8;
-	FontHeight = 12;
-	WindowWidth = 0;
-	WindowHeight = 0;
-	MemoryViewBytesPerRow = 16;
-}
-
-void Pcsx2Config::DebugOptions::LoadSave(SettingsWrapper& wrap)
-{
-	SettingsWrapSection("EmuCore/Debugger");
-
-	SettingsWrapBitBool(ShowDebuggerOnStart);
-	SettingsWrapBitBool(AlignMemoryWindowStart);
-	SettingsWrapBitfield(FontWidth);
-	SettingsWrapBitfield(FontHeight);
-	SettingsWrapBitfield(WindowWidth);
-	SettingsWrapBitfield(WindowHeight);
-	SettingsWrapBitfield(MemoryViewBytesPerRow);
-}
-
-bool Pcsx2Config::DebugOptions::operator!=(const DebugOptions& right) const
-{
-	return !this->operator==(right);
-}
-
-bool Pcsx2Config::DebugOptions::operator==(const DebugOptions& right) const
-{
-	return OpEqu(bitset) &&
-		   OpEqu(FontWidth) &&
-		   OpEqu(FontHeight) &&
-		   OpEqu(WindowWidth) &&
-		   OpEqu(WindowHeight) &&
-		   OpEqu(MemoryViewBytesPerRow);
-}
-
 const char* Pcsx2Config::DebugAnalysisOptions::RunConditionNames[] = {
 	"Always",
 	"If Debugger Is Open",
@@ -1979,7 +1941,6 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	Profiler.LoadSave(wrap);
 	Savestate.LoadSave(wrap);
 
-	Debugger.LoadSave(wrap);
 	DebuggerAnalysis.LoadSave(wrap);
 	Trace.LoadSave(wrap);
 
@@ -2207,16 +2168,16 @@ bool EmuFolders::SetDataDirectory(Error* error)
 	if (DataRoot.empty())
 	{
 #if defined(__linux__)
-	// special check if we're on appimage
-	// always make sure that DataRoot
-	// is adjacent next to the appimage
-	if (getenv("APPIMAGE"))
-	{
-		std::string_view appimage_path = Path::GetDirectory(getenv("APPIMAGE"));
-		DataRoot = Path::RealPath(Path::Combine(appimage_path, "PCSX2"));
-	}
-	else
-		DataRoot = Path::Combine(AppRoot, GetPortableModePath());
+		// special check if we're on appimage
+		// always make sure that DataRoot
+		// is adjacent next to the appimage
+		if (getenv("APPIMAGE"))
+		{
+			std::string_view appimage_path = Path::GetDirectory(getenv("APPIMAGE"));
+			DataRoot = Path::RealPath(Path::Combine(appimage_path, "PCSX2"));
+		}
+		else
+			DataRoot = Path::Combine(AppRoot, GetPortableModePath());
 #else
 		DataRoot = Path::Combine(AppRoot, GetPortableModePath());
 #endif
@@ -2245,6 +2206,8 @@ void EmuFolders::SetDefaults(SettingsInterface& si)
 	si.SetStringValue("Folders", "Textures", "textures");
 	si.SetStringValue("Folders", "InputProfiles", "inputprofiles");
 	si.SetStringValue("Folders", "Videos", "videos");
+	si.SetStringValue("Folders", "DebuggerLayouts", "debuggerlayouts");
+	si.SetStringValue("Folders", "DebuggerSettings", "debuggersettings");
 }
 
 static std::string LoadPathFromSettings(SettingsInterface& si, const std::string& root, const char* name, const char* def)
@@ -2271,6 +2234,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Textures = LoadPathFromSettings(si, DataRoot, "Textures", "textures");
 	InputProfiles = LoadPathFromSettings(si, DataRoot, "InputProfiles", "inputprofiles");
 	Videos = LoadPathFromSettings(si, DataRoot, "Videos", "videos");
+	DebuggerLayouts = LoadPathFromSettings(si, Settings, "DebuggerLayouts", "debuggerlayouts");
 	DebuggerSettings = LoadPathFromSettings(si, Settings, "DebuggerSettings", "debuggersettings");
 
 	Console.WriteLn("BIOS Directory: %s", Bios.c_str());
@@ -2288,6 +2252,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Console.WriteLn("Textures Directory: %s", Textures.c_str());
 	Console.WriteLn("Input Profile Directory: %s", InputProfiles.c_str());
 	Console.WriteLn("Video Dumping Directory: %s", Videos.c_str());
+	Console.WriteLn("Debugger Layouts Directory: %s", DebuggerLayouts.c_str());
 	Console.WriteLn("Debugger Settings Directory: %s", DebuggerSettings.c_str());
 }
 
@@ -2304,11 +2269,12 @@ bool EmuFolders::EnsureFoldersExist()
 	result = FileSystem::CreateDirectoryPath(Covers.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(GameSettings.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(UserResources.c_str(), false) && result;
-	result = FileSystem::CreateDirectoryPath(DebuggerSettings.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(Cache.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(Textures.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(InputProfiles.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(Videos.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(DebuggerLayouts.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(DebuggerSettings.c_str(), false) && result;
 	return result;
 }
 

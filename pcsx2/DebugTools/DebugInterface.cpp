@@ -158,6 +158,57 @@ bool DebugInterface::parseExpression(PostfixExpression& exp, u64& dest, std::str
 	return parsePostfixExpression(exp, &funcs, dest, error);
 }
 
+DebugInterface& DebugInterface::get(BreakPointCpu cpu)
+{
+	switch (cpu)
+	{
+		case BREAKPOINT_EE:
+			return r5900Debug;
+		case BREAKPOINT_IOP:
+			return r3000Debug;
+		default:
+		{
+		}
+	}
+
+	pxFailRel("DebugInterface::get called with invalid cpu enum.");
+	return r5900Debug;
+}
+
+const char* DebugInterface::cpuName(BreakPointCpu cpu)
+{
+	switch (cpu)
+	{
+		case BREAKPOINT_EE:
+			return "EE";
+		case BREAKPOINT_IOP:
+			return "IOP";
+		default:
+		{
+		}
+	}
+
+	pxFailRel("DebugInterface::cpuName called with invalid cpu enum.");
+	return "";
+}
+
+const char* DebugInterface::longCpuName(BreakPointCpu cpu)
+{
+	switch (cpu)
+	{
+		case BREAKPOINT_EE:
+			return TRANSLATE("DebugInterface", "Emotion Engine");
+		case BREAKPOINT_IOP:
+			return TRANSLATE("DebugInteface", "Input Output Processor");
+		default:
+		{
+		}
+	}
+
+	pxFailRel("DebugInterface::longCpuName called with invalid cpu enum.");
+	return "";
+}
+
 //
 // R5900DebugInterface
 //

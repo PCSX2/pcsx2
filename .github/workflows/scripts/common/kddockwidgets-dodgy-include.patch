@@ -1,0 +1,13 @@
+diff --git a/src/core/indicators/ClassicDropIndicatorOverlay.h b/src/core/indicators/ClassicDropIndicatorOverlay.h
+index 2dfb9718a..9b01f002e 100644
+--- a/src/core/indicators/ClassicDropIndicatorOverlay.h
++++ b/src/core/indicators/ClassicDropIndicatorOverlay.h
+@@ -11,7 +11,7 @@
+ 
+ #pragma once
+ 
+-#include "core/DropIndicatorOverlay.h"
++#include <kddockwidgets/core/DropIndicatorOverlay.h>
+ 
+ namespace KDDockWidgets {
+ 
