@@ -62,6 +62,8 @@ public slots:
 	void gotoProgramCounterOnPause();
 	void gotoAddress(u32 address, bool should_set_focus);
 
+	void toggleBreakpoint(u32 address);
+
 private:
 	Ui::DisassemblyWidget m_ui;
 

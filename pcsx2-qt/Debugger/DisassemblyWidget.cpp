@@ -3,6 +3,7 @@
 
 #include "DisassemblyWidget.h"
 
+#include "Debugger/Breakpoints/BreakpointModel.h"
 #include "Debugger/JsonValueWrapper.h"
 
 #include "DebugTools/DebugInterface.h"
@@ -12,6 +13,7 @@
 
 #include "QtUtils.h"
 #include "QtHost.h"
+#include <QtCore/QPointer>
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QMenu>
 #include <QtGui/QClipboard>
@@ -185,22 +187,7 @@ void DisassemblyWidget::contextJumpToCursor()
 
 void DisassemblyWidget::contextToggleBreakpoint()
 {
-	if (!cpu().isAlive())
-		return;
-
-	const u32 selectedAddressStart = m_selectedAddressStart;
-	const BreakPointCpu cpuType = cpu().getCpuType();
-	if (CBreakPoints::IsAddressBreakPoint(cpuType, selectedAddressStart))
-	{
-		Host::RunOnCPUThread([cpuType, selectedAddressStart] { CBreakPoints::RemoveBreakPoint(cpuType, selectedAddressStart); });
-	}
-	else
-	{
-		Host::RunOnCPUThread([cpuType, selectedAddressStart] { CBreakPoints::AddBreakPoint(cpuType, selectedAddressStart); });
-	}
-
-	broadcastEvent(DebuggerEvents::BreakpointsChanged());
-	this->repaint();
+	toggleBreakpoint(m_selectedAddressStart);
 }
 
 void DisassemblyWidget::contextFollowBranch()
@@ -559,21 +546,7 @@ void DisassemblyWidget::mousePressEvent(QMouseEvent* event)
 
 void DisassemblyWidget::mouseDoubleClickEvent(QMouseEvent* event)
 {
-	if (!cpu().isAlive())
-		return;
-
-	const u32 selectedAddress = (static_cast<int>(event->position().y()) / m_rowHeight * 4) + m_visibleStart;
-	const BreakPointCpu cpuType = cpu().getCpuType();
-	if (CBreakPoints::IsAddressBreakPoint(cpuType, selectedAddress))
-	{
-		Host::RunOnCPUThread([cpuType, selectedAddress] { CBreakPoints::RemoveBreakPoint(cpuType, selectedAddress); });
-	}
-	else
-	{
-		Host::RunOnCPUThread([cpuType, selectedAddress] { CBreakPoints::AddBreakPoint(cpuType, selectedAddress); });
-	}
-	broadcastEvent(DebuggerEvents::BreakpointsChanged());
-	this->repaint();
+	toggleBreakpoint((static_cast<int>(event->position().y()) / m_rowHeight * 4) + m_visibleStart);
 }
 
 void DisassemblyWidget::wheelEvent(QWheelEvent* event)
@@ -914,6 +887,27 @@ void DisassemblyWidget::gotoAddress(u32 address, bool should_set_focus)
 	this->repaint();
 	if (should_set_focus)
 		this->setFocus();
+}
+
+void DisassemblyWidget::toggleBreakpoint(u32 address)
+{
+	if (!cpu().isAlive())
+		return;
+
+	QPointer<DisassemblyWidget> disassembly_widget(this);
+
+	Host::RunOnCPUThread([cpu = &cpu(), address, disassembly_widget] {
+		if (!CBreakPoints::IsAddressBreakPoint(cpu->getCpuType(), address))
+			CBreakPoints::AddBreakPoint(cpu->getCpuType(), address);
+		else
+			CBreakPoints::RemoveBreakPoint(cpu->getCpuType(), address);
+
+		QtHost::RunOnUIThread([cpu, disassembly_widget]() {
+			BreakpointModel::getInstance(*cpu)->refreshData();
+			if (disassembly_widget)
+				disassembly_widget->repaint();
+		});
+	});
 }
 
 bool DisassemblyWidget::AddressCanRestore(u32 start, u32 end)

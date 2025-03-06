@@ -11,7 +11,7 @@
 
 SavedAddressesWidget::SavedAddressesWidget(const DebuggerWidgetParameters& parameters)
 	: DebuggerWidget(parameters, DISALLOW_MULTIPLE_INSTANCES)
-	, m_model(new SavedAddressesModel(cpu(), this))
+	, m_model(SavedAddressesModel::getInstance(cpu()))
 {
 	m_ui.setupUi(this);
 
@@ -37,7 +37,7 @@ SavedAddressesWidget::SavedAddressesWidget(const DebuggerWidgetParameters& param
 	}
 
 	QTableView* savedAddressesTableView = m_ui.savedAddressesList;
-	connect(m_model, &QAbstractItemModel::dataChanged, [savedAddressesTableView](const QModelIndex& topLeft) {
+	connect(m_model, &QAbstractItemModel::dataChanged, this, [savedAddressesTableView](const QModelIndex& topLeft) {
 		savedAddressesTableView->resizeColumnToContents(topLeft.column());
 	});
 
@@ -141,18 +141,23 @@ void SavedAddressesWidget::contextPasteCSV()
 
 void SavedAddressesWidget::contextNew()
 {
-	qobject_cast<SavedAddressesModel*>(m_ui.savedAddressesList->model())->addRow();
+	m_model->addRow();
 	const u32 row_count = m_model->rowCount();
 	m_ui.savedAddressesList->edit(m_model->index(row_count - 1, 0));
 }
 
 void SavedAddressesWidget::addAddress(u32 address)
 {
-	qobject_cast<SavedAddressesModel*>(m_ui.savedAddressesList->model())->addRow();
-	const u32 row_count = m_model->rowCount();
-	const QModelIndex address_index = m_model->index(row_count - 1, 0);
+	m_model->addRow();
+
+	u32 row_count = m_model->rowCount();
+
+	QModelIndex address_index = m_model->index(row_count - 1, SavedAddressesModel::ADDRESS);
 	m_model->setData(address_index, address, Qt::UserRole);
-	m_ui.savedAddressesList->edit(m_model->index(row_count - 1, 1));
+
+	QModelIndex label_index = m_model->index(row_count - 1, SavedAddressesModel::LABEL);
+	if (label_index.isValid())
+		m_ui.savedAddressesList->edit(label_index);
 }
 
 void SavedAddressesWidget::saveToDebuggerSettings()
