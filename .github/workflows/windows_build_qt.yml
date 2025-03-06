@@ -167,8 +167,24 @@ jobs:
             !./bin/**/*.pdb
             !./bin/**/*.lib
 
+      - name: Install the Breakpad Symbol Generator
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: dump_syms
+
+      - name: Generate Breakpad Symbols
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path ./bin -Recurse -File | Where-Object { 
+            ($_.Extension -eq ".exe" -or $_.Extension -eq ".pdb") -and ($_.Name -notmatch "updater") 
+          } | ForEach-Object { 
+            & dump_syms $_.FullName >> pcsx2-qt.bpsym 
+          }
+
       - name: Upload artifact - with symbols
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}-symbols
-          path: ./bin/**/*.pdb
+          path: |
+            ./bin/**/*.pdb
+            pcsx2-qt.bpsym
