@@ -475,14 +475,14 @@ void InputVibrationBindingWidget::onClicked()
 
 	for (QString motor : input_setting_options)
 	{
-		SmallStringBase motor_ui(motor.toStdString());
+		SmallString motor_ui{std::string_view{motor.toStdString()}};
 		InputManager::PrettifyInputBinding(motor_ui, false);
 		input_ui_options.push_back(QString(motor_ui));
 	}
 
 	if (!current.isEmpty() && input_ui_options.indexOf(current) < 0)
 	{
-		input_setting_options.append(current);
+		input_ui_options.append(current);
 	}
 	else if (input_setting_options.isEmpty())
 	{
@@ -503,8 +503,8 @@ void InputVibrationBindingWidget::onClicked()
 
 	// If a controller is unplugged, we won't have the setting string to save
 	// Skip saving if selected is an existing bind from an unplugged controller
-	const int selected = input_setting_options.indexOf(input_dialog.textValue());
-	if (selected >= 0)
+	const int selected = input_ui_options.indexOf(input_dialog.textValue());
+	if (selected >= 0 && selected < input_setting_options.size())
 	{
 		// Update config
 		const std::string new_setting_value(input_setting_options[selected].toStdString());
