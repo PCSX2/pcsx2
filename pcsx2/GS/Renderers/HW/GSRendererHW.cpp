@@ -6490,7 +6490,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	if (ate_second_pass)
 	{
-		pxAssert(!env.PABE.PABE);
+		pxAssert(!m_conf.ps.pabe);
 
 		std::memcpy(&m_conf.alpha_second_pass.ps, &m_conf.ps, sizeof(m_conf.ps));
 		std::memcpy(&m_conf.alpha_second_pass.colormask, &m_conf.colormask, sizeof(m_conf.colormask));
