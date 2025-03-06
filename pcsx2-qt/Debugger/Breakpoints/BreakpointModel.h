@@ -34,8 +34,7 @@ public:
 		ExportRole = Qt::UserRole + 1,
 	};
 
-	static constexpr QHeaderView::ResizeMode HeaderResizeModes[BreakpointColumns::COLUMN_COUNT] =
-	{
+	static constexpr QHeaderView::ResizeMode HeaderResizeModes[BreakpointColumns::COLUMN_COUNT] = {
 		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::ResizeToContents,
@@ -45,7 +44,7 @@ public:
 		QHeaderView::ResizeMode::ResizeToContents,
 	};
 
-	explicit BreakpointModel(DebugInterface& cpu, QObject* parent = nullptr);
+	static BreakpointModel* getInstance(DebugInterface& cpu);
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -63,6 +62,10 @@ public:
 	void clear();
 
 private:
+	BreakpointModel(DebugInterface& cpu, QObject* parent = nullptr);
+
 	DebugInterface& m_cpu;
 	std::vector<BreakpointMemcheck> m_breakpoints;
+
+	static std::map<BreakPointCpu, BreakpointModel*> s_instances;
 };

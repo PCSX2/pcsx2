@@ -20,7 +20,7 @@ public:
 		QString description;
 	};
 
-	enum HeaderColumns: int
+	enum HeaderColumns : int
 	{
 		ADDRESS = 0,
 		LABEL,
@@ -28,14 +28,14 @@ public:
 		COLUMN_COUNT
 	};
 
-	static constexpr QHeaderView::ResizeMode HeaderResizeModes[HeaderColumns::COLUMN_COUNT] =
-	{
+	static constexpr QHeaderView::ResizeMode HeaderResizeModes[HeaderColumns::COLUMN_COUNT] = {
 		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::Stretch,
 	};
 
-	explicit SavedAddressesModel(DebugInterface& cpu, QObject* parent = nullptr);
+	static SavedAddressesModel* getInstance(DebugInterface& cpu);
+
 	QVariant data(const QModelIndex& index, int role) const override;
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -49,6 +49,10 @@ public:
 	void clear();
 
 private:
+	SavedAddressesModel(DebugInterface& cpu, QObject* parent = nullptr);
+
 	DebugInterface& m_cpu;
 	std::vector<SavedAddress> m_savedAddresses;
+
+	static std::map<BreakPointCpu, SavedAddressesModel*> s_instances;
 };

@@ -12,22 +12,9 @@
 
 BreakpointWidget::BreakpointWidget(const DebuggerWidgetParameters& parameters)
 	: DebuggerWidget(parameters, DISALLOW_MULTIPLE_INSTANCES)
-	, m_model(new BreakpointModel(cpu()))
+	, m_model(BreakpointModel::getInstance(cpu()))
 {
 	m_ui.setupUi(this);
-
-	if (cpu().getCpuType() == BREAKPOINT_EE)
-	{
-		connect(g_emu_thread, &EmuThread::onGameChanged, this, [this](const QString& title) {
-			if (title.isEmpty())
-				return;
-
-			if (m_model->rowCount() == 0)
-				DebuggerSettingsManager::loadGameSettings(m_model);
-		});
-
-		DebuggerSettingsManager::loadGameSettings(m_model);
-	}
 
 	m_ui.breakpointList->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.breakpointList, &QTableView::customContextMenuRequested, this, &BreakpointWidget::openContextMenu);
@@ -39,13 +26,6 @@ BreakpointWidget::BreakpointWidget(const DebuggerWidgetParameters& parameters)
 		m_ui.breakpointList->horizontalHeader()->setSectionResizeMode(i, mode);
 		i++;
 	}
-
-	connect(m_model, &BreakpointModel::dataChanged, m_model, &BreakpointModel::refreshData);
-
-	receiveEvent<DebuggerEvents::BreakpointsChanged>([this](const DebuggerEvents::BreakpointsChanged& event) -> bool {
-		m_model->refreshData();
-		return true;
-	});
 }
 
 void BreakpointWidget::onDoubleClicked(const QModelIndex& index)

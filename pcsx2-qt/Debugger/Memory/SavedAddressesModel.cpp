@@ -6,93 +6,112 @@
 
 #include "common/Console.h"
 
+std::map<BreakPointCpu, SavedAddressesModel*> SavedAddressesModel::s_instances;
+
 SavedAddressesModel::SavedAddressesModel(DebugInterface& cpu, QObject* parent)
 	: QAbstractTableModel(parent)
 	, m_cpu(cpu)
 {
 }
 
+SavedAddressesModel* SavedAddressesModel::getInstance(DebugInterface& cpu)
+{
+	auto iterator = s_instances.find(cpu.getCpuType());
+	if (iterator == s_instances.end())
+		iterator = s_instances.emplace(cpu.getCpuType(), new SavedAddressesModel(cpu)).first;
+
+	return iterator->second;
+}
+
 QVariant SavedAddressesModel::data(const QModelIndex& index, int role) const
 {
+	size_t row = static_cast<size_t>(index.row());
+	if (!index.isValid() || row >= m_savedAddresses.size())
+		return false;
+
+	const SavedAddress& entry = m_savedAddresses[row];
+
 	if (role == Qt::CheckStateRole)
-	{
 		return QVariant();
-	}
 
 	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
-		SavedAddress savedAddress = m_savedAddresses.at(index.row());
 		switch (index.column())
 		{
 			case HeaderColumns::ADDRESS:
-				return QString::number(savedAddress.address, 16).toUpper();
+				return QString::number(entry.address, 16).toUpper();
 			case HeaderColumns::LABEL:
-				return savedAddress.label;
+				return entry.label;
 			case HeaderColumns::DESCRIPTION:
-				return savedAddress.description;
+				return entry.description;
 		}
 	}
 	if (role == Qt::UserRole)
 	{
-		SavedAddress savedAddress = m_savedAddresses.at(index.row());
 		switch (index.column())
 		{
 			case HeaderColumns::ADDRESS:
-				return savedAddress.address;
+				return entry.address;
 			case HeaderColumns::LABEL:
-				return savedAddress.label;
+				return entry.label;
 			case HeaderColumns::DESCRIPTION:
-				return savedAddress.description;
+				return entry.description;
 		}
 	}
+
 	return QVariant();
 }
 
 bool SavedAddressesModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-	if (role == Qt::CheckStateRole)
-	{
+	size_t row = static_cast<size_t>(index.row());
+	if (!index.isValid() || row >= m_savedAddresses.size())
 		return false;
-	}
+
+	SavedAddress& entry = m_savedAddresses[row];
+
+	if (role == Qt::CheckStateRole)
+		return false;
 
 	if (role == Qt::EditRole)
 	{
-		SavedAddress addressToEdit = m_savedAddresses.at(index.row());
 		if (index.column() == HeaderColumns::ADDRESS)
 		{
 			bool ok = false;
 			const u32 address = value.toString().toUInt(&ok, 16);
 			if (ok)
-				addressToEdit.address = address;
+				entry.address = address;
 			else
 				return false;
 		}
+
 		if (index.column() == HeaderColumns::DESCRIPTION)
-			addressToEdit.description = value.toString();
+			entry.description = value.toString();
+
 		if (index.column() == HeaderColumns::LABEL)
-			addressToEdit.label = value.toString();
-		m_savedAddresses.at(index.row()) = addressToEdit;
+			entry.label = value.toString();
 
 		emit dataChanged(index, index, QList<int>(role));
 		return true;
 	}
 	else if (role == Qt::UserRole)
 	{
-		SavedAddress addressToEdit = m_savedAddresses.at(index.row());
 		if (index.column() == HeaderColumns::ADDRESS)
 		{
 			const u32 address = value.toUInt();
-			addressToEdit.address = address;
+			entry.address = address;
 		}
+
 		if (index.column() == HeaderColumns::DESCRIPTION)
-			addressToEdit.description = value.toString();
+			entry.description = value.toString();
+
 		if (index.column() == HeaderColumns::LABEL)
-			addressToEdit.label = value.toString();
-		m_savedAddresses.at(index.row()) = addressToEdit;
+			entry.label = value.toString();
 
 		emit dataChanged(index, index, QList<int>(role));
 		return true;
 	}
+
 	return false;
 }
 
@@ -155,6 +174,7 @@ bool SavedAddressesModel::removeRows(int row, int count, const QModelIndex& pare
 {
 	if (row < 0 || count < 1 || static_cast<size_t>(row + count) > m_savedAddresses.size())
 		return false;
+
 	beginRemoveRows(parent, row, row + count - 1);
 	m_savedAddresses.erase(m_savedAddresses.begin() + row, m_savedAddresses.begin() + row + count);
 	endRemoveRows();

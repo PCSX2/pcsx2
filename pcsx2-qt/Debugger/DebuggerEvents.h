@@ -47,10 +47,6 @@ namespace DebuggerEvents
 	{
 	};
 
-	struct BreakpointsChanged : Event
-	{
-	};
-
 	// Add the address to the saved addresses list and switch to that tab.
 	struct AddToSavedAddresses : Event
 	{
