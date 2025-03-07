@@ -5168,7 +5168,10 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		// ST uses a normalized position so doesn't need an offset here, will break Bionicle Heroes.
 		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
 		{
-			if (!m_downscale_source && tex->m_scale > 1.0f)
+			const u32 psm = rt ? rt->m_TEX0.PSM : ds->m_TEX0.PSM;
+			const bool can_offset = m_r.width() > GSLocalMemory::m_psm[psm].pgs.x || m_r.height() > GSLocalMemory::m_psm[psm].pgs.y;
+
+			if (can_offset && tex->m_scale > 1.0f)
 			{
 				const GSVertex* v = &m_vertex.buff[0];
 				if (PRIM->FST)
@@ -5177,9 +5180,9 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 					const int y1_frac = ((v[1].XYZ.Y - m_context->XYOFFSET.OFY) & 0xf);
 
 					if (!(x1_frac & 8))
-						m_conf.cb_vs.texture_offset.x = 6.0f + (0.25f * tex->m_scale);
+						m_conf.cb_vs.texture_offset.x = (1.0f - ((0.5f / (tex->m_unscaled_size.x * tex->m_scale)) * tex->m_unscaled_size.x)) * 8.0f;
 					if (!(y1_frac & 8))
-						m_conf.cb_vs.texture_offset.y = 6.0f + (0.25f * tex->m_scale);
+						m_conf.cb_vs.texture_offset.y = (1.0f - ((0.5f / (tex->m_unscaled_size.y * tex->m_scale)) * tex->m_unscaled_size.y)) * 8.0f;
 				}
 			}
 		}
@@ -5236,7 +5239,10 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 
 		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
 		{
-			if (!m_downscale_source && tex->m_scale > 1.0f)
+			const u32 psm = rt ? rt->m_TEX0.PSM : ds->m_TEX0.PSM;
+			const bool can_offset = m_r.width() > GSLocalMemory::m_psm[psm].pgs.x || m_r.height() > GSLocalMemory::m_psm[psm].pgs.y;
+
+			if (can_offset && tex->m_scale > 1.0f)
 			{
 				const GSVertex* v = &m_vertex.buff[0];
 				if (PRIM->FST)
@@ -5245,11 +5251,11 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 					const int y1_frac = ((v[1].XYZ.Y - m_context->XYOFFSET.OFY) & 0xf);
 
 					if (!(x1_frac & 8))
-						m_conf.cb_vs.texture_offset.x = 6.0f + (0.25f * tex->m_scale);
+						m_conf.cb_vs.texture_offset.x = (1.0f - ((0.5f / (tex->m_unscaled_size.x * tex->m_scale)) * tex->m_unscaled_size.x)) * 8.0f;
 					if (!(y1_frac & 8))
-						m_conf.cb_vs.texture_offset.y = 6.0f + (0.25f * tex->m_scale);
+						m_conf.cb_vs.texture_offset.y = (1.0f - ((0.5f / (tex->m_unscaled_size.y * tex->m_scale)) * tex->m_unscaled_size.y)) * 8.0f;
 				}
-				else
+				else if (m_vt.m_eq.q)
 				{
 					const float tw = static_cast<float>(1 << m_cached_ctx.TEX0.TW);
 					const float th = static_cast<float>(1 << m_cached_ctx.TEX0.TH);
@@ -6323,7 +6329,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
 	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
 
-	if ((GSConfig.UserHacks_HalfPixelOffset < GSHalfPixelOffset::Native || m_channel_shuffle) && rtscale > 1.0f)
+	if ((GSConfig.UserHacks_HalfPixelOffset < GSHalfPixelOffset::Native) && rtscale > 1.0f)
 	{
 		sx = 2.0f * rtscale / (rtsize.x << 4);
 		sy = 2.0f * rtscale / (rtsize.y << 4);
@@ -6360,7 +6366,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			
 			// Having the vertex negatively offset is a common thing for copying sprites but this causes problems when upscaling, so we need to further adjust the offset.
 			// This kinda screws things up when using ST, so let's not.
-			if (m_vt.m_primclass == GS_SPRITE_CLASS && rtscale > 1.0f && (!tex || PRIM->FST))
+			if (m_vt.m_primclass == GS_SPRITE_CLASS && rtscale > 1.0f && (tex && PRIM->FST))
 			{
 				const GSVertex* v = &m_vertex.buff[0];
 				const int x1_frac = ((v[1].XYZ.X - m_context->XYOFFSET.OFX) & 0xf);
