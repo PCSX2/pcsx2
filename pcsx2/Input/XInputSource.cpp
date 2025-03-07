@@ -374,9 +374,9 @@ TinyString XInputSource::ConvertKeyToString(InputBindingKey key, bool display, b
 		else if (key.source_subtype == InputSubclass::ControllerMotor)
 		{
 			if (display)
-				ret.format("XInput-{} {} Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
+				ret.format("XInput-{} {} Motor", static_cast<u32>(key.source_index), key.data ? "Small" : "Large");
 			else
-				ret.format("XInput-{}/{}Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
+				ret.format("XInput-{}/{}Motor", static_cast<u32>(key.source_index), key.data ? "Small" : "Large");
 		}
 	}
 
