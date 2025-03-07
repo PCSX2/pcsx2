@@ -172,13 +172,17 @@ jobs:
         with:
           crate: dump_syms
 
-      - name: Generate Breakpad Symbols
+      - name: Generate Breakpad Symbols # Also flatten pdbs to a 'symbols' directory for upload-artifact
         shell: pwsh
         run: |
+          mkdir -Force symbols
           Get-ChildItem -Path ./bin -Recurse -File | Where-Object { 
             ($_.Extension -eq ".exe" -or $_.Extension -eq ".pdb") -and ($_.Name -notmatch "updater") 
           } | ForEach-Object { 
-            & dump_syms $_.FullName >> pcsx2-qt.bpsym 
+            & dump_syms $_.FullName >> symbols/pcsx2-qt.bpsym
+          }
+          Get-ChildItem -Path ./bin -Recurse -Filter "*.pdb" | ForEach-Object {
+            Copy-Item $_.FullName -Destination symbols/
           }
 
       - name: Upload artifact - with symbols
@@ -186,5 +190,4 @@ jobs:
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}-symbols
           path: |
-            ./bin/**/*.pdb
-            pcsx2-qt.bpsym
+            ./symbols
