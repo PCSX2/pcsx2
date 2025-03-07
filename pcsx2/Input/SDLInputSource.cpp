@@ -966,9 +966,9 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key, bool display,
 		else if (key.source_subtype == InputSubclass::ControllerMotor)
 		{
 			if (display)
-				ret.format("SDL-{} {} Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
+				ret.format("SDL-{} {} Motor", static_cast<u32>(key.source_index), key.data ? "Small" : "Large");
 			else
-				ret.format("SDL-{}/{}Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
+				ret.format("SDL-{}/{}Motor", static_cast<u32>(key.source_index), key.data ? "Small" : "Large");
 		}
 		else if (key.source_subtype == InputSubclass::ControllerHaptic)
 		{
