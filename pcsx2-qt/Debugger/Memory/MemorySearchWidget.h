@@ -5,22 +5,23 @@
 
 #include "ui_MemorySearchWidget.h"
 
+#include "Debugger/DebuggerWidget.h"
+
 #include "DebugTools/DebugInterface.h"
 
 #include <QtWidgets/QWidget>
 #include <QtCore/QTimer>
 #include <QtCore/QMap>
 
-class MemorySearchWidget final : public QWidget
+class MemorySearchWidget final : public DebuggerWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-	MemorySearchWidget(QWidget* parent);
-    ~MemorySearchWidget() = default;
-	void setCpu(DebugInterface* cpu);
+	MemorySearchWidget(const DebuggerWidgetParameters& parameters);
+	~MemorySearchWidget() = default;
 
-    enum class SearchType
+	enum class SearchType
 	{
 		ByteType,
 		Int16Type,
@@ -77,9 +78,11 @@ public:
 		{
 			return labelToEnumMap.value(comparisonLabel, SearchComparison::Invalid);
 		}
-		QString enumToLabel(SearchComparison comparison) {
+		QString enumToLabel(SearchComparison comparison)
+		{
 			return enumToLabelMap.value(comparison, "");
 		}
+
 	private:
 		QMap<SearchComparison, QString> enumToLabelMap;
 		QMap<QString, SearchComparison> labelToEnumMap;
@@ -100,7 +103,9 @@ public:
 	public:
 		SearchResult() {}
 		SearchResult(u32 address, const QVariant& value, SearchType type)
-			: address(address), value(value), type(type)
+			: address(address)
+			, value(value)
+			, type(type)
 		{
 		}
 		bool isIntegerValue() const { return type == SearchType::ByteType || type == SearchType::Int16Type || type == SearchType::Int32Type || type == SearchType::Int64Type; }
@@ -111,7 +116,7 @@ public:
 		SearchType getType() const { return type; }
 		QByteArray getArrayValue() const { return isArrayValue() ? value.toByteArray() : QByteArray(); }
 
-		template<typename T>
+		template <typename T>
 		T getValue() const
 		{
 			return value.value<T>();
@@ -124,29 +129,21 @@ public slots:
 	void onSearchTypeChanged(int newIndex);
 	void onSearchComparisonChanged(int newIndex);
 	void loadSearchResults();
-	void contextSearchResultGoToDisassembly();
 	void contextRemoveSearchResult();
 	void contextCopySearchResultAddress();
 	void onListSearchResultsContextMenu(QPoint pos);
-
-signals:
-	void addAddressToSavedAddressesList(u32 address);
-	void goToAddressInDisassemblyView(u32 address);
-	void goToAddressInMemoryView(u32 address);
-	void switchToMemoryViewTab();
 
 private:
 	std::vector<SearchResult> m_searchResults;
 	SearchComparisonLabelMap m_searchComparisonLabelMap;
 	Ui::MemorySearchWidget m_ui;
-	DebugInterface* m_cpu;
 	QTimer m_resultsLoadTimer;
 
 	u32 m_initialResultsLoadLimit = 20000;
 	u32 m_numResultsAddedPerLoad = 10000;
 
 	void updateSearchComparisonSelections();
-	std::vector<SearchComparison> getValidSearchComparisonsForState(SearchType type, std::vector<SearchResult> &existingResults);
+	std::vector<SearchComparison> getValidSearchComparisonsForState(SearchType type, std::vector<SearchResult>& existingResults);
 	SearchType getCurrentSearchType();
 	SearchComparison getCurrentSearchComparison();
 	bool doesSearchComparisonTakeInput(SearchComparison comparison);

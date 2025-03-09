@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1000</width>
+    <height>750</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,31 +18,74 @@
     <normalon>:/icons/AppIcon64.png</normalon>
    </iconset>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QTabWidget" name="cpuTabs"/>
-    </item>
-   </layout>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1000</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionAnalyse"/>
+    <addaction name="actionSettings"/>
+    <addaction name="actionGameSettings"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose"/>
+   </widget>
+   <widget class="QMenu" name="menuDebug">
+    <property name="title">
+     <string>Debug</string>
+    </property>
+    <addaction name="actionRun"/>
+    <addaction name="actionStepInto"/>
+    <addaction name="actionStepOver"/>
+    <addaction name="actionStepOut"/>
+   </widget>
+   <widget class="QMenu" name="menuWindows">
+    <property name="title">
+     <string>Windows</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionOnTop"/>
+    <addaction name="separator"/>
+    <addaction name="actionIncreaseFontSize"/>
+    <addaction name="actionDecreaseFontSize"/>
+    <addaction name="actionResetFontSize"/>
+   </widget>
+   <widget class="QMenu" name="menuLayouts">
+    <property name="title">
+     <string>Layouts</string>
+    </property>
+    <addaction name="actionResetAllLayouts"/>
+    <addaction name="actionResetDefaultLayouts"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuView"/>
+   <addaction name="menuDebug"/>
+   <addaction name="menuTools"/>
+   <addaction name="menuWindows"/>
+   <addaction name="menuLayouts"/>
   </widget>
-  <widget class="QToolBar" name="toolBar">
-   <property name="contextMenuPolicy">
-    <enum>Qt::ContextMenuPolicy::PreventContextMenu</enum>
-   </property>
-   <property name="movable">
-    <bool>false</bool>
-   </property>
-   <property name="iconSize">
-    <size>
-     <width>16</width>
-     <height>16</height>
-    </size>
+  <widget class="QToolBar" name="toolBarDebug">
+   <property name="windowTitle">
+    <string>Debug</string>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-   </property>
-   <property name="floatable">
-    <bool>false</bool>
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -54,8 +97,57 @@
    <addaction name="actionStepInto"/>
    <addaction name="actionStepOver"/>
    <addaction name="actionStepOut"/>
+  </widget>
+  <widget class="QToolBar" name="toolBarFile">
+   <property name="windowTitle">
+    <string>File</string>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
    <addaction name="actionAnalyse"/>
+   <addaction name="actionSettings"/>
+   <addaction name="actionGameSettings"/>
+  </widget>
+  <widget class="QToolBar" name="toolBarSystem">
+   <property name="windowTitle">
+    <string>System</string>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionShutDown"/>
+   <addaction name="actionReset"/>
+  </widget>
+  <widget class="QToolBar" name="toolBarView">
+   <property name="windowTitle">
+    <string>View</string>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
    <addaction name="actionOnTop"/>
+   <addaction name="actionIncreaseFontSize"/>
+   <addaction name="actionDecreaseFontSize"/>
+   <addaction name="actionResetFontSize"/>
   </widget>
   <action name="actionRun">
    <property name="icon">
@@ -118,6 +210,112 @@
    </property>
    <property name="text">
     <string>Analyze</string>
+   </property>
+  </action>
+  <action name="actionResetAllLayouts">
+   <property name="text">
+    <string>Reset All Layouts</string>
+   </property>
+  </action>
+  <action name="actionResetDefaultLayouts">
+   <property name="text">
+    <string>Reset Default Layouts</string>
+   </property>
+  </action>
+  <action name="actionResetSplitterPositions">
+   <property name="text">
+    <string>Reset Splitter Positions</string>
+   </property>
+  </action>
+  <action name="actionShutDown">
+   <property name="icon">
+    <iconset theme="shut-down-line"/>
+   </property>
+   <property name="text">
+    <string>Shut Down</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="icon">
+    <iconset theme="restart-line"/>
+   </property>
+   <property name="text">
+    <string>Reset</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="icon">
+    <iconset theme="close-line"/>
+   </property>
+   <property name="text">
+    <string>Close</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionIncreaseFontSize">
+   <property name="icon">
+    <iconset theme="zoom-in-line"/>
+   </property>
+   <property name="text">
+    <string>Increase Font Size</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionDecreaseFontSize">
+   <property name="icon">
+    <iconset theme="zoom-out-line"/>
+   </property>
+   <property name="text">
+    <string>Decrease Font Size</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionResetFontSize">
+   <property name="icon">
+    <iconset theme="refresh-line"/>
+   </property>
+   <property name="text">
+    <string>Reset Font Size</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset theme="settings-3-line"/>
+   </property>
+   <property name="text">
+    <string>Settings</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionGameSettings">
+   <property name="icon">
+    <iconset theme="file-settings-line"/>
+   </property>
+   <property name="text">
+    <string>Game Settings</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
    </property>
   </action>
  </widget>

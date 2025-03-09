@@ -29,6 +29,7 @@
     "modules/20-sdl3.json",
     "modules/21-libbacktrace.json",
     "modules/22-shaderc.json",
+    "modules/23-kddockwidgets.json",
     {
       "name": "pcsx2",
       "buildsystem": "cmake-ninja",

@@ -3,39 +3,70 @@
 
 #pragma once
 
-#include "CpuWidget.h"
-
 #include "ui_DebuggerWindow.h"
 
-class DebuggerWindow : public QMainWindow
+#include "DebugTools/DebugInterface.h"
+
+#include <kddockwidgets/MainWindow.h>
+
+class DockManager;
+
+class DebuggerWindow : public KDDockWidgets::QtWidgets::MainWindow
 {
 	Q_OBJECT
 
 public:
 	DebuggerWindow(QWidget* parent);
-	~DebuggerWindow();
+
+	static DebuggerWindow* getInstance();
+	static DebuggerWindow* createInstance();
+	static void destroyInstance();
+	static bool shouldShowOnStartup();
+
+	DockManager& dockManager();
+
+	void setupDefaultToolBarState();
+	void clearToolBarState();
+	void setupFonts();
+	void updateFontActions();
+	void saveFontSize();
+	int fontSize();
+	void updateStyleSheets();
+
+	void saveWindowGeometry();
+	void restoreWindowGeometry();
+	bool shouldSaveWindowGeometry();
 
 public slots:
-	void onVMStateChanged();
+	void onVMStarting();
+	void onVMPaused();
+	void onVMResumed();
+	void onVMStopped();
+
+	void onAnalyse();
+	void onSettings();
+	void onGameSettings();
 	void onRunPause();
 	void onStepInto();
 	void onStepOver();
 	void onStepOut();
-	void onAnalyse();
 
 protected:
-	void showEvent(QShowEvent* event);
-	void hideEvent(QHideEvent *event);
+	void closeEvent(QCloseEvent* event);
 
 private:
+	DebugInterface* currentCPU();
+
 	Ui::DebuggerWindow m_ui;
-	QAction* m_actionRunPause;
-	QAction* m_actionStepInto;
-	QAction* m_actionStepOver;
-	QAction* m_actionStepOut;
 
-	CpuWidget* m_cpuWidget_r5900;
-	CpuWidget* m_cpuWidget_r3000;
+	DockManager* m_dock_manager;
 
-	void setTabActiveStyle(BreakPointCpu toggledCPU);
+	QByteArray m_default_toolbar_state;
+
+	int m_font_size;
+	static const constexpr int DEFAULT_FONT_SIZE = 10;
+	static const constexpr int MINIMUM_FONT_SIZE = 5;
+	static const constexpr int MAXIMUM_FONT_SIZE = 30;
 };
+
+extern DebuggerWindow* g_debugger_window;

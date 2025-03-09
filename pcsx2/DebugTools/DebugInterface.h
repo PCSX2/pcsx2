@@ -33,6 +33,11 @@ enum BreakPointCpu
 	BREAKPOINT_IOP_AND_EE = 0x03
 };
 
+inline const std::array<BreakPointCpu, 2> DEBUG_CPUS = {
+	BREAKPOINT_EE,
+	BREAKPOINT_IOP,
+};
+
 class MemoryReader
 {
 public:
@@ -86,9 +91,6 @@ public:
 	virtual SymbolImporter* GetSymbolImporter() const = 0;
 	virtual std::vector<std::unique_ptr<BiosThread>> GetThreadList() const = 0;
 
-	bool evaluateExpression(const char* expression, u64& dest, std::string& error);
-	bool initExpression(const char* exp, PostfixExpression& dest, std::string& error);
-	bool parseExpression(PostfixExpression& exp, u64& dest, std::string& error);
 	bool isAlive();
 	bool isCpuPaused();
 	void pauseCpu();
@@ -98,8 +100,16 @@ public:
 	std::optional<u32> getCallerStackPointer(const ccc::Function& currentFunction);
 	std::optional<u32> getStackFrameSize(const ccc::Function& currentFunction);
 
+	bool evaluateExpression(const char* expression, u64& dest, std::string& error);
+	bool initExpression(const char* exp, PostfixExpression& dest, std::string& error);
+	bool parseExpression(PostfixExpression& exp, u64& dest, std::string& error);
+
 	static void setPauseOnEntry(bool pauseOnEntry) { m_pause_on_entry = pauseOnEntry; };
 	static bool getPauseOnEntry() { return m_pause_on_entry; }
+
+	static DebugInterface& get(BreakPointCpu cpu);
+	static const char* cpuName(BreakPointCpu cpu);
+	static const char* longCpuName(BreakPointCpu cpu);
 
 private:
 	static bool m_pause_on_entry;

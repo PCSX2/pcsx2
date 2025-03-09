@@ -2,15 +2,17 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "MemoryViewWidget.h"
-#include "common/Console.h"
+
+#include "Debugger/JsonValueWrapper.h"
 
 #include "QtHost.h"
 #include "QtUtils.h"
-#include <QtGui/QMouseEvent>
 #include <QtCore/QObject>
+#include <QtGui/QActionGroup>
+#include <QtGui/QClipboard>
+#include <QtGui/QMouseEvent>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
-#include <QtGui/QClipboard>
 
 using namespace QtUtils;
 
@@ -41,7 +43,7 @@ void MemoryViewTable::UpdateSelectedAddress(u32 selected, bool page)
 	}
 }
 
-void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 height)
+void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 height, DebugInterface& cpu)
 {
 	rowHeight = painter.fontMetrics().height() + 2;
 	const s32 charWidth = painter.fontMetrics().averageCharWidth();
@@ -106,7 +108,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 			{
 				case MemoryViewType::BYTE:
 				{
-					const u8 val = static_cast<u8>(m_cpu->read8(thisSegmentsStart, valid));
+					const u8 val = static_cast<u8>(cpu.read8(thisSegmentsStart, valid));
 					if (penDefault && val == 0)
 						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "??");
@@ -114,7 +116,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 				}
 				case MemoryViewType::BYTEHW:
 				{
-					const u16 val = convertEndian<u16>(static_cast<u16>(m_cpu->read16(thisSegmentsStart, valid)));
+					const u16 val = convertEndian<u16>(static_cast<u16>(cpu.read16(thisSegmentsStart, valid)));
 					if (penDefault && val == 0)
 						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "????");
@@ -122,7 +124,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 				}
 				case MemoryViewType::WORD:
 				{
-					const u32 val = convertEndian<u32>(m_cpu->read32(thisSegmentsStart, valid));
+					const u32 val = convertEndian<u32>(cpu.read32(thisSegmentsStart, valid));
 					if (penDefault && val == 0)
 						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "????????");
@@ -130,7 +132,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 				}
 				case MemoryViewType::DWORD:
 				{
-					const u64 val = convertEndian<u64>(m_cpu->read64(thisSegmentsStart, valid));
+					const u64 val = convertEndian<u64>(cpu.read64(thisSegmentsStart, valid));
 					if (penDefault && val == 0)
 						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "????????????????");
@@ -153,7 +155,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 				painter.setPen(palette.text().color());
 
 			bool valid;
-			const u8 value = m_cpu->read8(currentRowAddress + j, valid);
+			const u8 value = cpu.read8(currentRowAddress + j, valid);
 			if (valid)
 			{
 				QChar curChar = QChar::fromLatin1(value);
@@ -173,6 +175,10 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 
 void MemoryViewTable::SelectAt(QPoint pos)
 {
+	// Check if SelectAt was called before DrawTable.
+	if (rowHeight == 0)
+		return;
+
 	const u32 selectedRow = (pos.y() - 2) / (rowHeight);
 	const s32 x = pos.x();
 	const s32 avgSegmentWidth = segmentXAxis[1] - segmentXAxis[0];
@@ -212,54 +218,54 @@ void MemoryViewTable::SelectAt(QPoint pos)
 	}
 }
 
-u128 MemoryViewTable::GetSelectedSegment()
+u128 MemoryViewTable::GetSelectedSegment(DebugInterface& cpu)
 {
 	u128 val;
 	switch (displayType)
 	{
 		case MemoryViewType::BYTE:
-			val.lo = m_cpu->read8(selectedAddress);
+			val.lo = cpu.read8(selectedAddress);
 			break;
 		case MemoryViewType::BYTEHW:
-			val.lo = convertEndian(static_cast<u16>(m_cpu->read16(selectedAddress & ~1)));
+			val.lo = convertEndian(static_cast<u16>(cpu.read16(selectedAddress & ~1)));
 			break;
 		case MemoryViewType::WORD:
-			val.lo = convertEndian(m_cpu->read32(selectedAddress & ~3));
+			val.lo = convertEndian(cpu.read32(selectedAddress & ~3));
 			break;
 		case MemoryViewType::DWORD:
-			val._u64[0] = convertEndian(m_cpu->read64(selectedAddress & ~7));
+			val._u64[0] = convertEndian(cpu.read64(selectedAddress & ~7));
 			break;
 	}
 	return val;
 }
 
-void MemoryViewTable::InsertIntoSelectedHexView(u8 value)
+void MemoryViewTable::InsertIntoSelectedHexView(u8 value, DebugInterface& cpu)
 {
 	const u8 mask = selectedNibbleHI ? 0x0f : 0xf0;
-	u8 curVal = m_cpu->read8(selectedAddress) & mask;
+	u8 curVal = cpu.read8(selectedAddress) & mask;
 	u8 newVal = value << (selectedNibbleHI ? 4 : 0);
 	curVal |= newVal;
 
-	Host::RunOnCPUThread([this, address = selectedAddress, cpu = m_cpu, val = curVal] {
-		cpu->write8(address, val);
+	Host::RunOnCPUThread([this, address = selectedAddress, &cpu, val = curVal] {
+		cpu.write8(address, val);
 		QtHost::RunOnUIThread([this] { parent->update(); });
 	});
 }
 
-void MemoryViewTable::InsertAtCurrentSelection(const QString& text)
+void MemoryViewTable::InsertAtCurrentSelection(const QString& text, DebugInterface& cpu)
 {
-	if (!m_cpu->isValidAddress(selectedAddress))
+	if (!cpu.isValidAddress(selectedAddress))
 		return;
 
 	// If pasting into the hex view, also decode the input as hex bytes.
 	// This approach prevents one from pasting on a nibble boundary, but that is almost always
 	// user error, and we don't have an undo function in this view, so best to stay conservative.
 	QByteArray input = selectedText ? text.toUtf8() : QByteArray::fromHex(text.toUtf8());
-	Host::RunOnCPUThread([this, address = selectedAddress, cpu = m_cpu, inBytes = input] {
+	Host::RunOnCPUThread([this, address = selectedAddress, &cpu, inBytes = input] {
 		u32 currAddr = address;
 		for (int i = 0; i < inBytes.size(); i++)
 		{
-			cpu->write8(currAddr, inBytes[i]);
+			cpu.write8(currAddr, inBytes[i]);
 			currAddr = nextAddress(currAddr);
 			QtHost::RunOnUIThread([this] { parent->update(); });
 		}
@@ -339,9 +345,9 @@ void MemoryViewTable::BackwardSelection()
 
 
 // We need both key and keychar because `key` is easy to use, but is case insensitive
-bool MemoryViewTable::KeyPress(int key, QChar keychar)
+bool MemoryViewTable::KeyPress(int key, QChar keychar, DebugInterface& cpu)
 {
-	if (!m_cpu->isValidAddress(selectedAddress))
+	if (!cpu.isValidAddress(selectedAddress))
 		return false;
 
 	bool pressHandled = false;
@@ -352,8 +358,8 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar)
 	{
 		if (keyCharIsText || (!keychar.isNonCharacter() && keychar.category() != QChar::Other_Control))
 		{
-			Host::RunOnCPUThread([this, address = selectedAddress, cpu = m_cpu, val = keychar.toLatin1()] {
-				cpu->write8(address, val);
+			Host::RunOnCPUThread([this, address = selectedAddress, &cpu, val = keychar.toLatin1()] {
+				cpu.write8(address, val);
 				QtHost::RunOnUIThread([this] { UpdateSelectedAddress(selectedAddress + 1); parent->update(); });
 			});
 			pressHandled = true;
@@ -363,8 +369,8 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar)
 		{
 			case Qt::Key::Key_Backspace:
 			case Qt::Key::Key_Escape:
-				Host::RunOnCPUThread([this, address = selectedAddress, cpu = m_cpu] {
-					cpu->write8(address, 0);
+				Host::RunOnCPUThread([this, address = selectedAddress, &cpu] {
+					cpu.write8(address, 0);
 					QtHost::RunOnUIThread([this] {BackwardSelection(); parent->update(); });
 				});
 				pressHandled = true;
@@ -391,7 +397,7 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar)
 			const u8 keyPressed = static_cast<u8>(QString(QChar(key)).toInt(&pressHandled, 16));
 			if (pressHandled)
 			{
-				InsertIntoSelectedHexView(keyPressed);
+				InsertIntoSelectedHexView(keyPressed, cpu);
 				ForwardSelection();
 			}
 		}
@@ -400,7 +406,7 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar)
 		{
 			case Qt::Key::Key_Backspace:
 			case Qt::Key::Key_Escape:
-				InsertIntoSelectedHexView(0);
+				InsertIntoSelectedHexView(0, cpu);
 				BackwardSelection();
 				pressHandled = true;
 				break;
@@ -447,123 +453,174 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar)
 /*
 	MemoryViewWidget
 */
-MemoryViewWidget::MemoryViewWidget(QWidget* parent)
-	: QWidget(parent)
+MemoryViewWidget::MemoryViewWidget(const DebuggerWidgetParameters& parameters)
+	: DebuggerWidget(parameters, MONOSPACE_FONT)
 	, m_table(this)
 {
 	ui.setupUi(this);
-	this->setFocusPolicy(Qt::FocusPolicy::ClickFocus);
-	connect(this, &MemoryViewWidget::customContextMenuRequested, this, &MemoryViewWidget::customMenuRequested);
+
+	setFocusPolicy(Qt::FocusPolicy::ClickFocus);
+
+	setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(this, &MemoryViewWidget::customContextMenuRequested, this, &MemoryViewWidget::openContextMenu);
+
+	m_table.UpdateStartAddress(0x100000);
+
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		update();
+		return true;
+	});
+
+	receiveEvent<DebuggerEvents::GoToAddress>([this](const DebuggerEvents::GoToAddress& event) -> bool {
+		if (event.filter != DebuggerEvents::GoToAddress::NONE &&
+			event.filter != DebuggerEvents::GoToAddress::MEMORY_VIEW)
+			return false;
+
+		gotoAddress(event.address);
+
+		if (event.switch_to_tab)
+			switchToThisTab();
+
+		return true;
+	});
 }
 
 MemoryViewWidget::~MemoryViewWidget() = default;
 
-void MemoryViewWidget::SetCpu(DebugInterface* cpu)
+void MemoryViewWidget::toJson(JsonValueWrapper& json)
 {
-	m_cpu = cpu;
-	m_table.SetCpu(cpu);
-	m_table.UpdateStartAddress(0x480000);
+	DebuggerWidget::toJson(json);
+
+	json.value().AddMember("startAddress", m_table.startAddress, json.allocator());
+	json.value().AddMember("viewType", static_cast<int>(m_table.GetViewType()), json.allocator());
+	json.value().AddMember("littleEndian", m_table.GetLittleEndian(), json.allocator());
+}
+
+bool MemoryViewWidget::fromJson(const JsonValueWrapper& json)
+{
+	if (!DebuggerWidget::fromJson(json))
+		return false;
+
+	auto start_address = json.value().FindMember("startAddress");
+	if (start_address != json.value().MemberEnd() && start_address->value.IsUint())
+		m_table.UpdateStartAddress(start_address->value.GetUint());
+
+	auto view_type = json.value().FindMember("viewType");
+	if (view_type != json.value().MemberEnd() && view_type->value.IsInt())
+	{
+		MemoryViewType type = static_cast<MemoryViewType>(view_type->value.GetInt());
+		if (type == MemoryViewType::BYTE ||
+			type == MemoryViewType::BYTEHW ||
+			type == MemoryViewType::WORD ||
+			type == MemoryViewType::DWORD)
+			m_table.SetViewType(type);
+	}
+
+	auto little_endian = json.value().FindMember("littleEndian");
+	if (little_endian != json.value().MemberEnd() && little_endian->value.IsBool())
+		m_table.SetLittleEndian(little_endian->value.GetBool());
+
+	repaint();
+
+	return true;
 }
 
 void MemoryViewWidget::paintEvent(QPaintEvent* event)
 {
-	if (!m_cpu->isAlive())
-		return;
-
 	QPainter painter(this);
 
-	m_table.DrawTable(painter, this->palette(), this->height());
+	painter.fillRect(rect(), palette().window());
+
+	if (!cpu().isAlive())
+		return;
+
+	m_table.DrawTable(painter, this->palette(), this->height(), cpu());
 }
 
 void MemoryViewWidget::mousePressEvent(QMouseEvent* event)
 {
-	if (!m_cpu->isAlive())
+	if (!cpu().isAlive())
 		return;
 
 	m_table.SelectAt(event->pos());
 	repaint();
 }
 
-void MemoryViewWidget::customMenuRequested(QPoint pos)
+void MemoryViewWidget::openContextMenu(QPoint pos)
 {
-	if (!m_cpu->isAlive())
+	if (!cpu().isAlive())
 		return;
 
-	if (!m_contextMenu)
-	{
-		m_contextMenu = new QMenu(this);
+	QMenu* menu = new QMenu(this);
+	menu->setAttribute(Qt::WA_DeleteOnClose);
 
-		QAction* action = new QAction(tr("Copy Address"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { QApplication::clipboard()->setText(QString::number(m_table.selectedAddress, 16).toUpper()); });
+	QAction* copy_action = menu->addAction(tr("Copy Address"));
+	connect(copy_action, &QAction::triggered, this, [this]() {
+		QApplication::clipboard()->setText(QString::number(m_table.selectedAddress, 16).toUpper());
+	});
 
-		action = new QAction(tr("Go to in Disassembly"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { emit gotoInDisasm(m_table.selectedAddress); });
+	createEventActions<DebuggerEvents::GoToAddress>(menu, [this]() {
+		DebuggerEvents::GoToAddress event;
+		event.address = m_table.selectedAddress;
+		return std::optional(event);
+	});
 
-		action = new QAction(tr("Go to address"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { contextGoToAddress(); });
+	QAction* go_to_address_action = menu->addAction(tr("Go to address"));
+	connect(go_to_address_action, &QAction::triggered, this, [this]() { contextGoToAddress(); });
 
-		m_contextMenu->addSeparator();
+	menu->addSeparator();
 
-		m_actionLittleEndian = new QAction(tr("Show as Little Endian"));
-		m_actionLittleEndian->setCheckable(true);
-		m_contextMenu->addAction(m_actionLittleEndian);
-		connect(m_actionLittleEndian, &QAction::triggered, this, [this]() { m_table.SetLittleEndian(m_actionLittleEndian->isChecked()); });
+	QAction* endian_action = menu->addAction(tr("Show as Little Endian"));
+	endian_action->setCheckable(true);
+	endian_action->setChecked(m_table.GetLittleEndian());
+	connect(endian_action, &QAction::triggered, this, [this, endian_action]() {
+		m_table.SetLittleEndian(endian_action->isChecked());
+	});
 
-		// View Types
-		m_actionBYTE = new QAction(tr("Show as 1 byte"));
-		m_actionBYTE->setCheckable(true);
-		m_contextMenu->addAction(m_actionBYTE);
-		connect(m_actionBYTE, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::BYTE); });
+	const MemoryViewType current_view_type = m_table.GetViewType();
 
-		m_actionBYTEHW = new QAction(tr("Show as 2 bytes"));
-		m_actionBYTEHW->setCheckable(true);
-		m_contextMenu->addAction(m_actionBYTEHW);
-		connect(m_actionBYTEHW, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::BYTEHW); });
+	// View Types
+	QActionGroup* view_type_group = new QActionGroup(menu);
+	view_type_group->setExclusive(true);
 
-		m_actionWORD = new QAction(tr("Show as 4 bytes"));
-		m_actionWORD->setCheckable(true);
-		m_contextMenu->addAction(m_actionWORD);
-		connect(m_actionWORD, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::WORD); });
+	QAction* byte_action = menu->addAction(tr("Show as 1 byte"));
+	byte_action->setCheckable(true);
+	byte_action->setChecked(current_view_type == MemoryViewType::BYTE);
+	connect(byte_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::BYTE); });
+	view_type_group->addAction(byte_action);
 
-		m_actionDWORD = new QAction(tr("Show as 8 bytes"));
-		m_actionDWORD->setCheckable(true);
-		m_contextMenu->addAction(m_actionDWORD);
-		connect(m_actionDWORD, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::DWORD); });
+	QAction* bytehw_action = menu->addAction(tr("Show as 2 bytes"));
+	bytehw_action->setCheckable(true);
+	bytehw_action->setChecked(current_view_type == MemoryViewType::BYTEHW);
+	connect(bytehw_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::BYTEHW); });
+	view_type_group->addAction(bytehw_action);
 
-		m_contextMenu->addSeparator();
+	QAction* word_action = menu->addAction(tr("Show as 4 bytes"));
+	word_action->setCheckable(true);
+	word_action->setChecked(current_view_type == MemoryViewType::WORD);
+	connect(word_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::WORD); });
+	view_type_group->addAction(word_action);
 
-		action = new QAction((tr("Add to Saved Memory Addresses")));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { emit addToSavedAddresses(m_table.selectedAddress); });
+	QAction* dword_action = menu->addAction(tr("Show as 8 bytes"));
+	dword_action->setCheckable(true);
+	dword_action->setChecked(current_view_type == MemoryViewType::DWORD);
+	connect(dword_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::DWORD); });
+	view_type_group->addAction(dword_action);
 
-		action = new QAction(tr("Copy Byte"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { contextCopyByte(); });
+	menu->addSeparator();
 
-		action = new QAction(tr("Copy Segment"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { contextCopySegment(); });
+	createEventActions<DebuggerEvents::AddToSavedAddresses>(menu, [this]() {
+		DebuggerEvents::AddToSavedAddresses event;
+		event.address = m_table.selectedAddress;
+		return std::optional(event);
+	});
 
-		action = new QAction(tr("Copy Character"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { contextCopyCharacter(); });
+	connect(menu->addAction(tr("Copy Byte")), &QAction::triggered, this, &MemoryViewWidget::contextCopyByte);
+	connect(menu->addAction(tr("Copy Segment")), &QAction::triggered, this, &MemoryViewWidget::contextCopySegment);
+	connect(menu->addAction(tr("Copy Character")), &QAction::triggered, this, &MemoryViewWidget::contextCopyCharacter);
+	connect(menu->addAction(tr("Paste")), &QAction::triggered, this, &MemoryViewWidget::contextPaste);
 
-		action = new QAction(tr("Paste"));
-		m_contextMenu->addAction(action);
-		connect(action, &QAction::triggered, this, [this]() { contextPaste(); });
-	}
-	m_actionLittleEndian->setChecked(m_table.GetLittleEndian());
-
-	const MemoryViewType currentViewType = m_table.GetViewType();
-
-	m_actionBYTE->setChecked(currentViewType == MemoryViewType::BYTE);
-	m_actionBYTEHW->setChecked(currentViewType == MemoryViewType::BYTEHW);
-	m_actionWORD->setChecked(currentViewType == MemoryViewType::WORD);
-	m_actionDWORD->setChecked(currentViewType == MemoryViewType::DWORD);
-	m_contextMenu->popup(this->mapToGlobal(pos));
+	menu->popup(this->mapToGlobal(pos));
 
 	this->repaint();
 	return;
@@ -571,22 +628,22 @@ void MemoryViewWidget::customMenuRequested(QPoint pos)
 
 void MemoryViewWidget::contextCopyByte()
 {
-	QApplication::clipboard()->setText(QString::number(m_cpu->read8(m_table.selectedAddress), 16).toUpper());
+	QApplication::clipboard()->setText(QString::number(cpu().read8(m_table.selectedAddress), 16).toUpper());
 }
 
 void MemoryViewWidget::contextCopySegment()
 {
-	QApplication::clipboard()->setText(QString::number(m_table.GetSelectedSegment().lo, 16).toUpper());
+	QApplication::clipboard()->setText(QString::number(m_table.GetSelectedSegment(cpu()).lo, 16).toUpper());
 }
 
 void MemoryViewWidget::contextCopyCharacter()
 {
-	QApplication::clipboard()->setText(QChar::fromLatin1(m_cpu->read8(m_table.selectedAddress)).toUpper());
+	QApplication::clipboard()->setText(QChar::fromLatin1(cpu().read8(m_table.selectedAddress)).toUpper());
 }
 
 void MemoryViewWidget::contextPaste()
 {
-	m_table.InsertAtCurrentSelection(QApplication::clipboard()->text());
+	m_table.InsertAtCurrentSelection(QApplication::clipboard()->text(), cpu());
 }
 
 void MemoryViewWidget::contextGoToAddress()
@@ -600,7 +657,7 @@ void MemoryViewWidget::contextGoToAddress()
 
 	u64 address = 0;
 	std::string error;
-	if (!m_cpu->evaluateExpression(targetString.toStdString().c_str(), address, error))
+	if (!cpu().evaluateExpression(targetString.toStdString().c_str(), address, error))
 	{
 		QMessageBox::warning(this, tr("Cannot Go To"), QString::fromStdString(error));
 		return;
@@ -628,7 +685,7 @@ void MemoryViewWidget::wheelEvent(QWheelEvent* event)
 
 void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
 {
-	if (!m_table.KeyPress(event->key(), event->text().size() ? event->text()[0] : '\0'))
+	if (!m_table.KeyPress(event->key(), event->text().size() ? event->text()[0] : '\0', cpu()))
 	{
 		switch (event->key())
 		{
@@ -644,7 +701,7 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
 		}
 	}
 	this->repaint();
-	VMUpdate();
+	DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
 }
 
 void MemoryViewWidget::gotoAddress(u32 address)

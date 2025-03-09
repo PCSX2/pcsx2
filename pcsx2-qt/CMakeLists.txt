@@ -86,6 +86,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/DebugAnalysisSettingsWidget.cpp
 	Settings/DebugAnalysisSettingsWidget.h
 	Settings/DebugAnalysisSettingsWidget.ui
+	Settings/DebugUserInterfaceSettingsWidget.cpp
+	Settings/DebugUserInterfaceSettingsWidget.h
+	Settings/DebugUserInterfaceSettingsWidget.ui
 	Settings/DebugSettingsWidget.cpp
 	Settings/DebugSettingsWidget.h
 	Settings/DebugSettingsWidget.ui
@@ -158,37 +161,66 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/AnalysisOptionsDialog.cpp
 	Debugger/AnalysisOptionsDialog.h
 	Debugger/AnalysisOptionsDialog.ui
-	Debugger/CpuWidget.cpp
-	Debugger/CpuWidget.h
-	Debugger/CpuWidget.ui
 	Debugger/DebuggerSettingsManager.cpp
 	Debugger/DebuggerSettingsManager.h
+	Debugger/DebuggerEvents.h
+	Debugger/DebuggerWidget.cpp
+	Debugger/DebuggerWidget.h
 	Debugger/DebuggerWindow.cpp
 	Debugger/DebuggerWindow.h
 	Debugger/DebuggerWindow.ui
 	Debugger/DisassemblyWidget.cpp
 	Debugger/DisassemblyWidget.h
 	Debugger/DisassemblyWidget.ui
-	Debugger/MemorySearchWidget.cpp
-	Debugger/MemorySearchWidget.h
-	Debugger/MemorySearchWidget.ui
-	Debugger/MemoryViewWidget.cpp
-	Debugger/MemoryViewWidget.h
-	Debugger/MemoryViewWidget.ui
+	Debugger/JsonValueWrapper.h
 	Debugger/RegisterWidget.cpp
 	Debugger/RegisterWidget.h
 	Debugger/RegisterWidget.ui
-	Debugger/BreakpointDialog.cpp
-	Debugger/BreakpointDialog.h
-	Debugger/BreakpointDialog.ui
-	Debugger/Models/BreakpointModel.cpp
-	Debugger/Models/BreakpointModel.h
-	Debugger/Models/ThreadModel.cpp
-	Debugger/Models/ThreadModel.h
-	Debugger/Models/StackModel.cpp
-	Debugger/Models/StackModel.h
-	Debugger/Models/SavedAddressesModel.cpp
-	Debugger/Models/SavedAddressesModel.h
+	Debugger/StackModel.cpp
+	Debugger/StackModel.h
+	Debugger/StackWidget.cpp
+	Debugger/StackWidget.h
+	Debugger/ThreadModel.cpp
+	Debugger/ThreadModel.h
+	Debugger/ThreadWidget.cpp
+	Debugger/ThreadWidget.h
+	Debugger/Breakpoints/BreakpointDialog.cpp
+	Debugger/Breakpoints/BreakpointDialog.h
+	Debugger/Breakpoints/BreakpointDialog.ui
+	Debugger/Breakpoints/BreakpointModel.cpp
+	Debugger/Breakpoints/BreakpointModel.h
+	Debugger/Breakpoints/BreakpointWidget.cpp
+	Debugger/Breakpoints/BreakpointWidget.h
+	Debugger/Breakpoints/BreakpointWidget.ui
+	Debugger/Docking/DockLayout.cpp
+	Debugger/Docking/DockLayout.h
+	Debugger/Docking/DockManager.cpp
+	Debugger/Docking/DockManager.h
+	Debugger/Docking/DockTables.cpp
+	Debugger/Docking/DockTables.h
+	Debugger/Docking/DockUtils.cpp
+	Debugger/Docking/DockUtils.h
+	Debugger/Docking/DockViews.cpp
+	Debugger/Docking/DockViews.h
+	Debugger/Docking/DropIndicators.cpp
+	Debugger/Docking/DropIndicators.h
+	Debugger/Docking/LayoutEditorDialog.cpp
+	Debugger/Docking/LayoutEditorDialog.h
+	Debugger/Docking/LayoutEditorDialog.ui
+	Debugger/Docking/NoLayoutsWidget.cpp
+	Debugger/Docking/NoLayoutsWidget.h
+	Debugger/Docking/NoLayoutsWidget.ui
+	Debugger/Memory/MemorySearchWidget.cpp
+	Debugger/Memory/MemorySearchWidget.h
+	Debugger/Memory/MemorySearchWidget.ui
+	Debugger/Memory/MemoryViewWidget.cpp
+	Debugger/Memory/MemoryViewWidget.h
+	Debugger/Memory/MemoryViewWidget.ui
+	Debugger/Memory/SavedAddressesModel.cpp
+	Debugger/Memory/SavedAddressesModel.h
+	Debugger/Memory/SavedAddressesWidget.cpp
+	Debugger/Memory/SavedAddressesWidget.h
+	Debugger/Memory/SavedAddressesWidget.ui
 	Debugger/SymbolTree/NewSymbolDialogs.cpp
 	Debugger/SymbolTree/NewSymbolDialogs.h
 	Debugger/SymbolTree/NewSymbolDialog.ui
@@ -232,6 +264,7 @@ target_link_libraries(pcsx2-qt PRIVATE
 	Qt6::Core
 	Qt6::Gui
 	Qt6::Widgets
+	KDAB::kddockwidgets
 )
 
 # Our Qt builds may have exceptions on, so force them off.

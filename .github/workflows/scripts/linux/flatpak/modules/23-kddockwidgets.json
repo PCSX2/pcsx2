@@ -1,0 +1,32 @@
+{
+  "name": "kddockwidgets",
+  "buildsystem": "cmake-ninja",
+  "builddir": true,
+  "config-opts": [
+    "-DKDDockWidgets_QT6=true",
+    "-DKDDockWidgets_EXAMPLES=false",
+    "-DKDDockWidgets_FRONTENDS=qtwidgets"
+  ],
+  "build-options": {
+    "strip": true
+  },
+  "sources": [
+    {
+      "type": "git",
+      "url": "https://github.com/KDAB/KDDockWidgets.git",
+      "tag": "v2.2.1",
+      "commit": "3aaccddc00a11a643e0959a24677838993de15ac",
+      "disable-submodules": true
+    },
+    {
+      "type": "patch",
+      "path": "../../../common/kddockwidgets-dodgy-include.patch"
+    }
+  ],
+  "cleanup": [
+    "/share/doc/KDDockWidgets-qt6",
+    "/mkspecs/modules/qt_KDDockWidgets.pri",
+    "/lib/cmake",
+    "/include"
+  ]
+}

@@ -3,21 +3,48 @@
 
 #include "BreakpointModel.h"
 
+#include "QtHost.h"
+#include "QtUtils.h"
+#include "Debugger/DebuggerSettingsManager.h"
+
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
 #include "DebugTools/DisassemblyManager.h"
 #include "common/Console.h"
 
-#include "QtHost.h"
-#include "QtUtils.h"
 #include <QtWidgets/QMessageBox>
 
 #include <algorithm>
+
+std::map<BreakPointCpu, BreakpointModel*> BreakpointModel::s_instances;
 
 BreakpointModel::BreakpointModel(DebugInterface& cpu, QObject* parent)
 	: QAbstractTableModel(parent)
 	, m_cpu(cpu)
 {
+	if (m_cpu.getCpuType() == BREAKPOINT_EE)
+	{
+		connect(g_emu_thread, &EmuThread::onGameChanged, this, [this](const QString& title) {
+			if (title.isEmpty())
+				return;
+
+			if (rowCount() == 0)
+				DebuggerSettingsManager::loadGameSettings(this);
+		});
+
+		DebuggerSettingsManager::loadGameSettings(this);
+	}
+
+	connect(this, &BreakpointModel::dataChanged, this, &BreakpointModel::refreshData);
+}
+
+BreakpointModel* BreakpointModel::getInstance(DebugInterface& cpu)
+{
+	auto iterator = s_instances.find(cpu.getCpuType());
+	if (iterator == s_instances.end())
+		iterator = s_instances.emplace(cpu.getCpuType(), new BreakpointModel(cpu)).first;
+
+	return iterator->second;
 }
 
 int BreakpointModel::rowCount(const QModelIndex&) const
@@ -32,10 +59,14 @@ int BreakpointModel::columnCount(const QModelIndex&) const
 
 QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 {
+	size_t row = static_cast<size_t>(index.row());
+	if (!index.isValid() || row >= m_breakpoints.size())
+		return QVariant();
+
+	const BreakpointMemcheck& bp_mc = m_breakpoints[row];
+
 	if (role == Qt::DisplayRole)
 	{
-		auto bp_mc = m_breakpoints.at(index.row());
-
 		if (const auto* bp = std::get_if<BreakPoint>(&bp_mc))
 		{
 			switch (index.column())
@@ -87,8 +118,6 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 	}
 	else if (role == BreakpointModel::DataRole)
 	{
-		auto bp_mc = m_breakpoints.at(index.row());
-
 		if (const auto* bp = std::get_if<BreakPoint>(&bp_mc))
 		{
 			switch (index.column())
@@ -133,8 +162,6 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 	}
 	else if (role == BreakpointModel::ExportRole)
 	{
-		auto bp_mc = m_breakpoints.at(index.row());
-
 		if (const auto* bp = std::get_if<BreakPoint>(&bp_mc))
 		{
 			switch (index.column())
@@ -181,8 +208,6 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 	{
 		if (index.column() == 0)
 		{
-			auto bp_mc = m_breakpoints.at(index.row());
-
 			if (const auto* bp = std::get_if<BreakPoint>(&bp_mc))
 			{
 				return bp->enabled ? Qt::CheckState::Checked : Qt::CheckState::Unchecked;
@@ -273,12 +298,14 @@ Qt::ItemFlags BreakpointModel::flags(const QModelIndex& index) const
 
 bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-	std::string error;
+	size_t row = static_cast<size_t>(index.row());
+	if (!index.isValid() || row >= m_breakpoints.size())
+		return false;
+
+	const BreakpointMemcheck& bp_mc = m_breakpoints[row];
 
 	if (role == Qt::CheckStateRole && index.column() == BreakpointColumns::ENABLED)
 	{
-		auto bp_mc = m_breakpoints.at(index.row());
-
 		if (const auto* bp = std::get_if<BreakPoint>(&bp_mc))
 		{
 			Host::RunOnCPUThread([cpu = this->m_cpu.getCpuType(), bp = *bp, enabled = value.toBool()] {
@@ -297,8 +324,6 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 	}
 	else if (role == Qt::EditRole && index.column() == BreakpointColumns::CONDITION)
 	{
-		auto bp_mc = m_breakpoints.at(index.row());
-
 		if (auto* bp = std::get_if<BreakPoint>(&bp_mc))
 		{
 			const QString condValue = value.toString();
@@ -316,6 +341,7 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 			{
 				PostfixExpression expr;
 
+				std::string error;
 				if (!m_cpu.initExpression(condValue.toLocal8Bit().constData(), expr, error))
 				{
 					QMessageBox::warning(nullptr, "Condition Error", QString::fromStdString(error));
@@ -349,6 +375,7 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 			{
 				PostfixExpression expr;
 
+				std::string error;
 				if (!m_cpu.initExpression(condValue.toLocal8Bit().constData(), expr, error))
 				{
 					QMessageBox::warning(nullptr, "Condition Error", QString::fromStdString(error));

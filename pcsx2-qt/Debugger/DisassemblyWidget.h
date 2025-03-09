@@ -5,36 +5,36 @@
 
 #include "ui_DisassemblyWidget.h"
 
-#include "pcsx2/DebugTools/DebugInterface.h"
+#include "DebuggerWidget.h"
+
 #include "pcsx2/DebugTools/DisassemblyManager.h"
 
-#include <QtWidgets/QWidget>
 #include <QtWidgets/QMenu>
 #include <QtGui/QPainter>
 
-class DisassemblyWidget final : public QWidget
+class DisassemblyWidget final : public DebuggerWidget
 {
 	Q_OBJECT
 
 public:
-	DisassemblyWidget(QWidget* parent);
+	DisassemblyWidget(const DebuggerWidgetParameters& parameters);
 	~DisassemblyWidget();
 
-	// Required because our constructor needs to take no extra arguments.
-	void SetCpu(DebugInterface* cpu);
+	void toJson(JsonValueWrapper& json) override;
+	bool fromJson(const JsonValueWrapper& json) override;
 
 	// Required for the breakpoint list (ugh wtf)
 	QString GetLineDisasm(u32 address);
 
 protected:
-	void paintEvent(QPaintEvent* event);
-	void mousePressEvent(QMouseEvent* event);
-	void mouseDoubleClickEvent(QMouseEvent* event);
-	void wheelEvent(QWheelEvent* event);
-	void keyPressEvent(QKeyEvent* event);
+	void paintEvent(QPaintEvent* event) override;
+	void mousePressEvent(QMouseEvent* event) override;
+	void mouseDoubleClickEvent(QMouseEvent* event) override;
+	void wheelEvent(QWheelEvent* event) override;
+	void keyPressEvent(QKeyEvent* event) override;
 
 public slots:
-	void customMenuRequested(QPoint pos);
+	void openContextMenu(QPoint pos);
 
 	// Context menu actions
 	// When called, m_selectedAddressStart will be the 'selected' instruction
@@ -56,23 +56,18 @@ public slots:
 	void contextRemoveFunction();
 	void contextStubFunction();
 	void contextRestoreFunction();
-	void contextShowOpcode();
+	void contextShowInstructionBytes();
 
 	void gotoAddressAndSetFocus(u32 address);
 	void gotoProgramCounterOnPause();
 	void gotoAddress(u32 address, bool should_set_focus);
 
-	void setDemangle(bool demangle) { m_demangleFunctions = demangle; };
-signals:
-	void gotoInMemory(u32 address);
-	void breakpointsChanged();
-	void VMUpdate();
+	void toggleBreakpoint(u32 address);
 
 private:
-	Ui::DisassemblyWidget ui;
+	Ui::DisassemblyWidget m_ui;
 
-	DebugInterface* m_cpu;
-	u32 m_visibleStart = 0x00336318; // The address of the first opcode shown(row 0)
+	u32 m_visibleStart = 0x100000; // The address of the first instruction shown.
 	u32 m_visibleRows;
 	u32 m_selectedAddressStart = 0;
 	u32 m_selectedAddressEnd = 0;
@@ -81,8 +76,7 @@ private:
 	std::map<u32, u32> m_nopedInstructions;
 	std::map<u32, std::tuple<u32, u32>> m_stubbedFunctions;
 
-	bool m_demangleFunctions = true;
-	bool m_showInstructionOpcode = true;
+	bool m_showInstructionBytes = true;
 	bool m_goToProgramCounterOnPause = true;
 	DisassemblyManager m_disassemblyManager;
 
