@@ -555,6 +555,11 @@ void SDLInputSource::SetHints()
 	// Gets us pressure sensitive button support on Linux
 	// Apparently doesn't work on Windows, so leave it off there
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS3, "1");
+#else
+	// Use the Sixaxis driver (or DsHidMini in SXS mode).
+	// We don't support DsHidMini's SDF mode as none of the
+	// PS3 hints allow accessing all the pressure sense axis.
+	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER, "1");
 #endif
 
 #ifdef __APPLE__
