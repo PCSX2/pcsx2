@@ -46,6 +46,15 @@ enum class InputSubclass : u32
 	ControllerHaptic = 4,
 };
 
+/// Layout of the source controller
+enum class InputLayout : u8
+{
+	Unknown,
+	Xbox,
+	Playstation,
+	Nintendo
+};
+
 enum class InputModifier : u32
 {
 	None = 0,

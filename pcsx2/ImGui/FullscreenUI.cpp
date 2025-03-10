@@ -628,6 +628,14 @@ void FullscreenUI::ApplyConfirmSetting(const SettingsInterface* bsi)
 			}
 		}
 
+		// Check gamepad
+		const InputLayout layout = ImGuiFullscreen::GetGamepadLayout();
+		if (layout == InputLayout::Nintendo)
+		{
+			io.ConfigNavSwapGamepadButtons = true;
+			return;
+		}
+
 		// X is confirm
 		io.ConfigNavSwapGamepadButtons = false;
 		return;
@@ -638,6 +646,11 @@ void FullscreenUI::ApplyConfirmSetting(const SettingsInterface* bsi)
 }
 
 void FullscreenUI::LocaleChanged()
+{
+	ApplyConfirmSetting();
+}
+
+void FullscreenUI::GamepadLayoutChanged()
 {
 	ApplyConfirmSetting();
 }
