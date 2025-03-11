@@ -1034,7 +1034,7 @@ GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex)
 	constexpr int valid_max_size = 2047;
 	if ((width > valid_max_size) || (height > valid_max_size))
 	{
-		Console.Warning("Warning: GetValidSize out of bounds, X:%d Y:%d", width, height);
+		DevCon.Warning("Warning: GetValidSize out of bounds, X:%d Y:%d", width, height);
 		width = std::min(width, valid_max_size);
 		height = std::min(height, valid_max_size);
 	}
