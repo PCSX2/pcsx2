@@ -833,7 +833,7 @@ struct Pcsx2Config
 		s8 ExclusiveFullscreenControl = -1;
 		GSScreenshotSize ScreenshotSize = GSScreenshotSize::WindowResolution;
 		GSScreenshotFormat ScreenshotFormat = GSScreenshotFormat::PNG;
-		int ScreenshotQuality = 50;
+		int ScreenshotQuality = 90;
 
 		std::string CaptureContainer = DEFAULT_CAPTURE_CONTAINER;
 		std::string VideoCaptureCodec;
