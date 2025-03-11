@@ -27,6 +27,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 #endif
 
 	connect(m_ui.actionRun, &QAction::triggered, this, &DebuggerWindow::onRunPause);
+	connect(m_ui.actionReset, &QAction::triggered, this, &DebuggerWindow::onReset);
 	connect(m_ui.actionStepInto, &QAction::triggered, this, &DebuggerWindow::onStepInto);
 	connect(m_ui.actionStepOver, &QAction::triggered, this, &DebuggerWindow::onStepOver);
 	connect(m_ui.actionStepOut, &QAction::triggered, this, &DebuggerWindow::onStepOut);
@@ -111,6 +112,11 @@ void DebuggerWindow::onVMStateChanged()
 void DebuggerWindow::onRunPause()
 {
 	g_emu_thread->setVMPaused(!QtHost::IsVMPaused());
+}
+
+void DebuggerWindow::onReset()
+{
+	g_emu_thread->resetVM();
 }
 
 void DebuggerWindow::onStepInto()
