@@ -379,7 +379,7 @@ vec4 sample_depth(vec2 st)
 	#endif
 
 	ivec2 uv = ivec2(uv_f);
-	vec4 t = vec4(0.0f);
+	vec4 t = 0.0f;
 
 #if PS_TALES_OF_ABYSS_HLE == 1
 	// Warning: UV can't be used in channel effect
@@ -758,7 +758,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 	// Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0
 	// Standard Clamp
-	C = clamp(C, vec3(0.0f), vec3(255.0f));
+	C = clamp(C, 0.0f, 255.0f);
 #endif
 
 	// FIXME rouding of negative float?
@@ -789,11 +789,11 @@ float As = As_rgba.a;
 	// No blending so early exit
 	if (As < 1.0f)
 	{
-		As_rgba.rgb = vec3(0.0f);
+		As_rgba.rgb = 0.0f;
 		return;
 	}
 
-	As_rgba.rgb = vec3(1.0f);
+	As_rgba.rgb = 1.0f;
 #endif
 
 #if SW_BLEND_NEEDS_RT
@@ -837,7 +837,7 @@ float As = As_rgba.a;
 #elif PS_BLEND_A == 1
 	vec3 A = Cd;
 #else
-	vec3 A = vec3(0.0f);
+	vec3 A = 0.0f;
 #endif
 
 #if PS_BLEND_B == 0
@@ -845,7 +845,7 @@ float As = As_rgba.a;
 #elif PS_BLEND_B == 1
 	vec3 B = Cd;
 #else
-	vec3 B = vec3(0.0f);
+	vec3 B = 0.0f;
 #endif
 
 #if PS_BLEND_C == 0
@@ -861,7 +861,7 @@ float As = As_rgba.a;
 #elif PS_BLEND_D == 1
 	vec3 D = Cd;
 #else
-	vec3 D = vec3(0.0f);
+	vec3 D = 0.0f;
 #endif
 
 	// As/Af clamp alpha for Blend mix
@@ -896,7 +896,7 @@ float As = As_rgba.a;
 	// we pick the lowest overflow from all colors because it's the safest,
 	// we divide by 255 the color because we don't know Cd value,
 	// changed alpha should only be done for hw blend.
-	vec3 alpha_compensate = max(vec3(1.0f), Color.rgb / vec3(255.0f));
+	vec3 alpha_compensate = max(1.0f, Color.rgb / 255.0f);
 	As_rgba.rgb -= alpha_compensate;
 #elif PS_BLEND_HW == 2
 	// Since we can't do Cd*(Alpha + 1) - Cs*Alpha in hw blend
@@ -904,33 +904,33 @@ float As = As_rgba.a;
 	// subtracted, this way we can get a better result in hw blend.
 	// Result is still wrong but less wrong than before.
 	float division_alpha = 1.0f + C;
-	Color.rgb /= vec3(division_alpha);
+	Color.rgb /= division_alpha;
 #elif PS_BLEND_HW == 3
 	// As, Ad or Af clamped.
 	As_rgba.rgb = vec3(C_clamped);
 	// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
 	// that is sent on second output to compensate.
-	vec3 overflow_check = (Color.rgb - vec3(255.0f)) / 255.0f;
-	vec3 alpha_compensate = max(vec3(0.0f), overflow_check);
+	vec3 overflow_check = (Color.rgb - 255.0f) / 255.0f;
+	vec3 alpha_compensate = max(0.0f, overflow_check);
 	As_rgba.rgb -= alpha_compensate;
 #endif
 
 #else
 
 #if PS_BLEND_C == 2
-	vec3 Alpha = vec3(Af);
+	vec3 Alpha = Af;
 #else
-	vec3 Alpha = vec3(As);
+	vec3 Alpha = As;
 #endif
 
 	// Needed for Cd * (As/Ad/F + 1) blending modes
 #if PS_BLEND_HW == 1
-	Color.rgb = vec3(255.0f);
+	Color.rgb = 255.0f;
 #elif PS_BLEND_HW == 2
 	// Cd*As,Cd*Ad or Cd*F
 
-	Color.rgb = max(vec3(0.0f), (Alpha - vec3(1.0f)));
-	Color.rgb *= vec3(255.0f);
+	Color.rgb = max(0.0f, (Alpha - 1.0f));
+	Color.rgb *= 255.0f;
 #elif PS_BLEND_HW == 3 && PS_RTA_CORRECTION == 0
 	// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
 	// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
@@ -939,22 +939,22 @@ float As = As_rgba.a;
 	// The higher the value (>128) the lower the compensation will be.
 	float max_color = max(max(Color.r, Color.g), Color.b);
 	float color_compensate = 255.0f / max(128.0f, max_color);
-	Color.rgb *= vec3(color_compensate);
+	Color.rgb *= color_compensate;
 #elif PS_BLEND_HW == 4
 	// Needed for Cd * (1 - Ad) and Cd*(1 + Alpha).
 
-	As_rgba.rgb = Alpha * vec3(128.0f / 255.0f);
-	Color.rgb = vec3(127.5f);
+	As_rgba.rgb = Alpha * (128.0f / 255.0f);
+	Color.rgb = 127.5f;
 #elif PS_BLEND_HW == 5
 	// Needed for Cs*Alpha + Cd*(1 - Alpha).
 	Alpha *= vec3(128.0f / 255.0f);
-	As_rgba.rgb = (Alpha - vec3(0.5f));
+	As_rgba.rgb = (Alpha - 0.5f);
 	Color.rgb = (Color.rgb * Alpha);
 #elif PS_BLEND_HW == 6
 	// Needed for Cd*Alpha + Cs*(1 - Alpha).
-	Alpha *= vec3(128.0f / 255.0f);
+	Alpha *= (128.0f / 255.0f);
 	As_rgba.rgb = Alpha;
-	Color.rgb *= (Alpha - vec3(0.5f));
+	Color.rgb *= (Alpha - 0.5f);
 #endif
 
 #endif
@@ -1031,9 +1031,9 @@ void ps_main()
 		vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
 	#endif
 
-	vec4 alpha_blend = vec4(RT.a / 128.0f);
+	vec4 alpha_blend = (RT.a / 128.0f);
 #else
-	vec4 alpha_blend = vec4(C.a / 128.0f);
+	vec4 alpha_blend = (C.a / 128.0f);
 #endif
 
 	// Correct the ALPHA value based on the output format
@@ -1041,7 +1041,7 @@ void ps_main()
 	float A_one = 128.0f; // alpha output will be 0x80
 	C.a = (PS_FBA != 0) ? A_one : step(128.0f, C.a) * A_one;
 #elif (PS_DST_FMT == FMT_32) && (PS_FBA != 0)
-	if(C.a < 128.0f) C.a += 128.0f;
+	if (C.a < 128.0f) C.a += 128.0f;
 #endif
 
 	// Get first primitive that will write a failling alpha value
