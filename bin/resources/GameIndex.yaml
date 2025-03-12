@@ -23474,6 +23474,9 @@ SLES-53717:
         // for VU1 to finish, which reduces the advantage of MTVU to basically zero.
         patch=1,EE,D0529074,extended,00000800
         patch=1,EE,20529074,extended,00000000
+  memcardFilters: # Saves from the non-Remix release can be imported.
+    - "SLES-52942"
+    - "SLES-53717"
 SLES-53718:
   name: "The Sims 2"
   name-sort: "Sims 2, The"
@@ -68913,6 +68916,9 @@ SLUS-21355:
         // for VU1 to finish, which reduces the advantage of MTVU to basically zero.
         patch=1,EE,D052907C,extended,00000800
         patch=1,EE,2052907C,extended,00000000
+  memcardFilters: # Saves from the non-Remix release can be imported.
+    - "SLUS-21029"
+    - "SLUS-21355"
 SLUS-21356:
   name: "Tom Clancy's Splinter Cell - Double Agent"
   region: "NTSC-U"
