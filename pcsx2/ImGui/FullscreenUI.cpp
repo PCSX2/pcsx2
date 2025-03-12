@@ -2315,11 +2315,30 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
 	bool is_open = true;
 	if (ImGui::BeginPopupModal(title, &is_open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 	{
-		static constexpr const char* labels[4] = {FSUI_NSTR("Left: "), FSUI_NSTR("Top: "), FSUI_NSTR("Right: "), FSUI_NSTR("Bottom: ")};
-		const char* keys[4] = {left_key, top_key, right_key, bottom_key};
-		int defaults[4] = {default_left, default_top, default_right, default_bottom};
-		s32 values[4] = {static_cast<s32>(left_value.value_or(default_left)), static_cast<s32>(top_value.value_or(default_top)),
-			static_cast<s32>(right_value.value_or(default_right)), static_cast<s32>(bottom_value.value_or(default_bottom))};
+		static constexpr const char* labels[4] = {
+			FSUI_NSTR("Left: "),
+			FSUI_NSTR("Top: "),
+			FSUI_NSTR("Right: "),
+			FSUI_NSTR("Bottom: "),
+		};
+		const char* keys[4] = {
+			left_key,
+			top_key,
+			right_key,
+			bottom_key,
+		};
+		int defaults[4] = {
+			default_left,
+			default_top,
+			default_right,
+			default_bottom,
+		};
+		s32 values[4] = {
+			static_cast<s32>(left_value.value_or(default_left)),
+			static_cast<s32>(top_value.value_or(default_top)),
+			static_cast<s32>(right_value.value_or(default_right)),
+			static_cast<s32>(bottom_value.value_or(default_bottom)),
+		};
 
 		BeginMenuButtons();
 
@@ -2942,21 +2961,69 @@ void FullscreenUI::DrawSettingsWindow()
 	{
 		static constexpr float ITEM_WIDTH = 25.0f;
 
-		static constexpr const char* global_icons[] = {ICON_FA_TV, ICON_PF_MICROCHIP, ICON_PF_GEARS_OPTIONS_SETTINGS, ICON_PF_PICTURE,
-			ICON_PF_SOUND, ICON_PF_MEMORY_CARD, ICON_PF_GAMEPAD_ALT, ICON_PF_KEYBOARD_ALT, ICON_FA_TROPHY, ICON_FA_FOLDER_OPEN, ICON_FA_EXCLAMATION_TRIANGLE};
-		static constexpr const char* per_game_icons[] = {ICON_FA_INFO, ICON_PF_GEARS_OPTIONS_SETTINGS, ICON_FA_BAND_AID, ICON_PF_INFINITY,
-			ICON_PF_PICTURE, ICON_PF_SOUND, ICON_PF_MEMORY_CARD, ICON_FA_EXCLAMATION_TRIANGLE};
-		static constexpr SettingsPage global_pages[] = {SettingsPage::Interface, SettingsPage::BIOS, SettingsPage::Emulation,
-			SettingsPage::Graphics, SettingsPage::Audio, SettingsPage::MemoryCard, SettingsPage::Controller, SettingsPage::Hotkey,
-			SettingsPage::Achievements, SettingsPage::Folders, SettingsPage::Advanced};
-		static constexpr SettingsPage per_game_pages[] = {SettingsPage::Summary, SettingsPage::Emulation, SettingsPage::Patches,
-			SettingsPage::Cheats, SettingsPage::Graphics, SettingsPage::Audio, SettingsPage::MemoryCard,
-			SettingsPage::GameFixes};
-		static constexpr const char* titles[] = {FSUI_NSTR("Summary"), FSUI_NSTR("Interface Settings"), FSUI_NSTR("BIOS Settings"),
-			FSUI_NSTR("Emulation Settings"), FSUI_NSTR("Graphics Settings"), FSUI_NSTR("Audio Settings"), FSUI_NSTR("Memory Card Settings"),
-			FSUI_NSTR("Controller Settings"), FSUI_NSTR("Hotkey Settings"), FSUI_NSTR("Achievements Settings"),
-			FSUI_NSTR("Folder Settings"), FSUI_NSTR("Advanced Settings"), FSUI_NSTR("Patches"), FSUI_NSTR("Cheats"),
-			FSUI_NSTR("Game Fixes")};
+		static constexpr const char* global_icons[] = {
+			ICON_FA_TV,
+			ICON_PF_MICROCHIP,
+			ICON_PF_GEARS_OPTIONS_SETTINGS,
+			ICON_PF_PICTURE,
+			ICON_PF_SOUND,
+			ICON_PF_MEMORY_CARD,
+			ICON_PF_GAMEPAD_ALT,
+			ICON_PF_KEYBOARD_ALT,
+			ICON_FA_TROPHY,
+			ICON_FA_FOLDER_OPEN,
+			ICON_FA_EXCLAMATION_TRIANGLE,
+		};
+		static constexpr const char* per_game_icons[] = {
+			ICON_FA_INFO,
+			ICON_PF_GEARS_OPTIONS_SETTINGS,
+			ICON_FA_BAND_AID,
+			ICON_PF_INFINITY,
+			ICON_PF_PICTURE,
+			ICON_PF_SOUND,
+			ICON_PF_MEMORY_CARD,
+			ICON_FA_EXCLAMATION_TRIANGLE,
+		};
+		static constexpr SettingsPage global_pages[] = {
+			SettingsPage::Interface,
+			SettingsPage::BIOS,
+			SettingsPage::Emulation,
+			SettingsPage::Graphics,
+			SettingsPage::Audio,
+			SettingsPage::MemoryCard,
+			SettingsPage::Controller,
+			SettingsPage::Hotkey,
+			SettingsPage::Achievements,
+			SettingsPage::Folders,
+			SettingsPage::Advanced,
+		};
+		static constexpr SettingsPage per_game_pages[] = {
+			SettingsPage::Summary,
+			SettingsPage::Emulation,
+			SettingsPage::Patches,
+			SettingsPage::Cheats,
+			SettingsPage::Graphics,
+			SettingsPage::Audio,
+			SettingsPage::MemoryCard,
+			SettingsPage::GameFixes,
+		};
+		static constexpr const char* titles[] = {
+			FSUI_NSTR("Summary"),
+			FSUI_NSTR("Interface Settings"),
+			FSUI_NSTR("BIOS Settings"),
+			FSUI_NSTR("Emulation Settings"),
+			FSUI_NSTR("Graphics Settings"),
+			FSUI_NSTR("Audio Settings"),
+			FSUI_NSTR("Memory Card Settings"),
+			FSUI_NSTR("Controller Settings"),
+			FSUI_NSTR("Hotkey Settings"),
+			FSUI_NSTR("Achievements Settings"),
+			FSUI_NSTR("Folder Settings"),
+			FSUI_NSTR("Advanced Settings"),
+			FSUI_NSTR("Patches"),
+			FSUI_NSTR("Cheats"),
+			FSUI_NSTR("Game Fixes"),
+		};
 
 		const u32 count = game_settings ? (show_advanced_settings ? std::size(per_game_pages) : (std::size(per_game_pages) - 1)) : std::size(global_pages);
 		const char* const* icons = game_settings ? per_game_icons : global_icons;
@@ -3822,7 +3889,13 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		FSUI_NSTR("8x"),
 		FSUI_NSTR("16x"),
 	};
-	static constexpr const char* s_anisotropic_filtering_values[] = {"0", "2", "4", "8", "16"};
+	static constexpr const char* s_anisotropic_filtering_values[] = {
+		"0",
+		"2",
+		"4",
+		"8",
+		"16",
+	};
 	static constexpr const char* s_preloading_options[] = {
 		FSUI_NSTR("None"),
 		FSUI_NSTR("Partial"),
@@ -4153,9 +4226,16 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		DrawIntRangeSetting(bsi, FSUI_CSTR("Shade Boost Saturation"), FSUI_CSTR("Adjusts saturation. 50 is normal."), "EmuCore/GS",
 			"ShadeBoost_Saturation", 50, 1, 100, "%d", shadeboost_active);
 
-		static constexpr const char* s_tv_shaders[] = {FSUI_NSTR("None (Default)"), FSUI_NSTR("Scanline Filter"),
-			FSUI_NSTR("Diagonal Filter"), FSUI_NSTR("Triangular Filter"), FSUI_NSTR("Wave Filter"), FSUI_NSTR("Lottes CRT"),
-			FSUI_NSTR("4xRGSS"), FSUI_NSTR("NxAGSS")};
+		static constexpr const char* s_tv_shaders[] = {
+			FSUI_NSTR("None (Default)"),
+			FSUI_NSTR("Scanline Filter"),
+			FSUI_NSTR("Diagonal Filter"),
+			FSUI_NSTR("Triangular Filter"),
+			FSUI_NSTR("Wave Filter"),
+			FSUI_NSTR("Lottes CRT"),
+			FSUI_NSTR("4xRGSS"),
+			FSUI_NSTR("NxAGSS"),
+		};
 		DrawIntListSetting(bsi, FSUI_CSTR("TV Shaders"), FSUI_CSTR("Applies a shader which replicates the visual effects of different styles of television set."), "EmuCore/GS", "TVShader", 0,
 			s_tv_shaders, std::size(s_tv_shaders), true);
 	}
@@ -4913,7 +4993,12 @@ void FullscreenUI::DrawFoldersSettingsPage()
 
 void FullscreenUI::DrawAdvancedSettingsPage()
 {
-	static constexpr const char* ee_rounding_mode_settings[] = {FSUI_NSTR("Nearest"), FSUI_NSTR("Negative"), FSUI_NSTR("Positive"), FSUI_NSTR("Chop/Zero (Default)")};
+	static constexpr const char* ee_rounding_mode_settings[] = {
+		FSUI_NSTR("Nearest"),
+		FSUI_NSTR("Negative"),
+		FSUI_NSTR("Positive"),
+		FSUI_NSTR("Chop/Zero (Default)"),
+	};
 
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 
