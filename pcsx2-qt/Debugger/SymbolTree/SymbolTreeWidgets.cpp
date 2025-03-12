@@ -973,7 +973,7 @@ std::unique_ptr<SymbolTreeNode> LocalVariableTreeWidget::buildNode(
 	node->live_range = local_variable.live_range;
 	node->symbol = ccc::MultiSymbolHandle(local_variable);
 
-	if (const ccc::GlobalStorage* storage = std::get_if<ccc::GlobalStorage>(&local_variable.storage))
+	if (std::get_if<ccc::GlobalStorage>(&local_variable.storage))
 		node->location = SymbolTreeLocation(SymbolTreeLocation::MEMORY, local_variable.address().value);
 	else if (const ccc::RegisterStorage* storage = std::get_if<ccc::RegisterStorage>(&local_variable.storage))
 		node->location = SymbolTreeLocation(SymbolTreeLocation::REGISTER, storage->dbx_register_number);
