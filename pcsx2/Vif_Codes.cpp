@@ -455,7 +455,7 @@ vifOp(vifCode_MSCALF)
 	{
 		vifXRegs.stat.VGW = false;
 		vifFlush(idx);
-		if (const u32 a = gifUnit.checkPaths(1, 1, 0))
+		if ([[maybe_unused]] const u32 a = gifUnit.checkPaths(1, 1, 0))
 		{
 			GUNIT_WARN("Vif MSCALF: Stall! [%d,%d]", !!(a & 1), !!(a & 2));
 			vif1Regs.stat.VGW = true;
