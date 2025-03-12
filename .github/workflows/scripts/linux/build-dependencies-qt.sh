@@ -15,7 +15,7 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 fi
 
 LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
-LIBJPEG=9f
+LIBJPEGTURBO=3.1.0
 LIBPNG=1.6.45
 LIBWEBP=1.5.0
 LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
@@ -34,7 +34,7 @@ cd deps-build
 
 cat > SHASUMS <<EOF
 fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
-04705c110cb2469caa79fb71fba3d7bf834914706e9641a4589485c1f832565b  jpegsrc.v$LIBJPEG.tar.gz
+9564c72b1dfd1d6fe6274c5f95a8d989b59854575d4bbee44ade7bc17aa9bc93  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 926485350139ffb51ef69760db35f78846c805fef3d59bfdcb2fba704663f370  libpng-$LIBPNG.tar.xz
 7d6fab70cf844bf6769077bd5d7a74893f8ffd4dfb42861745750c63c2a5c92c  libwebp-$LIBWEBP.tar.gz
 0728800155f3ed0a0c87e03addbd30ecbe374f7b080678bbca1506051d50dec3  $LZ4.tar.gz
@@ -55,7 +55,7 @@ EOF
 
 curl -L \
 	-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.zip" \
-	-O "https://ijg.org/files/jpegsrc.v$LIBJPEG.tar.gz" \
+	-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
 	-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
 	-O "https://github.com/lz4/lz4/archive/$LZ4.tar.gz" \
@@ -93,16 +93,14 @@ cmake --build build --parallel
 ninja -C build install
 cd ..
 
-echo "Building libjpeg..."
-rm -fr "jpeg-$LIBJPEG"
-tar xf "jpegsrc.v$LIBJPEG.tar.gz"
-cd "jpeg-$LIBJPEG"
-mkdir build
-cd build
-../configure --prefix="$INSTALLDIR" --disable-static --enable-shared
-make "-j$NPROCS"
-make install
-cd ../..
+echo "Building libjpegturbo..."
+rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
+tar xf "libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
+cd "libjpeg-turbo-$LIBJPEGTURBO"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
 
 echo "Building LZ4..."
 rm -fr "lz4-$LZ4"
