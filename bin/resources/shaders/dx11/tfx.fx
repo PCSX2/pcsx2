@@ -143,7 +143,7 @@ struct PS_OUTPUT
 
 Texture2D<float4> Texture : register(t0);
 Texture2D<float4> Palette : register(t1);
-Texture2D<float4> RtTexture : register(t2);
+Texture2D<float4> RtSampler : register(t2);
 Texture2D<float> PrimMinTexture : register(t3);
 SamplerState TextureSampler : register(s0);
 
@@ -175,7 +175,7 @@ cbuffer cb1
 float4 sample_c(float2 uv, float uv_w)
 {
 #if PS_TEX_IS_FB == 1
-	return RtTexture.Load(int3(int2(uv * WH.zw), 0));
+	return RtSampler.Load(int3(int2(uv * WH.zw), 0));
 #elif PS_REGION_RECT == 1
 	return Texture.Load(int3(int2(uv), 0));
 #else
@@ -379,7 +379,7 @@ float4x4 sample_4p(uint4 u)
 int fetch_raw_depth(int2 xy)
 {
 #if PS_TEX_IS_FB == 1
-	float4 col = RtTexture.Load(int3(xy, 0));
+	float4 col = RtSampler.Load(int3(xy, 0));
 #else
 	float4 col = Texture.Load(int3(xy, 0));
 #endif
@@ -389,7 +389,7 @@ int fetch_raw_depth(int2 xy)
 float4 fetch_raw_color(int2 xy)
 {
 #if PS_TEX_IS_FB == 1
-	return RtTexture.Load(int3(xy, 0));
+	return RtSampler.Load(int3(xy, 0));
 #else
 	return Texture.Load(int3(xy, 0));
 #endif
@@ -449,7 +449,7 @@ float4 sample_depth(float2 st, float2 pos)
 #endif
 
 	int2 uv = (int2)uv_f;
-	float4 t = (float4)(0.0f);
+	float4 t = 0.0f;
 
 	if (PS_TALES_OF_ABYSS_HLE == 1)
 	{
@@ -626,7 +626,7 @@ float4 sample_color(float2 st, float uv_w)
 
 			if(PS_FST == 0)
 			{
-				dd = clamp(dd, (float2)0.0f, (float2)0.9999999f);
+				dd = clamp(dd, 0.0f, 0.9999999f);
 			}
 		}
 		else
@@ -800,7 +800,7 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 	if (PS_FBMASK)
 	{
 		float multi = PS_HDR ? 65535.0f : 255.0f;
-		float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * multi + 0.1f);
+		float4 RT = trunc(RtSampler.Load(int3(pos_xy, 0)) * multi + 0.1f);
 		C = (float4)(((uint4)C & ~FbMask) | ((uint4)RT & FbMask));
 	}
 }
@@ -844,7 +844,7 @@ void ps_color_clamp_wrap(inout float3 C)
 
 		// Standard Clamp
 		if (PS_COLCLIP == 0 && PS_HDR == 0)
-			C = clamp(C, (float3)0.0f, (float3)255.0f);
+			C = clamp(C, 0.0f, 255.0f);
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
 		if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && (PS_BLEND_MIX == 0 || PS_DITHER))
@@ -867,14 +867,14 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			// No blending so early exit
 			if (As < 1.0f)
 			{
-				As_rgba.rgb = (float3)0.0f;
+				As_rgba.rgb = 0.0f;
 				return;
 			}
 
-			As_rgba.rgb = (float3)1.0f;
+			As_rgba.rgb = 1.0f;
 		}
 
-		float4 RT = SW_BLEND_NEEDS_RT ? RtTexture.Load(int3(pos_xy, 0)) : (float4)0.0f;
+		float4 RT = SW_BLEND_NEEDS_RT ? RtSampler.Load(int3(pos_xy, 0)) : 0.0f;
 
 		if (PS_SHUFFLE && SW_BLEND_NEEDS_RT)
 		{
@@ -900,10 +900,10 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		float3 Cd = trunc(RT.rgb * color_multi + 0.1f);
 		float3 Cs = Color.rgb;
 
-		float3 A = (PS_BLEND_A == 0) ? Cs : ((PS_BLEND_A == 1) ? Cd : (float3)0.0f);
-		float3 B = (PS_BLEND_B == 0) ? Cs : ((PS_BLEND_B == 1) ? Cd : (float3)0.0f);
+		float3 A = (PS_BLEND_A == 0) ? Cs : ((PS_BLEND_A == 1) ? Cd : 0.0f);
+		float3 B = (PS_BLEND_B == 0) ? Cs : ((PS_BLEND_B == 1) ? Cd : 0.0f);
 		float  C = (PS_BLEND_C == 0) ? As : ((PS_BLEND_C == 1) ? Ad : Af);
-		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
+		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : 0.0f);
 
 		// As/Af clamp alpha for Blend mix
 		// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
@@ -930,13 +930,13 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		if (PS_BLEND_HW == 1)
 		{
 			// As or Af
-			As_rgba.rgb = (float3)C;
+			As_rgba.rgb = C;
 			// Subtract 1 for alpha to compensate for the changed equation,
 			// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
 			// we pick the lowest overflow from all colors because it's the safest,
 			// we divide by 255 the color because we don't know Cd value,
 			// changed alpha should only be done for hw blend.
-			float3 alpha_compensate = max((float3)1.0f, Color.rgb / (float3)255.0f);
+			float3 alpha_compensate = max(1.0f, Color.rgb / 255.0f);
 			As_rgba.rgb -= alpha_compensate;
 		}
 		else if (PS_BLEND_HW == 2)
@@ -946,32 +946,32 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			// subtracted, this way we can get a better result in hw blend.
 			// Result is still wrong but less wrong than before.
 			float division_alpha = 1.0f + C;
-			Color.rgb /= (float3)division_alpha;
+			Color.rgb /= division_alpha;
 		}
 		else if (PS_BLEND_HW == 3)
 		{
 			// As, Ad or Af clamped.
-			As_rgba.rgb = (float3)C_clamped;
+			As_rgba.rgb = C_clamped;
 			// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
 			// that is sent on second output to compensate.
-			float3 overflow_check = (Color.rgb - (float3)255.0f) / 255.0f;
-			float3 alpha_compensate = max((float3)0.0f, overflow_check);
+			float3 overflow_check = (Color.rgb - 255.0f) / 255.0f;
+			float3 alpha_compensate = max(0.0f, overflow_check);
 			As_rgba.rgb -= alpha_compensate;
 		}
 	}
 	else
 	{
-		float3 Alpha = PS_BLEND_C == 2 ? (float3)Af : (float3)As;
+		float3 Alpha = PS_BLEND_C == 2 ? Af : As;
 
 		if (PS_BLEND_HW == 1)
 		{
 			// Needed for Cd * (As/Ad/F + 1) blending modes
-			Color.rgb = (float3)255.0f;
+			Color.rgb = 255.0f;
 		}
 		else if (PS_BLEND_HW == 2)
 		{
 			// Cd*As,Cd*Ad or Cd*F
-			Color.rgb = saturate(Alpha - (float3)1.0f) * (float3)255.0f;
+			Color.rgb = saturate(Alpha - 1.0f) * 255.0f;
 		}
 		else if (PS_BLEND_HW == 3 && PS_RTA_CORRECTION == 0)
 		{
@@ -982,27 +982,27 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			// The higher the value (>128) the lower the compensation will be.
 			float max_color = max(max(Color.r, Color.g), Color.b);
 			float color_compensate = 255.0f / max(128.0f, max_color);
-			Color.rgb *= (float3)color_compensate;
+			Color.rgb *= color_compensate;
 		}
 		else if (PS_BLEND_HW == 4)
 		{
 			// Needed for Cd * (1 - Ad) and Cd*(1 + Alpha).
-			As_rgba.rgb = Alpha * (float3)(128.0f / 255.0f);
-			Color.rgb = (float3)127.5f;
+			As_rgba.rgb = Alpha * (128.0f / 255.0f);
+			Color.rgb = 127.5f;
 		}
 		else if (PS_BLEND_HW == 5)
 		{
 			// Needed for Cs*Alpha + Cd*(1 - Alpha).
-			Alpha *= (float3)(128.0f / 255.0f);
-			As_rgba.rgb = (Alpha - (float3)0.5f);
+			Alpha *= (128.0f / 255.0f);
+			As_rgba.rgb = (Alpha - 0.5f);
 			Color.rgb = (Color.rgb * Alpha);
 		}
 		else if (PS_BLEND_HW == 6)
 		{
 			// Needed for Cd*Alpha + Cs*(1 - Alpha).
-			Alpha *= (float3)(128.0f / 255.0f);
+			Alpha *= (128.0f / 255.0f);
 			As_rgba.rgb = Alpha;
-			Color.rgb *= (Alpha - (float3)0.5f);
+			Color.rgb *= (Alpha - 0.5f);
 		}
 	}
 }
@@ -1034,15 +1034,15 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		C.a = 128.0f;
 	}
 
-	float4 alpha_blend = (float4)0.0f;
+	float4 alpha_blend = 0.0f;
 	if (SW_AD_TO_HW)
 	{
-		float4 RT = PS_RTA_CORRECTION ? trunc(RtTexture.Load(int3(input.p.xy, 0)) * 128.0f + 0.1f) : trunc(RtTexture.Load(int3(input.p.xy, 0)) * 255.0f + 0.1f);
-		alpha_blend = (float4)(RT.a / 128.0f);
+		float4 RT = PS_RTA_CORRECTION ? trunc(RtSampler.Load(int3(input.p.xy, 0)) * 128.0f + 0.1f) : trunc(RtSampler.Load(int3(input.p.xy, 0)) * 255.0f + 0.1f);
+		alpha_blend = (RT.a / 128.0f);
 	}
 	else
 	{
-		alpha_blend = (float4)(C.a / 128.0f);
+		alpha_blend = (C.a / 128.0f);
 	}
 
 	// Alpha correction
