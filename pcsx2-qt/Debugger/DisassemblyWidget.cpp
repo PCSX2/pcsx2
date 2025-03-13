@@ -35,8 +35,6 @@ DisassemblyWidget::DisassemblyWidget(const DebuggerWidgetParameters& parameters)
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &DisassemblyWidget::customContextMenuRequested, this, &DisassemblyWidget::openContextMenu);
 
-	connect(g_emu_thread, &EmuThread::onVMPaused, this, &DisassemblyWidget::gotoProgramCounterOnPause);
-
 	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
 		update();
 		return true;
@@ -51,6 +49,15 @@ DisassemblyWidget::DisassemblyWidget(const DebuggerWidgetParameters& parameters)
 
 		if (event.switch_to_tab)
 			switchToThisTab();
+
+		return true;
+	});
+
+	receiveEvent<DebuggerEvents::VMPaused>([this](const DebuggerEvents::VMPaused& event) -> bool {
+		if (!m_goToProgramCounterOnPause)
+			return false;
+
+		gotoAddress(cpu().getPC(), false);
 
 		return true;
 	});
@@ -868,12 +875,6 @@ QString DisassemblyWidget::FetchSelectionInfo(SelectionInfo selInfo)
 void DisassemblyWidget::gotoAddressAndSetFocus(u32 address)
 {
 	gotoAddress(address, true);
-}
-
-void DisassemblyWidget::gotoProgramCounterOnPause()
-{
-	if (m_goToProgramCounterOnPause)
-		gotoAddress(cpu().getPC(), false);
 }
 
 void DisassemblyWidget::gotoAddress(u32 address, bool should_set_focus)

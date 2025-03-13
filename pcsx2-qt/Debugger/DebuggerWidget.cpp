@@ -237,13 +237,18 @@ void DebuggerWidget::sendEventImplementation(const DebuggerEvents::Event& event)
 			return;
 }
 
-void DebuggerWidget::broadcastEventImplementation(const DebuggerEvents::Event& event)
+void DebuggerWidget::broadcastEventImplementation(const DebuggerEvents::Event& event, u32 flags)
 {
 	if (!g_debugger_window)
 		return;
 
-	for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerWidgets())
-		widget->handleEvent(event);
+	if (flags & DebuggerEvents::ALL_LAYOUTS)
+		for (DockLayout& layout : g_debugger_window->dockManager().layouts())
+			for (const auto& [unique_name, widget] : layout.debuggerWidgets())
+				widget->handleEvent(event);
+	else
+		for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerWidgets())
+			widget->handleEvent(event);
 }
 
 std::vector<QAction*> DebuggerWidget::createEventActionsImplementation(

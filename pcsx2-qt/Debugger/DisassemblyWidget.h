@@ -59,7 +59,6 @@ public slots:
 	void contextShowInstructionBytes();
 
 	void gotoAddressAndSetFocus(u32 address);
-	void gotoProgramCounterOnPause();
 	void gotoAddress(u32 address, bool should_set_focus);
 
 	void toggleBreakpoint(u32 address);
