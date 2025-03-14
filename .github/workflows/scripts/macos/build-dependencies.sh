@@ -183,8 +183,8 @@ rm -fr "freetype-$FREETYPE"
 tar xf "freetype-$FREETYPE.tar.xz"
 cd "freetype-$FREETYPE"
 cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DISABLE_HARFBUZZ=TRUE -B build
-cmake --build build --parallel
-cmake --install build
+make -C build "-j$NPROCS"
+make -C build install
 cd ..
 
 echo "Building HarfBuzz..."
@@ -192,8 +192,8 @@ rm -fr "harfbuzz-$HARFBUZZ"
 tar xf "harfbuzz-$HARFBUZZ.tar.gz"
 cd "harfbuzz-$HARFBUZZ"
 cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -B build
-cmake --build build --parallel
-cmake --install build
+make -C build "-j$NPROCS"
+make -C build install
 cd ..
 
 echo "Building FreeType with HarfBuzz..."
@@ -201,8 +201,8 @@ rm -fr "freetype-$FREETYPE"
 tar xf "freetype-$FREETYPE.tar.xz"
 cd "freetype-$FREETYPE"
 cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build
-cmake --build build --parallel
-cmake --install build
+make -C build "-j$NPROCS"
+make -C build install
 cd ..
 
 # MoltenVK already builds universal binaries, nothing special to do here.
@@ -333,8 +333,8 @@ tar xf "KDDockWidgets-$KDDOCKWIDGETS.tar.gz"
 cd "KDDockWidgets-$KDDOCKWIDGETS"
 patch -p1 < "$SCRIPTDIR/../common/kddockwidgets-dodgy-include.patch"
 cmake "${CMAKE_COMMON[@]}" -DKDDockWidgets_QT6=true -DKDDockWidgets_EXAMPLES=false -DKDDockWidgets_FRONTENDS=qtwidgets -B build
-cmake --build build --parallel
-cmake --install build
+make -C build "-j$NPROCS"
+make -C build install
 cd ..
 
 echo "Cleaning up..."
