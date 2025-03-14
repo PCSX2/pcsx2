@@ -101,17 +101,35 @@ static enum cpuinfo_uarch decode_uarch(uint32_t cpu_family, uint32_t core_index,
 	return cpuinfo_uarch_unknown;
 }
 
-static void decode_package_name(char* package_name) {
+/* Small bodge until cpuinfo merges PR #246 */
+static int read_package_name_from_brand_string(char* package_name) {
+	size_t size;
+	if (sysctlbyname("machdep.cpu.brand_string", NULL, &size, NULL, 0) != 0) {
+	sysctlfail:
+		cpuinfo_log_warning("sysctlbyname(\"machdep.cpu.brand_string\") failed: %s", strerror(errno));
+		return false;
+	}
+
+	char* brand_string = alloca(size);
+	if (sysctlbyname("machdep.cpu.brand_string", brand_string, &size, NULL, 0) != 0)
+		goto sysctlfail;
+	cpuinfo_log_debug("machdep.cpu.brand_string: %s", brand_string);
+
+	strlcpy(package_name, brand_string, CPUINFO_PACKAGE_NAME_MAX);
+	return true;
+}
+
+static int decode_package_name_from_hw_machine(char* package_name) {
 	size_t size;
 	if (sysctlbyname("hw.machine", NULL, &size, NULL, 0) != 0) {
 		cpuinfo_log_warning("sysctlbyname(\"hw.machine\") failed: %s", strerror(errno));
-		return;
+		return false;
 	}
 
 	char* machine_name = alloca(size);
 	if (sysctlbyname("hw.machine", machine_name, &size, NULL, 0) != 0) {
 		cpuinfo_log_warning("sysctlbyname(\"hw.machine\") failed: %s", strerror(errno));
-		return;
+		return false;
 	}
 	cpuinfo_log_debug("hw.machine: %s", machine_name);
 
@@ -119,7 +137,7 @@ static void decode_package_name(char* package_name) {
 	uint32_t major = 0, minor = 0;
 	if (sscanf(machine_name, "%9[^,0123456789]%" SCNu32 ",%" SCNu32, name, &major, &minor) != 3) {
 		cpuinfo_log_warning("parsing \"hw.machine\" failed: %s", strerror(errno));
-		return;
+		return false;
 	}
 
 	uint32_t chip_model = 0;
@@ -224,7 +242,9 @@ static void decode_package_name(char* package_name) {
 	}
 	if (chip_model != 0) {
 		snprintf(package_name, CPUINFO_PACKAGE_NAME_MAX, "Apple A%" PRIu32 "%c", chip_model, suffix);
+		return true;
 	}
+	return false;
 }
 
 void cpuinfo_arm_mach_init(void) {
@@ -275,7 +295,8 @@ void cpuinfo_arm_mach_init(void) {
 			.core_start = i * cores_per_package,
 			.core_count = cores_per_package,
 		};
-		decode_package_name(packages[i].name);
+		if (!read_package_name_from_brand_string(packages[i].name))
+			decode_package_name_from_hw_machine(packages[i].name);
 	}
 
 	const uint32_t cpu_family = get_sys_info_by_name("hw.cpufamily");
