@@ -12,6 +12,7 @@
 
 #include "fmt/format.h"
 
+#include <io.h>
 #include <mutex>
 
 static DWORD ConvertToWinApi(const PageProtectionMode& mode)
@@ -69,6 +70,22 @@ void* HostSys::CreateSharedMemory(const char* name, size_t size)
 {
 	return static_cast<void*>(CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
 		static_cast<DWORD>(size >> 32), static_cast<DWORD>(size), StringUtil::UTF8StringToWideString(name).c_str()));
+}
+
+void* HostSys::CreateMappingFromFile(FILE* fd)
+{
+	return static_cast<void*>(CreateFileMappingW(reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(fd))), NULL, PAGE_READWRITE,
+		0, 0, nullptr));
+}
+
+void* HostSys::MapMapping(void* handle, size_t size, const PageProtectionMode& mode)
+{
+	return MapViewOfFile(static_cast<HANDLE>(handle), FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, 0);
+}
+
+void HostSys::DestroyMapping(void* handle)
+{
+	CloseHandle(static_cast<HANDLE>(handle));
 }
 
 void HostSys::DestroySharedMemory(void* ptr)
