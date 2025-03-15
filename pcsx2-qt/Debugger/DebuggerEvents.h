@@ -9,6 +9,15 @@
 
 namespace DebuggerEvents
 {
+	enum EventFlags
+	{
+		NO_EVENT_FLAGS = 0,
+		// Broadcast events to debugger widgets from all layouts rather than
+		// just the currently selected one. No effect for sending events to
+		// individual debugger widgets.
+		ALL_LAYOUTS = 1 << 0
+	};
+
 	struct Event
 	{
 		virtual ~Event() = default;
@@ -18,6 +27,7 @@ namespace DebuggerEvents
 	// to all debugger widgets at regular intervals.
 	struct Refresh : Event
 	{
+		static constexpr const u32 FLAGS = NO_EVENT_FLAGS;
 	};
 
 	// Go to the address in a disassembly or memory view and switch to that tab.
@@ -38,6 +48,7 @@ namespace DebuggerEvents
 
 		bool switch_to_tab = true;
 
+		static constexpr const u32 FLAGS = NO_EVENT_FLAGS;
 		static constexpr const char* ACTION_PREFIX = QT_TRANSLATE_NOOP("DebuggerEvents", "Go to in");
 	};
 
@@ -45,6 +56,14 @@ namespace DebuggerEvents
 	// the new state (e.g. the VM has been paused).
 	struct VMUpdate : Event
 	{
+		static constexpr const u32 FLAGS = NO_EVENT_FLAGS;
+	};
+
+	// The VM has been paused. This event will not be sent if the breakpoint
+	// code triggered the pause.
+	struct VMPaused : Event
+	{
+		static constexpr const u32 FLAGS = ALL_LAYOUTS;
 	};
 
 	// Add the address to the saved addresses list and switch to that tab.
@@ -53,6 +72,7 @@ namespace DebuggerEvents
 		u32 address = 0;
 		bool switch_to_tab = true;
 
+		static constexpr const u32 FLAGS = NO_EVENT_FLAGS;
 		static constexpr const char* ACTION_PREFIX = QT_TRANSLATE_NOOP("DebuggerEvents", "Add to");
 	};
 } // namespace DebuggerEvents

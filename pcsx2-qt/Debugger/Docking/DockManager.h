@@ -81,6 +81,7 @@ public:
 
 	void updateDockWidgetTitles();
 
+	const std::span<DockLayout> layouts();
 	const std::map<QString, QPointer<DebuggerWidget>>& debuggerWidgets();
 	size_t countDebuggerWidgetsOfType(const char* type);
 	void recreateDebuggerWidget(const QString& unique_name);

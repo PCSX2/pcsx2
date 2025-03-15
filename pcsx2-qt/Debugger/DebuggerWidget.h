@@ -77,12 +77,12 @@ public:
 		if (!QtHost::IsOnUIThread())
 		{
 			QtHost::RunOnUIThread([event = std::move(event)]() {
-				DebuggerWidget::broadcastEventImplementation(event);
+				DebuggerWidget::broadcastEventImplementation(event, Event::FLAGS);
 			});
 			return;
 		}
 
-		broadcastEventImplementation(event);
+		broadcastEventImplementation(event, Event::FLAGS);
 	}
 
 	// Register a handler callback for the specified type of event.
@@ -167,7 +167,7 @@ protected:
 
 private:
 	static void sendEventImplementation(const DebuggerEvents::Event& event);
-	static void broadcastEventImplementation(const DebuggerEvents::Event& event);
+	static void broadcastEventImplementation(const DebuggerEvents::Event& event, u32 flags);
 
 	std::vector<QAction*> createEventActionsImplementation(
 		QMenu* menu,

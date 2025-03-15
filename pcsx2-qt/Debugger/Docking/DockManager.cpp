@@ -810,6 +810,11 @@ void DockManager::updateDockWidgetTitles()
 	m_layouts.at(m_current_layout).updateDockWidgetTitles();
 }
 
+const std::span<DockLayout> DockManager::layouts()
+{
+	return m_layouts;
+}
+
 const std::map<QString, QPointer<DebuggerWidget>>& DockManager::debuggerWidgets()
 {
 	static std::map<QString, QPointer<DebuggerWidget>> dummy;
