@@ -88,6 +88,8 @@ private:
 	bool HandleJoystickHatEvent(const SDL_JoyHatEvent* ev);
 	void SendRumbleUpdate(ControllerData* cd);
 
+	bool IsControllerSixaxis(const ControllerData& cd);
+
 	ControllerDataVector m_controllers;
 
 	// ConvertKeyToString and ConvertKeyToIcon can inspect the
