@@ -256,6 +256,8 @@ target_include_directories(pcsx2-qt PRIVATE
 	"${CMAKE_BINARY_DIR}/common/include"
 	"${CMAKE_SOURCE_DIR}/pcsx2"
 	"${CMAKE_SOURCE_DIR}/pcsx2-qt"
+	# TODO: Remove this the next time we update KDDockWidgets.
+	"${CMAKE_PREFIX_PATH}/include/kddockwidgets-qt6/kddockwidgets"
 )
 
 target_link_libraries(pcsx2-qt PRIVATE
