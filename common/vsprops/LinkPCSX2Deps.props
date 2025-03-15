@@ -4,13 +4,13 @@
   <ItemDefinitionGroup>
     <Link>
       <AdditionalLibraryDirectories>$(DepsLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;libjpeg.lib;libpng16.lib;libwebp.lib;lz4.lib;SDL3.lib;zlib.lib;zstd.lib;kddockwidgets-qt62.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;jpeg.lib;libpng16.lib;libwebp.lib;lz4.lib;SDL3.lib;zlib.lib;zstd.lib;kddockwidgets-qt62.lib</AdditionalDependencies>
    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <DepsDLLs Include="$(DepsBinDir)freetype.dll" />
     <DepsDLLs Include="$(DepsBinDir)harfbuzz.dll" />
-    <DepsDLLs Include="$(DepsBinDir)libjpeg.dll" />
+    <DepsDLLs Include="$(DepsBinDir)jpeg62.dll" />
     <DepsDLLs Include="$(DepsBinDir)libpng16.dll" />
     <DepsDLLs Include="$(DepsBinDir)libsharpyuv.dll" />
     <DepsDLLs Include="$(DepsBinDir)libwebp.dll" />

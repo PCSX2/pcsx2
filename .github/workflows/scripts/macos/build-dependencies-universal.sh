@@ -44,7 +44,7 @@ SDL=SDL3-3.2.8
 ZSTD=1.5.7
 LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
 LIBPNG=1.6.45
-LIBJPEG=9f
+LIBJPEGTURBO=3.1.0
 LIBWEBP=1.5.0
 FFMPEG=6.0
 MOLTENVK=1.2.9
@@ -82,7 +82,7 @@ eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3  zstd-$ZSTD.tar
 0728800155f3ed0a0c87e03addbd30ecbe374f7b080678bbca1506051d50dec3  $LZ4.tar.gz
 926485350139ffb51ef69760db35f78846c805fef3d59bfdcb2fba704663f370  libpng-$LIBPNG.tar.xz
 7d6fab70cf844bf6769077bd5d7a74893f8ffd4dfb42861745750c63c2a5c92c  libwebp-$LIBWEBP.tar.gz
-04705c110cb2469caa79fb71fba3d7bf834914706e9641a4589485c1f832565b  jpegsrc.v$LIBJPEG.tar.gz
+9564c72b1dfd1d6fe6274c5f95a8d989b59854575d4bbee44ade7bc17aa9bc93  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082  ffmpeg-$FFMPEG.tar.xz
 f415a09385030c6510a936155ce211f617c31506db5fbc563e804345f1ecf56e  v$MOLTENVK.tar.gz
 c5f22a5e10fb162895ded7de0963328e7307611c688487b5d152c9ee64767599  qtbase-everywhere-src-$QT.tar.xz
@@ -104,7 +104,7 @@ curl -C - -L \
 	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
 	-O "https://github.com/lz4/lz4/archive/$LZ4.tar.gz" \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
-	-O "https://ijg.org/files/jpegsrc.v$LIBJPEG.tar.gz" \
+	-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
 	-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
 	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
 	-O "https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/v$MOLTENVK.tar.gz" \
@@ -203,21 +203,12 @@ merge_binaries $(realpath build) $(realpath build-arm64)
 make -C build install
 cd ..
 
-echo "Installing libjpeg..."
-rm -fr "jpeg-$LIBJPEG"
-tar xf "jpegsrc.v$LIBJPEG.tar.gz"
-cd "jpeg-$LIBJPEG"
-mkdir build
-cd build
-../configure --prefix="$INSTALLDIR" --disable-static --enable-shared --host="x86_64-apple-darwin" CFLAGS="-arch x86_64"
-make "-j$NPROCS"
-cd ..
-mkdir build-arm64
-cd build-arm64
-../configure --prefix="$INSTALLDIR" --disable-static --enable-shared --host="aarch64-apple-darwin" CFLAGS="-arch arm64"
-make "-j$NPROCS"
-cd ..
-merge_binaries $(realpath build) $(realpath build-arm64)
+echo "Installing libjpegturbo..."
+rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
+tar xf "libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
+cd "libjpeg-turbo-$LIBJPEGTURBO"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_ARM64" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build-arm64
+make -C build "-j$NPROCS"
 make -C build install
 cd ..
 

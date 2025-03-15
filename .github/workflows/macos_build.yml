@@ -35,7 +35,7 @@ jobs:
     name: ${{ inputs.jobName }}
     runs-on: ${{ inputs.os }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
-    timeout-minutes: 90
+    timeout-minutes: 120
     env:
       POWERSHELL_TELEMETRY_OPTOUT: 1
       CCACHE_BASEDIR: ${{ github.workspace }}
