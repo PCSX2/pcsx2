@@ -2117,7 +2117,7 @@ Leaderboard Position: {1} of {2}</source>
     </message>
     <message>
         <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="215"/>
-        <source>4</source>
+        <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
