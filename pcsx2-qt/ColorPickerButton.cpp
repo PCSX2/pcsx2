@@ -29,7 +29,7 @@ void ColorPickerButton::setColor(u32 rgb)
 
 void ColorPickerButton::updateBackgroundColor()
 {
-	setStyleSheet(QStringLiteral("background-color: #%1;").arg(static_cast<uint>(m_color), 8, 16, QChar('0')));
+	setStyleSheet(QStringLiteral("background-color: #%1;").arg(static_cast<uint>(m_color), 6, 16, QChar('0')));
 }
 
 void ColorPickerButton::onClicked()
