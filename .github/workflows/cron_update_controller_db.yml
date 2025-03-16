@@ -19,7 +19,7 @@ jobs:
           mv ./game_controller_db.txt ${{github.workspace}}/bin/resources/game_controller_db.txt
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@4320041ed380b20e97d388d56a7fb4f9b8c20e79
         with:
           title: "PAD: Update to latest controller database"
           commit-message: "[ci skip] PAD: Update to latest controller database."

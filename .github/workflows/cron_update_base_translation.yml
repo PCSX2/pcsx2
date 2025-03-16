@@ -17,7 +17,7 @@ jobs:
         run: ./.github/workflows/scripts/common/update_base_translation.sh
       
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@4320041ed380b20e97d388d56a7fb4f9b8c20e79
         with:
           title: "Qt: Update Base Translation"
           commit-message: "[ci skip] Qt: Update Base Translation."
