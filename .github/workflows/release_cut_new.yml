@@ -40,7 +40,7 @@ jobs:
       # Docs - https://github.com/mathieudutour/github-tag-action
       - name: Bump Version and Push Tag
         id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
+        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b
         with:
           github_token: ${{ github.token }}
           tag_prefix: v
@@ -68,7 +68,7 @@ jobs:
           mv ./release-notes.md ${GITHUB_WORKSPACE}/release-notes.md
 
       - name: Create a GitHub Release (Manual)
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda
         if: steps.tag_version.outputs.new_tag && github.event_name == 'workflow_dispatch'
         with:
           body_path: ./release-notes.md
@@ -77,7 +77,7 @@ jobs:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
 
       - name: Create a GitHub Release (Push)
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda
         if: steps.tag_version.outputs.new_tag && github.event_name != 'workflow_dispatch'
         with:
           body_path: ./release-notes.md

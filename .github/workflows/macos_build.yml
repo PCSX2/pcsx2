@@ -160,7 +160,7 @@ jobs:
 
       - name: Sign the Application
         if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
-        uses: indygreg/apple-code-sign-action@v1.1
+        uses: indygreg/apple-code-sign-action@44d0985b7f4363198e80b6fea63ac3e9dd3e9957
         with:
           input_path: 'PCSX2.app'
           p12_file: cert.p12

@@ -12,7 +12,7 @@ jobs:
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-    - uses: xTVaser/first-interaction@v1.2.4
+    - uses: xTVaser/first-interaction@d62d6eb3c1215eae9f9d6dbfabf12d6725834cb3
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         debug-mode: false
