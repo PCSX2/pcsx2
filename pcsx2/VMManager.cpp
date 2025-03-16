@@ -518,7 +518,7 @@ void VMManager::UpdateLoggingSettings(SettingsInterface& si)
 void VMManager::SetDefaultLoggingSettings(SettingsInterface& si)
 {
 	si.SetBoolValue("Logging", "EnableSystemConsole", false);
-	si.SetBoolValue("Logging", "EnableFileLogging", false);
+	si.SetBoolValue("Logging", "EnableFileLogging", true);
 	si.SetBoolValue("Logging", "EnableTimestamps", true);
 	si.SetBoolValue("Logging", "EnableVerbose", false);
 	si.SetBoolValue("Logging", "EnableEEConsole", false);
