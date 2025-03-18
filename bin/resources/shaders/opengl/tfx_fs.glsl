@@ -25,7 +25,8 @@
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 #define PS_PRIMID_INIT (PS_DATE == 1 || PS_DATE == 2)
 #define NEEDS_RT_EARLY (PS_TEX_IS_FB == 1 || PS_DATE >= 5)
-#define NEEDS_RT (NEEDS_RT_EARLY || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)))
+#define NEEDS_RT_FOR_AFAIL (PS_AFAIL == 3 && PS_NO_COLOR1)
+#define NEEDS_RT (NEEDS_RT_EARLY || NEEDS_RT_FOR_AFAIL || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)))
 #define NEEDS_TEX (PS_TFX != 4)
 
 layout(std140, binding = 0) uniform cb21
@@ -1114,7 +1115,7 @@ void ps_main()
 
 	ps_fbmask(C);
 
-#if PS_AFAIL == 3 // RGB_ONLY
+#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY
 	// Use alpha blend factor to determine whether to update A.
 	alpha_blend.a = float(atst_pass);
 #endif
@@ -1129,6 +1130,10 @@ void ps_main()
 		SV_Target0.rgb = vec3(C.rgb / 65535.0f);
 	#else
 		SV_Target0.rgb = C.rgb / 255.0f;
+	#endif
+	#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+		if (!atst_pass)
+			SV_Target0.a = sample_from_rt().a;
 	#endif
 	#if !PS_NO_COLOR1
 		SV_Target1 = alpha_blend;
