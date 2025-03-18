@@ -105,7 +105,7 @@ disable_compiler_warnings_for_target(cubeb)
 disable_compiler_warnings_for_target(speex)
 
 # Find the Qt components that we need.
-find_package(Qt6 6.7.2 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets LinguistTools REQUIRED)
+find_package(Qt6 6.7.3 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets LinguistTools REQUIRED)
 
 if(WIN32)
   add_subdirectory(3rdparty/rainterface EXCLUDE_FROM_ALL)
