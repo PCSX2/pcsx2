@@ -299,8 +299,9 @@ void main()
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
+#define AFAIL_NEEDS_RT (PS_AFAIL == 3 && PS_NO_COLOR1)
 
-#define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5))
+#define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || AFAIL_NEEDS_RT || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5))
 
 #define NEEDS_TEX (PS_TFX != 4)
 
@@ -1381,7 +1382,7 @@ void main()
 
 	ps_fbmask(C);
 
-	#if PS_AFAIL == 3 // RGB_ONLY
+	#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY
 		// Use alpha blend factor to determine whether to update A.
 		alpha_blend.a = float(atst_pass);
 	#endif
@@ -1399,6 +1400,10 @@ void main()
 		#endif
 		#if !PS_NO_COLOR1
 			o_col1 = alpha_blend;
+		#endif
+		#if PS_AFAIL == 3 && PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+			if (!atst_pass)
+				o_col0.a = sample_from_rt().a;
 		#endif
 	#endif
 
