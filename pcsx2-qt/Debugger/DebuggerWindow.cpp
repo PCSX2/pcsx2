@@ -323,6 +323,13 @@ void DebuggerWindow::onVMPaused()
 			CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
 		});
 	}
+
+	// Stops us from telling the disassembly widget to jump somwhere because
+	// breakpoint code paused the core.
+	if (!CBreakPoints::GetCorePaused())
+		emit onVMActuallyPaused();
+	else
+		CBreakPoints::SetCorePaused(false);
 }
 
 void DebuggerWindow::onVMResumed()

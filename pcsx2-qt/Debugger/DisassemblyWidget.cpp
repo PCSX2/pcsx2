@@ -3,8 +3,9 @@
 
 #include "DisassemblyWidget.h"
 
-#include "Debugger/Breakpoints/BreakpointModel.h"
+#include "Debugger/DebuggerWindow.h"
 #include "Debugger/JsonValueWrapper.h"
+#include "Debugger/Breakpoints/BreakpointModel.h"
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
@@ -35,7 +36,8 @@ DisassemblyWidget::DisassemblyWidget(const DebuggerWidgetParameters& parameters)
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &DisassemblyWidget::customContextMenuRequested, this, &DisassemblyWidget::openContextMenu);
 
-	connect(g_emu_thread, &EmuThread::onVMPaused, this, &DisassemblyWidget::gotoProgramCounterOnPause);
+	connect(g_debugger_window, &DebuggerWindow::onVMActuallyPaused,
+		this, &DisassemblyWidget::gotoProgramCounterOnPause);
 
 	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
 		update();
