@@ -10,6 +10,7 @@
 #include "common/Console.h"
 #include "common/HostSys.h"
 
+#include "cpuinfo.h"
 #include "imgui.h"
 
 #ifdef __APPLE__
@@ -90,6 +91,12 @@ GSDeviceMTL::GSDeviceMTL()
 	, m_dev(nil)
 {
 	m_backref->second = this;
+	m_resource_options_shared_wc = MTLResourceStorageModeShared | MTLResourceCPUCacheModeWriteCombined;
+#ifdef _M_X86
+	// WC memory doesn't work properly on AMD hackintoshes, and ends up being horribly slow even when only writing
+	if (cpuinfo_get_core(0)->vendor == cpuinfo_vendor_amd)
+		m_resource_options_shared_wc = MTLResourceStorageModeShared;
+#endif
 }
 
 GSDeviceMTL::~GSDeviceMTL()
@@ -107,7 +114,7 @@ GSDeviceMTL::Map GSDeviceMTL::Allocate(UploadBuffer& buffer, size_t amt)
 		size_t newsize = std::max<size_t>(buffer.usage.Size() * 2, 4096);
 		while (newsize < amt)
 			newsize *= 2;
-		MTLResourceOptions options = MTLResourceStorageModeShared | MTLResourceCPUCacheModeWriteCombined;
+		MTLResourceOptions options = m_resource_options_shared_wc;
 		buffer.mtlbuffer = MRCTransfer([m_dev.dev newBufferWithLength:newsize options:options]);
 		pxAssertRel(buffer.mtlbuffer, "Failed to allocate MTLBuffer (out of memory?)");
 		buffer.buffer = [buffer.mtlbuffer contents];
@@ -148,7 +155,7 @@ GSDeviceMTL::Map GSDeviceMTL::Allocate(BufferPair& buffer, size_t amt)
 		size_t newsize = std::max<size_t>(buffer.usage.Size() * 2, 4096);
 		while (newsize < amt)
 			newsize *= 2;
-		MTLResourceOptions options = MTLResourceStorageModeShared | MTLResourceCPUCacheModeWriteCombined;
+		MTLResourceOptions options = m_resource_options_shared_wc;
 		buffer.cpubuffer = MRCTransfer([m_dev.dev newBufferWithLength:newsize options:options]);
 		pxAssertRel(buffer.cpubuffer, "Failed to allocate MTLBuffer (out of memory?)");
 		buffer.buffer = [buffer.cpubuffer contents];
@@ -1277,7 +1284,7 @@ void GSDeviceMTL::UpdateTexture(id<MTLTexture> texture, u32 x, u32 y, u32 width,
 	id<MTLCommandBuffer> cmdbuf = [m_queue commandBuffer];
 	id<MTLBlitCommandEncoder> enc = [cmdbuf blitCommandEncoder];
 	size_t bytes = data_stride * height;
-	MRCOwned<id<MTLBuffer>> buf = MRCTransfer([m_dev.dev newBufferWithLength:bytes options:MTLResourceStorageModeShared | MTLResourceCPUCacheModeWriteCombined]);
+	MRCOwned<id<MTLBuffer>> buf = MRCTransfer([m_dev.dev newBufferWithLength:bytes options:m_resource_options_shared_wc]);
 	memcpy([buf contents], data, bytes);
 	[enc copyFromBuffer:buf
 	       sourceOffset:0

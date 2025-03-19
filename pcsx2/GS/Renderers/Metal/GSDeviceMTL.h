@@ -219,6 +219,7 @@ public:
 	MRCOwned<id<MTLFence>> m_draw_sync_fence;
 	MRCOwned<MTLFunctionConstantValues*> m_fn_constants;
 	MRCOwned<MTLVertexDescriptor*> m_hw_vertex;
+	MTLResourceOptions m_resource_options_shared_wc;
 
 	// Previously in MetalHostDisplay.
 	MRCOwned<NSView*> m_view;
