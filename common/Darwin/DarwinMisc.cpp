@@ -419,7 +419,7 @@ void* HostSys::MapMapping(void* handle, size_t size, const PageProtectionMode& m
 {
 	const u32 mmap_prot = (mode.CanWrite() ? (PROT_READ | PROT_WRITE) : (PROT_READ)) | (mode.CanExecute() ? PROT_EXEC : 0);
 
-	return mmap(nullptr, size, mmap_prot, MAP_PRIVATE | MAP_ANON, static_cast<int>(reinterpret_cast<intptr_t>(handle)), 0);
+	return mmap(nullptr, size, mmap_prot, MAP_PRIVATE, static_cast<int>(reinterpret_cast<intptr_t>(handle)), 0);
 }
 
 void HostSys::DestroyMapping(void* handle)
