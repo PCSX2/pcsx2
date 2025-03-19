@@ -16,6 +16,7 @@ class JsonValueWrapper;
 struct DebuggerWidgetParameters
 {
 	QString unique_name;
+	u64 id = 0;
 	DebugInterface* cpu = nullptr;
 	std::optional<BreakPointCpu> cpu_override;
 	QWidget* parent = nullptr;
@@ -28,6 +29,7 @@ class DebuggerWidget : public QWidget
 
 public:
 	QString uniqueName() const;
+	u64 id() const;
 
 	// Get the translated name that should be displayed for this widget.
 	QString displayName() const;
@@ -177,6 +179,12 @@ private:
 		const char* action_prefix,
 		std::function<const DebuggerEvents::Event*()> event_func);
 
+	// Used for sorting debugger widgets that have the same display name. Unique
+	// within a single layout.
+	u64 m_id;
+
+	// Identifier for the dock widget used by KDDockWidgets. Unique within a
+	// single layout.
 	QString m_unique_name;
 
 	// A user-defined name, or an empty string if no name was specified so that

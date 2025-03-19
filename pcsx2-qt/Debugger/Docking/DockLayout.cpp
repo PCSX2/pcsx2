@@ -29,7 +29,7 @@
 const char* DEBUGGER_LAYOUT_FILE_FORMAT = "PCSX2 Debugger User Interface Layout";
 
 // Increment this whenever there is a breaking change to the JSON format.
-const u32 DEBUGGER_LAYOUT_FILE_VERSION_MAJOR = 1;
+const u32 DEBUGGER_LAYOUT_FILE_VERSION_MAJOR = 2;
 
 // Increment this whenever there is a non-breaking change to the JSON format.
 const u32 DEBUGGER_LAYOUT_FILE_VERSION_MINOR = 0;
@@ -70,7 +70,7 @@ DockLayout::DockLayout(
 	: m_name(name)
 	, m_cpu(cpu)
 	, m_is_default(is_default)
-	, m_next_unique_name(layout_to_clone.m_next_unique_name)
+	, m_next_id(layout_to_clone.m_next_id)
 	, m_base_layout(layout_to_clone.m_base_layout)
 	, m_toolbars(layout_to_clone.m_toolbars)
 	, m_geometry(layout_to_clone.m_geometry)
@@ -83,6 +83,7 @@ DockLayout::DockLayout(
 
 		DebuggerWidgetParameters parameters;
 		parameters.unique_name = unique_name;
+		parameters.id = widget_to_clone->id();
 		parameters.cpu = &DebugInterface::get(cpu);
 		parameters.cpu_override = widget_to_clone->cpuOverride();
 
@@ -262,7 +263,7 @@ void DockLayout::reset()
 		delete widget;
 	}
 
-	m_next_unique_name = 0;
+	m_next_id = 0;
 	m_toolbars.clear();
 	m_widgets.clear();
 	m_geometry.clear();
@@ -278,7 +279,8 @@ void DockLayout::reset()
 		const DockTables::DebuggerWidgetDescription& dock_description = iterator->second;
 
 		DebuggerWidgetParameters parameters;
-		parameters.unique_name = generateNewUniqueName(base_layout->widgets[i].type.c_str());
+		std::tie(parameters.unique_name, parameters.id) =
+			generateNewUniqueName(base_layout->widgets[i].type.c_str());
 		parameters.cpu = &DebugInterface::get(m_cpu);
 
 		if (parameters.unique_name.isEmpty())
@@ -330,7 +332,7 @@ void DockLayout::updateDockWidgetTitles()
 	{
 		std::sort(widgets.begin(), widgets.end(),
 			[&](const DebuggerWidget* lhs, const DebuggerWidget* rhs) {
-				return lhs->uniqueName() < rhs->uniqueName();
+				return lhs->id() < rhs->id();
 			});
 
 		for (size_t i = 0; i < widgets.size(); i++)
@@ -389,7 +391,7 @@ void DockLayout::createDebuggerWidget(const std::string& type)
 	const DockTables::DebuggerWidgetDescription& description = description_iterator->second;
 
 	DebuggerWidgetParameters parameters;
-	parameters.unique_name = generateNewUniqueName(type.c_str());
+	std::tie(parameters.unique_name, parameters.id) = generateNewUniqueName(type.c_str());
 	parameters.cpu = &DebugInterface::get(m_cpu);
 
 	if (parameters.unique_name.isEmpty())
@@ -428,6 +430,7 @@ void DockLayout::recreateDebuggerWidget(const QString& unique_name)
 
 	DebuggerWidgetParameters parameters;
 	parameters.unique_name = old_debugger_widget->uniqueName();
+	parameters.id = old_debugger_widget->id();
 	parameters.cpu = &DebugInterface::get(m_cpu);
 	parameters.cpu_override = old_debugger_widget->cpuOverride();
 
@@ -545,24 +548,22 @@ bool DockLayout::save(DockLayout::Index layout_index)
 	rapidjson::Document geometry;
 
 	const char* cpu_name = DebugInterface::cpuName(m_cpu);
-	const std::string& default_layouts_hash = DockTables::hashDefaultLayouts();
+	u32 default_layout_hash = DockTables::hashDefaultLayouts();
 
 	rapidjson::Value format;
 	format.SetString(DEBUGGER_LAYOUT_FILE_FORMAT, strlen(DEBUGGER_LAYOUT_FILE_FORMAT));
 	json.AddMember("format", format, json.GetAllocator());
 
-	json.AddMember("version_major", DEBUGGER_LAYOUT_FILE_VERSION_MAJOR, json.GetAllocator());
-	json.AddMember("version_minor", DEBUGGER_LAYOUT_FILE_VERSION_MINOR, json.GetAllocator());
-	rapidjson::Value version_hash;
-	version_hash.SetString(default_layouts_hash.c_str(), default_layouts_hash.size());
-	json.AddMember("version_hash", version_hash, json.GetAllocator());
+	json.AddMember("versionMajor", DEBUGGER_LAYOUT_FILE_VERSION_MAJOR, json.GetAllocator());
+	json.AddMember("versionMinor", DEBUGGER_LAYOUT_FILE_VERSION_MINOR, json.GetAllocator());
+	json.AddMember("defaultLayoutHash", default_layout_hash, json.GetAllocator());
 
 	std::string name_str = m_name.toStdString();
 	json.AddMember("name", rapidjson::Value().SetString(name_str.c_str(), name_str.size()), json.GetAllocator());
 	json.AddMember("target", rapidjson::Value().SetString(cpu_name, strlen(cpu_name)), json.GetAllocator());
 	json.AddMember("index", static_cast<int>(layout_index), json.GetAllocator());
 	json.AddMember("isDefault", m_is_default, json.GetAllocator());
-	json.AddMember("nextUniqueName", m_next_unique_name, json.GetAllocator());
+	json.AddMember("nextId", m_next_id, json.GetAllocator());
 
 	if (!m_base_layout.empty())
 	{
@@ -590,6 +591,7 @@ bool DockLayout::save(DockLayout::Index layout_index)
 		rapidjson::Value name;
 		name.SetString(name_str.c_str(), name_str.size(), json.GetAllocator());
 		object.AddMember("uniqueName", name, json.GetAllocator());
+		object.AddMember("id", widget->id(), json.GetAllocator());
 
 		const char* type_str = widget->metaObject()->className();
 		rapidjson::Value type;
@@ -687,11 +689,11 @@ void DockLayout::load(
 		return;
 	}
 
-	auto version_major = json.FindMember("version_major");
+	auto version_major = json.FindMember("versionMajor");
 	if (version_major == json.MemberEnd() || !version_major->value.IsInt())
 	{
-		Console.Error("Debugger: Layout file '%s' has missing or invalid 'version_major' property.", path.c_str());
-		result = INVALID_FORMAT;
+		Console.Error("Debugger: Layout file '%s' has missing or invalid 'versionMajor' property.", path.c_str());
+		result = MAJOR_VERSION_MISMATCH;
 		return;
 	}
 
@@ -701,23 +703,23 @@ void DockLayout::load(
 		return;
 	}
 
-	auto version_minor = json.FindMember("version_minor");
+	auto version_minor = json.FindMember("versionMinor");
 	if (version_minor == json.MemberEnd() || !version_minor->value.IsInt())
 	{
-		Console.Error("Debugger: Layout file '%s' has missing or invalid 'version_minor' property.", path.c_str());
-		result = INVALID_FORMAT;
+		Console.Error("Debugger: Layout file '%s' has missing or invalid 'versionMinor' property.", path.c_str());
+		result = MAJOR_VERSION_MISMATCH;
 		return;
 	}
 
-	auto version_hash = json.FindMember("version_hash");
-	if (version_hash == json.MemberEnd() || !version_hash->value.IsString())
+	auto default_layout_hash = json.FindMember("defaultLayoutHash");
+	if (default_layout_hash == json.MemberEnd() || !default_layout_hash->value.IsUint())
 	{
-		Console.Error("Debugger: Layout file '%s' has missing or invalid 'version_hash' property.", path.c_str());
-		result = INVALID_FORMAT;
+		Console.Error("Debugger: Layout file '%s' has missing or invalid 'defaultLayoutHash' property.", path.c_str());
+		result = MAJOR_VERSION_MISMATCH;
 		return;
 	}
 
-	if (strcmp(version_hash->value.GetString(), DockTables::hashDefaultLayouts().c_str()) != 0)
+	if (default_layout_hash->value.GetUint() != DockTables::hashDefaultLayouts())
 		result = DEFAULT_LAYOUT_HASH_MISMATCH;
 
 	auto name = json.FindMember("name");
@@ -745,9 +747,9 @@ void DockLayout::load(
 	if (is_default != json.MemberEnd() && is_default->value.IsBool())
 		m_is_default = is_default->value.GetBool();
 
-	auto next_unique_name = json.FindMember("nextUniqueName");
-	if (next_unique_name != json.MemberBegin() && next_unique_name->value.IsInt())
-		m_next_unique_name = next_unique_name->value.GetInt();
+	auto next_id = json.FindMember("nextId");
+	if (next_id != json.MemberBegin() && next_id->value.IsUint64())
+		m_next_id = next_id->value.GetUint64();
 
 	auto base_layout = json.FindMember("baseLayout");
 	if (base_layout != json.MemberEnd() && base_layout->value.IsString())
@@ -764,6 +766,10 @@ void DockLayout::load(
 		{
 			auto unique_name = object.FindMember("uniqueName");
 			if (unique_name == object.MemberEnd() || !unique_name->value.IsString())
+				continue;
+
+			auto id = object.FindMember("id");
+			if (id == object.MemberEnd() || !id->value.IsUint64())
 				continue;
 
 			auto widgets_iterator = m_widgets.find(unique_name->value.GetString());
@@ -790,6 +796,7 @@ void DockLayout::load(
 
 			DebuggerWidgetParameters parameters;
 			parameters.unique_name = unique_name->value.GetString();
+			parameters.id = id->value.GetUint64();
 			parameters.cpu = &DebugInterface::get(m_cpu);
 			parameters.cpu_override = cpu_override;
 
@@ -900,19 +907,20 @@ void DockLayout::setupDefaultLayout()
 		group->setCurrentTabIndex(0);
 }
 
-QString DockLayout::generateNewUniqueName(const char* type)
+std::pair<QString, u64> DockLayout::generateNewUniqueName(const char* type)
 {
 	QString name;
+	u64 id;
+
 	do
 	{
-		if (m_next_unique_name == INT_MAX)
-			return QString();
+		if (m_next_id == INT_MAX)
+			return {QString(), 0};
 
-		// Produce unique names that will lexicographically sort in the order
-		// they were allocated. This ensures the #1, #2, etc suffixes for dock
-		// widgets with conflicting names will be assigned in the correct order.
-		name = QStringLiteral("%1-%2").arg(m_next_unique_name, 16, 10, QLatin1Char('0')).arg(type);
-		m_next_unique_name++;
+		id = m_next_id;
+		name = QStringLiteral("%1-%2").arg(type).arg(static_cast<qulonglong>(m_next_id));
+		m_next_id++;
 	} while (hasDebuggerWidget(name));
-	return name;
+
+	return {name, id};
 }

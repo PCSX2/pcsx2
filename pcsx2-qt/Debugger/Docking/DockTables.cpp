@@ -14,11 +14,13 @@
 #include "Debugger/Memory/SavedAddressesWidget.h"
 #include "Debugger/SymbolTree/SymbolTreeWidgets.h"
 
-#include "common/MD5Digest.h"
-
-#include "fmt/format.h"
-
 using namespace DockUtils;
+
+static void hashDefaultLayout(const DockTables::DefaultDockLayout& layout, u32& hash);
+static void hashDefaultGroup(const DockTables::DefaultDockGroupDescription& group, u32& hash);
+static void hashDefaultDockWidget(const DockTables::DefaultDockWidgetDescription& widget, u32& hash);
+static void hashNumber(u32 number, u32& hash);
+static void hashString(const char* string, u32& hash);
 
 #define DEBUGGER_WIDGET(type, display_name, preferred_location) \
 	{ \
@@ -123,67 +125,43 @@ const DockTables::DefaultDockLayout* DockTables::defaultLayout(const std::string
 	return nullptr;
 }
 
-const std::string& DockTables::hashDefaultLayouts()
+u32 DockTables::hashDefaultLayouts()
 {
-	static std::string hash;
-	if (!hash.empty())
-		return hash;
+	static std::optional<u32> hash;
+	if (hash.has_value())
+		return *hash;
 
-	MD5Digest md5;
+	hash.emplace(0);
 
-	u32 hash_version = 1;
-	md5.Update(&hash_version, sizeof(hash_version));
+	u32 hash_version = 2;
+	hashNumber(hash_version, *hash);
 
-	u32 layout_count = static_cast<u32>(DEFAULT_DOCK_LAYOUTS.size());
-	md5.Update(&layout_count, sizeof(layout_count));
-
+	hashNumber(static_cast<u32>(DEFAULT_DOCK_LAYOUTS.size()), *hash);
 	for (const DefaultDockLayout& layout : DEFAULT_DOCK_LAYOUTS)
-		hashDefaultLayout(layout, md5);
+		hashDefaultLayout(layout, *hash);
 
-	u8 digest[16];
-	md5.Final(digest);
-	hash = fmt::format(
-		"{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-		digest[0], digest[1], digest[2], digest[3], digest[4], digest[5], digest[6], digest[7],
-		digest[8], digest[9], digest[10], digest[11], digest[12], digest[13], digest[14], digest[15]);
-
-	return hash;
+	return *hash;
 }
 
-void DockTables::hashDefaultLayout(const DefaultDockLayout& layout, MD5Digest& md5)
+static void hashDefaultLayout(const DockTables::DefaultDockLayout& layout, u32& hash)
 {
-	u32 layout_name_size = static_cast<u32>(layout.name.size());
-	md5.Update(&layout_name_size, sizeof(layout_name_size));
-	md5.Update(layout.name.data(), layout_name_size);
+	hashString(layout.name.c_str(), hash);
+	hashString(DebugInterface::cpuName(layout.cpu), hash);
 
-	const char* cpu_name = DebugInterface::cpuName(layout.cpu);
-	u32 cpu_name_size = static_cast<u32>(strlen(cpu_name));
-	md5.Update(&cpu_name_size, sizeof(cpu_name_size));
-	md5.Update(cpu_name, cpu_name_size);
+	hashNumber(static_cast<u32>(layout.groups.size()), hash);
+	for (const DockTables::DefaultDockGroupDescription& group : layout.groups)
+		hashDefaultGroup(group, hash);
 
-	u32 group_count = static_cast<u32>(layout.groups.size());
-	md5.Update(&group_count, sizeof(group_count));
+	hashNumber(static_cast<u32>(layout.widgets.size()), hash);
+	for (const DockTables::DefaultDockWidgetDescription& widget : layout.widgets)
+		hashDefaultDockWidget(widget, hash);
 
-	for (const DefaultDockGroupDescription& group : layout.groups)
-		hashDefaultGroup(group, md5);
-
-	u32 widget_count = static_cast<u32>(layout.widgets.size());
-	md5.Update(&widget_count, sizeof(widget_count));
-
-	for (const DefaultDockWidgetDescription& widget : layout.widgets)
-		hashDefaultDockWidget(widget, md5);
-
-	u32 toolbar_count = static_cast<u32>(layout.toolbars.size());
-	md5.Update(&toolbar_count, sizeof(toolbar_count));
+	hashNumber(static_cast<u32>(layout.toolbars.size()), hash);
 	for (const std::string& toolbar : layout.toolbars)
-	{
-		u32 toolbar_size = toolbar.size();
-		md5.Update(&toolbar_size, sizeof(toolbar_size));
-		md5.Update(toolbar.data(), toolbar.size());
-	}
+		hashString(toolbar.c_str(), hash);
 }
 
-void DockTables::hashDefaultGroup(const DefaultDockGroupDescription& group, MD5Digest& md5)
+static void hashDefaultGroup(const DockTables::DefaultDockGroupDescription& group, u32& hash)
 {
 	// This is inline here so that it's obvious that changing it will affect the
 	// result of the hash.
@@ -207,20 +185,25 @@ void DockTables::hashDefaultGroup(const DefaultDockGroupDescription& group, MD5D
 			break;
 	}
 
-	u32 location_size = static_cast<u32>(strlen(location));
-	md5.Update(&location_size, sizeof(location_size));
-	md5.Update(location, location_size);
-
-	u32 parent = static_cast<u32>(group.parent);
-	md5.Update(&parent, sizeof(parent));
+	hashString(location, hash);
+	hashNumber(static_cast<u32>(group.parent), hash);
 }
 
-void DockTables::hashDefaultDockWidget(const DefaultDockWidgetDescription& widget, MD5Digest& md5)
+static void hashDefaultDockWidget(const DockTables::DefaultDockWidgetDescription& widget, u32& hash)
 {
-	u32 type_size = static_cast<u32>(widget.type.size());
-	md5.Update(&type_size, sizeof(type_size));
-	md5.Update(widget.type.data(), type_size);
+	hashString(widget.type.c_str(), hash);
+	hashNumber(static_cast<u32>(widget.group), hash);
+}
 
-	u32 group = static_cast<u32>(widget.group);
-	md5.Update(&group, sizeof(group));
+static void hashNumber(u32 number, u32& hash)
+{
+	hash = hash * 31 + number;
+}
+
+static void hashString(const char* string, u32& hash)
+{
+	u32 size = static_cast<u32>(strlen(string));
+	hash = hash * 31 + size;
+	for (u32 i = 0; i < size; i++)
+		hash = hash * 31 + string[i];
 }
