@@ -111,16 +111,14 @@ void BreakpointWidget::contextDelete()
 	if (!selModel->hasSelection())
 		return;
 
-	QModelIndexList rows = selModel->selectedIndexes();
+	QModelIndexList indices = selModel->selectedIndexes();
 
-	std::sort(rows.begin(), rows.end(), [](const QModelIndex& a, const QModelIndex& b) {
-		return a.row() > b.row();
-	});
+	std::set<int> rows;
+	for (QModelIndex index : indices)
+		rows.emplace(index.row());
 
-	for (const QModelIndex& index : rows)
-	{
-		m_model->removeRows(index.row(), 1);
-	}
+	for (auto row = rows.rbegin(); row != rows.rend(); row++)
+		m_model->removeRows(*row, 1);
 }
 
 void BreakpointWidget::contextNew()
