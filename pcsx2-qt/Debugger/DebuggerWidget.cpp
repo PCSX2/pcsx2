@@ -14,6 +14,7 @@
 
 DebuggerWidget::DebuggerWidget(const DebuggerWidgetParameters& parameters, u32 flags)
 	: QWidget(parameters.parent)
+	, m_id(parameters.id)
 	, m_unique_name(parameters.unique_name)
 	, m_cpu(parameters.cpu)
 	, m_cpu_override(parameters.cpu_override)
@@ -34,6 +35,11 @@ DebugInterface& DebuggerWidget::cpu() const
 QString DebuggerWidget::uniqueName() const
 {
 	return m_unique_name;
+}
+
+u64 DebuggerWidget::id() const
+{
+	return m_id;
 }
 
 QString DebuggerWidget::displayName() const

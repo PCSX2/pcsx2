@@ -67,9 +67,5 @@ namespace DockTables
 
 	// This is used to determine if the user has updated and we need to recreate
 	// the default layouts.
-	const std::string& hashDefaultLayouts();
-
-	void hashDefaultLayout(const DefaultDockLayout& layout, MD5Digest& md5);
-	void hashDefaultGroup(const DefaultDockGroupDescription& group, MD5Digest& md5);
-	void hashDefaultDockWidget(const DefaultDockWidgetDescription& widget, MD5Digest& md5);
+	u32 hashDefaultLayouts();
 } // namespace DockTables
