@@ -341,43 +341,60 @@ void FileMemoryCard::Open()
 		}
 
 		if (!m_file[slot])
+			goto memoryCardOpenFailed;
+
+		m_fileSize[slot] = FileSystem::FSize64(m_file[slot]);
+
+		m_mapping_handles[slot] = HostSys::CreateMappingFromFile(m_file[slot]);
+		if (!m_mapping_handles[slot])
 		{
-			Host::ReportErrorAsync(TRANSLATE_SV("MemoryCard", "Memory Card Read Failed"),
-				fmt::format(TRANSLATE_FS("MemoryCard", "Unable to access memory card:\n\n{}\n\n"
-													   "Another instance of PCSX2 may be using this memory card "
-													   "or the memory card is stored in a write-protected folder.\n"
-													   "Close any other instances of PCSX2, or restart your computer.\n"),
-					fname));
+			Console.Warning("MemoryCardFile: CreateMappingFromFile failed!");
+			goto memoryCardOpenFailed;
 		}
-		else // Load memory map and checksum
+
+		m_mappings[slot] = static_cast<u8*>(HostSys::MapMapping(m_mapping_handles[slot], m_fileSize[slot], PageAccess_ReadWrite()));
+		if (!m_mappings[slot] || reinterpret_cast<intptr_t>(m_mappings[slot]) < 0)
 		{
-			m_fileSize[slot] = FileSystem::FSize64(m_file[slot]);
-
-			m_mapping_handles[slot] = HostSys::CreateMappingFromFile(m_file[slot]);
-			if (!m_mapping_handles[slot])
-			{
-				Console.Warning("CreateMappingFromFile failed!");
-			}
-
-			m_mappings[slot] = static_cast<u8*>(HostSys::MapMapping(m_mapping_handles[slot], m_fileSize[slot], PageAccess_ReadWrite()));
-			if (!m_mappings[slot])
-			{
-				Console.Warning("MapSharedMemory failed! %d. %s", errno, strerror(errno));
-			}
-
-			Console.WriteLnFmt(Color_Green, "McdSlot {} [File]: {} [{} MB, {}]", slot, Path::GetFileName(fname),
-				(m_fileSize[slot] + (MCD_SIZE + 1)) / MC2_MBSIZE,
-				FileMcd_IsMemoryCardFormatted(m_file[slot]) ? "Formatted" : "UNFORMATTED");
-
-			m_filenames[slot] = std::move(fname);
-			m_ispsx[slot] = m_fileSize[slot] == 0x20000;
-			m_chkaddr = 0x210;
-
-			if (!m_ispsx[slot])
-			{
-				std::memcpy(&m_chksum[slot], m_mappings[slot] + m_chkaddr, sizeof(m_chksum[slot]));
-			}
+			Console.Warning("MemoryCardFile: MapSharedMemory failed! %d. %s", errno, strerror(errno));
+			goto memoryCardOpenFailed;
 		}
+
+		Console.WriteLnFmt(Color_Green, "McdSlot {} [File]: {} [{} MB, {}]", slot, Path::GetFileName(fname),
+			(m_fileSize[slot] + (MCD_SIZE + 1)) / MC2_MBSIZE,
+			FileMcd_IsMemoryCardFormatted(m_file[slot]) ? "Formatted" : "UNFORMATTED");
+
+		m_filenames[slot] = std::move(fname);
+		m_ispsx[slot] = m_fileSize[slot] == 0x20000;
+		m_chkaddr = 0x210;
+
+		if (!m_ispsx[slot])
+		{
+			std::memcpy(&m_chksum[slot], m_mappings[slot] + m_chkaddr, sizeof(m_chksum[slot]));
+		}
+
+		continue;
+
+memoryCardOpenFailed:
+		Host::ReportErrorAsync(TRANSLATE_SV("MemoryCard", "Memory Card Read Failed"),
+			fmt::format(TRANSLATE_FS("MemoryCard", "Unable to access memory card:\n\n{}\n\n"
+												   "Another instance of PCSX2 may be using this memory card "
+												   "or the memory card is stored in a write-protected folder.\n"
+												   "Close any other instances of PCSX2, or restart your computer.\n"),
+				fname));
+
+		if(m_mapping_handles[slot])
+		{
+			HostSys::DestroyMapping(m_mapping_handles[slot]);
+		}
+
+		if(m_file[slot])
+		{
+			std::fclose(m_file[slot]);
+			m_file[slot] = nullptr;
+		}
+
+		m_filenames[slot] = {};
+		m_fileSize[slot] = -1;
 	}
 }
 
