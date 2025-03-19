@@ -29,7 +29,7 @@
 const char* DEBUGGER_LAYOUT_FILE_FORMAT = "PCSX2 Debugger User Interface Layout";
 
 // Increment this whenever there is a breaking change to the JSON format.
-const u32 DEBUGGER_LAYOUT_FILE_VERSION_MAJOR = 1;
+const u32 DEBUGGER_LAYOUT_FILE_VERSION_MAJOR = 2;
 
 // Increment this whenever there is a non-breaking change to the JSON format.
 const u32 DEBUGGER_LAYOUT_FILE_VERSION_MINOR = 0;
@@ -545,17 +545,15 @@ bool DockLayout::save(DockLayout::Index layout_index)
 	rapidjson::Document geometry;
 
 	const char* cpu_name = DebugInterface::cpuName(m_cpu);
-	const std::string& default_layouts_hash = DockTables::hashDefaultLayouts();
+	u32 default_layout_hash = DockTables::hashDefaultLayouts();
 
 	rapidjson::Value format;
 	format.SetString(DEBUGGER_LAYOUT_FILE_FORMAT, strlen(DEBUGGER_LAYOUT_FILE_FORMAT));
 	json.AddMember("format", format, json.GetAllocator());
 
-	json.AddMember("version_major", DEBUGGER_LAYOUT_FILE_VERSION_MAJOR, json.GetAllocator());
-	json.AddMember("version_minor", DEBUGGER_LAYOUT_FILE_VERSION_MINOR, json.GetAllocator());
-	rapidjson::Value version_hash;
-	version_hash.SetString(default_layouts_hash.c_str(), default_layouts_hash.size());
-	json.AddMember("version_hash", version_hash, json.GetAllocator());
+	json.AddMember("versionMajor", DEBUGGER_LAYOUT_FILE_VERSION_MAJOR, json.GetAllocator());
+	json.AddMember("versionMinor", DEBUGGER_LAYOUT_FILE_VERSION_MINOR, json.GetAllocator());
+	json.AddMember("defaultLayoutHash", default_layout_hash, json.GetAllocator());
 
 	std::string name_str = m_name.toStdString();
 	json.AddMember("name", rapidjson::Value().SetString(name_str.c_str(), name_str.size()), json.GetAllocator());
@@ -687,11 +685,11 @@ void DockLayout::load(
 		return;
 	}
 
-	auto version_major = json.FindMember("version_major");
+	auto version_major = json.FindMember("versionMajor");
 	if (version_major == json.MemberEnd() || !version_major->value.IsInt())
 	{
-		Console.Error("Debugger: Layout file '%s' has missing or invalid 'version_major' property.", path.c_str());
-		result = INVALID_FORMAT;
+		Console.Error("Debugger: Layout file '%s' has missing or invalid 'versionMajor' property.", path.c_str());
+		result = MAJOR_VERSION_MISMATCH;
 		return;
 	}
 
@@ -701,23 +699,23 @@ void DockLayout::load(
 		return;
 	}
 
-	auto version_minor = json.FindMember("version_minor");
+	auto version_minor = json.FindMember("versionMinor");
 	if (version_minor == json.MemberEnd() || !version_minor->value.IsInt())
 	{
-		Console.Error("Debugger: Layout file '%s' has missing or invalid 'version_minor' property.", path.c_str());
-		result = INVALID_FORMAT;
+		Console.Error("Debugger: Layout file '%s' has missing or invalid 'versionMinor' property.", path.c_str());
+		result = MAJOR_VERSION_MISMATCH;
 		return;
 	}
 
-	auto version_hash = json.FindMember("version_hash");
-	if (version_hash == json.MemberEnd() || !version_hash->value.IsString())
+	auto default_layout_hash = json.FindMember("defaultLayoutHash");
+	if (default_layout_hash == json.MemberEnd() || !default_layout_hash->value.IsUint())
 	{
-		Console.Error("Debugger: Layout file '%s' has missing or invalid 'version_hash' property.", path.c_str());
-		result = INVALID_FORMAT;
+		Console.Error("Debugger: Layout file '%s' has missing or invalid 'defaultLayoutHash' property.", path.c_str());
+		result = MAJOR_VERSION_MISMATCH;
 		return;
 	}
 
-	if (strcmp(version_hash->value.GetString(), DockTables::hashDefaultLayouts().c_str()) != 0)
+	if (default_layout_hash->value.GetUint() != DockTables::hashDefaultLayouts())
 		result = DEFAULT_LAYOUT_HASH_MISMATCH;
 
 	auto name = json.FindMember("name");
