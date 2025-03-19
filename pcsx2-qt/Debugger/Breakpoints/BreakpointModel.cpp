@@ -59,7 +59,7 @@ int BreakpointModel::columnCount(const QModelIndex&) const
 
 QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 {
-	size_t row = static_cast<size_t>(index.row());
+	const size_t row = static_cast<size_t>(index.row());
 	if (!index.isValid() || row >= m_breakpoints.size())
 		return QVariant();
 
@@ -298,7 +298,7 @@ Qt::ItemFlags BreakpointModel::flags(const QModelIndex& index) const
 
 bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-	size_t row = static_cast<size_t>(index.row());
+	const size_t row = static_cast<size_t>(index.row());
 	if (!index.isValid() || row >= m_breakpoints.size())
 		return false;
 
@@ -401,9 +401,14 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 
 bool BreakpointModel::removeRows(int row, int count, const QModelIndex& index)
 {
+	const size_t begin_index = static_cast<size_t>(row);
+	const size_t end_index = static_cast<size_t>(row + count);
+	if (end_index > m_breakpoints.size())
+		return false;
+
 	beginRemoveRows(index, row, row + count - 1);
 
-	for (int i = row; i < row + count; i++)
+	for (size_t i = begin_index; i < end_index; i++)
 	{
 		auto bp_mc = m_breakpoints.at(i);
 
@@ -420,6 +425,7 @@ bool BreakpointModel::removeRows(int row, int count, const QModelIndex& index)
 			});
 		}
 	}
+
 	const auto begin = m_breakpoints.begin() + row;
 	const auto end = begin + count;
 	m_breakpoints.erase(begin, end);
