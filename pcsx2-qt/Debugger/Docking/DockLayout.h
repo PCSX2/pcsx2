@@ -120,7 +120,7 @@ private:
 
 	void setupDefaultLayout();
 
-	QString generateNewUniqueName(const char* type);
+	std::pair<QString, u64> generateNewUniqueName(const char* type);
 
 	// The name displayed in the user interface. Also used to determine the
 	// file name for the layout file.
@@ -134,7 +134,7 @@ private:
 	bool m_is_default = false;
 
 	// A counter used to generate new unique names for dock widgets.
-	int m_next_unique_name = 0;
+	u64 m_next_id = 0;
 
 	// The name of the default layout which this layout was based on. This will
 	// be used if the m_geometry variable above is empty.
