@@ -113,6 +113,10 @@ bool GSRunner::InitializeConfig()
 	si.SetBoolValue("EmuCore/GS", "FrameLimitEnable", false);
 	si.SetIntValue("EmuCore/GS", "VsyncEnable", false);
 
+	// Force screenshot quality settings to something more performant, overriding any defaults good for users.
+	si.SetIntValue("EmuCore/GS", "ScreenshotFormat", static_cast<int>(GSScreenshotFormat::PNG));
+	si.SetIntValue("EmuCore/GS", "ScreenshotQuality", 10);
+
 	// ensure all input sources are disabled, we're not using them
 	si.SetBoolValue("InputSources", "SDL", false);
 	si.SetBoolValue("InputSources", "XInput", false);
