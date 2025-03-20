@@ -22,14 +22,20 @@
     <Filter Include="Debugger">
       <UniqueIdentifier>{ddb40cc4-9996-4ade-b647-eb549063553c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Debugger\Models">
-      <UniqueIdentifier>{f4084ca0-d9d5-4584-b9d2-063db9f67de2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Translations">
       <UniqueIdentifier>{ad04f939-64a0-4039-97aa-a38b8aa46855}</UniqueIdentifier>
     </Filter>
     <Filter Include="Debugger\SymbolTree">
       <UniqueIdentifier>{a622b871-62ae-4b70-b9b2-6ee30ce7fa7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Debugger\Breakpoints">
+      <UniqueIdentifier>{694f359a-dd3c-4e05-b000-684acb0fe0b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Debugger\Docking">
+      <UniqueIdentifier>{669ad4fe-0b5a-4722-946c-9e0742cebbca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Debugger\Memory">
+      <UniqueIdentifier>{63790c94-0680-417d-926c-a8b74118f80f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -302,51 +308,6 @@
     <ClCompile Include="Debugger\ThreadWidget.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
-    <ClCompile Include="Debugger\Breakpoints\BreakpointDialog.cpp">
-      <Filter>Debugger\Breakpoints</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Breakpoints\BreakpointModel.cpp">
-      <Filter>Debugger\Breakpoints</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Breakpoints\BreakpointWidget.cpp">
-      <Filter>Debugger\Breakpoints</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Docking\DockLayout.cpp">
-      <Filter>Debugger\Docking</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Docking\DockManager.cpp">
-      <Filter>Debugger\Docking</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Docking\DockTables.cpp">
-      <Filter>Debugger\Docking</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Docking\DockUtils.cpp">
-      <Filter>Debugger\Docking</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Docking\DockViews.cpp">
-      <Filter>Debugger\Docking</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Docking\DropIndicators.cpp">
-      <Filter>Debugger\Docking</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Docking\LayoutEditorDialog.cpp">
-      <Filter>Debugger\Docking</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Docking\NoLayoutsWidget.cpp">
-      <Filter>Debugger\Docking</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Memory\MemorySearchWidget.cpp">
-      <Filter>Debugger\Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Memory\MemoryViewWidget.cpp">
-      <Filter>Debugger\Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Memory\SavedAddressesModel.cpp">
-      <Filter>Debugger\Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="Debugger\Memory\SavedAddressesWidget.cpp">
-      <Filter>Debugger\Memory</Filter>
-    </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_AnalysisOptionsDialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
@@ -461,6 +422,72 @@
       <Filter>Debugger\SymbolTree</Filter>
     </ClCompile>
     <ClCompile Include="VCRuntimeChecker.cpp" />
+    <ClCompile Include="Debugger\Breakpoints\BreakpointDialog.cpp">
+      <Filter>Debugger\Breakpoints</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Breakpoints\BreakpointModel.cpp">
+      <Filter>Debugger\Breakpoints</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Breakpoints\BreakpointWidget.cpp">
+      <Filter>Debugger\Breakpoints</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DockLayout.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DockManager.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DockTables.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DockUtils.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DockViews.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DropIndicators.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Memory\SavedAddressesModel.cpp">
+      <Filter>Debugger\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Memory\SavedAddressesWidget.cpp">
+      <Filter>Debugger\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Memory\MemorySearchWidget.cpp">
+      <Filter>Debugger\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Memory\MemoryViewWidget.cpp">
+      <Filter>Debugger\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\LayoutEditorDialog.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\NoLayoutsWidget.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_NewSymbolDialogs.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeDelegates.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeLocation.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeModel.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeNode.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeWidgets.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_TypeString.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -482,27 +509,6 @@
     </ClInclude>
     <ClInclude Include="Debugger\DebuggerSettingsManager.h">
       <Filter>Debugger</Filter>
-    </ClInclude>
-    <ClInclude Include="Debugger\SymbolTree\NewSymbolDialogs.h">
-      <Filter>Debugger\SymbolTree</Filter>
-    </ClInclude>
-    <ClInclude Include="Debugger\SymbolTree\SymbolTreeDelegates.h">
-      <Filter>Debugger\SymbolTree</Filter>
-    </ClInclude>
-    <ClInclude Include="Debugger\SymbolTree\SymbolTreeLocation.h">
-      <Filter>Debugger\SymbolTree</Filter>
-    </ClInclude>
-    <ClInclude Include="Debugger\SymbolTree\SymbolTreeModel.h">
-      <Filter>Debugger\SymbolTree</Filter>
-    </ClInclude>
-    <ClInclude Include="Debugger\SymbolTree\SymbolTreeNode.h">
-      <Filter>Debugger\SymbolTree</Filter>
-    </ClInclude>
-    <ClInclude Include="Debugger\SymbolTree\SymbolTreeWidgets.h">
-      <Filter>Debugger\SymbolTree</Filter>
-    </ClInclude>
-    <ClInclude Include="Debugger\SymbolTree\TypeString.h">
-      <Filter>Debugger\SymbolTree</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -640,6 +646,16 @@
     <QtMoc Include="Debugger\ThreadWidget.h">
       <Filter>Debugger</Filter>
     </QtMoc>
+    <QtMoc Include="ColorPickerButton.h" />
+    <QtMoc Include="SetupWizardDialog.h" />
+    <QtMoc Include="Settings\GameCheatSettingsWidget.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
+    <QtMoc Include="Settings\GamePatchSettingsWidget.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
+    <QtMoc Include="LogWindow.h" />
+    <QtMoc Include="Debugger\SymbolTree\TypeString.h" />
     <QtMoc Include="Debugger\Breakpoints\BreakpointDialog.h">
       <Filter>Debugger\Breakpoints</Filter>
     </QtMoc>
@@ -667,17 +683,20 @@
     <QtMoc Include="Debugger\Docking\DropIndicators.h">
       <Filter>Debugger\Docking</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\Docking\LayoutEditorDialog.h">
-      <Filter>Debugger\Docking</Filter>
+    <QtMoc Include="Debugger\SymbolTree\SymbolTreeWidgets.h">
+      <Filter>Debugger\SymbolTree</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\Docking\NoLayoutsWidget.h">
-      <Filter>Debugger\Docking</Filter>
+    <QtMoc Include="Debugger\SymbolTree\SymbolTreeDelegates.h">
+      <Filter>Debugger\SymbolTree</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\Memory\MemorySearchWidget.h">
-      <Filter>Debugger\Memory</Filter>
+    <QtMoc Include="Debugger\SymbolTree\SymbolTreeLocation.h">
+      <Filter>Debugger\SymbolTree</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\Memory\MemoryViewWidget.h">
-      <Filter>Debugger\Memory</Filter>
+    <QtMoc Include="Debugger\SymbolTree\SymbolTreeModel.h">
+      <Filter>Debugger\SymbolTree</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\SymbolTree\SymbolTreeNode.h">
+      <Filter>Debugger\SymbolTree</Filter>
     </QtMoc>
     <QtMoc Include="Debugger\Memory\SavedAddressesModel.h">
       <Filter>Debugger\Memory</Filter>
@@ -685,15 +704,21 @@
     <QtMoc Include="Debugger\Memory\SavedAddressesWidget.h">
       <Filter>Debugger\Memory</Filter>
     </QtMoc>
-    <QtMoc Include="ColorPickerButton.h" />
-    <QtMoc Include="SetupWizardDialog.h" />
-    <QtMoc Include="Settings\GameCheatSettingsWidget.h">
-      <Filter>Settings</Filter>
+    <QtMoc Include="Debugger\Memory\MemorySearchWidget.h">
+      <Filter>Debugger\Memory</Filter>
     </QtMoc>
-    <QtMoc Include="Settings\GamePatchSettingsWidget.h">
-      <Filter>Settings</Filter>
+    <QtMoc Include="Debugger\Memory\MemoryViewWidget.h">
+      <Filter>Debugger\Memory</Filter>
     </QtMoc>
-    <QtMoc Include="LogWindow.h" />
+    <QtMoc Include="Debugger\Docking\LayoutEditorDialog.h">
+      <Filter>Debugger\Docking</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Docking\NoLayoutsWidget.h">
+      <Filter>Debugger\Docking</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\SymbolTree\NewSymbolDialogs.h">
+      <Filter>Debugger\SymbolTree</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -815,27 +840,6 @@
     <QtUi Include="Debugger\RegisterWidget.ui">
       <Filter>Debugger</Filter>
     </QtUi>
-    <QtUi Include="Debugger\Breakpoints\BreakpointDialog.ui">
-      <Filter>Debugger\Breakpoints</Filter>
-    </QtUi>
-    <QtUi Include="Debugger\Breakpoints\BreakpointWidget.ui">
-      <Filter>Debugger\Breakpoints</Filter>
-    </QtUi>
-    <QtUi Include="Debugger\Docking\LayoutEditorDialog.ui">
-      <Filter>Debugger\Docking</Filter>
-    </QtUi>
-    <QtUi Include="Debugger\Docking\NoLayoutsWidget.ui">
-      <Filter>Debugger\Docking</Filter>
-    </QtUi>
-    <QtUi Include="Debugger\Memory\MemorySearchWidget.ui">
-      <Filter>Debugger\Memory</Filter>
-    </QtUi>
-    <QtUi Include="Debugger\Memory\MemoryViewWidget.ui">
-      <Filter>Debugger\Memory</Filter>
-    </QtUi>
-    <QtUi Include="Debugger\Memory\SavedAddressesWidget.ui">
-      <Filter>Debugger\Memory</Filter>
-    </QtUi>
     <QtUi Include="Settings\ControllerLEDSettingsDialog.ui">
       <Filter>Settings</Filter>
     </QtUi>
@@ -884,6 +888,27 @@
     </QtUi>
     <QtUi Include="Settings\AudioStretchSettingsDialog.ui">
       <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\Breakpoints\BreakpointDialog.ui">
+      <Filter>Debugger\Breakpoints</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\Breakpoints\BreakpointWidget.ui">
+      <Filter>Debugger\Breakpoints</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\Memory\SavedAddressesWidget.ui">
+      <Filter>Debugger\Memory</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\Memory\MemoryViewWidget.ui">
+      <Filter>Debugger\Memory</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\Memory\MemorySearchWidget.ui">
+      <Filter>Debugger\Memory</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\Docking\LayoutEditorDialog.ui">
+      <Filter>Debugger\Docking</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\Docking\NoLayoutsWidget.ui">
+      <Filter>Debugger\Docking</Filter>
     </QtUi>
   </ItemGroup>
   <ItemGroup>
