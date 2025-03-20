@@ -5110,7 +5110,7 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.cpp" line="330"/>
+        <location filename="../Debugger/DebuggerWindow.cpp" line="337"/>
         <source>Pause</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5123,160 +5123,160 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="645"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="647"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="648"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="650"/>
         <source>Copy Instruction Hex</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="673"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="675"/>
         <source>NOP Instruction(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="678"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="680"/>
         <source>Run to Cursor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="689"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="691"/>
         <source>Follow Branch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="712"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="714"/>
         <source>Add Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="275"/>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="715"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="277"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="717"/>
         <source>Rename Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="718"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="720"/>
         <source>Remove Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="111"/>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="130"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="113"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="132"/>
         <source>Assemble Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="111"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="113"/>
         <source>Unable to change assembly while core is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="118"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="120"/>
         <source>Assemble Instruction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="275"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="277"/>
         <source>Function name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="268"/>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="281"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="270"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="283"/>
         <source>Rename Function Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="281"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="283"/>
         <source>Function name cannot be nothing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="268"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="270"/>
         <source>No function / symbol is currently selected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="211"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="213"/>
         <source>Go To In Disassembly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="221"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="223"/>
         <source>Cannot Go To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="325"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="327"/>
         <source>Restore Function Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="325"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="327"/>
         <source>Unable to stub selected address.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="651"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="653"/>
         <source>&amp;Copy Instruction Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="657"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="659"/>
         <source>Copy Function Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="665"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="667"/>
         <source>Restore Instruction(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="669"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="671"/>
         <source>Asse&amp;mble new Instruction(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="681"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="683"/>
         <source>&amp;Jump to Cursor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="685"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="687"/>
         <source>Toggle &amp;Breakpoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="694"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="696"/>
         <source>&amp;Go to Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="704"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="706"/>
         <source>Go to PC on Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="724"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="726"/>
         <source>Restore Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="729"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="731"/>
         <source>Stub (NOP) Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="735"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="737"/>
         <source>Show &amp;Instruction Bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="749"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="751"/>
         <source>%1 NOT VALID ADDRESS</source>
         <translation type="unfinished"></translation>
     </message>
