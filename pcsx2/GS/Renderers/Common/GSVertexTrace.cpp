@@ -20,10 +20,10 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 
 	m_primclass = primclass;
 
-	u32 iip = m_state->PRIM->IIP;
-	u32 tme = m_state->PRIM->TME;
-	u32 fst = m_state->PRIM->FST;
-	u32 color = !(m_state->PRIM->TME && m_state->m_context->TEX0.TFX == TFX_DECAL && m_state->m_context->TEX0.TCC);
+	const u32 iip = m_state->PRIM->IIP;
+	const u32 tme = m_state->PRIM->TME;
+	const u32 fst = m_state->PRIM->FST;
+	const u32 color = !(m_state->PRIM->TME && m_state->m_context->TEX0.TFX == TFX_DECAL && m_state->m_context->TEX0.TCC);
 
 	m_fmm[color][fst][tme][iip][primclass](*this, vertex, index, i_count);
 
@@ -36,6 +36,13 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 		m_accurate_stq = true;
 	}
 
+	// AA1: Set alpha min max to coverage 128 when there is no alpha blending.
+	if (!m_state->PRIM->ABE && m_state->PRIM->AA1 && (m_primclass == GS_LINE_CLASS || m_primclass == GS_TRIANGLE_CLASS))
+	{
+		m_min.c.a = 128;
+		m_max.c.a = 128;
+	}
+
 	m_eq.value = (m_min.c == m_max.c).mask() | ((m_min.p == m_max.p).mask() << 16) | ((m_min.t == m_max.t).mask() << 20);
 
 	m_alpha.valid = false;
@@ -46,7 +53,7 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 		CorrectDepthTrace(vertex, v_count);
 	}
 
-	if (m_state->PRIM->TME)
+	if (tme)
 	{
 		const GIFRegTEX1& TEX1 = m_state->m_context->TEX1;
 
@@ -59,17 +66,17 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 		}
 		else
 		{
-			float K = (float)TEX1.K / 16;
+			const float K = static_cast<float>(TEX1.K) / 16;
 
 			if (TEX1.LCM == 0 && m_state->PRIM->FST == 0) // FST == 1 => Q is not interpolated
 			{
 				// LOD = log2(1/|Q|) * (1 << L) + K
 
-				GSVector4::storel(&m_lod, m_max.t.uph(m_min.t).log2(3).neg() * (float)(1 << TEX1.L) + K);
+				GSVector4::storel(&m_lod, m_max.t.uph(m_min.t).log2(3).neg() * static_cast<float>(1 << TEX1.L) + K);
 
 				if (m_lod.x > m_lod.y)
 				{
-					float tmp = m_lod.x;
+					const float tmp = m_lod.x;
 					m_lod.x = m_lod.y;
 					m_lod.y = tmp;
 				}

@@ -6177,6 +6177,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	{
 		m_conf.blend = {}; // No blending please
 		m_conf.ps.no_color1 = true;
+		m_conf.ps.fixed_one_a = IsCoverageAlpha();
 
 		if (can_scale_rt_alpha && !new_scale_rt_alpha && m_conf.colormask.wa)
 		{
