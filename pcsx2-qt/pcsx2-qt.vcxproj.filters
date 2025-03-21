@@ -488,6 +488,12 @@
     <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_TypeString.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockMenuBar.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Docking\DockMenuBar.cpp">
+      <Filter>Debugger\Docking</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -718,6 +724,9 @@
     </QtMoc>
     <QtMoc Include="Debugger\SymbolTree\NewSymbolDialogs.h">
       <Filter>Debugger\SymbolTree</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Docking\DockMenuBar.h">
+      <Filter>Debugger\Docking</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
