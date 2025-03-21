@@ -89,7 +89,7 @@ public:
 	void setPrimaryDebuggerWidget(DebuggerWidget* widget, bool is_primary);
 	void switchToDebuggerWidget(DebuggerWidget* widget);
 
-	void updateStyleSheets();
+	void updateTheme();
 
 	bool isLayoutLocked();
 	void setLayoutLockedAndSaveSetting(bool locked);

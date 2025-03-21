@@ -3,16 +3,22 @@
 
 #include "DockMenuBar.h"
 
+#include <QtCore/QTimer>
 #include <QtGui/QPainter>
 #include <QtGui/QPaintEvent>
 #include <QtWidgets/QBoxLayout>
+#include <QtWidgets/QStyleFactory>
 #include <QtWidgets/QStyleOption>
+
+static const int OUTER_MENU_MARGIN = 2;
+static const int INNER_MENU_MARGIN = 4;
 
 DockMenuBar::DockMenuBar(QWidget* original_menu_bar, QWidget* parent)
 	: QWidget(parent)
+	, m_original_menu_bar(original_menu_bar)
 {
 	QHBoxLayout* layout = new QHBoxLayout;
-	layout->setContentsMargins(0, 2, 2, 0);
+	layout->setContentsMargins(0, OUTER_MENU_MARGIN, OUTER_MENU_MARGIN, 0);
 	setLayout(layout);
 
 	QWidget* menu_wrapper = new QWidget;
@@ -20,21 +26,19 @@ DockMenuBar::DockMenuBar(QWidget* original_menu_bar, QWidget* parent)
 	layout->addWidget(menu_wrapper);
 
 	QHBoxLayout* menu_layout = new QHBoxLayout;
-	menu_layout->setContentsMargins(0, 4, 0, 4);
+	menu_layout->setContentsMargins(0, INNER_MENU_MARGIN, 0, INNER_MENU_MARGIN);
 	menu_wrapper->setLayout(menu_layout);
 
 	menu_layout->addWidget(original_menu_bar);
 
 	m_layout_switcher = new QTabBar;
 	m_layout_switcher->setContentsMargins(0, 0, 0, 0);
-	m_layout_switcher->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+	m_layout_switcher->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	m_layout_switcher->setContextMenuPolicy(Qt::CustomContextMenu);
+	m_layout_switcher->setDrawBase(false);
+	m_layout_switcher->setExpanding(false);
 	m_layout_switcher->setMovable(true);
 	layout->addWidget(m_layout_switcher);
-
-	QWidget* spacer = new QWidget;
-	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-	layout->addWidget(spacer);
 
 	connect(m_layout_switcher, &QTabBar::tabMoved, this, [this](int from, int to) {
 		DockLayout::Index from_index = static_cast<DockLayout::Index>(from);
@@ -51,7 +55,6 @@ DockMenuBar::DockMenuBar(QWidget* original_menu_bar, QWidget* parent)
 
 	m_layout_locked_toggle = new QPushButton;
 	m_layout_locked_toggle->setCheckable(true);
-	m_layout_locked_toggle->setFlat(true);
 	connect(m_layout_locked_toggle, &QPushButton::clicked, this, [this](bool checked) {
 		if (m_ignore_lock_state_changed)
 			return;
@@ -59,6 +62,19 @@ DockMenuBar::DockMenuBar(QWidget* original_menu_bar, QWidget* parent)
 		emit lockButtonToggled(checked);
 	});
 	layout->addWidget(m_layout_locked_toggle);
+
+	updateTheme();
+}
+
+void DockMenuBar::updateTheme()
+{
+	DockMenuBarStyle* style = new DockMenuBarStyle(m_layout_switcher);
+	m_original_menu_bar->setStyle(style);
+	m_layout_switcher->setStyle(style);
+	m_layout_locked_toggle->setStyle(style);
+
+	delete m_style;
+	m_style = style;
 }
 
 void DockMenuBar::updateLayoutSwitcher(DockLayout::Index current_index, const std::vector<DockLayout>& layouts)
@@ -166,6 +182,27 @@ void DockMenuBar::stopBlink()
 	}
 }
 
+int DockMenuBar::innerHeight() const
+{
+	return m_original_menu_bar->sizeHint().height() + INNER_MENU_MARGIN * 2;
+}
+
+void DockMenuBar::paintEvent(QPaintEvent* event)
+{
+	QPainter painter(this);
+
+	// This fixes the background colour of the menu bar when using the Windows
+	// Vista style.
+	QStyleOptionMenuItem menu_option;
+	menu_option.palette = palette();
+	menu_option.state = QStyle::State_None;
+	menu_option.menuItemType = QStyleOptionMenuItem::EmptyArea;
+	menu_option.checkType = QStyleOptionMenuItem::NotCheckable;
+	menu_option.rect = rect();
+	menu_option.menuRect = rect();
+	style()->drawControl(QStyle::CE_MenuBarEmptyArea, &menu_option, &painter, this);
+}
+
 void DockMenuBar::tabChanged(int index)
 {
 	// Prevent recursion.
@@ -181,4 +218,125 @@ void DockMenuBar::tabChanged(int index)
 	{
 		emit newButtonClicked();
 	}
+}
+
+// *****************************************************************************
+
+DockMenuBarStyle::DockMenuBarStyle(QObject* parent)
+	: QProxyStyle(QStyleFactory::create(qApp->style()->name()))
+{
+	setParent(parent);
+}
+
+void DockMenuBarStyle::drawControl(
+	ControlElement element,
+	const QStyleOption* option,
+	QPainter* painter,
+	const QWidget* widget) const
+{
+	switch (element)
+	{
+		case CE_MenuBarItem:
+		{
+			const QStyleOptionMenuItem* opt = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
+			if (!opt)
+				break;
+
+			QWidget* menu_wrapper = widget->parentWidget();
+			if (!menu_wrapper)
+				break;
+
+			const DockMenuBar* menu_bar = qobject_cast<const DockMenuBar*>(menu_wrapper->parentWidget());
+			if (!menu_bar)
+				break;
+
+			if (baseStyle()->name() != "fusion")
+				break;
+
+			// This mirrors a check in QFusionStyle::drawControl. If act is
+			// false, QFusionStyle will try to draw a border along the bottom.
+			bool act = opt->state & State_Selected && opt->state & State_Sunken;
+			if (act)
+				break;
+
+			// Extend the menu item to the bottom of the menu bar to fix the
+			// position in which it draws its bottom border. We also need to
+			// extend it up by the same amount so that the text isn't moved.
+			QStyleOptionMenuItem menu_opt = *opt;
+			int difference = (menu_bar->innerHeight() - option->rect.top()) - menu_opt.rect.height();
+			menu_opt.rect.adjust(0, -difference, 0, difference);
+			QProxyStyle::drawControl(element, &menu_opt, painter, widget);
+
+			return;
+		}
+		case CE_TabBarTab:
+		{
+			QProxyStyle::drawControl(element, option, painter, widget);
+
+			// Draw a slick-looking highlight under the currently selected tab.
+			if (baseStyle()->name() == "fusion")
+			{
+				const QStyleOptionTab* tab = qstyleoption_cast<const QStyleOptionTab*>(option);
+				if (tab && (tab->state & State_Selected))
+				{
+					painter->setPen(tab->palette.highlight().color());
+					painter->drawLine(tab->rect.bottomLeft(), tab->rect.bottomRight());
+				}
+			}
+
+			return;
+		}
+		case CE_MenuBarEmptyArea:
+		{
+			// Prevent it from drawing a border in the wrong position.
+			return;
+		}
+		default:
+		{
+			break;
+		}
+	}
+
+	QProxyStyle::drawControl(element, option, painter, widget);
+}
+
+QSize DockMenuBarStyle::sizeFromContents(
+	QStyle::ContentsType type, const QStyleOption* option, const QSize& contents_size, const QWidget* widget) const
+{
+	QSize size = QProxyStyle::sizeFromContents(type, option, contents_size, widget);
+
+#ifdef Q_OS_WIN32
+	// Adjust the sizes of the layout switcher tabs depending on the theme.
+	if (type == CT_TabBarTab)
+	{
+		const QStyleOptionTab* opt = qstyleoption_cast<const QStyleOptionTab*>(option);
+		if (!opt)
+			return size;
+
+		const QTabBar* tab_bar = qobject_cast<const QTabBar*>(widget);
+		if (!tab_bar)
+			return size;
+
+		const DockMenuBar* menu_bar = qobject_cast<const DockMenuBar*>(tab_bar->parentWidget());
+		if (!menu_bar)
+			return size;
+
+		if (baseStyle()->name() == "fusion" || baseStyle()->name() == "windowsvista")
+		{
+			// Make sure the tab extends to the bottom of the widget.
+			size.setHeight(menu_bar->innerHeight() - opt->rect.top());
+		}
+		else if (baseStyle()->name() == "windows11")
+		{
+			// Adjust the size of the tab such that it is vertically centred.
+			size.setHeight(menu_bar->innerHeight() - opt->rect.top() * 2 - OUTER_MENU_MARGIN);
+
+			// Make the plus button square.
+			if (opt->tabIndex + 1 == tab_bar->count())
+				size.setWidth(size.height());
+		}
+	}
+#endif
+
+	return size;
 }

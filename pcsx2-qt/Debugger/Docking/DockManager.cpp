@@ -25,6 +25,8 @@
 #include <QtCore/QTimer>
 #include <QtCore/QtTranslation>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QProxyStyle>
+#include <QtWidgets/QStyleFactory>
 
 DockManager::DockManager(QObject* parent)
 	: QObject(parent)
@@ -757,11 +759,23 @@ void DockManager::switchToDebuggerWidget(DebuggerWidget* widget)
 	}
 }
 
-void DockManager::updateStyleSheets()
+void DockManager::updateTheme()
 {
+	if (m_menu_bar)
+		m_menu_bar->updateTheme();
+
 	for (DockLayout& layout : m_layouts)
 		for (const auto& [unique_name, widget] : layout.debuggerWidgets())
 			widget->updateStyleSheet();
+
+	// KDDockWidgets::QtWidgets::TabBar sets its own style to a subclass of
+	// QProxyStyle in its constructor, so we need to update that here.
+	for (KDDockWidgets::Core::Group* group : KDDockWidgets::DockRegistry::self()->groups())
+	{
+		auto tab_bar = static_cast<KDDockWidgets::QtWidgets::TabBar*>(group->tabBar()->view());
+		if (QProxyStyle* style = qobject_cast<QProxyStyle*>(tab_bar->style()))
+			style->setBaseStyle(QStyleFactory::create(qApp->style()->name()));
+	}
 }
 
 bool DockManager::isLayoutLocked()
