@@ -4200,18 +4200,6 @@ void GSRendererHW::Draw()
 		// Limit to 2x the vertical height of the resolution (for double buffering)
 		rt->UpdateValidity(real_rect, !frame_masked && (can_update_size || (real_rect.w <= (resolution.y * 2) && !m_texture_shuffle)));
 
-		g_texture_cache->InvalidateVideoMem(context->offset.fb, real_rect, false);
-
-		// Remove overwritten Zs at the FBP.
-		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, m_cached_ctx.FRAME.Block(),
-			m_cached_ctx.FRAME.PSM, m_texture_shuffle ? GetEffectiveTextureShuffleFbmsk() : fm);
-
-		if (!m_using_temp_z && g_texture_cache->GetTemporaryZ() != nullptr)
-		{
-			GSTextureCache::TempZAddress temp_z_info = g_texture_cache->GetTemporaryZInfo();
-			if (GSLocalMemory::GetStartBlockAddress(rt->m_TEX0.TBP0, rt->m_TEX0.TBW, rt->m_TEX0.PSM, real_rect) <= temp_z_info.ZBP && GSLocalMemory::GetEndBlockAddress(rt->m_TEX0.TBP0, rt->m_TEX0.TBW, rt->m_TEX0.PSM, real_rect) > temp_z_info.ZBP)
-				g_texture_cache->InvalidateTemporaryZ();
-		}
 	}
 
 	if (zm != 0xffffffff && ds)
@@ -4221,12 +4209,6 @@ void GSRendererHW::Draw()
 		//ds->m_valid = ds->m_valid.runion(r);
 		// Limit to 2x the vertical height of the resolution (for double buffering)
 		ds->UpdateValidity(real_rect, !z_masked && (can_update_size || (real_rect.w <= (resolution.y * 2) && !m_texture_shuffle)));
-
-		g_texture_cache->InvalidateVideoMem(context->offset.zb, real_rect, false);
-
-		// Remove overwritten RTs at the ZBP.
-		g_texture_cache->InvalidateVideoMemType(
-			GSTextureCache::RenderTarget, m_cached_ctx.ZBUF.Block(), m_cached_ctx.ZBUF.PSM, zm);
 
 		if (m_using_temp_z)
 		{
@@ -4313,6 +4295,31 @@ void GSRendererHW::Draw()
 
 	if (ds)
 		ds->m_last_draw = s_n;
+
+	if ((fm & fm_mask) != fm_mask && !no_rt)
+	{
+		g_texture_cache->InvalidateVideoMem(context->offset.fb, real_rect, false);
+
+		// Remove overwritten Zs at the FBP.
+		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, m_cached_ctx.FRAME.Block(),
+			m_cached_ctx.FRAME.PSM, m_texture_shuffle ? GetEffectiveTextureShuffleFbmsk() : fm);
+
+		if (rt && !m_using_temp_z && g_texture_cache->GetTemporaryZ() != nullptr)
+		{
+			GSTextureCache::TempZAddress temp_z_info = g_texture_cache->GetTemporaryZInfo();
+			if (GSLocalMemory::GetStartBlockAddress(rt->m_TEX0.TBP0, rt->m_TEX0.TBW, rt->m_TEX0.PSM, real_rect) <= temp_z_info.ZBP && GSLocalMemory::GetEndBlockAddress(rt->m_TEX0.TBP0, rt->m_TEX0.TBW, rt->m_TEX0.PSM, real_rect) > temp_z_info.ZBP)
+				g_texture_cache->InvalidateTemporaryZ();
+		}
+	}
+
+	if (zm != 0xffffffff && !no_ds)
+	{
+		g_texture_cache->InvalidateVideoMem(context->offset.zb, real_rect, false);
+
+		// Remove overwritten RTs at the ZBP.
+		g_texture_cache->InvalidateVideoMemType(
+			GSTextureCache::RenderTarget, m_cached_ctx.ZBUF.Block(), m_cached_ctx.ZBUF.PSM, zm);
+	}
 #ifdef DISABLE_HW_TEXTURE_CACHE
 	if (rt)
 		g_texture_cache->Read(rt, real_rect);
