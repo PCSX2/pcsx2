@@ -112,7 +112,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 	QMenuBar* menu_bar = menuBar();
 
-	setMenuWidget(m_dock_manager->createLayoutSwitcher(menu_bar));
+	setMenuWidget(m_dock_manager->createMenuBar(menu_bar));
 
 	Host::RunOnCPUThread([]() {
 		R5900SymbolImporter.OnDebuggerOpened();
