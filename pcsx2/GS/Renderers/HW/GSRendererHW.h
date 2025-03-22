@@ -92,9 +92,9 @@ private:
 	void DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex, const TextureMinMaxResult& tmm);
 
 	void ResetStates();
-	void SetupIA(float target_scale, float sx, float sy);
+	void SetupIA(float target_scale, float sx, float sy, bool req_vert_backup);
 	void EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
-	bool EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only);
+	bool EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only, GSTextureCache::Target* rt = nullptr);
 	void EmulateBlending(int rt_alpha_min, int rt_alpha_max, const bool DATE, bool& DATE_PRIMID, bool& DATE_BARRIER, GSTextureCache::Target* rt,
 		bool can_scale_rt_alpha, bool& new_rt_alpha_scale);
 	void CleanupDraw(bool invalidate_temp_src);
@@ -113,12 +113,14 @@ private:
 	void SetTCOffset();
 	bool NextDrawHDR() const;
 	bool IsPossibleChannelShuffle() const;
+	bool IsPageCopy() const;
 	bool NextDrawMatchesShuffle() const;
-	bool IsSplitTextureShuffle(GSTextureCache::Target* rt);
+	bool IsSplitTextureShuffle(GIFRegTEX0& rt_TEX0, GSVector4i& valid_area);
 	GSVector4i GetSplitTextureShuffleDrawRect() const;
 	u32 GetEffectiveTextureShuffleFbmsk() const;
 
 	static GSVector4i GetDrawRectForPages(u32 bw, u32 psm, u32 num_pages);
+	bool IsSinglePageDraw() const;
 	bool TryToResolveSinglePageFramebuffer(GIFRegFRAME& FRAME, bool only_next_draw);
 
 	bool IsSplitClearActive() const;
@@ -172,7 +174,13 @@ private:
 
 	u32 m_last_channel_shuffle_fbmsk = 0;
 	u32 m_last_channel_shuffle_fbp = 0;
+	u32 m_last_channel_shuffle_tbp = 0;
 	u32 m_last_channel_shuffle_end_block = 0;
+	u32 m_channel_shuffle_width = 0;
+	GSVector4i m_channel_shuffle_src_valid = GSVector4i::zero();
+	bool m_full_screen_shuffle = false;
+
+	GSTextureCache::Target* m_last_rt;
 
 	GIFRegFRAME m_split_clear_start = {};
 	GIFRegZBUF m_split_clear_start_Z = {};
@@ -199,6 +207,7 @@ public:
 
 	__fi static GSRendererHW* GetInstance() { return static_cast<GSRendererHW*>(g_gs_renderer.get()); }
 	__fi HWCachedCtx* GetCachedCtx() { return &m_cached_ctx; }
+	__fi u32 GetLastChannelShuffleFBP() { return m_last_channel_shuffle_fbp; }
 	void Destroy() override;
 
 	void UpdateRenderFixes() override;
