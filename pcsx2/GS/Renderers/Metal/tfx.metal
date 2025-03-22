@@ -97,7 +97,8 @@ constant bool SW_BLEND = (PS_BLEND_A != PS_BLEND_B) || PS_BLEND_D;
 constant bool SW_AD_TO_HW = (PS_BLEND_C == 1 && PS_A_MASKED);
 constant bool NEEDS_RT_FOR_BLEND = (((PS_BLEND_A != PS_BLEND_B) && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1)) || PS_BLEND_D == 1 || SW_AD_TO_HW);
 constant bool NEEDS_RT_EARLY = PS_TEX_IS_FB || PS_DATE >= 5;
-constant bool NEEDS_RT = NEEDS_RT_EARLY || (!PS_PRIM_CHECKING_INIT && (PS_FBMASK || NEEDS_RT_FOR_BLEND));
+constant bool NEEDS_RT_FOR_AFAIL = PS_AFAIL == 3 && PS_NO_COLOR1;
+constant bool NEEDS_RT = NEEDS_RT_FOR_AFAIL || NEEDS_RT_EARLY || (!PS_PRIM_CHECKING_INIT && (PS_FBMASK || NEEDS_RT_FOR_BLEND));
 
 constant bool PS_COLOR0 = !PS_NO_COLOR;
 constant bool PS_COLOR1 = !PS_NO_COLOR1;
@@ -1202,8 +1203,12 @@ struct PSMain
 			alpha_blend.a = float(atst_pass);
 
 		if (PS_COLOR0)
+		{
 			out.c0.a = PS_RTA_CORRECTION ? C.a / 128.f : C.a / 255.f;
 			out.c0.rgb = PS_HDR ? float3(C.rgb / 65535.f) : C.rgb / 255.f;
+			if (PS_AFAIL == 3 && !PS_COLOR1 && !atst_pass) // Doing RGB_ONLY without COLOR1
+				out.c0.a = current_color.a;
+		}
 		if (PS_COLOR1)
 			out.c1 = alpha_blend;
 		if (PS_ZCLAMP)

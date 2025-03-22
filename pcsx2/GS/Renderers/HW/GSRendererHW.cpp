@@ -6240,23 +6240,32 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			// Blending might be off, ensure it's enabled.
 			// We write the alpha pass/fail to SRC1_ALPHA, which is used to update A.
 			m_conf.ps.afail = AFAIL_RGB_ONLY;
-			m_conf.ps.no_color1 = false;
-			if (!m_conf.blend.enable)
+			if ((features.framebuffer_fetch && m_conf.require_one_barrier) || m_conf.require_full_barrier)
 			{
-				m_conf.blend = GSHWDrawConfig::BlendState(true, GSDevice::CONST_ONE, GSDevice::CONST_ZERO,
-					GSDevice::OP_ADD, GSDevice::SRC1_ALPHA, GSDevice::INV_SRC1_ALPHA, false, 0);
+				// We're reading the rt anyways, use it for AFAIL
+				// This ensures we don't attempt to use fbfetch + blend, which breaks Intel GPUs on Metal
+				// Setting afail to RGB_ONLY without enabling color1 will enable this mode in the shader, so nothing more to do here.
 			}
 			else
 			{
-				if (m_conf.blend_multi_pass.enable)
+				m_conf.ps.no_color1 = false;
+				if (!m_conf.blend.enable)
 				{
-					m_conf.blend_multi_pass.blend.src_factor_alpha = GSDevice::SRC1_ALPHA;
-					m_conf.blend_multi_pass.blend.dst_factor_alpha = GSDevice::INV_SRC1_ALPHA;
+					m_conf.blend = GSHWDrawConfig::BlendState(true, GSDevice::CONST_ONE, GSDevice::CONST_ZERO,
+						GSDevice::OP_ADD, GSDevice::SRC1_ALPHA, GSDevice::INV_SRC1_ALPHA, false, 0);
 				}
 				else
 				{
-					m_conf.blend.src_factor_alpha = GSDevice::SRC1_ALPHA;
-					m_conf.blend.dst_factor_alpha = GSDevice::INV_SRC1_ALPHA;
+					if (m_conf.blend_multi_pass.enable)
+					{
+						m_conf.blend_multi_pass.blend.src_factor_alpha = GSDevice::SRC1_ALPHA;
+						m_conf.blend_multi_pass.blend.dst_factor_alpha = GSDevice::INV_SRC1_ALPHA;
+					}
+					else
+					{
+						m_conf.blend.src_factor_alpha = GSDevice::SRC1_ALPHA;
+						m_conf.blend.dst_factor_alpha = GSDevice::INV_SRC1_ALPHA;
+					}
 				}
 			}
 
