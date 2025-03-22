@@ -2494,6 +2494,8 @@ void GSRendererHW::Draw()
 		return;
 	}
 
+	m_process_texture = PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_cached_ctx.TEX0.TCC) && !(no_rt && (!m_cached_ctx.TEST.ATE || m_cached_ctx.TEST.ATST <= ATST_ALWAYS));
+
 	// We trigger the sw prim render here super early, to avoid creating superfluous render targets.
 	if (CanUseSwPrimRender(no_rt, no_ds, draw_sprite_tex && m_process_texture) && SwPrimRender(*this, true, true))
 	{
@@ -2510,8 +2512,6 @@ void GSRendererHW::Draw()
 			if (!DetectDoubleHalfClear(no_rt, no_ds))
 				DetectRedundantBufferClear(no_rt, no_ds, fm_mask);
 	}
-
-	m_process_texture = PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_cached_ctx.TEX0.TCC) && !(no_rt && (!m_cached_ctx.TEST.ATE || m_cached_ctx.TEST.ATST <= ATST_ALWAYS));
 
 	CalculatePrimitiveCoversWithoutGaps();
 
@@ -6321,7 +6321,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 	{
 		src_target = tex->m_from_target;
 	}
-	else if (!m_downscale_source)
+	else if (!m_downscale_source || !tex->m_from_target)
 	{
 		// No match.
 		return;
@@ -6335,7 +6335,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 	GSVector4i copy_range;
 	GSVector2i copy_size;
 	GSVector2i copy_dst_offset;
-	bool copied_rt = false;
+	const bool copied_rt = src_target && !tex->m_shared_texture;
 	// Shuffles take the whole target. This should've already been halved.
 	// We can't partially copy depth targets in DirectX, and GL/Vulkan should use the direct read above.
 	// Restricting it also breaks Tom and Jerry...
@@ -6347,8 +6347,8 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			copy_size.x = rt->m_unscaled_size.x;
 			copy_size.y = rt->m_unscaled_size.y;
 			copy_range.x = copy_range.y = 0;
-			copy_range.z = std::min(m_r.width(), copy_size.x);
-			copy_range.w = std::min(m_r.height(), copy_size.y);
+			copy_range.z = std::min(m_r.width() + 1, copy_size.x);
+			copy_range.w = std::min(m_r.height() + 1, copy_size.y);
 		}
 		else
 		{
