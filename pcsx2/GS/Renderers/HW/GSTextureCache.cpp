@@ -5506,13 +5506,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			src->m_shared_texture = true;
 			src->m_32_bits_fmt = dst->m_32_bits_fmt;
 
-			// kill source immediately if it's the RT/DS, because that'll get invalidated immediately
-			if (GSRendererHW::GetInstance()->IsTBPFrameOrZ(dst->m_TEX0.TBP0) || channel_shuffle)
-			{
-				GL_CACHE("TC: Source is RT or ZBUF, invalidating after draw.");
-				m_temporary_source = src;
-			}
-			else if (new_size != dst_texture_size)
+			if (new_size != dst_texture_size)
 			{
 				// if the size doesn't match, we need to engage shader sampling.
 				GL_CACHE("TC: Sample reduced region directly from target: %dx%d -> %dx%d", dst_texture_size.x,
@@ -5522,6 +5516,13 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 					src->m_region.SetX(region_rect.x, region_rect.z);
 				if (new_size.y != dst_texture_size.y)
 					src->m_region.SetY(region_rect.y, region_rect.w);
+			}
+
+			// kill source immediately if it's the RT/DS, because that'll get invalidated immediately
+			if (GSRendererHW::GetInstance()->IsTBPFrameOrZ(dst->m_TEX0.TBP0) || channel_shuffle)
+			{
+				GL_CACHE("TC: Source is RT or ZBUF, invalidating after draw.");
+				m_temporary_source = src;
 			}
 		}
 		else
