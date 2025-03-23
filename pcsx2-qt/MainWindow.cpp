@@ -385,6 +385,8 @@ void MainWindow::connectSignals()
 			m_game_list_widget->gridZoomOut();
 	});
 	connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget, &GameListWidget::refreshGridCovers);
+	connect(m_ui.actionSetGameListBackground, &QAction::triggered, m_game_list_widget, &GameListWidget::onViewSetGameListBackgroundTriggered);
+	connect(m_ui.actionClearGameListBackground, &QAction::triggered, m_game_list_widget, &GameListWidget::onViewClearGameListBackgroundTriggered);
 	connect(m_game_list_widget, &GameListWidget::layoutChange, this, [this]() {
 		QSignalBlocker sb(m_ui.actionGridViewShowTitles);
 		m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
