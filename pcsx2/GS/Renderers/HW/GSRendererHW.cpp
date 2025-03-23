@@ -8569,7 +8569,10 @@ bool GSRendererHW::TextureCoversWithoutGapsNotEqual()
 int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 {
 	const GSVector2i draw_size = GSVector2i(m_vt.m_max.p.x - m_vt.m_min.p.x, m_vt.m_max.p.y - m_vt.m_min.p.y);
-	const GSVector2i tex_size = GSVector2i(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
+	GSVector2i tex_size = GSVector2i(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
+
+	tex_size.x = std::min(tex_size.x, 1 << m_cached_ctx.TEX0.TW);
+	tex_size.y = std::min(tex_size.y, 1 << m_cached_ctx.TEX0.TH);
 
 	const bool is_target_src = src && src->m_from_target;
 
