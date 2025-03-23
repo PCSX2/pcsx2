@@ -13278,8 +13278,9 @@ SLED-52441:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52473:
   name: "Transformers - Optimus Prime [Demo]"
@@ -13289,8 +13290,9 @@ SLED-52473:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52474:
   name: "Transformers - Red Alert [Demo]"
@@ -13300,8 +13302,9 @@ SLED-52474:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52476:
   name: "UEFA Euro 2004 - Portugal [Demo]"
@@ -19460,8 +19463,9 @@ SLES-52388:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLES-52392:
   name: "Combat Elite - WWII Paratroopers [Preview]"
@@ -22082,8 +22086,9 @@ SLES-53309:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLES-53311:
   name: "Graffiti Kingdom"
@@ -30604,8 +30609,9 @@ SLKA-25175:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLKA-25176:
   name: "Pump It Up - Exceed"
@@ -64911,8 +64917,9 @@ SLUS-20668:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-20669:
   name: "Resident Evil - Dead Aim"
@@ -72469,8 +72476,9 @@ SLUS-28040:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-28043:
   name: "Test Drive - Eve of Destruction [Trade Demo]"
@@ -72901,8 +72909,9 @@ SLUS-29107:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-29108:
   name: "Def Jam - Fight for NY [Demo]"
