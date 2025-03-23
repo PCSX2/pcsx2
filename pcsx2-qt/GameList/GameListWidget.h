@@ -8,6 +8,7 @@
 
 #include "pcsx2/GameList.h"
 
+#include <QtGui/QMovie>
 #include <QtWidgets/QListView>
 #include <QtWidgets/QTableView>
 
@@ -48,6 +49,9 @@ public:
 	void refresh(bool invalidate_cache);
 	void cancelRefresh();
 	void reloadThemeSpecificImages();
+	void setCustomBackground();
+	void updateCustomBackgroundState();
+	void processBackgroundFrames();
 
 	bool isShowingGameList() const;
 	bool isShowingGameGrid() const;
@@ -90,8 +94,12 @@ public Q_SLOTS:
 	void gridZoomOut();
 	void gridIntScale(int int_scale);
 	void refreshGridCovers();
+	void onViewSetGameListBackgroundTriggered();
+	void onViewClearGameListBackgroundTriggered();
 
 protected:
+	void showEvent(QShowEvent* event) override;
+	void hideEvent(QHideEvent* event) override;
 	void resizeEvent(QResizeEvent* event) override;
 	bool event(QEvent* event) override;
 
@@ -115,4 +123,6 @@ private:
 	Ui::EmptyGameListWidget m_empty_ui;
 
 	GameListRefreshThread* m_refresh_thread = nullptr;
+
+	QMovie* m_background_movie = nullptr;
 };

@@ -31,7 +31,7 @@
      <x>0</x>
      <y>0</y>
      <width>1050</width>
-     <height>27</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSystem">
@@ -160,6 +160,14 @@
       <iconset theme="window-2-line"/>
      </property>
     </widget>
+    <widget class="QMenu" name="menuBackgroundOpacity">
+     <property name="title">
+      <string>Background O&amp;pacity</string>
+     </property>
+     <property name="icon">
+      <iconset theme="lightbulb-line"/>
+     </property>
+    </widget>
     <addaction name="actionViewToolbar"/>
     <addaction name="actionViewLockToolbar"/>
     <addaction name="actionViewStatusBar"/>
@@ -176,6 +184,10 @@
     <addaction name="actionGridViewZoomIn"/>
     <addaction name="actionGridViewZoomOut"/>
     <addaction name="actionGridViewRefreshCovers"/>
+    <addaction name="separator"/>
+    <addaction name="actionSetGameListBackground"/>
+    <addaction name="actionClearGameListBackground"/>
+    <addaction name="menuBackgroundOpacity"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -1063,6 +1075,22 @@
    </property>
    <property name="text">
     <string>Edit &amp;Patches...</string>
+   </property>
+  </action>
+  <action name="actionSetGameListBackground">
+   <property name="icon">
+    <iconset theme="artboard-2-line"/>
+   </property>
+   <property name="text">
+    <string>Set Custom Background</string>
+   </property>
+  </action>
+  <action name="actionClearGameListBackground">
+   <property name="icon">
+    <iconset theme="trash-fill"/>
+   </property>
+   <property name="text">
+    <string>Clear Custom Background</string>
    </property>
   </action>
  </widget>
