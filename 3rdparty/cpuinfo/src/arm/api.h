@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef _MSC_VER
+#define RESTRICT_STATIC /* nothing for MSVC */
+#else
+#define RESTRICT_STATIC restrict static
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -82,11 +88,11 @@ struct cpuinfo_arm_chipset {
 
 #ifndef __cplusplus
 CPUINFO_INTERNAL void cpuinfo_arm_chipset_to_string(
-	const struct cpuinfo_arm_chipset chipset[restrict static 1],
-	char name[restrict static CPUINFO_ARM_CHIPSET_NAME_MAX]);
+	const struct cpuinfo_arm_chipset chipset[RESTRICT_STATIC 1],
+	char name[RESTRICT_STATIC CPUINFO_ARM_CHIPSET_NAME_MAX]);
 
 CPUINFO_INTERNAL void cpuinfo_arm_fixup_chipset(
-	struct cpuinfo_arm_chipset chipset[restrict static 1],
+	struct cpuinfo_arm_chipset chipset[RESTRICT_STATIC 1],
 	uint32_t cores,
 	uint32_t max_cpu_freq_max);
 
@@ -95,23 +101,23 @@ CPUINFO_INTERNAL void cpuinfo_arm_decode_vendor_uarch(
 #if CPUINFO_ARCH_ARM
 	bool has_vfpv4,
 #endif
-	enum cpuinfo_vendor vendor[restrict static 1],
-	enum cpuinfo_uarch uarch[restrict static 1]);
+	enum cpuinfo_vendor vendor[RESTRICT_STATIC 1],
+	enum cpuinfo_uarch uarch[RESTRICT_STATIC 1]);
 
 CPUINFO_INTERNAL void cpuinfo_arm_decode_cache(
 	enum cpuinfo_uarch uarch,
 	uint32_t cluster_cores,
 	uint32_t midr,
-	const struct cpuinfo_arm_chipset chipset[restrict static 1],
+	const struct cpuinfo_arm_chipset chipset[RESTRICT_STATIC 1],
 	uint32_t cluster_id,
 	uint32_t arch_version,
-	struct cpuinfo_cache l1i[restrict static 1],
-	struct cpuinfo_cache l1d[restrict static 1],
-	struct cpuinfo_cache l2[restrict static 1],
-	struct cpuinfo_cache l3[restrict static 1]);
+	struct cpuinfo_cache l1i[RESTRICT_STATIC 1],
+	struct cpuinfo_cache l1d[RESTRICT_STATIC 1],
+	struct cpuinfo_cache l2[RESTRICT_STATIC 1],
+	struct cpuinfo_cache l3[RESTRICT_STATIC 1]);
 
 CPUINFO_INTERNAL uint32_t
-cpuinfo_arm_compute_max_cache_size(const struct cpuinfo_processor processor[restrict static 1]);
+cpuinfo_arm_compute_max_cache_size(const struct cpuinfo_processor processor[RESTRICT_STATIC 1]);
 #else /* defined(__cplusplus) */
 CPUINFO_INTERNAL void cpuinfo_arm_decode_cache(
 	enum cpuinfo_uarch uarch,

@@ -101,7 +101,6 @@ static enum cpuinfo_uarch decode_uarch(uint32_t cpu_family, uint32_t core_index,
 	return cpuinfo_uarch_unknown;
 }
 
-/* Small bodge until cpuinfo merges PR #246 */
 static int read_package_name_from_brand_string(char* package_name) {
 	size_t size;
 	if (sysctlbyname("machdep.cpu.brand_string", NULL, &size, NULL, 0) != 0) {
