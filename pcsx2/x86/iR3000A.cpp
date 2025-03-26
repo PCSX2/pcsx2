@@ -1736,7 +1736,7 @@ StartRecomp:
 		}
 	}
 
-	pxAssert(xGetPtr() < recPtrEnd);
+	pxAssert(xGetPtr() < SysMemory::GetIOPRecEnd());
 
 	pxAssert(xGetPtr() - recPtr < _64kb);
 	s_pCurBlockEx->x86size = xGetPtr() - recPtr;
