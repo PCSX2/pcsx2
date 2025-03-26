@@ -244,7 +244,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useBlitSwapChain, "EmuCore/GS", "UseBlitSwapChain", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useDebugDevice, "EmuCore/GS", "UseDebugDevice", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.skipPresentingDuplicateFrames, "EmuCore/GS", "SkipDuplicateFrames", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableMailboxPresentation, "EmuCore/GS", "DisableMailboxPresentation", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.extendedUpscales, "EmuCore/GS", "ExtendedUpscalingMultipliers", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.exclusiveFullscreenControl, "EmuCore/GS", "ExclusiveFullscreenControl", -1, -1);
@@ -395,7 +394,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		m_ui.extendedUpscales = nullptr;
 		m_ui.spinCPUDuringReadbacks = nullptr;
 		m_ui.spinGPUDuringReadbacks = nullptr;
-		m_ui.skipPresentingDuplicateFrames = nullptr;
 		m_ui.overrideTextureBarriers = nullptr;
 		m_ui.disableFramebufferFetch = nullptr;
 		m_ui.disableShaderCache = nullptr;
@@ -860,12 +858,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.exclusiveFullscreenControl, tr("Allow Exclusive Fullscreen"), tr("Automatic (Default)"),
 			tr("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout.<br>"
 			   "Disallowing exclusive fullscreen may enable smoother task switching and overlays, but increase input latency."));
-
-		dialog->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"), tr("Unchecked"),
-			tr("Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still "
-			   "rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time "
-			   "fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase "
-			   "input lag."));
 
 		dialog->registerWidgetHelp(m_ui.disableMailboxPresentation, tr("Disable Mailbox Presentation"), tr("Unchecked"),
 			tr("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
