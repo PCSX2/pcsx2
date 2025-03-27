@@ -212,7 +212,7 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (r.IsPossibleChannelShuffle() && (RTBP0 & 31))
+		if (r.IsPossibleChannelShuffle() && !(RTBP0 & 31))
 		{
 			GSVertex* v = &r.m_vertex.buff[0];
 
