@@ -4259,14 +4259,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 				m_conf.ps.blend_d = 2;
 		}
 	}
-	// When AA1 is enabled and Alpha Blending is disabled, alpha blending done with coverage instead of alpha.
-	// We use a COV value of 128 (full coverage) in triangles (except the edge geometry, which we can't do easily).
-	if (IsCoverageAlpha())
-	{
-		m_conf.ps.fixed_one_a = 1;
-		m_conf.ps.blend_c = 0;
-	}
-	else if (m_conf.ps.blend_c == 1)
+	if (m_conf.ps.blend_c == 1)
 	{
 		// When both rt alpha min and max are equal replace Ad with Af, easier to manage.
 		if (rt_alpha_min == rt_alpha_max)
@@ -6169,6 +6162,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		new_scale_rt_alpha = rt->m_rt_alpha_scale;
 	}
 
+	// AA1: Set alpha source to coverage 128 when there is no alpha blending.
+	m_conf.ps.fixed_one_a = IsCoverageAlpha();
+
 	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle)))
 	{
 		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE, DATE_PRIMID, DATE_BARRIER, rt, can_scale_rt_alpha, new_scale_rt_alpha);
@@ -6177,7 +6173,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	{
 		m_conf.blend = {}; // No blending please
 		m_conf.ps.no_color1 = true;
-		m_conf.ps.fixed_one_a = IsCoverageAlpha();
 
 		if (can_scale_rt_alpha && !new_scale_rt_alpha && m_conf.colormask.wa)
 		{
