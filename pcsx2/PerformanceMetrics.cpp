@@ -15,7 +15,7 @@
 #include "MTVU.h"
 #include "VMManager.h"
 
-static const float UPDATE_INTERVAL = 0.25f;
+static const float UPDATE_INTERVAL = 0.5f;
 
 static float s_fps = 0.0f;
 static float s_internal_fps = 0.0f;
