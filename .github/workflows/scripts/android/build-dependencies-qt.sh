@@ -30,13 +30,19 @@ SHADERC_SPIRVHEADERS=5e3ad389ee56fca27c9705d093ae5387ce404df4
 SHADERC_SPIRVTOOLS=dd4b663e13c07fea4fbb3f70c1c91c86731099f7
 
 # Set Android NDK and target architecture
+ANDROID_SDK_PATH="/home/swami/Android/Sdk/"
 ANDROID_NDK_PATH="/home/swami/Android/Sdk/ndk/29.0.13113456/"
 ANDROID_API_LEVEL=21  # Adjust this to your target API level
 ANDROID_ARCH="arm64-v8a"  # Change this to your desired architecture (e.g., armv7a, x86, etc.)
 
+export ANDROID_SDK=$ANDROID_SDK_PATH
 export ANDROID_NDK=$ANDROID_NDK_PATH
 export ANDROID_API=$ANDROID_API_LEVEL
 export ANDROID_ARCH=$ANDROID_ARCH
+
+# Set up QT for cross compile
+QT_HOST_PATH="/usr/lib/qt"
+Qt6HostInfo_DIR="/usr/lib/cmake/Qt6HostInfo"
 
 # Ensure you're using the Android cross-compilation toolchain
 export PATH=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
@@ -99,17 +105,25 @@ cd ..
 
 # Build libpng for Android 
 echo "Building libpng for Android..."
+rm -fr "libpng-$LIBPNG"
 tar xf "libpng-$LIBPNG.tar.xz"
 cd "libpng-$LIBPNG"
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_PATH/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_NATIVE_API_LEVEL=21 -G Ninja ..
-cmake --build . --parallel
-cmake --install .
+cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_PATH/build/cmake/android.toolchain.cmake \
+	-DANDROID_ABI=arm64-v8a \
+	-DANDROID_NATIVE_API_LEVEL=21 \
+	-DCMAKE_PREFIX_PATH="$INSTALLDIR" \
+	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
+	-DBUILD_SHARED_LIBS=ON \
+	-DPNG_TESTS=OFF \
+	-DPNG_STATIC=OFF \
+	-DPNG_SHARED=ON \
+	-DPNG_TOOLS=OFF \
+	-B build \
+	-G Ninja 
+cmake --build build --parallel
+ninja -C build install
 cd ..
-cd ..
-
-
 
 # build libjpeg for Android
 echo "Building libjpegturbo for Android..."
@@ -119,18 +133,15 @@ cd "libjpeg-turbo-$LIBJPEGTURBO"
 
 # Run cmake with the Android-specific toolchain
 cmake -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_FILE \
-      -DANDROID_ABI=$TARGET_ABI \
-      -DANDROID_NATIVE_API_LEVEL=$API_LEVEL \
-      -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
-      -DENABLE_STATIC=OFF \
-      -DENABLE_SHARED=ON \
-      -B build -G Ninja
-
-# Build the library
+	-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_PATH/build/cmake/android.toolchain.cmake \
+	-DANDROID_ABI=arm64-v8a \
+	-DANDROID_NATIVE_API_LEVEL=21 \
+    -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
+    -DENABLE_STATIC=OFF \
+    -DENABLE_SHARED=ON \
+    -B build \
+	-G Ninja
 cmake --build build --parallel
-
-# Install the library
 ninja -C build install
 cd ..
 
@@ -138,16 +149,37 @@ echo "Building LZ4..."
 rm -fr "lz4-$LZ4"
 tar xf "$LZ4.tar.gz"
 cd "lz4-$LZ4"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DLZ4_BUILD_CLI=OFF -DLZ4_BUILD_LEGACY_LZ4C=OFF -B build-dir -G Ninja build/cmake
-cmake --build build-dir --parallel
-ninja -C build-dir install
+cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_PATH/build/cmake/android.toolchain.cmake \
+	-DANDROID_ABI=arm64-v8a \
+	-DANDROID_NATIVE_API_LEVEL=21 \
+	-DCMAKE_PREFIX_PATH="$INSTALLDIR" \
+	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
+	-DBUILD_SHARED_LIBS=ON \
+	-DLZ4_BUILD_CLI=OFF \
+	-DLZ4_BUILD_LEGACY_LZ4C=OFF \
+	-B build \
+	-G Ninja build/cmake
+cmake --build build --parallel
+ninja -C build install
 cd ..
 
 echo "Building Zstandard..."
 rm -fr "zstd-$ZSTD"
 tar xf "zstd-$ZSTD.tar.gz"
 cd "zstd-$ZSTD"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_SHARED=ON -DZSTD_BUILD_STATIC=OFF -DZSTD_BUILD_PROGRAMS=OFF -B build -G Ninja build/cmake
+cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_PATH/build/cmake/android.toolchain.cmake \
+	-DANDROID_ABI=arm64-v8a \
+	-DANDROID_NATIVE_API_LEVEL=21 \
+	-DCMAKE_PREFIX_PATH="$INSTALLDIR" \
+	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
+	-DBUILD_SHARED_LIBS=ON \
+	-DZSTD_BUILD_SHARED=ON \
+	-DZSTD_BUILD_STATIC=OFF \
+	-DZSTD_BUILD_PROGRAMS=OFF \
+	-B build \
+	-G Ninja build/cmake
 cmake --build build --parallel
 ninja -C build install
 cd ..
@@ -156,9 +188,24 @@ echo "Building WebP..."
 rm -fr "libwebp-$LIBWEBP"
 tar xf "libwebp-$LIBWEBP.tar.gz"
 cd "libwebp-$LIBWEBP"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -B build -G Ninja \
-  -DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF \
-  -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
+cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_PATH/build/cmake/android.toolchain.cmake \
+	-DANDROID_ABI=arm64-v8a \
+	-DANDROID_NATIVE_API_LEVEL=21 \
+	-DCMAKE_PREFIX_PATH="$INSTALLDIR" \
+	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
+	-DWEBP_BUILD_ANIM_UTILS=OFF \
+	-DWEBP_BUILD_CWEBP=OFF \
+	-DWEBP_BUILD_DWEBP=OFF \
+	-DWEBP_BUILD_GIF2WEBP=OFF \
+	-DWEBP_BUILD_IMG2WEBP=OFF \
+	-DWEBP_BUILD_VWEBP=OFF \
+	-DWEBP_BUILD_WEBPINFO=OFF \
+	-DWEBP_BUILD_WEBPMUX=OFF \
+	-DWEBP_BUILD_EXTRAS=OFF \
+	-DBUILD_SHARED_LIBS=ON \
+	-B build \
+	-G Ninja 
 cmake --build build --parallel
 ninja -C build install
 cd ..
@@ -167,7 +214,17 @@ echo "Building SDL..."
 rm -fr "$SDL"
 tar xf "$SDL.tar.gz"
 cd "$SDL"
-cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja
+cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_PATH/build/cmake/android.toolchain.cmake \
+	-DANDROID_ABI=arm64-v8a \
+	-DANDROID_NATIVE_API_LEVEL=21 \
+	-DCMAKE_PREFIX_PATH="$INSTALLDIR" \
+	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
+	-DBUILD_SHARED_LIBS=ON \
+	-DSDL_SHARED=ON \
+	-DSDL_STATIC=OFF \
+	-B build \
+	-G Ninja 
 cmake --build build --parallel
 ninja -C build install
 cd ..
@@ -183,7 +240,31 @@ tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
 mkdir build
 cd build
-../configure -prefix "$INSTALLDIR" -release -dbus-linked -gui -widgets -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -xcb -gtk -- -DFEATURE_dbus=ON -DFEATURE_icu=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
+# Configure Qt for Android
+../configure -prefix "$INSTALLDIR" \
+    -release \
+    -android-ndk "$ANDROID_NDK" \
+    -android-sdk "$ANDROID_SDK" \
+    -android-abis "$ANDROID_ARCH" \
+	-qt-host-path "$QT_HOST_PATH" \
+	-DQt6HostInfo_DIR="$Qt6HostInfo_DIR" \ 
+    -platform android-clang \
+    -qt-doubleconversion \
+    -ssl -openssl-runtime \
+    -opengl es2 \
+    -no-dbus \
+    -no-xcb \
+    -no-gtk \
+    -xkbcommon \
+    -- -DFEATURE_dbus=OFF \
+       -DFEATURE_icu=OFF \
+       -DFEATURE_printsupport=OFF \
+       -DFEATURE_sql=OFF \
+       -DFEATURE_system_png=ON \
+       -DFEATURE_system_jpeg=ON \
+       -DFEATURE_system_zlib=ON \
+       -DFEATURE_system_freetype=ON \
+       -DFEATURE_system_harfbuzz=ON
 cmake --build . --parallel
 ninja install
 cd ../../
