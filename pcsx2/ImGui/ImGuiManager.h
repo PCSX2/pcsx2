@@ -97,6 +97,12 @@ namespace ImGuiManager
 	/// Called on the CPU thread when any input event fires. Allows imgui to take over controller navigation.
 	bool ProcessGenericInputEvent(GenericInputBinding key, InputLayout layout, float value);
 
+	/// Called to swap North/West gamepad buttons within ImGui
+	void SwapGamepadNorthWest(bool value);
+
+	/// Checks if the North/West gamepad buttons are swapped within ImGui
+	bool IsGamepadNorthWestSwapped();
+
 	/// Sets an image and scale for a software cursor. Software cursors can be used for things like crosshairs.
 	void SetSoftwareCursor(u32 index, std::string image_path, float image_scale, u32 multiply_color = 0xFFFFFF);
 	bool HasSoftwareCursor(u32 index);

@@ -6,6 +6,8 @@
 #include "Input/InputManager.h"
 #include "Host.h"
 
+#include "ImGui/FullscreenUI.h"
+
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/Error.h"
@@ -700,6 +702,20 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 										TRANSLATE("SDLInputSource", "As part of our upgrade to SDL3, we've had to migrate your binds\n"
 																	"Your controller did not match the Xbox layout and may need rebinding\n"
 																	"Please verify your controller settings and amend if required"));
+
+									// Also apply BPM setting for legacy binds
+									// We assume this is a Nintendo controller, BPM will check if it is
+									// Defer this, as we are probably under a setting lock
+									Host::RunOnCPUThread([] {
+										if (!Host::ContainsBaseSettingValue("UI", "SDL2NintendoLayout"))
+										{
+											Host::SetBaseStringSettingValue("UI", "SDL2NintendoLayout", "auto");
+											Host::CommitBaseSettingChanges();
+											// Get FSUI to recheck setting
+											if (FullscreenUI::IsInitialized())
+												FullscreenUI::GamepadLayoutChanged();
+										}
+									});
 								}
 								key.data = pos;
 							}
