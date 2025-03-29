@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Debugger/Docking/DockLayout.h"
+#include "Debugger/Docking/DockMenuBar.h"
 
 #include <kddockwidgets/MainWindow.h>
 #include <kddockwidgets/DockWidget.h>
@@ -68,14 +69,14 @@ public:
 	void createToolsMenu(QMenu* menu);
 	void createWindowsMenu(QMenu* menu);
 
-	QWidget* createLayoutSwitcher(QWidget* menu_bar);
+	QWidget* createMenuBar(QWidget* original_menu_bar);
 	void updateLayoutSwitcher();
-	void layoutSwitcherTabChanged(int index);
-	void layoutSwitcherTabMoved(int from, int to);
-	void layoutSwitcherContextMenu(QPoint pos);
-	void layoutSwitcherStartBlink();
-	void layoutSwitcherUpdateBlink();
-	void layoutSwitcherStopBlink();
+	void newLayoutClicked();
+	void openLayoutSwitcherContextMenu(const QPoint& pos, QTabBar* layout_switcher);
+	void editLayoutClicked(DockLayout::Index layout_index);
+	void resetLayoutClicked(DockLayout::Index layout_index);
+	void deleteLayoutClicked(DockLayout::Index layout_index);
+	void layoutSwitcherTabMoved(DockLayout::Index from_index, DockLayout::Index to_index);
 
 	bool hasNameConflict(const QString& name, DockLayout::Index layout_index);
 
@@ -88,10 +89,11 @@ public:
 	void setPrimaryDebuggerWidget(DebuggerWidget* widget, bool is_primary);
 	void switchToDebuggerWidget(DebuggerWidget* widget);
 
-	void updateStyleSheets();
+	void updateTheme();
 
 	bool isLayoutLocked();
-	void setLayoutLocked(bool locked, QPushButton* lock_layout_toggle, bool write_back);
+	void setLayoutLockedAndSaveSetting(bool locked);
+	void setLayoutLocked(bool locked, bool save_setting);
 	void updateToolBarLockState();
 
 	std::optional<BreakPointCpu> cpu();
@@ -103,16 +105,7 @@ private:
 	std::vector<DockLayout> m_layouts;
 	DockLayout::Index m_current_layout = DockLayout::INVALID_INDEX;
 
-	QTabBar* m_switcher = nullptr;
-	int m_plus_tab_index = -1;
-	int m_current_tab_index = -1;
-	bool m_ignore_current_tab_changed = false;
-
-	QMetaObject::Connection m_tab_connection;
+	DockMenuBar* m_menu_bar = nullptr;
 
 	bool m_layout_locked = true;
-
-	QTimer* m_blink_timer = nullptr;
-	int m_blink_tab = 0;
-	int m_blink_stage = 0;
 };

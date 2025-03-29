@@ -196,6 +196,8 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/Docking/DockLayout.h
 	Debugger/Docking/DockManager.cpp
 	Debugger/Docking/DockManager.h
+	Debugger/Docking/DockMenuBar.cpp
+	Debugger/Docking/DockMenuBar.h
 	Debugger/Docking/DockTables.cpp
 	Debugger/Docking/DockTables.h
 	Debugger/Docking/DockUtils.cpp

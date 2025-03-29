@@ -31,7 +31,7 @@ public:
 	void updateFontActions();
 	void saveFontSize();
 	int fontSize();
-	void updateStyleSheets();
+	void updateTheme();
 
 	void saveWindowGeometry();
 	void restoreWindowGeometry();

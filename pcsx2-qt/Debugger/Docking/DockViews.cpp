@@ -20,6 +20,7 @@
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QMenu>
+#include <QtWidgets/QStyleFactory>
 
 KDDockWidgets::Core::View* DockViewFactory::createDockWidget(
 	const QString& unique_name,
@@ -143,6 +144,14 @@ DockTabBar::DockTabBar(KDDockWidgets::Core::TabBar* controller, QWidget* parent)
 {
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &DockTabBar::customContextMenuRequested, this, &DockTabBar::openContextMenu);
+
+	// The constructor of KDDockWidgets::QtWidgets::TabBar makes a QProxyStyle
+	// that ends up taking ownerhsip of the style for the entire application!
+	if (QProxyStyle* proxy_style = qobject_cast<QProxyStyle*>(style()))
+	{
+		proxy_style->baseStyle()->setParent(qApp);
+		proxy_style->setBaseStyle(QStyleFactory::create(qApp->style()->name()));
+	}
 }
 
 void DockTabBar::openContextMenu(QPoint pos)

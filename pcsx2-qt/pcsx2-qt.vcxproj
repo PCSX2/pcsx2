@@ -126,6 +126,7 @@
     <ClCompile Include="Debugger\Breakpoints\BreakpointWidget.cpp" />
     <ClCompile Include="Debugger\Docking\DockLayout.cpp" />
     <ClCompile Include="Debugger\Docking\DockManager.cpp" />
+    <ClCompile Include="Debugger\Docking\DockMenuBar.cpp" />
     <ClCompile Include="Debugger\Docking\DockTables.cpp" />
     <ClCompile Include="Debugger\Docking\DockUtils.cpp" />
     <ClCompile Include="Debugger\Docking\DockViews.cpp" />
@@ -242,6 +243,7 @@
     <QtMoc Include="Debugger\Breakpoints\BreakpointWidget.h" />
     <QtMoc Include="Debugger\Docking\DockLayout.h" />
     <QtMoc Include="Debugger\Docking\DockManager.h" />
+    <QtMoc Include="Debugger\Docking\DockMenuBar.h" />
     <QtMoc Include="Debugger\Docking\DockTables.h" />
     <QtMoc Include="Debugger\Docking\DockUtils.h" />
     <QtMoc Include="Debugger\Docking\DockViews.h" />
@@ -313,6 +315,7 @@
     <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointModel.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockManager.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockMenuBar.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockViews.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Docking\moc_DropIndicators.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Docking\moc_LayoutEditorDialog.cpp" />

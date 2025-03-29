@@ -112,7 +112,9 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 	QMenuBar* menu_bar = menuBar();
 
-	setMenuWidget(m_dock_manager->createLayoutSwitcher(menu_bar));
+	setMenuWidget(m_dock_manager->createMenuBar(menu_bar));
+
+	updateTheme();
 
 	Host::RunOnCPUThread([]() {
 		R5900SymbolImporter.OnDebuggerOpened();
@@ -193,7 +195,7 @@ void DebuggerWindow::setupFonts()
 		m_font_size++;
 
 		updateFontActions();
-		updateStyleSheets();
+		updateTheme();
 		saveFontSize();
 	});
 
@@ -205,7 +207,7 @@ void DebuggerWindow::setupFonts()
 		m_font_size--;
 
 		updateFontActions();
-		updateStyleSheets();
+		updateTheme();
 		saveFontSize();
 	});
 
@@ -213,12 +215,11 @@ void DebuggerWindow::setupFonts()
 		m_font_size = DEFAULT_FONT_SIZE;
 
 		updateFontActions();
-		updateStyleSheets();
+		updateTheme();
 		saveFontSize();
 	});
 
 	updateFontActions();
-	updateStyleSheets();
 }
 
 void DebuggerWindow::updateFontActions()
@@ -239,7 +240,7 @@ int DebuggerWindow::fontSize()
 	return m_font_size;
 }
 
-void DebuggerWindow::updateStyleSheets()
+void DebuggerWindow::updateTheme()
 {
 	// TODO: Migrate away from stylesheets to improve performance.
 	if (m_font_size != DEFAULT_FONT_SIZE)
@@ -252,7 +253,7 @@ void DebuggerWindow::updateStyleSheets()
 		setStyleSheet(QString());
 	}
 
-	dockManager().updateStyleSheets();
+	dockManager().updateTheme();
 }
 
 void DebuggerWindow::saveWindowGeometry()
