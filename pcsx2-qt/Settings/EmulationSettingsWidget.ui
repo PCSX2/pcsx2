@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>672</width>
-    <height>438</height>
+    <height>500</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -222,17 +222,17 @@
       </item>
       <item row="3" column="0" colspan="2">
        <layout class="QGridLayout" name="basicCheckboxGridLayout">
-        <item row="1" column="1">
-         <widget class="QCheckBox" name="useVSyncForTiming">
-          <property name="text">
-           <string>Use Host VSync Timing</string>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="1">
          <widget class="QCheckBox" name="syncToHostRefreshRate">
           <property name="text">
            <string>Sync to Host Refresh Rate</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="vsync">
+          <property name="text">
+           <string>Vertical Sync (VSync)</string>
           </property>
          </widget>
         </item>
@@ -243,10 +243,17 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="vsync">
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="useVSyncForTiming">
           <property name="text">
-           <string>Vertical Sync (VSync)</string>
+           <string>Use Host VSync Timing</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="skipPresentingDuplicateFrames">
+          <property name="text">
+           <string>Skip Presenting Duplicate Frames</string>
           </property>
          </widget>
         </item>
@@ -282,8 +289,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QDateTimeEdit" name="rtcDateTime">
-       </widget>
+       <widget class="QDateTimeEdit" name="rtcDateTime"/>
       </item>
      </layout>
     </widget>

@@ -2131,6 +2131,13 @@
           </item>
           <item row="10" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_9">
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="extendedUpscales">
+              <property name="text">
+               <string>Extended Upscaling Multipliers</string>
+              </property>
+             </widget>
+            </item>
             <item row="2" column="0">
              <widget class="QCheckBox" name="disableMailboxPresentation">
               <property name="text">
@@ -2145,31 +2152,17 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="skipPresentingDuplicateFrames">
-              <property name="text">
-               <string>Skip Presenting Duplicate Frames</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="1">
-             <widget class="QCheckBox" name="extendedUpscales">
+             <widget class="QCheckBox" name="spinCPUDuringReadbacks">
               <property name="text">
-               <string>Extended Upscaling Multipliers</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QCheckBox" name="spinGPUDuringReadbacks">
-              <property name="text">
-               <string>Spin GPU During Readbacks</string>
+               <string>Spin CPU During Readbacks</string>
               </property>
              </widget>
             </item>
             <item row="3" column="0">
-             <widget class="QCheckBox" name="spinCPUDuringReadbacks">
+             <widget class="QCheckBox" name="spinGPUDuringReadbacks">
               <property name="text">
-               <string>Spin CPU During Readbacks</string>
+               <string>Spin GPU During Readbacks</string>
               </property>
              </widget>
             </item>
