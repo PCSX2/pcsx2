@@ -151,6 +151,10 @@ void MainWindow::initialize()
 			ctx->updateTheme(); // Qt won't notice the style change without us touching the palette in some way
 		});
 	});
+	// The cocoa backing isn't initialized yet, delay this until stuff is set up with a `RunOnUIThread` call
+	QtHost::RunOnUIThread([this]{
+		CocoaTools::MarkHelpMenu(m_ui.menuHelp->toNSMenu());
+	});
 #endif
 	m_ui.setupUi(this);
 	setupAdditionalUi();
