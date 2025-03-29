@@ -84,7 +84,7 @@ namespace QtHost
 //////////////////////////////////////////////////////////////////////////
 // Local variable declarations
 //////////////////////////////////////////////////////////////////////////
-static std::unique_ptr<QTimer> s_settings_save_timer;
+static QTimer* s_settings_save_timer = nullptr;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
 static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
@@ -1404,7 +1404,7 @@ void QtHost::SaveSettings()
 	if (s_settings_save_timer)
 	{
 		s_settings_save_timer->deleteLater();
-		s_settings_save_timer.release();
+		s_settings_save_timer = nullptr;
 	}
 }
 
@@ -1420,10 +1420,21 @@ void Host::CommitBaseSettingChanges()
 	if (s_settings_save_timer)
 		return;
 
-	s_settings_save_timer = std::make_unique<QTimer>();
-	s_settings_save_timer->connect(s_settings_save_timer.get(), &QTimer::timeout, &QtHost::SaveSettings);
+	s_settings_save_timer = new QTimer;
+	s_settings_save_timer->connect(s_settings_save_timer, &QTimer::timeout, &QtHost::SaveSettings);
 	s_settings_save_timer->setSingleShot(true);
 	s_settings_save_timer->start(SETTINGS_SAVE_DELAY);
+
+	static bool connected = false;
+	if (!connected)
+	{
+		QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, []() {
+			delete s_settings_save_timer;
+			s_settings_save_timer = nullptr;
+		});
+
+		connected = true;
+	}
 }
 
 bool QtHost::InBatchMode()
