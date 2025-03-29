@@ -12,14 +12,9 @@
 
 struct BreakPointCond
 {
-	DebugInterface* debug;
+	DebugInterface* debug = nullptr;
 	PostfixExpression expression;
 	std::string expressionString;
-
-	BreakPointCond()
-		: debug(NULL)
-	{
-	}
 
 	u32 Evaluate()
 	{
@@ -33,17 +28,10 @@ struct BreakPointCond
 
 struct BreakPoint
 {
-	BreakPoint()
-		: addr(0)
-		, enabled(false)
-		, temporary(false)
-		, hasCond(false)
-	{
-	}
-
-	u32 addr;
-	bool enabled;
-	bool temporary;
+	u32 addr = 0;
+	bool enabled = false;
+	bool temporary = false;
+	bool stepping = false;
 
 	bool hasCond;
 	BreakPointCond cond;
@@ -120,7 +108,8 @@ public:
 	static bool IsAddressBreakPoint(BreakPointCpu cpu, u32 addr);
 	static bool IsAddressBreakPoint(BreakPointCpu cpu, u32 addr, bool* enabled);
 	static bool IsTempBreakPoint(BreakPointCpu cpu, u32 addr);
-	static void AddBreakPoint(BreakPointCpu cpu, u32 addr, bool temp = false, bool enabled = true);
+	static bool IsSteppingBreakPoint(BreakPointCpu cpu, u32 addr);
+	static void AddBreakPoint(BreakPointCpu cpu, u32 addr, bool temp = false, bool enabled = true, bool stepping = false);
 	static void RemoveBreakPoint(BreakPointCpu cpu, u32 addr);
 	static void ChangeBreakPoint(BreakPointCpu cpu, u32 addr, bool enable);
 	static void ClearAllBreakPoints();

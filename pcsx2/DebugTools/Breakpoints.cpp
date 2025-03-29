@@ -172,7 +172,13 @@ bool CBreakPoints::IsTempBreakPoint(BreakPointCpu cpu, u32 addr)
 	return bp != INVALID_BREAKPOINT;
 }
 
-void CBreakPoints::AddBreakPoint(BreakPointCpu cpu, u32 addr, bool temp, bool enabled)
+bool CBreakPoints::IsSteppingBreakPoint(BreakPointCpu cpu, u32 addr)
+{
+	const size_t bp = FindBreakpoint(cpu, addr, true, true);
+	return bp != INVALID_BREAKPOINT && breakPoints_[bp].stepping;
+}
+
+void CBreakPoints::AddBreakPoint(BreakPointCpu cpu, u32 addr, bool temp, bool enabled, bool stepping)
 {
 	const size_t bp = FindBreakpoint(cpu, addr, true, temp);
 	if (bp == INVALID_BREAKPOINT)
@@ -180,6 +186,7 @@ void CBreakPoints::AddBreakPoint(BreakPointCpu cpu, u32 addr, bool temp, bool en
 		BreakPoint pt;
 		pt.enabled = enabled;
 		pt.temporary = temp;
+		pt.stepping = stepping;
 		pt.addr = addr;
 		pt.cpu = cpu;
 
