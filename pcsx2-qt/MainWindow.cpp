@@ -108,6 +108,11 @@ MainWindow::MainWindow()
 	pxAssert(!g_main_window);
 	g_main_window = this;
 
+#ifndef _WIN32
+	bool enable_global_menus = Host::GetBaseBoolSettingValue("UI", "GlobalMenus", true);
+	QGuiApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, !enable_global_menus);
+#endif
+
 	//  Native window rendering is broken in wayland.
 	//  Let's work around it by disabling it for every widget besides
 	//  DisplayWidget.
@@ -1829,6 +1834,15 @@ void MainWindow::onLanguageChanged()
 	});
 }
 
+void MainWindow::onGlobalMenusChanged()
+{
+	recreate();
+
+	QtHost::RunOnUIThread([] {
+		g_main_window->doSettings("Interface");
+	});
+}
+
 void MainWindow::onInputRecNewActionTriggered()
 {
 	const bool wasPaused = s_vm_paused;
@@ -2683,8 +2697,11 @@ SettingsWindow* MainWindow::getSettingsWindow()
 	if (!m_settings_window)
 	{
 		m_settings_window = new SettingsWindow();
-		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::onThemeChanged);
-		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, &MainWindow::onLanguageChanged);
+
+		InterfaceSettingsWidget* widget = m_settings_window->getInterfaceSettingsWidget();
+		connect(widget, &InterfaceSettingsWidget::themeChanged, this, &MainWindow::onThemeChanged);
+		connect(widget, &InterfaceSettingsWidget::languageChanged, this, &MainWindow::onLanguageChanged);
+		connect(widget, &InterfaceSettingsWidget::globalMenusChanged, this, &MainWindow::onGlobalMenusChanged);
 		connect(m_settings_window->getGameListSettingsWidget(), &GameListSettingsWidget::preferEnglishGameListChanged, this, [] {
 			g_main_window->m_game_list_widget->refreshGridCovers();
 		});

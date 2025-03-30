@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>698</width>
-    <height>512</height>
+    <height>574</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -138,15 +138,18 @@
       <string>Preferences</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="1">
+       <widget class="QComboBox" name="language"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="theme"/>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="languageLabel">
         <property name="text">
          <string>Language:</string>
         </property>
        </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="language"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="themeLabel">
@@ -155,8 +158,12 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="theme"/>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="globalMenus">
+        <property name="text">
+         <string>Enable Global Menus</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -215,7 +222,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
+      <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>

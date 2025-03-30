@@ -108,6 +108,13 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "UI", "Language", QtHost::GetDefaultLanguage());
 	connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit languageChanged(); });
 
+#ifndef _WIN32
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.globalMenus, "UI", "GlobalMenus", true);
+	connect(m_ui.globalMenus, &QCheckBox::checkStateChanged, [this]() { emit globalMenusChanged(); });
+#else
+	m_ui.globalMenus->hide();
+#endif
+
 	// Per-game settings is special, we don't want to bind it if we're editing per-game settings.
 	if (!dialog->isPerGameSettings())
 	{
@@ -181,6 +188,9 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 	dialog->registerWidgetHelp(
 		m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"),
 		tr("Prevents the main window from being resized."));
+	dialog->registerWidgetHelp(
+		m_ui.globalMenus, tr("Enable Global Menus"), tr("Checked"),
+		tr("Display menu bars in a system-wide location if possible rather than at the top of each window."));
 
 	onRenderToSeparateWindowChanged();
 }
