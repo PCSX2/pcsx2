@@ -1654,7 +1654,7 @@ SCAJ-20076:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-Unk"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
@@ -1667,7 +1667,7 @@ SCAJ-20077:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-Unk"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
@@ -1826,7 +1826,7 @@ SCAJ-20105:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-Unk"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
     cpuSpriteRenderBW: 2 # Fixes broken water on "Upper Sea" level.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -1941,9 +1941,7 @@ SCAJ-20121:
   name: "Armored Core - Formula Front"
   region: "NTSC-Unk"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 1 # Fixes broken shadow caused by HPO 1.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 5 # Fixes misaligned blur.
 SCAJ-20122:
   name: "Swords of Destiny"
   region: "NTSC-Unk"
@@ -7203,7 +7201,7 @@ SCKA-20047:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
     cpuSpriteRenderBW: 2 # Fixes broken water on "Upper Sea" level.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -23809,7 +23807,7 @@ SLES-53819:
   name: "Armored Core - Nine Breaker"
   region: "PAL-E"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
     cpuSpriteRenderBW: 2 # Fixes broken water on "Upper Sea" level.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -29509,7 +29507,7 @@ SLES-82036:
   name: "Armored Core - Nexus [Disc 1]"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLES-82036"
@@ -29518,7 +29516,7 @@ SLES-82037:
   name: "Armored Core - Nexus [Disc 2]"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLES-82036"
@@ -30598,7 +30596,7 @@ SLKA-25201:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLKA-25201"
@@ -30607,7 +30605,7 @@ SLKA-25202:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLKA-25201"
@@ -30925,9 +30923,7 @@ SLKA-25270:
   name: "Armored Core - Formula Front"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 1 # Fixes broken shadow caused by HPO 1.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 5 # Fixes misaligned blur.
 SLKA-25271:
   name: "Harry Potter and the Order of the Phoenix"
   region: "NTSC-K"
@@ -56797,7 +56793,7 @@ SLPS-25338:
   name-en: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
@@ -56812,7 +56808,7 @@ SLPS-25339:
   name-en: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
@@ -57265,7 +57261,7 @@ SLPS-25408:
   name-en: "Armored Core - Nine Breaker"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
     cpuSpriteRenderBW: 2 # Fixes broken water on "Upper Sea" level.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -57590,9 +57586,7 @@ SLPS-25461:
   name-en: "Armored Core - Formula Front"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
-    cpuSpriteRenderBW: 1 # Fixes broken shadow caused by HPO 1.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 5 # Fixes misaligned blur.
 SLPS-25462:
   name: "アーマード・コア ラストレイヴン"
   name-sort: "あーまーどこあ らすとれいゔん"
@@ -60857,7 +60851,7 @@ SLPS-73202:
   name-en: "Armored Core - Nexus [Disc 1] [PlayStation2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
@@ -60872,7 +60866,7 @@ SLPS-73203:
   name-en: "Armored Core - Nexus [Disc 2] [PlayStation2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
@@ -66576,7 +66570,7 @@ SLUS-20986:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLUS-20986"
@@ -67150,7 +67144,7 @@ SLUS-21079:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLUS-20986"
@@ -67828,7 +67822,7 @@ SLUS-21200:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur.
+    halfPixelOffset: 5 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
     cpuSpriteRenderBW: 2 # Fixes broken water on "Upper Sea" level.
     cpuSpriteRenderLevel: 2 # Needed for above.
