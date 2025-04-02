@@ -3173,6 +3173,11 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_IMAGES,
 				TRANSLATE_SV("VMManager", "Mipmapping is disabled. This may break rendering in some games."));
 		}
+		if (EmuConfig.GS.UseDebugDevice)
+		{
+			append(ICON_FA_BUG,
+				TRANSLATE_SV("VMManager", "Debug device is enabled. This will massively reduce performance."));
+		}
 		static bool render_change_warn = false;
 		if (EmuConfig.GS.Renderer != GSRendererType::Auto && EmuConfig.GS.Renderer != GSRendererType::SW && !render_change_warn)
 		{
