@@ -230,7 +230,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 
 			// GPU
 			text.clear();
-			text.append_format("GPU: {}", g_gs_device->GetName());
+			text.append_format("GPU: {}{}", g_gs_device->GetName(), GSConfig.UseDebugDevice ? " (Debug)" : "");
 			DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 		}
 
