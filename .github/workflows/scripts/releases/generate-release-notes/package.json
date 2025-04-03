@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@octokit/plugin-retry": "^3.0.9",
-    "@octokit/plugin-throttling": "^3.5.2",
+    "@octokit/plugin-throttling": "^9.6.0",
     "@octokit/rest": "^21.1.1"
   }
 }
