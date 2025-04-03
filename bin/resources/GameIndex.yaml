@@ -23409,7 +23409,7 @@ SLES-53702:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes blurriness.
+    halfPixelOffset: 5 # Fixes blurriness.
 SLES-53703:
   name: "Peter Jackson's King Kong - The Official Game of the Movie"
   name-sort: "King Kong, Peter Jackson's - The Official Game of the Movie"
@@ -23643,7 +23643,7 @@ SLES-53756:
   name: "Resident Evil 4"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes blurriness.
+    halfPixelOffset: 5 # Fixes blurriness.
 SLES-53758:
   name: "Sniper Elite [Pre-Production]"
   region: "PAL-E"
@@ -31588,7 +31588,7 @@ SLKA-25410:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes blurriness.
+    halfPixelOffset: 5 # Fixes blurriness.
 SLKA-25411:
   name: "Need for Speed - ProStreet"
   region: "NTSC-K"
@@ -67457,7 +67457,7 @@ SLUS-21134:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes blurriness.
+    halfPixelOffset: 5 # Fixes blurriness.
 SLUS-21135:
   name: "MVP Baseball 2005"
   region: "NTSC-U"
@@ -73016,7 +73016,7 @@ SLUS-29169:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes blurriness.
+    halfPixelOffset: 5 # Fixes blurriness.
 SLUS-29170:
   name: "Total Overdose - A Gunslinger's Tale in Mexico [Demo]"
   region: "NTSC-U"
