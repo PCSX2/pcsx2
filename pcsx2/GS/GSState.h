@@ -234,6 +234,8 @@ public:
 	GSVector4i temp_draw_rect = {};
 	std::unique_ptr<GSDumpBase> m_dump;
 	bool m_scissor_invalid = false;
+	bool m_quad_check_valid = false;
+	bool m_are_quads = false;
 	bool m_nativeres = false;
 	bool m_mipmap = false;
 	bool m_texflush_flag = false;
@@ -439,7 +441,7 @@ public:
 
 	void DumpVertices(const std::string& filename);
 
-	bool TrianglesAreQuads(bool shuffle_check = false) const;
+	bool TrianglesAreQuads(bool shuffle_check = false);
 	PRIM_OVERLAP PrimitiveOverlap();
 	bool SpriteDrawWithoutGaps();
 	void CalculatePrimitiveCoversWithoutGaps();
