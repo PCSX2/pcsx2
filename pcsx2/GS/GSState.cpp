@@ -1758,6 +1758,7 @@ void GSState::FlushPrim()
 
 		// Skip draw if Z test is enabled, but set to fail all pixels.
 		const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
+		m_quad_check_valid = false;
 
 		if (!skip_draw)
 			Draw();
@@ -2879,11 +2880,17 @@ void GSState::GrowVertexBuffer()
 	m_index.buff = index;
 }
 
-bool GSState::TrianglesAreQuads(bool shuffle_check) const
+bool GSState::TrianglesAreQuads(bool shuffle_check)
 {
 	// If this is a quad, there should only be two distinct values for both X and Y, which
 	// also happen to be the minimum/maximum bounds of the primitive.
+	if (!shuffle_check && m_quad_check_valid)
+		return m_are_quads;
+
 	const GSVertex* const v = m_vertex.buff;
+	m_are_quads = false;
+	m_quad_check_valid = !shuffle_check;
+
 	for (u32 idx = 0; idx < m_index.tail; idx += 6)
 	{
 		const u16* const i = m_index.buff + idx;
@@ -2906,15 +2913,44 @@ bool GSState::TrianglesAreQuads(bool shuffle_check) const
 				return false;
 		}
 		// Degenerate triangles should've been culled already, so we can check indices.
-		u32 extra_verts = 0;
-		for (u32 j = 3; j < 6; j++)
+		// This doesn't really make much sense when it's a triangle strip as it will always have 1 extra vert, so check for distinct values for them.
+		if (PRIM->PRIM != GS_TRIANGLESTRIP)
 		{
-			const u16 tri2_idx = i[j];
-			if (tri2_idx != i[0] && tri2_idx != i[1] && tri2_idx != i[2])
-				extra_verts++;
+			u32 extra_verts = 0;
+			for (u32 j = 3; j < 6; j++)
+			{
+				const u16 tri2_idx = i[j];
+				if (tri2_idx != i[0] && tri2_idx != i[1] && tri2_idx != i[2])
+					extra_verts++;
+			}
+			if (extra_verts == 1)
+				continue;
 		}
-		if (extra_verts == 1)
-			continue;
+		else if (m_index.tail == 6)
+		{
+			const int first_X = m_vertex.buff[m_index.buff[0]].XYZ.X;
+			const int first_Y = m_vertex.buff[m_index.buff[0]].XYZ.Y;
+			const int second_X = m_vertex.buff[m_index.buff[1]].XYZ.X;
+			const int second_Y = m_vertex.buff[m_index.buff[1]].XYZ.Y;
+			const int third_X = m_vertex.buff[m_index.buff[2]].XYZ.X;
+			const int third_Y = m_vertex.buff[m_index.buff[2]].XYZ.Y;
+			const int new_X = m_vertex.buff[m_index.buff[5]].XYZ.X;
+			const int new_Y = m_vertex.buff[m_index.buff[5]].XYZ.Y;
+
+			const int middle_Y = (second_Y >= third_Y) ? (third_Y + ((second_Y - third_Y) / 2)) : (second_Y + ((third_Y - second_Y) / 2));
+			const int middle_X = (second_X >= third_X) ? (third_X + ((second_X - third_X) / 2)) : (second_X + ((third_X - second_X) / 2));
+			const bool first_lt_X = first_X <= middle_X;
+			const bool first_lt_Y = first_Y <= middle_Y;
+			const bool new_lt_X = new_X <= middle_X;
+			const bool new_lt_Y = new_Y <= middle_Y;
+
+			// Check if verts are on the same side. Not totally accurate, but should be good enough.
+			if (first_lt_X == new_lt_X && new_lt_Y == first_lt_Y)
+					return false;
+
+			m_prim_overlap = PRIM_OVERLAP_NO;
+			break;
+		}
 
 		// As a fallback, they might've used different vertices with a tri list, not strip.
 		// Note that this won't work unless the quad is axis-aligned.
@@ -2942,6 +2978,7 @@ bool GSState::TrianglesAreQuads(bool shuffle_check) const
 		}
 	}
 
+	m_are_quads = true;
 	return true;
 }
 
@@ -3100,6 +3137,46 @@ bool GSState::SpriteDrawWithoutGaps()
 					return false;
 			}
 		}
+
+		return true;
+	}
+
+	// Assume it's small sprites. NFSMW and a few other games draw 32x32 sprites in rows to fill the screen.
+	if (((first_dpY + 8) >> 4) == GSLocalMemory::m_psm[m_context->FRAME.PSM].pgs.y)
+	{
+		int lastXEdge = std::max(v[1].XYZ.X, v[0].XYZ.X);
+		int lastYEdge = std::max(v[1].XYZ.Y, v[0].XYZ.Y);
+		for (u32 i = 2; i < m_vertex.next; i += 2)
+		{
+			const int dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
+			
+			if (first_dpY != dpY)
+				return false;
+
+			const int newYStart = std::min(v[i + 1].XYZ.Y, v[i].XYZ.Y);
+			const int newXEdge = std::max(v[i + 1].XYZ.X, v[i].XYZ.X);
+			if (lastYEdge != newYStart)
+			{
+				if (newYStart != static_cast<int>(m_context->XYOFFSET.OFY))
+					return false;
+
+				const int newXStart = std::min(v[i + 1].XYZ.X, v[i].XYZ.X);
+
+				if (newXStart != lastXEdge)
+					return false;
+			}
+			else
+			{
+				const int dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
+				if (first_dpX != dpX || lastXEdge != newXEdge)
+					return false;
+			}
+
+			lastXEdge = newXEdge;
+			lastYEdge = std::max(v[i + 1].XYZ.Y, v[i].XYZ.Y);
+		}
+
+		m_prim_overlap = PRIM_OVERLAP_NO;
 
 		return true;
 	}
