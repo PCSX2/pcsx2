@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 set -e
+export CMAKE_POLICY_DEFAULT_CMP0174=NEW
+export CMAKE_POLICY_DEFAULT_CMP0177=NEW
 
 if [ "$#" -ne 1 ]; then
     echo "Syntax: $0 <output directory>"
@@ -39,10 +41,6 @@ export ANDROID_SDK=$ANDROID_SDK_PATH
 export ANDROID_NDK=$ANDROID_NDK_PATH
 export ANDROID_API=$ANDROID_API_LEVEL
 export ANDROID_ARCH=$ANDROID_ARCH
-
-# Set up QT for cross compile
-QT_HOST_PATH="/usr/lib/qt"
-Qt6HostInfo_DIR="/usr/lib/cmake/Qt6HostInfo"
 
 # Ensure you're using the Android cross-compilation toolchain
 export PATH=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
@@ -210,6 +208,52 @@ cmake --build build --parallel
 ninja -C build install
 cd ..
 
+echo "Building Freetype..."
+git clone https://gitlab.freedesktop.org/freetype/freetype.git
+cd freetype
+./autogen.sh
+./configure --prefix="$INSTALLDIR" \
+	 --host=arm-linux-androideabi \
+	 --build=x86_64-linux-gnu \
+	 --with-android-ndk=$ANDROID_NDK\
+	 --with-zlib=yes \
+	 --with-png=yes \
+	 --with-harfbuzz=no
+
+make && make install
+cd ..
+
+echo "Building Harfbuzz..."
+git clone https://github.com/harfbuzz/harfbuzz.git
+cd harfbuzz
+cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_PATH/build/cmake/android.toolchain.cmake \
+	-DANDROID_ABI=arm64-v8a \
+	-DANDROID_NATIVE_API_LEVEL=21 \
+	-DCMAKE_PREFIX_PATH="$INSTALLDIR" \
+	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
+	-DBUILD_SHARED_LIBS=ON \
+    -Dcoretext=disabled \
+    -Dfreetype=enabled \
+    -Dglib=disabled \
+	-B build \
+	-G Ninja 
+cmake --build build --parallel
+ninja -C build install
+cd ..
+
+git clone https://github.com/openssl/openssl.git
+cd openssl
+git checkout openssl-3.2.2
+./Configure android-arm64 no-shared \
+    -D__ANDROID_API__=$ANDROID_API \
+    --prefix="$INSTALLDIR" \
+    --with-zlib-include="$INSTALLDIR/include" \
+    --with-zlib-lib="$INSTALLDIR/lib"
+make -j$(nproc) SHLIB_VERSION_NUMBER= SHLIB_EXT=_1_1.so build_libs
+make install
+cd ..
+
 echo "Building SDL..."
 rm -fr "$SDL"
 tar xf "$SDL.tar.gz"
@@ -238,17 +282,20 @@ echo "Building Qt Base..."
 rm -fr "qtbase-everywhere-src-$QT"
 tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
+mkdir build-host
+cd build-host
+../configure -developer-build -nomake tests -nomake examples
+cmake --build . --target host_tools
+cd ..
 mkdir build
-cd build
+cd ./build
 # Configure Qt for Android
 ../configure -prefix "$INSTALLDIR" \
     -release \
     -android-ndk "$ANDROID_NDK" \
     -android-sdk "$ANDROID_SDK" \
     -android-abis "$ANDROID_ARCH" \
-	-qt-host-path "$QT_HOST_PATH" \
-	-DQt6HostInfo_DIR="$Qt6HostInfo_DIR" \ 
-    -platform android-clang \
+	-qt-host-path "../build-host" \
     -qt-doubleconversion \
     -ssl -openssl-runtime \
     -opengl es2 \
@@ -352,7 +399,17 @@ rm -fr "KDDockWidgets-$KDDOCKWIDGETS"
 tar xf "KDDockWidgets-$KDDOCKWIDGETS.tar.gz"
 cd "KDDockWidgets-$KDDOCKWIDGETS"
 patch -p1 < "$SCRIPTDIR/../common/kddockwidgets-dodgy-include.patch"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DKDDockWidgets_QT6=true -DKDDockWidgets_EXAMPLES=false -DKDDockWidgets_FRONTENDS=qtwidgets -B build -G Ninja
+cmake -DCMAKE_BUILD_TYPE=Release 
+	-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_PATH/build/cmake/android.toolchain.cmake \
+	-DANDROID_ABI=arm64-v8a \
+	-DANDROID_NATIVE_API_LEVEL=21 \
+	-DCMAKE_PREFIX_PATH="$INSTALLDIR" 
+	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" 
+	-DKDDockWidgets_QT6=true 
+	-DKDDockWidgets_EXAMPLES=false 
+	-DKDDockWidgets_FRONTENDS=qtwidgets 
+	-B build 
+	-G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
@@ -370,7 +427,17 @@ tar xf "../../shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz"
 mv "SPIRV-Tools-$SHADERC_SPIRVTOOLS" "spirv-tools"
 cd ..
 patch -p1 < "$SCRIPTDIR/../common/shaderc-changes.patch"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build -G Ninja
+cmake -DCMAKE_BUILD_TYPE=Release 
+	-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_PATH/build/cmake/android.toolchain.cmake \
+	-DANDROID_ABI=arm64-v8a \
+	-DANDROID_NATIVE_API_LEVEL=21 \
+	-DCMAKE_PREFIX_PATH="$INSTALLDIR" 
+	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" 
+	-DSHADERC_SKIP_TESTS=ON 
+	-DSHADERC_SKIP_EXAMPLES=ON 
+	-DSHADERC_SKIP_COPYRIGHT_CHECK=ON 
+	-B build 
+	-G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
