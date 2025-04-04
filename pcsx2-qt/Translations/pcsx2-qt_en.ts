@@ -4984,7 +4984,7 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Debugger/DebuggerWindow.ui" line="157"/>
-        <location filename="../Debugger/DebuggerWindow.cpp" line="303"/>
+        <location filename="../Debugger/DebuggerWindow.cpp" line="304"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5110,7 +5110,7 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.cpp" line="337"/>
+        <location filename="../Debugger/DebuggerWindow.cpp" line="338"/>
         <source>Pause</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5292,53 +5292,56 @@ Do you want to overwrite?</source>
 <context>
     <name>DockManager</name>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="113"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="111"/>
         <source>No Layouts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="366"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="360"/>
         <source>Add Another...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="674"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="574"/>
         <source>Edit Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="701"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="579"/>
         <source>Reset Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="711"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="629"/>
         <source>Are you sure you want to reset layout &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="712"/>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="735"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="630"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="653"/>
         <source>Confirmation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="727"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="585"/>
         <source>Delete Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="734"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="652"/>
         <source>Are you sure you want to delete layout &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>DockMenuBar</name>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="890"/>
+        <location filename="../Debugger/Docking/DockMenuBar.cpp" line="132"/>
         <source>Layout Locked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="895"/>
+        <location filename="../Debugger/Docking/DockMenuBar.cpp" line="137"/>
         <source>Layout Unlocked</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5346,52 +5349,52 @@ Do you want to overwrite?</source>
 <context>
     <name>DockTabBar</name>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="166"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="175"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="177"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="186"/>
         <source>Rename Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="177"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="186"/>
         <source>New name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="183"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="192"/>
         <source>Invalid Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="183"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="192"/>
         <source>The specified name is too long.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="190"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="199"/>
         <source>Reset Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="204"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="213"/>
         <source>Primary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="219"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="228"/>
         <source>Set Target</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="240"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="249"/>
         <source>Inherit From Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="248"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="257"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
