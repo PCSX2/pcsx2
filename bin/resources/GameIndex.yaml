@@ -7651,6 +7651,7 @@ SCKA-20120:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes vendor and other bloom.
     autoFlush: 2 # Fixes missing bloom and shadow definition.
+    halfPixelOffset: 5 # Fixes misaligned bloom. 
 SCKA-20124:
   name: "Piposarugetchu 3" # Ape Escape 3
   region: "NTSC-K"
@@ -12434,6 +12435,7 @@ SCUS-97615:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes vendor and other bloom.
     autoFlush: 2 # Fixes missing bloom and shadow definition.
+    halfPixelOffset: 5 # Fixes misaligned bloom. 
 SCUS-97616:
   name: "SingStar '80s"
   region: "NTSC-U"
@@ -27628,6 +27630,7 @@ SLES-55019:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes vendor and other bloom.
     autoFlush: 2 # Fixes missing bloom and shadow definition.
+    halfPixelOffset: 5 # Fixes misaligned bloom. 
 SLES-55020:
   name: "Die Simpsons - Das Spiel"
   region: "PAL-G"
