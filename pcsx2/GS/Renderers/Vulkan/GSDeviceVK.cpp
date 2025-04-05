@@ -5641,6 +5641,10 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	PipelineSelector& pipe = m_pipeline_selector;
 	UpdateHWPipelineSelector(config, pipe);
 
+	// If we don't have a barrier but the texture was drawn to last draw, end the pass to insert a barrier.
+	if (InRenderPass() && !pipe.IsRTFeedbackLoop() && (config.tex == m_current_render_target || config.tex == m_current_depth_target))
+		EndRenderPass();
+
 	// now blit the hdr texture back to the original target
 	if (hdr_rt)
 	{
