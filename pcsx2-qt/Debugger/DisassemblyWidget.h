@@ -80,6 +80,7 @@ private:
 	bool m_goToProgramCounterOnPause = true;
 	DisassemblyManager m_disassemblyManager;
 
+	QString GetDisassemblyTitleLine();
 	inline QString DisassemblyStringFromAddress(u32 address, QFont font, u32 pc, bool selected);
 	QColor GetAddressFunctionColor(u32 address);
 	enum class SelectionInfo
