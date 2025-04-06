@@ -116,7 +116,7 @@ namespace
 			// draw default item
 			QStyleOptionViewItem opt = option;
 			initStyleOption(&opt, index);
-			opt.icon = QIcon();
+			opt.type = QStyleOption::SO_Default;
 			QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter, 0);
 
 			const QRect r = option.rect;
