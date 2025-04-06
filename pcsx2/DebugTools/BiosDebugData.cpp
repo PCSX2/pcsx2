@@ -69,3 +69,29 @@ std::vector<std::unique_ptr<BiosThread>> getIOPThreads()
 
 	return threads;
 }
+
+std::vector<IopMod> getIOPModules()
+{
+	u32 maddr = iopMemRead32(CurrentBiosInformation.iopModListAddr);
+	std::vector<IopMod> modlist;
+
+	while (maddr != 0)
+	{
+		IopMod mod;
+
+		mod.name = iopMemReadString(iopMemRead32(maddr + 4));
+		mod.version = iopMemRead16(maddr + 8);
+		mod.entry = iopMemRead32(maddr + 0x10);
+		mod.gp = iopMemRead32(maddr + 0x14);
+		mod.text_addr = iopMemRead32(maddr + 0x18);
+		mod.text_size = iopMemRead32(maddr + 0x1c);
+		mod.data_size = iopMemRead32(maddr + 0x20);
+		mod.bss_size = iopMemRead32(maddr + 0x24);
+
+		modlist.push_back(mod);
+
+		maddr = iopMemRead32(maddr);
+	}
+
+	return modlist;
+}
