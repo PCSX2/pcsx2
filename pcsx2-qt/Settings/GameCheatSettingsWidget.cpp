@@ -283,6 +283,7 @@ QList<QStandardItem*> GameCheatSettingsWidget::populateTreeViewRow(const Patch::
 
 	QStandardItem* authorItem = new QStandardItem(QString::fromStdString(pi.author));
 	QStandardItem* descriptionItem = new QStandardItem(QString::fromStdString(pi.description));
+	descriptionItem->setToolTip(QString::fromStdString(pi.description));
 
 	items.push_back(nameItem);
 	items.push_back(authorItem);
