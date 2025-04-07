@@ -361,10 +361,11 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 	m_disassemblyManager.analyze(m_visibleStart, m_disassemblyManager.getNthNextAddress(m_visibleStart, m_visibleRows) - m_visibleStart);
 
 	const u32 curPC = cpu().getPC(); // Get the PC here, because it'll change when we are drawing and make it seem like there are two PCs
-		
+
 	// Format and draw title line on first row
 	QString titleLineString = GetDisassemblyTitleLine();
-	painter.fillRect(0, 0 * m_rowHeight, w, m_rowHeight, this->palette().highlight());									  									 	
+	QColor titleLineColor = GetDisassemblyTitleLineColor();
+	painter.fillRect(0, 0 * m_rowHeight, w, m_rowHeight, titleLineColor);
 	painter.drawText(2, 0 * m_rowHeight, w, m_rowHeight, Qt::AlignLeft, titleLineString);
 
 	// Prepare to draw the disassembly rows
@@ -531,7 +532,7 @@ void DisassemblyWidget::mousePressEvent(QMouseEvent* event)
 	const u32 selectedRowIndex = static_cast<int>(event->position().y()) / m_rowHeight;
 
 	// Only process if a row other than the column title row was clicked
-	if(selectedRowIndex > 0) 
+	if (selectedRowIndex > 0)
 	{
 		// Calculate address of selected row. Index minus one for title row.
 		const u32 selectedAddress = ((selectedRowIndex - 1) * 4) + m_visibleStart;
@@ -572,7 +573,7 @@ void DisassemblyWidget::mouseDoubleClickEvent(QMouseEvent* event)
 	const u32 selectedRowIndex = static_cast<int>(event->position().y()) / m_rowHeight;
 
 	// Only process if a row other than the column title row was double clicked
-	if(selectedRowIndex > 0) 
+	if (selectedRowIndex > 0)
 	{
 		// Calculate address of selected row. Index minus one for title row.
 		toggleBreakpoint(((selectedRowIndex - 1) * 4) + m_visibleStart);
@@ -670,7 +671,7 @@ void DisassemblyWidget::openContextMenu(QPoint pos)
 		return;
 
 	// Dont open context menu when used on column title row
-	if(pos.y() / m_rowHeight == 0)
+	if (pos.y() / m_rowHeight == 0)
 		return;
 
 	QMenu* menu = new QMenu(this);
@@ -780,34 +781,44 @@ QString DisassemblyWidget::GetDisassemblyTitleLine()
 	// Disassembly column title line based on format created by DisassemblyStringFromAddress()
 	QString title_line_string;
 
-	// Determine layout of disassembly row. Layout depends on user setting "Show Instruction Bytes". 
+	// Determine layout of disassembly row. Layout depends on user setting "Show Instruction Bytes".
 	bool show_instruction_bytes = m_showInstructionBytes && cpu().isAlive();
-	if(show_instruction_bytes) 
+	if (show_instruction_bytes)
 	{
-		title_line_string = QString(" %1 %2 %3  %4");
+		title_line_string = QCoreApplication::translate("DisassemblyWidgetColumnTitle", " %1 %2 %3  %4");
 	}
 	else
 	{
-		title_line_string = QString(" %1 %2  %3");
+		title_line_string = QCoreApplication::translate("DisassemblyWidgetColumnTitle", " %1 %2  %3");
 	}
 
 	// First 2 chars in disassembly row is always for non-returning functions (NR)
-	// Do not display column title for this field. 
-	title_line_string = title_line_string.arg("  "); 
+	// Do not display column title for this field.
+	title_line_string = title_line_string.arg("  ");
 
 	// Second column title is always address of instruction
-	title_line_string = title_line_string.arg("Location"); 
+	title_line_string = title_line_string.arg(QCoreApplication::translate("DisassemblyWidgetColumnTitle", "Location"));
 
 	// If user specified to "Show Instruction Bytes", third column is opcode + args
-	if(show_instruction_bytes)
+	if (show_instruction_bytes)
 	{
-		title_line_string = title_line_string.arg("Bytes   ");  
+		title_line_string = title_line_string.arg(QCoreApplication::translate("DisassemblyWidgetColumnTitle", "Bytes   "));
 	}
-	
+
 	// Last column title is always disassembled instruction
-	title_line_string = title_line_string.arg("Instruction"); 
-	
+	title_line_string = title_line_string.arg(QCoreApplication::translate("DisassemblyWidgetColumnTitle", "Instruction"));
+
 	return title_line_string;
+}
+
+QColor DisassemblyWidget::GetDisassemblyTitleLineColor()
+{
+	// Determine color of column title line. Based on QFusionStyle.
+	QColor title_line_color = this->palette().button().color();
+	int title_line_color_val = qGray(title_line_color.rgb());
+	title_line_color = title_line_color.lighter(100 + qMax(1, (180 - title_line_color_val) / 6));
+	title_line_color.setHsv(title_line_color.hue(), title_line_color.saturation() * 0.75, title_line_color.value());
+	return title_line_color.lighter(104);
 }
 
 inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFont font, u32 pc, bool selected)
