@@ -1261,6 +1261,102 @@ namespace SettingWidgetBinder
 		widget->connect(widget, &QLineEdit::editingFinished, widget, std::move(value_changed));
 	}
 
+	static inline void BindWidgetToFileSetting(SettingsInterface* sif, QLineEdit* widget, QAbstractButton* browse_button,
+		QAbstractButton* open_button, QAbstractButton* reset_button, std::string section, std::string key, std::string default_value,
+		const char* filter, bool allow_pergame = false, bool use_relative = true)
+	{
+		using Accessor = SettingAccessor<QLineEdit>;
+
+		std::string current_path(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str()));
+		if (current_path.empty())
+			current_path = default_value;
+		else if (use_relative && !Path::IsAbsolute(current_path))
+			current_path = Path::Canonicalize(Path::Combine(EmuFolders::DataRoot, current_path));
+
+		const QString value(QString::fromStdString(current_path));
+		Accessor::setStringValue(widget, value);
+
+		if (!allow_pergame)
+		{
+			widget->setEnabled(false);
+			if (browse_button)
+				browse_button->setEnabled(false);
+			if (reset_button)
+				reset_button->setEnabled(false);
+			return;
+		}
+
+		auto value_changed = [widget, section = std::move(section), key = std::move(key), default_value, use_relative]() {
+			const std::string new_value(widget->text().toStdString());
+			if (!new_value.empty())
+			{
+				if (use_relative)
+				{
+					const std::string relative_path(Path::MakeRelative(new_value, EmuFolders::DataRoot));
+					Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), relative_path.c_str());
+				}
+				else
+				{
+					Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), new_value.c_str());
+				}
+
+				if (!FileSystem::FileExists(new_value.c_str()))
+				{
+					QMessageBox::critical(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Error"),
+						qApp->translate("SettingWidgetBinder", "File cannot be found."));
+				}
+
+				Host::CommitBaseSettingChanges();
+				return;
+			}
+			else
+			{
+				QMessageBox::critical(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Error"),
+					qApp->translate("SettingWidgetBinder", "File path cannot be empty."));
+			}
+
+			// reset to old value
+			std::string current_path(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str()));
+			if (current_path.empty())
+				current_path = default_value;
+			else if (use_relative && !Path::IsAbsolute(current_path))
+				current_path = Path::Canonicalize(Path::Combine(EmuFolders::DataRoot, current_path));
+
+			widget->setText(QString::fromStdString(current_path));
+		};
+
+		if (browse_button)
+		{
+			QObject::connect(browse_button, &QAbstractButton::clicked, browse_button, [widget, key, value_changed, filter]() {
+				const QString path(QDir::toNativeSeparators(QFileDialog::getOpenFileName(QtUtils::GetRootWidget(widget),
+					qApp->translate("SettingWidgetBinder", "Select File"), QString(), filter)));
+				if (path.isEmpty())
+					return;
+
+				widget->setText(path);
+				value_changed();
+			});
+		}
+		if (open_button)
+		{
+			QObject::connect(open_button, &QAbstractButton::clicked, open_button, [widget]() {
+				QString path(Accessor::getStringValue(widget));
+				if (!path.isEmpty())
+					QtUtils::OpenURL(QtUtils::GetRootWidget(widget), QUrl::fromLocalFile(path));
+			});
+		}
+		if (reset_button)
+		{
+			QObject::connect(
+				reset_button, &QAbstractButton::clicked, reset_button, [widget, default_value = std::move(default_value), value_changed]() {
+					widget->setText(QString::fromStdString(default_value));
+					value_changed();
+				});
+		}
+
+		widget->connect(widget, &QLineEdit::editingFinished, widget, std::move(value_changed));
+	}
+
 	// No need to pass a section or key since this is only used once and has six keys associated with it
 	static inline void BindWidgetToDateTimeSetting(SettingsInterface* sif, QDateTimeEdit* widget, std::string section)
 	{

@@ -1209,6 +1209,9 @@ struct Pcsx2Config
 		static constexpr u32 MAXIMUM_NOTIFICATION_DURATION = 30;
 		static constexpr u32 DEFAULT_NOTIFICATION_DURATION = 5;
 		static constexpr u32 DEFAULT_LEADERBOARD_DURATION = 10;
+		static constexpr const char* DEFAULT_INFO_SOUND_NAME = "sounds/achievements/message.wav";
+		static constexpr const char* DEFAULT_UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav";
+		static constexpr const char* DEFAULT_LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
 
 		BITFIELD32()
 		bool
@@ -1220,11 +1223,18 @@ struct Pcsx2Config
 			Notifications : 1,
 			LeaderboardNotifications : 1,
 			SoundEffects : 1,
+			InfoSound : 1,
+			UnlockSound : 1,
+			LBSubmitSound : 1,
 			Overlays : 1;
 		BITFIELD_END
 
 		u32 NotificationsDuration = DEFAULT_NOTIFICATION_DURATION;
 		u32 LeaderboardsDuration = DEFAULT_LEADERBOARD_DURATION;
+
+		std::string InfoSoundName;
+		std::string UnlockSoundName;
+		std::string LBSubmitSoundName;
 
 		AchievementsOptions();
 		void LoadSave(SettingsWrapper& wrap);
