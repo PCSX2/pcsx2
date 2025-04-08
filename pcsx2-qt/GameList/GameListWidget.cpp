@@ -222,6 +222,7 @@ void GameListWidget::initialize()
 	m_table_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	m_table_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
 	m_table_view->setItemDelegateForColumn(0, new GameListIconStyleDelegate(this));
+	m_table_view->setItemDelegateForColumn(8, new GameListIconStyleDelegate(this));
 
 	loadTableViewColumnVisibilitySettings();
 	loadTableViewColumnSortSettings();
