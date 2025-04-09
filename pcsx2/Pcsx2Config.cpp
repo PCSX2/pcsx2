@@ -1895,6 +1895,7 @@ Pcsx2Config::Pcsx2Config()
 	EnableRecordingTools = true;
 	EnableGameFixes = true;
 	InhibitScreensaver = true;
+	UseSavestateSelector = true;
 	BackupSavestate = true;
 	WarnAboutUnsafeSettings = true;
 	ManuallySetRealTimeClock = false;
