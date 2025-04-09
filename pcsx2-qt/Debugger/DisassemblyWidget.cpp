@@ -363,8 +363,8 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 	const u32 curPC = cpu().getPC(); // Get the PC here, because it'll change when we are drawing and make it seem like there are two PCs
 
 	// Format and draw title line on first row
-	QString titleLineString = GetDisassemblyTitleLine();
-	QColor titleLineColor = GetDisassemblyTitleLineColor();
+	const QString titleLineString = GetDisassemblyTitleLine();
+	const QColor titleLineColor = GetDisassemblyTitleLineColor();
 	painter.fillRect(0, 0 * m_rowHeight, w, m_rowHeight, titleLineColor);
 	painter.drawText(2, 0 * m_rowHeight, w, m_rowHeight, Qt::AlignLeft, titleLineString);
 
@@ -782,7 +782,7 @@ QString DisassemblyWidget::GetDisassemblyTitleLine()
 	QString title_line_string;
 
 	// Determine layout of disassembly row. Layout depends on user setting "Show Instruction Bytes".
-	bool show_instruction_bytes = m_showInstructionBytes && cpu().isAlive();
+	const bool show_instruction_bytes = m_showInstructionBytes && cpu().isAlive();
 	if (show_instruction_bytes)
 	{
 		title_line_string = QCoreApplication::translate("DisassemblyWidgetColumnTitle", " %1 %2 %3  %4");
@@ -815,7 +815,7 @@ QColor DisassemblyWidget::GetDisassemblyTitleLineColor()
 {
 	// Determine color of column title line. Based on QFusionStyle.
 	QColor title_line_color = this->palette().button().color();
-	int title_line_color_val = qGray(title_line_color.rgb());
+	const int title_line_color_val = qGray(title_line_color.rgb());
 	title_line_color = title_line_color.lighter(100 + qMax(1, (180 - title_line_color_val) / 6));
 	title_line_color.setHsv(title_line_color.hue(), title_line_color.saturation() * 0.75, title_line_color.value());
 	return title_line_color.lighter(104);
