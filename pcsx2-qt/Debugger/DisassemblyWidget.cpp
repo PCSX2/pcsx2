@@ -355,37 +355,48 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 	// Get the row height
 	m_rowHeight = fm.height() + 2;
 
-	// Find the amount of visible rows
-	m_visibleRows = h / m_rowHeight;
+	// Find the amount of visible disassembly rows. Minus 1 to not count column title row.
+	m_visibleRows = h / m_rowHeight - 1;
 
 	m_disassemblyManager.analyze(m_visibleStart, m_disassemblyManager.getNthNextAddress(m_visibleStart, m_visibleRows) - m_visibleStart);
 
-	// Draw the rows
+	const u32 curPC = cpu().getPC(); // Get the PC here, because it'll change when we are drawing and make it seem like there are two PCs
+
+	// Format and draw title line on first row
+	const QString titleLineString = GetDisassemblyTitleLine();
+	const QColor titleLineColor = GetDisassemblyTitleLineColor();
+	painter.fillRect(0, 0 * m_rowHeight, w, m_rowHeight, titleLineColor);
+	painter.drawText(2, 0 * m_rowHeight, w, m_rowHeight, Qt::AlignLeft, titleLineString);
+
+	// Prepare to draw the disassembly rows
 	bool inSelectionBlock = false;
 	bool alternate = m_visibleStart % 8;
 
-	const u32 curPC = cpu().getPC(); // Get the PC here, because it'll change when we are drawing and make it seem like there are two PCs
-
+	// Draw visible disassembly rows
 	for (u32 i = 0; i <= m_visibleRows; i++)
 	{
+		// Address of instruction being displayed on row
 		const u32 rowAddress = (i * 4) + m_visibleStart;
-		// Row backgrounds
 
+		// Row will be drawn at row index+1 to offset past title row
+		const u32 rowIndex = (i + 1) * m_rowHeight;
+
+		// Row backgrounds
 		if (inSelectionBlock || (m_selectedAddressStart <= rowAddress && rowAddress <= m_selectedAddressEnd))
 		{
-			painter.fillRect(0, i * m_rowHeight, w, m_rowHeight, this->palette().highlight());
+			painter.fillRect(0, rowIndex, w, m_rowHeight, this->palette().highlight());
 			inSelectionBlock = m_selectedAddressEnd != rowAddress;
 		}
 		else
 		{
-			painter.fillRect(0, i * m_rowHeight, w, m_rowHeight, alternate ? this->palette().base() : this->palette().alternateBase());
+			painter.fillRect(0, rowIndex, w, m_rowHeight, alternate ? this->palette().base() : this->palette().alternateBase());
 		}
 
 		// Row text
 		painter.setPen(GetAddressFunctionColor(rowAddress));
 		QString lineString = DisassemblyStringFromAddress(rowAddress, painter.font(), curPC, rowAddress == m_selectedAddressStart);
 
-		painter.drawText(2, i * m_rowHeight, w, m_rowHeight, Qt::AlignLeft, lineString);
+		painter.drawText(2, rowIndex, w, m_rowHeight, Qt::AlignLeft, lineString);
 
 		// Breakpoint marker
 		bool enabled;
@@ -394,11 +405,11 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 			if (enabled)
 			{
 				painter.setPen(Qt::green);
-				painter.drawText(2, i * m_rowHeight, w, m_rowHeight, Qt::AlignLeft, "\u25A0");
+				painter.drawText(2, rowIndex, w, m_rowHeight, Qt::AlignLeft, "\u25A0");
 			}
 			else
 			{
-				painter.drawText(2, i * m_rowHeight, w, m_rowHeight, Qt::AlignLeft, "\u2612");
+				painter.drawText(2, rowIndex, w, m_rowHeight, Qt::AlignLeft, "\u2612");
 			}
 		}
 		alternate = !alternate;
@@ -435,9 +446,10 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 			// Explaination
 			// ((branchLine.first - m_visibleStart) -> Find the amount of bytes from the top of the view
 			// / 4 -> Convert that into rowss in instructions
+			// + 1 -> Offset 1 to account for column title row
 			// * m_rowHeight -> convert that into rows in pixels
 			// + (m_rowHeight / 2) -> Add half a row in pixels to center the arrow
-			top = (((branchLine.first - m_visibleStart) / 4) * m_rowHeight) + (m_rowHeight / 2);
+			top = (((branchLine.first - m_visibleStart) / 4 + 1) * m_rowHeight) + (m_rowHeight / 2);
 		}
 
 		if (branchLine.second < m_visibleStart)
@@ -450,7 +462,7 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 		}
 		else
 		{
-			bottom = (((branchLine.second - m_visibleStart) / 4) * m_rowHeight) + (m_rowHeight / 2);
+			bottom = (((branchLine.second - m_visibleStart) / 4 + 1) * m_rowHeight) + (m_rowHeight / 2);
 		}
 
 		branchCount++;
@@ -467,7 +479,8 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 		if (top < 0) // first is not visible, but second is
 		{
 			painter.drawLine(x - 2, bottom, x + 2, bottom);
-			painter.drawLine(x + 2, bottom, x + 2, 0);
+			// Draw to first visible disassembly row so branch line is not drawn on title line
+			painter.drawLine(x + 2, bottom, x + 2, m_rowHeight);
 
 			if (branchLine.type == LINE_DOWN)
 			{
@@ -515,40 +528,56 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 
 void DisassemblyWidget::mousePressEvent(QMouseEvent* event)
 {
-	const u32 selectedAddress = (static_cast<int>(event->position().y()) / m_rowHeight * 4) + m_visibleStart;
-	if (event->buttons() & Qt::LeftButton)
+	// Calculate index of row that was clicked
+	const u32 selectedRowIndex = static_cast<int>(event->position().y()) / m_rowHeight;
+
+	// Only process if a row other than the column title row was clicked
+	if (selectedRowIndex > 0)
 	{
-		if (event->modifiers() & Qt::ShiftModifier)
+		// Calculate address of selected row. Index minus one for title row.
+		const u32 selectedAddress = ((selectedRowIndex - 1) * 4) + m_visibleStart;
+		if (event->buttons() & Qt::LeftButton)
 		{
-			if (selectedAddress < m_selectedAddressStart)
+			if (event->modifiers() & Qt::ShiftModifier)
+			{
+				if (selectedAddress < m_selectedAddressStart)
+				{
+					m_selectedAddressStart = selectedAddress;
+				}
+				else if (selectedAddress > m_visibleStart)
+				{
+					m_selectedAddressEnd = selectedAddress;
+				}
+			}
+			else
 			{
 				m_selectedAddressStart = selectedAddress;
-			}
-			else if (selectedAddress > m_visibleStart)
-			{
 				m_selectedAddressEnd = selectedAddress;
 			}
 		}
-		else
+		else if (event->buttons() & Qt::RightButton)
 		{
-			m_selectedAddressStart = selectedAddress;
-			m_selectedAddressEnd = selectedAddress;
+			if (m_selectedAddressStart == m_selectedAddressEnd)
+			{
+				m_selectedAddressStart = selectedAddress;
+				m_selectedAddressEnd = selectedAddress;
+			}
 		}
+		this->repaint();
 	}
-	else if (event->buttons() & Qt::RightButton)
-	{
-		if (m_selectedAddressStart == m_selectedAddressEnd)
-		{
-			m_selectedAddressStart = selectedAddress;
-			m_selectedAddressEnd = selectedAddress;
-		}
-	}
-	this->repaint();
 }
 
 void DisassemblyWidget::mouseDoubleClickEvent(QMouseEvent* event)
 {
-	toggleBreakpoint((static_cast<int>(event->position().y()) / m_rowHeight * 4) + m_visibleStart);
+	// Calculate index of row that was double clicked
+	const u32 selectedRowIndex = static_cast<int>(event->position().y()) / m_rowHeight;
+
+	// Only process if a row other than the column title row was double clicked
+	if (selectedRowIndex > 0)
+	{
+		// Calculate address of selected row. Index minus one for title row.
+		toggleBreakpoint(((selectedRowIndex - 1) * 4) + m_visibleStart);
+	}
 }
 
 void DisassemblyWidget::wheelEvent(QWheelEvent* event)
@@ -639,6 +668,10 @@ void DisassemblyWidget::keyPressEvent(QKeyEvent* event)
 void DisassemblyWidget::openContextMenu(QPoint pos)
 {
 	if (!cpu().isAlive())
+		return;
+
+	// Dont open context menu when used on column title row
+	if (pos.y() / m_rowHeight == 0)
 		return;
 
 	QMenu* menu = new QMenu(this);
@@ -741,6 +774,51 @@ void DisassemblyWidget::openContextMenu(QPoint pos)
 	connect(show_instruction_bytes_action, &QAction::triggered, this, &DisassemblyWidget::contextShowInstructionBytes);
 
 	menu->popup(this->mapToGlobal(pos));
+}
+
+QString DisassemblyWidget::GetDisassemblyTitleLine()
+{
+	// Disassembly column title line based on format created by DisassemblyStringFromAddress()
+	QString title_line_string;
+
+	// Determine layout of disassembly row. Layout depends on user setting "Show Instruction Bytes".
+	const bool show_instruction_bytes = m_showInstructionBytes && cpu().isAlive();
+	if (show_instruction_bytes)
+	{
+		title_line_string = QCoreApplication::translate("DisassemblyWidgetColumnTitle", " %1 %2 %3  %4");
+	}
+	else
+	{
+		title_line_string = QCoreApplication::translate("DisassemblyWidgetColumnTitle", " %1 %2  %3");
+	}
+
+	// First 2 chars in disassembly row is always for non-returning functions (NR)
+	// Do not display column title for this field.
+	title_line_string = title_line_string.arg("  ");
+
+	// Second column title is always address of instruction
+	title_line_string = title_line_string.arg(QCoreApplication::translate("DisassemblyWidgetColumnTitle", "Location"));
+
+	// If user specified to "Show Instruction Bytes", third column is opcode + args
+	if (show_instruction_bytes)
+	{
+		title_line_string = title_line_string.arg(QCoreApplication::translate("DisassemblyWidgetColumnTitle", "Bytes   "));
+	}
+
+	// Last column title is always disassembled instruction
+	title_line_string = title_line_string.arg(QCoreApplication::translate("DisassemblyWidgetColumnTitle", "Instruction"));
+
+	return title_line_string;
+}
+
+QColor DisassemblyWidget::GetDisassemblyTitleLineColor()
+{
+	// Determine color of column title line. Based on QFusionStyle.
+	QColor title_line_color = this->palette().button().color();
+	const int title_line_color_val = qGray(title_line_color.rgb());
+	title_line_color = title_line_color.lighter(100 + qMax(1, (180 - title_line_color_val) / 6));
+	title_line_color.setHsv(title_line_color.hue(), title_line_color.saturation() * 0.75, title_line_color.value());
+	return title_line_color.lighter(104);
 }
 
 inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFont font, u32 pc, bool selected)
