@@ -17537,6 +17537,8 @@ SLES-51619:
   name: "Clock Tower 3"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes brightness and striped lines in FMVs.
 SLES-51620:
   name: "Black and Bruised"
   region: "PAL-M5"
@@ -30036,6 +30038,8 @@ SLKA-25051:
   name: "Clock Tower 3"
   region: "NTSC-K"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes brightness and striped lines in FMVs.
 SLKA-25052:
   name: "Air Ranger 2 - Rescue Helicopter"
   region: "NTSC-K"
@@ -40428,6 +40432,8 @@ SLPM-65221:
   name-en: "Clock Tower 3"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes brightness and striped lines in FMVs.
 SLPM-65222:
   name: "遊戯王真デュエルモンスターズⅡ 継承されし記憶 [コナミ殿堂セレクション]"
   name-sort: "ゆうぎおうしんでゅえるもんすたーず2 けいしょうされしきおく [こなみでんどうせれくしょん]"
@@ -52313,6 +52319,8 @@ SLPM-74416:
   name-sort: "くろっくたわー3 [PlayStation2 the Best]"
   name-en: "Clock Tower 3 [PlayStation2 the Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes brightness and striped lines in FMVs.
 SLPM-74420:
   name: "頭文字D Special Stage [PlayStation2 the Best]"
   name-sort: "いにしゃるD すぺしゃる すてーじ [PlayStation2 the Best]"
@@ -64595,6 +64603,8 @@ SLUS-20633:
   name: "Clock Tower 3"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes brightness and striped lines in FMVs.
 SLUS-20634:
   name: "Summer Heat Beach Volleyball"
   region: "NTSC-U"
