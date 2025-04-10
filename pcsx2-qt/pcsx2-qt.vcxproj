@@ -351,208 +351,85 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <QtUi Include="MainWindow.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="GameList\EmptyGameListWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="GameList\GameListWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\SettingsWindow.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\GameListSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\BIOSSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\EmulationSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\GraphicsSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\InterfaceSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\AdvancedSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\GameFixSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\InputBindingDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\ControllerSettingsWindow.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\ControllerBindingWidget_DualShock2.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\ControllerBindingWidget_Guitar.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\ControllerBindingWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\ControllerGlobalSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\MemoryCardCreateDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\AudioSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\MemoryCardConvertDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\MemoryCardSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\DEV9DnsHostDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\DEV9SettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\GameSummaryWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="AutoUpdaterDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="CoverDownloadDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\AchievementLoginDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\AchievementSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Tools\InputRecording\InputRecordingViewer.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Debugger\AnalysisOptionsDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Debugger\DebuggerWindow.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Debugger\DisassemblyWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Debugger\RegisterWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Debugger\Breakpoints\BreakpointDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Debugger\Breakpoints\BreakpointWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Debugger\Docking\LayoutEditorDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Debugger\Docking\NoLayoutsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Debugger\Memory\MemorySearchWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Debugger\Memory\MemoryViewWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Debugger\Memory\SavedAddressesWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-  </ItemGroup>
-  <ItemGroup>
-    <QtUi Include="SetupWizardDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
+    <QtUi Include="AboutDialog.ui" />
+    <QtUi Include="AutoUpdaterDialog.ui" />
+    <QtUi Include="CoverDownloadDialog.ui" />
+    <QtUi Include="Debugger\AnalysisOptionsDialog.ui" />
+    <QtUi Include="Debugger\Breakpoints\BreakpointDialog.ui" />
+    <QtUi Include="Debugger\Breakpoints\BreakpointWidget.ui" />
+    <QtUi Include="Debugger\DebuggerWindow.ui" />
+    <QtUi Include="Debugger\DisassemblyWidget.ui" />
+    <QtUi Include="Debugger\Docking\LayoutEditorDialog.ui" />
+    <QtUi Include="Debugger\Docking\NoLayoutsWidget.ui" />
+    <QtUi Include="Debugger\Memory\MemorySearchWidget.ui" />
+    <QtUi Include="Debugger\Memory\MemoryViewWidget.ui" />
+    <QtUi Include="Debugger\Memory\SavedAddressesWidget.ui" />
+    <QtUi Include="Debugger\RegisterWidget.ui" />
+    <QtUi Include="Debugger\StackWidget.ui" />
+    <QtUi Include="Debugger\SymbolTree\NewSymbolDialog.ui" />
+    <QtUi Include="Debugger\SymbolTree\SymbolTreeWidget.ui" />
+    <QtUi Include="Debugger\ThreadWidget.ui" />
+    <QtUi Include="GameList\EmptyGameListWidget.ui" />
+    <QtUi Include="GameList\GameListWidget.ui" />
+    <QtUi Include="MainWindow.ui" />
+    <QtUi Include="Settings\AchievementLoginDialog.ui" />
+    <QtUi Include="Settings\AchievementSettingsWidget.ui" />
+    <QtUi Include="Settings\AdvancedSettingsWidget.ui" />
+    <QtUi Include="Settings\AudioExpansionSettingsDialog.ui" />
+    <QtUi Include="Settings\AudioSettingsWidget.ui" />
+    <QtUi Include="Settings\AudioStretchSettingsDialog.ui" />
+    <QtUi Include="Settings\BIOSSettingsWidget.ui" />
+    <QtUi Include="Settings\ControllerBindingWidget.ui" />
+    <QtUi Include="Settings\ControllerBindingWidget_DualShock2.ui" />
+    <QtUi Include="Settings\ControllerBindingWidget_Guitar.ui" />
+    <QtUi Include="Settings\ControllerBindingWidget_Jogcon.ui" />
+    <QtUi Include="Settings\ControllerBindingWidget_Negcon.ui" />
+    <QtUi Include="Settings\ControllerBindingWidget_Popn.ui" />
+    <QtUi Include="Settings\ControllerGlobalSettingsWidget.ui" />
+    <QtUi Include="Settings\ControllerLEDSettingsDialog.ui" />
+    <QtUi Include="Settings\ControllerMacroEditWidget.ui" />
+    <QtUi Include="Settings\ControllerMacroWidget.ui" />
+    <QtUi Include="Settings\ControllerMappingSettingsDialog.ui" />
+    <QtUi Include="Settings\ControllerMouseSettingsDialog.ui" />
+    <QtUi Include="Settings\ControllerSettingsWindow.ui" />
+    <QtUi Include="Settings\DebugAnalysisSettingsWidget.ui" />
+    <QtUi Include="Settings\DebugSettingsWidget.ui" />
+    <QtUi Include="Settings\DebugUserInterfaceSettingsWidget.ui" />
+    <QtUi Include="Settings\DEV9DnsHostDialog.ui" />
+    <QtUi Include="Settings\DEV9SettingsWidget.ui" />
+    <QtUi Include="Settings\EmulationSettingsWidget.ui" />
+    <QtUi Include="Settings\FolderSettingsWidget.ui" />
+    <QtUi Include="Settings\GameCheatSettingsWidget.ui" />
+    <QtUi Include="Settings\GameFixSettingsWidget.ui" />
+    <QtUi Include="Settings\GameListSettingsWidget.ui" />
+    <QtUi Include="Settings\GamePatchDetailsWidget.ui" />
+    <QtUi Include="Settings\GamePatchSettingsWidget.ui" />
+    <QtUi Include="Settings\GameSummaryWidget.ui" />
+    <QtUi Include="Settings\GraphicsSettingsWidget.ui" />
+    <QtUi Include="Settings\InputBindingDialog.ui" />
+    <QtUi Include="Settings\InterfaceSettingsWidget.ui" />
+    <QtUi Include="Settings\MemoryCardConvertDialog.ui" />
+    <QtUi Include="Settings\MemoryCardCreateDialog.ui" />
+    <QtUi Include="Settings\MemoryCardSettingsWidget.ui" />
+    <QtUi Include="Settings\PatchDetailsWidget.ui" />
+    <QtUi Include="Settings\SettingsWindow.ui" />
+    <QtUi Include="Settings\USBBindingWidget_Buzz.ui" />
+    <QtUi Include="Settings\USBBindingWidget_DenshaCon.ui" />
+    <QtUi Include="Settings\USBBindingWidget_DrivingForce.ui" />
+    <QtUi Include="Settings\USBBindingWidget_Gametrak.ui" />
+    <QtUi Include="Settings\USBBindingWidget_GTForce.ui" />
+    <QtUi Include="Settings\USBBindingWidget_GunCon2.ui" />
+    <QtUi Include="Settings\USBBindingWidget_RealPlay.ui" />
+    <QtUi Include="Settings\USBBindingWidget_RyojouhenCon.ui" />
+    <QtUi Include="Settings\USBBindingWidget_ShinkansenCon.ui" />
+    <QtUi Include="Settings\USBBindingWidget_TranceVibrator.ui" />
+    <QtUi Include="Settings\USBDeviceWidget.ui" />
     <QtTs Include="Translations\pcsx2-qt_en.ts">
       <FileType>Document</FileType>
     </QtTs>
-    <QtUi Include="Settings\DebugAnalysisSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\DebugUserInterfaceSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\DebugSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\ControllerLEDSettingsDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\ControllerMouseSettingsDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\GameCheatSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\GamePatchSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\USBBindingWidget_Buzz.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\USBBindingWidget_DenshaCon.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\USBBindingWidget_DrivingForce.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\USBBindingWidget_Gametrak.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\USBBindingWidget_GTForce.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\USBBindingWidget_GunCon2.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\USBBindingWidget_RealPlay.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\USBBindingWidget_RyojouhenCon.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\USBBindingWidget_ShinkansenCon.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\USBBindingWidget_TranceVibrator.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\USBDeviceWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\ControllerMacroEditWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\ControllerMacroWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <None Include="Debugger\SymbolTree\NewSymbolDialog.ui" />
-    <None Include="Debugger\SymbolTree\SymbolTreeWidget.ui" />
-    <QtUi Include="Settings\AudioExpansionSettingsDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="Settings\AudioStretchSettingsDialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <None Include="Settings\ControllerBindingWidget_Popn.ui" />
-    <None Include="Settings\ControllerMappingSettingsDialog.ui" />
-    <None Include="Settings\FolderSettingsWidget.ui" />
+    <QtUi Include="SetupWizardDialog.ui" />
+    <QtUi Include="Tools\InputRecording\InputRecordingViewer.ui" />
+    <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(SolutionDir)common\vsprops\QtCompile.targets" />
