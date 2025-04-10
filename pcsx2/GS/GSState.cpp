@@ -3929,8 +3929,9 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 
 		// Need to make sure we don't oversample, this can cause trouble in grabbing textures.
 		// This may be inaccurate depending on the draw, but adding 1 all the time is wrong too.
-		const int inclusive_x_req = ((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.x < 1.0f || (grad.x == 1.0f && m_vt.m_max.p.x != floor(m_vt.m_max.p.x)))) ? 1 : 0;
-		const int inclusive_y_req = ((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.y < 1.0f || (grad.y == 1.0f && m_vt.m_max.p.y != floor(m_vt.m_max.p.y)))) ? 1 : 0;
+		// FIXME: It breaks sw renderer so let's still use 1 for SW mode for now.
+		const int inclusive_x_req = GSIsHardwareRenderer() ? (((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.x < 1.0f || (grad.x == 1.0f && m_vt.m_max.p.x != floor(m_vt.m_max.p.x)))) ? 1 : 0) : 1;
+		const int inclusive_y_req = GSIsHardwareRenderer() ? (((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.y < 1.0f || (grad.y == 1.0f && m_vt.m_max.p.y != floor(m_vt.m_max.p.y)))) ? 1 : 0) : 1;
 	
 		// Roughly cut out the min/max of the read (Clamp)
 		switch (wms)
