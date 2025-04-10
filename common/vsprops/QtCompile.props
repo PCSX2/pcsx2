@@ -102,7 +102,7 @@
   <Target Name="QtMoc"
     BeforeTargets="ClCompile"
     Condition="'@(QtMoc)'!=''"
-    Inputs="%(QtMoc.Identity);%(QtMoc.AdditionalDependencies);$(MSBuildProjectFile)"
+    Inputs="%(QtMoc.Identity);$(QtHostBinDir)moc.exe"
     Outputs="$(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp">
     <Message Text="moc %(QtMoc.Filename) $(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp" Importance="High" />
     <Error Condition="!$(QtDirValid)" Text="Qt directory non-existent (download/extract the zip)" />
@@ -111,7 +111,7 @@
   </Target>
 
   <ItemGroup>
-    <MocOutputs Include="$(QtToolOutDir)moc_*.cpp" />
+    <MocOutputs Include="$(QtToolOutDir)**/moc_*.cpp" />
   </ItemGroup>
   <Target Name="QtMocClean">
     <Delete Files="@(MocOutputs)" />
