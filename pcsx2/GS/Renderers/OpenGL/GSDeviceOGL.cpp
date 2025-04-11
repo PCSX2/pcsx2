@@ -2496,12 +2496,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			config.drawarea.width(), config.drawarea.height());
 		CopyRect(hdr_rt ? hdr_rt : config.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
 	}
-	else if (config.tex && config.tex == config.ds)
-	{
-		// Ensure all depth writes are finished before sampling
-		GL_INS("Texture barrier to flush depth before reading");
-		glTextureBarrier();
-	}
 
 	IASetVertexBuffer(config.verts, config.nverts);
 	if (config.vs.expand != GSHWDrawConfig::VSExpand::None && !GLAD_GL_ARB_shader_draw_parameters)
@@ -2563,6 +2557,15 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	SetupPipeline(psel);
 
+	const bool check_barrier = !(config.require_one_barrier && !m_features.texture_barrier);
+
+	// Be careful of the rt already being bound and the blend using the RT without a barrier.
+	if (check_barrier && ((config.tex && (config.tex == config.ds || config.tex == config.rt)) || ((psel.ps.IsFeedbackLoop() || psel.ps.blend_c == 1) && GLState::rt == config.rt)))
+	{
+		// Ensure all depth writes are finished before sampling
+		GL_INS("Texture barrier to flush depth or rt before reading");
+		glTextureBarrier();
+	}
 	// additional non-pipeline config stuff
 	const bool point_size_enabled = config.vs.point_size;
 	if (GLState::point_size != point_size_enabled)
