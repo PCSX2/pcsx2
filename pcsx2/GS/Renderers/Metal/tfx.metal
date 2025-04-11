@@ -890,28 +890,31 @@ struct PSMain
 
 	void ps_color_clamp_wrap(thread float4& C)
 	{
-		// When dithering the bottom 3 bits become meaningless and cause lines in the picture so we need to limit the color depth on dithered items
-		if (!SW_BLEND && !(PS_DITHER > 0 && PS_DITHER < 3) && !PS_FBMASK)
-			return;
+		// When dithering the bottom 3 bits become meaningless and cause lines in the picture
+		// so we need to limit the color depth on dithered items
+		if (SW_BLEND || (PS_DITHER > 0 && PS_DITHER < 3) || PS_FBMASK)
+		{
+			if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
+				C.rgb += 7.f; // Need to round up, not down since the shader will invert
 
-		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
-			C.rgb += 7.f; // Need to round up, not down since the shader will invert
+			// Correct the Color value based on the output format
+			if (PS_COLCLIP == 0 && PS_HDR == 0)
+				C.rgb = clamp(C.rgb, 0.f, 255.f); // Standard Clamp
 
-		// Correct the Color value based on the output format
-		if (!PS_COLCLIP && !PS_HDR)
-			C.rgb = clamp(C.rgb, 0.f, 255.f); // Standard Clamp
+			// FIXME rouding of negative float?
+			// compiler uses trunc but it might need floor
 
-		// FIXME rouding of negative float?
-		// compiler uses trunc but it might need floor
-
-		// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
-		// GS: Color = 1, Alpha = 255 => output 1
-		// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-		if (PS_DST_FMT == FMT_16 && PS_DITHER < 3 && (PS_BLEND_MIX == 0 || PS_DITHER))
+			// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
+			// GS: Color = 1, Alpha = 255 => output 1
+			// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
 			// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
+			if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && (PS_BLEND_MIX == 0 || PS_DITHER))
+				C.rgb = float3(short3(C.rgb) & 0xF8);
+			else if (PS_COLCLIP == 1 || PS_HDR == 1)
+				C.rgb = float3(short3(C.rgb) & 0xFF);
+		}
+		else if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && PS_BLEND_MIX == 0 && PS_BLEND_HW == 0)
 			C.rgb = float3(short3(C.rgb) & 0xF8);
-		else if (PS_COLCLIP || PS_HDR)
-			C.rgb = float3(short3(C.rgb) & 0xFF);
 	}
 
 	template <typename T>
