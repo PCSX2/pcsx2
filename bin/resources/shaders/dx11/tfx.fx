@@ -852,6 +852,8 @@ void ps_color_clamp_wrap(inout float3 C)
 		else if (PS_COLCLIP == 1 || PS_HDR == 1)
 			C = (float3)((int3)C & (int3)0xFF);
 	}
+	else if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && PS_BLEND_MIX == 0 && PS_BLEND_HW == 0)
+		C = (float3)((int3)C & (int3)0xF8);
 }
 
 void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)

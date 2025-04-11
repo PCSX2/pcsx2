@@ -1045,6 +1045,8 @@ void ps_color_clamp_wrap(inout vec3 C)
 	C = vec3(ivec3(C) & ivec3(0xFF));
 #endif
 
+#elif PS_DST_FMT == FMT_16 && PS_DITHER != 3 && PS_BLEND_MIX == 0 && PS_BLEND_HW == 0
+	C = vec3(ivec3(C) & ivec3(0xF8));
 #endif
 }
 
