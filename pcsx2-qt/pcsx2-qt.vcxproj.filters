@@ -735,107 +735,32 @@
     </QtResource>
   </ItemGroup>
   <ItemGroup>
-    <QtUi Include="mainwindow.ui" />
-    <QtUi Include="Settings\BIOSSettingsWidget.ui">
-      <Filter>Settings</Filter>
+    <QtUi Include="Debugger\Breakpoints\BreakpointDialog.ui">
+      <Filter>Debugger\Breakpoints</Filter>
     </QtUi>
-    <QtUi Include="Settings\EmulationSettingsWidget.ui">
-      <Filter>Settings</Filter>
+    <QtUi Include="Debugger\Breakpoints\BreakpointWidget.ui">
+      <Filter>Debugger\Breakpoints</Filter>
     </QtUi>
-    <QtUi Include="Settings\GameListSettingsWidget.ui">
-      <Filter>Settings</Filter>
+    <QtUi Include="Debugger\Docking\LayoutEditorDialog.ui">
+      <Filter>Debugger\Docking</Filter>
     </QtUi>
-    <QtUi Include="Settings\GraphicsSettingsWidget.ui">
-      <Filter>Settings</Filter>
+    <QtUi Include="Debugger\Docking\NoLayoutsWidget.ui">
+      <Filter>Debugger\Docking</Filter>
     </QtUi>
-    <QtUi Include="Settings\InterfaceSettingsWidget.ui">
-      <Filter>Settings</Filter>
+    <QtUi Include="Debugger\Memory\MemorySearchWidget.ui">
+      <Filter>Debugger\Memory</Filter>
     </QtUi>
-    <QtUi Include="Settings\SettingsWindow.ui">
-      <Filter>Settings</Filter>
+    <QtUi Include="Debugger\Memory\MemoryViewWidget.ui">
+      <Filter>Debugger\Memory</Filter>
     </QtUi>
-    <QtUi Include="Settings\AdvancedSettingsWidget.ui">
-      <Filter>Settings</Filter>
+    <QtUi Include="Debugger\Memory\SavedAddressesWidget.ui">
+      <Filter>Debugger\Memory</Filter>
     </QtUi>
-    <QtUi Include="Settings\GameFixSettingsWidget.ui">
-      <Filter>Settings</Filter>
+    <QtUi Include="Debugger\SymbolTree\NewSymbolDialog.ui">
+      <Filter>Debugger\SymbolTree</Filter>
     </QtUi>
-    <QtUi Include="Settings\InputBindingDialog.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\ControllerSettingsWindow.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\ControllerBindingWidget_DualShock2.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\ControllerBindingWidget_Guitar.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\ControllerBindingWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\ControllerGlobalSettingsWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\GameSummaryWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\MemoryCardConvertDialog.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\MemoryCardSettingsWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\AudioSettingsWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\MemoryCardCreateDialog.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\DEV9DnsHostDialog.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\DEV9SettingsWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="GameList\EmptyGameListWidget.ui">
-      <Filter>GameList</Filter>
-    </QtUi>
-    <QtUi Include="GameList\GameListWidget.ui">
-      <Filter>GameList</Filter>
-    </QtUi>
-    <QtUi Include="AutoUpdaterDialog.ui" />
-    <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui">
-      <Filter>Tools\Input Recording</Filter>
-    </QtUi>
-    <QtUi Include="Settings\ControllerMacroWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\ControllerMacroEditWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\AchievementSettingsWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\AchievementLoginDialog.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="CoverDownloadDialog.ui" />
-    <QtUi Include="Tools\InputRecording\InputRecordingViewer.ui">
-      <Filter>Tools\Input Recording</Filter>
-    </QtUi>
-    <QtUi Include="Settings\USBDeviceWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\DebugAnalysisSettingsWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\DebugUserInterfaceSettingsWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
-    <QtUi Include="Settings\DebugSettingsWidget.ui">
-      <Filter>Settings</Filter>
+    <QtUi Include="Debugger\SymbolTree\SymbolTreeWidget.ui">
+      <Filter>Debugger\SymbolTree</Filter>
     </QtUi>
     <QtUi Include="Debugger\AnalysisOptionsDialog.ui">
       <Filter>Debugger</Filter>
@@ -849,19 +774,141 @@
     <QtUi Include="Debugger\RegisterWidget.ui">
       <Filter>Debugger</Filter>
     </QtUi>
+    <QtUi Include="Debugger\StackWidget.ui">
+      <Filter>Debugger</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\ThreadWidget.ui">
+      <Filter>Debugger</Filter>
+    </QtUi>
+    <QtUi Include="GameList\EmptyGameListWidget.ui">
+      <Filter>GameList</Filter>
+    </QtUi>
+    <QtUi Include="GameList\GameListWidget.ui">
+      <Filter>GameList</Filter>
+    </QtUi>
+    <QtUi Include="Settings\AchievementLoginDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\AchievementSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\AdvancedSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\AudioExpansionSettingsDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\AudioSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\AudioStretchSettingsDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\BIOSSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerBindingWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerBindingWidget_DualShock2.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerBindingWidget_Guitar.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerBindingWidget_Jogcon.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerBindingWidget_Negcon.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerBindingWidget_Popn.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerGlobalSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
     <QtUi Include="Settings\ControllerLEDSettingsDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerMacroEditWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerMacroWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerMappingSettingsDialog.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\ControllerMouseSettingsDialog.ui">
       <Filter>Settings</Filter>
     </QtUi>
+    <QtUi Include="Settings\ControllerSettingsWindow.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\DebugAnalysisSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\DebugSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\DebugUserInterfaceSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\DEV9DnsHostDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\DEV9SettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\EmulationSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\FolderSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
     <QtUi Include="Settings\GameCheatSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GameFixSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GameListSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GamePatchDetailsWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\GamePatchSettingsWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
-    <QtUi Include="SetupWizardDialog.ui" />
+    <QtUi Include="Settings\GameSummaryWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GraphicsSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\InputBindingDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\InterfaceSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\MemoryCardConvertDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\MemoryCardCreateDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\MemoryCardSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\PatchDetailsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\SettingsWindow.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
     <QtUi Include="Settings\USBBindingWidget_Buzz.ui">
       <Filter>Settings</Filter>
     </QtUi>
@@ -892,50 +939,20 @@
     <QtUi Include="Settings\USBBindingWidget_TranceVibrator.ui">
       <Filter>Settings</Filter>
     </QtUi>
-    <QtUi Include="Settings\AudioExpansionSettingsDialog.ui">
+    <QtUi Include="Settings\USBDeviceWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
-    <QtUi Include="Settings\AudioStretchSettingsDialog.ui">
-      <Filter>Settings</Filter>
+    <QtUi Include="Tools\InputRecording\InputRecordingViewer.ui">
+      <Filter>Tools\Input Recording</Filter>
     </QtUi>
-    <QtUi Include="Debugger\Breakpoints\BreakpointDialog.ui">
-      <Filter>Debugger\Breakpoints</Filter>
+    <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui">
+      <Filter>Tools\Input Recording</Filter>
     </QtUi>
-    <QtUi Include="Debugger\Breakpoints\BreakpointWidget.ui">
-      <Filter>Debugger\Breakpoints</Filter>
-    </QtUi>
-    <QtUi Include="Debugger\Memory\SavedAddressesWidget.ui">
-      <Filter>Debugger\Memory</Filter>
-    </QtUi>
-    <QtUi Include="Debugger\Memory\MemoryViewWidget.ui">
-      <Filter>Debugger\Memory</Filter>
-    </QtUi>
-    <QtUi Include="Debugger\Memory\MemorySearchWidget.ui">
-      <Filter>Debugger\Memory</Filter>
-    </QtUi>
-    <QtUi Include="Debugger\Docking\LayoutEditorDialog.ui">
-      <Filter>Debugger\Docking</Filter>
-    </QtUi>
-    <QtUi Include="Debugger\Docking\NoLayoutsWidget.ui">
-      <Filter>Debugger\Docking</Filter>
-    </QtUi>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Settings\FolderSettingsWidget.ui">
-      <Filter>Settings</Filter>
-    </None>
-    <None Include="Settings\ControllerBindingWidget_Popn.ui">
-      <Filter>Settings</Filter>
-    </None>
-    <None Include="Settings\ControllerMappingSettingsDialog.ui">
-      <Filter>Settings</Filter>
-    </None>
-    <None Include="Debugger\SymbolTree\NewSymbolDialog.ui">
-      <Filter>Debugger\SymbolTree</Filter>
-    </None>
-    <None Include="Debugger\SymbolTree\SymbolTreeWidget.ui">
-      <Filter>Debugger\SymbolTree</Filter>
-    </None>
+    <QtUi Include="AboutDialog.ui" />
+    <QtUi Include="AutoUpdaterDialog.ui" />
+    <QtUi Include="CoverDownloadDialog.ui" />
+    <QtUi Include="MainWindow.ui" />
+    <QtUi Include="SetupWizardDialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtTs Include="Translations\pcsx2-qt_en.ts">

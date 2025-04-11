@@ -59,23 +59,37 @@
     <Delete Files="@(ResFiles->'$(QtToolOutDir)qrc_%(Filename).cpp')" />
   </Target>
 
-  <!--Passes all .ui files to uic and puts output in the build directory-->
-  <ItemGroup>
-    <UiFiles Include="$(MSBuildProjectDirectory)\**\*.ui" />
-  </ItemGroup>
+  <!--Passes .ui files to uic and puts output in the build directory-->
+  <!--We need to create tlogs so that VS knows the ui files are used-->
+  <!--See https://learn.microsoft.com/en-us/visualstudio/extensibility/visual-cpp-project-extensibility?view=vs-2022#tlog-files-->
   <Target Name="QtUi"
     BeforeTargets="ClCompile"
-    Inputs="@(UiFiles)"
-    Condition="'@(QtUi)'!=''"
-    Outputs="@(UiFiles->'$(QtToolOutDir)ui_%(Filename).h')">
-    <Message Text="uic %(UiFiles.Filename)" Importance="High" />
+    Condition="'@(QtUi)'!=''">
     <Error Condition="!$(QtDirValid)" Text="Qt directory non-existent (download/extract the zip)" />
     <MakeDir Directories="$(QtToolOutDir)" />
-    <Exec Command="&quot;$(QtHostBinDir)uic.exe&quot; &quot;%(UiFiles.FullPath)&quot; -o &quot;$(QtToolOutDir)ui_%(UiFiles.Filename).h&quot;" />
-  </Target>
+    <!--Setup metadata for following tasks-->
+    <ItemGroup>
+      <QtUi>
+        <Message>uic %(Filename)</Message>
+        <Command>
+            "$(QtHostBinDir)uic.exe" "%(FullPath)" -o "$(QtToolOutDir)ui_%(Filename).h"
+        </Command>
+        <Outputs>$(QtToolOutDir)ui_%(Filename).h</Outputs>
+      </QtUi>
+    </ItemGroup>
 
-  <Target Name="QtUiClean">
-    <Delete Files="@(UiFiles->'$(QtToolOutDir)ui_%(Filename).h')" />
+    <!--Helper for dealing with tlogs-->
+    <!--https://learn.microsoft.com/en-us/visualstudio/msbuild/getoutofdateitems-task?view=vs-2022-->
+    <GetOutOfDateItems Sources="@(QtUi)"
+      OutputsMetadataName="Outputs"
+      CommandMetadataName="Command"
+      TLogDirectory="$(TLogLocation)"
+      TLogNamePrefix="QtUi">
+      <Output TaskParameter="OutOfDateSources" ItemName="OutOfDateQtUi"/>
+    </GetOutOfDateItems>
+
+    <CustomBuild Condition="'@(OutOfDateQtUi)'!=''"
+      Sources="@(OutOfDateQtUi)" />
   </Target>
 
   <!--Compile files needed to MOC and output in the build directory-->
@@ -88,7 +102,7 @@
   <Target Name="QtMoc"
     BeforeTargets="ClCompile"
     Condition="'@(QtMoc)'!=''"
-    Inputs="%(QtMoc.Identity);%(QtMoc.AdditionalDependencies);$(MSBuildProjectFile)"
+    Inputs="%(QtMoc.Identity);$(QtHostBinDir)moc.exe"
     Outputs="$(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp">
     <Message Text="moc %(QtMoc.Filename) $(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp" Importance="High" />
     <Error Condition="!$(QtDirValid)" Text="Qt directory non-existent (download/extract the zip)" />
@@ -97,7 +111,7 @@
   </Target>
 
   <ItemGroup>
-    <MocOutputs Include="$(QtToolOutDir)moc_*.cpp" />
+    <MocOutputs Include="$(QtToolOutDir)**/moc_*.cpp" />
   </ItemGroup>
   <Target Name="QtMocClean">
     <Delete Files="@(MocOutputs)" />
