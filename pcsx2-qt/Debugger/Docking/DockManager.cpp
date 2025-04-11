@@ -185,7 +185,6 @@ void DockManager::loadLayouts()
 		&files);
 
 	bool needs_reset = false;
-	bool order_changed = false;
 	std::vector<DockLayout::Index> indices_last_session;
 
 	for (const FILESYSTEM_FIND_DATA& ffd : files)
@@ -234,29 +233,30 @@ void DockManager::loadLayouts()
 			layout.save(index);
 		}
 
-		if (index_last_session != index)
-			order_changed = true;
-
 		indices_last_session.emplace_back(index_last_session);
 	}
 
 	// Make sure the layouts remain in the same order they were in previously.
-	std::vector<DockLayout*> layout_pointers;
-	for (DockLayout& layout : m_layouts)
-		layout_pointers.emplace_back(&layout);
+	std::vector<size_t> layout_indices;
+	for (size_t i = 0; i < m_layouts.size(); i++)
+		layout_indices.emplace_back(i);
 
-	std::sort(layout_pointers.begin(), layout_pointers.end(),
-		[this, &indices_last_session](const DockLayout* lhs, const DockLayout* rhs) {
-			size_t lhs_index = lhs - m_layouts.data();
-			size_t rhs_index = rhs - m_layouts.data();
-			DockLayout::Index lhs_index_last_session = indices_last_session.at(lhs_index);
-			DockLayout::Index rhs_index_last_session = indices_last_session.at(rhs_index);
+	std::sort(layout_indices.begin(), layout_indices.end(),
+		[&indices_last_session](size_t lhs, size_t rhs) {
+			DockLayout::Index lhs_index_last_session = indices_last_session.at(lhs);
+			DockLayout::Index rhs_index_last_session = indices_last_session.at(rhs);
 			return lhs_index_last_session < rhs_index_last_session;
 		});
 
+	bool order_changed = false;
 	std::vector<DockLayout> sorted_layouts;
-	for (size_t i = 0; i < layout_pointers.size(); i++)
-		sorted_layouts.emplace_back(std::move(*layout_pointers[i]));
+	for (size_t i = 0; i < layout_indices.size(); i++)
+	{
+		if (i != indices_last_session[layout_indices[i]])
+			order_changed = true;
+
+		sorted_layouts.emplace_back(std::move(m_layouts[layout_indices[i]]));
+	}
 
 	m_layouts = std::move(sorted_layouts);
 
