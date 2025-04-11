@@ -20,6 +20,7 @@ public:
 Q_SIGNALS:
 	void themeChanged();
 	void languageChanged();
+	void globalMenusChanged();
 
 private Q_SLOTS:
 	void onRenderToSeparateWindowChanged();
