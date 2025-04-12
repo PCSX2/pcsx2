@@ -5,7 +5,7 @@
 
 #include "ui_RegisterWidget.h"
 
-#include "DebuggerWidget.h"
+#include "DebuggerView.h"
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
@@ -14,12 +14,12 @@
 #include <QtWidgets/QTabBar>
 #include <QtGui/QPainter>
 
-class RegisterWidget final : public DebuggerWidget
+class RegisterWidget final : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	RegisterWidget(const DebuggerWidgetParameters& parameters);
+	RegisterWidget(const DebuggerViewParameters& parameters);
 	~RegisterWidget();
 
 	void toJson(JsonValueWrapper& json) override;

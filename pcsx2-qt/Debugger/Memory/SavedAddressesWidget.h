@@ -7,14 +7,14 @@
 
 #include "SavedAddressesModel.h"
 
-#include "Debugger/DebuggerWidget.h"
+#include "Debugger/DebuggerView.h"
 
-class SavedAddressesWidget : public DebuggerWidget
+class SavedAddressesWidget : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	SavedAddressesWidget(const DebuggerWidgetParameters& parameters);
+	SavedAddressesWidget(const DebuggerViewParameters& parameters);
 
 	void openContextMenu(QPoint pos);
 	void contextPasteCSV();

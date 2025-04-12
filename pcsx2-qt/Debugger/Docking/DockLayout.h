@@ -12,7 +12,7 @@
 
 #include <QtCore/QPointer>
 
-class DebuggerWidget;
+class DebuggerView;
 class DebuggerWindow;
 
 extern const char* DEBUGGER_LAYOUT_FILE_FORMAT;
@@ -97,13 +97,13 @@ public:
 	KDDockWidgets::Core::DockWidget* createDockWidget(const QString& name);
 	void updateDockWidgetTitles();
 
-	const std::map<QString, QPointer<DebuggerWidget>>& debuggerWidgets();
-	bool hasDebuggerWidget(const QString& unique_name);
-	size_t countDebuggerWidgetsOfType(const char* type);
-	void createDebuggerWidget(const std::string& type);
-	void recreateDebuggerWidget(const QString& unique_name);
-	void destroyDebuggerWidget(const QString& unique_name);
-	void setPrimaryDebuggerWidget(DebuggerWidget* widget, bool is_primary);
+	const std::map<QString, QPointer<DebuggerView>>& debuggerViews();
+	bool hasDebuggerView(const QString& unique_name);
+	size_t countDebuggerViewsOfType(const char* type);
+	void createDebuggerView(const std::string& type);
+	void recreateDebuggerView(const QString& unique_name);
+	void destroyDebuggerView(const QString& unique_name);
+	void setPrimaryDebuggerView(DebuggerView* widget, bool is_primary);
 
 	void deleteFile();
 
@@ -115,8 +115,8 @@ private:
 		DockLayout::LoadResult& result,
 		DockLayout::Index& index_last_session);
 
-	// Make sure there is only a single primary debugger widget of each type.
-	void validatePrimaryDebuggerWidgets();
+	// Make sure there is only a single primary debugger view of each type.
+	void validatePrimaryDebuggerViews();
 
 	void setupDefaultLayout();
 
@@ -147,7 +147,7 @@ private:
 	// All the dock widgets currently open in this layout. If this is the active
 	// layout then these will be owned by the docking system, otherwise they
 	// won't be and will need to be cleaned up separately.
-	std::map<QString, QPointer<DebuggerWidget>> m_widgets;
+	std::map<QString, QPointer<DebuggerView>> m_widgets;
 
 	// The geometry of all the dock widgets, converted to JSON by the
 	// LayoutSaver class from KDDockWidgets.

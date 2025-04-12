@@ -24,8 +24,8 @@
 
 using namespace QtUtils;
 
-DisassemblyWidget::DisassemblyWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, MONOSPACE_FONT)
+DisassemblyWidget::DisassemblyWidget(const DebuggerViewParameters& parameters)
+	: DebuggerView(parameters, MONOSPACE_FONT)
 {
 	m_ui.setupUi(this);
 
@@ -62,7 +62,7 @@ DisassemblyWidget::~DisassemblyWidget() = default;
 
 void DisassemblyWidget::toJson(JsonValueWrapper& json)
 {
-	DebuggerWidget::toJson(json);
+	DebuggerView::toJson(json);
 
 	json.value().AddMember("startAddress", m_visibleStart, json.allocator());
 	json.value().AddMember("goToPCOnPause", m_goToProgramCounterOnPause, json.allocator());
@@ -71,7 +71,7 @@ void DisassemblyWidget::toJson(JsonValueWrapper& json)
 
 bool DisassemblyWidget::fromJson(const JsonValueWrapper& json)
 {
-	if (!DebuggerWidget::fromJson(json))
+	if (!DebuggerView::fromJson(json))
 		return false;
 
 	auto start_address = json.value().FindMember("startAddress");
@@ -140,7 +140,7 @@ void DisassemblyWidget::contextAssembleInstruction()
 				this->m_nopedInstructions.insert({i, cpu->read32(i)});
 				cpu->write32(i, val);
 			}
-			DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+			DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 		});
 	}
 }
@@ -153,7 +153,7 @@ void DisassemblyWidget::contextNoopInstruction()
 			this->m_nopedInstructions.insert({i, cpu->read32(i)});
 			cpu->write32(i, 0x00);
 		}
-		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 	});
 }
 
@@ -168,7 +168,7 @@ void DisassemblyWidget::contextRestoreInstruction()
 				this->m_nopedInstructions.erase(i);
 			}
 		}
-		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 	});
 }
 
@@ -298,7 +298,7 @@ void DisassemblyWidget::contextStubFunction()
 		this->m_stubbedFunctions.insert({address, {cpu->read32(address), cpu->read32(address + 4)}});
 		cpu->write32(address, 0x03E00008); // jr ra
 		cpu->write32(address + 4, 0x00000000); // nop
-		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 	});
 }
 
@@ -319,7 +319,7 @@ void DisassemblyWidget::contextRestoreFunction()
 			cpu->write32(address, first_instruction);
 			cpu->write32(address + 4, second_instruction);
 			this->m_stubbedFunctions.erase(address);
-			DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+			DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 		});
 	}
 	else

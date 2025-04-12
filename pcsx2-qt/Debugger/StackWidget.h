@@ -7,14 +7,14 @@
 
 #include "StackModel.h"
 
-#include "DebuggerWidget.h"
+#include "DebuggerView.h"
 
-class StackWidget final : public DebuggerWidget
+class StackWidget final : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	StackWidget(const DebuggerWidgetParameters& parameters);
+	StackWidget(const DebuggerViewParameters& parameters);
 
 	void openContextMenu(QPoint pos);
 	void onDoubleClick(const QModelIndex& index);

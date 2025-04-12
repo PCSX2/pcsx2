@@ -453,8 +453,8 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar, DebugInterface& cpu)
 /*
 	MemoryViewWidget
 */
-MemoryViewWidget::MemoryViewWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, MONOSPACE_FONT)
+MemoryViewWidget::MemoryViewWidget(const DebuggerViewParameters& parameters)
+	: DebuggerView(parameters, MONOSPACE_FONT)
 	, m_table(this)
 {
 	ui.setupUi(this);
@@ -489,7 +489,7 @@ MemoryViewWidget::~MemoryViewWidget() = default;
 
 void MemoryViewWidget::toJson(JsonValueWrapper& json)
 {
-	DebuggerWidget::toJson(json);
+	DebuggerView::toJson(json);
 
 	json.value().AddMember("startAddress", m_table.startAddress, json.allocator());
 	json.value().AddMember("viewType", static_cast<int>(m_table.GetViewType()), json.allocator());
@@ -498,7 +498,7 @@ void MemoryViewWidget::toJson(JsonValueWrapper& json)
 
 bool MemoryViewWidget::fromJson(const JsonValueWrapper& json)
 {
-	if (!DebuggerWidget::fromJson(json))
+	if (!DebuggerView::fromJson(json))
 		return false;
 
 	auto start_address = json.value().FindMember("startAddress");
@@ -701,7 +701,7 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
 		}
 	}
 	this->repaint();
-	DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+	DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 }
 
 void MemoryViewWidget::gotoAddress(u32 address)

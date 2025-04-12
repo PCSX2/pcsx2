@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include "DebuggerWidget.h"
+#include "DebuggerView.h"
 
 #include "Debugger/DebuggerWindow.h"
 #include "Debugger/JsonValueWrapper.h"
@@ -12,7 +12,7 @@
 
 #include "common/Assertions.h"
 
-DebuggerWidget::DebuggerWidget(const DebuggerWidgetParameters& parameters, u32 flags)
+DebuggerView::DebuggerView(const DebuggerViewParameters& parameters, u32 flags)
 	: QWidget(parameters.parent)
 	, m_id(parameters.id)
 	, m_unique_name(parameters.unique_name)
@@ -23,30 +23,30 @@ DebuggerWidget::DebuggerWidget(const DebuggerWidgetParameters& parameters, u32 f
 	updateStyleSheet();
 }
 
-DebugInterface& DebuggerWidget::cpu() const
+DebugInterface& DebuggerView::cpu() const
 {
 	if (m_cpu_override.has_value())
 		return DebugInterface::get(*m_cpu_override);
 
-	pxAssertRel(m_cpu, "DebuggerWidget::cpu called on object with null cpu.");
+	pxAssertRel(m_cpu, "DebuggerView::cpu called on object with null cpu.");
 	return *m_cpu;
 }
 
-QString DebuggerWidget::uniqueName() const
+QString DebuggerView::uniqueName() const
 {
 	return m_unique_name;
 }
 
-u64 DebuggerWidget::id() const
+u64 DebuggerView::id() const
 {
 	return m_id;
 }
 
-QString DebuggerWidget::displayName() const
+QString DebuggerView::displayName() const
 {
 	QString name = displayNameWithoutSuffix();
 
-	// If there are multiple debugger widgets of the same name, append a number
+	// If there are multiple debugger views with the same name, append a number
 	// to the display name.
 	if (m_display_name_suffix_number.has_value())
 		name = tr("%1 #%2").arg(name).arg(*m_display_name_suffix_number);
@@ -57,17 +57,17 @@ QString DebuggerWidget::displayName() const
 	return name;
 }
 
-QString DebuggerWidget::displayNameWithoutSuffix() const
+QString DebuggerView::displayNameWithoutSuffix() const
 {
 	return m_translated_display_name;
 }
 
-QString DebuggerWidget::customDisplayName() const
+QString DebuggerView::customDisplayName() const
 {
 	return m_custom_display_name;
 }
 
-bool DebuggerWidget::setCustomDisplayName(QString display_name)
+bool DebuggerView::setCustomDisplayName(QString display_name)
 {
 	if (display_name.size() > DockUtils::MAX_DOCK_WIDGET_NAME_SIZE)
 		return false;
@@ -76,17 +76,17 @@ bool DebuggerWidget::setCustomDisplayName(QString display_name)
 	return true;
 }
 
-bool DebuggerWidget::isPrimary() const
+bool DebuggerView::isPrimary() const
 {
 	return m_is_primary;
 }
 
-void DebuggerWidget::setPrimary(bool is_primary)
+void DebuggerView::setPrimary(bool is_primary)
 {
 	m_is_primary = is_primary;
 }
 
-bool DebuggerWidget::setCpu(DebugInterface& new_cpu)
+bool DebuggerView::setCpu(DebugInterface& new_cpu)
 {
 	BreakPointCpu before = cpu().getCpuType();
 	m_cpu = &new_cpu;
@@ -94,12 +94,12 @@ bool DebuggerWidget::setCpu(DebugInterface& new_cpu)
 	return before == after;
 }
 
-std::optional<BreakPointCpu> DebuggerWidget::cpuOverride() const
+std::optional<BreakPointCpu> DebuggerView::cpuOverride() const
 {
 	return m_cpu_override;
 }
 
-bool DebuggerWidget::setCpuOverride(std::optional<BreakPointCpu> new_cpu)
+bool DebuggerView::setCpuOverride(std::optional<BreakPointCpu> new_cpu)
 {
 	BreakPointCpu before = cpu().getCpuType();
 	m_cpu_override = new_cpu;
@@ -107,7 +107,7 @@ bool DebuggerWidget::setCpuOverride(std::optional<BreakPointCpu> new_cpu)
 	return before == after;
 }
 
-bool DebuggerWidget::handleEvent(const DebuggerEvents::Event& event)
+bool DebuggerView::handleEvent(const DebuggerEvents::Event& event)
 {
 	auto [begin, end] = m_event_handlers.equal_range(typeid(event).name());
 	for (auto handler = begin; handler != end; handler++)
@@ -117,14 +117,14 @@ bool DebuggerWidget::handleEvent(const DebuggerEvents::Event& event)
 	return false;
 }
 
-bool DebuggerWidget::acceptsEventType(const char* event_type)
+bool DebuggerView::acceptsEventType(const char* event_type)
 {
 	auto [begin, end] = m_event_handlers.equal_range(event_type);
 	return begin != end;
 }
 
 
-void DebuggerWidget::toJson(JsonValueWrapper& json)
+void DebuggerView::toJson(JsonValueWrapper& json)
 {
 	std::string custom_display_name_str = m_custom_display_name.toStdString();
 	rapidjson::Value custom_display_name;
@@ -134,7 +134,7 @@ void DebuggerWidget::toJson(JsonValueWrapper& json)
 	json.value().AddMember("isPrimary", m_is_primary, json.allocator());
 }
 
-bool DebuggerWidget::fromJson(const JsonValueWrapper& json)
+bool DebuggerView::fromJson(const JsonValueWrapper& json)
 {
 	auto custom_display_name = json.value().FindMember("customDisplayName");
 	if (custom_display_name != json.value().MemberEnd() && custom_display_name->value.IsString())
@@ -150,17 +150,17 @@ bool DebuggerWidget::fromJson(const JsonValueWrapper& json)
 	return true;
 }
 
-void DebuggerWidget::switchToThisTab()
+void DebuggerView::switchToThisTab()
 {
-	g_debugger_window->dockManager().switchToDebuggerWidget(this);
+	g_debugger_window->dockManager().switchToDebuggerView(this);
 }
 
-bool DebuggerWidget::supportsMultipleInstances()
+bool DebuggerView::supportsMultipleInstances()
 {
 	return !(m_flags & DISALLOW_MULTIPLE_INSTANCES);
 }
 
-void DebuggerWidget::retranslateDisplayName()
+void DebuggerView::retranslateDisplayName()
 {
 	if (!m_custom_display_name.isEmpty())
 	{
@@ -168,25 +168,25 @@ void DebuggerWidget::retranslateDisplayName()
 	}
 	else
 	{
-		auto description = DockTables::DEBUGGER_WIDGETS.find(metaObject()->className());
-		if (description != DockTables::DEBUGGER_WIDGETS.end())
-			m_translated_display_name = QCoreApplication::translate("DebuggerWidget", description->second.display_name);
+		auto description = DockTables::DEBUGGER_VIEWS.find(metaObject()->className());
+		if (description != DockTables::DEBUGGER_VIEWS.end())
+			m_translated_display_name = QCoreApplication::translate("DebuggerView", description->second.display_name);
 		else
 			m_translated_display_name = QString();
 	}
 }
 
-std::optional<int> DebuggerWidget::displayNameSuffixNumber() const
+std::optional<int> DebuggerView::displayNameSuffixNumber() const
 {
 	return m_display_name_suffix_number;
 }
 
-void DebuggerWidget::setDisplayNameSuffixNumber(std::optional<int> suffix_number)
+void DebuggerView::setDisplayNameSuffixNumber(std::optional<int> suffix_number)
 {
 	m_display_name_suffix_number = suffix_number;
 }
 
-void DebuggerWidget::updateStyleSheet()
+void DebuggerView::updateStyleSheet()
 {
 	QString stylesheet;
 
@@ -211,48 +211,48 @@ void DebuggerWidget::updateStyleSheet()
 	setStyleSheet(stylesheet);
 }
 
-void DebuggerWidget::goToInDisassembler(u32 address, bool switch_to_tab)
+void DebuggerView::goToInDisassembler(u32 address, bool switch_to_tab)
 {
 	DebuggerEvents::GoToAddress event;
 	event.address = address;
 	event.filter = DebuggerEvents::GoToAddress::DISASSEMBLER;
 	event.switch_to_tab = switch_to_tab;
-	DebuggerWidget::sendEvent(std::move(event));
+	DebuggerView::sendEvent(std::move(event));
 }
 
-void DebuggerWidget::goToInMemoryView(u32 address, bool switch_to_tab)
+void DebuggerView::goToInMemoryView(u32 address, bool switch_to_tab)
 {
 	DebuggerEvents::GoToAddress event;
 	event.address = address;
 	event.filter = DebuggerEvents::GoToAddress::MEMORY_VIEW;
 	event.switch_to_tab = switch_to_tab;
-	DebuggerWidget::sendEvent(std::move(event));
+	DebuggerView::sendEvent(std::move(event));
 }
 
-void DebuggerWidget::sendEventImplementation(const DebuggerEvents::Event& event)
+void DebuggerView::sendEventImplementation(const DebuggerEvents::Event& event)
 {
 	if (!g_debugger_window)
 		return;
 
-	for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerWidgets())
+	for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerViews())
 		if (widget->isPrimary() && widget->handleEvent(event))
 			return;
 
-	for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerWidgets())
+	for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerViews())
 		if (!widget->isPrimary() && widget->handleEvent(event))
 			return;
 }
 
-void DebuggerWidget::broadcastEventImplementation(const DebuggerEvents::Event& event)
+void DebuggerView::broadcastEventImplementation(const DebuggerEvents::Event& event)
 {
 	if (!g_debugger_window)
 		return;
 
-	for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerWidgets())
+	for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerViews())
 		widget->handleEvent(event);
 }
 
-std::vector<QAction*> DebuggerWidget::createEventActionsImplementation(
+std::vector<QAction*> DebuggerView::createEventActionsImplementation(
 	QMenu* menu,
 	u32 max_top_level_actions,
 	bool skip_self,
@@ -263,12 +263,12 @@ std::vector<QAction*> DebuggerWidget::createEventActionsImplementation(
 	if (!g_debugger_window)
 		return {};
 
-	std::vector<DebuggerWidget*> receivers;
-	for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerWidgets())
+	std::vector<DebuggerView*> receivers;
+	for (const auto& [unique_name, widget] : g_debugger_window->dockManager().debuggerViews())
 		if ((!skip_self || widget != this) && widget->acceptsEventType(event_type))
 			receivers.emplace_back(widget);
 
-	std::sort(receivers.begin(), receivers.end(), [&](const DebuggerWidget* lhs, const DebuggerWidget* rhs) {
+	std::sort(receivers.begin(), receivers.end(), [&](const DebuggerView* lhs, const DebuggerView* rhs) {
 		if (lhs->displayNameWithoutSuffix() == rhs->displayNameWithoutSuffix())
 			return lhs->displayNameSuffixNumber() < rhs->displayNameSuffixNumber();
 
@@ -285,7 +285,7 @@ std::vector<QAction*> DebuggerWidget::createEventActionsImplementation(
 	std::vector<QAction*> actions;
 	for (size_t i = 0; i < receivers.size(); i++)
 	{
-		DebuggerWidget* receiver = receivers[i];
+		DebuggerView* receiver = receivers[i];
 
 		QAction* action;
 		if (!submenu || i + 1 < max_top_level_actions)

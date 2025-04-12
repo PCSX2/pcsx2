@@ -3,7 +3,7 @@
 
 #include "DebuggerWindow.h"
 
-#include "Debugger/DebuggerWidget.h"
+#include "Debugger/DebuggerView.h"
 #include "Debugger/Docking/DockManager.h"
 
 #include "DebugTools/DebugInterface.h"
@@ -86,7 +86,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	});
 
 	connect(g_emu_thread, &EmuThread::onVMPaused, this, []() {
-		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 	});
 
 	connect(g_emu_thread, &EmuThread::onVMStarting, this, &DebuggerWindow::onVMStarting);
@@ -290,7 +290,7 @@ void DebuggerWindow::updateFromSettings()
 	{
 		m_refresh_timer = new QTimer(this);
 		connect(m_refresh_timer, &QTimer::timeout, this, []() {
-			DebuggerWidget::broadcastEvent(DebuggerEvents::Refresh());
+			DebuggerView::broadcastEvent(DebuggerEvents::Refresh());
 		});
 		m_refresh_timer->start(effective_refresh_interval);
 	}

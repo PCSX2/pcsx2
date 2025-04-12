@@ -22,12 +22,12 @@ static void hashDefaultDockWidget(const DockTables::DefaultDockWidgetDescription
 static void hashNumber(u32 number, u32& hash);
 static void hashString(const char* string, u32& hash);
 
-#define DEBUGGER_WIDGET(type, display_name, preferred_location) \
+#define DEBUGGER_VIEW(type, display_name, preferred_location) \
 	{ \
 		#type, \
 		{ \
-			[](const DebuggerWidgetParameters& parameters) -> DebuggerWidget* { \
-				DebuggerWidget* widget = new type(parameters); \
+			[](const DebuggerViewParameters& parameters) -> DebuggerView* { \
+				DebuggerView* widget = new type(parameters); \
 				widget->handleEvent(DebuggerEvents::Refresh()); \
 				return widget; \
 			}, \
@@ -36,22 +36,22 @@ static void hashString(const char* string, u32& hash);
 		} \
 	}
 
-const std::map<std::string, DockTables::DebuggerWidgetDescription> DockTables::DEBUGGER_WIDGETS = {
-	DEBUGGER_WIDGET(BreakpointWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Breakpoints"), BOTTOM_MIDDLE),
-	DEBUGGER_WIDGET(DisassemblyWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Disassembly"), TOP_RIGHT),
-	DEBUGGER_WIDGET(FunctionTreeWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Functions"), TOP_LEFT),
-	DEBUGGER_WIDGET(GlobalVariableTreeWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Globals"), BOTTOM_MIDDLE),
-	DEBUGGER_WIDGET(LocalVariableTreeWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Locals"), BOTTOM_MIDDLE),
-	DEBUGGER_WIDGET(MemorySearchWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Memory Search"), TOP_LEFT),
-	DEBUGGER_WIDGET(MemoryViewWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Memory"), BOTTOM_MIDDLE),
-	DEBUGGER_WIDGET(ParameterVariableTreeWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Parameters"), BOTTOM_MIDDLE),
-	DEBUGGER_WIDGET(RegisterWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Registers"), TOP_LEFT),
-	DEBUGGER_WIDGET(SavedAddressesWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Saved Addresses"), BOTTOM_MIDDLE),
-	DEBUGGER_WIDGET(StackWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Stack"), BOTTOM_MIDDLE),
-	DEBUGGER_WIDGET(ThreadWidget, QT_TRANSLATE_NOOP("DebuggerWidget", "Threads"), BOTTOM_MIDDLE),
+const std::map<std::string, DockTables::DebuggerViewDescription> DockTables::DEBUGGER_VIEWS = {
+	DEBUGGER_VIEW(BreakpointWidget, QT_TRANSLATE_NOOP("DebuggerView", "Breakpoints"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(DisassemblyWidget, QT_TRANSLATE_NOOP("DebuggerView", "Disassembly"), TOP_RIGHT),
+	DEBUGGER_VIEW(FunctionTreeWidget, QT_TRANSLATE_NOOP("DebuggerView", "Functions"), TOP_LEFT),
+	DEBUGGER_VIEW(GlobalVariableTreeWidget, QT_TRANSLATE_NOOP("DebuggerView", "Globals"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(LocalVariableTreeWidget, QT_TRANSLATE_NOOP("DebuggerView", "Locals"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(MemorySearchWidget, QT_TRANSLATE_NOOP("DebuggerView", "Memory Search"), TOP_LEFT),
+	DEBUGGER_VIEW(MemoryViewWidget, QT_TRANSLATE_NOOP("DebuggerView", "Memory"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(ParameterVariableTreeWidget, QT_TRANSLATE_NOOP("DebuggerView", "Parameters"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(RegisterWidget, QT_TRANSLATE_NOOP("DebuggerView", "Registers"), TOP_LEFT),
+	DEBUGGER_VIEW(SavedAddressesWidget, QT_TRANSLATE_NOOP("DebuggerView", "Saved Addresses"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(StackWidget, QT_TRANSLATE_NOOP("DebuggerView", "Stack"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(ThreadWidget, QT_TRANSLATE_NOOP("DebuggerView", "Threads"), BOTTOM_MIDDLE),
 };
 
-#undef DEBUGGER_WIDGET
+#undef DEBUGGER_VIEW
 
 const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUTS = {
 	{

@@ -18,8 +18,8 @@ static bool testName(const QString& name, const QString& filter);
 SymbolTreeWidget::SymbolTreeWidget(
 	u32 flags,
 	s32 symbol_address_alignment,
-	const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, MONOSPACE_FONT)
+	const DebuggerViewParameters& parameters)
+	: DebuggerView(parameters, MONOSPACE_FONT)
 	, m_flags(flags)
 	, m_symbol_address_alignment(symbol_address_alignment)
 	, m_group_by_module(cpu().getCpuType() == BREAKPOINT_IOP)
@@ -67,7 +67,7 @@ void SymbolTreeWidget::resizeEvent(QResizeEvent* event)
 
 void SymbolTreeWidget::toJson(JsonValueWrapper& json)
 {
-	DebuggerWidget::toJson(json);
+	DebuggerView::toJson(json);
 
 	json.value().AddMember("showSizeColumn", m_show_size_column, json.allocator());
 	if (m_flags & ALLOW_GROUPING)
@@ -85,7 +85,7 @@ void SymbolTreeWidget::toJson(JsonValueWrapper& json)
 
 bool SymbolTreeWidget::fromJson(const JsonValueWrapper& json)
 {
-	if (!DebuggerWidget::fromJson(json))
+	if (!DebuggerView::fromJson(json))
 		return false;
 
 	bool needs_reset = false;
@@ -712,7 +712,7 @@ SymbolTreeNode* SymbolTreeWidget::currentNode()
 
 // *****************************************************************************
 
-FunctionTreeWidget::FunctionTreeWidget(const DebuggerWidgetParameters& parameters)
+FunctionTreeWidget::FunctionTreeWidget(const DebuggerViewParameters& parameters)
 	: SymbolTreeWidget(
 		  ALLOW_GROUPING | ALLOW_MANGLED_NAME_ACTIONS | CLICK_TO_GO_TO_IN_DISASSEMBLER,
 		  4,
@@ -800,7 +800,7 @@ void FunctionTreeWidget::onNewButtonPressed()
 
 // *****************************************************************************
 
-GlobalVariableTreeWidget::GlobalVariableTreeWidget(const DebuggerWidgetParameters& parameters)
+GlobalVariableTreeWidget::GlobalVariableTreeWidget(const DebuggerViewParameters& parameters)
 	: SymbolTreeWidget(
 		  ALLOW_GROUPING | ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN | ALLOW_TYPE_ACTIONS | ALLOW_MANGLED_NAME_ACTIONS,
 		  1,
@@ -943,7 +943,7 @@ void GlobalVariableTreeWidget::onNewButtonPressed()
 
 // *****************************************************************************
 
-LocalVariableTreeWidget::LocalVariableTreeWidget(const DebuggerWidgetParameters& parameters)
+LocalVariableTreeWidget::LocalVariableTreeWidget(const DebuggerViewParameters& parameters)
 	: SymbolTreeWidget(
 		  ALLOW_TYPE_ACTIONS,
 		  1,
@@ -1072,7 +1072,7 @@ void LocalVariableTreeWidget::onNewButtonPressed()
 
 // *****************************************************************************
 
-ParameterVariableTreeWidget::ParameterVariableTreeWidget(const DebuggerWidgetParameters& parameters)
+ParameterVariableTreeWidget::ParameterVariableTreeWidget(const DebuggerViewParameters& parameters)
 	: SymbolTreeWidget(
 		  ALLOW_TYPE_ACTIONS,
 		  1,

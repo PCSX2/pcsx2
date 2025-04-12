@@ -5,19 +5,19 @@
 
 #include "ui_DisassemblyWidget.h"
 
-#include "DebuggerWidget.h"
+#include "DebuggerView.h"
 
 #include "pcsx2/DebugTools/DisassemblyManager.h"
 
 #include <QtWidgets/QMenu>
 #include <QtGui/QPainter>
 
-class DisassemblyWidget final : public DebuggerWidget
+class DisassemblyWidget final : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	DisassemblyWidget(const DebuggerWidgetParameters& parameters);
+	DisassemblyWidget(const DebuggerViewParameters& parameters);
 	~DisassemblyWidget();
 
 	void toJson(JsonValueWrapper& json) override;

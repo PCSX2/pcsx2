@@ -10,8 +10,8 @@
 
 #include <QtGui/QClipboard>
 
-BreakpointWidget::BreakpointWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, DISALLOW_MULTIPLE_INSTANCES)
+BreakpointWidget::BreakpointWidget(const DebuggerViewParameters& parameters)
+	: DebuggerView(parameters, DISALLOW_MULTIPLE_INSTANCES)
 	, m_model(BreakpointModel::getInstance(cpu()))
 {
 	m_ui.setupUi(this);

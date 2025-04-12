@@ -8,8 +8,8 @@
 #include <QtGui/QClipboard>
 #include <QtWidgets/QMenu>
 
-ThreadWidget::ThreadWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
+ThreadWidget::ThreadWidget(const DebuggerViewParameters& parameters)
+	: DebuggerView(parameters, NO_DEBUGGER_FLAGS)
 	, m_model(new ThreadModel(cpu()))
 	, m_proxy_model(new QSortFilterProxyModel())
 {
