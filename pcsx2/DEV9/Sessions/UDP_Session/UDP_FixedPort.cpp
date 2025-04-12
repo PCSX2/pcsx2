@@ -84,8 +84,28 @@ namespace Sessions
 
 		if (!success)
 		{
-			RaiseEventConnectionClosed();
-			return std::nullopt;
+			// See Reset() for why we copy the vector.
+			std::vector<UDP_BaseSession*> connectionsCopy;
+			{
+				std::lock_guard numberlock(connectionSentry);
+				open.store(false);
+				connectionsCopy = connections;
+			}
+
+			if (connectionsCopy.size() == 0)
+			{
+				// Can close immediately.
+				RaiseEventConnectionClosed();
+				return std::nullopt;
+			}
+			else
+			{
+				// Need to wait for child connections to close.
+				for (size_t i = 0; i < connectionsCopy.size(); i++)
+					connectionsCopy[i]->ForceClose();
+
+				return std::nullopt;
+			}
 		}
 		else if (ret.has_value())
 		{
@@ -112,10 +132,12 @@ namespace Sessions
 
 	void UDP_FixedPort::Reset()
 	{
-		// Reseting a session may cause that session to close itself,
-		// when that happens, the connections vector gets modified via our close handler.
-		// Duplicate the vector to avoid iterating over a modified collection,
-		// this also avoids the issue of recursive locking when our close handler takes a lock.
+		/*
+		 * Reseting a session may cause that session to close itself,
+		 * when that happens, the connections vector gets modified via our close handler.
+		 * Duplicate the vector to avoid iterating over a modified collection,
+		 * this also avoids the issue of recursive locking when our close handler takes a lock.
+		 */
 		std::vector<UDP_BaseSession*> connectionsCopy;
 		{
 			std::lock_guard numberlock(connectionSentry);
@@ -128,16 +150,15 @@ namespace Sessions
 
 	UDP_Session* UDP_FixedPort::NewClientSession(ConnectionKey parNewKey, bool parIsBrodcast, bool parIsMulticast)
 	{
+		// Lock the whole function so we can't race between the open check and creating the session
+		std::lock_guard numberlock(connectionSentry);
 		if (!open.load())
 			return nullptr;
 
 		UDP_Session* s = new UDP_Session(parNewKey, adapterIP, parIsBrodcast, parIsMulticast, client);
 
 		s->AddConnectionClosedHandler([&](BaseSession* session) { HandleChildConnectionClosed(session); });
-		{
-			std::lock_guard numberlock(connectionSentry);
-			connections.push_back(s);
-		}
+		connections.push_back(s);
 		return s;
 	}
 
@@ -159,6 +180,8 @@ namespace Sessions
 
 	UDP_FixedPort::~UDP_FixedPort()
 	{
+		DevCon.WriteLn("DEV9: Socket: UDPFixedPort %d had %d child connections", port, connections.size());
+
 		open.store(false);
 		if (client != INVALID_SOCKET)
 		{
