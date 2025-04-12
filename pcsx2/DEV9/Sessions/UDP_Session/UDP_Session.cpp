@@ -20,6 +20,7 @@
 #endif
 
 #include "UDP_Session.h"
+#include "UDP_Common.h"
 #include "DEV9/PacketReader/IP/UDP/UDP_Packet.h"
 
 using namespace PacketReader;
@@ -75,97 +76,17 @@ namespace Sessions
 			return std::nullopt;
 		}
 
-		int ret;
-		fd_set sReady;
-		fd_set sExcept;
+		std::optional<ReceivedPayload> ret;
+		bool success;
+		std::tie(ret, success) = UDP_Common::RecvFrom(client, srcPort);
 
-		timeval nowait{};
-		FD_ZERO(&sReady);
-		FD_ZERO(&sExcept);
-		FD_SET(client, &sReady);
-		FD_SET(client, &sExcept);
-		ret = select(client + 1, &sReady, nullptr, &sExcept, &nowait);
-
-		bool hasData;
-		if (ret == SOCKET_ERROR)
+		if (!success)
 		{
-			hasData = false;
-			Console.Error("DEV9: UDP: Select failed. Error code: %d",
-#ifdef _WIN32
-				WSAGetLastError());
-#elif defined(__POSIX__)
-				errno);
-#endif
+			RaiseEventConnectionClosed();
+			return std::nullopt;
 		}
-		else if (FD_ISSET(client, &sExcept))
-		{
-			hasData = false;
-
-			int error = 0;
-#ifdef _WIN32
-			int len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
-				Console.Error("DEV9: UDP: Unknown UDP connection error (getsockopt error: %d)", WSAGetLastError());
-#elif defined(__POSIX__)
-			socklen_t len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
-				Console.Error("DEV9: UDP: Unknown UDP connection error (getsockopt error: %d)", errno);
-#endif
-			else
-				Console.Error("DEV9: UDP: Recv error: %d", error);
-		}
-		else
-			hasData = FD_ISSET(client, &sReady);
-
-		if (hasData)
-		{
-			unsigned long available = 0;
-			PayloadData* recived = nullptr;
-			std::unique_ptr<u8[]> buffer;
-			sockaddr_in endpoint{};
-
-			// FIONREAD returns total size of all available messages
-			// however, we only read one message at a time
-#ifdef _WIN32
-			ret = ioctlsocket(client, FIONREAD, &available);
-#elif defined(__POSIX__)
-			ret = ioctl(client, FIONREAD, &available);
-#endif
-			if (ret != SOCKET_ERROR)
-			{
-				buffer = std::make_unique<u8[]>(available);
-
-#ifdef _WIN32
-				int fromlen = sizeof(endpoint);
-#elif defined(__POSIX__)
-				socklen_t fromlen = sizeof(endpoint);
-#endif
-				ret = recvfrom(client, reinterpret_cast<char*>(buffer.get()), available, 0, reinterpret_cast<sockaddr*>(&endpoint), &fromlen);
-			}
-
-			if (ret == SOCKET_ERROR)
-			{
-				Console.Error("DEV9: UDP: Recv error: %d",
-#ifdef _WIN32
-					WSAGetLastError());
-#elif defined(__POSIX__)
-					errno);
-#endif
-				RaiseEventConnectionClosed();
-				return std::nullopt;
-			}
-
-			recived = new PayloadData(ret);
-			memcpy(recived->data.get(), buffer.get(), ret);
-
-			std::unique_ptr<UDP_Packet> iRet = std::make_unique<UDP_Packet>(recived);
-			iRet->destinationPort = srcPort;
-			iRet->sourcePort = destPort;
-
-			deathClockStart.store(std::chrono::steady_clock::now());
-
-			return ReceivedPayload{destIP, std::move(iRet)};
-		}
+		else if (ret.has_value())
+			return ret;
 
 		if (std::chrono::steady_clock::now() - deathClockStart.load() > MAX_IDLE)
 		{
@@ -211,46 +132,11 @@ namespace Sessions
 			destPort = udp.destinationPort;
 			srcPort = udp.sourcePort;
 
-			int ret;
-			client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+			client = UDP_Common::CreateSocket(adapterIP, std::nullopt);
 			if (client == INVALID_SOCKET)
 			{
-				Console.Error("DEV9: UDP: Failed to open socket. Error: %d",
-#ifdef _WIN32
-					WSAGetLastError());
-#elif defined(__POSIX__)
-					errno);
-#endif
 				RaiseEventConnectionClosed();
 				return false;
-			}
-
-			constexpr int reuseAddress = true; // BOOL on Windows
-			ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuseAddress), sizeof(reuseAddress));
-
-			if (ret == SOCKET_ERROR)
-				Console.Error("DEV9: UDP: Failed to set SO_REUSEADDR. Error: %d",
-#ifdef _WIN32
-					WSAGetLastError());
-#elif defined(__POSIX__)
-					errno);
-#endif
-
-			if (adapterIP.integer != 0)
-			{
-				sockaddr_in endpoint{};
-				endpoint.sin_family = AF_INET;
-				endpoint.sin_addr = std::bit_cast<in_addr>(adapterIP);
-
-				ret = bind(client, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
-
-				if (ret == SOCKET_ERROR)
-					Console.Error("DEV9: UDP: Failed to bind socket. Error: %d",
-#ifdef _WIN32
-						WSAGetLastError());
-#elif defined(__POSIX__)
-						errno);
-#endif
 			}
 
 			sockaddr_in endpoint{};
@@ -258,7 +144,7 @@ namespace Sessions
 			endpoint.sin_addr = std::bit_cast<in_addr>(destIP);
 			endpoint.sin_port = htons(destPort);
 
-			ret = connect(client, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
+			const int ret = connect(client, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 
 			if (ret == SOCKET_ERROR)
 			{
