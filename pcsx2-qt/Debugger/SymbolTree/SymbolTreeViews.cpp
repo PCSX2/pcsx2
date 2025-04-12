@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include "SymbolTreeWidgets.h"
+#include "SymbolTreeViews.h"
 
 #include "Debugger/JsonValueWrapper.h"
 #include "Debugger/SymbolTree/NewSymbolDialogs.h"
@@ -15,7 +15,7 @@
 
 static bool testName(const QString& name, const QString& filter);
 
-SymbolTreeWidget::SymbolTreeWidget(
+SymbolTreeView::SymbolTreeView(
 	u32 flags,
 	s32 symbol_address_alignment,
 	const DebuggerViewParameters& parameters)
@@ -34,17 +34,17 @@ SymbolTreeWidget::SymbolTreeWidget(
 		reset();
 	});
 
-	connect(m_ui.filterBox, &QLineEdit::textEdited, this, &SymbolTreeWidget::reset);
+	connect(m_ui.filterBox, &QLineEdit::textEdited, this, &SymbolTreeView::reset);
 
-	connect(m_ui.newButton, &QPushButton::clicked, this, &SymbolTreeWidget::onNewButtonPressed);
-	connect(m_ui.deleteButton, &QPushButton::clicked, this, &SymbolTreeWidget::onDeleteButtonPressed);
+	connect(m_ui.newButton, &QPushButton::clicked, this, &SymbolTreeView::onNewButtonPressed);
+	connect(m_ui.deleteButton, &QPushButton::clicked, this, &SymbolTreeView::onDeleteButtonPressed);
 
 	connect(m_ui.treeView->verticalScrollBar(), &QScrollBar::valueChanged, this, [&]() {
 		updateVisibleNodes(false);
 	});
 
 	m_ui.treeView->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(m_ui.treeView, &QTreeView::customContextMenuRequested, this, &SymbolTreeWidget::openContextMenu);
+	connect(m_ui.treeView, &QTreeView::customContextMenuRequested, this, &SymbolTreeView::openContextMenu);
 
 	connect(m_ui.treeView, &QTreeView::expanded, this, [&]() {
 		updateVisibleNodes(true);
@@ -56,16 +56,16 @@ SymbolTreeWidget::SymbolTreeWidget(
 	});
 }
 
-SymbolTreeWidget::~SymbolTreeWidget() = default;
+SymbolTreeView::~SymbolTreeView() = default;
 
-void SymbolTreeWidget::resizeEvent(QResizeEvent* event)
+void SymbolTreeView::resizeEvent(QResizeEvent* event)
 {
 	QWidget::resizeEvent(event);
 
 	updateVisibleNodes(false);
 }
 
-void SymbolTreeWidget::toJson(JsonValueWrapper& json)
+void SymbolTreeView::toJson(JsonValueWrapper& json)
 {
 	DebuggerView::toJson(json);
 
@@ -83,7 +83,7 @@ void SymbolTreeWidget::toJson(JsonValueWrapper& json)
 	}
 }
 
-bool SymbolTreeWidget::fromJson(const JsonValueWrapper& json)
+bool SymbolTreeView::fromJson(const JsonValueWrapper& json)
 {
 	if (!DebuggerView::fromJson(json))
 		return false;
@@ -137,7 +137,7 @@ bool SymbolTreeWidget::fromJson(const JsonValueWrapper& json)
 	return true;
 }
 
-void SymbolTreeWidget::updateModel()
+void SymbolTreeView::updateModel()
 {
 	if (needsReset())
 		reset();
@@ -145,7 +145,7 @@ void SymbolTreeWidget::updateModel()
 		updateVisibleNodes(true);
 }
 
-void SymbolTreeWidget::reset()
+void SymbolTreeView::reset()
 {
 	if (!m_model)
 		setupTree();
@@ -170,7 +170,7 @@ void SymbolTreeWidget::reset()
 	}
 }
 
-void SymbolTreeWidget::updateVisibleNodes(bool update_hashes)
+void SymbolTreeView::updateVisibleNodes(bool update_hashes)
 {
 	if (!m_model)
 		return;
@@ -199,7 +199,7 @@ void SymbolTreeWidget::updateVisibleNodes(bool update_hashes)
 	m_ui.treeView->update();
 }
 
-void SymbolTreeWidget::expandGroups(QModelIndex index)
+void SymbolTreeView::expandGroups(QModelIndex index)
 {
 	if (!m_model)
 		return;
@@ -218,7 +218,7 @@ void SymbolTreeWidget::expandGroups(QModelIndex index)
 	}
 }
 
-void SymbolTreeWidget::setupTree()
+void SymbolTreeView::setupTree()
 {
 	m_model = new SymbolTreeModel(cpu(), this);
 	m_ui.treeView->setModel(m_model);
@@ -237,10 +237,10 @@ void SymbolTreeWidget::setupTree()
 
 	configureColumns();
 
-	connect(m_ui.treeView, &QTreeView::pressed, this, &SymbolTreeWidget::onTreeViewClicked);
+	connect(m_ui.treeView, &QTreeView::pressed, this, &SymbolTreeView::onTreeViewClicked);
 }
 
-std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::buildTree(const ccc::SymbolDatabase& database)
+std::unique_ptr<SymbolTreeNode> SymbolTreeView::buildTree(const ccc::SymbolDatabase& database)
 {
 	std::vector<SymbolWork> symbols = getSymbols(m_ui.filterBox->text(), database);
 
@@ -321,7 +321,7 @@ std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::buildTree(const ccc::SymbolDat
 	return root;
 }
 
-std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::groupBySourceFile(
+std::unique_ptr<SymbolTreeNode> SymbolTreeView::groupBySourceFile(
 	std::unique_ptr<SymbolTreeNode> child,
 	const SymbolWork& child_work,
 	SymbolTreeNode*& prev_group,
@@ -364,7 +364,7 @@ std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::groupBySourceFile(
 	return child;
 }
 
-std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::groupBySection(
+std::unique_ptr<SymbolTreeNode> SymbolTreeView::groupBySection(
 	std::unique_ptr<SymbolTreeNode> child,
 	const SymbolWork& child_work,
 	SymbolTreeNode*& prev_group,
@@ -403,7 +403,7 @@ std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::groupBySection(
 	return child;
 }
 
-std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::groupByModule(
+std::unique_ptr<SymbolTreeNode> SymbolTreeView::groupByModule(
 	std::unique_ptr<SymbolTreeNode> child,
 	const SymbolWork& child_work,
 	SymbolTreeNode*& prev_group,
@@ -448,7 +448,7 @@ std::unique_ptr<SymbolTreeNode> SymbolTreeWidget::groupByModule(
 	return child;
 }
 
-void SymbolTreeWidget::openContextMenu(QPoint pos)
+void SymbolTreeView::openContextMenu(QPoint pos)
 {
 	SymbolTreeNode* node = currentNode();
 	if (!node)
@@ -462,22 +462,22 @@ void SymbolTreeWidget::openContextMenu(QPoint pos)
 	menu->setAttribute(Qt::WA_DeleteOnClose);
 
 	QAction* copy_name = menu->addAction(tr("Copy Name"));
-	connect(copy_name, &QAction::triggered, this, &SymbolTreeWidget::onCopyName);
+	connect(copy_name, &QAction::triggered, this, &SymbolTreeView::onCopyName);
 
 	if (m_flags & ALLOW_MANGLED_NAME_ACTIONS)
 	{
 		QAction* copy_mangled_name = menu->addAction(tr("Copy Mangled Name"));
-		connect(copy_mangled_name, &QAction::triggered, this, &SymbolTreeWidget::onCopyMangledName);
+		connect(copy_mangled_name, &QAction::triggered, this, &SymbolTreeView::onCopyMangledName);
 	}
 
 	QAction* copy_location = menu->addAction(tr("Copy Location"));
-	connect(copy_location, &QAction::triggered, this, &SymbolTreeWidget::onCopyLocation);
+	connect(copy_location, &QAction::triggered, this, &SymbolTreeView::onCopyLocation);
 
 	menu->addSeparator();
 
 	QAction* rename_symbol = menu->addAction(tr("Rename Symbol"));
 	rename_symbol->setEnabled(node_is_symbol);
-	connect(rename_symbol, &QAction::triggered, this, &SymbolTreeWidget::onRenameSymbol);
+	connect(rename_symbol, &QAction::triggered, this, &SymbolTreeView::onRenameSymbol);
 
 	menu->addSeparator();
 
@@ -551,22 +551,22 @@ void SymbolTreeWidget::openContextMenu(QPoint pos)
 
 		QAction* reset_children = menu->addAction(tr("Reset Children"));
 		reset_children->setEnabled(node_is_object);
-		connect(reset_children, &QAction::triggered, this, &SymbolTreeWidget::onResetChildren);
+		connect(reset_children, &QAction::triggered, this, &SymbolTreeView::onResetChildren);
 
 		QAction* change_type_temporarily = menu->addAction(tr("Change Type Temporarily"));
 		change_type_temporarily->setEnabled(node_is_object);
-		connect(change_type_temporarily, &QAction::triggered, this, &SymbolTreeWidget::onChangeTypeTemporarily);
+		connect(change_type_temporarily, &QAction::triggered, this, &SymbolTreeView::onChangeTypeTemporarily);
 	}
 
 	menu->popup(m_ui.treeView->viewport()->mapToGlobal(pos));
 }
 
-bool SymbolTreeWidget::needsReset() const
+bool SymbolTreeView::needsReset() const
 {
 	return !m_model || m_model->needsReset();
 }
 
-void SymbolTreeWidget::onDeleteButtonPressed()
+void SymbolTreeView::onDeleteButtonPressed()
 {
 	SymbolTreeNode* node = currentNode();
 	if (!node)
@@ -585,7 +585,7 @@ void SymbolTreeWidget::onDeleteButtonPressed()
 	reset();
 }
 
-void SymbolTreeWidget::onCopyName()
+void SymbolTreeView::onCopyName()
 {
 	SymbolTreeNode* node = currentNode();
 	if (!node)
@@ -594,7 +594,7 @@ void SymbolTreeWidget::onCopyName()
 	QApplication::clipboard()->setText(node->name);
 }
 
-void SymbolTreeWidget::onCopyMangledName()
+void SymbolTreeView::onCopyMangledName()
 {
 	SymbolTreeNode* node = currentNode();
 	if (!node)
@@ -606,7 +606,7 @@ void SymbolTreeWidget::onCopyMangledName()
 		QApplication::clipboard()->setText(node->name);
 }
 
-void SymbolTreeWidget::onCopyLocation()
+void SymbolTreeView::onCopyLocation()
 {
 	SymbolTreeNode* node = currentNode();
 	if (!node)
@@ -615,7 +615,7 @@ void SymbolTreeWidget::onCopyLocation()
 	QApplication::clipboard()->setText(node->location.toString(cpu()));
 }
 
-void SymbolTreeWidget::onRenameSymbol()
+void SymbolTreeView::onRenameSymbol()
 {
 	SymbolTreeNode* node = currentNode();
 	if (!node || !node->symbol.valid())
@@ -643,7 +643,7 @@ void SymbolTreeWidget::onRenameSymbol()
 	});
 }
 
-void SymbolTreeWidget::onResetChildren()
+void SymbolTreeView::onResetChildren()
 {
 	if (!m_model)
 		return;
@@ -655,7 +655,7 @@ void SymbolTreeWidget::onResetChildren()
 	m_model->resetChildren(index);
 }
 
-void SymbolTreeWidget::onChangeTypeTemporarily()
+void SymbolTreeView::onChangeTypeTemporarily()
 {
 	if (!m_model)
 		return;
@@ -683,7 +683,7 @@ void SymbolTreeWidget::onChangeTypeTemporarily()
 		QMessageBox::warning(this, tr("Cannot Change Type"), *error_message);
 }
 
-void SymbolTreeWidget::onTreeViewClicked(const QModelIndex& index)
+void SymbolTreeView::onTreeViewClicked(const QModelIndex& index)
 {
 	if (!index.isValid())
 		return;
@@ -701,7 +701,7 @@ void SymbolTreeWidget::onTreeViewClicked(const QModelIndex& index)
 	goToInDisassembler(node->location.address, false);
 }
 
-SymbolTreeNode* SymbolTreeWidget::currentNode()
+SymbolTreeNode* SymbolTreeView::currentNode()
 {
 	if (!m_model)
 		return nullptr;
@@ -712,20 +712,20 @@ SymbolTreeNode* SymbolTreeWidget::currentNode()
 
 // *****************************************************************************
 
-FunctionTreeWidget::FunctionTreeWidget(const DebuggerViewParameters& parameters)
-	: SymbolTreeWidget(
+FunctionTreeView::FunctionTreeView(const DebuggerViewParameters& parameters)
+	: SymbolTreeView(
 		  ALLOW_GROUPING | ALLOW_MANGLED_NAME_ACTIONS | CLICK_TO_GO_TO_IN_DISASSEMBLER,
 		  4,
 		  parameters)
 {
 }
 
-FunctionTreeWidget::~FunctionTreeWidget() = default;
+FunctionTreeView::~FunctionTreeView() = default;
 
-std::vector<SymbolTreeWidget::SymbolWork> FunctionTreeWidget::getSymbols(
+std::vector<SymbolTreeView::SymbolWork> FunctionTreeView::getSymbols(
 	const QString& filter, const ccc::SymbolDatabase& database)
 {
-	std::vector<SymbolTreeWidget::SymbolWork> symbols;
+	std::vector<SymbolTreeView::SymbolWork> symbols;
 
 	for (const ccc::Function& function : database.functions)
 	{
@@ -750,7 +750,7 @@ std::vector<SymbolTreeWidget::SymbolWork> FunctionTreeWidget::getSymbols(
 	return symbols;
 }
 
-std::unique_ptr<SymbolTreeNode> FunctionTreeWidget::buildNode(
+std::unique_ptr<SymbolTreeNode> FunctionTreeView::buildNode(
 	SymbolWork& work, const ccc::SymbolDatabase& database) const
 {
 	const ccc::Function& function = static_cast<const ccc::Function&>(*work.symbol);
@@ -777,7 +777,7 @@ std::unique_ptr<SymbolTreeNode> FunctionTreeWidget::buildNode(
 	return node;
 }
 
-void FunctionTreeWidget::configureColumns()
+void FunctionTreeView::configureColumns()
 {
 	m_ui.treeView->setColumnHidden(SymbolTreeModel::NAME, false);
 	m_ui.treeView->setColumnHidden(SymbolTreeModel::LOCATION, false);
@@ -790,7 +790,7 @@ void FunctionTreeWidget::configureColumns()
 	m_ui.treeView->header()->setStretchLastSection(false);
 }
 
-void FunctionTreeWidget::onNewButtonPressed()
+void FunctionTreeView::onNewButtonPressed()
 {
 	NewFunctionDialog* dialog = new NewFunctionDialog(cpu(), this);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
@@ -800,20 +800,20 @@ void FunctionTreeWidget::onNewButtonPressed()
 
 // *****************************************************************************
 
-GlobalVariableTreeWidget::GlobalVariableTreeWidget(const DebuggerViewParameters& parameters)
-	: SymbolTreeWidget(
+GlobalVariableTreeView::GlobalVariableTreeView(const DebuggerViewParameters& parameters)
+	: SymbolTreeView(
 		  ALLOW_GROUPING | ALLOW_SORTING_BY_IF_TYPE_IS_KNOWN | ALLOW_TYPE_ACTIONS | ALLOW_MANGLED_NAME_ACTIONS,
 		  1,
 		  parameters)
 {
 }
 
-GlobalVariableTreeWidget::~GlobalVariableTreeWidget() = default;
+GlobalVariableTreeView::~GlobalVariableTreeView() = default;
 
-std::vector<SymbolTreeWidget::SymbolWork> GlobalVariableTreeWidget::getSymbols(
+std::vector<SymbolTreeView::SymbolWork> GlobalVariableTreeView::getSymbols(
 	const QString& filter, const ccc::SymbolDatabase& database)
 {
-	std::vector<SymbolTreeWidget::SymbolWork> symbols;
+	std::vector<SymbolTreeView::SymbolWork> symbols;
 
 	for (const ccc::GlobalVariable& global_variable : database.global_variables)
 	{
@@ -875,7 +875,7 @@ std::vector<SymbolTreeWidget::SymbolWork> GlobalVariableTreeWidget::getSymbols(
 	return symbols;
 }
 
-std::unique_ptr<SymbolTreeNode> GlobalVariableTreeWidget::buildNode(
+std::unique_ptr<SymbolTreeNode> GlobalVariableTreeView::buildNode(
 	SymbolWork& work, const ccc::SymbolDatabase& database) const
 {
 	std::unique_ptr<SymbolTreeNode> node = std::make_unique<SymbolTreeNode>();
@@ -918,7 +918,7 @@ std::unique_ptr<SymbolTreeNode> GlobalVariableTreeWidget::buildNode(
 	return node;
 }
 
-void GlobalVariableTreeWidget::configureColumns()
+void GlobalVariableTreeView::configureColumns()
 {
 	m_ui.treeView->setColumnHidden(SymbolTreeModel::NAME, false);
 	m_ui.treeView->setColumnHidden(SymbolTreeModel::LOCATION, false);
@@ -933,7 +933,7 @@ void GlobalVariableTreeWidget::configureColumns()
 	m_ui.treeView->header()->setStretchLastSection(false);
 }
 
-void GlobalVariableTreeWidget::onNewButtonPressed()
+void GlobalVariableTreeView::onNewButtonPressed()
 {
 	NewGlobalVariableDialog* dialog = new NewGlobalVariableDialog(cpu(), this);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
@@ -943,17 +943,17 @@ void GlobalVariableTreeWidget::onNewButtonPressed()
 
 // *****************************************************************************
 
-LocalVariableTreeWidget::LocalVariableTreeWidget(const DebuggerViewParameters& parameters)
-	: SymbolTreeWidget(
+LocalVariableTreeView::LocalVariableTreeView(const DebuggerViewParameters& parameters)
+	: SymbolTreeView(
 		  ALLOW_TYPE_ACTIONS,
 		  1,
 		  parameters)
 {
 }
 
-LocalVariableTreeWidget::~LocalVariableTreeWidget() = default;
+LocalVariableTreeView::~LocalVariableTreeView() = default;
 
-bool LocalVariableTreeWidget::needsReset() const
+bool LocalVariableTreeView::needsReset() const
 {
 	if (!m_function.valid())
 		return true;
@@ -975,10 +975,10 @@ bool LocalVariableTreeWidget::needsReset() const
 	if (left_function)
 		return true;
 
-	return SymbolTreeWidget::needsReset();
+	return SymbolTreeView::needsReset();
 }
 
-std::vector<SymbolTreeWidget::SymbolWork> LocalVariableTreeWidget::getSymbols(
+std::vector<SymbolTreeView::SymbolWork> LocalVariableTreeView::getSymbols(
 	const QString& filter, const ccc::SymbolDatabase& database)
 {
 	u32 program_counter = cpu().getPC();
@@ -992,7 +992,7 @@ std::vector<SymbolTreeWidget::SymbolWork> LocalVariableTreeWidget::getSymbols(
 	m_function = function->handle();
 	m_caller_stack_pointer = cpu().getCallerStackPointer(*function);
 
-	std::vector<SymbolTreeWidget::SymbolWork> symbols;
+	std::vector<SymbolTreeView::SymbolWork> symbols;
 
 	for (const ccc::LocalVariableHandle local_variable_handle : *function->local_variables())
 	{
@@ -1024,7 +1024,7 @@ std::vector<SymbolTreeWidget::SymbolWork> LocalVariableTreeWidget::getSymbols(
 	return symbols;
 }
 
-std::unique_ptr<SymbolTreeNode> LocalVariableTreeWidget::buildNode(
+std::unique_ptr<SymbolTreeNode> LocalVariableTreeView::buildNode(
 	SymbolWork& work, const ccc::SymbolDatabase& database) const
 {
 	const ccc::LocalVariable& local_variable = static_cast<const ccc::LocalVariable&>(*work.symbol);
@@ -1047,7 +1047,7 @@ std::unique_ptr<SymbolTreeNode> LocalVariableTreeWidget::buildNode(
 	return node;
 }
 
-void LocalVariableTreeWidget::configureColumns()
+void LocalVariableTreeView::configureColumns()
 {
 	m_ui.treeView->setColumnHidden(SymbolTreeModel::NAME, false);
 	m_ui.treeView->setColumnHidden(SymbolTreeModel::LOCATION, false);
@@ -1062,7 +1062,7 @@ void LocalVariableTreeWidget::configureColumns()
 	m_ui.treeView->header()->setStretchLastSection(false);
 }
 
-void LocalVariableTreeWidget::onNewButtonPressed()
+void LocalVariableTreeView::onNewButtonPressed()
 {
 	NewLocalVariableDialog* dialog = new NewLocalVariableDialog(cpu(), this);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
@@ -1072,17 +1072,17 @@ void LocalVariableTreeWidget::onNewButtonPressed()
 
 // *****************************************************************************
 
-ParameterVariableTreeWidget::ParameterVariableTreeWidget(const DebuggerViewParameters& parameters)
-	: SymbolTreeWidget(
+ParameterVariableTreeView::ParameterVariableTreeView(const DebuggerViewParameters& parameters)
+	: SymbolTreeView(
 		  ALLOW_TYPE_ACTIONS,
 		  1,
 		  parameters)
 {
 }
 
-ParameterVariableTreeWidget::~ParameterVariableTreeWidget() = default;
+ParameterVariableTreeView::~ParameterVariableTreeView() = default;
 
-bool ParameterVariableTreeWidget::needsReset() const
+bool ParameterVariableTreeView::needsReset() const
 {
 	if (!m_function.valid())
 		return true;
@@ -1104,13 +1104,13 @@ bool ParameterVariableTreeWidget::needsReset() const
 	if (left_function)
 		return true;
 
-	return SymbolTreeWidget::needsReset();
+	return SymbolTreeView::needsReset();
 }
 
-std::vector<SymbolTreeWidget::SymbolWork> ParameterVariableTreeWidget::getSymbols(
+std::vector<SymbolTreeView::SymbolWork> ParameterVariableTreeView::getSymbols(
 	const QString& filter, const ccc::SymbolDatabase& database)
 {
-	std::vector<SymbolTreeWidget::SymbolWork> symbols;
+	std::vector<SymbolTreeView::SymbolWork> symbols;
 
 	u32 program_counter = cpu().getPC();
 	const ccc::Function* function = database.functions.symbol_overlapping_address(program_counter);
@@ -1154,7 +1154,7 @@ std::vector<SymbolTreeWidget::SymbolWork> ParameterVariableTreeWidget::getSymbol
 	return symbols;
 }
 
-std::unique_ptr<SymbolTreeNode> ParameterVariableTreeWidget::buildNode(
+std::unique_ptr<SymbolTreeNode> ParameterVariableTreeView::buildNode(
 	SymbolWork& work, const ccc::SymbolDatabase& database) const
 {
 	const ccc::ParameterVariable& parameter_variable = static_cast<const ccc::ParameterVariable&>(*work.symbol);
@@ -1174,7 +1174,7 @@ std::unique_ptr<SymbolTreeNode> ParameterVariableTreeWidget::buildNode(
 	return node;
 }
 
-void ParameterVariableTreeWidget::configureColumns()
+void ParameterVariableTreeView::configureColumns()
 {
 	m_ui.treeView->setColumnHidden(SymbolTreeModel::NAME, false);
 	m_ui.treeView->setColumnHidden(SymbolTreeModel::LOCATION, false);
@@ -1189,7 +1189,7 @@ void ParameterVariableTreeWidget::configureColumns()
 	m_ui.treeView->header()->setStretchLastSection(false);
 }
 
-void ParameterVariableTreeWidget::onNewButtonPressed()
+void ParameterVariableTreeView::onNewButtonPressed()
 {
 	NewParameterVariableDialog* dialog = new NewParameterVariableDialog(cpu(), this);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);

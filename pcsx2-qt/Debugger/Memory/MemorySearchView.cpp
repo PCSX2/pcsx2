@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include "MemorySearchWidget.h"
+#include "MemorySearchView.h"
 
 #include "DebugTools/DebugInterface.h"
 
@@ -17,33 +17,33 @@
 #include <QtCore/QFutureWatcher>
 #include <QtGui/QPainter>
 
-using SearchComparison = MemorySearchWidget::SearchComparison;
-using SearchType = MemorySearchWidget::SearchType;
-using SearchResult = MemorySearchWidget::SearchResult;
+using SearchComparison = MemorySearchView::SearchComparison;
+using SearchType = MemorySearchView::SearchType;
+using SearchResult = MemorySearchView::SearchResult;
 
 using namespace QtUtils;
 
-MemorySearchWidget::MemorySearchWidget(const DebuggerViewParameters& parameters)
+MemorySearchView::MemorySearchView(const DebuggerViewParameters& parameters)
 	: DebuggerView(parameters, MONOSPACE_FONT)
 {
 	m_ui.setupUi(this);
 	this->repaint();
 
 	m_ui.listSearchResults->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(m_ui.btnSearch, &QPushButton::clicked, this, &MemorySearchWidget::onSearchButtonClicked);
-	connect(m_ui.btnFilterSearch, &QPushButton::clicked, this, &MemorySearchWidget::onSearchButtonClicked);
+	connect(m_ui.btnSearch, &QPushButton::clicked, this, &MemorySearchView::onSearchButtonClicked);
+	connect(m_ui.btnFilterSearch, &QPushButton::clicked, this, &MemorySearchView::onSearchButtonClicked);
 	connect(m_ui.listSearchResults, &QListWidget::itemDoubleClicked, [](QListWidgetItem* item) {
 		goToInMemoryView(item->text().toUInt(nullptr, 16), true);
 	});
-	connect(m_ui.listSearchResults->verticalScrollBar(), &QScrollBar::valueChanged, this, &MemorySearchWidget::onSearchResultsListScroll);
-	connect(m_ui.listSearchResults, &QListView::customContextMenuRequested, this, &MemorySearchWidget::onListSearchResultsContextMenu);
-	connect(m_ui.cmbSearchType, &QComboBox::currentIndexChanged, this, &MemorySearchWidget::onSearchTypeChanged);
-	connect(m_ui.cmbSearchComparison, &QComboBox::currentIndexChanged, this, &MemorySearchWidget::onSearchComparisonChanged);
+	connect(m_ui.listSearchResults->verticalScrollBar(), &QScrollBar::valueChanged, this, &MemorySearchView::onSearchResultsListScroll);
+	connect(m_ui.listSearchResults, &QListView::customContextMenuRequested, this, &MemorySearchView::onListSearchResultsContextMenu);
+	connect(m_ui.cmbSearchType, &QComboBox::currentIndexChanged, this, &MemorySearchView::onSearchTypeChanged);
+	connect(m_ui.cmbSearchComparison, &QComboBox::currentIndexChanged, this, &MemorySearchView::onSearchComparisonChanged);
 
 	// Ensures we don't retrigger the load results function unintentionally
 	m_resultsLoadTimer.setInterval(100);
 	m_resultsLoadTimer.setSingleShot(true);
-	connect(&m_resultsLoadTimer, &QTimer::timeout, this, &MemorySearchWidget::loadSearchResults);
+	connect(&m_resultsLoadTimer, &QTimer::timeout, this, &MemorySearchView::loadSearchResults);
 
 	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
 		update();
@@ -51,7 +51,7 @@ MemorySearchWidget::MemorySearchWidget(const DebuggerViewParameters& parameters)
 	});
 }
 
-void MemorySearchWidget::contextRemoveSearchResult()
+void MemorySearchView::contextRemoveSearchResult()
 {
 	const QItemSelectionModel* selModel = m_ui.listSearchResults->selectionModel();
 	if (!selModel->hasSelection())
@@ -67,7 +67,7 @@ void MemorySearchWidget::contextRemoveSearchResult()
 	delete rowToRemove;
 }
 
-void MemorySearchWidget::contextCopySearchResultAddress()
+void MemorySearchView::contextCopySearchResultAddress()
 {
 	if (!m_ui.listSearchResults->selectionModel()->hasSelection())
 		return;
@@ -78,7 +78,7 @@ void MemorySearchWidget::contextCopySearchResultAddress()
 	QApplication::clipboard()->setText(addressString);
 }
 
-void MemorySearchWidget::onListSearchResultsContextMenu(QPoint pos)
+void MemorySearchView::onListSearchResultsContextMenu(QPoint pos)
 {
 	const QItemSelectionModel* selection_model = m_ui.listSearchResults->selectionModel();
 	const QListWidget* list_search_results = m_ui.listSearchResults;
@@ -89,7 +89,7 @@ void MemorySearchWidget::onListSearchResultsContextMenu(QPoint pos)
 	if (selection_model->hasSelection())
 	{
 		connect(menu->addAction(tr("Copy Address")), &QAction::triggered,
-			this, &MemorySearchWidget::contextCopySearchResultAddress);
+			this, &MemorySearchView::contextCopySearchResultAddress);
 
 		createEventActions<DebuggerEvents::GoToAddress>(menu, [list_search_results]() {
 			u32 selected_address = list_search_results->selectedItems().first()->data(Qt::UserRole).toUInt();
@@ -106,7 +106,7 @@ void MemorySearchWidget::onListSearchResultsContextMenu(QPoint pos)
 		});
 
 		connect(menu->addAction(tr("Remove Result")), &QAction::triggered,
-			this, &MemorySearchWidget::contextRemoveSearchResult);
+			this, &MemorySearchView::contextRemoveSearchResult);
 	}
 
 	menu->popup(m_ui.listSearchResults->viewport()->mapToGlobal(pos));
@@ -297,7 +297,7 @@ void searchWorker(DebugInterface* cpu, std::vector<SearchResult>& searchResults,
 			T readValue = readValueAtAddress<T>(cpu, addr);
 			if (handleSearchComparison(searchComparison, addr, nullptr, searchValue, readValue))
 			{
-				searchResults.push_back(MemorySearchWidget::SearchResult(addr, QVariant::fromValue(readValue), searchType));
+				searchResults.push_back(MemorySearchView::SearchResult(addr, QVariant::fromValue(readValue), searchType));
 			}
 		}
 	}
@@ -312,7 +312,7 @@ void searchWorker(DebugInterface* cpu, std::vector<SearchResult>& searchResults,
 
 			const bool doesMatch = handleSearchComparison(searchComparison, addr, &searchResult, searchValue, readValue);
 			if (!doesMatch)
-				searchResult = MemorySearchWidget::SearchResult(addr, QVariant::fromValue(readValue), searchType);
+				searchResult = MemorySearchView::SearchResult(addr, QVariant::fromValue(readValue), searchType);
 
 			return !doesMatch;
 		});
@@ -399,7 +399,7 @@ static void searchWorkerByteArray(DebugInterface* cpu, SearchType searchType, Se
 				continue;
 			if (handleArraySearchComparison(cpu, searchComparison, addr, nullptr, searchValue))
 			{
-				searchResults.push_back(MemorySearchWidget::SearchResult(addr, searchValue, searchType));
+				searchResults.push_back(MemorySearchView::SearchResult(addr, searchValue, searchType));
 				addr += searchValue.length() - 1;
 			}
 		}
@@ -421,7 +421,7 @@ static void searchWorkerByteArray(DebugInterface* cpu, SearchType searchType, Se
 					matchValue = searchResult.getArrayValue();
 				else
 					matchValue = readArrayAtAddress(cpu, addr, searchValue.length() - 1);
-				searchResult = MemorySearchWidget::SearchResult(addr, matchValue, searchType);
+				searchResult = MemorySearchView::SearchResult(addr, matchValue, searchType);
 			}
 			return !doesMatch;
 		});
@@ -465,7 +465,7 @@ std::vector<SearchResult> startWorker(DebugInterface* cpu, const SearchType type
 	return searchResults;
 }
 
-void MemorySearchWidget::onSearchButtonClicked()
+void MemorySearchView::onSearchButtonClicked()
 {
 	if (!cpu().isAlive())
 		return;
@@ -612,7 +612,7 @@ void MemorySearchWidget::onSearchButtonClicked()
 	m_ui.resultsCountLabel->setVisible(true);
 }
 
-void MemorySearchWidget::onSearchResultsListScroll(u32 value)
+void MemorySearchView::onSearchResultsListScroll(u32 value)
 {
 	const bool hasResultsToLoad = static_cast<size_t>(m_ui.listSearchResults->count()) < m_searchResults.size();
 	const bool scrolledSufficiently = value > (m_ui.listSearchResults->verticalScrollBar()->maximum() * 0.95);
@@ -623,7 +623,7 @@ void MemorySearchWidget::onSearchResultsListScroll(u32 value)
 	}
 }
 
-void MemorySearchWidget::loadSearchResults()
+void MemorySearchView::loadSearchResults()
 {
 	const u32 numLoaded = m_ui.listSearchResults->count();
 	const u32 amountLeftToLoad = m_searchResults.size() - numLoaded;
@@ -643,18 +643,18 @@ void MemorySearchWidget::loadSearchResults()
 	}
 }
 
-SearchType MemorySearchWidget::getCurrentSearchType()
+SearchType MemorySearchView::getCurrentSearchType()
 {
 	return static_cast<SearchType>(m_ui.cmbSearchType->currentIndex());
 }
 
-SearchComparison MemorySearchWidget::getCurrentSearchComparison()
+SearchComparison MemorySearchView::getCurrentSearchComparison()
 {
 	// Note: The index can't be converted directly to the enum value since we change what comparisons are shown.
 	return m_searchComparisonLabelMap.labelToEnum(m_ui.cmbSearchComparison->currentText());
 }
 
-bool MemorySearchWidget::doesSearchComparisonTakeInput(const SearchComparison comparison)
+bool MemorySearchView::doesSearchComparisonTakeInput(const SearchComparison comparison)
 {
 	switch (comparison)
 	{
@@ -672,7 +672,7 @@ bool MemorySearchWidget::doesSearchComparisonTakeInput(const SearchComparison co
 	}
 }
 
-void MemorySearchWidget::onSearchTypeChanged(int newIndex)
+void MemorySearchView::onSearchTypeChanged(int newIndex)
 {
 	if (newIndex < 4)
 		m_ui.chkSearchHex->setEnabled(true);
@@ -689,12 +689,12 @@ void MemorySearchWidget::onSearchTypeChanged(int newIndex)
 	updateSearchComparisonSelections();
 }
 
-void MemorySearchWidget::onSearchComparisonChanged(int newValue)
+void MemorySearchView::onSearchComparisonChanged(int newValue)
 {
 	m_ui.txtSearchValue->setEnabled(getCurrentSearchComparison() != SearchComparison::UnknownValue);
 }
 
-void MemorySearchWidget::updateSearchComparisonSelections()
+void MemorySearchView::updateSearchComparisonSelections()
 {
 	const QString selectedComparisonLabel = m_ui.cmbSearchComparison->currentText();
 	const SearchComparison selectedComparison = m_searchComparisonLabelMap.labelToEnum(selectedComparisonLabel);
@@ -713,7 +713,7 @@ void MemorySearchWidget::updateSearchComparisonSelections()
 		m_ui.cmbSearchComparison->setCurrentText(selectedComparisonLabel);
 }
 
-std::vector<SearchComparison> MemorySearchWidget::getValidSearchComparisonsForState(SearchType type, std::vector<SearchResult>& existingResults)
+std::vector<SearchComparison> MemorySearchView::getValidSearchComparisonsForState(SearchType type, std::vector<SearchResult>& existingResults)
 {
 	const bool hasResults = existingResults.size() > 0;
 	std::vector<SearchComparison> comparisons = {SearchComparison::Equals};

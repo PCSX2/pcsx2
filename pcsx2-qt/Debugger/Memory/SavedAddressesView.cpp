@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include "SavedAddressesWidget.h"
+#include "SavedAddressesView.h"
 
 #include "QtUtils.h"
 #include "Debugger/DebuggerSettingsManager.h"
@@ -9,7 +9,7 @@
 #include <QtGui/QClipboard>
 #include <QtWidgets/QMenu>
 
-SavedAddressesWidget::SavedAddressesWidget(const DebuggerViewParameters& parameters)
+SavedAddressesView::SavedAddressesView(const DebuggerViewParameters& parameters)
 	: DebuggerView(parameters, DISALLOW_MULTIPLE_INSTANCES)
 	, m_model(SavedAddressesModel::getInstance(cpu()))
 {
@@ -19,7 +19,7 @@ SavedAddressesWidget::SavedAddressesWidget(const DebuggerViewParameters& paramet
 
 	m_ui.savedAddressesList->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.savedAddressesList, &QTableView::customContextMenuRequested,
-		this, &SavedAddressesWidget::openContextMenu);
+		this, &SavedAddressesView::openContextMenu);
 
 	connect(g_emu_thread, &EmuThread::onGameChanged, this, [this](const QString& title) {
 		if (title.isEmpty())
@@ -51,13 +51,13 @@ SavedAddressesWidget::SavedAddressesWidget(const DebuggerViewParameters& paramet
 	});
 }
 
-void SavedAddressesWidget::openContextMenu(QPoint pos)
+void SavedAddressesView::openContextMenu(QPoint pos)
 {
 	QMenu* menu = new QMenu(this);
 	menu->setAttribute(Qt::WA_DeleteOnClose);
 
 	QAction* new_action = menu->addAction(tr("New"));
-	connect(new_action, &QAction::triggered, this, &SavedAddressesWidget::contextNew);
+	connect(new_action, &QAction::triggered, this, &SavedAddressesView::contextNew);
 
 	const QModelIndex index_at_pos = m_ui.savedAddressesList->indexAt(pos);
 	const bool is_index_valid = index_at_pos.isValid();
@@ -92,7 +92,7 @@ void SavedAddressesWidget::openContextMenu(QPoint pos)
 	}
 
 	QAction* paste_from_csv_action = menu->addAction(tr("Paste from CSV"));
-	connect(paste_from_csv_action, &QAction::triggered, this, &SavedAddressesWidget::contextPasteCSV);
+	connect(paste_from_csv_action, &QAction::triggered, this, &SavedAddressesView::contextPasteCSV);
 
 	QAction* load_action = menu->addAction(tr("Load from Settings"));
 	load_action->setEnabled(is_cpu_alive);
@@ -103,7 +103,7 @@ void SavedAddressesWidget::openContextMenu(QPoint pos)
 
 	QAction* save_action = menu->addAction(tr("Save to Settings"));
 	save_action->setEnabled(is_cpu_alive);
-	connect(save_action, &QAction::triggered, this, &SavedAddressesWidget::saveToDebuggerSettings);
+	connect(save_action, &QAction::triggered, this, &SavedAddressesView::saveToDebuggerSettings);
 
 	QAction* delete_action = menu->addAction(tr("Delete"));
 	connect(delete_action, &QAction::triggered, this, [this, index_at_pos]() {
@@ -114,7 +114,7 @@ void SavedAddressesWidget::openContextMenu(QPoint pos)
 	menu->popup(m_ui.savedAddressesList->viewport()->mapToGlobal(pos));
 }
 
-void SavedAddressesWidget::contextPasteCSV()
+void SavedAddressesView::contextPasteCSV()
 {
 	QString csv = QGuiApplication::clipboard()->text();
 	// Skip header
@@ -139,14 +139,14 @@ void SavedAddressesWidget::contextPasteCSV()
 	}
 }
 
-void SavedAddressesWidget::contextNew()
+void SavedAddressesView::contextNew()
 {
 	m_model->addRow();
 	const u32 row_count = m_model->rowCount();
 	m_ui.savedAddressesList->edit(m_model->index(row_count - 1, 0));
 }
 
-void SavedAddressesWidget::addAddress(u32 address)
+void SavedAddressesView::addAddress(u32 address)
 {
 	m_model->addRow();
 
@@ -160,7 +160,7 @@ void SavedAddressesWidget::addAddress(u32 address)
 		m_ui.savedAddressesList->edit(label_index);
 }
 
-void SavedAddressesWidget::saveToDebuggerSettings()
+void SavedAddressesView::saveToDebuggerSettings()
 {
 	DebuggerSettingsManager::saveGameSettings(m_model);
 }

@@ -3,24 +3,24 @@
 
 #pragma once
 
-#include "ui_StackWidget.h"
+#include "ui_StackView.h"
 
 #include "StackModel.h"
 
 #include "DebuggerView.h"
 
-class StackWidget final : public DebuggerView
+class StackView final : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	StackWidget(const DebuggerViewParameters& parameters);
+	StackView(const DebuggerViewParameters& parameters);
 
 	void openContextMenu(QPoint pos);
 	void onDoubleClick(const QModelIndex& index);
 
 private:
-	Ui::StackWidget m_ui;
+	Ui::StackView m_ui;
 
 	StackModel* m_model;
 };

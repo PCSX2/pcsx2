@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ui_MemoryViewWidget.h"
+#include "ui_MemoryView.h"
 
 #include "Debugger/DebuggerView.h"
 
@@ -104,13 +104,13 @@ public:
 	}
 };
 
-class MemoryViewWidget final : public DebuggerView
+class MemoryView final : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	MemoryViewWidget(const DebuggerViewParameters& parameters);
-	~MemoryViewWidget();
+	MemoryView(const DebuggerViewParameters& parameters);
+	~MemoryView();
 
 	void toJson(JsonValueWrapper& json) override;
 	bool fromJson(const JsonValueWrapper& json) override;
@@ -133,7 +133,7 @@ public slots:
 	void gotoAddress(u32 address);
 
 private:
-	Ui::MemoryViewWidget ui;
+	Ui::MemoryView ui;
 
 	MemoryViewTable m_table;
 };

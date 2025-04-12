@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ui_BreakpointWidget.h"
+#include "ui_BreakpointView.h"
 
 #include "BreakpointModel.h"
 
@@ -16,12 +16,12 @@
 #include <QtWidgets/QTabBar>
 #include <QtGui/QPainter>
 
-class BreakpointWidget : public DebuggerView
+class BreakpointView : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	BreakpointWidget(const DebuggerViewParameters& parameters);
+	BreakpointView(const DebuggerViewParameters& parameters);
 
 	void onDoubleClicked(const QModelIndex& index);
 	void openContextMenu(QPoint pos);
@@ -35,7 +35,7 @@ public:
 	void saveBreakpointsToDebuggerSettings();
 
 private:
-	Ui::BreakpointWidget m_ui;
+	Ui::BreakpointView m_ui;
 
 	BreakpointModel* m_model;
 };
