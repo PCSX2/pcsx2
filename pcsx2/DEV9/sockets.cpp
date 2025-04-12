@@ -203,14 +203,19 @@ bool SocketAdapter::recv(NetPacket* pkt)
 
 	ScopedGuard cleanup([&]() {
 		// Garbage collect closed connections
-		for (BaseSession* s : deleteQueueRecvThread)
-			delete s;
-		deleteQueueRecvThread.clear();
+		if (deleteQueueRecvThread.size() != 0)
+		{
+			std::lock_guard deletelock(deleteRecvSentry);
+			for (BaseSession* s : deleteQueueRecvThread)
+				delete s;
+			deleteQueueRecvThread.clear();
+		}
 	});
 
 	EthernetFrame* bFrame;
 	if (!vRecBuffer.Dequeue(&bFrame))
 	{
+		std::lock_guard deletelock(deleteSendSentry);
 		std::vector<ConnectionKey> keys = connections.GetKeys();
 		for (size_t i = 0; i < keys.size(); i++)
 		{
@@ -259,9 +264,13 @@ bool SocketAdapter::send(NetPacket* pkt)
 	pxAssert(std::this_thread::get_id() == sendThreadId);
 	ScopedGuard cleanup([&]() {
 		// Garbage collect closed connections
-		for (BaseSession* s : deleteQueueSendThread)
-			delete s;
-		deleteQueueSendThread.clear();
+		if (deleteQueueSendThread.size() != 0)
+		{
+			std::lock_guard deletelock(deleteSendSentry);
+			for (BaseSession* s : deleteQueueSendThread)
+				delete s;
+			deleteQueueSendThread.clear();
+		}
 	});
 
 	EthernetFrame frame(pkt);
@@ -375,6 +384,7 @@ bool SocketAdapter::SendIP(IP_Packet* ipPkt)
 	Key.ip = ipPkt->destinationIP;
 	Key.protocol = ipPkt->protocol;
 
+	std::lock_guard deletelock(deleteRecvSentry);
 	switch (ipPkt->protocol) //(Prase Payload)
 	{
 		case (u8)IP_Type::ICMP:
