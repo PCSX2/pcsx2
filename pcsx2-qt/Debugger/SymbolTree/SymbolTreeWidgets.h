@@ -5,12 +5,12 @@
 
 #include "ui_SymbolTreeWidget.h"
 
-#include "Debugger/DebuggerWidget.h"
+#include "Debugger/DebuggerView.h"
 #include "Debugger/SymbolTree/SymbolTreeModel.h"
 
 // A symbol tree widget with its associated refresh button, filter box and
 // right-click menu. Supports grouping, sorting and various other settings.
-class SymbolTreeWidget : public DebuggerWidget
+class SymbolTreeWidget : public DebuggerView
 {
 	Q_OBJECT
 
@@ -36,7 +36,7 @@ protected:
 	SymbolTreeWidget(
 		u32 flags,
 		s32 symbol_address_alignment,
-		const DebuggerWidgetParameters& parameters);
+		const DebuggerViewParameters& parameters);
 
 	void resizeEvent(QResizeEvent* event) override;
 
@@ -118,7 +118,7 @@ class FunctionTreeWidget : public SymbolTreeWidget
 {
 	Q_OBJECT
 public:
-	explicit FunctionTreeWidget(const DebuggerWidgetParameters& parameters);
+	explicit FunctionTreeWidget(const DebuggerViewParameters& parameters);
 	virtual ~FunctionTreeWidget();
 
 protected:
@@ -137,7 +137,7 @@ class GlobalVariableTreeWidget : public SymbolTreeWidget
 {
 	Q_OBJECT
 public:
-	explicit GlobalVariableTreeWidget(const DebuggerWidgetParameters& parameters);
+	explicit GlobalVariableTreeWidget(const DebuggerViewParameters& parameters);
 	virtual ~GlobalVariableTreeWidget();
 
 protected:
@@ -156,7 +156,7 @@ class LocalVariableTreeWidget : public SymbolTreeWidget
 {
 	Q_OBJECT
 public:
-	explicit LocalVariableTreeWidget(const DebuggerWidgetParameters& parameters);
+	explicit LocalVariableTreeWidget(const DebuggerViewParameters& parameters);
 	virtual ~LocalVariableTreeWidget();
 
 protected:
@@ -180,7 +180,7 @@ class ParameterVariableTreeWidget : public SymbolTreeWidget
 {
 	Q_OBJECT
 public:
-	explicit ParameterVariableTreeWidget(const DebuggerWidgetParameters& parameters);
+	explicit ParameterVariableTreeWidget(const DebuggerViewParameters& parameters);
 	virtual ~ParameterVariableTreeWidget();
 
 protected:

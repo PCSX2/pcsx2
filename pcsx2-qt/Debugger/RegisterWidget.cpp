@@ -21,8 +21,8 @@
 
 using namespace QtUtils;
 
-RegisterWidget::RegisterWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, MONOSPACE_FONT)
+RegisterWidget::RegisterWidget(const DebuggerViewParameters& parameters)
+	: DebuggerView(parameters, MONOSPACE_FONT)
 {
 	this->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 
@@ -51,7 +51,7 @@ RegisterWidget::~RegisterWidget()
 
 void RegisterWidget::toJson(JsonValueWrapper& json)
 {
-	DebuggerWidget::toJson(json);
+	DebuggerView::toJson(json);
 
 	json.value().AddMember("showVU0FFloat", m_showVU0FFloat, json.allocator());
 	json.value().AddMember("showFPRFloat", m_showFPRFloat, json.allocator());
@@ -59,7 +59,7 @@ void RegisterWidget::toJson(JsonValueWrapper& json)
 
 bool RegisterWidget::fromJson(const JsonValueWrapper& json)
 {
-	if (!DebuggerWidget::fromJson(json))
+	if (!DebuggerView::fromJson(json))
 		return false;
 
 	auto show_vu0f_float = json.value().FindMember("showVU0FFloat");
@@ -401,7 +401,7 @@ void RegisterWidget::contextChangeValue()
 	if (contextFetchNewValue(newVal, cpu().getRegister(categoryIndex, m_selectedRow).lo))
 	{
 		cpu().setRegister(categoryIndex, m_selectedRow, u128::From64(newVal));
-		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 	}
 }
 
@@ -413,7 +413,7 @@ void RegisterWidget::contextChangeTop()
 	{
 		oldVal.hi = newVal;
 		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
-		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 	}
 }
 
@@ -425,7 +425,7 @@ void RegisterWidget::contextChangeBottom()
 	{
 		oldVal.lo = newVal;
 		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
-		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 	}
 }
 
@@ -437,7 +437,7 @@ void RegisterWidget::contextChangeSegment()
 	{
 		oldVal._u32[3 - m_selected128Field] = (u32)newVal;
 		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
-		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 	}
 }
 

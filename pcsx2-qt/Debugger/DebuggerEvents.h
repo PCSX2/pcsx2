@@ -14,8 +14,8 @@ namespace DebuggerEvents
 		virtual ~Event() = default;
 	};
 
-	// Sent when a debugger widget is first created, and subsequently broadcast
-	// to all debugger widgets at regular intervals.
+	// Sent when a debugger view is first created, and subsequently broadcast to
+	// all debugger views at regular intervals.
 	struct Refresh : Event
 	{
 	};
@@ -41,7 +41,7 @@ namespace DebuggerEvents
 		static constexpr const char* ACTION_PREFIX = QT_TRANSLATE_NOOP("DebuggerEvents", "Go to in");
 	};
 
-	// The state of the VM has changed and widgets should be updated to reflect
+	// The state of the VM has changed and views should be updated to reflect
 	// the new state (e.g. the VM has been paused).
 	struct VMUpdate : Event
 	{

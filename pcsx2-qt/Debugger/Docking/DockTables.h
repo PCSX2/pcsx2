@@ -11,14 +11,14 @@
 
 class MD5Digest;
 
-class DebuggerWidget;
-struct DebuggerWidgetParameters;
+class DebuggerView;
+struct DebuggerViewParameters;
 
 namespace DockTables
 {
-	struct DebuggerWidgetDescription
+	struct DebuggerViewDescription
 	{
-		DebuggerWidget* (*create_widget)(const DebuggerWidgetParameters& parameters);
+		DebuggerView* (*create_widget)(const DebuggerViewParameters& parameters);
 
 		// The untranslated string displayed as the dock widget tab text.
 		const char* display_name;
@@ -28,7 +28,7 @@ namespace DockTables
 		DockUtils::PreferredLocation preferred_location;
 	};
 
-	extern const std::map<std::string, DebuggerWidgetDescription> DEBUGGER_WIDGETS;
+	extern const std::map<std::string, DebuggerViewDescription> DEBUGGER_VIEWS;
 
 	enum class DefaultDockGroup
 	{

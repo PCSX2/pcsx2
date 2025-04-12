@@ -12,8 +12,8 @@
 
 class JsonValueWrapper;
 
-// Container for variables to be passed to the constructor of DebuggerWidget.
-struct DebuggerWidgetParameters
+// Container for variables to be passed to the constructor of DebuggerView.
+struct DebuggerViewParameters
 {
 	QString unique_name;
 	u64 id = 0;
@@ -23,7 +23,7 @@ struct DebuggerWidgetParameters
 };
 
 // The base class for the contents of the dock widgets in the debugger.
-class DebuggerWidget : public QWidget
+class DebuggerView : public QWidget
 {
 	Q_OBJECT
 
@@ -31,7 +31,7 @@ public:
 	QString uniqueName() const;
 	u64 id() const;
 
-	// Get the translated name that should be displayed for this widget.
+	// Get the translated name that should be displayed for this view.
 	QString displayName() const;
 	QString displayNameWithoutSuffix() const;
 
@@ -41,30 +41,30 @@ public:
 	bool isPrimary() const;
 	void setPrimary(bool is_primary);
 
-	// Get the effective debug interface associated with this particular widget
+	// Get the effective debug interface associated with this particular view
 	// if it's set, otherwise return the one associated with the layout that
-	// contains this widget.
+	// contains this view.
 	DebugInterface& cpu() const;
 
 	// Set the debug interface associated with the layout. If false is returned,
 	// we have to recreate the object.
 	bool setCpu(DebugInterface& new_cpu);
 
-	// Get the CPU associated with this particular widget.
+	// Get the CPU associated with this particular view.
 	std::optional<BreakPointCpu> cpuOverride() const;
 
 	// Set the CPU associated with the individual dock widget. If false is
 	// returned, we have to recreate the object.
 	bool setCpuOverride(std::optional<BreakPointCpu> new_cpu);
 
-	// Send each open debugger widget an event in turn, until one handles it.
+	// Send each open debugger view an event in turn, until one handles it.
 	template <typename Event>
 	static void sendEvent(Event event)
 	{
 		if (!QtHost::IsOnUIThread())
 		{
 			QtHost::RunOnUIThread([event = std::move(event)]() {
-				DebuggerWidget::sendEventImplementation(event);
+				DebuggerView::sendEventImplementation(event);
 			});
 			return;
 		}
@@ -72,14 +72,14 @@ public:
 		sendEventImplementation(event);
 	}
 
-	// Send all open debugger widgets an event.
+	// Send all open debugger views an event.
 	template <typename Event>
 	static void broadcastEvent(Event event)
 	{
 		if (!QtHost::IsOnUIThread())
 		{
 			QtHost::RunOnUIThread([event = std::move(event)]() {
-				DebuggerWidget::broadcastEventImplementation(event);
+				DebuggerView::broadcastEventImplementation(event);
 			});
 			return;
 		}
@@ -112,10 +112,10 @@ public:
 	// Call the handler callback for the specified event.
 	bool handleEvent(const DebuggerEvents::Event& event);
 
-	// Check if this debugger widget can receive the specified type of event.
+	// Check if this debugger view can receive the specified type of event.
 	bool acceptsEventType(const char* event_type);
 
-	// Generates context menu actions to send an event to each debugger widget
+	// Generates context menu actions to send an event to each debugger view
 	// that can receive it. A submenu is generated if the number of possible
 	// receivers exceeds max_top_level_actions. If skip_self is true, actions
 	// are only generated if the sender and receiver aren't the same object.
@@ -165,7 +165,7 @@ protected:
 		MONOSPACE_FONT = 1 << 1
 	};
 
-	DebuggerWidget(const DebuggerWidgetParameters& parameters, u32 flags);
+	DebuggerView(const DebuggerViewParameters& parameters, u32 flags);
 
 private:
 	static void sendEventImplementation(const DebuggerEvents::Event& event);
@@ -179,7 +179,7 @@ private:
 		const char* action_prefix,
 		std::function<const DebuggerEvents::Event*()> event_func);
 
-	// Used for sorting debugger widgets that have the same display name. Unique
+	// Used for sorting debugger views that have the same display name. Unique
 	// within a single layout.
 	u64 m_id;
 
@@ -194,7 +194,7 @@ private:
 	QString m_translated_display_name;
 	std::optional<int> m_display_name_suffix_number;
 
-	// Primary debugger widgets will be chosen to handle events first. For
+	// Primary debugger views will be chosen to handle events first. For
 	// example, clicking on an address to go to it in the primary memory view.
 	bool m_is_primary = false;
 

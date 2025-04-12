@@ -8,8 +8,8 @@
 #include <QtGui/QClipboard>
 #include <QtWidgets/QMenu>
 
-StackWidget::StackWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, NO_DEBUGGER_FLAGS)
+StackWidget::StackWidget(const DebuggerViewParameters& parameters)
+	: DebuggerView(parameters, NO_DEBUGGER_FLAGS)
 	, m_model(new StackModel(cpu()))
 {
 	m_ui.setupUi(this);

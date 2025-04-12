@@ -112,7 +112,7 @@
     <ClCompile Include="Tools\InputRecording\InputRecordingViewer.cpp" />
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp" />
     <ClCompile Include="Debugger\AnalysisOptionsDialog.cpp" />
-    <ClCompile Include="Debugger\DebuggerWidget.cpp" />
+    <ClCompile Include="Debugger\DebuggerView.cpp" />
     <ClCompile Include="Debugger\DebuggerWindow.cpp" />
     <ClCompile Include="Debugger\DisassemblyWidget.cpp" />
     <ClCompile Include="Debugger\RegisterWidget.cpp" />
@@ -229,7 +229,7 @@
     <ClInclude Include="QtUtils.h" />
     <QtMoc Include="Debugger\AnalysisOptionsDialog.h" />
     <QtMoc Include="Debugger\DebuggerEvents.h" />
-    <QtMoc Include="Debugger\DebuggerWidget.h" />
+    <QtMoc Include="Debugger\DebuggerView.h" />
     <QtMoc Include="Debugger\DebuggerWindow.h" />
     <QtMoc Include="Debugger\DisassemblyWidget.h" />
     <QtMoc Include="Debugger\RegisterWidget.h" />
@@ -303,7 +303,7 @@
     <ClCompile Include="$(IntDir)Settings\moc_DebugUserInterfaceSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_DebugSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_AnalysisOptionsDialog.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_DebuggerView.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWindow.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_DisassemblyWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_RegisterWidget.cpp" />

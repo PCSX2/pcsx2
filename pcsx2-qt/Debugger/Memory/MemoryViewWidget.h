@@ -5,7 +5,7 @@
 
 #include "ui_MemoryViewWidget.h"
 
-#include "Debugger/DebuggerWidget.h"
+#include "Debugger/DebuggerView.h"
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
@@ -104,12 +104,12 @@ public:
 	}
 };
 
-class MemoryViewWidget final : public DebuggerWidget
+class MemoryViewWidget final : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	MemoryViewWidget(const DebuggerWidgetParameters& parameters);
+	MemoryViewWidget(const DebuggerViewParameters& parameters);
 	~MemoryViewWidget();
 
 	void toJson(JsonValueWrapper& json) override;

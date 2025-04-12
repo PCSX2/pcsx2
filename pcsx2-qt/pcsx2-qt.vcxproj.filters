@@ -284,7 +284,7 @@
     <ClCompile Include="Debugger\AnalysisOptionsDialog.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
-    <ClCompile Include="Debugger\DebuggerWidget.cpp">
+    <ClCompile Include="Debugger\DebuggerView.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
     <ClCompile Include="Debugger\DebuggerWindow.cpp">
@@ -311,7 +311,7 @@
     <ClCompile Include="$(IntDir)Debugger\moc_AnalysisOptionsDialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWidget.cpp">
+    <ClCompile Include="$(IntDir)Debugger\moc_DebuggerView.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWindow.cpp">
@@ -628,7 +628,7 @@
     <QtMoc Include="Debugger\DebuggerEvents.h">
       <Filter>Debugger</Filter>
     </QtMoc>
-    <QtMoc Include="Debugger\DebuggerWidget.h">
+    <QtMoc Include="Debugger\DebuggerView.h">
       <Filter>Debugger</Filter>
     </QtMoc>
     <QtMoc Include="Debugger\DebuggerWindow.h">

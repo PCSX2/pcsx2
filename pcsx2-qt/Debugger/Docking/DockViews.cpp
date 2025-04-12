@@ -4,7 +4,7 @@
 #include "DockViews.h"
 
 #include "QtUtils.h"
-#include "Debugger/DebuggerWidget.h"
+#include "Debugger/DebuggerView.h"
 #include "Debugger/DebuggerWindow.h"
 #include "Debugger/Docking/DockManager.h"
 #include "Debugger/Docking/DropIndicators.h"
@@ -93,7 +93,7 @@ void DockWidget::openStateChanged(bool open)
 		return;
 
 	if (!open && g_debugger_window)
-		g_debugger_window->dockManager().destroyDebuggerWidget(uniqueName());
+		g_debugger_window->dockManager().destroyDebuggerView(uniqueName());
 }
 
 // *****************************************************************************
@@ -166,7 +166,7 @@ void DockTabBar::openContextMenu(QPoint pos)
 	if (!widget)
 		return;
 
-	size_t dock_widgets_of_type = g_debugger_window->dockManager().countDebuggerWidgetsOfType(
+	size_t dock_widgets_of_type = g_debugger_window->dockManager().countDebuggerViewsOfType(
 		widget->metaObject()->className());
 
 	QMenu* menu = new QMenu(this);
@@ -222,7 +222,7 @@ void DockTabBar::openContextMenu(QPoint pos)
 		if (!widget)
 			return;
 
-		g_debugger_window->dockManager().setPrimaryDebuggerWidget(widget, checked);
+		g_debugger_window->dockManager().setPrimaryDebuggerView(widget, checked);
 	});
 
 	QMenu* set_target_menu = menu->addMenu(tr("Set Target"));
@@ -263,7 +263,7 @@ void DockTabBar::openContextMenu(QPoint pos)
 		if (!widget)
 			return;
 
-		g_debugger_window->dockManager().destroyDebuggerWidget(widget->uniqueName());
+		g_debugger_window->dockManager().destroyDebuggerView(widget->uniqueName());
 	});
 
 	menu->popup(mapToGlobal(pos));
@@ -279,7 +279,7 @@ void DockTabBar::setCpuOverrideForTab(int tab_index, std::optional<BreakPointCpu
 		return;
 
 	if (!widget->setCpuOverride(cpu_override))
-		g_debugger_window->dockManager().recreateDebuggerWidget(view->uniqueName());
+		g_debugger_window->dockManager().recreateDebuggerView(view->uniqueName());
 
 	g_debugger_window->dockManager().updateDockWidgetTitles();
 }
@@ -296,7 +296,7 @@ DockTabBar::WidgetsFromTabIndexResult DockTabBar::widgetsFromTabIndex(int tab_in
 
 	auto dock_view = static_cast<KDDockWidgets::QtWidgets::DockWidget*>(dock_controller->view());
 
-	DebuggerWidget* widget = qobject_cast<DebuggerWidget*>(dock_view->widget());
+	DebuggerView* widget = qobject_cast<DebuggerView*>(dock_view->widget());
 	if (!widget)
 		return {};
 

@@ -5,7 +5,7 @@
 
 #include "ui_MemorySearchWidget.h"
 
-#include "Debugger/DebuggerWidget.h"
+#include "Debugger/DebuggerView.h"
 
 #include "DebugTools/DebugInterface.h"
 
@@ -13,12 +13,12 @@
 #include <QtCore/QTimer>
 #include <QtCore/QMap>
 
-class MemorySearchWidget final : public DebuggerWidget
+class MemorySearchWidget final : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	MemorySearchWidget(const DebuggerWidgetParameters& parameters);
+	MemorySearchWidget(const DebuggerViewParameters& parameters);
 	~MemorySearchWidget() = default;
 
 	enum class SearchType

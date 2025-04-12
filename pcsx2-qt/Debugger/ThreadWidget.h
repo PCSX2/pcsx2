@@ -5,17 +5,17 @@
 
 #include "ui_ThreadWidget.h"
 
-#include "DebuggerWidget.h"
+#include "DebuggerView.h"
 #include "ThreadModel.h"
 
 #include <QtCore/QSortFilterProxyModel>
 
-class ThreadWidget final : public DebuggerWidget
+class ThreadWidget final : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	ThreadWidget(const DebuggerWidgetParameters& parameters);
+	ThreadWidget(const DebuggerViewParameters& parameters);
 
 	void openContextMenu(QPoint pos);
 	void onDoubleClick(const QModelIndex& index);

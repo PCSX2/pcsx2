@@ -9,8 +9,8 @@
 #include <QtGui/QClipboard>
 #include <QtWidgets/QMenu>
 
-SavedAddressesWidget::SavedAddressesWidget(const DebuggerWidgetParameters& parameters)
-	: DebuggerWidget(parameters, DISALLOW_MULTIPLE_INSTANCES)
+SavedAddressesWidget::SavedAddressesWidget(const DebuggerViewParameters& parameters)
+	: DebuggerView(parameters, DISALLOW_MULTIPLE_INSTANCES)
 	, m_model(SavedAddressesModel::getInstance(cpu()))
 {
 	m_ui.setupUi(this);

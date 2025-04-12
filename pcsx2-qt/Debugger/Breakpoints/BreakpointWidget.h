@@ -7,7 +7,7 @@
 
 #include "BreakpointModel.h"
 
-#include "Debugger/DebuggerWidget.h"
+#include "Debugger/DebuggerView.h"
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
@@ -16,12 +16,12 @@
 #include <QtWidgets/QTabBar>
 #include <QtGui/QPainter>
 
-class BreakpointWidget : public DebuggerWidget
+class BreakpointWidget : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	BreakpointWidget(const DebuggerWidgetParameters& parameters);
+	BreakpointWidget(const DebuggerViewParameters& parameters);
 
 	void onDoubleClicked(const QModelIndex& index);
 	void openContextMenu(QPoint pos);
