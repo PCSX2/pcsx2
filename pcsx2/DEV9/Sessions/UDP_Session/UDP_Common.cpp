@@ -129,6 +129,7 @@ namespace Sessions::UDP_Common
 			else
 				Console.Error("DEV9: UDP: Socket error: %d", ret);
 
+			// All socket errors assumed fatal.
 			return {std::nullopt, false};
 		}
 		else if (FD_ISSET(client, &sReady))
@@ -159,13 +160,23 @@ namespace Sessions::UDP_Common
 
 			if (ret == SOCKET_ERROR)
 			{
-				Console.Error("DEV9: UDP: UDP recv error: %d",
 #ifdef _WIN32
-					WSAGetLastError());
+				ret = WSAGetLastError();
 #elif defined(__POSIX__)
-					errno);
+				ret = errno;
 #endif
-				return {std::nullopt, false};
+				Console.Error("DEV9: UDP: recvfrom error: %d", ret);
+
+				/*
+				 * We can receive an ICMP Port Unreacable error as a WSAECONNRESET/ECONNREFUSED error
+				 * Ignore the error, recv will be retried next loop
+				 */
+				return {std::nullopt,
+#ifdef _WIN32
+					ret == WSAECONNRESET};
+#elif defined(__POSIX__)
+					ret == ECONNREFUSED};
+#endif
 			}
 
 			recived = new PayloadData(ret);
