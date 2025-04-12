@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include "BreakpointWidget.h"
+#include "BreakpointView.h"
 
 #include "QtUtils.h"
 #include "Debugger/DebuggerSettingsManager.h"
@@ -10,15 +10,15 @@
 
 #include <QtGui/QClipboard>
 
-BreakpointWidget::BreakpointWidget(const DebuggerViewParameters& parameters)
+BreakpointView::BreakpointView(const DebuggerViewParameters& parameters)
 	: DebuggerView(parameters, DISALLOW_MULTIPLE_INSTANCES)
 	, m_model(BreakpointModel::getInstance(cpu()))
 {
 	m_ui.setupUi(this);
 
 	m_ui.breakpointList->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(m_ui.breakpointList, &QTableView::customContextMenuRequested, this, &BreakpointWidget::openContextMenu);
-	connect(m_ui.breakpointList, &QTableView::doubleClicked, this, &BreakpointWidget::onDoubleClicked);
+	connect(m_ui.breakpointList, &QTableView::customContextMenuRequested, this, &BreakpointView::openContextMenu);
+	connect(m_ui.breakpointList, &QTableView::doubleClicked, this, &BreakpointView::onDoubleClicked);
 
 	m_ui.breakpointList->setModel(m_model);
 	for (std::size_t i = 0; auto mode : BreakpointModel::HeaderResizeModes)
@@ -28,13 +28,13 @@ BreakpointWidget::BreakpointWidget(const DebuggerViewParameters& parameters)
 	}
 }
 
-void BreakpointWidget::onDoubleClicked(const QModelIndex& index)
+void BreakpointView::onDoubleClicked(const QModelIndex& index)
 {
 	if (index.isValid() && index.column() == BreakpointModel::OFFSET)
 		goToInDisassembler(m_model->data(index, BreakpointModel::DataRole).toUInt(), true);
 }
 
-void BreakpointWidget::openContextMenu(QPoint pos)
+void BreakpointView::openContextMenu(QPoint pos)
 {
 	QMenu* menu = new QMenu(m_ui.breakpointList);
 	menu->setAttribute(Qt::WA_DeleteOnClose);
@@ -42,23 +42,23 @@ void BreakpointWidget::openContextMenu(QPoint pos)
 	if (cpu().isAlive())
 	{
 		QAction* newAction = menu->addAction(tr("New"));
-		connect(newAction, &QAction::triggered, this, &BreakpointWidget::contextNew);
+		connect(newAction, &QAction::triggered, this, &BreakpointView::contextNew);
 
 		const QItemSelectionModel* selModel = m_ui.breakpointList->selectionModel();
 
 		if (selModel->hasSelection())
 		{
 			QAction* editAction = menu->addAction(tr("Edit"));
-			connect(editAction, &QAction::triggered, this, &BreakpointWidget::contextEdit);
+			connect(editAction, &QAction::triggered, this, &BreakpointView::contextEdit);
 
 			if (selModel->selectedIndexes().count() == 1)
 			{
 				QAction* copyAction = menu->addAction(tr("Copy"));
-				connect(copyAction, &QAction::triggered, this, &BreakpointWidget::contextCopy);
+				connect(copyAction, &QAction::triggered, this, &BreakpointView::contextCopy);
 			}
 
 			QAction* deleteAction = menu->addAction(tr("Delete"));
-			connect(deleteAction, &QAction::triggered, this, &BreakpointWidget::contextDelete);
+			connect(deleteAction, &QAction::triggered, this, &BreakpointView::contextDelete);
 		}
 	}
 
@@ -76,7 +76,7 @@ void BreakpointWidget::openContextMenu(QPoint pos)
 	if (cpu().isAlive())
 	{
 		QAction* actionImport = menu->addAction(tr("Paste from CSV"));
-		connect(actionImport, &QAction::triggered, this, &BreakpointWidget::contextPasteCSV);
+		connect(actionImport, &QAction::triggered, this, &BreakpointView::contextPasteCSV);
 
 		if (cpu().getCpuType() == BREAKPOINT_EE)
 		{
@@ -87,14 +87,14 @@ void BreakpointWidget::openContextMenu(QPoint pos)
 			});
 
 			QAction* actionSave = menu->addAction(tr("Save to Settings"));
-			connect(actionSave, &QAction::triggered, this, &BreakpointWidget::saveBreakpointsToDebuggerSettings);
+			connect(actionSave, &QAction::triggered, this, &BreakpointView::saveBreakpointsToDebuggerSettings);
 		}
 	}
 
 	menu->popup(m_ui.breakpointList->viewport()->mapToGlobal(pos));
 }
 
-void BreakpointWidget::contextCopy()
+void BreakpointView::contextCopy()
 {
 	const QItemSelectionModel* selModel = m_ui.breakpointList->selectionModel();
 
@@ -104,7 +104,7 @@ void BreakpointWidget::contextCopy()
 	QGuiApplication::clipboard()->setText(m_model->data(selModel->currentIndex()).toString());
 }
 
-void BreakpointWidget::contextDelete()
+void BreakpointView::contextDelete()
 {
 	const QItemSelectionModel* selModel = m_ui.breakpointList->selectionModel();
 
@@ -121,14 +121,14 @@ void BreakpointWidget::contextDelete()
 		m_model->removeRows(*row, 1);
 }
 
-void BreakpointWidget::contextNew()
+void BreakpointView::contextNew()
 {
 	BreakpointDialog* bpDialog = new BreakpointDialog(this, &cpu(), *m_model);
 	bpDialog->setAttribute(Qt::WA_DeleteOnClose);
 	bpDialog->show();
 }
 
-void BreakpointWidget::contextEdit()
+void BreakpointView::contextEdit()
 {
 	const QItemSelectionModel* selModel = m_ui.breakpointList->selectionModel();
 
@@ -144,7 +144,7 @@ void BreakpointWidget::contextEdit()
 	bpDialog->show();
 }
 
-void BreakpointWidget::contextPasteCSV()
+void BreakpointView::contextPasteCSV()
 {
 	QString csv = QGuiApplication::clipboard()->text();
 	// Skip header
@@ -168,7 +168,7 @@ void BreakpointWidget::contextPasteCSV()
 	}
 }
 
-void BreakpointWidget::saveBreakpointsToDebuggerSettings()
+void BreakpointView::saveBreakpointsToDebuggerSettings()
 {
 	DebuggerSettingsManager::saveGameSettings(m_model);
 }

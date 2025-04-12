@@ -1,14 +1,14 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include "ThreadWidget.h"
+#include "ThreadView.h"
 
 #include "QtUtils.h"
 
 #include <QtGui/QClipboard>
 #include <QtWidgets/QMenu>
 
-ThreadWidget::ThreadWidget(const DebuggerViewParameters& parameters)
+ThreadView::ThreadView(const DebuggerViewParameters& parameters)
 	: DebuggerView(parameters, NO_DEBUGGER_FLAGS)
 	, m_model(new ThreadModel(cpu()))
 	, m_proxy_model(new QSortFilterProxyModel())
@@ -16,8 +16,8 @@ ThreadWidget::ThreadWidget(const DebuggerViewParameters& parameters)
 	m_ui.setupUi(this);
 
 	m_ui.threadList->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(m_ui.threadList, &QTableView::customContextMenuRequested, this, &ThreadWidget::openContextMenu);
-	connect(m_ui.threadList, &QTableView::doubleClicked, this, &ThreadWidget::onDoubleClick);
+	connect(m_ui.threadList, &QTableView::customContextMenuRequested, this, &ThreadView::openContextMenu);
+	connect(m_ui.threadList, &QTableView::doubleClicked, this, &ThreadView::onDoubleClick);
 
 	m_proxy_model->setSourceModel(m_model);
 	m_proxy_model->setSortRole(Qt::UserRole);
@@ -36,7 +36,7 @@ ThreadWidget::ThreadWidget(const DebuggerViewParameters& parameters)
 	});
 }
 
-void ThreadWidget::openContextMenu(QPoint pos)
+void ThreadView::openContextMenu(QPoint pos)
 {
 	if (!m_ui.threadList->selectionModel()->hasSelection())
 		return;
@@ -63,7 +63,7 @@ void ThreadWidget::openContextMenu(QPoint pos)
 	menu->popup(m_ui.threadList->viewport()->mapToGlobal(pos));
 }
 
-void ThreadWidget::onDoubleClick(const QModelIndex& index)
+void ThreadView::onDoubleClick(const QModelIndex& index)
 {
 	switch (index.column())
 	{

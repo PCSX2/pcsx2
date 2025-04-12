@@ -4,15 +4,15 @@
 #include "DockTables.h"
 
 #include "Debugger/DebuggerEvents.h"
-#include "Debugger/DisassemblyWidget.h"
-#include "Debugger/RegisterWidget.h"
-#include "Debugger/StackWidget.h"
-#include "Debugger/ThreadWidget.h"
-#include "Debugger/Breakpoints/BreakpointWidget.h"
-#include "Debugger/Memory/MemorySearchWidget.h"
-#include "Debugger/Memory/MemoryViewWidget.h"
-#include "Debugger/Memory/SavedAddressesWidget.h"
-#include "Debugger/SymbolTree/SymbolTreeWidgets.h"
+#include "Debugger/DisassemblyView.h"
+#include "Debugger/RegisterView.h"
+#include "Debugger/StackView.h"
+#include "Debugger/ThreadView.h"
+#include "Debugger/Breakpoints/BreakpointView.h"
+#include "Debugger/Memory/MemorySearchView.h"
+#include "Debugger/Memory/MemoryView.h"
+#include "Debugger/Memory/SavedAddressesView.h"
+#include "Debugger/SymbolTree/SymbolTreeViews.h"
 
 using namespace DockUtils;
 
@@ -37,18 +37,18 @@ static void hashString(const char* string, u32& hash);
 	}
 
 const std::map<std::string, DockTables::DebuggerViewDescription> DockTables::DEBUGGER_VIEWS = {
-	DEBUGGER_VIEW(BreakpointWidget, QT_TRANSLATE_NOOP("DebuggerView", "Breakpoints"), BOTTOM_MIDDLE),
-	DEBUGGER_VIEW(DisassemblyWidget, QT_TRANSLATE_NOOP("DebuggerView", "Disassembly"), TOP_RIGHT),
-	DEBUGGER_VIEW(FunctionTreeWidget, QT_TRANSLATE_NOOP("DebuggerView", "Functions"), TOP_LEFT),
-	DEBUGGER_VIEW(GlobalVariableTreeWidget, QT_TRANSLATE_NOOP("DebuggerView", "Globals"), BOTTOM_MIDDLE),
-	DEBUGGER_VIEW(LocalVariableTreeWidget, QT_TRANSLATE_NOOP("DebuggerView", "Locals"), BOTTOM_MIDDLE),
-	DEBUGGER_VIEW(MemorySearchWidget, QT_TRANSLATE_NOOP("DebuggerView", "Memory Search"), TOP_LEFT),
-	DEBUGGER_VIEW(MemoryViewWidget, QT_TRANSLATE_NOOP("DebuggerView", "Memory"), BOTTOM_MIDDLE),
-	DEBUGGER_VIEW(ParameterVariableTreeWidget, QT_TRANSLATE_NOOP("DebuggerView", "Parameters"), BOTTOM_MIDDLE),
-	DEBUGGER_VIEW(RegisterWidget, QT_TRANSLATE_NOOP("DebuggerView", "Registers"), TOP_LEFT),
-	DEBUGGER_VIEW(SavedAddressesWidget, QT_TRANSLATE_NOOP("DebuggerView", "Saved Addresses"), BOTTOM_MIDDLE),
-	DEBUGGER_VIEW(StackWidget, QT_TRANSLATE_NOOP("DebuggerView", "Stack"), BOTTOM_MIDDLE),
-	DEBUGGER_VIEW(ThreadWidget, QT_TRANSLATE_NOOP("DebuggerView", "Threads"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(BreakpointView, QT_TRANSLATE_NOOP("DebuggerView", "Breakpoints"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(DisassemblyView, QT_TRANSLATE_NOOP("DebuggerView", "Disassembly"), TOP_RIGHT),
+	DEBUGGER_VIEW(FunctionTreeView, QT_TRANSLATE_NOOP("DebuggerView", "Functions"), TOP_LEFT),
+	DEBUGGER_VIEW(GlobalVariableTreeView, QT_TRANSLATE_NOOP("DebuggerView", "Globals"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(LocalVariableTreeView, QT_TRANSLATE_NOOP("DebuggerView", "Locals"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(MemorySearchView, QT_TRANSLATE_NOOP("DebuggerView", "Memory Search"), TOP_LEFT),
+	DEBUGGER_VIEW(MemoryView, QT_TRANSLATE_NOOP("DebuggerView", "Memory"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(ParameterVariableTreeView, QT_TRANSLATE_NOOP("DebuggerView", "Parameters"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(RegisterView, QT_TRANSLATE_NOOP("DebuggerView", "Registers"), TOP_LEFT),
+	DEBUGGER_VIEW(SavedAddressesView, QT_TRANSLATE_NOOP("DebuggerView", "Saved Addresses"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(StackView, QT_TRANSLATE_NOOP("DebuggerView", "Stack"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(ThreadView, QT_TRANSLATE_NOOP("DebuggerView", "Threads"), BOTTOM_MIDDLE),
 };
 
 #undef DEBUGGER_VIEW
@@ -64,20 +64,20 @@ const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUT
 		},
 		.widgets = {
 			/* DefaultDockGroup::TOP_RIGHT */
-			{"DisassemblyWidget", DefaultDockGroup::TOP_RIGHT},
+			{"DisassemblyView", DefaultDockGroup::TOP_RIGHT},
 			/* DefaultDockGroup::BOTTOM */
-			{"MemoryViewWidget", DefaultDockGroup::BOTTOM},
-			{"BreakpointWidget", DefaultDockGroup::BOTTOM},
-			{"ThreadWidget", DefaultDockGroup::BOTTOM},
-			{"StackWidget", DefaultDockGroup::BOTTOM},
-			{"SavedAddressesWidget", DefaultDockGroup::BOTTOM},
-			{"GlobalVariableTreeWidget", DefaultDockGroup::BOTTOM},
-			{"LocalVariableTreeWidget", DefaultDockGroup::BOTTOM},
-			{"ParameterVariableTreeWidget", DefaultDockGroup::BOTTOM},
+			{"MemoryView", DefaultDockGroup::BOTTOM},
+			{"BreakpointView", DefaultDockGroup::BOTTOM},
+			{"ThreadView", DefaultDockGroup::BOTTOM},
+			{"StackView", DefaultDockGroup::BOTTOM},
+			{"SavedAddressesView", DefaultDockGroup::BOTTOM},
+			{"GlobalVariableTreeView", DefaultDockGroup::BOTTOM},
+			{"LocalVariableTreeView", DefaultDockGroup::BOTTOM},
+			{"ParameterVariableTreeView", DefaultDockGroup::BOTTOM},
 			/* DefaultDockGroup::TOP_LEFT */
-			{"RegisterWidget", DefaultDockGroup::TOP_LEFT},
-			{"FunctionTreeWidget", DefaultDockGroup::TOP_LEFT},
-			{"MemorySearchWidget", DefaultDockGroup::TOP_LEFT},
+			{"RegisterView", DefaultDockGroup::TOP_LEFT},
+			{"FunctionTreeView", DefaultDockGroup::TOP_LEFT},
+			{"MemorySearchView", DefaultDockGroup::TOP_LEFT},
 		},
 		.toolbars = {
 			"toolBarDebug",
@@ -94,20 +94,20 @@ const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUT
 		},
 		.widgets = {
 			/* DefaultDockGroup::TOP_RIGHT */
-			{"DisassemblyWidget", DefaultDockGroup::TOP_RIGHT},
+			{"DisassemblyView", DefaultDockGroup::TOP_RIGHT},
 			/* DefaultDockGroup::BOTTOM */
-			{"MemoryViewWidget", DefaultDockGroup::BOTTOM},
-			{"BreakpointWidget", DefaultDockGroup::BOTTOM},
-			{"ThreadWidget", DefaultDockGroup::BOTTOM},
-			{"StackWidget", DefaultDockGroup::BOTTOM},
-			{"SavedAddressesWidget", DefaultDockGroup::BOTTOM},
-			{"GlobalVariableTreeWidget", DefaultDockGroup::BOTTOM},
-			{"LocalVariableTreeWidget", DefaultDockGroup::BOTTOM},
-			{"ParameterVariableTreeWidget", DefaultDockGroup::BOTTOM},
+			{"MemoryView", DefaultDockGroup::BOTTOM},
+			{"BreakpointView", DefaultDockGroup::BOTTOM},
+			{"ThreadView", DefaultDockGroup::BOTTOM},
+			{"StackView", DefaultDockGroup::BOTTOM},
+			{"SavedAddressesView", DefaultDockGroup::BOTTOM},
+			{"GlobalVariableTreeView", DefaultDockGroup::BOTTOM},
+			{"LocalVariableTreeView", DefaultDockGroup::BOTTOM},
+			{"ParameterVariableTreeView", DefaultDockGroup::BOTTOM},
 			/* DefaultDockGroup::TOP_LEFT */
-			{"RegisterWidget", DefaultDockGroup::TOP_LEFT},
-			{"FunctionTreeWidget", DefaultDockGroup::TOP_LEFT},
-			{"MemorySearchWidget", DefaultDockGroup::TOP_LEFT},
+			{"RegisterView", DefaultDockGroup::TOP_LEFT},
+			{"FunctionTreeView", DefaultDockGroup::TOP_LEFT},
+			{"MemorySearchView", DefaultDockGroup::TOP_LEFT},
 		},
 		.toolbars = {
 			"toolBarDebug",

@@ -3,25 +3,25 @@
 
 #pragma once
 
-#include "ui_ThreadWidget.h"
+#include "ui_ThreadView.h"
 
 #include "DebuggerView.h"
 #include "ThreadModel.h"
 
 #include <QtCore/QSortFilterProxyModel>
 
-class ThreadWidget final : public DebuggerView
+class ThreadView final : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	ThreadWidget(const DebuggerViewParameters& parameters);
+	ThreadView(const DebuggerViewParameters& parameters);
 
 	void openContextMenu(QPoint pos);
 	void onDoubleClick(const QModelIndex& index);
 
 private:
-	Ui::ThreadWidget m_ui;
+	Ui::ThreadView m_ui;
 
 	ThreadModel* m_model;
 	QSortFilterProxyModel* m_proxy_model;

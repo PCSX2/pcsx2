@@ -1,22 +1,22 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include "StackWidget.h"
+#include "StackView.h"
 
 #include "QtUtils.h"
 
 #include <QtGui/QClipboard>
 #include <QtWidgets/QMenu>
 
-StackWidget::StackWidget(const DebuggerViewParameters& parameters)
+StackView::StackView(const DebuggerViewParameters& parameters)
 	: DebuggerView(parameters, NO_DEBUGGER_FLAGS)
 	, m_model(new StackModel(cpu()))
 {
 	m_ui.setupUi(this);
 
 	m_ui.stackList->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(m_ui.stackList, &QTableView::customContextMenuRequested, this, &StackWidget::openContextMenu);
-	connect(m_ui.stackList, &QTableView::doubleClicked, this, &StackWidget::onDoubleClick);
+	connect(m_ui.stackList, &QTableView::customContextMenuRequested, this, &StackView::openContextMenu);
+	connect(m_ui.stackList, &QTableView::doubleClicked, this, &StackView::onDoubleClick);
 
 	m_ui.stackList->setModel(m_model);
 	for (std::size_t i = 0; auto mode : StackModel::HeaderResizeModes)
@@ -31,7 +31,7 @@ StackWidget::StackWidget(const DebuggerViewParameters& parameters)
 	});
 }
 
-void StackWidget::openContextMenu(QPoint pos)
+void StackView::openContextMenu(QPoint pos)
 {
 	if (!m_ui.stackList->selectionModel()->hasSelection())
 		return;
@@ -58,7 +58,7 @@ void StackWidget::openContextMenu(QPoint pos)
 	menu->popup(m_ui.stackList->viewport()->mapToGlobal(pos));
 }
 
-void StackWidget::onDoubleClick(const QModelIndex& index)
+void StackView::onDoubleClick(const QModelIndex& index)
 {
 	switch (index.column())
 	{

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ui_DisassemblyWidget.h"
+#include "ui_DisassemblyView.h"
 
 #include "DebuggerView.h"
 
@@ -12,13 +12,13 @@
 #include <QtWidgets/QMenu>
 #include <QtGui/QPainter>
 
-class DisassemblyWidget final : public DebuggerView
+class DisassemblyView final : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	DisassemblyWidget(const DebuggerViewParameters& parameters);
-	~DisassemblyWidget();
+	DisassemblyView(const DebuggerViewParameters& parameters);
+	~DisassemblyView();
 
 	void toJson(JsonValueWrapper& json) override;
 	bool fromJson(const JsonValueWrapper& json) override;
@@ -65,7 +65,7 @@ public slots:
 	void toggleBreakpoint(u32 address);
 
 private:
-	Ui::DisassemblyWidget m_ui;
+	Ui::DisassemblyView m_ui;
 
 	u32 m_visibleStart = 0x100000; // The address of the first instruction shown.
 	u32 m_visibleRows;

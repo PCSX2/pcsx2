@@ -3,19 +3,19 @@
 
 #pragma once
 
-#include "ui_SymbolTreeWidget.h"
+#include "ui_SymbolTreeView.h"
 
 #include "Debugger/DebuggerView.h"
 #include "Debugger/SymbolTree/SymbolTreeModel.h"
 
-// A symbol tree widget with its associated refresh button, filter box and
+// A symbol tree view with its associated refresh button, filter box and
 // right-click menu. Supports grouping, sorting and various other settings.
-class SymbolTreeWidget : public DebuggerView
+class SymbolTreeView : public DebuggerView
 {
 	Q_OBJECT
 
 public:
-	virtual ~SymbolTreeWidget();
+	virtual ~SymbolTreeView();
 
 	void updateModel();
 	void reset();
@@ -33,7 +33,7 @@ protected:
 		const ccc::SourceFile* source_file = nullptr;
 	};
 
-	SymbolTreeWidget(
+	SymbolTreeView(
 		u32 flags,
 		s32 symbol_address_alignment,
 		const DebuggerViewParameters& parameters);
@@ -90,7 +90,7 @@ protected:
 
 	SymbolTreeNode* currentNode();
 
-	Ui::SymbolTreeWidget m_ui;
+	Ui::SymbolTreeView m_ui;
 
 	SymbolTreeModel* m_model = nullptr;
 
@@ -114,12 +114,12 @@ protected:
 	bool m_sort_by_if_type_is_known = false;
 };
 
-class FunctionTreeWidget : public SymbolTreeWidget
+class FunctionTreeView : public SymbolTreeView
 {
 	Q_OBJECT
 public:
-	explicit FunctionTreeWidget(const DebuggerViewParameters& parameters);
-	virtual ~FunctionTreeWidget();
+	explicit FunctionTreeView(const DebuggerViewParameters& parameters);
+	virtual ~FunctionTreeView();
 
 protected:
 	std::vector<SymbolWork> getSymbols(
@@ -133,12 +133,12 @@ protected:
 	void onNewButtonPressed() override;
 };
 
-class GlobalVariableTreeWidget : public SymbolTreeWidget
+class GlobalVariableTreeView : public SymbolTreeView
 {
 	Q_OBJECT
 public:
-	explicit GlobalVariableTreeWidget(const DebuggerViewParameters& parameters);
-	virtual ~GlobalVariableTreeWidget();
+	explicit GlobalVariableTreeView(const DebuggerViewParameters& parameters);
+	virtual ~GlobalVariableTreeView();
 
 protected:
 	std::vector<SymbolWork> getSymbols(
@@ -152,12 +152,12 @@ protected:
 	void onNewButtonPressed() override;
 };
 
-class LocalVariableTreeWidget : public SymbolTreeWidget
+class LocalVariableTreeView : public SymbolTreeView
 {
 	Q_OBJECT
 public:
-	explicit LocalVariableTreeWidget(const DebuggerViewParameters& parameters);
-	virtual ~LocalVariableTreeWidget();
+	explicit LocalVariableTreeView(const DebuggerViewParameters& parameters);
+	virtual ~LocalVariableTreeView();
 
 protected:
 	bool needsReset() const override;
@@ -176,12 +176,12 @@ protected:
 	std::optional<u32> m_caller_stack_pointer;
 };
 
-class ParameterVariableTreeWidget : public SymbolTreeWidget
+class ParameterVariableTreeView : public SymbolTreeView
 {
 	Q_OBJECT
 public:
-	explicit ParameterVariableTreeWidget(const DebuggerViewParameters& parameters);
-	virtual ~ParameterVariableTreeWidget();
+	explicit ParameterVariableTreeView(const DebuggerViewParameters& parameters);
+	virtual ~ParameterVariableTreeView();
 
 protected:
 	bool needsReset() const override;

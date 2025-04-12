@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include "RegisterWidget.h"
+#include "RegisterView.h"
 
 #include "Debugger/JsonValueWrapper.h"
 
@@ -21,7 +21,7 @@
 
 using namespace QtUtils;
 
-RegisterWidget::RegisterWidget(const DebuggerViewParameters& parameters)
+RegisterView::RegisterView(const DebuggerViewParameters& parameters)
 	: DebuggerView(parameters, MONOSPACE_FONT)
 {
 	this->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
@@ -29,8 +29,8 @@ RegisterWidget::RegisterWidget(const DebuggerViewParameters& parameters)
 	ui.setupUi(this);
 	ui.registerTabs->setDrawBase(false);
 
-	connect(this, &RegisterWidget::customContextMenuRequested, this, &RegisterWidget::customMenuRequested);
-	connect(ui.registerTabs, &QTabBar::currentChanged, this, &RegisterWidget::tabCurrentChanged);
+	connect(this, &RegisterView::customContextMenuRequested, this, &RegisterView::customMenuRequested);
+	connect(ui.registerTabs, &QTabBar::currentChanged, this, &RegisterView::tabCurrentChanged);
 
 	for (int i = 0; i < cpu().getRegisterCategoryCount(); i++)
 	{
@@ -45,11 +45,11 @@ RegisterWidget::RegisterWidget(const DebuggerViewParameters& parameters)
 	});
 }
 
-RegisterWidget::~RegisterWidget()
+RegisterView::~RegisterView()
 {
 }
 
-void RegisterWidget::toJson(JsonValueWrapper& json)
+void RegisterView::toJson(JsonValueWrapper& json)
 {
 	DebuggerView::toJson(json);
 
@@ -57,7 +57,7 @@ void RegisterWidget::toJson(JsonValueWrapper& json)
 	json.value().AddMember("showFPRFloat", m_showFPRFloat, json.allocator());
 }
 
-bool RegisterWidget::fromJson(const JsonValueWrapper& json)
+bool RegisterView::fromJson(const JsonValueWrapper& json)
 {
 	if (!DebuggerView::fromJson(json))
 		return false;
@@ -75,12 +75,12 @@ bool RegisterWidget::fromJson(const JsonValueWrapper& json)
 	return true;
 }
 
-void RegisterWidget::tabCurrentChanged(int cur)
+void RegisterView::tabCurrentChanged(int cur)
 {
 	m_rowStart = 0;
 }
 
-void RegisterWidget::paintEvent(QPaintEvent* event)
+void RegisterView::paintEvent(QPaintEvent* event)
 {
 	QPainter painter(this);
 	painter.setPen(this->palette().text().color());
@@ -190,7 +190,7 @@ void RegisterWidget::paintEvent(QPaintEvent* event)
 	painter.end();
 }
 
-void RegisterWidget::mousePressEvent(QMouseEvent* event)
+void RegisterView::mousePressEvent(QMouseEvent* event)
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	m_selectedRow = static_cast<int>(((event->position().y() - m_renderStart.y()) / m_rowHeight)) + m_rowStart;
@@ -213,7 +213,7 @@ void RegisterWidget::mousePressEvent(QMouseEvent* event)
 	this->repaint();
 }
 
-void RegisterWidget::wheelEvent(QWheelEvent* event)
+void RegisterView::wheelEvent(QWheelEvent* event)
 {
 	if (event->angleDelta().y() < 0 && m_rowEnd < cpu().getRegisterCount(ui.registerTabs->currentIndex()))
 	{
@@ -227,7 +227,7 @@ void RegisterWidget::wheelEvent(QWheelEvent* event)
 	this->repaint();
 }
 
-void RegisterWidget::mouseDoubleClickEvent(QMouseEvent* event)
+void RegisterView::mouseDoubleClickEvent(QMouseEvent* event)
 {
 	if (!cpu().isAlive())
 		return;
@@ -240,7 +240,7 @@ void RegisterWidget::mouseDoubleClickEvent(QMouseEvent* event)
 		contextChangeValue();
 }
 
-void RegisterWidget::customMenuRequested(QPoint pos)
+void RegisterView::customMenuRequested(QPoint pos)
 {
 	if (!cpu().isAlive())
 		return;
@@ -281,13 +281,13 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 
 	if (cpu().getRegisterSize(categoryIndex) == 128)
 	{
-		connect(menu->addAction(tr("Copy Top Half")), &QAction::triggered, this, &RegisterWidget::contextCopyTop);
-		connect(menu->addAction(tr("Copy Bottom Half")), &QAction::triggered, this, &RegisterWidget::contextCopyBottom);
-		connect(menu->addAction(tr("Copy Segment")), &QAction::triggered, this, &RegisterWidget::contextCopySegment);
+		connect(menu->addAction(tr("Copy Top Half")), &QAction::triggered, this, &RegisterView::contextCopyTop);
+		connect(menu->addAction(tr("Copy Bottom Half")), &QAction::triggered, this, &RegisterView::contextCopyBottom);
+		connect(menu->addAction(tr("Copy Segment")), &QAction::triggered, this, &RegisterView::contextCopySegment);
 	}
 	else
 	{
-		connect(menu->addAction(tr("Copy Value")), &QAction::triggered, this, &RegisterWidget::contextCopyValue);
+		connect(menu->addAction(tr("Copy Value")), &QAction::triggered, this, &RegisterView::contextCopyValue);
 	}
 
 	menu->addSeparator();
@@ -295,16 +295,16 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 	if (cpu().getRegisterSize(categoryIndex) == 128)
 	{
 		connect(menu->addAction(tr("Change Top Half")), &QAction::triggered,
-			this, &RegisterWidget::contextChangeTop);
+			this, &RegisterView::contextChangeTop);
 		connect(menu->addAction(tr("Change Bottom Half")), &QAction::triggered,
-			this, &RegisterWidget::contextChangeBottom);
+			this, &RegisterView::contextChangeBottom);
 		connect(menu->addAction(tr("Change Segment")), &QAction::triggered,
-			this, &RegisterWidget::contextChangeSegment);
+			this, &RegisterView::contextChangeSegment);
 	}
 	else
 	{
 		connect(menu->addAction(tr("Change Value")), &QAction::triggered,
-			this, &RegisterWidget::contextChangeValue);
+			this, &RegisterView::contextChangeValue);
 	}
 
 	menu->addSeparator();
@@ -317,7 +317,7 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 }
 
 
-void RegisterWidget::contextCopyValue()
+void RegisterView::contextCopyValue()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	const u128 val = cpu().getRegister(categoryIndex, m_selectedRow);
@@ -327,21 +327,21 @@ void RegisterWidget::contextCopyValue()
 		QApplication::clipboard()->setText(QString("%1").arg(QString::number(val._u64[0], 16).toUpper(), 16));
 }
 
-void RegisterWidget::contextCopyTop()
+void RegisterView::contextCopyTop()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	const u128 val = cpu().getRegister(categoryIndex, m_selectedRow);
 	QApplication::clipboard()->setText(FilledQStringFromValue(val.hi, 16));
 }
 
-void RegisterWidget::contextCopyBottom()
+void RegisterView::contextCopyBottom()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	const u128 val = cpu().getRegister(categoryIndex, m_selectedRow);
 	QApplication::clipboard()->setText(FilledQStringFromValue(val.lo, 16));
 }
 
-void RegisterWidget::contextCopySegment()
+void RegisterView::contextCopySegment()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	const u128 val = cpu().getRegister(categoryIndex, m_selectedRow);
@@ -351,7 +351,7 @@ void RegisterWidget::contextCopySegment()
 		QApplication::clipboard()->setText(FilledQStringFromValue(val._u32[3 - m_selected128Field], 16));
 }
 
-bool RegisterWidget::contextFetchNewValue(u64& out, u64 currentValue, bool segment)
+bool RegisterView::contextFetchNewValue(u64& out, u64 currentValue, bool segment)
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	const bool floatingPoint = CAT_SHOW_FLOAT && segment;
@@ -394,7 +394,7 @@ bool RegisterWidget::contextFetchNewValue(u64& out, u64 currentValue, bool segme
 	return true;
 }
 
-void RegisterWidget::contextChangeValue()
+void RegisterView::contextChangeValue()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	u64 newVal;
@@ -405,7 +405,7 @@ void RegisterWidget::contextChangeValue()
 	}
 }
 
-void RegisterWidget::contextChangeTop()
+void RegisterView::contextChangeTop()
 {
 	u64 newVal;
 	u128 oldVal = cpu().getRegister(ui.registerTabs->currentIndex(), m_selectedRow);
@@ -417,7 +417,7 @@ void RegisterWidget::contextChangeTop()
 	}
 }
 
-void RegisterWidget::contextChangeBottom()
+void RegisterView::contextChangeBottom()
 {
 	u64 newVal;
 	u128 oldVal = cpu().getRegister(ui.registerTabs->currentIndex(), m_selectedRow);
@@ -429,7 +429,7 @@ void RegisterWidget::contextChangeBottom()
 	}
 }
 
-void RegisterWidget::contextChangeSegment()
+void RegisterView::contextChangeSegment()
 {
 	u64 newVal;
 	u128 oldVal = cpu().getRegister(ui.registerTabs->currentIndex(), m_selectedRow);
@@ -441,7 +441,7 @@ void RegisterWidget::contextChangeSegment()
 	}
 }
 
-std::optional<DebuggerEvents::GoToAddress> RegisterWidget::contextCreateGotoEvent()
+std::optional<DebuggerEvents::GoToAddress> RegisterView::contextCreateGotoEvent()
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	u128 regVal = cpu().getRegister(categoryIndex, m_selectedRow);

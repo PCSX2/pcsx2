@@ -346,7 +346,7 @@ void DebuggerWindow::onVMPaused()
 		});
 	}
 
-	// Stops us from telling the disassembly widget to jump somwhere because
+	// Stops us from telling the disassembly view to jump somwhere because
 	// breakpoint code paused the core.
 	if (!CBreakPoints::GetCorePaused())
 		emit onVMActuallyPaused();
