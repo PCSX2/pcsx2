@@ -21,6 +21,7 @@ public:
 		ENABLED = 0,
 		TYPE,
 		OFFSET,
+		DESCRIPTION,
 		SIZE_LABEL,
 		OPCODE,
 		CONDITION,
@@ -35,6 +36,7 @@ public:
 	};
 
 	static constexpr QHeaderView::ResizeMode HeaderResizeModes[BreakpointColumns::COLUMN_COUNT] = {
+		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::ResizeToContents,
