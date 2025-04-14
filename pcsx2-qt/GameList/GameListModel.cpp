@@ -558,11 +558,11 @@ QIcon GameListModel::getIconForType(GameList::EntryType type)
 	{
 		case GameList::EntryType::PS2Disc:
 		case GameList::EntryType::PS1Disc:
-			return QIcon(QStringLiteral(":/icons/media-optical-24.png"));
+			return QIcon::fromTheme("disc-2-line");
 
 		case GameList::EntryType::ELF:
 		default:
-			return QIcon(QStringLiteral(":/icons/applications-system-24.png"));
+			return QIcon::fromTheme("file-settings-line");
 	}
 }
 
