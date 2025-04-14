@@ -587,7 +587,7 @@ void GameListModel::loadCommonImages()
 
 	const QString base_path(QtHost::GetResourcesBasePath());
 	for (u32 i = 1; i < GameList::CompatibilityRatingCount; i++)
-		m_compatibility_pixmaps[i].load(QStringLiteral("%1/icons/star-%2.png").arg(base_path).arg(i - 1));
+		m_compatibility_pixmaps[i].load(QStringLiteral("%1/icons/star-%2.svg").arg(base_path).arg(i - 1));
 
 	m_placeholder_pixmap.load(QStringLiteral("%1/cover-placeholder.png").arg(base_path));
 }
