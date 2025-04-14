@@ -904,6 +904,7 @@ bool GSHWDrawConfig::BlendState::IsEffective(ColorMaskSelector colormask) const
 
 // clang-format off
 
+// Maps PS2 blend modes to our best approximation of them with PC hardware
 const std::array<HWBlend, 3*3*3*3> GSDevice::m_blendMap =
 {{
 	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0000: (Cs - Cs)*As + Cs ==> Cs

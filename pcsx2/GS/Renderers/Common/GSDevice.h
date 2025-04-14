@@ -257,11 +257,15 @@ enum HWBlendFlags
 	BLEND_A_MAX  = 0x8000, // Impossible blending uses coeff bigger than 1
 };
 
-// Determines the HW blend function for DX11/OGL
+// Determines the HW blend function for the video backend
 struct HWBlend
 {
+	typedef u8 BlendOp; /*GSDevice::BlendOp*/
+	typedef u8 BlendFactor; /*GSDevice::BlendFactor*/
+
 	u16 flags;
-	u8 op, src, dst;
+	BlendOp op;
+	BlendFactor src, dst;
 };
 
 struct alignas(16) GSHWDrawConfig
@@ -354,7 +358,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 blend_c        : 2;
 				u32 blend_d        : 2;
 				u32 fixed_one_a    : 1;
-				u32 blend_hw       : 3;
+				u32 blend_hw       : 3; /*HWBlendType*/
 				u32 a_masked       : 1;
 				u32 hdr            : 1;
 				u32 rta_correction : 1;
@@ -631,26 +635,30 @@ struct alignas(16) GSHWDrawConfig
 			return true;
 		}
 	};
+	// For hardware rendering backends
 	struct BlendState
 	{
+		typedef u8 BlendOp; /*GSDevice::BlendOp*/
+		typedef u8 BlendFactor; /*GSDevice::BlendFactor*/
+
 		union
 		{
 			struct
 			{
-				u8 enable : 1;
-				u8 constant_enable : 1;
-				u8 op : 6;
-				u8 src_factor : 4;
-				u8 dst_factor : 4;
-				u8 src_factor_alpha : 4;
-				u8 dst_factor_alpha : 4;
+				bool enable : 1;
+				bool constant_enable : 1;
+				BlendOp op : 6;
+				BlendFactor src_factor : 4;
+				BlendFactor dst_factor : 4;
+				BlendFactor src_factor_alpha : 4;
+				BlendFactor dst_factor_alpha : 4;
 				u8 constant;
 			};
 			u32 key;
 		};
 		constexpr BlendState(): key(0) {}
-		constexpr BlendState(bool enable_, u8 src_factor_, u8 dst_factor_, u8 op_,
-			u8 src_alpha_factor_, u8 dst_alpha_factor_, bool constant_enable_, u8 constant_)
+		constexpr BlendState(bool enable_, BlendFactor src_factor_, BlendFactor dst_factor_, BlendOp op_,
+			BlendFactor src_alpha_factor_, BlendFactor dst_alpha_factor_, bool constant_enable_, u8 constant_)
 			: key(0)
 		{
 			enable = enable_;
@@ -730,7 +738,7 @@ struct alignas(16) GSHWDrawConfig
 	struct BlendMultiPass
 	{
 		BlendState blend;
-		u8 blend_hw;
+		u8 blend_hw; /*HWBlendType*/
 		u8 dither;
 		bool enable;
 	};
