@@ -1,7 +1,6 @@
 <RCC>
 	<qresource>
 		<file>icons/AppIcon64.png</file>
-		<file>icons/applications-system-24.png</file>
 		<file>icons/black/index.theme</file>
 		<file>icons/black/svg/arrow-left-right-line.svg</file>
 		<file>icons/black/svg/artboard-2-line.svg</file>
@@ -105,9 +104,6 @@
 		<file>icons/black/svg/zoom-in-line.svg</file>
 		<file>icons/black/svg/zoom-out-line.svg</file>
 		<file>icons/logo.png</file>
-		<file>icons/media-optical-24.png</file>
-		<file>icons/media-optical-gear-24.png</file>
-		<file>icons/media-optical.png</file>
 		<file>icons/QT.png</file>
 		<file>icons/update.png</file>
 		<file>icons/white/index.theme</file>
