@@ -1413,6 +1413,8 @@ SCAJ-20023:
   region: "NTSC-Unk"
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-20024:
@@ -2206,10 +2208,11 @@ SCAJ-20158:
 SCAJ-20159:
   name: "SoulCalibur III"
   region: "NTSC-C"
-  gameFixes:
-    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     nativeScaling: 2 # Fixes misaligned bloom.
@@ -4212,10 +4215,11 @@ SCED-53662:
 SCED-53674:
   name: "SoulCalibur III [Demo]"
   region: "PAL-E"
-  gameFixes:
-    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     nativeScaling: 2 # Fixes misaligned bloom.
@@ -5888,10 +5892,11 @@ SCES-53312:
   name: "SoulCalibur III"
   region: "PAL-M5"
   compat: 5
-  gameFixes:
-    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     nativeScaling: 2 # Fixes misaligned bloom.
@@ -7023,6 +7028,8 @@ SCKA-20016:
   compat: 5
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCKA-20017:
@@ -7324,10 +7331,11 @@ SCKA-20059:
   name: "SoulCalibur III"
   region: "NTSC-K"
   compat: 5
-  gameFixes:
-    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     nativeScaling: 2 # Fixes misaligned bloom.
@@ -13189,6 +13197,8 @@ SLED-51901:
   region: "PAL-E"
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLED-51902:
@@ -17965,6 +17975,8 @@ SLES-51799:
   compat: 5
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLES-51800:
@@ -35040,10 +35052,11 @@ SLPM-61133:
   name-sort: "そうるきゃりばー3 [たいけんばん]"
   name-en: "SoulCalibur III [Trial]"
   region: "NTSC-J"
-  gameFixes:
-    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     nativeScaling: 2 # Fixes misaligned bloom.
@@ -56345,6 +56358,8 @@ SLPS-25230:
   compat: 5
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-25231:
@@ -58389,10 +58404,11 @@ SLPS-25577:
   name-en: "SoulCalibur III"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     nativeScaling: 2 # Fixes misaligned bloom.
@@ -64797,6 +64813,8 @@ SLUS-20643:
   compat: 5
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-20644:
@@ -68110,10 +68128,11 @@ SLUS-21216:
   name: "SoulCalibur III"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     nativeScaling: 2 # Fixes misaligned bloom.
@@ -72749,6 +72768,8 @@ SLUS-29058:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gameFixes:
+    - SoftwareRendererFMVHack # Horizontal bottom line in FMV.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-29059:
