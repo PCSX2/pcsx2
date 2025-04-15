@@ -57,6 +57,14 @@ u64 GetPhysicalMemory()
 	return status.ullTotalPhys;
 }
 
+u64 GetAvailablePhysicalMemory()
+{
+	MEMORYSTATUSEX status;
+	status.dwLength = sizeof(status);
+	GlobalMemoryStatusEx(&status);
+	return status.ullAvailPhys;
+}
+
 // Calculates the Windows OS Version and processor architecture, and returns it as a
 // human-readable string. :)
 std::string GetOSVersionString()
