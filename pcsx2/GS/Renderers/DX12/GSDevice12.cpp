@@ -1265,13 +1265,17 @@ void GSDevice12::DrawIndexedPrimitive(int offset, int count)
 void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
 	DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format) const
 {
-	static constexpr std::array<std::array<DXGI_FORMAT, 4>, static_cast<int>(GSTexture::Format::BC7) + 1>
+	static constexpr std::array<std::array<DXGI_FORMAT, 4>, static_cast<int>(GSTexture::Format::Last) + 1>
 		s_format_mapping = {{
 			{DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN}, // Invalid
 			{DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM,
 				DXGI_FORMAT_UNKNOWN}, // Color
+			{DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM,
+				DXGI_FORMAT_UNKNOWN}, // ColorHQ
+			{DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT,
+				DXGI_FORMAT_UNKNOWN}, // ColorHDR
 			{DXGI_FORMAT_R16G16B16A16_UNORM, DXGI_FORMAT_R16G16B16A16_UNORM, DXGI_FORMAT_R16G16B16A16_UNORM,
-				DXGI_FORMAT_UNKNOWN}, // HDRColor
+				DXGI_FORMAT_UNKNOWN}, // ColorClip
 			{DXGI_FORMAT_D32_FLOAT_S8X24_UINT, DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS, DXGI_FORMAT_UNKNOWN,
 				DXGI_FORMAT_D32_FLOAT_S8X24_UINT}, // DepthStencil
 			{DXGI_FORMAT_A8_UNORM, DXGI_FORMAT_A8_UNORM, DXGI_FORMAT_A8_UNORM, DXGI_FORMAT_UNKNOWN}, // UNorm8
@@ -2540,10 +2544,10 @@ bool GSDevice12::CompileConvertPipelines()
 																j & 1u, (j >> 1) & 1u, (j >> 2) & 1u, (j >> 3) & 1u));
 			}
 		}
-		else if (i == ShaderConvert::HDR_INIT || i == ShaderConvert::HDR_RESOLVE)
+		else if (i == ShaderConvert::COLCLIP_INIT || i == ShaderConvert::COLCLIP_RESOLVE)
 		{
-			const bool is_setup = i == ShaderConvert::HDR_INIT;
-			std::array<ComPtr<ID3D12PipelineState>, 2>& arr = is_setup ? m_hdr_setup_pipelines : m_hdr_finish_pipelines;
+			const bool is_setup = i == ShaderConvert::COLCLIP_INIT;
+			std::array<ComPtr<ID3D12PipelineState>, 2>& arr = is_setup ? m_colclip_setup_pipelines : m_colclip_finish_pipelines;
 			for (u32 ds = 0; ds < 2; ds++)
 			{
 				pxAssert(!arr[ds]);
@@ -2554,7 +2558,7 @@ bool GSDevice12::CompileConvertPipelines()
 				if (!arr[ds])
 					return false;
 
-				D3D12::SetObjectName(arr[ds].get(), TinyString::from_format("HDR {}/copy pipeline (ds={})", is_setup ? "setup" : "finish", ds));
+				D3D12::SetObjectName(arr[ds].get(), TinyString::from_format("ColorClip {}/copy pipeline (ds={})", is_setup ? "setup" : "finish", ds));
 			}
 		}
 	}
@@ -2780,8 +2784,8 @@ void GSDevice12::DestroyResources()
 	m_color_copy = {};
 	m_present = {};
 	m_convert = {};
-	m_hdr_setup_pipelines = {};
-	m_hdr_finish_pipelines = {};
+	m_colclip_setup_pipelines = {};
+	m_colclip_finish_pipelines = {};
 	m_date_image_setup_pipelines = {};
 	m_fxaa_pipeline.reset();
 	m_shadeboost_pipeline.reset();
@@ -2897,7 +2901,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_DST_FMT", sel.dst_fmt);
 	sm.AddMacro("PS_DEPTH_FMT", sel.depth_fmt);
 	sm.AddMacro("PS_PAL_FMT", sel.pal_fmt);
-	sm.AddMacro("PS_HDR", sel.hdr);
+	sm.AddMacro("PS_COLCLIP_HW", sel.colclip_hw);
 	sm.AddMacro("PS_RTA_CORRECTION", sel.rta_correction);
 	sm.AddMacro("PS_RTA_SRC_CORRECTION", sel.rta_source_correction);
 	sm.AddMacro("PS_COLCLIP", sel.colclip);
@@ -2955,7 +2959,7 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	{
 		const GSTexture::Format format = IsDATEModePrimIDInit(p.ps.date) ?
 											 GSTexture::Format::PrimID :
-											 (p.ps.hdr ? GSTexture::Format::HDRColor : GSTexture::Format::Color);
+											 (p.ps.colclip_hw ? GSTexture::Format::ColorClip : GSTexture::Format::Color);
 
 		DXGI_FORMAT native_format;
 		LookupNativeFormat(format, nullptr, nullptr, &native_format, nullptr);
@@ -3817,7 +3821,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	const bool stencil_DATE = (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
 							   config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne);
 
-	GSTexture12* hdr_rt = static_cast<GSTexture12*>(g_gs_device->GetHDRTexture());
+	GSTexture12* colclip_rt = static_cast<GSTexture12*>(g_gs_device->GetColorClipTexture());
 	GSTexture12* draw_rt = static_cast<GSTexture12*>(config.rt);
 	GSTexture12* draw_ds = static_cast<GSTexture12*>(config.ds);
 	GSTexture12* draw_rt_clone = nullptr;
@@ -3830,15 +3834,15 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	// figure out the pipeline
 	UpdateHWPipelineSelector(config);
 
-	// now blit the hdr texture back to the original target
-	if (hdr_rt)
+	// now blit the colclip texture back to the original target
+	if (colclip_rt)
 	{
-		if (config.hdr_mode == GSHWDrawConfig::HDRMode::EarlyResolve)
+		if (config.colclip_mode == GSHWDrawConfig::ColClipMode::EarlyResolve)
 		{
-			GL_PUSH("Blit HDR back to RT");
+			GL_PUSH("Blit ColorClip back to RT");
 
 			EndRenderPass();
-			hdr_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			colclip_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 			draw_rt = static_cast<GSTexture12*>(config.rt);
 			OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
@@ -3850,19 +3854,19 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 				D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 				draw_rt->GetUNormClearColor(), 0.0f, 0);
 
-			const GSVector4 sRect(GSVector4(config.hdr_update_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
-			SetPipeline(m_hdr_finish_pipelines[pipe.ds].get());
-			SetUtilityTexture(hdr_rt, m_point_sampler_cpu);
-			DrawStretchRect(sRect, GSVector4(config.hdr_update_area), rtsize);
+			const GSVector4 sRect(GSVector4(config.colclip_update_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
+			SetPipeline(m_colclip_finish_pipelines[pipe.ds].get());
+			SetUtilityTexture(colclip_rt, m_point_sampler_cpu);
+			DrawStretchRect(sRect, GSVector4(config.colclip_update_area), rtsize);
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-			Recycle(hdr_rt);
-			g_gs_device->SetHDRTexture(nullptr);
+			Recycle(colclip_rt);
+			g_gs_device->SetColorClipTexture(nullptr);
 		}
 		else
 		{
-			draw_rt = hdr_rt;
-			pipe.ps.hdr = 1;
+			draw_rt = colclip_rt;
+			pipe.ps.colclip_hw = 1;
 		}
 	}
 
@@ -3903,7 +3907,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	if (config.require_one_barrier)
 	{
 		// requires a copy of the RT
-		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, hdr_rt ? GSTexture::Format::HDRColor : GSTexture::Format::Color, true));
+		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, colclip_rt ? GSTexture::Format::ColorClip : GSTexture::Format::Color, true));
 		if (draw_rt_clone)
 		{
 			EndRenderPass();
@@ -3917,19 +3921,19 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	// Switch to hdr target for colclip rendering
-	if (pipe.ps.hdr)
+	// Switch to colclip target for colclip hw rendering
+	if (pipe.ps.colclip_hw)
 	{
-		if (!hdr_rt)
+		if (!colclip_rt)
 		{
-			config.hdr_update_area = config.drawarea;
+			config.colclip_update_area = config.drawarea;
 
 			EndRenderPass();
 
-			hdr_rt = static_cast<GSTexture12*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor, false));
-			if (!hdr_rt)
+			colclip_rt = static_cast<GSTexture12*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::ColorClip, false));
+			if (!colclip_rt)
 			{
-				Console.WriteLn("D3D12: Failed to allocate HDR render target, aborting draw.");
+				Console.WriteLn("D3D12: Failed to allocate ColorClip render target, aborting draw.");
 
 				if (date_image)
 					Recycle(date_image);
@@ -3937,17 +3941,17 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 				return;
 			}
 
-			g_gs_device->SetHDRTexture(static_cast<GSTexture*>(hdr_rt));
+			g_gs_device->SetColorClipTexture(static_cast<GSTexture*>(colclip_rt));
 
-			// propagate clear value through if the hdr render is the first
+			// propagate clear value through if the colclip render is the first
 			if (draw_rt->GetState() == GSTexture::State::Cleared)
 			{
-				hdr_rt->SetState(GSTexture::State::Cleared);
-				hdr_rt->SetClearColor(draw_rt->GetClearColor());
+				colclip_rt->SetState(GSTexture::State::Cleared);
+				colclip_rt->SetClearColor(draw_rt->GetClearColor());
 			}
 			else if (draw_rt->GetState() == GSTexture::State::Dirty)
 			{
-				GL_PUSH_("HDR Render Target Setup");
+				GL_PUSH_("ColorClip Render Target Setup");
 				draw_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 			}
 
@@ -3956,7 +3960,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 				PSSetShaderResource(2, draw_rt, true);
 		}
 
-		draw_rt = hdr_rt;
+		draw_rt = colclip_rt;
 	}
 
 	// clear texture binding when it's bound to RT or DS
@@ -3966,11 +3970,10 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(0, nullptr, false);
 	}
 
-	// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
 	if (m_in_render_pass && (m_current_render_target == draw_rt || m_current_depth_target == draw_ds))
 	{
 		// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
-		// keep the depth even if doing HDR draws, because the next draw will probably re-enable depth
+		// keep the depth even if doing colclip hw draws, because the next draw will probably re-enable depth
 		if (!draw_rt && m_current_render_target && config.tex != m_current_render_target &&
 			m_current_render_target->GetSize() == draw_ds->GetSize())
 		{
@@ -3991,9 +3994,9 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	if (!m_in_render_pass)
 	{
 		GSVector4 clear_color = draw_rt ? draw_rt->GetUNormClearColor() : GSVector4::zero();
-		if (pipe.ps.hdr)
+		if (pipe.ps.colclip_hw)
 		{
-			// Denormalize clear color for HDR.
+			// Denormalize clear color for hw colclip.
 			clear_color *= GSVector4::cxpr(255.0f / 65535.0f, 255.0f / 65535.0f, 255.0f / 65535.0f, 1.0f);
 		}
 		BeginRenderPass(GetLoadOpForTexture(draw_rt),
@@ -4007,13 +4010,13 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			clear_color, draw_ds ? draw_ds->GetClearDepth() : 0.0f, 1);
 	}
 
-	// rt -> hdr blit if enabled
-	if (hdr_rt && (config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertOnly || config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertAndResolve) && config.rt->GetState() == GSTexture::State::Dirty)
+	// rt -> colclip hw blit if enabled
+	if (colclip_rt && (config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly || config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertAndResolve) && config.rt->GetState() == GSTexture::State::Dirty)
 	{
 		SetUtilityTexture(static_cast<GSTexture12*>(config.rt), m_point_sampler_cpu);
-		SetPipeline(m_hdr_setup_pipelines[pipe.ds].get());
+		SetPipeline(m_colclip_setup_pipelines[pipe.ds].get());
 
-		const GSVector4 drawareaf = GSVector4((config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
+		const GSVector4 drawareaf = GSVector4((config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
 		const GSVector4 sRect(drawareaf / GSVector4(rtsize.x, rtsize.y).xyxy());
 		DrawStretchRect(sRect, GSVector4(drawareaf), rtsize);
 		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
@@ -4021,9 +4024,9 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		GL_POP();
 	}
 
-	// VB/IB upload, if we did DATE setup and it's not HDR this has already been done
+	// VB/IB upload, if we did DATE setup and it's not colclip hw this has already been done
 	SetPrimitiveTopology(s_primitive_topology_mapping[static_cast<u8>(config.topology)]);
-	if (!date_image || hdr_rt)
+	if (!date_image || colclip_rt)
 		UploadHWDrawVerticesAndIndices(config);
 
 	// now we can do the actual draw
@@ -4067,17 +4070,17 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	if (date_image)
 		Recycle(date_image);
 
-	// now blit the hdr texture back to the original target
-	if (hdr_rt)
+	// now blit the colclip texture back to the original target
+	if (colclip_rt)
 	{
-		config.hdr_update_area = config.hdr_update_area.runion(config.drawarea);
+		config.colclip_update_area = config.colclip_update_area.runion(config.drawarea);
 
-		if ((config.hdr_mode == GSHWDrawConfig::HDRMode::ResolveOnly || config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertAndResolve))
+		if ((config.colclip_mode == GSHWDrawConfig::ColClipMode::ResolveOnly || config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertAndResolve))
 		{
-			GL_PUSH("Blit HDR back to RT");
+			GL_PUSH("Blit ColorClip back to RT");
 
 			EndRenderPass();
-			hdr_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			colclip_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 			draw_rt = static_cast<GSTexture12*>(config.rt);
 			OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
@@ -4089,14 +4092,14 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 				D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 				draw_rt->GetUNormClearColor(), 0.0f, 0);
 
-			const GSVector4 sRect(GSVector4(config.hdr_update_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
-			SetPipeline(m_hdr_finish_pipelines[pipe.ds].get());
-			SetUtilityTexture(hdr_rt, m_point_sampler_cpu);
-			DrawStretchRect(sRect, GSVector4(config.hdr_update_area), rtsize);
+			const GSVector4 sRect(GSVector4(config.colclip_update_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
+			SetPipeline(m_colclip_finish_pipelines[pipe.ds].get());
+			SetUtilityTexture(colclip_rt, m_point_sampler_cpu);
+			DrawStretchRect(sRect, GSVector4(config.colclip_update_area), rtsize);
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-			Recycle(hdr_rt);
-			g_gs_device->SetHDRTexture(nullptr);
+			Recycle(colclip_rt);
+			g_gs_device->SetColorClipTexture(nullptr);
 		}
 	}
 }

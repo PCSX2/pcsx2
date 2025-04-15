@@ -170,7 +170,7 @@ PS_OUTPUT ps_rta_decorrection(PS_INPUT input)
 	return output;
 }
 
-PS_OUTPUT ps_hdr_init(PS_INPUT input)
+PS_OUTPUT ps_colclip_init(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
@@ -178,7 +178,7 @@ PS_OUTPUT ps_hdr_init(PS_INPUT input)
 	return output;
 }
 
-PS_OUTPUT ps_hdr_resolve(PS_INPUT input)
+PS_OUTPUT ps_colclip_resolve(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);

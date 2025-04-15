@@ -707,7 +707,7 @@ void ps_fbmask(inout vec4 C)
 {
 	// FIXME do I need special case for 16 bits
 #if PS_FBMASK
-	#if PS_HDR == 1
+	#if PS_COLCLIP_HW == 1
 		vec4 RT = trunc(sample_from_rt() * 65535.0f);
 	#else
 		vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
@@ -757,7 +757,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 #endif
 
 	// Correct the Color value based on the output format
-#if PS_COLCLIP == 0 && PS_HDR == 0
+#if PS_COLCLIP == 0 && PS_COLCLIP_HW == 0
 	// Standard Clamp
 	C = clamp(C, vec3(0.0f), vec3(255.0f));
 #endif
@@ -771,7 +771,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 #if PS_DST_FMT == FMT_16 && PS_DITHER < 3 && (PS_BLEND_MIX == 0 || PS_DITHER)
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 	C = vec3(ivec3(C) & ivec3(0xF8));
-#elif PS_COLCLIP == 1 || PS_HDR == 1
+#elif PS_COLCLIP == 1 || PS_COLCLIP_HW == 1
 	C = vec3(ivec3(C) & ivec3(0xFF));
 #endif
 
@@ -828,7 +828,7 @@ float As = As_rgba.a;
 	#endif
 		
 	// Let the compiler do its jobs !
-	#if PS_HDR == 1
+	#if PS_COLCLIP_HW == 1
 		vec3 Cd = trunc(RT.rgb * 65535.0f);
 	#else
 		vec3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
@@ -1125,7 +1125,7 @@ void ps_main()
 	#else
 		SV_Target0.a = C.a / 255.0f;
 	#endif
-	#if PS_HDR == 1
+	#if PS_COLCLIP_HW == 1
 		SV_Target0.rgb = vec3(C.rgb / 65535.0f);
 	#else
 		SV_Target0.rgb = C.rgb / 255.0f;
