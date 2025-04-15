@@ -87,6 +87,7 @@ std::vector<GSAdapterInfo> D3D::GetAdapterInfo(IDXGIFactory5* factory)
 		ai.max_upscale_multiplier = GSGetMaxUpscaleMultiplier(ai.max_texture_size);
 
 		wil::com_ptr_nothrow<IDXGIOutput> output;
+		// Only check the first output, which would be the primary display (if any is connected)
 		if (SUCCEEDED(hr = adapter->EnumOutputs(0, &output)))
 		{
 			UINT num_modes = 0;
@@ -111,7 +112,7 @@ std::vector<GSAdapterInfo> D3D::GetAdapterInfo(IDXGIFactory5* factory)
 				ERROR_LOG("GetDisplayModeList() failed: {:08X}", static_cast<unsigned>(hr));
 			}
 		}
-		else
+		else if (hr != DXGI_ERROR_NOT_FOUND)
 		{
 			ERROR_LOG("EnumOutputs() failed: {:08X}", static_cast<unsigned>(hr));
 		}
