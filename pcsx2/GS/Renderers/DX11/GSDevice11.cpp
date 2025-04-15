@@ -1307,7 +1307,6 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	else
 	{
 		ds = GSVector2i(m_window_info.surface_width, m_window_info.surface_height);
-
 	}
 
 	// om
@@ -1317,8 +1316,6 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 		OMSetDepthStencilState(m_convert.dss.get(), 0);
 
 	OMSetBlendState(bs, 0);
-
-
 
 	// ia
 
@@ -1336,7 +1333,6 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	};
 
 
-
     IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
 	IASetInputLayout(m_convert.il.get());
 	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
@@ -1344,7 +1340,6 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	// vs
 
 	VSSetShader(m_convert.vs.get(), nullptr);
-
 
 	// ps
 
@@ -1382,8 +1377,6 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	OMSetDepthStencilState(m_convert.dss.get(), 0);
 	OMSetBlendState(m_convert.bs[D3D11_COLOR_WRITE_ENABLE_ALL].get(), 0);
 
-
-
 	// ia
 
 	const float left = dRect.x * 2 / ds.x - 1.0f;
@@ -1399,8 +1392,6 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 		{GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)},
 	};
 
-
-
 	IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
 	IASetInputLayout(m_present.il.get());
 	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
@@ -1408,7 +1399,6 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	// vs
 
 	VSSetShader(m_present.vs.get(), nullptr);
-
 
 	// ps
 
@@ -2182,8 +2172,6 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 	//
 
 	DrawPrimitive();
-
-	//
 }
 
 void* GSDevice11::IAMapVertexBuffer(u32 stride, u32 count)
