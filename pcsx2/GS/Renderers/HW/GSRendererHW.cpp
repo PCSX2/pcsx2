@@ -1135,7 +1135,7 @@ GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex, const 
 	return g_texture_cache->GetTargetSize(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, valid_size.x, valid_size.y, can_expand);
 }
 
-bool GSRendererHW::NextDrawHDR() const
+bool GSRendererHW::NextDrawColClip() const
 {
 	const int get_next_ctx = (m_state_flush_reason == CONTEXTCHANGE) ? m_env.PRIM.CTXT : m_backed_up_ctx;
 	const GSDrawingContext& next_ctx = m_env.CTXT[get_next_ctx];
@@ -2438,31 +2438,31 @@ void GSRendererHW::Draw()
 
 	// I hate that I have to do this, but some games (like Pac-Man World Rally) troll us by causing a flush with degenerate triangles, so we don't have all available information about the next draw.
 	// So we have to check when the next draw happens if our frame has changed or if it's become recursive.
-	const bool has_HDR_texture = g_gs_device->GetHDRTexture() != nullptr;
-	if (!no_rt && has_HDR_texture && (m_conf.hdr_frame.FBP != m_cached_ctx.FRAME.FBP || m_conf.hdr_frame.Block() == m_cached_ctx.TEX0.TBP0))
+	const bool has_colclip_texture = g_gs_device->GetColorClipTexture() != nullptr;
+	if (!no_rt && has_colclip_texture && (m_conf.colclip_frame.FBP != m_cached_ctx.FRAME.FBP || m_conf.colclip_frame.Block() == m_cached_ctx.TEX0.TBP0))
 	{
 		GIFRegTEX0 FRAME;
-		FRAME.TBP0 = m_conf.hdr_frame.Block();
-		FRAME.TBW = m_conf.hdr_frame.FBW;
-		FRAME.PSM = m_conf.hdr_frame.PSM;
+		FRAME.TBP0 = m_conf.colclip_frame.Block();
+		FRAME.TBW = m_conf.colclip_frame.FBW;
+		FRAME.PSM = m_conf.colclip_frame.PSM;
 
 		GSTextureCache::Target* old_rt = g_texture_cache->LookupTarget(FRAME, GSVector2i(1, 1), GetTextureScaleFactor(), GSTextureCache::RenderTarget, true,
 			fm, false, false, true, true, GSVector4i(0, 0, 1, 1), true, false, false);
 
 		if (old_rt)
 		{
-			GL_CACHE("Pre-draw resolve of HDR! Address: %x", FRAME.TBP0);
-			GSTexture* hdr_texture = g_gs_device->GetHDRTexture();
-			g_gs_device->StretchRect(hdr_texture, GSVector4(m_conf.hdr_update_area) / GSVector4(GSVector4i(hdr_texture->GetSize()).xyxy()), old_rt->m_texture, GSVector4(m_conf.hdr_update_area),
-				ShaderConvert::HDR_RESOLVE, false);
+			GL_CACHE("Pre-draw resolve of colclip! Address: %x", FRAME.TBP0);
+			GSTexture* colclip_texture = g_gs_device->GetColorClipTexture();
+			g_gs_device->StretchRect(colclip_texture, GSVector4(m_conf.colclip_update_area) / GSVector4(GSVector4i(colclip_texture->GetSize()).xyxy()), old_rt->m_texture, GSVector4(m_conf.colclip_update_area),
+				ShaderConvert::COLCLIP_RESOLVE, false);
 
-			g_gs_device->Recycle(hdr_texture);
+			g_gs_device->Recycle(colclip_texture);
 
-			g_gs_device->SetHDRTexture(nullptr);
+			g_gs_device->SetColorClipTexture(nullptr);
 
 		}
 		else
-			DevCon.Warning("Error resolving HDR texture for pre-draw resolve");
+			DevCon.Warning("Error resolving colclip texture for pre-draw resolve");
 	}
 
 	const bool draw_sprite_tex = PRIM->TME && (m_vt.m_primclass == GS_SPRITE_CLASS);
@@ -4267,12 +4267,12 @@ void GSRendererHW::Draw()
 
 	if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
-		const bool writeback_HDR_texture = g_gs_device->GetHDRTexture() != nullptr;
-		if (writeback_HDR_texture)
+		const bool writeback_colclip_texture = g_gs_device->GetColorClipTexture() != nullptr;
+		if (writeback_colclip_texture)
 		{
-			GSTexture* hdr_texture = g_gs_device->GetHDRTexture();
-			g_gs_device->StretchRect(hdr_texture, GSVector4(m_conf.hdr_update_area) / GSVector4(GSVector4i(hdr_texture->GetSize()).xyxy()), rt->m_texture, GSVector4(m_conf.hdr_update_area),
-				ShaderConvert::HDR_RESOLVE, false);
+			GSTexture* colclip_texture = g_gs_device->GetColorClipTexture();
+			g_gs_device->StretchRect(colclip_texture, GSVector4(m_conf.colclip_update_area) / GSVector4(GSVector4i(colclip_texture->GetSize()).xyxy()), rt->m_texture, GSVector4(m_conf.colclip_update_area),
+				ShaderConvert::COLCLIP_RESOLVE, false);
 		}
 
 		const u64 frame = g_perfmon.GetFrame();
@@ -5228,10 +5228,10 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	// Per pixel alpha blending.
 	const bool PABE = m_draw_env->PABE.PABE && GetAlphaMinMax().min < 128;
 
-	// HW blend can handle it, no need for sw or hdr colclip, Cd*Alpha or Cd*(1 - Alpha) where Alpha <= 128.
+	// HW blend can handle it, no need for sw or hw colclip, Cd*Alpha or Cd*(1 - Alpha) where Alpha <= 128.
 	bool color_dest_blend2 = !PABE && ((m_conf.ps.blend_a == 1 && m_conf.ps.blend_b == 2 && m_conf.ps.blend_d == 2) || (m_conf.ps.blend_a == 2 && m_conf.ps.blend_b == 1 && m_conf.ps.blend_d == 1)) &&
 		(alpha_eq_less_one || (alpha_c1_eq_less_max_one && new_rt_alpha_scale));
-	// HW blend can handle it, no need for sw or hdr colclip, Cs*Alpha + Cd*(1 - Alpha) or Cd*Alpha + Cs*(1 - Alpha) where Alpha <= 128.
+	// HW blend can handle it, no need for sw or hw colclip, Cs*Alpha + Cd*(1 - Alpha) or Cd*Alpha + Cs*(1 - Alpha) where Alpha <= 128.
 	bool blend_zero_to_one_range = !PABE && ((m_conf.ps.blend_a == 0 && m_conf.ps.blend_b == 1 && m_conf.ps.blend_d == 1) || (blend_flag & BLEND_MIX3)) &&
 		(alpha_eq_less_one || (alpha_c1_eq_less_max_one && new_rt_alpha_scale));
 
@@ -5382,36 +5382,35 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	// Color clip
 	if (COLCLAMP.CLAMP == 0)
 	{
-		bool has_HDR_texture = g_gs_device->GetHDRTexture() != nullptr;
+		bool has_colclip_texture = g_gs_device->GetColorClipTexture() != nullptr;
 
-		// Don't know any game that resizes the RT mid HDR, but gotta be careful.
-		if (has_HDR_texture)
+		// Don't know any game that resizes the RT mid colclip, but gotta be careful.
+		if (has_colclip_texture)
 		{
-			GSTexture* hdr_texture = g_gs_device->GetHDRTexture();
+			GSTexture* colclip_texture = g_gs_device->GetColorClipTexture();
 
-			if (hdr_texture->GetSize() != rt->m_texture->GetSize())
+			if (colclip_texture->GetSize() != rt->m_texture->GetSize())
 			{
+				GL_CACHE("Pre-Blend resolve of colclip due to size change! Address: %x", rt->m_TEX0.TBP0);
+				g_gs_device->StretchRect(colclip_texture, GSVector4(m_conf.colclip_update_area) / GSVector4(GSVector4i(colclip_texture->GetSize()).xyxy()), rt->m_texture, GSVector4(m_conf.colclip_update_area),
+					ShaderConvert::COLCLIP_RESOLVE, false);
 
-				GL_CACHE("Pre-Blend resolve of HDR due to size change! Address: %x", rt->m_TEX0.TBP0);
-				g_gs_device->StretchRect(hdr_texture, GSVector4(m_conf.hdr_update_area) / GSVector4(GSVector4i(hdr_texture->GetSize()).xyxy()), rt->m_texture, GSVector4(m_conf.hdr_update_area),
-					ShaderConvert::HDR_RESOLVE, false);
+				g_gs_device->Recycle(colclip_texture);
 
-				g_gs_device->Recycle(hdr_texture);
+				g_gs_device->SetColorClipTexture(nullptr);
 
-				g_gs_device->SetHDRTexture(nullptr);
-
-				has_HDR_texture = false;
+				has_colclip_texture = false;
 			}
 		}
 
-		const bool free_colclip = !has_HDR_texture && (features.framebuffer_fetch || no_prim_overlap || blend_non_recursive);
+		const bool free_colclip = !has_colclip_texture && (features.framebuffer_fetch || no_prim_overlap || blend_non_recursive);
 		GL_DBG("COLCLIP Info (Blending: %u/%u/%u/%u, OVERLAP: %d)", m_conf.ps.blend_a, m_conf.ps.blend_b, m_conf.ps.blend_c, m_conf.ps.blend_d, m_prim_overlap);
 		if (color_dest_blend || color_dest_blend2 || blend_zero_to_one_range)
 		{
 			// No overflow, disable colclip.
 			GL_INS("COLCLIP mode DISABLED");
 			sw_blending = false;
-			m_conf.hdr_mode = (has_HDR_texture && !NextDrawHDR()) ? GSHWDrawConfig::HDRMode::ResolveOnly : GSHWDrawConfig::HDRMode::NoModify;
+			m_conf.colclip_mode = (has_colclip_texture && !NextDrawColClip()) ? GSHWDrawConfig::ColClipMode::ResolveOnly : GSHWDrawConfig::ColClipMode::NoModify;
 		}
 		else if (free_colclip)
 		{
@@ -5419,35 +5418,35 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			GL_INS("COLCLIP Free mode ENABLED");
 			m_conf.ps.colclip  = 1;
 			sw_blending        = true;
-			// Disable the HDR algo
+			// Disable the colclip hw algo
 			accumulation_blend = false;
 			blend_mix          = false;
-			m_conf.hdr_mode = (has_HDR_texture && !NextDrawHDR()) ? GSHWDrawConfig::HDRMode::ResolveOnly : GSHWDrawConfig::HDRMode::NoModify;
+			m_conf.colclip_mode = (has_colclip_texture && !NextDrawColClip()) ? GSHWDrawConfig::ColClipMode::ResolveOnly : GSHWDrawConfig::ColClipMode::NoModify;
 		}
 		else if (accumulation_blend)
 		{
 			// A fast algo that requires 2 passes
-			GL_INS("COLCLIP Fast HDR mode ENABLED");
-			m_conf.ps.hdr = 1;
-			sw_blending = true; // Enable sw blending for the HDR algo
+			GL_INS("COLCLIP Fast HW mode ENABLED");
+			m_conf.ps.colclip_hw = 1;
+			sw_blending = true; // Enable sw blending for the colclip algo
 
-			m_conf.hdr_mode = has_HDR_texture ? (NextDrawHDR() ? GSHWDrawConfig::HDRMode::NoModify : GSHWDrawConfig::HDRMode::ResolveOnly) : (NextDrawHDR() ? GSHWDrawConfig::HDRMode::ConvertOnly : GSHWDrawConfig::HDRMode::ConvertAndResolve);
+			m_conf.colclip_mode = has_colclip_texture ? (NextDrawColClip() ? GSHWDrawConfig::ColClipMode::NoModify : GSHWDrawConfig::ColClipMode::ResolveOnly) : (NextDrawColClip() ? GSHWDrawConfig::ColClipMode::ConvertOnly : GSHWDrawConfig::ColClipMode::ConvertAndResolve);
 		}
 		else if (sw_blending)
 		{
 			// A slow algo that could requires several passes (barely used)
 			GL_INS("COLCLIP SW mode ENABLED");
 			m_conf.ps.colclip = 1;
-			m_conf.hdr_mode = (has_HDR_texture && !NextDrawHDR()) ? GSHWDrawConfig::HDRMode::ResolveOnly : GSHWDrawConfig::HDRMode::NoModify;
+			m_conf.colclip_mode = (has_colclip_texture && !NextDrawColClip()) ? GSHWDrawConfig::ColClipMode::ResolveOnly : GSHWDrawConfig::ColClipMode::NoModify;
 		}
 		else
 		{
-			GL_INS("COLCLIP HDR mode ENABLED");
-			m_conf.ps.hdr = 1;
-			m_conf.hdr_mode = has_HDR_texture ? (NextDrawHDR() ? GSHWDrawConfig::HDRMode::NoModify : GSHWDrawConfig::HDRMode::ResolveOnly) : (NextDrawHDR() ? GSHWDrawConfig::HDRMode::ConvertOnly : GSHWDrawConfig::HDRMode::ConvertAndResolve);
+			GL_INS("COLCLIP HW mode ENABLED");
+			m_conf.ps.colclip_hw = 1;
+			m_conf.colclip_mode = has_colclip_texture ? (NextDrawColClip() ? GSHWDrawConfig::ColClipMode::NoModify : GSHWDrawConfig::ColClipMode::ResolveOnly) : (NextDrawColClip() ? GSHWDrawConfig::ColClipMode::ConvertOnly : GSHWDrawConfig::ColClipMode::ConvertAndResolve);
 		}
 
-		m_conf.hdr_frame = m_cached_ctx.FRAME;
+		m_conf.colclip_frame = m_cached_ctx.FRAME;
 	}
 
 	// Per pixel alpha blending
@@ -5478,13 +5477,13 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 				blend_mix          = false;
 				m_conf.ps.pabe     = 1;
 
-				// HDR mode should be disabled when doing sw blend, swap with sw colclip.
-				if (m_conf.ps.hdr)
+				// hw colclip mode should be disabled when doing sw blend, swap with sw colclip.
+				if (m_conf.ps.colclip_hw)
 				{
-					const bool has_HDR_texture = g_gs_device->GetHDRTexture() != nullptr;
-					m_conf.ps.hdr     = 0;
+					const bool has_colclip_texture = g_gs_device->GetColorClipTexture() != nullptr;
+					m_conf.ps.colclip_hw = 0;
 					m_conf.ps.colclip = 1;
-					m_conf.hdr_mode = has_HDR_texture ? GSHWDrawConfig::HDRMode::EarlyResolve : GSHWDrawConfig::HDRMode::NoModify;
+					m_conf.colclip_mode = has_colclip_texture ? GSHWDrawConfig::ColClipMode::EarlyResolve : GSHWDrawConfig::ColClipMode::NoModify;
 				}
 			}
 			else
@@ -5552,9 +5551,9 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			if (blend.op == GSDevice::OP_REV_SUBTRACT)
 			{
 				pxAssert(m_conf.ps.blend_a == 2);
-				if (m_conf.ps.hdr)
+				if (m_conf.ps.colclip_hw)
 				{
-					// HDR uses unorm, which is always positive
+					// HW colclip uses unorm, which is always positive
 					// Have the shader do the inversion, then clip to remove the negative
 					m_conf.blend.op = GSDevice::OP_ADD;
 				}
@@ -7405,7 +7404,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.require_full_barrier = false;
 	}
 	// Multi-pass algorithms shouldn't be needed with full barrier and backends may not handle this correctly
-	pxAssert(!m_conf.require_full_barrier || !m_conf.ps.hdr);
+	pxAssert(!m_conf.require_full_barrier || !m_conf.ps.colclip_hw);
 
 	// Swap full barrier for one barrier when there's no overlap, or a texture shuffle.
 	if (m_conf.require_full_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle))
