@@ -4198,7 +4198,7 @@ bool GSDeviceVK::CompileInterlacePipelines()
 		if (!m_interlace[i])
 			return false;
 
-		Vulkan::SetObjectName(m_device, m_convert[i], "Interlace pipeline %d", i);
+		Vulkan::SetObjectName(m_device, m_interlace[i], "Interlace pipeline %d", i);
 	}
 
 	return true;
@@ -4250,7 +4250,7 @@ bool GSDeviceVK::CompileMergePipelines()
 		if (!m_merge[i])
 			return false;
 
-		Vulkan::SetObjectName(m_device, m_convert[i], "Merge pipeline %d", i);
+		Vulkan::SetObjectName(m_device, m_merge[i], "Merge pipeline %d", i);
 	}
 
 	return true;
