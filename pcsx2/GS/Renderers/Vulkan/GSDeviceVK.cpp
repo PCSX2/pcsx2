@@ -3766,7 +3766,7 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	plb.AddDescriptorSet(m_utility_ds_layout);
 	if ((m_utility_pipeline_layout = plb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
-	Vulkan::SetObjectName(dev, m_utility_ds_layout, "Convert pipeline layout");
+	Vulkan::SetObjectName(dev, m_utility_pipeline_layout, "Convert pipeline layout");
 
 	//////////////////////////////////////////////////////////////////////////
 	// Draw/TFX Pipeline Layout
@@ -4969,7 +4969,7 @@ void GSDeviceVK::InitializeState()
 		Vulkan::SetObjectName(m_device, m_point_sampler, "Point sampler");
 	m_linear_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Linear());
 	if (m_linear_sampler)
-		Vulkan::SetObjectName(m_device, m_point_sampler, "Linear sampler");
+		Vulkan::SetObjectName(m_device, m_linear_sampler, "Linear sampler");
 
 	m_tfx_sampler_sel = GSHWDrawConfig::SamplerSelector::Point().key;
 	m_tfx_sampler = m_point_sampler;
