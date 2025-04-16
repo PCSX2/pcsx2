@@ -28,7 +28,7 @@ const char* QtHost::GetDefaultThemeName()
 #ifdef __APPLE__
 	return "";
 #else
-	return "darkfusion";
+	return "darkfusionblue";
 #endif
 }
 
