@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/DX11/D3D11ShaderCache.h"
+#include "GS/Renderers/DX11/GSDevice11.h"
 #include "GS/GS.h"
 
 #include "Config.h"
@@ -300,6 +301,12 @@ wil::com_ptr_nothrow<ID3D11VertexShader> D3D11ShaderCache::GetVertexShader(ID3D1
 		return {};
 	}
 
+	const char* shader_name = entry_point; // Ideally we'd feed in a proper name
+	if (shader_name)
+	{
+		GSDevice11::SetD3DDebugObjectName(shader.get(), shader_name);
+	}
+
 	return shader;
 }
 
@@ -318,6 +325,12 @@ bool D3D11ShaderCache::GetVertexShaderAndInputLayout(ID3D11Device* device, ID3D1
 	{
 		Console.Error("Failed to create vertex shader: 0x%08X", hr);
 		return {};
+	}
+
+	const char* shader_name = entry_point; // Ideally we'd feed in a proper name
+	if (shader_name)
+	{
+		GSDevice11::SetD3DDebugObjectName(actual_vs.get(), shader_name);
 	}
 
 	hr = device->CreateInputLayout(layout, layout_size, blob->GetBufferPointer(), blob->GetBufferSize(), il);
@@ -348,6 +361,12 @@ wil::com_ptr_nothrow<ID3D11PixelShader> D3D11ShaderCache::GetPixelShader(ID3D11D
 		return {};
 	}
 
+	const char* shader_name = entry_point; // Ideally we'd feed in a proper name
+	if (shader_name)
+	{
+		GSDevice11::SetD3DDebugObjectName(shader.get(), shader_name);
+	}
+
 	return shader;
 }
 
@@ -366,6 +385,12 @@ wil::com_ptr_nothrow<ID3D11ComputeShader> D3D11ShaderCache::GetComputeShader(ID3
 	{
 		Console.Error("Failed to create compute shader: 0x%08X", hr);
 		return {};
+	}
+
+	const char* shader_name = entry_point; // Ideally we'd feed in a proper name
+	if (shader_name)
+	{
+		GSDevice11::SetD3DDebugObjectName(shader.get(), shader_name);
 	}
 
 	return shader;
