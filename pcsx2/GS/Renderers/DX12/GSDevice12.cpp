@@ -2603,8 +2603,8 @@ bool GSDevice12::CompilePresentPipelines()
 		return false;
 	}
 
-	ComPtr<ID3DBlob> m_convert_vs = GetUtilityVertexShader(*shader, "vs_main");
-	if (!m_convert_vs)
+	ComPtr<ID3DBlob> vs = GetUtilityVertexShader(*shader, "vs_main");
+	if (!vs)
 		return false;
 
 	D3D12::GraphicsPipelineBuilder gpb;
@@ -2612,7 +2612,7 @@ bool GSDevice12::CompilePresentPipelines()
 	AddUtilityVertexAttributes(gpb);
 	gpb.SetNoCullRasterizationState();
 	gpb.SetNoBlendingState();
-	gpb.SetVertexShader(m_convert_vs.get());
+	gpb.SetVertexShader(vs.get());
 	gpb.SetDepthState(false, false, D3D12_COMPARISON_FUNC_ALWAYS);
 	gpb.SetNoStencilState();
 	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -2668,7 +2668,7 @@ bool GSDevice12::CompileInterlacePipelines()
 		if (!m_interlace[i])
 			return false;
 
-		D3D12::SetObjectName(m_convert[i].get(), TinyString::from_format("Interlace pipeline {}", static_cast<int>(i)));
+		D3D12::SetObjectName(m_interlace[i].get(), TinyString::from_format("Interlace pipeline {}", static_cast<int>(i)));
 	}
 
 	return true;
@@ -2705,7 +2705,7 @@ bool GSDevice12::CompileMergePipelines()
 		if (!m_merge[i])
 			return false;
 
-		D3D12::SetObjectName(m_convert[i].get(), TinyString::from_format("Merge pipeline {}", i));
+		D3D12::SetObjectName(m_merge[i].get(), TinyString::from_format("Merge pipeline {}", i));
 	}
 
 	return true;
