@@ -1428,9 +1428,10 @@ void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	GL_PUSH("ColorCopy Red:%d Green:%d Blue:%d Alpha:%d", red, green, blue, alpha);
 
 	const u32 index = (red ? 1 : 0) | (green ? 2 : 0) | (blue ? 4 : 0) | (alpha ? 8 : 0);
+	int rta_offset = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
 	const bool allow_discard = (index == 0xf);
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
-		m_color_copy[index].get(), false, allow_discard);
+		m_color_copy[index + rta_offset].get(), false, allow_discard);
 }
 
 void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
