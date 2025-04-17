@@ -82,12 +82,12 @@ public:
 
 	void updateDockWidgetTitles();
 
-	const std::map<QString, QPointer<DebuggerWidget>>& debuggerWidgets();
-	size_t countDebuggerWidgetsOfType(const char* type);
-	void recreateDebuggerWidget(const QString& unique_name);
-	void destroyDebuggerWidget(const QString& unique_name);
-	void setPrimaryDebuggerWidget(DebuggerWidget* widget, bool is_primary);
-	void switchToDebuggerWidget(DebuggerWidget* widget);
+	const std::map<QString, QPointer<DebuggerView>>& debuggerViews();
+	size_t countDebuggerViewsOfType(const char* type);
+	void recreateDebuggerView(const QString& unique_name);
+	void destroyDebuggerView(const QString& unique_name);
+	void setPrimaryDebuggerView(DebuggerView* widget, bool is_primary);
+	void switchToDebuggerView(DebuggerView* widget);
 
 	void updateTheme();
 

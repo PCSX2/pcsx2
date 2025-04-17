@@ -19,6 +19,7 @@
 #include <QtCore/QSortFilterProxyModel>
 #include <QtGui/QPainter>
 #include <QtGui/QPixmap>
+#include <QtGui/QPixmapCache>
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QHeaderView>
@@ -113,20 +114,51 @@ namespace
 			// https://stackoverflow.com/questions/32216568/how-to-set-icon-center-in-qtableview
 			Q_ASSERT(index.isValid());
 
-			// draw default item
+			// Draw the base item, with a blank icon
 			QStyleOptionViewItem opt = option;
 			initStyleOption(&opt, index);
-			opt.type = QStyleOption::SO_Default;
-			QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter, 0);
+			opt.icon = QIcon();
+			// Based on QStyledItemDelegate::paint()
+			const QStyle* style = option.widget ? option.widget->style() : QApplication::style();
+			style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, option.widget);
 
+			// Fetch icon pixmap
 			const QRect r = option.rect;
 			const QPixmap pix = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
 			const int pix_width = static_cast<int>(pix.width() / pix.devicePixelRatio());
-			const int pix_height = static_cast<int>(pix.width() / pix.devicePixelRatio());
+			const int pix_height = static_cast<int>(pix.height() / pix.devicePixelRatio());
 
-			// draw pixmap at center of item
+			// Draw the icon, using code derived from QItemDelegate::drawDecoration()
+			const bool enabled = option.state & QStyle::State_Enabled;
 			const QPoint p = QPoint((r.width() - pix_width) / 2, (r.height() - pix_height) / 2);
-			painter->drawPixmap(r.topLeft() + p, pix);
+			if (option.state & QStyle::State_Selected)
+			{
+				// See QItemDelegate::selectedPixmap()		
+				QString key = QString::fromStdString(fmt::format("{:016X}-{:d}", pix.cacheKey(), enabled));
+				QPixmap pm;
+				if (!QPixmapCache::find(key, &pm))
+				{
+					QImage img = pix.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+					QColor color = option.palette.color(enabled ? QPalette::Normal : QPalette::Disabled,
+						QPalette::Highlight);
+					color.setAlphaF(0.3f);
+
+					QPainter tinted_painter(&img);
+					tinted_painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
+					tinted_painter.fillRect(0, 0, img.width(), img.height(), color);
+					tinted_painter.end();
+
+					pm = QPixmap(QPixmap::fromImage(img));
+					QPixmapCache::insert(key, pm);
+				}
+
+				painter->drawPixmap(r.topLeft() + p, pm);
+			}
+			else
+			{
+				painter->drawPixmap(r.topLeft() + p, pix);
+			}
 		}
 	};
 } // namespace
@@ -190,6 +222,8 @@ void GameListWidget::initialize()
 	m_table_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	m_table_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
 	m_table_view->setItemDelegateForColumn(0, new GameListIconStyleDelegate(this));
+	m_table_view->setItemDelegateForColumn(8, new GameListIconStyleDelegate(this));
+	m_table_view->setItemDelegateForColumn(9, new GameListIconStyleDelegate(this));
 
 	loadTableViewColumnVisibilitySettings();
 	loadTableViewColumnSortSettings();

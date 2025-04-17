@@ -164,34 +164,34 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/DebuggerSettingsManager.cpp
 	Debugger/DebuggerSettingsManager.h
 	Debugger/DebuggerEvents.h
-	Debugger/DebuggerWidget.cpp
-	Debugger/DebuggerWidget.h
+	Debugger/DebuggerView.cpp
+	Debugger/DebuggerView.h
 	Debugger/DebuggerWindow.cpp
 	Debugger/DebuggerWindow.h
 	Debugger/DebuggerWindow.ui
-	Debugger/DisassemblyWidget.cpp
-	Debugger/DisassemblyWidget.h
-	Debugger/DisassemblyWidget.ui
+	Debugger/DisassemblyView.cpp
+	Debugger/DisassemblyView.h
+	Debugger/DisassemblyView.ui
 	Debugger/JsonValueWrapper.h
-	Debugger/RegisterWidget.cpp
-	Debugger/RegisterWidget.h
-	Debugger/RegisterWidget.ui
+	Debugger/RegisterView.cpp
+	Debugger/RegisterView.h
+	Debugger/RegisterView.ui
 	Debugger/StackModel.cpp
 	Debugger/StackModel.h
-	Debugger/StackWidget.cpp
-	Debugger/StackWidget.h
+	Debugger/StackView.cpp
+	Debugger/StackView.h
 	Debugger/ThreadModel.cpp
 	Debugger/ThreadModel.h
-	Debugger/ThreadWidget.cpp
-	Debugger/ThreadWidget.h
+	Debugger/ThreadView.cpp
+	Debugger/ThreadView.h
 	Debugger/Breakpoints/BreakpointDialog.cpp
 	Debugger/Breakpoints/BreakpointDialog.h
 	Debugger/Breakpoints/BreakpointDialog.ui
 	Debugger/Breakpoints/BreakpointModel.cpp
 	Debugger/Breakpoints/BreakpointModel.h
-	Debugger/Breakpoints/BreakpointWidget.cpp
-	Debugger/Breakpoints/BreakpointWidget.h
-	Debugger/Breakpoints/BreakpointWidget.ui
+	Debugger/Breakpoints/BreakpointView.cpp
+	Debugger/Breakpoints/BreakpointView.h
+	Debugger/Breakpoints/BreakpointView.ui
 	Debugger/Docking/DockLayout.cpp
 	Debugger/Docking/DockLayout.h
 	Debugger/Docking/DockManager.cpp
@@ -212,17 +212,17 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/Docking/NoLayoutsWidget.cpp
 	Debugger/Docking/NoLayoutsWidget.h
 	Debugger/Docking/NoLayoutsWidget.ui
-	Debugger/Memory/MemorySearchWidget.cpp
-	Debugger/Memory/MemorySearchWidget.h
-	Debugger/Memory/MemorySearchWidget.ui
-	Debugger/Memory/MemoryViewWidget.cpp
-	Debugger/Memory/MemoryViewWidget.h
-	Debugger/Memory/MemoryViewWidget.ui
+	Debugger/Memory/MemorySearchView.cpp
+	Debugger/Memory/MemorySearchView.h
+	Debugger/Memory/MemorySearchView.ui
+	Debugger/Memory/MemoryView.cpp
+	Debugger/Memory/MemoryView.h
+	Debugger/Memory/MemoryView.ui
 	Debugger/Memory/SavedAddressesModel.cpp
 	Debugger/Memory/SavedAddressesModel.h
-	Debugger/Memory/SavedAddressesWidget.cpp
-	Debugger/Memory/SavedAddressesWidget.h
-	Debugger/Memory/SavedAddressesWidget.ui
+	Debugger/Memory/SavedAddressesView.cpp
+	Debugger/Memory/SavedAddressesView.h
+	Debugger/Memory/SavedAddressesView.ui
 	Debugger/SymbolTree/NewSymbolDialogs.cpp
 	Debugger/SymbolTree/NewSymbolDialogs.h
 	Debugger/SymbolTree/NewSymbolDialog.ui
@@ -234,9 +234,9 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/SymbolTree/SymbolTreeNode.h
 	Debugger/SymbolTree/SymbolTreeDelegates.cpp
 	Debugger/SymbolTree/SymbolTreeDelegates.h
-	Debugger/SymbolTree/SymbolTreeWidgets.cpp
-	Debugger/SymbolTree/SymbolTreeWidgets.h
-	Debugger/SymbolTree/SymbolTreeWidget.ui
+	Debugger/SymbolTree/SymbolTreeViews.cpp
+	Debugger/SymbolTree/SymbolTreeViews.h
+	Debugger/SymbolTree/SymbolTreeView.ui
 	Debugger/SymbolTree/TypeString.cpp
 	Debugger/SymbolTree/TypeString.h
 	Tools/InputRecording/NewInputRecordingDlg.cpp

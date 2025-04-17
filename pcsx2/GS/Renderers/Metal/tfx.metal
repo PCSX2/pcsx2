@@ -826,7 +826,7 @@ struct PSMain
 		else
 			T = sample_color(st);
 
-		if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC)
+		if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
 			uint4 denorm_c_before = uint4(T);
 			if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1134,7 +1134,7 @@ struct PSMain
 
 		if (PS_SHUFFLE)
 		{
-			if (!PS_SHUFFLE_SAME && !PS_READ16_SRC)
+			if (!PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 			{
 				uint4 denorm_c_after = uint4(C);
 				if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1175,11 +1175,8 @@ struct PSMain
 			{
 				if (PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 				{
-					C.rb = C.br;
-					float g_temp = C.g;
-					
-					C.g = C.a;
-					C.a = g_temp;
+					C.br = C.rb;
+					C.ag = C.ga;
 				}
 				else if(PS_PROCESS_BA & SHUFFLE_READ)
 				{
@@ -1193,7 +1190,7 @@ struct PSMain
 				}
 			}
 		}
-		
+
 		ps_dither(C, alpha_blend.a);
 
 		// Color clamp/wrap needs to be done after sw blending and dithering

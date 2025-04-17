@@ -11,7 +11,7 @@
 #include <kddockwidgets/qtwidgets/views/TitleBar.h>
 #include <kddockwidgets/qtwidgets/views/TabBar.h>
 
-class DebuggerWidget;
+class DebuggerView;
 class DockManager;
 
 class DockViewFactory : public KDDockWidgets::QtWidgets::ViewFactory
@@ -101,7 +101,7 @@ protected:
 
 	struct WidgetsFromTabIndexResult
 	{
-		DebuggerWidget* debugger_widget = nullptr;
+		DebuggerView* widget = nullptr;
 		KDDockWidgets::Core::DockWidget* controller = nullptr;
 		KDDockWidgets::QtWidgets::DockWidget* view = nullptr;
 	};

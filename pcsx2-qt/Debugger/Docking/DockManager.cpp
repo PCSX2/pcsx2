@@ -3,7 +3,7 @@
 
 #include "DockManager.h"
 
-#include "Debugger/DebuggerWidget.h"
+#include "Debugger/DebuggerView.h"
 #include "Debugger/DebuggerWindow.h"
 #include "Debugger/Docking/DockTables.h"
 #include "Debugger/Docking/DockViews.h"
@@ -185,7 +185,6 @@ void DockManager::loadLayouts()
 		&files);
 
 	bool needs_reset = false;
-	bool order_changed = false;
 	std::vector<DockLayout::Index> indices_last_session;
 
 	for (const FILESYSTEM_FIND_DATA& ffd : files)
@@ -234,29 +233,30 @@ void DockManager::loadLayouts()
 			layout.save(index);
 		}
 
-		if (index_last_session != index)
-			order_changed = true;
-
 		indices_last_session.emplace_back(index_last_session);
 	}
 
 	// Make sure the layouts remain in the same order they were in previously.
-	std::vector<DockLayout*> layout_pointers;
-	for (DockLayout& layout : m_layouts)
-		layout_pointers.emplace_back(&layout);
+	std::vector<size_t> layout_indices;
+	for (size_t i = 0; i < m_layouts.size(); i++)
+		layout_indices.emplace_back(i);
 
-	std::sort(layout_pointers.begin(), layout_pointers.end(),
-		[this, &indices_last_session](const DockLayout* lhs, const DockLayout* rhs) {
-			size_t lhs_index = lhs - m_layouts.data();
-			size_t rhs_index = rhs - m_layouts.data();
-			DockLayout::Index lhs_index_last_session = indices_last_session.at(lhs_index);
-			DockLayout::Index rhs_index_last_session = indices_last_session.at(rhs_index);
+	std::sort(layout_indices.begin(), layout_indices.end(),
+		[&indices_last_session](size_t lhs, size_t rhs) {
+			DockLayout::Index lhs_index_last_session = indices_last_session.at(lhs);
+			DockLayout::Index rhs_index_last_session = indices_last_session.at(rhs);
 			return lhs_index_last_session < rhs_index_last_session;
 		});
 
+	bool order_changed = false;
 	std::vector<DockLayout> sorted_layouts;
-	for (size_t i = 0; i < layout_pointers.size(); i++)
-		sorted_layouts.emplace_back(std::move(*layout_pointers[i]));
+	for (size_t i = 0; i < layout_indices.size(); i++)
+	{
+		if (i != indices_last_session[layout_indices[i]])
+			order_changed = true;
+
+		sorted_layouts.emplace_back(std::move(m_layouts[layout_indices[i]]));
+	}
 
 	m_layouts = std::move(sorted_layouts);
 
@@ -359,9 +359,9 @@ void DockManager::createWindowsMenu(QMenu* menu)
 	// be opened.
 	QMenu* add_another_menu = menu->addMenu(tr("Add Another..."));
 
-	std::vector<DebuggerWidget*> add_another_widgets;
+	std::vector<DebuggerView*> add_another_widgets;
 	std::set<std::string> add_another_types;
-	for (const auto& [unique_name, widget] : layout.debuggerWidgets())
+	for (const auto& [unique_name, widget] : layout.debuggerViews())
 	{
 		std::string type = widget->metaObject()->className();
 
@@ -373,26 +373,26 @@ void DockManager::createWindowsMenu(QMenu* menu)
 	}
 
 	std::sort(add_another_widgets.begin(), add_another_widgets.end(),
-		[](const DebuggerWidget* lhs, const DebuggerWidget* rhs) {
+		[](const DebuggerView* lhs, const DebuggerView* rhs) {
 			if (lhs->displayNameWithoutSuffix() == rhs->displayNameWithoutSuffix())
 				return lhs->displayNameSuffixNumber() < rhs->displayNameSuffixNumber();
 
 			return lhs->displayNameWithoutSuffix() < rhs->displayNameWithoutSuffix();
 		});
 
-	for (DebuggerWidget* widget : add_another_widgets)
+	for (DebuggerView* widget : add_another_widgets)
 	{
 		const char* type = widget->metaObject()->className();
 
-		const auto description_iterator = DockTables::DEBUGGER_WIDGETS.find(type);
-		pxAssert(description_iterator != DockTables::DEBUGGER_WIDGETS.end());
+		const auto description_iterator = DockTables::DEBUGGER_VIEWS.find(type);
+		pxAssert(description_iterator != DockTables::DEBUGGER_VIEWS.end());
 
 		QAction* action = add_another_menu->addAction(description_iterator->second.display_name);
 		connect(action, &QAction::triggered, this, [this, type]() {
 			if (m_current_layout == DockLayout::INVALID_INDEX)
 				return;
 
-			m_layouts.at(m_current_layout).createDebuggerWidget(type);
+			m_layouts.at(m_current_layout).createDebuggerView(type);
 		});
 	}
 
@@ -401,18 +401,18 @@ void DockManager::createWindowsMenu(QMenu* menu)
 
 	menu->addSeparator();
 
-	struct DebuggerWidgetToggle
+	struct DebuggerViewToggle
 	{
 		QString display_name;
 		std::optional<int> suffix_number;
 		QAction* action;
 	};
 
-	std::vector<DebuggerWidgetToggle> toggles;
+	std::vector<DebuggerViewToggle> toggles;
 	std::set<std::string> toggle_types;
 
-	// Create a menu item for each open debugger widget.
-	for (const auto& [unique_name, widget] : layout.debuggerWidgets())
+	// Create a menu item for each open debugger view.
+	for (const auto& [unique_name, widget] : layout.debuggerViews())
 	{
 		QAction* action = new QAction(menu);
 		action->setText(widget->displayName());
@@ -422,10 +422,10 @@ void DockManager::createWindowsMenu(QMenu* menu)
 			if (m_current_layout == DockLayout::INVALID_INDEX)
 				return;
 
-			m_layouts.at(m_current_layout).destroyDebuggerWidget(unique_name);
+			m_layouts.at(m_current_layout).destroyDebuggerView(unique_name);
 		});
 
-		DebuggerWidgetToggle& toggle = toggles.emplace_back();
+		DebuggerViewToggle& toggle = toggles.emplace_back();
 		toggle.display_name = widget->displayNameWithoutSuffix();
 		toggle.suffix_number = widget->displayNameSuffixNumber();
 		toggle.action = action;
@@ -433,12 +433,12 @@ void DockManager::createWindowsMenu(QMenu* menu)
 		toggle_types.emplace(widget->metaObject()->className());
 	}
 
-	// Create menu items to open debugger widgets without any open instances.
-	for (const auto& [type, desc] : DockTables::DEBUGGER_WIDGETS)
+	// Create menu items to open debugger views without any open instances.
+	for (const auto& [type, desc] : DockTables::DEBUGGER_VIEWS)
 	{
 		if (!toggle_types.contains(type))
 		{
-			QString display_name = QCoreApplication::translate("DebuggerWidget", desc.display_name);
+			QString display_name = QCoreApplication::translate("DebuggerView", desc.display_name);
 
 			QAction* action = new QAction(menu);
 			action->setText(display_name);
@@ -448,10 +448,10 @@ void DockManager::createWindowsMenu(QMenu* menu)
 				if (m_current_layout == DockLayout::INVALID_INDEX)
 					return;
 
-				m_layouts.at(m_current_layout).createDebuggerWidget(type);
+				m_layouts.at(m_current_layout).createDebuggerView(type);
 			});
 
-			DebuggerWidgetToggle& toggle = toggles.emplace_back();
+			DebuggerViewToggle& toggle = toggles.emplace_back();
 			toggle.display_name = display_name;
 			toggle.suffix_number = std::nullopt;
 			toggle.action = action;
@@ -459,14 +459,14 @@ void DockManager::createWindowsMenu(QMenu* menu)
 	}
 
 	std::sort(toggles.begin(), toggles.end(),
-		[](const DebuggerWidgetToggle& lhs, const DebuggerWidgetToggle& rhs) {
+		[](const DebuggerViewToggle& lhs, const DebuggerViewToggle& rhs) {
 			if (lhs.display_name == rhs.display_name)
 				return lhs.suffix_number < rhs.suffix_number;
 
 			return lhs.display_name < rhs.display_name;
 		});
 
-	for (const DebuggerWidgetToggle& toggle : toggles)
+	for (const DebuggerViewToggle& toggle : toggles)
 		menu->addAction(toggle.action);
 }
 
@@ -702,53 +702,53 @@ void DockManager::updateDockWidgetTitles()
 	m_layouts.at(m_current_layout).updateDockWidgetTitles();
 }
 
-const std::map<QString, QPointer<DebuggerWidget>>& DockManager::debuggerWidgets()
+const std::map<QString, QPointer<DebuggerView>>& DockManager::debuggerViews()
 {
-	static std::map<QString, QPointer<DebuggerWidget>> dummy;
+	static std::map<QString, QPointer<DebuggerView>> dummy;
 	if (m_current_layout == DockLayout::INVALID_INDEX)
 		return dummy;
 
-	return m_layouts.at(m_current_layout).debuggerWidgets();
+	return m_layouts.at(m_current_layout).debuggerViews();
 }
 
-size_t DockManager::countDebuggerWidgetsOfType(const char* type)
+size_t DockManager::countDebuggerViewsOfType(const char* type)
 {
 	if (m_current_layout == DockLayout::INVALID_INDEX)
 		return 0;
 
-	return m_layouts.at(m_current_layout).countDebuggerWidgetsOfType(type);
+	return m_layouts.at(m_current_layout).countDebuggerViewsOfType(type);
 }
 
-void DockManager::recreateDebuggerWidget(const QString& unique_name)
+void DockManager::recreateDebuggerView(const QString& unique_name)
 {
 	if (m_current_layout == DockLayout::INVALID_INDEX)
 		return;
 
-	m_layouts.at(m_current_layout).recreateDebuggerWidget(unique_name);
+	m_layouts.at(m_current_layout).recreateDebuggerView(unique_name);
 }
 
-void DockManager::destroyDebuggerWidget(const QString& unique_name)
+void DockManager::destroyDebuggerView(const QString& unique_name)
 {
 	if (m_current_layout == DockLayout::INVALID_INDEX)
 		return;
 
-	m_layouts.at(m_current_layout).destroyDebuggerWidget(unique_name);
+	m_layouts.at(m_current_layout).destroyDebuggerView(unique_name);
 }
 
-void DockManager::setPrimaryDebuggerWidget(DebuggerWidget* widget, bool is_primary)
+void DockManager::setPrimaryDebuggerView(DebuggerView* widget, bool is_primary)
 {
 	if (m_current_layout == DockLayout::INVALID_INDEX)
 		return;
 
-	m_layouts.at(m_current_layout).setPrimaryDebuggerWidget(widget, is_primary);
+	m_layouts.at(m_current_layout).setPrimaryDebuggerView(widget, is_primary);
 }
 
-void DockManager::switchToDebuggerWidget(DebuggerWidget* widget)
+void DockManager::switchToDebuggerView(DebuggerView* widget)
 {
 	if (m_current_layout == DockLayout::INVALID_INDEX)
 		return;
 
-	for (const auto& [unique_name, test_widget] : m_layouts.at(m_current_layout).debuggerWidgets())
+	for (const auto& [unique_name, test_widget] : m_layouts.at(m_current_layout).debuggerViews())
 	{
 		if (widget == test_widget)
 		{
@@ -765,7 +765,7 @@ void DockManager::updateTheme()
 		m_menu_bar->updateTheme();
 
 	for (DockLayout& layout : m_layouts)
-		for (const auto& [unique_name, widget] : layout.debuggerWidgets())
+		for (const auto& [unique_name, widget] : layout.debuggerViews())
 			widget->updateStyleSheet();
 
 	// KDDockWidgets::QtWidgets::TabBar sets its own style to a subclass of

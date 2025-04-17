@@ -174,9 +174,8 @@ PAPX-90020:
     recommendedBlendingLevel: 4 # Improves banding and effect emulation.
     autoFlush: 1 # Fixes light bloom intensity.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
-    halfPixelOffset: 4 # Aligns post effects.
+    halfPixelOffset: 2 # Aligns post effects.
     nativeScaling: 1 # Fixes post effects.
-    getSkipCount: "GSC_GiTS"
 PAPX-90201:
   name: "ファンタビジョン [体験版]"
   name-sort: "ふぁんたびじょん [たいけんばん]"
@@ -524,7 +523,7 @@ PAPX-90524:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes and lines in UI.
-    cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
+    textureInsideRT: 1 # Fixes sepia-tone flashback sequences.
     forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and reduces HC size.
 PBGP-0061:
@@ -1250,26 +1249,31 @@ SCAJ-10011:
   region: "NTSC-Unk"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SCAJ-10012:
   name: "Taiko Drum Master"
   region: "NTSC-Unk"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SCAJ-10013:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special"
   region: "NTSC-Unk"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SCAJ-10014:
   name: "Taiko no Tatsujin - Wai Wai Happy! Rokudaime"
   region: "NTSC-Unk"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SCAJ-10015:
   name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime"
   region: "NTSC-Unk"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
     getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
 SCAJ-20001:
   name: "Ratchet & Clank"
@@ -1330,7 +1334,6 @@ SCAJ-20010:
   region: "NTSC-Unk"
   gsHWFixes:
     textureInsideRT: 1 # Fixes inside RT shuffling.
-    getSkipCount: "GSC_BigMuthaTruckers"
 SCAJ-20011:
   name: "Armored Core 3 - Silent Line"
   region: "NTSC-HK"
@@ -1395,6 +1398,8 @@ SCAJ-20020:
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
     mergeSprite: 1 # Fixes misaligned white lines.
     PCRTCOverscan: 1 # Fixes missing HUD.
+    textureInsideRT: 1 # Fixes post shuffle effect.
+    halfPixelOffset: 2 # Fixes boxes around shuffle effect pages.
 SCAJ-20021:
   name: "Metal Slug 3"
   region: "NTSC-Unk"
@@ -1511,6 +1516,8 @@ SCAJ-20047:
   region: "NTSC-Unk"
   gsHWFixes:
     texturePreloading: 0 # Performs much better with no preload.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
 SCAJ-20048:
   name: "R:RACING EVOLUTION"
   name-sort: "Rれーしんぐえぼりゅーしょん"
@@ -1560,6 +1567,8 @@ SCAJ-20060:
   region: "NTSC-Unk"
   gsHWFixes:
     texturePreloading: 0 # Performs much better with no preload.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
 SCAJ-20061:
   name: "Seven Samurai 20XX"
   region: "NTSC-Unk"
@@ -1631,9 +1640,9 @@ SCAJ-20072:
     recommendedBlendingLevel: 4 # Improves banding and effect emulation.
     autoFlush: 1 # Fixes light bloom intensity.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
-    halfPixelOffset: 4 # Aligns post effects.
+    halfPixelOffset: 2 # Aligns post effects.
     nativeScaling: 1 # Fixes post effects.
-    getSkipCount: "GSC_GiTS"
+    textureInsideRT: 1 # Fixes post shuffles.
 SCAJ-20073:
   name: "Jak and Daxter II"
   region: "NTSC-Unk"
@@ -1899,9 +1908,8 @@ SCAJ-20116:
   region: "NTSC-C-J"
   gsHWFixes:
     alignSprite: 1 # Fixes FMV lines.
-    cpuSpriteRenderBW: 2 # Prevents Death By VRAM explosion.
-    cpuSpriteRenderLevel: 2 # Needed for above.
-    getSkipCount: "GSC_DeathByDegreesTekkenNinaWilliams"
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    textureInsideRT: 1 # Fixes post shuffles.
 SCAJ-20117:
   name: "Fu-un Bakumatsu-den"
   region: "NTSC-Unk"
@@ -1973,6 +1981,7 @@ SCAJ-20125:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes heat haze half screen problem.
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
@@ -1983,6 +1992,7 @@ SCAJ-20126:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes heat haze half screen problem.
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
@@ -2264,15 +2274,15 @@ SCAJ-20167:
     preloadFrameData: 1 # Fixes some missing effects.
 SCAJ-20168:
   name: "Rule of Rose"
-  region: "NTSC-Unk"
-  gsHWFixes:
-    preloadFrameData: 1 # Fixes Black FMV's.
+  region: "NTSC-C"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes black FMVs in hardware and hash cache disabling itself.
 SCAJ-20169:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 1 # Fixes lighting.
-    halfPixelOffset: 4 # Fixes ghosting.
+    halfPixelOffset: 5 # Fixes ghosting.
     nativeScaling: 2 # Fixes post processing.
     recommendedBlendingLevel: 4 # Fixes missing light brightness.
 SCAJ-20170:
@@ -2371,7 +2381,7 @@ SCAJ-20183:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes and lines in UI.
-    cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
+    textureInsideRT: 1 # Fixes sepia-tone flashback sequences.
     forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and reduces HC size.
 SCAJ-20184:
@@ -2460,6 +2470,7 @@ SCAJ-20199:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes heat haze half screen problem.
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
@@ -3568,6 +3579,7 @@ SCED-52137:
     autoFlush: 2 # Fixes sun luminosity.
     halfPixelOffset: 2 # Aligns Depth of Field.
     nativeScaling: 2 # Fixes Depth of Field effect.
+    textureInsideRT: 1 # Fixes half screen fog effect.
 SCED-52141:
   name: "WRC 3 [Demo]"
   region: "PAL-E"
@@ -3579,6 +3591,7 @@ SCED-52141:
     autoFlush: 2 # Fixes sun luminosity.
     halfPixelOffset: 2 # Aligns Depth of Field.
     nativeScaling: 2 # Fixes Depth of Field effect.
+    textureInsideRT: 1 # Fixes half screen fog effect.
 SCED-52147:
   name: "EyeToy - Christmas Wishi Washi"
   region: "PAL-E"
@@ -3874,9 +3887,13 @@ SCED-52899:
 SCED-52932:
   name: "Bonus Demo 8"
   region: "PAL-M5"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes shadows in TOCA Race Driver 2.
 SCED-52933:
   name: "Bonus Demo 8"
   region: "PAL-M5"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes shadows in TOCA Race Driver 2.
 SCED-52935:
   name: "SingStar Party [Demo]"
   region: "PAL-E"
@@ -3950,6 +3967,8 @@ SCED-52997:
 SCED-53018:
   name: "Bonus Demo 8 (Geu)"
   region: "PAL-G"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes shadows in TOCA Race Driver 2.
 SCED-53043:
   name: "Magazine Ufficiale PlayStation 2 Speciale Platinum Italia"
   region: "PAL-I"
@@ -4162,6 +4181,7 @@ SCED-53538:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes heat haze half screen problem.
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
@@ -4561,8 +4581,7 @@ SCES-50000:
   clampModes:
     vuClampMode: 2 # Fixes texture rendering in the intro.
   gsHWFixes:
-    cpuFramebufferConversion: 1
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes post effects
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
@@ -5285,6 +5304,7 @@ SCES-51684:
     autoFlush: 2 # Fixes sun luminosity.
     halfPixelOffset: 2 # Aligns Depth of Field.
     nativeScaling: 2 # Fixes Depth of Field effect.
+    textureInsideRT: 1 # Fixes half screen fog effect.
   patches:
     80802EA9:
       content: |-
@@ -5327,6 +5347,8 @@ SCES-51844:
   region: "PAL-M5"
   gsHWFixes:
     texturePreloading: 0 # Performs much better with no preload.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
 SCES-51895:
   name: "EyeToy - Groove"
   region: "PAL-M11"
@@ -5424,6 +5446,7 @@ SCES-52137:
     autoFlush: 2 # Fixes sun luminosity.
     halfPixelOffset: 2 # Aligns Depth of Field.
     nativeScaling: 2 # Fixes Depth of Field effect.
+    textureInsideRT: 1 # Fixes half screen fog effect.
 SCES-52154:
   name: "EyeToy - Chat"
   region: "PAL-M11"
@@ -5631,9 +5654,8 @@ SCES-52586:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes FMV lines.
-    cpuSpriteRenderBW: 2 # Prevents Death By VRAM explosion.
-    cpuSpriteRenderLevel: 2 # Needed for above.
-    getSkipCount: "GSC_DeathByDegreesTekkenNinaWilliams"
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    textureInsideRT: 1 # Fixes post shuffles.
 SCES-52596:
   name: "This is Football 2005"
   region: "PAL-Unk"
@@ -5653,6 +5675,7 @@ SCES-52684:
     autoFlush: 2 # Fixes sun luminosity.
     halfPixelOffset: 2 # Aligns Depth of Field.
     nativeScaling: 2 # Fixes Depth of Field effect.
+    textureInsideRT: 1 # Fixes half screen fog effect.
 SCES-52748:
   name: "EyeToy - Play 2"
   region: "PAL-M12"
@@ -5733,18 +5756,16 @@ SCES-53053:
   region: "PAL-F-I"
   gsHWFixes:
     alignSprite: 1 # Fixes FMV lines.
-    cpuSpriteRenderBW: 2 # Prevents Death By VRAM explosion.
-    cpuSpriteRenderLevel: 2 # Needed for above.
-    getSkipCount: "GSC_DeathByDegreesTekkenNinaWilliams"
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    textureInsideRT: 1 # Fixes post shuffles.
 SCES-53054:
   name: "Death by Degrees"
   region: "PAL-E-G"
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes FMV lines.
-    cpuSpriteRenderBW: 2 # Prevents Death By VRAM explosion.
-    cpuSpriteRenderLevel: 2 # Needed for above.
-    getSkipCount: "GSC_DeathByDegreesTekkenNinaWilliams"
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    textureInsideRT: 1 # Fixes post shuffles.
 SCES-53055:
   name: "Eyetoy - Antigrav"
   region: "PAL-M5"
@@ -5787,6 +5808,7 @@ SCES-53202:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes heat haze half screen problem.
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
@@ -6993,6 +7015,8 @@ SCKA-20015:
   compat: 5
   gsHWFixes:
     texturePreloading: 0 # Performs much better with no preload.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
 SCKA-20016:
   name: "SoulCalibur II"
   region: "NTSC-K"
@@ -7066,9 +7090,9 @@ SCKA-20027:
     recommendedBlendingLevel: 4 # Improves banding and effect emulation.
     autoFlush: 1 # Fixes light bloom intensity.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
-    halfPixelOffset: 4 # Aligns post effects.
+    halfPixelOffset: 2 # Aligns post effects.
     nativeScaling: 1 # Fixes post effects.
-    getSkipCount: "GSC_GiTS"
+    textureInsideRT: 1 # Fixes post shuffles.
 SCKA-20028:
   name: "Ico [PlayStation2 Big Hit Series]"
   region: "NTSC-K"
@@ -7120,6 +7144,8 @@ SCKA-20034:
   region: "NTSC-K"
   gsHWFixes:
     texturePreloading: 0 # Performs much better with no preload.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
 SCKA-20035:
   name: "Hot Shots Golf 3 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -7150,9 +7176,8 @@ SCKA-20039:
   region: "NTSC-K"
   gsHWFixes:
     alignSprite: 1 # Fixes FMV lines.
-    cpuSpriteRenderBW: 2 # Prevents Death By VRAM explosion.
-    cpuSpriteRenderLevel: 2 # Needed for above.
-    getSkipCount: "GSC_DeathByDegreesTekkenNinaWilliams"
+    halfPixelOffset: 2 # Aligns post effects.
+    textureInsideRT: 1 # Fixes post shuffles.
 SCKA-20040:
   name: "Jak 3"
   region: "NTSC-K"
@@ -7238,6 +7263,7 @@ SCKA-20049:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes heat haze half screen problem.
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
@@ -7463,6 +7489,7 @@ SCKA-20081:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes heat haze half screen problem.
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
@@ -8644,9 +8671,8 @@ SCPS-15064:
     recommendedBlendingLevel: 4 # Improves banding and effect emulation.
     autoFlush: 1 # Fixes light bloom intensity.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
-    halfPixelOffset: 4 # Aligns post effects.
+    halfPixelOffset: 2 # Aligns post effects.
     nativeScaling: 1 # Fixes post effects.
-    getSkipCount: "GSC_GiTS"
   patches:
     A5768F53:
       content: |-
@@ -8896,8 +8922,8 @@ SCPS-15093:
   name-en: "Rule of Rose"
   region: "NTSC-J"
   compat: 5
-  gsHWFixes:
-    preloadFrameData: 1 # Fixes Black FMV's.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes black FMVs in hardware and hash cache disabling itself.
 SCPS-15094:
   name: "アイトーイ プレイ2 [ソフト単体]"
   name-sort: "あいとーい ぷれい2 [そふとたんたい]"
@@ -9138,7 +9164,7 @@ SCPS-15118:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes and lines in UI.
-    cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
+    textureInsideRT: 1 # Fixes sepia-tone flashback sequences.
     forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and reduces HC size.
 SCPS-15119:
@@ -9839,7 +9865,7 @@ SCPS-19333:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes and lines in UI.
-    cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
+    textureInsideRT: 1 # Fixes sepia-tone flashback sequences.
     forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and reduces HC size.
 SCPS-19335:
@@ -13252,8 +13278,9 @@ SLED-52441:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52473:
   name: "Transformers - Optimus Prime [Demo]"
@@ -13263,8 +13290,9 @@ SLED-52473:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52474:
   name: "Transformers - Red Alert [Demo]"
@@ -13274,8 +13302,9 @@ SLED-52474:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52476:
   name: "UEFA Euro 2004 - Portugal [Demo]"
@@ -13329,6 +13358,12 @@ SLED-52736:
 SLED-52851:
   name: "TOCA Race Driver 2"
   region: "PAL-Unk"
+  gsHWFixes:
+    alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
+    roundSprite: 1 # Fixes misaligned map.
+    halfPixelOffset: 2 # Fixes depth of field alignment.
+    nativeScaling: 1 # Fixes depth of field.
+    textureInsideRT: 1 # Fixes shadows.
 SLED-52852:
   name: "Forgotten Realms - Demon Stone [Demo]"
   region: "PAL-E"
@@ -13415,8 +13450,13 @@ SLED-53109:
     cpuCLUTRender: 1 # Fixes broken headlights.
     minimumBlendingLevel: 3
 SLED-53137:
-  name: "Stolen"
-  region: "PAL-Unk"
+  name: "Stolen [Demo]"
+  region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom effects.
+    texturePreloading: 1 # Performs much better with partial preload.
+    textureInsideRT: 1 # Fixes post effects.
+    nativeScaling: 1 # Fixes lighting quality and positioning.
 SLED-53198:
   name: "Rugby 2005"
   region: "PAL-Unk"
@@ -13574,6 +13614,7 @@ SLED-53723:
     autoFlush: 1 # Corrects vignette to match software.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     halfPixelOffset: 4 # Aligns blur more correctly to match software.
+    textureInsideRT: 1 # Fixes post processing effects.
 SLED-53731:
   name: "Battlefield 2 - Modern Combat [Demo]"
   region: "PAL-E"
@@ -13582,8 +13623,8 @@ SLED-53731:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes per line drawing.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
-    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLED-53732:
   name: "Spartan - Total Warrior [Demo]"
   region: "PAL"
@@ -13620,10 +13661,9 @@ SLED-53888:
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
     roundSprite: 1 # Fixes misaligned map.
-    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
-    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+    textureInsideRT: 1 # Fixes shadows.
 SLED-53937:
   name: "Black [Demo]"
   region: "PAL-M5"
@@ -15875,8 +15915,6 @@ SLES-50876:
   gsHWFixes:
     autoFlush: 1 # Aligns and corrects shadows.
     halfPixelOffset: 2 # Fixes sun and depth line.
-    cpuCLUTRender: 1 # Fixes janky coloured cars.
-    gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
     cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -17055,7 +17093,6 @@ SLES-51355:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1 # Fixes inside RT shuffling.
-    getSkipCount: "GSC_BigMuthaTruckers"
 SLES-51356:
   name: "Road Trip Adventure"
   region: "PAL-M3"
@@ -18540,6 +18577,9 @@ SLES-51997:
   compat: 5
   clampModes:
     eeClampMode: 3 # For grey screen ingame.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes post effects on player 2.
+    halfPixelOffset: 4 # Fixes chromatic effect.
 SLES-51998:
   name: "Kao the Kangaroo - Round 2"
   region: "PAL-M5"
@@ -18739,11 +18779,14 @@ SLES-52096:
     halfPixelOffset: 4 # Fixes post processing alignment.
     roundSprite: 1 # Fixes sprite misaligment.
 SLES-52097:
-  name: "SWAT - Global Strike Force"
+  name: "SWAT - Global Strike Team"
   region: "PAL-E-G"
   compat: 5
   clampModes:
     eeClampMode: 3 # For grey screen ingame.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes post effects on player 2.
+    halfPixelOffset: 4 # Fixes chromatic effect.
 SLES-52100:
   name: "NRL Rugby League"
   region: "PAL-E"
@@ -18751,7 +18794,7 @@ SLES-52101:
   name: "Wrath Unleashed"
   region: "PAL-M5"
   gsHWFixes:
-    textureInsideRT: 1 # Fixes flashing and some models still very broken in hardware mode.
+    textureInsideRT: 1 # Fixes colors.
 SLES-52102:
   name: "Hugo Bukkazoom!"
   region: "PAL-M12"
@@ -18814,6 +18857,8 @@ SLES-52132:
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
     autoFlush: 1 # Fixes bloom rendering.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
   speedHacks:
@@ -18824,6 +18869,8 @@ SLES-52133:
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
     autoFlush: 1 # Fixes bloom rendering.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
   speedHacks:
@@ -18835,6 +18882,8 @@ SLES-52134:
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
     autoFlush: 1 # Fixes bloom rendering.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
   speedHacks:
@@ -18845,6 +18894,8 @@ SLES-52135:
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
     autoFlush: 1 # Fixes bloom rendering.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
   speedHacks:
@@ -18855,6 +18906,8 @@ SLES-52136:
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
     autoFlush: 1 # Fixes bloom rendering.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
   speedHacks:
@@ -18893,8 +18946,6 @@ SLES-52153:
   gsHWFixes:
     autoFlush: 1 # Aligns and corrects shadows.
     halfPixelOffset: 2 # Fixes sun and depth line.
-    cpuCLUTRender: 1 # Fixes janky coloured cars.
-    gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
     cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -19237,6 +19288,8 @@ SLES-52322:
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
     mergeSprite: 1 # Fixes misaligned white lines.
     PCRTCOverscan: 1 # Fixes missing HUD.
+    textureInsideRT: 1 # Fixes post shuffle effect.
+    halfPixelOffset: 2 # Fixes boxes around shuffle effect pages.
 SLES-52323:
   name: "Richard Burns Rally"
   region: "PAL-M5"
@@ -19410,8 +19463,9 @@ SLES-52388:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLES-52392:
   name: "Combat Elite - WWII Paratroopers [Preview]"
@@ -20115,12 +20169,17 @@ SLES-52637:
   region: "PAL-M5"
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
+    textureInsideRT: 1 # Fixes shadows.
 SLES-52638:
   name: "DTM Race Driver 2"
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
+    roundSprite: 1 # Fixes misaligned map.
+    halfPixelOffset: 2 # Fixes depth of field alignment.
+    nativeScaling: 1 # Fixes depth of field.
+    textureInsideRT: 1 # Fixes shadows.
 SLES-52639:
   name: "V8 Supercars 2"
   region: "PAL-M5"
@@ -20783,7 +20842,7 @@ SLES-52859:
   gsHWFixes:
     autoFlush: 1 # Fixes the post processing positioning.
     textureInsideRT: 1 # Fixes post processing.
-    halfPixelOffset: 4 # Aligns bloom effect.
+    halfPixelOffset: 5 # Aligns bloom effect.
     nativeScaling: 2 # Fixes post processing smoothness and position.
 SLES-52861:
   name: "King Arthur"
@@ -20831,9 +20890,10 @@ SLES-52882:
   region: "PAL-M5"
   compat: 4
   gsHWFixes:
-    disablePartialInvalidation: 1 # Improves performance.
     halfPixelOffset: 2 # Fixes misaligned bloom effects.
     texturePreloading: 1 # Performs much better with partial preload.
+    textureInsideRT: 1 # Fixes post effects.
+    nativeScaling: 1 # Fixes lighting quality and positioning.
 SLES-52884:
   name: "Duel Masters"
   region: "PAL-M5"
@@ -21011,6 +21071,8 @@ SLES-52942:
   gsHWFixes:
     halfPixelOffset: 2 # Aligns post bloom.
     nativeScaling: 2 # Fixes light blooms.
+    textureInsideRT: 1 # Improves performance.
+    preloadFrameData: 1 # Fixes light trails.
     getSkipCount: "GSC_MidnightClub3"
   patches:
     EBE1972D:
@@ -21275,9 +21337,9 @@ SLES-53020:
     recommendedBlendingLevel: 4 # Improves banding and effect emulation.
     autoFlush: 1 # Fixes light bloom intensity.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
-    halfPixelOffset: 4 # Aligns post effects.
+    halfPixelOffset: 2 # Aligns post effects.
     nativeScaling: 1 # Fixes post effects.
-    getSkipCount: "GSC_GiTS"
+    textureInsideRT: 1 # Fixes post shuffles.
   patches:
     BF6F101F:
       content: |-
@@ -21344,7 +21406,7 @@ SLES-53028:
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post processing position.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post processing.
     getSkipCount: "GSC_HitmanBloodMoney"
@@ -21354,7 +21416,7 @@ SLES-53029:
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post processing position.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post processing.
     getSkipCount: "GSC_HitmanBloodMoney"
@@ -21364,7 +21426,7 @@ SLES-53030:
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post processing position.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post processing.
     getSkipCount: "GSC_HitmanBloodMoney"
@@ -21374,7 +21436,7 @@ SLES-53031:
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post processing position.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post processing.
     getSkipCount: "GSC_HitmanBloodMoney"
@@ -21384,7 +21446,7 @@ SLES-53032:
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post processing position.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post processing.
     getSkipCount: "GSC_HitmanBloodMoney"
@@ -21550,10 +21612,9 @@ SLES-53087:
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
     roundSprite: 1 # Fixes misaligned map.
-    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
-    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+    textureInsideRT: 1 # Fixes shadows.
   memcardFilters:
     - "SLES-53087"
     - "SLES-52637" # Race Driver 2 save unlocks 'Class A 4WD Track Challenge' in career early.
@@ -21563,10 +21624,9 @@ SLES-53088:
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
     roundSprite: 1 # Fixes misaligned map.
-    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
-    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+    textureInsideRT: 1 # Fixes shadows.
   memcardFilters:
     - "SLES-53088"
     - "SLES-52638" # Race Driver 2 save unlocks 'Class A 4WD Track Challenge' in career early.
@@ -21576,10 +21636,9 @@ SLES-53089:
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
     roundSprite: 1 # Fixes misaligned map.
-    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
-    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+    textureInsideRT: 1 # Fixes shadows.
   memcardFilters:
     - "SLES-53089"
     - "SLES-52639" # Race Driver 2 save unlocks 'Class A 4WD Track Challenge' in career early.
@@ -21669,7 +21728,7 @@ SLES-53124:
   gsHWFixes:
     autoFlush: 1 # Fixes the post processing positioning.
     textureInsideRT: 1 # Fixes post processing.
-    halfPixelOffset: 4 # Aligns bloom effect.
+    halfPixelOffset: 5 # Aligns bloom effect.
     nativeScaling: 2 # Fixes post processing smoothness and position.
 SLES-53125:
   name: "Enthusia Professional Racing"
@@ -22027,8 +22086,9 @@ SLES-53309:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLES-53311:
   name: "Graffiti Kingdom"
@@ -22366,6 +22426,7 @@ SLES-53415:
     halfPixelOffset: 2 # Fix text and post blur.
     nativeScaling: 2 # Fixes post effects.
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLES-53416:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-M3"
@@ -22375,6 +22436,7 @@ SLES-53416:
     halfPixelOffset: 2 # Fix text and post blur.
     nativeScaling: 2 # Fixes post effects.
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLES-53417:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-G"
@@ -22384,6 +22446,7 @@ SLES-53417:
     halfPixelOffset: 2 # Fix text and post blur.
     nativeScaling: 2 # Fixes post effects.
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLES-53418:
   name: "Tak - The Great JuJu Challenge"
   region: "PAL-A"
@@ -23129,6 +23192,7 @@ SLES-53616:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
     preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
     gpuTargetCLUT: 1 # Fixes light occlusion.
@@ -23143,6 +23207,7 @@ SLES-53617:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
     preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
     gpuTargetCLUT: 1 # Fixes light occlusion.
@@ -23157,6 +23222,7 @@ SLES-53618:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
     preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
     gpuTargetCLUT: 1 # Fixes light occlusion.
@@ -23429,6 +23495,7 @@ SLES-53703:
     autoFlush: 1 # Corrects vignette to match software.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     halfPixelOffset: 4 # Aligns blur more correctly to match software.
+    textureInsideRT: 1 # Fixes post processing effects.
 SLES-53704:
   name: "Peter Jackson's King Kong - The Official Game of the Movie"
   name-sort: "King Kong, Peter Jackson's - The Official Game of the Movie"
@@ -23438,6 +23505,7 @@ SLES-53704:
     autoFlush: 1 # Corrects vignette to match software.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     halfPixelOffset: 4 # Aligns blur more correctly to match software.
+    textureInsideRT: 1 # Fixes post processing effects.
 SLES-53705:
   name: "Peter Jackson's King Kong - The Official Game of the Movie"
   name-sort: "King Kong, Peter Jackson's - The Official Game of the Movie"
@@ -23447,6 +23515,7 @@ SLES-53705:
     autoFlush: 1 # Corrects vignette to match software.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     halfPixelOffset: 4 # Aligns blur more correctly to match software.
+    textureInsideRT: 1 # Fixes post processing effects.
 SLES-53706:
   name: "The Chronicles of Narnia - The Lion, the Witch and the Wardrobe"
   name-sort: "Chronicles of Narnia, The - The Lion, the Witch and the Wardrobe"
@@ -23500,6 +23569,8 @@ SLES-53717:
   gsHWFixes:
     halfPixelOffset: 2 # Aligns post bloom.
     nativeScaling: 2 # Fixes light blooms.
+    textureInsideRT: 1 # Improves performance.
+    preloadFrameData: 1 # Fixes light trails.
     getSkipCount: "GSC_MidnightClub3"
   patches:
     208183AF:
@@ -23531,6 +23602,7 @@ SLES-53722:
     halfPixelOffset: 2 # Fix text and post blur.
     nativeScaling: 2 # Fixes post effects.
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLES-53724:
   name: "World Series of Poker"
   region: "PAL-E"
@@ -23554,8 +23626,8 @@ SLES-53729:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes per line drawing.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
-    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLES-53730:
   name: "Battlefield 2 - Modern Combat"
   region: "PAL-M3"
@@ -23564,8 +23636,8 @@ SLES-53730:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes per line drawing.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
-    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLES-53734:
   name: "50 Cent - Bulletproof"
   region: "PAL-E"
@@ -24858,7 +24930,7 @@ SLES-54185:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes lighting.
-    halfPixelOffset: 4 # Fixes ghosting.
+    halfPixelOffset: 5 # Fixes ghosting.
     nativeScaling: 2 # Fixes post processing.
     recommendedBlendingLevel: 4 # Fixes missing light brightness.
 SLES-54186:
@@ -24960,8 +25032,8 @@ SLES-54217:
 SLES-54218:
   name: "Rule of Rose"
   region: "PAL-M5"
-  gsHWFixes:
-    preloadFrameData: 1 # Fixes Black FMV's.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes black FMVs in hardware and hash cache disabling itself.
 SLES-54221:
   name: "LEGO Star Wars II - The Original Trilogy"
   region: "PAL-M6"
@@ -25895,12 +25967,21 @@ SLES-54510:
 SLES-54511:
   name: "UEFA Champions League 2006-2007"
   region: "PAL-E"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken lights due to copying around P8 data.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-54512:
   name: "UEFA Champions League 2006-2007"
   region: "PAL-F-G"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken lights due to copying around P8 data.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-54513:
   name: "UEFA Champions League 2006-2007"
   region: "PAL-I-S"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken lights due to copying around P8 data.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-54516:
   name: "Thrillville"
   region: "PAL-F-G"
@@ -26844,8 +26925,9 @@ SLES-54819:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_Manhunt2"
     autoFlush: 1 # Fixes missing lights and light intensity.
+    textureInsideRT: 1 # Fixes post lighting.
+    halfPixelOffset: 2 # Fixes post effects.
 SLES-54820:
   name: "Stuntman - Ignition"
   region: "PAL-M5"
@@ -27279,6 +27361,7 @@ SLES-54962:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLES-54963:
   name: "Tony Hawk's Proving Ground"
   region: "PAL-E"
@@ -27310,7 +27393,7 @@ SLES-54972:
   region: "PAL-M3"
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes and lines in UI.
-    cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
+    textureInsideRT: 1 # Fixes sepia-tone flashback sequences.
     forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and reduces HC size.
 SLES-54973:
@@ -27326,6 +27409,7 @@ SLES-54974:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLES-54975:
   name: "George Of The Jungle"
   region: "PAL-E"
@@ -27712,6 +27796,7 @@ SLES-55031:
   region: "PAL-F"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
     halfPixelOffset: 4 # Aligns post processing.
     autoFlush: 1 # Fixes post processing.
 SLES-55032:
@@ -27864,6 +27949,8 @@ SLES-55109:
   region: "PAL-E"
   roundModes:
     vu0RoundMode: 0 # Fixes invisible wall collision in bedroom.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half screen.
 SLES-55110:
   name: "Odin Sphere"
   region: "PAL-M5"
@@ -28076,6 +28163,7 @@ SLES-55191:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLES-55192:
   name: "Steam Express"
   region: "PAL-M5"
@@ -28141,6 +28229,7 @@ SLES-55200:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLES-55201:
   name: "Riding Star"
   region: "PAL-M4"
@@ -28224,6 +28313,7 @@ SLES-55234:
   region: "PAL-SW"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
     halfPixelOffset: 4 # Aligns post processing.
     autoFlush: 1 # Fixes post processing.
 SLES-55235:
@@ -28231,6 +28321,7 @@ SLES-55235:
   region: "PAL-I"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
     halfPixelOffset: 4 # Aligns post processing.
     autoFlush: 1 # Fixes post processing.
 SLES-55236:
@@ -28238,6 +28329,7 @@ SLES-55236:
   region: "PAL-G-S"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
     halfPixelOffset: 4 # Aligns post processing.
     autoFlush: 1 # Fixes post processing.
 SLES-55237:
@@ -30517,8 +30609,9 @@ SLKA-25175:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLKA-25176:
   name: "Pump It Up - Exceed"
@@ -30586,8 +30679,6 @@ SLKA-25196:
   gsHWFixes:
     autoFlush: 1 # Aligns and corrects shadows.
     halfPixelOffset: 2 # Fixes sun and depth line.
-    cpuCLUTRender: 1 # Fixes janky coloured cars.
-    gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
     cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -30712,6 +30803,8 @@ SLKA-25218:
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
     autoFlush: 1 # Fixes bloom rendering.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
   speedHacks:
@@ -31217,13 +31310,12 @@ SLKA-25330:
   name: "Battlefield 2 - Modern Combat"
   region: "NTSC-K"
   gsHWFixes:
-    autoFlush: 2 # Post-processing.
+    minimumBlendingLevel: 4 # Fixes ground texture rendering.
+    autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
-    texturePreloading: 1 # Spikes all over the place otherwise.
-    textureInsideRT: 1 # Fixes light shinging through objects.
-    cpuCLUTRender: 1 # Fixes light shining through objects.
+    texturePreloading: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes per line drawing.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
-    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLKA-25331:
   name: "Marc Ecko's Getting Up - Contents Under Pressure"
   region: "NTSC-K"
@@ -31261,6 +31353,7 @@ SLKA-25337:
     autoFlush: 1 # Corrects vignette to match software.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     halfPixelOffset: 4 # Aligns blur more correctly to match software.
+    textureInsideRT: 1 # Fixes post processing effects.
 SLKA-25338:
   name: "The Godfather"
   name-sort: "Godfather, The"
@@ -31626,6 +31719,7 @@ SLKA-25414:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLKA-25417:
   name: "Jin Samguk Mussang 4 - Empires"
   region: "NTSC-K"
@@ -31681,6 +31775,7 @@ SLKA-25434:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLKA-25435:
   name: "Sengoku Basara X"
   region: "NTSC-J-K"
@@ -31689,6 +31784,7 @@ SLKA-25436:
   region: "NTSC-K"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLKA-25437:
   name: "Street Fighter Anniversary Collection"
   region: "NTSC-K"
@@ -32107,8 +32203,8 @@ SLPM-55034:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes per line drawing.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
-    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLPM-55035:
   name: "ファイトナイト ラウンド2 [EA:SY! 1980]"
   name-sort: "ふぁいとないと らうんど2 [EA:SY! 1980]"
@@ -32180,10 +32276,9 @@ SLPM-55046:
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
     roundSprite: 1 # Fixes misaligned map.
-    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
-    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+    textureInsideRT: 1 # Fixes shadows.
   memcardFilters:
     - "SLPM-55046"
     - "SLPM-66498" # Race Driver 2 save unlocks 'Class A 4WD Track Challenge' in career early.
@@ -32361,6 +32456,8 @@ SLPM-55080:
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
     mergeSprite: 1 # Fixes misaligned white lines.
     PCRTCOverscan: 1 # Fixes missing HUD.
+    textureInsideRT: 1 # Fixes post shuffle effect.
+    halfPixelOffset: 2 # Fixes boxes around shuffle effect pages.
 SLPM-55081:
   name: "ドラッグオンドラグーン2 ～封印の紅 背徳の黒～"
   name-sort: "どらっぐおんどらぐーん2 ～ふういんのあか はいとくのくろ～"
@@ -33451,8 +33548,7 @@ SLPM-60109:
   clampModes:
     vuClampMode: 2 # Fixes texture rendering in the intro.
   gsHWFixes:
-    cpuFramebufferConversion: 1
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes post effects
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
@@ -33956,6 +34052,8 @@ SLPM-60217:
   region: "NTSC-J"
   gsHWFixes:
     texturePreloading: 0 # Performs much better with no preload.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
 SLPM-60218:
   name: "GUNGRAVE O.D. [体験版]"
   name-sort: "がんぐれいぶ おーでぃー [たいけんばん]"
@@ -34128,9 +34226,8 @@ SLPM-60257:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes FMV lines.
-    cpuSpriteRenderBW: 2 # Prevents Death By VRAM explosion.
-    cpuSpriteRenderLevel: 2 # Needed for above.
-    getSkipCount: "GSC_DeathByDegreesTekkenNinaWilliams"
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    textureInsideRT: 1 # Fixes post shuffles.
 SLPM-60258:
   name: "THE TYPING OF THE DEAD ZOMBIE PANIC [体験版]"
   name-sort: "ざ たいぴんぐおぶ ざ でっど ぞんび ぱにっく [たいけんばん]"
@@ -34684,8 +34781,6 @@ SLPM-61092:
   gsHWFixes:
     autoFlush: 1 # Aligns and corrects shadows.
     halfPixelOffset: 2 # Fixes sun and depth line.
-    cpuCLUTRender: 1 # Fixes janky coloured cars.
-    gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
     cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -36971,7 +37066,6 @@ SLPM-62378:
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1 # Fixes inside RT shuffling.
-    getSkipCount: "GSC_BigMuthaTruckers"
 SLPM-62379:
   name: "カラオケレボリューション J-POPベストVol.2"
   name-sort: "からおけれぼりゅーしょん J-POPべすとVol.2"
@@ -39596,6 +39690,9 @@ SLPM-65073:
   name-sort: "げんそうすいこでん3 [しょかいせいさんぶん:とくしゅしよう]"
   name-en: "Gensou Suikoden III [Limited Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half screen.
+    halfPixelOffset: 4 # Fixes post effects.
   memcardFilters: # This looks like a mess because it includes all serials for Suikoden 3, Suikoden 2, Suikogaiden 1, and Suikogaiden 2. A lot of these probably aren't actually required but it's not really hurting anything to have them here.
     - "SLPM-65073"
     - "SLPM-65074"
@@ -39615,6 +39712,9 @@ SLPM-65074:
   name-sort: "げんそうすいこでん3"
   name-en: "Gensou Suikoden III"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half screen.
+    halfPixelOffset: 4 # Fixes post effects.
   memcardFilters:
     - "SLPM-65073"
     - "SLPM-65074"
@@ -40534,7 +40634,6 @@ SLPM-65234:
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1 # Fixes inside RT shuffling.
-    getSkipCount: "GSC_BigMuthaTruckers"
 SLPM-65235:
   name: "ニュールーマニア ポロリ青春"
   name-sort: "にゅーるーまにあ ぽろりせいしゅん"
@@ -40730,6 +40829,8 @@ SLPM-65266:
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
     mergeSprite: 1 # Fixes misaligned white lines.
     PCRTCOverscan: 1 # Fixes missing HUD.
+    textureInsideRT: 1 # Fixes post shuffle effect.
+    halfPixelOffset: 2 # Fixes boxes around shuffle effect pages.
 SLPM-65267:
   name: "鋼鉄の咆哮2 - ウォーシップガンナー"
   name-sort: "くろがねのほうこう2 うぉーしっぷがんなー"
@@ -40955,6 +41056,9 @@ SLPM-65305:
   name-sort: "げんそうすいこでん3 [KONAMI THE BEST]"
   name-en: "Gensou Suikoden 3"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half screen.
+    halfPixelOffset: 4 # Fixes post effects.
   memcardFilters:
     - "SLPM-65073"
     - "SLPM-65074"
@@ -42499,6 +42603,7 @@ SLPM-65583:
     autoFlush: 2 # Fixes sun luminosity.
     halfPixelOffset: 2 # Aligns Depth of Field.
     nativeScaling: 2 # Fixes Depth of Field effect.
+    textureInsideRT: 1 # Fixes half screen fog effect.
 SLPM-65584:
   name: "真・三國無双3 猛将伝"
   name-sort: "しんさんごくむそう3 もうしょうでん"
@@ -43122,6 +43227,9 @@ SLPM-65694:
   name-sort: "げんそうすいこでん3 [こなみでんどうせれくしょん]"
   name-en: "Gensou Suikoden 3 [KONAMI Dendou Selection]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half screen.
+    halfPixelOffset: 4 # Fixes post effects.
   memcardFilters:
     - "SLPM-65073"
     - "SLPM-65074"
@@ -43394,8 +43502,6 @@ SLPM-65741:
   gsHWFixes:
     autoFlush: 1 # Aligns and corrects shadows.
     halfPixelOffset: 2 # Fixes sun and depth line.
-    cpuCLUTRender: 1 # Fixes janky coloured cars.
-    gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
     cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -45532,6 +45638,7 @@ SLPM-66103:
     autoFlush: 2 # Fixes sun luminosity.
     halfPixelOffset: 2 # Aligns Depth of Field.
     nativeScaling: 2 # Fixes Depth of Field effect.
+    textureInsideRT: 1 # Fixes half screen fog effect.
 SLPM-66104:
   name: "ぷよぷよフィーバー2 [チュー！]"
   name-sort: "ぷよぷよふぃーばー2"
@@ -46208,8 +46315,8 @@ SLPM-66206:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes per line drawing.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
-    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLPM-66207:
   name: "どろろ [SEGA THE BEST 2800]"
   name-sort: "どろろ [SEGA THE BEST 2800]"
@@ -46242,6 +46349,7 @@ SLPM-66211:
     autoFlush: 1 # Corrects vignette to match software.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     halfPixelOffset: 4 # Aligns blur more correctly to match software.
+    textureInsideRT: 1 # Fixes post processing effects.
 SLPM-66212:
   name: "SEGA RALLY 2006"
   name-sort: "せが らりー 2006"
@@ -46652,7 +46760,7 @@ SLPM-66271:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes lighting.
-    halfPixelOffset: 4 # Fixes ghosting.
+    halfPixelOffset: 5 # Fixes ghosting.
     nativeScaling: 2 # Fixes post processing.
     recommendedBlendingLevel: 4 # Fixes missing light brightness.
 SLPM-66272:
@@ -47024,6 +47132,7 @@ SLPM-66328:
     halfPixelOffset: 2 # Fix text and post blur.
     nativeScaling: 2 # Fixes post effects.
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLPM-66329:
   name: "魔法先生ネギま！ 課外授業 乙女のドキドキ・ビーチサイド"
   name-sort: "まほうせんせいねぎま！ かがいじゅぎょう おとめのどきどき びーちさいど"
@@ -47906,6 +48015,7 @@ SLPM-66473:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
     preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
     gpuTargetCLUT: 1 # Fixes light occlusion.
@@ -48082,6 +48192,10 @@ SLPM-66498:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
+    roundSprite: 1 # Fixes misaligned map.
+    halfPixelOffset: 2 # Fixes depth of field alignment.
+    nativeScaling: 1 # Fixes depth of field.
+    textureInsideRT: 1 # Fixes shadows.
 SLPM-66499:
   name: "神様家族 応援願望"
   name-sort: "かみさまかぞく おうえんがんぼう"
@@ -48868,7 +48982,7 @@ SLPM-66629:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fixes lighting.
-    halfPixelOffset: 4 # Fixes ghosting.
+    halfPixelOffset: 5 # Fixes ghosting.
     nativeScaling: 2 # Fixes post processing.
     recommendedBlendingLevel: 4 # Fixes missing light brightness.
 SLPM-66630:
@@ -48993,8 +49107,8 @@ SLPM-66651:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes per line drawing.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
-    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLPM-66652:
   name: "バーンアウト リベンジ [EA BEST HITS]"
   name-sort: "ばーんあうと りべんじ [EA BEST HITS]"
@@ -50398,10 +50512,9 @@ SLPM-66881:
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
     roundSprite: 1 # Fixes misaligned map.
-    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
-    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+    textureInsideRT: 1 # Fixes shadows.
   memcardFilters:
     - "SLPM-66881"
     - "SLPM-66498" # Race Driver 2 save unlocks 'Class A 4WD Track Challenge' in career early.
@@ -51422,7 +51535,7 @@ SLPM-68016:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fixes lighting.
-    halfPixelOffset: 4 # Fixes ghosting.
+    halfPixelOffset: 5 # Fixes ghosting.
     nativeScaling: 2 # Fixes post processing.
     recommendedBlendingLevel: 4 # Fixes missing light brightness.
 SLPM-68017:
@@ -51490,6 +51603,9 @@ SLPM-68505:
   name-sort: "げんそうすいこでん3"
   name-en: "Gensou Suikoden III"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half screen.
+    halfPixelOffset: 4 # Fixes post effects.
 SLPM-68509:
   name: "頭文字D Special Stage [講談社懸賞品]"
   name-sort: "いにしゃるD すぺしゃる すてーじ [こうだんしゃけんしょうひん]"
@@ -51918,6 +52034,7 @@ SLPM-74243:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
     preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
     gpuTargetCLUT: 1 # Fixes light occlusion.
@@ -52379,8 +52496,7 @@ SLPS-20001:
   clampModes:
     vuClampMode: 2 # Fixes texture rendering in the intro.
   gsHWFixes:
-    cpuFramebufferConversion: 1
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes post effects
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
@@ -54203,6 +54319,7 @@ SLPS-20382:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SLPS-20383:
   name: "太鼓の達人 あつまれ！祭りだ！！四代目"
   name-sort: "たいこのたつじん あつまれ！まつりだ！！よんだいめ"
@@ -54210,6 +54327,7 @@ SLPS-20383:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SLPS-20384:
   name: "流行り神 警視庁怪異事件ファイル [初回限定版]"
   name-sort: "はやりがみ けいしちょうかいいじけんふぁいる [しょかいげんていばん]"
@@ -54277,6 +54395,7 @@ SLPS-20399:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SLPS-20400:
   name: "太鼓の達人 ゴー！ゴー！五代目 [ソフト単体]"
   name-sort: "たいこのたつじん ごー！ごー！ごだいめ [そふとたんたい]"
@@ -54284,6 +54403,7 @@ SLPS-20400:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SLPS-20401:
   name: "テクモ ヒットパレード"
   name-sort: "てくも ひっとぱれーど"
@@ -54355,6 +54475,7 @@ SLPS-20413:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SLPS-20414:
   name: "太鼓の達人 TAIKO DRUM MASTER"
   name-sort: "たいこのたつじん TAIKO DRUM MASTER"
@@ -54363,6 +54484,7 @@ SLPS-20414:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SLPS-20416:
   name: "陰陽大戦記 白虎演舞 [“EyeToy”カメラ同梱版]"
   name-sort: "おんみょうたいせんき びゃっこえんぶ [あいとーいかめらどうこんばん]"
@@ -54414,6 +54536,7 @@ SLPS-20424:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SLPS-20425:
   name: "太鼓の達人 とびっきり！アニメスペシャル [ソフト単体]"
   name-sort: "たいこのたつじん とびっきり！あにめすぺしゃる [そふとたんたい]"
@@ -54421,6 +54544,7 @@ SLPS-20425:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SLPS-20426:
   name: "マダガスカル"
   name-sort: "まだかすかる"
@@ -54530,6 +54654,7 @@ SLPS-20450:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SLPS-20451:
   name: "太鼓の達人 わいわいハッピー！六代目"
   name-sort: "たいこのたつじん わいわいはっぴー！ろくだいめ"
@@ -54537,6 +54662,7 @@ SLPS-20451:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
 SLPS-20452:
   name: "SIMPLE2000シリーズ Ultimate Vol.30 降臨！族車ゴッド～仏恥義理★愛羅武勇～"
   name-sort: "しんぷる2000しりーず あるてぃめっと Vol.30 こうりん！ぞくしゃごっど ぶっちぎりあいらぶゆう"
@@ -54737,6 +54863,7 @@ SLPS-20485:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
     getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
 SLPS-20486:
   name: "太鼓の達人 ドカッ！と大盛り七代目 [ソフト単体]"
@@ -54745,6 +54872,7 @@ SLPS-20486:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes post effects.
     getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
 SLPS-20487:
   name: "パチスロキング！ 科学忍者隊ガッチャマン"
@@ -56536,6 +56664,8 @@ SLPS-25289:
   region: "NTSC-J"
   gsHWFixes:
     texturePreloading: 0 # Performs much better with no preload.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
 SLPS-25290:
   name: "タイムクライシス3 [ソフト単体]"
   name-sort: "たいむくらいしす3 [そふとたんたい]"
@@ -56543,6 +56673,8 @@ SLPS-25290:
   region: "NTSC-J"
   gsHWFixes:
     texturePreloading: 0 # Performs much better with no preload.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
 SLPS-25291:
   name: "Baldur's Gate - DARK ALLIANCE - [PCCW Japan The BEST]"
   name-sort: "ばるだーずげーと だーくあらいあんす [PCCW Japan The BEST]"
@@ -57265,6 +57397,8 @@ SLPS-25406:
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
     autoFlush: 1 # Fixes bloom rendering.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
   speedHacks:
@@ -57394,9 +57528,8 @@ SLPS-25422:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes FMV lines.
-    cpuSpriteRenderBW: 2 # Prevents Death By VRAM explosion.
-    cpuSpriteRenderLevel: 2 # Needed for above.
-    getSkipCount: "GSC_DeathByDegreesTekkenNinaWilliams"
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    textureInsideRT: 1 # Fixes post shuffles.
 SLPS-25423:
   name: "怪盗アプリコット 完全版 [限定版]"
   name-sort: "かいとうあぷりこっと かんぜんばん [げんていばん]"
@@ -57880,6 +58013,7 @@ SLPS-25510:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes heat haze half screen problem.
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
@@ -58166,6 +58300,8 @@ SLPS-25563:
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
     autoFlush: 1 # Fixes bloom rendering.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
   speedHacks:
@@ -59862,6 +59998,7 @@ SLPS-25840:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLPS-25841:
   name: "テイルズ オブ デスティニー ディレクターズカット [プレミアムBOX]"
   name-sort: "ているず おぶ ですてぃにー でぃれくたーずかっと [ぷれみあむBOX]"
@@ -60118,6 +60255,7 @@ SLPS-25886:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLPS-25887:
   name: "スーパーロボット大戦Ｚ"
   name-sort: "すーぱーろぼっとたいせんZ"
@@ -60154,6 +60292,7 @@ SLPS-25889:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLPS-25890:
   name: "ギターヒーロー3 レジェンドオブロック [ソフト単体]"
   name-sort: "ぎたーひーろー3 れじぇんどおぶろっく [そふとたんたい]"
@@ -60166,6 +60305,7 @@ SLPS-25890:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLPS-25891:
   name: "乃木坂春香の秘密 こすぷれ、はじめました♥ [限定版]"
   name-sort: "のぎざかはるかのひみつ こすぷれ はじめました [げんていばん]"
@@ -60738,8 +60878,7 @@ SLPS-71502:
   name-en: "Ridge Racer V [MEGA HITS!]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuFramebufferConversion: 1
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes post effects
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
@@ -61052,6 +61191,7 @@ SLPS-73223:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes heat haze half screen problem.
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
@@ -61657,8 +61797,7 @@ SLUS-20002:
   clampModes:
     vuClampMode: 2 # Fixes texture rendering in the intro.
   gsHWFixes:
-    cpuFramebufferConversion: 1
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes post effects
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
@@ -62840,7 +62979,6 @@ SLUS-20291:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1 # Fixes inside RT shuffling.
-    getSkipCount: "GSC_BigMuthaTruckers"
 SLUS-20292:
   name: "Tsugunai - Atonement"
   region: "NTSC-U"
@@ -63315,6 +63453,9 @@ SLUS-20387:
   name: "Suikoden III"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half screen.
+    halfPixelOffset: 4 # Fixes post effects.
   memcardFilters: # Allows import of Suikoden II clear data.
     - "SLUS-20387"
     - "SLUS-00958"
@@ -63561,6 +63702,9 @@ SLUS-20433:
   compat: 5
   clampModes:
     eeClampMode: 3 # For grey screen ingame.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes post effects on player 2.
+    halfPixelOffset: 4 # Fixes chromatic effect.
 SLUS-20434:
   name: "Myst III - Exile"
   region: "NTSC-U"
@@ -64383,8 +64527,6 @@ SLUS-20587:
   gsHWFixes:
     autoFlush: 1 # Aligns and corrects shadows.
     halfPixelOffset: 2 # Fixes sun and depth line.
-    cpuCLUTRender: 1 # Fixes janky coloured cars.
-    gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
     cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -64481,7 +64623,6 @@ SLUS-20605:
   region: "NTSC-U"
   gsHWFixes:
     textureInsideRT: 1 # Fixes inside RT shuffling.
-    getSkipCount: "GSC_BigMuthaTruckers"
 SLUS-20606:
   name: "Bounty Hunter - Seek & Destroy"
   region: "NTSC-U"
@@ -64673,6 +64814,8 @@ SLUS-20645:
   compat: 5
   gsHWFixes:
     texturePreloading: 0 # Performs much better with no preload.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
 SLUS-20646:
   name: "Mark Davis Pro Bass Challenge"
   region: "NTSC-U"
@@ -64774,8 +64917,9 @@ SLUS-20668:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-20669:
   name: "Resident Evil - Dead Aim"
@@ -65141,6 +65285,8 @@ SLUS-20732:
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
     mergeSprite: 1 # Fixes misaligned white lines.
     PCRTCOverscan: 1 # Fixes missing HUD.
+    textureInsideRT: 1 # Fixes post shuffle effect.
+    halfPixelOffset: 2 # Fixes boxes around shuffle effect pages.
 SLUS-20733:
   name: "Castlevania - Lament of Innocence"
   region: "NTSC-U"
@@ -65687,7 +65833,7 @@ SLUS-20840:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 1 # Fixes flashing and some models still very broken in hardware mode.
+    textureInsideRT: 1 # Fixes colors.
 SLUS-20841:
   name: "NFL Street"
   region: "NTSC-U"
@@ -65941,6 +66087,8 @@ SLUS-20882:
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
     autoFlush: 1 # Fixes bloom rendering.
+    textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
   roundModes:
     vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
   speedHacks:
@@ -66270,9 +66418,8 @@ SLUS-20934:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes FMV lines.
-    cpuSpriteRenderBW: 2 # Prevents Death By VRAM explosion.
-    cpuSpriteRenderLevel: 2 # Needed for above.
-    getSkipCount: "GSC_DeathByDegreesTekkenNinaWilliams"
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    textureInsideRT: 1 # Fixes post shuffles.
 SLUS-20935:
   name: "IHRA Professional Drag Racing 2005"
   region: "NTSC-U"
@@ -66706,9 +66853,9 @@ SLUS-21006:
     recommendedBlendingLevel: 4 # Improves banding and effect emulation.
     autoFlush: 1 # Fixes light bloom intensity.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
-    halfPixelOffset: 4 # Aligns post effects.
+    halfPixelOffset: 2 # Aligns post effects.
     nativeScaling: 1 # Fixes post effects.
-    getSkipCount: "GSC_GiTS"
+    textureInsideRT: 1 # Fixes post shuffles.
   patches:
     default:
       content: |-
@@ -66852,8 +66999,8 @@ SLUS-21026:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes per line drawing.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
-    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-21027:
   name: "The Lord of the Rings - The Third Age"
   name-sort: "Lord of the Rings, The - The Third Age"
@@ -66873,6 +67020,8 @@ SLUS-21029:
   gsHWFixes:
     halfPixelOffset: 2 # Aligns post bloom.
     nativeScaling: 2 # Fixes light blooms.
+    textureInsideRT: 1 # Improves performance.
+    preloadFrameData: 1 # Fixes light trails.
     getSkipCount: "GSC_MidnightClub3"
   patches:
     0DD3417A:
@@ -66936,7 +67085,7 @@ SLUS-21037:
     autoFlush: 1 # Fixes the post processing positioning.
     textureInsideRT: 1 # Fixes post processing.
     nativeScaling: 2 # Fixes post processing smoothness and position.
-    halfPixelOffset: 4 # Makes bloom alignment slightly less awful.
+    halfPixelOffset: 5 # Makes bloom alignment slightly less awful.
 SLUS-21038:
   name: "Pinball Hall of Fame - The Gottlieb Collection"
   region: "NTSC-U"
@@ -66947,6 +67096,10 @@ SLUS-21039:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
+    roundSprite: 1 # Fixes misaligned map.
+    halfPixelOffset: 2 # Fixes depth of field alignment.
+    nativeScaling: 1 # Fixes depth of field.
+    textureInsideRT: 1 # Fixes shadows.
 SLUS-21040:
   name: "The Shield"
   name-sort: "Shield, The"
@@ -67063,6 +67216,7 @@ SLUS-21059:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes heat haze half screen problem.
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
@@ -67259,9 +67413,10 @@ SLUS-21099:
   region: "NTSC-U"
   compat: 4
   gsHWFixes:
-    disablePartialInvalidation: 1 # Improves performance.
     halfPixelOffset: 2 # Fixes misaligned bloom effects.
     texturePreloading: 1 # Performs much better with partial preload.
+    textureInsideRT: 1 # Fixes post effects.
+    nativeScaling: 1 # Fixes lighting quality and positioning.
 SLUS-21100:
   name: "NCAA March Madness 2005"
   region: "NTSC-U"
@@ -67304,6 +67459,7 @@ SLUS-21106:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
     preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
     gpuTargetCLUT: 1 # Fixes light occlusion.
@@ -67320,7 +67476,7 @@ SLUS-21108:
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes post processing position.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post processing.
     getSkipCount: "GSC_HitmanBloodMoney"
@@ -67612,6 +67768,7 @@ SLUS-21160:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes heat haze half screen problem.
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
@@ -67730,10 +67887,9 @@ SLUS-21182:
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
     roundSprite: 1 # Fixes misaligned map.
-    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
-    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+    textureInsideRT: 1 # Fixes shadows.
   memcardFilters:
     - "SLUS-21182"
     - "SLUS-21039" # Race Driver 2 save unlocks 'Class A 4WD Track Challenge' in career early.
@@ -68030,6 +68186,7 @@ SLUS-21228:
     halfPixelOffset: 2 # Fix text and post blur.
     nativeScaling: 2 # Fixes post effects.
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLUS-21229:
   name: "Motocross Mania 3"
   region: "NTSC-U"
@@ -68668,6 +68825,7 @@ SLUS-21311:
     autoFlush: 1 # Corrects vignette to match software.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     halfPixelOffset: 4 # Aligns blur more correctly to match software.
+    textureInsideRT: 1 # Fixes post processing effects.
 SLUS-21312:
   name: "Wallace & Gromit - The Curse of the Were-Rabbit"
   region: "NTSC-U"
@@ -68718,6 +68876,7 @@ SLUS-21318:
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLUS-21319:
   name: "Flow - Urban Dance Uprising"
   region: "NTSC-U"
@@ -68952,6 +69111,8 @@ SLUS-21355:
   gsHWFixes:
     halfPixelOffset: 2 # Aligns post bloom.
     nativeScaling: 2 # Fixes light blooms.
+    textureInsideRT: 1 # Improves performance.
+    preloadFrameData: 1 # Fixes light trails.
     getSkipCount: "GSC_MidnightClub3"
   patches:
     60A42FF5:
@@ -69416,7 +69577,7 @@ SLUS-21419:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes lighting.
-    halfPixelOffset: 4 # Fixes ghosting.
+    halfPixelOffset: 5 # Fixes ghosting.
     nativeScaling: 2 # Fixes post processing.
     recommendedBlendingLevel: 4 # Fixes missing light brightness.
 SLUS-21420:
@@ -69595,8 +69756,8 @@ SLUS-21448:
   name: "Rule of Rose"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    preloadFrameData: 1 # Fixes Black FMV's.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes black FMVs in hardware and hash cache disabling itself.
 SLUS-21449:
   name: "The Fast and the Furious"
   name-sort: "Fast and the Furious, The"
@@ -70175,6 +70336,9 @@ SLUS-21581:
   name: "UEFA Champions League 2006-2007"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken lights due to copying around P8 data.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21582:
   name: "MVP '07 - NCAA Baseball"
   region: "NTSC-U"
@@ -70370,8 +70534,9 @@ SLUS-21613:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_Manhunt2"
     autoFlush: 1 # Fixes missing lights and light intensity.
+    textureInsideRT: 1 # Fixes post lighting.
+    halfPixelOffset: 2 # Fixes Post effects.
 SLUS-21614:
   name: "Star Wars - The Force Unleashed"
   region: "NTSC-U"
@@ -70395,7 +70560,7 @@ SLUS-21615:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes and lines in UI.
-    cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
+    textureInsideRT: 1 # Fixes sepia-tone flashback sequences.
     forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and reduces HC size.
 SLUS-21616:
@@ -70731,6 +70896,7 @@ SLUS-21672:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLUS-21673:
   name: "College Hoops 2K8"
   region: "NTSC-U"
@@ -70954,6 +71120,8 @@ SLUS-21716:
   compat: 5
   roundModes:
     vu0RoundMode: 0 # Fixes invisible wall collision in bedroom.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half screen.
 SLUS-21717:
   name: "Dora the Explorer - Dora Saves the Mermaids"
   region: "NTSC-U"
@@ -71102,6 +71270,7 @@ SLUS-21740:
     autoFlush: 1 # Fixes bloom intensity.
     halfPixelOffset: 4 # Mostly aligns post processing.
     nativeScaling: 1 # Fixes post processing smoothness and position.
+    getSkipCount: "GSC_GuitarHero"
 SLUS-21741:
   name: "Sea Monsters - A Prehistoric Adventure"
   region: "NTSC-U"
@@ -71191,6 +71360,7 @@ SLUS-21757:
   compat: 5
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
     halfPixelOffset: 4 # Aligns post processing.
     autoFlush: 1 # Fixes post processing.
 SLUS-21758:
@@ -72306,8 +72476,9 @@ SLUS-28040:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-28043:
   name: "Test Drive - Eve of Destruction [Trade Demo]"
@@ -72367,8 +72538,8 @@ SLUS-28062:
 SLUS-28063:
   name: "Rule of Rose [Trade Demo]"
   region: "NTSC-U"
-  gsHWFixes:
-    preloadFrameData: 1 # Fixes Black FMV's.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes black FMVs in hardware and hash cache disabling itself.
 SLUS-28064:
   name: "Shin Megami Tensei - Devil Summoner [Trade Demo]"
   region: "NTSC-U"
@@ -72682,6 +72853,8 @@ SLUS-29087:
     eeClampMode: 3 # Characters are visible in-game.
   gsHWFixes:
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
+    textureInsideRT: 1 # Fixes post shuffle effect.
+    halfPixelOffset: 2 # Fixes boxes around shuffle effect pages.
 SLUS-29088:
   name: "Champions of Norrath - Realms of EverQuest [Demo]"
   region: "NTSC-U"
@@ -72736,8 +72909,9 @@ SLUS-29107:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
     textureInsideRT: 1 # Fixes shadow and sky rendering.
+    nativeScaling: 2 # Fixes light rays.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-29108:
   name: "Def Jam - Fight for NY [Demo]"
@@ -72780,8 +72954,8 @@ SLUS-29117:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes per line drawing.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
-    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29118:
   name: "Need for Speed - Underground 2 [Demo]"
   region: "NTSC-U"
@@ -72796,9 +72970,9 @@ SLUS-29123:
     recommendedBlendingLevel: 4 # Improves banding and effect emulation.
     autoFlush: 1 # Fixes light bloom intensity.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
-    halfPixelOffset: 4 # Aligns post effects.
+    halfPixelOffset: 2 # Aligns post effects.
     nativeScaling: 1 # Fixes post effects.
-    getSkipCount: "GSC_GiTS"
+    textureInsideRT: 1 # Fixes post shuffles.
 SLUS-29124:
   name: "Fight Club [Demo]"
   region: "NTSC-U"
@@ -72839,7 +73013,7 @@ SLUS-29131:
   gsHWFixes:
     autoFlush: 1 # Fixes the post processing positioning.
     textureInsideRT: 1 # Fixes post processing.
-    halfPixelOffset: 4 # Aligns bloom effect.
+    halfPixelOffset: 5 # Aligns bloom effect.
     nativeScaling: 2 # Fixes post processing smoothness and position.
 SLUS-29132:
   name: "S.L.A.I. - Steel Lancer Arena International - Phantom Crash [Public Beta Vol.1.0]"
@@ -72933,8 +73107,8 @@ SLUS-29152:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes per line drawing.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
-    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29153:
   name: "Burnout Revenge [Demo]"
   region: "NTSC-U"
@@ -73049,8 +73223,8 @@ SLUS-29172:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes per line drawing.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
-    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29173:
   name: "The Sims 2 [Demo]"
   name-sort: "Sims 2, The [Demo]"
@@ -73075,10 +73249,9 @@ SLUS-29178:
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
     roundSprite: 1 # Fixes misaligned map.
-    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
-    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
     halfPixelOffset: 2 # Fixes depth of field alignment.
     nativeScaling: 1 # Fixes depth of field.
+    textureInsideRT: 1 # Fixes shadows.
 SLUS-29179:
   name: "Sonic Riders [Demo]"
   region: "NTSC-U"
@@ -73126,6 +73299,7 @@ SLUS-29191:
     vuClampMode: 0 # Fixes bump mapping issues
   gsHWFixes:
     textureInsideRT: 1 # Fixes post processing.
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing in Hitman.
     getSkipCount: "GSC_HitmanBloodMoney"
 SLUS-29192:
   name: "Test Drive Unlimited [Public Beta Vol.1.0]"

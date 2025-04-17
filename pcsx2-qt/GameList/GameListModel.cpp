@@ -558,18 +558,18 @@ QIcon GameListModel::getIconForType(GameList::EntryType type)
 	{
 		case GameList::EntryType::PS2Disc:
 		case GameList::EntryType::PS1Disc:
-			return QIcon(QStringLiteral(":/icons/media-optical-24.png"));
+			return QIcon::fromTheme("disc-2-line");
 
 		case GameList::EntryType::ELF:
 		default:
-			return QIcon(QStringLiteral(":/icons/applications-system-24.png"));
+			return QIcon::fromTheme("file-settings-line");
 	}
 }
 
 QIcon GameListModel::getIconForRegion(GameList::Region region)
 {
 	return QIcon(
-		QStringLiteral("%1/icons/flags/%2.png").arg(QtHost::GetResourcesBasePath()).arg(GameList::RegionToString(region)));
+		QStringLiteral("%1/icons/flags/%2.svg").arg(QtHost::GetResourcesBasePath()).arg(GameList::RegionToString(region)));
 }
 
 void GameListModel::loadThemeSpecificImages()
@@ -587,7 +587,7 @@ void GameListModel::loadCommonImages()
 
 	const QString base_path(QtHost::GetResourcesBasePath());
 	for (u32 i = 1; i < GameList::CompatibilityRatingCount; i++)
-		m_compatibility_pixmaps[i].load(QStringLiteral("%1/icons/star-%2.png").arg(base_path).arg(i - 1));
+		m_compatibility_pixmaps[i].load(QStringLiteral("%1/icons/star-%2.svg").arg(base_path).arg(i - 1));
 
 	m_placeholder_pixmap.load(QStringLiteral("%1/cover-placeholder.png").arg(base_path));
 }

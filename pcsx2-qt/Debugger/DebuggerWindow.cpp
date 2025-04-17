@@ -3,7 +3,7 @@
 
 #include "DebuggerWindow.h"
 
-#include "Debugger/DebuggerWidget.h"
+#include "Debugger/DebuggerView.h"
 #include "Debugger/Docking/DockManager.h"
 
 #include "DebugTools/DebugInterface.h"
@@ -86,7 +86,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	});
 
 	connect(g_emu_thread, &EmuThread::onVMPaused, this, []() {
-		DebuggerWidget::broadcastEvent(DebuggerEvents::VMUpdate());
+		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 	});
 
 	connect(g_emu_thread, &EmuThread::onVMStarting, this, &DebuggerWindow::onVMStarting);
@@ -120,11 +120,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 		R5900SymbolImporter.OnDebuggerOpened();
 	});
 
-	QTimer* refresh_timer = new QTimer(this);
-	connect(refresh_timer, &QTimer::timeout, this, []() {
-		DebuggerWidget::broadcastEvent(DebuggerEvents::Refresh());
-	});
-	refresh_timer->start(1000);
+	updateFromSettings();
 }
 
 DebuggerWindow* DebuggerWindow::getInstance()
@@ -285,6 +281,25 @@ bool DebuggerWindow::shouldSaveWindowGeometry()
 	return Host::GetBaseBoolSettingValue("Debugger/UserInterface", "SaveWindowGeometry", true);
 }
 
+void DebuggerWindow::updateFromSettings()
+{
+	const int refresh_interval = Host::GetBaseIntSettingValue("Debugger/UserInterface", "RefreshInterval", 1000);
+	const int effective_refresh_interval = std::clamp(refresh_interval, 10, 100000);
+
+	if (!m_refresh_timer)
+	{
+		m_refresh_timer = new QTimer(this);
+		connect(m_refresh_timer, &QTimer::timeout, this, []() {
+			DebuggerView::broadcastEvent(DebuggerEvents::Refresh());
+		});
+		m_refresh_timer->start(effective_refresh_interval);
+	}
+	else
+	{
+		m_refresh_timer->setInterval(effective_refresh_interval);
+	}
+}
+
 void DebuggerWindow::onVMStarting()
 {
 	m_ui.actionRun->setEnabled(true);
@@ -331,7 +346,7 @@ void DebuggerWindow::onVMPaused()
 		});
 	}
 
-	// Stops us from telling the disassembly widget to jump somwhere because
+	// Stops us from telling the disassembly view to jump somwhere because
 	// breakpoint code paused the core.
 	if (!CBreakPoints::GetCorePaused())
 		emit onVMActuallyPaused();

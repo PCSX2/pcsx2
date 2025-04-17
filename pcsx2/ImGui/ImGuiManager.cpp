@@ -89,6 +89,8 @@ static std::atomic_bool s_imgui_wants_keyboard{false};
 static std::atomic_bool s_imgui_wants_mouse{false};
 static std::atomic_bool s_imgui_wants_text{false};
 
+static bool s_gamepad_swap_noth_west = false;
+
 // mapping of host key -> imgui key
 static std::unordered_map<u32, ImGuiKey> s_imgui_key_map;
 
@@ -959,12 +961,30 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, InputLayout
 		return false;
 
 	MTGS::RunOnGSThread(
-		[key = key_map[static_cast<u32>(key)], value, layout]() {
+		[key = key_map[static_cast<u32>(key)], value, layout]() mutable {
+			if (s_gamepad_swap_noth_west)
+			{
+				if (key == ImGuiKey_GamepadFaceUp)
+					key = ImGuiKey_GamepadFaceLeft;
+				else if (key == ImGuiKey_GamepadFaceLeft)
+					key = ImGuiKey_GamepadFaceUp;
+			}
+
 			ImGuiFullscreen::ReportGamepadLayout(layout);
 			ImGui::GetIO().AddKeyAnalogEvent(key, (value > 0.0f), value);
 		});
 
 	return s_imgui_wants_keyboard.load(std::memory_order_acquire);
+}
+
+void ImGuiManager::SwapGamepadNorthWest(bool value)
+{
+	s_gamepad_swap_noth_west = value;
+}
+
+bool ImGuiManager::IsGamepadNorthWestSwapped()
+{
+	return s_gamepad_swap_noth_west;
 }
 
 void ImGuiManager::CreateSoftwareCursorTextures()
