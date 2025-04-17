@@ -2525,13 +2525,6 @@ bool GSDevice12::CompileConvertPipelines()
 			// compile color copy pipelines
 			gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
 			gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
-
-			ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, shaderName(i)));
-			if (!ps)
-				return false;
-
-			gpb.SetPixelShader(ps.get());
-
 			for (u32 j = 16; j < 32; j++)
 			{
 				pxAssert(!m_color_copy[j]);

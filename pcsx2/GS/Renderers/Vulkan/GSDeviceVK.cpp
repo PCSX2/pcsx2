@@ -4001,15 +4001,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 		}
 		else if (i == ShaderConvert::RTA_CORRECTION)
 		{
-			// compile color copy pipelines
 			gpb.SetRenderPass(m_utility_color_render_pass_discard, 0);
-			VkShaderModule ps = GetUtilityFragmentShader(*shader, shaderName(i));
-			if (ps == VK_NULL_HANDLE)
-				return false;
-
-			ScopedGuard ps_guard([this, &ps]() { vkDestroyShaderModule(m_device, ps, nullptr); });
-			gpb.SetFragmentShader(ps);
-
 			for (u32 j = 16; j < 32; j++)
 			{
 				pxAssert(!m_color_copy[j]);
