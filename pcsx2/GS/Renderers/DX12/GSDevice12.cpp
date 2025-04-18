@@ -3900,7 +3900,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.require_one_barrier)
+	if (config.require_one_barrier || (config.tex && config.tex == config.rt)) // Used as "bind rt" flag when texture barrier is unsupported.
 	{
 		// requires a copy of the RT
 		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, colclip_rt ? GSTexture::Format::ColorClip : GSTexture::Format::Color, true));
@@ -3913,7 +3913,10 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 			draw_rt_clone->SetState(GSTexture::State::Invalidated);
 			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
-			PSSetShaderResource(2, draw_rt_clone, true);
+			if (config.require_one_barrier)
+				PSSetShaderResource(2, draw_rt_clone, true);
+			if (config.tex && config.tex == config.rt)
+				PSSetShaderResource(0, draw_rt_clone, true);
 		}
 	}
 
