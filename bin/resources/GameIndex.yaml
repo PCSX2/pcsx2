@@ -1274,7 +1274,7 @@ SCAJ-10015:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes post effects.
-    getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
+    getSkipCount: "GSC_NamcoGames" # Fixes upscaling grid, same engine.
 SCAJ-20001:
   name: "Ratchet & Clank"
   region: "NTSC-Unk"
@@ -1987,7 +1987,7 @@ SCAJ-20125:
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
-    getSkipCount: "GSC_Tekken5"
+    getSkipCount: "GSC_NamcoGames"
 SCAJ-20126:
   name: "Tekken 5"
   region: "NTSC-Unk"
@@ -1998,7 +1998,7 @@ SCAJ-20126:
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
-    getSkipCount: "GSC_Tekken5"
+    getSkipCount: "GSC_NamcoGames"
 SCAJ-20127:
   name: "EyeToy - Play 2 [with Camera]"
   region: "NTSC-Unk"
@@ -2248,7 +2248,7 @@ SCAJ-20163:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     autoFlush: 2 # Fixes post lighting.
-    getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
+    getSkipCount: "GSC_NamcoGames" # Fixes upscaling grid, same engine.
 SCAJ-20164:
   name: "Kingdom Hearts II"
   region: "NTSC-Unk"
@@ -2477,7 +2477,7 @@ SCAJ-20199:
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
-    getSkipCount: "GSC_Tekken5"
+    getSkipCount: "GSC_NamcoGames"
 SCAJ-25002:
   name: "Shinobi"
   region: "NTSC-Unk"
@@ -4188,7 +4188,7 @@ SCED-53538:
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
-    getSkipCount: "GSC_Tekken5"
+    getSkipCount: "GSC_NamcoGames"
 SCED-53611:
   name: "Official PlayStation 2 Magazine - German Kids Special"
   region: "PAL-G"
@@ -5827,7 +5827,7 @@ SCES-53202:
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
-    getSkipCount: "GSC_Tekken5"
+    getSkipCount: "GSC_NamcoGames"
 SCES-53247:
   name: "WRC Rally Evolved"
   region: "PAL-M8"
@@ -7285,7 +7285,7 @@ SCKA-20049:
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
-    getSkipCount: "GSC_Tekken5"
+    getSkipCount: "GSC_NamcoGames"
 SCKA-20050:
   name: "Tales of Legendia"
   region: "NTSC-K"
@@ -7512,7 +7512,7 @@ SCKA-20081:
     alignSprite: 1
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
-    getSkipCount: "GSC_Tekken5"
+    getSkipCount: "GSC_NamcoGames"
 SCKA-20082:
   name: "Ace Combat 5 - The Unsung War [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -54888,7 +54888,7 @@ SLPS-20485:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes post effects.
-    getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
+    getSkipCount: "GSC_NamcoGames" # Fixes upscaling grid, same engine.
 SLPS-20486:
   name: "太鼓の達人 ドカッ！と大盛り七代目 [ソフト単体]"
   name-sort: "たいこのたつじん どかっ！とおおもりななだいめ [そふとたんたい]"
@@ -54897,7 +54897,7 @@ SLPS-20486:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes post effects.
-    getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
+    getSkipCount: "GSC_NamcoGames" # Fixes upscaling grid, same engine.
 SLPS-20487:
   name: "パチスロキング！ 科学忍者隊ガッチャマン"
   name-sort: "ぱちすろきんぐ！ かがくにんじゃたいがっちゃまん"
@@ -58043,7 +58043,7 @@ SLPS-25510:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
-    getSkipCount: "GSC_Tekken5"
+    getSkipCount: "GSC_NamcoGames"
 SLPS-25511:
   name: "羅刹 -Alternative-"
   name-sort: "らせつ -Alternative-"
@@ -58484,7 +58484,7 @@ SLPS-25586:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 1 # Fixes post effects.
     autoFlush: 2 # Fixes post lighting.
-    getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
+    getSkipCount: "GSC_NamcoGames" # Fixes upscaling grid, same engine.
 SLPS-25587:
   name: "シュガシュガルーン 恋もおしゃれもピックアップ！"
   name-sort: "しゅがしゅがるーん こいもおしゃれもぴっくあっぷ！"
@@ -61222,7 +61222,7 @@ SLPS-73223:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
-    getSkipCount: "GSC_Tekken5"
+    getSkipCount: "GSC_NamcoGames"
 SLPS-73224:
   name: "ゼノサーガ エピソードⅡ [善悪の彼岸] [PlayStation2 the Best] [ディスク1/2]"
   name-sort: "ぜのさーが えぴそーど2 ぜんあくのひがん [PlayStation2 the Best] [でぃすく1/2]"
@@ -61522,7 +61522,7 @@ SLPS-73252:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 1 # Fixes post effects.
     autoFlush: 2 # Fixes post lighting.
-    getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
+    getSkipCount: "GSC_NamcoGames" # Fixes upscaling grid, same engine.
 SLPS-73253:
   name: "るろうに剣心-明治剣客浪漫譚- 炎上！京都輪廻 [PlayStation2 the Best]"
   name-sort: "るろうにけんしん めいじけんかくろまんたん えんじょう きょうとりんね [PlayStation2 the Best]"
@@ -67249,7 +67249,7 @@ SLUS-21059:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
-    getSkipCount: "GSC_Tekken5"
+    getSkipCount: "GSC_NamcoGames"
 SLUS-21060:
   name: "WWE SmackDown! vs. RAW"
   region: "NTSC-U"
@@ -67801,7 +67801,7 @@ SLUS-21160:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 4 # Align post.
     nativeScaling: 1 # Fixes depth of field effect.
-    getSkipCount: "GSC_Tekken5"
+    getSkipCount: "GSC_NamcoGames"
 SLUS-21161:
   name: "Fight Night Round 2"
   region: "NTSC-U"
@@ -69387,7 +69387,7 @@ SLUS-21386:
     halfPixelOffset: 4 # Fixes post positioning.
     nativeScaling: 1 # Fixes post effects.
     autoFlush: 2 # Fixes post lighting.
-    getSkipCount: "GSC_Tekken5" # Fixes upscaling grid, same engine.
+    getSkipCount: "GSC_NamcoGames" # Fixes upscaling grid, same engine.
 SLUS-21387:
   name: "Warship Gunner 2"
   region: "NTSC-U"
