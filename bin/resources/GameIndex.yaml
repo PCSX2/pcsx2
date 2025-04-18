@@ -69521,6 +69521,9 @@ SLUS-21410:
   name: "Mortal Kombat - Armageddon"
   region: "NTSC-U"
   compat: 5
+  memcardFilters: # Saves from the non-Premium can be imported
+    - "SLUS-21410"
+    - "SLUS-21543"
 SLUS-21411:
   name: "M2 Rock"
   region: "NTSC-U"
@@ -70163,6 +70166,9 @@ SLUS-21543:
   name: "Mortal Kombat - Armageddon [Premium Edition]"
   region: "NTSC-U"
   compat: 5
+  memcardFilters: # Saves from the non-Premium can be imported
+    - "SLUS-21543"
+    - "SLUS-21410"
 SLUS-21544:
   name: "Fantastic 4 - Rise of Silver Surfer"
   region: "NTSC-U"
