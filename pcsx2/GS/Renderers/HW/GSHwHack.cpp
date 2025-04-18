@@ -178,7 +178,7 @@ bool GSHwHack::GSC_DTGames(GSRendererHW& r, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
+bool GSHwHack::GSC_NamcoGames(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
@@ -195,7 +195,7 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 			if (!rt)
 				return false;
 
-			GL_INS("GSC_Tekken5(): HLE channel shuffle");
+			GL_INS("GSC_NamcoGames(): HLE channel shuffle");
 
 			// have to set up the palette ourselves too, since GSC executes before it does
 			r.m_mem.m_clut.Read32(RTEX0, r.m_draw_env->TEXA);
@@ -1502,13 +1502,11 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_Battlefield2),
 
 	// Channel Effect
+	CRC_F(GSC_NamcoGames),
 	CRC_F(GSC_SteambotChronicles),
 
 	// Depth Issue
 	CRC_F(GSC_BurnoutGames),
-
-	// Half Screen bottom issue
-	CRC_F(GSC_Tekken5),
 
 	// Upscaling hacks
 	CRC_F(GSC_UltramanFightingEvolution),
