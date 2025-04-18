@@ -2631,7 +2631,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 
 	GSTexture* rt_copy = nullptr;
-	if (config.require_one_barrier || (config.tex && config.tex == config.rt)) // Used as "bind rt" flag when texture barrier is unsupported
+	if (config.require_one_barrier || (config.tex && config.tex == config.rt)) // Used as "bind rt" flag when texture barrier is unsupported.
 	{
 		// Bind the RT.This way special effect can use it.
 		// Do not always bind the rt when it's not needed,
