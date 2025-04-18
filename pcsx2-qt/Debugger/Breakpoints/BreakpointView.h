@@ -32,6 +32,8 @@ public:
 	void contextEdit();
 	void contextPasteCSV();
 
+	void resizeColumns();
+
 	void saveBreakpointsToDebuggerSettings();
 
 private:
