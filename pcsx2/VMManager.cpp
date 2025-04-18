@@ -876,7 +876,9 @@ void VMManager::RequestDisplaySize(float scale /*= 0.0f*/)
 	switch (GSConfig.AspectRatio)
 	{
 		case AspectRatioType::RAuto4_3_3_2:
-			if (GSgetDisplayMode() == GSVideoMode::SDTV_480P)
+			if (EmuConfig.CurrentCustomAspectRatio > 0.f)
+				x_scale = EmuConfig.CurrentCustomAspectRatio / (static_cast<float>(iwidth) / static_cast<float>(iheight));
+			else if (GSgetDisplayMode() == GSVideoMode::SDTV_480P)
 				x_scale = (3.0f / 2.0f) / (static_cast<float>(iwidth) / static_cast<float>(iheight));
 			else
 				x_scale = (4.0f / 3.0f) / (static_cast<float>(iwidth) / static_cast<float>(iheight));

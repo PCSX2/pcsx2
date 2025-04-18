@@ -106,7 +106,7 @@
          </item>
          <item>
           <property name="text">
-           <string>Native (10:7)</string>
+           <string>Native/Full (10:7)</string>
           </property>
          </item>
         </widget>
@@ -142,7 +142,7 @@
          </item>
          <item>
           <property name="text">
-           <string>Native (10:7)</string>
+           <string>Native/Full (10:7)</string>
           </property>
          </item>
         </widget>
