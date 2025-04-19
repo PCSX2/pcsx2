@@ -64,6 +64,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 			break;
 
 		// 4 channel normalized
+		// There's no proper support for HDR in OpenGL, so we force 8bpc
 		case Format::Color:
 		case Format::ColorHQ:
 		case Format::ColorHDR:

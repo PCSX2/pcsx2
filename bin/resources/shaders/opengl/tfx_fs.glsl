@@ -753,7 +753,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 #if SW_BLEND || (PS_DITHER > 0 && PS_DITHER < 3) || PS_FBMASK
 
 #if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
-	C += 7.0f; // Need to round up, not down since the shader will invert
+	C += 7.0f; // Need to round up, not down since the shader will invert (0xFF - 0xF8)
 #endif
 
 	// Correct the Color value based on the output format
@@ -1126,7 +1126,7 @@ void ps_main()
 		SV_Target0.a = C.a / 255.0f;
 	#endif
 	#if PS_COLCLIP_HW == 1
-		SV_Target0.rgb = vec3(C.rgb / 65535.0f);
+		SV_Target0.rgb = C.rgb / 65535.0f;
 	#else
 		SV_Target0.rgb = C.rgb / 255.0f;
 	#endif

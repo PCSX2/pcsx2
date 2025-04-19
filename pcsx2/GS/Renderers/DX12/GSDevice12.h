@@ -179,6 +179,8 @@ private:
 
 	D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_11_0;
 
+	DXGI_FORMAT m_swap_chain_format;
+
 public:
 	struct alignas(8) PipelineSelector
 	{
@@ -260,6 +262,7 @@ public:
 		NUM_TFX_SAMPLERS = 1,
 		NUM_UTILITY_TEXTURES = 1,
 		NUM_UTILITY_SAMPLERS = 1,
+		// This needs to match the sum of all the utility cbuffer sizes //TODO: max not sum. VK too
 		CONVERT_PUSH_CONSTANTS_SIZE = 96,
 
 		VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
@@ -319,7 +322,7 @@ private:
 	std::array<ComPtr<ID3D12PipelineState>, 2> m_colclip_finish_pipelines{}; // [depth]
 	std::array<std::array<ComPtr<ID3D12PipelineState>, 4>, 2> m_date_image_setup_pipelines{}; // [depth][datm]
 	ComPtr<ID3D12PipelineState> m_fxaa_pipeline;
-	ComPtr<ID3D12PipelineState> m_shadeboost_pipeline;
+	ComPtr<ID3D12PipelineState> m_colorcorrect_pipeline;
 	ComPtr<ID3D12PipelineState> m_imgui_pipeline;
 
 	std::unordered_map<u32, ComPtr<ID3DBlob>> m_tfx_vertex_shaders;
@@ -339,7 +342,8 @@ private:
 	std::string m_tfx_source;
 
 	void LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
-		DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format) const;
+		DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format, GSTexture::Type type = GSTexture::Type::Invalid) const;
+	DXGI_FORMAT GetNativeFormat(GSTexture::Format format, GSTexture::Type type = GSTexture::Type::Invalid) const;
 
 	u32 GetSwapChainBufferCount() const;
 	bool CreateSwapChain();
@@ -354,7 +358,7 @@ private:
 		const GSRegEXTBUF& EXTBUF, u32 c, const bool linear) final;
 	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) final;
-	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) final;
+	void DoColorCorrect(GSTexture* sTex, GSTexture* dTex, const ColorCorrectConstantBuffer& cb) final;
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
 
 	bool DoCAS(
@@ -372,6 +376,7 @@ private:
 
 	ComPtr<ID3DBlob> GetUtilityVertexShader(const std::string& source, const char* entry_point);
 	ComPtr<ID3DBlob> GetUtilityPixelShader(const std::string& source, const char* entry_point);
+	ComPtr<ID3DBlob> GetUtilityPixelShader(const std::string& source, const char* entry_point, ShaderMacro& shader_macro);
 
 	bool CheckFeatures(const u32& vendor_id);
 	bool CreateNullTexture();
@@ -499,9 +504,6 @@ public:
 	void RenderTextureMipmap(GSTexture12* texture, u32 dst_level, u32 dst_width, u32 dst_height, u32 src_level,
 		u32 src_width, u32 src_height);
 
-	// Ends a render pass if we're currently in one.
-	// When Bind() is next called, the pass will be restarted.
-	// Calling this function is allowed even if a pass has not begun.
 	bool InRenderPass();
 	void BeginRenderPass(
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_begin = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
@@ -511,6 +513,9 @@ public:
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE stencil_begin = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_ENDING_ACCESS_TYPE stencil_end = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		GSVector4 clear_color = GSVector4::zero(), float clear_depth = 0.0f, u8 clear_stencil = 0);
+	// Ends a render pass if we're currently in one.
+	// When Bind() is next called, the pass will be restarted.
+	// Calling this function is allowed even if a pass has not begun.
 	void EndRenderPass();
 
 	void SetViewport(const D3D12_VIEWPORT& viewport);

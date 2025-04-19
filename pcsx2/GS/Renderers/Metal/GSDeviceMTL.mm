@@ -1066,12 +1066,13 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	auto ps_copy_rta_correct = LoadShader(@"ps_rta_correction");
 	auto pdesc = [[MTLRenderPipelineDescriptor new] autorelease];
 	// FS Triangle Pipelines
-	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
+	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(m_emulation_hw_rt_texture_format);
 	m_colclip_resolve_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_colclip_resolve"), @"ColorClip Resolve");
-	m_fxaa_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_fxaa"), @"fxaa");
-	m_shadeboost_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_shadeboost"), @"shadeboost");
 	m_clut_pipeline[0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_convert_clut_4"), @"4-bit CLUT Update");
 	m_clut_pipeline[1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_convert_clut_8"), @"8-bit CLUT Update");
+	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(m_postprocess_texture_format);
+	m_fxaa_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_fxaa"), @"fxaa");
+	m_shadeboost_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_shadeboost"), @"shadeboost");
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::ColorClip);
 	m_colclip_init_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_colclip_init"), @"ColorClip Init");
 	m_colclip_clear_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_clear"), @"ColorClip Clear");
@@ -1095,23 +1096,23 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_primid_init_pipeline[0][2] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm0"), @"PrimID DATM0 RTA Clear");
 	m_primid_init_pipeline[0][3] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm1"), @"PrimID DATM1 RTA Clear");
 
-	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
 	applyAttribute(pdesc.vertexDescriptor, 0, MTLVertexFormatFloat2, offsetof(ConvertShaderVertex, pos),    0);
 	applyAttribute(pdesc.vertexDescriptor, 1, MTLVertexFormatFloat2, offsetof(ConvertShaderVertex, texpos), 0);
 	pdesc.vertexDescriptor.layouts[0].stride = sizeof(ConvertShaderVertex);
-
+	
+	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(m_postprocess_texture_format);
 	for (size_t i = 0; i < std::size(m_interlace_pipeline); i++)
 	{
 		NSString* name = [NSString stringWithFormat:@"ps_interlace%zu", i];
 		m_interlace_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), name);
 	}
+	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(m_emulation_hw_rt_texture_format);
 	for (size_t i = 0; i < std::size(m_convert_pipeline); i++)
 	{
 		ShaderConvert conv = static_cast<ShaderConvert>(i);
 		NSString* name = [NSString stringWithCString:shaderName(conv) encoding:NSUTF8StringEncoding];
 		switch (conv)
 		{
-			case ShaderConvert::Count:
 			case ShaderConvert::DATM_0:
 			case ShaderConvert::DATM_1:
 			case ShaderConvert::DATM_0_RTA_CORRECTION:
@@ -1143,6 +1144,15 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 				pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
 				pdesc.depthAttachmentPixelFormat = ConvertPixelFormat(GSTexture::Format::DepthStencil);
 				break;
+			case ShaderConvert::COPY_EMU_LQ:
+				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
+				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+			break;
+			case ShaderConvert::COPY_POSTPROCESS:
+				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(m_postprocess_texture_format);
+				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+			break;
+			default:
 			case ShaderConvert::COPY:
 			case ShaderConvert::DOWNSAMPLE_COPY:
 			case ShaderConvert::RGBA_TO_8I: // Yes really
@@ -1153,7 +1163,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 			case ShaderConvert::FLOAT32_TO_RGB8:
 			case ShaderConvert::FLOAT16_TO_RGB5A1:
 			case ShaderConvert::YUV:
-				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
+				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(m_emulation_hw_rt_texture_format);
 				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
 				break;
 		}
@@ -1166,17 +1176,18 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		pdesc.colorAttachments[0].writeMask = mask;
 		m_convert_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), name);
 	}
+
+	pdesc.colorAttachments[0].pixelFormat = layer_px_fmt;
 	pdesc.colorAttachments[0].writeMask = MTLColorWriteMaskAll;
 	pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
 	for (size_t i = 0; i < std::size(m_present_pipeline); i++)
 	{
 		PresentShader conv = static_cast<PresentShader>(i);
 		NSString* name = [NSString stringWithCString:shaderName(conv) encoding:NSUTF8StringEncoding];
-		pdesc.colorAttachments[0].pixelFormat = layer_px_fmt;
 		m_present_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), [NSString stringWithFormat:@"present_%s", shaderName(conv) + 3]);
 	}
 
-	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
+	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(m_emulation_hw_rt_texture_format);
 	for (size_t i = 0; i < std::size(m_convert_pipeline_copy_mask); i++)
 	{
 		MTLColorWriteMask mask = MTLColorWriteMaskNone;
@@ -1190,6 +1201,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		m_convert_pipeline_copy_mask[i] = MakePipeline(pdesc, vs_convert, i & 16 ? ps_copy_rta_correct : ps_copy, name);
 	}
 
+	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(m_postprocess_texture_format);
 	pdesc.colorAttachments[0].blendingEnabled = YES;
 	pdesc.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
 	pdesc.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
@@ -1581,6 +1593,22 @@ void GSDeviceMTL::RenderCopy(GSTexture* sTex, id<MTLRenderPipelineState> pipelin
 void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
 { @autoreleasepool {
 
+	if (shader == ShaderConvert::COPY && dTex && dTex->GetFormat() != m_emulation_hw_rt_texture_format)
+	{
+		if (dTex->GetFormat() == GSTexture::Format::Color)
+		{
+			shader = ShaderConvert::COPY_EMU_LQ;
+		}
+		else if (dTex->GetFormat() == m_postprocess_texture_format)
+		{
+			shader = ShaderConvert::COPY_POSTPROCESS;
+		}
+		else
+		{
+			pxAssertMsg(false, "Trying to use the ShaderConvert::COPY shader pipeline to target an unsupported RT format");
+		}
+	}
+
 	pxAssert(linear ? SupportsBilinear(shader) : SupportsNearest(shader));
 
 	id<MTLRenderPipelineState> pipeline = m_convert_pipeline[static_cast<int>(shader)];
@@ -1613,7 +1641,7 @@ static_assert(offsetof(DisplayConstantBuffer, TargetResolution)    == offsetof(G
 static_assert(offsetof(DisplayConstantBuffer, RcpTargetResolution) == offsetof(GSMTLPresentPSUniform, rcp_target_resolution));
 static_assert(offsetof(DisplayConstantBuffer, SourceResolution)    == offsetof(GSMTLPresentPSUniform, source_resolution));
 static_assert(offsetof(DisplayConstantBuffer, RcpSourceResolution) == offsetof(GSMTLPresentPSUniform, rcp_source_resolution));
-static_assert(offsetof(DisplayConstantBuffer, TimeAndPad.x)        == offsetof(GSMTLPresentPSUniform, time));
+static_assert(offsetof(DisplayConstantBuffer, TimeAndBrightnessAndPad) == offsetof(GSMTLPresentPSUniform, time_brightness));
 
 void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
 { @autoreleasepool {
@@ -1622,6 +1650,7 @@ void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, ds);
 	cb.SetTime(shaderTime);
+	cb.SetBrightness(EmuConfig.HDROutput ? (GSConfig.HDR_BrightnessNits / Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS) : 1.f);
 	id<MTLRenderPipelineState> pipe = m_present_pipeline[static_cast<int>(shader)];
 
 	if (dTex)
@@ -1876,6 +1905,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantB(m_fn_constants, pssel.manual_lod,            GSMTLConstantIndex_PS_MANUAL_LOD);
 		setFnConstantB(m_fn_constants, pssel.region_rect,           GSMTLConstantIndex_PS_REGION_RECT);
 		setFnConstantI(m_fn_constants, pssel.scanmsk,               GSMTLConstantIndex_PS_SCANMSK);
+		setFnConstantB(m_fn_constants, EmuConfig.HDRRendering,       GSMTLConstantIndex_PS_HDR);
 		auto newps = LoadShader(@"ps_main");
 		ps = newps;
 		m_hw_ps.insert(std::make_pair(pssel, std::move(newps)));

@@ -108,6 +108,24 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 	GSVSyncMode vsync_mode, bool allow_present_throttle)
 {
 	const RenderAPI new_api = GetAPIForRenderer(renderer);
+
+	// These features are only supported by some renderers and on some HW (e.g. HDR displays),
+	// so they need a live state.
+	EmuConfig.HDRRendering = GSConfig.HDRRendering;
+	EmuConfig.HDROutput = GSConfig.HDROutput;
+
+	// Force disable HDR on unsupported (or partially supported) renderers.
+	if (new_api == RenderAPI::OpenGL || new_api == RenderAPI::Metal)
+	{
+		EmuConfig.HDRRendering = false;
+		EmuConfig.HDROutput = false;
+	}
+	// This is ignored by the SW renderer but let's turn it off for clarity.
+	if (!GSIsHardwareRenderer())
+	{
+		EmuConfig.HDRRendering = false;
+	}
+
 	switch (new_api)
 	{
 #ifdef _WIN32

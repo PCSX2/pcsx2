@@ -11,6 +11,10 @@
     #define FXAA_GLSL_VK 0
 #endif
 
+#ifndef PS_HDR
+	#define PS_HDR 0
+#endif
+
 #define UHQ_FXAA 1          //High Quality Fast Approximate Anti Aliasing. Adapted for GS from Timothy Lottes FXAA 3.11.
 #define FxaaSubpixMax 0.0   //[0.00 to 1.00] Amount of subpixel aliasing removal. 0.00: Edge only antialiasing (no blurring)
 #define FxaaEarlyExit 1     //[0 or 1] Use Fxaa early exit pathing. When disabled, the entire scene is antialiased(FSAA). 0 is off, 1 is on.
@@ -102,47 +106,30 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FXAA_QUALITY_P11 8.0
 #define FXAA_QUALITY_P12 8.0
 
+#define DEFAULT_GAMMA 2.2
+
 /*------------------------------------------------------------------------------
                         [GAMMA PREPASS CODE SECTION]
 ------------------------------------------------------------------------------*/
 float RGBLuminance(float3 color)
 {
-	const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
+	const float3 lumCoeff = float3(0.2126, 0.7152, 0.0722);
 	return dot(color.rgb, lumCoeff);
-}
-
-float3 RGBGammaToLinear(float3 color, float gamma)
-{
-	color = FxaaSat(color);
-	color.r = (color.r <= 0.0404482362771082) ?
-	color.r / 12.92 : pow((color.r + 0.055) / 1.055, gamma);
-	color.g = (color.g <= 0.0404482362771082) ?
-	color.g / 12.92 : pow((color.g + 0.055) / 1.055, gamma);
-	color.b = (color.b <= 0.0404482362771082) ?
-	color.b / 12.92 : pow((color.b + 0.055) / 1.055, gamma);
-
-	return color;
-}
-
-float3 LinearToRGBGamma(float3 color, float gamma)
-{
-	color = FxaaSat(color);
-	color.r = (color.r <= 0.00313066844250063) ?
-	color.r * 12.92 : 1.055 * pow(color.r, 1.0 / gamma) - 0.055;
-	color.g = (color.g <= 0.00313066844250063) ?
-	color.g * 12.92 : 1.055 * pow(color.g, 1.0 / gamma) - 0.055;
-	color.b = (color.b <= 0.00313066844250063) ?
-	color.b * 12.92 : 1.055 * pow(color.b, 1.0 / gamma) - 0.055;
-
-	return color;
 }
 
 float4 PreGammaPass(float4 color)
 {
-	const float GammaConst = 2.233;
-	color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
-	color.rgb = LinearToRGBGamma(color.rgb, GammaConst);
+#if !PS_HDR
+	// PS2 games didn't expect sRGB decoding from the display (which is different than raw gamma 2.2).
+	// HD TVs are all either 2.4 or 2.2. Most monitors are 2.2, not sRGB.
+	color.rgb = pow(abs(color.rgb), float3(DEFAULT_GAMMA, DEFAULT_GAMMA, DEFAULT_GAMMA)) * sign(color.rgb);
+#endif
+	
+	// Calculate the luminance in linear space
 	color.a = RGBLuminance(color.rgb);
+	
+	// Convert back to gamma space as FXAA expects it
+	color.rgb = pow(abs(color.rgb), float3(1.0 / DEFAULT_GAMMA, 1.0 / DEFAULT_GAMMA, 1.0 / DEFAULT_GAMMA)) * sign(color.rgb);
 
 	return color;
 }
@@ -153,16 +140,31 @@ float4 PreGammaPass(float4 color)
 ------------------------------------------------------------------------------*/
 
 float FxaaLuma(float4 rgba)
-{ 
+{
 	rgba.w = RGBLuminance(rgba.xyz);
+#if PS_HDR
+	// In HDR, the source color was linear, so given that calculating luminance
+	// in linear space is better (more accurate), do so and then apply gamma to the luminance
+	rgba.w = pow(max(rgba.w, 0.0), 1.0 / DEFAULT_GAMMA);
+#endif
 	return rgba.w; 
+}
+
+float4 FxaaEncode(float4 rgba)
+{
+#if PS_HDR
+	// Convert from linear to gamma space as FXAA expects it
+	rgba.rgb = pow(abs(rgba.rgb), float3(1.0 / DEFAULT_GAMMA, 1.0 / DEFAULT_GAMMA, 1.0 / DEFAULT_GAMMA)) * sign(rgba.rgb);
+#endif
+	return rgba;
 }
 
 float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaSubpix, float fxaaEdgeThreshold, float fxaaEdgeThresholdMin)
 {
 	float2 posM = pos;
 	float4 rgbyM = FxaaTexTop(tex, posM);
-	rgbyM.w = RGBLuminance(rgbyM.xyz);
+	rgbyM.w = FxaaLuma(rgbyM);
+	rgbyM = FxaaEncode(rgbyM);
 	#define lumaM rgbyM.w
 
 	float lumaS = FxaaLuma(FxaaTexOff(tex, posM, int2( 0, 1), fxaaRcpFrame.xy));
@@ -433,7 +435,7 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(!horzSpan) posM.x += pixelOffsetSubpix * lengthSign;
 	if( horzSpan) posM.y += pixelOffsetSubpix * lengthSign;
 
-	return float4(FxaaTexTop(tex, posM).xyz, lumaM);
+	return float4(FxaaEncode(FxaaTexTop(tex, posM)).xyz, lumaM);
 }
 
 #if (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
@@ -475,6 +477,9 @@ void main()
 	vec4 color = texture(TextureSampler, PSin_t);
 	color      = PreGammaPass(color);
 	color      = FxaaPass(color, PSin_t);
+#if PS_HDR
+	color.rgb = pow(abs(color.rgb), vec3(DEFAULT_GAMMA, DEFAULT_GAMMA, DEFAULT_GAMMA)) * sign(color.rgb);
+#endif
 
 	SV_Target0 = float4(color.rgb, 1.0);
 }
@@ -485,9 +490,11 @@ PS_OUTPUT main(VS_OUTPUT input)
 	PS_OUTPUT output;
 
 	float4 color = Texture.Sample(TextureSampler, input.t);
-
 	color = PreGammaPass(color);
 	color = FxaaPass(color, input.t);
+#if PS_HDR
+	color.rgb = pow(abs(color.rgb), DEFAULT_GAMMA) * sign(color.rgb);
+#endif
 
 	output.c = float4(color.rgb, 1.0);
 	

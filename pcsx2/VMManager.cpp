@@ -3179,6 +3179,11 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_IMAGES,
 				TRANSLATE_SV("VMManager", "Mipmapping is disabled. This may break rendering in some games."));
 		}
+		if (EmuConfig.GS.HDRRendering)
+		{
+			append(ICON_FA_IMAGES,
+				TRANSLATE_SV("VMManager", "HDR rendering is enabled. This may break rendering in some games."));
+		}
 		if (EmuConfig.GS.UseDebugDevice)
 		{
 			append(ICON_FA_BUG,

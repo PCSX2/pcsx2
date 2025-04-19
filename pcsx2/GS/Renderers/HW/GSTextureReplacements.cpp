@@ -581,7 +581,7 @@ void GSTextureReplacements::SetReplacementTextureAlphaMinMax(ReplacementTexture&
 			break;
 
 		default:
-			pxAssert(rtex.format == GSTexture::Format::Color);
+			pxAssert(rtex.format == GSTexture::Format::Color); //TODO: FP16 support
 			rtex.alpha_minmax = GSGetRGBA8AlphaMinMax(rtex.data.data(), rtex.width, rtex.height, rtex.pitch);
 			break;
 	}

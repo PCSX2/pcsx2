@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#ifndef PS_HDR
+#define PS_HDR 0
+#endif
+
 struct VS_INPUT
 {
 	float4 p : POSITION;
@@ -105,7 +109,7 @@ PS_OUTPUT ps_filter_transparency(PS_INPUT input)
 // Need to be careful with precision here, it can break games like Spider-Man 3 and Dogs Life
 uint ps_convert_rgba8_16bits(PS_INPUT input) : SV_Target0
 {
-	uint4 i = sample_c(input.t) * float4(255.5f, 255.5f, 255.5f, 255.5f);
+	uint4 i = saturate(sample_c(input.t)) * float4(255.5f, 255.5f, 255.5f, 255.5f);
 
 	return ((i.x & 0x00F8u) >> 3) | ((i.y & 0x00F8u) << 2) | ((i.z & 0x00f8u) << 7) | ((i.w & 0x80u) << 8);
 }
@@ -158,7 +162,10 @@ PS_OUTPUT ps_rta_correction(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
-	output.c = float4(value.rgb, value.a / (128.25f / 255.0f));
+#if 1 //TODO: saturate this and the above+below ones too? I was suggested to not to
+	value.a = saturate(value.a);
+#endif
+	output.c = float4(value.rgb, value.a * (255.0f / 128.25f));
 	return output;
 }
 
@@ -166,15 +173,37 @@ PS_OUTPUT ps_rta_decorrection(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
+#if 1
+	value.a = saturate(value.a);
+#endif
 	output.c = float4(value.rgb, value.a * (128.25f / 255.0f));
 	return output;
+}
+
+float fmod_mask_positive(float a, float b)
+{
+	// Don't wrap if the number if a multiple, to emulate bit mask operators
+	if (fmod(a, b) == 0.f && a != 0.f)
+	{
+		return b;
+	}
+	return fmod(fmod(a, b) + b, b);
+}
+float3 fmod_mask_positive(float3 a, float b)
+{
+	return float3(fmod_mask_positive(a.x, b), fmod_mask_positive(a.y, b), fmod_mask_positive(a.z, b));
 }
 
 PS_OUTPUT ps_colclip_init(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
+	value.rgb = saturate(value.rgb); // Clamp to [0,1] range given we might have upgraded the "Color" texture to float/HDR, to avoid overflow
+#if PS_HDR
+	output.c = float4(value.rgb * 255.f / 65535.f, value.a);
+#else
 	output.c = float4(round(value.rgb * 255) / 65535, value.a);
+#endif
 	return output;
 }
 
@@ -182,7 +211,12 @@ PS_OUTPUT ps_colclip_resolve(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
+#if PS_HDR
+	//TODO: add handling for negative values here (fmod_positive())? Or is this pre-wrapped to be positive only?
+	output.c = float4(fmod_mask_positive(value.rgb * 65535.f, 255.f) / 255.f, value.a);
+#else
 	output.c = float4(float3(uint3(value.rgb * 65535.5) & 255) / 255, value.a);
+#endif
 	return output;
 }
 
@@ -215,25 +249,25 @@ PS_OUTPUT ps_convert_float16_rgb5a1(PS_INPUT input)
 
 float rgba8_to_depth32(float4 val)
 {
-	uint4 c = uint4(val * 255.5f);
+	uint4 c = uint4(saturate(val) * 255.5f);
 	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
 }
 
 float rgba8_to_depth24(float4 val)
 {
-	uint3 c = uint3(val.rgb * 255.5f);
+	uint3 c = uint3(saturate(val.rgb) * 255.5f);
 	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
 }
 
 float rgba8_to_depth16(float4 val)
 {
-	uint2 c = uint2(val.rg * 255.5f);
+	uint2 c = uint2(saturate(val.rg) * 255.5f);
 	return float(c.r | (c.g << 8)) * exp2(-32.0f);
 }
 
 float rgb5a1_to_depth16(float4 val)
 {
-	uint4 c = uint4(val * 255.5f);
+	uint4 c = uint4(saturate(val) * 255.5f);
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
 }
 

@@ -223,8 +223,9 @@ bool GSRenderer::Merge(int field)
 		g_gs_device->Interlace(fs, field ^ field2, mode, offset);
 	}
 
-	if (GSConfig.ShadeBoost)
-		g_gs_device->ShadeBoost();
+	// The color correction pass needs to run all the times in HDR as it linearizes the color for scRGB HDR
+	if (EmuConfig.HDROutput || GSConfig.ColorCorrect || GSConfig.ShadeBoost)
+		g_gs_device->ColorCorrect();
 
 	if (GSConfig.FXAA)
 		g_gs_device->FXAA();
@@ -770,7 +771,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			// TODO: Maybe avoid this copy in the future? We can use swscale to fix it up on the dumping thread..
 			if (current->GetSize() != size)
 			{
-				GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, false);
+				GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSCapture::CAPTURE_TEX_FORMAT, false);
 				if (temp)
 				{
 					g_gs_device->StretchRect(current, temp, GSVector4(0, 0, size.x, size.y));
@@ -787,7 +788,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		{
 			// Bit janky, but unless we want to make variable frame rate files, we need to deliver *a* frame to
 			// the video file, so just grab a blank RT.
-			GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, true);
+			GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSCapture::CAPTURE_TEX_FORMAT, true);
 			if (temp)
 			{
 				GSCapture::DeliverVideoFrame(temp);
@@ -1005,10 +1006,10 @@ bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool 
 	const u32 image_height = crop_borders ? draw_height : std::max(draw_height, window_height);
 
 	// We're not expecting screenshots to be fast, so just allocate a download texture on demand.
-	GSTexture* rt = g_gs_device->CreateRenderTarget(draw_width, draw_height, GSTexture::Format::Color, false);
+	GSTexture* rt = g_gs_device->CreateRenderTarget(draw_width, draw_height, GSCapture::CAPTURE_TEX_FORMAT, false);
 	if (rt)
 	{
-		std::unique_ptr<GSDownloadTexture> dl(g_gs_device->CreateDownloadTexture(draw_width, draw_height, GSTexture::Format::Color));
+		std::unique_ptr<GSDownloadTexture> dl(g_gs_device->CreateDownloadTexture(draw_width, draw_height, GSCapture::CAPTURE_TEX_FORMAT));
 		if (dl)
 		{
 			const GSVector4i rc(0, 0, draw_width, draw_height);

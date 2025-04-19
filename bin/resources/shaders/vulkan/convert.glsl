@@ -18,6 +18,10 @@ void main()
 
 #ifdef FRAGMENT_SHADER
 
+#ifndef PS_HDR
+#define PS_HDR 0
+#endif
+
 layout(location = 0) in vec2 v_tex;
 
 #if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
@@ -43,6 +47,23 @@ layout(set = 0, binding = 0) uniform sampler2D samp0;
 vec4 sample_c(vec2 uv)
 {
 	return texture(samp0, uv);
+}
+
+float saturate(float c)
+{
+	return clamp(c, 0.0, 1.0);
+}
+vec2 saturate(vec2 c)
+{
+	return clamp(c, 0.0, 1.0);
+}
+vec3 saturate(vec3 c)
+{
+	return clamp(c, 0.0, 1.0);
+}
+vec4 saturate(vec4 c)
+{
+	return clamp(c, 0.0, 1.0);
 }
 
 #ifdef ps_copy
@@ -93,7 +114,7 @@ void ps_filter_transparency()
 // Need to be careful with precision here, it can break games like Spider-Man 3 and Dogs Life
 void ps_convert_rgba8_16bits()
 {
-	uvec4 i = uvec4(sample_c(v_tex) * vec4(255.5f, 255.5f, 255.5f, 255.5f));
+	uvec4 i = uvec4(saturate(sample_c(v_tex)) * vec4(255.5f, 255.5f, 255.5f, 255.5f));
 
 	o_col0 = ((i.x & 0x00F8u) >> 3) | ((i.y & 0x00F8u) << 2) | ((i.z & 0x00f8u) << 7) | ((i.w & 0x80u) << 8);
 }
@@ -136,6 +157,7 @@ void ps_datm0_rta_correction()
 void ps_rta_correction()
 {
 	vec4 value = sample_c(v_tex);
+	value.rgb = saturate(value.rgb);
 	o_col0 = vec4(value.rgb, value.a / (128.25f / 255.0f));
 }
 #endif
@@ -144,15 +166,35 @@ void ps_rta_correction()
 void ps_rta_decorrection()
 {
 	vec4 value = sample_c(v_tex);
+	value.rgb = saturate(value.rgb);
 	o_col0 = vec4(value.rgb, value.a * (128.25f / 255.0f));
 }
 #endif
+
+float fmod_mask_positive(float a, float b)
+{
+	// Don't wrap if the number if a multiple, to emulate bit mask operators
+	if (mod(a, b) == 0.f && a != 0.f)
+	{
+		return b;
+	}
+	return mod(mod(a, b) + b, b);
+}
+vec3 fmod_mask_positive(vec3 a, float b)
+{
+	return vec3(fmod_mask_positive(a.x, b), fmod_mask_positive(a.y, b), fmod_mask_positive(a.z, b));
+}
 
 #ifdef ps_colclip_init
 void ps_colclip_init()
 {
 	vec4 value = sample_c(v_tex);
+	value.rgb = saturate(value.rgb); // Clamp to [0,1] range given we might have upgraded the "Color" texture to float/HDR, to avoid overflow
+#if PS_HDR
+	o_col0 = vec4(value.rgb * 255.f / 65535.f, value.a);
+#else
 	o_col0 = vec4(roundEven(value.rgb * 255.0f) / 65535.0f, value.a);
+#endif
 }
 #endif
 
@@ -160,7 +202,11 @@ void ps_colclip_init()
 void ps_colclip_resolve()
 {
 	vec4 value = sample_c(v_tex);
+#if PS_HDR
+	o_col0 = vec4(fmod_mask_positive(value.rgb * 65535.f, 255.f) / 255.f, value.a);
+#else
 	o_col0 = vec4(vec3(uvec3(value.rgb * 65535.5f) & 255u) / 255.0f, value.a);
+#endif
 }
 #endif
 
@@ -192,25 +238,25 @@ void ps_convert_float16_rgb5a1()
 
 float rgba8_to_depth32(vec4 unorm)
 {
-	uvec4 c = uvec4(unorm * vec4(255.5f));
+	uvec4 c = uvec4(saturate(unorm) * vec4(255.5f));
 	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
 }
 
 float rgba8_to_depth24(vec4 unorm)
 {
-	uvec3 c = uvec3(unorm.rgb * vec3(255.5f));
+	uvec3 c = uvec3(saturate(unorm.rgb) * vec3(255.5f));
 	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
 }
 
 float rgba8_to_depth16(vec4 unorm)
 {
-	uvec2 c = uvec2(unorm.rg * vec2(255.5f));
+	uvec2 c = uvec2(saturate(unorm.rg) * vec2(255.5f));
 	return float(c.r | (c.g << 8)) * exp2(-32.0f);
 }
 
 float rgb5a1_to_depth16(vec4 unorm)
 {
-	uvec4 c = uvec4(unorm * vec4(255.5f));
+	uvec4 c = uvec4(saturate(unorm) * vec4(255.5f));
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
 }
 

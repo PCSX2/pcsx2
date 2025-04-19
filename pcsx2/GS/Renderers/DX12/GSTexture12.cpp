@@ -118,6 +118,23 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 	D3D12_CLEAR_VALUE optimized_clear_value = {};
 	D3D12_RESOURCE_STATES state;
 
+#if OLD_HDR // Add RT to allow textures of different formats to be copied in it
+	auto og_type = type;
+	if (format == GSTexture::Format::Color)
+	{
+		switch (type)
+		{
+			case GSTexture::Type::Texture:
+			case GSTexture::Type::RWTexture:
+				type = Type::RenderTarget;
+		}
+		if (rtv_format == DXGI_FORMAT_UNKNOWN)
+		{
+			rtv_format = dxgi_format;
+		}
+	}
+#endif
+
 	switch (type)
 	{
 		case Type::Texture:
@@ -222,6 +239,10 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		dev->GetDescriptorHeapManager().Free(&srv_descriptor);
 		return {};
 	}
+
+#if OLD_HDR
+	type = og_type;
+#endif
 
 	return std::unique_ptr<GSTexture12>(
 		new GSTexture12(type, format, width, height, levels, dxgi_format, std::move(resource), std::move(allocation),

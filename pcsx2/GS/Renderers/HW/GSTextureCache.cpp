@@ -2374,7 +2374,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		if (dst->m_scale != scale && (!preserve_scale || is_shuffle || !dst->m_downscaled || TEX0.TBW != dst->m_TEX0.TBW))
 		{
 			calcRescale(dst);
-			GSTexture* tex = type == RenderTarget ? g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::Color, clear) :
+			GSTexture* tex = type == RenderTarget ? g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, g_gs_device->GetEmuHWRTTexFormat(), clear) :
 													g_gs_device->CreateDepthStencil(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::DepthStencil, clear);
 			if (!tex)
 				return nullptr;
@@ -2474,7 +2474,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						dst->ResizeTexture(new_size.x, new_size.y, true, true, GSVector4i(dRect), true);
 					else
 					{
-						GSTexture* tex = type == RenderTarget ? g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::Color, clear) :
+						GSTexture* tex = type == RenderTarget ? g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, g_gs_device->GetEmuHWRTTexFormat(), clear) :
 																g_gs_device->CreateDepthStencil(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::DepthStencil, clear);
 						if (!tex)
 							return nullptr;
@@ -2495,7 +2495,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						dst->ResizeTexture(new_size.x, new_size.y, true, true, GSVector4i(dRect));
 					else
 					{
-						GSTexture* tex = type == RenderTarget ? g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::Color, clear) :
+						GSTexture* tex = type == RenderTarget ? g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, g_gs_device->GetEmuHWRTTexFormat(), clear) :
 																g_gs_device->CreateDepthStencil(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::DepthStencil, clear);
 						if (!tex)
 							return nullptr;
@@ -2579,7 +2579,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				// So, create a new target, clear/preload it, and copy RGB in.
 				GSTexture* tex = (type == RenderTarget) ?
 									 g_gs_device->CreateRenderTarget(dst->m_texture->GetWidth(),
-										 dst->m_texture->GetHeight(), GSTexture::Format::Color, true) :
+										 dst->m_texture->GetHeight(), g_gs_device->GetEmuHWRTTexFormat(), true) :
 									 g_gs_device->CreateDepthStencil(dst->m_texture->GetWidth(),
 										 dst->m_texture->GetHeight(), GSTexture::Format::DepthStencil, true);
 				if (!tex)
@@ -3273,9 +3273,12 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							t->m_valid.w -= height_adjust;
 							t->ResizeValidity(t->m_valid);
 
+							//TODO: delete?
+							pxAssert(!t->m_texture->IsRenderTarget() || t->m_texture->GetFormat() == g_gs_device->GetEmuHWRTTexFormat());
+
 							GSTexture* tex = (type == RenderTarget) ?
 												 g_gs_device->CreateRenderTarget(t->m_texture->GetWidth(),
-													 t->m_texture->GetHeight(), GSTexture::Format::Color, true) :
+													 t->m_texture->GetHeight(), g_gs_device->GetEmuHWRTTexFormat(), true) :
 												 g_gs_device->CreateDepthStencil(t->m_texture->GetWidth(),
 													 t->m_texture->GetHeight(), GSTexture::Format::DepthStencil, true);
 							if (tex)
@@ -3417,7 +3420,7 @@ void GSTextureCache::Target::ScaleRTAlpha()
 			const GSVector4i valid_rect = GSVector4i(GSVector4(m_valid) * GSVector4(m_scale));
 			GL_PUSH("ScaleRTAlpha(valid=(%dx%d %d,%d=>%d,%d))", m_valid.width(), m_valid.height(), m_valid.x, m_valid.y, m_valid.z, m_valid.w);
 
-			if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, !GSVector4i::loadh(rtsize).eq(valid_rect)))
+			if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, g_gs_device->GetEmuHWRTTexFormat(), !GSVector4i::loadh(rtsize).eq(valid_rect)))
 			{
 				// Only copy up the valid area, since there's no point in "correcting" nothing.
 				const GSVector4 dRect(m_texture->GetRect().rintersect(valid_rect));
@@ -3443,7 +3446,7 @@ void GSTextureCache::Target::UnscaleRTAlpha()
 			const GSVector4i valid_rect = GSVector4i(GSVector4(m_valid) * GSVector4(m_scale));
 			GL_PUSH("UnscaleRTAlpha(valid=(%dx%d %d,%d=>%d,%d))", valid_rect.width(), valid_rect.height(), valid_rect.x, valid_rect.y, valid_rect.z, valid_rect.w);
 
-			if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, !GSVector4i::loadh(rtsize).eq(valid_rect)))
+			if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, g_gs_device->GetEmuHWRTTexFormat(), !GSVector4i::loadh(rtsize).eq(valid_rect)))
 			{
 				// Only copy up the valid area, since there's no point in "correcting" nothing.
 				const GSVector4 dRect(m_texture->GetRect().rintersect(valid_rect));
@@ -3497,12 +3500,13 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 	const int new_width = std::max(t->m_unscaled_size.x, needed_width);
 	const int scaled_new_height = static_cast<int>(std::ceil(static_cast<float>(new_height) * scale));
 	const int scaled_new_width = static_cast<int>(std::ceil(static_cast<float>(new_width) * scale));
-	GSTexture* new_texture = g_gs_device->CreateRenderTarget(scaled_new_width, scaled_new_height, GSTexture::Format::Color, false);
+	GSTexture* new_texture = g_gs_device->CreateRenderTarget(scaled_new_width, scaled_new_height, g_gs_device->GetEmuHWRTTexFormat(), false);
 	if (!new_texture)
 	{
 		// Memory allocation failure, do our best to hobble along.
 		return;
 	}
+	pxAssert(new_texture->GetFormat() == old_texture->GetFormat() && new_texture->GetType() == old_texture->GetType()); //TODO: delete? Was this expected? Would it work anyway? Probably! It does stretch rect below!
 
 	GL_CACHE("Expanding target for display output, target height %d @ 0x%X, display %d @ 0x%X offset %d needed %d",
 		t->m_unscaled_size.y, t->m_TEX0.TBP0, real_h, dispfb.TBP0, y_offset, needed_height);
@@ -3596,7 +3600,7 @@ bool GSTextureCache::CopyRGBFromDepthToColor(Target* dst, Target* depth_src)
 	GSTexture* tex = dst->m_texture;
 	if (needs_new_tex)
 	{
-		tex = g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::Color,
+		tex = g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, g_gs_device->GetEmuHWRTTexFormat(),
 			new_size != dst->m_unscaled_size || new_size != depth_src->m_unscaled_size);
 		if (!tex)
 			return false;
@@ -3664,7 +3668,7 @@ bool GSTextureCache::CopyRGBFromDepthToColor(Target* dst, Target* depth_src)
 bool GSTextureCache::PrepareDownloadTexture(u32 width, u32 height, GSTexture::Format format, std::unique_ptr<GSDownloadTexture>* tex)
 {
 	GSDownloadTexture* ctex = tex->get();
-	if (ctex && ctex->GetWidth() >= width && ctex->GetHeight() >= height)
+	if (ctex && ctex->GetWidth() >= width && ctex->GetHeight() >= height && ctex->GetFormat() == format)
 		return true;
 
 	// In the case of oddly sized texture reads, we'll keep the larger dimension.
@@ -4572,6 +4576,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	// DirectX also can't copy to the same texture it's reading from (except potentially with enhanced barriers).
 	if (SBP == DBP && (!(GSVector4i(sx, sy, sx + w, sy + h).rintersect(GSVector4i(dx, dy, dx + w, dy + h))).rempty() || renderer_is_directx))
 	{
+		pxAssert(src->m_texture->IsDepthStencil() || src->m_texture->IsRenderTarget()); //TODO: delete... making sure the source texture was already an RT, otherwise we might need to upgrade the format to HDR!
 		GSTexture* tmp_texture = src->m_texture->IsDepthStencil() ?
 									 g_gs_device->CreateDepthStencil(src->m_texture->GetWidth(), src->m_texture->GetHeight(), src->m_texture->GetFormat(), false) :
 									 g_gs_device->CreateRenderTarget(src->m_texture->GetWidth(), src->m_texture->GetHeight(), src->m_texture->GetFormat(), false);
@@ -4859,6 +4864,8 @@ void GSTextureCache::CopyPages(Target* src, u32 sbw, u32 src_offset, Target* dst
 		rc.linear = false;
 		rc.wmask.wrgba = 0xf;
 	}
+
+	pxAssert(src->m_texture->GetFormat() != GSTexture::Format::ColorHDR);
 
 	// No need to sort here, it's all from the same texture.
 	g_gs_device->DrawMultiStretchRects(rects, num_pages, dst->m_texture, shader);
@@ -5219,14 +5226,16 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		dst->Update();
 
 		// If we have a source larger than the target (from tex-in-rt), texelFetch() for target region will return black.
+		// This is for when a target is used as a source but the origin is offset.
 		if constexpr (force_target_copy)
 		{
 			// If we have a source larger than the target, we need to clear it, otherwise we'll read junk
 			const bool outside_target = ((x + w) > dst->m_texture->GetWidth() || (y + h) > dst->m_texture->GetHeight());
 			GSTexture* sTex = dst->m_texture;
+			pxAssert(sTex->GetFormat() == GSTexture::Format::Color || sTex->GetFormat() == GSTexture::Format::ColorHDR); // Other formats might work but are untested
 			GSTexture* dTex = outside_target ?
-								  g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, true, PreferReusedLabelledTexture()) :
-								  g_gs_device->CreateTexture(w, h, tlevels, GSTexture::Format::Color, PreferReusedLabelledTexture());
+								  g_gs_device->CreateRenderTarget(w, h, g_gs_device->GetEmuHWRTTexFormat(), true, PreferReusedLabelledTexture()) :
+								  g_gs_device->CreateTexture(w, h, tlevels, dst->m_texture->GetFormat(), PreferReusedLabelledTexture());
 			if (!dTex) [[unlikely]]
 			{
 				Console.Error("Failed to allocate %dx%d texture for offset source", w, h);
@@ -5240,11 +5249,15 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			const GSVector4i area(GSVector4i(x, y, x + w, y + h).rintersect(GSVector4i(sTex->GetSize()).zwxy()));
 			if (!area.rempty())
 			{
-				if (dst->m_rt_alpha_scale)
+#if OLD_HDR
+				if (dst->m_rt_alpha_scale || dTex->GetFormat() != sTex->GetFormat() || dTex->GetType() != sTex->GetType())
+#else
+				if (dst->m_rt_alpha_scale || dTex->GetFormat() != sTex->GetFormat())
+#endif
 				{
 					const GSVector4 sRectF = GSVector4(area) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
 					g_gs_device->StretchRect(
-						sTex, sRectF, dTex, GSVector4(area), ShaderConvert::RTA_DECORRECTION, false);
+						sTex, sRectF, dTex, GSVector4(area), dst->m_rt_alpha_scale ? ShaderConvert::RTA_DECORRECTION : ShaderConvert::COPY, false);
 				}
 				else
 					g_gs_device->CopyRect(sTex, dTex, area, 0, 0);
@@ -5557,10 +5570,11 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			// Don't be fooled by the name. 'dst' is the old target (hence the input)
 			// 'src' is the new texture cache entry (hence the output)
 			GSTexture* sTex = dst->m_texture;
+			pxAssert(sTex->GetFormat() == GSTexture::Format::Color || sTex->GetFormat() == GSTexture::Format::ColorHDR); // Other formats might work but are untested
 			GSTexture* dTex = use_texture ?
-								  g_gs_device->CreateTexture(new_size.x, new_size.y, 1, GSTexture::Format::Color,
+								  g_gs_device->CreateTexture(new_size.x, new_size.y, 1, sTex->GetFormat(),
 									  PreferReusedLabelledTexture()) :
-								  g_gs_device->CreateRenderTarget(new_size.x, new_size.y, GSTexture::Format::Color,
+								  g_gs_device->CreateRenderTarget(new_size.x, new_size.y, g_gs_device->GetEmuHWRTTexFormat(),
 									  source_rect_empty || destX != 0 || destY != 0, PreferReusedLabelledTexture());
 			if (!dTex) [[unlikely]]
 			{
@@ -5576,11 +5590,11 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 			if (use_texture)
 			{
-				if (dst->m_rt_alpha_scale)
+				if (dst->m_rt_alpha_scale || dTex->GetFormat() != sTex->GetFormat())
 				{
 					const GSVector4 sRectF = GSVector4(sRect) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
 					g_gs_device->StretchRect(
-						sTex, sRectF, dTex, GSVector4(destX, destY, sRect.width(), sRect.height()), ShaderConvert::RTA_DECORRECTION, false);
+						sTex, sRectF, dTex, GSVector4(destX, destY, sRect.width(), sRect.height()), dst->m_rt_alpha_scale ? ShaderConvert::RTA_DECORRECTION : ShaderConvert::COPY, false);
 				}
 				else
 					g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);
@@ -6042,7 +6056,7 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 		lmtex->Unmap();
 
 	// Allocate our render target for drawing everything to.
-	GSTexture* dtex = g_gs_device->CreateRenderTarget(scaled_width, scaled_height, GSTexture::Format::Color, true);
+	GSTexture* dtex = g_gs_device->CreateRenderTarget(scaled_width, scaled_height, g_gs_device->GetEmuHWRTTexFormat(), true);
 	if (!dtex) [[unlikely]]
 	{
 		Console.Error("Failed to allocate %dx%d merged dest texture", scaled_width, scaled_height);
@@ -6187,7 +6201,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	const int tw = region.HasX() ? region.GetWidth() : (1 << TEX0.TW);
 	const int th = region.HasY() ? region.GetHeight() : (1 << TEX0.TH);
 	const int tlevels = lod ? (GSConfig.HWMipmap ? std::min(lod->y - lod->x + 1, GSDevice::GetMipmapLevelsForSize(tw, th)) : -1) : 1;
-	GSTexture* tex = g_gs_device->CreateTexture(tw, th, tlevels, paltex ? GSTexture::Format::UNorm8 : GSTexture::Format::Color);
+	GSTexture* tex = g_gs_device->CreateTexture(tw, th, tlevels, paltex ? GSTexture::Format::UNorm8 : GSTexture::Format::Color); //TODO: HDR? Nah
 	if (!tex)
 	{
 		// out of video memory if we hit here
@@ -6302,7 +6316,7 @@ GSTextureCache::Target* GSTextureCache::Target::Create(GIFRegTEX0 TEX0, int w, i
 	const int scaled_w = static_cast<int>(std::ceil(static_cast<float>(w) * scale));
 	const int scaled_h = static_cast<int>(std::ceil(static_cast<float>(h) * scale));
 	GSTexture* texture = (type == RenderTarget) ?
-							 g_gs_device->CreateRenderTarget(scaled_w, scaled_h, GSTexture::Format::Color, clear, PreferReusedLabelledTexture()) :
+							 g_gs_device->CreateRenderTarget(scaled_w, scaled_h, g_gs_device->GetEmuHWRTTexFormat(), clear, PreferReusedLabelledTexture()) :
 							 g_gs_device->CreateDepthStencil(scaled_w, scaled_h, GSTexture::Format::DepthStencil, clear, PreferReusedLabelledTexture());
 	if (!texture)
 		return nullptr;
@@ -6419,6 +6433,7 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 			}
 			else
 			{
+				// If the source was "HDR" (see "m_emulation_hw_texture_format"), we clip it for reading anyway
 				fmt = GSTexture::Format::Color;
 				if (t->m_rt_alpha_scale)
 					ps_shader = ShaderConvert::RTA_DECORRECTION;
@@ -6474,7 +6489,7 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 
 	const GSVector4 src(GSVector4(r) * GSVector4(t->m_scale) / GSVector4(t->m_texture->GetSize()).xyxy());
 	const GSVector4i drc(0, 0, r.width(), r.height());
-	const bool direct_read = t->m_type == RenderTarget && t->m_scale == 1.0f && ps_shader == ShaderConvert::COPY;
+	const bool direct_read = t->m_type == RenderTarget && t->m_scale == 1.0f && ps_shader == ShaderConvert::COPY && t->m_texture->GetFormat() != GSTexture::Format::ColorHDR;
 
 	if (!PrepareDownloadTexture(drc.z, drc.w, fmt, dltex))
 		return;
@@ -6542,6 +6557,7 @@ void GSTextureCache::Read(Source* t, const GSVector4i& r)
 	if (!PrepareDownloadTexture(drc.z, drc.w, GSTexture::Format::Color, &m_color_download_texture))
 		return;
 
+	pxAssertMsg(t->m_texture->GetFormat() == m_color_download_texture->GetFormat(), "GSTextureCache::Read between different formats.");
 	m_color_download_texture->CopyFromTexture(drc, t->m_texture, r, 0, true);
 	m_color_download_texture->Flush();
 
@@ -6832,6 +6848,8 @@ void GSTextureCache::Source::Flush(u32 count, int layer, const GSOffset& off)
 
 	pitch = VectorAlign(pitch);
 
+	pxAssert(m_texture->GetFormat() != GSTexture::Format::ColorHQ && m_texture->GetFormat() != GSTexture::Format::ColorHDR); // This probably wouldn't work
+
 	for (u32 i = 0; i < count; i++)
 	{
 		const GSVector4i r(m_write.rect[i]);
@@ -6997,6 +7015,7 @@ void GSTextureCache::Target::Update(bool cannot_scale)
 	const GSVector4 t_sizef(t_size.zwzw());
 
 	// This'll leave undefined data in pixels that we're not reading from... shouldn't hurt anything.
+	// This texture's data comes from SW emulation so it doesn't need to follow "m_emulation_hw_texture_format".
 	GSTexture* const t = g_gs_device->CreateTexture(t_size.z, t_size.w, 1, GSTexture::Format::Color);
 	if (!t) [[unlikely]]
 	{
@@ -7779,7 +7798,7 @@ void GSTextureCache::Palette::InitializeTexture()
 		// sampling such texture are always normalized by 255.
 		// This is because indexes are stored as normalized values of an RGBA texture (e.g. index 15 will be read as (15/255),
 		// and therefore will read texel 15/255 * texture size).
-		m_tex_palette = g_gs_device->CreateTexture(m_pal, 1, 1, GSTexture::Format::Color);
+		m_tex_palette = g_gs_device->CreateTexture(m_pal, 1, 1, GSTexture::Format::Color); //TODO: HDR? Nah
 		if (!m_tex_palette) [[unlikely]]
 		{
 			Console.Error("Failed to allocate %ux1 texture for palette", m_pal);
@@ -8169,6 +8188,7 @@ void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TE
 	// If we can stream it directly to GPU memory, do so, otherwise go through a temp buffer.
 	const GSVector4i unoffset_rect(0, 0, tw, th);
 	GSTexture::GSMap map;
+	pxAssert(tex->GetFormat() != GSTexture::Format::ColorHQ && tex->GetFormat() != GSTexture::Format::ColorHDR);
 	if (rect.eq(block_rect) && !alpha_minmax && tex->Map(map, &unoffset_rect, level))
 	{
 		rtx(mem, off, block_rect, map.bits, map.pitch, TEXA);

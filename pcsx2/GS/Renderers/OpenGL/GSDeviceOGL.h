@@ -196,7 +196,7 @@ private:
 	struct
 	{
 		GLProgram ps;
-	} m_shadeboost;
+	} m_colorcorrect;
 
 	struct
 	{
@@ -249,8 +249,8 @@ private:
 	bool CompileFXAAProgram();
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) override;
 
-	bool CompileShadeBoostProgram();
-	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) override;
+	bool CompileColorCorrectProgram();
+	void DoColorCorrect(GSTexture* sTex, GSTexture* dTex, const ColorCorrectConstantBuffer& cb) override;
 
 	bool CreateCASPrograms();
 	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) override;

@@ -294,6 +294,16 @@ void main()
 #define PS_ZCLAMP 0
 #define PS_FEEDBACK_LOOP 0
 #define PS_TEX_IS_FB 0
+#define PS_NO_COLOR 0
+#define PS_NO_COLOR1 0
+#define PS_DATE 0
+#define PS_HDR 0
+#endif
+
+//TODO: clear
+#if 0
+#undef PS_HDR
+#define PS_HDR 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -304,6 +314,12 @@ void main()
 #define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || AFAIL_NEEDS_RT || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5))
 
 #define NEEDS_TEX (PS_TFX != 4)
+
+#if PS_HDR
+#define RT_COLOR_OFFSET 0.0f
+#else
+#define RT_COLOR_OFFSET 0.1f
+#endif
 
 layout(std140, set = 0, binding = 1) uniform cb1
 {
@@ -363,6 +379,28 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
 #endif
 
+float fmod_positive(float a, float b)
+{
+	return mod(mod(a, b) + b, b);
+}
+vec3 fmod_positive(vec3 a, float b)
+{
+	return vec3(fmod_positive(a.x, b), fmod_positive(a.y, b), fmod_positive(a.z, b));
+}
+float fmod_mask_positive(float a, float b)
+{
+	// Don't wrap if the number if a multiple, to emulate bit mask operators
+	if (mod(a, b) == 0.f && a != 0.f)
+	{
+		return b;
+	}
+	return mod(mod(a, b) + b, b);
+}
+vec3 fmod_mask_positive(vec3 a, float b)
+{
+	return vec3(fmod_mask_positive(a.x, b), fmod_mask_positive(a.y, b), fmod_mask_positive(a.z, b));
+}
+
 #if NEEDS_TEX
 
 vec4 sample_c(vec2 uv)
@@ -409,14 +447,28 @@ vec4 sample_c(vec2 uv)
 #endif
 }
 
+#if PS_HDR
+vec4 sample_p(float idx)
+#else
 vec4 sample_p(uint idx)
+#endif
 {
+#if PS_HDR
+	float sizeX = 256.f;
+	// X is always 256. Y is always 1.
+	float excess = max(idx - (sizeX - 1.f), 0.f) / sizeX;
+	return texelFetch(Palette, ivec2(int(idx), 0), 0) * (excess + 1.f);
+#endif
 	return texelFetch(Palette, ivec2(int(idx), 0), 0);
 }
 
 vec4 sample_p_norm(float u)
 {
+#if PS_HDR
+	return sample_p(u * 255.0f);
+#else
 	return sample_p(uint(u * 255.5f));
+#endif
 }
 
 vec4 clamp_wrap_uv(vec4 uv)
@@ -513,7 +565,12 @@ mat4 sample_4c(vec4 uv)
 	return c;
 }
 
-uvec4 sample_4_index(vec4 uv)
+#if PS_HDR
+vec4
+#else
+uvec4
+#endif
+	sample_4_index(vec4 uv)
 {
 	vec4 c;
 
@@ -524,25 +581,45 @@ uvec4 sample_4_index(vec4 uv)
 
 	// Denormalize value
 			
-#if PS_RTA_SRC_CORRECTION
-	uvec4 i = uvec4(round(c * 128.25f));
+#if !PS_HDR
+	#if PS_RTA_SRC_CORRECTION
+		uvec4 i = uvec4(round(c * 128.25f));
+	#else
+		uvec4 i = uvec4(c * 255.5f);
+	#endif
 #else
-	uvec4 i = uvec4(c * 255.5f);
+	#if PS_RTA_SRC_CORRECTION
+		vec4 i = c * 127.5f;
+	#else
+		vec4 i = c * 255.f;
+	#endif
 #endif
 
 	#if PS_PAL_FMT == 1
 		// 4HL
-		return i & 0xFu;
+		#if !PS_HDR
+			return i & 0xFu;
+		#else
+			return mod(i, 16.f); // Note: negative handling is a bit random here but it should be fine
+		#endif
 	#elif PS_PAL_FMT == 2
 		// 4HH
-		return i >> 4u;
+		#if !PS_HDR
+			return i >> 4u;
+		#else
+			return max(i - pow(2.f, 4.f), min(i, 0.f)) / pow(2.f, 4.f);
+		#endif
 	#else
 		// 8
 		return i;
 	#endif
 }
 
+#if PS_HDR
+mat4 sample_4p(vec4 u)
+#else
 mat4 sample_4p(uvec4 u)
+#endif
 {
 	mat4 c;
 
@@ -843,6 +920,10 @@ vec4 sample_color(vec2 st)
 #if PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_RTA_SRC_CORRECTION
 	t.a = t.a * (128.5f / 255.0f);
 #endif
+
+	#if PS_HDR
+		return t * 255.0f;
+	#endif
 	return trunc(t * 255.0f + 0.05f);
 }
 
@@ -851,7 +932,10 @@ vec4 sample_color(vec2 st)
 vec4 tfx(vec4 T, vec4 C)
 {
 	vec4 C_out;
-	vec4 FxT = trunc((C * T) / 128.0f);
+	vec4 FxT = (C * T) / 128.0f;
+	#if !PS_HDR
+		FxT = trunc(FxT);
+	#endif
 
 #if (PS_TFX == 0)
 	C_out = FxT;
@@ -873,7 +957,9 @@ vec4 tfx(vec4 T, vec4 C)
 
 #if (PS_TFX == 0) || (PS_TFX == 2) || (PS_TFX == 3)
 	// Clamp only when it is useful
-	C_out = min(C_out, 255.0f);
+	#if !PS_HDR
+		C_out = min(C_out, 255.0f);
+	#endif
 #endif
 
 	return C_out;
@@ -910,7 +996,10 @@ bool atst(vec4 C)
 vec4 fog(vec4 c, float f)
 {
 	#if PS_FOG
-		c.rgb = trunc(mix(FogColor, c.rgb, f));
+		c.rgb = mix(FogColor, c.rgb, f);
+		#if !PS_HDR
+			c.rgb = trunc(c.rgb);
+		#endif
 	#endif
 
 	return c;
@@ -973,13 +1062,26 @@ vec4 ps_color()
 void ps_fbmask(inout vec4 C)
 {
 	#if PS_FBMASK
-		
-		#if PS_COLCLIP_HW == 1
-			vec4 RT = trunc(sample_from_rt() * 65535.0f);
-		#else
-			vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
-		#endif
-		C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
+		if (PS_HDR && !PS_COLCLIP_HW)
+		{
+			vec4 RT = sample_from_rt() * 255.0f;
+			bvec4 hi_bit = (FbMask & 0x80) != 0;
+			RT = hi_bit ? RT : min(RT, 255.0f);
+			C  = hi_bit ? min(C, 255.0f) : C;
+			uvec4 RTi = (uvec4)(RT + 0.5f);
+			uvec4 Ci  = (uvec4)(C  + 0.5f);
+			uvec4 mask = ((ivec4)FbMask << 24) >> 24; // Sign extend mask
+			C = (vec4)((Ci & ~mask) | (RTi & mask));
+		}
+		else
+		{
+			#if PS_COLCLIP_HW == 1
+				vec4 RT = trunc(sample_from_rt() * 65535.0f);
+			#else
+				vec4 RT = trunc(sample_from_rt() * 255.0f + RT_COLOR_OFFSET);
+			#endif
+			C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
+		}
 	#endif
 }
 
@@ -1018,18 +1120,24 @@ void ps_dither(inout vec3 C, float As)
 
 void ps_color_clamp_wrap(inout vec3 C)
 {
+	int mask = 0;
+
 	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
 	// so we need to limit the color depth on dithered items
 #if SW_BLEND || (PS_DITHER > 0 && PS_DITHER < 3) || PS_FBMASK
 
 #if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
-	C += 7.0f; // Need to round up, not down since the shader will invert
+	C += (float)(0xFF - 0xF8); // Need to round up, not down since the shader will invert
 #endif
 
 	// Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_COLCLIP_HW == 0
 	// Standard Clamp
-	C = clamp(C, vec3(0.0f), vec3(255.0f));
+	#if PS_HDR == 0
+		C = clamp(C, vec3(0.0f), vec3(255.0f));
+	#else // Without this, bloom in some games can go negative and make the scene darker
+		C = max(C, vec3(0.0f));
+	#endif
 #endif
 
 	// FIXME rouding of negative float?
@@ -1040,14 +1148,23 @@ void ps_color_clamp_wrap(inout vec3 C)
 	// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
 #if PS_DST_FMT == FMT_16 && PS_DITHER != 3 && (PS_BLEND_MIX == 0 || PS_DITHER > 0)
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
-	C = vec3(ivec3(C) & ivec3(0xF8));
+	mask = 0xF8;
 #elif PS_COLCLIP == 1 || PS_COLCLIP_HW == 1
-	C = vec3(ivec3(C) & ivec3(0xFF));
+	mask = 0xFF;
 #endif
 
 #elif PS_DST_FMT == FMT_16 && PS_DITHER != 3 && PS_BLEND_MIX == 0 && PS_BLEND_HW == 0
-	C = vec3(ivec3(C) & ivec3(0xF8));
+	mask = 0xF8;
 #endif
+
+	if (mask != 0)
+	{
+#if PS_HDR // Avoid quantization to 8bit in HDR
+		C = mask == 0xFF ? fmod_mask_positive(C, 255.f) : (C - fmod_positive(C, 8)); // 248 → 255 - 7 = 248
+#else
+		C = vec3(ivec3(C) & ivec3(mask));
+#endif
+	}
 }
 
 void ps_blend(inout vec4 Color, inout vec4 As_rgba)
@@ -1077,9 +1194,9 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 		#endif
 
 		#if PS_RTA_CORRECTION
-			float Ad = trunc(RT.a * 128.0f + 0.1f) / 128.0f;
+			float Ad = trunc(RT.a * 128.0f + RT_COLOR_OFFSET) / 128.0f;
 		#else
-			float Ad = trunc(RT.a * 255.0f + 0.1f) / 128.0f;
+			float Ad = trunc(RT.a * 255.0f + RT_COLOR_OFFSET) / 128.0f;
 		#endif
 		
 		#if PS_SHUFFLE && PS_FEEDBACK_LOOP_IS_NEEDED
@@ -1099,9 +1216,12 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 
 			// Let the compiler do its jobs !
 			#if PS_COLCLIP_HW == 1
-			vec3 Cd = trunc(RT.rgb * 65535.0f);
+			vec3 Cd = RT.rgb * 65535.0f;
 			#else
-			vec3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
+			vec3 Cd = RT.rgb * 255.0f + RT_COLOR_OFFSET;
+			#endif
+			#if !PS_HDR
+			Cd = trunc(Cd);
 			#endif
 			vec3 Cs = Color.rgb;
 
@@ -1146,19 +1266,29 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 
 		#if PS_BLEND_A == PS_BLEND_B
 			Color.rgb = D;
-		// In blend_mix, HW adds on some alpha factor * dst.
-		// Truncating here wouldn't quite get the right result because it prevents the <1 bit here from combining with a <1 bit in dst to form a ≥1 amount that pushes over the truncation.
-		// Instead, apply an offset to convert HW's round to a floor.
-		// Since alpha is in 1/128 increments, subtracting (0.5 - 0.5/128 == 127/256) would get us what we want if GPUs blended in full precision.
-		// But they don't.  Details here: https://github.com/PCSX2/pcsx2/pull/6809#issuecomment-1211473399
-		// Based on the scripts at the above link, the ideal choice for Intel GPUs is 126/256, AMD 120/256.  Nvidia is a lost cause.
-		// 124/256 seems like a reasonable compromise, providing the correct answer 99.3% of the time on Intel (vs 99.6% for 126/256), and 97% of the time on AMD (vs 97.4% for 120/256).
 		#elif PS_BLEND_MIX == 2
-			Color.rgb = ((A - B) * C_clamped + D) + (124.0f/256.0f);
+			Color.rgb = (A - B) * C_clamped + D;
 		#elif PS_BLEND_MIX == 1
-			Color.rgb = ((A - B) * C_clamped + D) - (124.0f/256.0f);
+			Color.rgb = (A - B) * C_clamped + D;
 		#else
-				Color.rgb = trunc((A - B) * C + D);
+			Color.rgb = (A - B) * C + D;
+		#endif
+		
+		#if PS_BLEND_A != PS_BLEND_B && PS_HDR == 0
+			// In blend_mix, HW adds on some alpha factor * dst.
+			// Truncating here wouldn't quite get the right result because it prevents the <1 bit here from combining with a <1 bit in dst to form a ≥1 amount that pushes over the truncation.
+			// Instead, apply an offset to convert HW's round to a floor.
+			// Since alpha is in 1/128 increments, subtracting (0.5 - 0.5/128 == 127/256) would get us what we want if GPUs blended in full precision.
+			// But they don't.  Details here: https://github.com/PCSX2/pcsx2/pull/6809#issuecomment-1211473399
+			// Based on the scripts at the above link, the ideal choice for Intel GPUs is 126/256, AMD 120/256.  Nvidia is a lost cause.
+			// 124/256 seems like a reasonable compromise, providing the correct answer 99.3% of the time on Intel (vs 99.6% for 126/256), and 97% of the time on AMD (vs 97.4% for 120/256).
+			#if PS_BLEND_MIX == 2
+				Color.rgb += 124.0f / 256.0f;
+			#elif PS_BLEND_MIX == 1
+				Color.rgb -= 124.0f / 256.0f;
+			#else
+				Color.rgb = trunc(Color.rgb);
+			#endif
 		#endif
 
 		#if PS_BLEND_HW == 1
@@ -1297,9 +1427,12 @@ void main()
 
 #if SW_AD_TO_HW
 	#if PS_RTA_CORRECTION
-		vec4 RT = trunc(sample_from_rt() * 128.0f + 0.1f);
+		vec4 RT = sample_from_rt() * 128.0f + RT_COLOR_OFFSET;
 	#else
-		vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
+		vec4 RT = sample_from_rt() * 255.0f + RT_COLOR_OFFSET;
+	#endif
+	#if !PS_HDR
+		RT = trunc(RT);
 	#endif
 
 	vec4 alpha_blend = vec4(RT.a / 128.0f);
@@ -1391,12 +1524,14 @@ void main()
 			o_col0.a = C.a / 255.0f;
 		#endif
 		#if PS_COLCLIP_HW == 1
-			o_col0.rgb = vec3(C.rgb / 65535.0f);
+			o_col0.rgb = C.rgb / 65535.0f;
 		#else
 			o_col0.rgb = C.rgb / 255.0f;
 		#endif
+		o_col0.a = clamp(o_col0.a, 0.f, 2.f); //TODO: ...
 		#if !PS_NO_COLOR1
 			o_col1 = alpha_blend;
+			o_col1.a = clamp(o_col1.a, 0.f, 2.f);
 		#endif
 		#if PS_AFAIL == 3 && PS_NO_COLOR1 // RGB_ONLY, no dual src blend
 			if (!atst_pass)

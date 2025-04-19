@@ -5751,6 +5751,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 				blend.op = GSDevice::OP_ADD;
 				// Render pass 2: Add or subtract result of render pass 1(Cd) from Cs.
 				m_conf.blend_multi_pass.enable = true;
+				pxAssert(dither == 0 || dither == 1); // It will overflow below if it's any other value
 				m_conf.blend_multi_pass.dither = dither * GSConfig.Dithering;
 				m_conf.blend_multi_pass.blend = {true, blend_multi_pass.src, GSDevice::CONST_ONE, blend_multi_pass.op, GSDevice::CONST_ONE, GSDevice::CONST_ZERO, false, 0};
 			}
@@ -6514,6 +6515,26 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			g_gs_device->FilteredDownsampleTexture(src_target->m_texture, src_copy.get(), downsample_factor, clamp_min, dRect);
 		}
 	}
+#if 1 //TODO!
+#if !OLD_HDR
+	else if (src_target->m_texture->GetFormat() != src_copy->GetFormat())
+#else
+	else if ((EmuConfig.HDRRendering && src_target->m_texture->GetFormat() == GSTexture::Format::Color && src_copy->GetFormat() == GSTexture::Format::Color
+			&& ((src_target->m_texture->GetType() == GSTexture::Type::RenderTarget || src_target->m_texture->GetType() == GSTexture::Type::RWTexture)
+					!= (src_copy->GetType() == GSTexture::Type::RenderTarget || src_copy->GetType() == GSTexture::Type::RWTexture)))
+			|| src_target->m_texture->GetFormat() != src_copy->GetFormat())
+#endif
+	{
+		pxAssertMsg(src_target->m_texture->GetFormat() == GSTexture::Format::Color || src_copy->GetFormat() == GSTexture::Format::Color, "CopyFromTexture unsupported format.");
+#if !OLD_HDR
+		pxAssertMsg(src_copy->GetType() == GSTexture::Type::RenderTarget, "CopyFromTexture unsupported type.");
+#endif
+
+		const GSVector4 src_rect = GSVector4(scaled_copy_range) / GSVector4(src_target->m_texture->GetSize()).xyxy();
+		const GSVector4 dst_rect = GSVector4((float)scaled_copy_dst_offset.x, (float)scaled_copy_dst_offset.y, scaled_copy_dst_offset.x + (scaled_copy_range.width() * ((float)src_copy->GetSize().x / (float)src_target->m_texture->GetSize().x)), scaled_copy_dst_offset.y + (scaled_copy_range.height() * ((float)src_copy->GetSize().y / (float)src_target->m_texture->GetSize().y)));
+		g_gs_device->StretchRect(src_target->m_texture, src_rect, src_copy.get(), dst_rect, ShaderConvert::COPY, true); //TODO: linear or nearest?
+	}
+#endif
 	else
 	{
 		g_gs_device->CopyRect(
@@ -8439,7 +8460,8 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		r_texture.y -= offset;
 		r_texture.w -= offset;
 
-		if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, th, GSTexture::Format::Color))
+		pxAssert(tex->m_texture->GetFormat() == g_gs_device->GetEmuHWRTTexFormat()); // We don't know what happens if this was the case, probably nothing! //TODO: delete!? All RTs should use the same format due to VK/DX12 limitations.
+		if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, th, tex->m_texture->GetFormat()))
 		{
 			// sRect is the top of texture
 			// Need to half pixel offset the dest tex coordinates as draw pixels are top left instead of centre for texel reads.

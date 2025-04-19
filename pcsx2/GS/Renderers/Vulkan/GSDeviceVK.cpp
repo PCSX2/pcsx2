@@ -2714,7 +2714,7 @@ void GSDeviceVK::DrawIndexedPrimitive(int offset, int count)
 	vkCmdDrawIndexed(GetCurrentCommandBuffer(), count, 1, m_index.start + offset, m_vertex.start, 0);
 }
 
-VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
+VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format, GSTexture::Type type) const
 {
 	static constexpr std::array<VkFormat, static_cast<int>(GSTexture::Format::Last) + 1> s_format_mapping = {{
 		VK_FORMAT_UNDEFINED, // Invalid
@@ -2733,9 +2733,18 @@ VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
 		VK_FORMAT_BC7_UNORM_BLOCK, // BC7
 	}};
 
-	return (format != GSTexture::Format::DepthStencil || m_features.stencil_buffer) ?
-			   s_format_mapping[static_cast<int>(format)] :
-			   VK_FORMAT_D32_SFLOAT;
+	if (format != GSTexture::Format::DepthStencil || m_features.stencil_buffer)
+	{
+#if OLD_HDR
+		if (EmuConfig.HDRRendering && format == GSTexture::Format::Color && (type == GSTexture::Type::RenderTarget || type == GSTexture::Type::RWTexture))
+		{
+			return VK_FORMAT_R16G16B16A16_SFLOAT;
+		}
+#endif
+		return s_format_mapping[static_cast<int>(format)];
+	}
+
+	return VK_FORMAT_D32_SFLOAT;
 }
 
 GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
@@ -2760,6 +2769,8 @@ std::unique_ptr<GSDownloadTexture> GSDeviceVK::CreateDownloadTexture(u32 width, 
 void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+	pxAssert(sTex->GetFormat() == dTex->GetFormat());
 
 	GSTextureVK* const sTexVK = static_cast<GSTextureVK*>(sTex);
 	GSTextureVK* const dTexVK = static_cast<GSTextureVK*>(dTex);
@@ -2852,14 +2863,37 @@ void GSDeviceVK::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	ShaderConvert shader /* = ShaderConvert::COPY */, bool linear /* = true */)
 {
 	pxAssert(HasDepthOutput(shader) == (dTex && dTex->GetType() == GSTexture::Type::DepthStencil));
-	pxAssert(linear ? SupportsBilinear(shader) : SupportsNearest(shader));
 
 	GL_INS("StretchRect(%d) {%d,%d} %dx%d -> {%d,%d) %dx%d", shader, int(sRect.left), int(sRect.top),
 		int(sRect.right - sRect.left), int(sRect.bottom - sRect.top), int(dRect.left), int(dRect.top),
 		int(dRect.right - dRect.left), int(dRect.bottom - dRect.top));
 
+	if (shader == ShaderConvert::COPY && dTex && dTex->GetFormat() != m_emulation_hw_rt_texture_format)
+	{
+		pxAssert(false); //TODO: delete if this never happens???
+
+		if (dTex->GetFormat() == GSTexture::Format::Color)
+		{
+			shader = ShaderConvert::COPY_EMU_LQ;
+		}
+		else if (dTex->GetFormat() == m_postprocess_texture_format)
+		{
+			shader = ShaderConvert::COPY_POSTPROCESS;
+		}
+		else
+		{
+			pxAssertMsg(false, "Trying to use the ShaderConvert::COPY shader pipeline to target an unsupported RT format");
+		}
+	}
+	else
+	{
+		pxAssertMsg(dTex, "StretchRect(): The destination texture needs to valid (it used to redirect to the presentation surface but it doesn't anymore)");
+	}
+	
+	pxAssert(linear ? SupportsBilinear(shader) : SupportsNearest(shader));
+
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), sRect, static_cast<GSTextureVK*>(dTex), dRect,
-		dTex ? m_convert[static_cast<int>(shader)] : m_present[static_cast<int>(shader)], linear,
+		m_convert[static_cast<int>(shader)], linear,
 		ShaderConvertWriteMask(shader) == 0xf);
 }
 
@@ -2867,6 +2901,8 @@ void GSDeviceVK::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	bool green, bool blue, bool alpha, ShaderConvert shader)
 {
 	GL_PUSH("ColorCopy Red:%d Green:%d Blue:%d Alpha:%d", red, green, blue, alpha);
+
+	pxAssertMsg((shader == ShaderConvert::COPY || shader == ShaderConvert::RTA_CORRECTION) && dTex && dTex->GetFormat() == m_emulation_hw_rt_texture_format, "Trying to use the m_color_copy shader pipeline to target an unsupported RT format");
 
 	const u32 index = (red ? 1 : 0) | (green ? 2 : 0) | (blue ? 4 : 0) | (alpha ? 8 : 0);
 	const bool allow_discard = (index == 0xf);
@@ -2882,6 +2918,7 @@ void GSDeviceVK::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(GetWindowWidth(), GetWindowHeight()));
 	cb.SetTime(shaderTime);
+	cb.SetBrightness(EmuConfig.HDROutput ? (GSConfig.HDR_BrightnessNits / Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS) : 1.f);
 	SetUtilityPushConstants(&cb, sizeof(cb));
 
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), sRect, static_cast<GSTextureVK*>(dTex), dRect,
@@ -2995,6 +3032,7 @@ void GSDeviceVK::DoMultiStretchRects(
 	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler : m_point_sampler);
 
 	pxAssert(shader == ShaderConvert::COPY || shader == ShaderConvert::RTA_CORRECTION || rects[0].wmask.wrgba == 0xf);
+	pxAssert(shader != ShaderConvert::COPY || dTex->GetFormat() == m_emulation_hw_rt_texture_format);
 	int rta_bit = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
 	SetPipeline(
 		(rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba | rta_bit] : m_convert[static_cast<int>(shader)]);
@@ -3021,7 +3059,7 @@ void GSDeviceVK::BeginRenderPassForStretchRect(
 																		   m_utility_depth_render_pass_load,
 				dtex_rc);
 	}
-	else if (dTex->GetFormat() == GSTexture::Format::Color)
+	else if (dTex->GetFormat() == m_emulation_hw_rt_texture_format)
 	{
 		if (load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
 			BeginClearRenderPass(m_utility_color_render_pass_clear, dtex_rc, dTex->GetClearColor());
@@ -3030,8 +3068,20 @@ void GSDeviceVK::BeginRenderPassForStretchRect(
 																		   m_utility_color_render_pass_load,
 				dtex_rc);
 	}
+	else if (dTex->GetFormat() == m_postprocess_texture_format)
+	{
+		if (load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
+			BeginClearRenderPass(m_postprocess_render_pass_clear, dtex_rc, dTex->GetClearColor());
+		else
+			BeginRenderPass((load_op == VK_ATTACHMENT_LOAD_OP_DONT_CARE) ? m_postprocess_render_pass_discard :
+																		   m_postprocess_render_pass_load,
+				dtex_rc);
+	}
 	else
 	{
+		// This might be innocuous, but either way it should have already been handled above with "m_utility_color_render_pass_*" or "m_postprocess_render_pass_*".
+		pxAssert(dTex->GetFormat() != GSTexture::Format::Color && dTex->GetFormat() != GSTexture::Format::ColorHQ && dTex->GetFormat() != GSTexture::Format::ColorHDR);
+
 		// integer formats, etc
 		const VkRenderPass rp = GetRenderPass(dTex->GetVkFormat(), VK_FORMAT_UNDEFINED, load_op,
 			VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
@@ -3187,6 +3237,7 @@ void GSDeviceVK::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32
 		clamp_min, static_cast<int>(downsample_factor), 0, static_cast<float>(downsample_factor * downsample_factor)};
 	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
 
+	pxAssert(dTex->GetFormat() == m_emulation_hw_rt_texture_format); // "ShaderConvert::DOWNSAMPLE_COPY" expects RTs of this format
 	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
 	//const GSVector4 dRect = GSVector4(dTex->GetRect());
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), GSVector4::zero(), static_cast<GSTextureVK*>(dTex), dRect,
@@ -3229,6 +3280,8 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	}
 	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(GSTextureVK::Layout::ColorAttachment);
 
+	pxAssert(dTex->GetFormat() == m_postprocess_texture_format); // "ShaderConvert::COPY_POSTPROCESS" and "m_postprocess_render_pass_*" expect RTs of this format
+
 	const GSVector2i dsize(dTex->GetSize());
 	const GSVector4i darea(0, 0, dsize.x, dsize.y);
 	bool dcleared = false;
@@ -3241,8 +3294,8 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 			static_cast<GSTextureVK*>(sTex[1])->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 			OMSetRenderTargets(dTex, nullptr, darea);
 			SetUtilityTexture(sTex[1], sampler);
-			BeginClearRenderPass(m_utility_color_render_pass_clear, darea, c);
-			SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)]);
+			BeginClearRenderPass(m_postprocess_render_pass_clear, darea, c);
+			SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY_POSTPROCESS)]);
 			DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
 			dTex->SetState(GSTexture::State::Dirty);
 			dcleared = true;
@@ -3280,13 +3333,13 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	{
 		EndRenderPass();
 		OMSetRenderTargets(dTex, nullptr, darea);
-		BeginClearRenderPass(m_utility_color_render_pass_clear, darea, c);
+		BeginClearRenderPass(m_postprocess_render_pass_clear, darea, c);
 		dTex->SetState(GSTexture::State::Dirty);
 	}
 	else if (!InRenderPass())
 	{
 		OMSetRenderTargets(dTex, nullptr, darea);
-		BeginRenderPass(m_utility_color_render_pass_load, darea);
+		BeginRenderPass(m_postprocess_render_pass_load, darea);
 	}
 
 	if (sTex[0] && sTex[0]->GetState() == GSTexture::State::Dirty)
@@ -3300,6 +3353,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 
 	if (feedback_write_1)
 	{
+		pxAssert(sTex[2]->GetFormat() == m_emulation_hw_rt_texture_format); // "ShaderConvert::YUV" and "m_utility_color_render_pass_load" expect RTs of this format
 		EndRenderPass();
 		SetPipeline(m_convert[static_cast<int>(ShaderConvert::YUV)]);
 		SetUtilityTexture(dTex, sampler);
@@ -3336,17 +3390,17 @@ void GSDeviceVK::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 }
 
-void GSDeviceVK::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
+void GSDeviceVK::DoColorCorrect(GSTexture* sTex, GSTexture* dTex, const ColorCorrectConstantBuffer& cb)
 {
 	const GSVector4 sRect = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
 	const GSVector4i dRect = dTex->GetRect();
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, dRect);
 	SetUtilityTexture(sTex, m_point_sampler);
-	BeginRenderPass(m_utility_color_render_pass_discard, dRect);
+	BeginRenderPass(m_postprocess_render_pass_discard, dRect);
 	dTex->SetState(GSTexture::State::Dirty);
-	SetPipeline(m_shadeboost_pipeline);
-	SetUtilityPushConstants(params, sizeof(float) * 4);
+	SetPipeline(m_colorcorrect_pipeline);
+	SetUtilityPushConstants(&cb, sizeof(cb));
 	DrawStretchRect(sRect, GSVector4(dRect), dTex->GetSize());
 	EndRenderPass();
 
@@ -3360,7 +3414,7 @@ void GSDeviceVK::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, dRect);
 	SetUtilityTexture(sTex, m_linear_sampler);
-	BeginRenderPass(m_utility_color_render_pass_discard, dRect);
+	BeginRenderPass(m_postprocess_render_pass_discard, dRect);
 	dTex->SetState(GSTexture::State::Dirty);
 	SetPipeline(m_fxaa_pipeline);
 	DrawStretchRect(sRect, GSVector4(dRect), dTex->GetSize());
@@ -3822,9 +3876,9 @@ bool GSDeviceVK::CreateRenderPasses()
 			return false; \
 	} while (0)
 
-	const VkFormat rt_format = LookupNativeFormat(GSTexture::Format::Color);
-	const VkFormat colclip_rt_format = LookupNativeFormat(GSTexture::Format::ColorClip);
-	const VkFormat depth_format = LookupNativeFormat(GSTexture::Format::DepthStencil);
+	const VkFormat rt_format = LookupNativeFormat(m_emulation_hw_rt_texture_format, GSTexture::Type::RenderTarget);
+	const VkFormat colclip_rt_format = LookupNativeFormat(GSTexture::Format::ColorClip, GSTexture::Type::RenderTarget);
+	const VkFormat depth_format = LookupNativeFormat(GSTexture::Format::DepthStencil, GSTexture::Type::RenderTarget);
 
 	for (u32 rt = 0; rt < 2; rt++)
 	{
@@ -3874,6 +3928,14 @@ bool GSDeviceVK::CreateRenderPasses()
 	GET(m_utility_depth_render_pass_discard, VK_FORMAT_UNDEFINED, depth_format, false, false,
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 
+	const VkFormat pp_rt_format = LookupNativeFormat(m_postprocess_texture_format, GSTexture::Type::RenderTarget);
+	GET(m_postprocess_render_pass_load, pp_rt_format, VK_FORMAT_UNDEFINED, false, false, VK_ATTACHMENT_LOAD_OP_LOAD,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+	GET(m_postprocess_render_pass_clear, pp_rt_format, VK_FORMAT_UNDEFINED, false, false, VK_ATTACHMENT_LOAD_OP_CLEAR,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+	GET(m_postprocess_render_pass_discard, pp_rt_format, VK_FORMAT_UNDEFINED, false, false,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+
 	m_date_setup_render_pass = GetRenderPass(VK_FORMAT_UNDEFINED, depth_format, VK_ATTACHMENT_LOAD_OP_LOAD,
 		VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
 		m_features.stencil_buffer ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -3899,6 +3961,13 @@ bool GSDeviceVK::CompileConvertPipelines()
 	if (vs == VK_NULL_HANDLE)
 		return false;
 	ScopedGuard vs_guard([this, &vs]() { vkDestroyShaderModule(m_device, vs, nullptr); });
+
+	std::string psource;
+	if (EmuConfig.HDRRendering)
+	{
+		psource += "#define PS_HDR 1\n";
+	}
+	psource += *shader;
 
 	Vulkan::GraphicsPipelineBuilder gpb;
 	SetPipelineProvokingVertex(m_features, gpb);
@@ -3941,9 +4010,23 @@ bool GSDeviceVK::CompileConvertPipelines()
 				rp = m_date_setup_render_pass;
 			}
 			break;
+			case ShaderConvert::COPY_EMU_LQ:
+			{
+				rp = GetRenderPass(LookupNativeFormat(GSTexture::Format::Color, GSTexture::Type::RenderTarget),
+					LookupNativeFormat(depth ? GSTexture::Format::DepthStencil : GSTexture::Format::Invalid),
+					VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+			}
+			break;
+			case ShaderConvert::COPY_POSTPROCESS:
+			{
+				rp = GetRenderPass(LookupNativeFormat(m_postprocess_texture_format, GSTexture::Type::RenderTarget),
+					LookupNativeFormat(depth ? GSTexture::Format::DepthStencil : GSTexture::Format::Invalid),
+					VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+			}
+			break;
 			default:
 			{
-				rp = GetRenderPass(LookupNativeFormat(depth ? GSTexture::Format::Invalid : GSTexture::Format::Color),
+				rp = GetRenderPass(LookupNativeFormat(depth ? GSTexture::Format::Invalid : m_emulation_hw_rt_texture_format, GSTexture::Type::RenderTarget),
 					LookupNativeFormat(depth ? GSTexture::Format::DepthStencil : GSTexture::Format::Invalid),
 					VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 			}
@@ -3969,7 +4052,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 
 		gpb.SetColorWriteMask(0, ShaderConvertWriteMask(i));
 
-		VkShaderModule ps = GetUtilityFragmentShader(*shader, shaderName(i));
+		VkShaderModule ps = GetUtilityFragmentShader(psource, shaderName(i));
 		if (ps == VK_NULL_HANDLE)
 			return false;
 
@@ -4060,7 +4143,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 	{
 		const std::string entry_point(StringUtil::StdStringFromFormat("ps_stencil_image_init_%d", datm));
 		VkShaderModule ps =
-			GetUtilityFragmentShader(*shader, entry_point.c_str());
+			GetUtilityFragmentShader(psource, entry_point.c_str());
 		if (ps == VK_NULL_HANDLE)
 			return false;
 
@@ -4104,7 +4187,14 @@ bool GSDeviceVK::CompilePresentPipelines()
 		return false;
 	}
 
-	VkShaderModule vs = GetUtilityVertexShader(*shader);
+	std::string source;
+	if (EmuConfig.HDROutput)
+	{
+		source += "#define PS_HDR 1\n";
+	}
+	source += *shader;
+
+	VkShaderModule vs = GetUtilityVertexShader(source);
 	if (vs == VK_NULL_HANDLE)
 		return false;
 	ScopedGuard vs_guard([this, &vs]() { vkDestroyShaderModule(m_device, vs, nullptr); });
@@ -4128,7 +4218,7 @@ bool GSDeviceVK::CompilePresentPipelines()
 	{
 		const int index = static_cast<int>(i);
 
-		VkShaderModule ps = GetUtilityFragmentShader(*shader, shaderName(i));
+		VkShaderModule ps = GetUtilityFragmentShader(source, shaderName(i));
 		if (ps == VK_NULL_HANDLE)
 			return false;
 
@@ -4156,7 +4246,7 @@ bool GSDeviceVK::CompileInterlacePipelines()
 	}
 
 	VkRenderPass rp =
-		GetRenderPass(LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
+		GetRenderPass(LookupNativeFormat(m_postprocess_texture_format, GSTexture::Type::RenderTarget), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
 	if (!rp)
 		return false;
 
@@ -4207,7 +4297,7 @@ bool GSDeviceVK::CompileMergePipelines()
 	}
 
 	VkRenderPass rp =
-		GetRenderPass(LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
+		GetRenderPass(LookupNativeFormat(m_postprocess_texture_format, GSTexture::Type::RenderTarget), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
 	if (!rp)
 		return false;
 
@@ -4252,7 +4342,7 @@ bool GSDeviceVK::CompileMergePipelines()
 bool GSDeviceVK::CompilePostProcessingPipelines()
 {
 	VkRenderPass rp =
-		GetRenderPass(LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
+		GetRenderPass(LookupNativeFormat(m_postprocess_texture_format, GSTexture::Type::RenderTarget), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
 	if (!rp)
 		return false;
 
@@ -4283,7 +4373,12 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 			return false;
 		}
 
-		const std::string psource = "#define FXAA_GLSL_VK 1\n" + *pshader;
+		std::string psource = "#define FXAA_GLSL_VK 1\n";
+		if (EmuConfig.HDROutput)
+		{
+			psource += "#define PS_HDR 1\n";
+		}
+		psource += *pshader;
 
 		VkShaderModule vs = GetUtilityVertexShader(*vshader);
 		if (vs == VK_NULL_HANDLE)
@@ -4304,19 +4399,30 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 	}
 
 	{
-		const std::optional<std::string> shader = ReadShaderSource("shaders/vulkan/shadeboost.glsl");
+		const std::optional<std::string> shader = ReadShaderSource("shaders/vulkan/colorcorrect.glsl");
 		if (!shader)
 		{
-			Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/shadeboost.glsl.");
+			Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/colorcorrect.glsl.");
 			return false;
 		}
 
-		VkShaderModule vs = GetUtilityVertexShader(*shader);
+		std::string source;
+		if (EmuConfig.HDRRendering)
+		{
+			source += "#define PS_HDR_INPUT 1\n";
+		}
+		if (EmuConfig.HDROutput)
+		{
+			source += "#define PS_HDR_OUTPUT 1\n";
+		}
+		source += *shader;
+
+		VkShaderModule vs = GetUtilityVertexShader(source);
 		ScopedGuard vs_guard([this, &vs]() { vkDestroyShaderModule(m_device, vs, nullptr); });
 		if (vs == VK_NULL_HANDLE)
 			return false;
 
-		VkShaderModule ps = GetUtilityFragmentShader(*shader);
+		VkShaderModule ps = GetUtilityFragmentShader(source);
 		ScopedGuard ps_guard([this, &ps]() { vkDestroyShaderModule(m_device, ps, nullptr); });
 		if (ps == VK_NULL_HANDLE)
 			return false;
@@ -4324,11 +4430,11 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 		gpb.SetVertexShader(vs);
 		gpb.SetFragmentShader(ps);
 
-		m_shadeboost_pipeline = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
-		if (!m_shadeboost_pipeline)
+		m_colorcorrect_pipeline = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
+		if (!m_colorcorrect_pipeline)
 			return false;
 
-		Vulkan::SetObjectName(m_device, m_shadeboost_pipeline, "Shadeboost pipeline");
+		Vulkan::SetObjectName(m_device, m_colorcorrect_pipeline, "ColorCorrect pipeline");
 	}
 
 	return true;
@@ -4387,7 +4493,14 @@ bool GSDeviceVK::CompileImGuiPipeline()
 		return false;
 	}
 
-	VkShaderModule vs = GetUtilityVertexShader(glsl.value(), "vs_main");
+	std::string source;
+	if (EmuConfig.HDROutput)
+	{
+		source += "#define PS_HDR 1\n";
+	}
+	source += *glsl;
+
+	VkShaderModule vs = GetUtilityVertexShader(source, "vs_main");
 	if (vs == VK_NULL_HANDLE)
 	{
 		Console.Error("VK: Failed to compile ImGui vertex shader");
@@ -4395,7 +4508,7 @@ bool GSDeviceVK::CompileImGuiPipeline()
 	}
 	ScopedGuard vs_guard([this, &vs]() { vkDestroyShaderModule(m_device, vs, nullptr); });
 
-	VkShaderModule ps = GetUtilityFragmentShader(glsl.value(), "ps_main");
+	VkShaderModule ps = GetUtilityFragmentShader(source, "ps_main");
 	if (ps == VK_NULL_HANDLE)
 	{
 		Console.Error("VK: Failed to compile ImGui pixel shader");
@@ -4440,13 +4553,26 @@ void GSDeviceVK::RenderImGui()
 	if (draw_data->CmdListsCount == 0)
 		return;
 
-	const float uniforms[2][2] = {{
+	// Imgui currently follows the same brightness as the whole HDR image (applied earlier on presentation),
+	// we could expose this variable to users to make it brightness
+	float imgui_hdr_brightness_nits = GSConfig.HDR_BrightnessNits;
+
+	const float uniforms[4][2] = {{
 									  2.0f / static_cast<float>(m_window_info.surface_width),
 									  2.0f / static_cast<float>(m_window_info.surface_height),
 								  },
 		{
 			-1.0f,
 			-1.0f,
+		},
+		{
+			EmuConfig.HDROutput ? (imgui_hdr_brightness_nits / Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS) : 1.f,
+			0.0f,
+		},
+		// Padding
+		{
+			0.0f,
+			0.0f,
 		}};
 
 	SetUtilityPushConstants(uniforms, sizeof(uniforms));
@@ -4621,8 +4747,8 @@ void GSDeviceVK::DestroyResources()
 	}
 	if (m_fxaa_pipeline != VK_NULL_HANDLE)
 		vkDestroyPipeline(m_device, m_fxaa_pipeline, nullptr);
-	if (m_shadeboost_pipeline != VK_NULL_HANDLE)
-		vkDestroyPipeline(m_device, m_shadeboost_pipeline, nullptr);
+	if (m_colorcorrect_pipeline != VK_NULL_HANDLE)
+		vkDestroyPipeline(m_device, m_colorcorrect_pipeline, nullptr);
 
 	for (VkPipeline it : m_cas_pipelines)
 	{
@@ -4788,6 +4914,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_TEX_IS_FB", sel.tex_is_fb);
 	AddMacro(ss, "PS_NO_COLOR", sel.no_color);
 	AddMacro(ss, "PS_NO_COLOR1", sel.no_color1);
+	AddMacro(ss, "PS_HDR", EmuConfig.HDRRendering);
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(ss.str());
@@ -5721,7 +5848,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	if (config.require_one_barrier && !m_features.texture_barrier)
 	{
 		// requires a copy of the RT
-		draw_rt_clone = static_cast<GSTextureVK*>(CreateTexture(rtsize.x, rtsize.y, 1, colclip_rt ? GSTexture::Format::ColorClip : GSTexture::Format::Color, true));
+		pxAssert(draw_rt->GetFormat() == (colclip_rt ? GSTexture::Format::ColorClip : m_emulation_hw_rt_texture_format));
+		draw_rt_clone = static_cast<GSTextureVK*>(CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true));
 		if (draw_rt_clone)
 		{
 			EndRenderPass();

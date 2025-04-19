@@ -105,7 +105,7 @@ private:
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear) override;
 	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) override;
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) override;
-	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) override;
+	void DoColorCorrect(GSTexture* sTex, GSTexture* dTex, const ColorCorrectConstantBuffer& cb) override;
 
 	bool CreateCASShaders();
 	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) override;
@@ -206,7 +206,7 @@ private:
 	{
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
 		wil::com_ptr_nothrow<ID3D11Buffer> cb;
-	} m_shadeboost;
+	} m_colorcorrect;
 
 	struct
 	{
@@ -228,7 +228,7 @@ private:
 		wil::com_ptr_nothrow<ID3D11VertexShader> vs;
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
 		wil::com_ptr_nothrow<ID3D11BlendState> bs;
-		wil::com_ptr_nothrow<ID3D11Buffer> vs_cb;
+		wil::com_ptr_nothrow<ID3D11Buffer> cb;
 	} m_imgui;
 
 	// Shaders...
