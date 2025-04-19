@@ -10879,24 +10879,24 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2687"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2688"/>
         <source>Stencil buffers and texture barriers are both unavailable, this will break some graphical effects.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5065"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5060"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="391"/>
+        <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="392"/>
         <source>Your system has the &quot;OpenCL, OpenGL, and Vulkan Compatibility Pack&quot; installed.
 This Vulkan driver crashes PCSX2 on some GPUs.
 To use the Vulkan renderer, you should remove this app package.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="410"/>
+        <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="411"/>
         <source>The Vulkan renderer was automatically selected, but no compatible devices were found.
        You should update all graphics drivers in your system, including any integrated GPUs
        to use the Vulkan renderer.</source>
@@ -19266,12 +19266,12 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>SDLInputSource</name>
     <message>
-        <location filename="../../pcsx2/Input/SDLInputSource.cpp" line="701"/>
+        <location filename="../../pcsx2/Input/SDLInputSource.cpp" line="767"/>
         <source>SDL3 Migration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Input/SDLInputSource.cpp" line="702"/>
+        <location filename="../../pcsx2/Input/SDLInputSource.cpp" line="768"/>
         <source>As part of our upgrade to SDL3, we&apos;ve had to migrate your binds
 Your controller did not match the Xbox layout and may need rebinding
 Please verify your controller settings and amend if required</source>
