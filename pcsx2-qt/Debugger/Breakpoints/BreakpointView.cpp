@@ -21,6 +21,11 @@ BreakpointView::BreakpointView(const DebuggerViewParameters& parameters)
 	connect(m_ui.breakpointList, &QTableView::doubleClicked, this, &BreakpointView::onDoubleClicked);
 
 	m_ui.breakpointList->setModel(m_model);
+	this->resizeColumns();
+}
+
+void BreakpointView::resizeColumns()
+{
 	for (std::size_t i = 0; auto mode : BreakpointModel::HeaderResizeModes)
 	{
 		m_ui.breakpointList->horizontalHeader()->setSectionResizeMode(i, mode);
@@ -124,6 +129,7 @@ void BreakpointView::contextDelete()
 void BreakpointView::contextNew()
 {
 	BreakpointDialog* bpDialog = new BreakpointDialog(this, &cpu(), *m_model);
+	connect(bpDialog, &QDialog::accepted, this, &BreakpointView::resizeColumns);
 	bpDialog->setAttribute(Qt::WA_DeleteOnClose);
 	bpDialog->show();
 }
@@ -140,6 +146,7 @@ void BreakpointView::contextEdit()
 	auto bpObject = m_model->at(selectedRow);
 
 	BreakpointDialog* bpDialog = new BreakpointDialog(this, &cpu(), *m_model, bpObject, selectedRow);
+	connect(bpDialog, &QDialog::accepted, this, &BreakpointView::resizeColumns);
 	bpDialog->setAttribute(Qt::WA_DeleteOnClose);
 	bpDialog->show();
 }

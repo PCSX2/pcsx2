@@ -12,7 +12,7 @@
 #include "VMManager.h"
 
 std::mutex DebuggerSettingsManager::writeLock;
-const QString DebuggerSettingsManager::settingsFileVersion = "0.00";
+const QString DebuggerSettingsManager::settingsFileVersion = "0.01";
 
 QJsonObject DebuggerSettingsManager::loadGameSettingsJSON()
 {
@@ -61,6 +61,18 @@ void DebuggerSettingsManager::loadGameSettings(BreakpointModel* bpModel)
 		Console.WriteLnFmt("Debugger Settings Manager: Failed to read Breakpoints array from settings file: '{}'", path);
 		return;
 	}
+	
+	// Breakpoint descriptions were added at debugger settings file version 0.01. If loading
+	// saved breakpoints from a previous version (only 0.00 existed prior), the breakpoints will be 
+	// missing a description. This code will add in an empty description so that the previous 
+	// version, 0.00, is compatible with 0.01.
+	const QJsonValue savedVersionValue = loadGameSettingsJSON().value("Version");
+	const QString savedVersion = savedVersionValue.toString();
+	bool isMissingDescription = false;
+	if (!savedVersionValue.isUndefined())
+	{
+		isMissingDescription = savedVersion.toStdString() == "0.00";
+	}
 
 	const QJsonArray breakpointsArray = breakpointsValue.toArray();
 	for (u32 row = 0; row < breakpointsArray.size(); row++)
@@ -71,7 +83,13 @@ void DebuggerSettingsManager::loadGameSettings(BreakpointModel* bpModel)
 			Console.WriteLn("Debugger Settings Manager: Failed to load invalid Breakpoint object.");
 			continue;
 		}
-		const QJsonObject rowObject = rowValue.toObject();
+		QJsonObject rowObject = rowValue.toObject();
+		
+		// Add empty description for saved breakpoints from debugger settings versions prior to 0.01
+		if (isMissingDescription)
+		{
+			rowObject.insert(QString("DESCRIPTION"), QJsonValue(""));
+		}
 
 		QStringList fields;
 		u32 col = 0;
