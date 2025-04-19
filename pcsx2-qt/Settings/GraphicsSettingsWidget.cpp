@@ -137,12 +137,19 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostBrightness, "EmuCore/GS", "ShadeBoost_Brightness", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostContrast, "EmuCore/GS", "ShadeBoost_Contrast", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostSaturation, "EmuCore/GS", "ShadeBoost_Saturation", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.colorCorrect, "EmuCore/GS", "ColorCorrect", false);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.colorCorrectGameGamma, "EmuCore/GS", "ColorCorrect_GameGamma", Pcsx2Config::GSOptions::DEFAULT_GAME_GAMMA);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.colorCorrectGameColorSpace, "EmuCore/GS", "ColorCorrect_GameColorSpace", (int)GSColorSpaceCorrection::Rec_709);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.hdrBrightness, "EmuCore/GS", "HDR_BrightnessNits", Pcsx2Config::GSOptions::DEFAULT_HDR_BRIGHTNESS_NITS);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.hdrPeakBrightness, "EmuCore/GS", "HDR_PeakBrightnessNits", Pcsx2Config::GSOptions::DEFAULT_HDR_PEAK_BRIGHTNESS_NITS);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.tvShader, "EmuCore/GS", "TVShader", DEFAULT_TV_SHADER_MODE);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.casMode, "EmuCore/GS", "CASMode", static_cast<int>(GSCASMode::Disabled));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.casSharpness, "EmuCore/GS", "CASSharpness", DEFAULT_CAS_SHARPNESS);
 
 	connect(m_ui.shadeBoost, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onShadeBoostChanged);
 	onShadeBoostChanged();
+	connect(m_ui.colorCorrect, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onColorCorrectChanged);
+	onColorCorrectChanged();
 	connect(m_ui.osdMessagesPos, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onMessagesPosChanged);
 	connect(m_ui.osdPerformancePos, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onPerformancePosChanged);
 	onMessagesPosChanged();
@@ -158,6 +165,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		s_anisotropic_filtering_entries, s_anisotropic_filtering_values, "0");
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.dithering, "EmuCore/GS", "dithering_ps2", 2);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.mipmapping, "EmuCore/GS", "hw_mipmap", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hdr, "EmuCore/GS", "hdr", false); //TODO: expose to SW renderer too? Or split the HDR textures vs HDR output
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.blending, "EmuCore/GS", "accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic));
 	SettingWidgetBinder::BindWidgetToIntSetting(
@@ -167,6 +175,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	connect(m_ui.trilinearFiltering, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
 		&GraphicsSettingsWidget::onTrilinearFilteringChanged);
 	onTrilinearFilteringChanged();
+	connect(m_ui.hdr, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onHDRChanged);
+	onHDRChanged();
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes
@@ -549,6 +559,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			m_ui.mipmapping, tr("Mipmapping"), tr("Checked"), tr("Enables mipmapping, which some games require to render correctly. Mipmapping uses progressively lower resolution variants of textures at progressively further distances to reduce processing load and avoid visual artifacts."));
 
 		dialog->registerWidgetHelp(
+			m_ui.hdr, tr("HDR"), tr("Checked"), tr("Forces all rendering to be in HDR without integer rounding, and HDR output. It will likely break many games. It might not work on all rendering backends."));
+
+		dialog->registerWidgetHelp(
 			m_ui.textureFiltering, tr("Texture Filtering"), tr("Bilinear (PS2)"),
 			tr("Changes what filtering algorithm is used to map textures to surfaces.<br> "
 			   "Nearest: Makes no attempt to blend colors.<br> "
@@ -740,6 +753,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.shadeBoostContrast, tr("Contrast"), tr("50"), tr("Adjusts contrast. 50 is normal."));
 
 		dialog->registerWidgetHelp(m_ui.shadeBoostSaturation, tr("Saturation"), tr("50"), tr("Adjusts saturation. 50 is normal."));
+
+		dialog->registerWidgetHelp(m_ui.colorCorrectGameGamma, tr("Game Gamma"), tr(/*DEFAULT_GAME_GAMMA*/ "2.35"), tr("This will interpret the game as having this specific gamma, and convert it to your display gamma (meant to be 2.2).\n2.35 is the average CRT TV gamma."));
+
+		dialog->registerWidgetHelp(m_ui.colorCorrectGameColorSpace, tr("Game Color Space"), tr("Rec.709/sRGB"), tr("This will interpret the game as being developed on (or for) a specific color space (each region had its own), and convert it to your display color space (Rec.709/sRGB).\nIt's not know what standard each game targeted, if any."));
+
+		dialog->registerWidgetHelp(m_ui.hdrBrightness, tr("HDR Brightness"), tr(/*DEFAULT_HDR_BRIGHTNESS_NITS*/ "203"), tr("Adjusts the brightness of the HDR output (in nits). 203 nits is standard."));
+
+		dialog->registerWidgetHelp(m_ui.hdrPeakBrightness, tr("HDR Peak Brightness"), tr(/*DEFAULT_HDR_PEAK_BRIGHTNESS_NITS*/ "203"), tr("Adjusts the peak brightness of the HDR output (in nits). It should match your display peak brightness."));
 
 		dialog->registerWidgetHelp(m_ui.tvShader, tr("TV Shader"), tr("None (Default)"),
 			tr("Applies a shader which replicates the visual effects of different styles of television set."));
@@ -953,6 +974,20 @@ void GraphicsSettingsWidget::onShadeBoostChanged()
 	m_ui.shadeBoostSaturation->setEnabled(enabled);
 }
 
+void GraphicsSettingsWidget::onColorCorrectChanged()
+{
+	const bool enabled = m_dialog->getEffectiveBoolValue("EmuCore/GS", "ColorCorrect", false);
+	m_ui.colorCorrectGameGamma->setEnabled(enabled);
+	m_ui.colorCorrectGameColorSpace->setEnabled(enabled);
+}
+
+void GraphicsSettingsWidget::onHDRChanged()
+{
+	const bool enabled = m_dialog->getEffectiveBoolValue("EmuCore/GS", "hdr", false);
+	m_ui.hdrBrightness->setEnabled(enabled);
+	m_ui.hdrPeakBrightness->setEnabled(enabled);
+}
+
 void GraphicsSettingsWidget::onMessagesPosChanged()
 {
 	const bool enabled = m_ui.osdMessagesPos->currentIndex() != (m_dialog->isPerGameSettings() ? 1 : 0);
@@ -1142,6 +1177,11 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	// texture replacement
 	m_ui.tabs->setTabEnabled(5, is_hardware);
 	m_ui.tabs->setTabVisible(5, is_hardware);
+
+	// HDR (SW rendering supports it on post processing only, but for now they don't have separate GUI settings)
+	m_ui.hdr->setEnabled(!is_software && type != GSRendererType::OGL && type != GSRendererType::Metal);
+	m_ui.hdrBrightness->setEnabled(m_ui.hdr->isEnabled() && m_ui.hdr->isChecked());
+	m_ui.hdrPeakBrightness->setEnabled(m_ui.hdr->isEnabled() && m_ui.hdr->isChecked());
 
 	// move back to the renderer if we're on one of the now-hidden tabs
 	if (is_software && (prev_tab == 1 || (prev_tab >= 2 && prev_tab <= 5)))

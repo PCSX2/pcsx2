@@ -59,6 +59,7 @@ bool D3D11ShaderCache::Open(D3D_FEATURE_LEVEL feature_level, bool debug)
 	m_feature_level = feature_level;
 	m_debug = debug;
 
+#if !PCSX2_DEVBUILD
 	if (!GSConfig.DisableShaderCache)
 	{
 		const std::string base_filename = GetCacheBaseFileName(feature_level, debug);
@@ -68,6 +69,7 @@ bool D3D11ShaderCache::Open(D3D_FEATURE_LEVEL feature_level, bool debug)
 		if (!ReadExisting(index_filename, blob_filename))
 			return CreateNew(index_filename, blob_filename);
 	}
+#endif
 
 	return true;
 }

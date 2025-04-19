@@ -870,9 +870,10 @@ bool GSCapture::DeliverVideoFrame(GSTexture* stex)
 		s_frame_encoded_cv.wait(lock, [&pf]() { return pf.state == PendingFrame::State::Unused; });
 	}
 
-	if (!pf.tex || pf.tex->GetWidth() != static_cast<u32>(stex->GetWidth()) || pf.tex->GetHeight() != static_cast<u32>(stex->GetHeight()))
+	if (!pf.tex || pf.tex->GetWidth() != static_cast<u32>(stex->GetWidth()) || pf.tex->GetHeight() != static_cast<u32>(stex->GetHeight()) || pf.tex->GetFormat() != stex->GetFormat())
 	{
 		pf.tex.reset();
+		pxAssert(stex->GetFormat() == GSCapture::CAPTURE_TEX_FORMAT); // For now only this format is supported
 		pf.tex = g_gs_device->CreateDownloadTexture(stex->GetWidth(), stex->GetHeight(), stex->GetFormat());
 		if (!pf.tex)
 		{

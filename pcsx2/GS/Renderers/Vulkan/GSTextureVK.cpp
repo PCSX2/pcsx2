@@ -65,7 +65,7 @@ GSTextureVK::~GSTextureVK()
 
 std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int width, int height, int levels)
 {
-	const VkFormat vk_format = GSDeviceVK::GetInstance()->LookupNativeFormat(format);
+	const VkFormat vk_format = GSDeviceVK::GetInstance()->LookupNativeFormat(format, type);
 
 	VkImageCreateInfo ici = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, nullptr, 0, VK_IMAGE_TYPE_2D, vk_format,
 		{static_cast<u32>(width), static_cast<u32>(height), 1}, static_cast<u32>(levels), 1, VK_SAMPLE_COUNT_1_BIT,

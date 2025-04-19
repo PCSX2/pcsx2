@@ -91,6 +91,7 @@ std::vector<GSAdapterInfo> D3D::GetAdapterInfo(IDXGIFactory5* factory)
 		if (SUCCEEDED(hr = adapter->EnumOutputs(0, &output)))
 		{
 			UINT num_modes = 0;
+			// This will work the same regardless of the SDR/HDR format we pass in
 			if (SUCCEEDED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
 			{
 				std::vector<DXGI_MODE_DESC> dmodes(num_modes);
