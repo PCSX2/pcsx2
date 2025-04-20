@@ -90,7 +90,7 @@ bool checkUnderflow(u32& xReg, u32 cFlagsToSet) {
 	return false;
 }
 
-bool checkOverflowUnderfowSoft(PS2Float xReg, u32 cFlagsToSet, bool oflw)
+bool checkOverflowUnderflowSoft(PS2Float xReg, u32 cFlagsToSet, bool oflw)
 {
 	if ((oflw && xReg.of) || (!oflw && xReg.uf))
 	{
@@ -262,8 +262,8 @@ void ADD_S() {
 	{
 		PS2Float addres = fpuAccurateAdd(_FsValUl_, _FtValUl_);
 		_FdValUl_ = addres.raw;
-		if (checkOverflowUnderfowSoft(addres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(addres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(addres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(addres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
@@ -278,8 +278,8 @@ void ADDA_S() {
 	{
 		PS2Float addres = fpuAccurateAdd(_FsValUl_, _FtValUl_);
 		_FAValUl_ = addres.raw;
-		if (checkOverflowUnderfowSoft(addres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(addres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(addres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(addres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
@@ -359,8 +359,8 @@ void DIV_S() {
 		PS2Float divres = fpuAccurateDiv(_FsValUl_, _FtValUl_);
 		_FdValUl_ = divres.raw;
 		if (checkDivideByZeroInvalidSoft(divres, FPUflagD | FPUflagSD, FPUflagI | FPUflagSI)) return;
-		if (checkOverflowUnderfowSoft(divres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(divres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(divres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(divres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
@@ -380,8 +380,8 @@ void MADD_S() {
 	{
 		PS2Float fmacres = fpuAccurateMulAdd(_FAValUl_, _FsValUl_, _FtValUl_);
 		_FdValUl_ = fmacres.raw;
-		if (checkOverflowUnderfowSoft(fmacres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(fmacres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(fmacres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(fmacres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
@@ -398,8 +398,8 @@ void MADDA_S() {
 	{
 		PS2Float fmacres = fpuAccurateMulAdd(_FAValUl_, _FsValUl_, _FtValUl_);
 		_FAValUl_ = fmacres.raw;
-		if (checkOverflowUnderfowSoft(fmacres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(fmacres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(fmacres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(fmacres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
@@ -433,8 +433,8 @@ void MSUB_S() {
 	{
 		PS2Float fmacres = fpuAccurateMulSub(_FAValUl_, _FsValUl_, _FtValUl_);
 		_FdValUl_ = fmacres.raw;
-		if (checkOverflowUnderfowSoft(fmacres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(fmacres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(fmacres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(fmacres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
@@ -451,8 +451,8 @@ void MSUBA_S() {
 	{
 		PS2Float fmacres = fpuAccurateMulSub(_FAValUl_, _FsValUl_, _FtValUl_);
 		_FAValUl_ = fmacres.raw;
-		if (checkOverflowUnderfowSoft(fmacres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(fmacres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(fmacres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(fmacres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
@@ -471,8 +471,8 @@ void MUL_S() {
 	{
 		PS2Float mulres = fpuAccurateMul(_FsValUl_, _FtValUl_);
 		_FdValUl_ = mulres.raw;
-		if (checkOverflowUnderfowSoft(mulres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(mulres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(mulres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(mulres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
@@ -487,8 +487,8 @@ void MULA_S() {
 	{
 		PS2Float mulres = fpuAccurateMul(_FsValUl_, _FtValUl_);
 		_FAValUl_ = mulres.raw;
-		if (checkOverflowUnderfowSoft(mulres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(mulres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(mulres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(mulres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
@@ -511,8 +511,8 @@ void RSQRT_S() {
 		PS2Float rsqrtres = PS2Float(_FsValUl_).Rsqrt(_FtValUl_);
 		_FdValUl_ = rsqrtres.raw;
 		if (checkDivideByZeroInvalidSoft(rsqrtres, FPUflagD | FPUflagSD, FPUflagI | FPUflagSI)) return;
-		if (checkOverflowUnderfowSoft(rsqrtres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(rsqrtres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(rsqrtres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(rsqrtres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
@@ -543,8 +543,8 @@ void SQRT_S() {
 		PS2Float sqrtres = PS2Float(_FtValUl_).Sqrt();
 		_FdValUl_ = sqrtres.raw;
 		if (checkDivideByZeroInvalidSoft(sqrtres, FPUflagD | FPUflagSD, FPUflagI | FPUflagSI)) return;
-		if (checkOverflowUnderfowSoft(sqrtres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(sqrtres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(sqrtres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(sqrtres, FPUflagU | FPUflagSU, false);
 	}
 	else if ((_FtValUl_ & 0x7F800000) == 0) // If Ft = +/-0
 		_FdValUl_ = _FtValUl_ & 0x80000000; // result is 0
@@ -563,8 +563,8 @@ void SUB_S() {
 	{
 		PS2Float subres = fpuAccurateSub(_FsValUl_, _FtValUl_);
 		_FdValUl_ = subres.raw;
-		if (checkOverflowUnderfowSoft(subres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(subres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(subres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(subres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
@@ -579,8 +579,8 @@ void SUBA_S() {
 	{
 		PS2Float subres = fpuAccurateSub(_FsValUl_, _FtValUl_);
 		_FAValUl_ = subres.raw;
-		if (checkOverflowUnderfowSoft(subres, FPUflagO | FPUflagSO, true)) return;
-		checkOverflowUnderfowSoft(subres, FPUflagU | FPUflagSU, false);
+		if (checkOverflowUnderflowSoft(subres, FPUflagO | FPUflagSO, true)) return;
+		checkOverflowUnderflowSoft(subres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
