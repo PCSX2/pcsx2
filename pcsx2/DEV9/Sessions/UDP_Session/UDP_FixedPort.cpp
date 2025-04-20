@@ -21,6 +21,7 @@
 #include <unistd.h>
 #endif
 
+#include "UDP_Common.h"
 #include "UDP_FixedPort.h"
 #include "DEV9/PacketReader/IP/UDP/UDP_Packet.h"
 
@@ -51,33 +52,15 @@ namespace Sessions
 
 	void UDP_FixedPort::Init()
 	{
-		int ret;
-		client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+		client = UDP_Common::CreateSocket(adapterIP, port);
 		if (client == INVALID_SOCKET)
 		{
-			Console.Error("DEV9: UDP: Failed to open socket. Error: %d",
-#ifdef _WIN32
-				WSAGetLastError());
-#elif defined(__POSIX__)
-				errno);
-#endif
 			RaiseEventConnectionClosed();
 			return;
 		}
 
-		constexpr int reuseAddress = true; // BOOL on Windows
-		ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuseAddress), sizeof(reuseAddress));
-
-		if (ret == SOCKET_ERROR)
-			Console.Error("DEV9: UDP: Failed to set SO_REUSEADDR. Error: %d",
-#ifdef _WIN32
-				WSAGetLastError());
-#elif defined(__POSIX__)
-				errno);
-#endif
-
 		constexpr int broadcastEnable = true; // BOOL on Windows
-		ret = setsockopt(client, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char*>(&broadcastEnable), sizeof(broadcastEnable));
+		const int ret = setsockopt(client, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char*>(&broadcastEnable), sizeof(broadcastEnable));
 
 		if (ret == SOCKET_ERROR)
 			Console.Error("DEV9: UDP: Failed to set SO_BROADCAST. Error: %d",
@@ -87,25 +70,6 @@ namespace Sessions
 				errno);
 #endif
 
-		sockaddr_in endpoint{};
-		endpoint.sin_family = AF_INET;
-		endpoint.sin_addr = std::bit_cast<in_addr>(adapterIP);
-		endpoint.sin_port = htons(port);
-
-		ret = bind(client, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
-
-		if (ret == SOCKET_ERROR)
-		{
-			Console.Error("DEV9: UDP: Failed to bind socket. Error: %d",
-#ifdef _WIN32
-				WSAGetLastError());
-#elif defined(__POSIX__)
-				errno);
-#endif
-			RaiseEventConnectionClosed();
-			return;
-		}
-
 		open.store(true);
 	}
 
@@ -114,102 +78,45 @@ namespace Sessions
 		if (!open.load())
 			return std::nullopt;
 
-		int ret;
-		fd_set sReady;
-		fd_set sExcept;
+		std::optional<ReceivedPayload> ret;
+		bool success;
+		std::tie(ret, success) = UDP_Common::RecvFrom(client, port);
 
-		timeval nowait{};
-		FD_ZERO(&sReady);
-		FD_ZERO(&sExcept);
-		FD_SET(client, &sReady);
-		FD_SET(client, &sExcept);
-		ret = select(client + 1, &sReady, nullptr, &sExcept, &nowait);
-
-		bool hasData;
-		if (ret == SOCKET_ERROR)
+		if (!success)
 		{
-			hasData = false;
-			Console.Error("DEV9: UDP: select failed. Error code: %d",
-#ifdef _WIN32
-				WSAGetLastError());
-#elif defined(__POSIX__)
-				errno);
-#endif
-		}
-		else if (FD_ISSET(client, &sExcept))
-		{
-			hasData = false;
-
-			int error = 0;
-#ifdef _WIN32
-			int len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
-				Console.Error("DEV9: UDP: Unknown UDP connection error (getsockopt error: %d)", WSAGetLastError());
-#elif defined(__POSIX__)
-			socklen_t len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
-				Console.Error("DEV9: UDP: Unknown UDP connection error (getsockopt error: %d)", errno);
-#endif
-			else
-				Console.Error("DEV9: UDP: Recv error: %d", error);
-		}
-		else
-			hasData = FD_ISSET(client, &sReady);
-
-		if (hasData)
-		{
-			unsigned long available = 0;
-			PayloadData* recived = nullptr;
-			std::unique_ptr<u8[]> buffer;
-			sockaddr_in endpoint{};
-
-			// FIONREAD returns total size of all available messages
-			// however, we only read one message at a time
-#ifdef _WIN32
-			ret = ioctlsocket(client, FIONREAD, &available);
-#elif defined(__POSIX__)
-			ret = ioctl(client, FIONREAD, &available);
-#endif
-			if (ret != SOCKET_ERROR)
+			// See Reset() for why we copy the vector.
+			std::vector<UDP_BaseSession*> connectionsCopy;
 			{
-				buffer = std::make_unique<u8[]>(available);
-
-#ifdef _WIN32
-				int fromlen = sizeof(endpoint);
-#elif defined(__POSIX__)
-				socklen_t fromlen = sizeof(endpoint);
-#endif
-				ret = recvfrom(client, reinterpret_cast<char*>(buffer.get()), available, 0, reinterpret_cast<sockaddr*>(&endpoint), &fromlen);
+				std::lock_guard numberlock(connectionSentry);
+				open.store(false);
+				connectionsCopy = connections;
 			}
 
-			if (ret == SOCKET_ERROR)
+			if (connectionsCopy.size() == 0)
 			{
-				Console.Error("DEV9: UDP: UDP recv error: %d",
-#ifdef _WIN32
-					WSAGetLastError());
-#elif defined(__POSIX__)
-					errno);
-#endif
+				// Can close immediately.
 				RaiseEventConnectionClosed();
 				return std::nullopt;
 			}
+			else
+			{
+				// Need to wait for child connections to close.
+				for (size_t i = 0; i < connectionsCopy.size(); i++)
+					connectionsCopy[i]->ForceClose();
 
-			recived = new PayloadData(ret);
-			memcpy(recived->data.get(), buffer.get(), ret);
-
-			std::unique_ptr<UDP_Packet> iRet = std::make_unique<UDP_Packet>(recived);
-			iRet->destinationPort = port;
-			iRet->sourcePort = ntohs(endpoint.sin_port);
-
-			IP_Address srvIP = std::bit_cast<IP_Address>(endpoint.sin_addr);
+				return std::nullopt;
+			}
+		}
+		else if (ret.has_value())
+		{
 			{
 				std::lock_guard numberlock(connectionSentry);
 
 				for (size_t i = 0; i < connections.size(); i++)
 				{
 					UDP_BaseSession* s = connections[i];
-					if (s->WillRecive(srvIP))
-						return ReceivedPayload{srvIP, std::move(iRet)};
+					if (s->WillRecive(ret.value().sourceIP))
+						return ret;
 				}
 			}
 			Console.Error("DEV9: UDP: Unexpected packet, dropping");
@@ -225,10 +132,12 @@ namespace Sessions
 
 	void UDP_FixedPort::Reset()
 	{
-		// Reseting a session may cause that session to close itself,
-		// when that happens, the connections vector gets modified via our close handler.
-		// Duplicate the vector to avoid iterating over a modified collection,
-		// this also avoids the issue of recursive locking when our close handler takes a lock.
+		/*
+		 * Reseting a session may cause that session to close itself,
+		 * when that happens, the connections vector gets modified via our close handler.
+		 * Duplicate the vector to avoid iterating over a modified collection,
+		 * this also avoids the issue of recursive locking when our close handler takes a lock.
+		 */
 		std::vector<UDP_BaseSession*> connectionsCopy;
 		{
 			std::lock_guard numberlock(connectionSentry);
@@ -241,16 +150,15 @@ namespace Sessions
 
 	UDP_Session* UDP_FixedPort::NewClientSession(ConnectionKey parNewKey, bool parIsBrodcast, bool parIsMulticast)
 	{
+		// Lock the whole function so we can't race between the open check and creating the session
+		std::lock_guard numberlock(connectionSentry);
 		if (!open.load())
 			return nullptr;
 
 		UDP_Session* s = new UDP_Session(parNewKey, adapterIP, parIsBrodcast, parIsMulticast, client);
 
 		s->AddConnectionClosedHandler([&](BaseSession* session) { HandleChildConnectionClosed(session); });
-		{
-			std::lock_guard numberlock(connectionSentry);
-			connections.push_back(s);
-		}
+		connections.push_back(s);
 		return s;
 	}
 
@@ -272,6 +180,8 @@ namespace Sessions
 
 	UDP_FixedPort::~UDP_FixedPort()
 	{
+		DevCon.WriteLn("DEV9: Socket: UDPFixedPort %d had %d child connections", port, connections.size());
+
 		open.store(false);
 		if (client != INVALID_SOCKET)
 		{

@@ -74,10 +74,6 @@ namespace Achievements
 	// Chrome uses 10 server calls per domain, seems reasonable.
 	static constexpr u32 MAX_CONCURRENT_SERVER_CALLS = 10;
 
-	static constexpr const char* INFO_SOUND_NAME = "sounds/achievements/message.wav";
-	static constexpr const char* UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav";
-	static constexpr const char* LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
-
 	namespace
 	{
 		struct LoginWithPasswordParameters
@@ -1050,9 +1046,8 @@ void Achievements::DisplayAchievementSummary()
 		});
 	}
 
-	// Technically not going through the resource API, but since we're passing this to something else, we can't.
-	if (EmuConfig.Achievements.SoundEffects)
-		Common::PlaySoundAsync(EmuFolders::GetOverridableResourcePath(INFO_SOUND_NAME).c_str());
+	if (EmuConfig.Achievements.SoundEffects && EmuConfig.Achievements.InfoSound)
+		Common::PlaySoundAsync(EmuConfig.Achievements.InfoSoundName.c_str());
 }
 
 void Achievements::DisplayHardcoreDeferredMessage()
@@ -1103,8 +1098,8 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 			});
 	}
 
-	if (EmuConfig.Achievements.SoundEffects)
-		Common::PlaySoundAsync(EmuFolders::GetOverridableResourcePath(UNLOCK_SOUND_NAME).c_str());
+	if (EmuConfig.Achievements.SoundEffects && EmuConfig.Achievements.UnlockSound)
+		Common::PlaySoundAsync(EmuConfig.Achievements.UnlockSoundName.c_str());
 }
 
 void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
@@ -1197,8 +1192,8 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
 		});
 	}
 
-	if (EmuConfig.Achievements.SoundEffects)
-		Common::PlaySoundAsync(EmuFolders::GetOverridableResourcePath(LBSUBMIT_SOUND_NAME).c_str());
+	if (EmuConfig.Achievements.SoundEffects && EmuConfig.Achievements.LBSubmitSound)
+		Common::PlaySoundAsync(EmuConfig.Achievements.LBSubmitSoundName.c_str());
 }
 
 void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* event)
@@ -2271,7 +2266,9 @@ void Achievements::DrawAchievementsWindow()
 					ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor));
 
 				text.format("{}%", static_cast<int>(std::round(fraction * 100.0f)));
+				ImGui::PushFont(g_medium_font);
 				text_size = ImGui::CalcTextSize(text.c_str(), text.end_ptr());
+				ImGui::PopFont();
 				const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
 					progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
 				dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor),

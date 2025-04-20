@@ -311,6 +311,7 @@ set(pcsx2DEV9Sources
 	DEV9/Sessions/TCP_Session/TCP_Session.cpp
 	DEV9/Sessions/TCP_Session/TCP_Session_In.cpp
 	DEV9/Sessions/TCP_Session/TCP_Session_Out.cpp
+	DEV9/Sessions/UDP_Session/UDP_Common.cpp
 	DEV9/Sessions/UDP_Session/UDP_FixedPort.cpp
 	DEV9/Sessions/UDP_Session/UDP_Session.cpp
 	DEV9/smap.cpp
@@ -356,6 +357,7 @@ set(pcsx2DEV9Headers
 	DEV9/Sessions/BaseSession.h
 	DEV9/Sessions/ICMP_Session/ICMP_Session.h
 	DEV9/Sessions/TCP_Session/TCP_Session.h
+	DEV9/Sessions/UDP_Session/UDP_Common.h
 	DEV9/Sessions/UDP_Session/UDP_FixedPort.h
 	DEV9/Sessions/UDP_Session/UDP_BaseSession.h
 	DEV9/Sessions/UDP_Session/UDP_Session.h
@@ -1284,7 +1286,7 @@ function(setup_main_executable target)
 
 		# Copy dependency libraries.
 		set(DEPS_BINDIR "${CMAKE_SOURCE_DIR}/deps/bin")
-		set(DEPS_TO_COPY freetype.dll harfbuzz.dll libjpeg.dll libpng16.dll libsharpyuv.dll libwebp.dll lz4.dll SDL3.dll shaderc_shared.dll zlib1.dll zstd.dll kddockwidgets-qt62.dll)
+		set(DEPS_TO_COPY freetype.dll harfbuzz.dll jpeg62.dll libpng16.dll libsharpyuv.dll libwebp.dll lz4.dll SDL3.dll shaderc_shared.dll zlib1.dll zstd.dll kddockwidgets-qt62.dll)
 		foreach(DEP_TO_COPY ${DEPS_TO_COPY})
 			install(FILES "${DEPS_BINDIR}/${DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin")
 		endforeach()

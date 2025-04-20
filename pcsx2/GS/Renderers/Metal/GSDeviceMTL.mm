@@ -10,6 +10,7 @@
 #include "common/Console.h"
 #include "common/HostSys.h"
 
+#include "cpuinfo.h"
 #include "imgui.h"
 
 #ifdef __APPLE__
@@ -90,6 +91,12 @@ GSDeviceMTL::GSDeviceMTL()
 	, m_dev(nil)
 {
 	m_backref->second = this;
+	m_resource_options_shared_wc = MTLResourceStorageModeShared | MTLResourceCPUCacheModeWriteCombined;
+#ifdef _M_X86
+	// WC memory doesn't work properly on AMD hackintoshes, and ends up being horribly slow even when only writing
+	if (cpuinfo_get_core(0)->vendor == cpuinfo_vendor_amd)
+		m_resource_options_shared_wc = MTLResourceStorageModeShared;
+#endif
 }
 
 GSDeviceMTL::~GSDeviceMTL()
@@ -107,7 +114,7 @@ GSDeviceMTL::Map GSDeviceMTL::Allocate(UploadBuffer& buffer, size_t amt)
 		size_t newsize = std::max<size_t>(buffer.usage.Size() * 2, 4096);
 		while (newsize < amt)
 			newsize *= 2;
-		MTLResourceOptions options = MTLResourceStorageModeShared | MTLResourceCPUCacheModeWriteCombined;
+		MTLResourceOptions options = m_resource_options_shared_wc;
 		buffer.mtlbuffer = MRCTransfer([m_dev.dev newBufferWithLength:newsize options:options]);
 		pxAssertRel(buffer.mtlbuffer, "Failed to allocate MTLBuffer (out of memory?)");
 		buffer.buffer = [buffer.mtlbuffer contents];
@@ -148,7 +155,7 @@ GSDeviceMTL::Map GSDeviceMTL::Allocate(BufferPair& buffer, size_t amt)
 		size_t newsize = std::max<size_t>(buffer.usage.Size() * 2, 4096);
 		while (newsize < amt)
 			newsize *= 2;
-		MTLResourceOptions options = MTLResourceStorageModeShared | MTLResourceCPUCacheModeWriteCombined;
+		MTLResourceOptions options = m_resource_options_shared_wc;
 		buffer.cpubuffer = MRCTransfer([m_dev.dev newBufferWithLength:newsize options:options]);
 		pxAssertRel(buffer.cpubuffer, "Failed to allocate MTLBuffer (out of memory?)");
 		buffer.buffer = [buffer.cpubuffer contents];
@@ -503,7 +510,9 @@ static constexpr MTLPixelFormat ConvertPixelFormat(GSTexture::Format format)
 		case GSTexture::Format::UInt16:       return MTLPixelFormatR16Uint;
 		case GSTexture::Format::UNorm8:       return MTLPixelFormatA8Unorm;
 		case GSTexture::Format::Color:        return MTLPixelFormatRGBA8Unorm;
-		case GSTexture::Format::HDRColor:     return MTLPixelFormatRGBA16Unorm;
+		case GSTexture::Format::ColorHQ:      return MTLPixelFormatRGB10A2Unorm;
+		case GSTexture::Format::ColorHDR:     return MTLPixelFormatRGBA16Float;
+		case GSTexture::Format::ColorClip:    return MTLPixelFormatRGBA16Unorm;
 		case GSTexture::Format::DepthStencil: return MTLPixelFormatDepth32Float_Stencil8;
 		case GSTexture::Format::Invalid:      return MTLPixelFormatInvalid;
 		case GSTexture::Format::BC1:          return MTLPixelFormatBC1_RGBA;
@@ -1058,14 +1067,14 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	auto pdesc = [[MTLRenderPipelineDescriptor new] autorelease];
 	// FS Triangle Pipelines
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
-	m_hdr_resolve_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_hdr_resolve"), @"HDR Resolve");
+	m_colclip_resolve_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_colclip_resolve"), @"ColorClip Resolve");
 	m_fxaa_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_fxaa"), @"fxaa");
 	m_shadeboost_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_shadeboost"), @"shadeboost");
 	m_clut_pipeline[0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_convert_clut_4"), @"4-bit CLUT Update");
 	m_clut_pipeline[1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_convert_clut_8"), @"8-bit CLUT Update");
-	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::HDRColor);
-	m_hdr_init_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_hdr_init"), @"HDR Init");
-	m_hdr_clear_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_clear"), @"HDR Clear");
+	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::ColorClip);
+	m_colclip_init_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_colclip_init"), @"ColorClip Init");
+	m_colclip_clear_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_clear"), @"ColorClip Clear");
 	pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
 	pdesc.stencilAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
 	m_datm_pipeline[0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm0"), @"datm0");
@@ -1109,8 +1118,8 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 			case ShaderConvert::DATM_1_RTA_CORRECTION:
 			case ShaderConvert::CLUT_4:
 			case ShaderConvert::CLUT_8:
-			case ShaderConvert::HDR_INIT:
-			case ShaderConvert::HDR_RESOLVE:
+			case ShaderConvert::COLCLIP_INIT:
+			case ShaderConvert::COLCLIP_RESOLVE:
 				continue;
 			case ShaderConvert::FLOAT32_TO_32_BITS:
 				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::UInt32);
@@ -1167,7 +1176,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		m_present_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), [NSString stringWithFormat:@"present_%s", shaderName(conv) + 3]);
 	}
 
-	pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA8Unorm;
+	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
 	for (size_t i = 0; i < std::size(m_convert_pipeline_copy_mask); i++)
 	{
 		MTLColorWriteMask mask = MTLColorWriteMaskNone;
@@ -1277,7 +1286,7 @@ void GSDeviceMTL::UpdateTexture(id<MTLTexture> texture, u32 x, u32 y, u32 width,
 	id<MTLCommandBuffer> cmdbuf = [m_queue commandBuffer];
 	id<MTLBlitCommandEncoder> enc = [cmdbuf blitCommandEncoder];
 	size_t bytes = data_stride * height;
-	MRCOwned<id<MTLBuffer>> buf = MRCTransfer([m_dev.dev newBufferWithLength:bytes options:MTLResourceStorageModeShared | MTLResourceCPUCacheModeWriteCombined]);
+	MRCOwned<id<MTLBuffer>> buf = MRCTransfer([m_dev.dev newBufferWithLength:bytes options:m_resource_options_shared_wc]);
 	memcpy([buf contents], data, bytes);
 	[enc copyFromBuffer:buf
 	       sourceOffset:0
@@ -1845,7 +1854,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantI(m_fn_constants, pssel.blend_d,               GSMTLConstantIndex_PS_BLEND_D);
 		setFnConstantI(m_fn_constants, pssel.blend_hw,              GSMTLConstantIndex_PS_BLEND_HW);
 		setFnConstantB(m_fn_constants, pssel.a_masked,              GSMTLConstantIndex_PS_A_MASKED);
-		setFnConstantB(m_fn_constants, pssel.hdr,                   GSMTLConstantIndex_PS_HDR);
+		setFnConstantB(m_fn_constants, pssel.colclip_hw,            GSMTLConstantIndex_PS_COLCLIP_HW);
 		setFnConstantB(m_fn_constants, pssel.rta_correction,        GSMTLConstantIndex_PS_RTA_CORRECTION);
 		setFnConstantB(m_fn_constants, pssel.rta_source_correction, GSMTLConstantIndex_PS_RTA_SRC_CORRECTION);
 		setFnConstantB(m_fn_constants, pssel.colclip,               GSMTLConstantIndex_PS_COLCLIP);
@@ -2107,7 +2116,7 @@ void GSDeviceMTL::MREInitHWDraw(GSHWDrawConfig& config, const Map& verts)
 
 void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 { @autoreleasepool {
-	if (config.tex && config.ds == config.tex)
+	if (config.tex && (config.ds == config.tex || config.rt == config.tex))
 		EndRenderPass(); // Barrier
 
 	size_t vertsize = config.nverts * sizeof(*config.verts);
@@ -2135,53 +2144,53 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	GSTexture* stencil = nullptr;
 	GSTexture* primid_tex = nullptr;
 	GSTexture* rt = config.rt;
-	GSTexture* hdr_rt = g_gs_device->GetHDRTexture();
+	GSTexture* colclip_rt = g_gs_device->GetColorClipTexture();
 	
-	if (hdr_rt)
+	if (colclip_rt)
 	{
-		if (config.hdr_mode == GSHWDrawConfig::HDRMode::EarlyResolve)
+		if (config.colclip_mode == GSHWDrawConfig::ColClipMode::EarlyResolve)
 		{
-			BeginRenderPass(@"HDR Resolve", config.rt, MTLLoadActionLoad, nullptr, MTLLoadActionDontCare);
-			RenderCopy(hdr_rt, m_hdr_resolve_pipeline, config.hdr_update_area);
+			BeginRenderPass(@"ColorClip Resolve", config.rt, MTLLoadActionLoad, nullptr, MTLLoadActionDontCare);
+			RenderCopy(colclip_rt, m_colclip_resolve_pipeline, config.colclip_update_area);
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-			Recycle(hdr_rt);
+			Recycle(colclip_rt);
 			
-			g_gs_device->SetHDRTexture(nullptr);
+			g_gs_device->SetColorClipTexture(nullptr);
 			
-			hdr_rt = nullptr;
+			colclip_rt = nullptr;
 		}
 		else
-			config.ps.hdr = 1;
+			config.ps.colclip_hw = 1;
 	}
 	
-	if (config.ps.hdr)
+	if (config.ps.colclip_hw)
 	{
-		if (!hdr_rt)
+		if (!colclip_rt)
 		{
-			config.hdr_update_area = config.drawarea;
+			config.colclip_update_area = config.drawarea;
 			
 			GSVector2i size = config.rt->GetSize();
-			rt = hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::HDRColor, false);
+			rt = colclip_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::ColorClip, false);
 			
-			g_gs_device->SetHDRTexture(hdr_rt);
+			g_gs_device->SetColorClipTexture(colclip_rt);
 			
-			const GSVector4i copy_rect = (config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertOnly) ? GSVector4i::loadh(size) : config.drawarea;
+			const GSVector4i copy_rect = (config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly) ? GSVector4i::loadh(size) : config.drawarea;
 			
 			switch (config.rt->GetState())
 			{
 				case GSTexture::State::Dirty:
-					BeginRenderPass(@"HDR Init", hdr_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
-					RenderCopy(config.rt, m_hdr_init_pipeline, copy_rect);
+					BeginRenderPass(@"ColorClip Init", colclip_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
+					RenderCopy(config.rt, m_colclip_init_pipeline, copy_rect);
 					g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 					break;
 
 				case GSTexture::State::Cleared:
 				{
-					BeginRenderPass(@"HDR Clear", hdr_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
+					BeginRenderPass(@"ColorClip Clear", colclip_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
 					GSVector4 color = GSVector4::rgba32(config.rt->GetClearColor()) / GSVector4::cxpr(65535, 65535, 65535, 255);
 					[m_current_render.encoder setFragmentBytes:&color length:sizeof(color) atIndex:GSMTLBufferIndexUniforms];
-					RenderCopy(nullptr, m_hdr_clear_pipeline, copy_rect);
+					RenderCopy(nullptr, m_colclip_clear_pipeline, copy_rect);
 					break;
 				}
 
@@ -2190,7 +2199,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			}
 		}
 
-		rt = hdr_rt;
+		rt = colclip_rt;
 	}
 	
 	switch (config.destination_alpha)
@@ -2277,19 +2286,19 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		SendHWDraw(config, mtlenc, index_buffer, index_buffer_offset);
 	}
 
-	if (hdr_rt)
+	if (colclip_rt)
 	{
-		config.hdr_update_area = config.hdr_update_area.runion(config.drawarea);
+		config.colclip_update_area = config.colclip_update_area.runion(config.drawarea);
 
-		if ((config.hdr_mode == GSHWDrawConfig::HDRMode::ResolveOnly || config.hdr_mode == GSHWDrawConfig::HDRMode::ConvertAndResolve))
+		if ((config.colclip_mode == GSHWDrawConfig::ColClipMode::ResolveOnly || config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertAndResolve))
 		{
-			BeginRenderPass(@"HDR Resolve", config.rt, MTLLoadActionLoad, nullptr, MTLLoadActionDontCare);
-			RenderCopy(hdr_rt, m_hdr_resolve_pipeline, config.hdr_update_area);
+			BeginRenderPass(@"ColorClip Resolve", config.rt, MTLLoadActionLoad, nullptr, MTLLoadActionDontCare);
+			RenderCopy(colclip_rt, m_colclip_resolve_pipeline, config.colclip_update_area);
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-			Recycle(hdr_rt);
+			Recycle(colclip_rt);
 			
-			g_gs_device->SetHDRTexture(nullptr);
+			g_gs_device->SetColorClipTexture(nullptr);
 		}
 	}
 

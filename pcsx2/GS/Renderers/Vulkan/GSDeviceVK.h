@@ -394,8 +394,8 @@ private:
 	std::array<VkPipeline, 32> m_color_copy{};
 	std::array<VkPipeline, 2> m_merge{};
 	std::array<VkPipeline, NUM_INTERLACE_SHADERS> m_interlace{};
-	VkPipeline m_hdr_setup_pipelines[2][2] = {}; // [depth][feedback_loop]
-	VkPipeline m_hdr_finish_pipelines[2][2] = {}; // [depth][feedback_loop]
+	VkPipeline m_colclip_setup_pipelines[2][2] = {}; // [depth][feedback_loop]
+	VkPipeline m_colclip_finish_pipelines[2][2] = {}; // [depth][feedback_loop]
 	VkRenderPass m_date_image_setup_render_passes[2][2] = {}; // [depth][clear]
 	VkPipeline m_date_image_setup_pipelines[2][4] = {}; // [depth][datm]
 	VkPipeline m_fxaa_pipeline = {};
@@ -415,7 +415,7 @@ private:
 	VkRenderPass m_date_setup_render_pass = VK_NULL_HANDLE;
 	VkRenderPass m_swap_chain_render_pass = VK_NULL_HANDLE;
 
-	VkRenderPass m_tfx_render_pass[2][2][2][3][2][2][3][3] = {}; // [rt][ds][hdr][date][fbl][dsp][rt_op][ds_op]
+	VkRenderPass m_tfx_render_pass[2][2][2][3][2][2][3][3] = {}; // [rt][ds][colclip][date][fbl][dsp][rt_op][ds_op]
 
 	VkDescriptorSetLayout m_cas_ds_layout = VK_NULL_HANDLE;
 	VkPipelineLayout m_cas_pipeline_layout = VK_NULL_HANDLE;
@@ -486,10 +486,10 @@ public:
 	/// Returns true if Vulkan is suitable as a default for the devices in the system.
 	static bool IsSuitableDefaultRenderer();
 
-	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool hdr, bool stencil, bool fbl, bool dsp,
+	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool colclip, bool stencil, bool fbl, bool dsp,
 		VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_op) const
 	{
-		return m_tfx_render_pass[rt][ds][hdr][stencil][fbl][dsp][rt_op][ds_op];
+		return m_tfx_render_pass[rt][ds][colclip][stencil][fbl][dsp][rt_op][ds_op];
 	}
 	__fi VkSampler GetPointSampler() const { return m_point_sampler; }
 	__fi VkSampler GetLinearSampler() const { return m_linear_sampler; }

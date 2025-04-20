@@ -522,6 +522,8 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_falkor = 0x00400103,
 	/** Qualcomm Saphira. */
 	cpuinfo_uarch_saphira = 0x00400104,
+	/** Qualcomm Oryon. */
+	cpuinfo_uarch_oryon = 0x00400105,
 
 	/** Nvidia Denver. */
 	cpuinfo_uarch_denver = 0x00500100,
@@ -821,6 +823,7 @@ struct cpuinfo_x86_isa {
 	bool avx512_4vnniw;
 	bool avx512_4fmaps;
 	bool avx10_1;
+	bool avx10_2;
 	bool amx_bf16;
 	bool amx_tile;
 	bool amx_int8;
@@ -1439,6 +1442,14 @@ static inline bool cpuinfo_has_x86_avx_ne_convert(void) {
 static inline bool cpuinfo_has_x86_avx10_1(void) {
 #if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
 	return cpuinfo_isa.avx10_1;
+#else
+	return false;
+#endif
+}
+
+static inline bool cpuinfo_has_x86_avx10_2(void) {
+#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+	return cpuinfo_isa.avx10_2;
 #else
 	return false;
 #endif

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
+#include <mutex>
 #include <vector>
 
 #include "net.h"
@@ -23,14 +24,17 @@ class SocketAdapter : public NetAdapter
 	bool initialized = false;
 	PacketReader::IP::IP_Address adapterIP;
 
-	//Sentrys replaced by the requirment for each session class to have thread safe destructor
-
 	ThreadSafeMap<Sessions::ConnectionKey, Sessions::BaseSession*> connections;
 	ThreadSafeMap<u16, Sessions::BaseSession*> fixedUDPPorts;
 
 	std::thread::id sendThreadId;
 	std::vector<Sessions::BaseSession*> deleteQueueSendThread;
 	std::vector<Sessions::BaseSession*> deleteQueueRecvThread;
+	//Mutex to be held when processing the delete queue.
+	//The Send thread will lock the RecvSentry to prevent the recv thread
+	//from deleting a session the send thread might be currently working on.
+	std::mutex deleteSendSentry;
+	std::mutex deleteRecvSentry;
 
 public:
 	SocketAdapter();

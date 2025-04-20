@@ -900,7 +900,7 @@ u8* recEndThunk()
 {
 	u8* block_end = x86Ptr;
 
-	pxAssert(block_end < recPtrEnd);
+	pxAssert(block_end < SysMemory::GetEERecEnd());
 	recPtr = block_end;
 	return block_end;
 }
@@ -2698,7 +2698,7 @@ StartRecomp:
 		}
 	}
 
-	pxAssert(xGetPtr() < recPtrEnd);
+	pxAssert(xGetPtr() < SysMemory::GetEERecEnd());
 
 	s_pCurBlockEx->x86size = static_cast<u32>(xGetPtr() - recPtr);
 

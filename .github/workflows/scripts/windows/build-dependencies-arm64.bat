@@ -44,17 +44,17 @@ cd "%BUILDDIR%"
 
 set FREETYPE=2.13.3
 set HARFBUZZ=10.0.1
-set LIBJPEG=9f
+set LIBJPEGTURBO=3.1.0
 set LIBPNG=1645
 set LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
-set QT=6.8.2
-set QTMINOR=6.8
-set SDL=SDL3-3.2.8
+set SDL=SDL3-3.2.10
+set QT=6.9.0
+set QTMINOR=6.9
 set WEBP=1.5.0
 set ZLIB=1.3.1
 set ZLIBSHORT=131
 set ZSTD=1.5.7
-set KDDOCKWIDGETS=2.2.1
+set KDDOCKWIDGETS=2.2.3
 
 set SHADERC=2024.1
 set SHADERC_GLSLANG=142052fa30f9eca191aa9dcf65359fcaed09eeec
@@ -64,18 +64,18 @@ set SHADERC_SPIRVTOOLS=dd4b663e13c07fea4fbb3f70c1c91c86731099f7
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download 5c3a8e78f7b24c20b25b54ee575d6daa40007a5f4eea2845861c3409b3021747 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip 8adf9f5a4b6022aa2744f45c89ce347df46fea8403e99f01d650b11c417d0aa8 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1645.zip a66c4b1350b67776e90263e2550933067cd9ccbd318db489f84dcc0d2b033249 || goto error
-call :downloadfile "jpegsr%LIBJPEG%.zip" https://ijg.org/files/jpegsr%LIBJPEG%.zip 6255da8c89e09d694e6800688c76145eb6870a76ac0d36c74fccd61b3940aafa || goto error
+call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 9564c72b1dfd1d6fe6274c5f95a8d989b59854575d4bbee44ade7bc17aa9bc93 || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" 7d6fab70cf844bf6769077bd5d7a74893f8ffd4dfb42861745750c63c2a5c92c || goto error
 call :downloadfile "lz4-%LZ4%.zip" "https://github.com/lz4/lz4/archive/%LZ4%.zip" 0c33119688d6b180c7e760b0acd70059222389cfd581632623784bee27e51a31 || goto error
-call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 7f8ff5c8246db4145301bc122601a5f8cef25ee2c326eddb3e88668849c61ddf || goto error
-call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 44087aec0caa4aa81437e787917d29d97536484a682a5d51ec035878e57c0b5c || goto error
-call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 83c72b5dfad04854acf61d592e3f9cdc2ed894779aab8d0470d966715266caaf || goto error
-call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 144d55e4d199793a76c53f19872633a79aec0314039f6f99b6a10b5be7a78fbf || goto error
-call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 102539447c1c76d206f24bcca2c911270cf53991548d9c3d7d0d01855f651e3b || goto error
-call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 33ccac9f99a357ffd83cb2d7179a0c0ffcba85a14d23d86619d5dc9721ded42f || goto error
+call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 01d9ab20fc071b076be91df5396b464b4ef159e93b2b2addda1cc36750fc1f29 || goto error
+call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 513df15a6365a40f6230ec9463ad8c71b824e181d4b661dac9707e103b24ae0c || goto error
+call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" d428fd17a0d3f92c48a30f1d23806bf20352fbce2e80e5bbee27fa80576480ee || goto error
+call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 54bf06afeb67035f1c6afcd00beec755c0d776626b4cce9ab56992a55215ba69 || goto error
+call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 5f8a94a161bd2e71a82f478dc19f4ec77ac95a50709f5a68d5951001ed6bb856 || goto error
+call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 5885ce1a114615cc5fa69e459f069d3fe2bcb1320fd9cc162821f3920ef44735 || goto error
 call :downloadfile "zlib%ZLIBSHORT%.zip" "https://zlib.net/zlib%ZLIBSHORT%.zip" 72af66d44fcc14c22013b46b814d5d2514673dda3d115e64b690c1ad636e7b17 || goto error
 call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" 7897bc5d620580d9b7cd3539c44b59d78f3657d33663fe97a145e07b4ebd69a4 || goto error
-call :downloadfile "KDDockWidgets-%KDDOCKWIDGETS%.zip" "https://github.com/KDAB/KDDockWidgets/archive/v2.2.1.zip" 78b5e242bf47476e150175b7de934ab84069459e151beb2d5ce84fd067138aa5 || goto error
+call :downloadfile "KDDockWidgets-%KDDOCKWIDGETS%.zip" "https://github.com/KDAB/KDDockWidgets/archive/v%KDDOCKWIDGETS%.zip" 1ba8e5b48f3b4d47d2de7121529d448532200fa36d9ed21f93909f6eb03f61cb || goto error
 
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" 6c9f42ed6bf42750f5369b089909abfdcf0101488b4a1f41116d5159d00af8e7 || goto error
 call :downloadfile "shaderc-glslang-%SHADERC_GLSLANG%.zip" "https://github.com/KhronosGroup/glslang/archive/%SHADERC_GLSLANG%.zip" 03ad8a6fa987af4653d0cfe6bdaed41bcf617f1366a151fb1574da75950cd3e8 || goto error
@@ -109,11 +109,10 @@ cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
 
-echo Building libjpeg...
-rmdir /S /Q "jpeg-%LIBJPEG%"
-%SEVENZIP% x "jpegsr%LIBJPEG%.zip" || goto error
-cd "jpeg-%LIBJPEG%" || goto error
-%PATCH% -p1 < "%SCRIPTDIR%\libjpeg-cmake.patch" || goto error
+echo Building libjpegturbo...
+rmdir /S /Q "libjpeg-turbo-%LIBJPEGTURBO%"
+tar -xf "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" || goto error
+cd "libjpeg-turbo-%LIBJPEGTURBO%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error

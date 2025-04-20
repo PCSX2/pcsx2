@@ -474,7 +474,7 @@ void VMManager::UpdateLoggingSettings(SettingsInterface& si)
 
 	const bool system_console_enabled = !s_log_block_system_console && si.GetBoolValue("Logging", "EnableSystemConsole", false);
 	const bool log_window_enabled = !s_log_block_system_console && si.GetBoolValue("Logging", "EnableLogWindow", false);
-	const bool file_logging_enabled = s_log_force_file_log || si.GetBoolValue("Logging", "EnableFileLogging", false);
+	const bool file_logging_enabled = s_log_force_file_log || si.GetBoolValue("Logging", "EnableFileLogging", true);
 
 	if (system_console_enabled != Log::IsConsoleOutputEnabled())
 		Log::SetConsoleOutputLevel(system_console_enabled ? level : LOGLEVEL_NONE);
@@ -518,7 +518,7 @@ void VMManager::UpdateLoggingSettings(SettingsInterface& si)
 void VMManager::SetDefaultLoggingSettings(SettingsInterface& si)
 {
 	si.SetBoolValue("Logging", "EnableSystemConsole", false);
-	si.SetBoolValue("Logging", "EnableFileLogging", false);
+	si.SetBoolValue("Logging", "EnableFileLogging", true);
 	si.SetBoolValue("Logging", "EnableTimestamps", true);
 	si.SetBoolValue("Logging", "EnableVerbose", false);
 	si.SetBoolValue("Logging", "EnableEEConsole", false);
@@ -2504,8 +2504,10 @@ void VMManager::LogCPUCapabilities()
 
 	Console.WriteLnFmt(
 		"  Operating System = {}\n"
-		"  Physical RAM     = {} MB",
+		"  Available RAM    = {} MB\n"
+		"  Physical RAM     = {} MB\n",
 		GetOSVersionString(),
+		GetAvailablePhysicalMemory() / _1mb,
 		GetPhysicalMemory() / _1mb);
 
 	Console.WriteLnFmt("  Processor        = {}", cpuinfo_get_package(0)->name);
@@ -3172,6 +3174,11 @@ void VMManager::WarnAboutUnsafeSettings()
 		{
 			append(ICON_FA_IMAGES,
 				TRANSLATE_SV("VMManager", "Mipmapping is disabled. This may break rendering in some games."));
+		}
+		if (EmuConfig.GS.UseDebugDevice)
+		{
+			append(ICON_FA_BUG,
+				TRANSLATE_SV("VMManager", "Debug device is enabled. This will massively reduce performance."));
 		}
 		static bool render_change_warn = false;
 		if (EmuConfig.GS.Renderer != GSRendererType::Auto && EmuConfig.GS.Renderer != GSRendererType::SW && !render_change_warn)

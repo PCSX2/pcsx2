@@ -119,6 +119,10 @@ GSState::~GSState()
 		_aligned_free(m_vertex.buff);
 	if (m_index.buff)
 		_aligned_free(m_index.buff);
+	if (m_draw_vertex.buff)
+		_aligned_free(m_draw_vertex.buff);
+	if (m_draw_index.buff)
+		_aligned_free(m_draw_index.buff);
 }
 
 std::string GSState::GetDrawDumpPath(const char* format, ...)
@@ -467,7 +471,8 @@ void GSState::DumpVertices(const std::string& filename)
 		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.R) << DEL;
 		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.G) << DEL;
 		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.B) << DEL;
-		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.A);
+		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.A) << DEL;
+		file << "FOG: " << std::setfill('0') << std::setw(3) << unsigned(v.FOG);
 		file << std::endl;
 	}
 
@@ -849,7 +854,7 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 		// Urban Chaos writes to the memory backing the CLUT in the middle of a shuffle, and
 		// it's unclear whether the CLUT would actually get reloaded in that case.
 		if (TEX0.CBP != m_mem.m_clut.GetCLUTCBP())
-			m_channel_shuffle = false;
+			m_channel_shuffle_abort = true;
 	}
 
 	TEX0.CPSM &= 0xa; // 1010b
@@ -1472,6 +1477,35 @@ void GSState::Flush(GSFlushReason reason)
 
 	if (m_index.tail > 0)
 	{
+		// Unless Vsync really needs the pending draw, don't do it when VSync happens as it can really screw up our heuristics when looking ahead.
+		if (reason == VSYNC)
+		{
+			GSDrawingContext* draw_ctx = &m_prev_env.CTXT[m_prev_env.PRIM.CTXT];
+			const u32 start_bp = GSLocalMemory::GetStartBlockAddress(draw_ctx->FRAME.Block(), draw_ctx->FRAME.FBW, draw_ctx->FRAME.PSM, temp_draw_rect);
+			const u32 end_bp = GSLocalMemory::GetEndBlockAddress(draw_ctx->FRAME.Block(), draw_ctx->FRAME.FBW, draw_ctx->FRAME.PSM, temp_draw_rect);
+			bool needs_flush[2] = {PCRTCDisplays.PCRTCDisplays[0].enabled, PCRTCDisplays.PCRTCDisplays[1].enabled};
+
+			if (PCRTCDisplays.PCRTCDisplays[1].enabled)
+			{
+				const u32 out_start_bp = GSLocalMemory::GetStartBlockAddress(PCRTCDisplays.PCRTCDisplays[1].Block(), PCRTCDisplays.PCRTCDisplays[1].FBW, PCRTCDisplays.PCRTCDisplays[1].PSM, PCRTCDisplays.PCRTCDisplays[1].framebufferRect);
+				const u32 out_end_bp = GSLocalMemory::GetEndBlockAddress(PCRTCDisplays.PCRTCDisplays[1].Block(), PCRTCDisplays.PCRTCDisplays[1].FBW, PCRTCDisplays.PCRTCDisplays[1].PSM, PCRTCDisplays.PCRTCDisplays[1].framebufferRect);
+
+				if (out_start_bp > end_bp || out_end_bp < start_bp)
+					needs_flush[1] = false;
+			}
+			
+			if (PCRTCDisplays.PCRTCDisplays[0].enabled)
+			{
+				const u32 out_start_bp = GSLocalMemory::GetStartBlockAddress(PCRTCDisplays.PCRTCDisplays[0].Block(), PCRTCDisplays.PCRTCDisplays[0].FBW, PCRTCDisplays.PCRTCDisplays[0].PSM, PCRTCDisplays.PCRTCDisplays[0].framebufferRect);
+				const u32 out_end_bp = GSLocalMemory::GetEndBlockAddress(PCRTCDisplays.PCRTCDisplays[0].Block(), PCRTCDisplays.PCRTCDisplays[0].FBW, PCRTCDisplays.PCRTCDisplays[0].PSM, PCRTCDisplays.PCRTCDisplays[0].framebufferRect);
+
+				if (out_start_bp > end_bp || out_end_bp < start_bp)
+					needs_flush[0] = false;
+			}
+
+			if (!needs_flush[0] && !needs_flush[1])
+				return;
+		}
 		m_state_flush_reason = reason;
 
 		// Used to prompt the current draw that it's modifying its own CLUT.
@@ -1674,7 +1708,8 @@ void GSState::FlushPrim()
 			Console.Warning("GS: Possible invalid draw, Frame PSM %x ZPSM %x", m_context->FRAME.PSM, m_context->ZBUF.PSM);
 		}
 #endif
-
+		// Update scissor, it may have been modified by a previous draw
+		m_env.CTXT[PRIM->CTXT].UpdateScissor();
 		m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
 		// Texel coordinate rounding
@@ -1723,6 +1758,7 @@ void GSState::FlushPrim()
 
 		// Skip draw if Z test is enabled, but set to fail all pixels.
 		const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
+		m_quad_check_valid = false;
 
 		if (!skip_draw)
 			Draw();
@@ -1936,10 +1972,10 @@ void GSState::Write(const u8* mem, int len)
 			m_draw_transfers.push_back(new_transfer);
 		}
 
-		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)", s_transfer_n,
+		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d) draw %d", s_transfer_n,
 				blit.DBP, blit.DBW, psm_str(blit.DPSM),
 				m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
-				m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
+				m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h, s_n);
 
 		if (len >= m_tr.total)
 		{
@@ -2794,8 +2830,10 @@ void GSState::GrowVertexBuffer()
 	const u32 maxcount = std::max<u32>(m_vertex.maxcount * 3 / 2, 10000);
 
 	GSVertex* vertex = static_cast<GSVertex*>(_aligned_malloc(sizeof(GSVertex) * maxcount, 32));
+	GSVertex* draw_vertex = static_cast<GSVertex*>(_aligned_malloc(sizeof(GSVertex) * maxcount, 32));
 	// Worst case index list is a list of points with vs expansion, 6 indices per point
 	u16* index = static_cast<u16*>(_aligned_malloc(sizeof(u16) * maxcount * 6, 32));
+	u16* draw_index = static_cast<u16*>(_aligned_malloc(sizeof(u16) * maxcount * 6, 32));
 
 	if (!vertex || !index)
 	{
@@ -2821,16 +2859,38 @@ void GSState::GrowVertexBuffer()
 		_aligned_free(m_index.buff);
 	}
 
+	if (m_draw_vertex.buff)
+	{
+		std::memcpy(draw_vertex, m_draw_vertex.buff, sizeof(GSVertex) * m_vertex.tail);
+
+		_aligned_free(m_draw_vertex.buff);
+	}
+
+	if (m_draw_index.buff)
+	{
+		std::memcpy(draw_index, m_draw_index.buff, sizeof(u16) * m_index.tail);
+
+		_aligned_free(m_draw_index.buff);
+	}
+
+	m_draw_vertex.buff = draw_vertex;
+	m_draw_index.buff = draw_index;
 	m_vertex.buff = vertex;
 	m_vertex.maxcount = maxcount - 3; // -3 to have some space at the end of the buffer before DrawingKick can grow it
 	m_index.buff = index;
 }
 
-bool GSState::TrianglesAreQuads(bool shuffle_check) const
+bool GSState::TrianglesAreQuads(bool shuffle_check)
 {
 	// If this is a quad, there should only be two distinct values for both X and Y, which
 	// also happen to be the minimum/maximum bounds of the primitive.
+	if (!shuffle_check && m_quad_check_valid)
+		return m_are_quads;
+
 	const GSVertex* const v = m_vertex.buff;
+	m_are_quads = false;
+	m_quad_check_valid = !shuffle_check;
+
 	for (u32 idx = 0; idx < m_index.tail; idx += 6)
 	{
 		const u16* const i = m_index.buff + idx;
@@ -2853,15 +2913,44 @@ bool GSState::TrianglesAreQuads(bool shuffle_check) const
 				return false;
 		}
 		// Degenerate triangles should've been culled already, so we can check indices.
-		u32 extra_verts = 0;
-		for (u32 j = 3; j < 6; j++)
+		// This doesn't really make much sense when it's a triangle strip as it will always have 1 extra vert, so check for distinct values for them.
+		if (PRIM->PRIM != GS_TRIANGLESTRIP)
 		{
-			const u16 tri2_idx = i[j];
-			if (tri2_idx != i[0] && tri2_idx != i[1] && tri2_idx != i[2])
-				extra_verts++;
+			u32 extra_verts = 0;
+			for (u32 j = 3; j < 6; j++)
+			{
+				const u16 tri2_idx = i[j];
+				if (tri2_idx != i[0] && tri2_idx != i[1] && tri2_idx != i[2])
+					extra_verts++;
+			}
+			if (extra_verts == 1)
+				continue;
 		}
-		if (extra_verts == 1)
-			continue;
+		else if (m_index.tail == 6)
+		{
+			const int first_X = m_vertex.buff[m_index.buff[0]].XYZ.X;
+			const int first_Y = m_vertex.buff[m_index.buff[0]].XYZ.Y;
+			const int second_X = m_vertex.buff[m_index.buff[1]].XYZ.X;
+			const int second_Y = m_vertex.buff[m_index.buff[1]].XYZ.Y;
+			const int third_X = m_vertex.buff[m_index.buff[2]].XYZ.X;
+			const int third_Y = m_vertex.buff[m_index.buff[2]].XYZ.Y;
+			const int new_X = m_vertex.buff[m_index.buff[5]].XYZ.X;
+			const int new_Y = m_vertex.buff[m_index.buff[5]].XYZ.Y;
+
+			const int middle_Y = (second_Y >= third_Y) ? (third_Y + ((second_Y - third_Y) / 2)) : (second_Y + ((third_Y - second_Y) / 2));
+			const int middle_X = (second_X >= third_X) ? (third_X + ((second_X - third_X) / 2)) : (second_X + ((third_X - second_X) / 2));
+			const bool first_lt_X = first_X <= middle_X;
+			const bool first_lt_Y = first_Y <= middle_Y;
+			const bool new_lt_X = new_X <= middle_X;
+			const bool new_lt_Y = new_Y <= middle_Y;
+
+			// Check if verts are on the same side. Not totally accurate, but should be good enough.
+			if (first_lt_X == new_lt_X && new_lt_Y == first_lt_Y)
+					return false;
+
+			m_prim_overlap = PRIM_OVERLAP_NO;
+			break;
+		}
 
 		// As a fallback, they might've used different vertices with a tri list, not strip.
 		// Note that this won't work unless the quad is axis-aligned.
@@ -2889,6 +2978,7 @@ bool GSState::TrianglesAreQuads(bool shuffle_check) const
 		}
 	}
 
+	m_are_quads = true;
 	return true;
 }
 
@@ -3051,6 +3141,46 @@ bool GSState::SpriteDrawWithoutGaps()
 		return true;
 	}
 
+	// Assume it's small sprites. NFSMW and a few other games draw 32x32 sprites in rows to fill the screen.
+	if (((first_dpY + 8) >> 4) == GSLocalMemory::m_psm[m_context->FRAME.PSM].pgs.y)
+	{
+		int lastXEdge = std::max(v[1].XYZ.X, v[0].XYZ.X);
+		int lastYEdge = std::max(v[1].XYZ.Y, v[0].XYZ.Y);
+		for (u32 i = 2; i < m_vertex.next; i += 2)
+		{
+			const int dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
+			
+			if (first_dpY != dpY)
+				return false;
+
+			const int newYStart = std::min(v[i + 1].XYZ.Y, v[i].XYZ.Y);
+			const int newXEdge = std::max(v[i + 1].XYZ.X, v[i].XYZ.X);
+			if (lastYEdge != newYStart)
+			{
+				if (newYStart != static_cast<int>(m_context->XYOFFSET.OFY))
+					return false;
+
+				const int newXStart = std::min(v[i + 1].XYZ.X, v[i].XYZ.X);
+
+				if (newXStart != lastXEdge)
+					return false;
+			}
+			else
+			{
+				const int dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
+				if (first_dpX != dpX || lastXEdge != newXEdge)
+					return false;
+			}
+
+			lastXEdge = newXEdge;
+			lastYEdge = std::max(v[i + 1].XYZ.Y, v[i].XYZ.Y);
+		}
+
+		m_prim_overlap = PRIM_OVERLAP_NO;
+
+		return true;
+	}
+
 	return false;
 }
 
@@ -3069,7 +3199,7 @@ void GSState::CalculatePrimitiveCoversWithoutGaps()
 	}
 	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
 	{
-		m_primitive_covers_without_gaps = (m_index.tail == 6 && TrianglesAreQuads()) ? m_primitive_covers_without_gaps : GapsFound;
+		m_primitive_covers_without_gaps = ((m_index.tail == 6 || ((m_index.tail % 6) == 0 && m_primitive_covers_without_gaps == FullCover)) && TrianglesAreQuads()) ? m_primitive_covers_without_gaps : GapsFound;
 		return;
 	}
 	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
@@ -3094,6 +3224,16 @@ __forceinline bool GSState::IsAutoFlushDraw(u32 prim)
 	if (!(GSUtil::GetChannelMask(m_context->TEX0.PSM) & GSUtil::GetChannelMask(m_context->FRAME.PSM, m_context->FRAME.FBMSK | ~(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk))))
 		return false;
 
+	// Try to detect shuffles, because these will not autoflush, they by design clash.
+	if (GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_context->TEX0.PSM].bpp == 16)
+	{
+		// Pretty confident here...
+		GSVertex* buffer = &m_vertex.buff[0];
+		const bool const_spacing = std::abs(buffer[m_index.buff[0]].U - buffer[m_index.buff[0]].XYZ.X) == std::abs(m_v.U - m_v.XYZ.X) && std::abs(buffer[m_index.buff[1]].XYZ.X - buffer[m_index.buff[0]].XYZ.X) <= 256; // Lequal to 16 pixels apart.
+
+		if (const_spacing)
+			return false;
+	}
 	const u32 frame_mask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
 	const bool frame_hit = m_context->FRAME.Block() == m_context->TEX0.TBP0 && !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL == 2) && ((m_context->FRAME.FBMSK & frame_mask) != frame_mask);
 	// There's a strange behaviour we need to test on a PS2 here, if the FRAME is a Z format, like Powerdrome something swaps over, and it seems Alpha Fail of "FB Only" writes to the Z.. it's odd.
@@ -3859,7 +3999,8 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 		const GSVector2 grad(uv_range / pos_range);
 		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
 		// optimization doesn't work when perspective correction is enabled.
-		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1 && m_primitive_covers_without_gaps != NoGapsType::GapsFound)
+		// Allowing for quads when the gradiant is 1. It's not guaranteed (would need to check the grandient on each vector), but should be close enough.
+		if (m_primitive_covers_without_gaps != NoGapsType::GapsFound && (m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && grad.x == 1.0f && grad.y == 1.0f && TrianglesAreQuads(false))))
 		{
 			// When coordinates are fractional, GS appears to draw to the right/bottom (effectively
 			// taking the ceiling), not to the top/left (taking the floor).
@@ -3870,11 +4011,24 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 
 				const GSVertex* vert_first = &m_vertex.buff[m_index.buff[0]];
 				const GSVertex* vert_second = &m_vertex.buff[m_index.buff[1]];
+				const GSVertex* vert_third = &m_vertex.buff[m_index.buff[2]];
 
 				GSVector4 new_st = st;
+				bool u_forward_check = false;
+				bool x_forward_check = false;
+				if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+				{
+					u_forward_check = PRIM->FST ? ((vert_first->U < vert_second->U) || (vert_first->U < vert_third->U)) : (((vert_first->ST.S / vert_first->RGBAQ.Q) < (vert_second->ST.S / vert_second->RGBAQ.Q)) || ((vert_first->ST.S / vert_first->RGBAQ.Q) < (vert_third->ST.S / vert_third->RGBAQ.Q)));
+					x_forward_check = (vert_first->XYZ.X < vert_second->XYZ.X) || (vert_first->XYZ.X < vert_third->XYZ.X);
+				}
+				else
+				{
+					u_forward_check = PRIM->FST ? (vert_first->U < vert_second->U) : ((vert_first->ST.T / vert_first->RGBAQ.Q) < (vert_second->ST.T / vert_first->RGBAQ.Q));
+					x_forward_check = vert_first->XYZ.Y < vert_second->XYZ.Y;
+				}
 				// Check if the UV coords are going in a different direction to the verts, if they match direction, no need to swap
-				const bool u_forward = vert_first->U < vert_second->U;
-				const bool x_forward = vert_first->XYZ.X < vert_second->XYZ.X;
+				const bool u_forward = u_forward_check;
+				const bool x_forward = x_forward_check;
 				const bool swap_x = u_forward != x_forward;
 
 				if (int_rc.left < scissored_rc.left)
@@ -3897,9 +4051,20 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 					st.x = new_st.x;
 					st.z = new_st.z;
 				}
-
-				const bool v_forward = vert_first->V < vert_second->V;
-				const bool y_forward = vert_first->XYZ.Y < vert_second->XYZ.Y;
+				bool v_forward_check = false;
+				bool y_forward_check = false;
+				if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+				{
+					v_forward_check = PRIM->FST ? ((vert_first->V < vert_second->V) || (vert_first->V < vert_third->V)) : (((vert_first->ST.T / vert_first->RGBAQ.Q) < (vert_second->ST.T / vert_second->RGBAQ.Q)) || ((vert_first->ST.T / vert_first->RGBAQ.Q) < (vert_third->ST.T / vert_third->RGBAQ.Q)));
+					y_forward_check = (vert_first->XYZ.Y < vert_second->XYZ.Y) || (vert_first->XYZ.Y < vert_third->XYZ.Y);
+				}
+				else
+				{
+					v_forward_check = PRIM->FST ? (vert_first->V < vert_second->V) : ((vert_first->ST.T / vert_first->RGBAQ.Q) < (vert_second->ST.T / vert_first->RGBAQ.Q));
+					y_forward_check = vert_first->XYZ.Y < vert_second->XYZ.Y;
+				}
+				const bool v_forward = v_forward_check;
+				const bool y_forward = y_forward_check;
 				const bool swap_y = v_forward != y_forward;
 
 				if (int_rc.top < scissored_rc.top)
@@ -3929,8 +4094,9 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 
 		// Need to make sure we don't oversample, this can cause trouble in grabbing textures.
 		// This may be inaccurate depending on the draw, but adding 1 all the time is wrong too.
-		const int inclusive_x_req = ((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.x < 1.0f || (grad.x == 1.0f && m_vt.m_max.p.x != floor(m_vt.m_max.p.x)))) ? 1 : 0;
-		const int inclusive_y_req = ((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.y < 1.0f || (grad.y == 1.0f && m_vt.m_max.p.y != floor(m_vt.m_max.p.y)))) ? 1 : 0;
+		// FIXME: It breaks sw renderer so let's still use 1 for SW mode for now.
+		const int inclusive_x_req = GSIsHardwareRenderer() ? (((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.x < 1.0f || (grad.x == 1.0f && m_vt.m_max.p.x != floor(m_vt.m_max.p.x)))) ? 1 : 0) : 1;
+		const int inclusive_y_req = GSIsHardwareRenderer() ? (((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.y < 1.0f || (grad.y == 1.0f && m_vt.m_max.p.y != floor(m_vt.m_max.p.y)))) ? 1 : 0) : 1;
 	
 		// Roughly cut out the min/max of the read (Clamp)
 		switch (wms)
@@ -4408,7 +4574,7 @@ bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
 	{
 		if (len > packet_size)
 		{
-#if defined(PCSX2_DEVBUILD) || defined(_DEBUG)
+#if defined(_DEBUG)
 			Console.Warning("GS transfer buffer overflow len %d remaining %d, tex_size %d tw %d th %d bpp %d", len, remaining, tex_size, tw, th, bpp);
 #endif
 		}
@@ -4668,10 +4834,16 @@ GSVector2i GSState::GSPCRTCRegs::GetFramebufferSize(int display)
 void GSState::GSPCRTCRegs::SetRects(int display, GSRegDISPLAY displayReg, GSRegDISPFB framebufferReg)
 {
 	// Save framebuffer information first, while we're here.
+	PCRTCDisplays[display].prevFramebufferReg.FBP = PCRTCDisplays[display].FBP;
+	PCRTCDisplays[display].prevFramebufferReg.FBW = PCRTCDisplays[display].FBW;
+	PCRTCDisplays[display].prevFramebufferReg.PSM = PCRTCDisplays[display].PSM;
+	PCRTCDisplays[display].prevFramebufferReg.DBX = PCRTCDisplays[display].DBX;
+	PCRTCDisplays[display].prevFramebufferReg.DBY = PCRTCDisplays[display].DBY;
 	PCRTCDisplays[display].FBP = framebufferReg.FBP;
 	PCRTCDisplays[display].FBW = framebufferReg.FBW;
 	PCRTCDisplays[display].PSM = framebufferReg.PSM;
-	PCRTCDisplays[display].prevFramebufferReg = framebufferReg;
+	PCRTCDisplays[display].DBX = framebufferReg.DBX;
+	PCRTCDisplays[display].DBY = framebufferReg.DBY;
 	// Probably not really enabled but will cause a mess.
 	// Q-Ball Billiards enables both circuits but doesn't set one of them up.
 	if (PCRTCDisplays[display].FBW == 0 && displayReg.DW == 0 && displayReg.DH == 0 && displayReg.MAGH == 0)

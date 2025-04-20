@@ -47,7 +47,7 @@ constant uint PS_BLEND_C            [[function_constant(GSMTLConstantIndex_PS_BL
 constant uint PS_BLEND_D            [[function_constant(GSMTLConstantIndex_PS_BLEND_D)]];
 constant uint PS_BLEND_HW           [[function_constant(GSMTLConstantIndex_PS_BLEND_HW)]];
 constant bool PS_A_MASKED           [[function_constant(GSMTLConstantIndex_PS_A_MASKED)]];
-constant bool PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
+constant bool PS_COLCLIP_HW         [[function_constant(GSMTLConstantIndex_PS_COLCLIP_HW)]];
 constant bool PS_RTA_CORRECTION     [[function_constant(GSMTLConstantIndex_PS_RTA_CORRECTION)]];
 constant bool PS_RTA_SRC_CORRECTION [[function_constant(GSMTLConstantIndex_PS_RTA_SRC_CORRECTION)]];
 constant bool PS_COLCLIP            [[function_constant(GSMTLConstantIndex_PS_COLCLIP)]];
@@ -97,7 +97,8 @@ constant bool SW_BLEND = (PS_BLEND_A != PS_BLEND_B) || PS_BLEND_D;
 constant bool SW_AD_TO_HW = (PS_BLEND_C == 1 && PS_A_MASKED);
 constant bool NEEDS_RT_FOR_BLEND = (((PS_BLEND_A != PS_BLEND_B) && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1)) || PS_BLEND_D == 1 || SW_AD_TO_HW);
 constant bool NEEDS_RT_EARLY = PS_TEX_IS_FB || PS_DATE >= 5;
-constant bool NEEDS_RT = NEEDS_RT_EARLY || (!PS_PRIM_CHECKING_INIT && (PS_FBMASK || NEEDS_RT_FOR_BLEND));
+constant bool NEEDS_RT_FOR_AFAIL = PS_AFAIL == 3 && PS_NO_COLOR1;
+constant bool NEEDS_RT = NEEDS_RT_FOR_AFAIL || NEEDS_RT_EARLY || (!PS_PRIM_CHECKING_INIT && (PS_FBMASK || NEEDS_RT_FOR_BLEND));
 
 constant bool PS_COLOR0 = !PS_NO_COLOR;
 constant bool PS_COLOR1 = !PS_NO_COLOR1;
@@ -825,7 +826,7 @@ struct PSMain
 		else
 			T = sample_color(st);
 
-		if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC)
+		if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
 			uint4 denorm_c_before = uint4(T);
 			if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -857,7 +858,7 @@ struct PSMain
 	{
 		if (PS_FBMASK)
 		{
-			float multi = PS_HDR ? 65535.0 : 255.5;
+			float multi = PS_COLCLIP_HW ? 65535.0 : 255.5;
 			C = float4((uint4(int4(C)) & (cb.fbmask ^ 0xff)) | (uint4(current_color * float4(multi, multi, multi, 255)) & cb.fbmask));
 		}
 	}
@@ -889,28 +890,31 @@ struct PSMain
 
 	void ps_color_clamp_wrap(thread float4& C)
 	{
-		// When dithering the bottom 3 bits become meaningless and cause lines in the picture so we need to limit the color depth on dithered items
-		if (!SW_BLEND && !(PS_DITHER > 0 && PS_DITHER < 3) && !PS_FBMASK)
-			return;
+		// When dithering the bottom 3 bits become meaningless and cause lines in the picture
+		// so we need to limit the color depth on dithered items
+		if (SW_BLEND || (PS_DITHER > 0 && PS_DITHER < 3) || PS_FBMASK)
+		{
+			if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
+				C.rgb += 7.f; // Need to round up, not down since the shader will invert
 
-		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
-			C.rgb += 7.f; // Need to round up, not down since the shader will invert
+			// Correct the Color value based on the output format
+			if (PS_COLCLIP == 0 && PS_COLCLIP_HW == 0)
+				C.rgb = clamp(C.rgb, 0.f, 255.f); // Standard Clamp
 
-		// Correct the Color value based on the output format
-		if (!PS_COLCLIP && !PS_HDR)
-			C.rgb = clamp(C.rgb, 0.f, 255.f); // Standard Clamp
+			// FIXME rouding of negative float?
+			// compiler uses trunc but it might need floor
 
-		// FIXME rouding of negative float?
-		// compiler uses trunc but it might need floor
-
-		// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
-		// GS: Color = 1, Alpha = 255 => output 1
-		// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-		if (PS_DST_FMT == FMT_16 && PS_DITHER < 3 && (PS_BLEND_MIX == 0 || PS_DITHER))
+			// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
+			// GS: Color = 1, Alpha = 255 => output 1
+			// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
 			// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
+			if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && (PS_BLEND_MIX == 0 || PS_DITHER))
+				C.rgb = float3(short3(C.rgb) & 0xF8);
+			else if (PS_COLCLIP == 1 || PS_COLCLIP_HW == 1)
+				C.rgb = float3(short3(C.rgb) & 0xFF);
+		}
+		else if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && PS_BLEND_MIX == 0 && PS_BLEND_HW == 0)
 			C.rgb = float3(short3(C.rgb) & 0xF8);
-		else if (PS_COLCLIP || PS_HDR)
-			C.rgb = float3(short3(C.rgb) & 0xFF);
 	}
 
 	template <typename T>
@@ -959,7 +963,7 @@ struct PSMain
 					current_color.a = float(denorm_rt.g & 0x80);
 				}
 			}
-			float multi = PS_HDR ? 65535.0 : 255.5;
+			float multi = PS_COLCLIP_HW ? 65535.0 : 255.5;
 			float3 Cd = trunc(current_color.rgb * multi);
 			float3 Cs = Color.rgb;
 
@@ -1130,7 +1134,7 @@ struct PSMain
 
 		if (PS_SHUFFLE)
 		{
-			if (!PS_SHUFFLE_SAME && !PS_READ16_SRC)
+			if (!PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 			{
 				uint4 denorm_c_after = uint4(C);
 				if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1171,11 +1175,8 @@ struct PSMain
 			{
 				if (PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 				{
-					C.rb = C.br;
-					float g_temp = C.g;
-					
-					C.g = C.a;
-					C.a = g_temp;
+					C.br = C.rb;
+					C.ag = C.ga;
 				}
 				else if(PS_PROCESS_BA & SHUFFLE_READ)
 				{
@@ -1189,7 +1190,7 @@ struct PSMain
 				}
 			}
 		}
-		
+
 		ps_dither(C, alpha_blend.a);
 
 		// Color clamp/wrap needs to be done after sw blending and dithering
@@ -1202,8 +1203,12 @@ struct PSMain
 			alpha_blend.a = float(atst_pass);
 
 		if (PS_COLOR0)
+		{
 			out.c0.a = PS_RTA_CORRECTION ? C.a / 128.f : C.a / 255.f;
-			out.c0.rgb = PS_HDR ? float3(C.rgb / 65535.f) : C.rgb / 255.f;
+			out.c0.rgb = PS_COLCLIP_HW ? float3(C.rgb / 65535.f) : C.rgb / 255.f;
+			if (PS_AFAIL == 3 && !PS_COLOR1 && !atst_pass) // Doing RGB_ONLY without COLOR1
+				out.c0.a = current_color.a;
+		}
 		if (PS_COLOR1)
 			out.c1 = alpha_blend;
 		if (PS_ZCLAMP)

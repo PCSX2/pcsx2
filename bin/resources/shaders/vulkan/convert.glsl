@@ -148,16 +148,16 @@ void ps_rta_decorrection()
 }
 #endif
 
-#ifdef ps_hdr_init
-void ps_hdr_init()
+#ifdef ps_colclip_init
+void ps_colclip_init()
 {
 	vec4 value = sample_c(v_tex);
 	o_col0 = vec4(roundEven(value.rgb * 255.0f) / 65535.0f, value.a);
 }
 #endif
 
-#ifdef ps_hdr_resolve
-void ps_hdr_resolve()
+#ifdef ps_colclip_resolve
+void ps_colclip_resolve()
 {
 	vec4 value = sample_c(v_tex);
 	o_col0 = vec4(vec3(uvec3(value.rgb * 65535.5f) & 255u) / 255.0f, value.a);

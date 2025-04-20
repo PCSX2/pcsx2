@@ -46,6 +46,8 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 		(max_base_index >= 7) ? cpuidex(7, 0) : (struct cpuid_regs){0, 0, 0, 0};
 	const struct cpuid_regs structured_feature_info1 =
 		(max_base_index >= 7) ? cpuidex(7, 1) : (struct cpuid_regs){0, 0, 0, 0};
+	const struct cpuid_regs structured_feature_info2 =
+		(max_base_index >= 7) ? cpuidex(0x24, 0) : (struct cpuid_regs){0, 0, 0, 0};
 
 	const uint32_t processor_capacity_info_index = UINT32_C(0x80000008);
 	const struct cpuid_regs processor_capacity_info = (max_extended_index >= processor_capacity_info_index)
@@ -430,9 +432,16 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 	isa.avx512f = avx512_regs && !!(structured_feature_info0.ebx & UINT32_C(0x00010000));
 
 	/*
-	 * AVX 10.1 instructions:
+	 * AVX 10.1 instructions: avx 10 isa supported.
+	 * - Intel: edx[bit 19] in structured feature info (ecx = 1).
 	 */
 	isa.avx10_1 = avx512_regs && !!(structured_feature_info1.edx & UINT32_C(0x00080000));
+
+	/*
+	 * AVX 10.2 instructions: avx 10 version information.
+	 * - Intel: ebx[bits 0-7] in structured features info (eax = 24 ecx = 0).
+	 */
+	isa.avx10_2 = ((structured_feature_info2.ebx & UINT32_C(0x000000FF)) >= 2) && isa.avx10_1;
 
 	/*
 	 * AVX512PF instructions:

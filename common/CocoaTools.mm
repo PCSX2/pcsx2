@@ -143,6 +143,11 @@ void CocoaTools::RemoveThemeChangeHandler(void* ctx)
 	[s_themeChangeHandler removeCallback:ctx];
 }
 
+void CocoaTools::MarkHelpMenu(void* menu)
+{
+	[NSApp setHelpMenu:(__bridge NSMenu*)menu];
+}
+
 // MARK: - Sound playback
 
 bool Common::PlaySoundAsync(const char* path)

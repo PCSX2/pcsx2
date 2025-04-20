@@ -266,15 +266,17 @@ bool ThreadedFileReader::Precache2(ProgressCallback* progress, Error* error)
 
 bool ThreadedFileReader::CheckAvailableMemoryForPrecaching(u64 required_size, Error* error)
 {
-	// Don't allow precaching to use more than 50% of system memory.
-	// Hopefully nobody's running 2-4GB potatoes anymore....
-	const u64 memory_size = GetPhysicalMemory();
-	const u64 max_precache_size = memory_size / 2;
+	// We want to check available physical memory instead of total.
+	const u64 memory_available = GetAvailablePhysicalMemory();
+	// Reserve 2GB of available memory for headroom.
+	constexpr u64 memory_reserve = 2147483648;
+	const u64 max_precache_size = std::max(s64{0}, static_cast<s64>(memory_available - memory_reserve));
+
 	if (required_size > max_precache_size)
 	{
 		Error::SetStringFmt(error,
-			TRANSLATE_FS("CDVD", "Required memory ({}GB) is the above the maximum allowed ({}GB)."),
-			required_size / _1gb, max_precache_size / _1gb);
+			TRANSLATE_FS("CDVD", "Not enough free memory available for precaching, ({}GB) required."),
+			(required_size + memory_reserve) / _1gb);
 		return false;
 	}
 

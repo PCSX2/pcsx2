@@ -14,8 +14,8 @@
     {
       "type": "git",
       "url": "https://github.com/KDAB/KDDockWidgets.git",
-      "tag": "v2.2.1",
-      "commit": "3aaccddc00a11a643e0959a24677838993de15ac",
+      "tag": "v2.2.3",
+      "commit": "28d16d0431d7cdc9f36cb619d22621146fdfab44",
       "disable-submodules": true
     },
     {

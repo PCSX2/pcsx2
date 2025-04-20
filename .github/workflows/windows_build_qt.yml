@@ -168,7 +168,7 @@ jobs:
             !./bin/**/*.lib
 
       - name: Install the Breakpad Symbol Generator
-        uses: baptiste0928/cargo-install@v3
+        uses: baptiste0928/cargo-install@91c5da15570085bcde6f4d7aed98cb82d6769fd3
         with:
           crate: dump_syms
 

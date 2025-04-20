@@ -750,11 +750,14 @@ void store_core_info_per_processor(
 	if (cores) {
 		processors[processor_global_index].core = cores + core_id;
 		cores[core_id].core_id = core_id;
-		get_core_uarch_for_efficiency(
-			chip_info->chip_name,
-			core_info->Processor.EfficiencyClass,
-			&(cores[core_id].uarch),
-			&(cores[core_id].frequency));
+
+		if (chip_info->uarchs == NULL) {
+			cpuinfo_log_error("uarch is NULL for core %d", core_id);
+			return;
+		}
+
+		cores[core_id].uarch = chip_info->uarchs[0].uarch;
+		cores[core_id].frequency = chip_info->uarchs[0].frequency;
 
 		/* We don't have cluster information, so we handle it as
 		 * fixed 1 to (cluster / cores).

@@ -8,6 +8,7 @@
 #include "DebugTools/DebugInterface.h"
 
 #include <kddockwidgets/MainWindow.h>
+#include <QtCore/QTimer>
 
 class DockManager;
 
@@ -31,11 +32,13 @@ public:
 	void updateFontActions();
 	void saveFontSize();
 	int fontSize();
-	void updateStyleSheets();
+	void updateTheme();
 
 	void saveWindowGeometry();
 	void restoreWindowGeometry();
 	bool shouldSaveWindowGeometry();
+
+	void updateFromSettings();
 
 public slots:
 	void onVMStarting();
@@ -51,6 +54,11 @@ public slots:
 	void onStepOver();
 	void onStepOut();
 
+Q_SIGNALS:
+	// Only emitted if the pause wasn't a temporary one triggered by the
+	// breakpoint code.
+	void onVMActuallyPaused();
+
 protected:
 	void closeEvent(QCloseEvent* event);
 
@@ -62,6 +70,7 @@ private:
 	DockManager* m_dock_manager;
 
 	QByteArray m_default_toolbar_state;
+	QTimer* m_refresh_timer = nullptr;
 
 	int m_font_size;
 	static const constexpr int DEFAULT_FONT_SIZE = 10;

@@ -15,6 +15,7 @@
 
 #include <dbus/dbus.h>
 #include <spawn.h>
+#include <sys/sysinfo.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -38,6 +39,15 @@ u64 GetPhysicalMemory()
 #endif
 
 	return pages * getpagesize();
+}
+
+u64 GetAvailablePhysicalMemory()
+{
+	struct sysinfo info;
+	if (sysinfo(&info) != 0)
+		return 0;
+
+	return static_cast<u64>(info.freeram) * info.mem_unit;
 }
 
 u64 GetTickFrequency()

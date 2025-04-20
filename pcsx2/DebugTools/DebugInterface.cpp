@@ -1029,6 +1029,11 @@ bool R3000DebugInterface::isValidAddress(u32 addr)
 		return true;
 	}
 
+	if (addr >= 0x1FC00000 && addr < 0x20000000)
+	{
+		return true;
+	}
+
 	if (addr < 0x200000)
 	{
 		return true;

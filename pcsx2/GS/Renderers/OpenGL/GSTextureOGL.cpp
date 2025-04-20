@@ -65,6 +65,8 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 
 		// 4 channel normalized
 		case Format::Color:
+		case Format::ColorHQ:
+		case Format::ColorHDR:
 			gl_fmt = GL_RGBA8;
 			m_int_format = GL_RGBA;
 			m_int_type = GL_UNSIGNED_BYTE;
@@ -72,7 +74,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 			break;
 
 		// 4 channel float
-		case Format::HDRColor:
+		case Format::ColorClip:
 			gl_fmt = GL_RGBA16;
 			m_int_format = GL_RGBA;
 			m_int_type = GL_UNSIGNED_SHORT;

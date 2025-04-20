@@ -1843,12 +1843,24 @@ Pcsx2Config::AchievementsOptions::AchievementsOptions()
 	Notifications = true;
 	LeaderboardNotifications = true;
 	SoundEffects = true;
+	InfoSound = true;
+	UnlockSound = true;
+	LBSubmitSound = true;
 	Overlays = true;
 }
 
 void Pcsx2Config::AchievementsOptions::LoadSave(SettingsWrapper& wrap)
 {
 	SettingsWrapSection("Achievements");
+
+	if (InfoSoundName.empty())
+		InfoSoundName = Path::Combine(EmuFolders::Resources, DEFAULT_INFO_SOUND_NAME);
+
+	if (UnlockSoundName.empty())
+		UnlockSoundName = Path::Combine(EmuFolders::Resources, DEFAULT_UNLOCK_SOUND_NAME);
+
+	if (LBSubmitSoundName.empty())
+		LBSubmitSoundName = Path::Combine(EmuFolders::Resources, DEFAULT_LBSUBMIT_SOUND_NAME);
 
 	SettingsWrapBitBool(Enabled);
 	SettingsWrapBitBoolEx(HardcoreMode, "ChallengeMode");
@@ -1858,9 +1870,15 @@ void Pcsx2Config::AchievementsOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(Notifications);
 	SettingsWrapBitBool(LeaderboardNotifications);
 	SettingsWrapBitBool(SoundEffects);
+	SettingsWrapBitBool(InfoSound);
+	SettingsWrapBitBool(UnlockSound);
+	SettingsWrapBitBool(LBSubmitSound);
 	SettingsWrapBitBool(Overlays);
 	SettingsWrapEntry(NotificationsDuration);
 	SettingsWrapEntry(LeaderboardsDuration);
+	SettingsWrapEntry(InfoSoundName);
+	SettingsWrapEntry(UnlockSoundName);
+	SettingsWrapEntry(LBSubmitSoundName);
 
 	if (wrap.IsLoading())
 	{
@@ -1890,6 +1908,7 @@ Pcsx2Config::Pcsx2Config()
 	EnableRecordingTools = true;
 	EnableGameFixes = true;
 	InhibitScreensaver = true;
+	UseSavestateSelector = true;
 	BackupSavestate = true;
 	WarnAboutUnsafeSettings = true;
 	ManuallySetRealTimeClock = false;

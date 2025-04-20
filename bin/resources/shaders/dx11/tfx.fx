@@ -55,7 +55,7 @@
 #define PS_CHANNEL_FETCH 0
 #define PS_TALES_OF_ABYSS_HLE 0
 #define PS_URBAN_CHAOS_HLE 0
-#define PS_HDR 0
+#define PS_COLCLIP_HW 0
 #define PS_RTA_CORRECTION 0
 #define PS_RTA_SRC_CORRECTION 0
 #define PS_COLCLIP 0
@@ -767,7 +767,7 @@ float4 ps_color(PS_INPUT input)
 	float4 T = sample_color(st, input.t.w);
 #endif
 
-	if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC)
+	if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 	{
 		uint4 denorm_c_before = uint4(T);
 		if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -799,7 +799,7 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 {
 	if (PS_FBMASK)
 	{
-		float multi = PS_HDR ? 65535.0f : 255.0f;
+		float multi = PS_COLCLIP_HW ? 65535.0f : 255.0f;
 		float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * multi + 0.1f);
 		C = (float4)(((uint4)C & ~FbMask) | ((uint4)RT & FbMask));
 	}
@@ -843,15 +843,17 @@ void ps_color_clamp_wrap(inout float3 C)
 			C += 7.0f; // Need to round up, not down since the shader will invert
 
 		// Standard Clamp
-		if (PS_COLCLIP == 0 && PS_HDR == 0)
+		if (PS_COLCLIP == 0 && PS_COLCLIP_HW == 0)
 			C = clamp(C, (float3)0.0f, (float3)255.0f);
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
 		if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && (PS_BLEND_MIX == 0 || PS_DITHER))
 			C = (float3)((int3)C & (int3)0xF8);
-		else if (PS_COLCLIP == 1 || PS_HDR == 1)
+		else if (PS_COLCLIP == 1 || PS_COLCLIP_HW == 1)
 			C = (float3)((int3)C & (int3)0xFF);
 	}
+	else if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && PS_BLEND_MIX == 0 && PS_BLEND_HW == 0)
+		C = (float3)((int3)C & (int3)0xF8);
 }
 
 void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
@@ -896,7 +898,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		}
 		
 		float Ad = PS_RTA_CORRECTION ? trunc(RT.a * 128.0f + 0.1f) / 128.0f : trunc(RT.a * 255.0f + 0.1f) / 128.0f;
-		float color_multi = PS_HDR ? 65535.0f : 255.0f;
+		float color_multi = PS_COLCLIP_HW ? 65535.0f : 255.0f;
 		float3 Cd = trunc(RT.rgb * color_multi + 0.1f);
 		float3 Cs = Color.rgb;
 
@@ -1084,7 +1086,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	if (PS_SHUFFLE)
 	{
-		if (!PS_SHUFFLE_SAME && !PS_READ16_SRC)
+		if (!PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
 			uint4 denorm_c_after = uint4(C);
 			if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1125,11 +1127,8 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		{
 			if (PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 			{
-				C.rb = C.br;
-				float g_temp = C.g;
-				
-				C.g = C.a;
-				C.a = g_temp;
+				C.br = C.rb;
+				C.ag = C.ga;
 			}
 			else if(PS_PROCESS_BA & SHUFFLE_READ)
 			{
@@ -1158,7 +1157,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 #if !PS_NO_COLOR
 	output.c0.a = PS_RTA_CORRECTION ? C.a / 128.0f : C.a / 255.0f;
-	output.c0.rgb = PS_HDR ? float3(C.rgb / 65535.0f) : C.rgb / 255.0f;
+	output.c0.rgb = PS_COLCLIP_HW ? float3(C.rgb / 65535.0f) : C.rgb / 255.0f;
 #if !PS_NO_COLOR1
 	output.c1 = alpha_blend;
 #endif

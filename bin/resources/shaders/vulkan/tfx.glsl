@@ -281,7 +281,7 @@ void main()
 #define PS_CHANNEL_FETCH 0
 #define PS_TALES_OF_ABYSS_HLE 0
 #define PS_URBAN_CHAOS_HLE 0
-#define PS_HDR 0
+#define PS_COLCLIP_HW 0
 #define PS_COLCLIP 0
 #define PS_BLEND_A 0
 #define PS_BLEND_B 0
@@ -299,8 +299,9 @@ void main()
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
+#define AFAIL_NEEDS_RT (PS_AFAIL == 3 && PS_NO_COLOR1)
 
-#define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5))
+#define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || AFAIL_NEEDS_RT || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5))
 
 #define NEEDS_TEX (PS_TFX != 4)
 
@@ -945,7 +946,7 @@ vec4 ps_color()
 	vec4 T = sample_color(st);
 #endif
 
-	#if PS_SHUFFLE && !PS_READ16_SRC && !PS_SHUFFLE_SAME
+	#if PS_SHUFFLE && !PS_READ16_SRC && !PS_SHUFFLE_SAME && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 		uvec4 denorm_c_before = uvec4(T);
 		#if (PS_PROCESS_BA & SHUFFLE_READ)
 			T.r = float((denorm_c_before.b << 3) & 0xF8u);
@@ -973,7 +974,7 @@ void ps_fbmask(inout vec4 C)
 {
 	#if PS_FBMASK
 		
-		#if PS_HDR == 1
+		#if PS_COLCLIP_HW == 1
 			vec4 RT = trunc(sample_from_rt() * 65535.0f);
 		#else
 			vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
@@ -1026,7 +1027,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 #endif
 
 	// Correct the Color value based on the output format
-#if PS_COLCLIP == 0 && PS_HDR == 0
+#if PS_COLCLIP == 0 && PS_COLCLIP_HW == 0
 	// Standard Clamp
 	C = clamp(C, vec3(0.0f), vec3(255.0f));
 #endif
@@ -1040,10 +1041,12 @@ void ps_color_clamp_wrap(inout vec3 C)
 #if PS_DST_FMT == FMT_16 && PS_DITHER != 3 && (PS_BLEND_MIX == 0 || PS_DITHER > 0)
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 	C = vec3(ivec3(C) & ivec3(0xF8));
-#elif PS_COLCLIP == 1 || PS_HDR == 1
+#elif PS_COLCLIP == 1 || PS_COLCLIP_HW == 1
 	C = vec3(ivec3(C) & ivec3(0xFF));
 #endif
 
+#elif PS_DST_FMT == FMT_16 && PS_DITHER != 3 && PS_BLEND_MIX == 0 && PS_BLEND_HW == 0
+	C = vec3(ivec3(C) & ivec3(0xF8));
 #endif
 }
 
@@ -1095,7 +1098,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 		#endif
 
 			// Let the compiler do its jobs !
-			#if PS_HDR == 1
+			#if PS_COLCLIP_HW == 1
 			vec3 Cd = trunc(RT.rgb * 65535.0f);
 			#else
 			vec3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
@@ -1329,7 +1332,7 @@ void main()
 	ps_blend(C, alpha_blend);
 
 #if PS_SHUFFLE
-		#if !PS_READ16_SRC && !PS_SHUFFLE_SAME
+		#if !PS_READ16_SRC && !PS_SHUFFLE_SAME && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 			uvec4 denorm_c_after = uvec4(C);
 			#if (PS_PROCESS_BA & SHUFFLE_READ)
 				C.b = float(((denorm_c_after.r >> 3) & 0x1Fu) | ((denorm_c_after.g << 2) & 0xE0u));
@@ -1340,8 +1343,6 @@ void main()
 			#endif
 		#endif
 
-		
-		
 		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 		#if PS_SHUFFLE_SAME
 			#if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1359,11 +1360,8 @@ void main()
 		// Write RB part. Mask will take care of the correct destination
 		#elif PS_SHUFFLE_ACROSS
 			#if(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
-				C.rb = C.br;
-				float g_temp = C.g;
-				
-				C.g = C.a;
-				C.a = g_temp;
+				C.br = C.rb;
+				C.ag = C.ga;
 			#elif(PS_PROCESS_BA & SHUFFLE_READ)
 				C.rb = C.bb;
 				C.ga = C.aa;
@@ -1381,7 +1379,7 @@ void main()
 
 	ps_fbmask(C);
 
-	#if PS_AFAIL == 3 // RGB_ONLY
+	#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY
 		// Use alpha blend factor to determine whether to update A.
 		alpha_blend.a = float(atst_pass);
 	#endif
@@ -1392,13 +1390,17 @@ void main()
 		#else
 			o_col0.a = C.a / 255.0f;
 		#endif
-		#if PS_HDR == 1
+		#if PS_COLCLIP_HW == 1
 			o_col0.rgb = vec3(C.rgb / 65535.0f);
 		#else
 			o_col0.rgb = C.rgb / 255.0f;
 		#endif
 		#if !PS_NO_COLOR1
 			o_col1 = alpha_blend;
+		#endif
+		#if PS_AFAIL == 3 && PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+			if (!atst_pass)
+				o_col0.a = sample_from_rt().a;
 		#endif
 	#endif
 
