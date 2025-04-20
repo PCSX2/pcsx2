@@ -47,7 +47,7 @@ constant uint PS_BLEND_C            [[function_constant(GSMTLConstantIndex_PS_BL
 constant uint PS_BLEND_D            [[function_constant(GSMTLConstantIndex_PS_BLEND_D)]];
 constant uint PS_BLEND_HW           [[function_constant(GSMTLConstantIndex_PS_BLEND_HW)]];
 constant bool PS_A_MASKED           [[function_constant(GSMTLConstantIndex_PS_A_MASKED)]];
-constant bool PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
+constant bool PS_COLCLIP_HW         [[function_constant(GSMTLConstantIndex_PS_COLCLIP_HW)]];
 constant bool PS_RTA_CORRECTION     [[function_constant(GSMTLConstantIndex_PS_RTA_CORRECTION)]];
 constant bool PS_RTA_SRC_CORRECTION [[function_constant(GSMTLConstantIndex_PS_RTA_SRC_CORRECTION)]];
 constant bool PS_COLCLIP            [[function_constant(GSMTLConstantIndex_PS_COLCLIP)]];
@@ -858,7 +858,7 @@ struct PSMain
 	{
 		if (PS_FBMASK)
 		{
-			float multi = PS_HDR ? 65535.0 : 255.5;
+			float multi = PS_COLCLIP_HW ? 65535.0 : 255.5;
 			C = float4((uint4(int4(C)) & (cb.fbmask ^ 0xff)) | (uint4(current_color * float4(multi, multi, multi, 255)) & cb.fbmask));
 		}
 	}
@@ -898,7 +898,7 @@ struct PSMain
 				C.rgb += 7.f; // Need to round up, not down since the shader will invert
 
 			// Correct the Color value based on the output format
-			if (PS_COLCLIP == 0 && PS_HDR == 0)
+			if (PS_COLCLIP == 0 && PS_COLCLIP_HW == 0)
 				C.rgb = clamp(C.rgb, 0.f, 255.f); // Standard Clamp
 
 			// FIXME rouding of negative float?
@@ -910,7 +910,7 @@ struct PSMain
 			// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 			if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && (PS_BLEND_MIX == 0 || PS_DITHER))
 				C.rgb = float3(short3(C.rgb) & 0xF8);
-			else if (PS_COLCLIP == 1 || PS_HDR == 1)
+			else if (PS_COLCLIP == 1 || PS_COLCLIP_HW == 1)
 				C.rgb = float3(short3(C.rgb) & 0xFF);
 		}
 		else if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && PS_BLEND_MIX == 0 && PS_BLEND_HW == 0)
@@ -963,7 +963,7 @@ struct PSMain
 					current_color.a = float(denorm_rt.g & 0x80);
 				}
 			}
-			float multi = PS_HDR ? 65535.0 : 255.5;
+			float multi = PS_COLCLIP_HW ? 65535.0 : 255.5;
 			float3 Cd = trunc(current_color.rgb * multi);
 			float3 Cs = Color.rgb;
 
@@ -1205,7 +1205,7 @@ struct PSMain
 		if (PS_COLOR0)
 		{
 			out.c0.a = PS_RTA_CORRECTION ? C.a / 128.f : C.a / 255.f;
-			out.c0.rgb = PS_HDR ? float3(C.rgb / 65535.f) : C.rgb / 255.f;
+			out.c0.rgb = PS_COLCLIP_HW ? float3(C.rgb / 65535.f) : C.rgb / 255.f;
 			if (PS_AFAIL == 3 && !PS_COLOR1 && !atst_pass) // Doing RGB_ONLY without COLOR1
 				out.c0.a = current_color.a;
 		}

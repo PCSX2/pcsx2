@@ -66,7 +66,9 @@ const char* GSTexture::GetFormatName(Format format)
 	static constexpr const char* format_names[] = {
 		"Invalid",
 		"Color",
-		"HDRColor",
+		"ColorHQ",
+		"ColorHDR",
+		"ColorClip",
 		"DepthStencil",
 		"UNorm8",
 		"UInt16",
@@ -90,7 +92,9 @@ u32 GSTexture::GetCompressedBytesPerBlock(Format format)
 	static constexpr u32 bytes_per_block[] = {
 		1, // Invalid
 		4, // Color/RGBA8
-		8, // HDRColor/RGBA16
+		4, // ColorHQ/RGB10A2
+		8, // ColorHDR/RGBA16F
+		8, // ColorClip/RGBA16
 		4, // DepthStencil
 		1, // UNorm8/R8
 		2, // UInt16/R16UI
@@ -99,7 +103,7 @@ u32 GSTexture::GetCompressedBytesPerBlock(Format format)
 		8, // BC1 - 16 pixels in 64 bits
 		16, // BC2 - 16 pixels in 128 bits
 		16, // BC3 - 16 pixels in 128 bits
-		16, // BC4 - 16 pixels in 128 bits
+		16, // BC7 - 16 pixels in 128 bits
 	};
 
 	return bytes_per_block[static_cast<u32>(format)];

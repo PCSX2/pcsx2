@@ -22,15 +22,17 @@ public:
 		Invalid = 0,
 		RenderTarget = 1,
 		DepthStencil,
-		Texture,
-		RWTexture,
+		Texture,   // Generic texture (usually is color textures loaded by the game)
+		RWTexture, // UAV
 	};
 
 	enum class Format : u8
 	{
 		Invalid = 0,  ///< Used for initialization
-		Color,        ///< Standard (RGBA8) color texture
-		HDRColor,     ///< Color texture with more bits for colclip emulation (RGBA16Unorm)
+		Color,        ///< Standard (RGBA8) color texture (used to store most of PS2's textures)
+		ColorHQ,      ///< High quality (RGB10A2) color texture (no proper alpha)
+		ColorHDR,     ///< High dynamic range (RGBA16F) color texture
+		ColorClip,    ///< Color texture with more bits for colclip (wrap) emulation, given that blending requires 9bpc (RGBA16Unorm)
 		DepthStencil, ///< Depth stencil texture
 		UNorm8,       ///< A8UNorm texture for paletted textures and the OSD font
 		UInt16,       ///< UInt16 texture for reading back 16-bit depth
@@ -40,6 +42,7 @@ public:
 		BC2,          ///< BC2, aka DXT2/3 compressed texture for replacements
 		BC3,          ///< BC3, aka DXT4/5 compressed texture for replacements
 		BC7,          ///< BC7, aka BPTC compressed texture for replacements
+		Last = BC7,
 	};
 
 	enum class State : u8

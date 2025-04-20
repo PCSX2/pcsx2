@@ -60,6 +60,25 @@ static const char* const* s_sdl_trigger_names_list[] = {
 	// Switch
 };
 
+static constexpr const char* s_sdl_ps3_sxs_pressure_names[] = {
+	nullptr, // JoyAxis0
+	nullptr, // JoyAxis1
+	nullptr, // JoyAxis2
+	nullptr, // JoyAxis3
+	nullptr, // JoyAxis4
+	nullptr, // JoyAxis5
+	"Cross (Pressure)", // JoyAxis6
+	"Circle (Pressure)", // JoyAxis7
+	"Square (Pressure)", // JoyAxis8
+	"Triangle (Pressure)", // JoyAxis9
+	"L1 (Pressure)", // JoyAxis10
+	"R1 (Pressure)", // JoyAxis11
+	"D-Pad Up (Pressure)", // JoyAxis12
+	"D-Pad Down (Pressure)", // JoyAxis13
+	"D-Pad Left (Pressure)", // JoyAxis14
+	"D-Pad Right (Pressure)", // JoyAxis15
+};
+
 static constexpr const char* s_sdl_axis_icons[][2] = {
 	{ICON_PF_LEFT_ANALOG_LEFT, ICON_PF_LEFT_ANALOG_RIGHT}, // SDL_GAMEPAD_AXIS_LEFTX
 	{ICON_PF_LEFT_ANALOG_UP, ICON_PF_LEFT_ANALOG_DOWN}, // SDL_GAMEPAD_AXIS_LEFTY
@@ -87,6 +106,25 @@ static const char* const* s_sdl_trigger_icons_list[] = {
 	// Switch
 };
 
+static constexpr const char* s_sdl_ps3_pressure_icons[] = {
+	nullptr, // JoyAxis0
+	nullptr, // JoyAxis1
+	nullptr, // JoyAxis2
+	nullptr, // JoyAxis3
+	nullptr, // JoyAxis4
+	nullptr, // JoyAxis5
+	"P" ICON_PF_BUTTON_CROSS, // JoyAxis6
+	"P" ICON_PF_BUTTON_CIRCLE, // JoyAxis7
+	"P" ICON_PF_BUTTON_SQUARE, // JoyAxis8
+	"P" ICON_PF_BUTTON_TRIANGLE, // JoyAxis9
+	"P" ICON_PF_LEFT_SHOULDER_L1, // JoyAxis10
+	"P" ICON_PF_RIGHT_SHOULDER_R1, // JoyAxis11
+	"P" ICON_PF_DPAD_UP, // JoyAxis12
+	"P" ICON_PF_DPAD_DOWN, // JoyAxis13
+	"P" ICON_PF_DPAD_LEFT, // JoyAxis14
+	"P" ICON_PF_DPAD_RIGHT, // JoyAxis15
+};
+
 static constexpr const GenericInputBinding s_sdl_generic_binding_axis_mapping[][2] = {
 	{GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight}, // SDL_GAMEPAD_AXIS_LEFTX
 	{GenericInputBinding::LeftStickUp, GenericInputBinding::LeftStickDown}, // SDL_GAMEPAD_AXIS_LEFTY
@@ -94,6 +132,24 @@ static constexpr const GenericInputBinding s_sdl_generic_binding_axis_mapping[][
 	{GenericInputBinding::RightStickUp, GenericInputBinding::RightStickDown}, // SDL_GAMEPAD_AXIS_RIGHTY
 	{GenericInputBinding::Unknown, GenericInputBinding::L2}, // SDL_GAMEPAD_AXIS_LEFT_TRIGGER
 	{GenericInputBinding::Unknown, GenericInputBinding::R2}, // SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
+};
+static constexpr const GenericInputBinding s_sdl_ps3_binding_pressure_mapping[] = {
+	GenericInputBinding::Unknown, // JoyAxis0
+	GenericInputBinding::Unknown, // JoyAxis1
+	GenericInputBinding::Unknown, // JoyAxis2
+	GenericInputBinding::Unknown, // JoyAxis3
+	GenericInputBinding::Unknown, // JoyAxis4
+	GenericInputBinding::Unknown, // JoyAxis5
+	GenericInputBinding::Cross, // JoyAxis6
+	GenericInputBinding::Circle, // JoyAxis7
+	GenericInputBinding::Square, // JoyAxis8
+	GenericInputBinding::Triangle, // JoyAxis9
+	GenericInputBinding::L1, // JoyAxis10
+	GenericInputBinding::R1, // JoyAxis11
+	GenericInputBinding::DPadUp, // JoyAxis12
+	GenericInputBinding::DPadDown, // JoyAxis13
+	GenericInputBinding::DPadLeft, // JoyAxis14
+	GenericInputBinding::DPadRight, // JoyAxis15
 };
 
 static constexpr const char* s_sdl_button_setting_names[] = {
@@ -265,7 +321,7 @@ static constexpr const char* s_sdl_button_ps3_icons[] = {
 	ICON_PF_BUTTON_SQUARE, // SDL_GAMEPAD_BUTTON_WEST
 	ICON_PF_BUTTON_TRIANGLE, // SDL_GAMEPAD_BUTTON_NORTH
 	ICON_PF_SELECT_SHARE, // SDL_GAMEPAD_BUTTON_BACK
-	ICON_PF_XBOX, // SDL_GAMEPAD_BUTTON_GUIDE
+	ICON_PF_PLAYSTATION, // SDL_GAMEPAD_BUTTON_GUIDE
 	ICON_PF_START, // SDL_GAMEPAD_BUTTON_START
 	ICON_PF_LEFT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_LEFT_STICK
 	ICON_PF_RIGHT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
@@ -360,12 +416,17 @@ static constexpr const GenericInputBinding s_sdl_generic_binding_button_mapping[
 	GenericInputBinding::DPadDown, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
 	GenericInputBinding::DPadLeft, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
 	GenericInputBinding::DPadRight, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
-	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_MISC1
-	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1
-	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_LEFT_PADDLE1
-	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2
-	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_LEFT_PADDLE2
-	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_TOUCHPAD
+};
+static constexpr const GenericInputBinding s_sdl_ps3_binding_button_mapping[] = {
+	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_SOUTH
+	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_EAST
+	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_WEST
+	GenericInputBinding::Unknown, // SDL_GAMEPAD_BUTTON_NORTH
+	GenericInputBinding::Select, // SDL_GAMEPAD_BUTTON_BACK
+	GenericInputBinding::System, // SDL_GAMEPAD_BUTTON_GUIDE
+	GenericInputBinding::Start, // SDL_GAMEPAD_BUTTON_START
+	GenericInputBinding::L3, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	GenericInputBinding::R3, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
 };
 
 static constexpr const char* s_sdl_hat_direction_names[] = {
@@ -555,6 +616,11 @@ void SDLInputSource::SetHints()
 	// Gets us pressure sensitive button support on Linux
 	// Apparently doesn't work on Windows, so leave it off there
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS3, "1");
+#else
+	// Use the Sixaxis driver (or DsHidMini in SXS mode).
+	// We don't support DsHidMini's SDF mode as none of the
+	// PS3 hints allow accessing all the pressure sense axis.
+	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER, "1");
 #endif
 
 #ifdef __APPLE__
@@ -920,7 +986,21 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key, bool display,
 						ret.format("SDL-{} {}", static_cast<u32>(key.source_index), s_sdl_trigger_names[trigger_index]);
 				}
 				else
-					ret.format("SDL-{} {}Axis {}{}", static_cast<u32>(key.source_index), modifier, key.data - std::size(s_sdl_axis_setting_names) + 1, key.invert ? "~" : "");
+				{
+					bool is_sixaxis = false;
+					if (it != m_controllers.end())
+						is_sixaxis = IsControllerSixaxis(*it);
+
+					const int joy_axis_Index = key.data - std::size(s_sdl_axis_setting_names);
+
+					if (is_sixaxis && key.modifier == InputModifier::FullAxis && key.invert == false &&
+						joy_axis_Index < std::size(s_sdl_ps3_sxs_pressure_names) && s_sdl_ps3_sxs_pressure_names[joy_axis_Index] != nullptr)
+					{
+						ret.format("SDL-{} {}", static_cast<u32>(key.source_index), s_sdl_ps3_sxs_pressure_names[joy_axis_Index]);
+					}
+					else
+						ret.format("SDL-{} {}Axis {}{}", static_cast<u32>(key.source_index), modifier, joy_axis_Index + 1, key.invert ? "~" : "");
+				}
 			}
 			else
 			{
@@ -1029,6 +1109,13 @@ TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key)
 					else
 						ret.format("SDL-{}  {}", static_cast<u32>(key.source_index), s_sdl_trigger_icons[trigger_index]);
 				}
+			}
+			else if (it != m_controllers.end() && IsControllerSixaxis(*it) && key.invert == false)
+			{
+				const int joy_axis_Index = key.data - std::size(s_sdl_axis_setting_names);
+
+				if (joy_axis_Index < std::size(s_sdl_ps3_pressure_icons) && s_sdl_ps3_pressure_icons[joy_axis_Index] != nullptr)
+					ret.format("SDL-{} {}", static_cast<u32>(key.source_index), s_sdl_ps3_pressure_icons[joy_axis_Index]);
 			}
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton)
@@ -1508,11 +1595,34 @@ bool SDLInputSource::GetGenericBindingMapping(const std::string_view device, Inp
 			if (positive != GenericInputBinding::Unknown)
 				mapping->emplace_back(positive, fmt::format("SDL-{}/+{}", pid, s_sdl_axis_setting_names[i]));
 		}
-		for (u32 i = 0; i < std::size(s_sdl_generic_binding_button_mapping); i++)
+
+		if (IsControllerSixaxis(*it))
 		{
-			const GenericInputBinding binding = s_sdl_generic_binding_button_mapping[i];
-			if (binding != GenericInputBinding::Unknown)
-				mapping->emplace_back(binding, fmt::format("SDL-{}/{}", pid, s_sdl_button_setting_names[i]));
+			// PS3 with pressure sensitive support
+			for (u32 i = 0; i < std::size(s_sdl_ps3_binding_pressure_mapping); i++)
+			{
+				const GenericInputBinding binding = s_sdl_ps3_binding_pressure_mapping[i];
+				if (binding != GenericInputBinding::Unknown)
+					mapping->emplace_back(binding, fmt::format("SDL-{}/FullJoyAxis{}", pid, i));
+			}
+
+			// PS3 non pressure sensitive buttons
+			for (u32 i = 0; i < std::size(s_sdl_ps3_binding_button_mapping); i++)
+			{
+				const GenericInputBinding binding = s_sdl_ps3_binding_button_mapping[i];
+				if (binding != GenericInputBinding::Unknown)
+					mapping->emplace_back(binding, fmt::format("SDL-{}/{}", pid, s_sdl_button_setting_names[i]));
+			}
+		}
+		else
+		{
+			// Standard buttons
+			for (u32 i = 0; i < std::size(s_sdl_generic_binding_button_mapping); i++)
+			{
+				const GenericInputBinding binding = s_sdl_generic_binding_button_mapping[i];
+				if (binding != GenericInputBinding::Unknown)
+					mapping->emplace_back(binding, fmt::format("SDL-{}/{}", pid, s_sdl_button_setting_names[i]));
+			}
 		}
 
 		if (it->use_gamepad_rumble || it->haptic_left_right_effect)
@@ -1623,4 +1733,17 @@ void SDLInputSource::SendRumbleUpdate(ControllerData* cd)
 		else
 			SDL_StopHapticRumble(cd->haptic);
 	}
+}
+
+bool SDLInputSource::IsControllerSixaxis(const ControllerData& cd)
+{
+	const SDL_GamepadType type = SDL_GetRealGamepadType(cd.gamepad);
+
+	// We check the number of buttons to exclude DsHidMini's SDF mode (which has 17 buttons??)
+	// SDF's input layout differs from the sixaxis or linux drivers, we only support the latter layout.
+	// This differing layout also isn't mapped correctly in SDL, I think due to how L2/R2 are exposed.
+	// Also see SetHints regarding reading the pressure sense from DsHidMini's SDF mode.
+	return type == SDL_GAMEPAD_TYPE_PS3 &&
+		   SDL_GetNumJoystickAxes(cd.joystick) == 16 &&
+		   SDL_GetNumJoystickButtons(cd.joystick) == 11;
 }

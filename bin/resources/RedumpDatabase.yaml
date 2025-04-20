@@ -1749,7 +1749,7 @@
 - hashes:
   - md5: f95ea9eb021181b888229df60ba8effd
     size: 2159050752
-  name: Shadow the Hedgehog (Europe, Australia) (En,Fr,De,Es,It)
+  name: Shadow the Hedgehog (Europe, Australia) (En,Ja,Fr,De,Es,It)
   serial: SLES-53542
   version: '1.01'
 - hashes:
@@ -8524,7 +8524,7 @@
 - hashes:
   - md5: ce030f48dcb588682902b5a569baa24e
     size: 4677795840
-  name: 007 - Quantum of Solace (USA)
+  name: 007 - Quantum of Solace (USA) (En,Fr)
   serial: SLUS-21813
   version: '1.00'
 - hashes:
@@ -8620,7 +8620,7 @@
 - hashes:
   - md5: c15a1707d1c89728e0c596b97ba91b27
     size: 4313153536
-  name: Official PlayStation 2 Magazine Sonderausgabe 2004-3 (Germany) (En,Fr,De,Es,It)
+  name: Official PlayStation 2 Magazine - Special Edition 2004-03 (Germany) (En,Fr,De,Es,It)
   serial: SCED-52997
   version: '1.00'
 - hashes:
@@ -8854,7 +8854,7 @@
 - hashes:
   - md5: fab56e6f617b0a64ad35221341bd167c
     size: 3529965568
-  name: Rock Band - Metal Track Pack (USA)
+  name: Rock Band - Metal Track Pack (USA, Canada)
   serial: SLUS-21889
   version: '1.00'
 - hashes:
@@ -9753,7 +9753,7 @@
 - hashes:
   - md5: 63d3e8e5da0305650160bc50f46df87b
     size: 4033478656
-  name: Fight Night Round 3 (Europe) (En,Fr)
+  name: Fight Night Round 3 (Europe, Australia) (En,Fr)
   serial: SLES-53982
   version: '1.00'
 - hashes:
@@ -13331,7 +13331,7 @@
 - hashes:
   - md5: aac303724ce688c8f242245ea0f4b9e4
     size: 877953024
-  name: Tokyo Bus Guide - Kyou kara Kimi mo Untenshu (Japan)
+  name: SuperLite 2000 Vol. 5 - Tokyo Bus Guide - Kyou kara Kimi mo Untenshu (Japan)
   serial: SLPM-65032
   version: '1.04'
 - hashes:
@@ -15880,7 +15880,7 @@
 - hashes:
   - md5: 29e5cf458549ca5321dd0c12619a002b
     size: 3846504448
-  name: Bakugan - Battle Brawlers (USA)
+  name: Bakugan - Battle Brawlers (USA) (En,Fr)
   serial: SLUS-21902
   version: '1.00'
 - hashes:
@@ -20525,7 +20525,7 @@
 - hashes:
   - md5: 2e7fcee5a1333b72eef8a18c7a673e9f
     size: 8539766784
-  name: Guitar Hero - Metallica (USA)
+  name: Guitar Hero - Metallica (USA) (En,Fr)
   serial: SLUS-21843
   version: '1.00'
 - hashes:
@@ -20868,7 +20868,7 @@
 - hashes:
   - md5: 35d939b30458790cf58ddd16ef11e159
     size: 697149264
-  name: Online Start-Up Disc 4.0 - Broadband Only (USA)
+  name: Online Start-Up Disc 4.0 - Broadband Only (USA) (v1.02)
   serial: PBPX-95248
   version: '1.02'
 - hashes:
@@ -21320,8 +21320,7 @@
 - hashes:
   - md5: 4f18266ee64804fc1ba858c5d5bee759
     size: 3782836224
-  name: Official PlayStation 2 Magazine Germany Special Edition 01-2004 (Germany)
-    (En,Fr,De,Es,It)
+  name: Official PlayStation 2 Magazine - Special Edition 2004-01 (Germany) (En,Fr,De,Es,It)
   serial: SCED-52119
   version: '1.01'
 - hashes:
@@ -21764,7 +21763,7 @@
 - hashes:
   - md5: e6159c29d23cd03252e94823045b4ff8
     size: 4071424000
-  name: DJ Hero (USA)
+  name: DJ Hero (USA) (En,Fr)
   serial: SLUS-21909
   version: '1.00'
 - hashes:
@@ -22190,7 +22189,7 @@
 - hashes:
   - md5: 007f0ccc933f59b65f28c72ad227843d
     size: 4580573184
-  name: Score International Baja 1000 - World Championship Off Road Racing (Europe)
+  name: SCORE International Baja 1000 - World Championship Off Road Racing (Europe)
   serial: SLES-55295
   version: '1.00'
 - hashes:
@@ -22862,7 +22861,7 @@
 - hashes:
   - md5: cadce0add00903396577b5d53cff1929
     size: 4679565312
-  name: Marvel Super Hero Squad (USA)
+  name: Marvel Super Hero Squad (USA) (En,Fr,Es)
   serial: SLUS-21910
   version: '1.00'
 - hashes:
@@ -22946,7 +22945,7 @@
 - hashes:
   - md5: 77ae418d710142291b5d6eb5d5d904d1
     size: 3007021056
-  name: Buzz! The Schools Quiz (Europe)
+  name: Buzz! The Schools Quiz (UK) (v2.00)
   serial: SCES-54941
   version: '2.00'
 - hashes:
@@ -30411,7 +30410,7 @@
 - hashes:
   - md5: 01abdbe56de95af5b5379cf7fea1bec0
     size: 3683680256
-  name: Ratchet & Clank 2 - Gagaga! Ginga no Commando-ssu (Japan, Asia)
+  name: Ratchet & Clank 2 - Gagaga! Ginga no Commando ssu (Japan, Asia)
   serial: SCAJ-20052
   version: '1.00'
 - hashes:
@@ -32035,7 +32034,7 @@
 - hashes:
   - md5: 47e03c7b246239330d5e41efb5160fda
     size: 1328939008
-  name: Nickelodeon Bob L'eponge - Silence on Tourne! (France)
+  name: Nickelodeon Bob L'eponge - Silence on Tourne ! (France)
   serial: SLES-53495
   version: '1.00'
 - hashes:
@@ -33603,19 +33602,19 @@
 - hashes:
   - md5: ac71dddc4a60475a689fcb6f1836e607
     size: 4307582976
-  name: Buzz! The Big Quiz (Europe) (En,Fr,Nl)
+  name: Buzz! The Big Quiz (Belgium, Netherlands) (En,Fr,Nl)
   serial: SCES-53925
   version: '1.00'
 - hashes:
   - md5: 0f457023f2a436d38a0cd53599115846
     size: 4611080192
-  name: Buzz! The Mega Quiz (Europe) (En,Fr,Nl)
+  name: Buzz! The Mega Quiz (Belgium, Netherlands) (En,Fr,Nl)
   serial: SCES-54505
   version: '1.00'
 - hashes:
   - md5: 409302dffc2512d1ccd2227d17ff6bf2
     size: 4688314368
-  name: Buzz! The Pop Quiz (Europe) (En,Fr,Nl)
+  name: Buzz! The Pop Quiz (Belgium, Netherlands) (En,Fr,Nl)
   serial: SCES-55098
   version: '1.00'
 - hashes:
@@ -34577,7 +34576,7 @@
 - hashes:
   - md5: 4703eb006c9921927145c878acd7324c
     size: 3536748544
-  name: Buzz! The Sports Quiz (Europe) (En,Fr,Nl)
+  name: Buzz! The Sports Quiz (Belgium, Netherlands) (En,Fr,Nl)
   serial: SCES-54265
   version: '1.00'
 - hashes:
@@ -36547,7 +36546,7 @@
 - hashes:
   - md5: fa7523e49dc9825589504430857c5c25
     size: 564202464
-  name: LEGO Island Xtreme Stunts (USA)
+  name: Island Xtreme Stunts (USA)
   serial: SLUS-20575
   version: '1.01'
 - hashes:
@@ -38437,7 +38436,7 @@
 - hashes:
   - md5: 06553f511a16b8cc0396bab31cc910a6
     size: 2924576768
-  name: DreamWorks Madagascar - Escape 2 Africa (USA)
+  name: DreamWorks Madagascar - Escape 2 Africa (USA) (En,Fr)
   serial: SLUS-21840
   version: '1.01'
 - hashes:
@@ -39061,7 +39060,7 @@
 - hashes:
   - md5: cc5e862a633532654176096888dfacba
     size: 2679865344
-  name: PES 2011 - Pro Evolution Soccer (USA)
+  name: PES 2011 - Pro Evolution Soccer (USA) (En,Fr,Es,Pt)
   serial: SLUS-21942
   version: '1.00'
 - hashes:
@@ -39355,7 +39354,7 @@
 - hashes:
   - md5: 298ad8520c82f4edbaacb3194bc46d5c
     size: 3530391552
-  name: PES 2010 - Pro Evolution Soccer (USA)
+  name: PES 2010 - Pro Evolution Soccer (USA) (En,Fr,Es,Pt)
   serial: SLUS-21918
   version: '1.02'
 - hashes:
@@ -39421,7 +39420,7 @@
 - hashes:
   - md5: 491a3f6a39ce290de2f6dbb9ba98575f
     size: 2129297408
-  name: PES 2013 - Pro Evolution Soccer (USA)
+  name: PES 2013 - Pro Evolution Soccer (USA) (En,Fr,Es,Pt)
   serial: SLUS-21955
   version: '1.00'
 - hashes:
@@ -39433,7 +39432,7 @@
 - hashes:
   - md5: b2d139590f169442a46d21ed2f8558ab
     size: 2437316608
-  name: PES 2012 - Pro Evolution Soccer (USA)
+  name: PES 2012 - Pro Evolution Soccer (USA) (En,Fr,Es,Pt)
   serial: SLUS-21948
   version: '1.00'
 - hashes:
@@ -39511,7 +39510,7 @@
 - hashes:
   - md5: 6821bded97877694e8cf4ccf9ca64ad4
     size: 4659347456
-  name: Vitamin Z - Welcome Our New Supplement Boys (Japan) (Genteiban)
+  name: VitaminZ - Welcome Our New Supplement Boys (Japan) (Genteiban)
   serial: SLPS-25922
   version: '1.02'
 - hashes:
@@ -39770,7 +39769,7 @@
 - hashes:
   - md5: 6f2533c2ae433f1beac4f1aa3a88f4c6
     size: 4588797952
-  name: AND 1 Streetball (USA) (v1.03)
+  name: AND 1 Streetball (USA) (En,Fr,Es) (v1.03)
   serial: SLUS-21237
   version: '1.03'
 - hashes:
@@ -39902,7 +39901,7 @@
 - hashes:
   - md5: 2d3dd4cd0d8c16e97a1a887b70349658
     size: 4636672000
-  name: Score International Baja 1000 - The Official Game (USA)
+  name: SCORE International Baja 1000 - The Official Game (USA)
   serial: SLUS-21850
   version: '1.00'
 - hashes:
@@ -40463,7 +40462,7 @@
   - md5: 08a63db4f248acdc24cdaa0b9507b854
     size: 2205908992
   name: Umishou (Japan)
-  serial: SLPM-66864
+  serial: FVGK-0001
   version: '1.01'
 - hashes:
   - md5: d3b19450aea4a9688e876fa71830aa77
@@ -40745,7 +40744,7 @@
 - hashes:
   - md5: 9be1477e6c0bd67bb6aff3a02601b4a6
     size: 1534427136
-  name: Freaky Flyers (USA) (Demo)
+  name: Freaky Flyers (USA) (Demo) (Rev 1)
   serial: SLUS-29061
   version: '0.30'
 - hashes:
@@ -41497,7 +41496,7 @@
 - hashes:
   - md5: 6dc613680039ba59d20f8baa61e56fc5
     size: 739706352
-  name: Momotarou Dentetsu 11 - Black Bombee Shutsugen! no Maki (Japan)
+  name: Momotarou Dentetsu 11 - Black Bonby Shutsugen! no Maki (Japan)
   serial: SLPM-62475
   version: '1.01'
 - hashes:
@@ -44241,7 +44240,7 @@
   - md5: 34d981b3883eaeb95c82fbed14dcad26
     size: 3115188224
   name: Harukanaru Toki no Naka de 3 (Japan) (History Box)
-  serial: SLPM-66005
+  serial: SLPM-65849
   version: '1.02'
 - hashes:
   - md5: d8ecac6d03a601d4a81f1389bfe25962
@@ -45207,13 +45206,13 @@
 - hashes:
   - md5: 29a454ebd230549939654022af5db917
     size: 4107206656
-  name: Vitamin X - We are Super Supriment Boys (Japan)
+  name: VitaminX - We are Super Supriment Boys (Japan)
   serial: SLPS-25761
   version: '1.01'
 - hashes:
   - md5: 19cc959d502b7eebae156ee760731454
     size: 4659347456
-  name: Vitamin Z - Welcome Our New Supplement Boys (Japan)
+  name: VitaminZ - Welcome Our New Supplement Boys (Japan)
   serial: SLPS-25923
   version: '1.02'
 - hashes:
@@ -46244,7 +46243,7 @@
 - hashes:
   - md5: ecb21ce06339ab6b628e077f3c03690b
     size: 3962535936
-  name: Suigetsu - Mayoi Gokoro (Japan)
+  name: Suigetsu - Mayoigokoro (Japan)
   serial: SLPM-65751
   version: '1.01'
 - hashes:
@@ -47270,7 +47269,7 @@
 - hashes:
   - md5: 68634f9b74fe47e4a039ada615970ca1
     size: 541969008
-  name: Momotarou Dentetsu 15 - Godai Bombee Toujou! no Maki (Japan) (v2.00)
+  name: Momotarou Dentetsu 15 - Godai Bonby Toujou! no Maki (Japan) (v2.00)
   serial: SLPM-74104
   version: '2.00'
 - hashes:
@@ -49343,8 +49342,7 @@
 - hashes:
   - md5: 72e49d4201496dea3e0851abf58098cf
     size: 4677992448
-  name: Official PlayStation 2 Magazine Germany Special Edition 2003-01 (Germany)
-    (En,De)
+  name: Official PlayStation 2 Magazine - Special Edition 2003-01 (Germany) (En,De)
   serial: SCED-51512
   version: '1.00'
 - hashes:
@@ -49422,7 +49420,7 @@
 - hashes:
   - md5: aa26f473fc9ecf2df7fad3a9acc30351
     size: 3115188224
-  name: Harukanaru Toki no Naka de 3 (Japan) (Triple Pack)
+  name: Harukanaru Toki no Naka de 3 (Japan) (Premium Box)
   serial: SLPM-65850
   version: '1.02'
 - hashes:
@@ -51310,12 +51308,6 @@
   serial: SCED-54180
   version: '1.00'
 - hashes:
-  - md5: 0b14951eb38e4f5f4730bcf48bf64898
-    size: 4569923584
-  name: Magazine Ufficiale PlayStation 2 Italia 05-04 (Italy) (En,Fr,De,Es,It)
-  serial: SCED-52443
-  version: '1.00'
-- hashes:
   - md5: 771bfe48ce1a10c8a638da8bedc9acf6
     size: 4175429632
   name: Official PlayStation 2 Magazine Demo 58 (Europe, Australia) (En,Fr,De,Es,It)
@@ -51698,13 +51690,13 @@
 - hashes:
   - md5: cf45002cd37168e4a2b3a8f96c560941
     size: 3983638528
-  name: Official PlayStation 2 Magazine Germany Special 2-2005 (Germany)
+  name: Official PlayStation 2 Magazine - Special Edition 2005-02 (Germany)
   serial: SCED-53662
   version: '1.00'
 - hashes:
   - md5: 8191fa8441cd8c947ab80b9db6de0ce3
     size: 4583129088
-  name: Official PlayStation 2 Magazine Germany Special 3-2005 (Germany)
+  name: Official PlayStation 2 Magazine - Special Edition 2005-03 (Germany)
   serial: SCED-53938
   version: '1.00'
 - hashes:
@@ -51818,7 +51810,7 @@
 - hashes:
   - md5: 8e18b5399008416a7d012f2ea1bf9353
     size: 663976656
-  name: Pro Evolution Soccer 3 (Europe) (Demo 1)
+  name: Pro Evolution Soccer 3 (UK) (Demo)
   serial: SLED-51992
   version: '1.00'
 - hashes:
@@ -51950,7 +51942,7 @@
 - hashes:
   - md5: 209c4247ffb84795b23ce2cec0f090a4
     size: 3793453056
-  name: Official PlayStation 2 Magazine Germany Special Edition 2003-03 (Germany)
+  name: Official PlayStation 2 Magazine - Special Edition 2003-03 (Germany)
   serial: SCED-51551
   version: '1.00'
 - hashes:
@@ -52038,7 +52030,7 @@
 - hashes:
   - md5: e8e5b428c642c78d510cbd854c17b9cc
     size: 1616740352
-  name: Primal + The Mark of Kri + War of the Monsters (Europe) (En,Fr,De,Es,It)
+  name: Primal & The Mark of Kri & War of the Monsters (Europe) (En,Fr,De,Es,It)
   serial: SCED-51506
   version: '1.00'
 - hashes:
@@ -52350,7 +52342,7 @@
 - hashes:
   - md5: d42eed1d14cdaf8add8295116776a447
     size: 3765108736
-  name: Best PS2 Games Ever 10 (Europe)
+  name: Official PlayStation 2 Magazine-UK Special Edition - Yearbook 2002 (Europe)
   serial: SCED-51389
   version: '1.00'
 - hashes:
@@ -52637,7 +52629,7 @@
 - hashes:
   - md5: cded45ee044b5a7614644fa444a59989
     size: 4334157824
-  name: Official PlayStation 2 Magazine Germany Special Edition 2003-02 (Germany)
+  name: Official PlayStation 2 Magazine - Special Edition 2003-02 (Germany)
   serial: SCED-51549
   version: '1.01'
 - hashes:
@@ -53111,7 +53103,7 @@
 - hashes:
   - md5: f309b4b48dc775dbbde635a1ef3b662b
     size: 4522639360
-  name: Germany Special Issue 3 (Germany)
+  name: Official PlayStation 2 Magazine - Special Edition 3 (Germany)
   serial: SCED-51375
   version: '1.00'
 - hashes:
@@ -54054,7 +54046,7 @@
 - hashes:
   - md5: ac5b76bd39b0cabd1acfe4dcb08df502
     size: 1649803264
-  name: Primal + The Mark of Kri (Europe)
+  name: Primal & The Mark of Kri (Europe)
   serial: SCED-51491
   version: '1.00'
 - hashes:
@@ -54085,7 +54077,7 @@
 - hashes:
   - md5: 2475b61666f06dc2aa9ca032f15a4cde
     size: 4241293312
-  name: Official PlayStation 2 Magazine Germany Special Edition 2007-1 (Germany)
+  name: Official PlayStation 2 Magazine - Special Edition 2007-01 (Germany)
   serial: SCED-54693
   version: '1.02'
 - hashes:
@@ -54462,7 +54454,7 @@
 - hashes:
   - md5: 97a9156abd199f588d4f46e9af7ab5a7
     size: 4107206656
-  name: Vitamin X - We are Super Supriment Boys (Japan) (Genteiban)
+  name: VitaminX - We are Super Supriment Boys (Japan) (Genteiban)
   serial: SLPS-25760
   version: '1.01'
 - hashes:
@@ -54767,7 +54759,7 @@
 - hashes:
   - md5: a4b5b1d6c13c15bc1bac6fc63622c9ee
     size: 2925920256
-  name: Ever 17 - The Out of Infinity Premium Edition (Japan)
+  name: Ever 17 - The Out of Infinity - Premium Edition (Japan)
   serial: SLPM-65421
   version: '1.01'
 - hashes:
@@ -55910,7 +55902,7 @@
 - hashes:
   - md5: 05b210d50d92a418ac1e37a1fff0df8a
     size: 243996480
-  name: Giant Robo - The Animation - Chikyuu ga Seishi suru Hi (Japan)
+  name: Giant Robo - The Animation - Chikyuu ga Seishi Suru Hi (Japan)
   serial: SLPM-62526
   version: '1.02'
 - hashes:
@@ -56111,7 +56103,7 @@
 - hashes:
   - md5: 45d62f1cf862b8e6c47d373a5c55d2f2
     size: 708511776
-  name: Pro Evolution Soccer 4 (Europe) (Demo)
+  name: Pro Evolution Soccer 4 (UK) (Demo)
   serial: SLED-52873
   version: '1.02'
 - hashes:
@@ -56171,7 +56163,7 @@
 - hashes:
   - md5: 139585af1bf276d5f2e17a32def4f66d
     size: 4528504832
-  name: Official PlayStation 2 Magazine Germany Special Edition 1 (Germany)
+  name: Official PlayStation 2 Magazine - Special Edition 1 (Germany)
   serial: SCED-50780
   version: '1.10'
 - hashes:
@@ -57668,7 +57660,7 @@
 - hashes:
   - md5: 1ce4a9368f7c6c73dcd983ad5f86f3eb
     size: 718702992
-  name: MaxPlay (Europe) (Unl)
+  name: Max Play (Europe) (Unl)
   version: 1.00 (European)
 - hashes:
   - md5: 8182f27cc5a0cac14da217e45861e49e
@@ -57841,8 +57833,7 @@
 - hashes:
   - md5: 4fb718d2059a1843882a70b17922b483
     size: 4613996544
-  name: Official PlayStation 2 Magazine Germany Special Edition 2005-01 (Germany)
-    (En,De)
+  name: Official PlayStation 2 Magazine - Special Edition 2005-01 (Germany) (En,De)
   serial: SCED-53298
   version: '1.02'
 - hashes:
@@ -57854,7 +57845,7 @@
 - hashes:
   - md5: 739a2f519751c64f7291d036105c2c0d
     size: 1670316032
-  name: Buzz! Junior - Robojam (Europe) (Beta) (2007-01-12)
+  name: Buzz! Junior - RoboJam (Europe) (Beta) (2007-01-12)
   serial: SCES-54676
   version: '1.00'
 - hashes:
@@ -58392,7 +58383,7 @@
 - hashes:
   - md5: 6969a8f3623387131e2e1d49fff4c3f5
     size: 4492853248
-  name: Magical Tale - Chiicha na Mahoutsukai (Japan)
+  name: Magical Tale - Chitcha na Mahoutsukai (Japan)
   serial: SLPM-65965
   version: '1.01'
 - hashes:
@@ -59340,7 +59331,7 @@
 - hashes:
   - md5: 8d61b97a6dd45165b012b338d42e53a8
     size: 2358018048
-  name: Harry Potter and the Prisoner of Azkaban (Korea)
+  name: Harry Potter-wa Azkaban-ui Joesu (Korea)
   serial: SLKA-25172
   version: '1.01'
 - hashes:
@@ -59646,7 +59637,7 @@
 - hashes:
   - md5: 1162e6411d9e16fbefc9fd8a9e886d70
     size: 4412145664
-  name: Official PlayStation 2 Magazine Germany Winter 2006 (Germany) (En,De)
+  name: Official PlayStation 2 Magazine - Winter 2006 (Germany) (En,De)
   serial: SCED-54558
   version: '1.00'
 - hashes:
@@ -60504,7 +60495,7 @@
 - hashes:
   - md5: 78f327cd6c0f2bd6f99a299e982b9a93
     size: 1253867520
-  name: TOCA Race Driver 3 + V8 Supercars Australia 3 (Australia) (Demo)
+  name: TOCA Race Driver 3 (Australia) (Demo)
   serial: SLED-53888
   version: '1.00'
 - hashes:
@@ -60764,7 +60755,7 @@
 - hashes:
   - md5: 7e964b27119adc590228452d42c634b0
     size: 4614062080
-  name: Buzz! Hollywood Quiz (Europe) (En,Fr,Nl)
+  name: Buzz! Hollywood Quiz (Belgium, Netherlands) (En,Fr,Nl)
   serial: SCES-54854
   version: '1.00'
 - hashes:
@@ -62041,7 +62032,7 @@
 - hashes:
   - md5: dd5ccdc3e325716d7f7ed08a9836f3f0
     size: 3938189312
-  name: PlayStation 2 Revista Oficial - Portugal 9 (Portugal)
+  name: Official PlayStation 2 Magazine Demo 32 (Portugal)
   serial: SCED-51657
   version: '1.00'
 - hashes:
@@ -62487,7 +62478,7 @@
 - hashes:
   - md5: fe79ea717184a278802679ef78f6df7b
     size: 7774928896
-  name: Zhen San Guo Wu Shuang 5 Special (Taiwan)
+  name: Zhen Sanguo Wushuang 5 Special (Taiwan)
   serial: SLAJ-35007
   version: '1.00'
 - hashes:
@@ -63024,7 +63015,7 @@
 - hashes:
   - md5: 18e6281d238ccb19e8975d45e8c157f0
     size: 3816554496
-  name: Offizielle PlayStation 2 Magazin 02-2004, Das - Uncut Edition (Germany)
+  name: Official PlayStation 2 Magazine 02-2004 - Uncut Edition (Germany)
   serial: SCED-52082
   version: '1.01'
 - hashes:
@@ -63141,7 +63132,7 @@
 - hashes:
   - md5: d38ab694e14843f16af11a15d1883023
     size: 4677795840
-  name: Koi suru Otome to Shugo no Tate - The Shield of AIGIS (Japan)
+  name: Koi Suru Otome to Shugo no Tate - The Shield of AIGIS (Japan)
   serial: SLPM-55098
   version: '1.02'
 - hashes:
@@ -63554,7 +63545,7 @@
 - hashes:
   - md5: 3acdf0ae8cc67fe9e0db9f4707cb3905
     size: 2638381056
-  name: I Love Baseball - Pro Yakyuu o Koyonaku Ai suru Hitotachi e (Japan)
+  name: I Love Baseball - Pro Yakyuu o Koyonaku Ai Suru Hitotachi e (Japan)
   serial: SLPM-65633
   version: '1.04'
 - hashes:
@@ -63941,13 +63932,13 @@
 - hashes:
   - md5: 7ea2da0f39ae55794fd9fd5006b417cc
     size: 4446388224
-  name: Offizielle PlayStation 2 Magazin 09-2004, Das (Germany)
+  name: Official PlayStation 2 Magazine 09-2004 (Germany)
   serial: SCED-52089
   version: '1.02'
 - hashes:
   - md5: 11b80bd02a0a874212b014c56e44a4c5
     size: 4033347584
-  name: Offizielle PlayStation 2 Magazin 12-2003, Das (Germany)
+  name: Official PlayStation Magazine 12-2003 (Germany)
   serial: SCED-51936
   version: '1.00'
 - hashes:
@@ -64181,7 +64172,7 @@
 - hashes:
   - md5: 8990d1c3b88b04b1bbc7a78ee3e9df2f
     size: 33821760
-  name: Karat PS2-you Pro Action Replay 2 Taikenban (Japan) (Unl)
+  name: Karat PS2-you Pro Action Replay 2 Taikenban (Japan) (Unl) (Rev 1)
   version: '1.7'
 - hashes:
   - md5: 4a2754811946ef9badbbd872f541a03f
@@ -64254,7 +64245,7 @@
 - hashes:
   - md5: 0e35e8fd22fe57f8727b9764685bbc29
     size: 3871703040
-  name: Offizielle PlayStation 2 Magazin, Das - Special Edition 2 (Germany)
+  name: Official PlayStation 2 Magazine - Special Edition 2 (Germany)
   serial: SCED-51161
   version: '1.00'
 - hashes:
@@ -64563,7 +64554,7 @@
 - hashes:
   - md5: 477eb508b08f59386478908e481eb8a1
     size: 4519690240
-  name: Official PlayStation 2 Magazine - German Kids Special (Germany) (En,De)
+  name: Official PlayStation 2 Magazine - Kids Special (Germany) (En,De)
   serial: SCED-53611
   version: '1.00'
 - hashes:
@@ -64580,7 +64571,7 @@
 - hashes:
   - md5: ac9cb481855792415314e06e5c12b291
     size: 664183632
-  name: Pro Evolution Soccer 3 (Europe) (Demo 2)
+  name: Pro Evolution Soccer 3 (Europe) (Demo)
   serial: SLED-51994
   version: '1.00'
 - hashes:
@@ -65185,7 +65176,7 @@
 - hashes:
   - md5: 86af0c99c8a8566e5f9307110f339e20
     size: 364475328
-  name: Monopoly - Mezase!! Daifugou Jinsei!! (Japan)
+  name: Monopoly - Mezase!! Daifugou Jinsei!! (Japan) (v2.00)
   serial: SLPS-20281
   version: '2.00'
 - hashes:
@@ -66352,7 +66343,7 @@
 - hashes:
   - md5: ff59d561b843dbbb940c631d53294d63
     size: 1552318464
-  name: Monsterspass (Austria, Switzerland) (En,Fr,De,Es,It,Nl,Pt)
+  name: Monsterspass (Austria) (En,Fr,De,Es,It,Nl,Pt)
   serial: SCES-54704
   version: '1.00'
 - hashes:
@@ -66436,7 +66427,7 @@
 - hashes:
   - md5: 79fc6bc53ff748088a36d2f6778d0a0b
     size: 1943797760
-  name: Big! Sports Quiz, The (Austria, Switzerland)
+  name: Big! Sports Quiz, The (Austria)
   serial: SCES-54526
   version: '1.00'
 - hashes:
@@ -66803,7 +66794,7 @@
 - hashes:
   - md5: 91450691bed8af904b291c4d86c0c338
     size: 1645182976
-  name: Jungle Party (Austria, Switzerland)
+  name: Jungle Party (Austria)
   serial: SCES-54524
   version: '1.01'
 - hashes:
@@ -66934,7 +66925,7 @@
 - hashes:
   - md5: 777cd430a73b95945cee679a27446eed
     size: 2297200640
-  name: Disney-Pixar Finding Nemo (Korea)
+  name: Disney-Pixar Nemo-reul Chajaseo (Korea)
   serial: SLKA-25056
   version: '1.00'
 - hashes:
@@ -68550,7 +68541,7 @@
 - hashes:
   - md5: 5b315096f6bfc1897e52fec9c877b81d
     size: 4250206208
-  name: Offizielle PlayStation 2 Magazin 13-2003, Das - Uncut Edition (Germany)
+  name: Official PlayStation 2 Magazine 13-2003 - Uncut Edition (Germany)
   serial: SCED-51937
   version: '1.00'
 - hashes:
@@ -69278,7 +69269,7 @@
 - hashes:
   - md5: 6905874bbb6167417bac324464d70d28
     size: 541969008
-  name: Momotarou Dentetsu 15 - Godai Bombee Toujou! no Maki (Japan) (v1.01)
+  name: Momotarou Dentetsu 15 - Godai Bonby Toujou! no Maki (Japan) (v1.01)
   serial: SLPM-62702
   version: '1.01'
 - hashes:
@@ -69326,7 +69317,7 @@
 - hashes:
   - md5: 950783ce0723d41ff7aa46659a6eafbc
     size: 4492853248
-  name: Magical Tale - Chiicha na Mahoutsukai (Japan) (Shokai Genteiban)
+  name: Magical Tale - Chitcha na Mahoutsukai (Japan) (Shokai Genteiban)
   serial: SLPM-65964
   version: '1.01'
 - hashes:
@@ -69341,3 +69332,240 @@
   name: Quilt - Anata to Tsumugu Yume to Koi no Dress (Japan)
   serial: SLPM-66735
   version: '1.02'
+- hashes:
+  - md5: ad64473c57824cf607cf40a7d85cf36c
+    size: 2300313600
+  name: Guitar Hero (USA) (Demo)
+  serial: SLUS-29177
+  version: '1.00'
+- hashes:
+  - md5: 667607deb941380aa4d13db387b93077
+    size: 93254448
+  name: Codes Exclusifs (France) (Unl)
+  version: '1.00'
+- hashes:
+  - md5: 589e37362d073b8ad52670cdd5664415
+    size: 1822326784
+  name: DearS (Japan) (Genteiban)
+  serial: SLPS-25371
+  version: '1.04'
+- hashes:
+  - md5: 4afb874dc19e35051e79f7a881a584b4
+    size: 1524793344
+  name: Winning Post 6 - 2005-nendoban (Japan) (Premium Pack)
+  serial: SLPM-65893
+  version: '1.01'
+- hashes:
+  - md5: 132ce8a9e16ca7ef5a356aa111bce318
+    size: 4354473984
+  name: Jak 3 (Europe) (En,Fr,De,Es,It,Pt,Ko,Ru) (Beta) (2004-09-14)
+  serial: SCES-52460
+  version: '1.00'
+- hashes:
+  - md5: 6432d610b89d00eb1eea2ee71cf27147
+    size: 3007119360
+  name: Buzz! The Schools Quiz (UK) (v1.00)
+  serial: SCES-54941
+  version: '1.00'
+- hashes:
+  - md5: 3c47093b42a1e1a39692b220e7659ad9
+    size: 4601774080
+  name: Big! Pop Quiz, The (Austria)
+  serial: SCES-55099
+  version: '1.00'
+- hashes:
+  - md5: 859073451dbb344df7cee32703245ed5
+    size: 306380800
+  name: Freaky Flyers (USA) (Demo)
+  serial: SLUS-29051
+  version: '1.00'
+- hashes:
+  - md5: 8d987ddccb1e2ec4c068896a4182bc4c
+    size: 1542029312
+  name: Tennis no Oujisama - Smash Hit! 2 (Japan) (Shokai SP Genteiban C-Type)
+  serial: SLPM-65453
+  version: '1.01'
+- hashes:
+  - md5: b0a2a871249538d80b92e7ef837f20dd
+    size: 761692848
+  name: CD avec les Codes Action Replay Exclusivement pour le Jeu Enter the Matrix
+    (France)
+  version: 1.01 (European)
+- hashes:
+  - md5: db0c13bd5bddb659d563b4e2c0fcd5e8
+    size: 226549344
+  name: Action Replay Ultimate Cheats for Use with Grand Theft Auto - Vice City (UK)
+    (Unl)
+  version: '1.30'
+- hashes:
+  - md5: 7866eaffddb52bbf7375ab4deca20dd6
+    size: 33821760
+  name: Karat PS2-you Pro Action Replay 2 Taikenban (Japan) (Unl)
+  version: '1.7'
+- hashes:
+  - md5: 76b15475cac6977f2510ea07d9b87043
+    size: 4348444672
+  name: Official PlayStation 2 Magazine - Special Edition 2006-01 (Germany)
+  serial: SCED-54034
+  version: '1.00'
+- hashes:
+  - md5: c9f8be1699b50935c1e1989cd76bdbe1
+    size: 697118688
+  name: Online Start-Up Disc 4.0 - Broadband Only (USA) (v1.01)
+  serial: PBPX-95248
+  version: '1.01'
+- hashes:
+  - md5: d7cfe2da9a3598cb10bc61abd2657acd
+    size: 3497885696
+  name: Big! Movie Quiz, The (Austria)
+  serial: SCES-54857
+  version: '1.00'
+- hashes:
+  - md5: 875894a624cc3d7bc81311985b5eeff7
+    size: 549201408
+  name: Argus-ui Jeonsa (Korea) (Cheheompan)
+  serial: SCKA-90005
+  version: '1.00'
+- hashes:
+  - md5: 7f3b5e111ca4c77039a1641fe2785423
+    size: 3271229440
+  name: Mai-Otome HiME - Otome Butoushi!! (Japan) (Limited Edition)
+  serial: SLPS-25680
+  version: '1.01'
+- hashes:
+  - md5: 5626f8c491117a0924380c786ab7e458
+    size: 3049783296
+  name: Fire It Up Kids (Europe)
+  serial: SCED-53678
+  version: '1.00'
+- hashes:
+  - md5: 7d6503407ba1ea104753be2bfe1283e3
+    size: 2560065536
+  name: Nickelodeon SpongeBob SquarePants - Movin' with Friends (Europe) (En,Fr,De,Es)
+    (Beta) (2004-10-29)
+- hashes:
+  - md5: baf280135d74603e097a813d52e25afa
+    size: 707949648
+  name: Pro Evolution Soccer 4 (Europe) (Demo)
+  serial: SLED-52878
+  version: '1.03'
+- hashes:
+  - md5: 1fa77218061839d6ac9b39159fa46680
+    size: 1249804288
+  name: SingStar Rocks! (Europe) (Demo)
+  serial: SCED-54086
+  version: '1.00'
+- hashes:
+  - md5: 2d91ab06f6fc0f918c9389990df71a63
+    size: 1378156544
+  name: This Is Football 2004 (Belgium) (Demo)
+  serial: SCED-52321
+  version: '1.01'
+- hashes:
+  - md5: 6917a832cf75177a18c4ef4499966ba4
+    size: 3448471552
+  name: Official PlayStation 2 Magazine Demo 10 (Spain)
+  serial: SCED-50406
+- hashes:
+  - md5: e1615a414d9b561e70b395155edb7e39
+    size: 4697686016
+  name: Chaos Legion (Europe) (Demo)
+  serial: SLED-51808
+  version: '1.00'
+- hashes:
+  - md5: 670fabe932a7ad8b81f6356d162cdac6
+    size: 4569923584
+  name: Magazine Ufficiale PlayStation 2 Italia 05-04 (Italy) (En,Fr,De,Es,It)
+  serial: SCED-52443
+  version: '1.00'
+- hashes:
+  - md5: dd4dd82c735f0189b5cd91c0c5e4b327
+    size: 364472976
+  name: Monopoly - Mezase!! Daifugou Jinsei!! (Japan) (v1.04)
+  serial: SLPS-20281
+  version: '1.04'
+- hashes:
+  - md5: 2be7a399436665d532383e9e6d21f7fb
+    size: 1632665600
+  name: Musashiden II - Blademaster (Japan) (Taikenban)
+  serial: SLPM-61117
+  version: '1.00'
+- hashes:
+  - md5: 85f8dd4c84ac2fd97f4b154280c01910
+    size: 1239580672
+  name: Bratz - Rock Angelz (Denmark)
+  serial: SLES-53578
+  version: '1.00'
+- hashes:
+  - md5: 36c27c981bfdd9f311ecc36da4ad7071
+    size: 598507520
+  name: Metal Gear Solid 2 - Sons of Liberty (Europe) (En,Fr,De) (Demo)
+  serial: SLED-50782
+  version: '1.00'
+- hashes:
+  - md5: 626b946f71116a9ec455b41c0fb8aa3a
+    size: 2710274048
+  name: Bonus Demo 7 (15-16) (Europe)
+  serial: SCED-52437
+  version: '1.02'
+- hashes:
+  - md5: 2696c838c64d0f7f0c86adc5bbc1f54a
+    size: 4292870144
+  name: Buzz! The Big Quiz (Switzerland) (Fr,De,It)
+  serial: SCES-54071
+  version: '1.00'
+- hashes:
+  - md5: 865cb20ccc3b938879eb3cae955ab70c
+    size: 4598398976
+  name: Buzz! The Mega Quiz (Switzerland) (Fr,De,It)
+  serial: SCES-54506
+  version: '1.00'
+- hashes:
+  - md5: f543c17d10aa576cc4ea74622a7050ee
+    size: 750130416
+  name: Code Breaker (USA) (Unl) (v4.0)
+  version: '4.0'
+- hashes:
+  - md5: bae22925feb7587573b663cc83bc1eb3
+    size: 2719285248
+  name: Kaido Battle 2 - Chain Reaction (Korea)
+  serial: SLKA-25146
+  version: '1.02'
+- hashes:
+  - md5: 92c7a59eb4650bbc8a429970640b871b
+    size: 748700400
+  name: Time Crisis II (Europe) (Demo)
+  serial: SCED-50473
+  version: '1.01'
+- hashes:
+  - md5: fd46dd639a28f9f8ec7475f999d8b653
+    size: 2786852864
+  name: Call of Duty - World at War - Final Fronts (Korea)
+  serial: SLKA-25449
+  version: '1.00'
+- hashes:
+  - md5: 41ccada9d75b88b20adf6db41349df52
+    size: 4511367168
+  name: Shijag-ui Ilbo All Stars (Korea)
+  serial: SLKA-25152
+  version: '1.01'
+- hashes:
+  - md5: d46987283a22024d4b8e3e36c597035f
+    size: 4116643840
+  name: Fight Night Round 2 (Europe, Australia) (Demo)
+  serial: SLED-53126
+  version: '1.00'
+- hashes:
+  - md5: 22a1b12df6fae4ecd8da5bed8cd91dd6
+    size: 4192600064
+  name: SOCOM 3 - U.S. Navy SEALs (USA) (Beta) (2005-09-08)
+- hashes:
+  - md5: 3a04c1e3548d8169271336a73ae67e93
+    size: 566942544
+  name: Taz - Wanted (Europe)  (2002-01-29)
+  version: Beta
+- hashes:
+  - md5: ecb58db2de607ed68a215d052381a83b
+    size: 245814576
+  name: Taz - Wanted (Europe)  (2001-05-31)
+  version: Beta
