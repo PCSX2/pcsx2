@@ -1062,16 +1062,16 @@ vec4 ps_color()
 void ps_fbmask(inout vec4 C)
 {
 	#if PS_FBMASK
-		if (PS_HDR && !PS_COLCLIP_HW)
+		if (PS_HDR == 1 && PS_COLCLIP_HW == 0)
 		{
 			vec4 RT = sample_from_rt() * 255.0f;
-			bvec4 hi_bit = (FbMask & 0x80) != 0;
-			RT = hi_bit ? RT : min(RT, 255.0f);
-			C  = hi_bit ? min(C, 255.0f) : C;
-			uvec4 RTi = (uvec4)(RT + 0.5f);
-			uvec4 Ci  = (uvec4)(C  + 0.5f);
-			uvec4 mask = ((ivec4)FbMask << 24) >> 24; // Sign extend mask
-			C = (vec4)((Ci & ~mask) | (RTi & mask));
+			bvec4 hi_bit = bvec4((FbMask.x & uint(0x80)) != 0, (FbMask.y & uint(0x80)) != 0, (FbMask.z & uint(0x80)) != 0, (FbMask.w & uint(0x80)) != 0);
+			RT = vec4(hi_bit.x ? RT.x : min(RT.x, 255.0f), hi_bit.y ? RT.y : min(RT.y, 255.0f), hi_bit.z ? RT.z : min(RT.z, 255.0f), hi_bit.w ? RT.w : min(RT.w, 255.0f));
+			C  = vec4(hi_bit.x ? min(C.x, 255.0f) : C.x, hi_bit.y ? min(C.y, 255.0f) : C.y, hi_bit.z ? min(C.z, 255.0f) : C.z, hi_bit.w ? min(C.w, 255.0f) : C.w);
+			uvec4 RTi = uvec4(RT + 0.5f);
+			uvec4 Ci  = uvec4(C  + 0.5f);
+			uvec4 mask = (ivec4(FbMask) << 24) >> 24; // Sign extend mask
+			C = vec4((Ci & ~mask) | (RTi & mask));
 		}
 		else
 		{
