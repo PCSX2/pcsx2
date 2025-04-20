@@ -48,6 +48,16 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 	connect(m_ui.vu0ClampMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) { setClampingMode(0, index); });
 	connect(m_ui.vu1ClampMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) { setClampingMode(1, index); });
 
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeSoftAddSub, "EmuCore/CPU/Recompiler", "fpuSoftAddSub", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeSoftMulDiv, "EmuCore/CPU/Recompiler", "fpuSoftMulDiv", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeSoftSqrt, "EmuCore/CPU/Recompiler", "fpuSoftSqrt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0SoftAddSub, "EmuCore/CPU/Recompiler", "vu0SoftAddSub", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0SoftMulDiv, "EmuCore/CPU/Recompiler", "vu0SoftMulDiv", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0SoftSqrt, "EmuCore/CPU/Recompiler", "vu0SoftSqrt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1SoftAddSub, "EmuCore/CPU/Recompiler", "vu1SoftAddSub", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1SoftMulDiv, "EmuCore/CPU/Recompiler", "vu1SoftMulDiv", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1SoftSqrt, "EmuCore/CPU/Recompiler", "vu1SoftSqrt", false);
+
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.iopRecompiler, "EmuCore/CPU/Recompiler", "EnableIOP", true);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gameFixes, "EmuCore", "EnableGameFixes", true);
