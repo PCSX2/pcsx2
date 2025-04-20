@@ -48,7 +48,7 @@ class alignas(32) GSClut final : public GSAlignedClass<32>
 
 	GSTexture* m_gpu_clut4 = nullptr;
 	GSTexture* m_gpu_clut8 = nullptr;
-	GSTexture* m_current_gpu_clut = nullptr;
+	GSTexture* m_current_gpu_clut = nullptr; // The lut to be used by HW renderers
 
 	typedef void (GSClut::*writeCLUT)(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 

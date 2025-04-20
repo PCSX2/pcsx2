@@ -69,6 +69,7 @@ constant bool PS_AUTOMATIC_LOD      [[function_constant(GSMTLConstantIndex_PS_AU
 constant bool PS_MANUAL_LOD         [[function_constant(GSMTLConstantIndex_PS_MANUAL_LOD)]];
 constant bool PS_REGION_RECT        [[function_constant(GSMTLConstantIndex_PS_REGION_RECT)]];
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
+constant uint PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
 
 constant GSMTLExpandType VS_EXPAND_TYPE = static_cast<GSMTLExpandType>(VS_EXPAND_TYPE_RAW);
 

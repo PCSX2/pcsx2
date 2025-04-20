@@ -489,6 +489,13 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 			if (!features.dxt_textures)
 				return false;
 		}
+		//TODO!
+		else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', '1', '0') || dxt10_format == 10 /*DXGI_FORMAT_R16G16B16A16_FLOAT*/)
+		{
+			info->format = GSTexture::Format::ColorHDR;
+			info->block_size = 1; // Not compressed
+			info->bytes_per_block = 8;
+		}
 		else if (dxt10_format == 98 /*DXGI_FORMAT_BC7_UNORM*/)
 		{
 			info->format = GSTexture::Format::BC7;

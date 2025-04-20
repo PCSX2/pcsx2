@@ -41,6 +41,8 @@ const char* shaderName(ShaderConvert value)
 	{
 			// clang-format off
 		case ShaderConvert::COPY:                   return "ps_copy";
+		case ShaderConvert::COPY_EMU_LQ:            return "ps_copy";
+		case ShaderConvert::COPY_POSTPROCESS:       return "ps_copy";
 		case ShaderConvert::RGBA8_TO_16_BITS:       return "ps_convert_rgba8_16bits";
 		case ShaderConvert::DATM_1:                 return "ps_datm1";
 		case ShaderConvert::DATM_0:                 return "ps_datm0";
@@ -211,6 +213,15 @@ std::unique_ptr<GSDevice> g_gs_device;
 
 GSDevice::GSDevice()
 {
+	// Ideally the post process and emulation RTs formats would be split and we could have HDR on each of the two independently,
+	// though ultimately there's no much point in splitting them
+#if OLD_HDR
+	m_emulation_hw_rt_texture_format = GSTexture::Format::Color;
+#else
+	m_emulation_hw_rt_texture_format = EmuConfig.HDRRendering ? GSTexture::Format::ColorHDR : GSTexture::Format::Color;
+#endif
+	m_postprocess_texture_format = EmuConfig.HDROutput ? GSTexture::Format::ColorHDR : GSTexture::Format::ColorHQ;
+
 #ifdef PCSX2_DEVBUILD
 	s_texture_counts.fill(0);
 #endif
@@ -674,7 +685,7 @@ void GSDevice::ClearCurrent()
 
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c)
 {
-	if (ResizeRenderTarget(&m_merge, fs.x, fs.y, false, false))
+	if (ResizeRenderTarget(&m_merge, fs.x, fs.y, false, false, m_postprocess_texture_format))
 		DoMerge(sTex, sRect, m_merge, dRect, PMODE, EXTBUF, c, GSConfig.PCRTCOffsets);
 
 	m_current = m_merge;
@@ -714,20 +725,20 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	switch (mode)
 	{
 		case 0: // Weave
-			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
+			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false, m_postprocess_texture_format);
 			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, false, offset, field);
 			m_current = m_weavebob;
 			break;
 		case 1: // Bob
 			// Field is reversed here as we are countering the bounce.
-			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
+			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false, m_postprocess_texture_format);
 			do_interlace(m_merge, m_weavebob, ShaderInterlace::BOB, true, yoffset * (1 - field), 0);
 			m_current = m_weavebob;
 			break;
 		case 2: // Blend
-			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
+			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false, m_postprocess_texture_format);
 			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, false, offset, field);
-			ResizeRenderTarget(&m_blend, ds.x, ds.y, true, false);
+			ResizeRenderTarget(&m_blend, ds.x, ds.y, true, false, m_postprocess_texture_format);
 			do_interlace(m_weavebob, m_blend, ShaderInterlace::BLEND, false, 0, 0);
 			m_current = m_blend;
 			break;
@@ -736,9 +747,9 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 			bufIdx &= ~1;
 			bufIdx |= field;
 			bufIdx &= 3;
-			ResizeRenderTarget(&m_mad, ds.x, ds.y * 2.0f, true, false);
+			ResizeRenderTarget(&m_mad, ds.x, ds.y * 2.0f, true, false, m_postprocess_texture_format);
 			do_interlace(m_merge, m_mad, ShaderInterlace::MAD_BUFFER, false, offset, bufIdx);
-			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
+			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false, m_postprocess_texture_format);
 			do_interlace(m_mad, m_weavebob, ShaderInterlace::MAD_RECONSTRUCT, false, 0, bufIdx);
 			m_current = m_weavebob;
 			break;
@@ -750,27 +761,31 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 
 void GSDevice::FXAA()
 {
-	// Combining FXAA+ShadeBoost can't share the same target.
+	// Combining FXAA+ColorCorrect can't share the same target.
 	GSTexture*& dTex = (m_current == m_target_tmp) ? m_merge : m_target_tmp;
-	if (ResizeRenderTarget(&dTex, m_current->GetWidth(), m_current->GetHeight(), false, false))
+	if (ResizeRenderTarget(&dTex, m_current->GetWidth(), m_current->GetHeight(), false, false, m_postprocess_texture_format))
 	{
 		DoFXAA(m_current, dTex);
 		m_current = dTex;
 	}
 }
 
-void GSDevice::ShadeBoost()
+void GSDevice::ColorCorrect()
 {
-	if (ResizeRenderTarget(&m_target_tmp, m_current->GetWidth(), m_current->GetHeight(), false, false))
+	if (ResizeRenderTarget(&m_target_tmp, m_current->GetWidth(), m_current->GetHeight(), false, false, m_postprocess_texture_format))
 	{
+		ColorCorrectConstantBuffer cb = {};
+		cb.correction.x = GSConfig.ColorCorrect ? GSConfig.ColorCorrect_GameGamma : 2.2f;
+		cb.correction.y = GSConfig.ColorCorrect ? static_cast<float>(GSConfig.ColorCorrect_GameColorSpace) : 0.f;
+		cb.correction.z = EmuConfig.HDROutput ? (GSConfig.HDR_BrightnessNits / Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS) : 1.f;
+		// preapply gamma on the peak brightness parameter
+		cb.correction.w = EmuConfig.HDROutput ? powf(GSConfig.HDR_PeakBrightnessNits / Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS, 1.f / cb.correction.x) : 1.f;
 		// predivide to avoid the divide (multiply) in the shader
-		const float params[4] = {
-			static_cast<float>(GSConfig.ShadeBoost_Brightness) * (1.0f / 50.0f),
-			static_cast<float>(GSConfig.ShadeBoost_Contrast) * (1.0f / 50.0f),
-			static_cast<float>(GSConfig.ShadeBoost_Saturation) * (1.0f / 50.0f),
-		};
+		cb.adjustment.x = (GSConfig.ShadeBoost ? static_cast<float>(GSConfig.ShadeBoost_Brightness) : 50.f) * (1.0f / 50.0f);
+		cb.adjustment.y = (GSConfig.ShadeBoost ? static_cast<float>(GSConfig.ShadeBoost_Contrast) : 50.f) * (1.0f / 50.0f);
+		cb.adjustment.z = (GSConfig.ShadeBoost ? static_cast<float>(GSConfig.ShadeBoost_Saturation) : 50.f) * (1.0f / 50.0f);
 
-		DoShadeBoost(m_current, m_target_tmp, params);
+		DoColorCorrect(m_current, m_target_tmp, cb);
 
 		m_current = m_target_tmp;
 	}
@@ -787,7 +802,7 @@ void GSDevice::Resize(int width, int height)
 		s = m_current->GetSize() * GSVector2i(++multiplier);
 	}
 
-	if (ResizeRenderTarget(&dTex, s.x, s.y, false, false))
+	if (ResizeRenderTarget(&dTex, s.x, s.y, false, false, m_postprocess_texture_format))
 	{
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
@@ -796,7 +811,7 @@ void GSDevice::Resize(int width, int height)
 	}
 }
 
-bool GSDevice::ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_contents, bool recycle)
+bool GSDevice::ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_contents, bool recycle, GSTexture::Format default_format)
 {
 	pxAssert(t);
 
@@ -809,7 +824,7 @@ bool GSDevice::ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_con
 		return true;
 	}
 
-	const GSTexture::Format fmt = orig_tex ? orig_tex->GetFormat() : GSTexture::Format::Color;
+	const GSTexture::Format fmt = orig_tex ? orig_tex->GetFormat() : default_format;
 	const bool really_preserve_contents = (preserve_contents && orig_tex);
 	GSTexture* new_tex = FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, fmt, !really_preserve_contents, true);
 	if (!new_tex)
@@ -881,7 +896,7 @@ void GSDevice::CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, con
 	if (!m_cas || m_cas->GetWidth() != dst_width || m_cas->GetHeight() != dst_height)
 	{
 		delete m_cas;
-		m_cas = CreateSurface(GSTexture::Type::RWTexture, dst_width, dst_height, 1, GSTexture::Format::Color);
+		m_cas = CreateSurface(GSTexture::Type::RWTexture, dst_width, dst_height, 1, m_postprocess_texture_format);
 		if (!m_cas)
 		{
 			Console.Error("Failed to allocate CAS RW texture.");

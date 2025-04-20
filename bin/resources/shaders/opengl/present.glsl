@@ -42,7 +42,7 @@ uniform vec2 u_target_resolution;
 uniform vec2 u_rcp_target_resolution; // 1 / u_target_resolution
 uniform vec2 u_source_resolution;
 uniform vec2 u_rcp_source_resolution; // 1 / u_source_resolution
-uniform float u_time;
+uniform vec2 u_time_and_brightness; // time, user brightness scale (HDR)
 
 in vec4 PSin_p;
 in vec2 PSin_t;
@@ -152,7 +152,7 @@ void ps_filter_complex()
 
 float ToLinear1(float c)
 {
-	return c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4);
+	return pow(abs(c), 2.2) * sign(c);
 }
 
 vec3 ToLinear(vec3 c)
@@ -160,14 +160,14 @@ vec3 ToLinear(vec3 c)
 	return vec3(ToLinear1(c.r), ToLinear1(c.g), ToLinear1(c.b));
 }
 
-float ToSrgb1(float c)
+float ToGamma1(float c)
 {
-	return c < 0.0031308 ? c * 12.92 : 1.055 * pow(c, 0.41666) - 0.055;
+	return pow(abs(c), 1.0 / 2.2) * sign(c);
 }
 
-vec3 ToSrgb(vec3 c)
+vec3 ToGamma(vec3 c)
 {
-	return vec3(ToSrgb1(c.r), ToSrgb1(c.g), ToSrgb1(c.b));
+	return vec3(ToGamma1(c.r), ToGamma1(c.g), ToGamma1(c.b));
 }
 
 vec3 Fetch(vec2 pos, vec2 off)
@@ -421,7 +421,7 @@ vec4 LottesCRTPass()
 #if UseShadowMask
 	color.rgb *= Mask(fragcoord.xy);
 #endif
-	color.rgb = ToSrgb(color.rgb);
+	color.rgb = ToGamma(color.rgb);
 
 	return color;
 }

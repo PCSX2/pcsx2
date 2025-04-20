@@ -8,17 +8,18 @@
 
 #include "common/SmallString.h"
 #include "GSVector.h"
+#include "GS/Renderers/Common/GSTexture.h"
 
 namespace Threading
 {
 class ThreadHandle;
 }
 
-class GSTexture;
-class GSDownloadTexture;
-
 namespace GSCapture
 {
+	// Any conversion from game buffer to a capture	buffer requires 8bit per channel for simplicity (no HDR nor 10bit support)
+	static const GSTexture::Format CAPTURE_TEX_FORMAT = GSTexture::Format::Color;
+
 	bool BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string filename);
 	bool DeliverVideoFrame(GSTexture* stex);
 	void DeliverAudioPacket(const s16* frames); // AudioStream::CHUNK_SIZE

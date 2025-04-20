@@ -223,8 +223,9 @@ bool GSRenderer::Merge(int field)
 		g_gs_device->Interlace(fs, field ^ field2, mode, offset);
 	}
 
-	if (GSConfig.ShadeBoost)
-		g_gs_device->ShadeBoost();
+	// The color correction pass needs to run all the times in HDR as it linearizes the color for scRGB HDR
+	if (EmuConfig.HDROutput || GSConfig.ColorCorrect || GSConfig.ShadeBoost)
+		g_gs_device->ColorCorrect();
 
 	if (GSConfig.FXAA)
 		g_gs_device->FXAA();
@@ -268,8 +269,25 @@ float GSRenderer::GetModXYOffset()
 
 static float GetCurrentAspectRatioFloat(bool is_progressive)
 {
-	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount) + 1> ars = {{4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 10.0f / 7.0f, 3.0f / 2.0f}};
-	return ars[static_cast<u32>(GSConfig.AspectRatio) + (3u * (is_progressive && GSConfig.AspectRatio == AspectRatioType::RAuto4_3_3_2))];
+	switch (GSConfig.AspectRatio)
+	{
+		default:
+		// We don't know the AR of the display here, nor we care about it
+		case AspectRatioType::Stretch:
+		case AspectRatioType::RAuto4_3_3_2:
+			if (EmuConfig.CurrentCustomAspectRatio > 0.f)
+				return EmuConfig.CurrentCustomAspectRatio;
+			else if (is_progressive)
+				return 3.0f / 2.0f;
+			else
+				return 4.0f / 3.0f;
+		case AspectRatioType::R4_3:
+			return 4.0f / 3.0f;
+		case AspectRatioType::R16_9:
+			return 16.0f / 9.0f;
+		case AspectRatioType::R10_7:
+			return 10.0f / 7.0f;
+	}
 }
 
 static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const GSVector4i& src_rect, const GSVector2i& src_size, GSDisplayAlignment alignment, bool flip_y, bool is_progressive)
@@ -285,6 +303,9 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 			targetAr = 3.0f / 2.0f;
 		else
 			targetAr = 4.0f / 3.0f;
+		// Fall back on the custom aspect ratio set by patches (e.g. 16:9, 21:9)
+		if (EmuConfig.CurrentCustomAspectRatio > 0.f)
+			targetAr = EmuConfig.CurrentCustomAspectRatio;
 	}
 	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R4_3)
 	{
@@ -297,6 +318,10 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R10_7)
 	{
 		targetAr = 10.0f / 7.0f;
+	}
+	else if (EmuConfig.CurrentCustomAspectRatio > 0.f)
+	{
+		targetAr = EmuConfig.CurrentCustomAspectRatio;
 	}
 
 	const float crop_adjust = (static_cast<float>(src_rect.width()) / static_cast<float>(src_size.x)) /
@@ -750,7 +775,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			// TODO: Maybe avoid this copy in the future? We can use swscale to fix it up on the dumping thread..
 			if (current->GetSize() != size)
 			{
-				GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, false);
+				GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSCapture::CAPTURE_TEX_FORMAT, false);
 				if (temp)
 				{
 					g_gs_device->StretchRect(current, temp, GSVector4(0, 0, size.x, size.y));
@@ -767,7 +792,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		{
 			// Bit janky, but unless we want to make variable frame rate files, we need to deliver *a* frame to
 			// the video file, so just grab a blank RT.
-			GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, true);
+			GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSCapture::CAPTURE_TEX_FORMAT, true);
 			if (temp)
 			{
 				GSCapture::DeliverVideoFrame(temp);
@@ -985,10 +1010,10 @@ bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool 
 	const u32 image_height = crop_borders ? draw_height : std::max(draw_height, window_height);
 
 	// We're not expecting screenshots to be fast, so just allocate a download texture on demand.
-	GSTexture* rt = g_gs_device->CreateRenderTarget(draw_width, draw_height, GSTexture::Format::Color, false);
+	GSTexture* rt = g_gs_device->CreateRenderTarget(draw_width, draw_height, GSCapture::CAPTURE_TEX_FORMAT, false);
 	if (rt)
 	{
-		std::unique_ptr<GSDownloadTexture> dl(g_gs_device->CreateDownloadTexture(draw_width, draw_height, GSTexture::Format::Color));
+		std::unique_ptr<GSDownloadTexture> dl(g_gs_device->CreateDownloadTexture(draw_width, draw_height, GSCapture::CAPTURE_TEX_FORMAT));
 		if (dl)
 		{
 			const GSVector4i rc(0, 0, draw_width, draw_height);
