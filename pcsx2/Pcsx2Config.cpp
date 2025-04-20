@@ -836,6 +836,8 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_BilinearHack) &&
 		OpEqu(OverrideTextureBarriers) &&
 
+		OpEqu(LoadTextureReplacements) &&
+
 		OpEqu(CAS_Sharpness) &&
 		OpEqu(ShadeBoost_Brightness) &&
 		OpEqu(ShadeBoost_Contrast) &&
