@@ -340,7 +340,7 @@ float4 sample_p(ctype u)
 	if (PS_HDR && (PS_PAL_FMT == 0 || PS_PAL_FMT >= 3)) //TODO1: add compatibility with other LUT types?
 	{
 #if 1
-		float4 p = sampleLUTWithExtrapolation(Palette, u / 255.f);
+		float4 p = sampleLUTWithExtrapolation(Palette, u / 255.0f);
 		p = max(p, 0.f); // Any negative value should probably be clamped as it'd be accidental and have negative consequences
 #else // Old basic extrapolation code
 		float2 size;
@@ -478,7 +478,7 @@ ctype4 sample_4_index(float4 uv, float uv_w)
 		i = ctype4(c * 255.5f); // Denormalize value (so that 254.5 to 255 map to the last texel)
 	}
 #else
-	i = c * (PS_RTA_SRC_CORRECTION ? NEUTRAL_ALPHA : 255.f);
+	i = c * (PS_RTA_SRC_CORRECTION ? NEUTRAL_ALPHA : 255.0f);
 #endif
 
 	// Remap coordinates for the current palette size (range)
@@ -946,7 +946,7 @@ float4 shuffle(float4 C, bool true_read_false_write)
 {
 	//TODO1: allow float? or int
 #if PS_HDR
-	C = clamp(C, 0.f, 255.f);
+	C = clamp(C, 0.0f, 255.0f);
 #endif
 	uint4 denorm_c_before = uint4(C); 
 	if (PS_PROCESS_BA & (true_read_false_write ? SHUFFLE_READ : SHUFFLE_WRITE))
@@ -1128,9 +1128,9 @@ void ps_color_clamp_wrap(inout float3 C)
 	if (mask != 0)
 	{
 #if PS_HDR // Avoid quantization to 8bit in HDR
-		//C = mask == 0xFF ? fmod_mask_positive(C, 255.f) : (C - fmod_positive(C, 8)); // 248 → 255 - 7 = 248 //TODO: test! Nah
+		//C = mask == 0xFF ? fmod_mask_positive(C, 255.0f) : (C - fmod_positive(C, 8)); // 248 → 255 - 7 = 248 //TODO: test! Nah
 		if (mask == 0xFF) // Ignore mapping to 0-248 for 5bpc textures, we don't want quantization in HDR
-			C = fmod_mask_positive(C, 255.f);
+			C = fmod_mask_positive(C, 255.0f);
 #else
 		C = (float3)((int3)C & (int3)mask);
 #endif
@@ -1161,7 +1161,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 
 		if (PS_SHUFFLE && SW_BLEND_NEEDS_RT)
 		{
-			RT = clamp(RT, 0.f, 255.f); //TODO1: allow float? or int (below)
+			RT = clamp(RT, 0.0f, 255.0f); //TODO1: allow float? or int (below)
 			RT = shuffle(RT, false);
 		}
 		
@@ -1383,7 +1383,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	if (PS_SHUFFLE)
 	{
-		C = clamp(C, 0.f, 255.f); //TODO1: allow float? or int (below)
+		C = clamp(C, 0.0f, 255.0f); //TODO1: allow float? or int (below)
 
 		if (!PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
