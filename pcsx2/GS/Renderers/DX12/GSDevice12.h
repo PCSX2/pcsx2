@@ -259,7 +259,7 @@ public:
 		NUM_TFX_TEXTURES = 2,
 		NUM_TFX_RT_TEXTURES = 2,
 		NUM_TOTAL_TFX_TEXTURES = NUM_TFX_TEXTURES + NUM_TFX_RT_TEXTURES,
-		NUM_TFX_SAMPLERS = 1,
+		NUM_TFX_SAMPLERS = 2,
 		NUM_UTILITY_TEXTURES = 1,
 		NUM_UTILITY_SAMPLERS = 1,
 		// This needs to match the sum of all the utility cbuffer sizes //TODO: max not sum. VK too

@@ -333,7 +333,7 @@ struct alignas(16) GSHWDrawConfig
 			{
 				// Format
 				u32 aem_fmt   : 2;
-				u32 pal_fmt   : 2;
+				u32 pal_fmt   : 2; // 0 None, 1 PSMT4HL, 2 PSMT4HH, 3 PSMT8H
 				u32 dst_fmt   : 2; // 0 → 32-bit, 1 → 24-bit, 2 → 16-bit
 				u32 depth_fmt : 2; // 0 → None, 1 → 32-bit, 2 → 16-bit, 3 → RGBA
 				// Alpha extension/Correction
@@ -375,8 +375,8 @@ struct alignas(16) GSHWDrawConfig
 				u32 blend_hw       : 3; /*HWBlendType*/
 				u32 a_masked       : 1;
 				u32 colclip_hw     : 1; // colclip (COLCLAMP off) emulation through HQ textures
-				u32 rta_correction : 1;
-				u32 rta_source_correction : 1;
+				u32 rta_correction : 1; // Scale target alpha by 0.5, only used with HW blending
+				u32 rta_source_correction : 1; // Scale source alpha by 0.5
 				u32 colclip        : 1; // COLCLAMP off (color blend outputs wrap around 0-255)
 				u32 blend_mix      : 2;
 				u32 round_inv      : 1; // Blending will invert the value, so rounding needs to go the other way
@@ -398,7 +398,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 tcoffsethack : 1;
 				u32 urban_chaos_hle : 1;
 				u32 tales_of_abyss_hle : 1;
-				u32 tex_is_fb : 1; // Jak Shadows
+				u32 tex_is_fb : 1; // Texture is frame buffer (Jak Shadows)
 				u32 automatic_lod : 1;
 				u32 manual_lod : 1;
 				u32 point_sampler : 1;

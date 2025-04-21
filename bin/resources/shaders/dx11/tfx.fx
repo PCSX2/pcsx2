@@ -94,10 +94,20 @@
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 
-//TODO: test this 0.1?
 #if PS_HDR
+#define ctype float
+#define ctype3 float3
+#define ctype4 float4
+//TODO1: make this 128 again here and in the convert shaders? (alpha max is 1.9921875, not 2) Otherwise divide alpha by 128 when reading textures sourced by the disk memory directly and not RTs (including paletters)
+//#define NEUTRAL_ALPHA 127.5f
+#define NEUTRAL_ALPHA 128.0f
+//TODO: test this 0.1?
 #define RT_COLOR_OFFSET 0.0f
 #else
+#define ctype uint
+#define ctype3 uint3
+#define ctype4 uint4
+#define NEUTRAL_ALPHA 128.0f
 #define RT_COLOR_OFFSET 0.1f
 #endif
 
@@ -159,11 +169,17 @@ struct PS_OUTPUT
 #endif
 };
 
+// The source color
 Texture2D<float4> Texture : register(t0);
+// LUT
 Texture2D<float4> Palette : register(t1);
+// The same texture we are writing to
 Texture2D<float4> RtTexture : register(t2);
 Texture2D<float> PrimMinTexture : register(t3);
+// The current color source sampler
 SamplerState TextureSampler : register(s0);
+// A forced linear sampler for any usage
+SamplerState TextureLinearSampler : register(s1);
 
 #ifdef DX12
 cbuffer cb1 : register(b1)
@@ -190,6 +206,8 @@ cbuffer cb1
 	float RcpScaleFactor;
 };
 
+#define FLT_MIN	asfloat(0x00800000)
+
 float fmod_positive(float a, float b)
 {
 	return fmod(fmod(a, b) + b, b);
@@ -198,7 +216,7 @@ float3 fmod_positive(float3 a, float b)
 {
 	return float3(fmod_positive(a.x, b), fmod_positive(a.y, b), fmod_positive(a.z, b));
 }
-float fmod_mask_positive(float a, float b)
+float fmod_mask_positive1(float a, float b)
 {
 	// Don't wrap if the number if a multiple, to emulate bit mask operators
 	if (fmod(a, b) == 0.f && a != 0.f)
@@ -209,13 +227,58 @@ float fmod_mask_positive(float a, float b)
 }
 float3 fmod_mask_positive(float3 a, float b)
 {
-	return float3(fmod_mask_positive(a.x, b), fmod_mask_positive(a.y, b), fmod_mask_positive(a.z, b));
+	return float3(fmod_mask_positive1(a.x, b), fmod_mask_positive1(a.y, b), fmod_mask_positive1(a.z, b));
+}
+float4 fmod_mask_positive(float4 a, float b)
+{
+	return float4(fmod_mask_positive1(a.x, b), fmod_mask_positive1(a.y, b), fmod_mask_positive1(a.z, b), fmod_mask_positive1(a.w, b));
+}
+
+// Code from Filippo Tarpini, from the "Luma Framework" (https://github.com/Filoppi/Luma-Framework/)
+// 
+// LUT sample that allows to go beyond the 0-1 coordinates range through extrapolation.
+// It finds the rate of change (acceleration) of the LUT color around the requested clamped coordinates, and guesses what color the sampling would have with the out of range coordinates.
+// Extrapolating LUT by re-apply the rate of change has the benefit of consistency. If the LUT has the same color at (e.g.) uv 0.9 0.9 and 1.0 1.0, thus clipping to white or black, the extrapolation will also stay clipped.
+// Additionally, if the LUT had inverted colors or highly fluctuating colors, extrapolation would work a lot better than a raw LUT out of range extraction with a luminance multiplier.
+//
+// Note that this function might return "invalid colors", they could have negative values etc etc, so make sure to clamp them after if you need to.
+float4 sampleLUTWithExtrapolation(Texture2D<float4> lut, float unclampedU)
+{
+  // LUT size in texels
+  const float lutWidth = 256.0;
+  const float lutHeight = 1.0;
+  const float2 lutSize = float2(lutWidth, lutHeight);
+  const float2 lutMax = lutSize - 1.0;
+  const float2 uvScale = lutMax / lutSize;        // Also "1-(1/lutSize)"
+  const float2 uvOffset = 1.0 / (2.0 * lutSize);  // Also "(1/lutSize)/2"
+  // The uv distance between the center of one texel and the next one
+  const float2 lutTexelRange = 1.0 / lutMax;
+
+  float2 unclampedUV = float2(unclampedU, 0.5);
+  const float2 clampedUV = saturate(unclampedUV);
+  const float distanceFromUnclampedToClamped = abs(unclampedUV.x - clampedUV.x);
+  const bool uvOutOfRange = distanceFromUnclampedToClamped > FLT_MIN; // Some threshold is needed to avoid divisions by tiny numbers
+
+  const float4 clampedSample = lut.Sample(TextureLinearSampler, (clampedUV * uvScale) + uvOffset).xyzw;
+
+  if (uvOutOfRange)
+  {
+    // Travel backwards down the LUT by 25%
+    float backwardsOffset = 0.25 * (lutSize.x / lutMax.x); // Make this "lutTexelRange.x" to only go back by one texel, though that's usually not enough to get proper extrapolation
+    float2 centeredUV = float2(clampedUV.x >= 0.5 ? max(clampedUV.x - backwardsOffset, 0.5) : min(clampedUV.x + backwardsOffset, 0.5), unclampedUV.y);
+    const float4 centeredSample = lut.Sample(TextureLinearSampler, (centeredUV * uvScale) + uvOffset).xyzw;
+    const float distanceFromClampedToCentered = abs(clampedUV.x - centeredUV.x);
+    const float extrapolationRatio = distanceFromClampedToCentered == 0.0 ? 0.0 : (distanceFromUnclampedToClamped / distanceFromClampedToCentered);
+    const float4 extrapolatedSample = lerp(centeredSample, clampedSample, 1.0 + extrapolationRatio);
+    return extrapolatedSample;
+  }
+  return clampedSample;
 }
 
 float4 sample_c(float2 uv, float uv_w)
 {
 #if PS_TEX_IS_FB == 1
-	return RtTexture.Load(int3(int2(uv * WH.zw), 0)); //TODO: why are these not rounded?
+	return RtTexture.Load(int3(int2(uv * WH.zw), 0));
 #elif PS_REGION_RECT == 1
 	return Texture.Load(int3(int2(uv), 0));
 #else
@@ -227,7 +290,7 @@ float4 sample_c(float2 uv, float uv_w)
 		// I'm manually adjusting coordinates to the centre of texels here,
 		// though the centre is just paranoia, the top left corner works fine.
 		// As of 2018 this issue is still present.
-#if PS_HDR && 0
+#if 0 // Shouldn't be done on NV?
 		uv = (trunc(uv * WH.zw) + float2(0.5, 0.5)) / WH.zw;
 #endif
 	}
@@ -267,29 +330,38 @@ float4 sample_c(float2 uv, float uv_w)
 #endif
 }
 
-#if PS_HDR
-float4 sample_p(float u)
-#else
-float4 sample_p(uint u)
-#endif
+// Samples a 255x1 palette that outputs 4 channel from 1
+float4 sample_p(ctype u)
 {
-	if (PS_HDR) //TODO: add linear sampling and improved LUT extrapolation
+	//u = min(u, 255u);
+	//return u / 255.f; //Disable LUT //TODO
+	//return min(u / 255.f, 1.f);
+	// This won't work if the "Palette" isn't fully used (e.g. the whole 256 texels range is only used when it's 8 bit)
+	if (PS_HDR && (PS_PAL_FMT == 0 || PS_PAL_FMT >= 3)) //TODO1: add compatibility with other LUT types?
 	{
+#if 1
+		float4 p = sampleLUTWithExtrapolation(Palette, u / 255.f);
+		p = max(p, 0.f); // Any negative value should probably be clamped as it'd be accidental and have negative consequences
+#else // Old basic extrapolation code
 		float2 size;
 		Palette.GetDimensions(size.x, size.y);
 		// Y is always 1 texel large
 		float excess = max(u - (size.x - 1.f), 0.f) / size.x;
-		return Palette.Load(int3(int(round(u)), 0, 0)) * (excess + 1.f);
+		float4 p = Palette.Load(int3(int(min(round(u), size.x - 1.f)), 0, 0));
+		p.rgb *= excess + 1.f; // Don't extrapolate alpha
+#endif
+		return p;
 	}
-	return Palette.Load(int3(int(u), 0, 0));
+	return Palette.Load(int3(min(int(u), 255), 0, 0));
 }
 
+// Samples a palette based on any rgba color channel
 float4 sample_p_norm(float u)
 {
 #if PS_HDR
 	return sample_p(u * 255.0f);
 #else
-	return sample_p(u * 255.5f); //TODO: why is this denormalized to 255.5?
+	return sample_p(u * 255.5f); // Denormalize value (so that 254.5 to 255 map to the last texel)
 #endif
 }
 
@@ -313,7 +385,7 @@ float4 clamp_wrap_uv(float4 uv)
 		}
 		else if(PS_WMS == 3)
 		{
-#if PS_FST == 0
+			#if PS_FST == 0
 			// wrap negative uv coords to avoid an off by one error that shifted
 			// textures. Fixes Xenosaga's hair issue.
 			uv = frac(uv);
@@ -384,12 +456,8 @@ float4x4 sample_4c(float4 uv, float uv_w)
 	return c;
 }
 
-#if PS_HDR
-float4
-#else
-uint4
-#endif
-	sample_4_index(float4 uv, float uv_w)
+// Returns palette input coordinates sampled from color alphas
+ctype4 sample_4_index(float4 uv, float uv_w)
 {
 	float4 c;
 
@@ -398,38 +466,39 @@ uint4
 	c.z = sample_c(uv.xw, uv_w).a;
 	c.w = sample_c(uv.zw, uv_w).a;
 
-	// Denormalize value
-	float4 i;
+	ctype4 i;
 	
 #if !PS_HDR
 	if (PS_RTA_SRC_CORRECTION)
 	{
-		i = round(c * 128.25f); // Denormalize value //TODO: why rounding?
+		i = ctype4(round(c * (NEUTRAL_ALPHA + 0.25f))); // Denormalize values (with a slight empirically found offset to better round it) (they are all alphas)
 	}
 	else
 	{
-		i = c * 255.5f; // Denormalize value
+		i = ctype4(c * 255.5f); // Denormalize value (so that 254.5 to 255 map to the last texel)
 	}
 #else
-	i = c * (PS_RTA_SRC_CORRECTION ? 127.5f : 255.f); //TODO: is 127.5 the right halved value?
+	i = c * (PS_RTA_SRC_CORRECTION ? NEUTRAL_ALPHA : 255.f);
 #endif
 
+	// Remap coordinates for the current palette size (range)
 	if (PS_PAL_FMT == 1)
 	{
 		// 4HL
 #if !PS_HDR
-		return (uint4)i & 0xFu;
+		return i & 0xFu;
 #else
-		return fmod(i, 16.f); // Note: negative handling is a bit random here but it should be fine
+		//return fmod(i, 16.f); // Note: negative handling is a bit random here but it should be fine
+		return fmod_mask_positive(i, 15.f); //TODO1: doesn't match beyond 1?
 #endif
 	}
 	else if (PS_PAL_FMT == 2)
 	{
 		// 4HH
 #if !PS_HDR
-		return (uint4)i >> 4u;
+		return i >> 4u;
 #else
-		return max(i - pow(2.f, 4.f), min(i, 0.f)) / pow(2.f, 4.f); //TODO: this formula doesn't match the SDR one... As it doesn't mask out the first 4 bits first
+		return max(i - pow(2.f, 4.f), min(i, 0.f)) / pow(2.f, 4.f); //TODO1: this formula doesn't match the SDR one... As it doesn't mask out the first 4 bits first
 #endif
 	}
 	else
@@ -439,11 +508,8 @@ uint4
 	}
 }
 
-#if PS_HDR
-float4x4 sample_4p(float4 u)
-#else
-float4x4 sample_4p(uint4 u)
-#endif
+// Samples palette 4 times based on 4 coordinates
+float4x4 sample_4p(ctype4 u)
 {
 	float4x4 c;
 
@@ -571,7 +637,7 @@ float4 sample_depth(float2 st, float2 pos)
 
 		// Convert a FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
 		uint d = uint(fetch_c(uv).r * exp2(32.0f));
-		t = float4(uint4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) * float4(8.0f, 8.0f, 8.0f, 128.0f);
+		t = float4(uint4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) * float4(8.0f, 8.0f, 8.0f, NEUTRAL_ALPHA);
 	}
 	else if (PS_DEPTH_FMT == 3)
 	{
@@ -585,11 +651,14 @@ float4 sample_depth(float2 st, float2 pos)
 	}
 	else if (PS_AEM_FMT == FMT_16)
 	{
-		t.a = t.a >= 128.0f ? 255.0f * TA.y : ((PS_AEM == 0) || any(bool3(t.rgb))) ? 255.0f * TA.x : 0.0f;
+		t.a = t.a >= NEUTRAL_ALPHA ? 255.0f * TA.y : ((PS_AEM == 0) || any(bool3(t.rgb))) ? 255.0f * TA.x : 0.0f;
 	}
 	else if (PS_PAL_FMT != 0 && !PS_TALES_OF_ABYSS_HLE && !PS_URBAN_CHAOS_HLE)
 	{
-		t = trunc(sample_4p(uint4(t.aaaa))[0] * 255.0f + 0.05f); //TODO: ... (depth)
+		t = sample_4p(ctype4(t.aaaa))[0] * 255.0f;
+#if !PS_HDR
+		t = trunc(t + 0.05f);
+#endif
 	}
 
 	return t;
@@ -673,7 +742,7 @@ float4 fetch_gXbY(int2 xy)
 	}
 	else
 	{
-		int4 rt = (int4)(fetch_raw_color(xy) * 255.0); //TODO: add float support?
+		int4 rt = (int4)(fetch_raw_color(xy) * 255.0); //TODO: add float support? (rarely used by games)
 		int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
 		int blue = (rt.b << ChannelShuffle.y) & ChannelShuffle.x;
 		return (float4)(green | blue);
@@ -720,7 +789,7 @@ float4 sample_color(float2 st, float uv_w)
 #else
 		c = sample_4c(uv, uv_w);
 #endif
-#if 0
+#if 0 //TODO: delete... test
 		c[0].a = saturate(c[0].a);
 		c[1].a = saturate(c[1].a);
 		c[2].a = saturate(c[2].a);
@@ -738,7 +807,12 @@ float4 sample_color(float2 st, float uv_w)
 		}
 		else if(PS_AEM_FMT == FMT_16)
 		{
-			c[i].a = c[i].a >= 0.5 ? TA.y : !PS_AEM || any(int3(c[i].rgb * 255.0f) & 0xF8) ? TA.x : 0; //TODO: remove trunc/mask? Nah
+#if PS_HDR //TODO threshold 4 or 7.5?
+			c[i].a = c[i].a >= 0.5 ? TA.y : !PS_AEM || any((c[i].rgb * 255.0f) > 4.f) ? TA.x : 0;
+#else
+			// Check if the color is black (we discared the last 7 values, as these bits don't exist on real HW)
+			c[i].a = c[i].a >= 0.5 ? TA.y : !PS_AEM || any(int3(c[i].rgb * 255.0f) & 0xF8) ? TA.x : 0;
+#endif
 		}
 	}
 
@@ -752,31 +826,63 @@ float4 sample_color(float2 st, float uv_w)
 	}
 
 	if (PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_RTA_SRC_CORRECTION)
-		t.a = t.a * (128.5f / 255.0f); //TODO: why 128.5 normalization?
-
-	if (PS_HDR) //TODO: test... good change??? Fixes raised blacks?
 	{
-		return t * 255.0f;
+		if (PS_HDR == 0)
+			t.a *= (NEUTRAL_ALPHA + 0.5) / 255.0f; // Add 0.5 for int rounding
+		else
+			t.a *= NEUTRAL_ALPHA / 255.0f;
 	}
-	return trunc(t * 255.0f + 0.05f);
+
+	t *= 255.0f;
+	if (!PS_HDR)
+	{
+		t = trunc(t + 0.05f);
+	}
+	return t;
 }
 
+//TODO1: make this optional and make sure it doesn't scale up brightness when drawing post process on itself
+float3 PumboAutoHDR(float3 SDRColor, float PeakWhiteNits = 400.f, float PaperWhiteNits = 203.f, float ShoulderPow = 3.5f)
+{
+	const float3 LumCoeff = float3(0.2125, 0.7154, 0.0721);
+	const float SDRRatio = dot(SDRColor, LumCoeff);
+	// Limit AutoHDR brightness, it won't look good beyond a certain level.
+	// The paper white multiplier is applied later so we account for that.
+	const float AutoHDRMaxWhite = max(min(PeakWhiteNits, 1000.f) / PaperWhiteNits, 1.f);
+	const float AutoHDRShoulderRatio = saturate(SDRRatio);
+	const float AutoHDRExtraRatio = pow(max(AutoHDRShoulderRatio, 0.f), ShoulderPow) * (AutoHDRMaxWhite - 1.f);
+	const float AutoHDRTotalRatio = SDRRatio + AutoHDRExtraRatio;
+	return SDRColor * (SDRRatio > 0.f ? (AutoHDRTotalRatio / SDRRatio) : 1.f);
+}
+
+// Texture function
+// T: Texture color
+// C: Vertex color
 float4 tfx(float4 T, float4 C)
 {
+#if 0
+	C.rgb = PumboAutoHDR(C.rgb, 400.f, 80.f, 3.25f);
+#endif
+
 	float4 C_out;
-	float4 FxT = (C * T) / 128.0f;
+	float4 FxT = (C * T) / NEUTRAL_ALPHA; //TODO: should be interpret vertex alpha as 127.5 or 128 for neutral?
 	if (PS_HDR == 0)
 	{
 		FxT = trunc(FxT);
 	}
 
+// Modulate
 #if (PS_TFX == 0)
 	C_out = FxT;
+// Decal
+// Ignore vertex color
 #elif (PS_TFX == 1)
 	C_out = T;
+// Highlight
 #elif (PS_TFX == 2)
 	C_out.rgb = FxT.rgb + C.a;
 	C_out.a = T.a + C.a;
+// Highlight 2
 #elif (PS_TFX == 3)
 	C_out.rgb = FxT.rgb + C.a;
 	C_out.a = T.a;
@@ -799,31 +905,67 @@ float4 tfx(float4 T, float4 C)
 	return C_out;
 }
 
+// Alpha test (in 0-255 range)
 bool atst(float4 C)
 {
 	float a = C.a;
 
+	float a_test = AREF;
+#if PS_HDR
+	a_test *= NEUTRAL_ALPHA / 128.f; //TODO: save 128 as "ORIGINAL_NEUTRAL_ALPHA"
+#endif
+
+	// Less
 	if(PS_ATST == 1)
 	{
-		return (a <= AREF);
+		return (a <= a_test);
 	}
+	// Greater
 	else if(PS_ATST == 2)
 	{
-		return (a >= AREF);
+		return (a >= a_test);
 	}
+	// Equal
 	else if(PS_ATST == 3)
 	{
-		 return (abs(a - AREF) <= 0.5f);
+		 return (abs(a - a_test) <= 0.5f);
 	}
+	// Not equal
 	else if(PS_ATST == 4)
 	{
-		return (abs(a - AREF) >= 0.5f);
+		return (abs(a - a_test) >= 0.5f);
 	}
 	else
 	{
 		// nothing to do
 		return true;
 	}
+}
+
+float4 shuffle(float4 C, bool true_read_false_write)
+{
+	//TODO1: allow float? or int
+#if PS_HDR
+	C = clamp(C, 0.f, 255.f);
+#endif
+	uint4 denorm_c_before = uint4(C); 
+	if (PS_PROCESS_BA & (true_read_false_write ? SHUFFLE_READ : SHUFFLE_WRITE))
+	{
+		// rgba from b-ba-a-a
+		C.r = float((denorm_c_before.b << 3) & 0xF8u);
+		C.g = float(((denorm_c_before.b >> 2) & 0x38u) | ((denorm_c_before.a << 6) & 0xC0u));
+		C.b = float((denorm_c_before.a << 1) & 0xF8u);
+		C.a = float(denorm_c_before.a & 0x80u);
+	}
+	else
+	{
+		// rgba from r-rg-g-g
+		C.r = float((denorm_c_before.r << 3) & 0xF8u);
+		C.g = float(((denorm_c_before.r >> 2) & 0x38u) | ((denorm_c_before.g << 6) & 0xC0u));
+		C.b = float((denorm_c_before.g << 1) & 0xF8u);
+		C.a = float(denorm_c_before.g & 0x80u);
+	}
+	return C;
 }
 
 float4 fog(float4 c, float f)
@@ -835,7 +977,7 @@ float4 fog(float4 c, float f)
 		{
 			c.rgb = trunc(c.rgb);
 		}
-		//TODO: try luminance preserving fog?
+		//TODO1: try luminance preserving fog?
 	}
 
 	return c;
@@ -871,23 +1013,14 @@ float4 ps_color(PS_INPUT input)
 
 	if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 	{
-		uint4 denorm_c_before = uint4(T); //TODO: allow float? or int
-		if (PS_PROCESS_BA & SHUFFLE_READ)
-		{
-			T.r = float((denorm_c_before.b << 3) & 0xF8u);
-			T.g = float(((denorm_c_before.b >> 2) & 0x38u) | ((denorm_c_before.a << 6) & 0xC0u));
-			T.b = float((denorm_c_before.a << 1) & 0xF8u);
-			T.a = float(denorm_c_before.a & 0x80u);
-		}
-		else
-		{
-			T.r = float((denorm_c_before.r << 3) & 0xF8u);
-			T.g = float(((denorm_c_before.r >> 2) & 0x38u) | ((denorm_c_before.g << 6) & 0xC0u));
-			T.b = float((denorm_c_before.g << 1) & 0xF8u);
-			T.a = float(denorm_c_before.g & 0x80u);
-		}
+		T = shuffle(T, true);
 		
+#if PS_HDR
+		T.a = (T.a >= 127.5f ? TA.y : !PS_AEM || any(T.rgb > 4.f) ? TA.x : 0) * 255.0f;
+#else
+		// Check if the color is black (we discared the last 7 values, as these bits don't exist on real HW)
 		T.a = (T.a >= 127.5f ? TA.y : !PS_AEM || any(int3(T.rgb) & 0xF8) ? TA.x : 0) * 255.0f;
+#endif
 	}
 
 	float4 C = tfx(T, input.c);
@@ -897,18 +1030,20 @@ float4 ps_color(PS_INPUT input)
 	return C;
 }
 
+// Frame buffer mask
+// This will read the current frame buffer (render target) and mask our color with it
 void ps_fbmask(inout float4 C, float2 pos_xy)
 {
 	if (PS_FBMASK)
 	{
-#if 1 //TODO: test!
-		if (PS_HDR && !PS_COLCLIP_HW)
+#if 1 //TODO1: test!
+		if (PS_HDR && !PS_COLCLIP_HW) // Don't do this in colclip hw mode as it can't output "HDR"
 		{
 			float4 RT = RtTexture.Load(int3(pos_xy, 0)) * 255.0f;
 			bool4 hi_bit = (FbMask & 0x80) != 0;
 			RT = hi_bit ? RT : min(RT, 255.0f);
 			C  = hi_bit ? min(C, 255.0f) : C;
-			uint4 RTi = (uint4)(RT + 0.5f); //TODO: make int? Or better, use fmod! Also what if we have numbers higher than the mask peak countbits?
+			uint4 RTi = (uint4)(RT + 0.5f); //TODO1: make int? Or better, use fmod! Also what if we have numbers higher than the mask peak countbits?
 			uint4 Ci  = (uint4)(C  + 0.5f);
 			uint4 mask = ((int4)FbMask << 24) >> 24; // Sign extend mask
 			C = (float4)((Ci & ~mask) | (RTi & mask));
@@ -925,7 +1060,11 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 
 void ps_dither(inout float3 C, float As, float2 pos_xy)
 {
-	// Dithering shouldn't be particularly needed in HDR (though it won't necessarily hurt, especially on top of low quality source textures)
+	// On PS2 dithering only happened when writing to RGB5A1 textures.
+	// Dithering shouldn't be particularly needed in HDR given it upgrades all textures and doesn't quantize to 5 or 8 bit color during calculations,
+	// it might still look good in some cases though, for example the source color texture was 5bpc, but that's not a case that has ever been accounted for.
+	// Theoretically games could have also used dithering to darker or brighten up textures (by setting the dither matrix to all positive or all negative values),
+	// but in practice that never seems to have happened, so we don't need to emulate that behaviour if we skip dithering.
 	if (PS_DITHER > 0 && PS_DITHER < 3 && PS_HDR == 0)
 	{
 		int2 fpos;
@@ -961,7 +1100,9 @@ void ps_color_clamp_wrap(inout float3 C)
 	// 0xF8 is 248, which is "11111000" (lower 3 bits are masked off, as in, the lower values)
 	if (SW_BLEND || (PS_DITHER > 0 && PS_DITHER < 3) || PS_FBMASK)
 	{
-		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV) //TODO: HDR!???
+		// If the blend equation subtracts src color, the ps2 rounds down after negating, but the shader is running pre-negate, so we need to round up instead, so add an offset to turn the round down into a round up
+		// Should be when working with floats with no decimal, think (x + 7) & ~7 in integer, but with floats instead
+		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV && PS_HDR == 0)
 			C += float(0xFF - 0xF8); // Need to round up, not down since the shader will invert
 
 		// Standard Clamp
@@ -969,11 +1110,13 @@ void ps_color_clamp_wrap(inout float3 C)
 		{
 			if (PS_HDR == 0)
 				C = clamp(C, (float3)0.0f, (float3)255.0f);
-			else // Without this, bloom in some games can go negative and make the scene darker //TODO: why... This removes BT.2020 colors, is there a better alternative?
+			else // Without this, bloom in some games can go negative and make the scene darker //TODO: why... This removes BT.2020 colors, is there a better alternative? Maintain until luminance is 0?
 				C = max(C, (float3)0.0f);
 		}
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
+		// With "PS_DITHER" set to 3, we force all RTs to be treated as 16bpc, and avoid clamping them
+		// to 248 as they used to be (this can make the final image a bit brighter, but fixes banding)
 		if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && (PS_BLEND_MIX == 0 || PS_DITHER))
 			mask = 0xF8;
 		else if (PS_COLCLIP == 1 || PS_COLCLIP_HW == 1)
@@ -985,7 +1128,9 @@ void ps_color_clamp_wrap(inout float3 C)
 	if (mask != 0)
 	{
 #if PS_HDR // Avoid quantization to 8bit in HDR
-		C = mask == 0xFF ? fmod_mask_positive(C, 255.f) : (C - fmod_positive(C, 8)); // 248 → 255 - 7 = 248
+		//C = mask == 0xFF ? fmod_mask_positive(C, 255.f) : (C - fmod_positive(C, 8)); // 248 → 255 - 7 = 248 //TODO: test! Nah
+		if (mask == 0xFF) // Ignore mapping to 0-248 for 5bpc textures, we don't want quantization in HDR
+			C = fmod_mask_positive(C, 255.f);
 #else
 		C = (float3)((int3)C & (int3)mask);
 #endif
@@ -1016,25 +1161,12 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 
 		if (PS_SHUFFLE && SW_BLEND_NEEDS_RT)
 		{
-			uint4 denorm_rt = uint4(RT); //TODO: allow float? or int
-			if (PS_PROCESS_BA & SHUFFLE_WRITE)
-			{
-				RT.r = float((denorm_rt.b << 3) & 0xF8u);
-				RT.g = float(((denorm_rt.b >> 2) & 0x38u) | ((denorm_rt.a << 6) & 0xC0u));
-				RT.b = float((denorm_rt.a << 1) & 0xF8u);
-				RT.a = float(denorm_rt.a & 0x80u);
-			}
-			else
-			{
-				RT.r = float((denorm_rt.r << 3) & 0xF8u);
-				RT.g = float(((denorm_rt.r >> 2) & 0x38u) | ((denorm_rt.g << 6) & 0xC0u));
-				RT.b = float((denorm_rt.g << 1) & 0xF8u);
-				RT.a = float(denorm_rt.g & 0x80u);
-			}
+			RT = clamp(RT, 0.f, 255.f); //TODO1: allow float? or int (below)
+			RT = shuffle(RT, false);
 		}
 		
-		float Ad = PS_RTA_CORRECTION ? ((RT.a * 128.0f + RT_COLOR_OFFSET) / 128.0f) : ((RT.a * 255.0f + RT_COLOR_OFFSET) / 128.0f);
-		//if (PS_HDR == 0) //TODO: do we even care about not truncating alpha? Probably not (port to VK in case)
+		float Ad = (RT.a * (PS_RTA_CORRECTION ? NEUTRAL_ALPHA : 255.0f) + RT_COLOR_OFFSET) / NEUTRAL_ALPHA;
+		if (PS_HDR == 0)
 		{
 			Ad = trunc(Ad);
 		}
@@ -1046,9 +1178,10 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		}
 		float3 Cs = Color.rgb;
 
+		// The proper formula on PS2 is "(((A - B) * C) >> 7) + D" (>>7 is equivalent to dividing by 128), with it working in uint8 in a 9bit register
 		float3 A = (PS_BLEND_A == 0) ? Cs : ((PS_BLEND_A == 1) ? Cd : (float3)0.0f);
 		float3 B = (PS_BLEND_B == 0) ? Cs : ((PS_BLEND_B == 1) ? Cd : (float3)0.0f);
-		float  C = (PS_BLEND_C == 0) ? As : ((PS_BLEND_C == 1) ? Ad : Af);
+		float  C = (PS_BLEND_C == 0) ? As : ((PS_BLEND_C == 1) ? Ad : Af); // Source color alpha or Target color alpha or Fixed alpha (from CPU)
 		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
 
 		// As/Af clamp alpha for Blend mix
@@ -1057,6 +1190,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		if (PS_BLEND_MIX > 0 && PS_BLEND_HW != 1 && PS_BLEND_HW != 2)
 			C_clamped = saturate(C_clamped);
 
+		// A and B nullify each other, we can skip the whole thing
 		if (PS_BLEND_A == PS_BLEND_B)
 			Color.rgb = D;
 		else if (PS_BLEND_MIX == 2)
@@ -1071,7 +1205,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			// In blend_mix, HW adds on some alpha factor * dst.
 			// Truncating here wouldn't quite get the right result because it prevents the <1 bit here from combining with a <1 bit in dst to form a ≥1 amount that pushes over the truncation.
 			// Instead, apply an offset to convert HW's round to a floor.
-			// Since alpha is in 1/128 increments, subtracting (0.5 - 0.5/128 == 127/256) would get us what we want if GPUs blended in full precision.
+			// Since alpha is in 1/128 increments (with 128 being neutral alpha (1)), subtracting (0.5 - 0.5/128 == 127/256) would get us what we want if GPUs blended in full precision.
 			// But they don't.  Details here: https://github.com/PCSX2/pcsx2/pull/6809#issuecomment-1211473399
 			// Based on the scripts at the above link, the ideal choice for Intel GPUs is 126/256, AMD 120/256.  Nvidia is a lost cause.
 			// 124/256 seems like a reasonable compromise, providing the correct answer 99.3% of the time on Intel (vs 99.6% for 126/256), and 97% of the time on AMD (vs 97.4% for 120/256).
@@ -1092,7 +1226,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			// we pick the lowest overflow from all colors because it's the safest,
 			// we divide by 255 the color because we don't know Cd value,
 			// changed alpha should only be done for hw blend.
-			float3 alpha_compensate = max((float3)1.0f, Color.rgb / (float3)255.0f); //TODO: now Color.rgb could be > 1?
+			float3 alpha_compensate = max((float3)1.0f, Color.rgb / (float3)255.0f); //TODO: now Color.rgb could be > 1? Probably fine
 			As_rgba.rgb -= alpha_compensate;
 		}
 		else if (PS_BLEND_HW == 2)
@@ -1110,7 +1244,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			As_rgba.rgb = (float3)C_clamped;
 			// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
 			// that is sent on second output to compensate.
-			float3 overflow_check = (Color.rgb - (float3)255.0f) / 255.0f; //TODO: now Color.rgb could be > 1?
+			float3 overflow_check = (Color.rgb - (float3)255.0f) / 255.0f; //TODO: now Color.rgb could be > 1? Probably fine
 			float3 alpha_compensate = max((float3)0.0f, overflow_check);
 			As_rgba.rgb -= alpha_compensate;
 		}
@@ -1137,26 +1271,26 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			// to give us more accurate colors, otherwise they will be wrong.
 			// The higher the value (>128) the lower the compensation will be.
 			float max_color = max(max(Color.r, Color.g), Color.b);
-			float color_compensate = 255.0f / max(128.0f, max_color);
+			float color_compensate = 255.0f / max(NEUTRAL_ALPHA, max_color); //TODO: this can go beyond 1?
 			Color.rgb *= (float3)color_compensate;
 		}
 		else if (PS_BLEND_HW == 4)
 		{
 			// Needed for Cd * (1 - Ad) and Cd*(1 + Alpha).
-			As_rgba.rgb = Alpha * (float3)(128.0f / 255.0f);
+			As_rgba.rgb = Alpha * (float3)(NEUTRAL_ALPHA / 255.0f);
 			Color.rgb = (float3)127.5f;
 		}
 		else if (PS_BLEND_HW == 5)
 		{
 			// Needed for Cs*Alpha + Cd*(1 - Alpha).
-			Alpha *= (float3)(128.0f / 255.0f);
+			Alpha *= (float3)(NEUTRAL_ALPHA / 255.0f);
 			As_rgba.rgb = (Alpha - (float3)0.5f);
 			Color.rgb = (Color.rgb * Alpha);
 		}
 		else if (PS_BLEND_HW == 6)
 		{
 			// Needed for Cd*Alpha + Cs*(1 - Alpha).
-			Alpha *= (float3)(128.0f / 255.0f);
+			Alpha *= (float3)(NEUTRAL_ALPHA / 255.0f);
 			As_rgba.rgb = Alpha;
 			Color.rgb *= (Alpha - (float3)0.5f);
 		}
@@ -1166,6 +1300,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 PS_OUTPUT ps_main(PS_INPUT input)
 {
 	float4 C = ps_color(input);
+
 	bool atst_pass = atst(C);
 
 #if PS_AFAIL == 0 // KEEP or ATST off
@@ -1187,33 +1322,37 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	// AA (Fixed one) will output a coverage of 1.0 as alpha
 	if (PS_FIXED_ONE_A)
 	{
-		C.a = 128.0f;
+		C.a = NEUTRAL_ALPHA;
 	}
 
 	float4 alpha_blend = (float4)0.0f;
 	if (SW_AD_TO_HW)
 	{
-		float4 RT = PS_RTA_CORRECTION ? (RtTexture.Load(int3(input.p.xy, 0)) * 128.0f + RT_COLOR_OFFSET) : (RtTexture.Load(int3(input.p.xy, 0)) * 255.0f + RT_COLOR_OFFSET);
+		float RTa = RtTexture.Load(int3(input.p.xy, 0)).a * (PS_RTA_CORRECTION ? NEUTRAL_ALPHA : 255.0f) + RT_COLOR_OFFSET;
 		if (PS_HDR == 0)
 		{
-			RT = trunc(RT);
+			RTa = trunc(RTa);
 		}
-		alpha_blend = (float4)(RT.a / 128.0f);
+		alpha_blend = (float4)(RTa / NEUTRAL_ALPHA);
 	}
 	else
 	{
-		alpha_blend = (float4)(C.a / 128.0f);
+		alpha_blend = (float4)(C.a / NEUTRAL_ALPHA);
+#if PS_HDR && 0 //TODO1: hack... bring back to 1 the values that got slightly beyond one due to alpha being 128 as neutral (1) in textures (should we apply it to RTs as well in case they are copied from a dvd texture? probably not!)
+		if (alpha_blend.a > 1.f && alpha_blend.a < ((128.0f / 127.5f) * 1.001f))
+			alpha_blend = 1.f;
+#endif
 	}
 
 	// Alpha correction
 	if (PS_DST_FMT == FMT_16)
 	{
-		float A_one = 128.0f; // alpha output will be 0x80
+		float A_one = NEUTRAL_ALPHA; // alpha output will be 0x80
 		C.a = PS_FBA ? A_one : step(A_one, C.a) * A_one;
 	}
 	else if ((PS_DST_FMT == FMT_32) && PS_FBA)
 	{
-		float A_one = 128.0f;
+		float A_one = NEUTRAL_ALPHA;
 		if (C.a < A_one) C.a += A_one;
 	}
 
@@ -1244,9 +1383,11 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	if (PS_SHUFFLE)
 	{
+		C = clamp(C, 0.f, 255.f); //TODO1: allow float? or int (below)
+
 		if (!PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
-			uint4 denorm_c_after = uint4(C); //TODO: allow int?
+			uint4 denorm_c_after = uint4(C);
 			if (PS_PROCESS_BA & SHUFFLE_READ)
 			{
 				C.b = float(((denorm_c_after.r >> 3) & 0x1Fu) | ((denorm_c_after.g << 2) & 0xE0u));
@@ -1259,11 +1400,10 @@ PS_OUTPUT ps_main(PS_INPUT input)
 			}
 		}
 
-
 		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 		if (PS_SHUFFLE_SAME)
 		{
-			uint4 denorm_c = uint4(C); //TODO: allow int?
+			uint4 denorm_c = uint4(C);
 			
 			if (PS_PROCESS_BA & SHUFFLE_READ)
 				C = (float4)(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
@@ -1273,7 +1413,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		// Copy of a 16bit source in to this target
 		else if (PS_READ16_SRC)
 		{
-			uint4 denorm_c = uint4(C); //TODO: allow int?
+			uint4 denorm_c = uint4(C);
 			uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
 			C.rb = (float2)float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5));
 			if (denorm_c.a & 0x80u)
@@ -1301,6 +1441,10 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		}
 	}
 
+#if PS_PAL_FMT && 0 //TODO: test
+	C.rgb = clamp(C.rgb, (float3)0.0f, (float3)255.0f);
+#endif
+
 	ps_dither(C.rgb, alpha_blend.a, input.p.xy);
 
 	// Color clamp/wrap needs to be done after sw blending and dithering
@@ -1314,16 +1458,22 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #endif
 
 #if !PS_NO_COLOR
-	output.c0.a = PS_RTA_CORRECTION ? (C.a / 128.0f) : (C.a / 255.0f);
+	output.c0.a = PS_RTA_CORRECTION ? (C.a / NEUTRAL_ALPHA) : (C.a / 255.0f); //TODO1: force disable/enable RTA correction for HDR?
 	output.c0.rgb = PS_COLCLIP_HW ? (C.rgb / 65535.0f) : (C.rgb / 255.0f);
-	output.c0.a = clamp(output.c0.a, 0.f, 2.f); //TODO: ...
+
+#if PS_HDR //TODO1: here and below
+	//output.c0.a = clamp(output.c0.a, 0.f, 1.f); // Probably not needed as alpha is never touched
+	//output.c0.rgb = clamp(output.c0.rgb, 0.f, 1.f);
+#endif
 #if PS_COLCLIP_HW && 0 //TODO: test... It's not recursive...
 	// Pre wrap negative values as we can't store negative colors in colclip hw textures!
 	output.c0.rgb = output.c0.rgb < 0.f ? (1.f + output.c0.rgb) : output.c0.rgb;
 #endif
-#if !PS_NO_COLOR1
+#if !PS_NO_COLOR1 // Only used for HW blending //TODO: ???
 	output.c1 = alpha_blend;
-	output.c1.a = clamp(output.c1.a, 0.f, 2.f); //TODO: ...
+#if PS_HDR
+	//output.c1.a = clamp(output.c1.a, 0.f, 1.f);
+#endif
 #endif
 #endif // !PS_NO_COLOR
 

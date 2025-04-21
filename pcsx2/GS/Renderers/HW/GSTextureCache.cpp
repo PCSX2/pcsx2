@@ -7793,12 +7793,13 @@ void GSTextureCache::Palette::InitializeTexture()
 {
 	if (!m_tex_palette)
 	{
+		pxAssert(m_pal == 256);
 		// A palette texture is always created with dimensions 256x1 (also in the case that m_pal is 16, thus a 16x1 texture
 		// would be enough to store the CLUT data) because the coordinates that the shader uses for
 		// sampling such texture are always normalized by 255.
 		// This is because indexes are stored as normalized values of an RGBA texture (e.g. index 15 will be read as (15/255),
 		// and therefore will read texel 15/255 * texture size).
-		m_tex_palette = g_gs_device->CreateTexture(m_pal, 1, 1, GSTexture::Format::Color); //TODO: HDR? Nah
+		m_tex_palette = g_gs_device->CreateTexture(m_pal, 1, 1, GSTexture::Format::Color);
 		if (!m_tex_palette) [[unlikely]]
 		{
 			Console.Error("Failed to allocate %ux1 texture for palette", m_pal);

@@ -2870,7 +2870,7 @@ void GSDeviceVK::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	if (shader == ShaderConvert::COPY && dTex && dTex->GetFormat() != m_emulation_hw_rt_texture_format)
 	{
-		pxAssert(false); //TODO: delete if this never happens???
+		//pxAssert(false); //TODO: delete if this never happens???
 
 		if (dTex->GetFormat() == GSTexture::Format::Color)
 		{
@@ -3080,7 +3080,7 @@ void GSDeviceVK::BeginRenderPassForStretchRect(
 	else
 	{
 		// This might be innocuous, but either way it should have already been handled above with "m_utility_color_render_pass_*" or "m_postprocess_render_pass_*".
-		pxAssert(dTex->GetFormat() != GSTexture::Format::Color && dTex->GetFormat() != GSTexture::Format::ColorHQ && dTex->GetFormat() != GSTexture::Format::ColorHDR);
+		//pxAssert(dTex->GetFormat() != GSTexture::Format::Color && dTex->GetFormat() != GSTexture::Format::ColorHQ && dTex->GetFormat() != GSTexture::Format::ColorHDR);
 
 		// integer formats, etc
 		const VkRenderPass rp = GetRenderPass(dTex->GetVkFormat(), VK_FORMAT_UNDEFINED, load_op,

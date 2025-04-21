@@ -59,6 +59,12 @@ struct GSMTLCLUTConvertPSUniform
 	uint doffset;
 };
 
+struct GSMTLColorCorrectPSUniform
+{
+	vector_float4 correction;
+	vector_float4 adjustment;
+};
+
 struct GSMTLIndexedConvertPSUniform
 {
 	float scale;

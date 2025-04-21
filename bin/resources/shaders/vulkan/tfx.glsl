@@ -1087,7 +1087,7 @@ void ps_fbmask(inout vec4 C)
 
 void ps_dither(inout vec3 C, float As)
 {
-	#if PS_DITHER > 0 && PS_DITHER < 3
+	#if PS_DITHER > 0 && PS_DITHER < 3 && PS_HDR == 0
 		ivec2 fpos;
 
 		#if PS_DITHER == 2
@@ -1126,7 +1126,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 	// so we need to limit the color depth on dithered items
 #if SW_BLEND || (PS_DITHER > 0 && PS_DITHER < 3) || PS_FBMASK
 
-#if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
+#if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV && PS_HDR == 0
 	C += 7.0f; // Need to round up, not down since the shader will invert (0xFF - 0xF8)
 #endif
 
@@ -1214,16 +1214,16 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			#endif
 		#endif
 
-			// Let the compiler do its jobs !
-			#if PS_COLCLIP_HW == 1
+		// Let the compiler do its jobs !
+		#if PS_COLCLIP_HW == 1
 			vec3 Cd = RT.rgb * 65535.0f;
-			#else
+		#else
 			vec3 Cd = RT.rgb * 255.0f + RT_COLOR_OFFSET;
-			#endif
-			#if !PS_HDR
+		#endif
+		#if !PS_HDR
 			Cd = trunc(Cd);
-			#endif
-			vec3 Cs = Color.rgb;
+		#endif
+		vec3 Cs = Color.rgb;
 
 		#if PS_BLEND_A == 0
 			vec3 A = Cs;

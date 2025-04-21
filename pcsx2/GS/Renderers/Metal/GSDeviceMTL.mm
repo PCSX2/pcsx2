@@ -647,11 +647,11 @@ void GSDeviceMTL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	RenderCopy(sTex, m_fxaa_pipeline, GSVector4i(0, 0, dTex->GetSize().x, dTex->GetSize().y));
 }
 
-void GSDeviceMTL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
+void GSDeviceMTL::DoColorCorrect(GSTexture* sTex, GSTexture* dTex, const ColorCorrectConstantBuffer& cb)
 {
 	BeginRenderPass(@"ShadeBoost", dTex, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
-	[m_current_render.encoder setFragmentBytes:params
-	                                    length:sizeof(float) * 4
+	[m_current_render.encoder setFragmentBytes:&cb
+	                                    length:sizeof(cb)
 	                                   atIndex:GSMTLBufferIndexUniforms];
 	RenderCopy(sTex, m_shadeboost_pipeline, GSVector4i(0, 0, dTex->GetSize().x, dTex->GetSize().y));
 }

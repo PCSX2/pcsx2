@@ -84,7 +84,7 @@ private:
 	enum : u32
 	{
 		MAX_TEXTURES = 4,
-		MAX_SAMPLERS = 1,
+		MAX_SAMPLERS = 2,
 		VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
 		INDEX_BUFFER_SIZE = 16 * 1024 * 1024,
 		NUM_TIMESTAMP_QUERIES = 5,
@@ -326,7 +326,7 @@ public:
 	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb);
 	void PSUpdateShaderState();
-	void PSSetSamplerState(ID3D11SamplerState* ss0);
+	void PSSetSamplerState(int i, ID3D11SamplerState* ss0);
 
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, u8 sref);
 	void OMSetBlendState(ID3D11BlendState* bs, u8 bf);

@@ -986,6 +986,10 @@ void GraphicsSettingsWidget::onHDRChanged()
 	const bool enabled = m_dialog->getEffectiveBoolValue("EmuCore/GS", "hdr", false);
 	m_ui.hdrBrightness->setEnabled(enabled);
 	m_ui.hdrPeakBrightness->setEnabled(enabled);
+#ifndef PCSX2_DEVBUILD // Allow messing around in dev builds
+	// Dithering is forced off in HDR, and all render targets are R16G16B16A16F
+	m_ui.dithering->setEditable(!enabled);
+#endif
 }
 
 void GraphicsSettingsWidget::onMessagesPosChanged()

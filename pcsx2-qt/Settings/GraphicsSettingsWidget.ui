@@ -1414,7 +1414,7 @@
          <property name="title">
           <string>Color Correction</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_7">
+         <layout class="QFormLayout" name="formLayout_11">
           <item row="0" column="0">
            <widget class="QCheckBox" name="colorCorrect">
             <property name="text">
