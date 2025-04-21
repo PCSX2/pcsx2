@@ -2504,11 +2504,13 @@ void VMManager::LogCPUCapabilities()
 
 	Console.WriteLnFmt(
 		"  Operating System = {}\n"
-		"  Available RAM    = {} MB\n"
-		"  Physical RAM     = {} MB\n",
+		"  Available RAM    = {} MB ({:.2f} GB)\n"
+		"  Physical RAM     = {} MB ({:.2f} GB)\n",
 		GetOSVersionString(),
 		GetAvailablePhysicalMemory() / _1mb,
-		GetPhysicalMemory() / _1mb);
+		static_cast<double>(GetAvailablePhysicalMemory()) / static_cast<double>(_1gb),
+		GetPhysicalMemory() / _1mb,
+		static_cast<double>(GetPhysicalMemory()) / static_cast<double>(_1gb));
 
 	Console.WriteLnFmt("  Processor        = {}", cpuinfo_get_package(0)->name);
 	Console.WriteLnFmt("  Core Count       = {} cores", cpuinfo_get_cores_count());
