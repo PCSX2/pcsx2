@@ -43,11 +43,45 @@ u64 GetPhysicalMemory()
 
 u64 GetAvailablePhysicalMemory()
 {
-	struct sysinfo info;
+	// Try to read MemAvailable from /proc/meminfo.
+	FILE* file = fopen("/proc/meminfo", "r");
+	if (file)
+	{
+		u64 mem_available = 0;
+		u64 mem_free = 0, buffers = 0, cached = 0, sreclaimable = 0, shmem = 0;
+		char line[256];
+
+		while (fgets(line, sizeof(line), file))
+		{
+			// Modern kernels provide MemAvailable directly - preferred and most accurate.
+			if (sscanf(line, "MemAvailable: %llu kB", &mem_available) == 1)
+			{
+				fclose(file);
+				return mem_available * _1kb;
+			}
+
+			// Fallback values for manual approximation.
+			sscanf(line, "MemFree: %llu kB", &mem_free);
+			sscanf(line, "Buffers: %llu kB", &buffers);
+			sscanf(line, "Cached: %llu kB", &cached);
+			sscanf(line, "SReclaimable: %llu kB", &sreclaimable);
+			sscanf(line, "Shmem: %llu kB", &shmem);
+		}
+		fclose(file);
+
+		// Fallback approximation: Linux-like heuristic.
+		// available = MemFree + Buffers + Cached + SReclaimable - Shmem.
+		const u64 available_kb = mem_free + buffers + cached + sreclaimable - shmem;
+		return available_kb * _1kb;
+	}
+
+	// Fallback to sysinfo if /proc/meminfo couldn't be read.
+	struct sysinfo info = {};
 	if (sysinfo(&info) != 0)
 		return 0;
 
-	return static_cast<u64>(info.freeram) * info.mem_unit;
+	// Note: This does NOT include cached memory - only free + buffer.
+	return (static_cast<u64>(info.freeram) + static_cast<u64>(info.bufferram)) * static_cast<u64>(info.mem_unit);
 }
 
 u64 GetTickFrequency()
