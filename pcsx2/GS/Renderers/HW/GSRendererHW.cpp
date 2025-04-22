@@ -5449,6 +5449,9 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		m_conf.colclip_frame = m_cached_ctx.FRAME;
 	}
 
+	// Needed to avoid rgba values going below zero when doing subtractive blends. We rely on users having high blending quality when HDR is enabled anyway
+	const bool force_sw_blending = EmuConfig.HDRRendering && (blend.op == GSDevice::OP_SUBTRACT || blend.op == GSDevice::OP_REV_SUBTRACT);
+
 	// Per pixel alpha blending
 	if (PABE)
 	{
@@ -5459,7 +5462,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		// C 12 Final Resistance triggers it but there's no difference and it's a psx game.
 		if (sw_blending)
 		{
-			if (accumulation_blend && (blend.op != GSDevice::OP_REV_SUBTRACT))
+			if (accumulation_blend && (blend.op != GSDevice::OP_REV_SUBTRACT) && !force_sw_blending)
 			{
 				// PABE accumulation blend:
 				// Idea is to achieve final output Cs when As < 1, we do this with manipulating Cd using the src1 output.
@@ -5489,7 +5492,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			else
 			{
 				// PABE sw blend:
-				m_conf.ps.pabe = !(accumulation_blend || blend_mix);
+				m_conf.ps.pabe = !(accumulation_blend || blend_mix) || force_sw_blending;
 			}
 
 			GL_INS("PABE mode %s", m_conf.ps.pabe ? "ENABLED" : "DISABLED");
@@ -5526,7 +5529,12 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		if (m_conf.ps.blend_c == 2)
 			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
 
-		if (accumulation_blend)
+		static bool assertSubtractiveBlends = false;
+		pxAssert(!assertSubtractiveBlends || (blend.op != GSDevice::OP_SUBTRACT && blend.op != GSDevice::OP_REV_SUBTRACT));
+		static bool assertInverseBlends = false;
+		pxAssert(!assertInverseBlends || (blend.src != GSDevice::INV_SRC_COLOR && blend.src != GSDevice::INV_DST_COLOR && blend.src == GSDevice::INV_SRC1_COLOR));
+		//TODO1 (nothing)
+		if (!force_sw_blending && accumulation_blend)
 		{
 			// Keep HW blending to do the addition/subtraction
 			m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::CONST_ONE, blend.op, GSDevice::CONST_ONE, GSDevice::CONST_ZERO, false, 0};
@@ -5575,7 +5583,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			// Dual source output not needed (accumulation blend replaces it with ONE).
 			m_conf.ps.no_color1 = (m_conf.ps.pabe == 0);
 		}
-		else if (blend_mix)
+		else if (!force_sw_blending && blend_mix)
 		{
 			// Disable dithering on blend mix if needed.
 			if (m_conf.ps.dither)
