@@ -1054,7 +1054,7 @@ bool FullscreenUI::LoadResources()
 	for (u32 i = static_cast<u32>(GameDatabaseSchema::Compatibility::Nothing);
 		 i <= static_cast<u32>(GameDatabaseSchema::Compatibility::Perfect); i++)
 	{
-		s_game_compatibility_textures[i - 1] = LoadTexture(fmt::format("icons/star-{}.png", i - 1).c_str());
+		s_game_compatibility_textures[i - 1] = LoadTexture(fmt::format("fullscreenui/star-{}.png", i - 1).c_str());
 	}
 
 	return true;
@@ -6499,7 +6499,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 			// region
 			{
-				std::string flag_texture(fmt::format("icons/flags/{}.png", GameList::RegionToString(selected_entry->region)));
+				std::string flag_texture(fmt::format("fullscreenui/flags/{}.png", GameList::RegionToString(selected_entry->region)));
 				ImGui::TextUnformatted(FSUI_CSTR("Region: "));
 				ImGui::SameLine();
 				ImGui::Image(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(flag_texture.c_str())->GetNativeHandle()), LayoutScale(23.0f, 16.0f));
