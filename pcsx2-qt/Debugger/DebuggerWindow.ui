@@ -24,7 +24,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -50,6 +50,7 @@
     <property name="title">
      <string>Windows</string>
     </property>
+    <addaction name="actionWindowsDummy"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -72,6 +73,7 @@
     <property name="title">
      <string>Tools</string>
     </property>
+    <addaction name="actionToolsDummy"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -316,6 +318,16 @@
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionToolsDummy">
+   <property name="text">
+    <string/>
+   </property>
+  </action>
+  <action name="actionWindowsDummy">
+   <property name="text">
+    <string/>
    </property>
   </action>
  </widget>
