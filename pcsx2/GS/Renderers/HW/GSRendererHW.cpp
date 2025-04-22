@@ -6525,26 +6525,12 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			g_gs_device->FilteredDownsampleTexture(src_target->m_texture, src_copy.get(), downsample_factor, clamp_min, dRect);
 		}
 	}
-#if 1 //TODO!
-#if !OLD_HDR
 	else if (src_target->m_texture->GetFormat() != src_copy->GetFormat())
-#else
-	else if ((EmuConfig.HDRRendering && src_target->m_texture->GetFormat() == GSTexture::Format::Color && src_copy->GetFormat() == GSTexture::Format::Color
-			&& ((src_target->m_texture->GetType() == GSTexture::Type::RenderTarget || src_target->m_texture->GetType() == GSTexture::Type::RWTexture)
-					!= (src_copy->GetType() == GSTexture::Type::RenderTarget || src_copy->GetType() == GSTexture::Type::RWTexture)))
-			|| src_target->m_texture->GetFormat() != src_copy->GetFormat())
-#endif
 	{
-		pxAssertMsg(src_target->m_texture->GetFormat() == GSTexture::Format::Color || src_copy->GetFormat() == GSTexture::Format::Color, "CopyFromTexture unsupported format.");
-#if !OLD_HDR
-		pxAssertMsg(src_copy->GetType() == GSTexture::Type::RenderTarget, "CopyFromTexture unsupported type.");
-#endif
-
 		const GSVector4 src_rect = GSVector4(scaled_copy_range) / GSVector4(src_target->m_texture->GetSize()).xyxy();
 		const GSVector4 dst_rect = GSVector4((float)scaled_copy_dst_offset.x, (float)scaled_copy_dst_offset.y, scaled_copy_dst_offset.x + (scaled_copy_range.width() * ((float)src_copy->GetSize().x / (float)src_target->m_texture->GetSize().x)), scaled_copy_dst_offset.y + (scaled_copy_range.height() * ((float)src_copy->GetSize().y / (float)src_target->m_texture->GetSize().y)));
-		g_gs_device->StretchRect(src_target->m_texture, src_rect, src_copy.get(), dst_rect, ShaderConvert::COPY, true); //TODO: linear or nearest?
+		g_gs_device->StretchRect(src_target->m_texture, src_rect, src_copy.get(), dst_rect, ShaderConvert::COPY, false); //TODO1: linear or nearest?
 	}
-#endif
 	else
 	{
 		g_gs_device->CopyRect(

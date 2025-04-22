@@ -23,19 +23,12 @@ GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, const D3
 	m_mipmap_levels = static_cast<int>(desc.MipLevels);
 }
 
-DXGI_FORMAT GSTexture11::GetDXGIFormat(Format format, Type type)
+DXGI_FORMAT GSTexture11::GetDXGIFormat(Format format, Type type) //TODO: remove "type" from all of these?
 {
 	// clang-format off
 	switch (format)
 	{
-	case GSTexture::Format::Color:        /*return DXGI_FORMAT_R8G8B8A8_UNORM;*/
-#if OLD_HDR //TODO: clean all up!
-        if (EmuConfig.HDRRendering && (type == GSTexture::Type::RenderTarget || type == GSTexture::Type::RWTexture))
-        {
-            return DXGI_FORMAT_R16G16B16A16_FLOAT;
-        }
-#endif
-		  return DXGI_FORMAT_R8G8B8A8_UNORM;
+	case GSTexture::Format::Color:        return DXGI_FORMAT_R8G8B8A8_UNORM;
 	case GSTexture::Format::ColorHQ:      return DXGI_FORMAT_R10G10B10A2_UNORM;
 	case GSTexture::Format::ColorHDR:     return DXGI_FORMAT_R16G16B16A16_FLOAT;
 	case GSTexture::Format::ColorClip:    return DXGI_FORMAT_R16G16B16A16_UNORM;
@@ -75,12 +68,6 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int l
 		Common::AlignUpPow2((u32)r.right, bs), Common::AlignUpPow2((u32)r.bottom, bs), 1U};
 	const UINT subresource = layer; // MipSlice + (ArraySlice * MipLevels).
 	
-	if (EmuConfig.HDRRendering && GetFormat() == GSTexture::Format::Color)
-	{
-#if OLD_HDR
-		pxAssertMsg(GetType() != GSTexture::Type::RenderTarget && GetType() != GSTexture::Type::RWTexture, "GSTexture11::Update unsupported format.");
-#endif
-	}
 	// All the calls to this expect "GSTexture::Format::Color" (8bpc) at the moment
 	pxAssertMsg(!EmuConfig.HDRRendering || GetFormat() == GSTexture::Format::Color || GetFormat() >= GSTexture::Format::DepthStencil, "GSTexture11::Update unsupported format.");
 
@@ -241,12 +228,6 @@ void GSDownloadTexture11::CopyFromTexture(
 	if (IsMapped())
 		Unmap();
 
-	if (EmuConfig.HDRRendering && stex->GetFormat() == GSTexture::Format::Color)
-	{
-#if OLD_HDR
-		pxAssertMsg(stex->GetType() != GSTexture::Type::RenderTarget && stex->GetType() != GSTexture::Type::RWTexture, "CopyFromTexture unsupported format.");
-#endif
-	}
 	pxAssertMsg(GetFormat() == stex->GetFormat(), "CopyFromTexture between different formats.");
 
 	// depth textures need to copy the whole thing..

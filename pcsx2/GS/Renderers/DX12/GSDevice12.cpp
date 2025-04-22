@@ -1273,19 +1273,11 @@ void GSDevice12::DrawIndexedPrimitive(int offset, int count)
 void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
 	DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format, GSTexture::Type type) const
 {
-#if OLD_HDR
-	static constexpr std::array<std::array<DXGI_FORMAT, 4>, static_cast<int>(GSTexture::Format::Last) + 2>
-#else
 	static constexpr std::array<std::array<DXGI_FORMAT, 4>, static_cast<int>(GSTexture::Format::Last) + 1>
-#endif
 		s_format_mapping = {{
 			{DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN}, // Invalid
 			{DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM,
 				DXGI_FORMAT_UNKNOWN}, // Color
-#if OLD_HDR
-			{DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT,
-				DXGI_FORMAT_UNKNOWN}, // Color (upgraded to HDR)
-#endif
 			{DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM,
 				DXGI_FORMAT_UNKNOWN}, // ColorHQ
 			{DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT,
@@ -1303,13 +1295,6 @@ void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_f
 			{DXGI_FORMAT_BC3_UNORM, DXGI_FORMAT_BC3_UNORM, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN}, // BC3
 			{DXGI_FORMAT_BC7_UNORM, DXGI_FORMAT_BC7_UNORM, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN}, // BC7
 		}};
-
-#if OLD_HDR
-	if ((EmuConfig.HDRRendering && (type == GSTexture::Type::RenderTarget || type == GSTexture::Type::RWTexture)) ? format >= GSTexture::Format::Color : format > GSTexture::Format::Color)
-	{
-		format = (GSTexture::Format)((u8)format + 1);
-	}
-#endif
 
 	const auto& mapping = s_format_mapping[static_cast<int>(format)];
 	if (d3d_format)
@@ -3999,14 +3984,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	{
 		// requires a copy of the RT
 		pxAssert(draw_rt->GetFormat() == (colclip_rt ? GSTexture::Format::ColorClip : m_emulation_hw_rt_texture_format)); //TODO: delete this here and in OGL + VK
-#if OLD_HDR //TODO: do in VK too
-		if (EmuConfig.HDRRendering && draw_rt->GetFormat() == GSTexture::Format::Color && (draw_rt->GetType() == GSTexture::Type::RenderTarget || draw_rt->GetType() == GSTexture::Type::RWTexture))
-			draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, GSTexture::Format::ColorHDR, true));
-		else
-			draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true));
-#else
 		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true));
-#endif
 		if (draw_rt_clone)
 		{
 			EndRenderPass();

@@ -5249,11 +5249,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			const GSVector4i area(GSVector4i(x, y, x + w, y + h).rintersect(GSVector4i(sTex->GetSize()).zwxy()));
 			if (!area.rempty())
 			{
-#if OLD_HDR
-				if (dst->m_rt_alpha_scale || dTex->GetFormat() != sTex->GetFormat() || dTex->GetType() != sTex->GetType())
-#else
 				if (dst->m_rt_alpha_scale || dTex->GetFormat() != sTex->GetFormat())
-#endif
 				{
 					const GSVector4 sRectF = GSVector4(area) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
 					g_gs_device->StretchRect(

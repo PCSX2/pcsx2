@@ -33,8 +33,6 @@ class SettingsWrapper;
 
 enum class CDVD_SourceType : uint8_t;
 
-#define OLD_HDR 0
-
 namespace Pad
 {
 	enum class ControllerType : u8;

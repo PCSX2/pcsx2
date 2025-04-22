@@ -2735,15 +2735,8 @@ VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format, GSTexture::Typ
 
 	if (format != GSTexture::Format::DepthStencil || m_features.stencil_buffer)
 	{
-#if OLD_HDR
-		if (EmuConfig.HDRRendering && format == GSTexture::Format::Color && (type == GSTexture::Type::RenderTarget || type == GSTexture::Type::RWTexture))
-		{
-			return VK_FORMAT_R16G16B16A16_SFLOAT;
-		}
-#endif
 		return s_format_mapping[static_cast<int>(format)];
 	}
-
 	return VK_FORMAT_D32_SFLOAT;
 }
 

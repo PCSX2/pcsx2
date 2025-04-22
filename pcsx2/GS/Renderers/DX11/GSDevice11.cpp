@@ -1227,18 +1227,6 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 			break;
 	}
 
-#if OLD_HDR // Add RT to allow textures of different formats to be copied in it
-	if (format == GSTexture::Format::Color)
-	{
-		switch (type)
-		{
-			case GSTexture::Type::Texture:
-			case GSTexture::Type::RWTexture:
-				desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
-		}
-	}
-#endif
-
 	wil::com_ptr_nothrow<ID3D11Texture2D> texture;
 	HRESULT hr = m_dev->CreateTexture2D(&desc, nullptr, texture.put());
 	if (FAILED(hr))
@@ -1270,16 +1258,7 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	const bool depth = (sTex->GetType() == GSTexture::Type::DepthStencil);
 	auto pBox = depth ? nullptr : &box;
 
-	if (sTex->GetFormat() == dTex->GetFormat())
-	{
-		if (EmuConfig.HDRRendering && sTex->GetFormat() == GSTexture::Format::Color)
-		{
-#if OLD_HDR
-			pxAssertMsg((sTex->GetType() == GSTexture::Type::RenderTarget || sTex->GetType() == GSTexture::Type::RWTexture) == (dTex->GetType() == GSTexture::Type::RenderTarget || dTex->GetType() == GSTexture::Type::RWTexture), "CopyRect Source and Target are of different types.");
-#endif
-		}
-	}
-	else
+	if (sTex->GetFormat() != dTex->GetFormat())
 	{
 		pxAssertMsg(false, "CopyRect between different formats.");
 	}
@@ -1344,9 +1323,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 			OMSetRenderTargets(nullptr, dTex);
 		else
 			OMSetRenderTargets(dTex, nullptr);
-#if !OLD_HDR
 		pxAssert(dTex->IsRenderTargetOrDepthStencil());
-#endif
 	}
 	else
 	{
