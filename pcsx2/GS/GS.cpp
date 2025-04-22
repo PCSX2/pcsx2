@@ -121,7 +121,7 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 		EmuConfig.HDROutput = false;
 	}
 	// This is ignored by the SW renderer but let's turn it off for clarity.
-	if (!GSIsHardwareRenderer())
+	if (renderer == GSRendererType::SW)
 	{
 		EmuConfig.HDRRendering = false;
 	}
