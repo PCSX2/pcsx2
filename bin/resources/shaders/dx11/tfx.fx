@@ -80,7 +80,7 @@
 #define PS_HDR 0
 #endif
 
-//TODO: clear
+//TODO: clear (add a new "simple" HDR branch that just unlocks some brightness beyond 255?)
 #if 0
 #undef PS_HDR
 #define PS_HDR 0
@@ -742,7 +742,11 @@ float4 fetch_gXbY(int2 xy)
 	}
 	else
 	{
-		int4 rt = (int4)(fetch_raw_color(xy) * 255.0); //TODO: add float support? (rarely used by games)
+		float4 rt_float = fetch_raw_color(xy) * 255.0f;
+#if PS_HDR
+		rt_float = min(round(rt_float), 255.0f);
+#endif
+		int4 rt = (int4)rt_float;
 		int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
 		int blue = (rt.b << ChannelShuffle.y) & ChannelShuffle.x;
 		return (float4)(green | blue);
@@ -944,9 +948,9 @@ bool atst(float4 C)
 
 float4 shuffle(float4 C, bool true_read_false_write)
 {
-	//TODO1: allow float? or int
+	//TODO1: allow float? or int. It'd be very hard... (same around all other PS_SHUFFLE code)
 #if PS_HDR
-	C = clamp(C, 0.0f, 255.0f);
+	C = min(round(C), 255.0f);
 #endif
 	uint4 denorm_c_before = uint4(C); 
 	if (PS_PROCESS_BA & (true_read_false_write ? SHUFFLE_READ : SHUFFLE_WRITE))
@@ -1105,12 +1109,12 @@ void ps_color_clamp_wrap(inout float3 C)
 		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV && PS_HDR == 0)
 			C += float(0xFF - 0xF8); // Need to round up, not down since the shader will invert
 
-		// Standard Clamp
+		// Standard Clamp (alpha is never directly edited by blends (at worse it's shuffled), so we don't need to clamp it)
 		if (PS_COLCLIP == 0 && PS_COLCLIP_HW == 0)
 		{
 			if (PS_HDR == 0)
 				C = clamp(C, (float3)0.0f, (float3)255.0f);
-			else // Without this, bloom in some games can go negative and make the scene darker //TODO: why... This removes BT.2020 colors, is there a better alternative? Maintain until luminance is 0?
+			else // Games use subtractive blends (-1) to clear render targets to black, so we need to clip them to 0 (anyway without this, bloom can often can go negative and make the scene darker)
 				C = max(C, (float3)0.0f);
 		}
 
@@ -1161,7 +1165,6 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 
 		if (PS_SHUFFLE && SW_BLEND_NEEDS_RT)
 		{
-			RT = clamp(RT, 0.0f, 255.0f); //TODO1: allow float? or int (below)
 			RT = shuffle(RT, false);
 		}
 		
@@ -1383,10 +1386,11 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	if (PS_SHUFFLE)
 	{
-		C = clamp(C, 0.0f, 255.0f); //TODO1: allow float? or int (below)
-
 		if (!PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
+#if PS_HDR
+		C = min(round(C), 255.0f);
+#endif
 			uint4 denorm_c_after = uint4(C);
 			if (PS_PROCESS_BA & SHUFFLE_READ)
 			{
@@ -1403,6 +1407,9 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 		if (PS_SHUFFLE_SAME)
 		{
+#if PS_HDR
+			C = min(round(C), 255.0f);
+#endif
 			uint4 denorm_c = uint4(C);
 			
 			if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1413,6 +1420,9 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		// Copy of a 16bit source in to this target
 		else if (PS_READ16_SRC)
 		{
+#if PS_HDR
+			C = min(round(C), 255.0f);
+#endif
 			uint4 denorm_c = uint4(C);
 			uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
 			C.rb = (float2)float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5));
@@ -1438,12 +1448,13 @@ PS_OUTPUT ps_main(PS_INPUT input)
 				C.rb = C.rr;
 				C.ga = C.gg;
 			}
+
+			if (PS_HDR) // Avoid alpha ever going beyond one in HDR (if its value came from another HDR channel)
+			{
+				C.a = min(C.a, 255.0f);
+			}
 		}
 	}
-
-#if PS_PAL_FMT && 0 //TODO: test
-	C.rgb = clamp(C.rgb, (float3)0.0f, (float3)255.0f);
-#endif
 
 	ps_dither(C.rgb, alpha_blend.a, input.p.xy);
 
