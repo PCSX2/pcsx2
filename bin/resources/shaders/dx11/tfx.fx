@@ -845,30 +845,13 @@ float4 sample_color(float2 st, float uv_w)
 	return t;
 }
 
-//TODO1: make this optional and make sure it doesn't scale up brightness when drawing post process on itself
-float3 PumboAutoHDR(float3 SDRColor, float PeakWhiteNits = 400.f, float PaperWhiteNits = 203.f, float ShoulderPow = 3.5f)
-{
-	const float3 LumCoeff = float3(0.2125, 0.7154, 0.0721);
-	const float SDRRatio = dot(SDRColor, LumCoeff);
-	// Limit AutoHDR brightness, it won't look good beyond a certain level.
-	// The paper white multiplier is applied later so we account for that.
-	const float AutoHDRMaxWhite = max(min(PeakWhiteNits, 1000.f) / PaperWhiteNits, 1.f);
-	const float AutoHDRShoulderRatio = saturate(SDRRatio);
-	const float AutoHDRExtraRatio = pow(max(AutoHDRShoulderRatio, 0.f), ShoulderPow) * (AutoHDRMaxWhite - 1.f);
-	const float AutoHDRTotalRatio = SDRRatio + AutoHDRExtraRatio;
-	return SDRColor * (SDRRatio > 0.f ? (AutoHDRTotalRatio / SDRRatio) : 1.f);
-}
-
 // Texture function
-// T: Texture color
-// C: Vertex color
+// T: Texture color (0-255)
+// C: Vertex color (0-255)
 float4 tfx(float4 T, float4 C)
 {
-#if 0
-	C.rgb = PumboAutoHDR(C.rgb, 400.f, 80.f, 3.25f);
-#endif
-
 	float4 C_out;
+	// On console this clamps to 255 (it's divided by 128 as it does >>7 on console), but the formula can actually generate HDR brightnesses
 	float4 FxT = (C * T) / NEUTRAL_ALPHA; //TODO: should be interpret vertex alpha as 127.5 or 128 for neutral?
 	if (PS_HDR == 0)
 	{
@@ -876,6 +859,7 @@ float4 tfx(float4 T, float4 C)
 	}
 
 // Modulate
+// Multiplies texture by vertex (can generate HDR brightnesses)
 #if (PS_TFX == 0)
 	C_out = FxT;
 // Decal
@@ -883,6 +867,7 @@ float4 tfx(float4 T, float4 C)
 #elif (PS_TFX == 1)
 	C_out = T;
 // Highlight
+// Additive vertex color (can generate HDR brightnesses)
 #elif (PS_TFX == 2)
 	C_out.rgb = FxT.rgb + C.a;
 	C_out.a = T.a + C.a;
@@ -1475,6 +1460,8 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #if PS_HDR //TODO1: here and below
 	//output.c0.a = clamp(output.c0.a, 0.f, 1.f); // Probably not needed as alpha is never touched
 	//output.c0.rgb = clamp(output.c0.rgb, 0.f, 1.f);
+	//output.c0 = round(output.c0 * 255.0f) / 255.0f;
+	output.c0.a = round(output.c0.a * 255.0f) / 255.0f;
 #endif
 #if PS_COLCLIP_HW && 0 //TODO: test... It's not recursive...
 	// Pre wrap negative values as we can't store negative colors in colclip hw textures!
