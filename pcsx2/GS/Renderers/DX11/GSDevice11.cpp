@@ -1919,14 +1919,6 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 	D3D11_DEPTH_STENCIL_DESC dsd;
 	i->second.get()->GetDesc(&dsd);
 
-	static bool upgrade_blends = false; //TODO: decide etc
-	if (upgrade_blends)
-	{
-		u8* key = (u8*)&(bsel.key);
-		u8* key_pad_1 = key++;
-		*key_pad_1 = u8(dsd.DepthEnable);
-	}
-
 	auto j = std::as_const(m_om_bs).find(bsel.key);
 
 	if (j == m_om_bs.end())
@@ -1956,32 +1948,6 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 			bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 			bd.RenderTarget[0].SrcBlendAlpha = s_d3d11_blend_factors[bsel.blend.src_factor_alpha];
 			bd.RenderTarget[0].DestBlendAlpha = s_d3d11_blend_factors[bsel.blend.dst_factor_alpha];
-
-			if (EmuConfig.HDRRendering && upgrade_blends)
-			{
-				//TODO: emulate these in pixel shaders too for the highest quality blending mode
-				// Turn background darkening additive alpha into pure additive alpha, this is for two reasons:
-				// - If the background was already beyond 1 (or below 0) the math breaks!
-				// - This is (mostly...) used to avoid colors clipping, but we don't need to if HDR is enabled!
-				if (dsd.DepthEnable && bd.RenderTarget[0].BlendOp == D3D11_BLEND_OP_ADD && (bd.RenderTarget[0].SrcBlend == D3D11_BLEND_SRC_ALPHA || bd.RenderTarget[0].SrcBlend == D3D11_BLEND_ONE) && bd.RenderTarget[0].DestBlend == D3D11_BLEND_INV_SRC_ALPHA)
-				{
-					bd.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-				}
-				else if (dsd.DepthEnable && bd.RenderTarget[0].BlendOp == D3D11_BLEND_OP_ADD && bd.RenderTarget[0].SrcBlend == D3D11_BLEND_INV_DEST_COLOR && bd.RenderTarget[0].DestBlend == D3D11_BLEND_ONE)
-				{
-					bd.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-				}
-				else if (dsd.DepthEnable && bd.RenderTarget[0].BlendOp == D3D11_BLEND_OP_ADD && bd.RenderTarget[0].SrcBlend == D3D11_BLEND_ONE && (bd.RenderTarget[0].DestBlend == D3D11_BLEND_INV_SRC_COLOR || bd.RenderTarget[0].DestBlend == D3D11_BLEND_INV_SRC1_COLOR))
-				{
-					bd.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-				}
-#if 0 // Probably not needed??? Also what's the diff between D3D11_BLEND_INV_SRC_COLOR and D3D11_BLEND_INV_SRC1_COLOR
-				else if (bd.RenderTarget[0].BlendOp == D3D11_BLEND_OP_ADD && bd.RenderTarget[0].DestBlend == D3D11_BLEND_ONE && (bd.RenderTarget[0].SrcBlend == D3D11_BLEND_INV_SRC_COLOR || bd.RenderTarget[0].SrcBlend == D3D11_BLEND_INV_SRC1_COLOR))
-				{
-					bd.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-				}
-#endif
-			}
 		}
 
 		if (bsel.colormask.wr)
