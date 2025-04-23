@@ -89,6 +89,7 @@
 #undef PS_HDR
 #define PS_HDR 1
 #endif
+#define HDR_ALPHA 1
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
@@ -275,12 +276,28 @@ float4 sampleLUTWithExtrapolation(Texture2D<float4> lut, float unclampedU)
   return clampedSample;
 }
 
+float4 DecodeTex(float4 C)
+{
+#if PS_HDR
+	C.a = round(C.a * 255.0f) / 255.0f;
+#endif
+	return C;
+}
+
+float4 EncodeTex(float4 C)
+{
+#if PS_HDR
+	C.a = round(C.a * 255.0f) / 255.0f;
+#endif
+	return C;
+}
+
 float4 sample_c(float2 uv, float uv_w)
 {
 #if PS_TEX_IS_FB == 1
-	return RtTexture.Load(int3(int2(uv * WH.zw), 0));
+	return DecodeTex(RtTexture.Load(int3(int2(uv * WH.zw), 0)));
 #elif PS_REGION_RECT == 1
-	return Texture.Load(int3(int2(uv), 0));
+	return DecodeTex(Texture.Load(int3(int2(uv), 0)));
 #else
 	if (PS_POINT_SAMPLER)
 	{
@@ -310,7 +327,7 @@ float4 sample_c(float2 uv, float uv_w)
 #endif
 
 #if PS_AUTOMATIC_LOD == 1
-	return Texture.Sample(TextureSampler, uv);
+	return DecodeTex(Texture.Sample(TextureSampler, uv));
 #elif PS_MANUAL_LOD == 1
 	// FIXME add LOD: K - ( LOG2(Q) * (1 << L))
 	float K = LODParams.x;
@@ -323,9 +340,9 @@ float4 sample_c(float2 uv, float uv_w)
 	//float lod = max(min(gs_lod, max_lod) - bias, 0.0f);
 	float lod = min(gs_lod, max_lod) - bias;
 
-	return Texture.SampleLevel(TextureSampler, uv, lod);
+	return DecodeTex(Texture.SampleLevel(TextureSampler, uv, lod));
 #else
-	return Texture.SampleLevel(TextureSampler, uv, 0); // No lod
+	return DecodeTex(Texture.SampleLevel(TextureSampler, uv, 0)); // No lod
 #endif
 #endif
 }
@@ -478,7 +495,7 @@ ctype4 sample_4_index(float4 uv, float uv_w)
 		i = ctype4(c * 255.5f); // Denormalize value (so that 254.5 to 255 map to the last texel)
 	}
 #else
-	i = c * (PS_RTA_SRC_CORRECTION ? NEUTRAL_ALPHA : 255.0f);
+	i = c * (PS_RTA_SRC_CORRECTION ? NEUTRAL_ALPHA : 255.0f); //TODO1 HDR_ALPHA?
 #endif
 
 	// Remap coordinates for the current palette size (range)
@@ -524,9 +541,9 @@ float4x4 sample_4p(ctype4 u)
 int fetch_raw_depth(int2 xy)
 {
 #if PS_TEX_IS_FB == 1
-	float4 col = RtTexture.Load(int3(xy, 0));
+	float4 col = DecodeTex(RtTexture.Load(int3(xy, 0)));
 #else
-	float4 col = Texture.Load(int3(xy, 0));
+	float4 col = DecodeTex(Texture.Load(int3(xy, 0)));
 #endif
 	return (int)(col.r * exp2(32.0f));
 }
@@ -534,15 +551,15 @@ int fetch_raw_depth(int2 xy)
 float4 fetch_raw_color(int2 xy)
 {
 #if PS_TEX_IS_FB == 1
-	return RtTexture.Load(int3(xy, 0));
+	return DecodeTex(RtTexture.Load(int3(xy, 0)));
 #else
-	return Texture.Load(int3(xy, 0));
+	return DecodeTex(Texture.Load(int3(xy, 0)));
 #endif
 }
 
 float4 fetch_c(int2 uv)
 {
-	return Texture.Load(int3(uv, 0));
+	return DecodeTex(Texture.Load(int3(uv, 0)));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -744,7 +761,7 @@ float4 fetch_gXbY(int2 xy)
 	{
 		float4 rt_float = fetch_raw_color(xy) * 255.0f;
 #if PS_HDR
-		rt_float = min(round(rt_float), 255.0f);
+		rt_float = min(round(rt_float), 255.0f) + 0.5f;
 #endif
 		int4 rt = (int4)rt_float;
 		int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
@@ -755,7 +772,7 @@ float4 fetch_gXbY(int2 xy)
 
 float4 sample_color(float2 st, float uv_w)
 {
-	#if PS_TCOFFSETHACK
+#if PS_TCOFFSETHACK
 	st += TC_OffsetHack.xy;
 	#endif
 
@@ -831,14 +848,14 @@ float4 sample_color(float2 st, float uv_w)
 
 	if (PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_RTA_SRC_CORRECTION)
 	{
-		if (PS_HDR == 0)
+		if (PS_HDR == 0 || HDR_ALPHA)
 			t.a *= (NEUTRAL_ALPHA + 0.5) / 255.0f; // Add 0.5 for int rounding
 		else
 			t.a *= NEUTRAL_ALPHA / 255.0f;
 	}
 
 	t *= 255.0f;
-	if (!PS_HDR)
+	if (PS_HDR == 0 || HDR_ALPHA)
 	{
 		t = trunc(t + 0.05f);
 	}
@@ -856,6 +873,10 @@ float4 tfx(float4 T, float4 C)
 	if (PS_HDR == 0)
 	{
 		FxT = trunc(FxT);
+	}
+	else if (HDR_ALPHA)
+	{
+		FxT.a = trunc(FxT.a);
 	}
 
 // Modulate
@@ -935,7 +956,7 @@ float4 shuffle(float4 C, bool true_read_false_write)
 {
 	//TODO1: allow float? or int. It'd be very hard... (same around all other PS_SHUFFLE code)
 #if PS_HDR
-	C = min(round(C), 255.0f);
+	C = min(round(C), 255.0f) + 0.5f;
 #endif
 	uint4 denorm_c_before = uint4(C); 
 	if (PS_PROCESS_BA & (true_read_false_write ? SHUFFLE_READ : SHUFFLE_WRITE))
@@ -1028,7 +1049,7 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 #if 1 //TODO1: test!
 		if (PS_HDR && !PS_COLCLIP_HW) // Don't do this in colclip hw mode as it can't output "HDR"
 		{
-			float4 RT = RtTexture.Load(int3(pos_xy, 0)) * 255.0f;
+			float4 RT = DecodeTex(RtTexture.Load(int3(pos_xy, 0))) * 255.0f;
 			bool4 hi_bit = (FbMask & 0x80) != 0;
 			RT = hi_bit ? RT : min(RT, 255.0f);
 			C  = hi_bit ? min(C, 255.0f) : C;
@@ -1041,7 +1062,7 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 #endif
 		{
 			float multi = PS_COLCLIP_HW ? 65535.0f : 255.0f;
-			float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * multi + RT_COLOR_OFFSET);
+			float4 RT = trunc(DecodeTex(RtTexture.Load(int3(pos_xy, 0))) * multi + RT_COLOR_OFFSET);
 			C = (float4)(((uint4)C & ~FbMask) | ((uint4)RT & FbMask));
 		}
 	}
@@ -1146,7 +1167,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			As_rgba.rgb = (float3)1.0f;
 		}
 
-		float4 RT = SW_BLEND_NEEDS_RT ? RtTexture.Load(int3(pos_xy, 0)) : (float4)0.0f;
+		float4 RT = SW_BLEND_NEEDS_RT ? DecodeTex(RtTexture.Load(int3(pos_xy, 0))) : (float4)0.0f;
 
 		if (PS_SHUFFLE && SW_BLEND_NEEDS_RT)
 		{
@@ -1154,7 +1175,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		}
 		
 		float Ad = (RT.a * (PS_RTA_CORRECTION ? NEUTRAL_ALPHA : 255.0f) + RT_COLOR_OFFSET) / NEUTRAL_ALPHA;
-		if (PS_HDR == 0)
+		if (PS_HDR == 0 || HDR_ALPHA)
 		{
 			Ad = trunc(Ad);
 		}
@@ -1316,8 +1337,8 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	float4 alpha_blend = (float4)0.0f;
 	if (SW_AD_TO_HW)
 	{
-		float RTa = RtTexture.Load(int3(input.p.xy, 0)).a * (PS_RTA_CORRECTION ? NEUTRAL_ALPHA : 255.0f) + RT_COLOR_OFFSET;
-		if (PS_HDR == 0)
+		float RTa = DecodeTex(RtTexture.Load(int3(input.p.xy, 0))).a * (PS_RTA_CORRECTION ? NEUTRAL_ALPHA : 255.0f) + RT_COLOR_OFFSET;
+		if (PS_HDR == 0 || HDR_ALPHA)
 		{
 			RTa = trunc(RTa);
 		}
@@ -1374,7 +1395,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (!PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
 #if PS_HDR
-		C = min(round(C), 255.0f);
+			C = min(round(C), 255.0f) + 0.5f;
 #endif
 			uint4 denorm_c_after = uint4(C);
 			if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1393,7 +1414,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (PS_SHUFFLE_SAME)
 		{
 #if PS_HDR
-			C = min(round(C), 255.0f);
+			C = min(round(C), 255.0f) + 0.5f;
 #endif
 			uint4 denorm_c = uint4(C);
 			
@@ -1406,7 +1427,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		else if (PS_READ16_SRC)
 		{
 #if PS_HDR
-			C = min(round(C), 255.0f);
+			C = min(round(C), 255.0f) + 0.5f;
 #endif
 			uint4 denorm_c = uint4(C);
 			uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
@@ -1454,14 +1475,16 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #endif
 
 #if !PS_NO_COLOR
+#if PS_HDR && HDR_ALPHA
+	C.a = round(C.a);
+#endif
 	output.c0.a = PS_RTA_CORRECTION ? (C.a / NEUTRAL_ALPHA) : (C.a / 255.0f); //TODO1: force disable/enable RTA correction for HDR?
 	output.c0.rgb = PS_COLCLIP_HW ? (C.rgb / 65535.0f) : (C.rgb / 255.0f);
-
-#if PS_HDR //TODO1: here and below
+#if PS_HDR //TODO1: here and below and above
 	//output.c0.a = clamp(output.c0.a, 0.f, 1.f); // Probably not needed as alpha is never touched
 	//output.c0.rgb = clamp(output.c0.rgb, 0.f, 1.f);
 	//output.c0 = round(output.c0 * 255.0f) / 255.0f;
-	output.c0.a = round(output.c0.a * 255.0f) / 255.0f;
+	//output.c0.a = round(output.c0.a * 255.0f) / 255.0f;
 #endif
 #if PS_COLCLIP_HW && 0 //TODO: test... It's not recursive...
 	// Pre wrap negative values as we can't store negative colors in colclip hw textures!
