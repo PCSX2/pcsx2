@@ -3184,6 +3184,11 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_IMAGES,
 				TRANSLATE_SV("VMManager", "HDR rendering is enabled. This may break rendering in some games."));
 		}
+		if (EmuConfig.GS.HDROutput && GSConfig.CASMode != GSCASMode::Disabled)
+		{
+			append(ICON_FA_IMAGES,
+				TRANSLATE_SV("VMManager", "CAS is currently not compatible with HDR output, it will clip colors to SDR."));
+		}
 		if (EmuConfig.GS.UseDebugDevice)
 		{
 			append(ICON_FA_BUG,

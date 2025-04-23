@@ -66,7 +66,7 @@ VS_OUTPUT vs_main(VS_INPUT input)
 PS_OUTPUT EncodeOutput(PS_OUTPUT output)
 {
 	// If necessary we could convert to any color space here,
-	// assuming we are starting Rec.709 with gamma 2.2.
+	// assuming we are starting with Rec.709 (gamma 2.2 in SDR and linear in HDR).
 #if !PS_HDR && 1 //TODO: Test only!
 	// Convert to sRGB encoding (useful to test SDR in HDR as Windows interprets SDR content as sRGB)
 	float3 color_in_excess = output.c.rgb - saturate(output.c.rgb);

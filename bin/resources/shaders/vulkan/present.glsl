@@ -69,7 +69,7 @@ vec4 ps_scanlines(uint i)
 vec4 EncodeOutput(vec4 color)
 {
 	// If necessary we could convert to any color space here,
-	// assuming we are starting Rec.709 with gamma 2.2.
+	// assuming we are starting with Rec.709 (gamma 2.2 in SDR and linear in HDR).
 #if !PS_HDR && 1 //TODO: Test only!
 	// Convert to sRGB encoding (useful to test SDR in HDR as Windows interprets SDR content as sRGB)
 	vec3 color_in_excess = color.rgb - clamp(color.rgb, 0.f, 1.f);
