@@ -24,15 +24,6 @@ BreakpointView::BreakpointView(const DebuggerViewParameters& parameters)
 	this->resizeColumns();
 }
 
-void BreakpointView::resizeColumns()
-{
-	for (std::size_t i = 0; auto mode : BreakpointModel::HeaderResizeModes)
-	{
-		m_ui.breakpointList->horizontalHeader()->setSectionResizeMode(i, mode);
-		i++;
-	}
-}
-
 void BreakpointView::onDoubleClicked(const QModelIndex& index)
 {
 	if (index.isValid() && index.column() == BreakpointModel::OFFSET)
@@ -178,4 +169,13 @@ void BreakpointView::contextPasteCSV()
 void BreakpointView::saveBreakpointsToDebuggerSettings()
 {
 	DebuggerSettingsManager::saveGameSettings(m_model);
+}
+
+void BreakpointView::resizeColumns()
+{
+	for (std::size_t i = 0; auto mode : BreakpointModel::HeaderResizeModes)
+	{
+		m_ui.breakpointList->horizontalHeader()->setSectionResizeMode(i, mode);
+		i++;
+	}
 }

@@ -72,13 +72,13 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 			switch (index.column())
 			{
 				case BreakpointColumns::ENABLED:
-					return "";
+					return (bp->enabled) ? tr("Enabled") : tr("Disabled");
 				case BreakpointColumns::TYPE:
 					return tr("Execute");
 				case BreakpointColumns::OFFSET:
 					return QtUtils::FilledQStringFromValue(bp->addr, 16);
 				case BreakpointColumns::DESCRIPTION:
-					return QString::fromStdString(bp->description);					
+					return QString::fromStdString(bp->description);
 				case BreakpointColumns::SIZE_LABEL:
 					return QString::fromStdString(m_cpu.GetSymbolGuardian().FunctionStartingAtAddress(bp->addr).name);
 				case BreakpointColumns::OPCODE:
@@ -108,7 +108,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OFFSET:
 					return QtUtils::FilledQStringFromValue(mc->start, 16);
 				case BreakpointColumns::DESCRIPTION:
-					return QString::fromStdString(mc->description);					
+					return QString::fromStdString(mc->description);
 				case BreakpointColumns::SIZE_LABEL:
 					return QString::number(mc->end - mc->start, 16);
 				case BreakpointColumns::OPCODE:
@@ -127,9 +127,9 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 			switch (index.column())
 			{
 				case BreakpointColumns::CONDITION:
-					return bp->hasCond ? QString::fromStdString(bp->cond.expressionString) : "";				
+					return bp->hasCond ? QString::fromStdString(bp->cond.expressionString) : "";
 				case BreakpointColumns::DESCRIPTION:
-					return QString::fromStdString(bp->description);		
+					return QString::fromStdString(bp->description);
 			}
 		}
 		else if (const auto* mc = std::get_if<MemCheck>(&bp_mc))
@@ -156,7 +156,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OFFSET:
 					return bp->addr;
 				case BreakpointColumns::DESCRIPTION:
-					return QString::fromStdString(bp->description);					
+					return QString::fromStdString(bp->description);
 				case BreakpointColumns::SIZE_LABEL:
 					return QString::fromStdString(m_cpu.GetSymbolGuardian().FunctionStartingAtAddress(bp->addr).name);
 				case BreakpointColumns::OPCODE:
@@ -179,7 +179,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OFFSET:
 					return mc->start;
 				case BreakpointColumns::DESCRIPTION:
-					return QString::fromStdString(mc->description);					
+					return QString::fromStdString(mc->description);
 				case BreakpointColumns::SIZE_LABEL:
 					return mc->end - mc->start;
 				case BreakpointColumns::OPCODE:
@@ -204,7 +204,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OFFSET:
 					return QtUtils::FilledQStringFromValue(bp->addr, 16);
 				case BreakpointColumns::DESCRIPTION:
-					return QString::fromStdString(bp->description);					
+					return QString::fromStdString(bp->description);
 				case BreakpointColumns::SIZE_LABEL:
 					return QString::fromStdString(m_cpu.GetSymbolGuardian().FunctionStartingAtAddress(bp->addr).name);
 				case BreakpointColumns::OPCODE:
@@ -225,7 +225,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OFFSET:
 					return QtUtils::FilledQStringFromValue(mc->start, 16);
 				case BreakpointColumns::DESCRIPTION:
-					return QString::fromStdString(mc->description);					
+					return QString::fromStdString(mc->description);
 				case BreakpointColumns::SIZE_LABEL:
 					return mc->end - mc->start;
 				case BreakpointColumns::OPCODE:
@@ -269,7 +269,7 @@ QVariant BreakpointModel::headerData(int section, Qt::Orientation orientation, i
 				//: Warning: limited space available. Abbreviate if needed.
 				return tr("OFFSET");
 			case BreakpointColumns::DESCRIPTION:
-				return "DESCRIPTION";					
+				return "DESCRIPTION";
 			case BreakpointColumns::SIZE_LABEL:
 				//: Warning: limited space available. Abbreviate if needed.
 				return tr("SIZE / LABEL");
@@ -298,7 +298,7 @@ QVariant BreakpointModel::headerData(int section, Qt::Orientation orientation, i
 			case BreakpointColumns::OFFSET:
 				return "OFFSET";
 			case BreakpointColumns::DESCRIPTION:
-				return "DESCRIPTION";					
+				return "DESCRIPTION";
 			case BreakpointColumns::SIZE_LABEL:
 				return "SIZE / LABEL";
 			case BreakpointColumns::OPCODE:
@@ -433,7 +433,7 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 			}
 		}
 		emit dataChanged(index, index);
-		return true;		
+		return true;
 	}
 	else if (role == Qt::EditRole && index.column() == BreakpointColumns::DESCRIPTION)
 	{
@@ -452,7 +452,7 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 			Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), mc, descValue] {
 				CBreakPoints::ChangeMemCheckDescription(cpu, mc->start, mc->end, descValue.toStdString());
 			});
-		}		
+		}
 		emit dataChanged(index, index);
 		return true;
 	}
@@ -512,7 +512,7 @@ bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<Break
 		{
 			Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), bp = *bp] {
 				CBreakPoints::AddBreakPoint(cpu, bp.addr, false, bp.enabled);
-
+				CBreakPoints::ChangeBreakPointDescription(cpu, bp.addr, bp.description);
 				if (bp.hasCond)
 				{
 					CBreakPoints::ChangeBreakPointAddCond(cpu, bp.addr, bp.cond);
@@ -523,6 +523,7 @@ bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<Break
 		{
 			Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), mc = *mc] {
 				CBreakPoints::AddMemCheck(cpu, mc.start, mc.end, mc.memCond, mc.result);
+				CBreakPoints::ChangeMemCheckDescription(cpu, mc.start, mc.end, mc.description);
 				if (mc.hasCond)
 				{
 					CBreakPoints::ChangeMemCheckAddCond(cpu, mc.start, mc.end, mc.cond);

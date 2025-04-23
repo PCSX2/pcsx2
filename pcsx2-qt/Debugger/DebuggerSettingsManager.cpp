@@ -61,17 +61,16 @@ void DebuggerSettingsManager::loadGameSettings(BreakpointModel* bpModel)
 		Console.WriteLnFmt("Debugger Settings Manager: Failed to read Breakpoints array from settings file: '{}'", path);
 		return;
 	}
-	
+
 	// Breakpoint descriptions were added at debugger settings file version 0.01. If loading
-	// saved breakpoints from a previous version (only 0.00 existed prior), the breakpoints will be 
-	// missing a description. This code will add in an empty description so that the previous 
+	// saved breakpoints from a previous version (only 0.00 existed prior), the breakpoints will be
+	// missing a description. This code will add in an empty description so that the previous
 	// version, 0.00, is compatible with 0.01.
-	const QJsonValue savedVersionValue = loadGameSettingsJSON().value("Version");
-	const QString savedVersion = savedVersionValue.toString();
 	bool isMissingDescription = false;
+	const QJsonValue savedVersionValue = loadGameSettingsJSON().value("Version");
 	if (!savedVersionValue.isUndefined())
 	{
-		isMissingDescription = savedVersion.toStdString() == "0.00";
+		isMissingDescription = savedVersionValue.toString().toStdString() == "0.00";
 	}
 
 	const QJsonArray breakpointsArray = breakpointsValue.toArray();
@@ -84,7 +83,7 @@ void DebuggerSettingsManager::loadGameSettings(BreakpointModel* bpModel)
 			continue;
 		}
 		QJsonObject rowObject = rowValue.toObject();
-		
+
 		// Add empty description for saved breakpoints from debugger settings versions prior to 0.01
 		if (isMissingDescription)
 		{

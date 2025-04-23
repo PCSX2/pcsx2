@@ -285,7 +285,7 @@ BreakPointCond* CBreakPoints::GetBreakPointCondition(BreakPointCpu cpu, u32 addr
 	return NULL;
 }
 
-void CBreakPoints::ChangeBreakPointDescription(BreakPointCpu cpu, u32 addr, std::string description)
+void CBreakPoints::ChangeBreakPointDescription(BreakPointCpu cpu, u32 addr, const std::string& description)
 {
 	const size_t bp = FindBreakpoint(cpu, addr, true, false);
 	if (bp != INVALID_BREAKPOINT)
@@ -366,7 +366,7 @@ void CBreakPoints::ChangeMemCheckAddCond(BreakPointCpu cpu, u32 start, u32 end, 
 	}
 }
 
-void CBreakPoints::ChangeMemCheckDescription(BreakPointCpu cpu, u32 start, u32 end, std::string description)
+void CBreakPoints::ChangeMemCheckDescription(BreakPointCpu cpu, u32 start, u32 end, const std::string& description)
 {
 	const size_t mc = FindMemCheck(cpu, start, end);
 	if (mc != INVALID_MEMCHECK)
