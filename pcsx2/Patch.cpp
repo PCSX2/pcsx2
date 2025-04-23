@@ -111,7 +111,7 @@ namespace Patch
 	struct PatchGroup
 	{
 		std::string name;
-		std::optional<AspectRatioType> override_aspect_ratio;
+		std::optional<float> override_aspect_ratio;
 		std::optional<GSInterlaceMode> override_interlace_mode;
 		std::vector<PatchCommand> patches;
 		std::vector<DynamicPatch> dpatches;
@@ -186,7 +186,7 @@ namespace Patch
 	static EnablePatchList s_just_enabled_cheats;
 	static EnablePatchList s_just_enabled_patches;
 	static u32 s_patches_crc;
-	static std::optional<AspectRatioType> s_override_aspect_ratio;
+	static std::optional<float> s_override_aspect_ratio;
 	static std::optional<GSInterlaceMode> s_override_interlace_mode;
 
 	static const PatchTextTable s_patch_commands[] = {
@@ -797,17 +797,13 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 
 void Patch::ApplyPatchSettingOverrides()
 {
-	// Switch to 16:9 if widescreen patches are enabled, and AR is auto.
+	// Switch to 16:9 (or any custom aspect ratio) if widescreen patches are enabled, and AR is auto.
 	if (s_override_aspect_ratio.has_value() && EmuConfig.GS.AspectRatio == AspectRatioType::RAuto4_3_3_2)
 	{
-		// Don't change when reloading settings in the middle of a FMV with switch.
-		if (EmuConfig.CurrentAspectRatio == EmuConfig.GS.AspectRatio)
-			EmuConfig.CurrentAspectRatio = s_override_aspect_ratio.value();
+		EmuConfig.CurrentCustomAspectRatio = s_override_aspect_ratio.value();
 
 		Console.WriteLn(Color_Gray,
-			fmt::format("Patch: Setting aspect ratio to {} by patch request.",
-				Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(s_override_aspect_ratio.value())]));
-		EmuConfig.GS.AspectRatio = s_override_aspect_ratio.value();
+			fmt::format("Patch: Setting aspect ratio to {} by patch request.", s_override_aspect_ratio.value()));
 	}
 
 	// Disable interlacing in GS if active.
@@ -821,9 +817,13 @@ void Patch::ApplyPatchSettingOverrides()
 
 bool Patch::ReloadPatchAffectingOptions()
 {
+	// Restore the aspect ratio + interlacing setting the user had set before reloading the patch,
+	// as the custom patch settings only apply if the "Auto" settings are selected.
+
 	const AspectRatioType current_ar = EmuConfig.GS.AspectRatio;
 	const GSInterlaceMode current_interlace = EmuConfig.GS.InterlaceMode;
-
+	const float custom_aspect_ratio = EmuConfig.CurrentCustomAspectRatio;
+	
 	// This is pretty gross, but we're not using a config layer, so...
 	AspectRatioType new_ar = Pcsx2Config::GSOptions::DEFAULT_ASPECT_RATIO;
 	const std::string ar_value = Host::GetStringSettingValue("EmuCore/GS", "AspectRatio",
@@ -836,15 +836,14 @@ bool Patch::ReloadPatchAffectingOptions()
 			break;
 		}
 	}
-	if (EmuConfig.CurrentAspectRatio == EmuConfig.GS.AspectRatio)
-		EmuConfig.CurrentAspectRatio = new_ar;
 	EmuConfig.GS.AspectRatio = new_ar;
 	EmuConfig.GS.InterlaceMode = static_cast<GSInterlaceMode>(Host::GetIntSettingValue(
 		"EmuCore/GS", "deinterlace_mode", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_INTERLACE_MODE)));
 
 	ApplyPatchSettingOverrides();
 
-	return (current_ar != EmuConfig.GS.AspectRatio || current_interlace != EmuConfig.GS.InterlaceMode);
+	// Return true if any config setting changed
+	return current_ar != EmuConfig.GS.AspectRatio || custom_aspect_ratio != EmuConfig.CurrentCustomAspectRatio || current_interlace != EmuConfig.GS.InterlaceMode;
 }
 
 void Patch::UnloadPatches()
@@ -941,13 +940,22 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view cmd, cons
 
 void Patch::PatchFunc::gsaspectratio(PatchGroup* group, const std::string_view cmd, const std::string_view param)
 {
-	for (u32 i = 0; i < static_cast<u32>(AspectRatioType::MaxCount); i++)
+	std::string str(param);
+	std::istringstream ss(str);
+	uint dividend, divisor;
+	char delimiter;
+	float aspect_ratio = 0.f;
+
+	ss >> dividend >> delimiter >> divisor;
+	if (!ss.fail() && delimiter == ':' && divisor != 0)
 	{
-		if (param == Pcsx2Config::GSOptions::AspectRatioNames[i])
-		{
-			group->override_aspect_ratio = static_cast<AspectRatioType>(i);
-			return;
-		}
+		aspect_ratio = static_cast<float>(dividend) / static_cast<float>(divisor);
+	}
+
+	if (aspect_ratio > 0.f)
+	{
+		group->override_aspect_ratio = aspect_ratio;
+		return;
 	}
 
 	Console.Error(fmt::format("Patch error: {} is an unknown aspect ratio.", param));

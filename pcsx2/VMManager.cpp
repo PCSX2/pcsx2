@@ -876,7 +876,9 @@ void VMManager::RequestDisplaySize(float scale /*= 0.0f*/)
 	switch (GSConfig.AspectRatio)
 	{
 		case AspectRatioType::RAuto4_3_3_2:
-			if (GSgetDisplayMode() == GSVideoMode::SDTV_480P)
+			if (EmuConfig.CurrentCustomAspectRatio > 0.f)
+				x_scale = EmuConfig.CurrentCustomAspectRatio / (static_cast<float>(iwidth) / static_cast<float>(iheight));
+			else if (GSgetDisplayMode() == GSVideoMode::SDTV_480P)
 				x_scale = (3.0f / 2.0f) / (static_cast<float>(iwidth) / static_cast<float>(iheight));
 			else
 				x_scale = (4.0f / 3.0f) / (static_cast<float>(iwidth) / static_cast<float>(iheight));
@@ -2504,11 +2506,13 @@ void VMManager::LogCPUCapabilities()
 
 	Console.WriteLnFmt(
 		"  Operating System = {}\n"
-		"  Available RAM    = {} MB\n"
-		"  Physical RAM     = {} MB\n",
+		"  Available RAM    = {} MB ({:.2f} GB)\n"
+		"  Physical RAM     = {} MB ({:.2f} GB)\n",
 		GetOSVersionString(),
 		GetAvailablePhysicalMemory() / _1mb,
-		GetPhysicalMemory() / _1mb);
+		static_cast<double>(GetAvailablePhysicalMemory()) / static_cast<double>(_1gb),
+		GetPhysicalMemory() / _1mb,
+		static_cast<double>(GetPhysicalMemory()) / static_cast<double>(_1gb));
 
 	Console.WriteLnFmt("  Processor        = {}", cpuinfo_get_package(0)->name);
 	Console.WriteLnFmt("  Core Count       = {} cores", cpuinfo_get_cores_count());

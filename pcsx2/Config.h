@@ -223,8 +223,8 @@ enum class DebugFunctionScanMode
 
 enum class AspectRatioType : u8
 {
-	Stretch,
-	RAuto4_3_3_2,
+	Stretch, // Stretches to the whole window/display size
+	RAuto4_3_3_2, // Automatically scales to the target aspect ratio if there's a widescreen patch
 	R4_3,
 	R16_9,
 	R10_7,
@@ -233,7 +233,7 @@ enum class AspectRatioType : u8
 
 enum class FMVAspectRatioSwitchType : u8
 {
-	Off,
+	Off, // Falls back on the selected generic aspect ratio type
 	RAuto4_3_3_2,
 	R4_3,
 	R16_9,
@@ -1324,6 +1324,8 @@ struct Pcsx2Config
 	std::string CurrentIRX;
 	std::string CurrentGameArgs;
 	AspectRatioType CurrentAspectRatio = AspectRatioType::RAuto4_3_3_2;
+	// Fall back aspect ratio for games that have patches (when AspectRatioType::RAuto4_3_3_2) is active.
+	float CurrentCustomAspectRatio = 0.f;
 	bool IsPortableMode = false;
 
 	Pcsx2Config();

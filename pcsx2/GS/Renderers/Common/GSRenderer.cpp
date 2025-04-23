@@ -268,8 +268,25 @@ float GSRenderer::GetModXYOffset()
 
 static float GetCurrentAspectRatioFloat(bool is_progressive)
 {
-	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount) + 1> ars = {{4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 10.0f / 7.0f, 3.0f / 2.0f}};
-	return ars[static_cast<u32>(GSConfig.AspectRatio) + (3u * (is_progressive && GSConfig.AspectRatio == AspectRatioType::RAuto4_3_3_2))];
+	switch (GSConfig.AspectRatio)
+	{
+		default:
+		// We don't know the AR of the display here, nor we care about it
+		case AspectRatioType::Stretch:
+		case AspectRatioType::RAuto4_3_3_2:
+			if (EmuConfig.CurrentCustomAspectRatio > 0.f)
+				return EmuConfig.CurrentCustomAspectRatio;
+			else if (is_progressive)
+				return 3.0f / 2.0f;
+			else
+				return 4.0f / 3.0f;
+		case AspectRatioType::R4_3:
+			return 4.0f / 3.0f;
+		case AspectRatioType::R16_9:
+			return 16.0f / 9.0f;
+		case AspectRatioType::R10_7:
+			return 10.0f / 7.0f;
+	}
 }
 
 static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const GSVector4i& src_rect, const GSVector2i& src_size, GSDisplayAlignment alignment, bool flip_y, bool is_progressive)
@@ -285,6 +302,9 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 			targetAr = 3.0f / 2.0f;
 		else
 			targetAr = 4.0f / 3.0f;
+		// Fall back on the custom aspect ratio set by patches (e.g. 16:9, 21:9)
+		if (EmuConfig.CurrentCustomAspectRatio > 0.f)
+			targetAr = EmuConfig.CurrentCustomAspectRatio;
 	}
 	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R4_3)
 	{
