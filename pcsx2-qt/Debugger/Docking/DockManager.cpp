@@ -298,7 +298,10 @@ void DockManager::resetAllLayouts()
 	m_layouts.clear();
 
 	for (const DockTables::DefaultDockLayout& layout : DockTables::DEFAULT_DOCK_LAYOUTS)
-		createLayout(tr(layout.name.c_str()), layout.cpu, true, layout.name);
+	{
+		QString name = QCoreApplication::translate("DebuggerLayout", layout.name.c_str());
+		createLayout(name, layout.cpu, true, layout.name);
+	}
 
 	switchToLayout(0);
 	updateLayoutSwitcher();
@@ -313,7 +316,10 @@ void DockManager::resetDefaultLayouts()
 	m_layouts = std::vector<DockLayout>();
 
 	for (const DockTables::DefaultDockLayout& layout : DockTables::DEFAULT_DOCK_LAYOUTS)
-		createLayout(tr(layout.name.c_str()), layout.cpu, true, layout.name);
+	{
+		QString name = QCoreApplication::translate("DebuggerLayout", layout.name.c_str());
+		createLayout(name, layout.cpu, true, layout.name);
+	}
 
 	for (DockLayout& layout : old_layouts)
 		if (!layout.isDefault())
