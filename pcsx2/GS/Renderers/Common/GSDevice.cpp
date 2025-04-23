@@ -157,6 +157,7 @@ static TextureLabel GetTextureLabel(GSTexture::Type type, GSTexture::Format form
 				case GSTexture::Format::BC2:
 				case GSTexture::Format::BC3:
 				case GSTexture::Format::BC7:
+				// This could be either a copy of an HDR Render Target texture, or a user custom texture
 				case GSTexture::Format::ColorHDR:
 					return TextureLabel::ReplacementTexture;
 				default:

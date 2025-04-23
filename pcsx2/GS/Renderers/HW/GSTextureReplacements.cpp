@@ -513,8 +513,9 @@ GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache:
 template <GSTexture::Format format>
 std::pair<u8, u8> GSTextureReplacements::GetBCAlphaMinMax(ReplacementTexture& rtex)
 {
-	constexpr u32 BC_BLOCK_SIZE = 4;
-	constexpr u32 BC_BLOCK_BYTES = (format == GSTexture::Format::BC1) ? 8 : 16;
+	constexpr u32 BC_BLOCK_SIZE = (format >= GSTexture::Format::BC1 && format <= GSTexture::Format::BC7) ? 4 : 1; // See "GSTexture::GetCompressedBlockSize()"
+	constexpr u32 BC_BLOCK_BYTES = (format > GSTexture::Format::BC1 && format <= GSTexture::Format::BC7) ? 8 : 16; // See "GSTexture::GetCompressedBytesPerBlock()"
+	static_assert(format >= GSTexture::Format::BC1 && format <= GSTexture::Format::BC7);
 
 	const u32 blocks_wide = (rtex.width + (BC_BLOCK_SIZE - 1)) / BC_BLOCK_SIZE;
 	const u32 blocks_high = (rtex.height + (BC_BLOCK_SIZE - 1)) / BC_BLOCK_SIZE;
@@ -580,8 +581,12 @@ void GSTextureReplacements::SetReplacementTextureAlphaMinMax(ReplacementTexture&
 			rtex.alpha_minmax = GetBCAlphaMinMax<GSTexture::Format::BC7>(rtex);
 			break;
 
+		case GSTexture::Format::ColorHDR:
+			rtex.alpha_minmax = GSGetRGBA16FAlphaMinMax(rtex.data.data(), rtex.width, rtex.height, rtex.pitch);
+			break;
+
 		default:
-			pxAssert(rtex.format == GSTexture::Format::Color); //TODO: FP16 support
+			pxAssert(rtex.format == GSTexture::Format::Color);
 			rtex.alpha_minmax = GSGetRGBA8AlphaMinMax(rtex.data.data(), rtex.width, rtex.height, rtex.pitch);
 			break;
 	}
