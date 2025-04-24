@@ -3684,7 +3684,8 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 
 	if (flags & DIRTY_FLAG_TFX_SAMPLERS)
 	{
-		if (!GetSamplerAllocator().LookupSingle(&m_tfx_samplers_handle_gpu, m_tfx_sampler))
+		D3D12DescriptorHandle samplers[] = {m_tfx_sampler, m_linear_sampler_cpu};
+		if (!GetSamplerAllocator().LookupGroup(&m_tfx_samplers_handle_gpu, samplers))
 		{
 			ExecuteCommandListAndRestartRenderPass(false, "Ran out of sampler groups");
 			return ApplyTFXState(true);

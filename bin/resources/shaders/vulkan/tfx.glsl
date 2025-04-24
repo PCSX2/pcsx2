@@ -361,13 +361,13 @@ layout(location = 0) out vec4 o_col0;
 #endif
 
 #if NEEDS_TEX
-layout(set = 1, binding = 0) uniform sampler2D Texture;
-layout(set = 1, binding = 1) uniform texture2D Palette;
+layout(set = 1, binding = 0) uniform sampler2D Texture; // TFX_TEXTURE_TEXTURE
+layout(set = 1, binding = 1) uniform sampler2D Palette; // TFX_TEXTURE_PALETTE
 #endif
 
 #if PS_FEEDBACK_LOOP_IS_NEEDED
 	#if defined(DISABLE_TEXTURE_BARRIER) || defined(HAS_FEEDBACK_LOOP_LAYOUT)
-		layout(set = 1, binding = 2) uniform texture2D RtSampler;
+		layout(set = 1, binding = 2) uniform texture2D RtSampler; // TFX_TEXTURE_RT
 		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
 	#else
 		layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
@@ -376,7 +376,7 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 #endif
 
 #if PS_DATE > 0
-layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
+layout(set = 1, binding = 3) uniform texture2D PrimMinTexture; // TFX_TEXTURE_PRIMID
 #endif
 
 float fmod_positive(float a, float b)
