@@ -562,7 +562,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			m_ui.hdr, tr("HDR"), tr("Checked"), tr("Forces all rendering to be in HDR without integer rounding, and HDR output. It will likely break many games. It might not work on all rendering backends."));
 
 		dialog->registerWidgetHelp(
-			m_ui.textureFiltering, tr("Texture Filtering"), tr("Bilinear (PS2)"),
+			m_ui.textureFiltering, tr("Texture Filtering"), tr("Bilinear (PS2) (Default)"),
 			tr("Changes what filtering algorithm is used to map textures to surfaces.<br> "
 			   "Nearest: Makes no attempt to blend colors.<br> "
 			   "Bilinear (Forced): Will blend colors together to remove harsh edges between different colored pixels even if the game told the PS2 not to.<br> "

@@ -3924,7 +3924,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	static constexpr const char* s_bilinear_options[] = {
 		FSUI_NSTR("Nearest"),
 		FSUI_NSTR("Bilinear (Forced)"),
-		FSUI_NSTR("Bilinear (PS2)"),
+		FSUI_NSTR("Bilinear (PS2) (Default)"),
 		FSUI_NSTR("Bilinear (Forced excluding sprite)"),
 	};
 	static constexpr const char* s_trilinear_options[] = {

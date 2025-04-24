@@ -496,7 +496,7 @@
          </item>
          <item>
           <property name="text">
-           <string>Bilinear (PS2)</string>
+           <string>Bilinear (PS2) (Default)</string>
           </property>
          </item>
          <item>
@@ -684,7 +684,7 @@
          </item>
          <item>
           <property name="text">
-           <string>Bilinear (PS2)</string>
+           <string>Bilinear (PS2) (Default)</string>
           </property>
          </item>
          <item>
