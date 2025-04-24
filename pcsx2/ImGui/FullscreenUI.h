@@ -17,6 +17,7 @@ namespace FullscreenUI
 {
 	bool Initialize();
 	bool IsInitialized();
+	void ReloadSvgResources();
 	bool HasActiveWindow();
 	void CheckForConfigChanges(const Pcsx2Config& old_config);
 	void OnVMStarted();

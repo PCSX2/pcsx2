@@ -255,6 +255,9 @@ void ImGuiManager::UpdateScale()
 
 	if (!g_gs_device->UpdateImGuiFontTexture())
 		pxFailRel("Failed to recreate font texture after scale+resize");
+
+	if (FullscreenUI::IsInitialized())
+		FullscreenUI::ReloadSvgResources();
 }
 
 void ImGuiManager::NewFrame()

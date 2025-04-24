@@ -94,6 +94,7 @@ using ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING;
 using ImGuiFullscreen::LAYOUT_SCREEN_HEIGHT;
 using ImGuiFullscreen::LAYOUT_SCREEN_WIDTH;
+using ImGuiFullscreen::SvgScaling;
 using ImGuiFullscreen::UIBackgroundColor;
 using ImGuiFullscreen::UIBackgroundHighlightColor;
 using ImGuiFullscreen::UIBackgroundLineColor;
@@ -131,6 +132,8 @@ using ImGuiFullscreen::EndNavBar;
 using ImGuiFullscreen::EnumChoiceButton;
 using ImGuiFullscreen::FloatingButton;
 using ImGuiFullscreen::ForceKeyNavEnabled;
+using ImGuiFullscreen::GetCachedSvgTexture;
+using ImGuiFullscreen::GetCachedSvgTextureAsync;
 using ImGuiFullscreen::GetCachedTexture;
 using ImGuiFullscreen::GetCachedTextureAsync;
 using ImGuiFullscreen::GetPlaceholderTexture;
@@ -139,6 +142,7 @@ using ImGuiFullscreen::HorizontalMenuItem;
 using ImGuiFullscreen::IsFocusResetQueued;
 using ImGuiFullscreen::IsGamepadInputSource;
 using ImGuiFullscreen::LayoutScale;
+using ImGuiFullscreen::LoadSvgTexture;
 using ImGuiFullscreen::LoadTexture;
 using ImGuiFullscreen::MenuButton;
 using ImGuiFullscreen::MenuButtonFrame;
@@ -237,6 +241,11 @@ namespace FullscreenUI
 	static void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel);
 	static void ApplyLayoutSettings(const SettingsInterface* bsi = nullptr);
 
+	void DrawSvgTexture(GSTexture* padded_texture, ImVec2 unpadded_size);
+	void DrawSvgTexture_UV(GSTexture* padded_texture, ImVec2 unpadded_size, ImVec2 unpadded_uv0, ImVec2 unpadded_uv1);
+	void DrawCachedSvgTexture(const std::string& path, ImVec2 size, SvgScaling mode);
+	void DrawCachedSvgTextureAsync(const std::string& path, ImVec2 size, SvgScaling mode);
+
 	static MainWindowType s_current_main_window = MainWindowType::None;
 	static PauseSubMenu s_current_pause_submenu = PauseSubMenu::None;
 	static bool s_initialized = false;
@@ -256,6 +265,7 @@ namespace FullscreenUI
 	// Resources
 	//////////////////////////////////////////////////////////////////////////
 	static bool LoadResources();
+	static bool LoadSvgResources();
 	static void DestroyResources();
 
 	static std::array<std::shared_ptr<GSTexture>, static_cast<u32>(GameDatabaseSchema::Compatibility::Perfect)>
@@ -678,6 +688,34 @@ void FullscreenUI::GamepadLayoutChanged()
 	ApplyLayoutSettings();
 }
 
+// When drawing an svg to a non-integer size, we get a padded texture.
+// This function crops off this padding by setting the image UV for the draw.
+// We currently only use integer sizes for images, but I wrote this before checking that.
+void FullscreenUI::DrawSvgTexture(GSTexture* padded_texture, ImVec2 unpadded_size)
+{
+	if (padded_texture != GetPlaceholderTexture().get())
+	{
+		const ImVec2 padded_size(padded_texture->GetWidth(), padded_texture->GetHeight());
+		const ImVec2 uv1 = unpadded_size / padded_size;
+		ImGui::Image(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), unpadded_size, ImVec2(0.0f, 0.0f), uv1);
+	}
+	else
+	{
+		// Placeholder is a png file and should be scaled by ImGui
+		ImGui::Image(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), unpadded_size);
+	}
+}
+
+void FullscreenUI::DrawCachedSvgTexture(const std::string& path, ImVec2 size, SvgScaling mode)
+{
+	DrawSvgTexture(GetCachedSvgTexture(path, size, mode), size);
+}
+
+void FullscreenUI::DrawCachedSvgTextureAsync(const std::string& path, ImVec2 size, SvgScaling mode)
+{
+	DrawSvgTexture(GetCachedSvgTextureAsync(path, size, mode), size);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
@@ -725,6 +763,11 @@ bool FullscreenUI::Initialize()
 bool FullscreenUI::IsInitialized()
 {
 	return s_initialized;
+}
+
+void FullscreenUI::ReloadSvgResources()
+{
+	LoadSvgResources();
 }
 
 bool FullscreenUI::HasActiveWindow()
@@ -1049,10 +1092,15 @@ bool FullscreenUI::LoadResources()
 	s_fallback_disc_texture = LoadTexture("fullscreenui/media-cdrom.png");
 	s_fallback_exe_texture = LoadTexture("fullscreenui/applications-system.png");
 
+	return LoadSvgResources();
+}
+
+bool FullscreenUI::LoadSvgResources()
+{
 	for (u32 i = static_cast<u32>(GameDatabaseSchema::Compatibility::Nothing);
 		 i <= static_cast<u32>(GameDatabaseSchema::Compatibility::Perfect); i++)
 	{
-		s_game_compatibility_textures[i - 1] = LoadTexture(fmt::format("fullscreenui/star-{}.png", i - 1).c_str());
+		s_game_compatibility_textures[i - 1] = LoadSvgTexture(fmt::format("icons/star-{}.svg", i - 1).c_str(), LayoutScale(64.0f, 16.0f), SvgScaling::Fit);
 	}
 
 	return true;
@@ -6497,10 +6545,13 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 			// region
 			{
-				std::string flag_texture(fmt::format("fullscreenui/flags/{}.png", GameList::RegionToString(selected_entry->region)));
+				std::string flag_texture(fmt::format("icons/flags/{}.svg", GameList::RegionToString(selected_entry->region)));
 				ImGui::TextUnformatted(FSUI_CSTR("Region: "));
 				ImGui::SameLine();
-				ImGui::Image(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(flag_texture.c_str())->GetNativeHandle()), LayoutScale(23.0f, 16.0f));
+				if (selected_entry->region == GameList::Region::Other)
+					DrawCachedSvgTextureAsync(flag_texture, LayoutScale(23.0f, 16.0f), SvgScaling::Fit);
+				else
+					DrawCachedSvgTextureAsync(flag_texture, LayoutScale(23.0f, 16.0f), SvgScaling::ZoomFill);
 				ImGui::SameLine();
 				ImGui::Text(" (%s)", GameList::RegionToString(selected_entry->region));
 			}
@@ -6510,8 +6561,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			ImGui::SameLine();
 			if (selected_entry->compatibility_rating != GameDatabaseSchema::Compatibility::Unknown)
 			{
-				ImGui::Image(reinterpret_cast<ImTextureID>(s_game_compatibility_textures[static_cast<u32>(selected_entry->compatibility_rating) - 1]->GetNativeHandle()),
-					LayoutScale(64.0f, 16.0f));
+				DrawSvgTexture(s_game_compatibility_textures[static_cast<u32>(selected_entry->compatibility_rating) - 1].get(), LayoutScale(64.0f, 16.0f));
 				ImGui::SameLine();
 			}
 			ImGui::Text(" (%s)", GameList::EntryCompatibilityRatingToString(selected_entry->compatibility_rating));

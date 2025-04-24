@@ -86,8 +86,8 @@ namespace ImGuiFullscreen
 	}
 
 	/// Centers an image within the specified bounds, scaling up or down as needed.
-	ImRect CenterImage(const ImVec2& fit_size, const ImVec2& image_size);
-	ImRect CenterImage(const ImRect& fit_rect, const ImVec2& image_size);
+	ImRect CenterImage(const ImVec2& fit_size, const ImVec2& image_size, bool fill = false);
+	ImRect CenterImage(const ImRect& fit_rect, const ImVec2& image_size, bool fill = false);
 
 	/// Initializes, setting up any state.
 	bool Initialize(const char* placeholder_image_path);
@@ -104,6 +104,15 @@ namespace ImGuiFullscreen
 	std::shared_ptr<GSTexture> LoadTexture(std::string_view path);
 	GSTexture* GetCachedTexture(std::string_view name);
 	GSTexture* GetCachedTextureAsync(std::string_view name);
+	enum class SvgScaling : u8
+	{
+		Stretch,
+		Fit,
+		ZoomFill,
+	};
+	std::shared_ptr<GSTexture> LoadSvgTexture(std::string_view path, ImVec2 size, SvgScaling mode = SvgScaling::Stretch);
+	GSTexture* GetCachedSvgTexture(std::string_view name, ImVec2 size, SvgScaling mode = SvgScaling::Stretch);
+	GSTexture* GetCachedSvgTextureAsync(std::string_view name, ImVec2 size, SvgScaling mode = SvgScaling::Stretch);
 	bool InvalidateCachedTexture(const std::string& path);
 	void UploadAsyncTextures();
 

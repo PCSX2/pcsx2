@@ -26,6 +26,9 @@
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
 
+#include <plutovg.h>
+#include <plutosvg.h>
+
 #include <array>
 #include <cmath>
 #include <condition_variable>
@@ -41,6 +44,7 @@ namespace ImGuiFullscreen
 
 	static std::optional<RGBA8Image> LoadTextureImage(const char* path);
 	static std::shared_ptr<GSTexture> UploadTexture(const char* path, const RGBA8Image& image);
+	static std::optional<RGBA8Image> LoadSvgTextureImage(const char* path, ImVec2 size, SvgScaling mode);
 	static void TextureLoaderThread();
 
 	static void DrawFileSelector();
@@ -88,11 +92,13 @@ namespace ImGuiFullscreen
 	static FocusResetType s_focus_reset_queued = FocusResetType::None;
 
 	static LRUCache<std::string, std::shared_ptr<GSTexture>> s_texture_cache(128, true);
+	static LRUCache<std::string, std::vector<u8>> s_svg_data_cache(64, true);
 	static std::shared_ptr<GSTexture> s_placeholder_texture;
 	static std::atomic_bool s_texture_load_thread_quit{false};
 	static std::mutex s_texture_load_mutex;
 	static std::condition_variable s_texture_load_cv;
 	static std::deque<std::string> s_texture_load_queue;
+	static std::deque<std::tuple<std::string, ImVec2, SvgScaling>> s_svg_texture_load_queue;
 	static std::deque<std::pair<std::string, RGBA8Image>> s_texture_upload_queue;
 	static Threading::Thread s_texture_load_thread;
 
@@ -367,6 +373,166 @@ GSTexture* ImGuiFullscreen::GetCachedTextureAsync(std::string_view name)
 	return tex_ptr->get();
 }
 
+// Renders an SVG image to specified size into a texture of ceil(size).
+// The region donated by size is positioned top left of the image when size != ceil(size).
+// The image is scaled to fit within, and rendered center of, size.
+std::optional<RGBA8Image> ImGuiFullscreen::LoadSvgTextureImage(const char* path, ImVec2 size, SvgScaling mode)
+{
+	std::optional<RGBA8Image> image;
+
+	// Cache SVG files as we may need to re-render at a new size later.
+	std::vector<u8>* data_ptr = s_svg_data_cache.Lookup(path);
+	if (!data_ptr)
+	{
+		std::optional<std::vector<u8>> data;
+		if (Path::IsAbsolute(path))
+			data = FileSystem::ReadBinaryFile(path);
+		else
+			data = FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Resources, path).c_str());
+		if (data.has_value())
+			data_ptr = s_svg_data_cache.Insert(std::string(path), std::move(data.value()));
+	}
+
+	if (data_ptr)
+	{
+		// Load SVG
+		plutosvg_document_t* pluto_svg = plutosvg_document_load_from_data(reinterpret_cast<char*>(data_ptr->data()),
+			data_ptr->size(), -1, -1, nullptr, nullptr);
+
+		if (pluto_svg == nullptr)
+		{
+			Console.Error("Failed to load svg '%s'", path);
+			return image;
+		}
+
+		const float base_width = plutosvg_document_get_width(pluto_svg);
+		const float base_height = plutosvg_document_get_height(pluto_svg);
+
+		// Create a surface large enough to store the SVG.
+		const int px_width = std::ceil(size.x);
+		const int px_height = std::ceil(size.y);
+
+		std::vector<u32> pixel_data;
+		pixel_data.resize(px_width * px_height);
+
+		plutovg_surface_t* pluto_surface = plutovg_surface_create_for_data(reinterpret_cast<unsigned char*>(pixel_data.data()),
+			px_width, px_height, px_width * 4);
+		if (pluto_surface == nullptr)
+		{
+			plutosvg_document_destroy(pluto_svg);
+			Console.Error("Failed to create plutovg surface '%s'", path);
+			return image;
+		}
+
+		// Create a drawing canvas.
+		plutovg_canvas_t* pluto_canvas = plutovg_canvas_create(pluto_surface);
+		if (pluto_canvas == nullptr)
+		{
+			plutovg_surface_destroy(pluto_surface);
+			plutosvg_document_destroy(pluto_svg);
+			Console.Error("Failed to create plutovg canvas '%s'", path);
+			return image;
+		}
+
+		// Scale & position SVG.
+		// ImGui positions images from top left, so we can ignore integer size of surface.
+		switch (mode)
+		{
+			case SvgScaling::Stretch:
+				plutovg_canvas_scale(pluto_canvas, size.x / base_width, size.y / base_height);
+				break;
+			case SvgScaling::Fit:
+			{
+				const ImRect rect = CenterImage(size, {base_width, base_height}, false);
+				const float scale = (rect.Max.y - rect.Min.y) / base_height;
+				plutovg_canvas_scale(pluto_canvas, scale, scale);
+				plutovg_canvas_translate(pluto_canvas, rect.Min.x / scale, rect.Min.y / scale);
+				break;
+			}
+			case SvgScaling::ZoomFill:
+			{
+				const ImRect rect = CenterImage(size, {base_width, base_height}, true);
+				const float scale = (rect.Max.y - rect.Min.y) / base_height;
+				plutovg_canvas_scale(pluto_canvas, scale, scale);
+				plutovg_canvas_translate(pluto_canvas, rect.Min.x / scale, rect.Min.y / scale);
+				break;
+			}
+		}
+
+		// Render
+		const bool success = plutosvg_document_render(pluto_svg, nullptr, pluto_canvas, nullptr, nullptr, nullptr);
+
+		// Free pluto objects
+		plutovg_canvas_destroy(pluto_canvas);
+		plutovg_surface_destroy(pluto_surface);
+		plutosvg_document_destroy(pluto_svg);
+
+		if (!success)
+		{
+			Console.Error("Failed to render svg '%s'", path);
+			return image;
+		}
+
+		// Convert to RGBA8Image
+		plutovg_convert_argb_to_rgba(reinterpret_cast<unsigned char*>(pixel_data.data()), reinterpret_cast<unsigned char*>(pixel_data.data()),
+			px_width, px_height, px_width * 4);
+		image = RGBA8Image(px_width, px_height, std::move(pixel_data));
+	}
+	else
+	{
+		Console.Error("Failed to open texture resource '%s'", path);
+	}
+
+	return image;
+}
+
+std::shared_ptr<GSTexture> ImGuiFullscreen::LoadSvgTexture(std::string_view path, ImVec2 size, SvgScaling mode)
+{
+	std::string path_str(path);
+	std::optional<RGBA8Image> image(LoadSvgTextureImage(path_str.c_str(), size, mode));
+	if (image.has_value())
+	{
+		std::shared_ptr<GSTexture> ret(UploadTexture(path_str.c_str(), image.value()));
+		if (ret)
+			return ret;
+	}
+
+	return s_placeholder_texture;
+}
+
+GSTexture* ImGuiFullscreen::GetCachedSvgTexture(std::string_view name, ImVec2 size, SvgScaling mode)
+{
+	std::string svg_key = fmt::format("{}_{}x{}_{}", name, size.x, size.y, static_cast<u8>(mode));
+
+	std::shared_ptr<GSTexture>* tex_ptr = s_texture_cache.Lookup(svg_key);
+	if (!tex_ptr)
+	{
+		std::shared_ptr<GSTexture> tex(LoadSvgTexture(name, size, mode));
+		tex_ptr = s_texture_cache.Insert(std::string(svg_key), std::move(tex));
+	}
+
+	return tex_ptr->get();
+}
+
+GSTexture* ImGuiFullscreen::GetCachedSvgTextureAsync(std::string_view name, ImVec2 size, SvgScaling mode)
+{
+	std::string svg_key = fmt::format("{}_{}x{}_{}", name, size.x, size.y, static_cast<u8>(mode));
+
+	std::shared_ptr<GSTexture>* tex_ptr = s_texture_cache.Lookup(svg_key);
+	if (!tex_ptr)
+	{
+		// insert the placeholder
+		tex_ptr = s_texture_cache.Insert(std::string(svg_key), s_placeholder_texture);
+
+		// queue the actual load
+		std::unique_lock lock(s_texture_load_mutex);
+		s_svg_texture_load_queue.emplace_back(std::tuple(name, size, mode));
+		s_texture_load_cv.notify_one();
+	}
+
+	return tex_ptr->get();
+}
+
 bool ImGuiFullscreen::InvalidateCachedTexture(const std::string& path)
 {
 	return s_texture_cache.Remove(path);
@@ -398,7 +564,12 @@ void ImGuiFullscreen::TextureLoaderThread()
 	for (;;)
 	{
 		s_texture_load_cv.wait(
-			lock, []() { return (s_texture_load_thread_quit.load(std::memory_order_acquire) || !s_texture_load_queue.empty()); });
+			lock, []() {
+				return (
+					s_texture_load_thread_quit.load(std::memory_order_acquire) ||
+					!s_texture_load_queue.empty() ||
+					!s_svg_texture_load_queue.empty());
+			});
 
 		if (s_texture_load_thread_quit.load(std::memory_order_acquire))
 			break;
@@ -416,9 +587,30 @@ void ImGuiFullscreen::TextureLoaderThread()
 			if (image)
 				s_texture_upload_queue.emplace_back(std::move(path), std::move(image.value()));
 		}
+
+		while (!s_svg_texture_load_queue.empty())
+		{
+			std::string path;
+			ImVec2 size;
+			SvgScaling mode;
+			std::tie(path, size, mode) = std::move(s_svg_texture_load_queue.front());
+			s_svg_texture_load_queue.pop_front();
+
+			lock.unlock();
+			std::optional<RGBA8Image> image(LoadSvgTextureImage(path.c_str(), size, mode));
+			lock.lock();
+
+			// don't bother queuing back if it doesn't exist
+			if (image)
+			{
+				std::string svg_key = fmt::format("{}_{}x{}_{}", path, size.x, size.y, static_cast<u8>(mode));
+				s_texture_upload_queue.emplace_back(std::move(svg_key), std::move(image.value()));
+			}
+		}
 	}
 
 	s_texture_load_queue.clear();
+	s_svg_texture_load_queue.clear();
 }
 
 bool ImGuiFullscreen::UpdateLayoutScale()
@@ -451,13 +643,13 @@ bool ImGuiFullscreen::UpdateLayoutScale()
 	return g_layout_scale != old_scale;
 }
 
-ImRect ImGuiFullscreen::CenterImage(const ImVec2& fit_size, const ImVec2& image_size)
+ImRect ImGuiFullscreen::CenterImage(const ImVec2& fit_size, const ImVec2& image_size, bool fill)
 {
 	const float fit_ar = fit_size.x / fit_size.y;
 	const float image_ar = image_size.x / image_size.y;
 
 	ImRect ret;
-	if (fit_ar > image_ar)
+	if ((fit_ar > image_ar) ^ fill)
 	{
 		// center horizontally
 		const float width = fit_size.y * image_ar;
@@ -477,7 +669,7 @@ ImRect ImGuiFullscreen::CenterImage(const ImVec2& fit_size, const ImVec2& image_
 	return ret;
 }
 
-ImRect ImGuiFullscreen::CenterImage(const ImRect& fit_rect, const ImVec2& image_size)
+ImRect ImGuiFullscreen::CenterImage(const ImRect& fit_rect, const ImVec2& image_size, bool fill)
 {
 	ImRect ret(CenterImage(fit_rect.Max - fit_rect.Min, image_size));
 	ret.Translate(fit_rect.Min);
