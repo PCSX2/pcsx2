@@ -1530,7 +1530,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						GL_CACHE("TC: Attempt to repopulate RGB for target [%x] on source lookup", t->m_TEX0.TBP0);
 						for (Target* dst_match : m_dst[DepthStencil])
 						{
-							if (dst_match->m_TEX0.TBP0 != t->m_TEX0.TBP0 || !dst_match->m_valid_rgb)
+							// Be careful of dirty overlap on the targets, we don't really want dirty data.
+							if (dst_match->m_TEX0.TBP0 != t->m_TEX0.TBP0 || !dst_match->m_valid_rgb ||(!dst_match->m_dirty.empty() && !dst_match->m_dirty.GetTotalRect(dst_match->m_TEX0, dst_match->m_unscaled_size).rintersect(block_boundary_rect).rempty()))
 								continue;
 
 							if (!CopyRGBFromDepthToColor(t, dst_match))
@@ -2147,7 +2148,23 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				// 2. Preserved data will be in the correct place (in most cases)
 				// 3. Less deleting sources/targets
 				// 4. We can basically do clears in hardware, if they aren't insane ones
-				if (can_use && ((!is_shuffle && t->m_dirty.size() >= 1) || (is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16)) && ((preserve_alpha && preserve_rgb) || (draw_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y && !possible_clear)) && TEX0.TBW != t->m_TEX0.TBW)
+				bool dirtied_area = t->m_dirty.size() >= 1;
+
+				// Check it covers the whole area of the new draw
+				if (!is_shuffle && dirtied_area)
+				{
+					const u32 draw_start = GSLocalMemory::GetStartBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, draw_rect);
+					const u32 draw_end = GSLocalMemory::GetEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, draw_rect);
+
+					const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
+					const u32 dirty_start = GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, dirty_rect);
+					const u32 dirty_end = GSLocalMemory::GetEndBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, dirty_rect);
+
+					if (dirty_end < draw_end || dirty_start > draw_start)
+						dirtied_area = false;
+				}
+
+				if (can_use && ((!is_shuffle && dirtied_area) || (is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16)) && ((preserve_alpha && preserve_rgb) || (draw_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y && !possible_clear)) && TEX0.TBW != t->m_TEX0.TBW)
 				{
 					can_use = false;
 				}

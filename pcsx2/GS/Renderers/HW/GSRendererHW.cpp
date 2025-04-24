@@ -2482,7 +2482,7 @@ void GSRendererHW::Draw()
 	//                                |       0.5,2.25 |        1-1 |    1 |
 	//                                |        0.5,2.5 |        1-2 |    2 |
 	//                                --------------------------------------
-	m_r = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p) + GSVector4::cxpr(0.5f));
+	m_r = GSVector4i((m_vt.m_min.p.upld(m_vt.m_max.p) + GSVector4::cxpr(0.4f)).round<Round_NearestInt>());
 	m_r = m_r.blend8(m_r + GSVector4i::cxpr(0, 0, 1, 1), (m_r.xyxy() == m_r.zwzw()));
 	m_r_no_scissor = m_r;
 	m_r = m_r.rintersect(context->scissor.in);
@@ -6492,8 +6492,9 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		// Can't use box filtering on depth (yet), or fractional scales.
 		if (src_target->m_texture->IsDepthStencil() || std::floor(src_target->GetScale()) != src_target->GetScale())
 		{
-			const GSVector4 dst_rect = GSVector4(GSVector4i::loadh(src_unscaled_size));
-			g_gs_device->StretchRect(src_target->m_texture, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), src_copy.get(), dst_rect,
+			GSVector4 src_rect = GSVector4(tmm.coverage) / GSVector4(GSVector4i::loadh(src_unscaled_size).zwzw());
+			const GSVector4 dst_rect = GSVector4(tmm.coverage);
+			g_gs_device->StretchRect(src_target->m_texture, src_rect, src_copy.get(), dst_rect,
 				src_target->m_texture->IsDepthStencil() ? ShaderConvert::DEPTH_COPY : ShaderConvert::COPY, false);
 		}
 		else
