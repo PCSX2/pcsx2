@@ -2695,6 +2695,15 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				// Probably an old target, get rid of it.
 				if (remove_target)
 				{
+					// DT Racer hits this path and causes a crash when RT in RT is disabled,
+					// so let's make sure source and target texture isn't linked/shared before deleting the target.
+					if (src && src->m_target && src->m_from_target == t && src->m_target_direct)
+					{
+						src->m_target_direct = false;
+						src->m_shared_texture = false;
+						t->m_texture = nullptr;
+					}
+
 					InvalidateSourcesFromTarget(t);
 					i = rev_list.erase(i);
 					delete t;
