@@ -42,6 +42,7 @@ BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, Breakpo
 		m_ui.rdoExecute->setChecked(true);
 		m_ui.chkEnable->setChecked(bp->enabled);
 		m_ui.txtAddress->setText(QtUtils::FilledQStringFromValue(bp->addr, 16));
+		m_ui.txtDescription->setText(QString::fromStdString(bp->description));
 
 		if (bp->hasCond)
 			m_ui.txtCondition->setText(QString::fromStdString(bp->cond.expressionString));
@@ -52,6 +53,8 @@ BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, Breakpo
 
 		m_ui.txtAddress->setText(QtUtils::FilledQStringFromValue(mc->start, 16));
 		m_ui.txtSize->setText(QtUtils::FilledQStringFromValue(mc->end - mc->start, 16));
+
+		m_ui.txtDescription->setText(QString::fromStdString(mc->description));
 
 		m_ui.chkRead->setChecked(mc->memCond & MEMCHECK_READ);
 		m_ui.chkWrite->setChecked(mc->memCond & MEMCHECK_WRITE);
@@ -102,6 +105,7 @@ void BreakpointDialog::accept()
 		}
 
 		bp->addr = address;
+		bp->description = m_ui.txtDescription->text().toStdString();
 
 		bp->enabled = m_ui.chkEnable->isChecked();
 
@@ -138,6 +142,7 @@ void BreakpointDialog::accept()
 
 		mc->start = startAddress;
 		mc->end = startAddress + size;
+		mc->description = m_ui.txtDescription->text().toStdString();
 
 		if (!m_ui.txtCondition->text().isEmpty())
 		{

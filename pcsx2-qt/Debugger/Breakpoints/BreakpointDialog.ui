@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>375</width>
-    <height>250</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,19 +22,19 @@
   <property name="minimumSize">
    <size>
     <width>375</width>
-    <height>250</height>
+    <height>300</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>375</width>
-    <height>250</height>
+    <height>300</height>
    </size>
   </property>
   <property name="baseSize">
    <size>
     <width>375</width>
-    <height>250</height>
+    <height>300</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -44,7 +44,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>210</y>
+     <y>260</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -102,14 +102,17 @@
     <rect>
      <x>110</x>
      <y>10</y>
-     <width>251</width>
-     <height>41</height>
+     <width>250</width>
+     <height>79</height>
     </rect>
    </property>
    <property name="title">
     <string/>
    </property>
    <layout class="QFormLayout" name="formLayout">
+    <property name="formAlignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
     <item row="0" column="0">
      <widget class="QLabel" name="label">
       <property name="text">
@@ -139,6 +142,29 @@
       </property>
      </widget>
     </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>Description</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="txtDescription">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>19</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>19</height>
+       </size>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QGroupBox" name="grpMemory">
@@ -148,7 +174,7 @@
    <property name="geometry">
     <rect>
      <x>110</x>
-     <y>50</y>
+     <y>100</y>
      <width>251</width>
      <height>91</height>
     </rect>
@@ -224,13 +250,13 @@
    <property name="geometry">
     <rect>
      <x>110</x>
-     <y>140</y>
+     <y>190</y>
      <width>251</width>
      <height>61</height>
     </rect>
    </property>
    <property name="title">
-    <string></string>
+    <string/>
    </property>
    <layout class="QFormLayout" name="formLayout_3">
     <item row="0" column="0">
