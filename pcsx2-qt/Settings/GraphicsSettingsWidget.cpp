@@ -988,8 +988,8 @@ void GraphicsSettingsWidget::onHDRChanged()
 	m_ui.hdrPeakBrightness->setEnabled(enabled);
 #ifndef PCSX2_DEVBUILD // Allow messing around in dev builds
 	// Dithering is forced off in HDR, and all render targets are R16G16B16A16F
-	m_ui.dithering->setVisible(!enabled);
-	m_ui.ditheringLabel->setVisible(!enabled);
+	m_ui.dithering->setEnabled(!enabled);
+	m_ui.ditheringLabel->setEnabled(!enabled);
 #endif
 }
 
