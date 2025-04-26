@@ -438,7 +438,7 @@ namespace FullscreenUI
 
 	static void InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, s32 slot);
 	static bool InitializeSaveStateListEntry(
-		SaveStateListEntry* li, const std::string& title, const std::string& serial, u32 crc, s32 slot);
+		SaveStateListEntry* li, const std::string& title, const std::string& serial, u32 crc, s32 slot, bool backup = false);
 	static void ClearSaveStateEntryList();
 	static u32 PopulateSaveStateListEntries(const std::string& title, const std::string& serial, u32 crc);
 	static bool OpenLoadStateSelectorForGame(const std::string& game_path);
@@ -5625,9 +5625,9 @@ void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* l
 }
 
 bool FullscreenUI::InitializeSaveStateListEntry(
-	SaveStateListEntry* li, const std::string& title, const std::string& serial, u32 crc, s32 slot)
+	SaveStateListEntry* li, const std::string& title, const std::string& serial, u32 crc, s32 slot, bool backup)
 {
-	std::string filename(VMManager::GetSaveStateFileName(serial.c_str(), crc, slot));
+	std::string filename(VMManager::GetSaveStateFileName(serial.c_str(), crc, slot, backup));
 	FILESYSTEM_STAT_DATA sd;
 	if (filename.empty() || !FileSystem::StatFile(filename.c_str(), &sd))
 	{
@@ -5635,7 +5635,7 @@ bool FullscreenUI::InitializeSaveStateListEntry(
 		return false;
 	}
 
-	li->title = fmt::format("{}##game_slot_{}", TinyString::from_format(FSUI_FSTR("Save Slot {0}"), slot), slot);
+	li->title = fmt::format("{}##game_slot_{}", TinyString::from_format(FSUI_FSTR("{0} Slot {1}"), backup ? "Backup Save" : "Save", slot), slot);
 	li->summary = fmt::format(FSUI_FSTR("Saved {}"), TimeToPrintableString(sd.ModificationTime));
 	li->slot = slot;
 	li->timestamp = sd.ModificationTime;
@@ -5680,6 +5680,10 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& title, const s
 		SaveStateListEntry li;
 		if (InitializeSaveStateListEntry(&li, title, serial, crc, i) || !s_save_state_selector_loading)
 			s_save_state_selector_slots.push_back(std::move(li));
+
+		SaveStateListEntry bli;
+		if (InitializeSaveStateListEntry(&bli, title, serial, crc, i, true) || !s_save_state_selector_loading)
+			s_save_state_selector_slots.push_back(std::move(bli));
 	}
 
 	return static_cast<u32>(s_save_state_selector_slots.size());
