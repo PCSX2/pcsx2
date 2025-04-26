@@ -5530,10 +5530,6 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		if (m_conf.ps.blend_c == 2)
 			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
 
-		static bool assertSubtractiveBlends = false;
-		pxAssert(!assertSubtractiveBlends || (blend.op != GSDevice::OP_SUBTRACT && blend.op != GSDevice::OP_REV_SUBTRACT));
-		static bool assertInverseBlends = true; //TODO1
-		pxAssert(!assertInverseBlends || (blend.src != GSDevice::INV_SRC_COLOR && blend.src != GSDevice::INV_DST_COLOR && blend.src != GSDevice::INV_SRC1_COLOR && blend.dst != GSDevice::INV_SRC_COLOR && blend.dst != GSDevice::INV_DST_COLOR && blend.dst == GSDevice::INV_SRC1_COLOR));
 		if (!keep_sw_blending && accumulation_blend)
 		{
 			// Keep HW blending to do the addition/subtraction
@@ -5664,8 +5660,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		m_conf.ps.blend_b = 0;
 		m_conf.ps.blend_d = 0;
 
-		// We could probably skip this entirely in HDR (float textures alphas can go beyond 1) but it's not been tested //TODO: comment
-		const bool rta_correction = can_scale_rt_alpha && !blend_ad_alpha_masked && m_conf.ps.blend_c == 1 && !(blend_flag & BLEND_A_MAX) /*&& !EmuConfig.HDRRendering*/;
+		const bool rta_correction = can_scale_rt_alpha && !blend_ad_alpha_masked && m_conf.ps.blend_c == 1 && !(blend_flag & BLEND_A_MAX);
 		if (rta_correction)
 		{
 			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
@@ -6665,8 +6660,8 @@ void GSRendererHW::EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool
 	const int atst = pass_2 ? inverted_atst[m_cached_ctx.TEST.ATST] : m_cached_ctx.TEST.ATST;
 	const float aref = static_cast<float>(m_cached_ctx.TEST.AREF);
 
-	// Add an offset to account for 8bit/float inaccuracies, hopefully it's not needed in HDR
-	const float rounding_offset = EmuConfig.HDRRendering ? 0.f : 0.1f;
+	// Add an offset to account for 8bit/float inaccuracies, hopefully it's not needed in HDR (see "HDR_FLT_THRESHOLD" in shaders)
+	const float rounding_offset = (EmuConfig.HDRRendering && EmuConfig.HDRMode > 1) ? (0.0001f * 128.0f) : 0.1f;
 
 	switch (atst)
 	{
@@ -7035,6 +7030,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	bool new_scale_rt_alpha = false;
 	if (rt)
 	{
+		// TODO: if HDR rendering is enabled, we could always pre-correct alpha, thus scaling it by 2 (matching 128 to 1) when the texture is first written.
+		// This would allow HDR to skip many RTA correction and decorrection passes, and do more HW blends (because float textures can go beyond 1!).
 		can_scale_rt_alpha = !needs_ad && (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8) && rt_new_alpha_max <= 128;
 
 		const bool partial_fbmask = (m_conf.ps.fbmask && m_conf.cb_ps.FbMask.a != 0xFF && m_conf.cb_ps.FbMask.a != 0);

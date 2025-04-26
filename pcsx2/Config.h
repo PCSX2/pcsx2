@@ -1351,6 +1351,8 @@ struct Pcsx2Config
 	bool HDROutput = false;
 	bool IsPortableMode = false;
 
+	u8 HDRMode = 2;
+
 	Pcsx2Config();
 	void LoadSave(SettingsWrapper& wrap);
 	void LoadSaveCore(SettingsWrapper& wrap);

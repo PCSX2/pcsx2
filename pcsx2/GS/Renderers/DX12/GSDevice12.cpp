@@ -2498,7 +2498,7 @@ bool GSDevice12::CompileConvertPipelines()
 	gpb.SetVertexShader(m_convert_vs.get());
 
 	ShaderMacro sm;
-	sm.AddMacro("PS_HDR", EmuConfig.HDRRendering ? "1" : "0");
+	sm.AddMacro("PS_HDR", EmuConfig.HDRRendering ? "2" : "0");
 
 	for (ShaderConvert i = ShaderConvert::COPY; static_cast<int>(i) < static_cast<int>(ShaderConvert::Count);
 		 i = static_cast<ShaderConvert>(static_cast<int>(i) + 1))
@@ -2996,7 +2996,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 	sm.AddMacro("PS_NO_COLOR", sel.no_color);
 	sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
-	sm.AddMacro("PS_HDR", EmuConfig.HDRRendering);
+	sm.AddMacro("PS_HDR", EmuConfig.HDRRendering ? 2 : 0);
 
 	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, sm.GetPtr(), "ps_main"));
 	it = m_tfx_pixel_shaders.emplace(sel, std::move(ps)).first;

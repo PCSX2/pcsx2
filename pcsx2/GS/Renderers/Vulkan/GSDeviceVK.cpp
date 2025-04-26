@@ -3958,7 +3958,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 	std::string psource;
 	if (EmuConfig.HDRRendering)
 	{
-		psource += "#define PS_HDR 1\n";
+		psource += "#define PS_HDR 2\n";
 	}
 	psource += *shader;
 
@@ -4907,7 +4907,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_TEX_IS_FB", sel.tex_is_fb);
 	AddMacro(ss, "PS_NO_COLOR", sel.no_color);
 	AddMacro(ss, "PS_NO_COLOR1", sel.no_color1);
-	AddMacro(ss, "PS_HDR", EmuConfig.HDRRendering);
+	AddMacro(ss, "PS_HDR", EmuConfig.HDRRendering ? 2 : 0);
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(ss.str());

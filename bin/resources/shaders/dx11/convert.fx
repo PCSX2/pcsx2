@@ -5,11 +5,22 @@
 #define PS_HDR 0
 #endif
 
+#if PS_HDR && 0
+#undef PS_HDR
+#define PS_HDR 0
+#endif
+
+#define FLT_MAX	asfloat(0x7F7FFFFF)  //3.402823466e+38f
+#define INT_MAX	0x7FFFFFFF
+
+#define NEUTRAL_ALPHA 128.0f
+
 #if PS_HDR
-//#define NEUTRAL_ALPHA 127.5f
-#define NEUTRAL_ALPHA 128.0f
+#define OUTPUT_MAX FLT_MAX
+// We could possibly go even lower but it shouldn't really matter
+#define HDR_FLT_THRESHOLD 0.0001f
 #else
-#define NEUTRAL_ALPHA 128.0f
+#define OUTPUT_MAX INT_MAX
 #endif
 
 struct VS_INPUT
@@ -116,7 +127,7 @@ PS_OUTPUT ps_filter_transparency(PS_INPUT input)
 // Need to be careful with precision here, it can break games like Spider-Man 3 and Dogs Life
 uint ps_convert_rgba8_16bits(PS_INPUT input) : SV_Target0
 {
-	uint4 i = saturate(sample_c(input.t)) * float4(255.5f, 255.5f, 255.5f, 255.5f);
+	uint4 i = saturate(sample_c(input.t)) * 255.0f + 0.5f;
 
 	return ((i.x & 0x00F8u) >> 3) | ((i.y & 0x00F8u) << 2) | ((i.z & 0x00f8u) << 7) | ((i.w & 0x80u) << 8);
 }
@@ -125,8 +136,16 @@ PS_OUTPUT ps_datm1(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	
-	clip(sample_c(input.t).a - 127.5f / 255); // >= 0x80 pass
-	
+#if PS_HDR > 2
+	// In "full" HDR we reduce the tolerance threshold compared to the default branch below. These are >= tests, so if in HDR we have more granularity over the values,
+	// we don't want to give it any further tolerance, or we'd risk things like shadow getting larger, due to their alpha values being more nuanced and the test accepting a larger area of a shadow stencil gradient.
+	clip(sample_c(input.t).a - (NEUTRAL_ALPHA / 255.0f - HDR_FLT_THRESHOLD));
+#else
+	// For the "PS_HDR <= 2" cases, there's no need to round the sampled alpha (to the closest value on a scale of 0-255)
+	// because it would have been quantized on write, and the HDR formats have enough precisions to preserve it
+	clip(sample_c(input.t).a - (NEUTRAL_ALPHA - 0.5f) / 255.0f); // >= 0x80 pass
+#endif
+
 	output.c = 0;
 
 	return output;
@@ -136,7 +155,11 @@ PS_OUTPUT ps_datm0(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	
-	clip(127.5f / 255 - sample_c(input.t).a); // < 0x80 pass (== 0x80 should not pass)
+#if PS_HDR > 2
+	clip((NEUTRAL_ALPHA / 255.0f - HDR_FLT_THRESHOLD) - sample_c(input.t).a);
+#else
+	clip((NEUTRAL_ALPHA - 0.5f) / 255.0f - sample_c(input.t).a); // < 0x80 pass (== 0x80 should not pass)
+#endif
 	
 	output.c = 0;
 
@@ -147,47 +170,53 @@ PS_OUTPUT ps_datm1_rta_correction(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
-	clip(sample_c(input.t).a - 254.5f / 255); // >= 0x80 pass
+#if PS_HDR > 2
+	clip(sample_c(input.t).a - (1.f - HDR_FLT_THRESHOLD));
+#else
+	clip(sample_c(input.t).a - 254.5f / 255.0f); // >= 0x80 pass
+#endif
 
 	output.c = 0;
 
 	return output;
 }
 
-//TODO: these in HDR?
 PS_OUTPUT ps_datm0_rta_correction(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
-	clip(254.5f / 255 - sample_c(input.t).a); // < 0x80 pass (== 0x80 should not pass)
+#if PS_HDR > 2
+	clip((1.f - HDR_FLT_THRESHOLD) - sample_c(input.t).a);
+#else
+	clip(254.5f / 255.0f - sample_c(input.t).a); // < 0x80 pass (== 0x80 should not pass)
+#endif
 
 	output.c = 0;
 
 	return output;
 }
 
+// Maps alpha ~0.5 (the original form, given we store in UNORM8, where 128 is ~0.5) to ~1 (and 1 to ~2 wherever possible)
 PS_OUTPUT ps_rta_correction(PS_INPUT input)
 {
 	PS_OUTPUT output;
-	float4 value = sample_c(input.t);
-#if PS_HDR && 0 //TODO: saturate this and the above+below ones too? I was suggested to not to. Anyway this is not needed until proven otherwise.
+	float4 value = sample_c(input.t); // We can be guaranteed that alpha isn't beyond 0-2 even in HDR, as we pre-clamp it for safety
+#if PS_HDR && 0 //TODO: saturate this in HDR? I was suggested to not to. Anyway this is not needed until proven otherwise. Probably not... but see comment above.
 	value.a = saturate(value.a);
 #endif
 #if PS_HDR
 	output.c = float4(value.rgb, value.a * (255.0f / NEUTRAL_ALPHA));
 #else
-	output.c = float4(value.rgb, value.a * (255.0f / (NEUTRAL_ALPHA + 0.25f)));
+	output.c = float4(value.rgb, value.a * (255.0f / (NEUTRAL_ALPHA + 0.25f))); // Add 0.25 as a rounding "hack" (it's not entirely clear why)
 #endif
 	return output;
 }
 
+// Maps alpha ~1 to ~0.5 (and ~2 to 1 wherever possible)
 PS_OUTPUT ps_rta_decorrection(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
-#if PS_HDR && 0
-	value.a = saturate(value.a);
-#endif
 #if PS_HDR
 	output.c = float4(value.rgb, value.a * (NEUTRAL_ALPHA / 255.0f));
 #else
@@ -196,30 +225,12 @@ PS_OUTPUT ps_rta_decorrection(PS_INPUT input)
 	return output;
 }
 
-float fmod_mask_positive(float a, float b)
-{
-	// Don't wrap if the number if a multiple, to emulate bit mask operators
-	if (fmod(a, b) == 0.f && a != 0.f)
-	{
-		return b;
-	}
-	return fmod(fmod(a, b) + b, b);
-}
-float3 fmod_mask_positive(float3 a, float b)
-{
-	return float3(fmod_mask_positive(a.x, b), fmod_mask_positive(a.y, b), fmod_mask_positive(a.z, b));
-}
-
 PS_OUTPUT ps_colclip_init(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
-	value.rgb = saturate(value.rgb); // Clamp to [0,1] range given we might have upgraded the "Color" texture to float/HDR, to avoid overflow
-#if PS_HDR
-	output.c = float4(value.rgb * 255.f / 65535.f, value.a);
-#else
-	output.c = float4(round(value.rgb * 255) / 65535, value.a);
-#endif
+	value.rgb = saturate(value.rgb); // Clamp to [0,1] range given we might have upgraded the "Color" texture to float/HDR, to avoid an initial overflow which could't have happened in uint/SDR
+	output.c = float4(int3((value.rgb * 255.0) + 0.5) / 65535.0, value.a); // We quantize the source to 8bit even if it was HDR, any finer detail isn't relevant as this is about wrapping
 	return output;
 }
 
@@ -227,12 +238,7 @@ PS_OUTPUT ps_colclip_resolve(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
-#if PS_HDR
-	//TODO: add handling for negative values here (fmod_positive())? Or is this pre-wrapped to be positive only?
-	output.c = float4(fmod_mask_positive(value.rgb * 65535.f, 255.f) / 255.f, value.a);
-#else
-	output.c = float4(float3(uint3(value.rgb * 65535.5) & 255) / 255, value.a);
-#endif
+	output.c = float4(float3(uint3((value.rgb * 65535.0) + 0.5) & 255) / 255.0, value.a); //TODO: are we properly handling negative blend results?
 	return output;
 }
 
@@ -265,25 +271,25 @@ PS_OUTPUT ps_convert_float16_rgb5a1(PS_INPUT input)
 
 float rgba8_to_depth32(float4 val)
 {
-	uint4 c = uint4(saturate(val) * 255.5f);
+	uint4 c = uint4(saturate(val) * 255.0f + 0.5f);
 	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
 }
 
 float rgba8_to_depth24(float4 val)
 {
-	uint3 c = uint3(saturate(val.rgb) * 255.5f);
+	uint3 c = uint3(saturate(val.rgb) * 255.0f + 0.5f);
 	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
 }
 
 float rgba8_to_depth16(float4 val)
 {
-	uint2 c = uint2(saturate(val.rg) * 255.5f);
+	uint2 c = uint2(saturate(val.rg) * 255.0f + 0.5f);
 	return float(c.r | (c.g << 8)) * exp2(-32.0f);
 }
 
 float rgb5a1_to_depth16(float4 val)
 {
-	uint4 c = uint4(saturate(val) * 255.5f);
+	uint4 c = uint4(saturate(val) * 255.0f + 0.5f);
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
 }
 
@@ -493,46 +499,66 @@ PS_OUTPUT ps_yuv(PS_INPUT input)
 	return output;
 }
 
-//TODO: these in HDR?
 float ps_stencil_image_init_0(PS_INPUT input) : SV_Target
 {
 	float c;
-	if ((127.5f / 255.0f) < sample_c(input.t).a) // < 0x80 pass (== 0x80 should not pass)
+#if PS_HDR > 2
+	// In "full" HDR we reduce the tolerance threshold compared to the default branch below. These are >= tests, so if in HDR we have more granularity over the values,
+	// we don't want to give it any further tolerance, or we'd risk things like shadow getting larger, due to their alpha values being more nuanced and the test accepting a larger area of a shadow stencil gradient.
+	if ((NEUTRAL_ALPHA / 255.0f - HDR_FLT_THRESHOLD) < sample_c(input.t).a)
+#else
+	// For the "PS_HDR <= 2" cases, there's no need to round the sampled alpha (to the closest value on a scale of 0-255)
+	// because it would have been quantized on write, and the HDR formats have enough precisions to preserve it
+	if (((NEUTRAL_ALPHA - 0.5f) / 255.0f) < sample_c(input.t).a) // < 0x80 pass (== 0x80 should not pass)
+#endif
 		c = float(-1);
 	else
-		c = float(0x7FFFFFFF);
+		c = float(OUTPUT_MAX);
 	return c;
 }
 
 float ps_stencil_image_init_1(PS_INPUT input) : SV_Target
 {
 	float c;
-	if (sample_c(input.t).a < (127.5f / 255.0f)) // >= 0x80 pass
+#if PS_HDR > 2
+	if (sample_c(input.t).a < (NEUTRAL_ALPHA / 255.0f - HDR_FLT_THRESHOLD))
+#else
+	if (sample_c(input.t).a < ((NEUTRAL_ALPHA - 0.5f) / 255.0f)) // >= 0x80 pass
+#endif
 		c = float(-1);
 	else
-		c = float(0x7FFFFFFF);
+		c = float(OUTPUT_MAX);
 	return c;
 }
 
-//TODO: these in HDR?
+// RTA corrected
 float ps_stencil_image_init_2(PS_INPUT input)
 	: SV_Target
 {
 	float c;
+#if PS_HDR > 2
+	if ((1.0f - HDR_FLT_THRESHOLD) < sample_c(input.t).a)
+#else
 	if ((254.5f / 255.0f) < sample_c(input.t).a) // < 0x80 pass (== 0x80 should not pass)
+#endif
 		c = float(-1);
 	else
-		c = float(0x7FFFFFFF);
+		c = float(OUTPUT_MAX);
 	return c;
 }
 
+// RTA corrected
 float ps_stencil_image_init_3(PS_INPUT input)
 	: SV_Target
 {
 	float c;
+#if PS_HDR > 2
+	if (sample_c(input.t).a < (1.0f - HDR_FLT_THRESHOLD))
+#else
 	if (sample_c(input.t).a < (254.5f / 255.0f)) // >= 0x80 pass
+#endif
 		c = float(-1);
 	else
-		c = float(0x7FFFFFFF);
+		c = float(OUTPUT_MAX);
 	return c;
 }

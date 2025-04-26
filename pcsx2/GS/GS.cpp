@@ -1266,6 +1266,16 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 					Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(EmuConfig.CurrentAspectRatio)]),
 				Host::OSD_QUICK_DURATION);
 		}},
+	{"HDRMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "HDR Mode"),
+		[](s32 pressed) {
+			if (pressed)
+				return;
+
+			// technically this races, but the worst that'll happen is one frame uses the old AR.
+			EmuConfig.HDRMode = (EmuConfig.HDRMode + 1) % 4;
+			Host::AddKeyedOSDMessage("HDRMode",
+				fmt::format(TRANSLATE_FS("Hotkeys", "HDR mode set to '{}'."), EmuConfig.HDRMode), Host::OSD_QUICK_DURATION);
+		}},
 	{"ToggleMipmapMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Hardware Mipmapping"),
 		[](s32 pressed) {
 			if (!pressed)

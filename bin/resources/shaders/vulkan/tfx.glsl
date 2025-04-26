@@ -1062,7 +1062,7 @@ vec4 ps_color()
 void ps_fbmask(inout vec4 C)
 {
 	#if PS_FBMASK
-		if (PS_HDR == 1 && PS_COLCLIP_HW == 0)
+		if (PS_HDR > 1 && PS_COLCLIP_HW == 0)
 		{
 			vec4 RT = sample_from_rt() * 255.0f;
 			bvec4 hi_bit = bvec4((FbMask.x & uint(0x80)) != 0, (FbMask.y & uint(0x80)) != 0, (FbMask.z & uint(0x80)) != 0, (FbMask.w & uint(0x80)) != 0);

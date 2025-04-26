@@ -384,6 +384,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 pabe           : 1;
 				u32 no_color       : 1; // disables color output entirely (depth only)
 				u32 no_color1      : 1; // disables second color output (when unnecessary)
+				u32 hdr_mode       : 2; // 0 SDR (default), 1 HDR (range only, quantized to 8 bits), 2 HDR (only alpha quantized to 8 bit), 3 HDR (no quantization)
 
 				// Others ways to fetch the texture
 				u32 channel : 3;

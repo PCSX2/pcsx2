@@ -1905,7 +1905,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantB(m_fn_constants, pssel.manual_lod,            GSMTLConstantIndex_PS_MANUAL_LOD);
 		setFnConstantB(m_fn_constants, pssel.region_rect,           GSMTLConstantIndex_PS_REGION_RECT);
 		setFnConstantI(m_fn_constants, pssel.scanmsk,               GSMTLConstantIndex_PS_SCANMSK);
-		setFnConstantB(m_fn_constants, EmuConfig.HDRRendering,       GSMTLConstantIndex_PS_HDR);
+		setFnConstantI(m_fn_constants, EmuConfig.HDRRendering ? 2u : 0u,       GSMTLConstantIndex_PS_HDR);
 		auto newps = LoadShader(@"ps_main");
 		ps = newps;
 		m_hw_ps.insert(std::make_pair(pssel, std::move(newps)));
