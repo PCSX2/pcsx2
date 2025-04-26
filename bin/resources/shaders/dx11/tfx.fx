@@ -696,9 +696,7 @@ float4 sample_depth(float2 st, float2 pos)
 	else if (PS_PAL_FMT != 0 && !PS_TALES_OF_ABYSS_HLE && !PS_URBAN_CHAOS_HLE)
 	{
 		t = sample_4p(ctype4(t.aaaa))[0] * 255.0f;
-#if PS_HDR <= 1
 		t = trunc(t + 0.5f);
-#endif
 	}
 
 	return t;
@@ -786,7 +784,7 @@ float4 fetch_gXbY(int2 xy)
 		//TODO: allow float? or int.
 		float4 rt_float = fetch_raw_color(xy) * 255.0f;
 #if PS_HDR > 1 // The other HDR cases should already be clamped and quantized
-		rt_float = min(round(rt_float), 255.0f) + 0.5f;
+		rt_float = min(rt_float, 255.0f) + 0.5f;
 #endif
 		int4 rt = (int4)rt_float;
 		int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
@@ -933,13 +931,11 @@ float4 tfx(const float4 T, const float4 C)
 #if (PS_TFX == 0) || (PS_TFX == 2) || (PS_TFX == 3)
 	// Clamp only when it is useful
 	if (PS_HDR == 0)
-	{
 		C_out = min(C_out, 255.0f);
-	}
 	else
-	{
 		C_out.a = min(C_out.a, max(alpha_max, 255.0f));
-	}
+#elif PS_HDR != 0
+	C_out.a = min(C_out.a, max(alpha_max, 255.0f));
 #endif
 
 	return C_out;
@@ -984,7 +980,7 @@ float4 shuffle(float4 C, bool true_read_false_write)
 {
 	//TODO1: allow float? or int. It'd be very hard... (same around all other PS_SHUFFLE code) We need to detect what channels have been shuffled
 #if PS_HDR > 1 // The other HDR cases should already be clamped and quantized
-	C = min(round(C), 255.0f) + 0.5f;
+	C = min(C, 255.0f) + 0.5f;
 #endif
 	uint4 denorm_c_before = uint4(C); 
 	if (PS_PROCESS_BA & (true_read_false_write ? SHUFFLE_READ : SHUFFLE_WRITE))
@@ -1158,7 +1154,7 @@ void ps_color_clamp_wrap(inout float3 C)
 			if (PS_HDR == 0)
 				C = clamp(C, 0.0f, 255.0f);
 			else // Games use subtractive blends (-1) to clear render targets to black, so we need to clip them to 0 (anyway without this, bloom can often can go negative and make the scene darker, and colclip hw wouldn't wrap correctly on initialization)
-				C = max(C, 0.0f);
+				C = max(C, 0.0f); //TODO: limit this anyway in HDR for safety? Maybe to 4 times? Or 2 times?
 		}
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
@@ -1430,8 +1426,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	output.c = (C.a < (NEUTRAL_ALPHA - 0.5f)) ? float(input.primid) : float(OUTPUT_MAX);
 #endif
 
-#else
-	// Not primid DATE setup
+#else // Not primid DATE setup
 
 	ps_blend(C, alpha_blend, input.p.xy);
 
@@ -1440,7 +1435,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (!PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
 #if PS_HDR > 1 // The other HDR cases should already be clamped and quantized
-			C = min(round(C), 255.0f) + 0.5f;
+			C = min(C, 255.0f) + 0.5f;
 #endif
 			uint4 denorm_c_after = uint4(C);
 			if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1459,7 +1454,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (PS_SHUFFLE_SAME)
 		{
 #if PS_HDR > 1
-			C = min(round(C), 255.0f) + 0.5f;
+			C = min(C, 255.0f) + 0.5f;
 #endif
 			uint4 denorm_c = uint4(C);
 			
@@ -1472,7 +1467,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		else if (PS_READ16_SRC)
 		{
 #if PS_HDR > 1
-			C = min(round(C), 255.0f) + 0.5f;
+			C = min(C, 255.0f) + 0.5f;
 #endif
 			uint4 denorm_c = uint4(C);
 			uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
@@ -1494,7 +1489,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 				C.rb = C.bb;
 				C.ga = C.aa;
 			}
-			else // PS_PROCESS_RG
+			else // PS_PROCESS_RG & SHUFFLE_READ
 			{
 				C.rb = C.rr;
 				C.ga = C.gg;
