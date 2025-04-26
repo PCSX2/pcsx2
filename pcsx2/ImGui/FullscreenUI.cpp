@@ -3505,7 +3505,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
 	MenuHeading(FSUI_CSTR("On-Screen Display"));
 	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_SEARCH, "OSD Scale"),
-		FSUI_CSTR("Determines how large the on-screen messages and monitor are."), "EmuCore/GS", "OsdScale", 100, 25, 500, 1, FSUI_CSTR("%d%%"));
+		FSUI_CSTR("Determines how large the on-screen messages and monitor are."), "EmuCore/GS", "OsdScale", 100, 25, 400, 1, FSUI_CSTR("%d%%"));
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Show Messages"),
 		FSUI_CSTR(
 			"Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc."),
@@ -4319,7 +4319,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		const bool hdr_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "hdr", false);
 		
 		DrawIntRangeSetting(bsi, FSUI_CSTR("HDR Nits"), FSUI_CSTR("Adjusts the brightness of the HDR output (in nits). 203 nits is standard."), "EmuCore/GS",
-			"HDR_BrightnessNits", Pcsx2Config::GSOptions::DEFAULT_HDR_BRIGHTNESS_NITS, 80, 500, "%d", hdr_active);
+			"HDR_BrightnessNits", Pcsx2Config::GSOptions::DEFAULT_HDR_BRIGHTNESS_NITS, 80, 400, "%d", hdr_active);
 		DrawIntRangeSetting(bsi, FSUI_CSTR("HDR Peak Nits"), FSUI_CSTR("Adjusts the peak brightness of the HDR output (in nits). It should match your display peak brightness."), "EmuCore/GS",
 			"HDR_PeakBrightnessNits", Pcsx2Config::GSOptions::DEFAULT_HDR_PEAK_BRIGHTNESS_NITS, 400, 10000, "%d", hdr_active);
 
