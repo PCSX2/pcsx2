@@ -245,20 +245,18 @@ float3 fmod_positive(float3 a, float b)
 // Additionally, if the LUT had inverted colors or highly fluctuating colors, extrapolation would work a lot better than a raw LUT out of range extraction with a luminance multiplier.
 //
 // Note that this function might return "invalid colors", they could have negative values etc etc, so make sure to clamp them after if you need to.
-float4 sampleLUTWithExtrapolation(Texture2D<float4> lut, float unclampedU)
+float4 sampleLUTWithExtrapolation(Texture2D<float4> lut, float unclampedPixelU)
 {
   // LUT size in texels
   float lutWidth; // 256.0;
   float lutHeight; // 1.0;
-  Texture.GetDimensions(lutWidth, lutHeight);
+  lut.GetDimensions(lutWidth, lutHeight);
   const float2 lutSize = float2(lutWidth, lutHeight);
   const float2 lutMax = lutSize - 1.0;
   const float2 uvScale = lutMax / lutSize;        // Also "1-(1/lutSize)"
   const float2 uvOffset = 1.0 / (2.0 * lutSize);  // Also "(1/lutSize)/2"
-  // The uv distance between the center of one texel and the next one
-  const float2 lutTexelRange = 1.0 / lutMax;
 
-  float2 unclampedUV = float2(unclampedU, 0.5);
+  float2 unclampedUV = float2(unclampedPixelU / lutMax.x, 0.5);
   const float2 clampedUV = saturate(unclampedUV);
   const float distanceFromUnclampedToClamped = abs(unclampedUV.x - clampedUV.x);
   const bool uvOutOfRange = distanceFromUnclampedToClamped > FLT_MIN; // Some threshold is needed to avoid divisions by tiny numbers
@@ -268,7 +266,7 @@ float4 sampleLUTWithExtrapolation(Texture2D<float4> lut, float unclampedU)
   if (uvOutOfRange)
   {
     // Travel backwards down the LUT by 25%
-    float backwardsOffset = 0.25 * (lutSize.x / lutMax.x); // Make this "lutTexelRange.x" to only go back by one texel, though that's usually not enough to get proper extrapolation
+    float backwardsOffset = 0.25 * (lutSize.x / lutMax.x);
     float2 centeredUV = float2(clampedUV.x >= 0.5 ? max(clampedUV.x - backwardsOffset, 0.5) : min(clampedUV.x + backwardsOffset, 0.5), unclampedUV.y);
     const float4 centeredSample = lut.Sample(TextureLinearSampler, (centeredUV * uvScale) + uvOffset).xyzw;
     const float distanceFromClampedToCentered = abs(clampedUV.x - centeredUV.x);
@@ -376,7 +374,7 @@ float4 sample_p(ctype u)
 	if (PS_HDR)
 	{
 #if PS_HDR > 1
-		float4 p = sampleLUTWithExtrapolation(Palette, u / 255.0f);
+		float4 p = sampleLUTWithExtrapolation(Palette, u);
 		p = max(p, 0.f); // Any negative value should probably be clamped as it'd be accidental and have negative consequences
 #if PS_HDR <= 2
 		// Always make sure alpha is quantized
