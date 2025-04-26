@@ -87,7 +87,7 @@ public Q_SLOTS:
 	void setVMPaused(bool paused);
 	void shutdownVM(bool save_state = true);
 	void loadState(const QString& filename);
-	void loadStateFromSlot(qint32 slot);
+	void loadStateFromSlot(qint32 slot, bool load_backup = false);
 	void saveState(const QString& filename);
 	void saveStateToSlot(qint32 slot);
 	void toggleFullscreen();

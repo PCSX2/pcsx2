@@ -118,10 +118,10 @@ namespace VMManager
 	void ReloadInputBindings(bool force = false);
 
 	/// Returns the save state filename for the given game serial/crc.
-	std::string GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot);
+	std::string GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot, bool backup = false);
 
 	/// Returns the path to save state for the specified disc/elf.
-	std::string GetSaveStateFileName(const char* filename, s32 slot);
+	std::string GetSaveStateFileName(const char* filename, s32 slot, bool backup = false);
 
 	/// Returns true if there is a save state in the specified slot.
 	bool HasSaveStateInSlot(const char* game_serial, u32 game_crc, s32 slot);
@@ -130,7 +130,7 @@ namespace VMManager
 	bool LoadState(const char* filename);
 
 	/// Loads state from the specified slot.
-	bool LoadStateFromSlot(s32 slot);
+	bool LoadStateFromSlot(s32 slot, bool backup = false);
 
 	/// Saves state to the specified filename.
 	bool SaveState(const char* filename, bool zip_on_thread = true, bool backup_old_state = false);
