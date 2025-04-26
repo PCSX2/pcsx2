@@ -8642,7 +8642,8 @@ ClearType GSRendererHW::IsConstantDirectWriteMemClear()
 u32 GSRendererHW::GetConstantDirectWriteMemClearColor() const
 {
 	// Take the vertex colour, but check if the blending would make it black.
-	u32 vert_color = m_vertex.buff[1].RGBAQ.U32[0];
+	const u32 vert_index = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 2 : 1;
+	u32 vert_color = m_vertex.buff[m_index.buff[vert_index]].RGBAQ.U32[0];
 	if (PRIM->ABE && m_context->ALPHA.IsBlack())
 		vert_color &= 0xFF000000u;
 
