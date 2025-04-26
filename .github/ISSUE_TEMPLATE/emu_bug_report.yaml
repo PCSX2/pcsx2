@@ -66,10 +66,6 @@ body:
 
         Performance issues as a result of not meeting our hardware requirements are not valid.
 
-        Please read our known issues pages for AMD and Intel drivers.
-        - [Intel Drivers](https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know).
-        - [AMD Drivers](https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know).
-
         We are **not** accepting issues related to the **libretro** core. The libretro core is being maintained separately at this time
   - type: input
     id: rev
