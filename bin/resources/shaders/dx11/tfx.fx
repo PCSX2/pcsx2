@@ -107,6 +107,12 @@
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 
+// If this is true, shuffle is simply swapping g/a or r/b within a single pass, by doing two 16<->32 bit reinterprets on read and write.
+// Note that we might also want to accept "PS_TFX == 0" if the whole pass vertex color is 128, but that's not necessary until proven otherwise.
+// Other types of blends might also be active as long as they didn't influence the output (e.g. different blend flags, or fixed alpha at 128 (neutral)), we can't can't easily account for them all.
+#define SHUFFLE_TEX_PASSTHROUGH (PS_FOG == 0 && PS_TFX == 1 && PS_TCC == 0 && PS_FIXED_ONE_A == 0 && SW_BLEND ? (PS_BLEND_A == PS_BLEND_B && PS_BLEND_D == 0) : (PS_BLEND_MIX == 0 && PS_BLEND_HW == 0))
+#define SHUFFLE_RT_PASSTHROUGH (SW_BLEND && PS_BLEND_A == PS_BLEND_B && PS_BLEND_D == 1)
+
 #define FLT_MIN	asfloat(0x00800000)  //1.175494351e-38f
 #define FLT_MAX	asfloat(0x7F7FFFFF)  //3.402823466e+38f
 
@@ -1017,6 +1023,10 @@ float4 fog(float4 c, float f)
 	return c;
 }
 
+// In 0-255 range
+static float4 pre_shuffle_c = 0.f;
+static float4 pre_shuffle_rt = 0.f;
+
 float4 ps_color(PS_INPUT input)
 {
 #if PS_FST == 0
@@ -1044,6 +1054,8 @@ float4 ps_color(PS_INPUT input)
 #else
 	float4 T = sample_color(st, input.t.w);
 #endif
+
+	pre_shuffle_c = T;
 
 	if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 	{
@@ -1205,6 +1217,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		}
 
 		float4 RT = SW_BLEND_NEEDS_RT ? DecodeTex(RtTexture.Load(int3(pos_xy, 0))) : (float4)0.0f;
+		pre_shuffle_rt = RT;
 
 		if (PS_SHUFFLE && SW_BLEND_NEEDS_RT)
 		{
@@ -1495,10 +1508,39 @@ PS_OUTPUT ps_main(PS_INPUT input)
 				C.ga = C.gg;
 			}
 
-			if (PS_HDR > 1) // Avoid alpha ever going beyond two in HDR (if its value came from another HDR channel)
+			bool clamp_alpha = true;
+
+			// If we have shuffles in read and write, we are essentially doing two 16<->32 bit reinterprets and swapping channels.
+			// In the SDR code, to emulate real HW, this clipped all values beyond 255. For HDR, we want to preserve the original value without clipping it
+			// (e.g. GoW stores the scene green color in the alpha channel during shadow calculations, to later restore it)
+#if PS_HDR > 1 //TODO...
+#if SHUFFLE_TEX_PASSTHROUGH
+#if PS_PROCESS_BA
+			C.a = pre_shuffle_c.g;
+#else
+			C.g = pre_shuffle_c.a;
+#endif
+			//TODO: find which channels to restore based on "PS_PROCESS_BA" etc
+			C.a = pre_shuffle_c.g;
+			C.g = pre_shuffle_c.a;
+			//C.a = 0;
+			clamp_alpha = false;
+#elif SHUFFLE_RT_PASSTHROUGH
+#if PS_PROCESS_BA
+			C.a = pre_shuffle_RT.g;
+#else
+			C.g = pre_shuffle_RT.a;
+#endif
+			clamp_alpha = false;
+#endif
+#endif
+
+#if PS_HDR > 1 // Avoid alpha ever going beyond two in HDR (if its value came from another HDR channel)
+			if (clamp_alpha)
 			{
 				C.a = min(C.a, 255.0f);
 			}
+#endif
 		}
 	}
 
