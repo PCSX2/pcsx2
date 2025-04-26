@@ -269,7 +269,7 @@ enum HWBlendFlags
 	BLEND_ACCU   = 0x2000, // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
 	BLEND_NO_REC = 0x4000, // Doesn't require sampling of the RT as a texture
 	BLEND_A_MAX  = 0x8000, // Impossible blending uses coeff bigger than 1
-	BLEND_NEG    = 0x1000, // The blend is "subtractive" and risks resulting in colors below 0
+	BLEND_NEG    = 0x10000, // The blend is "subtractive" and risks resulting in colors below 0
 };
 
 // Determines the HW blend function for the video backend
