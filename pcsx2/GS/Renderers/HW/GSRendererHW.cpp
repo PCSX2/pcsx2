@@ -6492,13 +6492,22 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		m_conf.ps.tfx = 4;
 		return;
 	}
+
+	// CopyRect() might crash if the source area reads out of bounds or the target area writes out of bounds
+	//pxAssert(scaled_copy_range.x >= 0 && scaled_copy_range.z <= src_target->m_texture->GetWidth() && scaled_copy_range.y >= 0 && scaled_copy_range.w <= src_target->m_texture->GetHeight());
+	GSVector4i clamped_copy_range = scaled_copy_range;
+	clamped_copy_range.z = std::min(clamped_copy_range.z, src_target->m_texture->GetWidth());
+	clamped_copy_range.w = std::min(clamped_copy_range.w, src_target->m_texture->GetHeight());
+	clamped_copy_range.x = std::min(clamped_copy_range.x, clamped_copy_range.z);
+	clamped_copy_range.y = std::min(clamped_copy_range.y, clamped_copy_range.w);
 	
-	const GSVector4 src_rect = GSVector4(scaled_copy_range) / GSVector4(src_target->m_texture->GetSize()).xyxy();
-	const GSVector4 dst_rect = GSVector4((float)scaled_copy_dst_offset.x, (float)scaled_copy_dst_offset.y, scaled_copy_dst_offset.x + (scaled_copy_range.width() * ((float)src_copy->GetSize().x / (float)src_target->m_texture->GetSize().x)), scaled_copy_dst_offset.y + (scaled_copy_range.height() * ((float)src_copy->GetSize().y / (float)src_target->m_texture->GetSize().y)));
-	//const GSVector4 dst_rect = GSVector4(scaled_copy_range - scaled_copy_range.xyxy() + GSVector4i(scaled_copy_dst_offset).xyxy());
-	const GSVector4i equal_size_vec = (scaled_copy_range.zwzw() - scaled_copy_range.xyxy()) == GSVector4i(dst_rect.zwzw() - dst_rect.xyxy() + 0.5f);
-	const bool equal_size = equal_size_vec.x != 0 && equal_size_vec.y != 0; //TODO1
-	
+	clamped_copy_range = clamped_copy_range - clamped_copy_range.xyxy() + GSVector4i(scaled_copy_dst_offset).xyxy();
+	clamped_copy_range.z = std::min(clamped_copy_range.z, src_copy->GetWidth());
+	clamped_copy_range.w = std::min(clamped_copy_range.w, src_copy->GetHeight());
+	clamped_copy_range.x = std::min(clamped_copy_range.x, clamped_copy_range.z);
+	clamped_copy_range.y = std::min(clamped_copy_range.y, clamped_copy_range.w);
+	clamped_copy_range = clamped_copy_range - clamped_copy_range.xyxy() + scaled_copy_range.xyxy();
+
 	if (m_downscale_source)
 	{
 		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
@@ -6528,19 +6537,16 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			g_gs_device->FilteredDownsampleTexture(src_target->m_texture, src_copy.get(), downsample_factor, clamp_min, dRect);
 		}
 	}
-	else if ((src_target->m_texture->GetFormat() != src_copy->GetFormat() /*|| !equal_size*/) /*&& src_copy->IsRenderTargetOrDepthStencil()*/) //TODO1
+	else if (src_target->m_texture->GetFormat() != src_copy->GetFormat())
 	{
-		pxAssert(src_copy->IsRenderTargetOrDepthStencil());
-		g_gs_device->StretchRect(src_target->m_texture, src_rect, src_copy.get(), dst_rect, ShaderConvert::COPY, !equal_size);
+		const GSVector4 src_rect = GSVector4(clamped_copy_range) / GSVector4(src_target->m_texture->GetSize()).xyxy();
+		const GSVector4 dst_rect = GSVector4(clamped_copy_range - clamped_copy_range.xyxy() + GSVector4i(scaled_copy_dst_offset).xyxy());
+		g_gs_device->StretchRect(src_target->m_texture, src_rect, src_copy.get(), dst_rect, ShaderConvert::COPY, false);
 	}
-	else //if (equal_size) // CopyRect() might crash if the target size is out of bound //TODO1
+	else
 	{
 		g_gs_device->CopyRect(
-			src_target->m_texture, src_copy.get(), scaled_copy_range, scaled_copy_dst_offset.x, scaled_copy_dst_offset.y);
-	}
-	//else
-	{
-		//pxAssert(false); // This shouldn't happen!
+			src_target->m_texture, src_copy.get(), clamped_copy_range, scaled_copy_dst_offset.x, scaled_copy_dst_offset.y);
 	}
 	m_conf.tex = src_copy.get();
 }
