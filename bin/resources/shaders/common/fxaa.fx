@@ -160,10 +160,7 @@ float FxaaLuma(float4 rgba)
 
 float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaSubpix, float fxaaEdgeThreshold, float fxaaEdgeThresholdMin)
 {
-	float2 posM;
-	posM.x = pos.x;
-	posM.y = pos.y;
-
+	float2 posM = pos;
 	float4 rgbyM = FxaaTexTop(tex, posM);
 	rgbyM.w = RGBLuminance(rgbyM.xyz);
 	#define lumaM rgbyM.w
@@ -186,9 +183,10 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	float rangeMaxScaled = rangeMax * fxaaEdgeThreshold;
 	float rangeMaxClamped = max(fxaaEdgeThresholdMin, rangeMaxScaled);
 
-	bool earlyExit = range < rangeMaxClamped;
 	#if (FxaaEarlyExit == 1)
-	if(earlyExit) { return rgbyM; }
+	// Potential optimization, early exit.
+	if (range < rangeMaxClamped)
+		return rgbyM;
 	#endif
 
 	float lumaNW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1,-1), fxaaRcpFrame.xy));
