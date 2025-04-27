@@ -108,8 +108,8 @@
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 
 // If this is true, shuffle is simply swapping g/a or r/b within a single pass, by doing two 16<->32 bit reinterprets on read and write.
-// Note that we might also want to accept "PS_TFX == 0" if the whole pass vertex color is 128, but that's not necessary until proven otherwise.
-// Other types of blends might also be active as long as they didn't influence the output (e.g. different blend flags, or fixed alpha at 128 (neutral)), we can't can't easily account for them all.
+// Note that we might also want to accept "PS_TFX == 0" if the whole pass vertex color is 128, but that's not necessary until proven otherwise. Fog might also be active but with intensity 0.
+// Other types of blends might also be active as long as they didn't influence the input (e.g. different blend flags, or fixed alpha at 128 (neutral)), we can't can't easily account for them all.
 #define SHUFFLE_TEX_PASSTHROUGH (PS_FOG == 0 && PS_TFX == 1 && PS_TCC == 0 && PS_FIXED_ONE_A == 0 && SW_BLEND ? (PS_BLEND_A == PS_BLEND_B && PS_BLEND_D == 0) : (PS_BLEND_MIX == 0 && PS_BLEND_HW == 0))
 #define SHUFFLE_RT_PASSTHROUGH (SW_BLEND && PS_BLEND_A == PS_BLEND_B && PS_BLEND_D == 1)
 
@@ -331,7 +331,7 @@ float4 sample_c(float2 uv, float uv_w)
 		// I'm manually adjusting coordinates to the centre of texels here,
 		// though the centre is just paranoia, the top left corner works fine.
 		// As of 2018 this issue is still present.
-#if 0 // Shouldn't be done on NV?
+#if 0 // Shouldn't be done on NV? //TODO
 		uv = (trunc(uv * WH.zw) + float2(0.5, 0.5)) / WH.zw;
 #endif
 	}
@@ -386,7 +386,7 @@ float4 sample_p(ctype u)
 		// Always make sure alpha is quantized
 		p.a = round(p.a * 255.0f) / 255.0f;
 #endif
-#else // Old basic extrapolation code
+#else // Old basic extrapolation code (it doesn't work well with wierd LUTs)
 		float2 size;
 		Palette.GetDimensions(size.x, size.y);
 		// Y is always 1 texel large
@@ -938,8 +938,6 @@ float4 tfx(const float4 T, const float4 C)
 		C_out = min(C_out, 255.0f);
 	else
 		C_out.a = min(C_out.a, max(alpha_max, 255.0f));
-#elif PS_HDR != 0
-	C_out.a = min(C_out.a, max(alpha_max, 255.0f));
 #endif
 
 	return C_out;
@@ -1536,7 +1534,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #if PS_HDR > 1 // Avoid alpha ever going beyond two in HDR (if its value came from another HDR channel)
 			if (clamp_alpha)
 			{
-				C.a = min(C.a, 255.0f);
+				C.a = min(C.a, 255.0f); // Theoretically we should quantize alpha again too here, but we are doing it just below, before the final output
 			}
 #endif
 		}
