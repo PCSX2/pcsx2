@@ -271,8 +271,8 @@ float4 sampleLUTWithExtrapolation(Texture2D<float4> lut, float unclampedPixelU)
 
   if (uvOutOfRange)
   {
-    // Travel backwards down the LUT by 25%
-    float backwardsOffset = 0.25 * (lutSize.x / lutMax.x);
+    // Travel backwards down the LUT by 25% (anything from 1 texel backwards to 33% should be good)
+    float backwardsOffset = 0.25;
     float2 centeredUV = float2(clampedUV.x >= 0.5 ? max(clampedUV.x - backwardsOffset, 0.5) : min(clampedUV.x + backwardsOffset, 0.5), unclampedUV.y);
     const float4 centeredSample = lut.Sample(TextureLinearSampler, (centeredUV * uvScale) + uvOffset).xyzw;
     const float distanceFromClampedToCentered = abs(clampedUV.x - centeredUV.x);
@@ -543,8 +543,6 @@ ctype4 sample_4_index(float4 uv, float uv_w)
 		return i >> 4u; // i / 16 with truncation
 #else
 		return i / 16.0f;
-		//return floor(i / 16.0f);
-		//return max(i - pow(2.f, 4.f), min(i, 0.f)) / pow(2.f, 4.f); //TODO1: this formula doesn't match the SDR one... As it doesn't mask out the first 4 bits first
 #endif
 	}
 	else
