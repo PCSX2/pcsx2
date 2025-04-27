@@ -6275,7 +6275,6 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	m_conf.sampler.lodclamp = !(trilinear_manual || trilinear_auto);
 }
 
-#pragma optimize("", off)
 __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, const GSTextureCache::Target* ds,
 	const GSTextureCache::Source* tex, const TextureMinMaxResult& tmm, GSTextureCache::SourceRegion& source_region,
 	bool& target_region, GSVector2i& unscaled_size, float& scale, GSDevice::RecycledTexture& src_copy)
@@ -6493,19 +6492,13 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		return;
 	}
 
-	// CopyRect() might crash if the source area reads out of bounds or the target area writes out of bounds
-	//pxAssert(scaled_copy_range.x >= 0 && scaled_copy_range.z <= src_target->m_texture->GetWidth() && scaled_copy_range.y >= 0 && scaled_copy_range.w <= src_target->m_texture->GetHeight());
+	// CopyRect() might crash if the source area reads out of bounds or the target area writes out of bounds, so clamp it upfront (it's unclear why we get in this situation in the first place)
 	GSVector4i clamped_copy_range = scaled_copy_range;
-	clamped_copy_range.z = std::min(clamped_copy_range.z, src_target->m_texture->GetWidth());
-	clamped_copy_range.w = std::min(clamped_copy_range.w, src_target->m_texture->GetHeight());
-	clamped_copy_range.x = std::min(clamped_copy_range.x, clamped_copy_range.z);
-	clamped_copy_range.y = std::min(clamped_copy_range.y, clamped_copy_range.w);
+	clamped_copy_range = clamped_copy_range.rintersect(GSVector4i(0, 0, src_target->m_texture->GetWidth(), src_target->m_texture->GetHeight()));
 	
 	clamped_copy_range = clamped_copy_range - clamped_copy_range.xyxy() + GSVector4i(scaled_copy_dst_offset).xyxy();
-	clamped_copy_range.z = std::min(clamped_copy_range.z, src_copy->GetWidth());
-	clamped_copy_range.w = std::min(clamped_copy_range.w, src_copy->GetHeight());
-	clamped_copy_range.x = std::min(clamped_copy_range.x, clamped_copy_range.z);
-	clamped_copy_range.y = std::min(clamped_copy_range.y, clamped_copy_range.w);
+	//pxAssert(clamped_copy_range.x >= 0 && clamped_copy_range.z <= src_copy->GetWidth() && clamped_copy_range.y >= 0 && clamped_copy_range.w <= src_copy->GetHeight());
+	clamped_copy_range = clamped_copy_range.rintersect(GSVector4i(0, 0, src_copy->GetWidth(), src_copy->GetHeight()));
 	clamped_copy_range = clamped_copy_range - clamped_copy_range.xyxy() + scaled_copy_range.xyxy();
 
 	if (m_downscale_source)
