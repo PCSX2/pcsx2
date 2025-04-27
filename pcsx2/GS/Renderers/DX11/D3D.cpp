@@ -531,7 +531,7 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEAT
 		error_blob.reset();
 	}
 
-	if (FAILED(hr))
+	if (FAILED(hr) || !error_string.empty())
 	{
 		Console.WriteLn("Failed to compile '%s':\n%s", target, error_string.c_str());
 
@@ -540,7 +540,7 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEAT
 		if (ofs.is_open())
 		{
 			ofs << code;
-			ofs << "\n\nCompile as " << target << " failed: " << hr << "\n";
+			ofs << "\n\nCompile as " << target << (FAILED(hr) ? " failed: " : " had warnings: ") << hr << "\n";
 			ofs.write(error_string.c_str(), error_string.size());
 			ofs << "\n";
 			if (macros)
@@ -551,11 +551,12 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEAT
 			ofs.close();
 		}
 
-		return {};
+		if (FAILED(hr))
+			return {};
 	}
 
 	if (!error_string.empty())
-		Console.Warning("'%s' compiled with warnings:\n%s", target, error_string.c_str());
+		Console.Warning("'%s' compiled with warnings:\n%s", entry_point, error_string.c_str());
 
 	return blob;
 }
