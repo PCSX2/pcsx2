@@ -1144,7 +1144,7 @@ void ps_dither(inout float3 C, float As, float2 pos_xy)
 
 void ps_color_clamp_wrap(inout float3 C)
 {
-	int mask = 0;
+	uint mask = 0;
 
 	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
 	// so we need to limit the color depth on dithered items
