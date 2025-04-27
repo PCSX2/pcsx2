@@ -1100,7 +1100,7 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 			C = (float4)((Ci & ~mask) | (RTi & mask));
 			// Retain any fractional value from the color with the lowest bit mask, to avoid quantizing to 8 bit.
 			// This hopefully never hurts stencil tests that depend on this mask.
-			C += lo_bit ? frac(RT) : frac(C); //TODO1: evaluate if this is even needed, this stuff is used for stencils etc
+			C += lo_bit ? (RT - (float4)RTi) : (C - (float4)Ci); //TODO1: evaluate if this is even needed, this stuff is used for stencils etc
 		}
 		else
 		{
