@@ -1629,7 +1629,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						 (GSLocalMemory::m_psm[color_psm].bpp >= 16 || (/*possible_shuffle &&*/ GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32)) && // Channel shuffles or non indexed lookups.
 					t->m_age <= 1 && (!found_t || t->m_last_draw > dst->m_last_draw) /*&& CanTranslate(bp, bw, psm, block_boundary_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW)*/)
 				{
-					u32 horz_page_offset = ((bp - t->m_TEX0.TBP0) >> 5) % t->m_TEX0.TBW;
+					u32 rt_tbw = std::max(1U, t->m_TEX0.TBW);
+					u32 horz_page_offset = ((bp - t->m_TEX0.TBP0) >> 5) % rt_tbw;
 					if (GSLocalMemory::m_psm[color_psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32 && bw != 1 && 
 						((t->m_TEX0.TBW < (horz_page_offset + ((block_boundary_rect.z + GSLocalMemory::m_psm[psm].pgs.x - 1) / GSLocalMemory::m_psm[psm].pgs.x)) || 
 						(t->m_TEX0.TBW != bw && block_boundary_rect.w > GSLocalMemory::m_psm[psm].pgs.y))))
@@ -1641,7 +1642,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					// Also check for 4HH/HL and 8H which use the alpha channel, if the page order is wrong this can cause problems as well (Jak X font).
 					else if (!possible_shuffle && GSLocalMemory::m_psm[psm].trbpp <= 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32 &&
 													(!(block_boundary_rect.w <= GSLocalMemory::m_psm[psm].pgs.y && ((GSLocalMemory::m_psm[psm].bpp == 32) ? bw : ((bw + 1) / 2)) <= t->m_TEX0.TBW) &&
-													!(((GSLocalMemory::m_psm[psm].bpp == 32) ? bw : ((bw + 1) / 2)) == t->m_TEX0.TBW)))
+								 !(((GSLocalMemory::m_psm[psm].bpp == 32) ? bw : ((bw + 1) / 2)) == rt_tbw)))
 					{
 						DevCon.Warning("BP %x - 8bit bad match for target bp %x bw %d src %d format %d", bp, t->m_TEX0.TBP0, t->m_TEX0.TBW, bw, t->m_TEX0.PSM);
 						continue;
@@ -1663,9 +1664,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					{
 						src_psm = t->m_TEX0.PSM;
 						// If it's taking double width for the shuffle, half that.
-						if (src_bw == (t->m_TEX0.TBW * 2))
+						if (src_bw == (rt_tbw * 2))
 						{
-							src_bw = t->m_TEX0.TBW;
+							src_bw = rt_tbw;
 
 							rect.x /= 2;
 							rect.z /= 2;
@@ -1678,7 +1679,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					}
 					if (bp > t->m_TEX0.TBP0)
 					{
-						if (!region.HasEither() && GSLocalMemory::m_psm[psm].bpp == 32 && (t->m_TEX0.TBW - (((bp - t->m_TEX0.TBP0) >> 5) % t->m_TEX0.TBW)) < static_cast<u32>((block_boundary_rect.width() + 63) / 64))
+						if (!region.HasEither() && GSLocalMemory::m_psm[psm].bpp == 32 && (t->m_TEX0.TBW - (((bp - t->m_TEX0.TBP0) >> 5) % rt_tbw)) < static_cast<u32>((block_boundary_rect.width() + 63) / 64))
 						{
 							DevCon.Warning("Bad alignmenet");
 							continue;
@@ -1737,7 +1738,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 									continue;
 							}
 
-							if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, t->m_TEX0.TBW == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
+							if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, rt_tbw == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
 								continue;
 
 							// Be careful of shuffles where it can shuffle the width of the target, even though it may not have all been drawn to.
@@ -1765,7 +1766,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							}
 							if (so.is_valid)
 							{
-								if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, t->m_TEX0.TBW == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
+								if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, rt_tbw == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
 									continue;
 
 								dst = t;
