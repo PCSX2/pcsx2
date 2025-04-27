@@ -1241,19 +1241,22 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 
 		// As/Af clamp alpha for Blend mix
 		// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
-		float C_clamped = C;
+		float C_clamped_hw = C;
+		float C_clamped_sw = C;
 		if (PS_BLEND_MIX > 0 && PS_BLEND_HW != 1 && PS_BLEND_HW != 2)
-			C_clamped = saturate(C_clamped);
+			C_clamped_hw = saturate(C_clamped_hw);
+		if (PS_HDR)
+			C_clamped_sw = clamp(0.f, C_clamped_sw, 2.f * (127.5f / NEUTRAL_ALPHA)); // Clamp to 1.9921875, the max PS2 alpha, it could have gone beyond in HDR
 
 		// A and B nullify each other, we can skip the whole thing
 		if (PS_BLEND_A == PS_BLEND_B)
 			Color.rgb = D;
 		else if (PS_BLEND_MIX == 2)
-			Color.rgb = (A - B) * C_clamped + D;
+			Color.rgb = (A - B) * C_clamped_hw + D;
 		else if (PS_BLEND_MIX == 1)
-			Color.rgb = (A - B) * C_clamped + D;
+			Color.rgb = (A - B) * C_clamped_hw + D;
 		else
-			Color.rgb = (A - B) * C + D;
+			Color.rgb = (A - B) * C_clamped_sw + D;
 
 		if (PS_BLEND_A != PS_BLEND_B)
 		{
@@ -1296,7 +1299,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		else if (PS_BLEND_HW == 3)
 		{
 			// As, Ad or Af clamped.
-			As_rgba.rgb = (float3)C_clamped;
+			As_rgba.rgb = (float3)C_clamped_hw;
 			// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
 			// that is sent on second output to compensate.
 			float3 overflow_check = (Color.rgb - (float3)255.0f) / 255.0f;
