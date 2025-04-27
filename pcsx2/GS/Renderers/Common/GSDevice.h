@@ -278,7 +278,7 @@ struct HWBlend
 	typedef u8 BlendOp; /*GSDevice::BlendOp*/
 	typedef u8 BlendFactor; /*GSDevice::BlendFactor*/
 
-	u16 flags;
+	u32 flags; /*HWBlendFlags*/
 	BlendOp op;
 	BlendFactor src, dst;
 };
@@ -1082,7 +1082,7 @@ public:
 	// Convert the GS blend equations to HW blend factors/ops
 	// Index is computed as ((((A * 3 + B) * 3) + C) * 3) + D. A, B, C, D taken from ALPHA register.
 	__ri static HWBlend GetBlend(u32 index) { return m_blendMap[index]; }
-	__ri static u16 GetBlendFlags(u32 index) { return m_blendMap[index].flags; }
+	__ri static auto GetBlendFlags(u32 index) { return m_blendMap[index].flags; }
 };
 
 template <>

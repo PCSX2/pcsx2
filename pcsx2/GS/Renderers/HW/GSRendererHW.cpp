@@ -5216,7 +5216,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 
 	const u8 blend_index = static_cast<u8>(((m_conf.ps.blend_a * 3 + m_conf.ps.blend_b) * 3 + m_conf.ps.blend_c) * 3 + m_conf.ps.blend_d);
 	HWBlend blend = GSDevice::GetBlend(blend_index);
-	const int blend_flag = blend.flags;
+	const auto blend_flag = blend.flags;
 
 	// Re set alpha, it was modified, must be done after index calculation
 	if (blend_ad_alpha_masked)
