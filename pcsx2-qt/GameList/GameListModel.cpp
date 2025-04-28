@@ -578,7 +578,7 @@ void GameListModel::loadThemeSpecificImages()
 		m_type_pixmaps[type] = getIconForType(static_cast<GameList::EntryType>(type)).pixmap(QSize(24, 24));
 
 	for (u32 i = 0; i < static_cast<u32>(GameList::Region::Count); i++)
-		m_region_pixmaps[i] = getIconForRegion(static_cast<GameList::Region>(i)).pixmap(QSize(42, 30));
+		m_region_pixmaps[i] = getIconForRegion(static_cast<GameList::Region>(i)).pixmap(QSize(36, 26));
 }
 
 void GameListModel::loadCommonImages()

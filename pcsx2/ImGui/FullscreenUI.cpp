@@ -6548,10 +6548,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 				std::string flag_texture(fmt::format("icons/flags/{}.svg", GameList::RegionToString(selected_entry->region)));
 				ImGui::TextUnformatted(FSUI_CSTR("Region: "));
 				ImGui::SameLine();
-				if (selected_entry->region == GameList::Region::Other)
-					DrawCachedSvgTextureAsync(flag_texture, LayoutScale(23.0f, 16.0f), SvgScaling::Fit);
-				else
-					DrawCachedSvgTextureAsync(flag_texture, LayoutScale(23.0f, 16.0f), SvgScaling::ZoomFill);
+				DrawCachedSvgTextureAsync(flag_texture, LayoutScale(23.0f, 16.0f), SvgScaling::Fit);
 				ImGui::SameLine();
 				ImGui::Text(" (%s)", GameList::RegionToString(selected_entry->region));
 			}
