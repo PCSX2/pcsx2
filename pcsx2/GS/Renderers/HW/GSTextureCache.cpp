@@ -2588,7 +2588,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 
 				std::swap(dst->m_texture, tex);
 				PreloadTarget(TEX0, size, GSVector2i(dst->m_valid.z, dst->m_valid.w), is_frame, preload,
-					preserve_target, draw_rect, dst);
+					preserve_target, draw_rect, dst, src);
 				g_gs_device->StretchRect(tex, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), dst->m_texture,
 					GSVector4(dst->m_texture->GetRect()), false, false, false, true);
 				g_gs_device->Recycle(tex);
