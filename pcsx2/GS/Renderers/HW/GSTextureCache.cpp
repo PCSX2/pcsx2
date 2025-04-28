@@ -2666,6 +2666,13 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			if (!is_shuffle && (!ds || (ds != t)) && 
 				t->m_TEX0.TBW != TEX0.TBW && TEX0.TBW != 1 && !preserve_rgb && min_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y)
 			{
+				if (src && src->m_target && src->m_from_target == t && src->m_target_direct)
+				{
+					src->m_target_direct = false;
+					src->m_shared_texture = false;
+					t->m_texture = nullptr;
+				}
+
 				DevCon.Warning("Deleting Z draw %d", GSState::s_n);
 				InvalidateSourcesFromTarget(t);
 				i = rev_list.erase(i);
