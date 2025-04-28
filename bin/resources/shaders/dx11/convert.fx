@@ -200,10 +200,9 @@ PS_OUTPUT ps_datm0_rta_correction(PS_INPUT input)
 PS_OUTPUT ps_rta_correction(PS_INPUT input)
 {
 	PS_OUTPUT output;
-	float4 value = sample_c(input.t); // We can be guaranteed that alpha isn't beyond 0-2 even in HDR, as we pre-clamp it for safety
-#if PS_HDR && 0 //TODO: saturate this in HDR? I was suggested to not to. Anyway this is not needed until proven otherwise. Probably not... but see comment above.
-	value.a = saturate(value.a);
-#endif
+	// We can be guaranteed that alpha isn't beyond 0-2 even in HDR, as we often pre-clamp it for safety,
+	// but if not, alpha will be clamped to 0-2 on blends, so we don't have to worry about clamping it here.
+	float4 value = sample_c(input.t);
 #if PS_HDR
 	output.c = float4(value.rgb, value.a * (255.0f / NEUTRAL_ALPHA));
 #else
@@ -238,7 +237,7 @@ PS_OUTPUT ps_colclip_resolve(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
-	output.c = float4(float3(uint3((value.rgb * 65535.0) + 0.5) & 255) / 255.0, value.a); //TODO: are we properly handling negative blend results?
+	output.c = float4(float3(uint3((value.rgb * 65535.0) + 0.5) & 255) / 255.0, value.a);
 	return output;
 }
 

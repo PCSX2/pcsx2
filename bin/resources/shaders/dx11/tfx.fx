@@ -788,9 +788,9 @@ float4 fetch_gXbY(int2 xy)
 		//TODO: allow float? or int.
 		float4 rt_float = fetch_raw_color(xy) * 255.0f;
 #if PS_HDR > 1 // The other HDR cases should already be clamped and quantized
-		rt_float = min(rt_float, 255.0f) + 0.5f;
+		rt_float = min(rt_float, 255.0f);
 #endif
-		int4 rt = (int4)rt_float;
+		int4 rt = (int4)(rt_float + 0.5f);
 		int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
 		int blue = (rt.b << ChannelShuffle.y) & ChannelShuffle.x;
 		return (float4)(green | blue);
@@ -982,9 +982,9 @@ float4 shuffle(float4 C, bool true_read_false_write)
 {
 	//TODO1: allow float? or int. It'd be very hard... (same around all other PS_SHUFFLE code) We need to detect what channels have been shuffled
 #if PS_HDR > 1 // The other HDR cases should already be clamped and quantized
-	C = min(C, 255.0f) + 0.5f;
+	C = min(C, 255.0f);
 #endif
-	uint4 denorm_c_before = uint4(C); 
+	uint4 denorm_c_before = uint4(C + 0.5f); 
 	if (PS_PROCESS_BA & (true_read_false_write ? SHUFFLE_READ : SHUFFLE_WRITE))
 	{
 		// rgba from b-ba-a-a
@@ -1185,7 +1185,7 @@ void ps_color_clamp_wrap(inout float3 C)
 			C = C - fmod_positive(C, 8.0f); // Round down to the nearest multiple of 8
 #endif
 		if (mask == 0xFF)
-			C = fmod_positive(C, 256.0f);
+			C = fmod_positive(C, 256.0f); // Wrapping needs to be mirrored for negative values to best emulate original HW
 #else
 		C = (float3)((int3)C & (int3)mask);
 #endif
@@ -1447,9 +1447,9 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (!PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
 #if PS_HDR > 1 // The other HDR cases should already be clamped and quantized
-			C = min(C, 255.0f) + 0.5f;
+			C = min(C, 255.0f);
 #endif
-			uint4 denorm_c_after = uint4(C);
+			uint4 denorm_c_after = uint4(C + 0.5f);
 			if (PS_PROCESS_BA & SHUFFLE_READ)
 			{
 				C.b = float(((denorm_c_after.r >> 3) & 0x1Fu) | ((denorm_c_after.g << 2) & 0xE0u));
@@ -1466,9 +1466,9 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (PS_SHUFFLE_SAME)
 		{
 #if PS_HDR > 1
-			C = min(C, 255.0f) + 0.5f;
+			C = min(C, 255.0f);
 #endif
-			uint4 denorm_c = uint4(C);
+			uint4 denorm_c = uint4(C + 0.5f);
 			
 			if (PS_PROCESS_BA & SHUFFLE_READ)
 				C = (float4)(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
@@ -1479,10 +1479,10 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		else if (PS_READ16_SRC)
 		{
 #if PS_HDR > 1
-			C = min(C, 255.0f) + 0.5f;
+			C = min(C, 255.0f);
 #endif
-			uint4 denorm_c = uint4(C);
-			uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
+			uint4 denorm_c = uint4(C + 0.5f);
+			uint2 denorm_TA = uint2(TA.xy * 255.0f + 0.5f);
 			C.rb = (float2)float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5));
 			if (denorm_c.a & 0x80u)
 				C.ga = (float2)float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u));
