@@ -3260,7 +3260,8 @@ void GSRendererHW::Draw()
 
 				new_size.y += new_offset;
 
-				rt->ResizeTexture(new_size.x, new_size.y, true, true, GSVector4i::loadh(new_size * rt->m_scale).loadl(GSVector2i(0, new_offset * rt->m_scale)));
+				const GSVector4i new_drect = GSVector4i(0, new_offset * rt->m_scale, new_size.x * rt->m_scale, new_size.y * rt->m_scale);
+				rt->ResizeTexture(new_size.x, new_size.y, true, true, new_drect);
 
 				if (src && src->m_from_target && src->m_from_target == rt && src->m_target_direct)
 				{
