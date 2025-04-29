@@ -3266,6 +3266,13 @@ void GSRendererHW::Draw()
 				if (src && src->m_from_target && src->m_from_target == rt && src->m_target_direct)
 				{
 					src->m_texture = rt->m_texture;
+
+					// If we've moved it and the source is expecting to be inside this target, we need to update the region to point to it.
+					u32 max_region_y = src->m_region.GetMaxY() + new_offset;
+					if (max_region_y == new_offset)
+						max_region_y = new_size.y;
+
+					src->m_region.SetY(src->m_region.GetMinY() + new_offset, max_region_y);
 				}
 
 				rt->m_valid.y += new_offset;
