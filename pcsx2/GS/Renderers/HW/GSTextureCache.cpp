@@ -2062,6 +2062,60 @@ GSVector2i GSTextureCache::ScaleRenderTargetSize(const GSVector2i& sz, float sca
 		static_cast<int>(std::ceil(static_cast<float>(sz.y) * scale)));
 }
 
+void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache::Source* src)
+{
+	auto& list = m_dst[target->m_type];
+
+	for (auto i = list.begin(); i != list.end();)
+	{
+		Target* t = *i;
+
+		if (t != target)
+		{
+			// Target not contained, skip it.
+			if (t->m_TEX0.TBP0 < target->m_TEX0.TBP0 || t->m_end_block > target->m_end_block)
+			{
+				i++;
+				continue;
+			}
+			// Formats match
+			if (t->m_TEX0.TBW == target->m_TEX0.TBW && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[target->m_TEX0.PSM].bpp)
+			{
+				const GSLocalMemory::psm_t& t_psm = GSLocalMemory::m_psm[t->m_TEX0.PSM];
+				const u32 page_offset = ((t->m_TEX0.TBP0 - target->m_TEX0.TBP0) >> 5) % std::max(1U, t->m_TEX0.TBW);
+				const u32 page_width = (t->m_valid.z + (t_psm.pgs.x - 1)) / t_psm.pgs.x;
+
+				if ((page_offset + page_width) <= target->m_TEX0.TBW)
+				{
+					const u32 vertical_offset = (((t->m_TEX0.TBP0 - target->m_TEX0.TBP0) >> 5) / std::max(1U, t->m_TEX0.TBW)) * t_psm.pgs.y;
+					const u32 horizontal_offset = page_offset * t_psm.pgs.x;
+					const GSVector4i target_drect_unscaled = t->m_valid + GSVector4i(horizontal_offset, vertical_offset).xyxy();
+					const GSVector4 target_drect = GSVector4(target_drect_unscaled) * target->m_scale;
+
+					g_gs_device->StretchRect(t->m_texture, GSVector4(0, 0, 1, 1), target->m_texture, target_drect, (target->m_type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY, t->m_scale < target->m_scale);
+
+					target->UpdateValidity(target_drect_unscaled);
+
+					if (src && src->m_from_target == t)
+					{
+						src->m_texture = t->m_texture;
+						src->m_shared_texture = false;
+						src->m_target_direct = false;
+						t->m_texture = nullptr;
+					}
+
+					InvalidateSourcesFromTarget(t);
+					i = list.erase(i);
+					delete t;
+
+					continue;
+				}
+			}
+		}
+		i++;
+	}
+}
+
 GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
 	bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_rgb, bool preserve_alpha, const GSVector4i draw_rect,
 	bool is_shuffle, bool possible_clear, bool preserve_scale, GSTextureCache::Source* src, GSTextureCache::Target* ds, int offset)
@@ -3268,7 +3322,9 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 					{
 						if (GSUtil::GetChannelMask(dst->m_TEX0.PSM) == 0x7 && (t->m_valid_alpha_high || t->m_valid_alpha_low))
 						{
-							t->m_valid_rgb = false;
+							if (GSLocalMemory::m_psm[dst->m_TEX0.PSM].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth)
+								t->m_valid_rgb = false;
+
 							i++;
 							continue;
 						}
@@ -3322,6 +3378,8 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 								i = list.erase(j);
 								delete t;
 							}
+
+							continue;
 						}
 					}
 					
