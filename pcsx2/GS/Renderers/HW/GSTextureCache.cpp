@@ -77,6 +77,8 @@ void GSTextureCache::ReadbackAll()
 
 void GSTextureCache::RemoveAll(bool sources, bool targets, bool hash_cache)
 {
+	InvalidateTemporaryZ();
+
 	if (sources || targets)
 	{
 		m_src.RemoveAll();
@@ -3189,11 +3191,32 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				auto j = i;
 				Target* t = *j;
 
-				if (dst != t && t->m_TEX0.PSM == dst->m_TEX0.PSM && dst->m_TEX0.TBW == t->m_TEX0.TBW && t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid) &&
+				if (dst != t && t->m_TEX0.PSM == dst->m_TEX0.PSM && t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid) &&
 					static_cast<int>(((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) / 32) % std::max(dst->m_TEX0.TBW, 1U)) <= std::max(0, static_cast<int>(dst->m_TEX0.TBW - t->m_TEX0.TBW)))
 				{
 					const u32 buffer_width = std::max(1U, dst->m_TEX0.TBW);
 
+					if (buffer_width != std::max(1U, t->m_TEX0.TBW))
+					{
+						// Check if this got messed with at some point, if it did just nuke it.
+						if (t->m_valid.width() == dst->m_valid.width())
+						{
+							// Not correct, but it's better than a null reference.
+							if (src && src->m_target_direct && src->m_from_target == t)
+							{
+								DevCon.Warning("Replacing source target, texture may be invalid");
+								src->m_texture = dst->m_texture;
+								src->m_from_target = dst;
+							}
+							
+							InvalidateSourcesFromTarget(t);
+							i = list.erase(j);
+							delete t;
+						}
+						else
+							i++;
+						continue;
+					}
 					// If the two targets are misaligned, it's likely a relocation, so we can just kill the old target.
 					// Kill targets that are overlapping new targets, but ignore the copy if the old target is dirty  because we favour GS memory.
 					if (((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % buffer_width) != 0) && !t->m_dirty.empty())
