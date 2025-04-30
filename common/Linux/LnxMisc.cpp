@@ -54,18 +54,18 @@ u64 GetAvailablePhysicalMemory()
 		while (fgets(line, sizeof(line), file))
 		{
 			// Modern kernels provide MemAvailable directly - preferred and most accurate.
-			if (sscanf(line, "MemAvailable: %llu kB", &mem_available) == 1)
+			if (sscanf(line, "MemAvailable: %lu kB", &mem_available) == 1)
 			{
 				fclose(file);
 				return mem_available * _1kb;
 			}
 
 			// Fallback values for manual approximation.
-			sscanf(line, "MemFree: %llu kB", &mem_free);
-			sscanf(line, "Buffers: %llu kB", &buffers);
-			sscanf(line, "Cached: %llu kB", &cached);
-			sscanf(line, "SReclaimable: %llu kB", &sreclaimable);
-			sscanf(line, "Shmem: %llu kB", &shmem);
+			sscanf(line, "MemFree: %lu kB", &mem_free);
+			sscanf(line, "Buffers: %lu kB", &buffers);
+			sscanf(line, "Cached: %lu kB", &cached);
+			sscanf(line, "SReclaimable: %lu kB", &sreclaimable);
+			sscanf(line, "Shmem: %lu kB", &shmem);
 		}
 		fclose(file);
 
