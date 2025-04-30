@@ -991,7 +991,7 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key, bool display,
 					if (it != m_controllers.end())
 						is_sixaxis = IsControllerSixaxis(*it);
 
-					const int joy_axis_Index = key.data - std::size(s_sdl_axis_setting_names);
+					const size_t joy_axis_Index = key.data - std::size(s_sdl_axis_setting_names);
 
 					if (is_sixaxis && key.modifier == InputModifier::FullAxis && key.invert == false &&
 						joy_axis_Index < std::size(s_sdl_ps3_sxs_pressure_names) && s_sdl_ps3_sxs_pressure_names[joy_axis_Index] != nullptr)
@@ -1112,7 +1112,7 @@ TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key)
 			}
 			else if (it != m_controllers.end() && IsControllerSixaxis(*it) && key.invert == false)
 			{
-				const int joy_axis_Index = key.data - std::size(s_sdl_axis_setting_names);
+				const size_t joy_axis_Index = key.data - std::size(s_sdl_axis_setting_names);
 
 				if (joy_axis_Index < std::size(s_sdl_ps3_pressure_icons) && s_sdl_ps3_pressure_icons[joy_axis_Index] != nullptr)
 					ret.format("SDL-{} {}", static_cast<u32>(key.source_index), s_sdl_ps3_pressure_icons[joy_axis_Index]);

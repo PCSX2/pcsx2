@@ -1658,8 +1658,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					// PSM equality needed because CreateSource does not handle PSM conversion.
 					// Only inclusive hit to limit false hits.
 					GSVector4i rect = block_boundary_rect;
-					int src_bw = bw;
-					int src_psm = psm;
+					u32 src_bw = bw;
+					u32 src_psm = psm;
 
 					// If the input is C16 and it's actually a shuffle of 32bits we need to correct the size.
 					if ((tex_color_psm & 0xF) <= PSMCT24 && (psm & 0x7) == PSMCT16 && possible_shuffle)

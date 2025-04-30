@@ -3270,7 +3270,7 @@ void GSRendererHW::Draw()
 					src->m_texture = rt->m_texture;
 
 					// If we've moved it and the source is expecting to be inside this target, we need to update the region to point to it.
-					u32 max_region_y = src->m_region.GetMaxY() + new_offset;
+					int max_region_y = src->m_region.GetMaxY() + new_offset;
 					if (max_region_y == new_offset)
 						max_region_y = new_size.y;
 
