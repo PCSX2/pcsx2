@@ -1637,7 +1637,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						((t->m_TEX0.TBW < (horz_page_offset + ((block_boundary_rect.z + GSLocalMemory::m_psm[psm].pgs.x - 1) / GSLocalMemory::m_psm[psm].pgs.x)) || 
 						(t->m_TEX0.TBW != bw && block_boundary_rect.w > GSLocalMemory::m_psm[psm].pgs.y))))
 					{
-						DevCon.Warning("BP %x - 16bit bad match for target bp %x bw %d src %d format %d", bp, t->m_TEX0.TBP0, t->m_TEX0.TBW, bw, t->m_TEX0.PSM);
+						DbgCon.Warning("BP %x - 16bit bad match for target bp %x bw %d src %d format %d", bp, t->m_TEX0.TBP0, t->m_TEX0.TBW, bw, t->m_TEX0.PSM);
 						continue;
 					}
 					// Keep note that 2 bw is basically 1 normal page, as bw is in 64 pixels, and 8bit pages are 128 pixels wide, aka 2 bw.
@@ -1646,12 +1646,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 													(!(block_boundary_rect.w <= GSLocalMemory::m_psm[psm].pgs.y && ((GSLocalMemory::m_psm[psm].bpp == 32) ? bw : ((bw + 1) / 2)) <= t->m_TEX0.TBW) &&
 								 !(((GSLocalMemory::m_psm[psm].bpp == 32) ? bw : ((bw + 1) / 2)) == rt_tbw)))
 					{
-						DevCon.Warning("BP %x - 8bit bad match for target bp %x bw %d src %d format %d", bp, t->m_TEX0.TBP0, t->m_TEX0.TBW, bw, t->m_TEX0.PSM);
+						DbgCon.Warning("BP %x - 8bit bad match for target bp %x bw %d src %d format %d", bp, t->m_TEX0.TBP0, t->m_TEX0.TBW, bw, t->m_TEX0.PSM);
 						continue;
 					}
 					else if (!possible_shuffle && GSLocalMemory::m_psm[psm].bpp <= 8 && TEX0.TBW == 1)
 					{
-						DevCon.Warning("Too small for relocation, skipping");
+						DbgCon.Warning("Too small for relocation, skipping");
 						continue;
 					}
 
@@ -1683,7 +1683,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					{
 						if (!region.HasEither() && GSLocalMemory::m_psm[psm].bpp == 32 && (t->m_TEX0.TBW - (((bp - t->m_TEX0.TBP0) >> 5) % rt_tbw)) < static_cast<u32>((block_boundary_rect.width() + 63) / 64))
 						{
-							DevCon.Warning("Bad alignmenet");
+							DbgCon.Warning("Bad alignmenet");
 							continue;
 						}
 
@@ -2729,7 +2729,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					t->m_texture = nullptr;
 				}
 
-				DevCon.Warning("Deleting Z draw %d", GSState::s_n);
+				GL_CACHE("Deleting Z draw %d", GSState::s_n);
 				InvalidateSourcesFromTarget(t);
 				i = rev_list.erase(i);
 				delete t;
@@ -3060,7 +3060,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 
 		dst->UpdateValidity(GSVector4i::loadh(valid_size));
 
-		if (!is_frame && !preload && !(src && src->m_TEX0.TBP0 == dst->m_TEX0.TBP0))
+		if (!is_frame && !preload/* && !(src && src->m_TEX0.TBP0 == dst->m_TEX0.TBP0)*/)
 		{
 			if ((preserve_target || !draw_rect.eq(GSVector4i::loadh(valid_size))) && GSRendererHW::GetInstance()->m_draw_transfers.size() > 0)
 			{
@@ -4277,13 +4277,18 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 				const GSVector4i draw_rect = (t->readbacks_since_draw > 1) ? t->m_drawn_since_read : targetr.rintersect(t->m_drawn_since_read);
 				const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
+
+				// Getaway (J) stores a Z texture at 0x2800 which it uses and the next frame it stores the reflection map in
+				// 0x2800, so this will misdetect. So if it's not expecting a Z, check for RT's too.
+				z_found = read_start >= t->m_TEX0.TBP0 && read_end <= t->m_end_block && GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
+
 				// Recently made this section dirty, no need to read it.
-				if (draw_rect.rintersect(dirty_rect).eq(draw_rect))
+				if (z_found && draw_rect.rintersect(dirty_rect).eq(draw_rect))
 					return;
 
 				if (t->m_drawn_since_read.eq(GSVector4i::zero()))
 				{
-					if (draw_rect.rintersect(t->m_valid).eq(draw_rect))
+					if (z_found && draw_rect.rintersect(t->m_valid).eq(draw_rect))
 						return;
 					else
 						continue;
@@ -4296,10 +4301,6 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 						t->Update();
 
 					Read(t, draw_rect);
-
-					// Getaway (J) stores a Z texture at 0x2800 which it uses and the next frame it stores the reflection map in
-					// 0x2800, so this will misdetect. So if it's not expecting a Z, check for RT's too.
-					z_found = read_start >= t->m_TEX0.TBP0 && read_end <= t->m_end_block && GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 
 					if (draw_rect.rintersect(t->m_drawn_since_read).eq(t->m_drawn_since_read))
 						t->m_drawn_since_read = GSVector4i::zero();
