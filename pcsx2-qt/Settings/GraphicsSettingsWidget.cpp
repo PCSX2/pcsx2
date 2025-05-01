@@ -1240,13 +1240,8 @@ void GraphicsSettingsWidget::populateUpscaleMultipliers(u32 max_upscale_multipli
 {
 	static constexpr std::pair<const char*, float> templates[] = {
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Native (PS2) (Default)"), 1.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.25x Native (~450px)"), 1.25f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.5x Native (~540px)"), 1.5f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.75x Native (~630px)"), 1.75f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2x Native (~720px/HD)"), 2.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2.5x Native (~900px/HD+)"), 2.5f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3x Native (~1080px/FHD)"), 3.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3.5x Native (~1260px)"), 3.5f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "4x Native (~1440px/QHD)"), 4.0f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "5x Native (~1800px/QHD+)"), 5.0f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "6x Native (~2160px/4K UHD)"), 6.0f},
