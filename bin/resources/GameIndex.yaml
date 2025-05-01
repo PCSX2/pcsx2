@@ -118,7 +118,7 @@ CPCS-01005:
   name-en: "Gun Survivor 4 - BioHazard - Heroes Never Die [with GunCon2]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes character offset with flashlight and blurriness.
+    halfPixelOffset: 5 # Fixes character offset with flashlight and blurriness. Fixes water lines.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes light bloom intensity.
     nativeScaling: 2 # Fixes post processing.
@@ -17320,7 +17320,7 @@ SLES-51448:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes character offset with flashlight and blurriness.
+    halfPixelOffset: 5 # Fixes character offset with flashlight and blurriness. Fixes water lines.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes light bloom intensity.
     nativeScaling: 2 # Fixes post processing.
@@ -30091,7 +30091,7 @@ SLKA-25038:
   name: "Gun Survivor 4 - BioHazard - Heroes Never Die"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes character offset with flashlight and blurriness.
+    halfPixelOffset: 5 # Fixes character offset with flashlight and blurriness. Fixes water lines.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes light bloom intensity.
     nativeScaling: 2 # Fixes post processing.
@@ -34586,7 +34586,7 @@ SLPM-61039:
   name-en: "BioHazard Gun Survivor 4 - Heroes Never Die [Store Demo]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes character offset with flashlight and blurriness.
+    halfPixelOffset: 5 # Fixes character offset with flashlight and blurriness. Fixes water lines.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes light bloom intensity.
     nativeScaling: 2 # Fixes post processing.
@@ -40728,7 +40728,7 @@ SLPM-65245:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes character offset with flashlight and blurriness.
+    halfPixelOffset: 5 # Fixes character offset with flashlight and blurriness. Fixes water lines.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes light bloom intensity.
     nativeScaling: 2 # Fixes post processing.
@@ -64954,7 +64954,7 @@ SLUS-20669:
   gsHWFixes:
     PCRTCOverscan: 1 # Shows full image frame.
     PCRTCOffsets: 1 # Shows full image frame.
-    halfPixelOffset: 4 # Fixes character offset with flashlight and blurriness.
+    halfPixelOffset: 5 # Fixes character offset with flashlight and blurriness. Fixes water lines.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes light bloom intensity.
     nativeScaling: 2 # Fixes post processing.
