@@ -2259,6 +2259,15 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				{
 					const GSLocalMemory::psm_t& s_psm = GSLocalMemory::m_psm[TEX0.PSM];
 
+					// If it overlaps but the target is huge and the Z isn't offset, we need to split the buffer, so let's shrink this one down.
+					// 896 is just 448 * 2,just gives the buffer chance to be larger than normal, in case they do something like 640x640, or something ridiculous.
+					if (!is_shuffle && (ds && offset == 0 && (t->m_valid.w >= 896) && ((((t->m_end_block + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) <= bp))
+					{
+						t->m_valid.w /= 2;
+						t->m_end_block = ((((t->m_end_block + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) - 1;
+						continue;
+					}
+
 					// I know what you're thinking, and I hate the guy who wrote it too (me). Project Snowblind, Tomb Raider etc decide to offset where they're drawing using a channel shuffle, and this gets messy, so best just to kill the old target.
 					if (is_shuffle && src && src->m_TEX0.PSM == PSMT8 && GSRendererHW::GetInstance()->m_context->FRAME.FBW == 1 && t->m_last_draw != (GSState::s_n - 1) && src->m_from_target && (src->m_from_target->m_TEX0.TBP0 == src->m_TEX0.TBP0 || (((src->m_TEX0.TBP0 - src->m_from_target->m_TEX0.TBP0) >> 5) % std::max(src->m_from_target->m_TEX0.TBW, 1U) == 0)) && widthpage_offset && src->m_from_target != t)
 					{
@@ -7759,6 +7768,11 @@ void GSTextureCache::SetTemporaryZInfo(u32 address, u32 offset)
 {
 	m_temporary_z_info.ZBP = address;
 	m_temporary_z_info.offset = offset;
+	m_temporary_z_info.rect_since = GSVector4i::zero();
+}
+void GSTextureCache::SetTemporaryZInfo(TempZAddress address_info)
+{
+	m_temporary_z_info = address_info;
 }
 
 void GSTextureCache::SetTemporaryZ(GSTexture* temp_z)
