@@ -7858,6 +7858,7 @@ TRANSLATE_NOOP("FullscreenUI", "{} unlabelled patch codes found but not enabled.
 TRANSLATE_NOOP("FullscreenUI", "This Session: {}");
 TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
 TRANSLATE_NOOP("FullscreenUI", "Save Slot {0}");
+TRANSLATE_NOOP("FullscreenUI", "{0} Slot {1}");
 TRANSLATE_NOOP("FullscreenUI", "Saved {}");
 TRANSLATE_NOOP("FullscreenUI", "{} does not exist.");
 TRANSLATE_NOOP("FullscreenUI", "{} deleted.");
