@@ -210,6 +210,7 @@ public:
 	{
 		u32 ZBP;
 		u32 offset;
+		GSVector4i rect_since;
 	};
 
 	class Target : public Surface
@@ -564,6 +565,7 @@ public:
 	GSTexture* GetTemporaryZ();
 	TempZAddress GetTemporaryZInfo();
 	void SetTemporaryZInfo(u32 address, u32 offset);
+	void SetTemporaryZInfo(TempZAddress address_info);
 	/// Invalidates a temporary Z, a partial copy only created from the current DS for the current draw when Z is not offset but RT is.
 	void InvalidateTemporaryZ();
 

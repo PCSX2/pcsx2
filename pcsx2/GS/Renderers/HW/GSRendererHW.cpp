@@ -3358,6 +3358,15 @@ void GSRendererHW::Draw()
 
 						if (ds->m_TEX0.TBP0 != z_address_info.ZBP || z_address_info.offset != static_cast<u32>(vertical_offset - z_vertical_offset))
 							g_texture_cache->InvalidateTemporaryZ();
+						else if (!m_r.rintersect(z_address_info.rect_since + GSVector4i(0, z_address_info.offset, 0, z_address_info.offset)).rempty() && m_cached_ctx.TEST.ZTST > ZTST_ALWAYS)
+						{
+							GL_CACHE("RT in RT Updating Z copy on draw %d z_offset %d", s_n, z_address_info.offset);
+							GSVector4i dRect = GSVector4i(z_address_info.rect_since.x * ds->m_scale, (z_address_info.offset + z_address_info.rect_since.y) * ds->m_scale, (z_address_info.rect_since.z + (1.0f / ds->m_scale)) * ds->m_scale, (z_address_info.offset + z_address_info.rect_since.w + (1.0f / ds->m_scale)) * ds->m_scale);
+							g_gs_device->StretchRect(ds->m_texture, GSVector4(z_address_info.rect_since.x / static_cast<float>(ds->m_unscaled_size.x), z_address_info.rect_since.y / static_cast<float>(ds->m_unscaled_size.y), (z_address_info.rect_since.z + (1.0f / ds->m_scale)) / static_cast<float>(ds->m_unscaled_size.x), (z_address_info.rect_since.w + (1.0f / ds->m_scale)) / static_cast<float>(ds->m_unscaled_size.y)), g_texture_cache->GetTemporaryZ(), GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
+							g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+							z_address_info.rect_since = GSVector4i::zero();
+							g_texture_cache->SetTemporaryZInfo(z_address_info);
+						}
 					}
 
 					if (g_texture_cache->GetTemporaryZ() == nullptr)
@@ -4267,10 +4276,11 @@ void GSRendererHW::Draw()
 			GSTextureCache::TempZAddress z_address_info = g_texture_cache->GetTemporaryZInfo();
 			if (ds->m_TEX0.TBP0 == z_address_info.ZBP)
 			{
-				GL_CACHE("RT in RT Updating Z copy on draw %d z_offset %d", s_n, z_address_info.offset);
-				GSVector4i dRect = GSVector4i(real_rect.x * ds->m_scale, (z_address_info.offset + real_rect.y) * ds->m_scale, (real_rect.z + (1.0f / ds->m_scale)) * ds->m_scale, (z_address_info.offset + real_rect.w + (1.0f / ds->m_scale)) * ds->m_scale);
-				g_gs_device->StretchRect(ds->m_texture, GSVector4(real_rect.x / static_cast<float>(ds->m_unscaled_size.x), real_rect.y / static_cast<float>(ds->m_unscaled_size.y), (real_rect.z + (1.0f / ds->m_scale)) / static_cast<float>(ds->m_unscaled_size.x), (real_rect.w + (1.0f / ds->m_scale)) / static_cast<float>(ds->m_unscaled_size.y)), g_texture_cache->GetTemporaryZ(), GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
-				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+				if (z_address_info.rect_since.rempty())
+					z_address_info.rect_since = real_rect;
+				else
+					z_address_info.rect_since = z_address_info.rect_since.runion(real_rect);
+				g_texture_cache->SetTemporaryZInfo(z_address_info);
 			}
 		}
 	}
