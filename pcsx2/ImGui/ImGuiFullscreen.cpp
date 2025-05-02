@@ -671,7 +671,7 @@ ImRect ImGuiFullscreen::CenterImage(const ImVec2& fit_size, const ImVec2& image_
 
 ImRect ImGuiFullscreen::CenterImage(const ImRect& fit_rect, const ImVec2& image_size, bool fill)
 {
-	ImRect ret(CenterImage(fit_rect.Max - fit_rect.Min, image_size));
+	ImRect ret(CenterImage(fit_rect.Max - fit_rect.Min, image_size, fill));
 	ret.Translate(fit_rect.Min);
 	return ret;
 }
