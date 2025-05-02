@@ -269,6 +269,7 @@ namespace FullscreenUI
 
 	static std::array<std::shared_ptr<GSTexture>, static_cast<u32>(GameDatabaseSchema::Compatibility::Perfect)>
 		s_game_compatibility_textures;
+	static std::shared_ptr<GSTexture> s_banner_texture;
 	static std::shared_ptr<GSTexture> s_fallback_disc_texture;
 	static std::shared_ptr<GSTexture> s_fallback_exe_texture;
 	static std::vector<std::unique_ptr<GSTexture>> s_cleanup_textures;
@@ -1096,6 +1097,8 @@ bool FullscreenUI::LoadResources()
 
 bool FullscreenUI::LoadSvgResources()
 {
+	s_banner_texture = LoadSvgTexture("icons/AppBanner.svg", LayoutScale(500.0f, 76.0f), SvgScaling::Fit);
+
 	for (u32 i = static_cast<u32>(GameDatabaseSchema::Compatibility::Nothing);
 		 i <= static_cast<u32>(GameDatabaseSchema::Compatibility::Perfect); i++)
 	{
@@ -1109,6 +1112,7 @@ void FullscreenUI::DestroyResources()
 {
 	s_fallback_exe_texture.reset();
 	s_fallback_disc_texture.reset();
+	s_banner_texture.reset();
 	for (auto& tex : s_game_compatibility_textures)
 		tex.reset();
 	for (auto& tex : s_cleanup_textures)
@@ -7017,7 +7021,7 @@ void FullscreenUI::OpenAboutWindow()
 
 void FullscreenUI::DrawAboutWindow()
 {
-	ImGui::SetNextWindowSize(LayoutScale(1000.0f, 580.0f));
+	ImGui::SetNextWindowSize(LayoutScale(1000.0f, 600.0f));
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 	ImGui::OpenPopup(FSUI_CSTR("About PCSX2"));
 
@@ -7027,20 +7031,23 @@ void FullscreenUI::DrawAboutWindow()
 
 	if (ImGui::BeginPopupModal(FSUI_CSTR("About PCSX2"), &s_about_window_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
 	{
+		const ImVec2 image_size = LayoutScale(500.0f, 76.0f);
+		const ImRect image_bb(ImGui::GetCursorScreenPos(), ImGui::GetCursorScreenPos() + ImVec2(ImGui::GetCurrentWindow()->WorkRect.GetWidth(), image_size.y));
+		const ImRect image_rect(CenterImage(image_bb, image_size));
+
+		DrawListSvgTexture(ImGui::GetWindowDrawList(), s_banner_texture.get(), image_rect.Min, image_rect.Max);
+
+		const float indent = image_size.y + LayoutScale(12.0f);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + indent);
 		ImGui::TextWrapped("%s", FSUI_CSTR(
 									 "PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a "
 									 "combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. "
 									 "This allows you to play PS2 games on your PC, with many additional features and benefits."));
 		ImGui::NewLine();
 
-		ImGui::TextWrapped(FSUI_CSTR("Version: %s"), BuildVersion::GitRev);
-		ImGui::NewLine();
-
 		ImGui::TextWrapped("%s",
 			FSUI_CSTR("PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not "
 					  "affiliated in any way with Sony Interactive Entertainment."));
-
-		ImGui::NewLine();
 
 		BeginMenuButtons();
 
@@ -7067,6 +7074,10 @@ void FullscreenUI::DrawAboutWindow()
 		}
 
 		EndMenuButtons();
+
+		const float alignment = image_size.x + image_size.y;
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + alignment);
+		ImGui::TextWrapped(FSUI_CSTR("Version: %s"), BuildVersion::GitRev);
 
 		ImGui::EndPopup();
 	}
