@@ -231,7 +231,7 @@ echo "Building PlutoVG..."
 rm -fr "plutovg-$PLUTOVG"
 tar xf "plutovg-$PLUTOVG.tar.gz"
 cd "plutovg-$PLUTOVG"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DPLUTOVG_BUILD_EXAMPLES=OFF -B build -G Ninja
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DPLUTOVG_BUILD_EXAMPLES=OFF -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
