@@ -242,7 +242,6 @@ namespace FullscreenUI
 	static void ApplyLayoutSettings(const SettingsInterface* bsi = nullptr);
 
 	void DrawSvgTexture(GSTexture* padded_texture, ImVec2 unpadded_size);
-	void DrawSvgTexture_UV(GSTexture* padded_texture, ImVec2 unpadded_size, ImVec2 unpadded_uv0, ImVec2 unpadded_uv1);
 	void DrawCachedSvgTexture(const std::string& path, ImVec2 size, SvgScaling mode);
 	void DrawCachedSvgTextureAsync(const std::string& path, ImVec2 size, SvgScaling mode);
 
