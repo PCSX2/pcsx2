@@ -2081,7 +2081,7 @@ SCAJ-20139:
   name: "Zero - Shisei no Koe" # Fatal Frame - Rei - Irezumi no Sei
   region: "NTSC-Unk"
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces blurriness.
+    halfPixelOffset: 5 # Reduces blurriness.
 SCAJ-20140:
   name: "Bleach - Erabareshi Tamashi"
   region: "NTSC-Unk"
@@ -23947,7 +23947,7 @@ SLES-53825:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces blurriness.
+    halfPixelOffset: 5 # Reduces blurriness.
 SLES-53826:
   name: "Tom Clancy's Splinter Cell - Double Agent"
   region: "PAL-M5"
@@ -58216,6 +58216,8 @@ SLPS-25544:
   name-en: "Fatal Frame III - The Tormented"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Reduces blurriness.
 SLPS-25545:
   name: "ファイティング フォー ワンピース"
   name-sort: "ふぁいてぃんぐ ふぉー わんぴーす"
@@ -61440,6 +61442,8 @@ SLPS-73245:
   name-sort: "ぜろ しせいのこえ [PlayStation2 the Best]"
   name-en: "Fatal Frame III - The Tormented [PlayStation2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Reduces blurriness.
 SLPS-73246:
   name: "ガンダム トゥルーオデッセイ ～失われしGの伝説～ [PlayStation2 the Best]"
   name-sort: "がんだむ とぅるーおでっせい うしなわれしGのでんせつ [PlayStation2 the Best]"
@@ -61551,7 +61555,7 @@ SLPS-73257:
   name-en: "Fatal Frame III - The Tormented [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces blurriness.
+    halfPixelOffset: 5 # Reduces blurriness.
 SLPS-73258:
   name: "喧嘩番長2 ～フルスロットル～ [PlayStation2 the Best]"
   name-sort: "けんかばんちょう2 ふるすろっとる [PlayStation2 the Best]"
@@ -68356,7 +68360,7 @@ SLUS-21244:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces blurriness.
+    halfPixelOffset: 5 # Reduces blurriness.
 SLUS-21245:
   name: "Suikoden Tactics"
   region: "NTSC-U"
