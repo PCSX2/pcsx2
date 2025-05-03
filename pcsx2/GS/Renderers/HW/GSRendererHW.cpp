@@ -6411,8 +6411,8 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 				}
 			}
 
-			copy_range.z = std::min(copy_range.z, copy_size.x);
-			copy_range.w = std::min(copy_range.w, copy_size.y);
+			copy_range.z = std::min(copy_range.z, src_target->m_unscaled_size.x);
+			copy_range.w = std::min(copy_range.w, src_target->m_unscaled_size.y);
 		}
 	}
 	else
