@@ -324,6 +324,7 @@ public:
 	void VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb);
 
 	void PSSetShaderResource(int i, GSTexture* sr);
+	void PSClearShaderResources(int start, int count);
 	void PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb);
 	void PSUpdateShaderState();
 	void PSSetSamplerState(ID3D11SamplerState* ss0);

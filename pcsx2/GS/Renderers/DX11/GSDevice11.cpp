@@ -1350,6 +1350,12 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	//
 
 	DrawPrimitive();
+
+	// Unbind
+
+	if (!draw_in_depth)
+		OMSetRenderTargets(nullptr, nullptr);
+	PSClearShaderResources(0, 1);
 }
 
 void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
@@ -1409,6 +1415,12 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	//
 
 	DrawPrimitive();
+
+	// Unbind
+
+	if (dTex)
+		OMSetRenderTargets(nullptr, nullptr);
+	PSClearShaderResources(0, 1);
 }
 
 void GSDevice11::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
@@ -1501,6 +1513,10 @@ void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_re
 	}
 
 	DoMultiStretchRects(rects + first, count, ds);
+
+	// Unbind
+	PSClearShaderResources(0, 1);
+	OMSetRenderTargets(nullptr, nullptr);
 }
 
 void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds)
@@ -2172,6 +2188,10 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 	//
 
 	DrawPrimitive();
+
+	// Unbind
+
+	PSClearShaderResources(0, 1);
 }
 
 void* GSDevice11::IAMapVertexBuffer(u32 stride, u32 count)
@@ -2353,6 +2373,15 @@ void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0)
 	m_state.ps_ss[0] = ss0;
 }
 
+void GSDevice11::PSClearShaderResources(int start, int count)
+{
+	std::vector<ID3D11ShaderResourceView*> null_srvs(count, nullptr);
+	m_ctx->PSSetShaderResources(start, count, null_srvs.data());
+
+	for (int i = 0; i < count; ++i)
+		m_state.ps_sr_views[start + i] = nullptr;
+}
+
 void GSDevice11::ClearSamplerCache()
 {
 	m_ps_ss.clear();
@@ -2441,7 +2470,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		m_state.dsv = dsv;
 	}
 	if (changed)
-		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
+		m_ctx->OMSetRenderTargets(rtv ? 1 : 0, &rtv, dsv);
 
 	if (rt || ds)
 	{
@@ -2660,6 +2689,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		OMSetRenderTargets(primid_tex, config.ds, &config.scissor);
 		DrawIndexedPrimitive();
 
+		// Unbind
+		OMSetRenderTargets(nullptr, nullptr, nullptr);
+
 		config.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
 		SetupPS(config.ps, nullptr, config.sampler);
@@ -2696,6 +2728,11 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
 		DrawIndexedPrimitive();
 	}
+
+	// Unbind
+	if (colclip_rt || config.rt)
+		OMSetRenderTargets(nullptr, nullptr, nullptr);
+	PSClearShaderResources(0, MAX_TEXTURES);
 
 	if (rt_copy)
 		Recycle(rt_copy);
