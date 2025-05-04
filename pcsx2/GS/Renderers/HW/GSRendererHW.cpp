@@ -6545,10 +6545,10 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextureCache::Source* tex,
 	const TextureMinMaxResult& tmm)
 {
-	// Minimum blending or no barriers -> we can't use tex-is-fb.
-	if (GSConfig.AccurateBlendingUnit == AccBlendLevel::Minimum || !g_gs_device->Features().texture_barrier)
+	// Minimum blending -> we can't use tex-is-fb.
+	if (GSConfig.AccurateBlendingUnit == AccBlendLevel::Minimum)
 	{
-		GL_CACHE("Can't use tex-is-fb due to no barriers.");
+		GL_CACHE("Can't use tex-is-fb due to minimum blending.");
 		return false;
 	}
 
@@ -6559,14 +6559,28 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 			return false;
 	}
 
-	// If we're a shuffle, tex-is-fb is always fine.
-	if (m_texture_shuffle || m_channel_shuffle)
+	// If it's a channel shuffle, tex-is-fb should be fine, even on DX.
+	if (m_channel_shuffle)
+	{
+		GL_CACHE("Activating tex-is-fb for channel shuffle.");
+		return true;
+	}
+
+	// No barriers -> we can't use tex-is-fb.
+	if (!g_gs_device->Features().texture_barrier)
+	{
+		GL_CACHE("Can't use tex-is-fb due to no barriers.");
+		return false;
+	}
+
+	// If it's a channel shuffle, tex-is-fb is always fine, except on DX.
+	if (m_texture_shuffle)
 	{
 		// We can't do tex is FB if the source and destination aren't pointing to the same bit of texture.
 		if (m_texture_shuffle && (floor(abs(m_vt.m_min.t.y) + tex->m_region.GetMinY()) != floor(abs(m_vt.m_min.p.y))))
 			return false;
 
-		GL_CACHE("Activating tex-is-fb for %s shuffle.", m_texture_shuffle ? "texture" : "channel");
+		GL_CACHE("Activating tex-is-fb for texture shuffle.");
 		return true;
 	}
 
