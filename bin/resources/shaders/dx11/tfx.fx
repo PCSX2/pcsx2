@@ -1217,7 +1217,7 @@ void ps_color_clamp_wrap(inout float3 C)
 		C *= 1.0f - (4.0f / 256.0f);
 }
 
-void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy, float4 pre_shuffle_RT)
+void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy, out float4 pre_shuffle_RT)
 {
 	float As = As_rgba.a;
 
@@ -1249,7 +1249,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy, float4 pr
 		float Ad = (RT.a * (PS_RTA_CORRECTION ? NEUTRAL_ALPHA : 255.0f)) / NEUTRAL_ALPHA;
 		if (PS_HDR <= 2) // RT Alpha rounding is probably already done while decoding the texture in these HDR modes, but let's do it again for extra safety
 		{
-			Ad = trunc(Ad + 0.5f);
+			Ad = trunc(Ad + 0.5f / NEUTRAL_ALPHA);
 		}
 		float3 Cd = RT.rgb * color_multi;
 		if (PS_HDR <= 1)
@@ -1341,6 +1341,8 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy, float4 pr
 	}
 	else
 	{
+		pre_shuffle_RT = 0;
+
 		float3 Alpha = PS_BLEND_C == 2 ? (float3)Af : (float3)As;
 
 		if (PS_BLEND_HW == 1)
