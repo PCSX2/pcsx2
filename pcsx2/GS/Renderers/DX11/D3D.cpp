@@ -533,7 +533,7 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEAT
 
 	if (FAILED(hr) || !error_string.empty())
 	{
-		Console.WriteLn("Failed to compile '%s':\n%s", target, error_string.c_str());
+		Console.WriteLn("Failed to compile '%s':\n%s", entry_point, error_string.c_str());
 
 		std::ofstream ofs(Path::Combine(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", s_next_bad_shader_id++)),
 			std::ofstream::out | std::ofstream::binary);
