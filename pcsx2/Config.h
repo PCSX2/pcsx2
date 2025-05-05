@@ -221,6 +221,15 @@ enum class DebugFunctionScanMode
 	SKIP
 };
 
+enum class HDRRenderType : u8
+{
+	Off, // SDR (default)
+	Safe, // HDR (quantized to 8 bit on all channels, without clamping to 255)
+	Unsafe, // HDR (only alpha quantized to 8 bit)
+	Insane, // HDR (no quantization, no clamping)
+	MaxCount
+};
+
 enum class AspectRatioType : u8
 {
 	Stretch, // Stretches to the whole window/display size
@@ -741,8 +750,6 @@ struct Pcsx2Config
 					PreloadFrameWithGSData : 1,
 					Mipmap : 1,
 					HWMipmap : 1,
-					HDRRendering : 1,
-					HDROutput : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,
@@ -780,6 +787,9 @@ struct Pcsx2Config
 					EnableAudioCaptureParameters : 1;
 			};
 		};
+		
+		HDRRenderType HDRRendering = HDRRenderType::Off;
+		bool HDROutput = false;
 
 		int VsyncQueueSize = 2;
 
@@ -1347,11 +1357,9 @@ struct Pcsx2Config
 	AspectRatioType CurrentAspectRatio = AspectRatioType::RAuto4_3_3_2;
 	// Fall back aspect ratio for games that have patches (when AspectRatioType::RAuto4_3_3_2) is active.
 	float CurrentCustomAspectRatio = 0.f;
-	bool HDRRendering = false;
+	HDRRenderType HDRRendering = HDRRenderType::Off;
 	bool HDROutput = false;
 	bool IsPortableMode = false;
-
-	u8 HDRMode = 2;
 
 	Pcsx2Config();
 	void LoadSave(SettingsWrapper& wrap);

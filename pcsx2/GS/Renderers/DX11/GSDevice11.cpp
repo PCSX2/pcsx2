@@ -212,7 +212,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	}
 
 	ShaderMacro sm_emulation;
-	sm_emulation.AddMacro("PS_HDR", EmuConfig.HDRRendering ? "2" : "0");
+	sm_emulation.AddMacro("PS_HDR", static_cast<int>(EmuConfig.HDRRendering));
 	ShaderMacro sm_postprocess;
 	sm_postprocess.AddMacro("PS_HDR", EmuConfig.HDROutput ? "1" : "0");
 
@@ -335,7 +335,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	if (!shader.has_value())
 		return false;
 
-	sm_postprocess.AddMacro("PS_HDR_INPUT", EmuConfig.HDRRendering ? "1" : "0");
+	sm_postprocess.AddMacro("PS_HDR_INPUT", EmuConfig.HDRRendering > HDRRenderType::Off ? "1" : "0");
 	sm_postprocess.AddMacro("PS_HDR_OUTPUT", EmuConfig.HDROutput ? "1" : "0");
 	m_colorcorrect.ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm_postprocess.GetPtr(), "ps_main");
 	if (!m_colorcorrect.ps)
@@ -1731,9 +1731,7 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 
 void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel)
 {
-	auto sel2 = sel;
-	sel2.hdr_mode = EmuConfig.HDRMode;
-	auto i = std::as_const(m_ps).find(sel2);
+	auto i = std::as_const(m_ps).find(sel);
 
 	if (i == m_ps.end())
 	{
@@ -1795,10 +1793,10 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 		sm.AddMacro("PS_NO_COLOR", sel.no_color);
 		sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
-		sm.AddMacro("PS_HDR", EmuConfig.HDRRendering ? (sel2.hdr_mode) : 0); // It's ok to access this variable here, when toggling HDR, the renderer is restarted
+		sm.AddMacro("PS_HDR", static_cast<int>(EmuConfig.HDRRendering)); // It's ok to access this variable here, when toggling HDR, the renderer is restarted
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
-		i = m_ps.try_emplace(sel2, std::move(ps)).first;
+		i = m_ps.try_emplace(sel, std::move(ps)).first;
 	}
 
 	if (cb && m_ps_cb_cache.Update(*cb))

@@ -69,7 +69,7 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int l
 	const UINT subresource = layer; // MipSlice + (ArraySlice * MipLevels).
 	
 	// All the calls to this expect "GSTexture::Format::Color" (8bpc) at the moment
-	pxAssertMsg(!EmuConfig.HDRRendering || GetFormat() == GSTexture::Format::Color || GetFormat() >= GSTexture::Format::DepthStencil, "GSTexture11::Update unsupported format.");
+	pxAssertMsg(EmuConfig.HDRRendering == HDRRenderType::Off || GetFormat() == GSTexture::Format::Color || GetFormat() >= GSTexture::Format::DepthStencil, "GSTexture11::Update unsupported format.");
 
 	GSDevice11::GetInstance()->GetD3DContext()->UpdateSubresource(m_texture.get(), subresource, &box, data, pitch, 0);
 	m_needs_mipmaps_generated |= (layer == 0);

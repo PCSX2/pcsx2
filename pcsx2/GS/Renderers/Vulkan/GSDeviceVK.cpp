@@ -3956,9 +3956,9 @@ bool GSDeviceVK::CompileConvertPipelines()
 	ScopedGuard vs_guard([this, &vs]() { vkDestroyShaderModule(m_device, vs, nullptr); });
 
 	std::string psource;
-	if (EmuConfig.HDRRendering)
+	if (EmuConfig.HDRRendering > HDRRenderType::Off)
 	{
-		psource += "#define PS_HDR 2\n";
+		psource += "#define PS_HDR " + std::to_string(static_cast<int>(EmuConfig.HDRRendering)) + "\n";
 	}
 	psource += *shader;
 
@@ -4400,7 +4400,7 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 		}
 
 		std::string source;
-		if (EmuConfig.HDRRendering)
+		if (EmuConfig.HDRRendering > HDRRenderType::Off)
 		{
 			source += "#define PS_HDR_INPUT 1\n";
 		}
@@ -4907,7 +4907,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_TEX_IS_FB", sel.tex_is_fb);
 	AddMacro(ss, "PS_NO_COLOR", sel.no_color);
 	AddMacro(ss, "PS_NO_COLOR1", sel.no_color1);
-	AddMacro(ss, "PS_HDR", EmuConfig.HDRRendering ? 2 : 0);
+	AddMacro(ss, "PS_HDR", static_cast<int>(EmuConfig.HDRRendering)); // It's ok to access this variable here, when toggling HDR, the renderer is restarted
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(ss.str());

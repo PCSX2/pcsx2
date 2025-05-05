@@ -736,8 +736,6 @@ Pcsx2Config::GSOptions::GSOptions()
 	PreloadFrameWithGSData = false;
 	Mipmap = true;
 	HWMipmap = true;
-	HDRRendering = false;
-	HDROutput = false;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -787,6 +785,9 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 {
 	return (
 		OpEqu(bitset) &&
+		
+		OpEqu(HDRRendering) &&
+		OpEqu(HDROutput) &&
 
 		OpEqu(InterlaceMode) &&
 		OpEqu(LinearPresent) &&
@@ -959,8 +960,8 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBoolEx(AutoFlushSW, "autoflush_sw");
 	SettingsWrapBitBoolEx(PreloadFrameWithGSData, "preload_frame_with_gs_data");
 	SettingsWrapBitBoolEx(Mipmap, "mipmap");
-	SettingsWrapBitBoolEx(HDRRendering, "hdr");
-	SettingsWrapBitBoolEx(HDROutput, "hdr"); // For now this doesn't have its own separate setting
+	SettingsWrapIntEnumEx(HDRRendering, "hdr");
+	SettingsWrapBitBoolEx(HDROutput, "hdr"); // For now this doesn't have its own separate setting, for simplicity
 	SettingsWrapBitBoolEx(ManualUserHacks, "UserHacks");
 	SettingsWrapBitBoolEx(UserHacks_AlignSpriteX, "UserHacks_align_sprite_X");
 	SettingsWrapIntEnumEx(UserHacks_AutoFlush, "UserHacks_AutoFlushLevel");

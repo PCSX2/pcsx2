@@ -5,9 +5,10 @@
 #define PS_HDR 0
 #endif
 
+//TODO: delete
 #if PS_HDR && 0
 #undef PS_HDR
-#define PS_HDR 0
+#define PS_HDR 1
 #endif
 
 #define FLT_MAX	asfloat(0x7F7FFFFF)  //3.402823466e+38f
@@ -104,15 +105,26 @@ PS_OUTPUT ps_downsample_copy(PS_INPUT input)
 	float Weight = BGColor.x;
 
 	int2 coord = max(int2(input.p.xy) * DownsampleFactor, ClampMin);
+	
+	const float gamma = 2.35f; // CRT average
 
 	PS_OUTPUT output;
 	output.c = (float4)0;
 	for (int yoff = 0; yoff < DownsampleFactor; yoff++)
 	{
 		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
-			output.c += Texture.Load(int3(coord + int2(xoff, yoff), 0));
+		{
+			float4 c = Texture.Load(int3(coord + int2(xoff, yoff), 0));
+#if PS_HDR >= 3 // In HDR, downsample in linear space (assuming we are downscaling rgb colors, which is very likely the case (we do alpha as well, because it's more likely to make sense than not)) (this is an optional feature!)
+			c.rgba = pow(c.rgba, gamma); //TODO: alpha too? Add to VK
+#endif
+			output.c += c;
+		}
 	}
 	output.c /= Weight;
+#if PS_HDR >= 3
+	output.c.rgba = pow(output.c.rgba, 1.0f / gamma);
+#endif
 	return output;
 }
 

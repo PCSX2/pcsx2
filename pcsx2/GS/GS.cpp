@@ -112,18 +112,18 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 	// These features are only supported by some renderers and on some HW (e.g. HDR displays),
 	// so they need a live state.
 	EmuConfig.HDRRendering = GSConfig.HDRRendering;
-	EmuConfig.HDROutput = GSConfig.HDROutput ;
+	EmuConfig.HDROutput = GSConfig.HDROutput;
 
 	// Force disable HDR on unsupported (or partially supported) renderers.
 	if (new_api == RenderAPI::OpenGL || new_api == RenderAPI::Metal)
 	{
-		EmuConfig.HDRRendering = false;
+		EmuConfig.HDRRendering = HDRRenderType::Off;
 		EmuConfig.HDROutput = false;
 	}
 	// This is ignored by the SW renderer but let's turn it off for clarity.
 	if (renderer == GSRendererType::SW)
 	{
-		EmuConfig.HDRRendering = false;
+		EmuConfig.HDRRendering = HDRRenderType::Off;
 	}
 
 	switch (new_api)
@@ -1266,15 +1266,16 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 					Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(EmuConfig.CurrentAspectRatio)]),
 				Host::OSD_QUICK_DURATION);
 		}},
+	//TODO: delete?
 	{"HDRMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "HDR Mode"),
 		[](s32 pressed) {
 			if (pressed)
 				return;
 
 			// technically this races, but the worst that'll happen is one frame uses the old AR.
-			EmuConfig.HDRMode = (EmuConfig.HDRMode + 1) % 4;
+			EmuConfig.HDRRendering = HDRRenderType((static_cast<int>(EmuConfig.HDRRendering) + 1) % (int)HDRRenderType::MaxCount);
 			Host::AddKeyedOSDMessage("HDRMode",
-				fmt::format(TRANSLATE_FS("Hotkeys", "HDR mode set to '{}'."), EmuConfig.HDRMode), Host::OSD_QUICK_DURATION);
+				fmt::format(TRANSLATE_FS("Hotkeys", "HDR mode set to '{}'."), static_cast<int>(EmuConfig.HDRRendering)), Host::OSD_QUICK_DURATION);
 		}},
 	{"ToggleMipmapMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Hardware Mipmapping"),
 		[](s32 pressed) {

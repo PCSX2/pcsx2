@@ -165,7 +165,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		s_anisotropic_filtering_entries, s_anisotropic_filtering_values, "0");
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.dithering, "EmuCore/GS", "dithering_ps2", 2);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.mipmapping, "EmuCore/GS", "hw_mipmap", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hdr, "EmuCore/GS", "hdr", false); //TODO: expose to SW renderer too? Or split the HDR textures vs HDR output
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hdr, "EmuCore/GS", "hdr", false); //TODO1: expose to SW renderer too? Or split the HDR textures vs HDR output. Or anyway add settings for all 4 enum HDR options?
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.blending, "EmuCore/GS", "accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic));
 	SettingWidgetBinder::BindWidgetToIntSetting(

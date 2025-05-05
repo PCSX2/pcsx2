@@ -5451,7 +5451,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 
 	// Needed to avoid rgba values going below zero when doing subtractive blends on HDR/float buffers.
 	// We still clamp out negative values when sampling textures in tfx, but we can't guarantee the final blend on an RT from being cut if lower quality blend accuracies are used.
-	const bool keep_sw_blending = EmuConfig.HDRRendering && (blend_flag & BLEND_NEG);
+	const bool keep_sw_blending = (EmuConfig.HDRRendering > HDRRenderType::Off) && (blend_flag & BLEND_NEG) && (GSConfig.AccurateBlendingUnit >= AccBlendLevel::Full);
 	
 	// Per pixel alpha blending
 	if (PABE)
@@ -5594,7 +5594,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			{
 				if (m_conf.ps.blend_b == m_conf.ps.blend_d && (alpha_c0_high_min_one || alpha_c1_high_min_one || alpha_c2_high_one))
 				{
-					pxAssert(!EmuConfig.HDRRendering);
+					pxAssert(EmuConfig.HDRRendering == HDRRenderType::Off);
 					// Alpha is guaranteed to be > 128.
 					// Replace Cs*Alpha + Cd*(1 - Alpha) with Cs*Alpha - Cd*(Alpha - 1).
 					blend.dst = GSDevice::SRC1_COLOR;
@@ -6671,7 +6671,7 @@ void GSRendererHW::EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool
 	const float aref = static_cast<float>(m_cached_ctx.TEST.AREF);
 
 	// Add an offset to account for 8bit/float inaccuracies, hopefully it's not needed in HDR (see "HDR_FLT_THRESHOLD" in shaders)
-	const float rounding_offset = (EmuConfig.HDRRendering && EmuConfig.HDRMode > 1) ? (0.0001f * 128.0f) : 0.1f;
+	const float rounding_offset = (EmuConfig.HDRRendering >= HDRRenderType::Unsafe) ? (0.0001f * 128.0f) : 0.1f;
 
 	switch (atst)
 	{

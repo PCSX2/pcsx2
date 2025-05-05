@@ -216,7 +216,7 @@ GSDevice::GSDevice()
 {
 	// Ideally the post process and emulation RTs formats would be split and we could have HDR on each of the two independently,
 	// though ultimately there's no much point in splitting them
-	m_emulation_hw_rt_texture_format = EmuConfig.HDRRendering ? GSTexture::Format::ColorHDR : GSTexture::Format::Color;
+	m_emulation_hw_rt_texture_format = (EmuConfig.HDRRendering > HDRRenderType::Off) ? GSTexture::Format::ColorHDR : GSTexture::Format::Color;
 	m_postprocess_texture_format = EmuConfig.HDROutput ? GSTexture::Format::ColorHDR : GSTexture::Format::ColorHQ;
 
 #ifdef PCSX2_DEVBUILD

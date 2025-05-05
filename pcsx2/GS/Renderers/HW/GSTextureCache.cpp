@@ -4865,7 +4865,7 @@ void GSTextureCache::CopyPages(Target* src, u32 sbw, u32 src_offset, Target* dst
 		rc.wmask.wrgba = 0xf;
 	}
 
-	pxAssert(src->m_texture->GetFormat() != GSTexture::Format::ColorHDR);
+	pxAssert(src->m_texture->GetFormat() == dst->m_texture->GetFormat());
 
 	// No need to sort here, it's all from the same texture.
 	g_gs_device->DrawMultiStretchRects(rects, num_pages, dst->m_texture, shader);
