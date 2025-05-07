@@ -6,6 +6,8 @@
 #include "GS/GSGL.h"
 #include "GS/GSUtil.h"
 
+#include <cmath>
+
 static bool s_nativeres;
 
 #define RPRIM r.PRIM
