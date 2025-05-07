@@ -13606,10 +13606,10 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="288"/>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1181"/>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1215"/>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1294"/>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="287"/>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1185"/>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1219"/>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1298"/>
         <source>Use Global Setting [%1]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14057,128 +14057,134 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1243"/>
-        <source>2x Native (~720px/HD)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1244"/>
-        <source>3x Native (~1080px/FHD)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1245"/>
-        <source>4x Native (~1440px/QHD)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1246"/>
-        <source>5x Native (~1800px/QHD+)</source>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1175"/>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1185"/>
+        <source>(Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1247"/>
-        <source>6x Native (~2160px/4K UHD)</source>
+        <source>2x Native (~720px/HD)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1248"/>
-        <source>7x Native (~2520px)</source>
+        <source>3x Native (~1080px/FHD)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1249"/>
-        <source>8x Native (~2880px/5K UHD)</source>
+        <source>4x Native (~1440px/QHD)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1250"/>
-        <source>9x Native (~3240px)</source>
+        <source>5x Native (~1800px/QHD+)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1251"/>
-        <source>10x Native (~3600px/6K UHD)</source>
+        <source>6x Native (~2160px/4K UHD)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1252"/>
-        <source>11x Native (~3960px)</source>
+        <source>7x Native (~2520px)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1253"/>
-        <source>12x Native (~4320px/8K UHD)</source>
+        <source>8x Native (~2880px/5K UHD)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1254"/>
-        <source>13x Native (~4680px)</source>
+        <source>9x Native (~3240px)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1255"/>
-        <source>14x Native (~5040px)</source>
+        <source>10x Native (~3600px/6K UHD)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1256"/>
-        <source>15x Native (~5400px)</source>
+        <source>11x Native (~3960px)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1257"/>
-        <source>16x Native (~5760px)</source>
+        <source>12x Native (~4320px/8K UHD)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1258"/>
-        <source>17x Native (~6120px)</source>
+        <source>13x Native (~4680px)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1259"/>
-        <source>18x Native (~6480px/12K UHD)</source>
+        <source>14x Native (~5040px)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1260"/>
-        <source>19x Native (~6840px)</source>
+        <source>15x Native (~5400px)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1261"/>
-        <source>20x Native (~7200px)</source>
+        <source>16x Native (~5760px)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1262"/>
-        <source>21x Native (~7560px)</source>
+        <source>17x Native (~6120px)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1263"/>
-        <source>22x Native (~7920px)</source>
+        <source>18x Native (~6480px/12K UHD)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1264"/>
-        <source>23x Native (~8280px)</source>
+        <source>19x Native (~6840px)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1265"/>
-        <source>24x Native (~8640px/16K UHD)</source>
+        <source>20x Native (~7200px)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1266"/>
+        <source>21x Native (~7560px)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1267"/>
+        <source>22x Native (~7920px)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1268"/>
+        <source>23x Native (~8280px)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1269"/>
+        <source>24x Native (~8640px/16K UHD)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1270"/>
         <source>25x Native (~9000px)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1287"/>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1293"/>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1291"/>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1297"/>
         <source>%1x Native</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14279,8 +14285,8 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="524"/>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1209"/>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1215"/>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1213"/>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1219"/>
         <source>Borderless Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14341,7 +14347,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="543"/>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1242"/>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1246"/>
         <source>Native (PS2) (Default)</source>
         <translation type="unfinished"></translation>
     </message>
