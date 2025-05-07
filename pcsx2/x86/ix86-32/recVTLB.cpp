@@ -929,9 +929,11 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 	static constexpr u32 SHADOW_SIZE = 0;
 #endif
 
+#if 0
 	DevCon.WriteLn("Backpatching %s at %p[%u] (pc %08X vaddr %08X): Bitmask %08X %08X Addr %u Data %u Size %u Flags %02X %02X",
 		is_load ? "load" : "store", (void*)code_address, code_size, guest_pc, guest_addr, gpr_bitmask, fpr_bitmask,
 		address_register, data_register, size_in_bits, is_signed, is_load);
+#endif
 
 	u8* thunk = recBeginThunk();
 
