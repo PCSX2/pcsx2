@@ -226,7 +226,7 @@ DEFINE_HOTKEY("InputRecToggleMode", TRANSLATE_NOOP("Hotkeys", "System"),
 DEFINE_HOTKEY("SwapMemCard", TRANSLATE_NOOP("Hotkeys", "System"),
 	TRANSLATE_NOOP("Hotkeys", "Swap Memory Card"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			g_InputRecording.getControls().requestSwapCards();
+			MemoryCardSettingsWidget.getControls().requestSwapCards();
 	})
 
 DEFINE_HOTKEY("PreviousSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
