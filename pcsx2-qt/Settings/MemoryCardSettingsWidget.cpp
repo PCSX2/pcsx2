@@ -283,6 +283,12 @@ void MemoryCardSettingsWidget::convertCard()
 		refresh();
 }
 
+void MemoryCardSettingsWidget::MemoryCardSettingsWidget(QWidget* parent)
+	: QWidget(parent)
+{
+	connect(this, &MemoryCardSettingsWidget::requestSwapCards, this, &MemoryCardSettingsWidget::swapCards);
+}
+
 void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
 {
 	QMenu menu(this);
