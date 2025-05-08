@@ -223,8 +223,8 @@ DEFINE_HOTKEY("InputRecToggleMode", TRANSLATE_NOOP("Hotkeys", "System"),
 		if (!pressed && VMManager::HasValidVM())
 			g_InputRecording.getControls().toggleRecordMode();
 	})
-DEFINE_HOTKEY("SwapMemCard", TRANSLATE_NOOP("Hotkeys", "System"),
-	TRANSLATE_NOOP("Hotkeys", "Swap Memory Card"), [](s32 pressed) {
+DEFINE_HOTKEY("SwapMemCards", TRANSLATE_NOOP("Hotkeys", "System"),
+	TRANSLATE_NOOP("Hotkeys", "Swap Memory Cards"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
 			MemoryCardSettingsWidget.getControls().requestSwapCards();
 	})
