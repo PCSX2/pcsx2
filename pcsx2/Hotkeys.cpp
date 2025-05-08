@@ -11,6 +11,7 @@
 #include "Recording/InputRecording.h"
 #include "SPU2/spu2.h"
 #include "VMManager.h"
+#include "pcsx2-qt/Settings/MemoryCardSettingsWidget.h"
 
 #include "common/Assertions.h"
 #include "common/FileSystem.h"
