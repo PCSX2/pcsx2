@@ -73,6 +73,9 @@ protected:
 	void resizeEvent(QResizeEvent* event);
 	bool eventFilter(QObject* watched, QEvent* event);
 
+Q_SIGNALS:
+	void requestSwapCards();
+
 private Q_SLOTS:
 	void listContextMenuRequested(const QPoint& pos);
 	void refresh();
