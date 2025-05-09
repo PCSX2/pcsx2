@@ -109,7 +109,6 @@ struct GSMTLMainPSUniform
 	vector_float4 wh; ///< xy => PS2, zw => actual (upscaled)
 	vector_float2 ta;
 	float max_depth;
-	float alpha_fix;
 	vector_uint4 fbmask;
 
 	vector_float4 half_texel;
