@@ -17845,7 +17845,7 @@ This action cannot be reversed, and you will lose any saves on the card.</source
     </message>
     <message>
         <location filename="../Debugger/Memory/MemorySearchView.ui" line="75"/>
-        <source>Array of byte</source>
+        <source>Byte Array</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
