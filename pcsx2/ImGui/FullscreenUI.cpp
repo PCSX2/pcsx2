@@ -244,6 +244,7 @@ namespace FullscreenUI
 	void DrawSvgTexture(GSTexture* padded_texture, ImVec2 unpadded_size);
 	void DrawCachedSvgTexture(const std::string& path, ImVec2 size, SvgScaling mode);
 	void DrawCachedSvgTextureAsync(const std::string& path, ImVec2 size, SvgScaling mode);
+	void DrawListSvgTexture(ImDrawList* drawList, GSTexture* padded_texture, const ImVec2& p_min, const ImVec2& p_unpadded_max);
 
 	static MainWindowType s_current_main_window = MainWindowType::None;
 	static PauseSubMenu s_current_pause_submenu = PauseSubMenu::None;
@@ -714,6 +715,23 @@ void FullscreenUI::DrawCachedSvgTexture(const std::string& path, ImVec2 size, Sv
 void FullscreenUI::DrawCachedSvgTextureAsync(const std::string& path, ImVec2 size, SvgScaling mode)
 {
 	DrawSvgTexture(GetCachedSvgTextureAsync(path, size, mode), size);
+}
+
+// p_unpadded_max should be equal to p_min + unpadded_size
+void FullscreenUI::DrawListSvgTexture(ImDrawList* drawList, GSTexture* padded_texture, const ImVec2& p_min, const ImVec2& p_unpadded_max)
+{
+	const ImVec2 unpadded_size = p_unpadded_max - p_min;
+	if (padded_texture != GetPlaceholderTexture().get())
+	{
+		const ImVec2 padded_size(padded_texture->GetWidth(), padded_texture->GetHeight());
+		const ImVec2 uv1 = unpadded_size / padded_size;
+		drawList->AddImage(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), p_min, p_unpadded_max, ImVec2(0.0f, 0.0f), uv1);
+	}
+	else
+	{
+		// Placeholder is a png file and should be scaled by ImGui
+		drawList->AddImage(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), p_min, p_unpadded_max);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
