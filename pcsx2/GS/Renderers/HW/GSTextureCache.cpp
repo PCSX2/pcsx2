@@ -1412,7 +1412,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					{
 						for (auto& dirty : t->m_dirty)
 						{
-							GSVector4i dirty_rect = dirty.GetDirtyRect(t->m_TEX0, t->m_TEX0.PSM != dirty.psm);
+							const GSVector4i dirty_rect = dirty.GetDirtyRect(t->m_TEX0, t->m_TEX0.PSM != dirty.psm);
 							if (!dirty_rect.rintersect(new_rect).rempty())
 							{
 								rect_clean = false;
@@ -1428,12 +1428,14 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					// If the source is reading the rt, make sure it's big enough.
 					if (!possible_shuffle && t && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM)&& real_fmt_match)
 					{
+						// Be careful if a new texture has been uploaded that expands the current one (Valkyrie Profile 2 does this)
+						GSVector4i dirty_rect = (t->m_dirty.size() > 0 && bw == t->m_TEX0.TBW) ? t->m_dirty.GetTotalRect(t->m_TEX0, GSVector2i(new_rect.z, new_rect.w)) : GSVector4i(GSVector4(t->m_valid) * GSVector4(2));
 						// Try to clamp the size of the target when using repeat, we don't want it getting too huge.
 						GSVector4i resize_rect = new_rect;
 						if (CLAMP.WMS == 0 || CLAMP.WMS == 3)
 							resize_rect.z = std::min(resize_rect.z, static_cast<int>(t->m_TEX0.TBW) * 64);
 						if ((CLAMP.WMT == 0 || CLAMP.WMT == 3) && resize_rect.w > (t->m_valid.w * 2))
-							resize_rect.w = std::min(resize_rect.w, t->m_valid.w * 2);
+							resize_rect.w = std::min(resize_rect.w, std::max(t->m_valid.w * 2, dirty_rect.w));
 
 						if (t->Overlaps(bp, bw, psm, new_rect))
 							ResizeTarget(t, resize_rect, bp, psm, bw);
