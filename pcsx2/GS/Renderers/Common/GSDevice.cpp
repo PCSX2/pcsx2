@@ -493,6 +493,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 			{
 				ERROR_LOG("GS: Memory allocation failure for {}x{} texture. Purging pool and retrying.", size.x, size.y);
 				PurgePool();
+				t = CreateSurface(type, size.x, size.y, levels, format);
 				if (!t)
 				{
 					ERROR_LOG("GS: Memory allocation failure for {}x{} texture after purging pool.", size.x, size.y);
