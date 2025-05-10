@@ -18,6 +18,7 @@
 
 #include "Config.h"
 #include "Host.h"
+#include "VMManager.h"
 #include "IconsPromptFont.h"
 
 #include "fmt/format.h"
@@ -634,6 +635,50 @@ void FileMcd_Reopen(std::string new_serial)
 	FileMcd_SetType();
 	sioSetGameSerial(new_serial);
 	FileMcd_EmuOpen();
+}
+
+void FileMcd_Swap()
+{
+	if (MemcardBusy::IsBusy())
+	{
+		Host::AddIconOSDMessage("MemoryCardSwap", ICON_PF_MEMORY_CARD, TRANSLATE_SV("MemoryCardSwap", "Memory cards are busy, cannot swap right now."));
+		return;
+	}
+
+	const std::string card1Filename = Host::GetStringSettingValue("MemoryCards", "Slot1_Filename");
+	const std::string card2Filename = Host::GetStringSettingValue("MemoryCards", "Slot2_Filename");
+
+	// Copy each McdOptions to local memory
+	Pcsx2Config::McdOptions firstSlot = EmuConfig.Mcd[0];
+	Pcsx2Config::McdOptions secondSlot = EmuConfig.Mcd[1];
+
+
+	if (!firstSlot.Enabled || !secondSlot.Enabled ||
+		card1Filename.empty() || card2Filename.empty())
+	{
+		Host::AddIconOSDMessage("MemoryCardSwap", ICON_PF_MEMORY_CARD, TRANSLATE_SV("MemoryCard", "Both slots must have a card selected to swap.."));
+		return;
+	}
+
+	// Swap them
+	Host::AddIconOSDMessage("MemoryCardSwap", ICON_PF_MEMORY_CARD, TRANSLATE_SV("MemoryCard", "Swapping Memory Cards.."));
+	Host::SetBaseStringSettingValue("MemoryCards", "Slot1_Filename", card2Filename.c_str());
+	Host::SetBaseStringSettingValue("MemoryCards", "Slot2_Filename", card1Filename.c_str());
+	Host::CommitBaseSettingChanges();
+	Host::RunOnCPUThread([]() { VMManager::ApplySettings(); });
+	EmuConfig.Mcd[0] = secondSlot;
+	EmuConfig.Mcd[1] = firstSlot;
+
+	// Reopen them
+	FileMcd_EmuClose();
+	FileMcd_SetType();
+	FileMcd_EmuOpen();
+	AutoEject::SetAll();
+	Host::AddIconOSDMessage("MemoryCardSwap", ICON_PF_MEMORY_CARD, fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card has been swapped.\n"
+																										  "Slot 1: {}\n"
+																										  "Slot 2: {}"),
+																	   EmuConfig.Mcd[0].Filename, EmuConfig.Mcd[1].Filename),
+		Host::OSD_INFO_DURATION);
 }
 
 s32 FileMcd_IsPresent(uint port, uint slot)
