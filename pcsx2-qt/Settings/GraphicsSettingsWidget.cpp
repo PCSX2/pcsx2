@@ -806,7 +806,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Shows the current system time in the top-right corner of the display currently with Hour:Minute:Second (HH:MM:SS) format."));
 
 		dialog->registerWidgetHelp(m_ui.osdShowSystemDate, tr("Show System Date"), tr("Unchecked"),
-			tr("Shows the current system date in the top-right corner of the display currerntly with Year-Month-Day (YYYY-MM-DD) format."));
+			tr("Shows the current system date in the top-right corner of the display currently with Year-Month-Day (YYYY-MM-DD) format."));
 
 //		dialog->registerWidgetHelp(m_ui.osdShowUTCOffset, tr("Show UTC Offset"), tr("Unchecked"),
 //			tr("Shows the current UTC/GMT offset in the top-right corner of the display."));

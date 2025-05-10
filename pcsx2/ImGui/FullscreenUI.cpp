@@ -3641,7 +3641,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		FSUI_CSTR("Shows the current system date on the OSD currently with Year-Month-Day (YYYY-MM-DD) format.."), "EmuCore/GS", "OsdShowSystemDate", false);
 //	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Show UTC Offset"),
 //		FSUI_CSTR("Shows the UTC offset on the OSD."), "EmuCore/GS", "OsdShowUTCOffset", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EXCLAMATION, "Warn About Unsafe Settings"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TRIANGLE_EXCLAMATION, "Warn About Unsafe Settings"),
 		FSUI_CSTR("Displays warnings when settings are enabled which may break games."), "EmuCore", "WarnAboutUnsafeSettings", true);
 
 	MenuHeading(FSUI_CSTR("Operations"));
