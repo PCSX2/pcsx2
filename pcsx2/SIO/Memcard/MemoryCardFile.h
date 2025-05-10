@@ -42,6 +42,7 @@ void FileMcd_EmuOpen();
 void FileMcd_EmuClose();
 void FileMcd_CancelEject();
 void FileMcd_Reopen(std::string new_serial);
+void FileMcd_Swap();
 s32 FileMcd_IsPresent(uint port, uint slot);
 void FileMcd_GetSizeInfo(uint port, uint slot, McdSizeInfo* outways);
 bool FileMcd_IsPSX(uint port, uint slot);

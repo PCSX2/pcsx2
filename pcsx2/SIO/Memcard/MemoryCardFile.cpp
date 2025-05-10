@@ -5,6 +5,7 @@
 
 #include "SIO/Memcard/MemoryCardFolder.h"
 #include "SIO/Sio.h"
+#include <SIO/SioTypes.h>
 
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -18,6 +19,7 @@
 
 #include "Config.h"
 #include "Host.h"
+#include "VMManager.h"
 #include "IconsPromptFont.h"
 
 #include "fmt/format.h"
@@ -634,6 +636,68 @@ void FileMcd_Reopen(std::string new_serial)
 	FileMcd_SetType();
 	sioSetGameSerial(new_serial);
 	FileMcd_EmuOpen();
+}
+
+static bool FileMcd_IsAutoEjecting()
+{
+	for (size_t port = 0; port < SIO::PORTS; ++port)
+	{
+		for (size_t slot = 0; slot < SIO::SLOTS; ++slot)
+		{
+			if (mcds[port][slot].autoEjectTicks > 0)
+			{
+				return true; // Auto-eject is active
+			}
+		}
+	}
+	return false; // No auto-eject active
+}
+
+void FileMcd_Swap()
+{
+	//Assert that this is called on the CPU thread
+	pxAssert(Host::RunOnCPUThread([]() { return true; }, true) && "FileMcd_Swap must be called under Host::RunOnCPUThread"); 
+
+	if (MemcardBusy::IsBusy())
+	{
+		Host::AddIconOSDMessage("MemoryCardSwap_Busy", ICON_PF_MEMORY_CARD, TRANSLATE_SV("MemoryCardSwap_Busy", "Memory cards are busy. Can't swap right now."));
+		return;
+	}
+
+	// Check if auto-eject is active
+	if (FileMcd_IsAutoEjecting())
+	{
+		Host::AddIconOSDMessage("MemoryCardSwap_AutoEject", ICON_PF_MEMORY_CARD, TRANSLATE_SV("MemoryCardSwap_AutoEject", "Memory cards are being auto-ejected. Can't swap right now."));
+		return;
+	}
+
+	const std::string card1Filename = Host::GetStringSettingValue("MemoryCards", "Slot1_Filename");
+	const std::string card2Filename = Host::GetStringSettingValue("MemoryCards", "Slot2_Filename");
+
+	// Copy each McdOptions to local memory
+	Pcsx2Config::McdOptions firstSlot = EmuConfig.Mcd[0];
+	Pcsx2Config::McdOptions secondSlot = EmuConfig.Mcd[1];
+
+	if (!firstSlot.Enabled || !secondSlot.Enabled || card1Filename.empty() || card2Filename.empty())
+	{
+		Host::AddIconOSDMessage("MemoryCardSwap_EmptySlot", ICON_PF_MEMORY_CARD, TRANSLATE_SV("MemoryCard_EmptySlot", "Both slots must have a card selected to swap."));
+		return;
+	}
+
+	// Swap them
+	Host::SetBaseStringSettingValue("MemoryCards", "Slot1_Filename", card2Filename.c_str());
+	Host::SetBaseStringSettingValue("MemoryCards", "Slot2_Filename", card1Filename.c_str());
+	Host::CommitBaseSettingChanges();
+	VMManager::ApplySettings();
+	EmuConfig.Mcd[0] = secondSlot;
+	EmuConfig.Mcd[1] = firstSlot;
+
+	// Reopen them
+	FileMcd_EmuClose();
+	FileMcd_SetType();
+	FileMcd_EmuOpen();
+	AutoEject::SetAll();
+	Host::AddIconOSDMessage("MemoryCardSwap", ICON_PF_MEMORY_CARD, fmt::format(TRANSLATE_FS("MemoryCardSwap", "Memory Cards have been swapped.\nSlot 1: {}\nSlot 2: {}"), EmuConfig.Mcd[0].Filename, EmuConfig.Mcd[1].Filename), Host::OSD_INFO_DURATION);
 }
 
 s32 FileMcd_IsPresent(uint port, uint slot)
