@@ -148,35 +148,34 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 	{
 		bool first = true;
 		// --- Display System Time and Date First + Second Line in Imgui or most top-right by default ---
-		if (GSConfig.OsdShowSystemTime)
+		if (GSConfig.OsdShowSystemTime || GSConfig.OsdShowSystemDate)
 		{
-			std::string systemTimeStr = GetSystemTime();
-
-			// Extract hours, minutes, and seconds from the host time string to prepare easier visuals such as HH:MM:SS
-			std::string systemhours = systemTimeStr.substr(0, 2);
-			std::string systemminutes = systemTimeStr.substr(3, 2);
-			std::string systemseconds = systemTimeStr.substr(6, 2);
-
 			text.clear(); // Clear for this new line
-			text.append_format("Time: {}:{}:{} (HH:MM:SS)", systemhours, systemminutes, systemseconds); // Example: Time: 04H:48M:30S combination possible or just 04:48:30 as well or combined with what format it is with that and say HH:MM:SS but perhaps best in tooltip instead.
-			if (!text.empty() && !systemTimeStr.empty()) // Ensure GetSystemTime returns the string
-				DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255)); // Default White color
-		}
 
-		if (GSConfig.OsdShowSystemDate)
-		{
-			std::string systemDateStr = GetSystemDate();
+			if (GSConfig.OsdShowSystemTime)
+			{
+				std::string systemTimeStr = GetSystemTime();
 
-			// Extract year, month, and day from the date string to prepare easier visuals such as YYYY-MM-DD
-			std::string year = systemDateStr.substr(0, 4);
-			std::string month = systemDateStr.substr(5, 2);
-			std::string day = systemDateStr.substr(8, 2);
+				// Extract hours, minutes, and seconds from the host time string to prepare easier visuals such as HH:MM:SS
+				std::string systemhours = systemTimeStr.substr(0, 2);
+				std::string systemminutes = systemTimeStr.substr(3, 2);
+				std::string systemseconds = systemTimeStr.substr(6, 2);
 
-			text.clear(); // Clear for this new line
-			text.append_format("Date: {}-{}-{} (YYYY-MM-DD)", year, month, day); // Example: Date: 2025 Y - 10 M - 05 D but can do 2025-10-05 as well or combined with what format it is or even look at the locale of user but perhaps best in tooltip instead.
-			if (!text.empty() && !systemDateStr.empty()) // Ensure GetSystemDate returns the string
-				DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255)); // Default White color
-		}
+				text.append_format("Time: {}:{}:{}", systemhours, systemminutes, systemseconds); // Example: Time: 04H:48M:30S combination possible or just 04:48:30 as well or combined with what format it is with that and say HH:MM:SS but perhaps best in tooltip instead.
+				first = false;
+			}
+
+			if (GSConfig.OsdShowSystemDate)
+			{
+				std::string systemDateStr = GetSystemDate();
+
+				// Extract year, month, and day from the date string to prepare easier visuals such as YYYY-MM-DD
+				std::string year = systemDateStr.substr(0, 4);
+				std::string month = systemDateStr.substr(5, 2);
+				std::string day = systemDateStr.substr(8, 2);
+
+				text.append_format("{}Date: {}-{}-{}", first ? " " : " | ", year, month, day); // Example: Date: 2025 Y - 10 M - 05 D but can do 2025-10-05 as well or combined with what format it is or even look at the locale of user but perhaps best in tooltip instead.
+			}
 
 		// --- Then, display the FPS, VPS, Speed, Version lines ensuring red and green text is preserved ---
 		text.clear(); // Clear text buffer for the main stats line
