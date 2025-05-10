@@ -118,6 +118,18 @@ bool GSRenderer::Merge(int field)
 	if (!tex[0] && !tex[1])
 	{
 		m_real_size = GSVector2i(0, 0);
+
+		// Clear out the MAD buffer as some remnants of the previously shown frame came be left over, causing a flash for one frame.
+		if (GSConfig.InterlaceMode == GSInterlaceMode::Automatic || GSConfig.InterlaceMode >= GSInterlaceMode::AdaptiveTFF)
+		{
+			GSTexture* mad_tex = g_gs_device->GetMAD();
+
+			if (mad_tex)
+			{
+				g_gs_device->ClearRenderTarget(mad_tex, 0);
+				mad_tex = nullptr;
+			}
+		}
 		return false;
 	}
 
