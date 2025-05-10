@@ -934,7 +934,8 @@ public:
 	__fi bool IsPresentThrottleAllowed() const { return m_allow_present_throttle; }
 
 	__fi GSTexture* GetCurrent() const { return m_current; }
-
+	__fi GSTexture* GetMAD() const { return m_mad; }
+	
 	void Recycle(GSTexture* t);
 
 	/// Returns true if it's an OpenGL-based renderer.
