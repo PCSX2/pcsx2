@@ -3686,7 +3686,7 @@ void GSRendererHW::Draw()
 				m_vt.m_min.t *= 0.5f;
 				m_vt.m_max.t *= 0.5f;
 
-				tmm = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, m_vt.IsLinear(), false);
+				tmm = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, m_vt.IsLinear(), true);
 
 				src->UpdateLayer(MIP_TEX0, tmm.coverage, layer - m_lod.x);
 			}
@@ -3881,7 +3881,7 @@ void GSRendererHW::Draw()
 			const bool new_rect = rt->m_valid.rempty();
 			const bool new_height = new_h > rt->GetUnscaledHeight();
 			const int old_height = rt->m_texture->GetHeight();
-
+			bool merge_targets = false;
 			pxAssert(rt->GetScale() == target_scale);
 			if (rt->GetUnscaledWidth() != new_w || rt->GetUnscaledHeight() != new_h)
 				GL_INS("HW: Resize RT from %dx%d to %dx%d", rt->GetUnscaledWidth(), rt->GetUnscaledHeight(), new_w, new_h);
@@ -3904,7 +3904,10 @@ void GSRendererHW::Draw()
 					g_texture_cache->AddDirtyRectTarget(rt, height_dirty_rect, rt->m_TEX0.PSM, rt->m_TEX0.TBW, mask);
 				}
 			}*/
-			
+
+			if ((new_w > rt->m_unscaled_size.x || new_h > rt->m_unscaled_size.y) && GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
+				merge_targets = true;
+
 			rt->ResizeTexture(new_w, new_h);
 
 			if (!m_texture_shuffle && !m_channel_shuffle)
@@ -3935,6 +3938,8 @@ void GSRendererHW::Draw()
 			rt->UpdateValidity(update_rect, !frame_masked && (rt_update || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle)));
 			rt->UpdateDrawn(update_rect, !frame_masked && (rt_update || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle)));
 
+			if (merge_targets)
+				g_texture_cache->CombineAlignedInsideTargets(rt, src);
 			// Probably changing to double buffering, so invalidate any old target that was next to it.
 			// This resolves an issue where the PCRTC will find the old target in FMV's causing flashing.
 			// Grandia Xtreme, Onimusha Warlord.
@@ -6296,56 +6301,58 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 
 	// Detect framebuffer read that will need special handling
 	const GSTextureCache::Target* src_target = nullptr;
-
-	if (rt && m_conf.tex == m_conf.rt && !(m_channel_shuffle && tex && (tex_diff != frame_diff || target_region)))
+	if (!m_downscale_source || !tex->m_from_target)
 	{
-		// Can we read the framebuffer directly? (i.e. sample location matches up).
-		if (CanUseTexIsFB(rt, tex, tmm))
+		if (rt && m_conf.tex == m_conf.rt && !(m_channel_shuffle && tex && (tex_diff != frame_diff || target_region)))
 		{
-			m_conf.tex = nullptr;
-			m_conf.ps.tex_is_fb = true;
-			if (m_prim_overlap == PRIM_OVERLAP_NO || !g_gs_device->Features().texture_barrier)
-				m_conf.require_one_barrier = true;
-			else
-				m_conf.require_full_barrier = true;
+			// Can we read the framebuffer directly? (i.e. sample location matches up).
+			if (CanUseTexIsFB(rt, tex, tmm))
+			{
+				m_conf.tex = nullptr;
+				m_conf.ps.tex_is_fb = true;
+				if (m_prim_overlap == PRIM_OVERLAP_NO || !g_gs_device->Features().texture_barrier)
+					m_conf.require_one_barrier = true;
+				else
+					m_conf.require_full_barrier = true;
 
-			unscaled_size = rt->GetUnscaledSize();
-			scale = rt->GetScale();
+				unscaled_size = rt->GetUnscaledSize();
+				scale = rt->GetScale();
+				return;
+			}
+
+			GL_CACHE("HW: Source is render target, taking copy.");
+			src_target = rt;
+		}
+		// Be careful of single page channel shuffles where depth is the source but it's not going to the same place, we can't read this directly.
+		else if (ds && m_conf.tex == m_conf.ds && (!m_channel_shuffle || static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) == static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0)))
+		{
+			// GL, Vulkan (in General layout), not DirectX!
+			const bool can_read_current_depth_buffer = g_gs_device->Features().test_and_sample_depth;
+
+			// If this is our current Z buffer, we might not be able to read it directly if it's being written to.
+			// Rather than leaving the backend to do it, we'll check it here.
+			if (can_read_current_depth_buffer && (m_cached_ctx.ZBUF.ZMSK || m_cached_ctx.TEST.ZTST == ZTST_NEVER))
+			{
+				// Safe to read!
+				GL_CACHE("HW: Source is depth buffer, not writing, safe to read.");
+				unscaled_size = ds->GetUnscaledSize();
+				scale = ds->GetScale();
+				return;
+			}
+
+			// Can't safely read the depth buffer, so we need to take a copy of it.
+			GL_CACHE("HW: Source is depth buffer, unsafe to read, taking copy.");
+			src_target = ds;
+		}
+		else if (m_channel_shuffle && tex->m_from_target && tex_diff != frame_diff)
+		{
+			src_target = tex->m_from_target;
+		}
+		else
+		{
+			// No match.
 			return;
 		}
-
-		GL_CACHE("HW: Source is render target, taking copy.");
-		src_target = rt;
-	}
-	// Be careful of single page channel shuffles where depth is the source but it's not going to the same place, we can't read this directly.
-	else if (ds && m_conf.tex == m_conf.ds && (!m_channel_shuffle || static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) ==  static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0)))
-	{
-		// GL, Vulkan (in General layout), not DirectX!
-		const bool can_read_current_depth_buffer = g_gs_device->Features().test_and_sample_depth;
-
-		// If this is our current Z buffer, we might not be able to read it directly if it's being written to.
-		// Rather than leaving the backend to do it, we'll check it here.
-		if (can_read_current_depth_buffer && (m_cached_ctx.ZBUF.ZMSK || m_cached_ctx.TEST.ZTST == ZTST_NEVER))
-		{
-			// Safe to read!
-			GL_CACHE("HW: Source is depth buffer, not writing, safe to read.");
-			unscaled_size = ds->GetUnscaledSize();
-			scale = ds->GetScale();
-			return;
-		}
-
-		// Can't safely read the depth buffer, so we need to take a copy of it.
-		GL_CACHE("HW: Source is depth buffer, unsafe to read, taking copy.");
-		src_target = ds;
-	}
-	else if (m_channel_shuffle && tex->m_from_target && tex_diff != frame_diff)
-	{
-		src_target = tex->m_from_target;
-	}
-	else if (!m_downscale_source || !tex->m_from_target)
-	{
-		// No match.
-		return;
 	}
 	else
 		src_target = tex->m_from_target;
