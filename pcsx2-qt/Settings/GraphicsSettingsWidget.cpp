@@ -130,6 +130,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowHardwareInfo, "EmuCore/GS", "OsdShowHardwareInfo", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowVideoCapture, "EmuCore/GS", "OsdShowVideoCapture", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowInputRec, "EmuCore/GS", "OsdShowInputRec", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowSystemTime, "EmuCore/GS", "OsdShowSystemTime", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowSystemDate, "EmuCore/GS", "OsdShowSystemDate", false);
+//	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowUTCOffset, "EmuCore/GS", "OsdShowUTCOffset", false);  TODO show what timezone an user has like UTC - 3 or UTC + 1 maybe even regional variants but less priority
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.warnAboutUnsafeSettings, "EmuCore", "WarnAboutUnsafeSettings", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fxaa, "EmuCore/GS", "fxaa", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.shadeBoost, "EmuCore/GS", "ShadeBoost", false);
@@ -799,6 +802,15 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.osdShowHardwareInfo, tr("Show Hardware Info"), tr("Unchecked"),
 			tr("Shows the current system hardware information on the OSD."));
 
+		dialog->registerWidgetHelp(m_ui.osdShowSystemTime, tr("Show System Time"), tr("Unchecked"),
+			tr("Shows the current system time in the top-right corner of the display currently with Hour:Minute:Second (HH:MM:SS) format."));
+
+		dialog->registerWidgetHelp(m_ui.osdShowSystemDate, tr("Show System Date"), tr("Unchecked"),
+			tr("Shows the current system date in the top-right corner of the display currerntly with Year-Month-Day (YYYY-MM-DD) format."));
+
+//		dialog->registerWidgetHelp(m_ui.osdShowUTCOffset, tr("Show UTC Offset"), tr("Unchecked"),
+//			tr("Shows the current UTC/GMT offset in the top-right corner of the display."));
+
 		dialog->registerWidgetHelp(m_ui.warnAboutUnsafeSettings, tr("Warn About Unsafe Settings"), tr("Checked"),
 			tr("Displays warnings when settings are enabled which may break games."));
 	}
@@ -975,6 +987,9 @@ void GraphicsSettingsWidget::onPerformancePosChanged()
 	m_ui.osdShowIndicators->setEnabled(enabled);
 	m_ui.osdShowFrameTimes->setEnabled(enabled);
 	m_ui.osdShowVersion->setEnabled(enabled);
+	m_ui.osdShowSystemTime->setEnabled(enabled);
+	m_ui.osdShowSystemDate->setEnabled(enabled);
+//	m_ui.osdShowUTCOffset->setEnabled(enabled);
 }
 
 void GraphicsSettingsWidget::onTextureDumpChanged()
