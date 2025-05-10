@@ -468,32 +468,39 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 		if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '1') || dxt10_format == 71 /*DXGI_FORMAT_BC1_UNORM*/)
 		{
 			info->format = GSTexture::Format::BC1;
-			info->block_size = 4;
-			info->bytes_per_block = 8;
+			info->block_size = GSTexture::GetCompressedBlockSize(info->format);
+			info->bytes_per_block = GSTexture::GetCompressedBytesPerBlock(info->format);
 			if (!features.dxt_textures)
 				return false;
 		}
 		else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '2') || header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '3') || dxt10_format == 74 /*DXGI_FORMAT_BC2_UNORM*/)
 		{
 			info->format = GSTexture::Format::BC2;
-			info->block_size = 4;
-			info->bytes_per_block = 16;
+			info->block_size = GSTexture::GetCompressedBlockSize(info->format);
+			info->bytes_per_block = GSTexture::GetCompressedBytesPerBlock(info->format);
 			if (!features.dxt_textures)
 				return false;
 		}
 		else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '4') || header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '5') || dxt10_format == 77 /*DXGI_FORMAT_BC3_UNORM*/)
 		{
 			info->format = GSTexture::Format::BC3;
-			info->block_size = 4;
-			info->bytes_per_block = 16;
+			info->block_size = GSTexture::GetCompressedBlockSize(info->format);
+			info->bytes_per_block = GSTexture::GetCompressedBytesPerBlock(info->format);
 			if (!features.dxt_textures)
 				return false;
+		}
+		// RGBA16F textures (these allow for values beyond 0-1)
+		else if (header.ddspf.dwFourCC == 113 /*D3DFMT_A16B16G16R16F*/ || dxt10_format == 10 /*DXGI_FORMAT_R16G16B16A16_FLOAT*/)
+		{
+			info->format = GSTexture::Format::ColorHDR;
+			info->block_size = GSTexture::GetCompressedBlockSize(info->format);
+			info->bytes_per_block = GSTexture::GetCompressedBytesPerBlock(info->format);
 		}
 		else if (dxt10_format == 98 /*DXGI_FORMAT_BC7_UNORM*/)
 		{
 			info->format = GSTexture::Format::BC7;
-			info->block_size = 4;
-			info->bytes_per_block = 16;
+			info->block_size = GSTexture::GetCompressedBlockSize(info->format);
+			info->bytes_per_block = GSTexture::GetCompressedBytesPerBlock(info->format);
 			if (!features.bptc_textures)
 				return false;
 		}
@@ -532,7 +539,7 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 
 		// All these formats are RGBA, just with byte swapping.
 		info->format = GSTexture::Format::Color;
-		info->block_size = 1;
+		info->block_size = GSTexture::GetCompressedBlockSize(info->format);
 		info->bytes_per_block = header.ddspf.dwRGBBitCount / 8;
 	}
 

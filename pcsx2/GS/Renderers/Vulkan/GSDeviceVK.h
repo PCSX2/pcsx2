@@ -345,6 +345,7 @@ public:
 	{
 		NUM_TFX_DYNAMIC_OFFSETS = 2,
 		NUM_UTILITY_SAMPLERS = 1,
+		// This needs to match the sum of all the utility cbuffer sizes
 		CONVERT_PUSH_CONSTANTS_SIZE = 96,
 
 		NUM_CAS_PIPELINES = 2,
@@ -356,14 +357,15 @@ public:
 
 		NUM_TFX_DESCRIPTOR_SETS,
 	};
-	enum TFX_TEXTURES : u32
+	enum TFX_DESCRIPTORS : u32
 	{
 		TFX_TEXTURE_TEXTURE,
 		TFX_TEXTURE_PALETTE,
 		TFX_TEXTURE_RT,
 		TFX_TEXTURE_PRIMID,
-
-		NUM_TFX_TEXTURES
+		NUM_TFX_TEXTURES = TFX_TEXTURE_PRIMID + 1,
+		TFX_SAMPLER_PALETTE,
+		NUM_TFX_DESCRIPTORS = TFX_SAMPLER_PALETTE + 1,
 	};
 
 private:
@@ -399,7 +401,7 @@ private:
 	VkRenderPass m_date_image_setup_render_passes[2][2] = {}; // [depth][clear]
 	VkPipeline m_date_image_setup_pipelines[2][4] = {}; // [depth][datm]
 	VkPipeline m_fxaa_pipeline = {};
-	VkPipeline m_shadeboost_pipeline = {};
+	VkPipeline m_colorcorrect_pipeline = {};
 
 	std::unordered_map<u32, VkShaderModule> m_tfx_vertex_shaders;
 	std::unordered_map<GSHWDrawConfig::PSSelector, VkShaderModule, GSHWDrawConfig::PSSelectorHash>
@@ -414,6 +416,9 @@ private:
 	VkRenderPass m_utility_depth_render_pass_discard = VK_NULL_HANDLE;
 	VkRenderPass m_date_setup_render_pass = VK_NULL_HANDLE;
 	VkRenderPass m_swap_chain_render_pass = VK_NULL_HANDLE;
+	VkRenderPass m_postprocess_render_pass_load = VK_NULL_HANDLE;
+	VkRenderPass m_postprocess_render_pass_clear = VK_NULL_HANDLE;
+	VkRenderPass m_postprocess_render_pass_discard = VK_NULL_HANDLE;
 
 	VkRenderPass m_tfx_render_pass[2][2][2][3][2][2][3][3] = {}; // [rt][ds][colclip][date][fbl][dsp][rt_op][ds_op]
 
@@ -434,7 +439,7 @@ private:
 		const GSRegEXTBUF& EXTBUF, u32 c, const bool linear) final;
 	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) final;
-	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) final;
+	void DoColorCorrect(GSTexture* sTex, GSTexture* dTex, const ColorCorrectConstantBuffer& cb) final;
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
 
 	bool DoCAS(
@@ -580,7 +585,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 
 public:
-	VkFormat LookupNativeFormat(GSTexture::Format format) const;
+	VkFormat LookupNativeFormat(GSTexture::Format format, GSTexture::Type type = GSTexture::Type::Invalid) const;
 
 	__fi VkFramebuffer GetCurrentFramebuffer() const { return m_current_framebuffer; }
 

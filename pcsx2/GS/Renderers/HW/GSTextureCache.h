@@ -134,7 +134,7 @@ public:
 		GIFRegTEXA m_TEXA = {};
 		GSVector2i m_unscaled_size = {};
 		float m_scale = 0.0f;
-		int m_age = 0;
+		int m_age = 0; // How many frames ago the texture was last used (written to). It's increased every frame and reset on write.
 		u32 m_end_block = MAX_BP; // Hint of the surface area.
 		bool m_32_bits_fmt = false; // Allow to detect the casting of 32 bits as 16 bits texture
 		bool m_was_dst_matched = false;

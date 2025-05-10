@@ -496,7 +496,7 @@
          </item>
          <item>
           <property name="text">
-           <string>Bilinear (PS2)</string>
+           <string>Bilinear (PS2) (Default)</string>
           </property>
          </item>
          <item>
@@ -635,6 +635,13 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="hdr">
+           <property name="text">
+            <string>HDR</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>
@@ -677,7 +684,7 @@
          </item>
          <item>
           <property name="text">
-           <string>Bilinear (PS2)</string>
+           <string>Bilinear (PS2) (Default)</string>
           </property>
          </item>
          <item>
@@ -1403,6 +1410,154 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox_8">
+         <property name="title">
+          <string>Color Correction</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_11">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="colorCorrect">
+            <property name="text">
+             <string>Correct Colors</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <item>
+             <spacer name="horizontalSpacer_1">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="gameGammaLabel">
+              <property name="text">
+               <string>Game Gamma:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="colorCorrectGameGamma">
+              <property name="minimum">
+               <double>2.0</double>
+              </property>
+              <property name="maximum">
+               <double>3.0</double>
+              </property>
+              <property name="singleStep">
+               <double>0.01</double>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="gameColorSpaceLabel">
+              <property name="text">
+               <string>Game Color Space:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="colorCorrectGameColorSpace">
+              <item>
+               <property name="text">
+                <string extracomment="No color correction.">Rec.709/sRGB</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>NTCS-M (Rec.601)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>NTCS-J</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>PAL</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="HDR">
+            <property name="text">
+             <string>HDR</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <spacer name="horizontalSpacer1">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="1" column="2">
+             <widget class="QLabel" name="hdrBrightnessLabel">
+              <property name="text">
+               <string>HDR Brightness:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QSpinBox" name="hdrBrightness">
+              <property name="suffix">
+               <string>nits</string>
+              </property>
+              <property name="minimum">
+               <number>80</number>
+              </property>
+              <property name="maximum">
+               <number>400</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="4">
+             <widget class="QLabel" name="hdrPeakBrightnessLabel">
+              <property name="text">
+               <string>HDR Peak Brightness:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="5">
+             <widget class="QSpinBox" name="hdrPeakBrightness">
+              <property name="suffix">
+               <string>nits</string>
+              </property>
+              <property name="minimum">
+               <number>400</number>
+              </property>
+              <property name="maximum">
+               <number>10000</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBox_7">
          <property name="title">
           <string>Filters</string>
@@ -1525,7 +1680,7 @@
             <item>
              <widget class="QSpinBox" name="shadeBoostSaturation">
               <property name="minimum">
-               <number>1</number>
+               <number>0</number>
               </property>
               <property name="maximum">
                <number>100</number>

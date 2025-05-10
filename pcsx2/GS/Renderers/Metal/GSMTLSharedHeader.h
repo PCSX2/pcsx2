@@ -37,7 +37,7 @@ struct GSMTLPresentPSUniform
 	vector_float2 rcp_target_resolution; ///< 1 / target_resolution
 	vector_float2 source_resolution;
 	vector_float2 rcp_source_resolution; ///< 1 / source_resolution
-	float time;
+	vector_float2 time_and_brightness; // time, user brightness scale (HDR)
 };
 
 struct GSMTLInterlacePSUniform
@@ -57,6 +57,12 @@ struct GSMTLCLUTConvertPSUniform
 	float scale;
 	vector_uint2 offset;
 	uint doffset;
+};
+
+struct GSMTLColorCorrectPSUniform
+{
+	vector_float4 correction;
+	vector_float4 adjustment;
 };
 
 struct GSMTLIndexedConvertPSUniform
@@ -214,4 +220,5 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_MANUAL_LOD,
 	GSMTLConstantIndex_PS_REGION_RECT,
 	GSMTLConstantIndex_PS_SCANMSK,
+	GSMTLConstantIndex_PS_HDR,
 };

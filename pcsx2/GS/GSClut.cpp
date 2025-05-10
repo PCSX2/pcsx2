@@ -443,7 +443,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 				if (!dst)
 				{
 					// allocate texture lazily
-					dst = g_gs_device->CreateRenderTarget(dst_size, 1, GSTexture::Format::Color, false);
+					dst = g_gs_device->CreateRenderTarget(dst_size, 1, g_gs_device->GetEmuHWRTTexFormat(), false); //TODO: HDR or GSTexture::Format::Color??? Nah. Though all textures need to be HDR if HDR is enable, due to VK and DX12 pipelines being fixed format
 					is_4bit ? (m_gpu_clut4 = dst) : (m_gpu_clut8 = dst);
 				}
 				if (dst)
