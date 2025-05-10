@@ -2331,6 +2331,8 @@ int main(int argc, char* argv[])
 {
 	CrashHandler::Install();
 
+	std::locale::global(std::locale(""));
+
 	QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 	QtHost::RegisterTypes();
 
