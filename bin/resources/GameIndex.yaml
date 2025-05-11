@@ -1637,7 +1637,7 @@ SCAJ-20070:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 5 # Fix effects upscaling.
+    halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
     roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
     textureInsideRT: 1 # Fixes missing battle effects.
@@ -4783,6 +4783,8 @@ SCES-50410:
   name: "Ace Combat - Distant Thunder"
   region: "PAL-M5"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes autopilot being silly and crashing the plane.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
@@ -10233,7 +10235,7 @@ SCPS-55019:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 5 # Fix effects upscaling.
+    halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
     roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
     textureInsideRT: 1 # Fixes missing battle effects.
@@ -10562,13 +10564,10 @@ SCPS-56016:
   gameFixes:
     - GIFFIFOHack
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes car shadows but addeds about 5000 barriers, might impact slower machines.
     halfPixelOffset: 2 # Fixes post processing position.
     nativeScaling: 2 # Fixes post effects.
-    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
-    gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
     autoFlush: 1 # Corrects shadows (Currently still broken even with this).
-    recommendedBlendingLevel: 4 # Fixes car shadows but addeds about 5000 barriers, might impact slower machines.
-    gpuTargetCLUT: 2 # Fixes light flicker.
     getSkipCount: "GSC_DTGames"
 SCPS-72001:
   name: "GRAN TURISMO3 A-spec [MEGA HITS!]"
@@ -12916,14 +12915,15 @@ SLAJ-25052:
     halfPixelOffset: 2 # Fixes upscaling lines.
     nativeScaling: 2 # Fixes post processing.
 SLAJ-25053:
-  name: "Burnout 3 - Takedown"
-  region: "NTSC-Unk"
+  name: "橫衝直撞3"
+  name-en: "Burnout 3 - Takedown"
+  region: "NTSC-C"
   clampModes:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
-    halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 2 # Fixes blur and obscures sun behind objects.
+    halfPixelOffset: 5 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur and obscures sun behind objects.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     nativeScaling: 2 # Smooths speed blur and corrects some lighting.
@@ -13512,8 +13512,8 @@ SLED-52597:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
-    halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 2 # Fixes blur and obscures sun behind objects.
+    halfPixelOffset: 5 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur and obscures sun behind objects.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     nativeScaling: 2 # Smooths speed blur and corrects some lighting.
@@ -20261,8 +20261,8 @@ SLES-52584:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
-    halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 2 # Fixes blur and obscures sun behind objects.
+    halfPixelOffset: 5 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur and obscures sun behind objects.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     nativeScaling: 2 # Smooths speed blur and corrects some lighting.
@@ -20275,8 +20275,8 @@ SLES-52585:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
-    halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 2 # Fixes blur and obscures sun behind objects.
+    halfPixelOffset: 5 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur and obscures sun behind objects.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     nativeScaling: 2 # Smooths speed blur and corrects some lighting.
@@ -23488,6 +23488,7 @@ SLES-53616:
     halfPixelOffset: 5 # Reduces post misalignment.
     nativeScaling: 2 # Fixes remaining post misalignment and light bloom and shadows.
     autoFlush: 1 # Fixes shadow alignment.
+    bilinearUpscale: 2 # Fixes sun glare textures to behave like native.
 SLES-53617:
   name: "True Crime - New York City"
   region: "PAL-G"
@@ -23503,6 +23504,7 @@ SLES-53617:
     halfPixelOffset: 5 # Reduces post misalignment.
     nativeScaling: 2 # Fixes remaining post misalignment and light bloom and shadows.
     autoFlush: 1 # Fixes shadow alignment.
+    bilinearUpscale: 2 # Fixes sun glare textures to behave like native.
 SLES-53618:
   name: "True Crime - New York City"
   region: "PAL-S"
@@ -23518,6 +23520,7 @@ SLES-53618:
     halfPixelOffset: 5 # Reduces post misalignment.
     nativeScaling: 2 # Fixes remaining post misalignment and light bloom and shadows.
     autoFlush: 1 # Fixes shadow alignment.
+    bilinearUpscale: 2 # Fixes sun glare textures to behave like native.
 SLES-53621:
   name: "Wallace & Gromit - The Curse of the Were-Rabbit"
   region: "PAL-M5"
@@ -29904,7 +29907,7 @@ SLES-82028:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 5 # Fix effects upscaling.
+    halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
     roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
     textureInsideRT: 1 # Fixes missing battle effects.
@@ -29915,7 +29918,7 @@ SLES-82029:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 5 # Fix effects upscaling.
+    halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
     roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
     textureInsideRT: 1 # Fixes missing battle effects.
@@ -31091,8 +31094,8 @@ SLKA-25206:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
-    halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 2 # Fixes blur and obscures sun behind objects.
+    halfPixelOffset: 5 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur and obscures sun behind objects.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     nativeScaling: 2 # Smooths speed blur and corrects some lighting.
@@ -34132,6 +34135,8 @@ SLPM-60149:
   name-sort: "えーすこんばっと04 しゃったーどすかい [たいけんばん]"
   name-en: "Ace Combat 04 - Shattered Skies [Trial]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes autopilot being silly and crashing the plane.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
@@ -34530,8 +34535,8 @@ SLPM-60246:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
-    halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 2 # Fixes blur and obscures sun behind objects.
+    halfPixelOffset: 5 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur and obscures sun behind objects.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     nativeScaling: 2 # Smooths speed blur and corrects some lighting.
@@ -40850,7 +40855,7 @@ SLPM-65209:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 5 # Fix effects upscaling.
+    halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
     roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
     textureInsideRT: 1 # Fixes missing battle effects.
@@ -42219,7 +42224,7 @@ SLPM-65438:
   gameFixes:
     - VuAddSubHack # Fixes ELF decryption.
   gsHWFixes:
-    halfPixelOffset: 5 # Fix effects upscaling.
+    halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
     roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
     textureInsideRT: 1 # Fixes missing battle effects.
@@ -42232,7 +42237,7 @@ SLPM-65439:
   gameFixes:
     - VuAddSubHack # Fixes ELF decryption.
   gsHWFixes:
-    halfPixelOffset: 5 # Fix effects upscaling.
+    halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
     roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
     textureInsideRT: 1 # Fixes missing battle effects.
@@ -43776,8 +43781,8 @@ SLPM-65719:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
-    halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 2 # Fixes blur and obscures sun behind objects.
+    halfPixelOffset: 5 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur and obscures sun behind objects.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     nativeScaling: 2 # Smooths speed blur and corrects some lighting.
@@ -45174,8 +45179,8 @@ SLPM-65958:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
-    halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 2 # Fixes blur and obscures sun behind objects.
+    halfPixelOffset: 5 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur and obscures sun behind objects.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     nativeScaling: 2 # Smooths speed blur and corrects some lighting.
@@ -48450,6 +48455,7 @@ SLPM-66473:
     halfPixelOffset: 5 # Reduces post misalignment.
     nativeScaling: 2 # Fixes remaining post misalignment and light bloom and shadows.
     autoFlush: 1 # Fixes shadow alignment.
+    bilinearUpscale: 2 # Fixes sun glare textures to behave like native.
 SLPM-66474:
   name: "オーディンスフィア"
   name-sort: "おーでぃんすふぃあ"
@@ -48480,7 +48486,7 @@ SLPM-66478:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 5 # Fix effects upscaling.
+    halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
     roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
     textureInsideRT: 1 # Fixes missing battle effects.
@@ -48493,7 +48499,7 @@ SLPM-66479:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 5 # Fix effects upscaling.
+    halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
     roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
     textureInsideRT: 1 # Fixes missing battle effects.
@@ -51405,8 +51411,8 @@ SLPM-66962:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
-    halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 2 # Fixes blur and obscures sun behind objects.
+    halfPixelOffset: 5 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur and obscures sun behind objects.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     nativeScaling: 2 # Smooths speed blur and corrects some lighting.
@@ -52476,6 +52482,7 @@ SLPM-74243:
     halfPixelOffset: 5 # Reduces post misalignment.
     nativeScaling: 2 # Fixes remaining post misalignment and light bloom and shadows.
     autoFlush: 1 # Fixes shadow alignment.
+    bilinearUpscale: 2 # Fixes sun glare textures to behave like native.
 SLPM-74244:
   name: "PHANTASY STAR UNIVERSE [PlayStation2 the Best]"
   name-sort: "ふぁんたしーすたーゆにばーす [PlayStation2 the Best]"
@@ -55803,6 +55810,8 @@ SLPS-25052:
   name-en: "Ace Combat 04 - Shattered Skies"
   region: "NTSC-J"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes autopilot being silly and crashing the plane.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
@@ -61525,6 +61534,8 @@ SLPS-73205:
   name-sort: "えーすこんばっと04 しゃったーどすかい [PlayStation2 the Best]"
   name-en: "Ace Combat 04 - Shattered Skies [PlayStation2 the Best]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes autopilot being silly and crashing the plane.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
@@ -62137,6 +62148,8 @@ SLPS-73410:
   name-sort: "えーすこんばっと04 しゃったーどすかい [PlayStation2 the Best]"
   name-en: "Ace Combat 04 - Shattered Skies [PlayStation2 the Best]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes autopilot being silly and crashing the plane.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
@@ -62849,6 +62862,8 @@ SLUS-20152:
   name: "Ace Combat 04 - Shattered Skies"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes autopilot being silly and crashing the plane.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
@@ -64514,7 +64529,7 @@ SLUS-20488:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 5 # Fix effects upscaling.
+    halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
     roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
     textureInsideRT: 1 # Fixes missing battle effects.
@@ -66685,7 +66700,7 @@ SLUS-20891:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 5 # Fix effects upscaling.
+    halfPixelOffset: 4 # Fix effects upscaling.
     nativeScaling: 2 # Fixes post effects.
     roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
     textureInsideRT: 1 # Fixes missing battle effects.
@@ -67712,8 +67727,8 @@ SLUS-21050:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
-    halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 2 # Fixes blur and obscures sun behind objects.
+    halfPixelOffset: 5 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur and obscures sun behind objects.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     nativeScaling: 2 # Smooths speed blur and corrects some lighting.
@@ -68016,6 +68031,7 @@ SLUS-21106:
     halfPixelOffset: 5 # Reduces post misalignment.
     nativeScaling: 2 # Fixes remaining post misalignment and light bloom and shadows.
     autoFlush: 1 # Fixes shadow alignment.
+    bilinearUpscale: 2 # Fixes sun glare textures to behave like native.
 SLUS-21107:
   name: "X-Men - The Official Game"
   region: "NTSC-U"
@@ -73533,8 +73549,8 @@ SLUS-29113:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
-    halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 2 # Fixes blur and obscures sun behind objects.
+    halfPixelOffset: 5 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur and obscures sun behind objects.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     nativeScaling: 2 # Smooths speed blur and corrects some lighting.
