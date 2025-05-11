@@ -5923,9 +5923,6 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 
 	m_conf.cb_ps.ScaleFactor = GSVector4(scale_factor * (1.0f / 16.0f), 1.0f / scale_factor, scale_rt, 0.0f);
 
-	if ((m_conf.ps.tex_is_fb && rt->m_rt_alpha_scale) || (tex->m_target && tex->m_from_target && tex->m_target_direct && tex->m_from_target->m_rt_alpha_scale))
-		m_conf.ps.rta_source_correction = 1;
-
 	// Warning fetch the texture PSM format rather than the context format. The latter could have been corrected in the texture cache for depth.
 	//const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[tex->m_TEX0.PSM];
@@ -7115,6 +7112,19 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		new_scale_rt_alpha = rt->m_rt_alpha_scale;
 	}
 
+	GSDevice::RecycledTexture tex_copy;
+	if (tex)
+	{
+		EmulateTextureSampler(rt, ds, tex, tmm, tex_copy);
+	}
+	else
+	{
+		const float scale_factor = rt ? rt->GetScale() : ds->GetScale();
+		m_conf.cb_ps.ScaleFactor = GSVector4(scale_factor * (1.0f / 16.0f), 1.0f / scale_factor, scale_factor, 0.0f);
+
+		m_conf.ps.tfx = 4;
+	}
+
 	// AA1: Set alpha source to coverage 128 when there is no alpha blending.
 	m_conf.ps.fixed_one_a = IsCoverageAlpha();
 
@@ -7137,6 +7147,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			new_scale_rt_alpha = full_cover || rt->m_last_draw >= s_n;
 		}
 	}
+
+	if ((m_conf.ps.tex_is_fb && rt && rt->m_rt_alpha_scale) || (tex && tex->m_from_target && tex->m_target_direct && tex->m_from_target->m_rt_alpha_scale))
+		m_conf.ps.rta_source_correction = 1;
 
 	if (req_src_update && tex->m_texture != rt->m_texture)
 		tex->m_texture = rt->m_texture;
@@ -7404,18 +7417,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.cb_ps.FogColor_AREF = fc.blend32<8>(m_conf.cb_ps.FogColor_AREF);
 	}
 
-	GSDevice::RecycledTexture tex_copy;
-	if (tex)
-	{
-		EmulateTextureSampler(rt, ds, tex, tmm, tex_copy);
-	}
-	else
-	{
-		const float scale_factor = rt ? rt->GetScale() : ds->GetScale();
-		m_conf.cb_ps.ScaleFactor = GSVector4(scale_factor * (1.0f / 16.0f), 1.0f / scale_factor, scale_factor, 0.0f);
 
-		m_conf.ps.tfx = 4;
-	}
 
 	// Update RT scaled alpha flag, nothing's going to read it anymore.
 	if (rt)
