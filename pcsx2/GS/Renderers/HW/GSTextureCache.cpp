@@ -2317,6 +2317,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 
 						continue;
 					}
+
 					GSVector4i lookup_rect = min_rect;
 
 					if (is_shuffle)
@@ -2325,6 +2326,17 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					const GSVector4i translated_rect = GSVector4i(0, 0, 0, 0).max_i32(TranslateAlignedRectByPage(t, TEX0.TBP0, TEX0.PSM, TEX0.TBW, lookup_rect));
 					const GSVector4i dirty_rect = t->m_dirty.empty() ? GSVector4i::zero() : t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size).rintersect(t->m_valid);
 					const bool all_dirty = dirty_rect.eq(t->m_valid);
+
+					
+					if (!is_shuffle && !t->m_dirty.empty() && (!preserve_alpha && !preserve_rgb) && (GSState::s_n - 1) != t->m_last_draw)
+					{
+						GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to dirty areas not preserved (Likely change in target)", t->m_TEX0.TBP0, t->m_TEX0.TBW, psm_str(t->m_TEX0.PSM));
+						InvalidateSourcesFromTarget(t);
+						i = list.erase(i);
+						delete t;
+
+						continue;
+					}
 
 					if (!all_dirty && ((translated_rect.w <= t->m_valid.w) || widthpage_offset == 0 || (GSState::s_n - 1) == t->m_last_draw))
 					{
