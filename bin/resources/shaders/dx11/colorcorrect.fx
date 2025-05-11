@@ -195,6 +195,7 @@ float4 ps_main(PS_INPUT input) : SV_Target0
 	// Tonemap in gamma space (this specific formula looks better with it) and by channel, to best retain the original color hues (even if we do it in a different color space).
 	const float tonemapGamma = 2.75; // Found empyrically, any value between 1 and 3 is good, with 2-3 being especially good
 	c.rgb = pow(abs(c.rgb), 1.0 / tonemapGamma) * sign(c.rgb);
+	peakWhite = pow(peakWhite, 1.0 / tonemapGamma);
 	
 	c.r = LuminanceCompress(c.r, peakWhite, shoulderStart);
 	c.g = LuminanceCompress(c.g, peakWhite, shoulderStart);

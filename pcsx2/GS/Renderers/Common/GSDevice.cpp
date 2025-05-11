@@ -775,8 +775,7 @@ void GSDevice::ColorCorrect()
 		cb.correction.x = GSConfig.ColorCorrect ? GSConfig.ColorCorrect_GameGamma : 2.2f;
 		cb.correction.y = GSConfig.ColorCorrect ? static_cast<float>(GSConfig.ColorCorrect_GameColorSpace) : 0.f;
 		cb.correction.z = EmuConfig.HDROutput ? (GSConfig.HDR_BrightnessNits / Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS) : 1.f;
-		// preapply gamma on the peak brightness parameter
-		cb.correction.w = EmuConfig.HDROutput ? powf(GSConfig.HDR_PeakBrightnessNits / Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS, 1.f / cb.correction.x) : 1.f;
+		cb.correction.w = EmuConfig.HDROutput ? (GSConfig.HDR_PeakBrightnessNits / Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS) : 1.f;
 		// predivide to avoid the divide (multiply) in the shader
 		cb.adjustment.x = (GSConfig.ShadeBoost ? static_cast<float>(GSConfig.ShadeBoost_Brightness) : 50.f) * (1.0f / 50.0f);
 		cb.adjustment.y = (GSConfig.ShadeBoost ? static_cast<float>(GSConfig.ShadeBoost_Contrast) : 50.f) * (1.0f / 50.0f);
