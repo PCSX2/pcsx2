@@ -68,6 +68,12 @@ float LuminanceCompress(
 	return (InValue <= ShoulderStart) ? InValue : possibleOutValue;
 }
 
+// BT.709
+float luminance(float3 c)
+{
+	return dot(c, float3(0.2125, 0.7154, 0.0721));
+}
+
 /*
 ** Contrast, saturation, brightness
 ** Code of this function is from TGM's shader pack
@@ -81,8 +87,6 @@ float4 ContrastSaturationBrightness(float4 color) // Ported to HLSL
 	float con = adjustment.y;
 	float sat = adjustment.z;
 		
-	const float3 LumCoeff = float3(0.2125, 0.7154, 0.0721);
-	
 #if 1 // For linear space in/out
 	float3 AvgLumin = 0.18; // Mid gray
 #else
@@ -93,7 +97,7 @@ float4 ContrastSaturationBrightness(float4 color) // Ported to HLSL
 	float3 AvgLumin = float3(AvgLumR, AvgLumG, AvgLumB);
 #endif
 	float3 brtColor = color.rgb * brt;
-	float intensity = dot(brtColor, LumCoeff);
+	float intensity = luminance(brtColor);
 	float3 satColor = lerp(intensity, brtColor, sat);
 	float3 conColor = lerp(AvgLumin, satColor, con);
 
@@ -113,8 +117,7 @@ struct PS_INPUT
 // From: https://github.com/Filoppi/PumboAutoHDR (MIT)
 float3 PumboAutoHDR(float3 SDRColor, float PeakWhiteNits = 400.f, float PaperWhiteNits = 203.f, float ShoulderPow = 3.5f)
 {
-	const float3 LumCoeff = float3(0.2125, 0.7154, 0.0721);
-	const float SDRRatio = dot(SDRColor, LumCoeff);
+	const float SDRRatio = luminance(SDRColor);
 	// Limit AutoHDR brightness, it won't look good beyond a certain level.
 	// The paper white multiplier is applied later so we account for that.
 	const float AutoHDRMaxWhite = max(min(PeakWhiteNits, 1000.f) / PaperWhiteNits, 1.f);
@@ -156,6 +159,8 @@ float4 ps_main(PS_INPUT input) : SV_Target0
 		c.rgb = mul(c.rgb, from_PAL);
 	}
 
+	float3 sdrColor = saturate(c.rgb);
+
 //TODO: expose setting? In VK too. Also... clean this all around (move define, remove branches)
 #define PS_FAKE_HDR 1
 #if PS_HDR_OUTPUT && PS_FAKE_HDR
@@ -163,8 +168,7 @@ float4 ps_main(PS_INPUT input) : SV_Target0
 #if PS_HDR_INPUT // "Fake" HDR
 	const float normalizationPoint = 0.333; // Found empyrically
 	const float fakeHDRIntensity = 0.25; // Found empyrically
-	const float3 LumCoeff = float3(0.2125, 0.7154, 0.0721);
-	float cLuminanceOriginal = dot(c.rgb, LumCoeff);
+	float cLuminanceOriginal = luminance(c.rgb);
 	float cLuminance = cLuminanceOriginal / normalizationPoint;
 	cLuminance = cLuminance > 1.0 ? pow(cLuminance, 1.0 + fakeHDRIntensity) : cLuminance;
 	cLuminance *= normalizationPoint;
@@ -177,18 +181,25 @@ float4 ps_main(PS_INPUT input) : SV_Target0
 #endif
 	if (input.t.x <= 0.5f && PS_HDR_TEST)
 		c.rgb = saturate(c.rgb);
-#endif
+#endif // PS_HDR_OUTPUT && PS_FAKE_HDR
 	
 #if PS_HDR_INPUT // Display map
+	// Restore the SDR hue (rgb ratio) up to 50% to avoid highlights completely changing colors in unexpected ways
+	float sdrLuminance = luminance(sdrColor);
+	float hdrLuminance = luminance(c.rgb);
+	sdrColor *= sdrLuminance != 0.0 ? (hdrLuminance / sdrLuminance) : 1.0; // Scale up the SDR clipped color to have the HDR color luminance
+	c.rgb = lerp(c.rgb, sdrColor, 0.5);
+
 	// In HDR, we only compress the range above SDR (1), in SDR, we compress the top 20% range, to avoid clipping and retain HDR detail.
 	float shoulderStart = 1.f;
 #if PS_HDR_OUTPUT
 	// Tonemapping should be done in the color space of the output display (e.g. BT.2020 in HDR and BT.709 in SDR),
 	// because displays usually clip individual rgb values to the peak brightness value of HDR.
 	c.rgb = mul(BT709_2_BT2020, c.rgb);
-#else
-	shoulderStart = 0.8f;
-#endif
+#else // !PS_HDR_OUTPUT
+	c.rgb *= 0.75f; // Scale down the SDR image to leave more range for highlights (anything beyond 0.75 will be HDR in SDR), this would only look good on 10bit monitors that can go beyond ~200 nits
+	shoulderStart = 0.667f;
+#endif // PS_HDR_OUTPUT
 	
 	float peakWhite = correction.w;
 	
@@ -205,8 +216,8 @@ float4 ps_main(PS_INPUT input) : SV_Target0
 	
 #if PS_HDR_OUTPUT
 	c.rgb = mul(BT2020_2_BT709, c.rgb);
-#endif
-#endif
+#endif // PS_HDR_OUTPUT
+#endif // PS_HDR_INPUT
 	
 	c = ContrastSaturationBrightness(c);
 	
