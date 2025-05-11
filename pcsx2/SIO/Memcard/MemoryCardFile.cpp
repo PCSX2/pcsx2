@@ -794,7 +794,7 @@ static MemoryCardFileType GetMemoryCardFileTypeFromSize(s64 size)
 		return MemoryCardFileType::Unknown;
 }
 
-static bool IsMemoryCardFolder(const std::string& path)
+static bool FileMcd_IsFolder(const std::string& path)
 {
 	const std::string superblock_path(Path::Combine(path, s_folder_mem_card_id_file));
 	return FileSystem::FileExists(superblock_path.c_str());
@@ -862,7 +862,7 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 
 		if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
 		{
-			if (!IsMemoryCardFolder(fd.FileName))
+			if (!FileMcd_IsFolder(fd.FileName))
 				continue;
 
 			FolderMemoryCard sourceFolderMemoryCard;
@@ -904,7 +904,7 @@ std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view name)
 
 	if (sd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
 	{
-		if (IsMemoryCardFolder(path))
+		if (FileMcd_IsFolder(path))
 		{
 			ret = {std::move(basename), std::move(path), sd.ModificationTime,
 				MemoryCardType::Folder, MemoryCardFileType::Unknown, 0u, true};
