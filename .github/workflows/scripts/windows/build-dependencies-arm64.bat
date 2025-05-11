@@ -246,12 +246,21 @@ cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
 
+if %DEBUG%==1 (
+  set KDDOCKWIDGETSBUILDSPEC=-DCMAKE_CONFIGURATION_TYPES="Release;Debug" -DCMAKE_CROSS_CONFIGS=all -DCMAKE_DEFAULT_BUILD_TYPE=Release -DCMAKE_DEFAULT_CONFIGS=all -G "Ninja Multi-Config"
+) else (
+  rem kddockwidgets slightly changes the name of the dll depending on if CMAKE_BUILD_TYPE or CMAKE_CONFIGURATION_TYPES is used
+  rem The dll name being kddockwidgets-qt62.dll or kddockwidgets-qt62.dll respectively
+  rem Always use CMAKE_CONFIGURATION_TYPES to give consistant naming
+  set KDDOCKWIDGETSBUILDSPEC=-DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_CROSS_CONFIGS=all -DCMAKE_DEFAULT_BUILD_TYPE=Release -DCMAKE_DEFAULT_CONFIGS=Release -G "Ninja Multi-Config"
+)
+
 echo "Building KDDockWidgets..."
 rmdir /S /Q "KDDockWidgets-%KDDOCKWIDGETS%"
 %SEVENZIP% x "KDDockWidgets-%KDDOCKWIDGETS%.zip" || goto error
 cd "KDDockWidgets-%KDDOCKWIDGETS%" || goto error
 %PATCH% -p1 < "%SCRIPTDIR%\..\common\kddockwidgets-dodgy-include.patch" || goto error
-cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DKDDockWidgets_QT6=true -DKDDockWidgets_EXAMPLES=false -DKDDockWidgets_FRONTENDS=qtwidgets -B build -G Ninja || goto error
+cmake -B build %ARM64TOOLCHAIN% -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DKDDockWidgets_QT6=true -DKDDockWidgets_EXAMPLES=false -DKDDockWidgets_FRONTENDS=qtwidgets %KDDOCKWIDGETSBUILDSPEC% || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
