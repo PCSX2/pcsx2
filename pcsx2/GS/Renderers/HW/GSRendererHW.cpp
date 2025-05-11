@@ -2859,7 +2859,8 @@ void GSRendererHW::Draw()
 		if (!no_rt && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp >= 16 &&
 			(m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index.tail % 6) == 0 && TrianglesAreQuads(true) && m_index.tail > 6)))
 		{
-			if (GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16)
+			// Tail check is to make sure we have enough strips to go all the way across the page, or if it's using a region clamp could be used to draw strips.
+			if (GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && (m_index.tail >= (m_cached_ctx.TEX0.TBW * 2) || m_cached_ctx.CLAMP.WMS > CLAMP_CLAMP || m_cached_ctx.CLAMP.WMT > CLAMP_CLAMP))
 			{
 				const GSVertex* v = &m_vertex.buff[0];
 
